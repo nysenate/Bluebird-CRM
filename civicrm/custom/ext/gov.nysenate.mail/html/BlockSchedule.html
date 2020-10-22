@@ -1,0 +1,33 @@
+<style type="text/css">
+  div.crm-section {
+    clear: both;
+  }
+  #bootstrap-theme .label {
+    text-align: right;
+  }
+</style>
+<div style="margin-bottom: 30px;" ng-controller="NYSSMosaicoReview">
+  <div class="crm-section">
+    <div class="label"><label>Mailing Name</label></div>
+    <div class="content">{{mailing.name}}</div>
+  </div>
+  <div class="crm-section">
+    <div class="label"><label>Recipients</label></div>
+    <div class="content">
+      <a class="crm-hover-button action-item crm-popup" href="/civicrm/nyss/previewrecipients?id={{mailing.id}}"><i class="crm-i fa-user"></i> Preview Recipients</a>
+
+      <div ng-show="getIncludesAsString(mailing)">
+        <strong>{{ts('Include:')}}</strong> {{getIncludesAsString(mailing)}}
+      </div>
+      <div ng-show="getExcludesAsString(mailing)">
+        <strong>{{ts('Exclude:')}}</strong> <s>{{getExcludesAsString(mailing)}}</s>
+      </div>
+    </div>
+  </div>
+  <div class="crm-section">
+    <div class="label"><label>Preview HTML</label></div>
+    <div class="content">
+      <a class="crm-hover-button action-item crm-popup" href="/civicrm/nyss/previewmailingiframe?id={{mailing.id}}"><i class="crm-i fa-television"></i> Preview as HTML</a>
+    </div>
+  </div>
+</div>

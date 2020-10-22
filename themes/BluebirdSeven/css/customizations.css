@@ -91,6 +91,11 @@ input[type=color] {
   display: block !important;
 }
 
+/*case: case extension new UI*/
+#bootstrap-theme .civicase__activity-feed__body__list {
+  max-width: calc(100% - 200px) !important;
+}
+
 /*********** BELOW SHOULD BE TEMPORARY! *************/
 
 /*remove old icons (should be unnecessary in future release of shoreditch...)*/

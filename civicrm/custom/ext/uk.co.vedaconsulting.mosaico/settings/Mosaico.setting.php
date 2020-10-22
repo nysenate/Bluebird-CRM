@@ -1,18 +1,18 @@
 <?php
-return array(
-  'mosaico_layout' => array(
+return [
+  'mosaico_layout' => [
     'group_name' => 'Mosaico Preferences',
     'group' => 'mosaico',
     'name' => 'mosaico_layout',
     'quick_form_type' => 'Select',
     'type' => 'String',
     'html_type' => 'select',
-    'html_attributes' => array(
+    'html_attributes' => [
       'class' => 'crm-select2',
-    ),
-    'pseudoconstant' => array(
+    ],
+    'pseudoconstant' => [
       'callback' => 'CRM_Mosaico_Utils::getLayoutOptions',
-    ),
+    ],
     'default' => 'auto',
     'add' => '4.7',
     'title' => 'Mosaico editor layout',
@@ -20,20 +20,20 @@ return array(
     'is_contact' => 0,
     'description' => NULL,
     'help_text' => NULL,
-  ),
-  'mosaico_graphics' => array(
+  ],
+  'mosaico_graphics' => [
     'group_name' => 'Mosaico Preferences',
     'group' => 'mosaico',
     'name' => 'mosaico_graphics',
     'quick_form_type' => 'Select',
     'type' => 'String',
     'html_type' => 'select',
-    'html_attributes' => array(
+    'html_attributes' => [
       'class' => 'crm-select2',
-    ),
-    'pseudoconstant' => array(
+    ],
+    'pseudoconstant' => [
       'callback' => 'CRM_Mosaico_Utils::getGraphicsOptions',
-    ),
+    ],
     'default' => 'auto',
     'add' => '4.7',
     'title' => 'Mosaico graphics driver',
@@ -41,8 +41,92 @@ return array(
     'is_contact' => 0,
     'description' => NULL,
     'help_text' => NULL,
-  ),
-  'mosaico_custom_templates_dir' => array(
+  ],
+  'mosaico_scale_factor1' => [
+    'group_name' => 'Mosaico Preferences',
+    'group' => 'mosaico',
+    'name' => 'mosaico_scale_factor1',
+    'quick_form_type' => 'Select',
+    'type' => 'String',
+    'html_type' => 'select',
+    'html_attributes' => [
+      'class' => 'crm-select2',
+    ],
+    'pseudoconstant' => [
+      'callback' => 'CRM_Mosaico_Utils::getResizeScaleFactor',
+    ],
+    'default' => '',
+    'add' => '5.24',
+    'title' => 'Image resize scale factor',
+    'is_domain' => 1,
+    'is_contact' => 0,
+    'description' => NULL,
+    'help_text' => NULL,
+  ],
+  'mosaico_scale_factor2' => [
+    'group_name' => 'Mosaico Preferences',
+    'group' => 'mosaico',
+    'name' => 'mosaico_scale_factor2',
+    'quick_form_type' => 'Select',
+    'type' => 'String',
+    'html_type' => 'select',
+    'html_attributes' => [
+      'class' => 'crm-select2',
+    ],
+    'pseudoconstant' => [
+      'callback' => 'CRM_Mosaico_Utils::getResizeScaleFactor',
+    ],
+    'default' => '',
+    'add' => '5.24',
+    'title' => 'Image resize scale factor',
+    'is_domain' => 1,
+    'is_contact' => 0,
+    'description' => NULL,
+    'help_text' => NULL,
+  ],
+  'mosaico_scale_width_limit1' => [
+    'group_name' => 'Mosaico Preferences',
+    'group' => 'mosaico',
+    'name' => 'mosaico_scale_width_limit1',
+    'quick_form_type' => 'Select',
+    'type' => 'String',
+    'html_type' => 'select',
+    'html_attributes' => [
+      'class' => 'crm-select2',
+    ],
+    'pseudoconstant' => [
+      'callback' => 'CRM_Mosaico_Utils::getResizeScaleWidthLimit',
+    ],
+    'default' => '',
+    'add' => '5.24',
+    'title' => 'Image resize scale factor width limit',
+    'is_domain' => 1,
+    'is_contact' => 0,
+    'description' => NULL,
+    'help_text' => NULL,
+  ],
+  'mosaico_scale_width_limit2' => [
+    'group_name' => 'Mosaico Preferences',
+    'group' => 'mosaico',
+    'name' => 'mosaico_scale_width_limit2',
+    'quick_form_type' => 'Select',
+    'type' => 'String',
+    'html_type' => 'select',
+    'html_attributes' => [
+      'class' => 'crm-select2',
+    ],
+    'pseudoconstant' => [
+      'callback' => 'CRM_Mosaico_Utils::getResizeScaleWidthLimit',
+    ],
+    'default' => '',
+    'add' => '5.24',
+    'title' => 'Image resize scale factor width limit',
+    'is_domain' => 1,
+    'is_contact' => 0,
+    'description' => NULL,
+    'help_text' => NULL,
+  ],
+  'mosaico_custom_templates_dir' => [
     'group_name' => 'Mosaico Preferences',
     'group' => 'mosaico',
     'name' => 'mosaico_custom_templates_dir',
@@ -56,8 +140,8 @@ return array(
     'is_contact' => 0,
     'description' => NULL,
     'help_text' => NULL,
-  ),
-  'mosaico_custom_templates_url' => array(
+  ],
+  'mosaico_custom_templates_url' => [
     'group_name' => 'Mosaico Preferences',
     'group' => 'mosaico',
     'name' => 'mosaico_custom_templates_url',
@@ -71,5 +155,5 @@ return array(
     'is_contact' => 0,
     'description' => NULL,
     'help_text' => NULL,
-  ),
-);
+  ],
+];

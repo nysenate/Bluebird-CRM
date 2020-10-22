@@ -1,0 +1,17 @@
+<li
+  ng-class="{disabled: !isActionEnabled(action)}"
+  ng-if="isActionAllowed(action)" ng-repeat="action in caseActions">
+  <a href ng-click="doAction(action)">
+    <i class="fa {{action.icon}}"></i> {{ action.title }}
+    <i ng-if="hasSubMenu(action)" class="fa fa-caret-right pull-right"></i>
+  </a>
+  <ul ng-if="hasSubMenu(action)" class="dropdown-menu sub-menu">
+    <li
+      ng-class="{disabled: !isActionEnabled(subMenu)}"
+      ng-if="isActionAllowed(subMenu)" ng-repeat="subMenu in action.items">
+      <a href ng-click="doAction(subMenu)">
+        <i class="fa {{subMenu.icon}}"></i> {{ subMenu.title }}
+      </a>
+    </li>
+  </ul>
+</li>

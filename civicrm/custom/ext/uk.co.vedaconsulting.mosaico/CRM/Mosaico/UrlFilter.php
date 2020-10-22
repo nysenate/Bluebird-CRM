@@ -21,7 +21,7 @@ class CRM_Mosaico_UrlFilter extends \Civi\FlexMailer\Listener\BaseListener {
       return;
     }
 
-    SimpleFilter::byValue($e, 'html', array($this, 'filterHtml'));
+    SimpleFilter::byValue($e, 'html', [$this, 'filterHtml']);
   }
 
   /**

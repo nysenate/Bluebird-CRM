@@ -1,0 +1,67 @@
+.civicase__tags-container,
+.civicase__tags-container__additional__list {
+  .badge {
+    margin-right: 4px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+}
+
+.civicase__tags-container {
+  display: inline-block;
+
+  .badge {
+    max-width: 50px;
+  }
+}
+
+.civicase__tags-container__additional__list {
+  margin: 0;
+  padding: 0;
+
+  li {
+    list-style: none;
+    padding: 5px 10px;
+
+    &:hover {
+      background: $gray-lighter;
+    }
+
+    a {
+      text-decoration: none;
+    }
+  }
+
+  .badge {
+    max-width: 80px;
+  }
+}
+
+.civicase__tags-container__additional-tags {
+  background-color: $crm-gray-matte;
+  display: inline;
+  padding: 0 8px;
+}
+
+.civicase__tags-container__additional__popover {
+  border: 1px solid $gray-light;
+  border-radius: 0;
+  box-shadow: $box-shadow-tooltip;
+  cursor: pointer;
+  padding: 0;
+
+  a {
+    display: flex !important;
+    line-height: 22px;
+  }
+
+  .arrow {
+    border-bottom-color: $gray-light;
+  }
+
+  .popover-content {
+    background: $crm-white;
+    padding: 0;
+  }
+}

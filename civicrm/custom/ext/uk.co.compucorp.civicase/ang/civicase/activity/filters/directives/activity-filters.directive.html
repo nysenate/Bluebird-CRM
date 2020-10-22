@@ -1,0 +1,156 @@
+<div
+  civicase-activity-filters-affix
+  class="panel-header civicase__activity-filter">
+  <div class="clearfix">
+    <div class="civicase__activity-filter__settings btn-group">
+      <button type="button" class="btn btn-default btn-clean dropdown-toggle" data-toggle="dropdown">
+        <i class="material-icons">settings</i> <span class="caret"></span>
+      </button>
+      <ul class="dropdown-menu" role="menu">
+        <li>
+          <input type="checkbox" id="act_control_overdue_first" ng-model="displayOptions.overdue_first" />
+          <label for="act_control_overdue_first">{{ ts('Show overdue activities first') }}</label>
+        </li>
+        <li ng-show="!params.case_id && params.filters.$contact_id">
+          <input type="checkbox" id="act_control_include_case" ng-model="displayOptions.include_case" />
+          <label for="act_control_include_case">{{ ts('Show case activities') }}</label>
+        </li>
+      </ul>
+    </div>
+
+    <!-- Bulk Actions -->
+    <civicase-bulk-actions-checkboxes
+      everything-count="totalCount"
+      displayed-count="displayedCount"
+      is-select-all-available="true"
+      show-checkboxes="showCheckboxes"
+      ng-show="bulkAllowed"/>
+    <span
+      ng-if="bulkAllowed"
+      class="civicase__bulkactions-actions-dropdown btn-group btn-group-sm">
+      <div class="btn-group">
+        <button
+          type="button" class="btn btn-default"
+          ng-class="{disabled: (!selectedActivities.length || !showCheckboxes) && !isSelectAll}"
+          data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+          {{ ts('Actions') }}
+        </button>
+        <button
+          type="button" class="btn btn-default dropdown-toggle"
+          ng-class="{disabled: (!selectedActivities.length || !showCheckboxes) && !isSelectAll}"
+          data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+          <span class="caret"></span>
+        </button>
+        <ul
+          class="dropdown-menu" refresh-callback="refresh"
+          civicase-activity-actions mode="case-activity-bulk-action"
+          selected-activities="selectedActivities" is-select-all="isSelectAll"
+          total-count="totalCount" params="combinedFilterParams">
+        </ul>
+      </div>
+    </span>
+    <!-- End - Bulk Actions -->
+    <span class="pull-right">
+      <select
+        class="form-control civicase__activity-filter__timeline"
+        ng-if="caseTimelines.length > 0"
+        ng-model="filters.activitySet" crm-ui-select>
+        <option value="">{{ ts('Select timeline') }}</option>
+        <option ng-repeat="item in ::caseTimelines" value="{{ item.name }}">
+          {{ item.label }}
+        </option>
+      </select>
+
+      <div civicase-activity-filters-contact="filters"></div>
+
+      <select
+        ng-show="canSelectCaseTypeCategory && displayOptions.include_case"
+        class="form-control civicase__activity-filter__case-type-categories"
+        ng-model="filters['case_type_category']" crm-ui-select>
+        <option value="">{{ ts('Case Type Categories') }}</option>
+        <option ng-repeat="caseTypeCategory in caseTypeCategories" value="{{ caseTypeCategory.name }}">
+          {{ caseTypeCategory.label }}
+        </option>
+      </select>
+
+      <input
+        ng-if="activityCategories"
+        class="form-control civicase__activity-filter__category"
+        crm-ui-select="{allowClear: true, data: activityCategories, placeholder: ts('All Activity Categories')}"
+        ng-model="filters['activity_type_id.grouping']" />
+
+      <button
+        class="civicase__activity-filter__attachment btn btn-{{filters.file_id ? 'active' : 'default'}}"
+        ng-click="filters.file_id = filters.file_id ? null : {'IS NOT NULL': 1}"
+        title="{{ ts('Show only activities with attachments') }}">
+        <i class=" material-icons">attach_file</i>
+      </button>
+      <button
+        class="civicase__activity-filter__star btn btn-{{filters.is_star ? 'active' : 'default'}}"
+        ng-click="filters.is_star = filters.is_star ? null : '1'"
+        title="{{ ts('Show only starred items') }}">
+        <i ng-if="!filters.is_star" class="material-icons">star_border</i>
+        <i ng-if="filters.is_star" class="active material-icons">star</i>
+      </button>
+      <button
+        class="civicase__activity-filter__more btn btn-{{filters['@moreFilters'] ? 'active' : 'default'}}"
+        ng-click="toggleMoreFilters()"
+        title="{{ ts('Click to view More Filters') }}">
+        <i class="material-icons">tune</i> <span class="civicase__activity-filter__more__text">Filter Activities</span>
+      </button>
+    </span>
+  </div>
+
+  <form ng-show="filters['@moreFilters']" class="form-inline civicase__activity-filter__more-container">
+    <div class="btn-group btn-group-sm pull-right" ng-show="hasFilters()">
+      <button class="btn btn-danger btn-sm" ng-click="clearFilters()">
+        <i class="fa fa-ban"></i> {{ ts('Clear Filters') }}
+      </button>
+    </div>
+
+    <div class="input-group civicase__activity-filter__add">
+      <span class="input-group-btn">
+        <input
+          class="form-control" ng-model="availableFilterSearchText"
+          data-toggle="dropdown" placeholder="{{ ts('Add Filter') }}" />
+        <button type="button" class="btn btn-info btn-sm dropdown-toggle btn-filter" data-toggle="dropdown">
+          <span class="crm-i fa-filter"></span>
+        </button>
+        <ul class="dropdown-menu" role="menu">
+          <li ng-repeat="field in (filteredFilters = (availableFilters | filter:{label: availableFilterSearchText}))">
+            <span ng-class="{'civicase__activity-filter__custom': field.group && ($first || field.group !== filteredFilters[$index - 1].group)}">
+              <span class="civicase__activity-filter__header">
+                {{ field.group }}
+              </span>
+              <span ng-click="exposeFilter(field, $event)">
+                <input type="checkbox" id="availableFilter_{{ field.name }}" ng-model="exposedFilters[field.name]" />
+                <label for="availableFilter_{{ field.name }}">{{ field.label }}</label>
+              </span>
+            </span>
+          </li>
+        </ul>
+      </span>
+    </div>
+
+    <span
+      ng-repeat="field in availableFilters" ng-if="exposedFilters[field.name]" class="civicase__activity-filter__others"
+      data-activity-filter="{{ field.name }}" ng-switch="field.html_type">
+      <span ng-switch-when="Autocomplete-Select">
+        <input
+          placeholder="{{ field.label }}"
+          ng-list class="form-control"
+          ng-model="filters[field.name]"
+          crm-entityref="{entity: field.entity, select: {multiple: true}, api: {params: field.api_params}}"
+        />
+      </span>
+      <span ng-switch-when="Select Date">
+        <civicase-ui-date-range placeholder="{{ field.label }}" date-range="filters[field.name]" enforce-time></civicase-ui-date-range>
+      </span>
+      <span ng-switch-default>
+        <input placeholder="{{ field.label }}" type="{{ field.data_type === 'Number' || field.data_type === 'Integer' ? 'number' : 'text' }}" ng-if="!field.options && !field.is_search_range" class="form-control" id="case_search_field_custom_{{ field.id }}" ng-model="filters[field.name]" />
+        <span ng-if="!field.options && field.is_search_range" crm-ui-number-range="filters[field.name]"></span>
+        <input ng-list ng-if="field.options" class="form-control" placeholder="{{ field.label }}" crm-ui-select="{allowClear: true, multiple: true, data: field.options}" ng-model="filters[field.name]" />
+      </span>
+    </span>
+  </form>
+</div>

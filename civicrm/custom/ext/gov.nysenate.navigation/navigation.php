@@ -567,38 +567,51 @@ function _buildEmailMenu($emailID) {
   ";
   $rpts = CRM_Core_DAO::executeQuery($sql);
   while ($rpts->fetch()) {
-    $type = str_replace(array('mailing/', 'Mailing/'), '', $rpts->report_id);
+    $type = str_replace(['mailing/', 'Mailing/'], '', $rpts->report_id);
     $rptIDs[$type] = $rpts->id;
   }
 
-  $email = array(
-    'attributes' => array(
-      'label'      => 'Mass Email',
-      'name'       => 'Mass Email',
-      'url'        => null,
+  $email = [
+    'attributes' => [
+      'label' => 'Mass Email',
+      'name' => 'Mass Email',
+      'url' => null,
       'permission' => 'access CiviCRM',
-      'operator'   => 'AND',
-      'separator'  => 0,
-      'parentID'   => null,
-      'navID'      => $emailID,
-      'active'     => 1
-    ),
-    'child' => array(
-      $emailID+1 => array(
-        'attributes' => array(
+      'operator' => 'AND',
+      'separator' => 0,
+      'parentID' => null,
+      'navID' => $emailID,
+      'active' => 1
+    ],
+    'child' => [
+      $emailID+1 => [
+        'attributes' => [
           'label' => 'New Mass Email',
           'name' => 'New Mass Email',
           'url' => 'civicrm/mailing/send?reset=1',
-          'permission' => 'access CiviMail,create mailings,schedule mailings',
+          'permission' => 'access CiviMail,create mailings',
           'operator' => 'OR',
           'separator' => 0,
           'parentID' => $emailID,
           'navID' => $emailID+1,
           'active' => 1,
-        ),
-      ),
-      $emailID+2 => array(
-        'attributes' => Array(
+        ],
+      ],
+      $emailID+2 => [
+        'attributes' => [
+          'label' => 'New Mass Email (classic)',
+          'name' => 'New Mass Email (classic)',
+          'url' => 'civicrm/a/#/mailing/new/traditional',
+          'permission' => 'access CiviMail,create mailings',
+          'operator' => 'OR',
+          'separator' => 0,
+          'parentID' => $emailID,
+          'navID' => $emailID+2,
+          'active' => 1,
+        ],
+      ],
+      $emailID+3 => [
+        'attributes' => [
           'label' => 'Draft and Unscheduled Emails',
           'name' => 'Draft and Unscheduled Emails',
           'url' => 'civicrm/mailing/browse/unscheduled?reset=1&scheduled=false',
@@ -606,51 +619,64 @@ function _buildEmailMenu($emailID) {
           'operator' => 'OR',
           'separator' => 0,
           'parentID' => $emailID,
-          'navID' => $emailID+2,
+          'navID' => $emailID+3,
           'active' => 1,
-        ),
-      ),
-      $emailID+3 => array(
-        'attributes' => Array(
+        ],
+      ],
+      $emailID+4 => [
+        'attributes' => [
           'label' => 'Scheduled and Sent Emails',
           'name' => 'Scheduled and Sent Emails',
           'url' => 'civicrm/mailing/browse/scheduled?reset=1&scheduled=true',
-          'permission' => 'access CiviMail,approve mailings,create mailings,schedule mailings',
-          'operator' => 'OR',
-          'separator' => 0,
-          'parentID' => $emailID,
-          'navID' => $emailID+3,
-          'active' => 1,
-        ),
-      ),
-      $emailID+4 => array(
-        'attributes' => Array(
-          'label' => 'Find Mailings',
-          'name' => 'Find Mailings',
-          'url' => 'civicrm/mailing/browse?reset=1',
-          'permission' => 'access CiviMail,approve mailings,create mailings,schedule mailings',
+          'permission' => 'access CiviMail,create mailings,schedule mailings,approve mailings',
           'operator' => 'OR',
           'separator' => 0,
           'parentID' => $emailID,
           'navID' => $emailID+4,
           'active' => 1,
-        ),
-      ),
-      $emailID+5 => array(
-        'attributes' => Array(
-          'label' => 'Archived Emails',
-          'name' => 'Archived Emails',
-          'url' => 'civicrm/mailing/browse/archived?reset=1',
-          'permission' => 'create mailings,schedule mailings,access CiviMail',
+        ],
+      ],
+      $emailID+5 => [
+        'attributes' => [
+          'label' => 'Find Mailings',
+          'name' => 'Find Mailings',
+          'url' => 'civicrm/mailing/browse?reset=1',
+          'permission' => 'access CiviMail,create mailings,schedule mailings,approve mailings',
           'operator' => 'OR',
-          'separator' => 1,
+          'separator' => 0,
           'parentID' => $emailID,
           'navID' => $emailID+5,
           'active' => 1,
-        ),
-      ),
-      $emailID+6 => array(
-        'attributes' => Array(
+        ],
+      ],
+      $emailID+6 => [
+        'attributes' => [
+          'label' => 'Mailing Templates',
+          'name' => 'Mailing Templates',
+          'url' => 'civicrm/a/#/mosaico-template',
+          'permission' => 'access CiviMail,create mailings',
+          'operator' => 'OR',
+          'separator' => 0,
+          'parentID' => $emailID,
+          'navID' => $emailID+6,
+          'active' => 1,
+        ],
+      ],
+      $emailID+7 => [
+        'attributes' => [
+          'label' => 'Archived Emails',
+          'name' => 'Archived Emails',
+          'url' => 'civicrm/mailing/browse/archived?reset=1',
+          'permission' => 'access CiviMail,create mailings,schedule mailings',
+          'operator' => 'OR',
+          'separator' => 1,
+          'parentID' => $emailID,
+          'navID' => $emailID+7,
+          'active' => 1,
+        ],
+      ],
+      $emailID+8 => [
+        'attributes' => [
           'label' => 'Mass Email Summary Report',
           'name' => 'Mass Email Summary Report',
           'url' => "civicrm/report/instance/{$rptIDs['summary']}?reset=1",
@@ -658,12 +684,12 @@ function _buildEmailMenu($emailID) {
           'operator' => 'AND',
           'separator' => 0,
           'parentID' => $emailID,
-          'navID' => $emailID+6,
+          'navID' => $emailID+8,
           'active' => 1,
-        ),
-      ),
-      $emailID+7 => array(
-        'attributes' => Array(
+        ],
+      ],
+      $emailID+9 => [
+        'attributes' => [
           'label' => 'Mass Email Bounce Report',
           'name' => 'Mass Email Bounce Report',
           'url' => "civicrm/report/instance/{$rptIDs['bounce']}?reset=1",
@@ -671,12 +697,12 @@ function _buildEmailMenu($emailID) {
           'operator' => 'AND',
           'separator' => 0,
           'parentID' => $emailID,
-          'navID' => $emailID+7,
+          'navID' => $emailID+9,
           'active' => 1,
-        ),
-      ),
-      $emailID+8 => array(
-        'attributes' => Array(
+        ],
+      ],
+      $emailID+10 => [
+        'attributes' => [
           'label' => 'Mass Email Opened Report',
           'name' => 'Mass Email Opened Report',
           'url' => "civicrm/report/instance/{$rptIDs['opened']}?reset=1",
@@ -684,12 +710,12 @@ function _buildEmailMenu($emailID) {
           'operator' => 'OR',
           'separator' => 0,
           'parentID' => $emailID,
-          'navID' => $emailID+8,
+          'navID' => $emailID+10,
           'active' => 1,
-        ),
-      ),
-      $emailID+9 => array(
-        'attributes' => Array(
+        ],
+      ],
+      $emailID+11 => [
+        'attributes' => [
           'label' => 'Mass Email Clickthrough Report',
           'name' => 'Mass Email Clickthrough Report',
           'url' => "civicrm/report/instance/{$rptIDs['clicks']}?reset=1",
@@ -697,12 +723,12 @@ function _buildEmailMenu($emailID) {
           'operator' => 'OR',
           'separator' => 0,
           'parentID' => $emailID,
-          'navID' => $emailID+9,
+          'navID' => $emailID+11,
           'active' => 1,
-        ),
-      ),
-      $emailID+10 => array(
-        'attributes' => Array(
+        ],
+      ],
+      $emailID+12 => [
+        'attributes' => [
           'label' => 'Mass Email Detail Report',
           'name' => 'Mass Email Detail Report',
           'url' => "civicrm/report/instance/{$rptIDs['detail']}?reset=1",
@@ -710,12 +736,12 @@ function _buildEmailMenu($emailID) {
           'operator' => 'OR',
           'separator' => 0,
           'parentID' => $emailID,
-          'navID' => $emailID+10,
+          'navID' => $emailID+12,
           'active' => 1,
-        ),
-      ),
-    ),
-  );
+        ],
+      ],
+    ],
+  ];
 
   return $email;
 }//_buildManageMenu

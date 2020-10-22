@@ -1,0 +1,79 @@
+.civicase__case-details__add-new-dropdown {
+  left: -20px;
+  position: relative;
+  top: 6px;
+
+  .btn-primary {
+    border: 1px solid $crm-white;
+    line-height: 20px;
+    padding: 7px 16px;
+  }
+
+  .btn-primary i:nth-child(1) {
+    margin-right: 8px;
+    position: relative;
+    top: 1px;
+  }
+
+  .btn-primary i:nth-last-child(1) {
+    margin-left: 8px;
+  }
+
+  [civicase-dropdown] {
+    position: relative;
+  }
+
+  .dropdown-menu {
+    left: auto;
+    right: 0;
+    width: 180px;
+  }
+
+  [civicase-dropdown] .dropdown-menu {
+    top: 0;
+  }
+
+  .dropdown-menu .fa-fw,
+  a .material-icons, {
+    color: $brand-primary;
+  }
+}
+
+.civicase__dropdown-menu--filters.dropdown-menu {
+  max-height: 260px;
+  overflow-x: hidden;
+  overflow-y: scroll;
+  padding: 8px 0 0;
+  right: 170px;
+  top: 0;
+  width: 220px;
+
+  .form-control {
+    margin: 0 auto;
+    width: 204px;
+  }
+
+  .form-control-feedback {
+    color: $gray-darker;
+    font-size: 14px;
+    margin-right: 8px;
+    margin-top: 7px;
+    position: absolute;
+  }
+
+  a {
+    padding: 9px 17px;
+    white-space: normal;
+  }
+}
+
+.civicase__activity-dropdown .civicase__dropdown-menu--filters {
+  a {
+    padding: 9px 17px 9px 38px;
+  }
+
+  .fa-fw {
+    margin-left: -21px;
+    margin-right: 4px;
+  }
+}

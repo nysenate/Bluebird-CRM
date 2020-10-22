@@ -1,0 +1,24 @@
+<div class="civicase__summary-tab crm-entity" data-entity="Case" data-id="{{ item.id }}">
+  <civicase-case-summary></civicase-case-summary>
+
+  <div class="civicase__summary-tab-tile-container" ng-if="caseDetailsSummaryBlocks.length > 0">
+    <ng-include civicase-include-replace
+      ng-repeat="caseDetailsSummaryBlock in caseDetailsSummaryBlocks"
+      src="caseDetailsSummaryBlock.templateUrl">
+    </ng-include>
+  </div>
+
+  <civicase-case-summary-custom-data></civicase-case-summary-custom-data>
+
+  <div class="clearfix civicase__summary-tab-tile-container">
+    <civicase-case-summary-recent-communications
+      class="civicase__summary-tab-tile civicase__summary-tab__activity-list col-lg-6 col-md-12 panel civicase__panel-transparent-header">
+    </civicase-case-summary-recent-communications>
+    <civicase-case-summary-tasks
+      class="civicase__summary-tab-tile civicase__summary-tab__activity-list col-lg-6 col-md-12 panel civicase__panel-transparent-header">
+    </civicase-case-summary-tasks>
+  </div>
+
+  <civicase-case-summary-other-cases ng-if="areRelatedCasesVisibleOnSummaryTab">
+  </civicase-case-summary-other-cases>
+</div>

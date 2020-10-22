@@ -1,0 +1,5 @@
+.civicase__icon {
+  // rotate(0.03deg) is applied to retain proper shape of icons in low resolution
+  // https://github.com/google/material-design-icons/issues/648#issuecomment-335735429
+  transform: translateY(14%) rotate(0.03deg);
+}

@@ -1,0 +1,60 @@
+<form class="panel panel-default civicase__panel-transparent-header">
+  <fieldset class="panel-body" ng-disabled="block.check()">
+    <div crm-ui-debug="activity"></div>
+    <div crm-ui-debug="uploader.queue.length"></div>
+    <div class="clearfix civicase__file-upload-container" ng-class="{'civicase__file-upload-container--upload-active': isUploadActive()}">
+      <div class="civicase__file-upload-item civicase__file-upload-box pull-left">
+        <div class="civicase__file-upload-dropzone"
+          nv-file-drop nv-file-over uploader="uploader">
+          <i class="material-icons">file_upload</i>
+          <h3>{{ts('Drop file here')}}</h3>
+          <label for="civicase__file-upload-button">{{ts('or click here to browse')}}</label>
+        </div>
+        <input id="civicase__file-upload-button" class="civicase__file-upload-button" type="file" multiple nv-file-select uploader="uploader" />
+      </div>
+      <div class="civicase__file-upload-details civicase__file-upload-item pull-right">
+        <div class="form-group">
+          <label for="uploadSubject">{{ts('Activity Subject')}}</label>
+          <input type="text" class="form-control" id="uploadSubject" placeholder="" ng-model="activity.subject">
+        </div>
+        <div class="row">
+          <div class="civicase__file-upload-name col-md-8"><label>{{ts('Name')}}</label></div>
+          <div class="civicase__file-upload-size col-md-2"><label>{{ts('Size')}}</label></div>
+          <div class="civicase__file-upload-action col-md-2"></div>
+        </div>
+
+        <div ng-repeat="item in uploader.queue">
+          <div class="row">
+            <h4 class="civicase__file-upload-name col-md-8" ng-bind="item.file.name"></h4>
+            <div class="civicase__file-upload-size col-md-2" civicase-filesize="item.file.size"></div>
+            <div class="civicase__file-upload-action col-md-2 civicase__file-upload-remove">
+              <button class="btn btn-sm btn-danger-outline" ng-click="item.remove()">{{ts('Remove')}}</button>
+            </div>
+          </div>
+          <div class="progress civicase__file-upload-progress">
+            <div class="progress-bar progress-bar-success" role="progressbar" aria-valuenow="60" aria-valuemin="0" aria-valuemax="100" ng-style="{width: item.progress + '%'}"><span class="sr-only">{{item.progress}}% Complete</span></div>
+          </div>
+          <div class="form-group civicase__file-upload-description">
+            <label >{{ts('File Description')}}</label>
+            <textarea type="textarea" class="form-control" placeholder="{{ts('Add file description')}}" rows="3" ng-model="item.crmData.description"></textarea>
+          </div>
+        </div>
+
+        <civicase-tags-selector
+          ng-if="tags.all.length > 0"
+          model="tags.selected"
+          all-tags="tags.all">
+        </civicase-tags-selector>
+
+        <div class="clearfix">
+          <div class="pull-right">
+            <button type="button" class="btn btn-default cancel" ng-click="deleteActivity()" >
+              <span class="btn-icon"></span> {{ts('Cancel')}}</button>
+            <button type="button" class="btn btn-primary" ng-click="saveActivity()" >
+              <span class="btn-icon"></span> {{ts('Upload File(s)')}}</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </fieldset>
+</form>

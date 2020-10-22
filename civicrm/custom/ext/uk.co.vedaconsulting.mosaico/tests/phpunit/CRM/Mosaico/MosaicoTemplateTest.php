@@ -36,52 +36,52 @@ class CRM_Mosaico_MosaicoTemplateTest extends CRM_Mosaico_TestCase implements En
 
   public function testCreateGetDelete() {
     $r = rand();
-    $createResult = $this->callAPISuccess('MosaicoTemplate', 'create', array(
+    $createResult = $this->callAPISuccess('MosaicoTemplate', 'create', [
       'title' => 'MosaicoTemplateTest ' . $r,
       'base' => 'versafix-1',
       'html' => '<p>hello</p>',
-      'metadata' => json_encode(array('foo' => 'bar')),
-      'content' => json_encode(array('abc' => 'def')),
-    ));
+      'metadata' => json_encode(['foo' => 'bar']),
+      'content' => json_encode(['abc' => 'def']),
+    ]);
 
-    $getResult = $this->callAPISuccess('MosaicoTemplate', 'get', array(
+    $getResult = $this->callAPISuccess('MosaicoTemplate', 'get', [
       'title' => 'MosaicoTemplateTest ' . $r,
-    ));
+    ]);
     $this->assertEquals(1, $getResult['count']);
     $this->assertEquals(1, count($getResult['values']));
     $this->assertTrue(is_array($getResult['values'][$createResult['id']]));
     foreach ($getResult['values'] as $value) {
       $this->assertEquals('<p>hello</p>', $value['html']);
-      $this->assertEquals(array('foo' => 'bar'), json_decode($value['metadata'], 1));
-      $this->assertEquals(array('abc' => 'def'), json_decode($value['content'], 1));
+      $this->assertEquals(['foo' => 'bar'], json_decode($value['metadata'], 1));
+      $this->assertEquals(['abc' => 'def'], json_decode($value['content'], 1));
     }
 
-    $this->callAPISuccess('MosaicoTemplate', 'delete', array(
+    $this->callAPISuccess('MosaicoTemplate', 'delete', [
       'id' => $createResult['id'],
-    ));
+    ]);
   }
 
   public function testClone() {
-    $createResult = $this->callAPISuccess('MosaicoTemplate', 'create', array(
+    $createResult = $this->callAPISuccess('MosaicoTemplate', 'create', [
       'title' => 'MosaicoTemplateTest foo',
       'base' => 'versafix-1',
       'html' => '<p>hello</p>',
-      'metadata' => json_encode(array('foo' => 'bar')),
-      'content' => json_encode(array('abc' => 'def')),
-    ));
+      'metadata' => json_encode(['foo' => 'bar']),
+      'content' => json_encode(['abc' => 'def']),
+    ]);
 
-    $cloneResult = $this->callAPISuccess('MosaicoTemplate', 'clone', array(
+    $cloneResult = $this->callAPISuccess('MosaicoTemplate', 'clone', [
       'id' => $createResult['id'],
       'title' => 'MosaicoTemplateTest bar',
-    ));
+    ]);
     $clone = $cloneResult['values'][$cloneResult['id']];
 
     $this->assertNotEquals($clone['id'], $createResult['id']);
     $this->assertEquals('MosaicoTemplateTest bar', $clone['title']);
     $this->assertEquals('versafix-1', $clone['base']);
     $this->assertEquals('<p>hello</p>', $clone['html']);
-    $this->assertEquals(json_encode(array('foo' => 'bar')), $clone['metadata']);
-    $this->assertEquals(json_encode(array('abc' => 'def')), $clone['content']);
+    $this->assertEquals(json_encode(['foo' => 'bar']), $clone['metadata']);
+    $this->assertEquals(json_encode(['abc' => 'def']), $clone['content']);
   }
 
 }

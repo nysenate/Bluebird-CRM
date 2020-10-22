@@ -1,0 +1,13 @@
+<div crm-ui-debug="getfiles"></div>
+<div civicase-util="caseutil"></div>
+<div civicase-api3-ctrl="getfiles"
+     civicase-api3="['Case','getfiles', {case_id: item.id, text: '', options: {xref:1, limit:0}}]"
+     on-refresh="caseutil.formatActivities(result.xref.activity)">
+</div>
+<div civicase-file-uploader="item" on-upload="getfiles.refresh()"></div>
+<div class="civicase__file-tab-actions">
+    <!--    For Bulk Actions
+   <div class="civicase__file-filter-actions"></div> -->
+    <div civicase-file-filter="getfiles" class="civicase__file-tab-filters"></div>
+</div>
+<div civicase-file-list="getfiles" bulk-allowed="bulkAllowed"></div>

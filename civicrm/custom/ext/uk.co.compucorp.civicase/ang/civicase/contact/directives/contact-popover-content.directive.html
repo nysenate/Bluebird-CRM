@@ -1,0 +1,58 @@
+<div class="civicase__contact-popover">
+  <div class="civicase__contact-popover__header">
+    <h2>{{contact.display_name}}</h2>
+    <hr />
+  </div>
+  <div class="civicase__contact-popover__column">
+    <div class="civicase__contact-popover__detail-group" ng-repeat="phoneNumber in contact.phoneNumbers">
+      <div class="civicase__contact-popover__detail-header"><strong>{{phoneNumber.type}}</strong></div>
+      <div class="civicase__contact-popover__detail-value">{{phoneNumber.number}}</div>
+    </div>
+    <div class="civicase__contact-popover__detail-group">
+      <div class="civicase__contact-popover__detail-header"><strong>Primary Address</strong></div>
+      <div class="civicase__contact-popover__detail-value">{{contact.street_address}}</div>
+    </div>
+    <div class="civicase__contact-popover__detail-group">
+      <div class="civicase__contact-popover__detail-header"><strong>City</strong></div>
+      <div class="civicase__contact-popover__detail-value">{{contact.city}}</div>
+    </div>
+    <div class="civicase__contact-popover__detail-group">
+      <div class="civicase__contact-popover__detail-header"><strong>State</strong></div>
+      <div class="civicase__contact-popover__detail-value">{{contact.state_province}}</div>
+    </div>
+    <div class="civicase__contact-popover__detail-group">
+      <div class="civicase__contact-popover__detail-header"><strong>Postal Code</strong></div>
+      <div class="civicase__contact-popover__detail-value">{{contact.postal_code}}</div>
+    </div>
+  </div>
+  <div class="civicase__contact-popover__column">
+    <div class="civicase__contact-popover__detail-group">
+      <div class="civicase__contact-popover__detail-header"><strong>Primary Email</strong></div>
+      <div class="civicase__contact-popover__detail-value">
+        <a class="crm-popup" ng-href="{{ getEmailUrl() }}">
+          {{contact.email}}
+        </a>
+      </div>
+    </div>
+    <div class="civicase__contact-popover__detail-group">
+      <div class="civicase__contact-popover__detail-header"><strong>Groups</strong></div>
+      <div class="civicase__contact-popover__detail-value">{{contact.groups}}</div>
+    </div>
+    <div class="civicase__contact-popover__detail-group">
+      <div class="civicase__contact-popover__detail-header"><strong>Tags</strong></div>
+      <div class="civicase__contact-popover__detail-value">
+        <span ng-repeat="tag in contact['api.EntityTag.get'].values">
+          <span civicase-tag="tag"></span>&nbsp;
+        </span>
+      </div>
+    </div>
+    <div class="civicase__contact-popover__detail-group">
+      <div class="civicase__contact-popover__detail-header"><strong>Gender</strong></div>
+      <div class="civicase__contact-popover__detail-value">{{contact.gender}}</div>
+    </div>
+    <div class="civicase__contact-popover__detail-group">
+      <div class="civicase__contact-popover__detail-header"><strong>Date of Birth</strong></div>
+      <div class="civicase__contact-popover__detail-value">{{contact.birth_date | date:'longDate'}}</div>
+    </div>
+  </div>
+</div>

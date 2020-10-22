@@ -1,0 +1,29 @@
+<div>
+  <div class="civicase__case-tab__actions">
+    <button
+      class="btn btn-large btn-primary"
+      ng-click="linkCase()"
+    >
+      <i class="fa fa-link"></i>
+      {{ ts('Link Cases') }}
+    </button>
+  </div>
+  <civicase-case-summary-other-cases
+    ng-if="item.relatedCases.length"
+  ></civicase-case-summary-other-cases>
+  <div
+    ng-if="item.relatedCases.length === 0"
+    class="civicase__contact-cases-tab-empty"
+  >
+    <div class="civicase__activity-no-result-icon civicase__activity-no-result-icon--case"></div>
+    <div class="civicase__activity-card--big--empty-title"> {{ ts('No linked cases') }} </div>
+    <div class="civicase__activity-card--big--empty-description">
+      {{ ts('Click the button below to create a new link for this case') }}
+    </div>
+    <a
+      class="civicase__activity-card--big--empty-button btn"
+      ng-click="linkCase()">
+      {{ ts('Link Cases') }}
+    </a>
+  </div>
+</div>

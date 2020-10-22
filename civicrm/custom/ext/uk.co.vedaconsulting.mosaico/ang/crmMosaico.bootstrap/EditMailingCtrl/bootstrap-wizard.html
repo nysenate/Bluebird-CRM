@@ -6,11 +6,11 @@
         <div crm-mosaico-block-mailing crm-mailing="mailing"></div>
       </div>
 
-      <div crmb-wizard-step crm-title="ts('Design')" ng-form="designForm">
+      <div crmb-wizard-step crm-title="ts('Design')" ng-if="checkPerm('create mailings') || checkPerm('access CiviMail')" ng-form="designForm">
         <div crm-mosaico-block-design crm-mailing="mailing" crm-mosaico-ctrl="mosaicoCtrl"></div>
       </div>
 
-      <div crmb-wizard-step crm-title="ts('Options')" ng-form="optionsForm">
+      <div crmb-wizard-step crm-title="ts('Options')" ng-form="optionsForm" ng-if="checkPerm('schedule mailings') || checkPerm('access CiviMail')">
         <div style="float: right">
           <button class="btn btn-primary" ng-click="openAdvancedOptions(mailing)">
           <span class="glyphicon glyphicon-cog" aria-hidden="true"></span>
@@ -18,6 +18,10 @@
         </button>
         </div>
         <div crm-mosaico-block-schedule crm-mailing="mailing"></div>
+      </div>
+
+      <div crmb-wizard-step crm-title="ts('Approve')" ng-if="checkPerm('approve mailings') || checkPerm('access CiviMail')" ng-form="approveForm">
+        <div crm-mosaico-block-approve crm-mailing="mailing"></div>
       </div>
 
       <button class="btn btn-secondary-outline" crmb-wizard-button-position="left" ng-click="crmbWizardCtrl.previous()" ng-show="!crmbWizardCtrl.$first()">
@@ -41,10 +45,16 @@
       {{ts('Continue')}}
     </button>
 
-      <button class="btn btn-primary" crmb-wizard-button-position="right" ng-show="crmbWizardCtrl.$last()" ng-disabled="block.check() || !crmbWizardCtrl.$validStep()" ng-click="submit()">
+      <!--NYSS 13568-->
+      <button ng-if="!checkPerm('approve mailings') && !checkPerm('access CiviMail') && !checkPerm('create mailings')" class="btn btn-primary" crmb-wizard-button-position="right" ng-show="crmbWizardCtrl.$last()" ng-disabled="block.check() || !crmbWizardCtrl.$validStep()" ng-click="submit()">
       <span class="btn-icon"><i class="fa fa-send"></i></span>
-      {{ts('Submit Mailing')}}
+      {{checkPerm('schedule mailings') ? ts('Schedule Mailing') : ts('Submit Mailing')}}
     </button>
+
+     <button ng-if="checkPerm('approve mailings') || checkPerm('access CiviMail')" class="btn btn-primary" crmb-wizard-button-position="right" ng-show="crmbWizardCtrl.$last()" ng-disabled="block.check() || !crmbWizardCtrl.$validStep()" ng-click="approve('Approved')">
+     <span class="btn-icon"><i class="fa fa-send"></i></span>
+     {{ts('Approve and Submit Mailing')}}
+   </button>
 
     </div>
 

@@ -29,8 +29,8 @@
     }
 
     crmApi({
-      bases: ['MosaicoBaseTemplate', 'get', {sequential: 1, 'option.limit': 0}],
-      templates: ['MosaicoTemplate', 'get', {sequential: 1, 'option.limit': 0, return:['title', 'base']}]
+      bases: ['MosaicoBaseTemplate', 'get', {sequential: 1, 'options': {'sort': 'title ASC', 'limit': 0}}],
+      templates: ['MosaicoTemplate', 'get', {sequential: 1, 'options': {'sort': 'title ASC', 'limit': 0}, return:['title', 'base']}]
     }).then(function(r){
       cache.basesByName = _.indexBy(r.bases.values, 'name');
       cache.bases = _.map(r.bases.values, filterBase);

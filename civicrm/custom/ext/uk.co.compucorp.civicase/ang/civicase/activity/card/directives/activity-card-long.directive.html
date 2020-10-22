@@ -1,0 +1,184 @@
+<div
+  class="civicase__activity-card civicase__activity-card--long"
+  ng-class="{
+    'civicase__activity-card--draft': activity.status==='Draft',
+    'civicase__activity-card--ribbon': activity.category.indexOf('milestone') > -1,
+    'civicase__activity-card--with-checkbox': activity.category.indexOf('task') > -1,
+    'civicase__activity-card--alert': activity.category.indexOf('alert') > -1,
+    'civicase__activity-card--file': activity.type === 'File Upload'
+  }">
+  <div class="panel panel-default" ng-click="viewActivityDetails($event, activity)">
+    <div class="panel-body">
+      <div class="civicase__activity-card-row civicase__activity-card-row--first">
+        <span ng-if="activity.icon || activity.category.indexOf('milestone') > -1" activity-icon="activity"></span>
+        <!-- Task - Checkbox -->
+        <span
+          ng-if="activity.category.indexOf('task') > -1"
+          class="civicase__checkbox"
+          title="{{ activity.is_completed ? ts('Mark incomplete') : ts('Mark complete') }}"
+          ng-click="markCompleted(activity); $event.stopPropagation();"
+          role="checkbox" aria-checked="{{activity.is_completed}}" tabindex="0" aria-labelledby="Mark complete/incomplete">
+          <i ng-if="activity.is_completed" class="civicase__checkbox--checked material-icons">check_box</i>
+        </span>
+        <!-- End - Task - Checkbox -->
+        <!-- Title - Type/Subject -->
+        <civicase-tooltip
+            tooltip-text="activity.type !== 'File Upload' ? civicaseTs(activity.type) : (activity.subject || civicaseTs(activity.type))">
+          <span
+            ng-if="activity.type !== 'File Upload'"
+            class="civicase__tooltip__ellipsis civicase__activity-type"
+            ng-class="{'civicase__activity-type--completed': (activity.category.indexOf('task') > -1 && activity.is_completed)}">
+            {{ civicaseTs(activity.type) }}
+          </span>
+          <span
+            class="civicase__tooltip__ellipsis civicase__activity-subject"
+            ng-if="activity.type === 'File Upload'">
+            {{ activity.subject || civicaseTs(activity.type) }}
+          </span>
+        </civicase-tooltip>
+        </span>
+        <!-- End - Title - Type/Subject -->
+        <span class="civicase__activity__right-container" ng-if="activity.category.indexOf('alert') === -1">
+          <!-- Tags -->
+          <civicase-tags-container
+            tags="activity.tag_id"
+            show-ellipsis-after="1">
+          </civicase-tags-container>
+          <!-- End - Tags -->
+
+          <!-- Attachments -->
+          <div class="btn-group civicase__activity-attachment__container" ng-if="activity.type !== 'File Upload' && activity.file_id">
+            <i ng-mouseover="getAttachments(activity)" class="civicase__activity-attachment__icon material-icons">attach_file</i>
+            <ul class="dropdown-menu">
+              <li ng-if="!activity.attachments || !activity.attachments.length" class="civicase__activity-attachment-load">
+                <span>
+                  <i class="civicase__activity-attachment-load-icon text-primary material-icons">loop</i> &nbsp;{{ ts('Loading...') }}
+                </span>
+              </li>
+              <li ng-repeat="file in activity.attachments || []">
+                <a class="civicase__activity-attachment__file-name"
+                  title="{{ file.description || ts('Download File') }}"
+                  href="{{ file.url }}">
+                  <i class="civicase__activity-attachment__file-icon crm-i {{ file.icon }}"></i> &nbsp;{{ file.name }}
+                </a>
+              </li>
+              <li ng-if="activity.attachments.length" role="separator" class="divider"></li>
+              <li ng-if="activity.attachments.length">
+                <a class="civicase__activity-attachment__file-name"
+                  ng-href="{{ 'civicrm/case/activity/download-all-files' | civicaseCrmUrl:{ activity_id: activity.id } }}">
+                  <i class="civicase__activity-attachment__file-icon crm-i fa-download"></i> &nbsp;Download all
+                </a>
+              </li>
+            </ul>
+          </div>
+          <!-- End - Attachments -->
+
+          <!-- Rating -->
+          <a ng-click="toggleActivityStar($event, activity)" href ng-if="activity.is_star" title="{{ activity.is_star === '0' ? ts('Add star') : ts('Unstar') }}">
+            <i ng-if="activity.is_star === '0'" class="civicase__activity-star material-icons">star_border</i>
+            <i ng-if="activity.is_star === '1'" class="civicase__activity-star active material-icons">star</i>
+          </a>
+          <!-- End - Rating -->
+
+          <!-- Activity Date -->
+          <span
+            class="civicase__activity-date"
+            ng-class="{'civicase__overdue-activity-icon': activity.is_overdue}">
+            <span class="civicase__activity-date__with-year">
+              {{formatDate(activity.activity_date_time, 'DD MMM YYYY')}}
+            </span>
+            <span
+              class="civicase__activity-date__without-year"
+              title="{{formatDate(activity.activity_date_time, 'DD MMM YYYY')}}">
+              {{formatDate(activity.activity_date_time, 'DD MMM')}}
+            </span>
+          </span>
+          <!-- End - Activity Date -->
+
+          <!-- Avatar -->
+          <span
+            ng-if="activity.assignee_contact_name"
+            civicase-contact-card
+            avatar="true"
+            case-id="activity.case_id"
+            contacts="activity.assignee_contact_name"
+          ></span>
+          <!-- End - Avatar -->
+          <div ng-include="'~/civicase/activity/card/directives/activity-card-menu-feed.html'" ng-if="bulkAllowed"></div>
+        </span>
+      </div>
+      <div class="civicase__activity-card-row">
+        <!-- Subject -->
+        <div ng-if="activity.type !== 'File Upload'" class="civicase__activity-subject">{{ activity.subject }}</div>
+        <!-- End - Subject -->
+      </div>
+      <div
+        class="civicase__activity-card-row civicase__activity-card-row--communication"
+        ng-if="areFromAndToFieldsVisible"
+      >
+        <div>
+          <span>To:&nbsp;</span>
+          <span
+            ng-if="activity.target_contact_name"
+            civicase-contact-card
+            contacts="activity.target_contact_name"
+            case-id="activity.case_id"
+          ></span>
+        </div>
+        <div class="civicase__activity__right-container">
+          <span>From:&nbsp;</span>
+          <span
+            ng-if="activity.source_contact_id"
+            civicase-contact-card
+            case-id="activity.case_id"
+            contacts="activity.source_contact_id"
+          ></span>
+        </div>
+      </div>
+      <div class="civicase__activity-card-row" ng-if="activity.category.indexOf('alert') > -1">
+        <!-- Tags for alert-->
+        <civicase-tags-container
+          tags="activity.tag_id"
+          show-ellipsis-after="1">
+        </civicase-tags-container>
+        <!-- End - Tags for alert -->
+      </div>
+
+      <div class="civicase__activity-card-row civicase__activity-card-row--file" ng-if="activity.type === 'File Upload'" ng-init="getAttachments(activity)">
+        <div ng-repeat="file in activity.attachments || []">
+          <a class="civicase__activity-attachment__file-name"
+            title="{{ file.description || ts('Download File') }}"
+            href="{{ file.url }}">
+            {{ file.name }}
+          </a>
+          <div ng-include="'~/civicase/activity/card/directives/activity-card-menu-file.html'" class="civicase__activity-attachment__file-options" ng-if="bulkAllowed"></div>
+          <div class="civicase__activity-attachment__file-description">{{ file.description }}</div>
+        </div>
+      </div>
+    </div>
+    <!-- Case information -->
+    <div class="panel-footer" ng-if="activity.case">
+      <a ng-href="{{ caseDetailUrl }}">
+        <div class="civicase__activity-card-row civicase__activity-card-row--case-info" >
+          <span>
+            <span class="civicase__activity-card__case-id__label">{{ ts("Case ID:") }}</span>
+            <span class="civicase__activity-card__case-id__value">{{activity.case_id}}</span>
+          </span>
+          <span class="civicase__pipe"> | </span>
+          <span class="civicase__activity-card__case-type">{{ activity.case.type.title }}</span>
+          <div class="civicase__activity__right-container">
+            <div>
+              <span
+                civicase-contact-card
+                case-id="activity.case_id"
+                contacts="activity.case.client"
+              ></span>
+            </div>
+            <span class="crm_notification-badge" style="background-color: {{ activity.case.status.color }};">{{ activity.case.status.label }}</span>
+          </div>
+        </div>
+      </a>
+    </div>
+    <!-- End - Case information -->
+  </div>
+</div>

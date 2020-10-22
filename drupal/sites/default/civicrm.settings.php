@@ -91,6 +91,7 @@ $prefsMap = &$civicrm_setting['Map Preferences'];
 $prefsSearch = &$civicrm_setting['Search Preferences'];
 $prefsUrl = &$civicrm_setting['URL Preferences'];
 $prefsReportError = &$civicrm_setting['reporterror'];
+$prefsMosaico = &$civicrm_setting['mosaico'];
 
 // Core settings, from Core.setting.php
 // contact_view_options, contact_edit_options
@@ -153,10 +154,10 @@ $prefsCore['ajaxPopupsEnabled'] = 1;
 // petition_contacts
 
 // Case settings, from Case.setting.php
-// civicaseRedactActivityEmail
-// civicaseAllowMultipleClients
-// civicaseNaturalActivityTypeSort
-$prefsCase['civicaseActivityRevisions'] = true;
+$prefsCase['civicaseRedactActivityEmail'] = 'default';
+$prefsCase['civicaseAllowMultipleClients'] = 1;
+$prefsCase['civicaseNaturalActivityTypeSort'] = 'default';
+$prefsCase['civicaseActivityRevisions'] = false;
 
 // Contribute settings, from Contribute.setting.php
 // cvv_backoffice_required
@@ -289,6 +290,12 @@ $prefsReportError['reporterror_show_post_data'] = TRUE;
 $prefsReportError['reporterror_smartgroups_autodisable'] = TRUE;
 $prefsReportError['reporterror_sendreport_profile'] = TRUE;
 $prefsReportError['reporterror_handle_profile'] = TRUE;
+
+// Mosaico extension settings
+$prefsMosaico['mosaico_custom_templates_dir'] = "$approot/civicrm/custom/mosaico";
+$prefsMosaico['mosaico_custom_templates_url'] = 'sites/all/mosaico';
+$prefsMosaico['mosaico_layout'] = 'auto';
+$prefsMosaico['mosaico_graphics'] = 'auto';
 
 if (isset($bbcfg['xhprof.profile']) && $bbcfg['xhprof.profile']) {
   function xhprof_shutdown_func($source, $run_id = null) {

@@ -1,0 +1,133 @@
+diff --git a/ang/crmMosaico.bootstrap/EditMailingCtrl/bootstrap-wizard.html b/ang/crmMosaico.bootstrap/EditMailingCtrl/bootstrap-wizard.html
+index 9d41e0f..ac4aa2f 100644
+--- a/ang/crmMosaico.bootstrap/EditMailingCtrl/bootstrap-wizard.html
++++ b/ang/crmMosaico.bootstrap/EditMailingCtrl/bootstrap-wizard.html
+@@ -6,11 +6,11 @@
+         <div crm-mosaico-block-mailing crm-mailing="mailing"></div>
+       </div>
+ 
+-      <div crmb-wizard-step crm-title="ts('Design')" ng-form="designForm">
++      <div crmb-wizard-step crm-title="ts('Design')" ng-if="checkPerm('create mailings') || checkPerm('access CiviMail')" ng-form="designForm">
+         <div crm-mosaico-block-design crm-mailing="mailing" crm-mosaico-ctrl="mosaicoCtrl"></div>
+       </div>
+ 
+-      <div crmb-wizard-step crm-title="ts('Options')" ng-form="optionsForm">
++      <div crmb-wizard-step crm-title="ts('Options')" ng-form="optionsForm" ng-if="checkPerm('schedule mailings') || checkPerm('access CiviMail')">
+         <div style="float: right">
+           <button class="btn btn-primary" ng-click="openAdvancedOptions(mailing)">
+           <span class="glyphicon glyphicon-cog" aria-hidden="true"></span>
+@@ -20,6 +20,10 @@
+         <div crm-mosaico-block-schedule crm-mailing="mailing"></div>
+       </div>
+ 
++      <div crmb-wizard-step crm-title="ts('Approve')" ng-if="checkPerm('approve mailings') || checkPerm('access CiviMail')" ng-form="approveForm">
++        <div crm-mosaico-block-approve crm-mailing="mailing"></div>
++      </div>
++
+       <button class="btn btn-secondary-outline" crmb-wizard-button-position="left" ng-click="crmbWizardCtrl.previous()" ng-show="!crmbWizardCtrl.$first()">
+       <span class="btn-icon"><i class="fa fa-chevron-left"></i></span>
+       {{ts('Back')}}
+@@ -41,11 +45,16 @@
+       {{ts('Continue')}}
+     </button>
+ 
+-      <button class="btn btn-primary" crmb-wizard-button-position="right" ng-show="crmbWizardCtrl.$last()" ng-disabled="block.check() || !crmbWizardCtrl.$validStep()" ng-click="submit()">
++      <button ng-if="!checkPerm('approve mailings') && !checkPerm('access CiviMail')" class="btn btn-primary" crmb-wizard-button-position="right" ng-show="crmbWizardCtrl.$last()" ng-disabled="block.check() || !crmbWizardCtrl.$validStep()" ng-click="submit()">
+       <span class="btn-icon"><i class="fa fa-send"></i></span>
+-      {{ts('Submit Mailing')}}
++      {{checkPerm('schedule mailings') ? ts('Schedule Mailing') : ts('Submit Mailing')}}
+     </button>
+ 
++     <button ng-if="checkPerm('approve mailings') || checkPerm('access CiviMail')" class="btn btn-primary" crmb-wizard-button-position="right" ng-show="crmbWizardCtrl.$last()" ng-disabled="block.check() || !crmbWizardCtrl.$validStep()" ng-click="approve('Approved')">
++     <span class="btn-icon"><i class="fa fa-send"></i></span>
++     {{ts('Approve and Submit Mailing')}}
++   </button>
++
+     </div>
+ 
+   </div>
+diff --git a/ang/crmbWizard.js b/ang/crmbWizard.js
+index 006fdf7..b2b7309 100644
+--- a/ang/crmbWizard.js
++++ b/ang/crmbWizard.js
+@@ -21,6 +21,7 @@
+           var crmbWizardCtrl = this;
+           var maxVisited = 0;
+           var selectedIndex = null;
++          $scope.checkPerm = CRM.checkPerm;
+ 
+           var findIndex = function() {
+             var found = null;
+@@ -40,6 +41,20 @@
+           this.$validStep = function() {
+             return steps[selectedIndex] && steps[selectedIndex].isStepValid();
+           };
++          this.workFlowEnabled = function() {
++            return CRM.crmMailing.workflowEnabled;
++          };
++          this.check = function() {
++            if (this.$index() == 1 || this.$index() == 0) {
++              return !(CRM.crmMailing.workflowEnabled && !CRM.checkPerm('create mailings') && !CRM.checkPerm('access CiviMail'));
++            }
++            if (this.$index() == 2) {
++              return !(CRM.crmMailing.workflowEnabled && !CRM.checkPerm('schedule mailings') && !CRM.checkPerm('access CiviMail'));
++            }
++            else {
++              return true;
++            }
++          }
+           this.iconFor = function(index) {
+             if (index < this.$index()) return '√';
+             if (index === this.$index()) return '»';
+diff --git a/mosaico.php b/mosaico.php
+index 35e29a7..f0fda0d 100644
+--- a/mosaico.php
++++ b/mosaico.php
+@@ -211,15 +211,6 @@ function mosaico_civicrm_check(&$messages) {
+       'fa-chain-broken'
+     );
+   }
+-  if (CRM_Mailing_Info::workflowEnabled()) {
+-    $messages[] = new CRM_Utils_Check_Message(
+-      'mosaico_workflow',
+-      E::ts('CiviMail is configured to support advanced workflows. This is currently incompatible with the Mosaico mailer. Navigate to "Administer => CiviMail => CiviMail Component Settings" to disable it.'),
+-      E::ts('Advanced CiviMail workflows unsupported'),
+-      \Psr\Log\LogLevel::CRITICAL,
+-      'fa-chain-broken'
+-    );
+-  }
+   if (!CRM_Extension_System::singleton()->getMapper()->isActiveModule('flexmailer')) {
+     $messages[] = new CRM_Utils_Check_Message(
+       'mosaico_flexmailer',
+diff --git a/ang/crmMosaico/BlockApprove.html b/ang/crmMosaico/BlockApprove.html
+new file mode 100644
+index 0000000..4847db1
+--- /dev/null
++++ b/ang/crmMosaico/BlockApprove.html
+@@ -0,0 +1,15 @@
++<div class="crm-block" ng-form="apprForm" crm-ui-id-scope>
++  <div class="crm-group">
++    <div crm-ui-field="{title: ts('Status')}">
++      {{mailingFields.approval_status_id.optionsMap[mailing.approval_status_id] || ts('Unreviewed')}}
++    </div>
++    <div crm-ui-field="{name: 'apprForm.approval_note', title: ts('Note')}">
++      <textarea
++        style="height: 20em; width: 50%; margin: 0.5em;"
++        crm-ui-id="apprForm.approval_note"
++        name="approval_note"
++        ng-model="mailing.approval_note"
++        ></textarea>
++    </div>
++  </div>
++</div>
+diff --git a/ang/crmMosaico/BlockApprove.js b/ang/crmMosaico/BlockApprove.js
+new file mode 100644
+index 0000000..d2c26e0
+--- /dev/null
++++ b/ang/crmMosaico/BlockApprove.js
+@@ -0,0 +1,5 @@
++(function(angular, $, _) {
++  angular.module('crmMosaico').directive('crmMosaicoBlockApprove', function(crmMailingSimpleDirective) {
++    return crmMailingSimpleDirective('crmMosaicoBlockApprove', '~/crmMosaico/BlockApprove.html');
++  });
++})(angular, CRM.$, CRM._);

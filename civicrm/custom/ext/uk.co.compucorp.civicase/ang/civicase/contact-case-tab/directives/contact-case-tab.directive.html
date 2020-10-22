@@ -1,0 +1,138 @@
+<div
+  id="bootstrap-theme"
+  class="clearfix civicase__container"
+  civicase-on-contact-tab-change="handleContactTabChange($tabUrlParams)"
+>
+  <!-- Added for SEO purpose (This will be hidden through css) -->
+  <h1 crm-page-title class="element-invisible"> {{ ts('Related cases to the user') }} </h1>
+  <div class="civicase__contact-cases-tab clearfix">
+    <a ng-if="isAddCaseVisible()"
+      class="btn-primary btn civicase__contact-cases-tab-add"
+      ng-click="addCase({
+        caseTypeCategoryName: caseTypeCategoryName,
+        contactId: contactId,
+        callbackFn: refresh,
+      })">
+      <i class="material-icons">add_circle</i>
+      {{ ts('Add case') }}
+    </a>
+    <div class="clearfix" ng-if="totalCount > 0">
+      <div class="civicase__contact-cases-tab-container pull-left col-md-6">
+        <div
+          ng-repeat="casesList in casesListConfig"
+          class="panel panel-default civicase__panel-transparent-header">
+          <div class="panel-heading">
+            <h3 class="panel-title"> {{ casesList.title }}</h3>
+          </div>
+          <div class="panel-body panel-body-extra">
+            <civicase-contact-case-tab-case-list cases-list="casesList" viewing-case-id="selectedCase.id"></civicase-contact-case-tab-case-list>
+          </div>
+        </div>
+      </div>
+      <div class="civicase__contact-cases-tab-container pull-left col-md-6">
+        <div class="panel panel-default civicase__panel-transparent-header">
+          <div class="panel-body panel-body-extra">
+            <civicase-contact-case-tab-case-details
+              class="civicase__contact-cases-tab-details"
+              selected-case="selectedCase"
+              ng-if="caseDetailsLoaded",
+              refresh-callback="refresh"
+              case-type-category="caseTypeCategoryName">
+            </civicase-contact-case-tab-case-details>
+            <!-- Loading placeholder -->
+            <div ng-if="!caseDetailsLoaded" class="panel panel-default civicase__contact-cases-tab-details">
+              <div class="panel-body">
+                <div class="civicase__contact-cases-tab__panel-row civicase__contact-cases-tab__panel-row--dark  clearfix">
+                  <div class="pull-left">
+                    <div class="civicase__loading-placeholder__oneline civicase__contact-cases-tab-details__title" style="width: 2em; font-size: 12px;"></div>
+                  </div>
+                  <div class="pull-right">
+                  <div class="civicase__loading-placeholder__oneline btn-group" style="width: 4em; font-size: 33px;"></div>
+                  <div class="civicase__loading-placeholder__oneline btn-group" style="width: 2em; font-size: 33px;"></div>
+                  </div>
+                </div>
+                <div class="civicase__contact-cases-tab__panel-row civicase__contact-cases-tab__panel-row--dark  clearfix">
+                  <div class="civicase__loading-placeholder__oneline" style="width: 10em; margin-bottom: 10px;"></div>
+                  <div class="civicase__loading-placeholder__oneline" style="width: 12em; font-size: 18px; margin-bottom: 10px;"></div>
+                  <div class="civicase__loading-placeholder__oneline" style="width: 10em; margin-bottom: 10px;"></div>
+                </div>
+                <div class="civicase__contact-cases-tab__panel-row civicase__contact-cases-tab__panel-row--dark  clearfix">
+                  <div class="pull-left">
+                    <div class="civicase__loading-placeholder__oneline" style="width: 10em; margin-bottom: 10px; "></div>
+                  </div>
+                  <div class="pull-right">
+                    <div class="civicase__loading-placeholder__oneline" style="width: 8em; margin-bottom: 10px; "></div>
+                  </div>
+                </div>
+                <div class="civicase__contact-cases-tab__panel-row">
+                  <div class="civicase__contact-cases-tab__panel-fields" style="margin-bottom: 10px;">
+                    <div class="civicase__loading-placeholder__oneline civicase__contact-cases-tab__panel-field-title" style="width: 8em; margin-bottom: 10px;"></div>
+                    <div class="civicase__activity-card civicase__activity-card--short">
+                      <div class="panel panel-default">
+                        <div class="panel-body">
+                          <div class="civicase__activity-card-row" style="margin-bottom: 8px;">
+                            <div class="civicase__loading-placeholder__oneline" style="width: 0.8em; font-size: 24px; margin-right: 10px;"></div>
+                            <div class="civicase__loading-placeholder__oneline" style="width: 8em; font-size: 18px;"></div>
+                            <div class="civicase__activity__right-container civicase__loading-placeholder__oneline" style="width: 7em;"></div>
+                          </div>
+                          <div class="civicase__activity-card-row--file civicase__loading-placeholder__oneline" style="width: 8em; margin-bottom: 10px;"></div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="civicase__contact-cases-tab__panel-fields" style="margin-bottom: 10px;">
+                    <div class="civicase__loading-placeholder__oneline civicase__contact-cases-tab__panel-field-title" style="width: 8em; margin-bottom: 10px;"></div>
+                    <div class="civicase__loading-placeholder__oneline" style="width: 12em;"></div>
+                  </div>
+                  <div class="civicase__contact-cases-tab__panel-fields" style="margin-bottom: 10px;">
+                    <div class="civicase__loading-placeholder__oneline civicase__contact-cases-tab__panel-field-title" style="width: 8em; margin-bottom: 10px;"></div>
+                    <div class="civicase__loading-placeholder__oneline" style="width: 12em;"></div>
+                  </div>
+                  <div class="civicase__contact-cases-tab__panel-fields" style="margin-bottom: 10px;">
+                    <div class="civicase__loading-placeholder__oneline civicase__contact-cases-tab__panel-field-title" style="width: 8em; margin-bottom: 10px;"></div>
+                    <div class="civicase__loading-placeholder__oneline" style="width: 12em;"></div>
+                  </div>
+                  <div class="civicase__contact-cases-tab__panel-fields" style="margin-bottom: 10px;">
+                    <div class="civicase__loading-placeholder__oneline civicase__contact-cases-tab__panel-field-title" style="width: 8em; margin-bottom: 10px;"></div>
+                    <div class="civicase__loading-placeholder__oneline" style="width: 12em;"></div>
+                  </div>
+                  <div class="civicase__contact-cases-tab__panel-fields" style="margin-bottom: 10px;">
+                    <div class="civicase__loading-placeholder__oneline civicase__contact-cases-tab__panel-field-title" style="width: 8em; margin-bottom: 10px;"></div>
+                    <div class="civicase__loading-placeholder__oneline" style="width: 12em;"></div>
+                  </div>
+                  <div class="civicase__contact-cases-tab__panel-fields" style="margin-bottom: 10px;">
+                    <div class="civicase__loading-placeholder__oneline civicase__contact-cases-tab__panel-field-title" style="width: 8em; margin-bottom: 10px;"></div>
+                    <div class="civicase__loading-placeholder__oneline" style="width: 12em;"></div>
+                  </div>
+                  <div class="civicase__contact-cases-tab__panel-fields">
+                    <div class="civicase__loading-placeholder__oneline civicase__contact-cases-tab__panel-field-title" style="width: 8em; margin-bottom: 10px;"></div>
+                    <div class="civicase__loading-placeholder__oneline" style="width: 12em;"></div>
+                  </div>
+                </div>
+                <div class="civicase__contact-cases-tab__panel-row civicase__contact-cases-tab__panel-actions">
+                  <div class="civicase__loading-placeholder__oneline btn-group" style="width: 4em; font-size: 33px;"></div>
+                </div>
+              </div>
+            </div>
+            <!-- End of loading placeholder -->
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div  ng-if="totalCount == 0" class="civicase__contact-cases-tab-empty">
+    <div class="civicase__activity-no-result-icon civicase__activity-no-result-icon--case"></div>
+    <div class="civicase__activity-card--big--empty-title"> {{ ts('This contact has no cases') }} </div>
+    <div class="civicase__activity-card--big--empty-description"> {{ ts('Click the button below to create a new case for this contact') }} </div>
+    <a
+      ng-if="isAddCaseVisible()"
+      class="civicase__activity-card--big--empty-button btn"
+      ng-click="addCase({
+        caseTypeCategoryName: caseTypeCategoryName,
+        contactId: contactId,
+        callbackFn: refresh,
+      })">
+      {{ ts('Add new case') }}
+    </a>
+  </div>
+</div>

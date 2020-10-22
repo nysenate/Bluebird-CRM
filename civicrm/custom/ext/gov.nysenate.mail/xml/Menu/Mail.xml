@@ -38,4 +38,23 @@
     <title>Mailing Recipient Review</title>
     <access_arguments>access CiviCRM</access_arguments>
   </item>
+  <!--13402-->
+  <item>
+    <path>civicrm/nyss/previewmailing</path>
+    <page_callback>CRM_NYSS_Mail_Page_PreviewMailing</page_callback>
+    <title>Preview Mailing</title>
+    <access_arguments>view mass email;access CiviMail;create mailings;schedule mailings;approve mailings;</access_arguments>
+  </item>
+  <item>
+    <path>civicrm/nyss/previewmailingiframe</path>
+    <page_callback>CRM_NYSS_Mail_Page_PreviewMailingIframe</page_callback>
+    <title>Preview Mailing</title>
+    <access_arguments>view mass email;access CiviMail;create mailings;schedule mailings;approve mailings;</access_arguments>
+  </item>
+  <item>
+    <path>civicrm/nyss/previewrecipients</path>
+    <page_callback>CRM_NYSS_Mail_Page_PreviewRecipients</page_callback>
+    <title>Preview Recipients</title>
+    <access_arguments>view mass email;access CiviMail;create mailings;schedule mailings;</access_arguments>
+  </item>
 </menu>

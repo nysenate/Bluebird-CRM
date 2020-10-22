@@ -1,0 +1,47 @@
+<div class="panel civicase__summary-tab-tile civicase__panel-transparent-header civicase__summary-tab-tile--responsive">
+  <div ng-if="isMainContentVisible()" class="panel-heading">
+    <h3 class="panel-title">Next Activity</h3>
+  </div>
+  <div ng-if="isMainContentVisible()" class="panel-body">
+    <div
+      case-activity-card="item.nextActivityNotMilestone"
+      crm-popup-form-success="pushCaseData($data.civicase_reload[0])"
+      refresh-callback="refresh"
+      mode="big"
+      type="'activity'"
+      case="item">
+    </div>
+  </div>
+
+  <!-- Placeholder -->
+  <div ng-if="isPlaceHolderVisible()" class="civicase__loading-placeholder__oneline" style="width: 10em; margin-bottom: 10px;"></div>
+  <div ng-if="isPlaceHolderVisible()" class="panel-body">
+    <div class="civicase__activity-card civicase__activity-card--big civicase__activity-card">
+      <div class="panel panel-default">
+        <div class="panel-body">
+          <div class="civicase__activity-card-row civicase__activity-card-row--first clearfix">
+            <span class="civicase__activity-icon-container civicase__activity-icon-container--ribbon pull-left">
+              <!-- Activity Ribbon -->
+              <span class="civicase__loading-placeholder__oneline" style="width: 1em; font-size: 30px;"></span>
+            </span>
+            <div class="civicase__activity__right-container pull-right" style="height: 30px;">
+              <span class="civicase__loading-placeholder__oneline" style="width: 6em; font-size: 20px;"></span>
+            </div>
+          </div>
+          <div class="civicase__activity-card-inner">
+            <div>
+              <div class="civicase__loading-placeholder__oneline" style="width: 60%; font-size: 20px;"></div>
+            </div>
+            <div class="civicase__loading-placeholder__oneline" style="width: 50%; margin-top: 8px;"></div>
+            <div class="civicase__activity-big-subject" style="margin-top: 20px;">
+              <div class="civicase__loading-placeholder__oneline" style="width: 90%; margin-top: 8px;"></div>
+              <div class="civicase__loading-placeholder__oneline" style="width: 90%; margin-top: 8px;"></div>
+            </div>
+            <div class="civicase__loading-placeholder__oneline civicase__tags-container" style="width: 70%; margin-top: 25px;"></div>
+            <div class="civicase__loading-placeholder__oneline" style="width: 50%; margin-top: 10px;"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

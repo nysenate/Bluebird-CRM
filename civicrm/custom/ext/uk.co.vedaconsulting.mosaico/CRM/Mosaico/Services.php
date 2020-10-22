@@ -1,6 +1,5 @@
 <?php
 
-
 use Symfony\Component\DependencyInjection\ContainerBuilder;
 use Symfony\Component\DependencyInjection\Definition;
 use Civi\FlexMailer\FlexMailer as FM;
@@ -14,19 +13,17 @@ use CRM_Mosaico_ExtensionUtil as E;
 class CRM_Mosaico_Services {
 
   public static function registerServices(ContainerBuilder $container) {
-    if (version_compare(\CRM_Utils_System::version(), '4.7.0', '>=')) {
-      $container->addResource(new \Symfony\Component\Config\Resource\FileResource(__FILE__));
-    }
+    $container->addResource(new \Symfony\Component\Config\Resource\FileResource(__FILE__));
 
     if (!CRM_Extension_System::singleton()->getMapper()->isActiveModule('flexmailer')) {
       return;
     }
-    $container->setDefinition('mosaico_flexmail_composer', new Definition('CRM_Mosaico_MosaicoComposer'));
-    $container->setDefinition('mosaico_flexmail_url_filter', new Definition('CRM_Mosaico_UrlFilter'));
-    $container->setDefinition('mosaico_image_filter', new Definition('CRM_Mosaico_ImageFilter'));
-    $container->setDefinition('mosaico_required_tokens', new Definition('CRM_Mosaico_MosaicoRequiredTokens'));
+    $container->setDefinition('mosaico_flexmail_composer', new Definition('CRM_Mosaico_MosaicoComposer'))->setPublic(TRUE);
+    $container->setDefinition('mosaico_flexmail_url_filter', new Definition('CRM_Mosaico_UrlFilter'))->setPublic(TRUE);
+    $container->setDefinition('mosaico_image_filter', new Definition('CRM_Mosaico_ImageFilter'))->setPublic(TRUE);
+    $container->setDefinition('mosaico_required_tokens', new Definition('CRM_Mosaico_MosaicoRequiredTokens'))->setPublic(TRUE);
     $container->setDefinition('mosaico_graphics', new Definition('CRM_Mosaico_Graphics_Interface'))
-      ->setFactory([__CLASS__, 'createGraphics']);
+      ->setFactory([__CLASS__, 'createGraphics'])->setPublic(TRUE);
 
     foreach (self::getListenerSpecs() as $listenerSpec) {
       $container->findDefinition('dispatcher')->addMethodCall('addListenerService', $listenerSpec);
@@ -34,14 +31,11 @@ class CRM_Mosaico_Services {
   }
 
   protected static function getListenerSpecs() {
-    $listenerSpecs = array();
+    $listenerSpecs = [];
 
-    if (class_exists('\Civi\FlexMailer\Validator')) {
-      // TODO Simplify by removing conditional. Wait until at least Feb 2018.
-      $listenerSpecs[] = array(\Civi\FlexMailer\Validator::EVENT_CHECK_SENDABLE, array('mosaico_required_tokens', 'onCheckSendable'), FM::WEIGHT_MAIN);
-    }
-    $listenerSpecs[] = array(FM::EVENT_COMPOSE, array('mosaico_flexmail_composer', 'onCompose'), FM::WEIGHT_MAIN);
-    $listenerSpecs[] = array(FM::EVENT_COMPOSE, array('mosaico_flexmail_url_filter', 'onCompose'), FM::WEIGHT_ALTER - 100);
+    $listenerSpecs[] = [\Civi\FlexMailer\Validator::EVENT_CHECK_SENDABLE, ['mosaico_required_tokens', 'onCheckSendable'], FM::WEIGHT_MAIN];
+    $listenerSpecs[] = [FM::EVENT_COMPOSE, ['mosaico_flexmail_composer', 'onCompose'], FM::WEIGHT_MAIN];
+    $listenerSpecs[] = [FM::EVENT_COMPOSE, ['mosaico_flexmail_url_filter', 'onCompose'], FM::WEIGHT_ALTER - 100];
     $listenerSpecs[] = ['hook_civicrm_alterMailContent', ['mosaico_image_filter', 'alterMailContent']];
 
     return $listenerSpecs;

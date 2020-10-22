@@ -1,0 +1,100 @@
+  {
+  "scenarios": [{
+    "label": "Activity Feed Panel - Main Section",
+    "url": "{url}/civicrm/case/a/#/case?dtab=1"
+  },
+  {
+    "label": "Activity Feed Panel - Loading State",
+    "url": "{url}/civicrm/case/a/#/case?dtab=1",
+    "captureLoadingScreen": true
+  },
+  {
+    "label": "Activity Feed Panel - Bulk Actions",
+    "url": "{url}/civicrm/case/a/#/case?dtab=1",
+    "onReadyScript": "activity-feed-panel/bulk-actions.js"
+  },
+  {
+    "label": "Activity Feed Panel - Load more clicked",
+    "url": "{url}/civicrm/case/a/#/case?dtab=1",
+    "onReadyScript": "activity-feed-panel/load-more-clicked.js"
+  },
+  {
+    "label": "Activity Feed Panel - Filters",
+    "url": "{url}/civicrm/case/a/#/case?dtab=1",
+    "clickSelectors": [
+      ".civicase__activity-filter__more",
+      ".civicase__activity-filter__others:first-of-type input"
+    ]
+  },
+  {
+    "label": "Activity Feed Panel - Activity Details - Activity Panel visible",
+    "url": "{url}/civicrm/case/a/#/case?dtab=1",
+    "onReadyScript": "activity-feed-panel/activity-detail.js"
+  },
+  {
+    "label": "Activity Feed Panel - Activity Details - Selected Activity - Details",
+    "url": "{url}/civicrm/case/a/#/case?dtab=1",
+    "onReadyScript": "activity-feed-panel/activity-detail.js",
+    "selectors": [".CRM_Activity_Form_Activity"]
+  },
+  {
+    "label": "Activity Feed Panel - Selected Activity - Details - Maximise",
+    "url": "{url}/civicrm/case/a/#/case?dtab=1",
+    "onReadyScript": "activity-feed-panel/activity-detail-maximize.js"
+  },
+  {
+    "label": "Activity Feed Panel - Selected Activity - Details - Status Dropdown",
+    "url": "{url}/civicrm/case/a/#/case?dtab=1",
+    "onReadyScript": "activity-feed-panel/activity-detail-status-dropdown.js"
+  },
+  {
+    "label": "Activity Feed Panel - Selected Activity - Details - Priority Dropdown",
+    "url": "{url}/civicrm/case/a/#/case?dtab=1",
+    "onReadyScript": "activity-feed-panel/activity-detail-priority-dropdown.js"
+  },
+  {
+    "label": "Activity Feed Panel - Activity Card Menu",
+    "url": "{url}/civicrm/case/a/#/case?dtab=1",
+    "clickSelector": ".civicase__activity-feed__list:first-child .civicase__activity-card .civicase__activity-card-menu"
+  },
+  {
+    "label": "Activity Feed Panel - Activity Details - Edit Activity",
+    "url": "{url}/civicrm/case/a/#/case?dtab=1",
+    "onReadyScript": "activity-feed-panel/activity-edit-details.js"
+  },
+  {
+    "label": "Activity Feed Panel - On Manage Cases",
+    "url": "{url}/civicrm/case/a/#/case/list",
+    "onReadyScript": "activity-feed-panel/on-manage-cases.js"
+  },
+  {
+    "label": "Activity Feed Panel - On Contact Page",
+    "url": "{url}/civicrm/contact/view?cid={contactName:admin}&selectedChild=activity",
+    "onReadyScript": "activity-feed-panel/on-contact-page.js"
+  },
+  {
+    "label": "Activity Feed Panel - Bulk Actions - Move to case",
+    "url": "{url}/civicrm/case/a/#/case?dtab=1",
+    "onReadyScript": "activity-feed-panel/bulk-actions-move-to-case.js"
+  },
+  {
+    "label": "Activity Feed Panel - Bulk Actions - Copy to case",
+    "url": "{url}/civicrm/case/a/#/case?dtab=1",
+    "onReadyScript": "activity-feed-panel/bulk-actions-copy-to-case.js"
+  },
+  {
+    "label": "Activity Feed Panel - Bulk Actions - Add tags",
+    "url": "{url}/civicrm/case/a/#/case?dtab=1",
+    "onReadyScript": "activity-feed-panel/bulk-actions-add-tag.js"
+  },
+  {
+    "label": "Activity Feed Panel - Bulk Actions - Remove tags",
+    "url": "{url}/civicrm/case/a/#/case?dtab=1",
+    "onReadyScript": "activity-feed-panel/bulk-actions-remove-tag.js"
+  },
+  {
+    "label": "Activity Feed Panel - Bulk Actions - Delete",
+    "url": "{url}/civicrm/case/a/#/case?dtab=1",
+    "onReadyScript": "activity-feed-panel/bulk-actions-delete.js"
+  }]
+}

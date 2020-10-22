@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="48px" height="48px" viewBox="0 0 48 48" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+    <!-- Generator: Sketch 51.1 (57501) - http://www.bohemiancoding.com/sketch -->
+    <title>activities</title>
+    <desc>Created with Sketch.</desc>
+    <defs></defs>
+    <g id="Find-Cases" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
+        <g id="Caselist---Individual-Case---Summary---empty-state" transform="translate(-1149.000000, -681.000000)">
+            <g id="activities" transform="translate(1149.000000, 681.000000)">
+                <rect id="Rectangle-18" fill="#BAD2DF" x="0" y="30" width="18" height="18"></rect>
+                <rect id="Rectangle-18-Copy" fill="#E8EEF0" x="0" y="3" width="18" height="18" rx="9"></rect>
+                <rect id="Rectangle-18-Copy-3" fill="#CDE1ED" x="27" y="30" width="18" height="18" rx="9"></rect>
+                <rect id="Rectangle-18-Copy-2" stroke="#BAD2DF" transform="translate(36.000000, 12.000000) rotate(45.000000) translate(-36.000000, -12.000000) " x="28.5" y="4.5" width="15" height="15"></rect>
+            </g>
+        </g>
+    </g>
+</svg>

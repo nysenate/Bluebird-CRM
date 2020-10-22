@@ -1,0 +1,17 @@
+<?xml version="1.0"?>
+<ruleset name="PHP Custom Ruleset">
+  <description>Drupal Coder Ruleset with some exclusions</description>
+  <rule ref="bin/drupal/coder/coder_sniffer/Drupal">
+    <!-- CiviCRM expects to have file names with underscores -->
+    <!-- Example: The Class `CRM_Civicase_Upgrader` has a file name of `Upgrader.php` -->
+    <!-- Hence the following rules are excluded -->
+    <exclude name="Drupal.NamingConventions.ValidClassName.NoUnderscores"/>
+    <exclude name="Drupal.Classes.ClassFileName.NoMatch"/>
+    <!--Drupal expects function names like civicase_civicrm_pre_process but civi can have-->
+    <!--civicase_civicrm_preProcess which is valid for civi.-->
+    <exclude name="Drupal.NamingConventions.ValidFunctionName.InvalidName"/>
+
+    <!-- this was was added in drupal, but in civicrm we ignore this rule -->
+    <exclude name="Drupal.Classes.UseGlobalClass.RedundantUseStatement"/>
+  </rule>
+</ruleset>

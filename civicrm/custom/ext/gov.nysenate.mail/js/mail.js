@@ -61,7 +61,8 @@ CRM.$(function($) {
             testPreview(checkExists);
           });
 
-          clearInterval(checkPreview);
+          //13021 keep checking as we may need to reload/resize after the test dialog is closed and reopened
+          //clearInterval(checkPreview);
         }
       }, 100);
 
@@ -74,6 +75,39 @@ CRM.$(function($) {
           });
 
           clearInterval(checkDelete);
+        }
+      }, 100);
+
+      //13426 when in mosaico, move notification popup higher up tree so it can be displayed
+      var checkNotificationContainer = setInterval(function () {
+        var notCont = $('div#crm-notification-container');
+
+        if (notCont.length && $('body > div#crm-notification-container').length === 0) {
+          notCont.insertBefore('body div.ui-widget-overlay');
+        }
+      }, 100);
+
+      //13554 - relabel wizard steps
+      var checkWizardNumber = setInterval(function () {
+        if ($('.crm_wizard__title__number').length) {
+          $('.crm_wizard__title__number').each(function() {
+            var stepNumber = $(this).text();
+            //console.log('stepNumber: ', stepNumber);
+
+            if (stepNumber == 2) {
+              var stepText = $(this).closest('a')[0];
+              //console.log('stepText: ', stepText);
+              stepText.lastChild.nodeValue = 'Create';
+
+            }
+            else if (stepNumber == 3) {
+              var stepText = $(this).closest('a')[0];
+              //console.log('stepText: ', stepText);
+              stepText.lastChild.nodeValue = 'Schedule';
+            }
+          });
+
+          clearInterval(checkWizardNumber);
         }
       }, 100);
     }

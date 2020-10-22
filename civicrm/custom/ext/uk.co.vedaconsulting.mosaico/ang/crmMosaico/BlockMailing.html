@@ -19,7 +19,7 @@
   </div>
 
   <div class="form-group">
-    <label for="inputFrom" class="control-label required-mark">{{ts('From')}}
+    <label for="inputFrom" ng-class="checkPerm('create mailings') ? 'control-label' : 'control-label required-mark'">{{ts('From')}}
       <a crm-ui-help="hs({id: 'from_email', title: ts('From')})"></a></label>
     <div ng-controller="EmailAddrCtrl" crm-mailing-from-address="fromPlaceholder" crm-mailing="mailing">
       <select
@@ -54,12 +54,12 @@
   </div>
 
   <div class="form-group">
-    <label for="inputRecipients" class="control-label required-mark">{{ts('Recipients')}}</label>
+    <label for="inputRecipients" ng-class="checkPerm('create mailings') ? 'control-label' : 'control-label required-mark'">{{ts('Recipients')}}</label>
     <div crm-mailing-block-recipients="{name: 'recipients', id: 'subform.recipients'}" crm-mailing="mailing"></div>
   </div>
 
   <div class="form-group">
-    <label for="inputSubject" class="control-label required-mark">{{ts('Subject')}}</label>
+    <label for="inputSubject" ng-class="checkPerm('create mailings') ? 'control-label' : 'control-label required-mark'">{{ts('Subject')}}</label>
     <div>
       <div style="float: right;" class="token-holder">
         <input class="form-control" crm-mailing-token on-select="$broadcast('insert:subject', token.name)" tabindex="-1"/>
@@ -72,14 +72,14 @@
         class="form-control"
         placeholder="{{ts('Subject')}}"
         ng-model="mailing.subject"
-        required
+        ng-required="!checkPerm('create mailings')"
       />
     </div>
   </div>
 
   <span ng-controller="EditUnsubGroupCtrl">
     <div class="form-group" ng-if="isUnsubGroupRequired(mailing)">
-      <label for="inputUnsubscribeGroup" class="control-label required-mark">{{ts('Unsubscribe Group')}}</label>
+      <label for="inputUnsubscribeGroup" ng-class="checkPerm('create mailings') ? 'control-label' : 'control-label required-mark'">{{ts('Unsubscribe Group')}}</label>
       <input
         crm-entityref="{entity: 'Group', api: {params: {is_hidden: 0, is_active: 1}}, select: {allowClear:true, minimumInputLength: 0}}"
         class="form-control"
@@ -92,7 +92,7 @@
   </span>
 
   <div class="form-group" ng-if="crmMailingConst.isMultiLingual">
-    <label for="inputLanguage" class="control-label required-mark">{{ts('Language')}}</label>
+    <label for="inputLanguage" ng-class="checkPerm('create mailings') ? 'control-label' : 'control-label required-mark'">{{ts('Language')}}</label>
     <select
         id="inputLanguage"
         name="language"

@@ -34,6 +34,16 @@
         {$form.mosaico_custom_templates_url.html|crmAddClass:'huge40'}
       </td>
     </tr>
+    <tr class="crm-mosaico-form-block-mosaico_scale_factor">
+      <td class="label">
+        {$form.mosaico_scale_factor1.label}
+      </td>
+      <td>
+        {$form.mosaico_scale_factor1.html|crmAddClass:six} {ts}for resize of images with width{/ts} {$form.mosaico_scale_width_limit1.html|crmAddClass:huge}<br/>
+        {$form.mosaico_scale_factor2.html|crmAddClass:six} {ts}for resize of images with width{/ts} {$form.mosaico_scale_width_limit2.html|crmAddClass:huge}<br/>
+        <span class="description">{ts}When uploading images, the mosaico editor trims it down to very required size (in pixels). Use scale factor setting to keep some buffer (2x or 3x) so upscale doesn't look distorted or low resolution. Example:{/ts}<br/>{ts}3x => Upto 285 pixels (covers both 2 and 3 column block images){/ts}<br/>{ts}2x => All other sizes (single column block images){/ts}</span>
+      </td>
+    </tr>
   </table>
   <div class="crm-submit-buttons">{include file="CRM/common/formButtons.tpl" location="bottom"}</div>
 </div>

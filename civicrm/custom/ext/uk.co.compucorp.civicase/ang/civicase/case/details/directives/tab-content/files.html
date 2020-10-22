@@ -1,0 +1,52 @@
+<div
+  ng-if="isMainContentVisible()"
+  class="civicase__case-tab--files civicase__case-tab__container"
+  civicase-case-details-file-tab="item">
+</div>
+
+<!-- Placeholder -->
+<div
+  ng-if="isPlaceHolderVisible()"
+  class="civicase__case-tab--files civicase__case-tab__container">
+  <div class="panel panel-default civicase__panel-transparent-header">
+    <div class="panel-body">
+      <div class="clearfix civicase__file-upload-container">
+        <div class="civicase__file-upload-item civicase__file-upload-box pull-left">
+          <div class="civicase__file-upload-dropzone">
+            <div class="civicase__loading-placeholder__oneline" style="width: 1em; font-size: 36px;  margin-bottom: 18px;"></div>
+            <div class="civicase__loading-placeholder__oneline" style="width: 5em;  font-size: 14px; margin-bottom: 5px;"></div>
+            <div class="civicase__loading-placeholder__oneline" style="width: 10em;  margin-bottom: 5px;"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="civicase__file-tab-actions">
+    <div class="civicase__file-tab-filters">
+      <form class="form-inline civicase__file-filters-container">
+        <div class="civicase__file-filters civicase__loading-placeholder__oneline" style="font-size: 30px;"></div>
+        <div class="civicase__file-filters civicase__loading-placeholder__oneline" style="font-size: 30px; width: 6em;"></div>
+        <div class="civicase__file-filters civicase__loading-placeholder__oneline" style="font-size: 30px; width: 6em;"></div>
+      </form>
+    </div>
+  </div>
+  <div>
+    <div class="civicase__activity-feed__list">
+      <div class="civicase__activity-feed__list-item">
+        <div class="civicase__activity-card civicase__activity-card--long" ng-repeat="i in [0,1,2]">
+          <div class="panel panel-default">
+            <div class="panel-body">
+              <div class="civicase__activity-card-row" style="margin-bottom: 8px;">
+                <div class="civicase__loading-placeholder__oneline" style="width: 0.8em; font-size: 24px; margin-right: 10px;"></div>
+                <div class="civicase__loading-placeholder__oneline" style="width: 8em; font-size: 18px;"></div>
+                <div class="civicase__activity__right-container civicase__loading-placeholder__oneline" style="width: 7em;"></div>
+              </div>
+              <div class="civicase__activity-card-row--file civicase__loading-placeholder__oneline" style="width: 8em; margin-bottom: 10px;"></div>
+              <div class="civicase__activity-card-row--file civicase__loading-placeholder__oneline" style="width: 5em; margin-bottom: 10px;"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

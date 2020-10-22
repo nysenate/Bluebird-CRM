@@ -1,0 +1,30 @@
+/* stylelint-disable selector-max-id  */
+/* stylelint-disable selector-max-compound-selectors */
+
+/**
+ *  This component is used to style UI tabs outside of #bootstrap-theme
+ *  so they look like Bootstrap tabs components.
+ */
+.___outside-namespace {
+  #crm-container .civicase__tabs {
+    background-color: $crm-white;
+    // 20px is the original padding for `.nav-pills-horizontal` but there is no corresponding variable:
+    padding: 0 0 0 20px;
+
+    .ui-tab {
+      background: none;
+      border: 0;
+      padding: 0;
+
+      .ui-tabs-anchor {
+        height: auto;
+        // the original rule has !important:
+        padding: $panel-body-padding !important;
+      }
+    }
+  }
+
+  #crm-container .civicase__tabs__panel {
+    padding: $panel-body-padding;
+  }
+}

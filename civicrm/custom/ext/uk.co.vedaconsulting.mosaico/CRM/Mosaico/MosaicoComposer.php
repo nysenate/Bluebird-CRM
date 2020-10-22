@@ -18,8 +18,8 @@ class CRM_Mosaico_MosaicoComposer extends \Civi\FlexMailer\Listener\DefaultCompo
     \Civi\FlexMailer\Event\ComposeBatchEvent $e
   ) {
     $context = parent::createTokenProcessorContext($e);
-    // Smarty would break Mosaico CSS.
-    $context['smarty'] = FALSE;
+    // Smarty would break Mosaico CSS unless we know what we are doing (eg. handling via extension)
+    $context['smarty'] = $e->context['smarty'] ?? FALSE;
     return $context;
   }
 

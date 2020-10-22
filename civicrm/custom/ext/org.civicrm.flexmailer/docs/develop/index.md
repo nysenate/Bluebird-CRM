@@ -1,9 +1,9 @@
 ## Unit tests
 
-The [headless unit tests](https://docs.civicrm.org/dev/en/latest/testing/#headless) are based on `phpunit4` and `cv`. Simply run:
+The [headless unit tests](https://docs.civicrm.org/dev/en/latest/testing/#headless) are based on PHPUnit and `cv`. Simply run:
 
 ```
-$ phpunit4
+$ phpunit5
 ```
 
 ## Events
@@ -126,6 +126,7 @@ For more detailed information about how to manipulate a service, consult its doc
      * `civi_flexmailer_default_composer` (`DefaultComposer.php`): Read the email template and evaluate any tokens (based on CiviMail tokens)
      * `civi_flexmailer_attachments` (`Attachments.php`): Add attachments
      * `civi_flexmailer_open_tracker` (`OpenTracker.php`): Add open-tracking codes
+     * `civi_flexmailer_test_prefix` (`TestPrefix.php`): Add a prefix to any test mailings
      * `civi_flexmailer_hooks` (`HookAdapter.php`): Backward compatibility with `hook_civicrm_alterMailParams`
 * Listener services (`SendBatchEvent`)
      * `civi_flexmailer_default_sender` (`DefaultSender.php`): Send the batch using CiviCRM's default delivery service

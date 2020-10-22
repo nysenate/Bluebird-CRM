@@ -1,0 +1,32 @@
+.civicase__activity-card--short {
+  box-shadow: $box-shadow-activity-card;
+  min-height: 100px;
+  position: relative;
+  width: $activity-card-short-width;
+
+  .panel-body {
+    min-height: 100px;
+  }
+
+  .civicase__contact-avatar {
+    margin-top: -10px;
+  }
+
+  .civicase__activity-subject {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .civicase__tooltip {
+    flex: 1;
+    min-width: 0;
+  }
+
+  .civicase__activity-card__case-type {
+    max-width: 150px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+}

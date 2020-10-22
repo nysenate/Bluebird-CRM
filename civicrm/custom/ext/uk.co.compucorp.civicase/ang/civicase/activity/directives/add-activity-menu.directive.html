@@ -1,0 +1,12 @@
+<ul class="dropdown-menu civicase__dropdown-menu--filters">
+  <li class="form-group has-feedback">
+    <input class="form-control" type="text" ng-model="activityTypeSearchText" />
+    <i class="material-icons form-control-feedback">search</i>
+  </li>
+  <li class="divider"></li>
+  <li ng-repeat="actType in availableActivityTypes | filter:{label: activityTypeSearchText}">
+    <a class="crm-popup" ng-href="{{ newActivityUrl(actType) }}">
+      <i class="fa fa-fw {{actType.icon || 'fa-circle'}}"></i>{{actType.label}}
+    </a>
+  </li>
+</ul>

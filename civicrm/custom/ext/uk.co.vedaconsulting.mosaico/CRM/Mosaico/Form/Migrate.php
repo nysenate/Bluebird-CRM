@@ -15,23 +15,23 @@ class CRM_Mosaico_Form_Migrate extends CRM_Core_Form {
     $migrateComment = E::ts('Are you sure want to copy data from Mosaico 1.x to 2.x?') . '\n' . E::ts('This action cannot be easily undone.');
     $purgeComment = E::ts('Are you sure want to purge Mosaico 1.x data?') . '\n' . E::ts('This action cannot be undone.');
 
-    $buttons = array();
-    $buttons[] = array(
+    $buttons = [];
+    $buttons[] = [
       'type' => 'submit',
       'name' => ts('Copy'),
       'subName' => 'migrate',
       'isDefault' => TRUE,
       'icon' => 'fa-copy',
-      'js' => array('onclick' => 'return confirm(\'' . $migrateComment . '\');'),
-    );
-    $buttons[] = array(
+      'js' => ['onclick' => 'return confirm(\'' . $migrateComment . '\');'],
+    ];
+    $buttons[] = [
       'type' => 'submit',
       'name' => ts('Purge'),
       'subName' => 'purge',
       'icon' => 'fa-trash',
       'isDefault' => FALSE,
-      'js' => array('onclick' => 'return confirm(\'' . $purgeComment . '\');'),
-    );
+      'js' => ['onclick' => 'return confirm(\'' . $purgeComment . '\');'],
+    ];
     $this->addButtons($buttons);
 
     // export form elements
@@ -42,22 +42,22 @@ class CRM_Mosaico_Form_Migrate extends CRM_Core_Form {
   public function postProcess() {
     $values = $this->exportValues();
     if (!empty($values['_qf_Migrate_submit_migrate'])) {
-      $apiResult = civicrm_api3('Job', 'mosaico_migrate', array(
+      $apiResult = civicrm_api3('Job', 'mosaico_migrate', [
         'check_permissions' => 1,
-      ));
-      CRM_Core_Session::setStatus(E::ts('Copied %1 templates from Mosaico 1.x to 2.x.', array(
+      ]);
+      CRM_Core_Session::setStatus(E::ts('Copied %1 templates from Mosaico 1.x to 2.x.', [
         1 => $apiResult['count'],
-      )), '', 'success', array(
+      ]), '', 'success', [
         'expires' => 0,
-      ));
+      ]);
     }
     elseif (!empty($values['_qf_Migrate_submit_purge'])) {
-      civicrm_api3('Job', 'mosaico_purge', array(
+      civicrm_api3('Job', 'mosaico_purge', [
         'check_permissions' => 1,
-      ));
-      CRM_Core_Session::setStatus(E::ts('Purged invisible Mosaico 1.x data.', array()), '', 'success', array(
+      ]);
+      CRM_Core_Session::setStatus(E::ts('Purged invisible Mosaico 1.x data.', []), '', 'success', [
         'expires' => 0,
-      ));
+      ]);
     }
     else {
       CRM_Core_Session::setStatus(E::ts('Unrecognized action'));
@@ -77,7 +77,7 @@ class CRM_Mosaico_Form_Migrate extends CRM_Core_Form {
     // auto-rendered in the loop -- such as "qfKey" and "buttons".  These
     // items don't have labels.  We'll identify renderable by filtering on
     // the 'label'.
-    $elementNames = array();
+    $elementNames = [];
     foreach ($this->_elements as $element) {
       /** @var HTML_QuickForm_Element $element */
       $label = $element->getLabel();

@@ -1,0 +1,67 @@
+<div class="panel panel-secondary panel-query" ng-class="{ 'is-loading-page': loading.partial }">
+  <header class="panel-heading">
+    <div class="clearfix">
+      <h2 class="panel-title pull-left">
+        <div ng-transclude="title">
+          {{loading.full ? '-' : total}} {{customData.itemName || 'items'}}
+        </div>
+      </h2>
+      <div class="panel-heading-control crm_custom-select pull-left">
+        <select ng-options="range.value as range.label for range in periodRange" ng-model="selectedRange"></select>
+        <span class="crm_custom-select__arrow"></span>
+      </div>
+      <div class="pull-right" ng-transclude="actions"></div>
+    </div>
+  </header>
+  <div class="panel-body">
+    <div ng-hide="loading.full">
+      <!-- Empty state -->
+      <div ng-show="total === 0" ng-transclude="empty">
+        <div class="civicase__activity-card--empty">
+          <div class="civicase__activity-no-result-icon civicase__activity-no-result-icon--activity"></div>
+          <div class="civicase__activity-card--big--empty-title">
+            No {{customData.itemName || 'items'}} found
+          </div>
+        </div>
+      </div>
+      <!-- Results -->
+      <div ng-show="total > 0" ng-transclude="results"></div>
+    </div>
+    <div ng-if="loading.full">
+      <!-- Placeholders -->
+      <div class="panel panel-default" ng-repeat="i in [0,1]">
+        <div class="panel-body" style="border-top: 0;">
+          <div class="civicase__activity-card-row" style="margin-bottom: 8px;">
+            <div class="civicase__loading-placeholder__oneline" style="width: 0.8em; font-size: 24px; margin-right: 10px;"></div>
+            <div class="civicase__loading-placeholder__oneline" style="width: 8em; font-size: 18px;"></div>
+            <div class="civicase__activity__right-container civicase__loading-placeholder__oneline" style="width: 7em;"></div>
+          </div>
+          <div class="civicase__activity-card-row--file civicase__loading-placeholder__oneline" style="width: 8em; margin-bottom: 10px;"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <footer class="panel-footer">
+    <paging
+      class="pull-right"
+      page="pagination.page"
+      page-size="pagination.size"
+      total="total"
+      adjacent="1"
+      dots="..."
+      disabled="{{loading.full || loading.partial || total === 0}}"
+      show-prev-next="true"
+      show-first-last="true"
+      text-first="&laquo;"
+      text-last="&raquo;"
+      text-next="&rsaquo;"
+      text-prev="&lsaquo;">
+    </paging>
+    <div ng-if="loading.full || total === 0">
+      Showing - to - of - {{customData.itemName || 'items'}}
+    </div>
+    <div ng-if="!loading.full && total > 0">
+      Showing {{pagination.range.from}} to {{pagination.range.to}} of {{total}} {{customData.itemName || 'items'}}
+    </div>
+  </footer>
+</div>

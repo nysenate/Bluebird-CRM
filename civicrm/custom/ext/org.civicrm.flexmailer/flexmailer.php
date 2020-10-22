@@ -14,6 +14,8 @@ define('CIVICRM_FLEXMAILER_HACK_REQUIRED_TOKENS', 'call://civi_flexmailer_requir
 
 require_once 'flexmailer.civix.php';
 
+use CRM_Flexmailer_ExtensionUtil as E;
+
 /**
  * Define an autoloader for FlexMailer.
  *
@@ -39,6 +41,7 @@ function _flexmailer_autoload($class) {
     require $file;
   }
 }
+
 spl_autoload_register('_flexmailer_autoload');
 
 /**
@@ -162,40 +165,41 @@ function flexmailer_civicrm_alterSettingsFolders(&$metaDataFolders = NULL) {
 }
 
 /**
- * Functions below this ship commented out. Uncomment as required.
- *
-/**
- * Implements hook_civicrm_preProcess().
- *
- * @link http://wiki.civicrm.org/confluence/display/CRMDOC/hook_civicrm_preProcess
- *
-function flexmailer_civicrm_preProcess($formName, &$form) {
-
-} // */
-
-/**
  * Implements hook_civicrm_navigationMenu().
  *
  * @link http://wiki.civicrm.org/confluence/display/CRMDOC/hook_civicrm_navigationMenu
- *
+ */
 function flexmailer_civicrm_navigationMenu(&$menu) {
-  _flexmailer_civix_insert_navigation_menu($menu, NULL, array(
-    'label' => ts('The Page', array('domain' => 'org.civicrm.flexmailer')),
-    'name' => 'the_page',
-    'url' => 'civicrm/the-page',
-    'permission' => 'access CiviReport,access CiviContribute',
-    'operator' => 'OR',
+  _flexmailer_civix_insert_navigation_menu($menu, 'Administer/CiviMail', [
+    'label' => ts('Flexmailer Settings', array('domain' => 'org.civicrm.flexmailer')),
+    'name' => 'flexmailer_settings',
+    'permission' => 'administer CiviCRM',
+    'child' => array(),
+    'operator' => 'AND',
     'separator' => 0,
-  ));
+    'url' => CRM_Utils_System::url('civicrm/admin/flexmailer', 'reset=1', TRUE),
+  ]);
   _flexmailer_civix_navigationMenu($menu);
-} // */
+}
 
 /**
  * Implements hook_civicrm_container().
  */
 function flexmailer_civicrm_container($container) {
-  if (version_compare(\CRM_Utils_System::version(), '4.7.0', '>=')) {
-    $container->addResource(new \Symfony\Component\Config\Resource\FileResource(__FILE__));
-  }
+  $container->addResource(new \Symfony\Component\Config\Resource\FileResource(__FILE__));
   \Civi\FlexMailer\Services::registerServices($container);
+}
+
+/**
+ * Get a list of delivery options for traditional mailings.
+ *
+ * @return array
+ *   Array (string $machineName => string $label).
+ */
+function _flexmailer_traditional_options() {
+  return array(
+    'auto' => E::ts('Automatic'),
+    'bao' => E::ts('CiviMail BAO'),
+    'flexmailer' => E::ts('Flexmailer Pipeline'),
+  );
 }

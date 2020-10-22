@@ -1,0 +1,116 @@
+.civicase__case-filter-panel {
+  background-color: $gray-lighter;
+  box-shadow: none;
+  margin-bottom: 0;
+
+  .panel-header {
+    position: relative;
+  }
+}
+
+.civicase__case-filter-panel__title {
+  font-size: 18px;
+  left: 20px;
+  line-height: 24px;
+  margin: 0;
+  max-width: calc(((100% - 950px) / 2) - 20px); // total width - width of the search criterion and its left half section minus left 20px spacing.
+  overflow: hidden;
+  position: absolute;
+  text-overflow: ellipsis;
+  top: 50%;
+  transform: translateY(-50%);
+  white-space: nowrap;
+}
+
+.civicase__case-filters-container {
+  display: flex;
+  justify-content: center;
+  left: 0;
+  padding: 13.5px 0;
+  top: 0;
+}
+
+.civicase__case-filter__input.form-control {
+  margin: 0 8px;
+
+  &:not(.select2-container) {
+    width: 240px;
+  }
+}
+
+.civicase__case-filter-panel__button {
+  margin: 0 8px;
+  width: 158px;
+
+  &:first-child {
+    margin-left: 0;
+  }
+
+  .fa {
+    font-size: 18px;
+    margin-right: 7px;
+    position: relative;
+    top: 2px;
+  }
+}
+
+.civicase__case-filter-form-elements-container {
+  margin: 0 auto;
+  width: 926px;
+}
+
+.civicase__case-filter-form-elements {
+  clear: both;
+  margin-bottom: 10px;
+
+  .select2-choices {
+    padding-right: 30px;
+  }
+
+  .form-control {
+    max-width: 385px;
+  }
+
+  label {
+    color: $crm-gray-matte;
+    font-weight: $font-weight-content;
+  }
+
+  .civicase__checkbox {
+    display: inline-block;
+    margin-right: 5px;
+    top: 4px;
+  }
+
+  &.civicase__case-filter-form-elements--case-id {
+    .form-control {
+      max-width: 160px;
+    }
+  }
+}
+
+.civicase__case-filter-panel__description {
+  align-items: center;
+  display: flex;
+  flex-direction: row;
+}
+
+.civicase__filter-search-description-list-container {
+  flex: 1 0 0;
+  margin-bottom: 0;
+}
+
+
+.civicase__case-filter-form-legend {
+  border-color: $gray-light;
+  color: $gray-darker;
+  font-size: 16px;
+  font-weight: $font-weight-heading;
+  line-height: 22px;
+  margin-bottom: 20px;
+  padding: 0 0 8px;
+}
+
+.civicase__case-filter-fieldset {
+  margin: 15px 0;
+}
