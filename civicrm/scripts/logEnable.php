@@ -13,19 +13,13 @@ $optList = civicrm_script_init("", array(), False);
 
 drupal_script_init();
 
-require_once 'CRM/Core/Config.php';
 CRM_Core_Config::singleton();
 
 echo "enable logging and rebuild triggers...\n";
+Civi::settings()->set('logging', TRUE);
 
-require_once 'CRM/Logging/Schema.php';
 $logging = new CRM_Logging_Schema;
 $logging->enableLogging();
-
-try {
-  civicrm_api3('setting', 'create', array('logging' => TRUE));
-}
-catch (CiviCRM_API3_Exception $e) {}
 
 Civi::service('sql_triggers')->rebuild(NULL, TRUE);
 
