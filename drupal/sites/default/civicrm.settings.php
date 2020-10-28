@@ -296,6 +296,10 @@ $prefsMosaico['mosaico_custom_templates_dir'] = "$approot/civicrm/custom/mosaico
 $prefsMosaico['mosaico_custom_templates_url'] = 'sites/all/mosaico';
 $prefsMosaico['mosaico_layout'] = 'auto';
 $prefsMosaico['mosaico_graphics'] = 'auto';
+$prefsMosaico['mosaico_scale_factor1'] = 3;
+$prefsMosaico['mosaico_scale_width_limit1'] = 285;
+$prefsMosaico['mosaico_scale_factor2'] = 2;
+$prefsMosaico['mosaico_scale_width_limit2'] = 9999;
 
 if (isset($bbcfg['xhprof.profile']) && $bbcfg['xhprof.profile']) {
   function xhprof_shutdown_func($source, $run_id = null) {
