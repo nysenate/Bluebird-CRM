@@ -1013,6 +1013,10 @@ function mail_civicrm_alterMailParams(&$params, $context) {
       }
     }
 
+    //13617 fix text alignment styles
+    //TODO this is fixed in a future Mosaico release
+    _mail_alterEmailContent($params);
+
     //Sendgrid headers
     $hdr->setCategory("BluebirdMail: {$jobInfo['mailing_name']} (ID: {$jobInfo['mailing_id']})");
     $hdr->setUniqueArgs([
@@ -1540,7 +1544,7 @@ function _mail_get_whitelist_clause($bbcfg) {
     $html = $bbcfg['email.extras.whitelist_html'];
   }
   else {
-    $html = 'To ensure delivery of emails to your inbox, please add <a href="mailto:%SENATOR_EMAIL%">%SENATOR_EMAIL%</a> to your email address book.';
+    $html = '<br />To ensure delivery of emails to your inbox, please add <a href="mailto:%SENATOR_EMAIL%">%SENATOR_EMAIL%</a> to your email address book.';
   }
 
   if (!empty($bbcfg['email.extras.whitelist_text'])) {
@@ -1642,3 +1646,29 @@ function _mail_replace_tokens($msg, $token_map) {
   $replacements = array_values($token_map);
   return str_replace($patterns, $replacements, $msg);
 } // _mail_replace_tokens()
+
+function _mail_alterEmailContent(&$params) {
+  //Civi::log()->debug(__FUNCTION__, ['$params' => $params]);
+
+  $html = $params['html'];
+  $doc = phpQuery::newDocument($html);
+
+  foreach ($doc['p'] as $p) {
+    $dStyle = pq($p)->attr('data-mce-style');
+    //Civi::log()->debug(__FUNCTION__, ['$dStyle' => $dStyle]);
+
+    if (!empty($dStyle)) {
+      $style = pq($p)->attr('style');
+      //Civi::log()->debug(__FUNCTION__, ['$style' => $style]);
+
+      if (substr($style, -1) != ';') {
+        $style .= ';';
+      }
+
+      pq($p)->attr('style', $style.$dStyle);
+      pq($p)->attr('data-mce-style', '');
+    }
+  }
+
+  $params['html'] = $doc->html();
+}
