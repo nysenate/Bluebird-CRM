@@ -1,0 +1,26 @@
+<div class="clearfix civicase__summary-tab-tile-container civicase__case-custom-fields__container">
+  <civicase-masonry-grid>
+    <civicase-masonry-grid-item
+      ng-repeat="(index, customGroup) in item.customData"
+      ng-if="!customGroup.isHidden">
+      <div class="panel panel-default civicase__panel-transparent-header">
+        <div class="panel-heading">
+          <h3 class="panel-title">{{ ::customGroup.title }}</h3>
+        </div>
+        <div class="panel-body" civicase-edit-custom-data>
+          <div ng-repeat="field in customGroup.fields" class="civicase__case-custom-fields">
+            <div class="civicase__case-custom-field__label">{{ field.label }}</div>
+            <div
+              class="civicase__case-custom-field__value" ng-if="!field.value.display">
+              Click to set value
+            </div>
+            <div
+              class="civicase__case-custom-field__value" ng-if="field.value.display"
+              ng-bind-html="trustAsHtml(field.value.display)">
+            </div>
+          </div>
+        </div>
+      </div>
+    </civicase-masonry-grid-item>
+  </civicase-masonry-grid>
+</div>

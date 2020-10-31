@@ -1,0 +1,35 @@
+<div class="civicase__tags-container" ng-show="tagsArray">
+  <span
+    class="badge"
+    ng-repeat="tag in tagsArray" ng-if="$index < showEllipsisAfter"
+    title="{{ tag['tag_id.description'] }}"
+    style="background-color: {{ tag['tag_id.color'] }};">
+    {{ tag['tag_id.name'] }}
+  </span>
+  <!-- Additional Tags Dropdown -->
+
+  <civicase-popover
+    trigger-event="hover"
+    popover-class="civicase__tags-container__additional__popover"
+    ng-if="tagsArray.length > showEllipsisAfter">
+    <civicase-popover-toggle-button>
+      <span
+        class="badge civicase__tags-container__additional-tags"
+        title="More Tags">
+        ...
+      </span>
+    </civicase-popover-toggle-button>
+    <civicase-popover-content>
+      <ul class="civicase__tags-container__additional__list">
+        <li ng-repeat="tag in tagsArray" ng-if="$index >= showEllipsisAfter">
+          <span
+            class="badge"
+            title="{{ tag['tag_id.description'] }}"
+            style="background-color: {{ tag['tag_id.color'] }};">
+            {{ tag['tag_id.name'] }}
+          </span>
+        </li>
+      </ul>
+    </civicase-popover-content>
+  </civicase-popover>
+</div>

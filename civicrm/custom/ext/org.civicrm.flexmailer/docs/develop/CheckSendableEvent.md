@@ -1,14 +1,14 @@
+
 The `CheckSendableEvent` (`EVENT_CHECK_SENDABLE`) determines whether a draft mailing is fully specified for delivery.
 
 For example, some jurisdictions require that email blasts provide contact
 information for the organization (eg street address) and an opt-out link.
-By default, the check-sendable event will verify that this information is
-provided through a mail-merge token (eg `{action.unsubscribeUrl}`).
+Traditionally, the check-sendable event will verify that this information is
+provided through a CiviMail token (eg `{action.unsubscribeUrl}`).
 
-The token validation logic depends on how the message has been encoded.  If
-you provide a new template language, you can implement new enforcement logic,
-e.g.
-
+But what happens if you implement a new template language (e.g. Mustache) with
+a different mail-merge notation? The validation will need to be different.
+In this example, we verify the presence of a Mustache-style token, `{{unsubscribeUrl}}`.
 
 ```php
 <?php

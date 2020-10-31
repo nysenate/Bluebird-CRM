@@ -1,0 +1,128 @@
+<div
+  class="civicase__activity-panel civicase__activity-panel--{{(activity.type).split(' ').join('_')}}"
+  ng-controller="caseActivityCardController"
+>
+  <div class="panel panel-default panel-w-subheading">
+    <div class="panel-heading clearfix">
+      <span class="civicase__activity-panel__id">ID-{{activity.id}}</span>
+      <div class="pull-right">
+        <div
+          ng-if="canChangeStatus"
+          class="btn-group btn-group-md civicase__activity-panel__status-dropdown"
+        >
+          <button
+            type="button" class="btn btn-primary-outline" data-toggle="dropdown"
+            aria-haspopup="true" aria-expanded="false"
+            title="{{ ts('Change activity status') }}">
+            {{ activity.status }}
+            <span class="caret"></span>
+          </button>
+          <ul class="dropdown-menu dropdown-menu-right">
+            <li>
+              <span class="list-group-item-info">{{ ts("Change status to:") }}</span>
+            </li>
+            <li
+              ng-repeat="(id, status) in allowedActivityStatuses"
+              ng-if="activity.status_id != id">
+              <a href ng-click="setStatusTo(activity, id)">{{ status.label }}</a>
+            </li>
+          </ul>
+        </div>
+        <div class="btn-group btn-group-md civicase__activity-panel__priority-dropdown">
+          <button
+            type="button" class="btn btn-primary-outline" data-toggle="dropdown"
+            aria-haspopup="true" aria-expanded="false"
+            title="{{ ts('Change activity priority') }}">
+            {{ activityPriorties[activity.priority_id].label || 'Set Priority' }}
+            <span class="caret"></span>
+          </button>
+          <ul class="dropdown-menu dropdown-menu-right">
+            <li>
+              <span class="list-group-item-info">{{ ts("Change priority to:") }}</span>
+            </li>
+            <li
+              ng-repeat="(id, priority) in activityPriorties"
+              ng-if="activityPriorties[activity.priority_id].name !== priority.name">
+              <a href ng-click="setPriorityTo(activity, id)">{{ priority.label }}</a>
+            </li>
+          </ul>
+        </div>
+        <button
+          class="btn btn-lg btn-link civicase__activity-panel__maximise"
+          title="View in Popup" ng-click="viewInPopup(null, activity)">
+          <i class="material-icons">unfold_more</i>
+        </button>
+        <button
+          class="btn btn-lg btn-link civicase__activity-panel__close"
+          title="Close" ng-click="closeDetailsPanel()">
+          <i class="material-icons">clear</i>
+        </button>
+      </div>
+    </div>
+    <div class="panel-subheading">
+      <h3 class="panel-subtitle clearfix">
+        <civicase-tooltip
+          tooltip-text="civicaseTs(activity.type)">
+            <span class="civicase__tooltip__ellipsis">
+              {{civicaseTs(activity.type)}}
+            </span>
+        </civicase-tooltip>
+        <div class="civicase__activity__right-container">
+          <!-- Tags -->
+          <civicase-tags-container
+            tags="activity.tag_id"
+            show-ellipsis-after="1">
+          </civicase-tags-container>
+          <!-- End - Tags -->
+
+          <!-- Rating -->
+          <a
+            ng-click="toggleActivityStar($event, activity)" href ng-if="activity.is_star"
+            title="{{ activity.is_star === '0' ? ts('Add star') : ts('Unstar') }}">
+            <i
+              ng-if="activity.is_star === '0'"
+              class="civicase__activity-star material-icons">
+              star_border
+            </i>
+            <i
+              ng-if="activity.is_star === '1'"
+              class="civicase__activity-star active material-icons">
+              star
+            </i>
+          </a>
+          <!-- End - Rating -->
+
+          <!-- Activity Date -->
+          <span
+            class="civicase__activity-date"
+            ng-class="{'civicase__overdue-activity-icon': activity.is_overdue}">
+            {{formatDate(activity.activity_date_time, 'DD MMM YYYY')}}
+          </span>
+          <!-- End - Activity Date -->
+
+          <!-- Avatar -->
+          <span
+            ng-if="activity.assignee_contact_name"
+            civicase-contact-card
+            avatar="true"
+            case-id="activity.case_id"
+            contacts="activity.assignee_contact_name"
+          ></span>
+          <!-- End - Avatar -->
+        </div>
+      </h3>
+    </div>
+    <div class="panel-body">
+      <div
+        class="civicase__activity-panel__core_container civicase__activity-panel__core_container--{{ activity.status | lowercase }}">
+      </div>
+
+      <button
+        ng-if="checkIfDraftEmailOrPDFActivity(activity)"
+        type="button" ng-click="viewInPopup(null, activity)"
+        class="btn btn-primary civicase__activity-panel__resume-draft">
+        Resume Draft
+      </button>
+    </div>
+  </div>
+</div>

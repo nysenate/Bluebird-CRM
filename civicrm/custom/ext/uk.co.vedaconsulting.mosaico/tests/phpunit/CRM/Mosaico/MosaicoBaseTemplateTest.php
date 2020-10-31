@@ -34,7 +34,7 @@ class CRM_Mosaico_MosaicoBaseTemplateTest extends CRM_Mosaico_TestCase implement
   }
 
   public function testGet() {
-    $result = $this->callAPISuccess('MosaicoBaseTemplate', 'get', array());
+    $result = $this->callAPISuccess('MosaicoBaseTemplate', 'get', []);
     $this->assertTrue(is_array($result['values']));
     $this->assertEquals('versafix-1', $result['values']['versafix-1']['name']);
     $this->assertRegExp(';\.html$;', $result['values']['versafix-1']['path']);
@@ -42,7 +42,7 @@ class CRM_Mosaico_MosaicoBaseTemplateTest extends CRM_Mosaico_TestCase implement
   }
 
   public function testGetSingle() {
-    $result = $this->callAPISuccess('MosaicoBaseTemplate', 'getsingle', array('name' => 'tedc15'));
+    $result = $this->callAPISuccess('MosaicoBaseTemplate', 'getsingle', ['name' => 'tedc15']);
     $this->assertEquals('tedc15', $result['name']);
     $this->assertRegExp(';\.html$;', $result['path']);
     $this->assertRegExp(';https?://.*mosaico.*tedc15.*png;', $result['thumbnail']);

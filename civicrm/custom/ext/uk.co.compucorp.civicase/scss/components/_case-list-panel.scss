@@ -1,0 +1,20 @@
+.civicase__panel-empty {
+  margin-bottom: 110px;
+  margin-top: 110px;
+  padding: 5px;
+  text-align: center;
+
+  .fa.fa-big {
+    color: $crm-gray-matte;
+    font-size: 64px;
+  }
+
+  .empty-label {
+    color: $crm-gray-matte;
+    font-size: 14px;
+    font-weight: $font-weight-heading;
+    line-height: 19px;
+    padding: 18px 0;
+    text-align: center;
+  }  
+}

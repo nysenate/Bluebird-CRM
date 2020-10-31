@@ -1,98 +1,94 @@
-// Overriding date and time styling filld
-.crm-form-date-wrapper {
-  .form-control {
-    display: inline-block;
-  }
+.crm-mosaico-page {
+  // Overriding date and time styling filld
+  .crm-form-date-wrapper {
+    .form-control {
+      display: inline-block;
+    }
 
-  .crm-form-date {
-    border-radius: 2px 0 0 2px;
-    border-right: 0;
-    min-width: 100px !important;
-    width: 100px;
-  }
+    .crm-form-date {
+      border-radius: 2px 0 0 2px;
+      border-right: 0;
+      min-width: 100px !important;
+      width: 100px;
+    }
 
-  .crm-form-time {
-    width: 75px;
-  }
+    .crm-form-time {
+      width: 75px;
+    }
 
-  .fa-calendar {
-    background-color: $crm-input-background-dark;
-    border: 1px solid $crm-input-border;
-    border-radius: 0 2px 2px 0;
-    height: 30px;
-    line-height: 26px;
-    margin-bottom: 0;
-    margin-right: 10px;
-    padding: 2px 0 0;
-    text-align: center;
-    width: 30px;
-  }
+    .fa-calendar {
+      background-color: $crm-input-background-dark;
+      border: 1px solid $crm-input-border;
+      border-radius: 0 2px 2px 0;
+      height: 30px;
+      line-height: 26px;
+      margin-bottom: 0;
+      margin-right: 10px;
+      padding: 2px 0 0;
+      text-align: center;
+      width: 30px;
+    }
 
-  .crm-clear-link {
-    background: none;
-    border: none;
-    position: relative;
-    top: 2px;
-  }
-}
-
-// Overriding crmMailing styles
-span.crmMailing-include {
-  color: $gray-darker;
-}
-
-a.helpicon:not(.crm-mosaico-page a.helpicon) {
-  background-color: $brand-primary;
-}
-
-.crmMailing-recip-est {
-  background: $crm-white;
-}
-
-.crm-group {
-  .label {
-    display: block;
-    padding: 8px 0;
-    text-align: left;
-    width: 100%;
-  }
-
-  .content {
-    clear: both;
-    margin: 0;
-
-    .select2-container {
-      max-width: 350px;
+    .crm-clear-link {
+      background: none;
+      border: none;
+      position: relative;
+      top: 2px;
     }
   }
-}
-// Overriding recipient civicrm form
-div[ng-form="editRecipOptionsForm"] .crm-group {
-  .label,
-  label,
-  label span {
+
+  // Overriding crmMailing styles
+  span.crmMailing-include {
     color: $gray-darker;
-    font-weight: $crm-font-weight-h3;
-    font-size: $font-size-base;
-    width: 100%;
-    text-align: left;
   }
 
-  label span.crm-marker {
-    color: $brand-danger;
-    margin-left: 5px;
+  .crmMailing-recip-est {
+    background: $crm-white;
   }
 
-  .content {
-    margin: 0;
+  .crm-group {
+    .label {
+      display: block;
+      padding: 8px 0;
+      text-align: left;
+      width: 100%;
+    }
+
+    .content {
+      clear: both;
+      margin: 0;
+
+      .select2-container {
+        max-width: 350px;
+      }
+    }
+  }
+  // Overriding recipient civicrm form
+  div[ng-form="editRecipOptionsForm"] .crm-group {
+    .label,
+    label,
+    label span {
+      color: $gray-darker;
+      font-weight: $crm-font-weight-h3;
+      font-size: $font-size-base;
+      width: 100%;
+      text-align: left;
+    }
+
+    label span.crm-marker {
+      color: $brand-danger;
+      margin-left: 5px;
+    }
+
+    .content {
+      margin: 0;
+    }
+
+    .crm-section {
+      margin-bottom: .5em;
+    }
   }
 
-  .crm-section {
-    margin-bottom: .5em;
-  }
-}
-
-.crm-mosaico-page {
   .select2-search-field {
     input[type=text]:focus,
     textarea:focus,
@@ -105,13 +101,9 @@ div[ng-form="editRecipOptionsForm"] .crm-group {
   #responses .select2-container {
     min-width: 350px;
   }
-}
 
-.crm-hover-button {
-  background: none;
-  border: none;
-}
-// Help icon styling
-.control-label a.helpicon:not(.crm-mosaico-page .control-label a.helpicon) {
-  background-color: $brand-primary;
+  .crm-hover-button {
+    background: none;
+    border: none;
+  }
 }

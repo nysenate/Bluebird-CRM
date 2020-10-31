@@ -1,0 +1,10 @@
+/**
+ * We temporarily hide the "File On Case" action for draft activities.
+ * This is done because this functionality needs to be fixed so it works
+ * with case categories, and supports translation. More info on CPS-155.
+ */
+.civicase__activity-panel__core_container--draft {
+  [title='File On Case'] {
+    display: none;
+  }
+}

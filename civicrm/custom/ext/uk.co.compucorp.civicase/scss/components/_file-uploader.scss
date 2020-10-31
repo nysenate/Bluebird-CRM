@@ -1,0 +1,148 @@
+.civicase__file-upload-container {
+  margin: 0 -12px;
+}
+
+.civicase__file-upload-item {
+  padding: 0 12px;
+}
+
+.civicase__file-upload-dropzone {
+  align-items: center;
+  border: 1px dashed $crm-grayblue-darker;
+  border-radius: 3px;
+  display: flex;
+  flex-direction: column;
+  height: 330px;
+  justify-content: center;
+  padding: 20px;
+  width: 100%;
+
+  &:hover {
+    background-color: $crm-white;
+  }
+
+  .material-icons {
+    color: $upload-icon-color;
+    font-size: 48px;
+  }
+
+  h3 {
+    font-size: 14px;
+    line-height: 18px;
+    margin: 10px 0 0;
+  }
+
+  label {
+    color: $brand-primary;
+    cursor: pointer;
+    font-weight: $font-weight-content;
+  }
+}
+
+.civicase__file-upload-button {
+  display: none !important;
+}
+
+.civicase__file-upload-box {
+  transition: 0.25s width cubic-bezier(0, 0, 0, 0.4);
+  width: 100%;
+}
+
+.civicase__file-upload-details {
+  opacity: 0;
+  overflow: hidden;
+  padding: 0;
+  transition: 0.1s opacity cubic-bezier(0 0, 0, 0.4);
+  transition-delay: 0.3s;
+  width: 0;
+
+  label {
+    color: $crm-gray-matte;
+    font-weight: $font-weight-content;
+    line-height: 18px;
+    margin-bottom: 5px;
+  }
+
+  .btn {
+    margin-right: 8px;
+    padding: 8px 16px;
+
+    &:last-child {
+      margin-right: 0;
+    }
+  }
+
+  .btn-default {
+    border-color: inherit;
+  }
+
+  .civicase__tags-selector {
+    margin-bottom: 25px;
+    margin-top: -10px;
+
+    .col-sm-5,
+    .col-xs-7 {
+      float: none;
+    }
+
+    .col-sm-5,
+    .col-xs-7,
+    .select2-container {
+      margin-bottom: 5px;
+      padding: 0;
+      width: 100% !important;
+    }
+  }
+}
+
+.civicase__file-upload-container--upload-active {
+  .civicase__file-upload-box {
+    width: 50%;
+  }
+
+  .civicase__file-upload-details {
+    opacity: 1;
+    overflow: visible;
+    padding: 0 12px;
+    width: 50%;
+  }
+}
+
+.civicase__file-upload-name,
+.civicase__file-upload-size,
+.civicase__file-upload-remove {
+  font-size: 13px;
+  line-height: 18px;
+  margin: 0;
+}
+
+.civicase__file-upload-name {
+  color: $brand-primary;
+}
+
+.civicase__file-upload-description {
+  margin-bottom: 24px;
+
+  textarea {
+    min-height: 90px;
+  }
+}
+
+.civicase__file-upload-remove {
+  text-align: right;
+
+  .btn {
+    border: 0;
+    color: $brand-danger;
+    padding: 0;
+    text-transform: capitalize;
+
+    &:hover {
+      background-color: transparent;
+    }
+  }
+}
+
+.civicase__file-upload-progress {
+  margin: 12px 0 16px;
+}

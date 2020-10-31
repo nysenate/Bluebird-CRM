@@ -23,6 +23,30 @@ class CRM_Mosaico_BAO_MosaicoTemplate extends CRM_Mosaico_DAO_MosaicoTemplate {
   } */
 
   /**
+   * Helps updating the URLs in templates so they can be reused
+   * after restoring a dump database in a new server.
+   * 
+   * @param string $fromUrl URL of the server where the
+   *   templates were created
+   * @param string $toUrl URL of the current server
+   */
+  public static function replaceUrls($fromUrl, $toUrl) {
+    $replaceQuery = "UPDATE civicrm_mosaico_template
+      SET metadata = json_replace(metadata, '$.template',
+          replace(
+              json_unquote(
+                  json_extract(metadata, '$.template')
+              ),
+          %1, %2)
+      );";
+
+    CRM_Core_DAO::executeQuery($replaceQuery, [
+      1 => [$fromUrl, 'String'],
+      2 => [$toUrl, 'String'],
+    ]);
+  }
+
+  /**
    * @return mixed
    */
   public static function findBaseTemplates() {
@@ -38,17 +62,17 @@ class CRM_Mosaico_BAO_MosaicoTemplate extends CRM_Mosaico_DAO_MosaicoTemplate {
 
       $templatesUrl = CRM_Mosaico_Utils::getTemplatesUrl('absolute');
 
-      $templatesLocation[] = array('dir' => $templatesDir, 'url' => $templatesUrl);
+      $templatesLocation[] = ['dir' => $templatesDir, 'url' => $templatesUrl];
 
       $customTemplatesDir = \Civi::paths()->getPath(CRM_Core_BAO_Setting::getItem('Mosaico Preferences', 'mosaico_custom_templates_dir'));
       $customTemplatesUrl = \Civi::paths()->getUrl(CRM_Core_BAO_Setting::getItem('Mosaico Preferences', 'mosaico_custom_templates_url'));
       if (!is_null($customTemplatesDir) && !is_null($customTemplatesUrl)) {
         if (is_dir($customTemplatesDir)) {
-          $templatesLocation[] = array('dir' => $customTemplatesDir, 'url' => $customTemplatesUrl);
+          $templatesLocation[] = ['dir' => $customTemplatesDir, 'url' => $customTemplatesUrl];
         }
       }
 
-      $records = array();
+      $records = [];
 
       foreach ($templatesLocation as $templateLocation) {
         foreach (glob("{$templateLocation['dir']}/*", GLOB_ONLYDIR) as $dir) {
@@ -56,20 +80,22 @@ class CRM_Mosaico_BAO_MosaicoTemplate extends CRM_Mosaico_DAO_MosaicoTemplate {
           $templateHTML = "{$templateLocation['url']}/{$template}/template-{$template}.html";
           $templateThumbnail = "{$templateLocation['url']}/{$template}/edres/_full.png";
 
-          $records[$template] = array(
+          $records[$template] = [
             'name' => $template,
             'title' => $template,
             'thumbnail' => $templateThumbnail,
             'path' => $templateHTML,
-          );
+          ];
         }
       }
+      // Sort the base templates into alphabetical order
+      ksort($records, SORT_NATURAL | SORT_FLAG_CASE);
 
       if (class_exists('\Civi\Core\Event\GenericHookEvent')) {
         \Civi::dispatcher()->dispatch('hook_civicrm_mosaicoBaseTemplates',
-          \Civi\Core\Event\GenericHookEvent::create(array(
+          \Civi\Core\Event\GenericHookEvent::create([
             'templates' => &$records,
-          ))
+          ])
         );
       }
 

@@ -1,0 +1,57 @@
+<?xml version="1.0"?>
+<menu>
+  <!-- TODO: do we use comma or semicolon for boolean OR? -->
+  <item>
+    <path>civicrm/case/a</path>
+    <page_callback>CRM_Civicase_Page_CaseAngular</page_callback>
+    <access_arguments>access all cases and activities,access my cases and activities</access_arguments>
+  </item>
+  <item>
+    <path>civicrm/case/contact-case-tab</path>
+    <page_callback>CRM_Civicase_Page_ContactCaseTab</page_callback>
+    <access_arguments>access all cases and activities;access my cases and activities;basic case information</access_arguments>
+  </item>
+  <item>
+    <path>civicrm/case/contact-act-tab</path>
+    <page_callback>CRM_Civicase_Page_ContactActivityTab</page_callback>
+    <title>ContactActivityTab</title>
+    <access_arguments>access CiviCRM</access_arguments>
+  </item>
+  <item>
+    <path>civicrm/case/webforms</path>
+    <page_callback>CRM_Civicase_Form_CaseWebforms</page_callback>
+    <title>CaseWebforms</title>
+    <access_arguments>access CiviCRM</access_arguments>
+  </item>
+  <item>
+    <path>civicrm/case/activity/download-all-files</path>
+    <page_callback>CRM_Civicase_Page_ActivityFiles::downloadAll</page_callback>
+    <title>Activity Files</title>
+    <access_arguments>access all cases and activities;access my cases and activities</access_arguments>
+  </item>
+  <item>
+    <path>civicrm/case/locked-contacts</path>
+    <page_callback>CRM_Civicase_Form_LockedContacts</page_callback>
+    <title>Locked Contacts</title>
+    <access_arguments>access all cases and activities;access my cases and activities</access_arguments>
+  </item>
+  <item>
+    <path>civicrm/case/customreport/print</path>
+    <page_callback>CRM_Civicase_XMLProcessor_Report::printCaseReport</page_callback>
+    <access_arguments>access all cases and activities</access_arguments>
+  </item>
+  <item>
+    <path>civicrm/dashboard</path>
+    <page_callback>CRM_Civicase_Page_DashboardTabs</page_callback>
+    <access_arguments>access CiviCRM</access_arguments>
+  </item>
+    <item>
+    <path>civicrm</path>
+    <access_callback>CRM_Core_Permission::checkMenu</access_callback>
+    <page_callback>CRM_Civicase_Page_DashboardTabs</page_callback>
+    <access_arguments>access CiviCRM</access_arguments>
+    <page_arguments>null</page_arguments>
+    <is_ssl>false</is_ssl>
+    <weight>0</weight>
+  </item>
+</menu>

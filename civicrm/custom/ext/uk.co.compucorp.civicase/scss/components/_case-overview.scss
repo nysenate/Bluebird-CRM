@@ -1,0 +1,276 @@
+$overview-grid-cell-width: 200px;
+
+.civicase__case-overview {
+  .panel-body {
+    background-color: $crm-gray-lightest;
+    padding: 0 !important;
+  }
+}
+
+.civicase__case-overview-container {
+  a {
+    color: inherit;
+    text-decoration: none;
+  }
+
+  .civicase__case-overview__flow,
+  .simplebar-content {
+    position: static;
+  }
+
+  .simplebar-content {
+    padding-right: 0 !important;
+  }
+}
+
+.civicase__case-overview__breakdown,
+.civicase__case-overview__flow {
+  display: flex;
+  margin-left: $overview-grid-cell-width;
+}
+
+.civicase__case-overview__flow-status,
+.civicase__case-overview__breakdown-field {
+  display: inline-flex;
+  flex-basis: $overview-grid-cell-width;
+  flex-grow: 1;
+  flex-shrink: 0;
+
+  &:first-child {
+    align-items: flex-start;
+    align-items: center;
+    flex-direction: row;
+    justify-content: flex-start;
+    left: 0;
+    position: absolute;
+    top: auto;
+    width: $overview-grid-cell-width;
+    z-index: 5;
+
+    .civicase__case-overview__flow-status__icon {
+      color: $brand-primary;
+      cursor: pointer;
+      margin-left: 8px;
+      position: relative;
+      top: 1px;
+    }
+  }
+}
+
+.civicase__case-overview__flow-status {
+  align-items: flex-start;
+  background-color: $crm-white;
+  flex-direction: column;
+  height: 80px;
+  justify-content: center;
+  position: relative;
+
+  &::after {
+    background-color: $crm-white;
+    border-bottom-right-radius: 5px;
+    box-shadow: 1px 1px 0 0 $gray-light;
+    content: '';
+    height: 57px;
+    position: absolute;
+    right: -25px;
+    top: 12px;
+    transform: rotateZ(-45deg);
+    transform-origin: 50% 50%;
+    width: 57px;
+    z-index: 1;
+  }
+
+  &:first-child {
+    font-size: 16px;
+    font-weight: $crm-font-weight-h3;
+    line-height: 22px;
+    padding-left: 24px;
+    z-index: 10;
+  }
+
+  &:last-child {
+    overflow: hidden;
+
+    &::after {
+      content: none;
+    }
+  }
+}
+
+.civicase__case-overview__flow-status-settings {
+  position: relative;
+
+  .btn {
+    color: inherit;
+    margin-right: 10px;
+    padding: 3px 0;
+    text-decoration: none !important;
+  }
+
+  .civicase__case-overview__flow-status__icon--settings {
+    color: inherit !important;
+    margin: 0 !important;
+    vertical-align: middle;
+
+    &.material-icons {
+      color: $crm-gray-matte !important;
+      font-size: 18px;
+    }
+  }
+}
+
+.civicase__case-overview__flow-status__border {
+  bottom: 0;
+  height: 4px;
+  position: absolute;
+  transform: skewx(-45deg);
+  width: calc(100% - 1px);
+  z-index: 2;
+}
+
+
+.civicase__case-overview__flow-status__count {
+  color: $gray-darker;
+  font-size: 24px;
+  font-weight: $crm-font-weight-h3;
+  line-height: 33px;
+  text-align: center;
+  width: 100%;
+}
+
+.civicase__case-overview__flow-status__empty-state {
+  text-align: center;
+  width: 100%;
+}
+
+.civicase__case-overview__flow-status__description {
+  color: $crm-gray-matte;
+  margin: 0 auto;
+  overflow: hidden;
+  overflow: hidden;
+  text-align: center;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  width: 140px;
+
+  span {
+    text-overflow: ellipsis;
+  }
+}
+
+.civicase__case-overview__breakdown {
+  &:last-child {
+    .civicase__case-overview__breakdown-field {
+      border: 0;
+    }
+  }
+}
+
+.civicase__case-overview__breakdown-field {
+  align-items: center;
+  border-bottom: 1px solid $gray-light;
+  justify-content: center;
+  padding: 16px 24px;
+  position: relative;
+
+  &:not(:first-child) {
+    color: $crm-gray-matte;
+  }
+
+  &:first-child,
+  &:last-child {
+    &::after {
+      background-color: $crm-gray-lightest;
+      bottom: -1px;
+      content: '';
+      height: 1px;
+      position: absolute;
+      width: 24px;
+    }
+  }
+
+  &:first-child {
+    background-color: $crm-gray-lightest;
+    font-weight: $crm-font-weight-h3;
+
+    a {
+      display: block;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      width: 100%;
+    }
+
+    &::after {
+      left: 0;
+    }
+  }
+
+  &:last-child {
+    &::after {
+      right: 0;
+    }
+  }
+}
+
+.civicase__case-overview__flow-status--hoverable,
+.civicase__case-overview__breakdown-field--hoverable {
+  &:hover {
+    background-color: $gray-lighter;
+
+    &::after {
+      background-color: $gray-lighter;
+    }
+  }
+}
+
+.civicase__case-overview__popup {
+  border: 1px solid $gray-light;
+  border-radius: 2px;
+  box-shadow: $box-shadow-tooltip;
+  color: $gray-darker;
+  padding: 0;
+  z-index: 1;
+
+  &.dropdown-menu {
+    margin-top: 15px;
+    padding: 8px 0;
+  }
+
+  .popover-content {
+    padding: 0;
+  }
+
+  .arrow {
+    border-bottom-color: $gray-light;
+
+    &.left {
+      left: 20px;
+    }
+  }
+
+  .dropdown-menu {
+    box-shadow: none;
+    display: inherit;
+    position: inherit;
+  }
+
+  .civicase__checkbox {
+    display: inline-block;
+    margin-right: 5px;
+  }
+
+  .civicase__checkbox--checked {
+    color: $brand-primary !important;
+    font-size: 24px !important;
+    top: 0 !important;
+  }
+
+  .civicase__checkbox-container {
+    line-height: 18px;
+
+    > * {
+      vertical-align: middle;
+    }
+  }
+}

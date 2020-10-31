@@ -1,0 +1,71 @@
+.panel-secondary {
+  $panel-control-margin: 10px;
+
+  box-shadow: $box-shadow-block;
+
+  > .panel-body {
+    padding: $case-panel-secondary-padding;
+  }
+
+  > .panel-footer {
+    padding: $case-panel-secondary-padding-small $case-panel-secondary-padding;
+  }
+
+  > .panel-heading {
+    background: $crm-white;
+    line-height: 1;
+    padding: $case-panel-secondary-padding;
+    position: relative;
+
+    &::after {
+      $border-margin-right: $case-panel-secondary-padding + ($case-panel-secondary-padding - $case-panel-secondary-padding-small);
+
+      border-bottom: 1px solid $gray-light;
+      bottom: 0;
+      content: '';
+      display: block;
+      height: 0;
+      left: $case-panel-secondary-padding-small;
+      position: absolute;
+      width: calc(100% - #{$border-margin-right});
+    }
+
+    .panel-title {
+      font-size: $font-size-h3;
+    }
+  }
+
+  // Vertically aligns a control (select, btn-group, link)
+  // inside the heading
+  .panel-heading-control {
+    display: block;
+    margin-left: 0;
+    margin-top: -13px;
+    position: relative;
+    top: 6px;
+
+    + & {
+      margin-left: $panel-control-margin;
+    }
+  }
+
+  a.panel-heading-control { /* stylelint-disable-line selector-no-qualifying-type */
+    line-height: $input-height-base;
+  }
+
+  .panel-title {
+    + .panel-heading-control {
+      margin-left: $panel-control-margin;
+    }
+  }
+
+  .civicase__activity-card--long,
+  .civicase__case-card--detached {
+    box-shadow: $box-shadow-panel-secondary-card;
+    margin-bottom: 0;
+
+    &:not(:last-child) {
+      margin-bottom: $case-gutter-width / 2;
+    }
+  }
+}

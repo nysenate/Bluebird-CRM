@@ -86,7 +86,7 @@ class CRM_Mosaico_Upgrader extends CRM_Mosaico_Upgrader_Base {
     $this->ctx->log->info('Applying update 4703');
     $domainId = CRM_Core_Config::domainID();
 
-    civicrm_api3('Navigation', 'create', array(
+    civicrm_api3('Navigation', 'create', [
       'sequential' => 1,
       'domain_id' => $domainId,
       'url' => "civicrm/a/#/mailing/new/traditional",
@@ -96,7 +96,7 @@ class CRM_Mosaico_Upgrader extends CRM_Mosaico_Upgrader_Base {
       'has_separator' => 0,
       'is_active' => 1,
       'parent_id' => "Mailings",
-    ));
+    ]);
 
     CRM_Core_Invoke::rebuildMenuAndCaches(TRUE);
 

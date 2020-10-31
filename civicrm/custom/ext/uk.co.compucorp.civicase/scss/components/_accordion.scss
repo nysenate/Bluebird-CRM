@@ -1,0 +1,27 @@
+.civicase__accordion {
+  .panel-heading {
+    padding: 0 0 15px;
+  }
+
+  .panel-title {
+    font-size: 16px;
+  }
+
+  .panel-title a,
+  .panel-title a:hover {
+    text-decoration: none;
+  }
+
+  .panel-title a::before {
+    content: '\f105'; // angle-right
+  }
+
+  &.panel-open .panel-title a::before {
+    content: '\f107'; // angle-down
+    margin-left: -4px;
+  }
+
+  .panel-body {
+    padding: 0 0 15px;
+  }
+}

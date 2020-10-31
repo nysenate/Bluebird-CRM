@@ -15,23 +15,23 @@ require_once __DIR__ . '/TestCase.php';
 class CRM_Mosaico_MosaicoComposerTest extends CRM_Mosaico_TestCase implements EndToEndInterface {
 
   public function getComposerExamples() {
-    $cases = array(); // array($field, $inputValue, $expectRegex).
+    $cases = []; // array($field, $inputValue, $expectRegex).
 
-    $cases[] = array(
+    $cases[] = [
       'body_html',
       '<p>Hello <img noise="1" src="foo.png"> world.</p>',
       ';noise="1" src="http://[^"]+/foo.png";',
-    );
-    $cases[] = array(
+    ];
+    $cases[] = [
       'body_text',
       'Go to [show_link]',
       ';Go to http://[^"]+civicrm/mailing/view;',
-    );
-    $cases[] = array(
+    ];
+    $cases[] = [
       'body_text',
       'Go to [unsubscribe_link]',
       ';Go to http://[^"]+civicrm/mailing/unsubscribe;',
-    );
+    ];
 
     return $cases;
   }
@@ -54,9 +54,9 @@ class CRM_Mosaico_MosaicoComposerTest extends CRM_Mosaico_TestCase implements En
 
     $contactId = $this->getContactId($GLOBALS['_CV']['ADMIN_USER']);
 
-    $params = array(
+    $params = [
       'template_type' => 'mosaico',
-      'template_options' => array('nonce' => 1),
+      'template_options' => ['nonce' => 1],
       'subject' => 'Placeholder',
       'body_text' => "Placeholder",
       'body_html' => "Placeholder",
@@ -64,14 +64,14 @@ class CRM_Mosaico_MosaicoComposerTest extends CRM_Mosaico_TestCase implements En
       'created_id' => $contactId,
       'header_id' => '',
       'footer_id' => '',
-      'api.Mailing.preview' => array(
+      'api.Mailing.preview' => [
         'id' => '$value.id',
         'contact_id' => $contactId,
-      ),
-      'options' => array(
+      ],
+      'options' => [
         'force_rollback' => 1,
-      ),
-    );
+      ],
+    ];
     $params[$field] = $inputValue;
 
     $result = $this->callAPISuccess('mailing', 'create', $params);

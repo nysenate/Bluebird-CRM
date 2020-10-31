@@ -1,0 +1,201 @@
+<div class="panel panel-default">
+  <div class="panel-body panel-body-extra" ng-controller="civicaseCaseDetailsController" ng-if="item">
+    <div class="civicase__contact-cases-tab__panel-row civicase__contact-cases-tab__panel-row--dark clearfix">
+      <div class="pull-left civicase__contact-cases-tab__panel-field-emphasis civicase__contact-cases-tab-details__title">
+        <span> {{ ts('Case ID:') }} <strong> {{item.id}} </strong></span>
+      </div>
+      <div class="pull-right">
+        <div class="btn-group btn-group-md">
+          <button
+            type="button"
+            style="background-color: {{ caseStatuses[item.status_id].color }};"
+            class="btn btn-primary"
+            data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" title="{{ ts('Change case status') }}">
+            {{ item.status }}
+            <span class="caret"></span>
+          </button>
+          <ul class="dropdown-menu dropdown-menu-right">
+            <li>
+              <span class="list-group-item-info">{{ ts("Change status to:") }}</span>
+            </li>
+            <li ng-repeat="(id, status) in allowedCaseStatuses" ng-if="id !== item.status_id">
+              <a
+                crm-popup-form-success="pushCaseData($data.civicase_reload[0]); refreshCases()"
+                class="crm-popup"
+                ng-href="{{
+                  'civicrm/case/activity' | civicaseCrmUrl:
+                    {
+                      action: 'add',
+                      reset: 1,
+                      cid: item.client[0].contact_id,
+                      caseid: item.id,
+                      atype: getActivityType('Change Case Status'),
+                      case_status_id: id,
+                      civicase_reload: caseGetParams()
+                    }
+                  }}">
+                {{ status.label }}
+              </a>
+            </li>
+          </ul>
+        </div>
+        <div class="btn-group btn-group-md">
+          <button
+            type="button"
+            class="civicase__case-header__action-icon btn btn-primary"
+            data-toggle="dropdown"
+            aria-haspopup="true"
+            aria-expanded="false">
+            <i class="material-icons">menu</i>
+          </button>
+          <ul
+            class="dropdown-menu dropdown-menu-right"
+            mode="contact-tab-cases"
+            civicase-case-actions="[item]"
+            refresh-callback="refresh"
+            popup-params="caseGetParams"
+            crm-popup-form-success="pushCaseData($data.civicase_reload[0])"></ul>
+        </div>
+      </div>
+    </div>
+    <div class="civicase__contact-cases-tab__panel-row civicase__contact-cases-tab__panel-row--dark clearfix">
+      <div>
+        <div
+          class="civicase__contact-card--client"
+          civicase-contact-card
+          case-id="item.id"
+          contacts="item.client"
+        ></div>
+        <div class="civicase__summary-tab__subject crm-entity" data-entity="Case" data-id="{{ item.id }}">
+          <p
+            crm-editable="item"
+            data-field="subject"
+            data-type="textarea"
+            data-placeholder="Click to add subject"
+            crm-form-success="onChangeSubject($data)">
+          </p>
+        </div>
+        <div class="civicase__summary-tab__description crm-entity" data-entity="Case" data-id="{{ item.id }}">
+          <p
+            crm-editable="item"
+            data-field="details"
+            data-type="textarea"
+            data-placeholder="{{ ts('This case doesn\'t currently have a description. Click here to add now.') }}">
+          </p>
+        </div>
+        <span class="civicase__case-header__case-type">
+          <a
+            ng-if="caseTypesLength > 1"
+            title="{{ ts('Change Case Type') }}"
+            class="crm-popup crm-editable-enabled"
+            crm-popup-form-success="pushCaseData($data.civicase_reload[0])"
+            ng-href="{{
+              'civicrm/case/activity' | civicaseCrmUrl:
+                {
+                  action: 'add',
+                  reset: 1,
+                  cid: item.client[0].contact_id,
+                  caseid: item.id,
+                  atype: getActivityType('Change Case Type'),
+                  case_status_id: id,
+                  civicase_reload: caseGetParams()
+                }
+              }}">
+            {{ item.case_type }}
+          </a>
+          <span ng-if="caseTypesLength < 2">
+            {{ item.case_type }}
+          </span>
+        </span>
+      </div>
+    </div>
+    <div class="civicase__contact-cases-tab__panel-row civicase__contact-cases-tab__panel-row--dark clearfix">
+      <div class="pull-left civicase__contact-cases-tab__panel-fields--inline">
+        <div class="civicase__case-header__dates">
+          <span>{{ CRM.utils.formatDate(item.start_date) || '. . .' }}</span> -
+          <span ng-if="item.end_date">{{ CRM.utils.formatDate(item.end_date) }}</span>
+          <span ng-if="!item.end_date">{{ ts('Ongoing') }}</span>
+        </div>
+        <span ng-if="item.tag_id" class="civicase__pipe"> | </span>
+        <civicase-tags-container
+          tags="item.tag_id"
+          show-ellipsis-after="1">
+        </civicase-tags-container>
+      </div>
+      <span class="pull-right civicase__contact-cases-tab__panel-fields--inline">
+        <span class="civicase__contact-cases-tab__panel-field-emphasis"> {{ ts('Case Manager:') }} </span>
+        <span>
+          <span
+            class="civicase__contact-card civicase__contact-card--manager"
+            civicase-contact-card
+            case-id="item.id"
+            contacts="[item.manager]"
+          ></span>
+        </span>
+      </span>
+    </div>
+    <div class="civicase__contact-cases-tab__panel-row clearfix">
+      <!-- Case Summary -->
+      <div class="civicase__contact-cases-tab__panel-fields">
+        <div class="civicase__contact-cases-tab__panel-field-title">
+          {{ ts('Summary') }}
+        </div>
+        <div>
+          {{ item.subject }}
+        </div>
+      </div>
+      <!--End Case Summary -->
+      <!-- Next Activity -->
+      <div class="civicase__contact-cases-tab__panel-fields">
+        <div class="civicase__contact-cases-tab__panel-field-title">
+          {{ ts('Next Activity') }}
+        </div>
+        <div
+          case-activity-card="item.activity_summary.next[0]"
+          refresh-callback="refresh"
+          case="item"
+          crm-popup-form-success="pushCaseData($data.civicase_reload[0])"
+        >
+        </div>
+      </div>
+      <!-- End Next Activity -->
+      <!-- Last Activity -->
+      <div class="civicase__contact-cases-tab__panel-fields">
+        <div class="civicase__contact-cases-tab__panel-field-title">
+          {{ ts('Last Activity') }}
+        </div>
+        <div
+          case-activity-card="item.activity_summary.last[0]"
+          refresh-callback="refresh"
+          case="item"
+          crm-popup-form-success="pushCaseData($data.civicase_reload[0])"
+        >
+        </div>
+      </div>
+      <!-- End Last Activity -->
+      <!-- Contact Role -->
+      <div class="civicase__contact-cases-tab__panel-fields" ng-if="item.contact_role">
+        <div class="civicase__contact-cases-tab__panel-field-title">
+          {{ ts('Contact Role') }}
+        </div>
+        <div>
+          {{ civicaseTs(item.contact_role) }}
+        </div>
+      </div>
+      <!-- End Contact Role -->
+      <!-- Last Modified -->
+      <div class="civicase__contact-cases-tab__panel-fields">
+        <div class="civicase__contact-cases-tab__panel-field-title">
+          {{ ts('Last Modified') }}
+        </div>
+        <span>{{ CRM.utils.formatDate(item.modified_date) }}</span>
+      </div>
+      <!-- End Last Modified -->
+    </div>
+    <div class="civicase__contact-cases-tab__panel-row civicase__contact-cases-tab__panel-actions">
+      <a ng-href="{{getCaseDetailsUrl(item)}}" class="btn btn-primary">
+        {{ ts('Go To Case') }}
+      </a>
+    </div>
+  </div>
+</div>

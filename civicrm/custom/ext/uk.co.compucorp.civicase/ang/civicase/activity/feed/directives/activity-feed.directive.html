@@ -1,0 +1,137 @@
+<div class="panel panel-default civicase__activity-feed">
+  <div
+    civicase-activity-filters="filters" case-timelines="caseTimelines"
+    display-options="displayOptions" show-checkboxes="showCheckboxes" feed-params="params"
+    displayed-count="activities.length" total-count="totalCount" bulk-allowed="bulkAllowed"
+    selected-activities="selectedActivities" is-select-all="isSelectAll"
+    can-select-case-type-category="canSelectCaseTypeCategory">
+  </div>
+
+  <civicase-bulk-actions-message
+    selected-items="selectedActivities.length" total-count="totalCount"
+    is-select-all-available="true" show-checkboxes="showCheckboxes"
+    is-select-all="isSelectAll">
+  </civicase-bulk-actions-message>
+
+  <div class="panel-body clearfix">
+    <div crm-ui-debug="activities"></div>
+    <div class="civicase__activity-feed__body" ng-show="!isLoading">
+      <div class="civicase__activity-feed__body__list" ng-class="{'civicase__activity-feed__body__list--details-visible': viewingActivity.id}">
+        <!-- Upside Pager -->
+        <div class="text-center civicase__activity-feed-pager">
+          <div
+            class="civicase__activity-feed-pager__more">
+            <div ng-if="showSpinner.up" class="civicase__spinner"></div>
+            <button
+              ng-if="!showSpinner.up && checkIfRecordsAvailableOnDirection('up')"
+              class="btn btn-link" ng-click="previousPage()"
+              title="{{ ts('Click for more') }}">
+              <i class="material-icons">keyboard_arrow_up</i>
+            </button>
+          </div>
+        </div>
+        <!-- End - Upside Pager -->
+        <div
+          class="panel panel-default civicase__panel-transparent-header"
+          ng-if="activityGroup.activities.length" ng-repeat="activityGroup in activityGroups">
+          <div class="panel-heading">
+            <h3
+              ng-class="{
+                'civicase__overdue-activity-icon civicase__overdue-activity-icon--before': activityGroup.key === 'overdue'
+              }"
+              class="panel-title">{{ activityGroup.title }}</h3>
+          </div>
+          <div class="panel-body">
+            <div
+              class="civicase__activity-feed__list civicase__animated-checkbox-card"
+              ng-class="{
+                'active': activity.id === viewingActivity.id,
+                'civicase__animated-checkbox-card--expanded': showCheckboxes && bulkAllowed
+              }"
+              ng-repeat="activity in activityGroup.activities">
+              <span
+                class="civicase__checkbox civicase__checkbox--bulk-action"
+                role="checkbox"
+                tabindex="0"
+                aria-labelledby="Select/Unselect"
+                ng-click="toggleSelected(activity); $event.stopPropagation();">
+                <i
+                  ng-if="findActivityById(selectedActivities, activity.id)"
+                  class="civicase__checkbox--checked material-icons">
+                  check_box
+                </i>
+              </span>
+              <div
+                ng-class="{'civicase__activity-feed__list__vertical_bar': $index< activityGroup.activities.length - 1 && activity.source_contact_id}"
+                class="civicase__activity-feed__list-item">
+                <span
+                  ng-if="activity.source_contact_id"
+                  civicase-contact-card
+                  avatar="true"
+                  case-id="activity.case_id"
+                  contacts="activity.source_contact_id"
+                ></span>
+                <div class="civicase__activity-feed__activity-container">
+                  <div
+                    case-activity-card="activity"
+                    data-offset-number="{{activity.cardId}}"
+                    mode="long"
+                    refresh-on-checkbox-toggle="true"
+                    bulk-allowed="bulkAllowed"
+                    custom-click-event="true"
+                    refresh-callback="refreshAll">
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <!-- Pager -->
+        <div class="text-center civicase__activity-feed-pager civicase__activity-feed-pager--down">
+          <div
+            class="civicase__activity-feed-pager__no-more"
+            ng-if="(totalCount !== undefined) &&
+             !showSpinner.down &&
+             !checkIfRecordsAvailableOnDirection('down') &&
+             !checkIfRecordsAvailableOnDirection('up')">
+            <button class="btn btn-default" disabled>
+              {{ totalCount === 0 ? ts('None Found') : ts('Showing all %1', {1: totalCount}) }}
+            </button>
+          </div>
+          <div
+            class="civicase__activity-feed-pager__more">
+            <div ng-if="showSpinner.down" class="civicase__spinner"></div>
+            <button
+              ng-if="!showSpinner.down && checkIfRecordsAvailableOnDirection('down')"
+              class="btn btn-link" ng-click="nextPage()"
+              title="{{ ts('Click for more') }}">
+              <i class="material-icons">keyboard_arrow_down</i>
+            </button>
+          </div>
+        </div>
+        <!-- End - Pager -->
+      </div>
+      <!-- activity details -->
+      <div
+        class="civicase__activity-feed__body__details"
+        civicase-activity-panel="viewingActivity"
+        refresh-callback="refreshAll"
+        ng-if="viewingActivity.id">
+      </div>
+      <!-- end activity details -->
+      <!-- quick month nav -->
+      <div
+        ng-show='isMonthNavVisible'
+        class="civicase__activity-feed__body__month-nav"
+        civicase-activity-month-nav
+        is-loading="isLoading">
+      </div>
+      <!-- end quick month nav -->
+    </div>
+
+    <div
+      ng-if="isLoading"
+      ng-include="'~/civicase/activity/feed/directives/activity-feed-placeholder.html'">
+    </div>
+  </div>
+</div>

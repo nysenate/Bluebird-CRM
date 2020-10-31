@@ -1,0 +1,29 @@
+.___outside-namespace {
+  .civicase__tags-modal {
+    background-color: $crm-white !important;
+  }
+}
+
+.civicase__tags-modal__generic-tags-container {
+  border: 1px solid $crm-grayblue-dark;
+  border-radius: 2px;
+  padding: 5px;
+
+  input {
+    margin-top: 0 !important;
+  }
+
+  label {
+    margin-bottom: 0;
+  }
+}
+
+.civicase__tags-modal__tags-container {
+  label {
+    margin-top: 4px;
+  }
+
+  .col-sm-9 {
+    width: 75% !important;
+  }
+}

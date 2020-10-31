@@ -1,0 +1,63 @@
+{
+  "name": "uk.co.compucorp.civicase",
+  "version": "5.0.0",
+  "description": "The CiviCase extension is an overhaul of the CiviCase UI. It provides a richer experience with more thoughtful layouts and interactions.",
+  "main": "index.js",
+  "directories": {
+    "doc": "docs",
+    "test": "tests"
+  },
+  "engines": {
+    "node": ">=10.15.3"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "postinstall": "cd bin && ./install-php-linter"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/compucorp/uk.co.compucorp.civicase.git"
+  },
+  "author": "Compucorp <info@compucorp.co.uk>",
+  "license": "GNU Affero Public License 3.0",
+  "bugs": {
+    "url": "https://github.com/compucorp/uk.co.compucorp.civicase/issues"
+  },
+  "homepage": "https://github.com/compucorp/uk.co.compucorp.civicase#readme",
+  "devDependencies": {
+    "civicrm-cv": "^0.1.2",
+    "civicrm-scssroot": "git://github.com/totten/civicrm-scssroot.git#v0.1.1",
+    "eslint": "^6.5.1",
+    "eslint-config-semistandard": "^15.0.0",
+    "eslint-config-standard": "^14.1.0",
+    "eslint-plugin-import": "^2.18.2",
+    "eslint-plugin-jsdoc": "^15.11.1",
+    "eslint-plugin-node": "^10.0.0",
+    "eslint-plugin-promise": "^4.2.1",
+    "eslint-plugin-standard": "^4.0.1",
+    "gulp": "^4.0.2",
+    "gulp-autoprefixer": "^7.0.1",
+    "gulp-clean-css": "^4.2.0",
+    "gulp-postcss": "^8.0.0",
+    "gulp-rename": "^1.4.0",
+    "gulp-sass": "^4.0.2",
+    "gulp-sass-glob": "^1.1.0",
+    "gulp-sourcemaps": "^2.6.5",
+    "gulp-strip-css-comments": "^2.0.0",
+    "gulp-transform-selectors": "0.0.2",
+    "husky": "^3.0.9",
+    "jasmine-core": "^3.5.0",
+    "karma": "^4.4.0",
+    "karma-chrome-launcher": "^3.1.0",
+    "karma-jasmine": "^2.0.1",
+    "karma-jasmine-diff": "^0.1.1",
+    "karma-ng-html2js-preprocessor": "^1.0.0",
+    "lint-staged": "^9.4.2",
+    "lodash": "^4.17.15",
+    "moment": "^2.24.0",
+    "postcss-discard-duplicates": "^4.0.2",
+    "postcss-prefix-selector": "^1.7.2",
+    "stylelint": "^11.1.1",
+    "stylelint-config-sass-guidelines": "^6.1.0"
+  }
+}

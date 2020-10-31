@@ -10,6 +10,13 @@ use CRM_Mosaico_ExtensionUtil as E;
  */
 class CRM_Mosaico_Utils {
 
+  /**
+   * Maximum image size, in total pixels, allowed for on-the-fly generation.
+   *
+   * @var int
+   */
+  const MAX_IMAGE_PIXELS = 36000000;
+
   public static function isBootstrap() {
     return strpos(CRM_Mosaico_Utils::getLayoutPath(), '/crmstar-') === FALSE;
   }
@@ -21,12 +28,12 @@ class CRM_Mosaico_Utils {
    *   Array (string $machineName => string $label).
    */
   public static function getLayoutOptions() {
-    return array(
+    return [
       'auto' => E::ts('Automatically select a layout'),
       'crmstar-single' => E::ts('Single Page (crm-*)'),
       'bootstrap-single' => E::ts('Single Page (Bootstrap CSS)'),
       'bootstrap-wizard' => E::ts('Wizard (Bootstrap CSS)'),
-    );
+    ];
   }
 
   /**
@@ -45,6 +52,36 @@ class CRM_Mosaico_Utils {
   }
 
   /**
+   * Get a list of image resize scale factors
+   *
+   * @return array
+   *   Array (int $machineName => string $label).
+   */
+  public static function getResizeScaleFactor() {
+    return [
+      '' => E::ts('None'),
+      3 => E::ts('3x'),
+      2 => E::ts('2x'),
+    ];
+  }
+
+  /**
+   * Get a list of image resize scale width limits
+   *
+   * @return array
+   *   Array (int $machineName => string $label).
+   */
+  public static function getResizeScaleWidthLimit() {
+    return [
+      ''   => E::ts('None'),
+      190  => E::ts('Upto 190 pixels (e.g 3 column blocks)'),
+      285  => E::ts('Upto 285 pixels (e.g 2 column blocks)'),
+      999  => E::ts('Upto 570 pixels (e.g 1 column blocks)'),
+      9999 => E::ts('All (other) sizes'),
+    ];
+  }
+
+  /**
    * Get the path to the Mosaico layout file.
    *
    * @return string
@@ -55,11 +92,11 @@ class CRM_Mosaico_Utils {
     $layout = CRM_Core_BAO_Setting::getItem('Mosaico Preferences', 'mosaico_layout');
     $prefix = '~/crmMosaico/EditMailingCtrl';
 
-    $paths = array(
+    $paths = [
       'crmstar-single' => "$prefix/crmstar-single.html",
       'bootstrap-single' => "$prefix/bootstrap-single.html",
       'bootstrap-wizard' => "$prefix/bootstrap-wizard.html",
-    );
+    ];
 
     if (empty($layout) || $layout === 'auto') {
       return CRM_Extension_System::singleton()->getMapper()->isActiveModule('shoreditch')
@@ -130,12 +167,12 @@ class CRM_Mosaico_Utils {
   }
 
   public static function getConfig() {
-    static $mConfig = array();
+    static $mConfig = [];
 
     if (empty($mConfig)) {
       $civiConfig = CRM_Core_Config::singleton();
 
-      $mConfig = array(
+      $mConfig = [
         /* base url for image folders */
         'BASE_URL' => $civiConfig->imageUploadURL,
 
@@ -165,7 +202,7 @@ class CRM_Mosaico_Utils {
         'THUMBNAIL_HEIGHT' => 90,
 
         'MOBILE_MIN_WIDTH' => 246,
-      );
+      ];
     }
 
     return $mConfig;
@@ -180,7 +217,7 @@ class CRM_Mosaico_Utils {
 
     global $http_return_code;
 
-    $messages = array();
+    $messages = [];
     _mosaico_civicrm_check_dirs($messages);
     if (!empty($messages)) {
       CRM_Core_Error::debug_log_message('Mosaico uploader failed. Check system status for directory errors.');
@@ -188,7 +225,7 @@ class CRM_Mosaico_Utils {
       return;
     }
 
-    $files = array();
+    $files = [];
 
     if ($_SERVER["REQUEST_METHOD"] == "GET") {
       $dir = scandir($config['BASE_DIR'] . $config['UPLOADS_DIR']);
@@ -199,11 +236,11 @@ class CRM_Mosaico_Utils {
         if (is_file($file_path)) {
           $size = filesize($file_path);
 
-          $file = array(
+          $file = [
             "name" => $file_name,
             "url" => $config['BASE_URL'] . $config['UPLOADS_DIR'] . $file_name,
             "size" => $size,
-          );
+          ];
 
           if (file_exists($config['BASE_DIR'] . $config['THUMBNAILS_DIR'] . $file_name)) {
             $file["thumbnailUrl"] = $config['BASE_URL'] . $config['THUMBNAILS_URL'] . $file_name;
@@ -228,21 +265,15 @@ class CRM_Mosaico_Utils {
           if (move_uploaded_file($tmp_name, $file_path) === TRUE) {
             $size = filesize($file_path);
 
-            $image = new Imagick($file_path);
+            $thumbnail_path = $config['BASE_DIR'] . $config[ 'THUMBNAILS_DIR' ] . $file_name;
+            Civi::service('mosaico_graphics')->createResizedImage($file_path, $thumbnail_path, $config['THUMBNAIL_WIDTH'], $config['THUMBNAIL_HEIGHT']);
 
-            $image->resizeImage($config['THUMBNAIL_WIDTH'], $config['THUMBNAIL_HEIGHT'], Imagick::FILTER_LANCZOS, 1.0, TRUE);
-            // $image->writeImage( $config['BASE_DIR'] . $config[ THUMBNAILS_DIR ] . $file_name );
-            if ($f = fopen($config['BASE_DIR'] . $config['THUMBNAILS_DIR'] . $file_name, "w")) {
-              $image->writeImageFile($f);
-            }
-            $image->destroy();
-
-            $file = array(
+            $file = [
               "name" => $file_name,
               "url" => $config['BASE_URL'] . $config['UPLOADS_DIR'] . $file_name,
               "size" => $size,
               "thumbnailUrl" => $config['BASE_URL'] . $config['THUMBNAILS_URL'] . $file_name,
-            );
+            ];
 
             $files[] = $file;
           }
@@ -261,7 +292,7 @@ class CRM_Mosaico_Utils {
     header("Content-Type: application/json; charset=utf-8");
     header("Connection: close");
 
-    echo json_encode(array("files" => $files));
+    echo json_encode(["files" => $files]);
     CRM_Utils_System::civiExit();
   }
 
@@ -281,8 +312,26 @@ class CRM_Mosaico_Utils {
       $width = (int) $params[0];
       $height = (int) $params[1];
 
+      // Apply a sensible maximum size for images in an email
+      if ($width * $height > self::MAX_IMAGE_PIXELS)  {
+        throw new \Exception("The requested image size is too large");
+      }
+
+      // Sometimes output buffer started by another module or plugin causes problem with
+      // image rendering. Let's clean any such buffers.
+      $levels = ob_get_level();
+      for ($i = 0; $i < $levels; $i++) {
+        ob_end_clean();
+      }
+
       switch ($method) {
         case 'placeholder':
+
+          // Only privileged users can request generation of placeholders
+          if (!CRM_Core_Permission::check([['access CiviMail', 'create mailings', 'edit message templates']])) {
+            CRM_Utils_System::permissionDenied();
+          }
+
           Civi::service('mosaico_graphics')->sendPlaceholder($width, $height);
           break;
 

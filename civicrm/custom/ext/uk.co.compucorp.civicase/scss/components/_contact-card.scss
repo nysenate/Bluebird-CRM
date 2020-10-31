@@ -1,0 +1,122 @@
+.civicase__contact-card {
+  color: $brand-primary;
+  display: flex;
+}
+
+.civicase__contact-name-container {
+  display: flex;
+}
+
+.civicase__contact-name,
+.civicase__contact-name-additional {
+  color: inherit;
+  margin-left: 5px;
+  max-width: 130px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.civicase__contact-icon,
+.civicase__contact-icon-additional {
+  color: $crm-grayblue-darker;
+  font-size: 18px;
+  margin-top: 2px;
+
+  &:hover,
+  &.civicase__contact-icon--highlighted {
+    color: $brand-primary;
+    cursor: pointer;
+  }
+
+  .material-icons {
+    line-height: inherit;
+  }
+}
+
+.civicase__contact-additional__container {
+  margin-left: 8px;
+}
+
+.civicase__contact-additional__container,
+.civicase__tooltip-popup-list--additional-contacts {
+  color: $brand-primary;
+  padding-left: 0 !important;
+  padding-right: 0 !important;
+
+  .civicase__contact-icon {
+    font-size: 18px;
+  }
+
+  .civicase__contact-name-additional {
+    color: $brand-primary;
+  }
+}
+
+.civicase__contact-additional__popover {
+  border: 1px solid $gray-light;
+  border-radius: 0;
+  box-shadow: $box-shadow-tooltip;
+  cursor: pointer;
+
+  a {
+    display: flex !important;
+    line-height: 22px;
+  }
+
+  .arrow {
+    border-bottom-color: $gray-light;
+  }
+
+  .popover-content {
+    padding: 0;
+  }
+}
+
+.civicase__contact-additional__list {
+  margin: 0;
+  padding: 0;
+
+  li {
+    height: 34px;
+    list-style: none;
+    padding: 7px 20px;
+
+    &:hover {
+      background: $gray-lighter;
+    }
+
+    .civicase__contact-icon {
+      vertical-align: middle;
+    }
+
+    a {
+      text-decoration: none;
+    }
+  }
+}
+
+.civicase__contact-avatar {
+  background: $contact-avatar-background;
+  min-width: 30px;
+  padding: 5px;
+}
+
+.civicase__contact-additional__container--avatar {
+  background: $contact-avatar-background;
+  margin-left: 0;
+  margin-top: -10px;
+  min-width: 30px;
+  padding: 5px;
+}
+
+.civicase__contact-avatar--image {
+  background: none;
+  padding: 0;
+
+  img {
+    border-radius: 2px;
+    height: 25px;
+    width: 25px;
+  }
+}

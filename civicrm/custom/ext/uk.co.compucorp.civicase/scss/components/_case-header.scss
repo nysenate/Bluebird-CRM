@@ -1,0 +1,151 @@
+.civicase__case-header {
+  background: $crm-white;
+  position: relative;
+}
+
+.civicase__case-header__expand_button {
+  background: none;
+  border-left: 1px solid $gray-light;
+  border-right: 1px solid $gray-light;
+  bottom: 0;
+  color: $crm-grayblue-darker;
+  font-size: 30px;
+  left: 0;
+  padding: 0;
+  position: absolute;
+  top: 0;
+  width: 56px;
+
+  >.material-icons {
+    vertical-align: middle;
+  }
+}
+
+.civicase__case-header__content {
+  border-top: 1px solid $crm-grayblue-dark;
+  padding: 15px 15px 15px 80px;
+
+  .civicase__contact-card--client {
+    color: $gray-darker;
+    font-size: 24px;
+    font-weight: $font-weight-heading;
+
+    .civicase__contact-icon {
+      font-size: 30px;
+    }
+
+    .material-icons {
+      line-height: 1;
+    }
+
+    .civicase__contact-additional__arrow {
+      top: -18px;
+    }
+  }
+
+  .civicase__contact-name {
+    margin-top: 1px;
+    max-width: 300px;
+  }
+
+  .civicase__contact-card--manager {
+    display: inline-block;
+    position: relative;
+    top: 4px;
+
+    .material-icons {
+      line-height: 1;
+    }
+  }
+
+  .civicase__tags-container {
+    margin-left: 5px;
+    position: relative;
+    top: -1px;
+  }
+}
+
+.civicase__case-header__content__first-row {
+  display: flex;
+  min-height: 42px;
+}
+
+.civicase__case-header__content__trash {
+  font-size: 30px;
+  margin-right: 5px;
+  position: relative;
+  top: 2px;
+  width: 20px;
+}
+
+.civicase__case-header__dates,
+.civicase__case-header__case-info {
+  color: $crm-gray-matte;
+}
+
+.civicase__case-header__case-info {
+  margin-top: 5px;
+}
+
+.civicase__case-header__case-id,
+.civicase__case-header__case-source,
+.civicase__case-header__case-type {
+  color: $gray-darker;
+}
+
+.civicase__case-header__case-type {
+  a {
+    display: inline;
+  }
+}
+
+.civicase__case-header__action-menu {
+  position: absolute;
+  right: 20px;
+  top: 20px;
+
+  .list-group-item-info {
+    color: $crm-gray-matte;
+    display: block;
+    padding: $crm-dropdown-item-padding;
+  }
+
+  /* Caseview menu dropdown */
+  /* stylelint-disable selector-max-compound-selectors, max-nesting-depth */
+  .dropdown-menu {
+    > li {
+      a {
+        max-width: 200px;
+        overflow: hidden;
+        position: relative;
+        text-overflow: ellipsis;
+      }
+
+      > .dropdown-menu.sub-menu {
+        left: -100%;
+        margin-top: -40px;
+        position: absolute;
+        width: 100%;
+      }
+
+      &:hover {
+        > .dropdown-menu.sub-menu {
+          display: block;
+          opacity: 1;
+          visibility: visible;
+        }
+      }
+    }
+  }
+
+}
+
+.civicase__case-header__action-icon {
+  font-size: 20px;
+  padding: 2px 10px;
+
+  .material-icons {
+    position: relative;
+    top: 3px;
+  }
+}

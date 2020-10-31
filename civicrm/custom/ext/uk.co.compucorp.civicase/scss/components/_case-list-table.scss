@@ -1,0 +1,261 @@
+.civicase__case-list-table-container {
+  border-left: 1px solid $gray-light;
+  margin-left: $case-card-width;
+  overflow-x: auto;
+  overflow-y: visible;
+}
+
+.civicase__case-list-table {
+  table-layout: inherit;
+
+  td:first-child,
+  th:first-child {
+    width: $case-card-width;
+  }
+
+  th {
+    line-height: 18px;
+    min-width: 142px;
+    padding: 22px 15px !important;
+  }
+
+  .civicase__bulkactions-checkbox {
+    top: 2px;
+  }
+
+  .civicase__bulkactions-actions-dropdown {
+    top: 2px;
+
+    .civicase__bulkactions-actions-dropdown__text {
+      width: 60px;
+    }
+  }
+
+  .civicase__case-list-column--first {
+    padding: 16px 14px !important;
+  }
+
+  th:first-child {
+    background: $gray-lighter;
+    left: 0;
+    position: absolute;
+    width: $case-card-width;
+  }
+
+  th:nth-child(2) {
+    max-width: 320px;
+    min-width: 320px;
+    position: relative;
+  }
+
+  tr {
+    height: 150px;
+  }
+
+  thead tr {
+    height: 63px;
+  }
+
+  td {
+    height: 150px;
+    min-width: 142px;
+    padding: 20px;
+
+    &:first-child {
+      background: $crm-white;
+      left: 0;
+      padding: 0;
+      position: absolute;
+      width: $case-card-width;
+      z-index: 1;
+    }
+
+    &:nth-child(2) {
+      vertical-align: middle;
+    }
+  }
+
+  .case-activity-card-wrapper {
+    max-width: 320px;
+    min-width: 320px;
+    position: relative;
+  }
+}
+
+
+.civicase__case-list-table__header {
+  &.affix {
+    display: block;
+    left: 0;
+    margin-left: $case-card-width;
+    overflow-x: hidden;
+    overflow-y: visible;
+    right: 0;
+    top: 60px;
+    z-index: 10;
+
+    tr {
+      display: table;
+      width: 100%;
+    }
+
+    th {
+      border-bottom: 1px solid $gray-light;
+      display: table-cell;
+    }
+
+    th:nth-child(1) {
+      left: 0;
+      position: fixed;
+    }
+  }
+}
+
+.civicase__case-list {
+  margin: 0;
+  overflow: hidden;
+  position: relative;
+
+  .civicase__bulkactions-message {
+    .alert {
+      border-bottom: 0;
+    }
+  }
+
+  .civicase__pager--fixed {
+    position: fixed;
+  }
+
+  .civicase__pager--viewing-case {
+    width: $case-card-width;
+
+    &.civicase__pager--fixed {
+      position: absolute;
+    }
+  }
+
+  .civicase__pager--case-focused {
+    display: none;
+  }
+}
+
+.civicase__case-list--summary {
+  > .civicase__pager {
+    bottom: 0;
+    height: 60px;
+    position: absolute;
+  }
+
+  .civicase__case-list-table-container {
+    overflow-x: hidden;
+  }
+}
+
+.civicase__case-list-panel {
+  border-top: 1px solid $crm-grayblue-dark;
+  box-shadow: none;
+  margin-bottom: 0;
+  overflow: auto;
+  padding: 0;
+  position: relative;
+  transition: width 0.3s linear;
+}
+
+.civicase__case-list-panel--summary {
+  border-top: 0;
+  bottom: 60px;
+  overflow-x: hidden;
+  position: absolute;
+  top: 65px;
+  width: $case-card-width;
+
+  thead {
+    display: none;
+  }
+
+  .civicase__case-list-column--first {
+    background: $crm-white !important;
+  }
+
+  .civicase__case-list-table {
+    td:first-child {
+      width: 100%;
+    }
+  }
+}
+
+.civicase__case-list-column--first--detached {
+  background: $crm-white;
+  border-bottom: 1px solid $crm-grayblue-dark;
+  border-top: 1px solid $crm-grayblue-dark;
+  height: 65px;
+  left: 0;
+  padding: 16px 14px;
+  position: absolute;
+  width: $case-card-width;
+}
+
+.civicase__case-list-panel--focused {
+  width: 0;
+
+  .civicase__pager {
+    display: none;
+  }
+}
+
+.civicase__case-details-panel {
+  box-shadow: none;
+  display: none;
+  float: right;
+  height: 0;
+  overflow: hidden;
+  transition: width 0.3s;
+  width: 0;
+
+  > .panel-body {
+    background: none;
+  }
+}
+
+.civicase__case-details-panel--summary {
+  display: block;
+  height: 100%;
+  overflow-y: auto;
+  width: calc(100% - #{$case-card-width});
+}
+
+.civicase__case-details-panel--focused {
+  width: 100%;
+}
+
+.civicase__case-list-sortable-header {
+  cursor: pointer;
+
+  &:hover {
+    background-color: $gray-light;
+  }
+
+  &.active {
+    background-color: $gray-light !important;
+  }
+}
+
+.civicase__case-list__toggle-sort {
+  color: $crm-gray-matte;
+  cursor: pointer;
+  font-size: 20px;
+  position: relative;
+  top: 7px;
+}
+
+.civicase__case-list__header-toggle-sort {
+  float: right;
+  position: relative;
+  top: 3px;
+}
+
+.civicase__case-sort-dropdown {
+  box-shadow: none;
+  display: inline-block;
+  width: 90px !important;
+}

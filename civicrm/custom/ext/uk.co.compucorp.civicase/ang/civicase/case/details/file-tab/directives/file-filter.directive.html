@@ -1,0 +1,44 @@
+<form class="form-inline civicase__file-filters-container">
+  <div class="civicase__file-filters">
+    <input
+      placeholder="{{ ts('Tagged') }}"
+      ng-list class="form-control"
+      ng-model="customFilters.tag_id"
+      crm-entityref="{
+        entity: 'Tag',
+        select: {multiple: true},
+        api: {params: {used_for: { LIKE: '%civicrm_activity%' }, is_tagset: 0}}
+      }"
+    />
+  </div>
+  <div class="civicase__file-filters input-group">
+    <input
+      type="search" class="form-control"
+      placeholder="{{ ts('Contains text') }}"
+      ng-model="fileFilter.params.text"/>
+    <span class="input-group-addon">
+      <i class="material-icons">search</i>
+    </span>
+  </div>
+  <div class="civicase__file-filters input-group">
+    <input
+      class="form-control"
+      crm-ui-select="{
+        allowClear: true,
+        multiple: false,
+        placeholder: ts('File Types...'),
+        data: fileCategoriesIT
+      }"
+      ng-model="fileFilter.params.mime_type_cat"/>
+  </div>
+  <div class="civicase__file-filters input-group">
+    <select class="form-control" ng-model="customFilters.grouping" crm-ui-select>
+      <option value="">{{ ts('All Activity Categories') }}</option>
+      <option
+        ng-repeat="(value, item) in ::activityCategories"
+        value="{{ value }}" data-icon="{{ item.icon }}">
+        {{ item.label }}
+      </option>
+    </select>
+  </div>
+</form>

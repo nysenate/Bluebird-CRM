@@ -1,0 +1,42 @@
+.civicase__case-body {
+  padding: 0;
+
+  .tab-content {
+    background: transparent;
+    position: relative;
+    z-index: 0; // fixes the stacking context of this element and its children.
+  }
+}
+
+.civicase__case-body_tab {
+  position: relative;
+  z-index: 1;
+
+  &.affix {
+    position: fixed;
+    top: 0;
+    z-index: 11;
+
+    + .tab-content {
+      padding-top: 50px;
+    }
+  }
+
+  > [civicase-dropdown] {
+    opacity: 1;
+  }
+}
+
+.civicase__case-details-panel--summary {
+  .civicase__case-body_tab.affix,
+  .civicase__activity-filter.affix {
+    width: calc(100% - #{$case-card-width});
+  }
+}
+
+.civicase__case-details-panel--focused {
+  .civicase__case-body_tab.affix,
+  .civicase__activity-filter.affix {
+    width: 100%;
+  }
+}

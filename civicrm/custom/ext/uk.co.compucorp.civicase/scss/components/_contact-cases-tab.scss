@@ -1,0 +1,168 @@
+.civicase__contact-cases-tab {
+  margin-left: -5px;
+}
+
+.civicase__contact-cases-tab-container {
+  padding-left: 15px;
+  padding-right: 15px;
+
+  .civicase__panel-transparent-header {
+    >.panel-heading .panel-title { /* stylelint-disable selector-max-compound-selectors */
+      font-size: $font-size-h2;
+      margin: 0;
+      padding: 15px 0;
+    }
+
+    > .panel-body {
+      background: transparent;
+      box-shadow: none;
+      padding: 0;
+    }
+  }
+}
+
+.civicase__contact-case-tab__case-list__footer {
+  margin-top: 24px;
+
+  .btn {
+    box-shadow: $box-shadow-block;
+  }
+}
+
+.civicase__contact-cases-tab-empty {
+  align-items: center;
+  display: flex;
+  flex-direction: column;
+  padding: 50px 0;
+
+  a {
+    color: $gray-dark;
+  }
+}
+
+.civicase__contact-cases-tab-add {
+  background: $gray-dark;
+  margin-bottom: 10px;
+
+  .material-icons {
+    margin-right: 5px;
+    position: relative;
+    top: 2px;
+  }
+}
+
+.civicase__contact-cases-tab-details {
+  $panel-header-top-margin: calc((#{$headings-line-height} * #{$font-size-h2}) + 2 * 15px);
+
+  box-shadow: $box-shadow-block;
+  margin-top: #{$panel-header-top-margin};
+
+  > .panel-body {
+    padding: 0;
+  }
+
+  .btn-group {
+    margin-right: 5px;
+
+    &:last-child {
+      margin-right: 0;
+    }
+  }
+
+  .civicase__activity-card {
+    width: 100%;
+  }
+
+  .civicase__summary-tab__subject {
+    margin-bottom: 3px;
+    margin-left: -2px;
+    margin-top: 5px;
+  }
+
+  .civicase__summary-tab__description {
+    margin-bottom: 5px;
+  }
+
+  .civicase__contact-card--client,
+  .civicase__contact-card--manager {
+    .material-icons {
+      line-height: 1;
+    }
+  }
+
+  .civicase__contact-card--manager {
+    position: relative;
+    top: 2px;
+  }
+
+  .list-group-item-info {
+    color: $crm-gray-matte;
+    display: block;
+    padding: $crm-dropdown-item-padding;
+  }
+}
+
+.civicase__contact-cases-tab-details__title {
+  margin: 6.5px 0;
+}
+
+.civicase__contact-cases-tab__panel-row {
+  border-bottom: 1px solid $gray-light;
+  padding: 15px 24px;
+
+  &:last-child {
+    border-bottom: 0;
+  }
+
+  .civicase__summary-tab__subject {
+    textarea {
+      min-height: 65px;
+    }
+  }
+
+  .civicase__summary-tab__description {
+    textarea {
+      min-height: 85px;
+    }
+  }
+}
+
+.civicase__contact-cases-tab__panel-actions {
+  padding: 20px;
+}
+
+.civicase__contact-cases-tab__panel-row--dark {
+  background-color: $gray-lighter;
+
+  .civicase__pipe {
+    color: $gray-light;
+    margin: 0 8px;
+  }
+}
+
+.civicase__contact-cases-tab__panel-fields {
+  padding-bottom: 15px;
+}
+
+.civicase__contact-cases-tab__panel-fields--inline {
+  align-items: center;
+  display: flex;
+}
+
+.civicase__contact-cases-tab__panel-field-emphasis {
+  color: $crm-gray-matte;
+}
+
+.civicase__contact-cases-tab__panel-field-title {
+  color: $crm-gray-matte;
+  margin-bottom: 5px;
+}
+
+.___outside-namespace {
+  .crm-contact-page {
+    #ui-id-5 { /* stylelint-disable selector-max-id */
+      padding: 30px;
+      width: calc(100% - 200px);
+    }
+  }
+}

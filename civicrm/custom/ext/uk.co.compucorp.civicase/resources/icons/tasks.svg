@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="48px" height="44px" viewBox="0 0 48 44" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+    <!-- Generator: Sketch 51.1 (57501) - http://www.bohemiancoding.com/sketch -->
+    <title>tasks</title>
+    <desc>Created with Sketch.</desc>
+    <defs></defs>
+    <g id="Find-Cases" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
+        <g id="Caselist---Individual-Case---Summary---empty-state" transform="translate(-1315.000000, -1016.000000)">
+            <g id="tasks" transform="translate(1315.000000, 1016.000000)">
+                <g id="Group-13">
+                    <rect id="Rectangle" fill="#BAD2DF" x="0" y="0" width="48" height="20" rx="2"></rect>
+                    <rect id="Rectangle-2" fill="#E8EEF0" x="20" y="4" width="24" height="5"></rect>
+                    <rect id="Rectangle-2-Copy" fill="#E8EEF0" x="20" y="11" width="16" height="5"></rect>
+                    <g id="Group-16" transform="translate(4.000000, 4.000000)">
+                        <rect id="Checkbox-Base" fill="#FFFFFF" x="0" y="0" width="12" height="12" rx="1"></rect>
+                        <path d="M9.85548387,4.32828283 C9.95182844,4.42255939 10,4.53703636 10,4.67171717 C10,4.80639798 9.95182844,4.92087495 9.85548387,5.01515152 L5.41677419,9.35858586 C5.32042963,9.45286242 5.20344155,9.5 5.06580645,9.5 C4.92817135,9.5 4.81118328,9.45286242 4.71483871,9.35858586 L2.14451613,6.84343434 C2.04817156,6.74915778 2,6.63468081 2,6.5 C2,6.36531919 2.04817156,6.25084222 2.14451613,6.15656566 L2.84645161,5.46969697 C2.94279618,5.3754204 3.05978426,5.32828283 3.19741935,5.32828283 C3.33505445,5.32828283 3.45204253,5.3754204 3.5483871,5.46969697 L5.06580645,6.95959596 L8.4516129,3.64141414 C8.54795747,3.54713758 8.66494555,3.5 8.80258065,3.5 C8.94021574,3.5 9.05720382,3.54713758 9.15354839,3.64141414 L9.85548387,4.32828283 Z" id="" fill="#BAD2DF"></path>
+                    </g>
+                </g>
+                <g id="Group-13-Copy" transform="translate(0.000000, 24.000000)">
+                    <rect id="Rectangle" fill="#BAD2DF" x="0" y="0" width="48" height="20" rx="2"></rect>
+                    <rect id="Rectangle-2" fill="#E8EEF0" x="20" y="4" width="24" height="5"></rect>
+                    <rect id="Rectangle-2-Copy" fill="#E8EEF0" x="20" y="11" width="16" height="5"></rect>
+                    <g id="Group-16" transform="translate(4.000000, 4.000000)" fill="#E8EEF0">
+                        <rect id="Checkbox-Base" x="0" y="0" width="12" height="12" rx="1"></rect>
+                    </g>
+                </g>
+            </g>
+        </g>
+    </g>
+</svg>
