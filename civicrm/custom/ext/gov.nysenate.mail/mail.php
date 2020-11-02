@@ -190,6 +190,11 @@ function mail_civicrm_mosaicoStyles(&$styles) {
   $styles[] = $extUrl.'css/Mosaico.css';
 }
 
+function mail_civicrm_mosaicoConfig(&$config) {
+  //13618
+  $config['tinymceConfigFull']['browser_spellcheck'] = TRUE;
+}
+
 function mail_civicrm_pageRun(&$page) {
   /*Civi::log()->debug(__FUNCTION__, [
     'page' => $page,
