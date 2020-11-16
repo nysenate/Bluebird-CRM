@@ -24,6 +24,10 @@
 
       var plugins = [];
       var config = {/literal}{$mosaicoConfig}{literal};
+      //NYSS 13567
+      if (config.fileuploadConfig.acceptFileTypes) {
+        config.fileuploadConfig.acceptFileTypes = /(\.|\/)(|gif|p?jpe?g|png|x-png)$/i;
+      }
       if (window.top.crmMosaicoIframe) {
         window.top.crmMosaicoIframe(window, Mosaico, config, plugins);
       }
