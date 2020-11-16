@@ -94,14 +94,15 @@ CRM.$(function($) {
             var stepNumber = $(this).text();
             //console.log('stepNumber: ', stepNumber);
 
-            if (stepNumber == 2) {
-              var stepText = $(this).closest('a')[0];
+            var stepText = $(this).closest('a')[0];
+            //console.log('text: ', stepText.lastChild.nodeValue.trim());
+
+            if (stepText.lastChild.nodeValue.trim() === 'Design') {
               //console.log('stepText: ', stepText);
               stepText.lastChild.nodeValue = 'Create';
 
             }
-            else if (stepNumber == 3) {
-              var stepText = $(this).closest('a')[0];
+            else if (stepText.lastChild.nodeValue.trim() === 'Options') {
               //console.log('stepText: ', stepText);
               stepText.lastChild.nodeValue = 'Schedule';
             }
