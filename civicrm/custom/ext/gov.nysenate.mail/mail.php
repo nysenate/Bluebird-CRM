@@ -205,6 +205,17 @@ function mail_civicrm_pageRun(&$page) {
   if (is_a($page, 'Civi\Angular\Page\Main')) {
     CRM_Core_Resources::singleton()->addStyleFile('gov.nysenate.mail', 'css/mail.css');
     CRM_Core_Resources::singleton()->addScriptFile('gov.nysenate.mail', 'js/mail.js');
+
+    //13627 - if only a scheduler, jump to schedule tab
+    $schedulerOnly = FALSE;
+    if (CRM_Core_Permission::check('schedule mailings') &&
+      !CRM_Core_Permission::check('create mailings') &&
+      !CRM_Core_Permission::check('approve mailings') &&
+      !CRM_Core_Permission::check('access CiviMail')
+    ) {
+      $schedulerOnly = TRUE;
+    }
+    CRM_Core_Resources::singleton()->addVars('NYSS', ['schedulerOnly' => $schedulerOnly]);
   }
 
   //expose url/open tracking to mailing report
