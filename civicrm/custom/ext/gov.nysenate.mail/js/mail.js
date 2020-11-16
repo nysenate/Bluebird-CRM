@@ -111,6 +111,16 @@ CRM.$(function($) {
           clearInterval(checkWizardNumber);
         }
       }, 100);
+
+      if (CRM.vars.NYSS.schedulerOnly) {
+        var checkSchedulerJump = setInterval(function () {
+          if ($('button.btn-primary[title="Next step"]').length) {
+            //console.log('$(button.btn-primary): ', $('button.btn-primary'));
+            $('button.btn-primary[title="Next step"]').trigger('click');
+            clearInterval(checkSchedulerJump);
+          }
+        }, 100);
+      }
     }
   });
 });
