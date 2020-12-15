@@ -36,6 +36,9 @@ class CRM_Report_Form_Activity extends CRM_Report_Form {
    */
   protected $groupFilterNotOptimised = TRUE;
 
+  //NYSS - 13624 - appears to be fixed upstream at which point this should be removed
+  public $optimisedForOnlyFullGroupBy = FALSE;
+
   /**
    * Class constructor.
    */

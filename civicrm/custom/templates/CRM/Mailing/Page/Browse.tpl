@@ -51,8 +51,14 @@
       {*NYSS 10955/CRM-20781 truncate some fields if too long*}
       {counter start=0 skip=1 print=false}
       {foreach from=$rows item=row}
+        {*NYSS 13637*}
+        {crmAPI var='template_type' entity='Mailing' action='getvalue' sequential=0 return="template_type" id=$row.id}
+
       <tr id="crm-mailing_{$row.id}" class="{cycle values="odd-row,even-row"} crm-mailing crm-mailing_status-{$row.status}">
-        <td class="crm-mailing-name">{$row.name|replace:'_':' '}</td>
+        <td class="crm-mailing-name">{$row.name|replace:'_':' '}
+          {*NYSS 13637*}
+          {if $template_type eq 'mosaico'} <i class="crm-i fa-paper-plane" title="Modern Email Builder"></i>{/if}
+        </td>
         {if $multilingual}
           <td class="crm-mailing-language">{$row.language}</td>
         {/if}
