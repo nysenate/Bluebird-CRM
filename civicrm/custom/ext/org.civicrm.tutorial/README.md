@@ -2,17 +2,18 @@
 
 Create and display walkthrough tutorials for CiviCRM screens.
 
-[Contribute the Make-It-Happen Campaign](https://civicrm.org/make-it-happen/civitutorial) to support development of a full-featured release.
-
 ![Screenshot](/images/view-tour.gif)
+
+View the latest version of this extension on CiviCRM's Gitlab:  
+https://lab.civicrm.org/extensions/tutorial
 
 ## Requirements
 
-* CiviCRM 4.7+
+* CiviCRM 5.12 or (preferably) later
 
 ## Usage
 
-Once installed, visit the contact summary screen to view the default tutorial. It will be displayed to each user once.
+Once installed, visit the CiviCRM Dashboard screen to view the default tutorial. Select *Support* from the top menu bar, then *Welcome to CiviCRM*. It will be displayed to each user once.
 
 If you are an administrator, this extension will let you edit the default tutorial on the contact summary screen, or create new tutorials for other screens. Visit the *Support* menu to get started.
 
@@ -29,8 +30,6 @@ You can easily package tutorials in an extension for any core or custom page. Fo
 4. Commit the file to git and you're done! People will see the tutorial when they use your extension, and translators can localize it the same way they translate other strings in your extension.
 
 ## To do:
-
-[Support the Make-It-Happen Campaign](https://civicrm.org/make-it-happen/civitutorial) to help this extension be feature-complete.
 
 * ~~Support more than one tutorial per screen.~~
 * ~~Support angular pages.~~

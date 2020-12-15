@@ -2,7 +2,7 @@
   CRM.vars.tutorial = CRM.vars.tutorial || {};
   CRM.vars.tutorial.items = CRM.vars.tutorial.items || {};
   CRM.vars.tutorial.menuItems = [];
-  
+
   var route, poll, supportMenuName,
     tutorials = CRM.vars.tutorial.items;
 
@@ -18,6 +18,19 @@
       });
     }
   });
+
+  // Copied from hopscotch:getStepTargetHelper
+  function getTarget(target) {
+    var parts = target.split(' '),
+      context = document;
+    // Get element from within iframe
+    if ($(parts[0]).is('iframe')) {
+      context = $(parts[0]).contents();
+      target = parts.slice(1).join(' ');
+    }
+    var result = jQuery(target, context);
+    return result.length ? result[0] : null;
+  }
 
   function loadTutorials() {
     var autoStartTutorial,
@@ -37,13 +50,26 @@
       clearInterval(poll);
       poll = null;
     }
+
+    function compare(tutorialUrl) {
+      var tutorialRoute = tutorialUrl.split('#')[1] || '';
+      if (tutorialRoute === hash || !tutorialRoute) {
+        return tutorialRoute === hash;
+      }
+      tutorialRoute = _.trim(tutorialRoute, '/!');
+      var existingRoute = _.trim(hash, '/!'),
+        search = _.escapeRegExp(tutorialRoute).replace(/\\\*/g, '.*'),
+        searchExp = new RegExp(search);
+      return searchExp.test(existingRoute);
+    }
+
     _.each(CRM.vars.tutorial.menuItems, function(item) {
       CRM.menubar.removeItem('tutorial_view:' + item);
       CRM.menubar.removeItem('tutorial_edit:' + item);
     });
     CRM.vars.tutorial.menuItems = [];
     _.each(tutorials, function(tutorial, id) {
-      if ((tutorial.url.split('#')[1] || '') === hash) {
+      if (compare(tutorial.url)) {
         CRM.vars.tutorial.menuItems.push(id);
         viewMenuItems.push({
           label: tutorial.title,
@@ -72,7 +98,7 @@
     // Poll the dom at intervals to see if the element of the first step is present
     if (autoStartTutorial) {
       poll = setInterval(function() {
-        if ($(autoStartTutorial.steps[0].target).length) {
+        if (getTarget(autoStartTutorial.steps[0].target)) {
           startTutorial(autoStartTutorial.id);
           clearInterval(poll);
           poll = null;
