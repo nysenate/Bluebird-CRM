@@ -92,7 +92,7 @@
     setSaved(false);
     refreshAccordions();
   }
-
+  
   function refreshAccordions(activeIndex) {
     $('#civitutorial-steps').accordion('refresh').find('h5').off('keydown');
     if (typeof activeIndex === 'number') {
@@ -113,9 +113,6 @@
     });
     if (hash && hash.indexOf('?') > -1) {
       hash = hash.split('?')[0];
-    }
-    if (hash) {
-      hash = hash.replace(/\/[0-9]+/g, '/*');
     }
     return path + query + hash;
   }
@@ -247,16 +244,8 @@
   function onTargetClick(e) {
     doneSelecting();
     if ($(e.target).closest('#civitutorial-admin').length < 1) {
-      var element = $(document.elementFromPoint(e.clientX, e.clientY)),
-        container = '';
-      if (element.is('iframe')) {
-        container = 'iframe' + (element.attr('id') ? '#' + element.attr('id') : '') + ' ';
-        var offset = element.offset();
-        element = $(element[0].contentWindow.document.elementFromPoint(e.clientX - offset.left, e.clientY - offset.top));
-      }
-      var target = pickBestTarget(element);
       e.preventDefault();
-      $('.civitutorial-step-content').eq(currentStep).find('[name=target]').val(container + target).change();
+      pickBestTarget($(document.elementFromPoint(e.clientX, e.clientY)));
     }
   }
 
@@ -273,27 +262,26 @@
 
   function pickBestTarget($target, child) {
     var id, selector,
+      targetField = $('.civitutorial-step-content').eq(currentStep).find('[name=target]'),
       select2 = $target.closest('.select2-container'),
       classes = getSelectorClass($target),
       name = $target.attr('name');
     child = child || '';
-    if ($target.is('#civicrm-menu *')) {
-      return '#civicrm-menu li[data-name="' + $target.closest('li[data-name]').data('name') + '"]';
-    } else if (select2.length) {
-      return pickBestTarget(select2.parent(), ' .select2-container');
+    if (select2.length) {
+      pickBestTarget(select2.parent(), ' .select2-container');
     } else if ($target.is('[id] > a')) {
-      return pickBestTarget($target.parent());
+      pickBestTarget($target.parent());
     } else if ($target.attr('id')) {
-      return '#' + $target.attr('id') + child;
+      targetField.val('#' + $target.attr('id') + child).change();
     } else if ((name || classes) && !$target.is('span, strong, i, b, em, p, hr')) {
       id = $target.closest('[id]').attr('id');
       selector = (id ? '#' + id + ' ' : '') + (name ? "[name='" + name + "']" : classes);
       if ($(selector).index($target) > 0) {
         selector += ':eq(' + $(selector).index($target) + ')';
       }
-      return selector + child;
+      targetField.val(selector + child).change();
     } else {
-      return pickBestTarget($target.parent());
+      pickBestTarget($target.parent());
     }
   }
 

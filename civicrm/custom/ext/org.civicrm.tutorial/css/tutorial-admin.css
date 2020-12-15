@@ -173,5 +173,7 @@ body.civitutorial-select-target #civitutorial-overlay {
   background-color: rgba(0, 0, 255, .05);
   z-index: 99999999999;
   box-sizing: border-box;
+}
+body.civitutorial-select-target * {
   cursor: crosshair !important;
 }
