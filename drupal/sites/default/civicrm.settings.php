@@ -300,6 +300,8 @@ $prefsMosaico['mosaico_scale_factor1'] = 3;
 $prefsMosaico['mosaico_scale_width_limit1'] = 285;
 $prefsMosaico['mosaico_scale_factor2'] = 2;
 $prefsMosaico['mosaico_scale_width_limit2'] = 9999;
+$prefsMosaico['mosaico_plugins'] = 'link hr paste lists textcolor code civicrmtoken charmap';
+$prefsMosaico['mosaico_toolbar'] = 'bold italic forecolor backcolor hr bullist numlist charmap styleselect removeformat | civicrmtoken | link unlink | pastetext code';
 
 if (isset($bbcfg['xhprof.profile']) && $bbcfg['xhprof.profile']) {
   function xhprof_shutdown_func($source, $run_id = null) {
