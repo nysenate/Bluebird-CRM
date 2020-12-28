@@ -2,34 +2,38 @@
 
 namespace Civi\Api4;
 
-use Civi\Api4\Action\ContactLayout\Replace;
-use Civi\Api4\Generic\BasicGetAction;
-
 /**
  * ContactLayout entity - visual layouts for the contact summary screen.
  *
+ * @see https://civicrm.org/extensions/contact-layout-editor
  */
 class ContactLayout extends Generic\DAOEntity {
 
   /**
-   * @return \Civi\Api4\Generic\BasicGetAction
+   * @param bool $checkPermissions
+   * @return Action\ContactLayout\GetBlocks
    */
-  public static function getBlocks() {
-    return new BasicGetAction(__CLASS__, __FUNCTION__, ['CRM_Contactlayout_BAO_ContactLayout', 'getAllBlocks']);
+  public static function getBlocks($checkPermissions = TRUE) {
+    return (new Action\ContactLayout\GetBlocks(__CLASS__, __FUNCTION__, ['CRM_Contactlayout_BAO_ContactLayout', 'getAllBlocks']))
+      ->setCheckPermissions($checkPermissions);
   }
 
   /**
-   * @return \Civi\Api4\Generic\BasicGetAction
+   * @param bool $checkPermissions
+   * @return Action\ContactLayout\GetTabs
    */
-  public static function getTabs() {
-    return new BasicGetAction(__CLASS__, __FUNCTION__, ['CRM_Contactlayout_BAO_ContactLayout', 'getAllTabs']);
+  public static function getTabs($checkPermissions = TRUE) {
+    return (new Action\ContactLayout\GetTabs(__CLASS__, __FUNCTION__, ['CRM_Contactlayout_BAO_ContactLayout', 'getAllTabs']))
+      ->setCheckPermissions($checkPermissions);
   }
 
   /**
-   * @return \Civi\Api4\Action\ContactLayout\Replace
+   * @param bool $checkPermissions
+   * @return Action\ContactLayout\Replace
    */
-  public static function replace() {
-    return new Replace(__CLASS__, __FUNCTION__);
+  public static function replace($checkPermissions = TRUE) {
+    return (new Action\ContactLayout\Replace(__CLASS__, __FUNCTION__))
+      ->setCheckPermissions($checkPermissions);
   }
 
   public static function permissions() {

@@ -31,7 +31,7 @@ class CRM_Contactlayout_Upgrader extends CRM_Contactlayout_Upgrader_Base {
         ->addValue('label', E::ts('Contact Summary Layouts'))
         ->addValue('name', 'contact_summary_editor')
         ->addValue('permission', 'administer CiviCRM')
-        ->addValue('url', 'civicrm/a/#/contact-summary-editor')
+        ->addValue('url', 'civicrm/admin/contactlayout')
         ->addValue('parent_id', $parent['id'])
         ->execute();
     }
@@ -99,6 +99,17 @@ class CRM_Contactlayout_Upgrader extends CRM_Contactlayout_Upgrader_Base {
     return TRUE;
   }
 
+  /**
+   * Point menu items to standalone base page.
+   *
+   * @return TRUE on success
+   * @throws Exception
+   */
+  public function upgrade_1002() {
+    $this->ctx->log->info('Applying update 1002 - Point menu items to standalone base page.');
+    CRM_Core_DAO::executeQuery("UPDATE `civicrm_navigation` SET url = 'civicrm/admin/contactlayout' WHERE url LIKE '%contact-summary-editor'");
+    return TRUE;
+  }
 
   /**
    * Example: Run an external SQL script.
