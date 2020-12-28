@@ -516,7 +516,7 @@ HERESQL;
     }
 
     $type = CRM_Utils_Array::value('type', $params, 'upcoming');
-    $userID = CRM_Core_Session::singleton()->get('userID');
+    $userID = CRM_Core_Session::getLoggedInContactID();
 
     // validate access for all cases.
     if ($allCases && !CRM_Core_Permission::check('access all cases and activities')) {
@@ -637,7 +637,7 @@ HERESQL;
           }
         }
         if (isset($case['activity_type_id']) && self::checkPermission($actId, 'edit', $case['activity_type_id'], $userID)) {
-          $casesList[$key]['date'] .= sprintf('<a class="action-item crm-hover-button" href="%s" title="%s"><i class="crm-i fa-pencil"></i></a>',
+          $casesList[$key]['date'] .= sprintf('<a class="action-item crm-hover-button" href="%s" title="%s"><i class="crm-i fa-pencil" aria-hidden="true"></i></a>',
             CRM_Utils_System::url('civicrm/case/activity', ['reset' => 1, 'cid' => $case['contact_id'], 'caseid' => $case['case_id'], 'action' => 'update', 'id' => $actId]),
             ts('Edit activity')
           );
@@ -676,7 +676,7 @@ HERESQL;
       return $caseSummary;
     }
 
-    $userID = CRM_Core_Session::singleton()->get('userID');
+    $userID = CRM_Core_Session::getLoggedInContactID();
 
     //validate access for all cases.
     if ($allCases && !CRM_Core_Permission::check('access all cases and activities')) {
@@ -1154,6 +1154,7 @@ SELECT civicrm_case.id, case_status.label AS case_status, status_id, civicrm_cas
     }
 
     $values = [];
+    $caseClientCondition = !empty($caseInfo['client_id']) ? "AND cc.id NOT IN (%2)" : '';
     $query = <<<HERESQL
     SELECT cc.display_name as name, cc.sort_name as sort_name, cc.id, cr.relationship_type_id, crt.label_b_a as role, crt.name_b_a as role_name, crt.name_a_b as role_name_reverse, ce.email, cp.phone
     FROM civicrm_relationship cr
@@ -1170,7 +1171,7 @@ SELECT civicrm_case.id, case_status.label AS case_status, status_id, civicrm_cas
      AND cp.is_primary= 1
     WHERE cr.case_id =  %1
      AND cr.is_active
-     AND cc.id NOT IN (%2)
+     {$caseClientCondition}
     UNION
     SELECT cc.display_name as name, cc.sort_name as sort_name, cc.id, cr.relationship_type_id, crt.label_a_b as role, crt.name_a_b as role_name, crt.name_b_a as role_name_reverse, ce.email, cp.phone
     FROM civicrm_relationship cr
@@ -1187,12 +1188,16 @@ SELECT civicrm_case.id, case_status.label AS case_status, status_id, civicrm_cas
      AND cp.is_primary= 1
     WHERE cr.case_id =  %1
      AND cr.is_active
-     AND cc.id NOT IN (%2)
+     {$caseClientCondition}
 HERESQL;
+
     $params = [
       1 => [$caseID, 'Integer'],
-      2 => [implode(',', $caseInfo['client_id']), 'String'],
     ];
+
+    if ($caseClientCondition) {
+      $params[2] = [implode(',', $caseInfo['client_id']), 'CommaSeparatedIntegers'];
+    }
     $dao = CRM_Core_DAO::executeQuery($query, $params);
 
     while ($dao->fetch()) {
@@ -1277,9 +1282,9 @@ HERESQL;
         break;
       }
     }
-    $session = CRM_Core_Session::singleton();
+
     // CRM-8926 If user is not logged in, use the activity creator as userID
-    if (!($userID = $session->get('userID'))) {
+    if (!($userID = CRM_Core_Session::getLoggedInContactID())) {
       $userID = CRM_Activity_BAO_Activity::getSourceContactID($activityId);
     }
 
@@ -1411,8 +1416,7 @@ HERESQL;
    *
    */
   public static function getNextScheduledActivity($cases, $type = 'upcoming') {
-    $session = CRM_Core_Session::singleton();
-    $userID = $session->get('userID');
+    $userID = CRM_Core_Session::getLoggedInContactID();
 
     $caseID = implode(',', $cases['case_id']);
     $contactID = implode(',', $cases['contact_id']);
@@ -1899,6 +1903,7 @@ HERESQL;
         'case_id' => $dao->id,
         'case_type' => $dao->case_type,
         'client_name' => $clientView,
+        'status_id' => $dao->status_id,
         'case_status' => $statuses[$dao->status_id],
         'links' => $caseView,
       ];
@@ -2078,7 +2083,7 @@ SELECT  id
         CRM_Core_DAO::storeValues($otherActivity, $mainActVals);
         $mainActivity->copyValues($mainActVals);
         $mainActivity->id = NULL;
-        $mainActivity->activity_date_time = CRM_Utils_Date::isoToMysql($otherActivity->activity_date_time);
+        $mainActivity->activity_date_time = $otherActivity->activity_date_time;
         $mainActivity->source_record_id = CRM_Utils_Array::value($mainActivity->source_record_id,
           $activityMappingIds
         );

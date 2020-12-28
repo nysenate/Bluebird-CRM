@@ -13,8 +13,6 @@
  *
  * @package CRM
  * @copyright CiviCRM LLC https://civicrm.org/licensing
- * $Id$
- *
  */
 
 require_once 'CRM/Utils/DeprecatedUtils.php';
@@ -512,25 +510,8 @@ class CRM_Event_Import_Parser_Participant extends CRM_Event_Import_Parser {
       if ($customFieldID = CRM_Core_BAO_CustomField::getKeyID($key)) {
         $values[$key] = $value;
         $type = $customFields[$customFieldID]['html_type'];
-        if ($type == 'CheckBox' || $type == 'Multi-Select') {
-          $mulValues = explode(',', $value);
-          $customOption = CRM_Core_BAO_CustomOption::getCustomOption($customFieldID, TRUE);
-          $values[$key] = [];
-          foreach ($mulValues as $v1) {
-            foreach ($customOption as $customValueID => $customLabel) {
-              $customValue = $customLabel['value'];
-              if ((strtolower(trim($customLabel['label'])) == strtolower(trim($v1))) ||
-                (strtolower(trim($customValue)) == strtolower(trim($v1)))
-              ) {
-                if ($type == 'CheckBox') {
-                  $values[$key][$customValue] = 1;
-                }
-                else {
-                  $values[$key][] = $customValue;
-                }
-              }
-            }
-          }
+        if (CRM_Core_BAO_CustomField::isSerialized($customFields[$customFieldID])) {
+          $values[$key] = self::unserializeCustomValue($customFieldID, $value, $type);
         }
         elseif ($type == 'Select' || $type == 'Radio') {
           $customOption = CRM_Core_BAO_CustomOption::getCustomOption($customFieldID, TRUE);

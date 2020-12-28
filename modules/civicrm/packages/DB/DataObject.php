@@ -2758,7 +2758,7 @@ class DB_DataObject extends DB_DataObject_Overload
         $action = strtolower(substr(trim($queryString),0,6));
         // CRM-20445 ends
 
-        if (!empty($_DB_DATAOBJECT['CONFIG']['debug']) || defined('CIVICRM_DEBUG_LOG_QUERY')) {
+        if (!empty($_DB_DATAOBJECT['CONFIG']['debug']) || (defined('CIVICRM_DEBUG_LOG_QUERY') && CIVICRM_DEBUG_LOG_QUERY)) {
           $timeTaken = sprintf("%0.6f", microtime(TRUE) - $time);
           $alertLevel = $this->getAlertLevel($timeTaken);
           $message = "$alertLevel QUERY DONE IN $timeTaken  seconds.";
@@ -2774,8 +2774,8 @@ class DB_DataObject extends DB_DataObject_Overload
           else {
             echo $message .= " not quite sure why this query does not have more info";
           }
-          if (defined('CIVICRM_DEBUG_LOG_QUERY')) {
-            CRM_Core_Error::debug_log_message($message, FALSE, 'sql_log');
+          if ((defined('CIVICRM_DEBUG_LOG_QUERY') && CIVICRM_DEBUG_LOG_QUERY)) {
+            CRM_Core_Error::debug_log_message($message, FALSE, 'sql_log' . CIVICRM_DEBUG_LOG_QUERY);
           }
           else {
             $this->debug($message, 'query', 1);

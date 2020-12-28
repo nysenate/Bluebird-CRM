@@ -14,12 +14,12 @@
  *
  * @package CRM
  * @copyright CiviCRM LLC https://civicrm.org/licensing
- * $Id$
- *
  */
 
 
 namespace Civi\Api4\Generic;
+
+use Civi\Api4\Utils\CoreUtil;
 
 /**
  * Base class for all actions that need to fetch records (`Get`, `Update`, `Delete`, etc.).
@@ -62,9 +62,9 @@ abstract class AbstractQueryAction extends AbstractAction {
   /**
    * Maximum number of $ENTITIES to return.
    *
-   * Defaults to unlimited.
+   * Defaults to `0` - unlimited.
    *
-   * Note: the Api Explorer sets this to 25 by default to avoid timeouts.
+   * Note: the Api Explorer sets this to `25` by default to avoid timeouts.
    * Change or remove this default for your application code.
    *
    * @var int
@@ -74,7 +74,7 @@ abstract class AbstractQueryAction extends AbstractAction {
   /**
    * Zero-based index of first $ENTITY to return.
    *
-   * Defaults to "0" - first $ENTITY found.
+   * Defaults to `0` - first $ENTITY found.
    *
    * @var int
    */
@@ -88,7 +88,7 @@ abstract class AbstractQueryAction extends AbstractAction {
    * @throws \API_Exception
    */
   public function addWhere(string $fieldName, string $op, $value = NULL) {
-    if (!in_array($op, \CRM_Core_DAO::acceptedSQLOperators())) {
+    if (!in_array($op, CoreUtil::getOperators())) {
       throw new \API_Exception('Unsupported operator');
     }
     $this->where[] = [$fieldName, $op, $value];
@@ -147,7 +147,7 @@ abstract class AbstractQueryAction extends AbstractAction {
       }
       return $output . '(' . $this->whereClauseToString($whereClause, $op) . ')';
     }
-    elseif (isset($whereClause[1]) && in_array($whereClause[1], \CRM_Core_DAO::acceptedSQLOperators())) {
+    elseif (isset($whereClause[1]) && in_array($whereClause[1], CoreUtil::getOperators())) {
       $output = $whereClause[0] . ' ' . $whereClause[1] . ' ';
       if (isset($whereClause[2])) {
         $output .= is_array($whereClause[2]) ? '[' . implode(', ', $whereClause[2]) . ']' : $whereClause[2];

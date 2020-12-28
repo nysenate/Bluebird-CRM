@@ -215,7 +215,8 @@ class CRM_Utils_Address {
     }
     else {
       if ($microformat == 1) {
-        $formatted = "\n<div class=\"vcard\"><span class=\"adr\">\n$formatted</span></div>\n"; //NYSS 3438 location class conflict
+      	//NYSS 3438 location class conflict
+        $formatted = "\n<div class=\"vcard\"><span class=\"adr\">\n$formatted</span></div>\n";
       }
       else {
         $formatted = "\n<div class=\"vcard\"><span class=\"adr\">$formatted</span></div>\n";

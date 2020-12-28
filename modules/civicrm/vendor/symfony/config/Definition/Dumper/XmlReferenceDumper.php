@@ -42,10 +42,9 @@ class XmlReferenceDumper
     }
 
     /**
-     * @param NodeInterface $node
-     * @param int           $depth
-     * @param bool          $root      If the node is the root node
-     * @param string        $namespace The namespace of the node
+     * @param int    $depth
+     * @param bool   $root      If the node is the root node
+     * @param string $namespace The namespace of the node
      */
     private function writeNode(NodeInterface $node, $depth = 0, $root = false, $namespace = null)
     {
@@ -65,10 +64,10 @@ class XmlReferenceDumper
         }
         $rootName = str_replace('_', '-', $rootName);
 
-        $rootAttributes = array();
-        $rootAttributeComments = array();
-        $rootChildren = array();
-        $rootComments = array();
+        $rootAttributes = [];
+        $rootAttributeComments = [];
+        $rootChildren = [];
+        $rootComments = [];
 
         if ($node instanceof ArrayNode) {
             $children = $node->getChildren();
@@ -96,7 +95,10 @@ class XmlReferenceDumper
                     $rootAttributes[$key] = str_replace('-', ' ', $rootName).' '.$key;
                 }
 
-                if ($prototype instanceof ArrayNode) {
+                if ($prototype instanceof PrototypedArrayNode) {
+                    $prototype->setName($key);
+                    $children = [$key => $prototype];
+                } elseif ($prototype instanceof ArrayNode) {
                     $children = $prototype->getChildren();
                 } else {
                     if ($prototype->hasDefaultValue()) {
@@ -137,7 +139,7 @@ class XmlReferenceDumper
                     $value = '%%%%not_defined%%%%'; // use a string which isn't used in the normal world
 
                     // comments
-                    $comments = array();
+                    $comments = [];
                     if ($info = $child->getInfo()) {
                         $comments[] = $info;
                     }
@@ -148,6 +150,10 @@ class XmlReferenceDumper
 
                     if ($child->isRequired()) {
                         $comments[] = 'Required';
+                    }
+
+                    if ($child->isDeprecated()) {
+                        $comments[] = sprintf('Deprecated (%s)', $child->getDeprecationMessage($child->getName(), $node->getPath()));
                     }
 
                     if ($child instanceof EnumNode) {
@@ -300,5 +306,7 @@ class XmlReferenceDumper
         if (\is_array($value)) {
             return implode(',', $value);
         }
+
+        return '';
     }
 }

@@ -68,6 +68,7 @@ DROP TABLE IF EXISTS `civicrm_mailing_job`;
 DROP TABLE IF EXISTS `civicrm_mailing_trackable_url`;
 DROP TABLE IF EXISTS `civicrm_mailing_group`;
 DROP TABLE IF EXISTS `civicrm_mailing`;
+DROP TABLE IF EXISTS `civicrm_relationship_cache`;
 DROP TABLE IF EXISTS `civicrm_relationship`;
 DROP TABLE IF EXISTS `civicrm_dashboard_contact`;
 DROP TABLE IF EXISTS `civicrm_action_log`;
@@ -102,7 +103,6 @@ DROP TABLE IF EXISTS `civicrm_group_nesting`;
 DROP TABLE IF EXISTS `civicrm_group_contact_cache`;
 DROP TABLE IF EXISTS `civicrm_subscription_history`;
 DROP TABLE IF EXISTS `civicrm_group`;
-DROP TABLE IF EXISTS `civicrm_acl_cache`;
 DROP TABLE IF EXISTS `civicrm_status_pref`;
 DROP TABLE IF EXISTS `civicrm_word_replacement`;
 DROP TABLE IF EXISTS `civicrm_print_label`;
@@ -166,6 +166,7 @@ DROP TABLE IF EXISTS `civicrm_relationship_type`;
 DROP TABLE IF EXISTS `civicrm_acl_contact_cache`;
 DROP TABLE IF EXISTS `civicrm_contact`;
 DROP TABLE IF EXISTS `civicrm_acl_entity_role`;
+DROP TABLE IF EXISTS `civicrm_acl_cache`;
 DROP TABLE IF EXISTS `civicrm_acl`;
 DROP TABLE IF EXISTS `civicrm_recurring_entity`;
 DROP TABLE IF EXISTS `civicrm_action_mapping`;
@@ -333,6 +334,7 @@ CREATE TABLE `civicrm_msg_template` (
      `msg_html` longtext    COMMENT 'HTML formatted message',
      `is_active` tinyint   DEFAULT 1 ,
      `workflow_id` int unsigned    COMMENT 'a pseudo-FK to civicrm_option_value',
+     `workflow_name` varchar(255)    ,
      `is_default` tinyint   DEFAULT 1 COMMENT 'is this the default message template for the workflow referenced by workflow_id?',
      `is_reserved` tinyint    COMMENT 'is this the reserved message template which we ship for the workflow referenced by workflow_id?',
      `is_sms` tinyint   DEFAULT 0 COMMENT 'Is this message template used for sms?',
@@ -564,6 +566,36 @@ CREATE TABLE `civicrm_acl` (
 
 -- /*******************************************************
 -- *
+-- * civicrm_acl_cache
+-- *
+-- * Cache for acls and contacts
+-- *
+-- *******************************************************/
+CREATE TABLE `civicrm_acl_cache` (
+
+
+     `id` int unsigned NOT NULL AUTO_INCREMENT  COMMENT 'Unique table ID',
+     `contact_id` int unsigned    COMMENT 'Foreign Key to Contact',
+     `acl_id` int unsigned NOT NULL   COMMENT 'Foreign Key to ACL',
+     `modified_date` timestamp NULL   COMMENT 'When was this cache entry last modified' 
+,
+        PRIMARY KEY (`id`)
+ 
+    ,     INDEX `index_contact_id`(
+        contact_id
+  )
+  ,     INDEX `index_acl_id`(
+        acl_id
+  )
+  ,     INDEX `index_modified_date`(
+        modified_date
+  )
+  
+,          CONSTRAINT FK_civicrm_acl_cache_acl_id FOREIGN KEY (`acl_id`) REFERENCES `civicrm_acl`(`id`) ON DELETE CASCADE  
+)  ENGINE=InnoDB DEFAULT CHARACTER SET utf8 COLLATE utf8_unicode_ci  ;
+
+-- /*******************************************************
+-- *
 -- * civicrm_acl_entity_role
 -- *
 -- * Join table for Contacts and Groups to ACL Roles
@@ -642,7 +674,7 @@ CREATE TABLE `civicrm_contact` (
      `job_title` varchar(255)    COMMENT 'Job Title',
      `gender_id` int unsigned    COMMENT 'FK to gender ID',
      `birth_date` date    COMMENT 'Date of birth',
-     `is_deceased` tinyint   DEFAULT 0 ,
+     `is_deceased` tinyint NOT NULL  DEFAULT 0 ,
      `deceased_date` date    COMMENT 'Date of deceased',
      `household_name` varchar(128)    COMMENT 'Household Name.',
      `primary_contact_id` int unsigned    COMMENT 'Optional FK to Primary Contact for this household.',
@@ -742,7 +774,7 @@ CREATE TABLE `civicrm_acl_contact_cache` (
       , operation
   )
   
-,          CONSTRAINT FK_civicrm_acl_contact_cache_contact_id FOREIGN KEY (`contact_id`) REFERENCES `civicrm_contact`(`id`) ON DELETE CASCADE  
+ 
 )  ENGINE=InnoDB DEFAULT CHARACTER SET utf8 COLLATE utf8_unicode_ci  ;
 
 -- /*******************************************************
@@ -791,6 +823,8 @@ CREATE TABLE `civicrm_saved_search` (
 
 
      `id` int unsigned NOT NULL AUTO_INCREMENT  COMMENT 'Saved Search ID',
+     `name` varchar(255)   DEFAULT NULL COMMENT 'Unique name of saved search',
+     `label` varchar(255)   DEFAULT NULL COMMENT 'Administrative label for search',
      `form_values` text    COMMENT 'Submitted form values for this search',
      `mapping_id` int unsigned    COMMENT 'Foreign key to civicrm_mapping used for saved search-builder searches.',
      `search_custom_id` int unsigned    COMMENT 'Foreign key to civicrm_option value table used for saved custom searches.',
@@ -799,7 +833,10 @@ CREATE TABLE `civicrm_saved_search` (
 ,
         PRIMARY KEY (`id`)
  
- 
+    ,     UNIQUE INDEX `UI_name`(
+        name
+  )
+  
 ,          CONSTRAINT FK_civicrm_saved_search_mapping_id FOREIGN KEY (`mapping_id`) REFERENCES `civicrm_mapping`(`id`) ON DELETE SET NULL  
 )  ENGINE=InnoDB DEFAULT CHARACTER SET utf8 COLLATE utf8_unicode_ci  ;
 
@@ -814,13 +851,13 @@ CREATE TABLE `civicrm_contact_type` (
 
 
      `id` int unsigned NOT NULL AUTO_INCREMENT  COMMENT 'Contact Type ID',
-     `name` varchar(64)    COMMENT 'Internal name of Contact Type (or Subtype).',
+     `name` varchar(64) NOT NULL   COMMENT 'Internal name of Contact Type (or Subtype).',
      `label` varchar(64)    COMMENT 'localized Name of Contact Type.',
      `description` text    COMMENT 'localized Optional verbose description of the type.',
      `image_URL` varchar(255)    COMMENT 'URL of image if any.',
      `parent_id` int unsigned    COMMENT 'Optional FK to parent contact type.',
-     `is_active` tinyint    COMMENT 'Is this entry active?',
-     `is_reserved` tinyint    COMMENT 'Is this contact type a predefined system type' 
+     `is_active` tinyint   DEFAULT 1 COMMENT 'Is this entry active?',
+     `is_reserved` tinyint   DEFAULT 0 COMMENT 'Is this contact type a predefined system type' 
 ,
         PRIMARY KEY (`id`)
  
@@ -939,7 +976,7 @@ CREATE TABLE `civicrm_mailing_abtest` (
      `mailing_id_a` int unsigned    COMMENT 'The first experimental mailing (\"A\" condition)',
      `mailing_id_b` int unsigned    COMMENT 'The second experimental mailing (\"B\" condition)',
      `mailing_id_c` int unsigned    COMMENT 'The final, general mailing (derived from A or B)',
-     `domain_id` int unsigned    COMMENT 'Which site is this mailing for',
+     `domain_id` int unsigned NOT NULL   COMMENT 'Which site is this mailing for',
      `testing_criteria` varchar(32)    ,
      `winner_criteria` varchar(32)    ,
      `specific_url` varchar(255)    COMMENT 'What specific url to track',
@@ -1747,7 +1784,7 @@ CREATE TABLE `civicrm_custom_group` (
      `extends_entity_column_id` int unsigned   DEFAULT NULL COMMENT 'FK to civicrm_option_value.id (for option group custom_data_type.)',
      `extends_entity_column_value` varchar(255)    COMMENT 'linking custom group for dynamic object',
      `style` varchar(15)    COMMENT 'Visual relationship between this form and its parent.',
-     `collapse_display` int unsigned   DEFAULT 0 COMMENT 'Will this group be in collapsed or expanded mode on initial display ?',
+     `collapse_display` tinyint   DEFAULT 0 COMMENT 'Will this group be in collapsed or expanded mode on initial display ?',
      `help_pre` text    COMMENT 'Description and/or help text to display before fields in form.',
      `help_post` text    COMMENT 'Description and/or help text to display after fields in form.',
      `weight` int NOT NULL  DEFAULT 1 COMMENT 'Controls display order when multiple extended property groups are setup for the same class.',
@@ -1756,11 +1793,12 @@ CREATE TABLE `civicrm_custom_group` (
      `is_multiple` tinyint   DEFAULT 0 COMMENT 'Does this group hold multiple values?',
      `min_multiple` int unsigned    COMMENT 'minimum number of multiple records (typically 0?)',
      `max_multiple` int unsigned    COMMENT 'maximum number of multiple records, if 0 - no max',
-     `collapse_adv_display` int unsigned   DEFAULT 0 COMMENT 'Will this group be in collapsed or expanded mode on advanced search display ?',
+     `collapse_adv_display` tinyint   DEFAULT 0 COMMENT 'Will this group be in collapsed or expanded mode on advanced search display ?',
      `created_id` int unsigned    COMMENT 'FK to civicrm_contact, who created this custom group',
      `created_date` datetime    COMMENT 'Date and time this custom group was created.',
      `is_reserved` tinyint   DEFAULT 0 COMMENT 'Is this a reserved Custom Group?',
-     `is_public` tinyint   DEFAULT 1 COMMENT 'Is this property public?' 
+     `is_public` tinyint   DEFAULT 1 COMMENT 'Is this property public?',
+     `icon` varchar(255)   DEFAULT NULL COMMENT 'crm-i icon class' 
 ,
         PRIMARY KEY (`id`)
  
@@ -1814,6 +1852,7 @@ CREATE TABLE `civicrm_custom_field` (
      `note_rows` int unsigned    COMMENT 'Number of rows in Note Field',
      `column_name` varchar(255)    COMMENT 'Name of the column that holds the values for this field.',
      `option_group_id` int unsigned    COMMENT 'For elements with options, the option group id that is used',
+     `serialize` int unsigned NOT NULL  DEFAULT 0 COMMENT 'Serialization method - a non-zero value indicates a multi-valued field.',
      `filter` varchar(255)    COMMENT 'Stores Contact Get API params contact reference custom fields. May be used for other filters in the future.',
      `in_selector` tinyint   DEFAULT 0 COMMENT 'Should the multi-record custom field values be displayed in tab table listing' 
 ,
@@ -2064,7 +2103,9 @@ CREATE TABLE `civicrm_mail_settings` (
      `password` varchar(255)    COMMENT 'password to use when polling',
      `is_ssl` tinyint    COMMENT 'whether to use SSL or not',
      `source` varchar(255)    COMMENT 'folder to poll from when using IMAP, path to poll from when using Maildir, etc.',
-     `activity_status` varchar(255)    COMMENT 'Name of status to use when creating email to activity.' 
+     `activity_status` varchar(255)    COMMENT 'Name of status to use when creating email to activity.',
+     `is_non_case_email_skipped` tinyint   DEFAULT 0 COMMENT 'Enabling this option will have CiviCRM skip any emails that do not have the Case ID or Case Hash so that the system will only process emails that can be placed on case records. Any emails that are not processed will be moved to the ignored folder.',
+     `is_contact_creation_disabled_if_no_match` tinyint   DEFAULT 0  
 ,
         PRIMARY KEY (`id`)
  
@@ -2166,7 +2207,7 @@ CREATE TABLE `civicrm_navigation` (
      `permission_operator` varchar(3)    COMMENT 'Permission Operator',
      `parent_id` int unsigned    COMMENT 'Parent navigation item, used for grouping',
      `is_active` tinyint    COMMENT 'Is this navigation item active?',
-     `has_separator` tinyint    COMMENT 'If separator needs to be added after this menu item',
+     `has_separator` tinyint   DEFAULT 0 COMMENT 'Place a separator either before or after this menu item.',
      `weight` int    COMMENT 'Ordering of the navigation items in various blocks.' 
 ,
         PRIMARY KEY (`id`)
@@ -2218,7 +2259,7 @@ CREATE TABLE `civicrm_option_value` (
      `value` varchar(512) NOT NULL   COMMENT 'The actual value stored (as a foreign key) in the data record. Functions which need lookup option_value.title should use civicrm_option_value.option_group_id plus civicrm_option_value.value as the key.',
      `name` varchar(255)    COMMENT 'Stores a fixed (non-translated) name for this option value. Lookup functions should use the name as the key for the option value row.',
      `grouping` varchar(255)    COMMENT 'Use to sort and/or set display properties for sub-set(s) of options within an option group. EXAMPLE: Use for college_interest field, to differentiate partners from non-partners.',
-     `filter` int unsigned    COMMENT 'Bitwise logic can be used to create subsets of options within an option_group for different uses.',
+     `filter` int unsigned   DEFAULT 0 COMMENT 'Bitwise logic can be used to create subsets of options within an option_group for different uses.',
      `is_default` tinyint   DEFAULT 0 COMMENT 'Is this the default option for the group?',
      `weight` int unsigned NOT NULL   COMMENT 'Controls display sort order.',
      `description` text    COMMENT 'Optional description.',
@@ -2565,33 +2606,6 @@ CREATE TABLE `civicrm_status_pref` (
 
 -- /*******************************************************
 -- *
--- * civicrm_acl_cache
--- *
--- * Cache for acls and contacts
--- *
--- *******************************************************/
-CREATE TABLE `civicrm_acl_cache` (
-
-
-     `id` int unsigned NOT NULL AUTO_INCREMENT  COMMENT 'Unique table ID',
-     `contact_id` int unsigned    COMMENT 'Foreign Key to Contact',
-     `acl_id` int unsigned NOT NULL   COMMENT 'Foreign Key to ACL',
-     `modified_date` timestamp NULL   COMMENT 'When was this cache entry last modified' 
-,
-        PRIMARY KEY (`id`)
- 
-    ,     INDEX `index_acl_id`(
-        acl_id
-  )
-  ,     INDEX `index_modified_date`(
-        modified_date
-  )
-  
-,          CONSTRAINT FK_civicrm_acl_cache_contact_id FOREIGN KEY (`contact_id`) REFERENCES `civicrm_contact`(`id`) ON DELETE CASCADE,          CONSTRAINT FK_civicrm_acl_cache_acl_id FOREIGN KEY (`acl_id`) REFERENCES `civicrm_acl`(`id`) ON DELETE CASCADE  
-)  ENGINE=InnoDB DEFAULT CHARACTER SET utf8 COLLATE utf8_unicode_ci  ;
-
--- /*******************************************************
--- *
 -- * civicrm_group
 -- *
 -- * Provide grouping of related contacts
@@ -2602,7 +2616,7 @@ CREATE TABLE `civicrm_group` (
 
      `id` int unsigned NOT NULL AUTO_INCREMENT  COMMENT 'Group ID',
      `name` varchar(64)    COMMENT 'Internal name of Group.',
-     `title` varchar(64)    COMMENT 'Name of Group.',
+     `title` varchar(255)    COMMENT 'Name of Group.',
      `description` text    COMMENT 'Optional verbose description of the group.',
      `source` varchar(64)    COMMENT 'Module or process which created this group.',
      `saved_search_id` int unsigned    COMMENT 'FK to saved search table.',
@@ -2619,7 +2633,9 @@ CREATE TABLE `civicrm_group` (
      `is_hidden` tinyint   DEFAULT 0 COMMENT 'Is this group hidden?',
      `is_reserved` tinyint   DEFAULT 0 ,
      `created_id` int unsigned    COMMENT 'FK to contact table.',
-     `modified_id` int unsigned    COMMENT 'FK to contact table.' 
+     `modified_id` int unsigned    COMMENT 'FK to contact table.',
+     `frontend_title` varchar(255)   DEFAULT NULL COMMENT 'Alternative public title for this Group.',
+     `frontend_description` text   DEFAULT NULL COMMENT 'Alternative public description of the group.' 
 ,
         PRIMARY KEY (`id`)
  
@@ -3038,14 +3054,14 @@ CREATE TABLE `civicrm_membership_type` (
 
      `id` int unsigned NOT NULL AUTO_INCREMENT  COMMENT 'Membership Id',
      `domain_id` int unsigned NOT NULL   COMMENT 'Which Domain is this match entry for',
-     `name` varchar(128)    COMMENT 'Name of Membership Type',
+     `name` varchar(128) NOT NULL   COMMENT 'Name of Membership Type',
      `description` varchar(255)    COMMENT 'Description of Membership Type',
      `member_of_contact_id` int unsigned NOT NULL   COMMENT 'Owner organization for this membership type. FK to Contact ID',
      `financial_type_id` int unsigned NOT NULL   COMMENT 'If membership is paid by a contribution - what financial type should be used. FK to civicrm_financial_type.id',
      `minimum_fee` decimal(18,9)   DEFAULT 0 COMMENT 'Minimum fee for this membership (0 for free/complimentary memberships).',
      `duration_unit` varchar(8)    COMMENT 'Unit in which membership period is expressed.',
      `duration_interval` int    COMMENT 'Number of duration units in membership period (e.g. 1 year, 12 months).',
-     `period_type` varchar(8)    COMMENT 'Rolling membership period starts on signup date. Fixed membership periods start on fixed_period_start_day.',
+     `period_type` varchar(8) NOT NULL   COMMENT 'Rolling membership period starts on signup date. Fixed membership periods start on fixed_period_start_day.',
      `fixed_period_start_day` int    COMMENT 'For fixed period memberships, month and day (mmdd) on which subscription/membership will start. Period start is back-dated unless after rollover day.',
      `fixed_period_rollover_day` int    COMMENT 'For fixed period memberships, signups after this day (mmdd) rollover to next period.',
      `relationship_type_id` varchar(64)    COMMENT 'FK to Relationship Type ID',
@@ -3112,7 +3128,7 @@ CREATE TABLE `civicrm_case` (
      `subject` varchar(128)    COMMENT 'Short name of the case.',
      `start_date` date    COMMENT 'Date on which given case starts.',
      `end_date` date    COMMENT 'Date on which given case ends.',
-     `details` text    COMMENT 'Details about the meeting (agenda, notes, etc).',
+     `details` text    COMMENT 'Details populated from Open Case. Only used in the CiviCase extension.',
      `status_id` int unsigned NOT NULL   COMMENT 'Id of case status.',
      `is_deleted` tinyint   DEFAULT 0 ,
      `created_date` timestamp NULL  DEFAULT NULL COMMENT 'When was the case was created.',
@@ -3253,7 +3269,7 @@ CREATE TABLE `civicrm_price_set` (
      `financial_type_id` int unsigned   DEFAULT NULL COMMENT 'FK to Financial Type(for membership price sets only).',
      `is_quick_config` tinyint   DEFAULT 0 COMMENT 'Is set if edited on Contribution or Event Page rather than through Manage Price Sets',
      `is_reserved` tinyint   DEFAULT 0 COMMENT 'Is this a predefined system price set  (i.e. it can not be deleted, edited)?',
-     `min_amount` int unsigned   DEFAULT 0 COMMENT 'Minimum Amount required for this set.' 
+     `min_amount` decimal(20,2)   DEFAULT 0.0 COMMENT 'Minimum Amount required for this set.' 
 ,
         PRIMARY KEY (`id`)
  
@@ -3680,6 +3696,49 @@ CREATE TABLE `civicrm_relationship` (
 
 -- /*******************************************************
 -- *
+-- * civicrm_relationship_cache
+-- *
+-- * The cache permutes information from the relationship table to facilitate querying. Every relationship is mapped to multiple records in the cache. Joins should begin on the near side and extract info from the far side.
+-- *
+-- *******************************************************/
+CREATE TABLE `civicrm_relationship_cache` (
+
+
+     `id` int unsigned NOT NULL AUTO_INCREMENT  COMMENT 'Relationship Cache ID',
+     `relationship_id` int unsigned NOT NULL   COMMENT 'id of the relationship (FK to civicrm_relationship.id)',
+     `relationship_type_id` int unsigned NOT NULL   COMMENT 'id of the relationship type',
+     `orientation` char(3) NOT NULL   COMMENT 'The cache record is a permutation of the original relationship record. The orientation indicates whether it is forward (a_b) or reverse (b_a) relationship.',
+     `near_contact_id` int unsigned NOT NULL   COMMENT 'id of the first contact',
+     `near_relation` varchar(64)    COMMENT 'name for relationship of near_contact to far_contact.',
+     `far_contact_id` int unsigned NOT NULL   COMMENT 'id of the second contact',
+     `far_relation` varchar(64)    COMMENT 'name for relationship of far_contact to near_contact.',
+     `is_active` tinyint   DEFAULT 1 COMMENT 'is the relationship active ?',
+     `start_date` date    COMMENT 'date when the relationship started',
+     `end_date` date    COMMENT 'date when the relationship ended' 
+,
+        PRIMARY KEY (`id`)
+ 
+    ,     UNIQUE INDEX `UI_relationship`(
+        relationship_id
+      , orientation
+  )
+  ,     INDEX `index_nearid_nearrelation`(
+        near_contact_id
+      , near_relation
+  )
+  ,     INDEX `index_nearid_farrelation`(
+        near_contact_id
+      , far_relation
+  )
+  ,     INDEX `index_near_relation`(
+        near_relation
+  )
+  
+,          CONSTRAINT FK_civicrm_relationship_cache_relationship_id FOREIGN KEY (`relationship_id`) REFERENCES `civicrm_relationship`(`id`) ON DELETE CASCADE,          CONSTRAINT FK_civicrm_relationship_cache_relationship_type_id FOREIGN KEY (`relationship_type_id`) REFERENCES `civicrm_relationship_type`(`id`) ON DELETE CASCADE,          CONSTRAINT FK_civicrm_relationship_cache_near_contact_id FOREIGN KEY (`near_contact_id`) REFERENCES `civicrm_contact`(`id`) ON DELETE CASCADE,          CONSTRAINT FK_civicrm_relationship_cache_far_contact_id FOREIGN KEY (`far_contact_id`) REFERENCES `civicrm_contact`(`id`) ON DELETE CASCADE  
+)  ENGINE=InnoDB DEFAULT CHARACTER SET utf8 COLLATE utf8_unicode_ci  ;
+
+-- /*******************************************************
+-- *
 -- * civicrm_mailing
 -- *
 -- * Stores information about a mailing.
@@ -4040,7 +4099,7 @@ CREATE TABLE `civicrm_contribution_recur` (
 
      `id` int unsigned NOT NULL AUTO_INCREMENT  COMMENT 'Contribution Recur ID',
      `contact_id` int unsigned NOT NULL   COMMENT 'Foreign key to civicrm_contact.id.',
-     `amount` decimal(20,2) NOT NULL   COMMENT 'Amount to be contributed or charged each recurrence.',
+     `amount` decimal(20,2) NOT NULL   COMMENT 'Amount to be collected (including any sales tax) by payment processor each recurrence.',
      `currency` varchar(3)   DEFAULT NULL COMMENT '3 character string, value from config setting or input via user.',
      `frequency_unit` varchar(8)   DEFAULT 'month' COMMENT 'Time units for recurrence of payment.',
      `frequency_interval` int unsigned NOT NULL   COMMENT 'Number of time units for recurrence of payment.',
@@ -4204,7 +4263,7 @@ CREATE TABLE `civicrm_activity` (
      `source_record_id` int unsigned    COMMENT 'Artificial FK to original transaction (e.g. contribution) IF it is not an Activity. Table can be figured out through activity_type_id, and further through component registry.',
      `activity_type_id` int unsigned NOT NULL  DEFAULT 1 COMMENT 'FK to civicrm_option_value.id, that has to be valid, registered activity type.',
      `subject` varchar(255)    COMMENT 'The subject/purpose/short description of the activity.',
-     `activity_date_time` datetime    COMMENT 'Date and time this activity is scheduled to occur. Formerly named scheduled_date_time.',
+     `activity_date_time` datetime NULL  DEFAULT CURRENT_TIMESTAMP COMMENT 'Date and time this activity is scheduled to occur. Formerly named scheduled_date_time.',
      `duration` int unsigned    COMMENT 'Planned or actual duration of activity expressed in minutes. Conglomerate of former duration_hours and duration_minutes.',
      `location` varchar(255)    COMMENT 'Location of the activity (optional, open text).',
      `phone_id` int unsigned    COMMENT 'Phone ID of the number called (optional - used if an existing phone number is selected).',
@@ -4225,7 +4284,7 @@ CREATE TABLE `civicrm_activity` (
      `engagement_level` int unsigned    COMMENT 'Assign a specific level of engagement to this activity. Used for tracking constituents in ladder of engagement.',
      `weight` int    ,
      `is_star` tinyint   DEFAULT 0 COMMENT 'Activity marked as favorite.',
-     `created_date` timestamp NULL  DEFAULT NULL COMMENT 'When was the activity was created.',
+     `created_date` timestamp NULL  DEFAULT CURRENT_TIMESTAMP COMMENT 'When was the activity was created.',
      `modified_date` timestamp NULL  DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT 'When was the activity (or closely related entity) was created or modified or deleted.' 
 ,
         PRIMARY KEY (`id`)
@@ -4241,9 +4300,6 @@ CREATE TABLE `civicrm_activity` (
   )
   ,     INDEX `index_status_id`(
         status_id
-  )
-  ,     INDEX `index_medium_id`(
-        medium_id
   )
   ,     INDEX `index_is_current_revision`(
         is_current_revision
@@ -4354,8 +4410,8 @@ CREATE TABLE `civicrm_price_field_value` (
 
      `id` int unsigned NOT NULL AUTO_INCREMENT  COMMENT 'Price Field Value',
      `price_field_id` int unsigned NOT NULL   COMMENT 'FK to civicrm_price_field',
-     `name` varchar(255)    COMMENT 'Price field option name',
-     `label` varchar(255)    COMMENT 'Price field option label',
+     `name` varchar(255)   DEFAULT NULL COMMENT 'Price field option name',
+     `label` varchar(255)   DEFAULT NULL COMMENT 'Price field option label',
      `description` text   DEFAULT NULL COMMENT 'Price field option description.',
      `help_pre` text   DEFAULT NULL COMMENT 'Price field option pre help text.',
      `help_post` text   DEFAULT NULL COMMENT 'Price field option post field help.',
@@ -4715,7 +4771,7 @@ CREATE TABLE `civicrm_event` (
      `summary` text    COMMENT 'Brief summary of event. Text and html allowed. Displayed on Event Registration form and can be used on other CMS pages which need an event summary.',
      `description` text    COMMENT 'Full description of event. Text and html allowed. Displayed on built-in Event Information screens.',
      `event_type_id` int unsigned   DEFAULT 0 COMMENT 'Event Type ID.Implicit FK to civicrm_option_value where option_group = event_type.',
-     `participant_listing_id` int unsigned   DEFAULT 0 COMMENT 'Should we expose the participant list? Implicit FK to civicrm_option_value where option_group = participant_listing.',
+     `participant_listing_id` int unsigned   DEFAULT NULL COMMENT 'Should we expose the participant list? Implicit FK to civicrm_option_value where option_group = participant_listing.',
      `is_public` tinyint   DEFAULT 1 COMMENT 'Public events will be included in the iCal feeds. Access to private event information may be limited using ACLs.',
      `start_date` datetime    COMMENT 'Date and time that event starts.',
      `end_date` datetime    COMMENT 'Date and time that event ends. May be NULL if no defined end date/time',
@@ -4764,7 +4820,7 @@ CREATE TABLE `civicrm_event` (
      `requires_approval` tinyint    COMMENT 'Whether participants require approval before they can finish registering.',
      `expiration_time` int unsigned    COMMENT 'Expire pending but unconfirmed registrations after this many hours.',
      `allow_selfcancelxfer` tinyint   DEFAULT 0 COMMENT 'Allow self service cancellation or transfer for event?',
-     `selfcancelxfer_time` int unsigned   DEFAULT 0 COMMENT 'Number of hours prior to event start date to allow self-service cancellation or transfer.',
+     `selfcancelxfer_time` int   DEFAULT 0 COMMENT 'Number of hours prior to event start date to allow self-service cancellation or transfer.',
      `waitlist_text` text    COMMENT 'Text to display when the event is full, but participants can signup for a waitlist.',
      `approval_req_text` text    COMMENT 'Text to display when the approval is required to complete registration for an event.',
      `is_template` tinyint NOT NULL  DEFAULT 0 COMMENT 'whether the event has template',

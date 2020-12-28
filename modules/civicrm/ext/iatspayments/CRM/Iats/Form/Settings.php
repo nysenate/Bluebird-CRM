@@ -55,6 +55,18 @@ class CRM_Iats_Form_Settings extends CRM_Core_Form {
       ts('Enable self-service updates to recurring contribution Contact Billing Info.')
     );
 
+    $this->add(
+      'checkbox',
+      'enable_change_subscription_amount',
+      ts('Allow self-service updates to recurring contribution amount.')
+    );
+
+    $this->add(
+      'checkbox',
+      'enable_cancel_recurring',
+      ts('Enable self-service cancellation of a recurring contribution.')
+    );
+
     /* These checkboxes are not yet implemented, ignore for now
     $this->add(
       'checkbox', // field type

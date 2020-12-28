@@ -485,7 +485,6 @@
     //         $scope.myOrder.setDir('field2', '');
     //   HTML: <tr ng-repeat="... | order:myOrder.get()">...</tr>
     .service('CrmUiOrderCtrl', function(){
-      //
       function CrmUiOrderCtrl(defaults){
         this.values = defaults;
       }
@@ -825,9 +824,9 @@
             return steps[selectedIndex] && steps[selectedIndex].isStepValid();
           };
           this.iconFor = function(index) {
-            if (index < this.$index()) return '√';
-            if (index === this.$index()) return '»';
-            return ' ';
+            if (index < this.$index()) return 'crm-i fa-check';
+            if (index === this.$index()) return 'crm-i fa-angle-double-right';
+            return '';
           };
           this.isSelectable = function(step) {
             if (step.selected) return false;
@@ -910,7 +909,7 @@
     })
 
     // Example for Font Awesome: <button crm-icon="fa-check">Save</button>
-    // Example for jQuery UI (deprecated): <button crm-icon="check">Save</button>
+    // Example for jQuery UI (deprecated): <button crm-icon="fa-check">Save</button>
     .directive('crmIcon', function() {
       return {
         restrict: 'EA',
@@ -920,7 +919,7 @@
             return;
           }
           if (attrs.crmIcon.substring(0,3) == 'fa-') {
-            $(element).prepend('<i class="crm-i ' + attrs.crmIcon + '"></i> ');
+            $(element).prepend('<i class="crm-i ' + attrs.crmIcon + '" aria-hidden="true"></i> ');
           }
           else {
             $(element).prepend('<span class="icon ui-icon-' + attrs.crmIcon + '"></span> ');
@@ -1052,7 +1051,7 @@
     // set a custom title (i.e., it has an initial title of "CiviCRM"). See the
     // global variables pageTitle and documentTitle.
     // Example (same title for both): <h1 crm-page-title>{{ts('Hello')}}</h1>
-    // Example (separate document title): <h1 crm-document-title="ts('Hello')" crm-page-title><i class="crm-i fa-flag"></i>{{ts('Hello')}}</h1>
+    // Example (separate document title): <h1 crm-document-title="ts('Hello')" crm-page-title><i class="crm-i fa-flag" aria-hidden="true"></i>{{ts('Hello')}}</h1>
     .directive('crmPageTitle', function($timeout) {
       return {
         scope: {

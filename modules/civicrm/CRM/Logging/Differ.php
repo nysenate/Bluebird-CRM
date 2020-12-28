@@ -13,8 +13,6 @@
  *
  * @package CRM
  * @copyright CiviCRM LLC https://civicrm.org/licensing
- * $Id$
- *
  */
 class CRM_Logging_Differ {
   private $db;
@@ -30,7 +28,8 @@ class CRM_Logging_Differ {
    * @param string $interval
    */
   public function __construct($log_conn_id, $log_date, $interval = '10 SECOND') {
-    $dsn = defined('CIVICRM_LOGGING_DSN') ? DB::parseDSN(CIVICRM_LOGGING_DSN) : DB::parseDSN(CIVICRM_DSN);
+    $dsn = defined('CIVICRM_LOGGING_DSN') ? CRM_Utils_SQL::autoSwitchDSN(CIVICRM_LOGGING_DSN) : CRM_Utils_SQL::autoSwitchDSN(CIVICRM_DSN);
+    $dsn = DB::parseDSN($dsn);
     $this->db = $dsn['database'];
     $this->log_conn_id = $log_conn_id;
     $this->log_date = $log_date;
@@ -404,10 +403,56 @@ ORDER BY log_date
    *
    * @param array $tables
    *   Array of tables to inspect.
+   * @param int $limit
+   *   Limit result to x
+   * @param int $offset
+   *   Offset result to y
    *
    * @return array
    */
-  public function getAllChangesForConnection($tables) {
+  public function getAllChangesForConnection($tables, $limit = 0, $offset = 0) {
+    $params = [
+      1 => [$this->log_conn_id, 'String'],
+      2 => [$limit, 'Integer'],
+      3 => [$offset, 'Integer'],
+    ];
+
+    foreach ($tables as $table) {
+      if (empty($sql)) {
+        $sql = " SELECT '{$table}' as table_name, id FROM {$this->db}.log_{$table} WHERE log_conn_id = %1";
+      }
+      else {
+        $sql .= " UNION SELECT '{$table}' as table_name, id FROM {$this->db}.log_{$table} WHERE log_conn_id = %1";
+      }
+    }
+    if ($limit) {
+      $sql .= " LIMIT %2";
+    }
+    if ($offset) {
+      $sql .= " OFFSET %3";
+    }
+    $diffs = [];
+    $dao = CRM_Core_DAO::executeQuery($sql, $params);
+    while ($dao->fetch()) {
+      if (empty($this->log_date)) {
+        // look for available table in above query instead of looking for last table. this will avoid multiple loops
+        $this->log_date = CRM_Core_DAO::singleValueQuery("SELECT log_date FROM {$this->db}.log_{$dao->table_name} WHERE log_conn_id = %1 LIMIT 1", $params);
+      }
+      $diffs = array_merge($diffs, $this->diffsInTableForId($dao->table_name, $dao->id));
+    }
+    return $diffs;
+  }
+
+  /**
+   * Get count of all changes made in the connection.
+   *
+   * @param array $tables
+   *   Array of tables to inspect.
+   *
+   * @return array
+   */
+  public function getCountOfAllContactChangesForConnection($tables) {
+    $count = 0;
     $params = [1 => [$this->log_conn_id, 'String']];
     foreach ($tables as $table) {
       if (empty($sql)) {
@@ -417,15 +462,9 @@ ORDER BY log_date
         $sql .= " UNION SELECT '{$table}' as table_name, id FROM {$this->db}.log_{$table} WHERE log_conn_id = %1";
       }
     }
-    $diffs = [];
-    $dao = CRM_Core_DAO::executeQuery($sql, $params);
-    while ($dao->fetch()) {
-      if (empty($this->log_date)) {
-        $this->log_date = CRM_Core_DAO::singleValueQuery("SELECT log_date FROM {$this->db}.log_{$table} WHERE log_conn_id = %1 LIMIT 1", $params);
-      }
-      $diffs = array_merge($diffs, $this->diffsInTableForId($dao->table_name, $dao->id));
-    }
-    return $diffs;
+    $countSQL = " SELECT count(*) as countOfContacts FROM ({$sql}) count";
+    $count = CRM_Core_DAO::singleValueQuery($countSQL, $params);
+    return $count;
   }
 
   /**
