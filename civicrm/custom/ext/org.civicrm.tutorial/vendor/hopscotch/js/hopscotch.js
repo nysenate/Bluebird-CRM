@@ -1,4 +1,4 @@
-/**! hopscotch - v0.3.1
+/**! hopscotch - v0.3.1 + CiviCRM patches
 *
 * Copyright 2017 LinkedIn Corp. All rights reserved.
 *
@@ -36,7 +36,6 @@
   var customRenderer;
   var customEscape;
   var templateToUse = 'bubble_default';
-  var Sizzle = window.Sizzle || null;
   var utils;
   var callbacks;
   var helpers;
@@ -45,7 +44,7 @@
   var winHopscotch;
   var undefinedStr = 'undefined';
   var waitingToStart = false;
-  var hasJquery = (typeof jQuery === 'undefined' ? 'undefined' : _typeof(jQuery)) !== undefinedStr;
+  var $ = CRM.$ || window.jQuery;
   var hasSessionStorage = false;
   var isStorageWritable = false;
   var validIdRegEx = /^[a-zA-Z]+[a-zA-Z0-9_-]*$/;
@@ -350,13 +349,9 @@
     },
 
     /**
-     * Helper function to get a single target DOM element. We will try to
-     * locate the DOM element through several ways, in the following order:
+     * Helper function to get a single target DOM element using jQuery.
      *
-     * 1) Passing the string into document.querySelector
-     * 2) Passing the string to jQuery, if it exists
-     * 3) Passing the string to Sizzle, if it exists
-     * 4) Calling document.getElementById if it is a plain id
+     * Can retrieve element from within an iframe if the iframe is the first part of the selector.
      *
      * Default case is to assume the string is a plain id and call
      * document.getElementById on it.
@@ -364,32 +359,15 @@
      * @private
      */
     getStepTargetHelper: function getStepTargetHelper(target) {
-      var result = document.getElementById(target);
-
-      //Backwards compatibility: assume the string is an id
-      if (result) {
-        return result;
+      var parts = target.split(' '),
+        context = document;
+      // Get element from within iframe
+      if ($(parts[0]).is('iframe')) {
+        context = $(parts[0]).contents();
+        target = parts.slice(1).join(' ');
       }
-      if (hasJquery) {
-        result = jQuery(target);
-        return result.length ? result[0] : null;
-      }
-      if (Sizzle) {
-        result = new Sizzle(target);
-        return result.length ? result[0] : null;
-      }
-      if (document.querySelector) {
-        try {
-          return document.querySelector(target);
-        } catch (err) {}
-      }
-      // Regex test for id. Following the HTML 4 spec for valid id formats.
-      // (http://www.w3.org/TR/html4/types.html#type-id)
-      if (/^#[a-zA-Z][\w-_:.]*$/.test(target)) {
-        return document.getElementById(target.substring(1));
-      }
-
-      return null;
+      var result = jQuery(target, context);
+      return result.length ? result[0] : null;
     },
 
     /**
@@ -1463,54 +1441,11 @@
               yuiAnim.animate();
             }
 
-            // Use jQuery if it exists
-            else if (hasJquery) {
-                jQuery('body, html').animate({ scrollTop: scrollToVal }, getOption('scrollDuration'), cb);
+            // Use jQuery
+            else {
+                $('body, html').animate({ scrollTop: scrollToVal }, getOption('scrollDuration'), cb);
               }
 
-              // Use my crummy setInterval scroll solution if we're using plain, vanilla Javascript.
-              else {
-                  if (scrollToVal < 0) {
-                    scrollToVal = 0;
-                  }
-
-                  // 48 * 10 == 480ms scroll duration
-                  // make it slightly less than CSS transition duration because of
-                  // setInterval overhead.
-                  // To increase or decrease duration, change the divisor of scrollIncr.
-                  direction = windowTop > targetTop ? -1 : 1; // -1 means scrolling up, 1 means down
-                  scrollIncr = Math.abs(windowTop - scrollToVal) / (getOption('scrollDuration') / 10);
-                  _scrollTimeoutFn = function scrollTimeoutFn() {
-                    var scrollTop = utils.getScrollTop(),
-                        scrollTarget = scrollTop + direction * scrollIncr;
-
-                    if (direction > 0 && scrollTarget >= scrollToVal || direction < 0 && scrollTarget <= scrollToVal) {
-                      // Overshot our target. Just manually set to equal the target
-                      // and clear the interval
-                      scrollTarget = scrollToVal;
-                      if (cb) {
-                        cb();
-                      } // HopscotchBubble.show
-                      window.scrollTo(0, scrollTarget);
-                      return;
-                    }
-
-                    window.scrollTo(0, scrollTarget);
-
-                    if (utils.getScrollTop() === scrollTop) {
-                      // Couldn't scroll any further.
-                      if (cb) {
-                        cb();
-                      } // HopscotchBubble.show
-                      return;
-                    }
-
-                    // If we reached this point, that means there's still more to scroll.
-                    setTimeout(_scrollTimeoutFn, 10);
-                  };
-
-                  _scrollTimeoutFn();
-                }
           }
     },
 
@@ -2421,7 +2356,7 @@
  */
 _.escape = function(str){
   if(customEscape){ return customEscape(str); }
-  
+
   if(str == null) return '';
   return ('' + str).replace(new RegExp('[&<>"\']', 'g'), function(match){
     if(match == '&'){ return '&amp;' }
