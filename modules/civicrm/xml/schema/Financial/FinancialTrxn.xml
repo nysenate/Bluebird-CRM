@@ -18,34 +18,6 @@
     <autoincrement>true</autoincrement>
   </primaryKey>
   <field>
-    <name>from_account_id</name>
-    <type>int unsigned</type>
-    <comment>FK to financial_account table.</comment>
-    <add>3.2</add>
-    <drop>4.3</drop>
-  </field>
-  <foreignKey>
-    <name>from_account_id</name>
-    <table>civicrm_financial_account</table>
-    <key>id</key>
-    <add>3.2</add>
-    <drop>4.3</drop>
-  </foreignKey>
-  <field>
-    <name>to_account_id</name>
-    <type>int unsigned</type>
-    <comment>FK to financial_account table.</comment>
-    <add>3.2</add>
-    <drop>4.3</drop>
-  </field>
-  <foreignKey>
-    <name>to_account_id</name>
-    <table>civicrm_financial_account</table>
-    <key>id</key>
-    <add>3.2</add>
-    <drop>4.3</drop>
-  </foreignKey>
-  <field>
     <name>from_financial_account_id</name>
     <type>int unsigned</type>
     <title>Financial Transaction From Account</title>
@@ -98,15 +70,6 @@
       <type>Select Date</type>
       <formatType>activityDateTime</formatType>
     </html>
-  </field>
-  <field>
-    <name>trxn_type</name>
-    <title>Financial Transaction Type</title>
-    <type>enum</type>
-    <values>Debit,Credit</values>
-    <required>true</required>
-    <add>1.3</add>
-    <drop>4.3</drop>
   </field>
   <field>
     <name>total_amount</name>
@@ -162,15 +125,6 @@
     <add>4.7</add>
   </field>
   <field>
-    <name>payment_processor</name>
-    <type>varchar</type>
-    <length>64</length>
-    <required>true</required>
-    <comment>derived from Processor setting in civicrm.settings.php.</comment>
-    <add>1.3</add>
-    <drop>4.3</drop>
-  </field>
-  <field>
     <name>trxn_id</name>
     <title>Transaction ID</title>
     <type>varchar</type>
@@ -213,6 +167,14 @@
     <title>Payment Processor</title>
     <type>int unsigned</type>
     <comment>Payment Processor for this financial transaction</comment>
+    <pseudoconstant>
+      <table>civicrm_payment_processor</table>
+      <keyColumn>id</keyColumn>
+      <labelColumn>name</labelColumn>
+    </pseudoconstant>
+    <html>
+      <type>Select</type>
+    </html>
     <add>4.3</add>
   </field>
   <foreignKey>
@@ -276,7 +238,7 @@
   <field>
     <name>pan_truncation</name>
     <uniqueName>financial_trxn_pan_truncation</uniqueName>
-    <title>Pan Truncation</title>
+    <title>PAN Truncation</title>
     <type>varchar</type>
     <length>4</length>
     <html>

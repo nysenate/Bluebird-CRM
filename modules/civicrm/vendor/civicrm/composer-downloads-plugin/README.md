@@ -1,23 +1,26 @@
 Composer Downloads Plugin
 ===========================
 
-> This is a fork of [lastcall/composer-extra-files](https://github.com/LastCallMedia/ComposerExtraFiles/). Some of the
-> configuration options have changed, so it has been renamed to prevent it from conflicting in real-world usage.
+The "Downloads" plugin allows you to download extra files (`*.zip` or `*.tar.gz`) and extract them within your package.
 
-This `composer` plugin allows you to download extra files (`*.zip` or `*.tar.gz`) and extract them within your package.
+This is an updated version of [lastcall/composer-extra-files](https://github.com/LastCallMedia/ComposerExtraFiles/).
+It adds integration tests, fixes some bugs, and makes a few other improvements. Some of the
+configuration options have changed, so it has been renamed to prevent it from conflicting in real-world usage.
 
-For example, suppose you publish a PHP package `foo/bar` which relies on an external artifact `examplelib-0.1.zip` (containing some JS, CSS, or image). Place this configuration in the `composer.json` for `foo/bar`:
+## Example
+
+Suppose you publish a PHP package `foo/bar` which relies on an external artifact `examplelib-0.1.zip`. Place this configuration in the `composer.json` for `foo/bar`:
 
 ```json
 {
   "name": "foo/bar",
   "require": {
-    "civicrm/composer-downloads-plugin": "~1.0"
+    "civicrm/composer-downloads-plugin": "~2.1"
   },
   "extra": {
     "downloads": {
       "examplelib": {
-        "url": "`https://example.com/examplelib-0.1.zip`",
+        "url": "https://example.com/examplelib-0.1.zip",
         "path": "extern/examplelib",
         "ignore": ["test", "doc", ".*"]
       }
@@ -28,22 +31,26 @@ For example, suppose you publish a PHP package `foo/bar` which relies on an exte
 
 When a downstream user of `foo/bar` runs `composer install`, it will fetch and extract the zip file, creating `vendor/foo/bar/extern/examplelib`. 
 
-This does not require consumers of `foo/bar` to make any special changes in their root-level project, and it uses `composer`'s built-in cache system.
+## Evaluation
 
-## When should I use this?
+The primary strengths of `composer-downloads-plugin` are:
 
-The most common use-case is if you have compiled front-end code, where the compiled version is never committed to a git repository, and therefore isn't registered on packagist.org.  For example, if you want your distributed package to depend on an NPM/Bower package.
+* __Simple__: It downloads a URL (ZIP/TAR file) and extracts it. It only needs to know two things: *what to download* (`url`) and *where to put it* (`path`). It runs as pure-PHP without any external dependencies.
+* __Fast__: The logic does not require scanning, indexing, or mapping any large registries. The download system uses `composer`'s built-in cache.
+* __Isolated__: As the author of a package `foo/bar`, you define the content under the `vendor/foo/bar` folder. When others use `foo/bar`, there is no need for special instructions, no root-level configuration, no interaction with other packages.
 
-If you have the ability to maintain the root `composer.json` of consumers, then consider these alternatives -- when using multiple NPM/Bower packages, they provide more robust functionality (such as automatic updates and version-constraints).
+The "Downloads" plugin is only a download mechanism. Use it to *assimilate* an external resource as part of a `composer` package.
+
+The "Downloads" plugin is __not__ a *dependency management system*. There is no logic to scan registries, resolve transitive dependencies, identify version-conflicts, etc among diverse external resources.  If you need that functionality, then you may want a *bridge* to integrate `composer` with an external dependency management tool. A few good bridges to consider:
 
 * [Asset Packagist](https://asset-packagist.org/)
 * [Composer Asset Plugin](https://github.com/fxpio/composer-asset-plugin)
-
-The `downloads` approach is most appropriate if (a) you publish an intermediate (non-root) project to diverse consumers and (b) the external assets are relatively stable.
+* [Composer Bower Plugin](https://github.com/php-kit/composer-bower-plugin)
+* [Foxy](https://github.com/fxpio/foxy)
 
 ## Configuration: Properties
 
-The `downloads` contains a list of files to download. Each extra-file as a symbolic ID (e.g. `examplelib` above) and some mix of properties:
+The `extra.downloads` section contains a list of files to download. Each extra-file has a symbolic ID (e.g. `examplelib` above) and some mix of properties:
 
 * `url`: The URL to fetch the content from.
 
@@ -66,7 +73,7 @@ Values in `url` and `path` support the following variables:
 
 ## Configuration: Defaults
 
-You may set default values for downloaded files using the `*` entry.
+You may set default properties for all downloads. Place them under `*`, as in:
 
 ```json
 {
@@ -87,13 +94,18 @@ You may set default values for downloaded files using the `*` entry.
 }
 ```
 
+This example will:
+
+* Create `bower_components/jquery` (based on jQuery 1.12.4), minus any test/doc folders.
+* Create `bower_components/jquery-ui` (based on jQueryUI 1.12.1), minus any test/doc folders.
+
 ## Tips
 
-In each downloaded folder, this plugin will create a small metadata folder (`.composer-downloads`) to track the origin of the current code. If you modify the `composer.json` to use a different URL, then it will re-download the file.
+* In each downloaded folder, this plugin will create a small metadata folder (`.composer-downloads`) to track the origin of the current code. If you modify the `composer.json` to use a different URL, then it will re-download the file.
 
-Download each extra file to a distinct `path`. Don't try to download into overlapping paths. (*This has not been tested, but it may lead to extraneous deletions/re-downloads.*)
+* Download each extra file to a distinct `path`. Don't try to download into overlapping paths. (*This has not been tested, but I expect downloads are not well-ordered, and you may find that updates require re-downloading.*)
 
-What should you do if you *normally* download the extra-file as `*.tgz` but sometimes (for local dev) need to grab bleeding edge content from somewhere else?  Simply delete the autodownloaded folder and replace it with your own.  `composer-downloads-plugin` will detect that conflict (by virtue of the absent `.composer-downloads`) and leave your code in place (until you choose to get rid of it). To switch back, you can simply delete the code and run `composer install` again.
+* What should you do if you *normally* download the extra-file as `*.tar.gz` but sometimes (for local dev) need to grab bleeding edge content from somewhere else?  Simply delete the autodownloaded folder and replace it with your own.  `composer-downloads-plugin` will detect that conflict (by virtue of the absent `.composer-downloads`) and leave your code in place (until you choose to get rid of it). To switch back, you can simply delete the code and run `composer install` again.
 
 ## Known Limitations
 

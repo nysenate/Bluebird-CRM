@@ -296,7 +296,7 @@ class HTML_QuickForm extends HTML_Common
         $attributes = array('action'=>$action, 'method'=>$method, 'name'=>$formName, 'id'=>$formName) + $target;
         $this->updateAttributes($attributes);
         if (!$trackSubmit || isset($_REQUEST['_qf__' . $formName])) {
-            if (1 == get_magic_quotes_gpc()) {
+            if (FALSE) {
                 $this->_submitValues = $this->_recursiveFilter('stripslashes', 'get' == $method? $_GET: $_POST);
                 foreach ($_FILES as $keyFirst => $valFirst) {
                     foreach ($valFirst as $keySecond => $valSecond) {
@@ -636,7 +636,26 @@ class HTML_QuickForm extends HTML_Common
            $elementObject->onQuickFormEvent('updateValue', null, $this);
         } else {
             $args = func_get_args();
-            $elementObject =& $this->_loadElement('addElement', $element, array_slice($args, 1));
+            if ($element === 'submit') {
+              // Hack to support https://github.com/civicrm/civicrm-core/pull/18410
+              // This can maybe get deprecation notices at some point.
+              $button = explode('_', $args[1]);
+              $type = array_pop($button);
+              $attrs = array_merge([
+                'name' => $args[2],
+                'type' => 'submit',
+                'class' => '',
+              ], $args[3]);
+              $attrs['class'] .= " crm-button crm-button-type-{$type} crm-button{$args[1]}";
+              $buttonContents = CRM_Core_Page::crmIcon('fa-check-circle')  . ' ' .  $args[2];
+              $elementObjects = &$this->createElement('xbutton', $args[1], $buttonContents, $attrs);
+              $this->setDefaultAction($args[1]);
+              $group = $this->addGroup([$elementObjects], $args[1], '', ['&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'], FALSE);
+              return $group;
+            }
+            else {
+              $elementObject =& $this->_loadElement('addElement', $element, array_slice($args, 1));
+            }
             if (PEAR::isError($elementObject)) {
                 return $elementObject;
             }

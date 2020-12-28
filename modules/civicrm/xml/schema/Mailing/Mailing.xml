@@ -6,6 +6,11 @@
   <name>civicrm_mailing</name>
   <comment>Stores information about a mailing.</comment>
   <archive>true</archive>
+  <icon>fa-envelope-o</icon>
+  <paths>
+    <add>civicrm/a/#/mailing/new</add>
+    <update>civicrm/a/#/mailing/[id]</update>
+  </paths>
   <field>
     <name>id</name>
     <title>Mailing ID</title>

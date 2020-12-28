@@ -63,11 +63,11 @@
 </div>
 {elseif $action ne 1}
     <div class="messages status no-popup">
-      <div class="icon inform-icon"></div>
+      {icon icon="fa-info-circle"}{/icon}
         {ts}There are no jobs configured.{/ts}
      </div>
      <div class="action-link">
-       <a href="{crmURL p='civicrm/admin/job' q="action=add&reset=1"}" id="newJob-nojobs" class="button"><span><i class="crm-i fa-plus-circle"></i> {ts}Add New Scheduled Job{/ts}</span></a>
+       <a href="{crmURL p='civicrm/admin/job' q="action=add&reset=1"}" id="newJob-nojobs" class="button"><span><i class="crm-i fa-plus-circle" aria-hidden="true"></i> {ts}Add New Scheduled Job{/ts}</span></a>
      </div>
 
 {/if}

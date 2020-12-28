@@ -5,6 +5,7 @@ namespace LastCall\DownloadsPlugin\Handler;
 use Composer\Composer;
 use Composer\IO\IOInterface;
 use Composer\Util\Filesystem;
+use React\Promise\PromiseInterface;
 
 class FileHandler extends BaseHandler
 {
@@ -41,22 +42,35 @@ class FileHandler extends BaseHandler
         if (file_exists($tmpDir)) {
             $cfs->remove($tmpDir);
         }
+        if (file_exists($target)) {
+          $cfs->remove($target);
+        }
 
         $pkg = clone $this->getSubpackage();
         $pkg->setTargetDir($tmpDir);
         $downloadManager = $composer->getDownloadManager();
-        $downloadManager->download($pkg, $tmpDir);
-
-        if (file_exists($target)) {
-            $cfs->remove($target);
+        // composer:v2
+        $version = method_exists(Composer::class, 'getVersion') ? Composer::getVersion() : Composer::VERSION;
+        if (version_compare($version, '2.0.0') >= 0) {
+          $file = '';
+          $promise = $downloadManager->download($pkg, $tmpDir);
+          $promise->then(static function($res) use (&$file) {
+            $file = $res;
+          });
+          $composer->getLoop()->wait([$promise]);
+          $cfs->rename($file, $target);
+          $cfs->remove($tmpDir);
         }
-
-        foreach ((array)glob("$tmpDir/*") as $file) {
+        // composer:v1
+        else {
+          $downloadManager->download($pkg, $tmpDir);
+          foreach ((array)glob("$tmpDir/*") as $file) {
             if (is_file($file)) {
-                $cfs->rename($file, $target);
-                $cfs->remove($tmpDir);
-                break;
+              $cfs->rename($file, $target);
+              $cfs->remove($tmpDir);
+              break;
             }
+          }
         }
     }
 

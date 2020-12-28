@@ -14,8 +14,6 @@
  *
  * @package CRM
  * @copyright CiviCRM LLC https://civicrm.org/licensing
- * $Id$
- *
  */
 
 
@@ -61,6 +59,10 @@ class DAOGetFieldsAction extends BasicGetFieldsAction {
     ];
     $fields[] = [
       'name' => 'help_post',
+      'data_type' => 'String',
+    ];
+    $fields[] = [
+      'name' => 'column_name',
       'data_type' => 'String',
     ];
     $fields[] = [

@@ -78,7 +78,7 @@ class HTML_QuickForm_radio extends HTML_QuickForm_input
         if ( ! $this->getAttribute('id') ) {
             //hack to add 'id' for radio
             static $idTextStr = 1;
-            if (CRM_Utils_Array::value('id_suffix', $attributes)) {
+            if (!empty($attributes['id_suffix'])) {
               $idSuffix =  $attributes['id_suffix'];
               $this->removeAttribute('id_suffix');
             }
