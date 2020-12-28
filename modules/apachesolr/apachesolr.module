@@ -323,7 +323,7 @@ function apachesolr_facetapi_query_types() {
  */
 function apachesolr_facetapi_facet_info($searcher_info) {
   $facets = array();
-  if ('apachesolr' == $searcher_info['adapter']) {
+  if ('apachesolr' == $searcher_info['module']) {
     $environment = apachesolr_environment_load($searcher_info['instance']);
 
     if (!empty($environment['conf']['facet callbacks'])) {
@@ -801,6 +801,7 @@ function apachesolr_node_type_insert($info) {
       $bundles[] = $info->type;
       // Set the new bundle as indexable for all environments
       apachesolr_index_set_bundles($env['env_id'], 'node', $bundles);
+      apachesolr_environments_clear_cache();
     }
   }
 }
@@ -1583,7 +1584,7 @@ function apachesolr_do_query(DrupalSolrQueryInterface $current_query) {
       }
     }
     if ($qalt) {
-      $query->addParam('q.alt', implode(' ', $qalt));
+      $query->addParam('q.alt', implode(' AND ', $qalt));
     }
   }
   // We must run htmlspecialchars() here since converted entities are in the index.
@@ -2821,12 +2822,7 @@ function theme_apachesolr_sort_link($vars) {
     $icon = ' ' . theme('tablesort_indicator', array('style' => $vars['direction']));
   }
   if ($vars['active']) {
-    if (isset($vars['options']['attributes']['class'])) {
-      $vars['options']['attributes']['class'] .= ' active';
-    }
-    else {
-      $vars['options']['attributes']['class'] = 'active';
-    }
+    $vars['options']['attributes']['class'][] = 'active';
   }
   return $icon . apachesolr_l($vars['text'], $vars['path'], $vars['options']);
 }
@@ -2882,7 +2878,7 @@ function apachesolr_environment_load_subrecords(&$environments) {
   $all_index_bundles_keyed = array();
   foreach ($all_index_bundles as $env_info) {
     extract($env_info);
-    $all_index_bundles_keyed[$env_id][$entity_type][] = $bundle;
+    $all_index_bundles_keyed[$env_id][$entity_type][$bundle] = $bundle;
   }
 
   $all_variables = db_select('apachesolr_environment_variable', 'v')

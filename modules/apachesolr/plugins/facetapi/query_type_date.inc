@@ -33,10 +33,13 @@ class ApacheSolrFacetapiDate extends FacetapiQueryTypeDate implements FacetapiQu
       return NULL;
     }
     list($start, $end, $gap) = $date_range;
-    $query->addParam('facet.date', $this->facet['field']);
-    $query->addParam('f.' . $this->facet['field'] . '.facet.date.start', $start);
-    $query->addParam('f.' . $this->facet['field'] . '.facet.date.end', $end);
-    $query->addParam('f.' . $this->facet['field'] . '.facet.date.gap', $gap);
+
+    $facet_name = $query->getSolrVersion() >= 6 ? 'facet.range' : 'facet.date';
+
+    $query->addParam($facet_name, $this->facet['field']);
+    $query->addParam('f.' . $this->facet['field'] . '.' . $facet_name . '.start', $start);
+    $query->addParam('f.' . $this->facet['field'] . '.' . $facet_name . '.end', $end);
+    $query->addParam('f.' . $this->facet['field'] . '.' . $facet_name . '.gap', $gap);
 
     // Adds "hard limit" parameter to prevent too many return values.
     $settings = $this->adapter->getFacet($this->facet)->getSettings();
@@ -145,8 +148,14 @@ class ApacheSolrFacetapiDate extends FacetapiQueryTypeDate implements FacetapiQu
     }
 
     // Gets raw facet data from the Solr server.
+    // Check older versions first, then newer ones.
     if (isset($response->facet_counts->facet_dates) && isset($response->facet_counts->facet_dates->{$this->facet['field']})) {
       $raw_data = (array) $response->facet_counts->facet_dates->{$this->facet['field']};
+      $raw_data['gap'] = (isset($response->facet_counts->facet_dates->{$this->facet['field']}->gap)) ?? FACETAPI_DATE_MINUTE;
+    }
+    elseif (isset($response->facet_counts->facet_ranges) && isset($response->facet_counts->facet_ranges->{$this->facet['field']}->counts)) {
+      $raw_data = (array) $response->facet_counts->facet_ranges->{$this->facet['field']}->counts;
+      $raw_data['gap'] = (isset($response->facet_counts->facet_ranges->{$this->facet['field']}->gap)) ?? FACETAPI_DATE_MINUTE;
     }
     else {
       $raw_data = array();

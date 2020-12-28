@@ -362,61 +362,94 @@ class SolrBaseQuery extends SolrFilterSubQuery implements DrupalSolrQueryInterfa
     return $this->context;
   }
 
-  protected $single_value_params = array(
-    'q' => TRUE, // http://wiki.apache.org/solr/SearchHandler#q
-    'q.op' => TRUE, // http://wiki.apache.org/solr/SearchHandler#q.op
-    'q.alt' => TRUE, // http://wiki.apache.org/solr/SearchHandler#q
-    'df' => TRUE,
-    'qt' => TRUE,
-    'defType' => TRUE,
-    'timeAllowed' => TRUE,
-    'omitHeader' => TRUE,
-    'debugQuery' => TRUE,
-    'start' => TRUE,
-    'rows' => TRUE,
-    'stats' => TRUE,
-    'facet' => TRUE,
-    'facet.prefix' => TRUE,
-    'facet.limit' => TRUE,
-    'facet.offset' => TRUE,
-    'facet.mincount' => TRUE,
-    'facet.missing' => TRUE,
-    'facet.method' => TRUE,
-    'facet.enum.cache.minDf' => TRUE,
-    'facet.date.start' => TRUE,
-    'facet.date.end' => TRUE,
-    'facet.date.gap' => TRUE,
-    'facet.date.hardend' => TRUE,
-    'facet.date.other' => TRUE,
-    'facet.date.include' => TRUE,
-    'hl' => TRUE,
-    'hl.snippets' => TRUE,
-    'hl.fragsize' => TRUE,
-    'hl.mergeContiguous' => TRUE,
-    'hl.requireFieldMatch' => TRUE,
-    'hl.maxAnalyzedChars' => TRUE,
-    'hl.alternateField' => TRUE,
-    'hl.maxAlternateFieldLength' => TRUE,
-    'hl.formatter' => TRUE,
-    'hl.simple.pre/hl.simple.post' => TRUE,
-    'hl.fragmenter' => TRUE,
-    'hl.fragListBuilder' => TRUE,
-    'hl.fragmentsBuilder' => TRUE,
-    'hl.useFastVectorHighlighter' => TRUE,
-    'hl.usePhraseHighlighter' => TRUE,
-    'hl.highlightMultiTerm' => TRUE,
-    'hl.regex.slop' => TRUE,
-    'hl.regex.pattern' => TRUE,
-    'hl.regex.maxAnalyzedChars' => TRUE,
-    'mm' => TRUE,
-    'spellcheck' => TRUE,
-  );
+  /**
+   * Get Single Value params for the base query.
+   * @return array
+   */
+  protected function getSingleValueParams() {
+    $single_value_params = array(
+      'q' => TRUE, // http://wiki.apache.org/solr/SearchHandler#q
+      'q.op' => TRUE, // http://wiki.apache.org/solr/SearchHandler#q.op
+      'q.alt' => TRUE, // http://wiki.apache.org/solr/SearchHandler#q
+      'df' => TRUE,
+      'qt' => TRUE,
+      'defType' => TRUE,
+      'timeAllowed' => TRUE,
+      'omitHeader' => TRUE,
+      'debugQuery' => TRUE,
+      'start' => TRUE,
+      'rows' => TRUE,
+      'stats' => TRUE,
+      'facet' => TRUE,
+      'facet.prefix' => TRUE,
+      'facet.limit' => TRUE,
+      'facet.offset' => TRUE,
+      'facet.mincount' => TRUE,
+      'facet.missing' => TRUE,
+      'facet.method' => TRUE,
+      'facet.enum.cache.minDf' => TRUE,
+      'facet.date.start' => TRUE,
+      'facet.date.end' => TRUE,
+      'facet.date.gap' => TRUE,
+      'facet.date.hardend' => TRUE,
+      'facet.date.other' => TRUE,
+      'facet.date.include' => TRUE,
+      'hl' => TRUE,
+      'hl.snippets' => TRUE,
+      'hl.fragsize' => TRUE,
+      'hl.mergeContiguous' => TRUE,
+      'hl.requireFieldMatch' => TRUE,
+      'hl.maxAnalyzedChars' => TRUE,
+      'hl.alternateField' => TRUE,
+      'hl.maxAlternateFieldLength' => TRUE,
+      'hl.formatter' => TRUE,
+      'hl.simple.pre/hl.simple.post' => TRUE,
+      'hl.fragmenter' => TRUE,
+      'hl.fragListBuilder' => TRUE,
+      'hl.fragmentsBuilder' => TRUE,
+      'hl.useFastVectorHighlighter' => TRUE,
+      'hl.usePhraseHighlighter' => TRUE,
+      'hl.highlightMultiTerm' => TRUE,
+      'hl.regex.slop' => TRUE,
+      'hl.regex.pattern' => TRUE,
+      'hl.regex.maxAnalyzedChars' => TRUE,
+      'mm' => TRUE,
+      'spellcheck' => TRUE,
+    );
+
+    // Date change to Range in versions after Solr 5.
+    if ($this->solr->getSolrVersion() >= 6) {
+      $deprecated_keys = [
+        'facet.date.start',
+        'facet.date.end',
+        'facet.date.gap',
+        'facet.date.hardend',
+        'facet.date.other',
+        'facet.date.include',
+      ];
+      $new_keys = [
+        'facet.range.start',
+        'facet.range.end',
+        'facet.range.gap',
+        'facet.range.hardend',
+        'facet.range.other',
+        'facet.range.include',
+      ];
+      $single_value_params = array_merge(array_diff_key($single_value_params, array_flip($deprecated_keys)), $new_keys);
+    }
+
+    return $single_value_params;
+  }
+
+  public function getSolrVersion() {
+    return $this->solr->getSolrVersion();
+  }
 
   public function getParam($name) {
     if ($name == 'fq') {
       return $this->rebuildFq();
     }
-    $empty = isset($this->single_value_params[$name]) ? NULL : array();
+    $empty = isset($this->getSingleValueParams()[$name]) ? NULL : array();
     return isset($this->params[$name]) ? $this->params[$name] : $empty;
   }
 
@@ -460,7 +493,7 @@ class SolrBaseQuery extends SolrFilterSubQuery implements DrupalSolrQueryInterfa
     // Anything that has a name and value
     // check if we have a : in the string
     if (strstr($string, ':')) {
-      list($name, $value) = explode(":", $string, 2);
+      [$name, $value] = explode(":", $string, 2);
     }
     else {
       $value = $string;
@@ -470,7 +503,7 @@ class SolrBaseQuery extends SolrFilterSubQuery implements DrupalSolrQueryInterfa
   }
 
   public function addParam($name, $value) {
-    if (isset($this->single_value_params[$name])) {
+    if (isset($this->getSingleValueParams()[$name])) {
       if (is_array($value)) {
         $value = end($value);
       }
