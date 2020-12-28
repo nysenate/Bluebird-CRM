@@ -31,6 +31,16 @@ if ! $readConfig --instance $instance --quiet; then
   exit 1
 fi
 
+echo "reinstall flexmailer from core package..."
+$drush $instance cvapi extension.disable key=uk.co.vedaconsulting.mosaico --quiet
+$drush $instance cvapi extension.disable key=org.civicrm.flexmailer --quiet
+$drush $instance cvapi extension.uninstall key=org.civicrm.flexmailer --quiet
+$drush $instance cvapi extension.install key=org.civicrm.flexmailer --quiet
+$drush $instance cvapi extension.enable key=uk.co.vedaconsulting.mosaico --quiet
+
+echo "upgrade extensions..."
+$drush $instance cvapi extension.upgrade --quiet
+
 ## upgrade drupal db
 echo "running drupal db upgrade..."
 $drush $instance updb -y -q
