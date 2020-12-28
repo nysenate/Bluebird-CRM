@@ -1,10 +1,9 @@
-name = Statistics
-description = Logs access statistics for your site.
-package = Core
+name = "User module flood control tests"
+description = "Support module for user flood control testing."
+package = Testing
 version = VERSION
 core = 7.x
-files[] = statistics.test
-configure = admin/config/system/statistics
+hidden = TRUE
 
 ; Information added by Drupal.org packaging script on 2020-12-03
 version = "7.77"
