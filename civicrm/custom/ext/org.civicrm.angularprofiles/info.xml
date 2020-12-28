@@ -8,12 +8,11 @@
     <author>Ginkgo Street Labs</author>
     <email>inquire@ginkgostreet.com</email>
   </maintainer>
-  <releaseDate>2018-06-29</releaseDate>
-  <version>4.7.31-1.1.2</version>
+  <releaseDate>2020-10-13</releaseDate>
+  <version>5.23-1.2.0</version>
   <develStage>stable</develStage>
   <compatibility>
-    <ver>4.7</ver>
-    <ver>5.0</ver>
+    <ver>5.23</ver>
   </compatibility>
   <comments>
     This extension is a utility for allowing AngularJS pages to load CiviCRM's Backbone.js-based profile editor/selector

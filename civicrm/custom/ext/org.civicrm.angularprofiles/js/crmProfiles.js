@@ -8,7 +8,8 @@
     function loadNextScript(scripts, callback, fail) {
       var script = scripts.shift();
       var isAbsoluteUrl = /^(http|\/)/.test(script.url);
-      script.url = isAbsoluteUrl ? script.url : CRM.config.resourceBase + script.url;
+      var baseUrl = script.packages ? CRM.config.packagesBase : CRM.config.resourceBase;
+      script.url = isAbsoluteUrl ? script.url : baseUrl + script.url;
 
       CRM.$.getScript(script.url)
         .done(function(scriptData, status) {
@@ -29,24 +30,24 @@
     function loadBackbone() {
       var deferred = $q.defer();
       var scripts = [
-        {url: 'packages/jquery/plugins/jstree/jquery.jstree.js', weight: 0},
-        {url: 'packages/backbone/json2.js', weight: 100},
-        {url: 'packages/backbone/backbone.js', weight: 120},
-        {url: 'packages/backbone/backbone.marionette.js', weight: 125},
-        {url: 'packages/backbone/backbone.collectionsubset.js', weight: 125},
-        {url: 'packages/backbone-forms/distribution/backbone-forms.js', weight: 130},
-        {url: 'packages/backbone-forms/distribution/adapters/backbone.bootstrap-modal.min.js', weight: 140},
-        {url: 'packages/backbone-forms/distribution/editors/list.min.js', weight: 140},
-        {url: CRM.vars['org.civicrm.angularprofiles'].backboneInitUrl, weight: 145},
-        {url: 'js/crm.backbone.js', weight: 150},
-        {url: 'js/model/crm.schema-mapped.js', weight: 200},
-        {url: 'js/model/crm.uf.js', weight: 200},
-        {url: 'js/model/crm.designer.js', weight: 200},
-        {url: 'js/model/crm.profile-selector.js', weight: 200},
-        {url: 'js/view/crm.designer.js', weight: 200},
-        {url: 'js/view/crm.profile-selector.js', weight: 200},
-        {url: 'js/jquery/jquery.crmProfileSelector.js', weight: 250},
-        {url: 'js/crm.designerapp.js', weight: 250}
+        {url: 'jquery/plugins/jstree/jquery.jstree.js', weight: 0, packages: true},
+        {url: 'backbone/json2.js', weight: 100, packages: true},
+        {url: 'backbone/backbone.js', weight: 120, packages: true},
+        {url: 'backbone/backbone.marionette.js', weight: 125, packages: true},
+        {url: 'backbone/backbone.collectionsubset.js', weight: 125, packages: true},
+        {url: 'backbone-forms/distribution/backbone-forms.js', weight: 130, packages: true},
+        {url: 'backbone-forms/distribution/adapters/backbone.bootstrap-modal.min.js', weight: 140, packages: true},
+        {url: 'backbone-forms/distribution/editors/list.min.js', weight: 140, packages: true},
+        {url: CRM.crmProfileUtils.backboneInitUrl, weight: 145, packages: false},
+        {url: 'js/crm.backbone.js', weight: 150, packages: false},
+        {url: 'js/model/crm.schema-mapped.js', weight: 200, packages: false},
+        {url: 'js/model/crm.uf.js', weight: 200, packages: false},
+        {url: 'js/model/crm.designer.js', weight: 200, packages: false},
+        {url: 'js/model/crm.profile-selector.js', weight: 200, packages: false},
+        {url: 'js/view/crm.designer.js', weight: 200, packages: false},
+        {url: 'js/view/crm.profile-selector.js', weight: 200, packages: false},
+        {url: 'js/jquery/jquery.crmProfileSelector.js', weight: 250, packages: false},
+        {url: 'js/crm.designerapp.js', weight: 250, packages: false}
       ];
 
       scripts.sort(function(a, b){
@@ -61,8 +62,8 @@
       //We need to put underscore on the global scope or backbone fails to load
       window._ = CRM._;
 
-      loadStyleFile(CRM.config.resourceBase + 'packages/jquery/plugins/jstree/themes/default/style.css');
-      loadStyleFile(CRM.config.resourceBase + 'packages/backbone-forms/distribution/templates/default.css');
+      loadStyleFile(CRM.config.packagesBase + 'jquery/plugins/jstree/themes/default/style.css');
+      loadStyleFile(CRM.config.packagesBase + 'backbone-forms/distribution/templates/default.css');
       loadStyleFile(CRM.config.resourceBase + 'css/crm.designer.css');
 
 
