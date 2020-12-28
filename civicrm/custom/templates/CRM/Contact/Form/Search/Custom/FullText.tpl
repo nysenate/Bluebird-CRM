@@ -62,7 +62,7 @@
     {if !$table and $summary.addShowAllLink.Contact}
       <div class="crm-section full-text-view-all-section">
         <a href="{crmURL p='civicrm/contact/search/custom' q="csid=`$csID`&reset=1&force=1&table=Contact&text=$text"}"
-        title="{ts}View all results for contacts{/ts}">&raquo;&nbsp;{ts}View all results for contacts{/ts}</a>
+        title="{ts}View all results for contacts{/ts}"><i class="crm-i fa-chevron-right" aria-hidden="true"></i> {ts}View all results for contacts{/ts}</a>
       </div>{/if}
     {* note we using location="below" because we don't want to use rows per page for now. And therefore don't put location="bottom" for now. *}
     {if $table}{include file="CRM/common/pager.tpl" location="below"}{/if}
@@ -84,7 +84,7 @@
           <th>{ts}Type{/ts}</th>
           <th>{ts}Subject{/ts}</th>
           <th>{ts}Details{/ts}</th>
-          <th class='link'>{ts}Added By{/ts}</th>
+          <th class='link'>{ts}Added by{/ts}</th>
           <th class='link'>{ts}With{/ts}</th>
           <th class='link'>{ts}Assignee{/ts}</th>
           {if $allowFileSearch}<th>{ts}File{/ts}</th>{/if}
@@ -97,20 +97,25 @@
             <td>{$row.subject|mb_truncate:40}</td>
             <td>{$row.details|escape}</td>
             <td>
-              <a href="{crmURL p='civicrm/contact/view' q="reset=1&cid=`$row.contact_id`&context=fulltext&key=`$qfKey`&text=`$text`"}" title="{ts}View contact details{/ts}">{$row.sort_name}</a>
+              <a href="{crmURL p='civicrm/contact/view' q="reset=1&cid=`$row.contact_id`&context=fulltext&key=`$qfKey`"}"
+                title="{ts}View Contact Details{/ts}">{$row.sort_name}</a>
             </td>
             <td>
-              <a href="{crmURL p='civicrm/contact/view' q="reset=1&cid=`$row.target_contact_id`&context=fulltext&key=`$qfKey`&text=`$text`"}" title="{ts}View contact details{/ts}">{$row.target_sort_name}</a>
+              <a href="{crmURL p='civicrm/contact/view' q="reset=1&cid=`$row.target_contact_id`&context=fulltext&key=`$qfKey`"}"
+                title="{ts}View Contact Details{/ts}">{$row.target_sort_name}</a>
             </td>
             <td>
-              <a href="{crmURL p='civicrm/contact/view' q="reset=1&cid=`$row.assignee_contact_id`&context=fulltext&key=`$qfKey`&text=`$text`"}" title="{ts}View contact details{/ts}">{$row.assignee_sort_name}</a>
+              <a href="{crmURL p='civicrm/contact/view' q="reset=1&cid=`$row.assignee_contact_id`&context=fulltext&key=`$qfKey`"}"
+                title="{ts}View Contact Details{/ts}">{$row.assignee_sort_name}</a>
             </td>
             {if $allowFileSearch}<td>{$row.fileHtml}</td>{/if}
             <td>
               {if $row.case_id }
-                <a href="{crmURL p='civicrm/case/activity/view' q="reset=1&aid=`$row.activity_id`&cid=`$row.client_id`&caseID=`$row.case_id`&context=fulltext&key=`$qfKey`&text=`$text`"}">
+                <a href="{crmURL p='civicrm/case/activity/view'
+                q="reset=1&aid=`$row.activity_id`&cid=`$row.client_id`&caseID=`$row.case_id`&context=fulltext&key=`$qfKey`"}">
               {else}
-                <a href="{crmURL p='civicrm/contact/view/activity' q="atype=`$row.activity_type_id`&action=view&reset=1&id=`$row.activity_id`&cid=`$row.contact_id`&context=fulltext&key=`$qfKey`&text=`$text`"}">
+                <a href="{crmURL p='civicrm/contact/view/activity'
+                q="atype=`$row.activity_type_id`&action=view&reset=1&id=`$row.activity_id`&cid=`$row.contact_id`&context=fulltext&key=`$qfKey`"}">
               {/if}
               {ts}View{/ts}</a>
             </td>
@@ -120,7 +125,7 @@
     {if !$table and $summary.addShowAllLink.Activity}
       <div class="crm-section full-text-view-all-section">
         <a href="{crmURL p='civicrm/contact/search/custom' q="csid=`$csID`&reset=1&force=1&table=Activity&text=$text"}"
-        title="{ts}View all results for activities{/ts}">&raquo;&nbsp;{ts}View all results for activities{/ts}</a>
+        title="{ts}View all results for activities{/ts}"><i class="crm-i fa-chevron-right" aria-hidden="true"></i> {ts}View all results for activities{/ts}</a>
       </div>
     {/if}
     {if $table}{include file="CRM/common/pager.tpl" location="below"}{/if}
@@ -151,18 +156,23 @@
         {foreach from=$summary.Case item=row}
           <tr class="{cycle values="odd-row,even-row"}">
             <td>
-              <a href="{crmURL p='civicrm/contact/view' q="reset=1&cid=`$row.contact_id`&context=fulltext&key=`$qfKey`&text=`$text`"}" title="{ts}View contact details{/ts}">{$row.sort_name}</a>
+              <a href="{crmURL p='civicrm/contact/view' q="reset=1&cid=`$row.contact_id`&context=fulltext&key=`$qfKey`"}"
+                title="{ts}View Contact Details{/ts}">{$row.sort_name}</a>
             </td>
             <td>{$row.case_start_date|crmDate:"%b %d, %Y %l:%M %P"}</td>
             <td>{$row.case_end_date|crmDate:"%b %d, %Y %l:%M %P"}</td>
             <td>{$row.case_id}</td>
             {if $allowFileSearch}<td>{$row.fileHtml}</td>{/if}
             {if $row.case_is_deleted}
-			  <td>
-                <a href="{crmURL p='civicrm/contact/view/case' q="reset=1&id=`$row.case_id`&cid=`$row.contact_id`&action=renew&context=fulltext&key=`$qfKey`&text=`$text`"}">{ts}Restore Case{/ts}</a></td>
-			{else}
-			  <td>
-                <a href="{crmURL p='civicrm/contact/view/case' q="reset=1&id=`$row.case_id`&cid=`$row.contact_id`&action=view&context=fulltext&key=`$qfKey`&text=`$text`"}">{ts}Manage{/ts}</a></td>
+              <td>
+                <a href="{crmURL p='civicrm/contact/view/case'
+                q="reset=1&id=`$row.case_id`&cid=`$row.contact_id`&action=renew&context=fulltext&key=`$qfKey`"}">{ts}Restore Case{/ts}</a>
+              </td>
+            {else}
+              <td>
+                <a href="{crmURL p='civicrm/contact/view/case'
+                q="reset=1&id=`$row.case_id`&cid=`$row.contact_id`&action=view&context=fulltext&key=`$qfKey`"}">{ts}Manage{/ts}</a>
+              </td>
             {/if}
             <td class="start_date hiddenElement">{$row.case_start_date|crmDate}</td>
             <td class="end_date hiddenElement">{$row.case_end_date|crmDate}</td>
@@ -172,7 +182,7 @@
     {if !$table and $summary.addShowAllLink.Case}
       <div class="crm-section full-text-view-all-section">
         <a href="{crmURL p='civicrm/contact/search/custom' q="csid=`$csID`&reset=1&force=1&table=Case&text=$text"}"
-        title="{ts}View all results for cases{/ts}">&raquo;&nbsp;{ts}View all results for cases{/ts}</a>
+        title="{ts}View all results for cases{/ts}"><i class="crm-i fa-chevron-right" aria-hidden="true"></i> {ts}View all results for cases{/ts}</a>
       </div>
     {/if}
     {if $table}{include file="CRM/common/pager.tpl" location="below"}{/if}
@@ -205,7 +215,9 @@
         {foreach from=$summary.Contribution item=row}
           <tr class="{cycle values="odd-row,even-row"}">
             <td>
-              <a href="{crmURL p='civicrm/contact/view' q="reset=1&cid=`$row.contact_id`&context=fulltext&key=`$qfKey`&text=`$text`"}" title="{ts}View contact details{/ts}">{$row.sort_name}</a>
+              <a href="{crmURL p='civicrm/contact/view'
+              q="reset=1&cid=`$row.contact_id`&context=fulltext&key=`$qfKey`"}"
+                title="{ts}View Contact Details{/ts}">{$row.sort_name}</a>
             </td>
             <td>{$row.contribution_total_amount|crmMoney}</td>
             <td>{$row.financial_type}</td>
@@ -214,7 +226,8 @@
             <td>{$row.contribution_status}</td>
             {if $allowFileSearch}<td>{$row.fileHtml}</td>{/if}
             <td>
-              <a href="{crmURL p='civicrm/contact/view/contribution' q="reset=1&id=`$row.contribution_id`&cid=`$row.contact_id`&action=view&context=fulltext&key=`$qfKey`&text=`$text`"}">{ts}View{/ts}</a>
+              <a href="{crmURL p='civicrm/contact/view/contribution'
+              q="reset=1&id=`$row.contribution_id`&cid=`$row.contact_id`&action=view&context=fulltext&key=`$qfKey`"}">{ts}View{/ts}</a>
             </td>
             <td class="received_date hiddenElement">{$row.contribution_receive_date|crmDate}</td>
           </tr>
@@ -223,7 +236,7 @@
     {if !$table and $summary.addShowAllLink.Contribution}
       <div class="crm-section full-text-view-all-section">
         <a href="{crmURL p='civicrm/contact/search/custom' q="csid=`$csID`&reset=1&force=1&table=Contribution&text=$text"}"
-        title="{ts}View all results for contributions{/ts}">&raquo;&nbsp;{ts}View all results for contributions{/ts}</a>
+        title="{ts}View all results for contributions{/ts}"><i class="crm-i fa-chevron-right" aria-hidden="true"></i> {ts}View all results for contributions{/ts}</a>
       </div>
     {/if}
     {if $table}{include file="CRM/common/pager.tpl" location="below"}{/if}
@@ -258,7 +271,8 @@
         {foreach from=$summary.Participant item=row}
           <tr class="{cycle values="odd-row,even-row"}">
             <td>
-              <a href="{crmURL p='civicrm/contact/view' q="reset=1&cid=`$row.contact_id`&context=fulltext&key=`$qfKey`&text=`$text`"}" title="{ts}View contact details{/ts}">{$row.sort_name}</a>
+              <a href="{crmURL p='civicrm/contact/view' q="reset=1&cid=`$row.contact_id`&context=fulltext&key=`$qfKey`"}"
+                title="{ts}View Contact Details{/ts}">{$row.sort_name}</a>
             </td>
             <td>{$row.event_title}</td>
             <td>{$row.participant_fee_level}</td>
@@ -269,7 +283,8 @@
             <td>{$row.participant_role}</td>
             {if $allowFileSearch}<td>{$row.fileHtml}</td>{/if}
             <td>
-              <a href="{crmURL p='civicrm/contact/view/participant' q="reset=1&id=`$row.participant_id`&cid=`$row.contact_id`&action=view&context=fulltext&key=`$qfKey`&text=`$text`"}">{ts}View{/ts}</a>
+              <a href="{crmURL p='civicrm/contact/view/participant'
+              q="reset=1&id=`$row.participant_id`&cid=`$row.contact_id`&action=view&context=fulltext&key=`$qfKey`"}">{ts}View{/ts}</a>
             </td>
             <td class="register_date hiddenElement">{$row.participant_register_date|crmDate}</td>
           </tr>
@@ -278,7 +293,7 @@
     {if !$table and $summary.addShowAllLink.Participant}
       <div class="crm-section full-text-view-all-section"><a
         href="{crmURL p='civicrm/contact/search/custom' q="csid=`$csID`&reset=1&force=1&table=Participant&text=$text"}"
-        title="{ts}View all results for participants{/ts}">&raquo;&nbsp;{ts}View all results for participants{/ts}</a>
+        title="{ts}View all results for participants{/ts}"><i class="crm-i fa-chevron-right" aria-hidden="true"></i> {ts}View all results for participants{/ts}</a>
       </div>{/if}
     {if $table}{include file="CRM/common/pager.tpl" location="below"}{/if}
     {* END Actions/Results section *}
@@ -312,7 +327,8 @@
         {foreach from=$summary.Membership item=row}
           <tr class="{cycle values="odd-row,even-row"}">
             <td>
-              <a href="{crmURL p='civicrm/contact/view' q="reset=1&cid=`$row.contact_id`&context=fulltext&key=`$qfKey`&text=`$text`"}" title="{ts}View contact details{/ts}">{$row.sort_name}</a>
+              <a href="{crmURL p='civicrm/contact/view' q="reset=1&cid=`$row.contact_id`&context=fulltext&key=`$qfKey`"}"
+                title="{ts}View Contact Details{/ts}">{$row.sort_name}</a>
             </td>
             <td>{$row.membership_type}</td>
             <td>{$row.membership_fee|crmMoney}</td>
@@ -322,7 +338,8 @@
             <td>{$row.membership_status}</td>
             {if $allowFileSearch}<td>{$row.fileHtml}</td>{/if}
             <td>
-              <a href="{crmURL p='civicrm/contact/view/membership' q="reset=1&id=`$row.membership_id`&cid=`$row.contact_id`&action=view&context=fulltext&key=`$qfKey`&text=`$text`"}">{ts}View{/ts}</a>
+              <a href="{crmURL p='civicrm/contact/view/membership'
+              q="reset=1&id=`$row.membership_id`&cid=`$row.contact_id`&action=view&context=fulltext&key=`$qfKey`"}">{ts}View{/ts}</a>
             </td>
             <td class="start_date hiddenElement">{$row.membership_start_date|crmDate}</td>
             <td class="end_date hiddenElement">{$row.membership_end_date|crmDate}</td>
@@ -332,7 +349,7 @@
     {if !$table and $summary.addShowAllLink.Membership}
       <div class="crm-section full-text-view-all-section">
         <a href="{crmURL p='civicrm/contact/search/custom' q="csid=`$csID`&reset=1&force=1&table=Membership&text=$text"}"
-        title="{ts}View all results for memberships{/ts}">&raquo;&nbsp;{ts}View all results for memberships{/ts}</a>
+        title="{ts}View all results for memberships{/ts}"><i class="crm-i fa-chevron-right" aria-hidden="true"></i> {ts}View all results for memberships{/ts}</a>
       </div>
     {/if}
     {if $table}{include file="CRM/common/pager.tpl" location="below"}{/if}
@@ -378,7 +395,7 @@
   {if !$table and $summary.addShowAllLink.File}
   <div class="crm-section full-text-view-all-section">
     <a href="{crmURL p='civicrm/contact/search/custom' q="csid=`$csID`&reset=1&force=1&table=File&text=$text"}"
-          title="{ts}View all results for files{/ts}">&raquo;&nbsp;{ts}View all results for files{/ts}</a>
+          title="{ts}View all results for files{/ts}"><i class="crm-i fa-chevron-right" aria-hidden="true"></i> {ts}View all results for files{/ts}</a>
   </div>{/if}
   {if $table}{include file="CRM/common/pager.tpl" location="below"}{/if}
 {* END Actions/Results section *}

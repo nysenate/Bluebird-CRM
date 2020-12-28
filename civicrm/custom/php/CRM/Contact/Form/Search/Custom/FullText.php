@@ -301,11 +301,7 @@ WHERE      t.table_name = 'Activity' AND
     $config = CRM_Core_Config::singleton();
 
     $form->applyFilter('__ALL__', 'trim');
-    $form->add('text',
-      'text',
-      ts('Find'),
-      TRUE
-    );
+    $form->add('text', 'text', ts('Find'), NULL, TRUE);
 
     // also add a select box to allow the search to be constrained
     $tables = ['' => ts('All tables')];
@@ -563,4 +559,5 @@ FROM   {$this->_tableName} contact_a
     }
     return $result;
   }
+
 }
