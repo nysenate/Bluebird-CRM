@@ -140,7 +140,7 @@ $prefsCore['syncCMSEmail'] = false;
 $prefsCore['wkhtmltopdfPath'] = get_config_value($bbcfg, 'wkhtmltopdf.path', '/usr/local/bin/wkhtmltopdf');
 $prefsCore['versionCheck'] = false;
 $prefsCore['checksumTimeout'] = 7;
-$prefsCore['menubar_color'] = '#DADAD2';
+$prefsCore['menubar_color'] = 'white';
 $prefsCore['ajaxPopupsEnabled'] = 1;
 
 // Address settings, from Address.setting.php

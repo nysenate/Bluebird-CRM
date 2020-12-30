@@ -232,6 +232,7 @@ class CRM_Report_Form_Contribute_History extends CRM_Report_Form {
             'default' => '',
           ],
           'receive_date' => ['operatorType' => CRM_Report_Form::OP_DATE],
+          'receipt_date' => ['operatorType' => CRM_Report_Form::OP_DATE],
           'contribution_status_id' => [
             'title' => ts('Contribution Status'),
             'operatorType' => CRM_Report_Form::OP_MULTISELECT,
@@ -814,7 +815,7 @@ class CRM_Report_Form_Contribute_History extends CRM_Report_Form {
           }
 
           if ($last_primary && ($rowNum == "{$last_primary}_total")) {
-            $value = CRM_Utils_Money::format($value, ' ');
+            $value = CRM_Utils_Money::formatLocaleNumericRoundedForDefaultCurrency($value);
           }
           $row[$key] = '<strong>' . $value . '</strong>';
         }

@@ -16,8 +16,6 @@
  *
  * @package CRM
  * @copyright CiviCRM LLC https://civicrm.org/licensing
- * $Id$
- *
  */
 class CRM_Core_Action {
 
@@ -180,6 +178,12 @@ class CRM_Core_Action {
    * @param null $op
    * @param null $objectName
    * @param int $objectId
+   * @param string $iconMode
+   *   - `text`: even if `icon` is set for a link, display the `name`
+   *   - `icon`: display only the `icon` for each link if it's available, and
+   *     don't tuck anything under "more >"
+   *   - `both`: if `icon` is available, display it next to the `name` for each
+   *     link
    *
    * @return string
    *   the html string
@@ -192,7 +196,8 @@ class CRM_Core_Action {
     $enclosedAllInSingleUL = FALSE,
     $op = NULL,
     $objectName = NULL,
-    $objectId = NULL
+    $objectId = NULL,
+    $iconMode = 'text'
   ) {
     if (empty($links)) {
       return NULL;
@@ -245,11 +250,22 @@ class CRM_Core_Action {
         if (strpos($urlPath, '/delete') || strpos($urlPath, 'action=delete')) {
           $classes .= " small-popup";
         }
+
+        $linkContent = $link['name'];
+        if (!empty($link['icon'])) {
+          if ($iconMode == 'icon') {
+            $linkContent = CRM_Core_Page::crmIcon($link['icon'], $link['name'], TRUE, ['title' => '']);
+          }
+          elseif ($iconMode == 'both') {
+            $linkContent = CRM_Core_Page::crmIcon($link['icon']) . ' ' . $linkContent;
+          }
+        }
+
         $url[] = sprintf('<a href="%s" class="%s" %s' . $extra . '>%s</a>',
           $urlPath,
           $classes,
           !empty($link['title']) ? "title='{$link['title']}' " : '',
-          $link['name']
+          $linkContent
         );
       }
     }
@@ -263,18 +279,20 @@ class CRM_Core_Action {
     }
     else {
       $extra = '';
-      $urlOrig = $url;//NYSS
-      $extraLinks = array_splice($url, 2);
-      //NYSS 5942
-      $mainLinksLength = array_sum(array_map('strlen',array_map('strip_tags',array_slice($url, 0, 2))));
-      if (count($extraLinks) > 1 ||
-        ($mainLinksLength > 10 && count($url) > 1 && strpos($url[0], 'contact/view/case') === FALSE) ) {
-        if ( $mainLinksLength > 10 ) {
-          $mainLinks = array_slice($url, 0, 1);
-          $extraLinks = array_splice($urlOrig, 1);
-        }
-        else {
-          $mainLinks = array_slice($url, 0, 2);
+      if ($iconMode != 'icon') {
+        $urlOrig = $url;//NYSS
+        $extraLinks = array_splice($url, 2);
+        //NYSS 5942
+        $mainLinksLength = array_sum(array_map('strlen',array_map('strip_tags',array_slice($url, 0, 2))));
+        if (count($extraLinks) > 1 ||
+          ($mainLinksLength > 10 && count($url) > 1 && strpos($url[0], 'contact/view/case') === FALSE) ) {
+          if ($mainLinksLength > 10) {
+            $mainLinks = array_slice($url, 0, 1);
+            $extraLinks = array_splice($urlOrig, 1);
+          }
+          else {
+            $mainLinks = array_slice($url, 0, 2);
+          }
         }
         CRM_Utils_String::append($extra, '</li><li>', $extraLinks);
         $extra = "{$extraULName}<ul class='panel'><li>{$extra}</li></ul>";
@@ -324,7 +342,7 @@ class CRM_Core_Action {
 
     // make links indexed sequentially instead of by bitmask
     // otherwise it's next to impossible to reliably add new ones
-    $seqLinks = array();
+    $seqLinks = [];
     foreach ($links as $bit => $link) {
       $link['bit'] = $bit;
       $seqLinks[] = $link;

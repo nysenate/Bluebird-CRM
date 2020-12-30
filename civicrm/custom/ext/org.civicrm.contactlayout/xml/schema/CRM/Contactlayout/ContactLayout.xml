@@ -7,6 +7,7 @@
   <comment>Layouts for the contact summary page</comment>
   <add>1.0</add>
   <log>true</log>
+  <title>Contact Summary Layout</title>
 
   <field>
     <name>id</name>

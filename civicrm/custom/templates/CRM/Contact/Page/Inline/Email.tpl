@@ -12,14 +12,14 @@
   <div class="crm-clear crm-inline-block-content" {if $permission EQ 'edit'}title="{ts}Add or edit email{/ts}"{/if}>
   {if $permission EQ 'edit'}
     <div class="crm-edit-help">
-      <span class="crm-i fa-pencil"></span> {if empty($email)}{ts}Add email{/ts}{else}{ts}Add or edit email{/ts}{/if}
+      <span class="crm-i fa-pencil" aria-hidden="true"></span> {if empty($email)}{ts}Add email{/ts}{else}{ts}Add or edit email{/ts}{/if}
     </div>
   {/if}
   {if empty($email)}
     <div class="crm-summary-row">
       <div class="crm-label">
         {ts}Email{/ts}
-        {if $privacy.do_not_email}<span class="icon privacy-flag do-not-email" title="{ts}Privacy flag: Do Not Email{/ts}"></span>{/if}
+        {if $privacy.do_not_email}{privacyFlag field=do_not_email}{/if}
       </div>
       <div class="crm-content"></div>
     </div>

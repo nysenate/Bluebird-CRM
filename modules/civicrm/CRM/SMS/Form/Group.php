@@ -97,12 +97,12 @@ class CRM_SMS_Form_Group extends CRM_Contact_Form_Task {
 
     $this->add('select', 'sms_provider_id',
       ts('Select SMS Provider'),
-      CRM_Utils_Array::collect('title', CRM_SMS_BAO_Provider::getProviders()),
+      CRM_Utils_Array::collect('title', CRM_SMS_BAO_Provider::getProviders(NULL, ['is_active' => 1])),
       TRUE
     );
 
     // Get the mailing groups.
-    $groups = CRM_Core_PseudoConstant::nestedGroup('Mailing');
+    $groups = CRM_Core_PseudoConstant::nestedGroup(TRUE, 'Mailing');
 
     // Get the sms mailing list.
     $mailings = CRM_Mailing_PseudoConstant::completed('sms');

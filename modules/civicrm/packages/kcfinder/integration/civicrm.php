@@ -71,7 +71,7 @@ function checkAuthentication() {
       break;
     }
     if(!$auth_function($config)) {
-      CRM_Core_Error::fatal(ts("You must be logged in with proper permissions to edit, add, or delete uploaded images."));
+      throw new CRM_Core_Exception(ts("You must be logged in with proper permissions to edit, add, or delete uploaded images."));
     }
 
     $_SESSION['KCFINDER']['disabled'] = false;

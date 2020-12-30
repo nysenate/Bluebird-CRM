@@ -1,0 +1,35 @@
+{
+    "name": "brick/money",
+    "description": "Money and currency library",
+    "type": "library",
+    "keywords": [
+        "Brick",
+        "Money",
+        "Currency"
+    ],
+    "license": "MIT",
+    "require": {
+        "php": "^7.1|^8.0",
+        "brick/math": "~0.7.3 || ~0.8.0"
+    },
+    "require-dev": {
+        "brick/varexporter": "~0.2.1",
+        "phpunit/phpunit": "^7.5.15",
+        "php-coveralls/php-coveralls": "^2.2",
+        "ext-pdo": "*",
+        "ext-dom": "*"
+    },
+    "suggest": {
+        "ext-intl": "Required to format Money objects"
+    },
+    "autoload": {
+        "psr-4": {
+            "Brick\\Money\\": "src/"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "Brick\\Money\\Tests\\": "tests/"
+        }
+    }
+}

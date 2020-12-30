@@ -641,11 +641,15 @@ function apachesolr_status_page($environment = array()) {
 }
 
 /**
- * Get the report, eg.: some statistics and useful data from the Apache Solr index
+ * Get the report.
+ *
+ * Return some statistics and useful data from the Apache Solr index.
  *
  * @param array $environment
+ *   A single environment to report on.
  *
- * @return array page render array
+ * @return array
+ *   Page render array.
  */
 function apachesolr_index_report(array $environment = array()) {
   if (empty($environment)) {
@@ -655,7 +659,7 @@ function apachesolr_index_report(array $environment = array()) {
   $environments = apachesolr_load_all_environments();
   $environments_list = array();
   foreach ($environments as $env) {
-    $var_status = array('!name' =>$env['name']);
+    $var_status = array('!name' => $env['name']);
     $environments_list[] = l(t('Statistics for !name', $var_status), 'admin/reports/apachesolr/' . $env['env_id']);
   }
   $output['environments_list'] = array(
@@ -679,7 +683,10 @@ function apachesolr_index_report(array $environment = array()) {
 
   $limit = variable_get('apachesolr_luke_limit', 20000);
   if (isset($data->index->numDocs) && $data->index->numDocs > $limit) {
-    $messages[] = array(t('Limit'), t('You have more than @limit documents, so term frequencies are being omitted for performance reasons.', array('@limit' => $limit)));
+    $messages[] = array(
+      t('Limit'),
+      t('You have more than @limit documents, so term frequencies are being omitted for performance reasons.', array('@limit' => $limit)),
+    );
     $not_found = t('<em>Omitted</em>');
   }
   elseif (isset($data->index->numDocs)) {
@@ -699,12 +706,12 @@ function apachesolr_index_report(array $environment = array()) {
   }
   // Initializes output with information about which server's setting we are
   // editing, as it is otherwise not transparent to the end user.
-  $fields = (array)$data->fields;
+  $fields = (array) $data->fields;
   if ($fields) {
     $messages[] = array(t('# of fields in index'), count($fields));
   }
 
-  // Output the messages we have for this page
+  // Output the messages we have for this page.
   $output['apachesolr_index_report'] = array(
     '#theme' => 'table',
     '#header' => array('type', 'value'),
@@ -716,7 +723,9 @@ function apachesolr_index_report(array $environment = array()) {
     $header = array(
       'name' => t('Field name'),
       'type' => t('Index type'),
-      'terms' => t('Distinct terms'),
+      'docs' => t('Documents'),
+      'terms' => t('Distinct Terms'),
+
     );
 
     // Builds table rows.
@@ -726,11 +735,12 @@ function apachesolr_index_report(array $environment = array()) {
       $rows[$name] = array(
         'name' => $name,
         'type' => $field->type,
+        'docs' => isset($field->docs) ? $field->docs : $not_found,
         'terms' => isset($field->distinct) ? $field->distinct : $not_found
       );
     }
     ksort($rows);
-    // Output the fields we found for this environment
+    // Output the fields we found for this environment.
     $output['field_table'] = array(
       '#theme' => 'table',
       '#header' => $header,

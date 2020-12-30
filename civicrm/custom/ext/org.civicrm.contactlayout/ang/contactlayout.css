@@ -379,3 +379,36 @@
 #contactLayoutEditor h5 {
   font-size: 13px;
 }
+
+.crm-container .contactlayout__relatioonship-dialog .select2-container {
+  min-width: calc(100% - 30px);
+}
+
+.contactlayout__relatioonship-dialog__illustration {
+  align-items: center;
+  color: gray;
+  display: flex;
+  margin-top: 2em;
+  text-align: center;
+}
+
+.contactlayout__relatioonship-dialog__illustration__contact {
+  align-self: flex-start;
+  width: 30%;
+}
+
+.contactlayout__relatioonship-dialog__illustration__relationship-type {
+  position: relative;
+  top: 5px;
+  width: 40%;
+}
+
+.contactlayout__relatioonship-dialog__illustration__relationship-type .fa {
+  font-size: 1.5em;
+  position: relative;
+  top: 3px;
+}
+
+.contactlayout__relatioonship-dialog__illustration__relationship-type small {
+  padding: 0 5px;
+}

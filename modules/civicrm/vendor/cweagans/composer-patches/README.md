@@ -66,7 +66,7 @@ Then your `composer.patches.json` should look like this:
 
 ## Allowing patches to be applied from dependencies
 
-If you want your project to accept patches from dependencies, you must have the following in your composer file:
+If your project doesn't supply any patches of its own, but you still want to accept patches from dependencies, you must have the following in your composer file:
 
 ```json
 {
@@ -78,6 +78,8 @@ If you want your project to accept patches from dependencies, you must have the 
   }
 }
 ```
+
+If you do have a `patches` section in your composer file that defines your own set of patches then the `enable-patching` setting will be ignored and patches from dependencies will always be applied.
 
 ## Ignoring patches
 
@@ -110,6 +112,21 @@ There may be situations in which you want to ignore a patch supplied by a depend
           "This patch has known conflicts with our Quick Edit integration": "https://www.drupal.org/files/issues/2664682-49.patch"
         }
       }
+    }
+  }
+}
+```
+
+## Allowing to force the patch level (-pX)
+
+Some situations require to force the patchLevel used to apply patches on a particular package.
+Its useful for packages like drupal/core which packages only a subdir of the original upstream project on which patches are based.
+
+```json
+{
+  "extra": {
+    "patchLevel": {
+      "drupal/core": "-p2"
     }
   }
 }

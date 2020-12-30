@@ -11,28 +11,32 @@
 
 namespace Symfony\Component\Process;
 
+@trigger_error(sprintf('The %s class is deprecated since Symfony 3.4 and will be removed in 4.0. Use the Process class instead.', ProcessBuilder::class), E_USER_DEPRECATED);
+
 use Symfony\Component\Process\Exception\InvalidArgumentException;
 use Symfony\Component\Process\Exception\LogicException;
 
 /**
  * @author Kris Wallsmith <kris@symfony.com>
+ *
+ * @deprecated since version 3.4, to be removed in 4.0. Use the Process class instead.
  */
 class ProcessBuilder
 {
     private $arguments;
     private $cwd;
-    private $env = array();
+    private $env = [];
     private $input;
     private $timeout = 60;
-    private $options = array();
+    private $options;
     private $inheritEnv = true;
-    private $prefix = array();
+    private $prefix = [];
     private $outputDisabled = false;
 
     /**
      * @param string[] $arguments An array of arguments
      */
-    public function __construct(array $arguments = array())
+    public function __construct(array $arguments = [])
     {
         $this->arguments = $arguments;
     }
@@ -44,7 +48,7 @@ class ProcessBuilder
      *
      * @return static
      */
-    public static function create(array $arguments = array())
+    public static function create(array $arguments = [])
     {
         return new static($arguments);
     }
@@ -74,7 +78,7 @@ class ProcessBuilder
      */
     public function setPrefix($prefix)
     {
-        $this->prefix = \is_array($prefix) ? $prefix : array($prefix);
+        $this->prefix = \is_array($prefix) ? $prefix : [$prefix];
 
         return $this;
     }
@@ -163,13 +167,11 @@ class ProcessBuilder
     /**
      * Sets the input of the process.
      *
-     * @param mixed $input The input as a string
+     * @param resource|string|int|float|bool|\Traversable|null $input The input content
      *
      * @return $this
      *
      * @throws InvalidArgumentException In case the argument is invalid
-     *
-     * Passing an object as an input is deprecated since version 2.5 and will be removed in 3.0.
      */
     public function setInput($input)
     {
@@ -260,20 +262,15 @@ class ProcessBuilder
             throw new LogicException('You must add() command arguments before calling getProcess().');
         }
 
-        $options = $this->options;
-
         $arguments = array_merge($this->prefix, $this->arguments);
-        $script = implode(' ', array_map(array(__NAMESPACE__.'\\ProcessUtils', 'escapeArgument'), $arguments));
+        $process = new Process($arguments, $this->cwd, $this->env, $this->input, $this->timeout, $this->options);
+        // to preserve the BC with symfony <3.3, we convert the array structure
+        // to a string structure to avoid the prefixing with the exec command
+        $process->setCommandLine($process->getCommandLine());
 
         if ($this->inheritEnv) {
-            // include $_ENV for BC purposes
-            $env = array_replace($_ENV, $_SERVER, $this->env);
-        } else {
-            $env = $this->env;
+            $process->inheritEnvironmentVariables();
         }
-
-        $process = new Process($script, $this->cwd, $env, $this->input, $this->timeout, $options);
-
         if ($this->outputDisabled) {
             $process->disableOutput();
         }

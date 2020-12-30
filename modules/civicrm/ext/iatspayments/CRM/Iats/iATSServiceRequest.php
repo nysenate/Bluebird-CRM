@@ -220,17 +220,20 @@ class CRM_Iats_iATSServiceRequest {
       }
     }
     catch (SoapFault $exception) {
-      // always log soap faults to the CiviCRM error log
-      CRM_Core_Error::debug_var('SoapFault Exception', $exception);
+      // always log soap fault codes to the CiviCRM error log
       CRM_Core_Error::debug_var('SoapFault Code',$exception->faultcode);
       CRM_Core_Error::debug_var('SoapFault String',$exception->faultstring);
-      if (!empty($this->options['debug']) && !empty($soapClient)) {
-        $response_log = "\n HEADER:\n";
-        $response_log .= $soapClient->__getLastResponseHeaders();
-        $response_log .= "\n BODY:\n";
-        $response_log .= $soapClient->__getLastResponse();
-        $response_log .= "\n BODYEND:\n";
-        CRM_Core_Error::debug_var('Raw Response', $response_log);
+      // extra logging if debugging
+      if (!empty($this->options['debug'])) {
+        CRM_Core_Error::debug_var('SoapFault Exception', $exception);
+        if (!empty($soapClient)) {
+          $response_log = "\n HEADER:\n";
+          $response_log .= $soapClient->__getLastResponseHeaders();
+          $response_log .= "\n BODY:\n";
+          $response_log .= $soapClient->__getLastResponse();
+          $response_log .= "\n BODYEND:\n";
+          CRM_Core_Error::debug_var('Raw Response', $response_log);
+        }
       }
       return FALSE;
     }

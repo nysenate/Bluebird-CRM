@@ -1,7 +1,7 @@
 <?php
 
 /**
- * @file Copyright iATS Payments (c) 2014.
+ * @file Copyright iATS Payments (c) 2020.
  * @author Alan Dixon
  *
  * This file is a part of CiviCRM published extension.
@@ -20,6 +20,8 @@
  *
  * This code provides glue between CiviCRM payment model and the iATS Payment model encapsulated in the CRM_Iats_iATSServiceRequest object
  */
+
+use Civi\Payment\Exception\PaymentProcessorException;
 
 /**
  *
@@ -45,7 +47,6 @@ class CRM_Core_Payment_iATSService extends CRM_Core_Payment {
    */
   public function __construct($mode, &$paymentProcessor, &$paymentForm = NULL, $force = FALSE) {
     $this->_paymentProcessor = $paymentProcessor;
-    $this->_processorName = ts('iATS Payments');
 
     // Get merchant data from config.
     $config = CRM_Core_Config::singleton();
@@ -114,6 +115,24 @@ class CRM_Core_Payment_iATSService extends CRM_Core_Payment {
   }
 
   /**
+   * Internal function to determine if I'm supporting self-service functions
+   *
+   * @return bool
+   */
+  protected function allowSelfService($action) {
+    if ('CRM_Core_Payment_iATSServiceACHEFT' == CRM_Utils_System::getClassName($this)) {
+      return FALSE;
+    }
+    elseif (!CRM_Core_Permission::check('access CiviContribution')) {
+      // disable self-service 'action' if the admin has not allowed it
+      if (FALSE == $this->getSettings('enable_'.$action)) {
+	return FALSE;
+      }
+    }
+    return TRUE;
+  }
+
+  /**
    * The first payment date is configurable when setting up back office recurring payments.
    * For iATSPayments, this is also true for front-end recurring payments.
    *
@@ -121,12 +140,34 @@ class CRM_Core_Payment_iATSService extends CRM_Core_Payment {
    */
   public function supportsFutureRecurStartDate() {
     return TRUE;
-  } 
+  }
+
+  /* We override the default behaviour of allowing self-service editing of recurring contributions
+   * to use the allowSelfService() function that tests for the iATS configuration setting
+   *
+   * @return bool
+   */
+
+  public function supportsUpdateSubscriptionBillingInfo() {
+    return $this->allowSelfService('update_subscription_billing_info');
+  }
+
+  public function supportsEditRecurringContribution() {
+    return $this->allowSelfService('change_subscription_amount');
+  }
+
+  public function supportsChangeSubscriptionAmount() {
+    return $this->allowSelfService('change_subscription_amount');
+  }
+
+  public function supportsCancelRecurring() {
+    return $this->allowSelfService('cancel_recurring');
+  }
 
   /**
    *
    */
-  public function doDirectPayment(&$params) {
+  public function doPayment(&$params, $component = 'contribute') {
 
     if (!$this->_profile) {
       return self::error('Unexpected error, missing profile');
@@ -154,7 +195,6 @@ class CRM_Core_Payment_iATSService extends CRM_Core_Payment {
         // Success.
         $params['payment_status_id'] = 1;
         $params['trxn_id'] = trim($result['remote_id']) . ':' . time();
-        $params['gross_amount'] = $params['amount'];
         return $params;
       }
       else {
@@ -214,7 +254,6 @@ class CRM_Core_Payment_iATSService extends CRM_Core_Payment {
         $today = date('Ymd');
         // If the receive_date is NOT today, then
         // create a pending contribution and adjust the next scheduled date.
-        CRM_Core_Error::debug_var('receive_date', $receieve_date);
         if ($receive_date !== $today) {
           // I've got a schedule to adhere to!
           // set the receieve time to 3:00 am for a better admin experience
@@ -240,11 +279,10 @@ class CRM_Core_Payment_iATSService extends CRM_Core_Payment {
           $response = $iats->request($credentials, $request);
           $result = $iats->result($response);
           if ($result['status']) {
-            // Add a time string to iATS short authentication string to ensure 
+            // Add a time string to iATS short authentication string to ensure
             // uniqueness and provide helpful referencing.
             $update = array(
               'trxn_id' => trim($result['remote_id']) . ':' . time(),
-              'gross_amount' => $params['amount'],
               'payment_status_id' => 1,
             );
             // do some cleanups to the recurring record in updateRecurring
@@ -285,7 +323,7 @@ class CRM_Core_Payment_iATSService extends CRM_Core_Payment {
   /**
    * Set additional fields when editing the schedule.
    *
-   * Note: this doesn't completely replace the form hook, which is still 
+   * Note: this doesn't completely replace the form hook, which is still
    * in use for additional changes, and to support 4.6.
    * e.g. the commented out fields below don't work properly here.
    */
@@ -310,29 +348,18 @@ class CRM_Core_Payment_iATSService extends CRM_Core_Payment {
    *
    */
   public function &error($error = NULL) {
-    $e = CRM_Core_Error::singleton();
     if (is_object($error)) {
-      $e->push($error->getResponseCode(),
-        0, NULL,
-        $error->getMessage()
-      );
+      throw new PaymentProcessorException(ts('Error %1', [1 => $error->getMessage()]));
     }
     elseif ($error && is_numeric($error)) {
-      $e->push($error,
-        0, NULL,
-        $this->errorString($error)
-      );
+      throw new PaymentProcessorException(ts('Error %1', [1 => $this->errorString($error)]));
     }
     elseif (is_string($error)) {
-      $e->push(9002,
-        0, NULL,
-        $error
-      );
+      throw new PaymentProcessorException(ts('Error %1', [1 => $error]));
     }
     else {
-      $e->push(9001, 0, NULL, "Unknown System Error.");
+      throw new PaymentProcessorException(ts('Unknown System Error.', 9001));
     }
-    return $e;
   }
 
   /**
@@ -438,8 +465,8 @@ class CRM_Core_Payment_iATSService extends CRM_Core_Payment {
     if (empty($params['crid'])) {
       $params['crid'] = !empty($_POST['crid']) ? (int) $_POST['crid'] : (!empty($_GET['crid']) ? (int) $_GET['crid'] : 0);
       if (empty($params['crid']) && !empty($params['entryURL'])) {
-        $components = parse_url($params['entryURL']); 
-        parse_str(html_entity_decode($components['query']), $entryURLquery); 
+        $components = parse_url($params['entryURL']);
+        parse_str(html_entity_decode($components['query']), $entryURLquery);
         $params['crid'] = $entryURLquery['crid'];
       }
     }
@@ -448,7 +475,7 @@ class CRM_Core_Payment_iATSService extends CRM_Core_Payment {
     if (empty($crid)) {
       $alert = ts('This system is unable to perform self-service updates to credit cards. Please contact the administrator of this site.');
       throw new Exception($alert);
-    } 
+    }
     $mop = array(
       'Visa' => 'VISA',
       'MasterCard' => 'MC',
@@ -471,6 +498,13 @@ class CRM_Core_Payment_iATSService extends CRM_Core_Payment {
       'creditCardExpiry' => sprintf('%02d/%02d', $params['month'], $params['year'] % 100),
       'mop' => $mop[$params['credit_card_type']],
     );
+
+    // IATS-323
+    $submit_values['updateCreditCardNum'] = (0 < strlen($submit_values['creditCardNum']) && (FALSE === strpos($params['creditCardNum'], '*'))) ? 1 : 0;
+    if (empty($submit_values['updateCreditCardNum'])) {
+      unset($submit_values['creditCardNum']);
+      unset($submit_values['updateCreditCardNum']);
+    }
 
     $credentials = CRM_Iats_iATSServiceRequest::credentials($contribution_recur['payment_processor_id'], 0);
     $iats_service_params = array('type' => 'customer', 'iats_domain' => $credentials['domain'], 'method' => 'update_credit_card_customer');
@@ -502,12 +536,12 @@ class CRM_Core_Payment_iATSService extends CRM_Core_Payment {
       }
       return $this->error('9002','Authorization failed');
     }
-    catch (Exception $error) { // what could go wrong? 
+    catch (Exception $error) { // what could go wrong?
       $message = $error->getMessage();
       return $this->error('9002', $message);
     }
   }
-  
+
   /*
    * Update the recurring contribution record.
    *
@@ -521,7 +555,7 @@ class CRM_Core_Payment_iATSService extends CRM_Core_Payment {
   protected function updateRecurring($params, $update) {
     // If the recurring record already exists, let's fix the next contribution and start dates,
     // in case core isn't paying attention.
-    // We also set the schedule to 'in-progress' (even for ACH/EFT when the first one hasn't been verified), 
+    // We also set the schedule to 'in-progress' (even for ACH/EFT when the first one hasn't been verified),
     // because we want the recurring job to run for this schedule.
     if (!empty($params['contributionRecurID'])) {
       $recur_id = $params['contributionRecurID'];
@@ -533,6 +567,13 @@ class CRM_Core_Payment_iATSService extends CRM_Core_Payment {
       // By default, it's empty, unless we've got a future start date.
       if (empty($update['receive_date'])) {
         $next = strtotime('+' . $params['frequency_interval'] . ' ' . $params['frequency_unit']);
+        // handle the special case of monthly contributions made after the 28th
+        if ('month' == $params['frequency_unit']) {
+          $now = getdate();
+          if ($now['mday'] > 28) { // pull it back to the 28th
+            $next = $next - (($now['mday'] - 28) * 24 * 60 * 60);
+          }
+        }
         $recur_update['next_sched_contribution_date'] = date('Ymd', $next) . '030000';
       }
       else {

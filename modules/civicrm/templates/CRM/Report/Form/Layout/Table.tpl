@@ -100,7 +100,11 @@
                             <a title="{$row.$fieldHover|escape}" href="{$row.$fieldLink}"  {if $row.$fieldClass} class="{$row.$fieldClass}"{/if}>
                         {/if}
 
-                        {if $row.$field eq 'Subtotal'}
+                        {if is_array($row.$field)}
+                            {foreach from=$row.$field item=fieldrow key=fieldid}
+                                <div class="crm-report-{$field}-row-{$fieldid}">{$fieldrow}</div>
+                            {/foreach}
+                        {elseif $row.$field eq 'Subtotal'}
                             {$row.$field}
                         {elseif $header.type & 4 OR $header.type & 256}
                             {if $header.group_by eq 'MONTH' or $header.group_by eq 'QUARTER'}
@@ -136,7 +140,11 @@
                 {foreach from=$columnHeaders item=header key=field}
                     <td class="report-label">
                         {if $header.type eq 1024}
-                            {$grandStat.$field|crmMoney}
+                            {if $currencyColumn}
+                                {$grandStat.$field|crmMoney:$row.$currencyColumn}
+                            {else}
+                                {$grandStat.$field|crmMoney}
+                            {/if}
                         {else}
                             {$grandStat.$field}
                         {/if}

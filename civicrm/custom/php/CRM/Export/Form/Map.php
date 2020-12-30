@@ -13,8 +13,6 @@
  *
  * @package CRM
  * @copyright CiviCRM LLC https://civicrm.org/licensing
- * $Id$
- *
  */
 
 /**
@@ -28,6 +26,15 @@ class CRM_Export_Form_Map extends CRM_Core_Form {
    * @var int
    */
   protected $_mappingId;
+
+  /**
+   * Use the form name to create the tpl file name.
+   *
+   * @return string
+   */
+  public function getTemplateFileName() {
+    return 'CRM/Export/Form/Map.tpl';
+  }
 
   /**
    * Build the form object.
@@ -82,7 +89,7 @@ class CRM_Export_Form_Map extends CRM_Core_Form {
       ],
       [
         'type' => 'done',
-        'icon' => 'fa-ban',
+        'icon' => 'fa-times',
         'name' => ts('Return to Search'),
       ],
       [
@@ -126,7 +133,7 @@ class CRM_Export_Form_Map extends CRM_Core_Form {
 
     //NYSS 7228
     $attr = $this->_attributes;
-    $queryParams = $this->get('queryParams');
+    $queryParams = (array) $this->get('queryParams');
     if ($attr['action'] == '/civicrm/contact/search/custom') {
       $queryParams = NULL;
     }
@@ -158,6 +165,14 @@ class CRM_Export_Form_Map extends CRM_Core_Form {
       $exportParams['postal_mailing_export']['postal_mailing_export'] == 1
     );
     $processor = new CRM_Export_BAO_ExportProcessor($this->get('exportMode'), NULL, $this->get('queryOperator'), $this->get('mergeSameHousehold'), $isPostalOnly, $this->get('mergeSameAddress'));
+    // dev/core#1775 Remove notes,groups and tags from the preview data to speed up export
+    $defaultProperties = $processor->getDefaultReturnProperties();
+    foreach ($defaultProperties as $key => $var) {
+      if (in_array($key, ['groups', 'tags', 'notes'])) {
+        unset($defaultProperties[$key]);
+      }
+    }
+    $processor->setReturnProperties($defaultProperties);
     $processor->setComponentTable($this->get('componentTable'));
     $processor->setComponentClause($this->get('componentClause'));
     $data = $processor->getPreview(4);

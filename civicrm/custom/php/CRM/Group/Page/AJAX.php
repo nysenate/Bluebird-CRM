@@ -13,7 +13,6 @@
  *
  * @package CRM
  * @copyright CiviCRM LLC https://civicrm.org/licensing
- *
  */
 
 /**
@@ -43,6 +42,7 @@ class CRM_Group_Page_AJAX {
         'status' => 'Integer',
         'parentsOnly' => 'Integer',
         'showOrgInfo' => 'Boolean',
+        'savedSearch' => 'Integer',
         // Ignore 'parent_id' as that case is handled above
       ];
       $params = CRM_Core_Page_AJAX::defaultSortAndPagerParams();
@@ -68,13 +68,7 @@ class CRM_Group_Page_AJAX {
         $group['description'] = str_replace('\r\n', '\n', $group['description']);
         $group['description'] = str_replace('\r', '\n', $group['description']);
         $group['description'] = str_replace('\n', '<br />', $group['description']);
-      }
-
-      
-    }
-
-    if (!empty($_GET['is_unit_test'])) {
-      return $groups;
+      } 
     }
 
     CRM_Utils_JSON::output($groups);

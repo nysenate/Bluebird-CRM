@@ -116,20 +116,12 @@ function angularprofiles_civicrm_alterSettingsFolders(&$metaDataFolders = NULL) 
  * @param $angularModule
  */
 function angularprofiles_civicrm_angularModules(&$angularModule) {
-  // Using this hook as the place to call addVars is a bit of a hack. Ideally
-  // we'd have a more precise way to target exactly the contexts in which the
-  // data are needed on the client side, but the location is very convenient for
-  // our purposes, as:
-  //   1. The extension resource URL is not available client side by default.
-  //   2. This extension needs it when and only when Angular modules are loaded.
-  CRM_Core_Resources::singleton()->addVars(E::LONG_NAME, array(
-    'backboneInitUrl' => E::url('js/initBackbone.js'),
-  ));
-  // End hack.
-
-  $angularModule['crmProfileUtils'] = array(
-    'ext' => 'org.civicrm.angularprofiles',
-    'js' => array('js/crmProfiles.js'),
-    'partials' => array('partials'),
-  );
+  $angularModule['crmProfileUtils'] = [
+    'ext' => E::LONG_NAME,
+    'js' => ['js/crmProfiles.js'],
+    'partials' => ['partials'],
+    'settings' => [
+      'backboneInitUrl' => E::url('js/initBackbone.js'),
+    ],
+  ];
 }

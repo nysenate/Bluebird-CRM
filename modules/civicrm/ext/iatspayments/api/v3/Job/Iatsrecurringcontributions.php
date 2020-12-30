@@ -117,9 +117,10 @@ function civicrm_api3_job_Iatsrecurringcontributions($params) {
     $contribution_recur_id    = $recurringContribution['id'];
     $contact_id = $recurringContribution['contact_id'];
     $total_amount = $recurringContribution['amount'];
+    $is_test = $recurringContribution['is_test'];
     $payment_processor_id = $recurringContribution['payment_processor_id'];
     // Try to get a contribution template for this contribution series - if none matches (e.g. if a donation amount has been changed), we'll just be naive about it.
-    $contribution_template = CRM_Iats_Transaction::getContributionTemplate(['contribution_recur_id' => $contribution_recur_id, 'total_amount' => $total_amount]);
+    $contribution_template = CRM_Iats_Transaction::getContributionTemplate(['contribution_recur_id' => $contribution_recur_id, 'total_amount' => $total_amount, 'is_test' => $is_test]);
     // CRM_Core_Error::debug_var('Contribution Template', $contribution_template);
     // generate my invoice id like CiviCRM does
     $hash = md5(uniqid(rand(), TRUE));
@@ -166,7 +167,7 @@ function civicrm_api3_job_Iatsrecurringcontributions($params) {
       'contribution_status_id' => 'Pending', /* initialize as pending, so we can run completetransaction after taking the money */
       'currency'  => $recurringContribution['currency'],
       'payment_processor'   => $payment_processor_id,
-      'is_test'        => $recurringContribution['is_test'], /* propagate the is_test value from the recurring record */
+      'is_test'        => $is_test, /* propagate the is_test value from the recurring record */
       'financial_type_id' => $recurringContribution['financial_type_id'],
       'is_email_receipt' => (($receipt_recurring < 2) ? $receipt_recurring : $recurringContribution['is_email_receipt']),
     );

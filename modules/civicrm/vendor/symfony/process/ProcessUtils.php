@@ -35,13 +35,17 @@ class ProcessUtils
      * @param string $argument The argument that will be escaped
      *
      * @return string The escaped argument
+     *
+     * @deprecated since version 3.3, to be removed in 4.0. Use a command line array or give env vars to the `Process::start/run()` method instead.
      */
     public static function escapeArgument($argument)
     {
+        @trigger_error('The '.__METHOD__.'() method is deprecated since Symfony 3.3 and will be removed in 4.0. Use a command line array or give env vars to the Process::start/run() method instead.', E_USER_DEPRECATED);
+
         //Fix for PHP bug #43784 escapeshellarg removes % from given string
         //Fix for PHP bug #49446 escapeshellarg doesn't work on Windows
-        //@see https://bugs.php.net/bug.php?id=43784
-        //@see https://bugs.php.net/bug.php?id=49446
+        //@see https://bugs.php.net/43784
+        //@see https://bugs.php.net/49446
         if ('\\' === \DIRECTORY_SEPARATOR) {
             if ('' === $argument) {
                 return escapeshellarg($argument);
@@ -83,8 +87,6 @@ class ProcessUtils
      * @return mixed The validated input
      *
      * @throws InvalidArgumentException In case the input is not valid
-     *
-     * Passing an object as an input is deprecated since version 2.5 and will be removed in 3.0.
      */
     public static function validateInput($caller, $input)
     {
@@ -98,14 +100,17 @@ class ProcessUtils
             if (is_scalar($input)) {
                 return (string) $input;
             }
-            // deprecated as of Symfony 2.5, to be removed in 3.0
-            if (\is_object($input) && method_exists($input, '__toString')) {
-                @trigger_error('Passing an object as an input is deprecated since Symfony 2.5 and will be removed in 3.0.', E_USER_DEPRECATED);
-
-                return (string) $input;
+            if ($input instanceof Process) {
+                return $input->getIterator($input::ITER_SKIP_ERR);
+            }
+            if ($input instanceof \Iterator) {
+                return $input;
+            }
+            if ($input instanceof \Traversable) {
+                return new \IteratorIterator($input);
             }
 
-            throw new InvalidArgumentException(sprintf('%s only accepts strings or stream resources.', $caller));
+            throw new InvalidArgumentException(sprintf('"%s" only accepts strings, Traversable objects or stream resources.', $caller));
         }
 
         return $input;

@@ -13,10 +13,10 @@
  *
  * @package CRM
  * @copyright CiviCRM LLC https://civicrm.org/licensing
- * $Id$
- *
  */
 class CRM_Group_Controller extends CRM_Core_Controller {
+
+  protected $entity = 'Contact';
 
   /**
    * Class constructor.
@@ -54,6 +54,7 @@ class CRM_Group_Controller extends CRM_Core_Controller {
 
     // add all the actions
     $this->addActions($uploadDir, $uploadNames);
+    $this->set('entity', $this->entity);
   }
 
   /**

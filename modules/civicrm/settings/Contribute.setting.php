@@ -12,8 +12,7 @@
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2020
- *
+ * @copyright CiviCRM LLC https://civicrm.org/licensing
  * Settings metadata file
  */
 
@@ -185,8 +184,9 @@ return [
     'quick_form_type' => 'Select',
     'default' => NULL,
     'pseudoconstant' => [
-      // @todo - handle table style pseudoconstants for settings & avoid deprecated function.
-      'callback' => 'CRM_Contribute_PseudoConstant::contributionPage',
+      'table' => 'civicrm_contribution_page',
+      'keyColumn' => 'id',
+      'labelColumn' => 'title',
     ],
     'html_type' => 'select',
     'add' => '4.7',

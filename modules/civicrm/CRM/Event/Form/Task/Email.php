@@ -22,27 +22,4 @@
 class CRM_Event_Form_Task_Email extends CRM_Event_Form_Task {
   use CRM_Contact_Form_Task_EmailTrait;
 
-  /**
-   * Build all the data structures needed to build the form.
-   */
-  public function preProcess() {
-    CRM_Contact_Form_Task_EmailCommon::preProcessFromAddress($this);
-    parent::preProcess();
-
-    // we have all the participant ids, so now we get the contact ids
-    parent::setContactIDs();
-
-    $this->assign('single', $this->_single);
-  }
-
-  /**
-   * List available tokens for this form.
-   *
-   * @return array
-   */
-  public function listTokens() {
-    $tokens = CRM_Core_SelectValues::contactTokens();
-    return $tokens;
-  }
-
 }

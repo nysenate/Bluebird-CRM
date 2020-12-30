@@ -109,6 +109,10 @@ class CRM_Utils_API_HTMLInputCoder extends CRM_Utils_API_AbstractFieldCoder {
         'header',
         // https://lab.civicrm.org/dev/core/issues/1286
         'footer',
+        // SavedSearch entity
+        'api_params',
+        // SearchDisplay entity
+        'settings',
       ];
       $custom = CRM_Core_DAO::executeQuery('SELECT id FROM civicrm_custom_field WHERE html_type = "RichTextEditor"');
       while ($custom->fetch()) {

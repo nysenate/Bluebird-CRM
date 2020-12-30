@@ -1,6 +1,23 @@
 Apache Solr integration 7.x-1.x, xxxx-xx-xx
 -----------------------------
 
+Apache Solr integration 7.x-1.12, 2020-12-11
+-----------------------------
+Issue #2446419 by bburg, champcy, bfridman: Incorrect display of some main menu items and browser tab titles on some pages
+Issue #2178283 by kupide: Apache Solr doesn't invalidate its caches when inserting a new node type
+Issue #2333447 by kupide, cristiroma, paulbeaney, teknocat: No tabs with multiple search pages
+Issue #2879336 by joseph.olstad, japerry: Solr 5 config name is incorrect
+Issue #2559213 by luizsgpetri, caminadaf, douggreen: Allow developers to use a generic reindex callback
+Issue #2448615 by Cinedin: Default environment selection in search page settings
+Issue #2311087 by johnennew: ApacheSolrFacetapiAdapter cannot be extended
+Issue #2315173 by stefan.r, rutiolma: Node teasers aren't indexed if body field language is different than node language
+Issue #2317711 by jweowu, Erik Frèrejean: apachesolr_search_run() fails to handle the result of $query->abort_search
+Issue #2153347 by kaidjohnson, dooug: $vars['options']['attributes']['class'] expected to be an array in theme_apachesolr_sort_link(). String set
+Issue #2201747 by kaidjohnson: Unnecessary rebuilding of menu on search page save
+Issue #2023151 by pwolanin: apachesolr_load_all_environments() incorrectly merges array leading to duplicate bundles
+Issue #2972851 by Gold, japerry, retorque, heddn, rudolfbyker: Solr 7 integration.
+Issue #2896504 by n_e_, hitfactory: q.alt not working correctly with Solr version greater than 6
+
 Apache Solr integration 7.x-1.11, 2018-05-17
 -----------------------------
 #2860854 by lokapujya: apachesolr_taxonomy_term_update implements comment fix

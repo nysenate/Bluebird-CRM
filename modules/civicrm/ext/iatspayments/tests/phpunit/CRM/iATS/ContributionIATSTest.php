@@ -227,7 +227,7 @@ class CRM_Iats_ContributioniATSTest extends BaseTestClass {
     $processorParams = array(
       'domain_id' => 1,
       'name' => 'iATS Credit Card - TE4188',
-      'payment_processor_type_id' => 15,
+      'payment_processor_type_id' => 'iATS Payments Credit Card',
       'financial_account_id' => 12,
       'is_test' => FALSE,
       'is_active' => 1,
@@ -257,7 +257,7 @@ class CRM_Iats_ContributioniATSTest extends BaseTestClass {
     $processorParams = array(
       'domain_id' => 1,
       'name' => 'iATS Credit Card - TE4188',
-      'payment_processor_type_id' => 17,
+      'payment_processor_type_id' => 'iATS Payments SWIPE',
       'financial_account_id' => 12,
       'is_test' => FALSE,
       'is_active' => 1,

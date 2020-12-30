@@ -67,11 +67,7 @@ class CRM_Financial_Form_PaymentEdit extends CRM_Core_Form {
    */
   public function setDefaultValues() {
     $defaults = $this->_values;
-    // Format money fields - localize for display
-    $moneyFields = ['total_amount', 'fee_amount', 'net_amount'];
-    foreach ($moneyFields as $field) {
-      $defaults[$field] = CRM_Utils_Money::formatLocaleNumericRoundedForDefaultCurrency($this->_values[$field]);
-    }
+    $defaults['total_amount'] = CRM_Utils_Money::formatLocaleNumericRoundedForDefaultCurrency($this->_values['total_amount']);
     return $defaults;
   }
 
@@ -195,7 +191,7 @@ class CRM_Financial_Form_PaymentEdit extends CRM_Core_Form {
       $previousFinanciaTrxn['contribution_id'] = $newFinancialTrxn['contribution_id'] = $this->_contributionID;
 
       $newFinancialTrxn['to_financial_account_id'] = CRM_Financial_BAO_FinancialTypeAccount::getInstrumentFinancialAccount($submittedValues['payment_instrument_id']);
-      foreach (['total_amount', 'fee_amount', 'net_amount', 'currency', 'is_payment', 'status_id'] as $fieldName) {
+      foreach (['total_amount', 'currency', 'is_payment', 'status_id'] as $fieldName) {
         $newFinancialTrxn[$fieldName] = $this->_values[$fieldName];
       }
 
@@ -214,7 +210,7 @@ class CRM_Financial_Form_PaymentEdit extends CRM_Core_Form {
       civicrm_api3('FinancialTrxn', 'create', $submittedValues);
     }
 
-    self::updateRelatedContribution($submittedValues, $this->_contributionID);
+    CRM_Financial_BAO_Payment::updateRelatedContribution($submittedValues, $this->_contributionID);
   }
 
   /**
@@ -228,35 +224,6 @@ class CRM_Financial_Form_PaymentEdit extends CRM_Core_Form {
     $this->_values = civicrm_api3('FinancialTrxn', 'getsingle', ['id' => $params['id']]);
 
     $this->submit($params);
-  }
-
-  /**
-   * Function to update contribution's check_number and trxn_id by
-   *  concatenating values from financial trxn's check_number and trxn_id respectively
-   *
-   * @param array $params
-   * @param int $contributionID
-   */
-  public static function updateRelatedContribution($params, $contributionID) {
-    $contributionDAO = new CRM_Contribute_DAO_Contribution();
-    $contributionDAO->id = $contributionID;
-    $contributionDAO->find(TRUE);
-
-    foreach (['trxn_id', 'check_number'] as $fieldName) {
-      if (!empty($params[$fieldName])) {
-        if (!empty($contributionDAO->$fieldName)) {
-          $values = explode(',', $contributionDAO->$fieldName);
-          // if submitted check_number or trxn_id value is
-          //   already present then ignore else add to $values array
-          if (!in_array($params[$fieldName], $values)) {
-            $values[] = $params[$fieldName];
-          }
-          $contributionDAO->$fieldName = implode(',', $values);
-        }
-      }
-    }
-
-    $contributionDAO->save();
   }
 
   /**
