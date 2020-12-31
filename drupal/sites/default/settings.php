@@ -17,7 +17,7 @@
 require_once dirname(__FILE__).'/../../../civicrm/scripts/bluebird_config.php';
 
 # Use Bluebird custom maintenance pages within our own custom theme.
-$conf['maintenance_theme'] = 'Bluebird';
+$conf['maintenance_theme'] = 'BluebirdMaintenance';
 
 $bbconfig = get_bluebird_instance_config();
 
