@@ -1201,6 +1201,11 @@ function _mail_alterMailingBlock(phpQueryObject $doc) {
  * #13305
  */
 function _mail_alterMailingBlockMosaico(phpQueryObject $doc) {
+  //Civi::log()->debug(__FUNCTION__, ['doc' => $doc]);
+
+  //sync thumbnails whenever we open a Mosaico mailing
+  CRM_NYSS_Mail_Utils::createMosaicoThumbnails();
+
   //NYSS 5581 - mailing category options
   $catOptions = "<option value=''>- select -</option>";
   $opts = CRM_Core_DAO::executeQuery("
