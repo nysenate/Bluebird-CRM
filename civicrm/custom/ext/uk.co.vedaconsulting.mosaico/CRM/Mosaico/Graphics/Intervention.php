@@ -117,7 +117,9 @@ class CRM_Mosaico_Graphics_Intervention extends CRM_Mosaico_Graphics_Interface {
       $img->save($destFile);
     }
     catch (ImageException $e)  {
-      throw new \Exception($e->getMessage());
+      //NYSS log an error instead of throwing a fatal exception
+      CRM_Core_Error::debug_var('createResizedImage $e->msg', $e->getMessage(), TRUE, TRUE, 'mosaico');
+      //throw new \Exception($e->getMessage());
     }
   }
 
