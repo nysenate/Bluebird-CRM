@@ -10,6 +10,7 @@
 # Revised: 2013-12-04 - added Event API v3 functionality; use JSON by default
 # Revised: 2016-05-05 - added Subuser API management options
 # Revised: 2016-05-09 - added options to override config file
+# Revised: 2021-01-14 - fix mismatched option --subpassword
 #
 
 prog=`basename $0`
@@ -55,10 +56,10 @@ where [options] are:
   --get-subuser|-gsu [username]
   --set-email|-se email
   --set-password|-sp [password]
-  --username|-u username (overrides sendgrid.username)
+  --username|-U username (overrides sendgrid.username)
   --password|-P password (overrides sendgrid.password)
-  --subusername|-su) username (overrides smtp.username)
-  --subuserpass|-SP) password (overrides smtp.password)
+  --subusername|-SU) username (overrides smtp.username)
+  --subpassword|-SP) password (overrides smtp.password)
   --api-category|-ac apiCategory ['customer'|'user']
   --cmd|-c apiCommand
   --task|-t task
@@ -145,9 +146,9 @@ while [ $# -gt 0 ]; do
         else
           params="$params&password=%SUBUSERPASS%&confirm_password=%SUBUSERPASS%"
         fi ;;
-    --user*|-u) shift; sgusername="$1" ;;
+    --user*|-U) shift; sgusername="$1" ;;
     --pass*|-P) shift; sguserpass="$1" ;;
-    --subuser*|-su) shift; subusername="$1" ;;
+    --subuser*|-SU) shift; subusername="$1" ;;
     --subpass*|-SP) shift; subuserpass="$1" ;;
     --api-category|-ac) shift; acat="$1" ;;
     --cmd|-c) shift; cmd="$1" ;;
