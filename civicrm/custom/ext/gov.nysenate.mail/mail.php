@@ -1516,26 +1516,34 @@ function _mail_fixup_html_message($m) {
 
 
 /* Re-write any URLs in the message body of the form:
- *   <sitename>/sites/<sitename>/pubfiles [old format]
+ *
+ *   <sitename>/data/<shortname>/pubfiles
  * or
- *   <sitename>/data/<shortname>/pubfiles [new format]
- *   (where <shortname> is typically the senator's last name and
- *          <envname> is "crm", "crmdev", "crmtest", etc. and
- *          <sitename> is <shortname>.<envname>.nysenate.gov)
+ *   <sitename>/sites/all/mosaico/nyssbase/img
+ *
+ * where <sitename> is <shortname>.<envname>.nysenate.gov
+ *   and <shortname> is typically the senator's last name
+ *   and <envname> is "crm", "crmdev", "crmtest", etc.
+ *
  * into:
  *   pubfiles.nysenate.gov/<envname>/<shortname>/
+ * or
+ *   pubfiles.nysenate.gov/<envname>/<shortname>/common/images/mosaico/
 */
 function _mail_rewrite_public_urls($s) {
   $patterns = [
-    // Legacy "/sites/" URLs
-    '#[\w-]+\.(crm[\w]*)\.nysenate\.gov/sites/([\w-]+)\.crm[\w]*\.nysenate\.gov/pubfiles/#i',
     // Standard "/data/" URLs
-    '#[\w-]+\.(crm[\w]*)\.nysenate\.gov/data/([\w-]+)/pubfiles/#i',
+    '#([\w-]+)\.(crm[\w]*)\.nysenate\.gov/data/[\w-]+/pubfiles/#i',
+    // Mosaico URLs
+    '#([\w-]+)\.(crm[\w]*)\.nysenate\.gov/sites/all/mosaico/nyssbase/img/#i'
   ];
-  $replacement = 'pubfiles.nysenate.gov/$1/$2/';
+  $replacements = [
+    'pubfiles.nysenate.gov/$2/$1/',
+    'pubfiles.nysenate.gov/$2/$1/common/images/mosaico/'
+  ];
 
-  // Two patterns.  One replacement.  One call to preg_replace().
-  return preg_replace($patterns, $replacement, $s);
+  // Replace the "/data/" and Mosaico URLs with pubfiles URLs
+  return preg_replace($patterns, $replacements, $s);
 } // _mail_rewrite_public_urls()
 
 
