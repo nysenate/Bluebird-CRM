@@ -71,13 +71,13 @@ class CRM_Utils_SAGE
     // Build the URL, which will also be the cache key.
     $cache_key = self::buildSAGEUrl($url, $params);
 
-    // for benchtesting old method, forcing lookup on every call
-    $refresh = TRUE;
-
     // If the address is not cached, or if refresh is true,
     // call SAGE and cache the result.
     if (!($cache[$cache_key] ?? FALSE) || $refresh) {
-      CRM_Core_Session::singleton()->setStatus("calling sage with $cache_key");
+      if (CRM_Core_Config::singleton()->debug) {
+        CRM_Core_Session::singleton()
+          ->setStatus("SAGE Request: $cache_key");
+      }
       $request = new \GuzzleHttp\Client();
       $cache[$cache_key] = simplexml_load_string($request->get($cache_key)->getBody());
     }
