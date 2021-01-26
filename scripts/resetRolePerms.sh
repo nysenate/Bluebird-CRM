@@ -398,6 +398,8 @@ sql="
     (10, 'edit all contacts', 'civicrm'),
     (10, 'edit groups', 'civicrm'),
     (10, 'edit my contact', 'civicrm'),
+    (10, 'manage tags', 'civicrm'),
+    (10, 'merge duplicate contacts', 'civicrm'),
     (10, 'profile create', 'civicrm'),
     (10, 'profile edit', 'civicrm'),
     (10, 'profile listings', 'civicrm'),
