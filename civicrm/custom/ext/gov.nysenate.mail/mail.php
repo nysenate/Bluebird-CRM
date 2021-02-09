@@ -134,7 +134,18 @@ function mail_civicrm_caseTypes(&$caseTypes) {
  * @link http://wiki.civicrm.org/confluence/display/CRMDOC/hook_civicrm_caseTypes
  */
 function mail_civicrm_angularModules(&$angularModules) {
-_mail_civix_civicrm_angularModules($angularModules);
+  _mail_civix_civicrm_angularModules($angularModules);
+
+  //13780 office admins and managers can delete mailing templates
+  if (!empty($angularModules['crmMosaico'])) {
+    //Civi::log()->debug(__FUNCTION__, ['angularModules[crmMosaico]' => $angularModules['crmMosaico']]);
+
+    if (CRM_NYSS_BAO_NYSS::checkUserRole('Office Administrator') ||
+      CRM_NYSS_BAO_NYSS::checkUserRole('Office Manager')
+    ) {
+      $angularModules['crmMosaico']['settings']['canDelete'] = 1;
+    }
+  }
 }
 
 /**
@@ -1099,6 +1110,7 @@ function mail_civicrm_permission_check($permission, &$granted) {
     '$permission' => $permission,
     '$granted' => $granted,
     'current_path' => current_path(),
+    '$_REQUEST' => $_REQUEST,
   ]);*/
 
   //current_path() is not available via the CLI; we don't need the permission checks
