@@ -115,4 +115,22 @@ class CRM_NYSS_BAO_NYSS {
 
     return $mailDelivered;
   }
+
+  static function getProtectedProperty($prop, $obj) {
+    $reflection = new ReflectionClass($obj);
+    $property = $reflection->getProperty($prop);
+    $property->setAccessible(true);
+
+    return $property->getValue($obj);
+  }
+
+  static function checkUserRole($role) {
+    global $user;
+
+    if (in_array($role, $user->roles)) {
+      return TRUE;
+    }
+
+    return FALSE;
+  }
 }
