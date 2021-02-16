@@ -1679,7 +1679,8 @@ function _mail_add_extra_content($msg, $extra, $ctype, $context) {
       '#(\s*</body>)#'
     ];
     $fontColor = ($context == 'flexmailer') ? '#FFFFFF' : '#3f3f3f';
-    $attr = "style='text-align:center; font:10px/12px Helvetica, Arial, sans-serif; color:{$fontColor}; padding:0 10px 30px;'";
+    $backgroundColor = ($context == 'flexmailer') ? 'background-color: #3f3f3f;' : '';
+    $attr = "style='text-align:center; font:10px/12px Helvetica, Arial, sans-serif; color:{$fontColor}; padding:0 10px 30px; {$backgroundColor}'";
     $replacements = [
       "\n<!-- Extra HEAD content -->\n$extraHead\$1",
       "\$1<div id=\"extra_prebody_content\" $attr>\n$extraPreBody\n</div>\n",
