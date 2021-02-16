@@ -373,6 +373,7 @@ class CRM_Utils_SAGE
       self::storeDistricts($values, $xml, $overwrite_districts);
     }
     else {
+      $params = json_encode($params);
       self::warn("Lookup for [$params] has failed.");
     }
     return $ret;
@@ -463,6 +464,7 @@ class CRM_Utils_SAGE
       }
     }
     else {
+      $params = json_encode($params);
       self::warn("Lookup for [$params] has failed.");
     }
 
