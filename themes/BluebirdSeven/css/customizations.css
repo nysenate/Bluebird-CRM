@@ -92,6 +92,9 @@ input[type=color] {
 }
 
 /*case: case extension new UI*/
+#bootstrap-theme .civicase__activity-feed__body {
+  max-width: none;
+}
 #bootstrap-theme .civicase__activity-feed__body__list {
   max-width: calc(100% - 200px) !important;
 }
