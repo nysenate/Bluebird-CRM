@@ -1076,8 +1076,17 @@ function mail_civicrm_alterMailParams(&$params, $context) {
 
   $params['headers']['X-SMTPAPI'] = $hdr->asJSON();
 
+  //13827 suppress draft text in subject when viewing via report;add some normalizing css;
+  if (current_path() == 'civicrm/mailing/view') {
+    $params['Subject'] = str_replace('[BluebirdMail Draft] ', '', $params['Subject']);
+
+    //CRM_Core_Error::debug_var('params[html]', $params['html']);
+    $params['html'] = _mail_mailingViewCss($params['html']);
+  }
+
   //CRM_Core_Error::debug('session', $_SESSION);
   //CRM_Core_Error::debug_var('params', $params);
+  //CRM_Core_Error::debug_var('$_REQUEST', $_REQUEST);
 }
 
 function mail_civicrm_alterTemplateFile($formName, &$form, $context, &$tplName) {
@@ -1505,7 +1514,7 @@ function _mail_fixup_html_message($m) {
     $m = "<head>\n<title>New York State Senate</title>\n</head>\n$m";
     $added_tags .= ' HEAD TITLE /TITLE /HEAD';
   }
-  else if (stripos($m, '</head>') === false) {
+  elseif (stripos($m, '</head>') === false) {
     $m = str_ireplace('<body', "</head>\n<body", $m);
     $added_tags .= ' /HEAD';
   }
@@ -1524,7 +1533,7 @@ function _mail_fixup_html_message($m) {
     $m .= "\n<!-- AutoInserted Tags: $added_tags -->";
   }
   return $m;
-} // _mail_fixup_html_message()
+}
 
 
 /* Re-write any URLs in the message body of the form:
@@ -1712,4 +1721,29 @@ function _mail_alterEmailContent(&$params) {
   }
 
   $params['html'] = $doc->html();
+}
+
+function _mail_mailingViewCss($html) {
+  $doc = phpQuery::newDocument($html);
+  $doc->find('head')->append('
+    <style type="text/css">
+      .crm-container td {
+        padding: 0;
+      }
+      .crm-container.ui-dialog table tr td {
+        line-height: normal;
+      }
+      .crm-container.ui-dialog table tr td.vb-outer {
+        background-color: #bfbfbf;
+      }
+      .crm-container.ui-dialog td:first-child {
+        font-weight: normal !important;
+      }
+    </style>
+  ');
+
+  $html = $doc->html();
+  //Civi::log()->debug(__FUNCTION__, ['$html' => $html]);
+
+  return $html;
 }
