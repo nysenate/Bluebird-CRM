@@ -34,10 +34,34 @@ fi
 ## set mail extension to load last
 echo "$prog: set mail extension to load last"
 sql="
-   SELECT @max:=MAX(id) FROM civicrm_extension;
-   UPDATE civicrm_extension
-   SET id = @max + 1
+   DELETE FROM civicrm_extension
    WHERE full_name = 'gov.nysenate.mail';
+
+   INSERT INTO civicrm_extension
+   (type, full_name, name, label, file, is_active)
+   VALUES
+   ('module', 'gov.nysenate.mail', 'NYSS: Mailing Customizations', 'NYSS: Mailing Customizations', 'mail', 1);
+"
+$execSql $instance -c "$sql" -q
+
+## 13807 setup scheduled jobs
+echo "$prog: setup scheduled jobs"
+sql="
+   UPDATE civicrm_job
+   SET is_active = 0
+   WHERE api_action = 'version_check';
+
+   UPDATE civicrm_job
+   SET is_active = 1, run_frequency = 'Hourly', parameters = 'limit=5'
+   WHERE api_action = 'group_rebuild';
+
+   UPDATE civicrm_job
+   SET is_active = 1, run_frequency = 'Daily'
+   WHERE api_action = 'disable_expired_relationships';
+
+   UPDATE civicrm_job
+   SET is_active = 1, run_frequency = 'Daily', parameters = 'minDays=3\nmaxDays=15'
+   WHERE api_action = 'update_email_resetdate';
 "
 $execSql $instance -c "$sql" -q
 

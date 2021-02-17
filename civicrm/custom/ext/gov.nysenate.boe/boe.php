@@ -214,8 +214,9 @@ function boe_civicrm_buildForm($formName, &$form) {
             _boe_lockElement($form, $dataElementName);
           }
 
-          //lock location type - this hides street address and removes share fields for some weird reason
-          //_boe_lockElement($form, "{$name}[{$blockId}][location_type_id]");
+          //lock location type; there were issues in previous versions with this prompting handling via
+          //js, which had it's own issues (see #13829); restoring as it no longer seems to be problematic
+          _boe_lockElement($form, "{$name}[{$blockId}][location_type_id]");
         }
         else {
           //if not BOE, limit list options

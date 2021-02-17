@@ -168,6 +168,17 @@ function case_civicrm_buildForm($formName, &$form) {
       $form->assign('display_name', $dn);
     }
   }
+
+  if ($formName == 'CRM_Case_Form_ActivityToCase') {
+    //Civi::log()->debug(__FUNCTION__, ['form' => $form, 'REQUEST'=> $_REQUEST]);
+    CRM_Core_Resources::singleton()->addScriptFile('gov.nysenate.case', 'js/FileOnCase.js');
+
+    $cid = CRM_Utils_Request::retrieve('cid', 'Positive');
+    Civi::resources()->addVars('NYSS', [
+      'cid' => $cid,
+      'url' => CRM_Utils_System::url('civicrm/fileoncase/create', "reset=1&cid={$cid}")
+    ]);
+  }
 }
 
 function case_civicrm_post($op, $objectName, $objectId, &$objectRef) {
