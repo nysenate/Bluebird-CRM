@@ -64,10 +64,10 @@ function set_email_defaults(&$cfg)
   }
 
   if (!isset($cfg['email.images.instance.base_url'])) {
-    $cfg['email.images.instance.base_url'] = "http://pubfiles.nysenate.gov/{$cfg['envname']}/{$cfg['shortname']}/images";
+    $cfg['email.images.instance.base_url'] = "{$cfg['public.url.base']}/{$cfg['envname']}/{$cfg['shortname']}/images";
   }
   if (!isset($cfg['email.images.common.base_url'])) {
-    $cfg['email.images.common.base_url'] = "http://pubfiles.nysenate.gov/{$cfg['envname']}/common/images";
+    $cfg['email.images.common.base_url'] = "{$cfg['public.url.base']}/{$cfg['envname']}/common/images";
   }
 
   if (!isset($cfg['senator.name.formal'])) {
