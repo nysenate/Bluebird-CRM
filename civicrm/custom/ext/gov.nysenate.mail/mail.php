@@ -590,6 +590,22 @@ function mail_civicrm_apiWrappers(&$wrappers, $apiRequest) {
   }
 }
 
+function mail_civicrm_alterAPIPermissions($entity, $action, &$params, &$permissions) {
+  /*Civi::log()->debug(__FUNCTION__, [
+    'entity' => $entity,
+    'action' => $action,
+    'params' => $params,
+    'permissions' => $permissions,
+  ]);*/
+
+  if ($entity == 'mosaico_template' && $action == 'delete' &&
+    (CRM_NYSS_BAO_NYSS::checkUserRole('Office Administrator') ||
+      CRM_NYSS_BAO_NYSS::checkUserRole('Office Manager'))
+  ) {
+    $params['check_permissions'] = FALSE;
+  }
+}
+
 function mail_civicrm_buildForm($formName, &$form) {
   if ($formName == 'CRM_Mailing_Form_Group' && $form->_searchBasedMailing) {
     //get base mailing group, add to option list, set as default, freeze field
