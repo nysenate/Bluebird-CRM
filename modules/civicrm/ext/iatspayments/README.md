@@ -95,7 +95,7 @@ The notes below were written for the legacy processor, 1stPay testing notes stil
 
 Once you're happy all is well - then all you need to do is update the Payment Processor data - with your own iATS' Agent Code and Password.
 
-Remember that iATS master accounts (ending in 01) can typically NOT be used to push monies into via web services. So when setting up your Account with iATS - ask them to create another (set of) Agent Codes for you: e.g. 80 or 90, etc.
+'legacy' iATS master accounts (ending in 01) can typically NOT be used to push monies into via web services. So when setting up your Account with iATS - ask them to create another (set of) Agent Codes for you: e.g. 80, 81, etc.
 
 Also remember to turn off debugging/logging on any production environment!
 
@@ -109,7 +109,7 @@ Some issues may be related to core CiviCRM issues, and may not have an immediate
 
 Below is a list of some of the most common issues:
 
-9002 Error - if you get this when trying to make a contribution, then you're getting that error back from the iATS server due to an account misconfiguration. One source is due to some special characters in your passwd.
+9002 Error - if you get this when trying to make a contribution, then you're getting that error back from the iATS server due to an account misconfiguration. When this happens and your using a 'legacy' iATS account -> check if you have special characters in your password (and remove them). If you're using '1st Pay' contact iATS Customer Service to ensure your account is configured properly.
 
 CiviCRM core assigns Membership status (=new) and extends Membership End date as well as Event status (=registered) as soon as ACH/EFT is submitted (so while payment is still pending - this could be several days for ACH/EFT). If the contribution receives a Ok:BankAccept -> the extension will mark the contribution in CiviCRM as completed. If the contribution does NOT receive a Ok:BankAccept -> the extension will mark the contribution in CiviCRM as rejected - however - associated existing Membership and Event records may need to be updated manually.
 

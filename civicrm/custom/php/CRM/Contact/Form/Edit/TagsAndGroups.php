@@ -41,9 +41,10 @@ class CRM_Contact_Form_Edit_TagsAndGroups {
    *   If used for building tag block.
    * @param string $fieldName
    *   This is used in batch profile(i.e to build multiple blocks).
-   *
    * @param string $groupElementType
-   *
+   *   The html type of the element we are adding e.g. checkbox, select
+   * @param bool $public
+   *   Is this being used in a public form e.g. Profile.
    */
   public static function buildQuickForm(
     &$form,
@@ -54,7 +55,8 @@ class CRM_Contact_Form_Edit_TagsAndGroups {
     $groupName = 'Group(s)',
     $tagName = 'Tag(s)',
     $fieldName = NULL,
-    $groupElementType = 'checkbox'
+    $groupElementType = 'checkbox',
+    $public = FALSE
   ) {
     if (!isset($form->_tagGroup)) {
       $form->_tagGroup = [];
@@ -88,12 +90,13 @@ class CRM_Contact_Form_Edit_TagsAndGroups {
       }
 
       if ($groupID || !empty($group)) {
-        $groups = CRM_Contact_BAO_Group::getGroupsHierarchy($ids);
+        $groups = CRM_Contact_BAO_Group::getGroupsHierarchy($ids, NULL, '- ', FALSE, $public);
 
         $attributes['skiplabel'] = TRUE;
         $elements = [];
         $groupsOptions = [];
-        foreach ($groups as $id => $group) {
+        foreach ($groups as $key => $group) {
+          $id = $group['id'];
           // make sure that this group has public visibility
           if ($visibility &&
             $group['visibility'] == 'User and User Admin Only'
@@ -112,7 +115,6 @@ class CRM_Contact_Form_Edit_TagsAndGroups {
         }
 
         if ($groupElementType == 'select' && !empty($groupsOptions)) {
-          //NYSS 12137
           $form->add('select2', $fName, $groupName, $groupsOptions, FALSE,
             ['placeholder' => '- select -', 'multiple' => TRUE, 'class' => 'twenty']
           );
@@ -168,11 +170,11 @@ class CRM_Contact_Form_Edit_TagsAndGroups {
 
       $contactGroup = CRM_Contact_BAO_GroupContact::getContactGroup($id, 'Added', NULL, FALSE, TRUE);
       if ($contactGroup) {
-        foreach ($contactGroup as $group) {
-          if ($groupElementType == 'select') {
-            $defaults[$fName][] = $group['group_id'];
-          }
-          else {
+        if ($groupElementType == 'select') {
+          $defaults[$fName] = implode(',', CRM_Utils_Array::collect('group_id', $contactGroup));
+        }
+        else {
+          foreach ($contactGroup as $group) {
             $defaults[$fName . '[' . $group['group_id'] . ']'] = 1;
           }
         }

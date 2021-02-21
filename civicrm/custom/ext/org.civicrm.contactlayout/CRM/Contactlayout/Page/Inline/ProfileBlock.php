@@ -4,8 +4,10 @@ use CRM_Contactlayout_ExtensionUtil as E;
 class CRM_Contactlayout_Page_Inline_ProfileBlock extends CRM_Core_Page {
 
   public function run() {
-    $contactId = CRM_Utils_Request::retrieveValue('cid', 'Positive', NULL, TRUE);
+    $viewedContactId = CRM_Utils_Request::retrieveValue('cid', 'Positive', NULL, TRUE);
     $profileId = CRM_Utils_Request::retrieveValue('gid', 'Positive', NULL, TRUE);
+    $relatedContactId = CRM_Utils_Request::retrieveValue('rel_cid', 'Positive', NULL, FALSE);
+    $contactId = $relatedContactId ? $relatedContactId : $viewedContactId;
 
     $this->assign('contactId', $contactId);
     $this->assign('profileBlock', self::getProfileBlock($profileId, $contactId));

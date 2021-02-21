@@ -1,0 +1,39 @@
+<div class="contactlayout__relatioonship-dialog crm-container">
+  <p>If a relationship is selected, we display the information for the contact's
+    relation instead.</p>
+  <div class="crm-section">
+    <div class="label">
+      Relationship
+    </div>
+    <div class="content">
+      <input
+        ng-model="model.selectedRelationship"
+        ng-change="model.storeRelationshipInfoForSelectedOption()"
+        crm-ui-select="{
+          data: model.relationshipOptions.options,
+          dropdownAutoWidth : true,
+          allowClear: true,
+          placeholder: model.ts('- Select -')
+        }"
+      />
+      <a class="helpicon" title="Field Help" aria-label="Field Help" href="#" ng-click="model.displayHelp($event)">&nbsp;</a>
+    </div>
+    <div
+      ng-if="model.selectedRelationship"
+      class="contactlayout__relatioonship-dialog__illustration">
+      <div class="contactlayout__relatioonship-dialog__illustration__contact">
+        <i class="{{model.contactIcons.onBlock}}"></i><br />
+        <small>Contact on block</small>
+      </div>
+      <div class="contactlayout__relatioonship-dialog__illustration__relationship-type">
+        <i class="fa fa-long-arrow-right"></i>
+        <small>{{model.relationshipLabel}}</small>
+        <i class="fa fa-long-arrow-right"></i>
+      </div>
+      <div class="contactlayout__relatioonship-dialog__illustration__contact">
+        <i class="{{model.contactIcons.viewing}}"></i><br />
+        <small>Contact we are viewing</small>
+      </div>
+    </div>
+  </div>
+</div>

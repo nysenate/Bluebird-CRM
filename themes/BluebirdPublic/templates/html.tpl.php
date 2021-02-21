@@ -8,20 +8,22 @@
 
   <!--NYSS we are inserting only what we need-->
   <?php
-    //first pull the BB url and rewrite it
-    $urlEle = explode('.', $_SERVER['HTTP_HOST']);
-    $urlBase = "http://pubfiles.nysenate.gov/{$urlEle[1]}/{$urlEle[0]}/theme/css";
+    $bbcfg = get_bluebird_instance_config();
+    $base = $bbcfg['public.url.base'];
+    $envname = $bbcfg['envname'];
+    $instance = $bbcfg['shortname'];
+    $cssBase = "$base/$envname/$instance/theme/css";
 
     echo "
       <style type='text/css' media='all'>
-        @import url('{$urlBase}/default.css');
-        @import url('{$urlBase}/ie8.css');
-        @import url('{$urlBase}/ie9.css');
-        @import url('{$urlBase}/ie10.css');
-        @import url('{$urlBase}/layout.css');
-        @import url('{$urlBase}/normalize.css');
-        @import url('{$urlBase}/print.css');
-        @import url('{$urlBase}/style.css');
+        @import url('{$cssBase}/default.css');
+        @import url('{$cssBase}/ie8.css');
+        @import url('{$cssBase}/ie9.css');
+        @import url('{$cssBase}/ie10.css');
+        @import url('{$cssBase}/layout.css');
+        @import url('{$cssBase}/normalize.css');
+        @import url('{$cssBase}/print.css');
+        @import url('{$cssBase}/style.css');
       </style>
     ";
   ?>

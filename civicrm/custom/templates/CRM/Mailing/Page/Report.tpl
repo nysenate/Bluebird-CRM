@@ -178,7 +178,7 @@
   <td>
     {$report.mailing.body_text|mb_truncate:30|escape|nl2br}
     <br />
-    <strong><a class="crm-popup" href='{$textViewURL}'>&raquo; {ts}View complete message{/ts}</a></strong>
+    <strong><a class="crm-popup" href='{$textViewURL}'><i class="crm-i fa-chevron-right" aria-hidden="true"></i> {ts}View complete message{/ts}</a></strong>
   </td>
 </tr>
 {/if}
@@ -187,9 +187,7 @@
 <tr>
   <td class="label nowrap">{ts}HTML Message{/ts}</td>
   <td>
-    {$report.mailing.body_html|mb_truncate:30|escape|nl2br}
-    <br/>
-    <strong><a class="crm-popup" href='{$htmlViewURL}'>&raquo; {ts}View complete message{/ts}</a></strong>
+    <a class="crm-popup" href='{$htmlViewURL}'><i class="crm-i fa-chevron-right" aria-hidden="true"></i> {ts}View complete message{/ts}</a>
   </td>
 </tr>
 {/if}
@@ -237,10 +235,5 @@
 {/strip}
 </fieldset>
 <div class="action-link">
-    <a href="{$backUrl}" >&raquo; {$backUrlTitle}</a>
+    <a href="{$backUrl}" ><i class="crm-i fa-chevron-left" aria-hidden="true"></i> {$backUrlTitle}</a>
 </div>
-
-
-
-
-

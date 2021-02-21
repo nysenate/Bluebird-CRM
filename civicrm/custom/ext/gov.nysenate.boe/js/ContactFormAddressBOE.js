@@ -9,7 +9,9 @@ CRM.$(function($) {
       $('div#Address_Block_' + boeAddressBlockId + ' a[title="Delete Address Block"]').remove();
 
       //set BOE loc type and remove fields
-      $('div#Address_Block_' + boeAddressBlockId + ' span.location_type_id-address-element').html('<label for="address_' + boeAddressBlockId + '_location_type_id">Address Location Type: BOE</span>');
+      //removing in lieu of field freeze via buildForm hook -- #13829
+      //failed to set hidden input field causing form validation on save
+      //$('div#Address_Block_' + boeAddressBlockId + ' span.location_type_id-address-element').html('<label for="address_' + boeAddressBlockId + '_location_type_id">Address Location Type: BOE</span>');
 
       //remove shared address row
       $('div#Address_Block_' + boeAddressBlockId + ' div#shared-address-' + boeAddressBlockId).closest('tr').remove();

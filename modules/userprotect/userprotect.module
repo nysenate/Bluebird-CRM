@@ -165,7 +165,10 @@ function userprotect_form_alter(&$form, &$form_state, $form_id) {
  * Ensures user protections are respected in VBO views.
  */
 function userprotect_views_bulk_operations_form_alter(&$form, $form_state, $vbo) {
-  if ($vbo->table != 'users') {
+  // VBO <= 3.3 uses the 'users' table. VBO => 3.4 uses views_entity_user.
+  // Checking for two table names to keep compatibility with both VBO versions.
+  // See https://www.drupal.org/node/1635520.
+  if ($vbo->table != 'views_entity_user' && $vbo->table != 'users') {
     return;
   }
 
@@ -624,7 +627,7 @@ function userprotect_user_admin_account_validate($form, &$form_state) {
           unset($form_state['selection'][$key]);
           unset($form_state['values']['views_bulk_operations'][$key]);
           // Continue to the next user.
-          continue;
+          continue 2;
         }
 
         if (empty($form_state['values']['properties']['show_value'])) {
@@ -644,7 +647,7 @@ function userprotect_user_admin_account_validate($form, &$form_state) {
               unset($form_state['selection'][$key]);
               unset($form_state['values']['views_bulk_operations'][$key]);
               // Continue to the next user.
-              continue 2;
+              continue 3;
             }
           }
         }

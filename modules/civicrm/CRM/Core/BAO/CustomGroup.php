@@ -106,9 +106,10 @@ class CRM_Core_BAO_CustomGroup extends CRM_Core_DAO_CustomGroup {
       'help_post',
       'is_active',
       'is_multiple',
+      'icon',
     ];
-    $current_db_version = CRM_Core_DAO::singleValueQuery("SELECT version FROM civicrm_domain WHERE id = " . CRM_Core_Config::domainID());
-    $is_public_version = $current_db_version >= '4.7.19' ? 1 : 0;
+    $current_db_version = CRM_Core_BAO_Domain::version();
+    $is_public_version = version_compare($current_db_version, '4.7.19', '>=');
     if ($is_public_version) {
       $fields[] = 'is_public';
     }
@@ -416,10 +417,14 @@ class CRM_Core_BAO_CustomGroup extends CRM_Core_DAO_CustomGroup {
         'max_multiple',
       ],
     ];
-    $current_db_version = CRM_Core_DAO::singleValueQuery("SELECT version FROM civicrm_domain WHERE id = " . CRM_Core_Config::domainID());
-    $is_public_version = $current_db_version >= '4.7.19' ? 1 : 0;
+    $current_db_version = CRM_Core_BAO_Domain::version();
+    $is_public_version = version_compare($current_db_version, '4.7.19', '>=');
+    $serialize_version = version_compare($current_db_version, '5.27.alpha1', '>=');
     if ($is_public_version) {
       $tableData['custom_group'][] = 'is_public';
+    }
+    if ($serialize_version) {
+      $tableData['custom_field'][] = 'serialize';
     }
     if (!$toReturn || !is_array($toReturn)) {
       $toReturn = $tableData;
@@ -1095,6 +1100,7 @@ ORDER BY civicrm_custom_group.weight,
       $group['extra'] = ['gid' => $customGroupDAO->id];
       $group['table_name'] = $customGroupDAO->table_name;
       $group['is_multiple'] = $customGroupDAO->is_multiple;
+      $group['icon'] = $customGroupDAO->icon;
       $groups[] = $group;
     }
 
@@ -1115,53 +1121,16 @@ ORDER BY civicrm_custom_group.weight,
    * @see _apachesolr_civiAttachments_dereference_file_parent
    */
   public static function getTableNameByEntityName($entityType) {
-    $tableName = '';
     switch ($entityType) {
       case 'Contact':
       case 'Individual':
       case 'Household':
       case 'Organization':
-        $tableName = 'civicrm_contact';
-        break;
+        return 'civicrm_contact';
 
-      case 'Contribution':
-        $tableName = 'civicrm_contribution';
-        break;
-
-      case 'Group':
-        $tableName = 'civicrm_group';
-        break;
-
-      // DRAFTING: Verify if we cannot make it pluggable
-
-      case 'Activity':
-        $tableName = 'civicrm_activity';
-        break;
-
-      case 'Relationship':
-        $tableName = 'civicrm_relationship';
-        break;
-
-      case 'Membership':
-        $tableName = 'civicrm_membership';
-        break;
-
-      case 'Participant':
-        $tableName = 'civicrm_participant';
-        break;
-
-      case 'Event':
-        $tableName = 'civicrm_event';
-        break;
-
-      case 'Grant':
-        $tableName = 'civicrm_grant';
-        break;
-
-      // need to add cases for Location, Address
+      default:
+        return CRM_Core_DAO_AllCoreTables::getTableForEntityName($entityType);
     }
-
-    return $tableName;
   }
 
   /**
@@ -1296,10 +1265,10 @@ ORDER BY civicrm_custom_group.weight,
         continue;
       }
       foreach ($group['fields'] as $field) {
-        if (CRM_Utils_Array::value('element_value', $field) !== NULL) {
+        if (isset($field['element_value'])) {
           $value = $field['element_value'];
         }
-        elseif (CRM_Utils_Array::value('default_value', $field) !== NULL &&
+        elseif (isset($field['default_value']) &&
           ($action != CRM_Core_Action::UPDATE ||
             // CRM-7548
             !array_key_exists('element_value', $field)
@@ -1316,10 +1285,10 @@ ORDER BY civicrm_custom_group.weight,
         }
 
         $elementName = $field['element_name'];
+        $serialize = CRM_Core_BAO_CustomField::isSerialized($field);
 
-        switch ($field['html_type']) {
-          case 'Multi-Select':
-          case 'CheckBox':
+        if ($serialize) {
+          if ($field['data_type'] != 'Country' && $field['data_type'] != 'StateProvince') {
             $defaults[$elementName] = [];
             $customOption = CRM_Core_BAO_CustomOption::getCustomOption($field['id'], $inactiveNeeded);
             if ($viewMode) {
@@ -1358,6 +1327,7 @@ ORDER BY civicrm_custom_group.weight,
                 }
               }
               else {
+                // Values may be "array strings" or actual arrays. Handle both.
                 if (is_array($value) && count($value)) {
                   CRM_Utils_Array::formatArrayKeys($value);
                   $checkedValue = $value;
@@ -1377,21 +1347,27 @@ ORDER BY civicrm_custom_group.weight,
                 }
               }
             }
-            break;
-
-          case 'Multi-Select Country':
-          case 'Multi-Select State/Province':
+          }
+          else {
             if (isset($value)) {
-              $checkedValue = explode(CRM_Core_DAO::VALUE_SEPARATOR, $value);
+              // Values may be "array strings" or actual arrays. Handle both.
+              if (is_array($value) && count($value)) {
+                CRM_Utils_Array::formatArrayKeys($value);
+                $checkedValue = $value;
+              }
+              else {
+                $checkedValue = explode(CRM_Core_DAO::VALUE_SEPARATOR, substr($value, 1, -1));
+              }
               foreach ($checkedValue as $val) {
                 if ($val) {
                   $defaults[$elementName][$val] = $val;
                 }
               }
             }
-            break;
-
-          case 'Select Country':
+          }
+        }
+        else {
+          if ($field['data_type'] == 'Country') {
             if ($value) {
               $defaults[$elementName] = $value;
             }
@@ -1399,9 +1375,8 @@ ORDER BY civicrm_custom_group.weight,
               $config = CRM_Core_Config::singleton();
               $defaults[$elementName] = $config->defaultContactCountry;
             }
-            break;
-
-          default:
+          }
+          else {
             if ($field['data_type'] == "Float") {
               $defaults[$elementName] = (float) $value;
             }
@@ -1413,13 +1388,15 @@ ORDER BY civicrm_custom_group.weight,
             else {
               $defaults[$elementName] = $value;
             }
+          }
         }
       }
     }
   }
 
   /**
-   * PostProcess function.
+   * Old function only called from one place...
+   * @see CRM_Dedupe_Finder::formatParams
    *
    * @param array $groupTree
    * @param array $params
@@ -1427,19 +1404,16 @@ ORDER BY civicrm_custom_group.weight,
    */
   public static function postProcess(&$groupTree, &$params, $skipFile = FALSE) {
     // Get the Custom form values and groupTree
-    // first reset all checkbox and radio data
     foreach ($groupTree as $groupID => $group) {
       if ($groupID === 'info') {
         continue;
       }
       foreach ($group['fields'] as $field) {
         $fieldId = $field['id'];
+        $serialize = CRM_Core_BAO_CustomField::isSerialized($field);
 
-        //added Multi-Select option in the below if-statement
-        if ($field['html_type'] == 'CheckBox' ||
-          $field['html_type'] == 'Radio' ||
-          $field['html_type'] == 'Multi-Select'
-        ) {
+        // Reset all checkbox, radio and multiselect data
+        if ($field['html_type'] == 'Radio' || $serialize) {
           $groupTree[$groupID]['fields'][$fieldId]['customValue']['data'] = 'NULL';
         }
 
@@ -1457,31 +1431,13 @@ ORDER BY civicrm_custom_group.weight,
           $groupTree[$groupID]['fields'][$fieldId]['customValue'] = [];
         }
 
-        switch ($groupTree[$groupID]['fields'][$fieldId]['html_type']) {
+        // Serialize checkbox and multi-select data (using array keys for checkbox)
+        if ($serialize) {
+          $v = ($v && $field['html_type'] === 'Checkbox') ? array_keys($v) : $v;
+          $v = $v ? CRM_Utils_Array::implodePadded($v) : NULL;
+        }
 
-          // added for CheckBox
-          case 'CheckBox':
-            if (!empty($v)) {
-              $customValue = array_keys($v);
-              $groupTree[$groupID]['fields'][$fieldId]['customValue']['data'] = CRM_Core_DAO::VALUE_SEPARATOR
-                . implode(CRM_Core_DAO::VALUE_SEPARATOR, $customValue)
-                . CRM_Core_DAO::VALUE_SEPARATOR;
-            }
-            else {
-              $groupTree[$groupID]['fields'][$fieldId]['customValue']['data'] = NULL;
-            }
-            break;
-
-          case 'Multi-Select':
-            if (!empty($v)) {
-              $groupTree[$groupID]['fields'][$fieldId]['customValue']['data'] = CRM_Core_DAO::VALUE_SEPARATOR
-                . implode(CRM_Core_DAO::VALUE_SEPARATOR, $v)
-                . CRM_Core_DAO::VALUE_SEPARATOR;
-            }
-            else {
-              $groupTree[$groupID]['fields'][$fieldId]['customValue']['data'] = NULL;
-            }
-            break;
+        switch ($field['html_type']) {
 
           case 'Select Date':
             $date = CRM_Utils_Date::processDate($v);
@@ -1554,7 +1510,6 @@ ORDER BY civicrm_custom_group.weight,
     $form->assign_by_ref("{$prefix}groupTree", $groupTree);
 
     foreach ($groupTree as $id => $group) {
-      CRM_Core_ShowHideBlocks::links($form, $group['title'], '', '');
       foreach ($group['fields'] as $field) {
         $required = $field['is_required'] ?? NULL;
         //fix for CRM-1620
@@ -1615,9 +1570,7 @@ ORDER BY civicrm_custom_group.weight,
           ) {
             $valid = CRM_Core_BAO_CustomValue::typecheck($field['data_type'], $value);
           }
-          if ($field['html_type'] == 'CheckBox' ||
-            $field['html_type'] == 'Multi-Select'
-          ) {
+          if (CRM_Core_BAO_CustomField::isSerialized($field)) {
             $value = str_replace("|", ",", $value);
             $mulValues = explode(',', $value);
             $customOption = CRM_Core_BAO_CustomOption::getCustomOption($key, TRUE);

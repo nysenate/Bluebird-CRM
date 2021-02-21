@@ -130,7 +130,7 @@ function navigation_civicrm_navigationMenu(&$params) {
 
   //5260
   //find report parents
-  $reportNav = array();
+  $reportNav = [];
   foreach ($params as $navID => $navDetails) {
     //get reports menu so we can retain user-added items
     switch ($navDetails['attributes']['name']) {
@@ -144,8 +144,8 @@ function navigation_civicrm_navigationMenu(&$params) {
     unset($params[$navID]);
   }
 
-  $params[0] = array(
-    'attributes' => array(
+  $params[0] = [
+    'attributes' => [
       'label' => '',
       'name' => 'Home',
       'url' => 'civicrm/dashboard?reset=1',
@@ -156,9 +156,9 @@ function navigation_civicrm_navigationMenu(&$params) {
       'parentID' => null,
       'navID' => 0,
       'active' => 1
-    ),
-    'child' => array(),
-  );
+    ],
+    'child' => [],
+  ];
 
   $params[1000] = _buildCreateMenu(1000);
 
@@ -203,8 +203,8 @@ function navigation_civicrm_navigationMenu(&$params) {
 function _buildReportsMenu($navID, $reportNav) {
   //Civi::log()->debug('', array('reportNav' => $reportNav));
 
-  $nav = array(
-    'attributes' => array(
+  $nav = [
+    'attributes' => [
       'label' => 'Reports',
       'name' => 'reports',
       'url' => null,
@@ -214,11 +214,11 @@ function _buildReportsMenu($navID, $reportNav) {
       'parentID' => null,
       'navID' => $navID,
       'active' => 1
-    ),
-    'child' => array(
+    ],
+    'child' => [
       //top level items
-      $navID + 1 => array(
-        'attributes' => array(
+      $navID + 1 => [
+        'attributes' => [
           'label' => 'Reports Listing',
           'name' => 'reports_listing',
           'url' => 'civicrm/report/list?reset=1',
@@ -228,10 +228,10 @@ function _buildReportsMenu($navID, $reportNav) {
           'parentID' => $navID,
           'navID' => $navID + 1,
           'active' => 1,
-        ),
-      ),
-      $navID + 2 => array(
-        'attributes' => array(
+        ],
+      ],
+      $navID + 2 => [
+        'attributes' => [
           'label' => 'My Reports',
           'name' => 'my_reports',
           'url' => 'civicrm/report/list?myreports=1&reset=1',
@@ -241,10 +241,10 @@ function _buildReportsMenu($navID, $reportNav) {
           'parentID' => $navID,
           'navID' => $navID + 2,
           'active' => 1,
-        ),
-      ),
-      $navID + 3 => array(
-        'attributes' => array(
+        ],
+      ],
+      $navID + 3 => [
+        'attributes' => [
           'label' => 'Create Reports from Templates',
           'name' => 'create_reports_from_templates',
           'url' => 'civicrm/admin/report/template/list?reset=1',
@@ -254,12 +254,12 @@ function _buildReportsMenu($navID, $reportNav) {
           'parentID' => $navID,
           'navID' => $navID + 3,
           'active' => 1,
-        ),
-      ),
+        ],
+      ],
 
       //standard reports
-      $navID + 11 => array(
-        'attributes' => array(
+      $navID + 11 => [
+        'attributes' => [
           'label' => 'District Stats',
           'name' => 'district_stats',
           'url' => 'civicrm/districtstats',
@@ -269,11 +269,11 @@ function _buildReportsMenu($navID, $reportNav) {
           'parentID' => $navID,
           'navID' => $navID + 11,
           'active' => 1,
-        ),
-      ),
+        ],
+      ],
       //7260 add websignup reports
-      $navID + 12 => array(
-        'attributes' => array(
+      $navID + 12 => [
+        'attributes' => [
           'label' => 'Web Signup Reports',
           'name' => 'web_signup_reports',
           'url' => 'signupreports',
@@ -283,11 +283,11 @@ function _buildReportsMenu($navID, $reportNav) {
           'parentID' => $navID,
           'navID' => $navID + 12,
           'active' => 1,
-        ),
-      ),
+        ],
+      ],
       //5260 add changelog proofing report
-      $navID + 13 => array(
-        'attributes' => array(
+      $navID + 13 => [
+        'attributes' => [
           'label' => 'Changelog Proofing Report',
           'name' => 'changelog_proofing_report',
           'url' => 'civicrm/nyss/proofingreport?reset=1',
@@ -297,14 +297,14 @@ function _buildReportsMenu($navID, $reportNav) {
           'parentID' => $navID,
           'navID' => $navID + 13,
           'active' => 1,
-        ),
-      ),
-    ),
-  );
+        ],
+      ],
+    ],
+  ];
 
   //extract user-added nav items
   unset($reportNav['attributes']);
-  $navRemove = array('District Stats', 'Reports Listing', 'Create Reports from Templates');
+  $navRemove = ['District Stats', 'Reports Listing', 'Create Reports from Templates'];
   foreach ($reportNav['child'] as $k => $item) {
     if (in_array($item['attributes']['name'], $navRemove)) {
       unset($reportNav['child'][$k]);
@@ -321,21 +321,21 @@ function _buildReportsMenu($navID, $reportNav) {
  * return the complete array to be added to the main navigation array
  */
 function _buildManageMenu($manageID) {
-  $manage = array(
-    'attributes' => array(
-      'label'      => 'Manage',
-      'name'       => 'Manage',
-      'url'        => null,
+  $manage = [
+    'attributes' => [
+      'label' => 'Manage',
+      'name' => 'Manage',
+      'url' => null,
       'permission' => null,
-      'operator'   => 'AND',
-      'separator'  => 0,
-      'parentID'   => null,
-      'navID'      => $manageID,
-      'active'     => 1
-    ),
-    'child' => array(
-      $manageID+1 => array(
-        'attributes' => array(
+      'operator' => 'AND',
+      'separator' => 0,
+      'parentID' => null,
+      'navID' => $manageID,
+      'active' => 1
+    ],
+    'child' => [
+      $manageID+1 => [
+        'attributes' => [
           'label' => 'BOE/3rd Party Import',
           'name' => 'BOE Import',
           'url' => 'importData',
@@ -345,10 +345,10 @@ function _buildManageMenu($manageID) {
           'parentID' => $manageID,
           'navID' => $manageID+1,
           'active' => 1,
-        ),
-      ),
-      $manageID+2 => array(
-        'attributes' => Array(
+        ],
+      ],
+      $manageID+2 => [
+        'attributes' => [
           'label' => 'Site Maintenance',
           'name' => 'Site Maintenance',
           'url' => 'admin/config/development/maintenance',
@@ -358,10 +358,10 @@ function _buildManageMenu($manageID) {
           'parentID' => $manageID,
           'navID' => $manageID+2,
           'active' => 1,
-        ),
-      ),
-      $manageID+3 => array(
-        'attributes' => Array(
+        ],
+      ],
+      $manageID+3 => [
+        'attributes' => [
           'label' => 'Backup/Restore',
           'name' => 'Backup/Restore',
           'url' => 'civicrm/backup/listing',
@@ -371,10 +371,10 @@ function _buildManageMenu($manageID) {
           'parentID' => $manageID,
           'navID' => $manageID+3,
           'active' => 1,
-        ),
-      ),
-      $manageID+4 => array(
-        'attributes' => Array(
+        ],
+      ],
+      $manageID+4 => [
+        'attributes' => [
           'label' => 'Load Sample Data',
           'name' => 'Load Sample Data',
           'url' => 'civicrm/nyss/loadsampledata?reset=1',
@@ -384,10 +384,10 @@ function _buildManageMenu($manageID) {
           'parentID' => $manageID,
           'navID' => $manageID+4,
           'active' => 1,
-        ),
-      ),
-      $manageID+5 => array(
-        'attributes' => Array(
+        ],
+      ],
+      $manageID+5 => [
+        'attributes' => [
           'label' => 'Import Contacts',
           'name' => 'Import Contacts',
           'url' => 'civicrm/import/contact?reset=1',
@@ -397,10 +397,10 @@ function _buildManageMenu($manageID) {
           'parentID' => $manageID,
           'navID' => $manageID+5,
           'active' => 1,
-        ),
-      ),
-      $manageID+6 => array(
-        'attributes' => Array(
+        ],
+      ],
+      $manageID+6 => [
+        'attributes' => [
           'label' => 'Import Activities',
           'name' => 'Import Activities',
           'url' => 'civicrm/import/activity?reset=1',
@@ -410,10 +410,10 @@ function _buildManageMenu($manageID) {
           'parentID' => $manageID,
           'navID' => $manageID+6,
           'active' => 1,
-        ),
-      ),
-      $manageID+7 => array(
-        'attributes' => Array(
+        ],
+      ],
+      $manageID+7 => [
+        'attributes' => [
           'label' => 'Manage Groups',
           'name' => 'Manage Groups',
           'url' => 'civicrm/group?reset=1',
@@ -423,10 +423,10 @@ function _buildManageMenu($manageID) {
           'parentID' => $manageID,
           'navID' => $manageID+7,
           'active' => 1,
-        ),
-      ),
-      $manageID+8 => array(
-        'attributes' => Array(
+        ],
+      ],
+      $manageID+8 => [
+        'attributes' => [
           'label' => 'Manage Tags',
           'name' => 'Manage Tags',
           'url' => 'civicrm/tag?reset=1',
@@ -436,10 +436,10 @@ function _buildManageMenu($manageID) {
           'parentID' => $manageID,
           'navID' => $manageID+8,
           'active' => 1,
-        ),
-      ),
-      $manageID+9 => array(
-        'attributes' => Array(
+        ],
+      ],
+      $manageID+9 => [
+        'attributes' => [
           'label' => 'Manage Users',
           'name' => 'Manage Users',
           'url' => 'admin/people',
@@ -449,11 +449,11 @@ function _buildManageMenu($manageID) {
           'parentID' => $manageID,
           'navID' => $manageID+9,
           'active' => 1,
-        ),
-      ),
+        ],
+      ],
       //6552
-      $manageID+10 => array(
-        'attributes' => Array(
+      $manageID+10 => [
+        'attributes' => [
           'label' => 'Export Permissions',
           'name' => 'Export Permissions',
           'url' => 'civicrm/nyss/exportpermissions',
@@ -463,10 +463,10 @@ function _buildManageMenu($manageID) {
           'parentID' => $manageID,
           'navID' => $manageID+10,
           'active' => 1,
-        ),
-      ),
-      $manageID+11 => array(
-        'attributes' => Array(
+        ],
+      ],
+      $manageID+11 => [
+        'attributes' => [
           'label' => 'Merge Duplicate Contacts',
           'name' => 'Merge Duplicate Contacts',
           'url' => 'civicrm/contact/deduperules?reset=1',
@@ -476,10 +476,10 @@ function _buildManageMenu($manageID) {
           'parentID' => $manageID,
           'navID' => $manageID+11,
           'active' => 1,
-        ),
-      ),
-      $manageID+12 => array(
-        'attributes' => Array(
+        ],
+      ],
+      $manageID+12 => [
+        'attributes' => [
           'label' => 'Case Dashboard',
           'name' => 'Case Dashboard',
           'url' => 'civicrm/case?reset=1',
@@ -489,10 +489,10 @@ function _buildManageMenu($manageID) {
           'parentID' => $manageID,
           'navID' => $manageID+12,
           'active' => 1,
-        ),
-      ),
-      $manageID+13 => array(
-        'attributes' => Array(
+        ],
+      ],
+      $manageID+13 => [
+        'attributes' => [
           'label' => 'Import/Export Mappings',
           'name' => 'Import/Export Mappings',
           'url' => 'civicrm/admin/mapping?reset=1',
@@ -502,11 +502,11 @@ function _buildManageMenu($manageID) {
           'parentID' => $manageID,
           'navID' => $manageID+13,
           'active' => 1,
-        ),
-      ),
+        ],
+      ],
       //5230 add duplicate address removal tool
-      $manageID+14 => array(
-        'attributes' => Array(
+      $manageID+14 => [
+        'attributes' => [
           'label' => 'Duplicate Address Removal',
           'name' => 'Duplicate Address Removal',
           'url' => 'civicrm/dedupe/dupeaddress?reset=1',
@@ -516,11 +516,11 @@ function _buildManageMenu($manageID) {
           'parentID' => $manageID,
           'navID' => $manageID+14,
           'active' => 1,
-        ),
-      ),
+        ],
+      ],
       //delete trashed tool
-      $manageID+15 => array(
-        'attributes' => Array(
+      $manageID+15 => [
+        'attributes' => [
           'label' => 'Delete Trashed Contacts',
           'name' => 'Delete Trashed Contacts',
           'url' => 'civicrm/nyss/deletetrashed?reset=1',
@@ -530,10 +530,10 @@ function _buildManageMenu($manageID) {
           'parentID' => $manageID,
           'navID' => $manageID+15,
           'active' => 1,
-        ),
-      ),
-      $manageID+16 => array(
-        'attributes' => Array(
+        ],
+      ],
+      $manageID+16 => [
+        'attributes' => [
           'label' => 'Manage Images',
           'name' => 'Manage Images',
           'url' => 'sites/all/modules/civicrm/packages/kcfinder/browse.php?cms=civicrm&type=images&langCode=en',
@@ -544,10 +544,10 @@ function _buildManageMenu($manageID) {
           'navID' => $manageID+16,
           'active' => 1,
           'target' => '_blank',
-        ),
-      ),
-    ),
-  );
+        ],
+      ],
+    ],
+  ];
 
   return $manage;
 }//_buildManageMenu
@@ -558,7 +558,7 @@ function _buildManageMenu($manageID) {
  */
 function _buildEmailMenu($emailID) {
   //6799 first retrieve mailing report IDs; prefer reserved, lower IDs
-  $rptIDs = array();
+  $rptIDs = [];
   $sql = "
     SELECT id, report_id
     FROM civicrm_report_instance
@@ -751,236 +751,236 @@ function _buildEmailMenu($emailID) {
  * return the complete array to be added to the main navigation array
  */
 function _buildInboxMenu($inboxNavID) {
-  $inbox = array(
-    'attributes' => array(
-      'label'      => 'Inbox',
-      'name'       => 'Inbox',
-      'url'        => null,
+  $inbox = [
+    'attributes' => [
+      'label' => 'Inbox',
+      'name' => 'Inbox',
+      'url' => null,
       'permission' => 'access inbox polling',
-      'operator'   => 'AND',
-      'separator'  => 0,
-      'parentID'   => null,
-      'navID'      => $inboxNavID,
-      'active'     => 1
-    ),
-    'child' => array(
-      $inboxNavID+1 => array(
-        'attributes' => array(
-          'label'      => 'Unmatched Messages',
-          'name'       => 'Unmatched Messages',
-          'url'        => 'civicrm/nyss/inbox/unmatched?reset=1',
+      'operator' => 'AND',
+      'separator' => 0,
+      'parentID' => null,
+      'navID' => $inboxNavID,
+      'active' => 1
+    ],
+    'child' => [
+      $inboxNavID+1 => [
+        'attributes' => [
+          'label' => 'Unmatched Messages',
+          'name' => 'Unmatched Messages',
+          'url' => 'civicrm/nyss/inbox/unmatched?reset=1',
           'permission' => 'access inbox polling',
-          'operator'   => 'AND',
-          'separator'  => 0,
-          'parentID'   => $inboxNavID,
-          'navID'      => $inboxNavID+1,
-          'active'     => 1
-        ),
-      ),
-      $inboxNavID+2 => array(
-        'attributes' => array(
-          'label'      => 'Matched Messages',
-          'name'       => 'Matched Messages',
-          'url'        => 'civicrm/nyss/inbox/matched?reset=1',
+          'operator' => 'AND',
+          'separator' => 0,
+          'parentID' => $inboxNavID,
+          'navID' => $inboxNavID+1,
+          'active' => 1
+        ],
+      ],
+      $inboxNavID+2 => [
+        'attributes' => [
+          'label' => 'Matched Messages',
+          'name' => 'Matched Messages',
+          'url' => 'civicrm/nyss/inbox/matched?reset=1',
           'permission' => 'access inbox polling',
-          'operator'   => 'AND',
-          'separator'  => 0,
-          'parentID'   => $inboxNavID,
-          'navID'      => $inboxNavID+2,
-          'active'     => 1
-        ),
-      ),
-      $inboxNavID+3 => array(
-        'attributes' => array(
-          'label'      => 'Reports',
-          'name'       => 'Reports',
-          'url'        => 'civicrm/nyss/inbox/report',
+          'operator' => 'AND',
+          'separator' => 0,
+          'parentID' => $inboxNavID,
+          'navID' => $inboxNavID+2,
+          'active' => 1
+        ],
+      ],
+      $inboxNavID+3 => [
+        'attributes' => [
+          'label' => 'Reports',
+          'name' => 'Reports',
+          'url' => 'civicrm/nyss/inbox/report',
           'permission' => 'access inbox polling',
-          'operator'   => 'AND',
-          'separator'  => 2,
-          'parentID'   => $inboxNavID,
-          'navID'      => $inboxNavID+3,
-          'active'     => 1
-        ),
-      ),
-    ),
-  );
+          'operator' => 'AND',
+          'separator' => 2,
+          'parentID' => $inboxNavID,
+          'navID' => $inboxNavID+3,
+          'active' => 1
+        ],
+      ],
+    ],
+  ];
 
   return $inbox;
 }//_buildInboxMenu
 
 function _buildSearchMenu($searchNavID) {
-  $search = array(
-    'attributes' => array(
-      'label'      => 'Search',
-      'name'       => 'Search',
-      'url'        => null,
+  $search = [
+    'attributes' => [
+      'label' => 'Search',
+      'name' => 'Search',
+      'url' => null,
       'permission' => 'access CiviCRM',
-      'operator'   => 'AND',
-      'separator'  => 0,
-      'parentID'   => null,
-      'navID'      => $searchNavID,
-      'active'     => 1
-    ),
-    'child' => array(
-      $searchNavID+1 => array(
-        'attributes' => array(
-          'label'      => 'Advanced Search',
-          'name'       => 'Advanced Search',
-          'url'        => 'civicrm/contact/search/advanced?reset=1',
+      'operator' => 'AND',
+      'separator' => 0,
+      'parentID' => null,
+      'navID' => $searchNavID,
+      'active' => 1
+    ],
+    'child' => [
+      $searchNavID+1 => [
+        'attributes' => [
+          'label' => 'Advanced Search',
+          'name' => 'Advanced Search',
+          'url' => 'civicrm/contact/search/advanced?reset=1',
           'permission' => 'access CiviCRM',
-          'operator'   => 'OR',
-          'separator'  => 1,
-          'parentID'   => $searchNavID,
-          'navID'      => $searchNavID+1,
-          'active'     => 1
-        ),
-      ),
-      $searchNavID+2 => array(
-        'attributes' => array(
-          'label'      => 'Find Cases',
-          'name'       => 'Find Cases',
-          'url'        => 'civicrm/case/search?reset=1',
+          'operator' => 'OR',
+          'separator' => 1,
+          'parentID' => $searchNavID,
+          'navID' => $searchNavID+1,
+          'active' => 1
+        ],
+      ],
+      $searchNavID+2 => [
+        'attributes' => [
+          'label' => 'Find Cases',
+          'name' => 'Find Cases',
+          'url' => 'civicrm/case/search?reset=1',
           'permission' => 'access my cases and activities,access all cases and activities',
-          'operator'   => 'OR',
-          'separator'  => 0,
-          'parentID'   => $searchNavID,
-          'navID'      => $searchNavID+2,
-          'active'     => 1
-        ),
-      ),
-      $searchNavID+3 => array(
-        'attributes' => array(
-          'label'      => 'Find Activities',
-          'name'       => 'Find Activities',
-          'url'        => 'civicrm/activity/search?reset=1',
+          'operator' => 'OR',
+          'separator' => 0,
+          'parentID' => $searchNavID,
+          'navID' => $searchNavID+2,
+          'active' => 1
+        ],
+      ],
+      $searchNavID+3 => [
+        'attributes' => [
+          'label' => 'Find Activities',
+          'name' => 'Find Activities',
+          'url' => 'civicrm/activity/search?reset=1',
           'permission' => 'view all activities',
-          'operator'   => 'AND',
-          'separator'  => 1,
-          'parentID'   => $searchNavID,
-          'navID'      => $searchNavID+3,
-          'active'     => 1
-        ),
-      ),
-      $searchNavID+4 => array(
-        'attributes' => array(
-          'label'      => 'Full-text Search',
-          'name'       => 'Full-text Search',
-          'url'        => 'civicrm/contact/search/custom?csid=15&reset=1',
+          'operator' => 'AND',
+          'separator' => 1,
+          'parentID' => $searchNavID,
+          'navID' => $searchNavID+3,
+          'active' => 1
+        ],
+      ],
+      $searchNavID+4 => [
+        'attributes' => [
+          'label' => 'Full-text Search',
+          'name' => 'Full-text Search',
+          'url' => 'civicrm/contact/search/custom?csid=15&reset=1',
           'permission' => 'access CiviCRM',
-          'operator'   => 'AND',
-          'separator'  => 0,
-          'parentID'   => $searchNavID,
-          'navID'      => $searchNavID+4,
-          'active'     => 1
-        ),
-      ),
-      $searchNavID+5 => array(
-        'attributes' => array(
-          'label'      => 'Search Builder',
-          'name'       => 'Search Builder',
-          'url'        => 'civicrm/contact/search/builder?reset=1',
+          'operator' => 'AND',
+          'separator' => 0,
+          'parentID' => $searchNavID,
+          'navID' => $searchNavID+4,
+          'active' => 1
+        ],
+      ],
+      $searchNavID+5 => [
+        'attributes' => [
+          'label' => 'Search Builder',
+          'name' => 'Search Builder',
+          'url' => 'civicrm/contact/search/builder?reset=1',
           'permission' => 'access CiviCRM',
-          'operator'   => 'AND',
-          'separator'  => 1,
-          'parentID'   => $searchNavID,
-          'navID'      => $searchNavID+5,
-          'active'     => 1
-        ),
-      ),
-      $searchNavID+6 => array(
-        'attributes' => array(
-          'label'      => 'Proximity Search',
-          'name'       => 'Proximity Search',
-          'url'        => 'civicrm/contact/search/custom?reset=1&csid=6',
+          'operator' => 'AND',
+          'separator' => 1,
+          'parentID' => $searchNavID,
+          'navID' => $searchNavID+5,
+          'active' => 1
+        ],
+      ],
+      $searchNavID+6 => [
+        'attributes' => [
+          'label' => 'Proximity Search',
+          'name' => 'Proximity Search',
+          'url' => 'civicrm/contact/search/custom?reset=1&csid=6',
           'permission' => 'access CiviCRM',
-          'operator'   => 'AND',
-          'separator'  => 0,
-          'parentID'   => $searchNavID,
-          'navID'      => $searchNavID+6,
-          'active'     => 1
-        ),
-      ),
-      $searchNavID+7 => array(
-        'attributes' => array(
-          'label'      => 'Birthday Search',
-          'name'       => 'Birthday Search',
-          'url'        => 'civicrm/contact/search/custom?reset=1&csid=16',
+          'operator' => 'AND',
+          'separator' => 0,
+          'parentID' => $searchNavID,
+          'navID' => $searchNavID+6,
+          'active' => 1
+        ],
+      ],
+      $searchNavID+7 => [
+        'attributes' => [
+          'label' => 'Birthday Search',
+          'name' => 'Birthday Search',
+          'url' => 'civicrm/contact/search/custom?reset=1&csid=16',
           'permission' => 'access CiviCRM',
-          'operator'   => 'AND',
-          'separator'  => 0,
-          'parentID'   => $searchNavID,
-          'navID'      => $searchNavID+7,
-          'active'     => 1
-        ),
-      ),
-      $searchNavID+8 => array(
-        'attributes' => array(
-          'label'      => 'Include/Exclude Search',
-          'name'       => 'Include/Exclude Search',
-          'url'        => 'civicrm/contact/search/custom?csid=4&reset=1',
+          'operator' => 'AND',
+          'separator' => 0,
+          'parentID' => $searchNavID,
+          'navID' => $searchNavID+7,
+          'active' => 1
+        ],
+      ],
+      $searchNavID+8 => [
+        'attributes' => [
+          'label' => 'Include/Exclude Search',
+          'name' => 'Include/Exclude Search',
+          'url' => 'civicrm/contact/search/custom?csid=4&reset=1',
           'permission' => 'access CiviCRM,view all contacts',
-          'operator'   => 'AND',
-          'separator'  => 0,
-          'parentID'   => $searchNavID,
-          'navID'      => $searchNavID+8,
-          'active'     => 1
-        ),
-      ),
-      $searchNavID+9 => array(
-        'attributes' => array(
-          'label'      => 'Tag/Group Changelog Search',
-          'name'       => 'Tag/Group Changelog Search',
-          'url'        => 'civicrm/contact/search/custom?csid=17&reset=1',
+          'operator' => 'AND',
+          'separator' => 0,
+          'parentID' => $searchNavID,
+          'navID' => $searchNavID+8,
+          'active' => 1
+        ],
+      ],
+      $searchNavID+9 => [
+        'attributes' => [
+          'label' => 'Tag/Group Changelog Search',
+          'name' => 'Tag/Group Changelog Search',
+          'url' => 'civicrm/contact/search/custom?csid=17&reset=1',
           'permission' => 'access CiviCRM,view all contacts',
-          'operator'   => 'AND',
-          'separator'  => 0,
-          'parentID'   => $searchNavID,
-          'navID'      => $searchNavID+9,
-          'active'     => 1
-        ),
-      ),
-      $searchNavID+10 => array(
-        'attributes' => array(
-          'label'      => 'Tag Count Search',
-          'name'       => 'Tag Count Search',
-          'url'        => 'civicrm/contact/search/custom?csid=19&reset=1',
+          'operator' => 'AND',
+          'separator' => 0,
+          'parentID' => $searchNavID,
+          'navID' => $searchNavID+9,
+          'active' => 1
+        ],
+      ],
+      $searchNavID+10 => [
+        'attributes' => [
+          'label' => 'Tag Count Search',
+          'name' => 'Tag Count Search',
+          'url' => 'civicrm/contact/search/custom?csid=19&reset=1',
           'permission' => 'access CiviCRM,view all contacts',
-          'operator'   => 'AND',
-          'separator'  => 0,
-          'parentID'   => $searchNavID,
-          'navID'      => $searchNavID+10,
-          'active'     => 1
-        ),
-      ),
-      $searchNavID+11 => array(
-        'attributes' => array(
-          'label'      => 'Web Activity Search',
-          'name'       => 'Web Activity Search',
-          'url'        => 'civicrm/contact/search/custom?csid=18&reset=1',
+          'operator' => 'AND',
+          'separator' => 0,
+          'parentID' => $searchNavID,
+          'navID' => $searchNavID+10,
+          'active' => 1
+        ],
+      ],
+      $searchNavID+11 => [
+        'attributes' => [
+          'label' => 'Web Activity Search',
+          'name' => 'Web Activity Search',
+          'url' => 'civicrm/contact/search/custom?csid=18&reset=1',
           'permission' => 'access CiviCRM,view all contacts',
-          'operator'   => 'AND',
-          'separator'  => 0,
-          'parentID'   => $searchNavID,
-          'navID'      => $searchNavID+11,
-          'active'     => 1
-        ),
-      ),
-      $searchNavID+12 => array(
-        'attributes' => array(
-          'label'      => 'Tag Demographic Search',
-          'name'       => 'Tag Demographic Search',
-          'url'        => 'civicrm/contact/search/custom?csid=20&reset=1',
+          'operator' => 'AND',
+          'separator' => 0,
+          'parentID' => $searchNavID,
+          'navID' => $searchNavID+11,
+          'active' => 1
+        ],
+      ],
+      $searchNavID+12 => [
+        'attributes' => [
+          'label' => 'Tag Demographic Search',
+          'name' => 'Tag Demographic Search',
+          'url' => 'civicrm/contact/search/custom?csid=20&reset=1',
           'permission' => 'access CiviCRM,view all contacts',
-          'operator'   => 'AND',
-          'separator'  => 0,
-          'parentID'   => $searchNavID,
-          'navID'      => $searchNavID+12,
-          'active'     => 1
-        ),
-      ),
-    ),
-  );
+          'operator' => 'AND',
+          'separator' => 0,
+          'parentID' => $searchNavID,
+          'navID' => $searchNavID+12,
+          'active' => 1
+        ],
+      ],
+    ],
+  ];
 
   return $search;
 } //_buildSearchMenu()
@@ -992,8 +992,8 @@ function _buildAdminMenu($nyssBaseID) {
     SELECT id FROM civicrm_option_group WHERE name = 'mailing_categories'
   ");
 
-  $adminNav = array(
-    'attributes' => array(
+  $adminNav = [
+    'attributes' => [
       'label' => 'Administer',
       'name' => 'Administer',
       'url' => null,
@@ -1003,10 +1003,10 @@ function _buildAdminMenu($nyssBaseID) {
       'parentID' => null,
       'navID' => $nyssBaseID,
       'active' => 1
-    ),
-    'child' => array(
-      $nyssBaseID+1 => array(
-        'attributes' => array(
+    ],
+    'child' => [
+      $nyssBaseID+1 => [
+        'attributes' => [
           'label' => 'Administration Console',
           'name' => 'Administration Console',
           'url' => 'civicrm/admin?reset=1',
@@ -1016,10 +1016,10 @@ function _buildAdminMenu($nyssBaseID) {
           'parentID' => $nyssBaseID,
           'navID' => $nyssBaseID+1,
           'active' => 1
-        ),
-      ),
-      $nyssBaseID+2 => array(
-        'attributes' => array(
+        ],
+      ],
+      $nyssBaseID+2 => [
+        'attributes' => [
           'label' => 'NYSS Manage Mailing Categories',
           'name' => 'NYSS Manage Mailing Categories',
           'url' => "civicrm/admin/optionValue?gid={$mailingCatID}&reset=1",
@@ -1029,10 +1029,10 @@ function _buildAdminMenu($nyssBaseID) {
           'parentID' => $nyssBaseID,
           'navID' => $nyssBaseID+2,
           'active' => 1
-        ),
-      ),
-      $nyssBaseID+3 => array(
-        'attributes' => array(
+        ],
+      ],
+      $nyssBaseID+3 => [
+        'attributes' => [
           'label' => 'CiviCRM System Status',
           'name' => 'CiviCRM System Status',
           'url' => 'civicrm/a/#/status',
@@ -1042,10 +1042,10 @@ function _buildAdminMenu($nyssBaseID) {
           'parentID' => $nyssBaseID,
           'navID' => $nyssBaseID+3,
           'active' => 1
-        ),
-      ),
-      $nyssBaseID+4 => array(
-        'attributes' => array(
+        ],
+      ],
+      $nyssBaseID+4 => [
+        'attributes' => [
           'label' => 'Manage Extensions',
           'name' => 'Manage Extensions',
           'url' => 'civicrm/admin/extensions?reset=1',
@@ -1055,10 +1055,10 @@ function _buildAdminMenu($nyssBaseID) {
           'parentID' => $nyssBaseID,
           'navID' => $nyssBaseID+4,
           'active' => 1
-        ),
-      ),
-    ),
-  );
+        ],
+      ],
+    ],
+  ];
 
   //CRM_Core_Error::debug_var('adminNav', $adminNav);
   return $adminNav;
@@ -1066,8 +1066,8 @@ function _buildAdminMenu($nyssBaseID) {
 
 //11965
 function _buildHelpMenu($nyssBaseID) {
-  $nav = array(
-    'attributes' => array(
+  $nav = [
+    'attributes' => [
       'label' => 'Help',
       'name' => 'Help',
       'url' => null,
@@ -1077,10 +1077,10 @@ function _buildHelpMenu($nyssBaseID) {
       'parentID' => null,
       'navID' => $nyssBaseID,
       'active' => 1
-    ),
-    'child' => array(
-      $nyssBaseID+1 => array(
-        'attributes' => array(
+    ],
+    'child' => [
+      $nyssBaseID+1 => [
+        'attributes' => [
           'label' => 'Introduction',
           'name' => 'Introduction',
           'url' => 'sites/all/docs/bluebird_intro.pdf',
@@ -1091,10 +1091,10 @@ function _buildHelpMenu($nyssBaseID) {
           'navID' => $nyssBaseID+1,
           'active' => 1,
           'target' => '_blank',
-        ),
-      ),
-      $nyssBaseID+2 => array(
-        'attributes' => array(
+        ],
+      ],
+      $nyssBaseID+2 => [
+        'attributes' => [
           'label' => 'Inbound Email',
           'name' => 'Inbound Email',
           'url' => 'sites/all/docs/bluebird_inbound_email.pdf',
@@ -1105,10 +1105,10 @@ function _buildHelpMenu($nyssBaseID) {
           'navID' => $nyssBaseID+2,
           'active' => 1,
           'target' => '_blank',
-        ),
-      ),
-      $nyssBaseID+3 => array(
-        'attributes' => array(
+        ],
+      ],
+      $nyssBaseID+3 => [
+        'attributes' => [
           'label' => 'Mass Email',
           'name' => 'Mass Email',
           'url' => 'sites/all/docs/bluebird_mass_email.pdf',
@@ -1119,10 +1119,10 @@ function _buildHelpMenu($nyssBaseID) {
           'navID' => $nyssBaseID+3,
           'active' => 1,
           'target' => '_blank',
-        ),
-      ),
-      $nyssBaseID+4 => array(
-        'attributes' => array(
+        ],
+      ],
+      $nyssBaseID+4 => [
+        'attributes' => [
           'label' => 'Postal Mailings',
           'name' => 'Postal Mailings',
           'url' => 'sites/all/docs/bluebird_postal_mail.pdf',
@@ -1133,8 +1133,8 @@ function _buildHelpMenu($nyssBaseID) {
           'navID' => $nyssBaseID+4,
           'active' => 1,
           'target' => '_blank',
-        ),
-      ),
+        ],
+      ],
       $nyssBaseID+5 => [
         'attributes' => [
           'label' => 'Bluebird News',
@@ -1149,16 +1149,16 @@ function _buildHelpMenu($nyssBaseID) {
           'target' => '_blank',
         ],
       ],
-    ),
-  );
+    ],
+  ];
 
   //CRM_Core_Error::debug_var('adminNav', $adminNav);
   return $nav;
 } //_buildHelpMenu()
 
 function _buildCreateMenu($nyssBaseID) {
-  $nav = array(
-    'attributes' => array(
+  $nav = [
+    'attributes' => [
       'label' => 'Create',
       'name' => 'Create',
       'url' => null,
@@ -1168,10 +1168,10 @@ function _buildCreateMenu($nyssBaseID) {
       'parentID' => null,
       'navID' => $nyssBaseID,
       'active' => 1
-    ),
-    'child' => array(
-      $nyssBaseID+1 => array(
-        'attributes' => array(
+    ],
+    'child' => [
+      $nyssBaseID+1 => [
+        'attributes' => [
           'label' => 'New Individual',
           'name' => 'New Individual',
           'url' => 'civicrm/contact/add?reset=1&ct=Individual',
@@ -1181,10 +1181,10 @@ function _buildCreateMenu($nyssBaseID) {
           'parentID' => $nyssBaseID,
           'navID' => $nyssBaseID+1,
           'active' => 1
-        ),
-      ),
-      $nyssBaseID+2 => array(
-        'attributes' => array(
+        ],
+      ],
+      $nyssBaseID+2 => [
+        'attributes' => [
           'label' => 'New Household',
           'name' => 'New Household',
           'url' => 'civicrm/contact/add?reset=1&ct=Household',
@@ -1194,10 +1194,10 @@ function _buildCreateMenu($nyssBaseID) {
           'parentID' => $nyssBaseID,
           'navID' => $nyssBaseID+2,
           'active' => 1
-        ),
-      ),
-      $nyssBaseID+3 => array(
-        'attributes' => array(
+        ],
+      ],
+      $nyssBaseID+3 => [
+        'attributes' => [
           'label' => 'New Organization',
           'name' => 'New Organization',
           'url' => 'civicrm/contact/add?reset=1&ct=Organization',
@@ -1207,10 +1207,10 @@ function _buildCreateMenu($nyssBaseID) {
           'parentID' => $nyssBaseID,
           'navID' => $nyssBaseID+3,
           'active' => 1
-        ),
-      ),
-      $nyssBaseID+4 => array(
-        'attributes' => array(
+        ],
+      ],
+      $nyssBaseID+4 => [
+        'attributes' => [
           'label' => 'New Activity',
           'name' => 'New Activity',
           'url' => 'civicrm/activity?reset=1&action=add&context=standalone',
@@ -1220,10 +1220,10 @@ function _buildCreateMenu($nyssBaseID) {
           'parentID' => $nyssBaseID,
           'navID' => $nyssBaseID+4,
           'active' => 1
-        ),
-      ),
-      $nyssBaseID+5 => array(
-        'attributes' => array(
+        ],
+      ],
+      $nyssBaseID+5 => [
+        'attributes' => [
           'label' => 'New Case',
           'name' => 'New Case',
           'url' => 'civicrm/case/add?reset=1&action=add&atype=13&context=standalone',
@@ -1233,10 +1233,10 @@ function _buildCreateMenu($nyssBaseID) {
           'parentID' => $nyssBaseID,
           'navID' => $nyssBaseID+5,
           'active' => 1
-        ),
-      ),
-      $nyssBaseID+6 => array(
-        'attributes' => array(
+        ],
+      ],
+      $nyssBaseID+6 => [
+        'attributes' => [
           'label' => 'New Email',
           'name' => 'New Email',
           'url' => 'civicrm/activity/email/add?atype=3&action=add&reset=1&context=standalone',
@@ -1246,10 +1246,10 @@ function _buildCreateMenu($nyssBaseID) {
           'parentID' => $nyssBaseID,
           'navID' => $nyssBaseID+6,
           'active' => 1
-        ),
-      ),
-      $nyssBaseID+7 => array(
-        'attributes' => array(
+        ],
+      ],
+      $nyssBaseID+7 => [
+        'attributes' => [
           'label' => 'New Group',
           'name' => 'New Group',
           'url' => 'civicrm/group/add?reset=1',
@@ -1259,10 +1259,10 @@ function _buildCreateMenu($nyssBaseID) {
           'parentID' => $nyssBaseID,
           'navID' => $nyssBaseID+7,
           'active' => 1
-        ),
-      ),
-    ),
-  );
+        ],
+      ],
+    ],
+  ];
 
   //CRM_Core_Error::debug_var('adminNav', $adminNav);
   return $nav;

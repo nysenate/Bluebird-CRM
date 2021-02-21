@@ -1098,6 +1098,9 @@ class Smarty
     {
         $msg = htmlentities($error_msg);
         trigger_error("Smarty error: $msg", $error_type);
+        // Customised for CiviCRM - this allows us to capture the error messages
+        $event = new \Civi\Core\Event\SmartyErrorEvent($error_msg, $error_type);
+        \Civi::dispatcher()->dispatch('civi.smarty.error', $event);
     }
 
 

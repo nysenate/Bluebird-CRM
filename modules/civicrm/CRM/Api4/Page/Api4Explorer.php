@@ -11,13 +11,12 @@
  */
 
 use Civi\Api4\Service\Schema\Joinable\Joinable;
+use Civi\Api4\Utils\CoreUtil;
 
 /**
  *
  * @package CRM
  * @copyright CiviCRM LLC https://civicrm.org/licensing
- * $Id$
- *
  */
 class CRM_Api4_Page_Api4Explorer extends CRM_Core_Page {
 
@@ -32,17 +31,18 @@ class CRM_Api4_Page_Api4Explorer extends CRM_Core_Page {
       });
     }
     $vars = [
-      'operators' => \CRM_Core_DAO::acceptedSQLOperators(),
+      'operators' => CoreUtil::getOperators(),
       'basePath' => Civi::resources()->getUrl('civicrm'),
       'schema' => (array) \Civi\Api4\Entity::get()->setChain(['fields' => ['$name', 'getFields']])->execute(),
       'links' => $entityLinks,
       'docs' => \Civi\Api4\Utils\ReflectionUtils::parseDocBlock($apiDoc->getDocComment()),
+      'functions' => self::getSqlFunctions(),
       'groupOptions' => array_column((array) $groupOptions, 'options', 'name'),
     ];
     Civi::resources()
+      ->addBundle('bootstrap3')
       ->addVars('api4', $vars)
       ->addPermissions(['access debug output', 'edit groups', 'administer reserved groups'])
-      ->addScriptFile('civicrm', 'js/load-bootstrap.js')
       ->addScriptFile('civicrm', 'bower_components/js-yaml/dist/js-yaml.min.js')
       ->addScriptFile('civicrm', 'bower_components/marked/marked.min.js')
       ->addScriptFile('civicrm', 'bower_components/google-code-prettify/bin/prettify.min.js')
@@ -56,6 +56,29 @@ class CRM_Api4_Page_Api4Explorer extends CRM_Core_Page {
     ]);
     $loader->load();
     parent::run();
+  }
+
+  /**
+   * Gets info about all available sql functions
+   * @return array
+   */
+  public static function getSqlFunctions() {
+    $fns = [];
+    foreach (glob(Civi::paths()->getPath('[civicrm.root]/Civi/Api4/Query/SqlFunction*.php')) as $file) {
+      $matches = [];
+      if (preg_match('/(SqlFunction[A-Z_]+)\.php$/', $file, $matches)) {
+        $className = '\Civi\Api4\Query\\' . $matches[1];
+        if (is_subclass_of($className, '\Civi\Api4\Query\SqlFunction')) {
+          $fns[] = [
+            'name' => $className::getName(),
+            'title' => $className::getTitle(),
+            'params' => $className::getParams(),
+            'category' => $className::getCategory(),
+          ];
+        }
+      }
+    }
+    return $fns;
   }
 
 }

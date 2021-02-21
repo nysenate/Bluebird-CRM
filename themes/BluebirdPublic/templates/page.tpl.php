@@ -1,9 +1,10 @@
 <!-- ______________________ HEADER _______________________ -->
 <?php
   $bbcfg = get_bluebird_instance_config();
-  $env = $bbcfg['envname'];
-  $ins = $bbcfg['shortname'];
-  $logo_url = "//pubfiles.nysenate.gov/$env/$ins/common/images/nyss_logo.png";
+  $base = $bbcfg['public.url.base'];
+  $envname = $bbcfg['envname'];
+  $instance = $bbcfg['shortname'];
+  $logo_url = "$base/$envname/$instance/common/images/nyss_logo.png";
 ?>
 
 <header id="header">

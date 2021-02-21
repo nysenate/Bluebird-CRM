@@ -1,5 +1,29 @@
 <?php
 
+/**
+ * @file
+ * Copyright iATS Payments (c) 2020.
+ * @author Alan Dixon
+ *
+ * This file is a part of CiviCRM published extension.
+ *
+ * This extension is free software; you can copy, modify, and distribute it
+ * under the terms of the GNU Affero General Public License
+ * Version 3, 19 November 2007.
+ *
+ * It is distributed in the hope that it will be useful, but
+ * WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+ * See the GNU Affero General Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public
+ * License with this program; if not, see http://www.gnu.org/licenses/
+ *
+ * This code provides glue between CiviCRM payment model and the payment model encapsulated in the CRM\Iats\FapsRequest object
+ */
+
+use Civi\Payment\Exception\PaymentProcessorException;
+
 class CRM_Core_Payment_Faps extends CRM_Core_Payment {
 
   /**
@@ -21,7 +45,6 @@ class CRM_Core_Payment_Faps extends CRM_Core_Payment {
   function __construct( $mode, &$paymentProcessor ) {
     $this->_mode             = $mode;
     $this->_paymentProcessor = $paymentProcessor;
-    $this->_processorName    = ts('iATS Payments 1st American Payment System Interface');
     $this->disable_cryptogram   = iats_get_setting('disable_cryptogram');
     $this->is_test = ($this->_mode == 'test' ? 1 : 0);
   }
@@ -153,7 +176,7 @@ class CRM_Core_Payment_Faps extends CRM_Core_Payment {
     $cryptojs = 'https://' . $iats_domain . '/secure/PaymentHostedForm/Scripts/firstpay/firstpay.cryptogram.js';
     $iframe_src = 'https://' . $iats_domain . '/secure/PaymentHostedForm/v3/CreditCard';
     $jsVariables = [
-      'paymentProcessorId' => $this->_paymentProcessor['id'], 
+      'paymentProcessorId' => $this->_paymentProcessor['id'],
       'transcenterId' => $this->_paymentProcessor['password'],
       'processorId' => $this->_paymentProcessor['user_name'],
       'currency' => $form->getCurrency(),
@@ -165,10 +188,10 @@ class CRM_Core_Payment_Faps extends CRM_Core_Payment {
     ];
     $resources = CRM_Core_Resources::singleton();
     $cryptoCss = $resources->getUrl('com.iatspayments.civicrm', 'css/crypto.css');
-    $markup = '<link type="text/css" rel="stylesheet" href="'.$cryptoCss.'" media="all" /><script type="text/javascript" src="'.$cryptojs.'"></script>';
+    $markup = '<link type="text/css" rel="stylesheet" href="'.$cryptoCss.'" media="all" />'; // <script type="text/javascript" src="'.$cryptojs.'"></script>';
     CRM_Core_Region::instance('billing-block')->add(array(
       'markup' => $markup,
-    ));
+    )); 
     // the cryptojs above is the one on the 1pay server, now I load and invoke the extension's crypto.js
     $myCryptoJs = $resources->getUrl('com.iatspayments.civicrm', 'js/crypto.js');
     // after manually doing what addVars('iats', $jsVariables) would normally do
@@ -183,6 +206,22 @@ class CRM_Core_Payment_Faps extends CRM_Core_Payment {
   }
 
   /**
+   * Internal function to determine if I'm supporting self-service functions
+   *
+   * @return bool
+   */
+  protected function allowSelfService($action) {
+    if ('CRM_Core_Payment_FapsACH' == CRM_Utils_System::getClassName($this)) {
+      return FALSE;
+    }
+    elseif (FALSE == $this->getSettings('enable_'.$action)) {
+      // disable self-service action if the admin has not allowed it
+      return FALSE;
+    }
+    return TRUE;
+  }
+
+  /**
    * The first payment date is configurable when setting up back office recurring payments.
    * For iATSPayments, this is also true for front-end recurring payments.
    *
@@ -190,11 +229,32 @@ class CRM_Core_Payment_Faps extends CRM_Core_Payment {
    */
   public function supportsFutureRecurStartDate() {
     return TRUE;
-  } 
+  }
 
+  /* We override the default behaviour of allowing self-service editing of recurring contributions
+   * to use the allowSelfService() function that tests for the iATS configuration setting
+
+   * @return bool
+   */
+
+  public function supportsUpdateSubscriptionBillingInfo() {
+    return $this->allowSelfService('update_subscription_billing_info');
+  }
+
+  public function supportsEditRecurringContribution() {
+    return $this->allowSelfService('change_subscription_amount');
+  }
+
+  public function supportsChangeSubscriptionAmount() {
+    return $this->allowSelfService('change_subscription_amount');
+  }
+
+  public function supportsCancelRecurring() {
+    return $this->allowSelfService('cancel_recurring');
+  }
 
   /**
-   * function doDirectPayment
+   * function doPayment
    *
    * This is the function for taking a payment using a core payment form of any kind.
    *
@@ -202,12 +262,12 @@ class CRM_Core_Payment_Faps extends CRM_Core_Payment {
    * needs to be configured for use with the vault. The cryptogram iframe is created before
    * I know whether the contribution will be recurring or not, so that forces me to always
    * use the vault, if recurring is an option.
-   * 
+   *
    * So: the best we can do is to avoid the use of the vault if I'm not using the cryptogram, or if I'm on a page that
    * doesn't offer recurring contributions.
    */
-  public function doDirectPayment(&$params) {
-    // CRM_Core_Error::debug_var('doDirectPayment params', $params);
+  public function doPayment(&$params, $component = 'contribute') {
+    // CRM_Core_Error::debug_var('doPayment params', $params);
 
     // Check for valid currency [todo: we have C$ support, but how do we check,
     // or should we?]
@@ -255,7 +315,7 @@ class CRM_Core_Payment_Faps extends CRM_Core_Payment {
         'test' => $this->is_test,
       );
       $vault_request = new CRM_Iats_FapsRequest($options);
-      // auto-generate a compliant vault key  
+      // auto-generate a compliant vault key
       $vault_key = self::generateVaultKey($request['ownerEmail']);
       $request['vaultKey'] = $vault_key;
       $request['ipAddress'] = $ipAddress;
@@ -355,25 +415,11 @@ class CRM_Core_Payment_Faps extends CRM_Core_Payment {
       // For versions >= 4.6.6, the proper key.
       $params['payment_status_id'] = 1;
       $params['trxn_id'] = trim($result['data']['referenceNumber']).':'.time();
-      $params['gross_amount'] = $params['amount'];
       return $params;
     }
     else {
       return self::error($result);
     }
-  }
-
-  /**
-   * Todo?
-   *
-   * @param array $params name value pair of contribution data
-   *
-   * @return void
-   * @access public
-   *
-   */
-  function doTransferCheckout( &$params, $component ) {
-    CRM_Core_Error::fatal(ts('This function is not implemented'));
   }
 
   /**
@@ -425,6 +471,34 @@ class CRM_Core_Payment_Faps extends CRM_Core_Payment {
    * @return array
    */
   protected function convertParams($params, $method) {
+    if (empty($params['country']) && !empty($params['country_id'])) {
+      try {
+        $result = civicrm_api3('Country', 'get', [
+          'sequential' => 1,
+          'return' => ['name'],
+	  'id' => $params['country_id'],
+          'options' => ['limit' => 1],
+        ]);
+	$params['country'] = $result['values'][0]['name'];
+      }
+      catch (CiviCRM_API3_Exception $e) {
+        Civi::log()->info('Unexpected error from api3 looking up countries/states/provinces');
+      }
+    }
+    if (empty($params['state_province']) && !empty($params['state_province_id'])) {
+      try {
+        $result = civicrm_api3('StateProvince', 'get', [
+          'sequential' => 1,
+          'return' => ['name'],
+	  'id' => $params['state_province_id'],
+          'options' => ['limit' => 1],
+        ]);
+	$params['state_province'] = $result['values'][0]['name'];
+      }
+      catch (CiviCRM_API3_Exception $e) {
+        Civi::log()->info('Unexpected error from api3 looking up countries/states/provinces');
+      }
+    }
     $request = array();
     $convert = array(
       'ownerEmail' => 'email',
@@ -472,18 +546,12 @@ class CRM_Core_Payment_Faps extends CRM_Core_Payment {
    *
    */
   public function &error($error = NULL) {
-    $e = CRM_Core_Error::singleton();
+    $error_code = 'process_1stpay';
     if (is_object($error)) {
-      $e->push($error->getResponseCode(),
-        0, NULL,
-        $error->getMessage()
-      );
+      throw new PaymentProcessorException(ts('Error %1', [1 => $error->getMessage()]), $error_code);
     }
     elseif ($error && is_numeric($error)) {
-      $e->push($error,
-        0, NULL,
-        $this->errorString($error)
-      );
+      throw new PaymentProcessorException(ts('Error %1', [1 => $this->errorString($error)]), $error_code);
     }
     elseif (is_array($error)) {
       $errors = array();
@@ -496,15 +564,13 @@ class CRM_Core_Payment_Faps extends CRM_Core_Payment {
         foreach($error['validationFailures'] as $message) {
           $errors[] = 'Validation failure for '.$message['key'].': '.$message['message'];
         }
+        $error_code = 'process_1stpay_validation';
       }
-      $error_string = implode('<br />',$errors);
-      $e->push(9002,
-        0, NULL,
-        $error_string
-      );
+      $error_string = implode("\n",$errors);
+      throw new PaymentProcessorException(ts('Error: %1', [1 => $error_string]), $error_code);
     }
-    else {
-      $e->push(9001, 0, NULL, "Unknown System Error.");
+    else { /* in the event I'm handling an unexpected argument */
+      throw new PaymentProcessorException(ts('Unknown System Error.'), 'process_1stpay_extension');
     }
     return $e;
   }

@@ -34,12 +34,18 @@ abstract class TaggableCachePoolTest extends TestCase
      */
     abstract public function createCachePool();
 
-    protected function setUp()
+    /**
+     * @before
+     */
+    public function setupService()
     {
         $this->cache = $this->createCachePool();
     }
 
-    protected function tearDown()
+    /**
+     * @after
+     */
+    public function tearDownService()
     {
         if ($this->cache !== null) {
             $this->cache->clear();
@@ -55,8 +61,6 @@ abstract class TaggableCachePoolTest extends TestCase
     {
         if (isset($this->skippedTests[__FUNCTION__])) {
             $this->markTestSkipped($this->skippedTests[__FUNCTION__]);
-
-            return;
         }
 
         $this->cache->save($this->cache->getItem('key1')->set('value')->setTags(['tag1', 'tag2']));
@@ -81,8 +85,6 @@ abstract class TaggableCachePoolTest extends TestCase
     {
         if (isset($this->skippedTests[__FUNCTION__])) {
             $this->markTestSkipped($this->skippedTests[__FUNCTION__]);
-
-            return;
         }
 
         $item = $this->cache->getItem('key')->set('value');
@@ -104,8 +106,6 @@ abstract class TaggableCachePoolTest extends TestCase
     {
         if (isset($this->skippedTests[__FUNCTION__])) {
             $this->markTestSkipped($this->skippedTests[__FUNCTION__]);
-
-            return;
         }
 
         $item = $this->cache->getItem('key')->set('value');
@@ -119,45 +119,35 @@ abstract class TaggableCachePoolTest extends TestCase
         $this->assertCount(1, $item->getPreviousTags());
     }
 
-    /**
-     * @expectedException \Psr\Cache\InvalidArgumentException
-     */
     public function testTagAccessorWithEmptyTag()
     {
         if (isset($this->skippedTests[__FUNCTION__])) {
             $this->markTestSkipped($this->skippedTests[__FUNCTION__]);
-
-            return;
         }
 
         $item = $this->cache->getItem('key')->set('value');
+        $this->expectException('Psr\Cache\InvalidArgumentException');
         $item->setTags(['']);
-        $this->cache->save($item);
     }
 
     /**
-     * @expectedException \Psr\Cache\InvalidArgumentException
      * @dataProvider invalidKeys
      */
     public function testTagAccessorWithInvalidTag($tag)
     {
         if (isset($this->skippedTests[__FUNCTION__])) {
             $this->markTestSkipped($this->skippedTests[__FUNCTION__]);
-
-            return;
         }
 
         $item = $this->cache->getItem('key')->set('value');
+        $this->expectException('Psr\Cache\InvalidArgumentException');
         $item->setTags([$tag]);
-        $this->cache->save($item);
     }
 
     public function testTagAccessorDuplicateTags()
     {
         if (isset($this->skippedTests[__FUNCTION__])) {
             $this->markTestSkipped($this->skippedTests[__FUNCTION__]);
-
-            return;
         }
 
         $item = $this->cache->getItem('key')->set('value');
@@ -176,8 +166,6 @@ abstract class TaggableCachePoolTest extends TestCase
     {
         if (isset($this->skippedTests[__FUNCTION__])) {
             $this->markTestSkipped($this->skippedTests[__FUNCTION__]);
-
-            return;
         }
 
         $item = $this->cache->getItem('key')->set('value');
@@ -200,8 +188,6 @@ abstract class TaggableCachePoolTest extends TestCase
     {
         if (isset($this->skippedTests[__FUNCTION__])) {
             $this->markTestSkipped($this->skippedTests[__FUNCTION__]);
-
-            return;
         }
 
         $item = $this->cache->getItem('key')->set('value');
@@ -223,8 +209,6 @@ abstract class TaggableCachePoolTest extends TestCase
     {
         if (isset($this->skippedTests[__FUNCTION__])) {
             $this->markTestSkipped($this->skippedTests[__FUNCTION__]);
-
-            return;
         }
 
         $item = $this->cache->getItem('key')->set('value');
@@ -252,8 +236,6 @@ abstract class TaggableCachePoolTest extends TestCase
     {
         if (isset($this->skippedTests[__FUNCTION__])) {
             $this->markTestSkipped($this->skippedTests[__FUNCTION__]);
-
-            return;
         }
 
         $item = $this->cache->getItem('key')->set('value');
@@ -282,8 +264,6 @@ abstract class TaggableCachePoolTest extends TestCase
     {
         if (isset($this->skippedTests[__FUNCTION__])) {
             $this->markTestSkipped($this->skippedTests[__FUNCTION__]);
-
-            return;
         }
 
         $pool = $this->cache;

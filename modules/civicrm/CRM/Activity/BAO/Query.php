@@ -28,22 +28,13 @@ class CRM_Activity_BAO_Query {
       $query->_tables['civicrm_activity'] = $query->_whereTables['civicrm_activity'] = 1;
     }
 
-    if (!empty($query->_returnProperties['activity_type_id'])) {
-      $query->_select['activity_type_id'] = 'activity_type.value as activity_type_id';
+    if (!empty($query->_returnProperties['activity_type_id'])
+      || !empty($query->_returnProperties['activity_type'])
+    ) {
+      $query->_select['activity_type_id'] = 'civicrm_activity.activity_type_id';
       $query->_element['activity_type_id'] = 1;
       $query->_tables['civicrm_activity'] = 1;
-      $query->_tables['activity_type'] = 1;
       $query->_whereTables['civicrm_activity'] = 1;
-      $query->_whereTables['activity_type'] = 1;
-    }
-
-    if (!empty($query->_returnProperties['activity_type'])) {
-      $query->_select['activity_type'] = 'activity_type.label as activity_type';
-      $query->_element['activity_type'] = 1;
-      $query->_tables['civicrm_activity'] = 1;
-      $query->_tables['activity_type'] = 1;
-      $query->_whereTables['civicrm_activity'] = 1;
-      $query->_whereTables['activity_type'] = 1;
     }
 
     if (!empty($query->_returnProperties['activity_subject'])) {
@@ -198,7 +189,7 @@ class CRM_Activity_BAO_Query {
         // We no longer expect "subject" as a specific criteria (as of CRM-19447),
         // but we still use activity_subject in Activity.Get API
       case 'activity_subject':
-        $query->_where[$grouping][] = CRM_Contact_BAO_Query::buildClause($fieldSpec['where'], $op, $value, CRM_Utils_Type::typeToString($fieldSpec['type']));
+        $query->_where[$grouping][] = CRM_Contact_BAO_Query::buildClause($fieldSpec['where'], $op, $value, $query->getDataTypeForRealField($name));
         $query->_qill[$grouping][]  = $query->getQillForField($fieldSpec['is_pseudofield_for'] ?? $fieldSpec['name'], $value, $op, $fieldSpec);
         break;
 
@@ -281,7 +272,7 @@ class CRM_Activity_BAO_Query {
             $val = explode(',', $val);
             foreach ($val as $tId) {
               if (is_numeric($tId)) {
-                $value[$tId] = 1;
+                $value[] = $tId;
               }
             }
           }
@@ -487,7 +478,7 @@ class CRM_Activity_BAO_Query {
           'multiple' =>
           'multiple',
           'class' => 'crm-select2',
-          'placeholder' => ts('- select -'),
+          'placeholder' => ts('- select tags -'),
         ]
       );
     }

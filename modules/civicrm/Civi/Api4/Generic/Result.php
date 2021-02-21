@@ -40,6 +40,10 @@ class Result extends \ArrayObject implements \JsonSerializable {
    * @var int
    */
   public $version = 4;
+  /**
+   * @var int
+   */
+  public $rowCount;
 
   private $indexedBy;
 
@@ -61,6 +65,32 @@ class Result extends \ArrayObject implements \JsonSerializable {
   public function last() {
     $items = $this->getArrayCopy();
     return array_pop($items);
+  }
+
+  /**
+   * Return the one-and-only result record.
+   *
+   * If there are too many or too few results, then throw an exception.
+   *
+   * @return array
+   * @throws \API_Exception
+   */
+  public function single() {
+    $result = NULL;
+    foreach ($this as $values) {
+      if ($result === NULL) {
+        $result = $values;
+      }
+      else {
+        throw new \API_Exception("Expected to find one {$this->entity} record, but there were multiple.");
+      }
+    }
+
+    if ($result === NULL) {
+      throw new \API_Exception("Expected to find one {$this->entity} record, but there were zero.");
+    }
+
+    return $result;
   }
 
   /**
@@ -107,11 +137,7 @@ class Result extends \ArrayObject implements \JsonSerializable {
    * @return int
    */
   public function count() {
-    $count = parent::count();
-    if ($count == 1 && is_array($this->first()) && array_keys($this->first()) == ['row_count']) {
-      return $this->first()['row_count'];
-    }
-    return $count;
+    return $this->rowCount ?? parent::count();
   }
 
   /**

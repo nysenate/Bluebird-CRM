@@ -12,5 +12,6 @@ return [
   'partials' => [
     'ang/contactlayout',
   ],
-  'requires' => ['crmUi', 'crmUtil', 'ngRoute', 'ui.sortable', 'api4'],
+  'basePages' => [],
+  'requires' => ['crmUi', 'crmUtil', 'ngRoute', 'ui.sortable', 'api4', 'dialogService', 'crmProfileUtils'],
 ];

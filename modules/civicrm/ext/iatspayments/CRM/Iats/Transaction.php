@@ -18,11 +18,14 @@ class CRM_Iats_Transaction {
    */
   static function getContributionTemplate($contribution) {
     // Get the most recent contribution in this series that matches the same total_amount, if present.
-    $template = array();
-    $get = ['contribution_recur_id' => $contribution['contribution_recur_id'], 'options' => ['sort' => ' id DESC', 'limit' => 1]];
-    if (!empty($contribution['total_amount'])) {
-      $get['total_amount'] = $contribution['total_amount'];
+    $template = [];
+    $get = ['options' => ['sort' => ' id DESC', 'limit' => 1]];
+    foreach (['contribution_recur_id', 'total_amount', 'is_test'] as $key) {
+      if (!empty($contribution[$key])) {
+        $get[$key] = $contribution[$key];
+      }
     }
+    // CRM_Core_Error::debug_var('Contribution', $get);
     $result = civicrm_api3('contribution', 'get', $get);
     if (!empty($result['values'])) {
       $template = reset($result['values']);
@@ -358,9 +361,10 @@ class CRM_Iats_Transaction {
         // Process the soap response into a readable result.
         $result['result'] = $iats->result($response);
         $result['success'] = !empty($result['result']['status']);
+        $result['auth_code'] = $result['result']['auth_result'];
         if ($result['success']) {
           $result['trxn_id'] = trim($result['result']['remote_id']) . ':' . time();
-          $result['message'] = $result['auth_code'] = $result['result']['auth_result'];
+          $result['message'] = $result['auth_code'];
         }
         else {
           $result['message'] = $result['result']['reasonMessage'];
