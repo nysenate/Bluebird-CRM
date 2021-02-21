@@ -34,13 +34,19 @@ fi
 ## set mail extension to load last
 echo "$prog: set mail extension to load last"
 sql="
-   DELETE FROM civicrm_extension
-   WHERE full_name = 'gov.nysenate.mail';
+  SELECT @maxid := max(id) FROM civicrm_extension;
 
-   INSERT INTO civicrm_extension
-   (type, full_name, name, label, file, is_active)
-   VALUES
-   ('module', 'gov.nysenate.mail', 'NYSS: Mailing Customizations', 'NYSS: Mailing Customizations', 'mail', 1);
+  DELETE FROM civicrm_extension
+  WHERE full_name = 'gov.nysenate.mail' AND id != @maxid;
+
+  INSERT INTO civicrm_extension
+  (type, full_name, name, label, file, is_active)
+    SELECT 'module', 'gov.nysenate.mail', 'NYSS: Mailing Customizations', 'NYSS: Mailing Customizations', 'mail', 1
+    FROM DUAL
+    WHERE NOT EXISTS (
+      SELECT full_name FROM civicrm_extension
+      WHERE full_name = 'gov.nysenate.mail'
+    );
 "
 $execSql $instance -c "$sql" -q
 

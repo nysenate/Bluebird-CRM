@@ -81,12 +81,11 @@ class CRM_NYSS_Subscription_Form_Manage extends CRM_Core_Form
     }
 
     $bbconfig = get_bluebird_instance_config();
-    $env = explode('.', $bbconfig['base.domain']);
 
     //verify checksum
     if ( !CRM_Contact_BAO_Contact_Utils::validChecksum($contact['contact_id'], $cs) ) {
       CRM_Core_Error::debug_var('Failed attempt to validate checksum in email subscription tool.', $contact);
-      $url = "http://pubfiles.nysenate.gov/{$env[0]}/{$bbconfig['shortname']}/subscription/expired";
+      $url = "{$bbconfig['public.url.base']}/{$bbconfig['envname']}/{$bbconfig['shortname']}/subscription/expired";
       CRM_Utils_System::redirect($url);
     }
 
@@ -94,7 +93,7 @@ class CRM_NYSS_Subscription_Form_Manage extends CRM_Core_Form
     CRM_Utils_System::setTitle( ts('Manage Email Subscriptions') );
 
     //alter form action to use pubfiles version
-    $action = "http://pubfiles.nysenate.gov/{$env[0]}/{$bbconfig['shortname']}/subscription/manage";
+    $action = "{$bbconfig['public.url.base']}/{$bbconfig['envname']}/{$bbconfig['shortname']}/subscription/manage";
     $this->_attributes['action'] = $action;
     $this->_attributes['method'] = 'get';
 
@@ -236,9 +235,8 @@ class CRM_NYSS_Subscription_Form_Manage extends CRM_Core_Form
 
     //now redirect
     $bbconfig = get_bluebird_instance_config();
-    $env = explode('.', $bbconfig['base.domain']);
     //$url = CRM_Utils_System::url('civicrm/nyss/subscription/view', "eq={$formParams['eq']}&cs={$formParams['cs']}");
-    $url = "http://pubfiles.nysenate.gov/{$env[0]}/{$bbconfig['shortname']}/subscription/view/{$formParams['eq']}/{$formParams['cs']}";
+    $url = "{$bbconfig['public.url.base']}/{$bbconfig['envname']}/{$bbconfig['shortname']}/subscription/view/{$formParams['eq']}/{$formParams['cs']}";
     //CRM_Core_Error::debug_var('$url', $url);
     CRM_Utils_System::redirect($url);
   }//postProcess
