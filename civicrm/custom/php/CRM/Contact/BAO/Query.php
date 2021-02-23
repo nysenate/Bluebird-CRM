@@ -5138,7 +5138,8 @@ civicrm_relationship.start_date > {$today}
 
     $where .= sprintf(' AND contact_a.id IN (%s)', implode(',', $cids));
     $order = 'ORDER BY _wgt';
-    $groupBy = $this->_useGroupBy ? ' GROUP BY contact_a.id' : '';
+    //NYSS 13186
+    $groupBy = $this->_useGroupBy ? ' GROUP BY contact_id' : '';
     $limit = '';
     $query = "SELECT * FROM ($select $from $where $innerOrder) tmp $groupBy $order $limit";
     //Civi::log()->debug(__FUNCTION__, ['query' => $query]);
