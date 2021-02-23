@@ -266,14 +266,23 @@ class CRM_Mosaico_Utils {
             $size = filesize($file_path);
 
             $thumbnail_path = $config['BASE_DIR'] . $config[ 'THUMBNAILS_DIR' ] . $file_name;
-            Civi::service('mosaico_graphics')->createResizedImage($file_path, $thumbnail_path, $config['THUMBNAIL_WIDTH'], $config['THUMBNAIL_HEIGHT']);
 
-            $file = [
-              "name" => $file_name,
-              "url" => $config['BASE_URL'] . $config['UPLOADS_DIR'] . $file_name,
-              "size" => $size,
-              "thumbnailUrl" => $config['BASE_URL'] . $config['THUMBNAILS_URL'] . $file_name,
-            ];
+            //NYSS 13813
+            try {
+              Civi::service('mosaico_graphics')->createResizedImage($file_path, $thumbnail_path, $config['THUMBNAIL_WIDTH'], $config['THUMBNAIL_HEIGHT']);
+              $file = [
+                "name" => $file_name,
+                "url" => $config['BASE_URL'] . $config['UPLOADS_DIR'] . $file_name,
+                "size" => $size,
+                "thumbnailUrl" => $config['BASE_URL'] . $config['THUMBNAILS_URL'] . $file_name,
+              ];
+            }
+            catch (\Exception $e) {
+              CRM_Core_Error::debug_log_message($e->getMessage());
+              $file = [
+                'error' => $e->getMessage(),
+              ];
+            }
 
             $files[] = $file;
           }
