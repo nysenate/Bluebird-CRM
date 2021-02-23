@@ -1108,6 +1108,13 @@ function mail_civicrm_alterMailParams(&$params, $context) {
     $params['html'] = _mail_mailingViewCss($params['html']);
   }
 
+  //modify subject line of error emails
+  if (strpos($params['subject'], 'Bluebird error at NY Senate Constituent Services') !== FALSE) {
+    $subject = str_replace('Bluebird error at NY Senate Constituent Services', '', $params['subject']);
+    $subject = str_replace('()', '', $subject);
+    $params['subject'] = "Bluebird Error [{$bbconfig['shortname']}.{$bbconfig['envname']}]".$subject;
+  }
+
   //CRM_Core_Error::debug('session', $_SESSION);
   //CRM_Core_Error::debug_var('params', $params);
   //CRM_Core_Error::debug_var('$_REQUEST', $_REQUEST);
