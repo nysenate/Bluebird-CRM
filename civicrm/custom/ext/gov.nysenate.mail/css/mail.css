@@ -51,3 +51,8 @@ input[name=all_emails] {
 ul#civicrm-menu {
   z-index: 99999 !important;
 }
+
+/*13837 - ensure confirmation dialog box is on-screen*/
+div.ui-dialog.crm-confirm {
+  top: 200px !important;
+}
