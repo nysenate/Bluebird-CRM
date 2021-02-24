@@ -254,3 +254,20 @@ function case_civicrm_post($op, $objectName, $objectId, &$objectRef) {
     }
   }//end case role email
 }
+
+function case_civicrm_searchColumns($objectName, &$headers, &$rows, &$selector) {
+  /*Civi::log()->debug(__FUNCTION__, [
+    'objectName' => $objectName,
+    'headers' => $headers,
+    'selector' => $selector,
+  ]);*/
+
+  if ($objectName == 'case' && is_a($selector, 'CRM_Core_Selector_Controller')) {
+    foreach ($headers as &$header) {
+      if (in_array($header['sort'], ['case_recent_activity_date', 'case_scheduled_activity_date'])) {
+        unset($header['sort']);
+        unset($header['direction']);
+      }
+    }
+  }
+}
