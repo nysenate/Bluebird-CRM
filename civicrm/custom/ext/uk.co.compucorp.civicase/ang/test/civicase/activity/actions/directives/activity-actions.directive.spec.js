@@ -46,14 +46,69 @@
         });
       });
 
-      describe('isActionEnabled', () => {
-        beforeEach(() => {
-          initController();
-          $scope.isActionEnabled({ name: 'ResumeDraft' });
+      describe('enabled actions', () => {
+        let returnedValue;
+
+        describe('when calling an action with a custom action service', () => {
+          beforeEach(() => {
+            initController();
+            ResumeDraftActivityActionMock.isActionEnabled
+              .and.returnValue('returned-value');
+
+            returnedValue = $scope.isActionEnabled({ name: 'ResumeDraft' });
+          });
+
+          it('calls the respective service to fetch if the action is enabled', () => {
+            expect(ResumeDraftActivityActionMock.isActionEnabled).toHaveBeenCalledWith($scope);
+          });
+
+          it('returns the value provided by the custom action service', () => {
+            expect(returnedValue).toBe('returned-value');
+          });
         });
 
-        it('calls the respective service to fetch if the action is enabled', () => {
-          expect(ResumeDraftActivityActionMock.isActionEnabled).toHaveBeenCalledWith($scope);
+        describe('when there are no custom services', () => {
+          beforeEach(() => {
+            initController();
+
+            returnedValue = $scope.isActionEnabled({ name: 'MyCustomAction' });
+          });
+
+          it('enables the action by default', () => {
+            expect(returnedValue).toBe(true);
+          });
+        });
+
+        describe('when using actions that make changes to cases and the activity is read only', () => {
+          beforeEach(() => {
+            initController();
+            $scope.isReadOnly = true;
+
+            returnedValue = $scope.isActionEnabled({
+              name: 'MyCustomAction',
+              isWriteAction: true
+            });
+          });
+
+          it('disables the action', () => {
+            expect(returnedValue).toBe(false);
+          });
+        });
+
+        describe('when using actions that do not make changes to cases and the activity is read only', () => {
+          beforeEach(() => {
+            initController();
+            $scope.isReadOnly = true;
+
+            returnedValue = $scope.isActionEnabled({
+              name: 'MyCustomAction',
+              isWriteAction: false
+            });
+          });
+
+          it('enables the action', () => {
+            expect(returnedValue).toBe(true);
+          });
         });
       });
 

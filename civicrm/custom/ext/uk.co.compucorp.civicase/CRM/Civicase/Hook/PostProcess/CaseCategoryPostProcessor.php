@@ -1,9 +1,10 @@
 <?php
 
 use CRM_Civicase_Factory_CaseTypeCategoryEventHandler as CaseTypeCategoryEventHandlerFactory;
+use CRM_Civicase_Helper_CaseCategory as CaseTypeCategoryHelper;
 
 /**
- * Class CRM_Civicase_Hook_PostProcess_CaseCategoryPostProcessor.
+ * Handles post processing for the case category form.
  */
 class CRM_Civicase_Hook_PostProcess_CaseCategoryPostProcessor {
 
@@ -32,16 +33,18 @@ class CRM_Civicase_Hook_PostProcess_CaseCategoryPostProcessor {
     $categoryIcon = $formValues['icon'];
 
     $formAction = $form->getVar('_action');
+    $categoryValue = !empty($caseCategoryValues['value']) ? $caseCategoryValues['value'] : $formValues['value'];
+    $caseCategoryInstance = CaseTypeCategoryHelper::getInstanceObject($categoryValue);
     $handler = CaseTypeCategoryEventHandlerFactory::create();
 
     if ($formAction == CRM_Core_Action::UPDATE) {
-      $handler->onUpdate($categoryId, $categoryStatus, $categoryIcon);
+      $handler->onUpdate($caseCategoryInstance, $categoryId, $categoryStatus, $categoryIcon);
     }
     elseif ($formAction == CRM_Core_Action::ADD) {
-      $handler->onCreate($categoryName);
+      $handler->onCreate($caseCategoryInstance, $categoryName);
     }
     elseif ($formAction == CRM_Core_Action::DELETE) {
-      $handler->onDelete($categoryName);
+      $handler->onDelete($caseCategoryInstance, $categoryName);
     }
 
     // Flush all caches using the API.

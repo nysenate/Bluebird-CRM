@@ -28,7 +28,17 @@
         });
       });
 
-      describe('when used outside bulk action', () => {
+      describe('when inside files tab bulk action', () => {
+        beforeEach(() => {
+          $scope.mode = 'case-files-activity-bulk-action';
+        });
+
+        it('disables the action', () => {
+          expect(ResumeDraftActivityAction.isActionEnabled($scope)).toBeFalsy();
+        });
+      });
+
+      describe('when used else where', () => {
         beforeEach(() => {
           $scope.mode = 'not case-activity-bulk-action';
         });

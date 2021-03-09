@@ -154,25 +154,27 @@
   /**
    * Activities Calendar Controller
    *
-   * @param {*} $q $q service
-   * @param {*} $rootScope root scope object
-   * @param {*} $route route service
-   * @param {*} $sce sce service
-   * @param {*} $scope $scope scope object
-   * @param {*} ContactsCache contacts cache service
-   * @param {*} crmApi crm api service
-   * @param {*} formatActivity format activity service
-   * @param {*} getActivityFeedUrl get activity feed url service
-   * @param {*} ActivityStatusType activity status type service
+   * @param {object} $q $q service
+   * @param {object} $rootScope root scope object
+   * @param {object} $route route service
+   * @param {object} $sce sce service
+   * @param {object} $scope $scope scope object
+   * @param {object} ContactsCache contacts cache service
+   * @param {Function} civicaseCrmApi crm api service
+   * @param {Function} formatActivity format activity service
+   * @param {Function} getActivityFeedUrl get activity feed url service
+   * @param {object} ActivityStatusType activity status type service
    */
   function civicaseActivitiesCalendarController ($q, $rootScope, $route, $sce,
-    $scope, ContactsCache, crmApi, formatActivity, getActivityFeedUrl, ActivityStatusType) {
+    $scope, ContactsCache, civicaseCrmApi, formatActivity, getActivityFeedUrl, ActivityStatusType) {
     var ACTIVITIES_DISPLAY_LIMIT = 25;
     var DEBOUNCE_WAIT = 300;
 
     var debouncedLoad;
     var daysWithActivities = {};
     var selectedDate = null;
+    var incompleteActivityStatusTypes = ActivityStatusType.getAll().incomplete;
+    var completeActivityStatusTypes = ActivityStatusType.getAll().completed;
 
     $scope.activitiesDisplayLimit = ACTIVITIES_DISPLAY_LIMIT;
     $scope.loadingDays = false;
@@ -406,14 +408,10 @@
           return $q.resolve();
         }
 
-        return loadDaysWithActivitiesIncomplete(date)
-          .then(function () {
-            $scope.$emit('civicase::ActivitiesCalendar::refreshDatepicker');
-          })
-          .then(function () {
-            return loadDaysWithActivitiesCompleted(date);
-          })
-          .then(function () {
+        return loadDaysWithActivities(date)
+          .then(function (daysGroupedByStatusType) {
+            updatesDatesByActivityStatusType(date, daysGroupedByStatusType);
+
             $scope.$emit('civicase::ActivitiesCalendar::refreshDatepicker');
           });
       }(selectedDate))
@@ -440,7 +438,7 @@
         params.case_filter = $scope.caseParams;
       }
 
-      return crmApi('Activity', 'get', _.assign(params, {
+      return civicaseCrmApi('Activity', 'get', _.assign(params, {
         return: [
           'subject', 'details', 'activity_type_id', 'status_id',
           'source_contact_name', 'target_contact_name', 'assignee_contact_name',
@@ -506,21 +504,21 @@
 
     /**
      * Loads the days within the month of the given date
-     * with at least an activity with the given status(es)
+     * with at least an activity for complete and incomplete statuses
      *
      * The days are returned in an object containing also the year+month they
      * belong to, so that they can be properly grouped in the internal list of days
      *
      * @param {Date} date date
-     * @param {*} status status
      * @returns {Promise} promise
      */
-    function loadDaysWithActivities (date, status) {
+    function loadDaysWithActivities (date) {
       var params = {};
       var dateMoment = moment(date);
 
       params.activity_type_id = { '!=': 'Bulk Email' };
-      params.status_id = status;
+      params.is_deleted = '0';
+      params.status_id = { IN: _.union(incompleteActivityStatusTypes, completeActivityStatusTypes) };
       params.activity_date_time = {
         BETWEEN: [
           dateMoment.startOf('month').format('YYYY-MM-DD HH:mm:ss'),
@@ -534,9 +532,18 @@
 
       if ($scope.caseParams) {
         params.case_filter = $scope.caseParams;
+
+        // modified date is always updated when updating a case
+        // so adding this improves the performance of the api call
+        // as unnecessary cases are filtered out
+        params.case_filter.modified_date = {
+          '>=': params.activity_date_time.BETWEEN[0]
+        };
       }
 
-      return crmApi('Activity', 'getdayswithactivities', params)
+      params.options = { group_by_field: 'status_id' };
+
+      return civicaseCrmApi('Activity', 'getdayswithactivities', params)
         .then(function (result) {
           return result.values;
         })
@@ -546,29 +553,26 @@
     }
 
     /**
-     * Loads the days with at least a completed activity
      *
      * @param {Date} date date
-     * @returns {Promise} promise
+     * @param {object} daysGroupedByStatusType data returned from api
      */
-    function loadDaysWithActivitiesCompleted (date) {
-      var status = ActivityStatusType.getAll().completed[0];
+    function updatesDatesByActivityStatusType (date, daysGroupedByStatusType) {
+      var datesWithIncompleteStatuses = [];
+      var datesWithCompleteStatuses = [];
 
-      return loadDaysWithActivities(date, status)
-        .then(_.curryRight(updateDaysList)(date)('completed'));
-    }
+      _.each(daysGroupedByStatusType, function (datesList, statusTypeId) {
+        var statusTypeIdInt = parseInt(statusTypeId, 10);
 
-    /**
-     * Loads the days with at least an incomplete activity
-     *
-     * @param {Date} date date
-     * @returns {Promise} promise
-     */
-    function loadDaysWithActivitiesIncomplete (date) {
-      var status = { IN: ActivityStatusType.getAll().incomplete };
+        if (_.includes(incompleteActivityStatusTypes, statusTypeIdInt)) {
+          datesWithIncompleteStatuses = datesWithIncompleteStatuses.concat(datesList);
+        } else if (_.includes(completeActivityStatusTypes, statusTypeIdInt)) {
+          datesWithCompleteStatuses = datesWithCompleteStatuses.concat(datesList);
+        }
+      });
 
-      return loadDaysWithActivities(date, status)
-        .then(_.curryRight(updateDaysList)(date)('incomplete'));
+      updateDaysList(datesWithIncompleteStatuses, 'incomplete', date);
+      updateDaysList(datesWithCompleteStatuses, 'completed', date);
     }
 
     /**

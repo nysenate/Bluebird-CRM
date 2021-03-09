@@ -65,7 +65,7 @@
               <li ng-if="activity.attachments.length" role="separator" class="divider"></li>
               <li ng-if="activity.attachments.length">
                 <a class="civicase__activity-attachment__file-name"
-                  ng-href="{{ 'civicrm/case/activity/download-all-files' | civicaseCrmUrl:{ activity_id: activity.id } }}">
+                  ng-href="{{ 'civicrm/case/activity/download-all-files' | civicaseCrmUrl:{ activity_ids: activity.id } }}">
                   <i class="civicase__activity-attachment__file-icon crm-i fa-download"></i> &nbsp;Download all
                 </a>
               </li>

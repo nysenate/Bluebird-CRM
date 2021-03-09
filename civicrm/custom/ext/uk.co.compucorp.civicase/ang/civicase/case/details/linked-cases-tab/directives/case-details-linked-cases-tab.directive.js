@@ -28,11 +28,12 @@
      * The case details are refreshed after linking the cases.
      */
     function linkCase () {
-      var linkCaseForm = LinkCasesCaseAction.doAction([$scope.item]);
-
-      loadCrmForm(getCrmUrl(linkCaseForm.path, linkCaseForm.query))
-        .on('crmFormSuccess crmPopupFormSuccess', function () {
-          $scope.refresh();
+      LinkCasesCaseAction.doAction([$scope.item])
+        .then(function (linkCaseForm) {
+          loadCrmForm(getCrmUrl(linkCaseForm.path, linkCaseForm.query))
+            .on('crmFormSuccess crmPopupFormSuccess', function () {
+              $scope.refresh();
+            });
         });
     }
   }

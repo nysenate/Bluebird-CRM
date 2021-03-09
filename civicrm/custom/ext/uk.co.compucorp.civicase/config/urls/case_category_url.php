@@ -20,6 +20,10 @@ return [
     'url_type' => CaseCategoryFromUrl::CASE_CATEGORY_TYPE_URL,
     'param' => 'case_type_category',
   ],
+  'civicrm/workflow/a' => [
+    'url_type' => CaseCategoryFromUrl::CASE_CATEGORY_TYPE_URL,
+    'param' => 'case_type_category',
+  ],
   'civicrm/ajax/rest' => [
     'url_type' => CaseCategoryFromUrl::AJAX_TYPE_URL,
     'param' => 'case_type_id.case_type_category',
@@ -62,6 +66,6 @@ return [
   ],
   'civicrm/case/activity/download-all-files' => [
     'url_type' => CaseCategoryFromUrl::ACTIVITY_TYPE_URL,
-    'param' => 'activity_id',
+    'param' => 'activity_ids',
   ],
 ];

@@ -83,23 +83,11 @@
             contact_involved: { IN: [CRM.config.user_contact_id] }
           }));
         });
-      });
-    });
 
-    describe('when the dashboard filters changed event is fired', () => {
-      beforeEach(() => {
-        initController();
-        $rootScope.$broadcast('civicase::dashboard-filters::updated', {
-          case_type_id: 2,
-          status_id: { IN: [1, 2] }
+        it('filters by case activities related to the involved contact', () => {
+          expect($scope.activityFilters.case_filter.has_activities_for_involved_contact)
+            .toBe(1);
         });
-      });
-
-      it('reloads the data of the page', () => {
-        expect($scope.activityFilters.case_filter).toEqual(jasmine.objectContaining({
-          case_type_id: 2,
-          status_id: { IN: [1, 2] }
-        }));
       });
     });
 

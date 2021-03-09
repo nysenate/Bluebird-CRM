@@ -61,7 +61,7 @@
         beforeEach(() => {
           const caseTypes = CaseType.getAll();
           const caseTypeId = _.chain(caseTypes).keys().sample().value();
-          const caseType = caseTypes[caseTypeId];
+          const caseType = CaseType.getById(caseTypeId);
           const caseTypeCategory = _.find(CaseTypeCategory.getAll(), {
             value: caseType.case_type_category
           });
@@ -75,7 +75,8 @@
 
           expectedCaseDetailsUrl = getExpectedCaseDetailsUrl(
             $scope.activity.case_id,
-            caseTypeCategory.name
+            caseTypeCategory.name,
+            caseType.is_active
           );
 
           initDirective();
@@ -88,13 +89,19 @@
         /**
          * @param {number} caseId the case id.
          * @param {number} caseTypeCategoryName the category the case belongs to.
+         * @param {boolean} isCaseTypeActive the active status of the case type.
          * @returns {string} the expected URL to the case details for the given case.
          */
-        function getExpectedCaseDetailsUrl (caseId, caseTypeCategoryName) {
+        function getExpectedCaseDetailsUrl (caseId, caseTypeCategoryName, isCaseTypeActive) {
           const caseDetailUrl = 'civicrm/case/a/?' +
             $.param({ case_type_category: caseTypeCategoryName }) +
             '#/case/list';
-          const angularParams = $.param({ caseId });
+          const angularParams = $.param({
+            caseId,
+            cf: JSON.stringify({
+              'case_type_id.is_active': isCaseTypeActive
+            })
+          });
 
           return $filter('civicaseCrmUrl')(caseDetailUrl) + '?' + angularParams;
         }
@@ -151,14 +158,16 @@
       let activity;
 
       beforeEach(() => {
-        activity = activitiesMockData.get()[0];
+        activity = _.first(activitiesMockData.get());
         activity.type = 'Meeting';
 
         activityCard.isolateScope().viewInPopup(null, activity);
       });
 
       it('opens the modal to edit the activity', () => {
-        expect(viewInPopup).toHaveBeenCalledWith(null, activity);
+        expect(viewInPopup).toHaveBeenCalledWith(null, activity, {
+          isReadOnly: false
+        });
       });
 
       it('listens for the the form to be saved', () => {
@@ -176,13 +185,36 @@
       });
     });
 
+    describe('when viewing an activity in the popup', () => {
+      let activity;
+
+      beforeEach(() => {
+        activity = _.first(activitiesMockData.get());
+
+        activityCard.isolateScope().isReadOnly = true;
+        activityCard.isolateScope().viewInPopup(null, activity);
+      });
+
+      it('opens the modal to view the activity', () => {
+        expect(viewInPopup).toHaveBeenCalledWith(null, activity, {
+          isReadOnly: true
+        });
+      });
+    });
+
     /**
      * Initializes the ActivityCard directive
      */
     function initDirective () {
       $scope.refreshCallback = jasmine.createSpy('refreshCallback');
 
-      activityCard = $compile('<div case-activity-card="activity" refresh-callback="refreshCallback"></div>')($scope);
+      activityCard = $compile(`
+        <div
+          case-activity-card="activity"
+          refresh-callback="refreshCallback"
+          is-read-only="false"
+        ></div>
+      `)($scope);
       $rootScope.$digest();
     }
   });

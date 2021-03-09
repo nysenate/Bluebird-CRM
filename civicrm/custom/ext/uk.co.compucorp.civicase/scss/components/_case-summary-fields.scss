@@ -1,0 +1,13 @@
+.civicase__case-summary-fields {
+  &:not(:first-child) {
+    margin-top: 16px;
+  }
+}
+
+.civicase__case-summary-fields__label {
+  color: $crm-gray-matte;
+}
+
+.civicase__case-summary-fields__value {
+  color: $gray-darker;
+}

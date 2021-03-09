@@ -9,7 +9,6 @@
       scope: {
         showCheckboxes: '=?',
         selectedItems: '=',
-        isSelectAllAvailable: '=',
         everythingCount: '=',
         displayedCount: '='
       }
@@ -37,7 +36,7 @@
      * - 'visible' :  Selects all visible selections
      * - 'none' : Deselects all
      *
-     * @params {String} condition
+     * @param {string} condition bulk selection event name
      */
     $scope.select = function (condition) {
       $scope.$emit('civicase::bulk-actions::bulk-selections', condition);

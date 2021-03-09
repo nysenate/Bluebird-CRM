@@ -35,14 +35,16 @@
             contact_id: { IN: '$value.contact_id' },
             id: { '!=': '$value.id' },
             is_deleted: 0,
-            return: ['case_type_id', 'start_date', 'end_date', 'status_id', 'contacts', 'subject']
+            return: ['case_type_id', 'case_type_id.is_active', 'start_date',
+              'end_date', 'status_id', 'contacts', 'subject']
           },
           // Linked cases
           'api.Case.getcaselist.linkedCases': {
             'case_type_id.case_type_category': 'cases',
             id: { IN: '$value.related_case_ids' },
             is_deleted: 0,
-            return: ['case_type_id', 'start_date', 'end_date', 'status_id', 'contacts', 'subject']
+            return: ['case_type_id', 'case_type_id.is_active', 'start_date',
+              'end_date', 'status_id', 'contacts', 'subject']
           },
           // For the "recent communication" panel
           'api.Activity.get.recentCommunication': {
@@ -109,21 +111,28 @@
             status_id: 'Scheduled'
           },
           // Custom data
-          'api.CustomValue.gettreevalues': {
+          'api.CustomValue.getalltreevalues': {
             entity_id: '$value.id',
             entity_type: 'Case',
             return: [
               'custom_group.id', 'custom_group.name', 'custom_group.title',
-              'custom_field.name', 'custom_field.label', 'custom_value.display'
+              'custom_group.weight', 'custom_group.style',
+              'custom_field.name', 'custom_field.label',
+              'custom_value.display'
             ]
           },
           // Relationship description field
           'api.Relationship.get': {
             case_id: '11',
-            is_active: 1,
+            'api.Contact.get': {
+              contact_id: '$value.contact_id_b'
+            },
+            options: {
+              limit: 0
+            },
             return: [
               'id', 'relationship_type_id', 'contact_id_a', 'contact_id_b',
-              'description', 'start_date'
+              'description', 'end_date', 'is_active', 'start_date'
             ]
           },
           sequential: 1

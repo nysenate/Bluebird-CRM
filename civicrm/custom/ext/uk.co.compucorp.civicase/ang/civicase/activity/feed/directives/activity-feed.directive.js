@@ -56,7 +56,7 @@
    * @param {object} $scope scope object
    * @param {object} $q $q service
    * @param {object} BulkActions bulk actions service
-   * @param {object} crmApi crm api service
+   * @param {object} civicaseCrmApi crm api service
    * @param {object} crmUiHelp crm ui help service
    * @param {object} crmThrottle crm throttle service
    * @param {object} formatActivity format activity service
@@ -66,16 +66,19 @@
    * @param {object} ActivityStatus activity status service
    * @param {object} ActivityType activity type service
    * @param {object} CaseType case type service
+   * @param {boolean} showFullContactNameOnActivityFeed Show Full Contact Name On Activity Feed setting
    */
-  function civicaseActivityFeedController ($scope, $q, BulkActions, crmApi,
+  function civicaseActivityFeedController ($scope, $q, BulkActions, civicaseCrmApi,
     crmUiHelp, crmThrottle, formatActivity, $rootScope, dialogService,
-    ContactsCache, ActivityStatus, ActivityType, CaseType) {
+    ContactsCache, ActivityStatus, ActivityType, CaseType, showFullContactNameOnActivityFeed) {
     // The ts() and hs() functions help load strings for this module.
     var ts = $scope.ts = CRM.ts('civicase');
     var ITEMS_PER_PAGE = 25;
     var activityStartingOffset = 0;
     var caseId = $scope.params ? $scope.params.case_id : null;
     var pageNum = { down: 0, up: 0 };
+    var activitySets = $scope.caseTypeId &&
+      CaseType.getById($scope.caseTypeId).definition.activitySets;
 
     $scope.filters = {};
     $scope.isMonthNavVisible = true;
@@ -88,9 +91,12 @@
     $scope.bulkAllowed = $scope.showBulkActions && BulkActions.isAllowed();
     $scope.selectedActivities = [];
     $scope.viewingActivity = {};
-    $scope.caseTimelines = $scope.caseTypeId ? _.sortBy(CaseType.getAll()[$scope.caseTypeId].definition.activitySets, 'label') : [];
     $scope.refreshAll = refreshAll;
+    $scope.showFullContactNameOnActivityFeed = showFullContactNameOnActivityFeed;
     $scope.showSpinner = { up: false, down: false };
+    $scope.caseTimelines = $scope.caseTypeId
+      ? _.sortBy(activitySets, 'label')
+      : [];
 
     (function init () {
       applyFiltersFromBindings();
@@ -186,7 +192,11 @@
         // Mark email read
         if (act.status === 'Unread') {
           var statusId = _.findKey(ActivityStatus.getAll(), { name: 'Completed' });
-          crmApi('Activity', 'setvalue', { id: act.id, field: 'status_id', value: statusId }).then(function () {
+          civicaseCrmApi(
+            'Activity',
+            'setvalue',
+            { id: act.id, field: 'status_id', value: statusId }
+          ).then(function () {
             act.status_id = statusId;
             formatActivity(act);
           });
@@ -466,7 +476,7 @@
         }
       );
 
-      return crmApi({
+      return civicaseCrmApi({
         acts: ['Activity', apiAction, prepareActivityParams(returnParams, params)],
         all: ['Activity', apiActionAll, params]
       }).then(function (result) {
@@ -554,7 +564,7 @@
     /**
      * Refresh Activities
      * If: refreshCase callback is passed to the directive, calls the same
-     * Else: Calls crmApi directly
+     * Else: Calls civicaseCrmApi directly
      *
      * @param {Array} apiCalls apiCalls
      */
@@ -566,7 +576,7 @@
           apiCalls = [];
         }
 
-        crmApi(apiCalls, true).then(function (result) {
+        civicaseCrmApi(apiCalls, true).then(function (result) {
           getActivities({ direction: 'down' });
         });
       }

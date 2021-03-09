@@ -10,6 +10,9 @@
           var isError = _.isArray(result) && _.some(result, 'is_error');
 
           isError ? deferred.reject(result) : deferred.resolve(result);
+        })
+        .catch(function (result) {
+          deferred.reject(result);
         });
 
       return deferred.promise;

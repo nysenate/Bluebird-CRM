@@ -2,13 +2,31 @@
 
 use CRM_Case_BAO_CaseType as CaseType;
 use CRM_Civicase_Service_CaseCategoryPermission as CaseCategoryPermission;
+use CRM_Civicase_Service_CaseManagementUtils as CaseManagementUtils;
+use CRM_Civicase_BAO_CaseCategoryInstance as CaseCategoryInstance;
 
 /**
- * CRM_Civicase_Helper_CaseCategory class.
+ * CaseCategory Helper class with useful functions for managing case categories.
  */
 class CRM_Civicase_Helper_CaseCategory {
 
+  const CASE_TYPE_CATEGORY_GROUP_NAME = 'case_type_categories';
   const CASE_TYPE_CATEGORY_NAME = 'Cases';
+
+  /**
+   * Returns the full list of case type categories.
+   *
+   * @return array
+   *   a list of case categories as returned by the option value API.
+   */
+  public static function getCaseCategories() {
+    $result = civicrm_api3('OptionValue', 'get', [
+      'sequential' => 1,
+      'option_group_id' => self::CASE_TYPE_CATEGORY_GROUP_NAME,
+    ]);
+
+    return $result['values'];
+  }
 
   /**
    * Returns the case category name for the case Id.
@@ -86,22 +104,6 @@ class CRM_Civicase_Helper_CaseCategory {
   }
 
   /**
-   * Returns the case types for the cases category.
-   *
-   * @return array
-   *   Array of Case Types indexed by Id.
-   */
-  public static function getCaseTypesForCase() {
-    $result = civicrm_api3('CaseType', 'get', [
-      'sequential' => 1,
-      'return' => ['title', 'id'],
-      'case_type_category' => self::CASE_TYPE_CATEGORY_NAME,
-    ]);
-
-    return array_column($result['values'], 'title', 'id');
-  }
-
-  /**
    * Returns the case type category word replacements.
    *
    * @param string $caseTypeCategoryName
@@ -111,7 +113,8 @@ class CRM_Civicase_Helper_CaseCategory {
    *   The word to be replaced and replacement array.
    */
   public static function getWordReplacements($caseTypeCategoryName) {
-    $optionName = $caseTypeCategoryName . "_word_replacement";
+    $instanceName = self::getInstanceName($caseTypeCategoryName);
+    $optionName = $instanceName . '_word_replacement';
     try {
       $result = civicrm_api3('OptionValue', 'getsingle', [
         'option_group_id' => 'case_type_category_word_replacement_class',
@@ -241,7 +244,10 @@ class CRM_Civicase_Helper_CaseCategory {
   public static function getWhereUserCanAccessActivities($contactId = NULL) {
     $caseTypeCategories = CaseType::buildOptions('case_type_category', 'validate');
     $caseCategoryPermission = new CaseCategoryPermission();
-    $permissionsToCheck = ['access my cases and activities', 'access all cases and activities'];
+    $permissionsToCheck = [
+      'access my cases and activities',
+      'access all cases and activities',
+    ];
     $caseCategoryAccess = [];
     $contactId = $contactId ? $contactId : CRM_Core_Session::getLoggedInContactID();
     foreach ($caseTypeCategories as $id => $caseTypeCategoryName) {
@@ -288,6 +294,57 @@ class CRM_Civicase_Helper_CaseCategory {
     ];
 
     CRM_Utils_System::appendBreadCrumb($breadcrumb);
+  }
+
+  /**
+   * Gets the Instance utility object for the case category.
+   *
+   * We are using the BAO here to fetch the instance value because the API
+   * will return an error if the option value has been deleted and will treat
+   * the category value as a non valid value. This issue will be observed for
+   * the case category delete event.
+   *
+   * @param string $caseCategoryValue
+   *   Case category value.
+   *
+   * @return \CRM_Civicase_Service_CaseCategoryInstanceUtils
+   *   Instance utitlity object.
+   */
+  public static function getInstanceObject($caseCategoryValue) {
+    $caseCategoryInstance = new CRM_Civicase_BAO_CaseCategoryInstance();
+    $caseCategoryInstance->category_id = $caseCategoryValue;
+    $caseCategoryInstance->find(TRUE);
+    $instanceValue = $caseCategoryInstance->instance_id;
+
+    if (!$instanceValue) {
+      return new CaseManagementUtils();
+    }
+
+    $instanceClasses = CRM_Core_OptionGroup::values('case_category_instance_type', FALSE, FALSE, TRUE, NULL, 'grouping');
+    $instanceClass = $instanceClasses[$instanceValue];
+
+    return new $instanceClass($caseCategoryInstance->id);
+  }
+
+  /**
+   * Returns the Category Instance for the Case category.
+   *
+   * @param string $caseCategoryName
+   *   Case category Name.
+   */
+  public static function getInstanceName($caseCategoryName) {
+    try {
+      $result = civicrm_api3('CaseCategoryInstance', 'getsingle', [
+        'category_id' => $caseCategoryName,
+      ]);
+    }
+    catch (Exception $e) {
+      return NULL;
+    }
+
+    $instances = CaseCategoryInstance::buildOptions('instance_id', 'validate');
+
+    return $instances[$result['instance_id']];
   }
 
 }

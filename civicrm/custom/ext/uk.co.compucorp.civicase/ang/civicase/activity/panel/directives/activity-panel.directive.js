@@ -1,7 +1,7 @@
 (function (angular, $, _) {
   var module = angular.module('civicase');
 
-  module.directive('civicaseActivityPanel', function ($rootScope, $timeout,
+  module.directive('civicaseActivityPanel', function ($timeout,
     ActivityFeedMeasurements, ActivityForms, BulkActions) {
     return {
       restrict: 'A',
@@ -20,9 +20,8 @@
      * @param {object} scope scope object
      * @param {object} element directive element
      * @param {object} attrs attributes
-     * @param {object} ts ts service
      */
-    function civicaseActivityPanelLink (scope, element, attrs, ts) {
+    function civicaseActivityPanelLink (scope, element, attrs) {
       scope.canChangeStatus = true;
 
       (function init () {
@@ -86,8 +85,8 @@
         var activityTypeName = scope.civicaseTs(scope.activity.type);
 
         CRM.confirm({
-          title: ts('Delete Activity'),
-          message: ts('Permanently delete this %1 activity?', { 1: activityTypeName })
+          title: scope.ts('Delete Activity'),
+          message: scope.ts('Permanently delete this %1 activity?', { 1: activityTypeName })
         }).on('crmConfirm:yes', function () {
           $(element).children('.civicase__activity-panel__core_container').block();
           CRM.api3('Activity', 'delete', { id: scope.activity.id })
@@ -115,18 +114,11 @@
    * @param {object} $rootScope root scope object
    * @param {object} $scope scope object
    * @param {object} ActivityStatus activity status service
-   * @param {object} ActivityType activity type service
    * @param {Function} checkIfDraftActivity check if activity function
-   * @param {object} crmApi crm api service
-   * @param {object} crmBlocker crm blocker service
-   * @param {object} crmStatus crm status service
-   * @param {object} DateHelper date helper service
-   * @param {object} dialogService dialog service
    * @param {object} Priority priority service
    */
   function civicaseActivityPanelController ($rootScope, $scope, ActivityStatus,
-    ActivityType, checkIfDraftActivity, crmApi, crmBlocker, crmStatus,
-    DateHelper, dialogService, Priority) {
+    checkIfDraftActivity, Priority) {
     $scope.activityPriorties = Priority.getAll();
     $scope.allowedActivityStatuses = {};
     $scope.closeDetailsPanel = closeDetailsPanel;

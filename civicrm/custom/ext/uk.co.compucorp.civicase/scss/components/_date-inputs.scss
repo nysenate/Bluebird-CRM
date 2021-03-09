@@ -15,14 +15,9 @@
   }
 
   .crm-clear-link {
-    color: $brand-primary;
     position: absolute;
     right: -20px;
     top: 50%;
     transform: translateY(-50%);
-
-    .fa-times::before {
-      content: '\f057';
-    }
   }
 }

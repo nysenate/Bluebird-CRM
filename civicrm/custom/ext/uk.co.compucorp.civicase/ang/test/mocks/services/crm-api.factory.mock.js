@@ -6,6 +6,7 @@
   module.factory('crmApi', ['$q', function ($q) {
     var crmApi = jasmine.createSpy('crmApi');
     crmApi.and.returnValue($q.resolve());
+
     return crmApi;
   }]);
 })();

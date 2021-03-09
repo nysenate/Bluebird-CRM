@@ -9,7 +9,7 @@
   function GoToWebformCaseAction ($window) {
     this.doAction = doAction;
     this.isActionAllowed = isActionAllowed;
-    this.checkIfWebformContainsCaseTypeId = checkIfWebformContainsCaseTypeId;
+    this.checkIfWebformVisible = checkIfWebformVisible;
 
     /**
      * Click event handler for the Action
@@ -26,6 +26,13 @@
         urlObject['cid' + action.clientID] = cases[0].client[0].contact_id;
       }
 
+      CRM.alert(
+        ts('Please refresh this page to view updates from the webform submission.'),
+        ts('Refresh'),
+        'info',
+        { expires: 1800000 }
+      );
+
       window = $window.open(CRM.url(action.path, urlObject), '_blank');
       window.focus();
     }
@@ -40,16 +47,17 @@
      * @returns {boolean} - true if action is allowed, false otherwise.
      */
     function isActionAllowed (action, cases, attributes) {
-      return checkIfWebformContainsCaseTypeId(action, cases[0].case_type_id);
+      return checkIfWebformVisible(action, cases[0].case_type_id);
     }
 
     /**
      * @param {object} webform webform action object
      * @param {string} caseTypeID case type id
-     * @returns {boolean} if webform contains sent case type id
+     * @returns {boolean} if sent webform is visible for sent case type id
      */
-    function checkIfWebformContainsCaseTypeId (webform, caseTypeID) {
-      return webform.case_type_ids.indexOf(caseTypeID) !== -1;
+    function checkIfWebformVisible (webform, caseTypeID) {
+      return webform.case_type_ids.length === 0 ||
+        webform.case_type_ids.indexOf(caseTypeID) !== -1;
     }
   }
 })(angular, CRM.$, CRM._);

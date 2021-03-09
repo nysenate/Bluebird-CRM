@@ -30,11 +30,19 @@
           }]));
       });
 
+      it('adds the email activity form service', () => {
+        expect(ActivityFormsProvider.addActivityForms)
+          .toHaveBeenCalledWith(jasmine.arrayContaining([{
+            name: 'EmailActivityForm',
+            weight: 2
+          }]));
+      });
+
       it('adds the draft pdf activity form service', () => {
         expect(ActivityFormsProvider.addActivityForms)
           .toHaveBeenCalledWith(jasmine.arrayContaining([{
             name: 'DraftPdfActivityForm',
-            weight: 2
+            weight: 3
           }]));
       });
 
@@ -42,7 +50,7 @@
         expect(ActivityFormsProvider.addActivityForms)
           .toHaveBeenCalledWith(jasmine.arrayContaining([{
             name: 'DraftEmailActivityForm',
-            weight: 3
+            weight: 4
           }]));
       });
 
@@ -50,7 +58,7 @@
         expect(ActivityFormsProvider.addActivityForms)
           .toHaveBeenCalledWith(jasmine.arrayContaining([{
             name: 'UpdateActivityForm',
-            weight: 4
+            weight: 5
           }]));
       });
 
@@ -58,7 +66,7 @@
         expect(ActivityFormsProvider.addActivityForms)
           .toHaveBeenCalledWith(jasmine.arrayContaining([{
             name: 'ViewActivityForm',
-            weight: 5
+            weight: 6
           }]));
       });
     });

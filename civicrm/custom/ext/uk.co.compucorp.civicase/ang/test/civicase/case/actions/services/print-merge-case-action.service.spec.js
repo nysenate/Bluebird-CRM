@@ -2,11 +2,12 @@
 
 (function (_, $) {
   describe('MoveCopyActivityAction', function () {
-    var PrintMergeCaseAction, CasesMockData;
+    var $rootScope, PrintMergeCaseAction, CasesMockData;
 
     beforeEach(module('civicase', 'civicase.data'));
 
-    beforeEach(inject(function (_PrintMergeCaseAction_, _CasesData_) {
+    beforeEach(inject(function (_$rootScope_, _PrintMergeCaseAction_, _CasesData_) {
+      $rootScope = _$rootScope_;
       PrintMergeCaseAction = _PrintMergeCaseAction_;
       CasesMockData = _CasesData_;
     }));
@@ -17,7 +18,12 @@
       beforeEach(function () {
         caseObj = CasesMockData.get().values[0];
 
-        returnValue = PrintMergeCaseAction.doAction([caseObj]);
+        PrintMergeCaseAction.doAction([caseObj])
+          .then(function (result) {
+            returnValue = result;
+          });
+
+        $rootScope.$digest();
       });
 
       it('returns path for opening popup to print/merge document', function () {

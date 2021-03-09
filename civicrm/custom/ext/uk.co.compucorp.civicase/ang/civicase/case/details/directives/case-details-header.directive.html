@@ -35,7 +35,18 @@
             title="{{ ts('Change Case Type') }}"
             class="crm-popup crm-editable-enabled"
             crm-popup-form-success="pushCaseData($data.civicase_reload[0])"
-            ng-href="{{ 'civicrm/case/activity' | civicaseCrmUrl:{ action: 'add', reset: 1, cid: item.client[0].contact_id, caseid: item.id, atype: getActivityType('Change Case Type'), case_status_id: id, civicase_reload: caseGetParams() } }}">
+            ng-href="{{
+              'civicrm/case/activity' | civicaseCrmUrl: {
+                action: 'add',
+                reset: 1,
+                cid: item.client[0].contact_id,
+                caseid: item.id,
+                atype: getActivityType('Change Case Type'),
+                case_status_id: id,
+                civicase_reload: caseGetParamsAsString()
+              }
+            }}"
+          >
             {{ item.case_type }}
           </a>
           <span ng-if="caseTypesLength < 2">
@@ -44,11 +55,6 @@
         </span>
 
         <span ng-if="item.tag_id" class="civicase__pipe"> | </span>
-
-        <civicase-tags-container
-          tags="item.tag_id"
-          show-ellipsis-after="3">
-        </civicase-tags-container>
 
         <span class="pull-right">
           <span>{{ ts("Case Manager:") }}</span>
@@ -61,16 +67,44 @@
             ></span>
           </span>
         </span>
+
+        <civicase-tags-container
+          tags="item.tag_id"
+          show-ellipsis-after="5">
+        </civicase-tags-container>
       </div>
     </div>
 
     <div class="civicase__case-header__action-menu">
+      <!-- Case Webform Dropdown -->
+      <div
+        ng-if="isCaseWebformDropdownVisible"
+        class="btn-group btn-group-md">
+        <button
+          type="button"
+          class="btn btn-primary civicase__case-header__webform-dropdown"
+          data-toggle="dropdown">
+          {{ webformsListButtonLabel }}
+          <span class="caret"></span>
+        </button>
+        <ul class="dropdown-menu dropdown-menu-right">
+          <li ng-repeat="action in webformsAction.items" ng-if="isGoToWebformAllowed(action)">
+            <a href ng-click="openWebform(action)" title="{{action.title}}">
+              <i class="fa {{action.icon}}"></i> {{ action.title }}
+            </a>
+          </li>
+        </ul>
+      </div>
+      <!-- End - Case Webform Dropdown -->
       <div class="btn-group btn-group-md">
         <button
           type="button"
-          style="background-color: {{ caseStatuses[item.status_id].color }};"
+          ng-disabled="item['case_type_id.is_active'] === '0'"
+          ng-style="{'background-color': caseStatuses[item.status_id].color }"
           class="btn btn-primary"
-          data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" title="{{ ts('Change case status') }}">
+          data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"
+          title="{{ ts('Change case status') }}"
+        >
           {{ item.status }}
           <span class="caret"></span>
         </button>
@@ -82,14 +116,29 @@
             <a
               crm-popup-form-success="pushCaseData($data.civicase_reload[0])"
               class="crm-popup"
-              ng-href="{{ 'civicrm/case/activity' | civicaseCrmUrl:{ action: 'add', reset: 1, cid: item.client[0].contact_id, caseid: item.id, atype: getActivityType('Change Case Status'), case_status_id: status.value, civicase_reload: caseGetParams() } }}">
+              ng-href="{{
+                'civicrm/case/activity' | civicaseCrmUrl: {
+                  action: 'add',
+                  reset: 1,
+                  cid: item.client[0].contact_id,
+                  caseid: item.id,
+                  atype: getActivityType('Change Case Status'),
+                  case_status_id: status.value,
+                  civicase_reload: caseGetParamsAsString()
+                }
+              }}"
+            >
               {{ status.label }}
             </a>
           </li>
         </ul>
       </div>
       <div class="btn-group btn-group-md">
-        <button type="button" class="civicase__case-header__action-icon btn btn-primary" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+        <button
+          type="button"
+          class="civicase__case-header__action-icon btn btn-primary"
+          data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"
+        >
           <i class="material-icons">menu</i>
         </button>
         <ul
@@ -97,7 +146,7 @@
           mode="case-details"
           civicase-case-actions="[item]"
           refresh-callback="refresh"
-          popup-params="caseGetParams"
+          popup-params="caseGetParamsAsString"
           crm-popup-form-success="pushCaseData($data.civicase_reload[0])"></ul>
       </div>
     </div>

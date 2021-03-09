@@ -1,0 +1,133 @@
+<div id="bootstrap-theme">
+  <div class="civicrm__contact-prompt-dialog form-horizontal">
+    <!-- start date -->
+    <div class="row form-group" ng-if="model.showStartDate">
+      <label class="col-sm-12">
+        Relationship Start Date
+      </label>
+      <div class="col-sm-12">
+        <input
+          ng-model="model.startDate"
+          placeholder="Start Date"
+          crm-ui-datepicker="{
+            time: false,
+            maxDate: model.endDate.value,
+            beforeShow: model.removeDatePickerHrefs,
+            onChangeMonthYear: model.removeDatePickerHrefs
+          }" />
+      </div>
+    </div>
+    <!-- end - start date -->
+
+    <!-- end date -->
+    <div class="row form-group" ng-if="model.endDate.show">
+      <label class="col-sm-12">
+        Relationship End Date
+      </label>
+      <div
+        class="col-md-12 civicrm__contact-prompt-dialog__date-error"
+        ng-class="{
+          'crm-error': !!model.errorMessage.endDate}"
+      >
+        <input
+          ng-model="model.endDate.value"
+          ng-change="model.errorMessage.endDate = null"
+          placeholder="End Date"
+          crm-ui-datepicker="{
+            time: false,
+            maxDate: model.endDate.maxDate,
+            beforeShow: model.removeDatePickerHrefs,
+            onChangeMonthYear: model.removeDatePickerHrefs
+          }" />
+        <div
+          class="crm-error crm-error-label"
+          ng-if="!!model.errorMessage.endDate">
+          <i class="fa fa-times"></i>
+          {{model.errorMessage.endDate}}
+        </div>
+      </div>
+    </div>
+    <!-- end - end date -->
+
+    <!-- reassign date -->
+    <div class="row form-group" ng-if="model.reassignmentDate.show">
+      <label class="col-sm-12">
+        Relationship Reassignment Date
+      </label>
+      <div
+        class="col-md-12 civicrm__contact-prompt-dialog__date-error"
+        ng-class="{
+          'crm-error': !!model.errorMessage.reassignmentDate}"
+      >
+        <input
+          ng-model="model.reassignmentDate.value"
+          placeholder="Reassignment Date"
+          ng-change="model.errorMessage.reassignmentDate = null"
+          crm-ui-datepicker="{
+            time: false,
+            maxDate: model.reassignmentDate.maxDate,
+            beforeShow: model.removeDatePickerHrefs,
+            onChangeMonthYear: model.removeDatePickerHrefs
+          }" />
+          <div
+            class="crm-error crm-error-label"
+            ng-if="!!model.errorMessage.reassignmentDate">
+            <i class="fa fa-times"></i>
+            {{model.errorMessage.reassignmentDate}}
+          </div>
+      </div>
+    </div>
+    <!-- end - reassign date -->
+
+    <!-- contact selection dropdown -->
+    <div
+      ng-if="!model.hideContactField"
+      class="row form-group"
+      ng-class="{
+        'crm-error': !!model.errorMessage.contactSelection,
+        'select2-container': !!model.errorMessage.contactSelection
+      }"
+    >
+      <div class="col-md-12">
+        <input
+          class="form-control"
+          ng-model="model.contact.id"
+          ng-change="model.errorMessage.contactSelection = null"
+          crm-entityref="{
+            create: true,
+            entity: 'Contact',
+            select: { width: '100%', placeholder: ts('Select Contact') },
+            api: {
+              extra: ['display_name'],
+              params: {
+                contact_type: model.role.contact_type,
+                contact_sub_type: model.role.contact_sub_type
+              }
+            }
+          }"
+        />
+      </div>
+      <div
+        class="contact-selection-error crm-error crm-error-label"
+        ng-if="!!model.errorMessage.contactSelection"
+      >
+        <i class="fa fa-times"></i>
+        {{model.errorMessage.contactSelection}}
+      </div>
+    </div>
+    <!-- end - contact selection dropdown -->
+
+    <!-- description field -->
+    <div class="row form-group" ng-if="model.showDescriptionField">
+      <div class="col-md-12">
+        <textarea
+          rows="3"
+          cols="35"
+          ng-model="model.description"
+          ng-attr-placeholder="{{ts('Description')}}"
+        ></textarea>
+      </div>
+    </div>
+    <!-- end - description field -->
+  </div>
+</div>

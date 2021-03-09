@@ -2,14 +2,16 @@
 
 (function (_, $) {
   describe('WebformsCaseAction', function () {
-    var WebformsCaseAction, attributes, CaseActionsData, CasesData;
+    var WebformsCaseAction, attributes, CaseActionsData, CasesData, webformsList;
 
     beforeEach(module('civicase', 'civicase.data'));
 
-    beforeEach(inject(function (_WebformsCaseAction_, _CaseActionsData_, _CasesData_) {
+    beforeEach(inject(function (_WebformsCaseAction_, _CaseActionsData_,
+      _CasesData_, _webformsList_) {
       WebformsCaseAction = _WebformsCaseAction_;
       CaseActionsData = _CaseActionsData_;
       CasesData = _CasesData_.get().values;
+      webformsList = _webformsList_;
     }));
 
     describe('isActionAllowed()', function () {
@@ -23,24 +25,102 @@
         });
       });
 
-      describe('when used inside case details page', function () {
+      describe('when webforms should not be visible in a separate list', function () {
         beforeEach(function () {
-          attributes.mode = 'case-details';
+          webformsList.isVisible = false;
         });
 
-        describe('when webforms are present', () => {
-          it('displays the action link', function () {
-            expect(WebformsCaseAction.isActionAllowed(webformAction, cases, attributes)).toBeTrue();
-          });
-        });
-
-        describe('when webforms are not present', () => {
+        describe('webforms list in case actions dropdown', () => {
           beforeEach(function () {
-            webformAction.items = [];
+            attributes.mode = 'case-details';
           });
 
-          it('displays the action link', function () {
-            expect(WebformsCaseAction.isActionAllowed(webformAction, cases, attributes)).toBeFalse();
+          describe('when webforms are present', () => {
+            it('displays the action link', function () {
+              expect(WebformsCaseAction.isActionAllowed(webformAction, cases, attributes)).toBeTrue();
+            });
+          });
+
+          describe('when webforms are not present', () => {
+            beforeEach(function () {
+              webformAction.items = [];
+            });
+
+            it('hides the action link', function () {
+              expect(WebformsCaseAction.isActionAllowed(webformAction, cases, attributes)).toBeFalse();
+            });
+          });
+        });
+
+        describe('webforms list in case summary header', () => {
+          beforeEach(function () {
+            attributes.mode = 'case-details-header';
+          });
+
+          describe('when webforms are present', () => {
+            it('hides the action link', function () {
+              expect(WebformsCaseAction.isActionAllowed(webformAction, cases, attributes)).toBeFalse();
+            });
+          });
+
+          describe('when webforms are not present', () => {
+            beforeEach(function () {
+              webformAction.items = [];
+            });
+
+            it('hides the action link', function () {
+              expect(WebformsCaseAction.isActionAllowed(webformAction, cases, attributes)).toBeFalse();
+            });
+          });
+        });
+      });
+
+      describe('when webforms should be visible in a separate list', function () {
+        beforeEach(function () {
+          webformsList.isVisible = true;
+        });
+
+        describe('webforms list in case actions dropdown', () => {
+          beforeEach(function () {
+            attributes.mode = 'case-details';
+          });
+
+          describe('when webforms are present', () => {
+            it('hides the action link', function () {
+              expect(WebformsCaseAction.isActionAllowed(webformAction, cases, attributes)).toBeFalse();
+            });
+          });
+
+          describe('when webforms are not present', () => {
+            beforeEach(function () {
+              webformAction.items = [];
+            });
+
+            it('hides the action link', function () {
+              expect(WebformsCaseAction.isActionAllowed(webformAction, cases, attributes)).toBeFalse();
+            });
+          });
+        });
+
+        describe('webforms list in case summary header', () => {
+          beforeEach(function () {
+            attributes.mode = 'case-details-header';
+          });
+
+          describe('when webforms are present', () => {
+            it('displays the action link', function () {
+              expect(WebformsCaseAction.isActionAllowed(webformAction, cases, attributes)).toBeTrue();
+            });
+          });
+
+          describe('when webforms are not present', () => {
+            beforeEach(function () {
+              webformAction.items = [];
+            });
+
+            it('hides the action link', function () {
+              expect(WebformsCaseAction.isActionAllowed(webformAction, cases, attributes)).toBeFalse();
+            });
           });
         });
       });
@@ -52,7 +132,7 @@
           });
 
           it('hides the action link', function () {
-            expect(WebformsCaseAction.isActionAllowed(webformAction, cases, attributes)).toBeFalse();
+            expect(WebformsCaseAction.isActionAllowed(webformAction, cases, attributes)).toBeFalsy();
           });
         });
 
@@ -62,7 +142,7 @@
           });
 
           it('hides the action link', function () {
-            expect(WebformsCaseAction.isActionAllowed(webformAction, cases, attributes)).toBeFalse();
+            expect(WebformsCaseAction.isActionAllowed(webformAction, cases, attributes)).toBeFalsy();
           });
         });
       });

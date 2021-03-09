@@ -3,7 +3,7 @@
     class="badge"
     ng-repeat="tag in tagsArray" ng-if="$index < showEllipsisAfter"
     title="{{ tag['tag_id.description'] }}"
-    style="background-color: {{ tag['tag_id.color'] }};">
+    ng-style="{ 'background-color': tag['tag_id.color'] };">
     {{ tag['tag_id.name'] }}
   </span>
   <!-- Additional Tags Dropdown -->
@@ -16,7 +16,7 @@
       <span
         class="badge civicase__tags-container__additional-tags"
         title="More Tags">
-        ...
+        +{{tagsArray.length - showEllipsisAfter}}
       </span>
     </civicase-popover-toggle-button>
     <civicase-popover-content>
@@ -25,7 +25,7 @@
           <span
             class="badge"
             title="{{ tag['tag_id.description'] }}"
-            style="background-color: {{ tag['tag_id.color'] }};">
+            ng-style="{ 'background-color': tag['tag_id.color'] };">
             {{ tag['tag_id.name'] }}
           </span>
         </li>

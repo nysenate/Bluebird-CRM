@@ -2,14 +2,14 @@
   "scenarios": [
     {
       "label": "Civicase - Dashboard - With overview table expanded and tooltip visible on one of the titles",
-      "url": "{url}/civicrm/case/a/#/case",
+      "url": "{url}/civicrm/case/a/#/case?case_type_category=cases&drel=all",
       "clickSelector": ".civicase__case-overview__flow-status-settings + .civicase__case-overview__flow-status__icon",
       "hoverSelector": ".civicase__case-overview__flow-status--hoverable",
       "isUIBPopover": true
     },
     {
       "label": "Civicase - Dashboard - With overview table expanded, gear icon opened and case filter dropdown opened",
-      "url": "{url}/civicrm/case/a/#/case",
+      "url": "{url}/civicrm/case/a/#/case?case_type_category=cases&drel=all",
       "clickSelectors": [
         ".civicase__case-overview__flow-status-settings + .civicase__case-overview__flow-status__icon",
         ".civicase__case-overview__flow-status-settings",
@@ -18,24 +18,24 @@
     },
     {
       "label": "Civicase - Dashboard - Loading State",
-      "url": "{url}/civicrm/case/a/#/case",
+      "url": "{url}/civicrm/case/a/#/case?case_type_category=cases&drel=all",
       "captureLoadingScreen": true
     },
     {
       "label": "Civicase - Dashboard - Calendar - Activity Card",
-      "url": "{url}/civicrm/case/a/#/case",
+      "url": "{url}/civicrm/case/a/#/case?case_type_category=cases&drel=all",
       "clickSelector": ".civicase__activities-calendar__day-status",
       "waitForAjaxComplete": true
     },
     {
       "label": "Civicase - Dashboard - Calendar - Activity Card - Loading state",
-      "url": "{url}/civicrm/case/a/#/case",
+      "url": "{url}/civicrm/case/a/#/case?case_type_category=cases&drel=all",
       "clickSelector": ".civicase__activities-calendar__day-status"
     },
     {
       "label": "Civicase - Dashboard - Add case modal",
-      "url": "{url}/civicrm/case/a/#/case",
-      "clickSelector": ".civicase__affix__activity-filters .pull-right > span:nth-of-type(2) .civicase__dashboard__action-btn",
+      "url": "{url}/civicrm/case/a/#/case?case_type_category=cases&drel=all",
+      "clickSelector": ".civicase__dashboard__action-btn[ng-controller='AddCaseDashboardActionButtonController']",
       "waitForUIModalLoad": true
     }
   ]

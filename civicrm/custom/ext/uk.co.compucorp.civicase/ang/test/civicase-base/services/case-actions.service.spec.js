@@ -22,5 +22,24 @@
         expect(returnedCaseActions).toEqual(CaseActionsData);
       });
     });
+
+    describe('when getting a specific case action by name', () => {
+      let expectedResult, returnedCaseActions;
+
+      beforeEach(() => {
+        returnedCaseActions = CaseActions.findByActionName('Print');
+        expectedResult = {
+          title: 'Print Case',
+          action: 'Print',
+          number: 1,
+          icon: 'fa-print',
+          is_write_action: false
+        };
+      });
+
+      it('returns the case actions for the sent action name', () => {
+        expect(returnedCaseActions).toEqual(expectedResult);
+      });
+    });
   });
 })();

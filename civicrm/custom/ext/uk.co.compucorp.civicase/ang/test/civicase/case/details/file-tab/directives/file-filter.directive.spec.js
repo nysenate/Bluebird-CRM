@@ -23,7 +23,7 @@
         });
 
         it('filters by the selected tags', () => {
-          expect($scope.fileFilter.params.tag_id).toEqual('1');
+          expect($scope.fileFilterParams.tag_id).toEqual('1');
         });
       });
 
@@ -34,7 +34,7 @@
         });
 
         it('filters by all the selected tags', () => {
-          expect($scope.fileFilter.params.tag_id).toEqual({ IN: ['1', '2'] });
+          expect($scope.fileFilterParams.tag_id).toEqual({ IN: ['1', '2'] });
         });
       });
 
@@ -45,7 +45,7 @@
         });
 
         it('does not filter by tags', () => {
-          expect($scope.fileFilter.params.tag_id).toBeUndefined();
+          expect($scope.fileFilterParams.tag_id).toBeUndefined();
         });
       });
     });
@@ -55,7 +55,7 @@
      */
     function initController () {
       $scope = $rootScope.$new();
-      $scope.fileFilter = { params: {} };
+      $scope.fileFilterParams = {};
 
       $controller('civicaseFileFilterController', {
         $scope: $scope

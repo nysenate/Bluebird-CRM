@@ -1,6 +1,6 @@
 /* eslint-env jasmine */
 
-(function ($, _) {
+(function ($, _, loadCrmForm) {
   describe('civicaseActivityPanel', function () {
     var $compile, $rootScope, $scope, activityPanel, activitiesMockData,
       refreshFunction, formatActivity, ActivityStatus, ActivityForms,
@@ -21,6 +21,7 @@
 
       CRM.url.and.returnValue('crm url mock');
       refreshFunction = jasmine.createSpy('refresh');
+      loadCrmForm.and.returnValue($('<div></div>'));
 
       spyOn($rootScope, '$broadcast').and.callThrough();
       spyOn(ActivityForms, 'getActivityFormService');
@@ -60,7 +61,7 @@
           .toHaveBeenCalledWith($scope.viewingActivity, { action: 'view' });
         expect(MockActivityFormsService.getActivityFormUrl)
           .toHaveBeenCalledWith($scope.viewingActivity, { action: 'view' });
-        expect(CRM.loadForm).toHaveBeenCalledWith('/mockactivityurl', jasmine.objectContaining({
+        expect(loadCrmForm).toHaveBeenCalledWith('/mockactivityurl', jasmine.objectContaining({
           target: jasmine.any(Object)
         }));
       });
@@ -128,4 +129,4 @@
       $rootScope.$digest();
     }
   });
-})(CRM.$, CRM._);
+})(CRM.$, CRM._, CRM.loadForm);

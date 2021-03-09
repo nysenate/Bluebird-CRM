@@ -1,7 +1,7 @@
 (function ($, angular) {
   var module = angular.module('civicase');
 
-  module.directive('civicaseOnContactTabChange', function (parseUrlParameters) {
+  module.directive('civicaseOnContactTabChange', function (UrlParameters) {
     return {
       restrict: 'A',
       link: civicaseOnContactTabChangeLink,
@@ -33,7 +33,7 @@
        */
       function listenToContactTabChange (event, uiTab) {
         var tabUrl = $(uiTab.newTab).find('a').attr('href');
-        var urlParams = parseUrlParameters(tabUrl);
+        var urlParams = UrlParameters.parse(tabUrl);
 
         $scope.$apply(function () {
           $scope.onContactTabChange({

@@ -6704,7 +6704,7 @@ ON ({$this->_aliases['civicrm_event']}.id = {$this->_aliases['civicrm_participan
     $aggregateRowHeaderFields = $this->getAggregateRowFields();
 
     foreach ($this->_customGroupExtended as $key => $groupSpec) {
-      $customDAOs = $this->getCustomDataDAOs($groupSpec['extends']);
+      $customDAOs = $this->getCustomDataDaos($groupSpec['extends']);
       foreach ($customDAOs as $customField) {
         $tableKey = $customField['prefix'] . $customField['table_name'];
         $prefix = $customField['prefix'];
@@ -7385,7 +7385,7 @@ ON ({$this->_aliases['civicrm_event']}.id = {$this->_aliases['civicrm_participan
    * @param array $extends
    */
   protected function addCustomDataForEntities($extends) {
-    $fields = $this->getCustomDataDAOs($extends);
+    $fields = $this->getCustomDataDaos($extends);
     foreach ($fields as $field) {
       $prefixLabel = trim(CRM_Utils_Array::value('prefix_label', $field));
       $prefix = trim(CRM_Utils_Array::value('prefix', $field));
@@ -7404,7 +7404,7 @@ ON ({$this->_aliases['civicrm_event']}.id = {$this->_aliases['civicrm_participan
    *
    * @return array
    */
-  protected function getCustomDataDAOs($extends) {
+  protected function getCustomDataDaos($extends) {
     $extendsKey = implode(',', $extends);
     if (isset($this->customDataDAOs[$extendsKey])) {
       return $this->customDataDAOs[$extendsKey];

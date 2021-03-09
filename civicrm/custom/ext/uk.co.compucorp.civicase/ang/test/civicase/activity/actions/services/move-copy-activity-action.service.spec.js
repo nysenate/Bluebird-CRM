@@ -3,13 +3,13 @@
 ((_, $) => {
   describe('MoveCopyActivityAction', () => {
     let $q, $rootScope, MoveCopyActivityAction, activitiesMockData,
-      crmApiMock, dialogServiceMock, originalDialogFunction;
+      civicaseCrmApiMock, dialogServiceMock, originalDialogFunction;
 
     beforeEach(module('civicase', 'civicase.data', ($provide) => {
-      crmApiMock = jasmine.createSpy('crmApi');
+      civicaseCrmApiMock = jasmine.createSpy('civicaseCrmApi');
       dialogServiceMock = jasmine.createSpyObj('dialogService', ['open']);
 
-      $provide.value('crmApi', crmApiMock);
+      $provide.value('civicaseCrmApi', civicaseCrmApiMock);
       $provide.value('dialogService', dialogServiceMock);
     }));
 
@@ -42,6 +42,32 @@
         });
 
         $scope.selectedActivities = _.sample(activities, 2);
+      });
+
+      describe('when placed inside files tab bulk action', () => {
+        var returnValue;
+
+        beforeEach(() => {
+          $scope.mode = 'case-files-activity-bulk-action';
+          returnValue = MoveCopyActivityAction.isActionEnabled($scope);
+        });
+
+        it('hides the action', () => {
+          expect(returnValue).toBe(false);
+        });
+      });
+
+      describe('when placed anywhere other than files tab bulk action', () => {
+        var returnValue;
+
+        beforeEach(() => {
+          $scope.mode = 'somewhere-else';
+          returnValue = MoveCopyActivityAction.isActionEnabled($scope);
+        });
+
+        it('displays the action', () => {
+          expect(returnValue).toBe(true);
+        });
       });
 
       describe('when selecting some activities and then copy them to a new case', () => {
@@ -81,13 +107,19 @@
 
         describe('when fetching list of cases', () => {
           let getCaseListApiParams;
+          let expectedApiParams;
 
           beforeEach(() => {
             getCaseListApiParams = modalOpenCall[2].getCaseListApiParams;
+            expectedApiParams = {
+              params: {
+                search_by_case_id: true
+              }
+            };
           });
 
           it('displays cases from those case type categories for which user has "basic case information" permission', () => {
-            expect(getCaseListApiParams()).toEqual({});
+            expect(getCaseListApiParams()).toEqual(expectedApiParams);
           });
         });
 
@@ -105,13 +137,13 @@
             }]];
 
             spyOn($rootScope, '$broadcast');
-            crmApiMock.and.returnValue($q.resolve([{ values: $scope.selectedActivities }]));
+            civicaseCrmApiMock.and.returnValue($q.resolve([{ values: $scope.selectedActivities }]));
             saveMethod();
             $rootScope.$digest();
           });
 
           it('saves a new copy of each of the activities and assign them to the selected case', () => {
-            expect(crmApiMock.calls.mostRecent().args[0]).toEqual(expectedActivitySavingCalls);
+            expect(civicaseCrmApiMock.calls.mostRecent().args[0]).toEqual(expectedActivitySavingCalls);
           });
 
           it('emits a civicase activity updated event', () => {
@@ -129,13 +161,13 @@
             model.case_id = $scope.selectedActivities[0].case_id;
 
             spyOn($rootScope, '$broadcast');
-            crmApiMock.and.returnValue($q.resolve([{ values: $scope.selectedActivities }]));
+            civicaseCrmApiMock.and.returnValue($q.resolve([{ values: $scope.selectedActivities }]));
             saveMethod();
             $rootScope.$digest();
           });
 
           it('does not request the activities data', () => {
-            expect(crmApiMock).not.toHaveBeenCalled();
+            expect(civicaseCrmApiMock).not.toHaveBeenCalled();
           });
 
           it('does not emit the civicase activity updated event', () => {
@@ -195,13 +227,13 @@
               })
             }]];
 
-            crmApiMock.and.returnValue($q.resolve([{ values: $scope.selectedActivities }]));
+            civicaseCrmApiMock.and.returnValue($q.resolve([{ values: $scope.selectedActivities }]));
             saveMethod();
             $rootScope.$digest();
           });
 
           it('saves a new copy of each of the activity and assigns it to the selected case using the new activity subject', () => {
-            expect(crmApiMock.calls.mostRecent().args[0]).toEqual(expectedActivitySavingCalls);
+            expect(civicaseCrmApiMock.calls.mostRecent().args[0]).toEqual(expectedActivitySavingCalls);
           });
         });
       });
@@ -272,13 +304,13 @@
             }]];
 
             spyOn($rootScope, '$broadcast');
-            crmApiMock.and.returnValue($q.resolve([{ values: $scope.selectedActivities }]));
+            civicaseCrmApiMock.and.returnValue($q.resolve([{ values: $scope.selectedActivities }]));
             saveMethod();
             $rootScope.$digest();
           });
 
           it('moves each of the activities and assign them to the selected case', () => {
-            expect(crmApiMock.calls.mostRecent().args[0]).toEqual(expectedActivitySavingCalls);
+            expect(civicaseCrmApiMock.calls.mostRecent().args[0]).toEqual(expectedActivitySavingCalls);
           });
 
           it('emits a civicase activity updated event', () => {
@@ -296,13 +328,13 @@
             model.case_id = $scope.selectedActivities[0].case_id;
 
             spyOn($rootScope, '$broadcast');
-            crmApiMock.and.returnValue($q.resolve([{ values: $scope.selectedActivities }]));
+            civicaseCrmApiMock.and.returnValue($q.resolve([{ values: $scope.selectedActivities }]));
             saveMethod();
             $rootScope.$digest();
           });
 
           it('does not request the activities data', () => {
-            expect(crmApiMock).not.toHaveBeenCalled();
+            expect(civicaseCrmApiMock).not.toHaveBeenCalled();
           });
 
           it('does not emit the civicase activity updated event', () => {
@@ -349,13 +381,19 @@
 
         describe('when fetching list of cases', () => {
           let getCaseListApiParams;
+          let expectedApiParams;
 
           beforeEach(() => {
             getCaseListApiParams = modalOpenCall[2].getCaseListApiParams;
+            expectedApiParams = {
+              params: {
+                search_by_case_id: true
+              }
+            };
           });
 
           it('displays cases from those case type categories for which user has "basic case information" permission', () => {
-            expect(getCaseListApiParams()).toEqual({});
+            expect(getCaseListApiParams()).toEqual(expectedApiParams);
           });
         });
 
@@ -374,13 +412,13 @@
               })
             }]];
 
-            crmApiMock.and.returnValue($q.resolve([{ values: $scope.selectedActivities }]));
+            civicaseCrmApiMock.and.returnValue($q.resolve([{ values: $scope.selectedActivities }]));
             saveMethod();
             $rootScope.$digest();
           });
 
           it('moves the activity and assigns it to the selected case using the new activity subject', () => {
-            expect(crmApiMock.calls.mostRecent().args[0]).toEqual(expectedActivitySavingCalls);
+            expect(civicaseCrmApiMock.calls.mostRecent().args[0]).toEqual(expectedActivitySavingCalls);
           });
         });
       });

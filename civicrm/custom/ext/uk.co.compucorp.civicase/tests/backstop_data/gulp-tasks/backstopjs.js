@@ -20,30 +20,44 @@ var path = require('path');
 var PluginError = require('plugin-error');
 var puppeteer = require('puppeteer');
 
+var LOGGED_IN_USER_NAME = 'admin';
 var BACKSTOP_DIR = '.';
 var CACHE = {
   caseId: null,
   emptyCaseId: null,
   contactIdsMap: {}
 };
-var CONFIG_TPL = {
-  url: 'http://%{site-host}',
-  drush_alias: '',
-  root: '%{path-to-site-root}'
-};
 var FILES = {
   siteConfig: 'site-config.json',
+  siteConfigSample: 'site-config.json.sample',
   temp: 'backstop.temp.json',
   tpl: 'backstop.tpl.json'
 };
 var RECORD_IDENTIFIERS = {
   activeContactDisplayName: 'Arnold Backstop',
-  customGroupTitle: 'Backstop Case Custom Group',
-  customFieldLabel: 'Backstop Case Custom Field',
+  activeContactEmail: 'arnold@backstop.com',
+  caseSubject: 'Backstop Case',
+  caseTag: 'Backstop Case Tag',
   emptyCaseSubject: 'Backstop Empty Case',
-  emptyCaseTypeName: 'backstop_empty_case_type',
+  caseTypeName: 'backstop_case_type',
   emptyContactDisplayName: 'Emil Backstop',
-  fileUploadActivitySubject: 'Backstop File Upload'
+  emptyContactEmail: 'emil@backstop.com',
+  fileUploadActivitySubject: 'Backstop File Upload',
+  customGroups: {
+    inline: {
+      fieldLabel: 'Backstop Case Inline Custom Field',
+      groupTitle: 'Backstop Case Inline Custom Group'
+    },
+    tab: {
+      fieldLabel: 'Backstop Case Tab Custom Field',
+      groupTitle: 'Backstop Case Tab Custom Group'
+    }
+  },
+  relationshipTypes: {
+    homelessCoordinator: 'Homeless Services Coordinator is',
+    healthServiceCoordinator: 'Health Services Coordinator',
+    benefitsSpecialist: 'Benefits Specialist is'
+  }
 };
 var URL_VAR_REPLACERS = [
   replaceCaseIdVar,
@@ -55,10 +69,15 @@ var URL_VAR_REPLACERS = [
 var createUniqueActivity = createUniqueRecordFactory('Activity', ['subject']);
 var createUniqueAttachment = createUniqueRecordFactory('Attachment', ['entity_id', 'entity_table']);
 var createUniqueCase = createUniqueRecordFactory('Case', ['subject']);
+var createUniqueEmail = createUniqueRecordFactory('Email', ['email']);
 var createUniqueCaseType = createUniqueRecordFactory('CaseType', ['name']);
+var createUniqueRelationship = createUniqueRecordFactory('Relationship', ['contact_id_a', 'contact_id_b', 'relationship_type_id']);
+var createUniqueRelationshipType = createUniqueRecordFactory('RelationshipType', ['name_a_b']);
 var createUniqueContact = createUniqueRecordFactory('Contact', ['display_name']);
 var createUniqueCustomField = createUniqueRecordFactory('CustomField', ['label']);
 var createUniqueCustomGroup = createUniqueRecordFactory('CustomGroup', ['title']);
+var createUniqueTag = createUniqueRecordFactory('Tag', ['name', 'used_for']);
+var createUniqueEntityTag = createUniqueRecordFactory('EntityTag', ['entity_id', 'entity_table', 'tag_id']);
 
 /**
  * Returns the list of the scenarios from
@@ -154,7 +173,7 @@ function createUniqueRecordFactory (entityName, matchingFields) {
    * @returns {object} the returned value from the API.
    */
   return function createUniqueRecord (recordData) {
-    var filter = { options: { limit: 1 } };
+    var filter = { options: { limit: 1 }, sequential: 1 };
 
     matchingFields.forEach((matchingField) => {
       filter[matchingField] = recordData[matchingField];
@@ -194,7 +213,7 @@ function cvApi (entityName, action, queryData) {
  */
 function cvApiBatch (queriesData) {
   var config = siteConfig();
-  var cmd = `echo '${JSON.stringify(queriesData)}' | cv api:batch`;
+  var cmd = `echo '${JSON.stringify(queriesData)}' | cv api:batch -U ${LOGGED_IN_USER_NAME}`;
   var responses = JSON.parse(execSync(cmd, { cwd: config.root }));
 
   checkAndThrowApiResponseErrors(responses);
@@ -364,6 +383,7 @@ function runBackstopJS (command) {
       .on('end', async () => {
         try {
           (typeof argv.skipCookies === 'undefined') && await writeCookies();
+
           await backstopjs(command, { configPath: FILES.temp, filter: argv.filter });
 
           success = true;
@@ -385,35 +405,115 @@ function runBackstopJS (command) {
  * @returns {Promise} An empty promise that is resolved when the task is done.
  */
 function setupData () {
-  var activeCaseId = getActiveCaseId();
+  var homelessCoordinatorRelType = createUniqueRelationshipType({
+    name_a_b: RECORD_IDENTIFIERS.relationshipTypes.homelessCoordinator
+  });
+  var benefitsSpecialistRelType = createUniqueRelationshipType({
+    name_a_b: RECORD_IDENTIFIERS.relationshipTypes.benefitsSpecialist
+  });
+
   var caseType = createUniqueCaseType({
-    name: RECORD_IDENTIFIERS.emptyCaseTypeName,
+    name: RECORD_IDENTIFIERS.caseTypeName,
     case_type_category: 'Cases',
-    title: 'Backstop Empty Case Type',
+    title: 'Backstop Case Type',
     definition: {
-      activityTypes: [],
+      activityTypes: [{
+        name: 'Open Case',
+        max_instances: '1'
+      }, {
+        name: 'Follow up'
+      }, {
+        name: 'File Upload'
+      }],
       activitySets: [],
-      caseRoles: [{ name: 'Case Coordinator is', manager: '1', creator: '1' }],
+      caseRoles: [
+        {
+          name: RECORD_IDENTIFIERS.relationshipTypes.homelessCoordinator,
+          creator: '1',
+          manager: '0'
+        }, {
+          name: RECORD_IDENTIFIERS.relationshipTypes.healthServiceCoordinator,
+          manager: '0'
+        }, {
+          name: RECORD_IDENTIFIERS.relationshipTypes.benefitsSpecialist,
+          manager: '1'
+        }
+      ],
       timelineActivityTypes: []
     }
   });
+
   var activeContact = createUniqueContact({
     contact_type: 'Individual',
     display_name: RECORD_IDENTIFIERS.activeContactDisplayName
   });
+  createUniqueEmail({
+    contact_id: activeContact.id,
+    email: RECORD_IDENTIFIERS.activeContactEmail
+  });
   var emptyContact = createUniqueContact({
     contact_type: 'Individual',
-    display_name: RECORD_IDENTIFIERS.emptyContactDisplayName
+    display_name: RECORD_IDENTIFIERS.emptyContactDisplayName,
+    email: RECORD_IDENTIFIERS.emptyContactEmail
   });
+  createUniqueEmail({
+    contact_id: emptyContact.id,
+    email: RECORD_IDENTIFIERS.emptyContactEmail
+  });
+
+  var caseIds = createCases(caseType, activeContact, emptyContact);
+  createActivities(caseIds[0], activeContact);
+
+  createUniqueRelationship({
+    contact_id_a: activeContact.id,
+    relationship_type_id: benefitsSpecialistRelType.id,
+    start_date: 'now',
+    end_date: null,
+    contact_id_b: emptyContact.id,
+    case_id: caseIds[0],
+    description: 'Manager Role Assigned'
+  });
+
+  createUniqueRelationship({
+    contact_id_a: activeContact.id,
+    relationship_type_id: homelessCoordinatorRelType.id,
+    start_date: 'now',
+    end_date: null,
+    contact_id_b: emptyContact.id,
+    case_id: caseIds[0],
+    description: 'Homeless Coordinator Assigned'
+  });
+
   var fileUploadActivity = createUniqueActivity({
     activity_type_id: 'File Upload',
-    case_id: activeCaseId,
+    case_id: caseIds[0],
     source_contact_id: activeContact.id,
     subject: RECORD_IDENTIFIERS.fileUploadActivitySubject
   });
-  var customGroup = createUniqueCustomGroup({
-    title: RECORD_IDENTIFIERS.customGroupTitle,
-    extends: 'Case'
+
+  var inlineCustomGroup = createUniqueCustomGroup({
+    extends: 'Case',
+    style: 'Inline',
+    title: RECORD_IDENTIFIERS.customGroups.inline.groupTitle
+  });
+  var tabCustomGroup = createUniqueCustomGroup({
+    extends: 'Case',
+    style: 'Tab',
+    title: RECORD_IDENTIFIERS.customGroups.tab.groupTitle
+  });
+
+  createUniqueCustomField({
+    custom_group_id: inlineCustomGroup.id,
+    label: RECORD_IDENTIFIERS.customGroups.inline.fieldLabel,
+    data_type: 'String',
+    html_type: 'Text'
+  });
+
+  createUniqueCustomField({
+    custom_group_id: tabCustomGroup.id,
+    label: RECORD_IDENTIFIERS.customGroups.tab.fieldLabel,
+    data_type: 'String',
+    html_type: 'Text'
   });
 
   createUniqueAttachment({
@@ -423,20 +523,81 @@ function setupData () {
     name: 'backstop-file-upload.png',
     mime_type: 'image/png'
   });
-  createUniqueCase({
+
+  createUniqueTag({
+    is_selectable: 1,
+    name: RECORD_IDENTIFIERS.caseTag,
+    used_for: 'Cases'
+  });
+  createUniqueEntityTag({
+    entity_id: caseIds[0],
+    entity_table: 'civicrm_case',
+    tag_id: RECORD_IDENTIFIERS.caseTag
+  });
+
+  createSampleUploadFile();
+
+  return Promise.resolve();
+}
+
+/**
+ * Create Sample Upload File
+ */
+function createSampleUploadFile () {
+  fs.writeFileSync('sample.txt', 'Sample Text');
+}
+
+/**
+ * Create Activities
+ *
+ * @param {number} caseId case id
+ * @param {object} activeContact active contact
+ * @returns {Array} list of activity ids
+ */
+function createActivities (caseId, activeContact) {
+  var activityIds = [];
+
+  for (var i = 1; i <= 30; i++) {
+    activityIds.push(createUniqueActivity({
+      activity_type_id: 'Follow up',
+      case_id: caseId,
+      source_contact_id: activeContact.id,
+      subject: 'Follow Up ' + i,
+      activity_date_time: moment().startOf('month').format('YYYY-MM-DD')
+    }).id);
+  }
+
+  return activityIds;
+}
+
+/**
+ * Create Cases
+ *
+ * @param {object} caseType case type
+ * @param {object} activeContact active contact
+ * @param {object} emptyContact empty contact
+ * @returns {Array} list of case ids
+ */
+function createCases (caseType, activeContact, emptyContact) {
+  var caseIds = [];
+
+  for (var i = 1; i <= 17; i++) {
+    caseIds.push(createUniqueCase({
+      case_type_id: caseType.id,
+      contact_id: activeContact.id,
+      creator_id: activeContact.id,
+      subject: RECORD_IDENTIFIERS.caseSubject + i
+    }).id);
+  }
+
+  caseIds.push(createUniqueCase({
     case_type_id: caseType.id,
     contact_id: emptyContact.id,
     creator_id: emptyContact.id,
     subject: RECORD_IDENTIFIERS.emptyCaseSubject
-  });
-  createUniqueCustomField({
-    custom_group_id: customGroup.id,
-    label: RECORD_IDENTIFIERS.customFieldLabel,
-    data_type: 'String',
-    html_type: 'Text'
-  });
+  }).id);
 
-  return Promise.resolve();
+  return caseIds;
 }
 
 /**
@@ -459,7 +620,9 @@ function touchSiteConfigFile () {
   try {
     fs.readFileSync(FILES.siteConfig);
   } catch (err) {
-    fs.writeFileSync(FILES.siteConfig, JSON.stringify(CONFIG_TPL, null, 2));
+    // fs.createReadStream(FILES.siteConfigSample).pipe(fs.createWriteStream(FILES.siteConfig));
+    fs.copyFileSync(FILES.siteConfigSample, FILES.siteConfig);
+    // fs.writeFileSync(FILES.siteConfig, JSON.stringify(CONFIG_TPL, null, 2));
 
     created = true;
   }
@@ -497,11 +660,13 @@ async function writeCookies () {
   var cookiesDir = path.join(BACKSTOP_DIR, 'cookies');
   var cookieFilePath = path.join(cookiesDir, 'admin.json');
   var config = siteConfig();
-  var command = `drush ${config.drush_alias} uli --name=admin --uri=${config.url} --browser=0`;
+  var command = `drush ${config.drush_alias} uli --name=${LOGGED_IN_USER_NAME} --uri=${config.url} --browser=0`;
   var loginUrl = execSync(command, { encoding: 'utf8', cwd: config.root });
-  var browser = await puppeteer.launch();
+  var browser = await puppeteer.launch({
+    headless: true,
+    args: ['--no-sandbox']
+  });
   var page = await browser.newPage();
-
   await page.goto(loginUrl);
 
   var cookies = await page.cookies();

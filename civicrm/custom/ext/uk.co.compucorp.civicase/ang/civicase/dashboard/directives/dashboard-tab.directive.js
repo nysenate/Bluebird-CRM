@@ -3,6 +3,10 @@
 
   module.directive('civicaseDashboardTab', function () {
     return {
+      scope: {
+        activityFilters: '=',
+        filters: '='
+      },
       restrict: 'E',
       controller: 'dashboardTabController',
       templateUrl: '~/civicase/dashboard/directives/dashboard-tab.directive.html'
@@ -16,18 +20,19 @@
    *
    * @param {object} $location location service
    * @param {object} $rootScope rootScope object
-   * @param {object} $route route object
    * @param {object} $sce sce service
    * @param {object} $scope scope object
+   * @param {object} CaseType Case Type service
    * @param {object} ContactsCache contacts cache service
-   * @param {object} crmApi crm api service
+   * @param {object} civicaseCrmApi crm api service
    * @param {object} formatCase format case service
    * @param {object} formatActivity format activity service
    * @param {object} ts ts
    * @param {object} ActivityStatusType activity status type service
    */
-  function dashboardTabController ($location, $rootScope, $route, $sce, $scope,
-    ContactsCache, crmApi, formatCase, formatActivity, ts, ActivityStatusType) {
+  function dashboardTabController ($location, $rootScope, $sce, $scope,
+    CaseType, ContactsCache, civicaseCrmApi, formatCase, formatActivity, ts,
+    ActivityStatusType) {
     var ACTIVITIES_QUERY_PARAMS_DEFAULTS = {
       contact_id: 'user_contact_id',
       is_current_revision: 1,
@@ -38,16 +43,18 @@
       status_id: { IN: ActivityStatusType.getAll().incomplete },
       options: { sort: 'is_overdue DESC, activity_date_time ASC' },
       return: [
-        'subject', 'details', 'activity_type_id', 'status_id', 'source_contact_name',
-        'target_contact_name', 'assignee_contact_name', 'activity_date_time', 'is_star',
-        'original_id', 'tag_id.name', 'tag_id.description', 'tag_id.color', 'file_id',
-        'is_overdue', 'case_id', 'priority_id', 'case_id.case_type_id', 'case_id.status_id',
+        'subject', 'details', 'activity_type_id', 'status_id',
+        'source_contact_name', 'target_contact_name', 'assignee_contact_name',
+        'activity_date_time', 'is_star', 'original_id', 'tag_id.name',
+        'tag_id.description', 'tag_id.color', 'file_id', 'is_overdue', 'case_id',
+        'priority_id', 'case_id.case_type_id', 'case_id.status_id',
         'case_id.contacts'
       ]
     };
+    // The ID is needed for the sort to avoid returning cases in a random order
     var CASES_QUERY_PARAMS_DEFAULTS = {
       'status_id.grouping': 'Opened',
-      options: { sort: 'start_date DESC' },
+      options: { sort: 'start_date DESC, id DESC' },
       is_deleted: 0
     };
     var MILESTONES_QUERY_PARAMS_DEFAULTS = {
@@ -59,10 +66,11 @@
       status_id: { IN: ActivityStatusType.getAll().incomplete },
       options: { sort: 'is_overdue DESC, activity_date_time ASC' },
       return: [
-        'subject', 'details', 'activity_type_id', 'status_id', 'source_contact_name',
-        'target_contact_name', 'assignee_contact_name', 'activity_date_time', 'is_star',
-        'original_id', 'tag_id.name', 'tag_id.description', 'tag_id.color', 'file_id',
-        'is_overdue', 'case_id', 'priority_id', 'case_id.case_type_id', 'case_id.status_id',
+        'subject', 'details', 'activity_type_id', 'status_id',
+        'source_contact_name', 'target_contact_name', 'assignee_contact_name',
+        'activity_date_time', 'is_star', 'original_id', 'tag_id.name',
+        'tag_id.description', 'tag_id.color', 'file_id', 'is_overdue',
+        'case_id', 'priority_id', 'case_id.case_type_id', 'case_id.status_id',
         'case_id.contacts'
       ]
     };
@@ -90,7 +98,7 @@
         cardRefresh: activityCardRefreshActivities
       },
       handlers: {
-        range: _.curry(rangeHandler)('activity_date_time')('YYYY-MM-DD HH:mm:ss')(false),
+        range: _.curry(rangeHandler)('activity_date_time')('YYYY-MM-DD HH:mm:ss'),
         results: _.curry(resultsHandler)(formatActivity)('case_id.contacts')
       }
     };
@@ -109,7 +117,7 @@
         cardRefresh: activityCardRefreshMilestones
       },
       handlers: {
-        range: _.curry(rangeHandler)('activity_date_time')('YYYY-MM-DD HH:mm:ss')(true),
+        range: _.curry(rangeHandler)('activity_date_time')('YYYY-MM-DD HH:mm:ss'),
         results: _.curry(resultsHandler)(formatActivity)('case_id.contacts')
       }
     };
@@ -120,9 +128,14 @@
         caseClick: casesCustomClick,
         viewCasesLink: viewCasesLink()
       },
-      query: { entity: 'Case', action: 'getcaselist', countAction: 'getdetailscount', params: getQueryParams('cases') },
+      query: {
+        entity: 'Case',
+        action: 'getcaselist',
+        countAction: 'getdetailscount',
+        params: getQueryParams('cases')
+      },
       handlers: {
-        range: _.curry(rangeHandler)('start_date')('YYYY-MM-DD')(false),
+        range: _.curry(rangeHandler)('start_date')('YYYY-MM-DD'),
         results: _.curry(resultsHandler)(formatCase)('contacts')
       }
     };
@@ -170,7 +183,7 @@
      * name(s)
      *
      * Unfortunately the activity card expects the callback to handle api calls
-     * for it, hence the `apiCalls` param and the usage of `crmApi`
+     * for it, hence the `apiCalls` param and the usage of `civicaseCrmApi`
      *
      * @see {@link https://github.com/compucorp/uk.co.compucorp.civicase/blob/develop/ang/civicase/ActivityCard.js#L97}
      *
@@ -182,7 +195,7 @@
         apiCalls = [];
       }
 
-      crmApi(apiCalls).then(function (result) {
+      civicaseCrmApi(apiCalls).then(function (result) {
         $rootScope.$emit('civicase::ActivitiesCalendar::reload');
         $rootScope.$emit('civicase::PanelQuery::reload', panelName);
       });
@@ -194,7 +207,14 @@
      * @param {object} caseObj case object
      */
     function casesCustomClick (caseObj) {
-      $location.path('case/list').search('caseId', caseObj.id);
+      var caseType = CaseType.getById(caseObj.case_type_id);
+
+      $location
+        .path('case/list')
+        .search('caseId', caseObj.id)
+        .search('cf', JSON.stringify({
+          'case_type_id.is_active': caseType.is_active
+        }));
     }
 
     /**
@@ -301,14 +321,12 @@
      * @param {string} property the property where the information about the
      *   date is stored
      * @param {string} format the date format
-     * @param {boolean} useNowAsStart whether the starting point should be the
-     *   current datetime
      * @param {string} selectedRange the currently selected period range
      * @param {object} queryParams params
      */
-    function rangeHandler (property, format, useNowAsStart, selectedRange, queryParams) {
+    function rangeHandler (property, format, selectedRange, queryParams) {
       var now = moment();
-      var start = (useNowAsStart ? now : now.startOf(selectedRange)).format(format);
+      var start = now.startOf(selectedRange).format(format);
       var end = now.endOf(selectedRange).format(format);
 
       queryParams[property] = { BETWEEN: [start, end] };

@@ -5,6 +5,10 @@ $overview-grid-cell-width: 200px;
     background-color: $crm-gray-lightest;
     padding: 0 !important;
   }
+
+  paging {
+    padding-right: 20px;
+  }
 }
 
 .civicase__case-overview-container {

@@ -17,9 +17,12 @@
   "report": ["CLI", "browser"],
   "engine": "puppeteer",
   "engineOptions": {
-    "waitTimeout": 120000
+    "waitTimeout": 120000,
+    "args": [
+      "--no-sandbox"
+    ]
   },
-  "asyncCaptureLimit": 1,
+  "asyncCaptureLimit": 3,
   "asyncCompareLimit": 50,
   "debug": false,
   "debugWindow": false

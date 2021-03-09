@@ -17,7 +17,7 @@
         var activityTypeWithMaxInstance, activityTypeExceedingMaxInstanceIsHidden;
 
         beforeEach(function () {
-          var activityTypes = CaseType.getAll()[1].definition.activityTypes;
+          var activityTypes = CaseType.getById(1).definition.activityTypes;
           activityTypeWithMaxInstance = activityTypes.find(function (activity) {
             return activity.max_instances;
           });

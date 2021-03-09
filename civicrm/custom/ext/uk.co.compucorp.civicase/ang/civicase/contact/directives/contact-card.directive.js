@@ -1,7 +1,7 @@
 (function (angular, $, _, CRM) {
   var module = angular.module('civicase');
 
-  module.directive('civicaseContactCard', function ($document, ContactsCache) {
+  module.directive('civicaseContactCard', function (ContactsCache) {
     return {
       restrict: 'A',
       replace: true,
@@ -11,7 +11,9 @@
         caseId: '<?',
         data: '=contacts',
         isAvatar: '=avatar',
-        noIcon: '='
+        noIcon: '=',
+        displayMoreFields: '=',
+        showFullNameOnHover: '<'
       }
     };
 
@@ -35,70 +37,85 @@
       function refresh () {
         $scope.contacts = [];
 
-        if (_.isPlainObject($scope.data)) {
-          _.each($scope.data, function (name, contactID) {
-            if ($scope.isAvatar) {
-              prepareAvatarData(name, contactID);
+        fetchContactsInfo()
+          .then(function () {
+            if (_.isPlainObject($scope.data)) {
+              _.each($scope.data, function (name, contactID) {
+                if ($scope.isAvatar) {
+                  prepareAvatarData(ContactsCache.getCachedContact(contactID));
+                } else {
+                  $scope.contacts.push({ display_name: name, contact_id: contactID });
+                }
+              });
+            } else if (typeof $scope.data === 'string') {
+              if ($scope.isAvatar) {
+                prepareAvatarData(ContactsCache.getCachedContact($scope.data));
+              } else {
+                $scope.contacts = [{
+                  contact_id: $scope.data,
+                  display_name: ContactsCache.getCachedContact($scope.data).display_name
+                }];
+              }
             } else {
-              $scope.contacts.push({ display_name: name, contact_id: contactID });
+              $scope.contacts = _.cloneDeep($scope.data);
             }
           });
-        } else if (typeof $scope.data === 'string') {
-          if ($scope.isAvatar) {
-            prepareAvatarData(
-              ContactsCache.getCachedContact($scope.data).display_name,
-              $scope.data
-            );
-          } else {
-            $scope.contacts.push({
-              contact_id: $scope.data,
-              display_name: ContactsCache.getCachedContact($scope.data).display_name
-            });
-          }
+      }
+
+      /**
+       * Fetch the contacts information
+       *
+       * @returns {Promise} promise
+       */
+      function fetchContactsInfo () {
+        var contactIds;
+
+        if (typeof $scope.data === 'string') {
+          contactIds = [$scope.data];
+        } else if (_.isPlainObject($scope.data)) {
+          contactIds = _.keys($scope.data);
         } else {
-          $scope.contacts = _.cloneDeep($scope.data);
+          contactIds = _.chain($scope.data)
+            .compact()
+            .map('contact_id')
+            .value();
         }
+
+        return ContactsCache.add(contactIds);
       }
 
       /**
        * Get initials from the sent parameter
        * Example: JD should be returned for John Doe
        *
-       * @param {string} contactFullName the contact's full name.
+       * @param {object} contactObj the contact object.
        *
        * @returns {string} the contact's initials.
        */
-      function getInitials (contactFullName) {
-        var names = contactFullName.split(' ');
-        var initials = names[0].substring(0, 1).toUpperCase();
-
-        if (names.length > 1) {
-          initials += names[names.length - 1].substring(0, 1).toUpperCase();
-        }
-
-        return initials;
+      function getInitials (contactObj) {
+        return contactObj.first_name.substring(0, 1).toUpperCase() +
+          contactObj.last_name.substring(0, 1).toUpperCase();
       }
 
       /**
        * Prepares data when the directive is avatar
        *
-       * @param {string} name the contact's full name.
-       * @param {string} contactID the contact's id.
+       * @param {object} contactObj the contact object.
        */
-      function prepareAvatarData (name, contactID) {
+      function prepareAvatarData (contactObj) {
         var avatarText;
 
-        if (validateEmail(name)) {
-          avatarText = name.substr(0, 1).toUpperCase();
+        if (validateEmail(contactObj.display_name)) {
+          avatarText = contactObj.display_name.substr(0, 1).toUpperCase();
         } else {
-          avatarText = getInitials(name);
+          avatarText = getInitials(contactObj);
         }
 
         $scope.contacts.push({
-          display_name: name,
-          contact_id: contactID,
+          display_name: contactObj.display_name,
+          contact_id: contactObj.contact_id,
           avatar: avatarText,
-          image_URL: ContactsCache.getImageUrlOf(contactID)
+          image_URL: ContactsCache.getImageUrlOf(contactObj.contact_id)
         });
       }
 

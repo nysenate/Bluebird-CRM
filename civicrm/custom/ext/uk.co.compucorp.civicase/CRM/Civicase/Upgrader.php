@@ -4,11 +4,14 @@ use CRM_Civicase_Setup_CaseTypeCategorySupport as CaseTypeCategorySupport;
 use CRM_Civicase_Setup_CreateCasesOptionValue as CreateCasesOptionValue;
 use CRM_Civicase_Setup_AddCaseCategoryWordReplacementOptionGroup as AddCaseCategoryWordReplacementOptionGroup;
 use CRM_Civicase_Setup_MoveCaseTypesToCasesCategory as MoveCaseTypesToCasesCategory;
-use CRM_Civicase_Helper_CaseCategory as CaseCategoryHelper;
 use CRM_Civicase_Setup_CreateSafeFileExtensionOptionValue as CreateSafeFileExtensionOptionValue;
 use CRM_Civicase_Setup_UpdateMenuLinks as MenuLinksSetup;
 use CRM_Civicase_Uninstall_RemoveCustomGroupSupportForCaseCategory as RemoveCustomGroupSupportForCaseCategory;
 use CRM_Civicase_Setup_ProcessCaseCategoryForCustomGroupSupport as ProcessCaseCategoryForCustomGroupSupport;
+use CRM_Civicase_Setup_CaseCategoryInstanceSupport as CaseCategoryInstanceSupport;
+use CRM_Civicase_Setup_AddChangeCaseRoleDateActivityTypes as AddChangeCaseRoleDateActivityTypes;
+use CRM_Civicase_Setup_AddManageWorkflowMenu as AddManageWorkflowMenu;
+use CRM_Civicase_Service_CaseCategoryInstance as CaseCategoryInstance;
 
 /**
  * Collection of upgrade steps.
@@ -69,11 +72,13 @@ class CRM_Civicase_Upgrader extends CRM_Civicase_Upgrader_Base {
 
     $steps = [
       new CaseTypeCategorySupport(),
+      new CaseCategoryInstanceSupport(),
       new AddCaseCategoryWordReplacementOptionGroup(),
       new CreateCasesOptionValue(),
       new MoveCaseTypesToCasesCategory(),
       new CreateSafeFileExtensionOptionValue(),
       new ProcessCaseCategoryForCustomGroupSupport(),
+      new AddChangeCaseRoleDateActivityTypes(),
     ];
     foreach ($steps as $step) {
       $step->apply();
@@ -151,7 +156,7 @@ class CRM_Civicase_Upgrader extends CRM_Civicase_Upgrader_Base {
       'permission' => 'access my cases and activities,access all cases and activities',
       'operator' => 'OR',
       'separator' => 0,
-      'parent_name' => 'Manage',
+      'parent_name' => 'Cases',
     ]);
 
     CRM_Core_BAO_Navigation::resetNavigation();
@@ -226,7 +231,6 @@ class CRM_Civicase_Upgrader extends CRM_Civicase_Upgrader_Base {
     }
 
     $this->removeNav('Manage Cases');
-    $this->restoreCaseCustomGroupExtendClassToDefault();
 
     $steps = [
       new RemoveCustomGroupSupportForCaseCategory(),
@@ -242,7 +246,7 @@ class CRM_Civicase_Upgrader extends CRM_Civicase_Upgrader_Base {
    * Fixes original id of followup activities to point to the original activity
    * and not a revision.
    *
-   * TODO: This is a WIP (untested) and not yet called from anywhere.
+   * @todo This is a WIP (untested) and not yet called from anywhere.
    * When it's ready we can change its name to upgrade_000X and call it from
    * the installer.
    */
@@ -252,7 +256,7 @@ class CRM_Civicase_Upgrader extends CRM_Civicase_Upgrader_Base {
       WHERE a.parent_id = b.id
       AND b.original_id IS NOT NULL';
     CRM_Core_DAO::executeQuery($sql);
-    // TODO: before we uncomment the below, need to migrate this history
+    // @todo before we uncomment the below, need to migrate this history
     // to advanced logging table.
     // CRM_Core_DAO::executeQuery('DELETE FROM civicrm_activity WHERE
     // original_id IS NOT NULL');.
@@ -374,50 +378,6 @@ class CRM_Civicase_Upgrader extends CRM_Civicase_Upgrader_Base {
   }
 
   /**
-   * Restores the Case Custom Group Extend Class To Default.
-   *
-   * When the civicase extension is installed, it modifies the class
-   * that returns the case types for cases to one that returns only the
-   * one in cases category. This function restores that original value.
-   */
-  private function restoreCaseCustomGroupExtendClassToDefault() {
-    $this->setCaseCustomGroupExtendClass('CRM_Case_PseudoConstant::caseType;');
-  }
-
-  /**
-   * Sets the Case Custom Group Extend Class For Case Type Category.
-   *
-   * Setting this class allows the case types when adding custom group
-   * that extend a case to return case types belonging only to the case
-   * category.
-   */
-  private function setCaseCustomGroupExtendClassForCaseTypeCategory() {
-    $this->setCaseCustomGroupExtendClass('CRM_Civicase_Helper_CaseCategory::getCaseTypesForCase;');
-  }
-
-  /**
-   * Sets the Case Custom Group Extend Class.
-   *
-   * @param string $caseTypeClass
-   *   Case Type class for retrieving case types.
-   */
-  private function setCaseCustomGroupExtendClass($caseTypeClass) {
-    $result = civicrm_api3('OptionValue', 'get', [
-      'option_group_id' => 'cg_extend_objects',
-      'label' => CaseCategoryHelper::CASE_TYPE_CATEGORY_NAME,
-    ]);
-
-    if (empty($result['id'])) {
-      return;
-    }
-
-    civicrm_api3('OptionValue', 'create', [
-      'id' => $result['id'],
-      'description' => $caseTypeClass,
-    ]);
-  }
-
-  /**
    * Remove nav.
    *
    * @param string $name
@@ -436,7 +396,12 @@ class CRM_Civicase_Upgrader extends CRM_Civicase_Upgrader_Base {
     $this->swapCaseMenuItems();
 
     $this->toggleNav('Manage Cases', TRUE);
-    $this->setCaseCustomGroupExtendClassForCaseTypeCategory();
+
+    $instanceObj = new CaseCategoryInstance();
+    $instanceObj->assignInstanceForExistingCaseCategories();
+
+    $workflowMenu = new AddManageWorkflowMenu();
+    $workflowMenu->apply();
   }
 
   /**
@@ -446,7 +411,6 @@ class CRM_Civicase_Upgrader extends CRM_Civicase_Upgrader_Base {
     $this->swapCaseMenuItems();
 
     $this->toggleNav('Manage Cases', FALSE);
-    $this->restoreCaseCustomGroupExtendClassToDefault();
   }
 
   /**
@@ -494,7 +458,7 @@ class CRM_Civicase_Upgrader extends CRM_Civicase_Upgrader_Base {
   private function getCaseMenuItem($name) {
     $result = civicrm_api3('Navigation', 'get', [
       'sequential' => 1,
-      'parent_id' => 'Manage',
+      'parent_id' => 'Cases',
       'name' => $name,
       'options' => ['limit' => 1],
     ]);

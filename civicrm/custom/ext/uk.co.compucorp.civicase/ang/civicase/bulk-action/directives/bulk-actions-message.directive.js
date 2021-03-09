@@ -9,7 +9,6 @@
       scope: {
         selectedItems: '=',
         isSelectAll: '=',
-        isSelectAllAvailable: '=',
         totalCount: '=',
         showCheckboxes: '='
       }

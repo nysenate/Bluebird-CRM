@@ -3,13 +3,20 @@
 
   module.service('PrintMergeCaseAction', PrintMergeCaseAction);
 
-  function PrintMergeCaseAction () {
+  /**
+   * PrintMergeCaseAction service.
+   *
+   * @param {object} $q $q service
+   */
+  function PrintMergeCaseAction ($q) {
     /**
      * Click event handler for the Action
      *
-     * @param {Array} cases
-     * @param {Object} action
-     * @param {Function} callbackFn
+     * @param {Array} cases list of cases
+     * @param {object} action action to be performed
+     * @param {Function} callbackFn the callback function
+     *
+     * @returns {Promise} promise which resolves to the path for the popup
      */
     this.doAction = function (cases, action, callbackFn) {
       var contactIds = [];
@@ -20,7 +27,7 @@
         contactIds.push(item.client[0].contact_id);
       });
 
-      return {
+      return $q.resolve({
         path: 'civicrm/activity/pdf/add',
         query: {
           action: 'add',
@@ -29,7 +36,7 @@
           cid: contactIds.join(),
           caseid: caseIds.join()
         }
-      };
+      });
     };
   }
 })(angular, CRM.$, CRM._);

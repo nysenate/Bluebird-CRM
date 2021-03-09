@@ -44,29 +44,6 @@
       });
     });
 
-    describe('isSelectAllAvailable', function () {
-      describe('when isSelectAllAvailable is true', function () {
-        beforeEach(function () {
-          $scope.isSelectAllAvailable = true;
-          $scope.$digest();
-        });
-
-        it('enables the everything menu link', function () {
-          expect(element.find('a[ng-disabled="!isSelectAllAvailable"]').hasClass('civicase__link-disabled')).toBe(false);
-        });
-      });
-      describe('when isSelectAllAvailable is false', function () {
-        beforeEach(function () {
-          $scope.isSelectAllAvailable = false;
-          $scope.$digest();
-        });
-
-        it('disables the everything menu link', function () {
-          expect(element.find('a[ng-disabled="!isSelectAllAvailable"]').hasClass('civicase__link-disabled')).toBe(true);
-        });
-      });
-    });
-
     describe('toggleCheckbox()', function () {
       describe('when showCheckboxes is true', function () {
         beforeEach(function () {
@@ -139,8 +116,7 @@
     function compileDirective () {
       $scope.selectedCasesLength = 10;
       $scope.showCheckboxes = true;
-      $scope.isSelectAllAvailable = false;
-      element = $compile('<div civicase-bulk-actions-checkboxes show-checkboxes="showCheckboxes" is-select-all-available="isSelectAllAvailable" selected-items="selectedCasesLength"></div>')($scope);
+      element = $compile('<div civicase-bulk-actions-checkboxes show-checkboxes="showCheckboxes" selected-items="selectedCasesLength"></div>')($scope);
       $scope.$digest();
     }
   });

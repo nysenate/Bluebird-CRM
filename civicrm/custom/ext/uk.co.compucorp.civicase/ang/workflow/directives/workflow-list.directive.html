@@ -1,0 +1,104 @@
+<div id="bootstrap-theme">
+  <h1 crm-page-title>{{:: ts('Manage Workflows') }}</h1>
+
+  <a
+    ng-click="redirectToWorkflowCreationScreen()"
+    class="btn btn-primary civicase-workflow-list__new-button">
+    <i class="material-icons">add_circle</i>
+    New Workflow
+  </a>
+
+  <div class="panel panel-default civicase-workflow-list__filters" ng-if="filters.length > 0">
+    <div class="panel-body">
+      <div class="form-group">
+        <ng-include
+          ng-repeat="filter in filters"
+          civicase-include-replace src="filter.templateUrl">
+        </ng-include>
+      </div>
+      <button
+        ng-click="resetPagination(); refreshWorkflowsList();"
+        type="button" class="btn btn-primary pull-right">
+        {{ts('Filter')}}
+      </button>
+    </div>
+  </div>
+
+  <div class="panel panel-default" ng-if="workflows.length === 0 && !isLoading">
+    <div class="panel-body">
+      <div class="text-center">
+        {{:: ts('No workflows are available.') }}
+      </div>
+    </div>
+  </div>
+
+
+  <div class="panel panel-default civicase-workflow-list" ng-if="workflows.length > 0">
+    <div class="panel-body">
+      <table class="table">
+        <thead>
+          <tr>
+            <th ng-repeat="tableColumn in tableColumns">
+              {{:: tableColumn.label}}
+            </th>
+            <th width="20"></th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr ng-repeat="workflow in workflows">
+            <td ng-repeat="tableColumn in tableColumns">
+              <ng-include
+                civicase-include-replace src="tableColumn.templateUrl">
+              </ng-include>
+            </td>
+            <td>
+              <div
+              class="btn-group btn-group-md"
+              uib-dropdown
+              dropdown-append-to="'#bootstrap-theme'"
+              >
+                <button
+                  class="btn btn-default btn-sm dropdown-toggle"
+                  data-toggle="dropdown"
+                  aria-haspopup="true"
+                  aria-expanded="false"
+                  uib-dropdown-toggle
+                  aria-label="{{ ts('Actions') }}"
+                >
+                  <i class="material-icons">more_vert</i>
+                </button>
+                <ul class="dropdown-menu dropdown-menu-right" uib-dropdown-menu>
+                  <li ng-repeat="actionItem in actionItems">
+                    <ng-include
+                      civicase-include-replace src="actionItem.templateUrl">
+                    </ng-include>
+                  </li>
+                </ul>
+              </div>
+            </td>
+          </tr>
+          <tr>
+            <td colspan="{{tableColumns.length + 1}}">
+              <paging
+                class="pull-right"
+                ng-show="pageObj.total > 1"
+                page="pageObj.num"
+                page-size="pageObj.size"
+                total="totalCount"
+                adjacent="1"
+                dots="..."
+                show-prev-next="true"
+                show-first-last="true"
+                text-first="&laquo;"
+                text-last="&raquo;"
+                text-next="&rsaquo;"
+                text-prev="&lsaquo;"
+                paging-action="setPageTo(page)"
+              ></paging>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>

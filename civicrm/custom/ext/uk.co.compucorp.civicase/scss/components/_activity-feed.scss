@@ -1,4 +1,5 @@
 $feed-child-min-height: 400px;
+$contact-avatar-size: 40px;
 
 .civicase__activity-feed {
   box-shadow: none;
@@ -98,14 +99,22 @@ $feed-child-min-height: 400px;
     z-index: 2;
 
     .civicase__contact-avatar {
-      height: 40px;
+      height: $contact-avatar-size;
       line-height: 30px;
-      width: 40px;
+      width: $contact-avatar-size;
     }
 
     .civicase__contact-avatar--image img { /* stylelint-disable selector-max-compound-selectors */
-      height: 40px;
-      width: 40px;
+      height: $contact-avatar-size;
+      width: $contact-avatar-size;
+    }
+
+    .civicase__contact-avatar__full-name {
+      height: $contact-avatar-size;
+    }
+
+    .civicase__contact-avatar--image:hover .civicase__contact-avatar__full-name {
+      left: $contact-avatar-size - ($border-radius-base / 2);
     }
   }
 

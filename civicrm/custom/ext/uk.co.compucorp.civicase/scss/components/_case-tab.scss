@@ -5,3 +5,10 @@
 .civicase__case-tab__actions {
   margin-bottom: $case-panel-secondary-padding-small;
 }
+
+.civicase__case-tab__empty {
+  color: $gray-darker;
+  font-weight: $crm-font-weight-bold;
+  margin-top: $crm-standard-gap * 2;
+  opacity: 0.65;
+}

@@ -18,9 +18,10 @@
      * @returns {boolean} if the action is enabled
      */
     this.isActionEnabled = function ($scope) {
-      var isBulkAction = $scope.mode === 'case-activity-bulk-action';
+      var isActivityTabBulkAction = $scope.mode === 'case-activity-bulk-action';
+      var isFilesTabBulkAction = $scope.mode === 'case-files-activity-bulk-action';
 
-      if (!isBulkAction) {
+      if (!isActivityTabBulkAction && !isFilesTabBulkAction) {
         var activityTypeId = $scope.selectedActivities[0].activity_type_id;
         var activityTypeName = ActivityType.findById(activityTypeId).name;
 

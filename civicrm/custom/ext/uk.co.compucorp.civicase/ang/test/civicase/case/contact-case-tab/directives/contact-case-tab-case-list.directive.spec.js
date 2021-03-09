@@ -5,24 +5,24 @@
 
     beforeEach(module('civicase', 'civicase.templates', 'civicase.data'));
 
-    beforeEach(inject(function (_$q_, _$compile_, _$rootScope_, _crmApi_, _CasesData_) {
+    beforeEach(inject(function (_$q_, _$compile_, _$rootScope_, _CasesData_) {
       $compile = _$compile_;
       $rootScope = _$rootScope_;
       $scope = $rootScope.$new();
       CasesData = {
-        'name': 'opened',
-        'title': 'Open Cases',
-        'filterParams': {
+        name: 'opened',
+        title: 'Open Cases',
+        filterParams: {
           'status_id.grouping': 'Opened',
-          'contact_id': jasmine.any(Number)
+          contact_id: jasmine.any(Number)
         },
-        'isLoaded': false,
-        'showSpinner': false,
-        'cases': _CasesData_.get(),
-        'isLoadMoreAvailable': true,
-        'page': {
-          'size': 3,
-          'num': 1
+        isLoaded: false,
+        showSpinner: false,
+        cases: _CasesData_.get(),
+        isLoadMoreAvailable: true,
+        page: {
+          size: 3,
+          num: 1
         }
       };
     }));

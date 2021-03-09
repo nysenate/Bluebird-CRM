@@ -7,11 +7,10 @@
    * Tags Activity Action Service
    *
    * @param {object} $rootScope rootscope object
-   * @param {object} crmApi service to use civicrm api
+   * @param {object} civicaseCrmApi service to use civicrm api
    * @param {object} dialogService service to open dialog box
-   * @param {Function} getSelect2Value service to get select 2 values
    */
-  function TagsActivityAction ($rootScope, crmApi, dialogService, getSelect2Value) {
+  function TagsActivityAction ($rootScope, civicaseCrmApi, dialogService) {
     /**
      * Check if the Action is enabled
      *
@@ -29,7 +28,13 @@
      * @param {object} action action object
      */
     this.doAction = function ($scope, action) {
-      manageTags(action.operation, $scope.selectedActivities, $scope.isSelectAll, $scope.params, $scope.totalCount);
+      manageTags(
+        action.operation,
+        $scope.selectedActivities,
+        $scope.isSelectAll,
+        $scope.params,
+        $scope.totalCount
+      );
     };
 
     /**
@@ -114,7 +119,7 @@
     function addRemoveTagsConfirmationHandler (operation, activitiesObject, model) {
       var apiCalls = prepareApiCalls(operation, activitiesObject, model.selectedTags);
 
-      crmApi(apiCalls)
+      civicaseCrmApi(apiCalls)
         .then(function () {
           $rootScope.$broadcast('civicase::activity::updated');
         });
@@ -156,7 +161,7 @@
      * @returns {Promise} api call promise
      */
     function getTags () {
-      return crmApi('Tag', 'get', {
+      return civicaseCrmApi('Tag', 'get', {
         sequential: 1,
         used_for: { LIKE: '%civicrm_activity%' },
         options: { limit: 0 }

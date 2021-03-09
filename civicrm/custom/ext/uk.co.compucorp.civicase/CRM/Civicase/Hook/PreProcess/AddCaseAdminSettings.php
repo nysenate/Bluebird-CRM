@@ -3,9 +3,19 @@
 use CRM_Civicase_ExtensionUtil as ExtensionUtil;
 
 /**
- * Class CRM_Civicase_Hook_PreProcess_AddCaseAdminSettings.
+ * Adds custom settings related to civicase.
  */
 class CRM_Civicase_Hook_PreProcess_AddCaseAdminSettings {
+
+  /**
+   * Single case role setting name.
+   */
+  const CIVICASE_SINGLE_CASE_ROLE_PER_TYPE = 'civicaseSingleCaseRolePerType';
+
+  /**
+   * Multiple client setting name.
+   */
+  const CIVICASE_ALLOW_MULTIPLE_CLIENTS = 'civicaseAllowMultipleClients';
 
   /**
    * Sets the case admin settings.
@@ -24,7 +34,6 @@ class CRM_Civicase_Hook_PreProcess_AddCaseAdminSettings {
 
     $this->addCivicaseSettingsToForm($settings);
     $form->setVar('_settings', $settings);
-
     $this->addScriptFile();
   }
 
@@ -44,6 +53,35 @@ class CRM_Civicase_Hook_PreProcess_AddCaseAdminSettings {
     foreach ($settingKeys as $settingKey) {
       $settings[$settingKey] = CRM_Core_BAO_Setting::SYSTEM_PREFERENCES_NAME;
     }
+    $settings = $this->changeOrderForSingleCaseRoleSetting($settings);
+  }
+
+  /**
+   * Change order for single case role setting.
+   *
+   * @param array $settings
+   *   Settings array.
+   *
+   * @return array
+   *   Settings array with changed order.
+   */
+  private function changeOrderForSingleCaseRoleSetting(array $settings) {
+    if (!empty($settings[self::CIVICASE_SINGLE_CASE_ROLE_PER_TYPE]) &&
+      !empty($settings[self::CIVICASE_ALLOW_MULTIPLE_CLIENTS])) {
+      $newSettings = [];
+      foreach ($settings as $k => $val) {
+        if ($k === self::CIVICASE_SINGLE_CASE_ROLE_PER_TYPE) {
+          continue;
+        }
+        $newSettings[$k] = $val;
+        if ($k === self::CIVICASE_ALLOW_MULTIPLE_CLIENTS) {
+          $newSettings[self::CIVICASE_SINGLE_CASE_ROLE_PER_TYPE] = $settings[self::CIVICASE_SINGLE_CASE_ROLE_PER_TYPE];
+        }
+      }
+      return $newSettings;
+    }
+
+    return $settings;
   }
 
   /**

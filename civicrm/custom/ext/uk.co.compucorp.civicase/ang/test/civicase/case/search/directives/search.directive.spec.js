@@ -1,25 +1,29 @@
 /* eslint-env jasmine */
 (($, _, crmCheckPerm) => {
   describe('civicaseSearch', () => {
-    let $controller, $rootScope, $scope, $timeout, CaseFilters, CaseStatuses, caseTypeCategoriesMockData,
-      CaseTypes, crmApi, currentCaseCategory, customSearchFields, affixOriginalFunction,
-      offsetOriginalFunction, originalParentScope, affixReturnValue, originalBindToRoute;
+    let $controller, $rootScope, $scope, $window, $timeout, CaseFilters,
+      CaseStatuses, caseTypeCategoriesMockData, CaseTypes, civicaseCrmApi,
+      currentCaseCategory, customSearchFields, affixOriginalFunction,
+      offsetOriginalFunction, originalParentScope, affixReturnValue,
+      originalBindToRoute;
 
     const SEARCH_EVENT_NAME = 'civicase::case-search::filters-updated';
 
     beforeEach(module('civicase.templates', 'civicase', 'civicase.data', ($provide) => {
-      crmApi = jasmine.createSpy('crmApi');
+      civicaseCrmApi = jasmine.createSpy('civicaseCrmApi');
 
-      $provide.value('crmApi', crmApi);
+      $provide.value('civicaseCrmApi', civicaseCrmApi);
+      $provide.value('$window', { location: {} });
     }));
 
-    beforeEach(inject((_$controller_, $q, _$rootScope_, _$timeout_, _CaseFilters_,
-      _CaseStatuses_, _caseTypeCategoriesMockData_, _CaseTypesMockData_, _currentCaseCategory_,
-      _CustomSearchField_) => {
+    beforeEach(inject((_$controller_, $q, _$rootScope_, _$timeout_, _$window_,
+      _CaseFilters_, _CaseStatuses_, _caseTypeCategoriesMockData_,
+      _CaseTypesMockData_, _currentCaseCategory_, _CustomSearchField_) => {
       $controller = _$controller_;
       $rootScope = _$rootScope_;
       $scope = $rootScope.$new();
       $timeout = _$timeout_;
+      $window = _$window_;
       CaseFilters = _CaseFilters_;
       CaseStatuses = _CaseStatuses_.values;
       CaseTypes = _CaseTypesMockData_.get();
@@ -27,7 +31,7 @@
       customSearchFields = _CustomSearchField_.getAll();
       currentCaseCategory = _currentCaseCategory_;
 
-      crmApi.and.returnValue($q.resolve({ values: [] }));
+      civicaseCrmApi.and.returnValue($q.resolve({ values: [] }));
     }));
 
     beforeEach(() => {
@@ -42,7 +46,7 @@
       CRM.$.fn.affix.and.returnValue(affixReturnValue);
       originalBindToRoute = $scope.$bindToRoute;
       $scope.$bindToRoute = jasmine.createSpy('$bindToRoute');
-      spyOn($rootScope, '$broadcast');
+      spyOn($rootScope, '$broadcast').and.callThrough();
 
       initController();
     });
@@ -173,6 +177,10 @@
           it('sets the contact id filter equal to my id', function () {
             expect($scope.filters.contact_involved).toEqual([CRM.config.user_contact_id]);
           });
+
+          it('filters by case activities related to the involved contact', () => {
+            expect($scope.filters.has_activities_for_involved_contact).toBe(1);
+          });
         });
       });
 
@@ -197,6 +205,24 @@
             expect($rootScope.$broadcast)
               .toHaveBeenCalledWith(SEARCH_EVENT_NAME, jasmine.any(Object));
           });
+        });
+      });
+
+      describe('when show all cases button is presser', () => {
+        beforeEach(() => {
+          $rootScope.$broadcast(
+            'civicase::case-details::clear-filter-and-focus-specific-case', {
+              caseId: 10
+            }
+          );
+        });
+
+        it('shows the cases', () => {
+          const expectedURL = 'case_type_category=cases#/case/list?' +
+            'caseId=10&all_statuses=1&cf=%7B"case_type_category":"cases"%7D';
+
+          expect($window.location.href)
+            .toBe(expectedURL);
         });
       });
     });

@@ -1,0 +1,22 @@
+<div crm-ui-field="{name: 'caseTypeDetailForm.caseTypeCategory', title: ts('Instance'), required: true}">
+  <input
+    name="caseTypeCategory"
+    required="true"
+    crm-ui-id="caseType.case_type_category"
+    ng-model="caseType.case_type_category"
+    crm-entityref="{
+      entity: 'OptionValue',
+      api: {
+        params: {option_group_id: 'case_type_categories'}
+      },
+      select: {allowClear: true, multiple: false, placeholder: ts('Select Instance')},
+    }"
+    class="big crm-form-text"
+  />
+  <a
+    href="/civicrm/admin/options/case_type_categories?reset=1"
+    class="crm-option-edit-link medium-popup crm-hover-button"
+    target="_blank" >
+    <i aria-hidden="true" title="Edit Instance" class="crm-i fa-wrench"></i>
+  </a>
+</div>

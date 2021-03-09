@@ -1,7 +1,7 @@
 <?php
 
 /**
- * Class CRM_Civicase_Hook_ValidateForm_SaveActivityDraft.
+ * Save activity draft.
  */
 class CRM_Civicase_Hook_ValidateForm_SaveActivityDraft {
 
@@ -82,6 +82,9 @@ class CRM_Civicase_Hook_ValidateForm_SaveActivityDraft {
     if ($formName == $this->specialForms['email']) {
       $params['target_contact_id'] = explode(',', CRM_Utils_Array::value('to', $fields));
       $params['target_contact_id'] = array_map('intval', $params['target_contact_id']);
+    }
+    elseif ($formName == $this->specialForms['pdf'] && !empty($form->_contactIds)) {
+      $params['target_contact_id'] = $form->_contactIds;
     }
 
     civicrm_api3('Activity', 'create', $params + $fields);

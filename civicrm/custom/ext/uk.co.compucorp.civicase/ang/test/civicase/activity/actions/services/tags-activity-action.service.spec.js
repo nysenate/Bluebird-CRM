@@ -3,13 +3,13 @@
 (function (_, $) {
   describe('TagsActivityAction', function () {
     var $q, $rootScope, TagsActivityAction, activitiesMockData, TagsMockData,
-      crmApiMock, dialogServiceMock;
+      civicaseCrmApiMock, dialogServiceMock;
 
     beforeEach(module('civicase', 'civicase.data', function ($provide) {
-      crmApiMock = jasmine.createSpy('crmApi');
+      civicaseCrmApiMock = jasmine.createSpy('civicaseCrmApi');
       dialogServiceMock = jasmine.createSpyObj('dialogService', ['open']);
 
-      $provide.value('crmApi', crmApiMock);
+      $provide.value('civicaseCrmApi', civicaseCrmApiMock);
       $provide.value('dialogService', dialogServiceMock);
     }));
 
@@ -30,7 +30,7 @@
       var $scope = {};
 
       beforeEach(function () {
-        crmApiMock.and.returnValue($q.resolve({ values: TagsMockData.get() }));
+        civicaseCrmApiMock.and.returnValue($q.resolve({ values: TagsMockData.get() }));
         $scope.selectedActivities = activitiesMockData.get();
         TagsActivityAction.doAction($scope, { operation: 'add' });
         $rootScope.$digest();
@@ -38,7 +38,7 @@
       });
 
       it('fetches the tags from the api endpoint', function () {
-        expect(crmApiMock).toHaveBeenCalledWith('Tag', 'get', {
+        expect(civicaseCrmApiMock).toHaveBeenCalledWith('Tag', 'get', {
           sequential: 1,
           used_for: { LIKE: '%civicrm_activity%' },
           options: { limit: 0 }
@@ -90,7 +90,7 @@
           });
 
           it('saves the selected tags to the selected activities', function () {
-            expect(crmApiMock).toHaveBeenCalledWith(apiCalls);
+            expect(civicaseCrmApiMock).toHaveBeenCalledWith(apiCalls);
           });
         });
 
@@ -105,7 +105,7 @@
       var $scope = {};
 
       beforeEach(function () {
-        crmApiMock.and.returnValue($q.resolve({ values: TagsMockData.get() }));
+        civicaseCrmApiMock.and.returnValue($q.resolve({ values: TagsMockData.get() }));
         $scope.selectedActivities = activitiesMockData.get();
         TagsActivityAction.doAction($scope, { operation: 'remove' });
         $rootScope.$digest();
@@ -113,7 +113,7 @@
       });
 
       it('fetches the tags from the api endpoint', function () {
-        expect(crmApiMock).toHaveBeenCalledWith('Tag', 'get', {
+        expect(civicaseCrmApiMock).toHaveBeenCalledWith('Tag', 'get', {
           sequential: 1,
           used_for: { LIKE: '%civicrm_activity%' },
           options: { limit: 0 }
@@ -165,7 +165,7 @@
           });
 
           it('deletes the selected tags to the selected activities', function () {
-            expect(crmApiMock).toHaveBeenCalledWith(apiCalls);
+            expect(civicaseCrmApiMock).toHaveBeenCalledWith(apiCalls);
           });
         });
 

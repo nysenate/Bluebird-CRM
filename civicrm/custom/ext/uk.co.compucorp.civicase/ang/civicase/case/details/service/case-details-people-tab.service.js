@@ -7,9 +7,8 @@
    * People Case Tab service.
    *
    * @param {object} $location the location service.
-   * @param {Function} crmApi the CRM API service.
    */
-  function PeopleCaseTab ($location, crmApi) {
+  function PeopleCaseTab ($location) {
     /**
      * @returns {string} Returns tab content HTMl template url.
      */

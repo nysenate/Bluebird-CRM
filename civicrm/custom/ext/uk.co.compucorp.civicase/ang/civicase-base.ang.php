@@ -23,11 +23,13 @@ $options = [
   'priority' => 'priority',
   'activityCategories' => 'activity_category',
   'caseTypeCategories' => 'case_type_categories',
+  'caseCategoryInstanceType' => 'case_category_instance_type',
 ];
 
 OptionValuesHelper::setToJsVariables($options);
 NewCaseWebform::addWebformDataToOptions($options, $caseCategorySetting);
 set_case_types_to_js_vars($options);
+set_case_category_instance_to_js_vars($options);
 set_relationship_types_to_js_vars($options);
 set_file_categories_to_js_vars($options);
 set_activity_status_types_to_js_vars($options);
@@ -36,6 +38,14 @@ set_tags_to_js_vars($options);
 expose_settings($options, [
   'caseCategoryName' => $caseCategoryName,
 ]);
+
+/**
+ * Sets the tags and tagsets to javascript global variable.
+ */
+function set_case_category_instance_to_js_vars(&$options) {
+  $result = civicrm_api3('CaseCategoryInstance', 'get')['values'];
+  $options['caseCategoryInstanceMapping'] = $result;
+}
 
 /**
  * Expose settings.
@@ -53,6 +63,11 @@ function expose_settings(array &$options, array $defaults) {
   $options['showComingSoonCaseSummaryBlock'] = (bool) Civi::settings()->get('civicaseShowComingSoonCaseSummaryBlock');
   $options['allowCaseLocks'] = (bool) Civi::settings()->get('civicaseAllowCaseLocks');
   $options['allowLinkedCasesTab'] = (bool) Civi::settings()->get('civicaseAllowLinkedCasesTab');
+  $options['showWebformsListSeparately'] = (bool) Civi::settings()->get('civicaseShowWebformsListSeparately');
+  $options['webformsDropdownButtonLabel'] = Civi::settings()->get('civicaseWebformsDropdownButtonLabel');
+  $options['showFullContactNameOnActivityFeed'] = (bool) Civi::settings()->get('showFullContactNameOnActivityFeed');
+  $options['includeActivitiesForInvolvedContact'] = (bool) Civi::settings()->get('includeActivitiesForInvolvedContact');
+  $options['civicaseSingleCaseRolePerType'] = (bool) Civi::settings()->get('civicaseSingleCaseRolePerType');
   $options['caseTypeCategoriesWhereUserCanAccessActivities'] =
     CRM_Civicase_Helper_CaseCategory::getWhereUserCanAccessActivities();
   $options['currentCaseCategory'] = $defaults['caseCategoryName']
@@ -78,10 +93,15 @@ function get_base_js_files() {
 function set_case_types_to_js_vars(&$options) {
   $caseTypes = civicrm_api3('CaseType', 'get', [
     'return' => [
-      'id', 'name', 'title', 'description', 'definition', 'case_type_category',
+      'id',
+      'name',
+      'title',
+      'description',
+      'definition',
+      'case_type_category',
+      'is_active',
     ],
     'options' => ['limit' => 0, 'sort' => 'weight'],
-    'is_active' => 1,
   ]);
   foreach ($caseTypes['values'] as &$item) {
     CRM_Utils_Array::remove($item, 'is_forkable', 'is_forked');
@@ -176,7 +196,7 @@ function set_custom_fields_info_to_js_vars(&$options) {
 return [
   'js' => get_base_js_files(),
   'settings' => $options,
-  'requires' => ['crmUtil'],
+  'requires' => ['crmUtil', 'bw.paging'],
   'partials' => [
     'ang/civicase-base',
   ],

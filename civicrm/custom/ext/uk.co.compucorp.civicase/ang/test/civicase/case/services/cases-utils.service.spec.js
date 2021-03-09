@@ -2,9 +2,17 @@
 
 ((_) => {
   describe('CasesUtils', () => {
-    var CasesData, ContactsCache, CasesUtils;
+    var CasesData, ContactsCache, CasesUtils, mockTs;
 
-    beforeEach(module('civicase', 'civicase.data'));
+    beforeEach(module('civicase', 'civicase.data', ($provide) => {
+      mockTs = jasmine.createSpy('ts');
+
+      mockTs.and.callFake((string) => {
+        return string;
+      });
+
+      $provide.value('ts', mockTs);
+    }));
 
     beforeEach(inject((_ContactsCache_, _CasesData_, _CasesUtils_) => {
       ContactsCache = _ContactsCache_;
@@ -30,18 +38,6 @@
 
       it('fetches all contacts of the case', () => {
         expect(contactsFetched).toEqual(expectedContacts);
-      });
-    });
-
-    describe('getAllCaseClientContactIds()', () => {
-      let cases;
-
-      beforeEach(() => {
-        cases = CasesData.get().values[0];
-      });
-
-      it('fetches all client contact ids of the case', () => {
-        expect(CasesUtils.getAllCaseClientContactIds(cases.contacts)).toEqual(['170']);
       });
     });
   });

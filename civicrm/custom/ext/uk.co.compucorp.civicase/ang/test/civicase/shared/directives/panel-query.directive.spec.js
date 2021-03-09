@@ -1,23 +1,25 @@
 /* eslint-env jasmine */
 (function ($, _) {
   describe('panelQuery', function () {
-    var element, $compile, $q, $rootScope, $scope, crmApi, panelQueryScope, mockedResults;
+    var element, $compile, $q, $rootScope, $scope, civicaseCrmApi, panelQueryScope, mockedResults;
     var NO_OF_RESULTS = 10;
 
-    beforeEach(module('civicase.templates', 'civicase', 'crmUtil'));
+    beforeEach(module('civicase.templates', 'civicase', 'crmUtil', function ($provide) {
+      $provide.value('civicaseCrmApi', jasmine.createSpy('civicaseCrmApi'));
+    }));
 
-    beforeEach(inject(function (_$compile_, _$q_, _$rootScope_, _crmApi_) {
+    beforeEach(inject(function (_$compile_, _$q_, _$rootScope_, _civicaseCrmApi_) {
       $compile = _$compile_;
       $q = _$q_;
       $rootScope = _$rootScope_;
-      crmApi = _crmApi_;
+      civicaseCrmApi = _civicaseCrmApi_;
 
       $scope = $rootScope.$new();
       mockedResults = _.times(NO_OF_RESULTS, function () {
         return { id: _.random(1, 10) };
       });
 
-      crmApi.and.returnValue($q.resolve({
+      civicaseCrmApi.and.returnValue($q.resolve({
         get: { values: mockedResults },
         count: NO_OF_RESULTS
       }));
@@ -75,7 +77,7 @@
 
         beforeEach(function () {
           originalSource = $scope.queryData;
-          panelQueryScope.query = { baz: 'baz' };
+          panelQueryScope.query = { params: 'params' };
 
           $scope.$digest();
         });
@@ -255,11 +257,11 @@
         };
         compileDirective();
 
-        requests = crmApi.calls.argsFor(0)[0];
+        requests = civicaseCrmApi.calls.argsFor(0)[0];
       });
 
       it('sends two api requests on init', function () {
-        expect(crmApi).toHaveBeenCalled();
+        expect(civicaseCrmApi).toHaveBeenCalled();
         expect(_.isObject(requests)).toEqual(true);
         expect(Object.keys(requests).length).toBe(2);
       });
@@ -292,10 +294,10 @@
             beforeEach(function () {
               $scope.queryData.action = 'customaction';
 
-              crmApi.calls.reset();
+              civicaseCrmApi.calls.reset();
               compileDirective();
 
-              requests = crmApi.calls.argsFor(0)[0];
+              requests = civicaseCrmApi.calls.argsFor(0)[0];
               request = requests[Object.keys(requests)[0]];
             });
 
@@ -339,10 +341,10 @@
                   sort: 'some_field ASC'
                 };
 
-                crmApi.calls.reset();
+                civicaseCrmApi.calls.reset();
                 compileDirective();
 
-                requests = crmApi.calls.argsFor(0)[0];
+                requests = civicaseCrmApi.calls.argsFor(0)[0];
                 request = requests[Object.keys(requests)[0]];
                 requestParams = request[2];
               });
@@ -400,10 +402,10 @@
           beforeEach(function () {
             $scope.queryData.countAction = 'customcountaction';
 
-            crmApi.calls.reset();
+            civicaseCrmApi.calls.reset();
             compileDirective();
 
-            requests = crmApi.calls.argsFor(0)[0];
+            requests = civicaseCrmApi.calls.argsFor(0)[0];
             request = requests[Object.keys(requests)[1]];
             action = request[1];
           });
@@ -420,7 +422,7 @@
 
       beforeEach(function () {
         compileDirective();
-        crmApi.calls.reset();
+        civicaseCrmApi.calls.reset();
       });
 
       describe('when the query params change', function () {
@@ -429,12 +431,12 @@
           $scope.queryData.params.baz = 'baz';
           $scope.$digest();
 
-          getRequest = crmApi.calls.argsFor(0)[0].get;
-          countRequest = crmApi.calls.argsFor(0)[0].count;
+          getRequest = civicaseCrmApi.calls.argsFor(0)[0].get;
+          countRequest = civicaseCrmApi.calls.argsFor(0)[0].count;
         });
 
         it('triggers the api requests again', function () {
-          expect(crmApi).toHaveBeenCalled();
+          expect(civicaseCrmApi).toHaveBeenCalled();
         });
 
         it('passes the new params to the api', function () {
@@ -448,14 +450,14 @@
 
         describe('cache', function () {
           beforeEach(function () {
-            crmApi.calls.reset();
+            civicaseCrmApi.calls.reset();
 
             panelQueryScope.pagination.page = 2;
             $scope.$digest();
           });
 
           it('clears the cache', function () {
-            expect(crmApi).toHaveBeenCalled();
+            expect(civicaseCrmApi).toHaveBeenCalled();
           });
         });
       });
@@ -465,12 +467,12 @@
           panelQueryScope.pagination.page = 2;
           panelQueryScope.$digest();
 
-          getRequest = crmApi.calls.argsFor(0)[0].get;
-          countRequest = crmApi.calls.argsFor(0)[0].count;
+          getRequest = civicaseCrmApi.calls.argsFor(0)[0].get;
+          countRequest = civicaseCrmApi.calls.argsFor(0)[0].count;
         });
 
         it('triggers an api request', function () {
-          expect(crmApi).toHaveBeenCalled();
+          expect(civicaseCrmApi).toHaveBeenCalled();
         });
 
         it('triggers the api request to fetch the data', function () {
@@ -492,7 +494,7 @@
           });
 
           it('makes an api request', function () {
-            expect(crmApi).toHaveBeenCalled();
+            expect(civicaseCrmApi).toHaveBeenCalled();
           });
         });
 
@@ -503,14 +505,14 @@
             panelQueryScope.pagination.page = 3;
             panelQueryScope.$digest();
 
-            crmApi.calls.reset();
+            civicaseCrmApi.calls.reset();
 
             panelQueryScope.pagination.page = 2;
             panelQueryScope.$digest();
           });
 
           it('does not make an api request', function () {
-            expect(crmApi).not.toHaveBeenCalled();
+            expect(civicaseCrmApi).not.toHaveBeenCalled();
           });
         });
       });
@@ -523,7 +525,7 @@
         });
 
         it('does not make an additional api call', function () {
-          expect(crmApi.calls.count()).toBe(0);
+          expect(civicaseCrmApi.calls.count()).toBe(0);
         });
       });
 
@@ -536,7 +538,7 @@
         });
 
         it('reloads the panel data', function () {
-          expect(crmApi.calls.count()).toBe(1);
+          expect(civicaseCrmApi.calls.count()).toBe(1);
         });
 
         it('resets the force reload flag', function () {
@@ -616,7 +618,7 @@
         $scope.panelName = panelName;
 
         compileDirective();
-        crmApi.calls.reset();
+        civicaseCrmApi.calls.reset();
       });
 
       describe('when the event passes the panel name', function () {
@@ -626,7 +628,7 @@
           });
 
           it('triggers the api requests again', function () {
-            expect(crmApi).toHaveBeenCalled();
+            expect(civicaseCrmApi).toHaveBeenCalled();
           });
         });
 
@@ -636,7 +638,7 @@
           });
 
           it('triggers the api requests again', function () {
-            expect(crmApi).toHaveBeenCalled();
+            expect(civicaseCrmApi).toHaveBeenCalled();
           });
         });
       });
@@ -647,7 +649,7 @@
         });
 
         it('does not trigger the api requests again', function () {
-          expect(crmApi).not.toHaveBeenCalled();
+          expect(civicaseCrmApi).not.toHaveBeenCalled();
         });
       });
     });

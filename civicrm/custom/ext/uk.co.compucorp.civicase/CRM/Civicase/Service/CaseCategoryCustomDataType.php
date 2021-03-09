@@ -1,7 +1,7 @@
 <?php
 
 /**
- * Class CRM_Civicase_Service_CaseCategoryCustomDataType.
+ * Helps to create the custom data option value for a case category.
  */
 class CRM_Civicase_Service_CaseCategoryCustomDataType {
 
@@ -22,7 +22,7 @@ class CRM_Civicase_Service_CaseCategoryCustomDataType {
       return;
     }
 
-    $caseCategoryOptions = array_flip(CRM_Case_BAO_CaseType::buildOptions('case_type_category', 'validate'));
+    $caseCategoryOptions = CRM_Core_OptionGroup::values('case_type_categories', TRUE, FALSE, TRUE, NULL, 'name');
 
     try {
       civicrm_api3('OptionValue', 'create', [

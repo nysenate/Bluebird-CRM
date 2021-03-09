@@ -37,20 +37,27 @@ module.exports = function (config) {
       // Source Files
       extPath + '/ang/civicase-base.js',
       extPath + '/ang/civicase.js',
+      extPath + '/ang/workflow.js',
       { pattern: extPath + '/ang/civicase-base/**/*.js' },
       { pattern: extPath + '/ang/civicase/**/*.js' },
+      { pattern: extPath + '/ang/workflow/**/*.js' },
 
       // Spec files
       { pattern: extPath + '/ang/test/mocks/modules.mock.js' },
       { pattern: extPath + '/ang/test/mocks/**/*.js' },
       { pattern: extPath + '/ang/test/civicase/**/*.js' },
-      { pattern: extPath + '/ang/test/civicase-base/**/*.js' }
+      { pattern: extPath + '/ang/test/civicase-base/**/*.js' },
+      { pattern: extPath + '/ang/test/workflow/**/*.js' }
     ],
     exclude: [
     ],
     // Used to transform angular templates in JS strings
     preprocessors: (function (obj) {
       obj[extPath + '/ang/civicase/**/*.html'] = ['ng-html2js'];
+      obj[extPath + '/ang/civicase/**/*.js'] = ['coverage'];
+      obj[extPath + '/ang/civicase-base/**/*.js'] = ['coverage'];
+      obj[extPath + '/ang/workflow/**/*.js'] = ['coverage'];
+
       return obj;
     })({}),
     ngHtml2JsPreprocessor: {
@@ -58,12 +65,19 @@ module.exports = function (config) {
       prependPrefix: '~',
       moduleName: 'civicase.templates'
     },
-    reporters: ['progress'],
+    reporters: ['progress', 'coverage'],
     // web server port
     port: 9876,
     colors: true,
     logLevel: config.LOG_INFO,
     autoWatch: true,
+    coverageReporter: {
+      dir: extPath + '/coverage',
+      reporters: [
+        { type: 'text-summary' },
+        { type: 'lcov', subdir: 'js-lcov' }
+      ]
+    },
     browsers: ['ChromeHeadlessBrowser'],
     customLaunchers: {
       ChromeHeadlessBrowser: {

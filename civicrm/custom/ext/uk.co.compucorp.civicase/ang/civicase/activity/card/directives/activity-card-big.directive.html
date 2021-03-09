@@ -23,7 +23,7 @@
               <li ng-if="activity.attachments.length" role="separator" class="divider"></li>
               <li ng-if="activity.attachments.length">
                 <a class="civicase__activity-attachment__file-name"
-                  ng-href="{{ 'civicrm/case/activity/download-all-files' | civicaseCrmUrl:{ activity_id: activity.id } }}">
+                  ng-href="{{ 'civicrm/case/activity/download-all-files' | civicaseCrmUrl:{ activity_ids: activity.id } }}">
                   <i class="civicase__activity-attachment__file-icon crm-i fa-download"></i> &nbsp;Download all
                 </a>
               </li>
@@ -109,20 +109,30 @@
       </div>
     <div class="civicase__activity-card--big--empty-description" ng-if="type === 'activity'"> Click the button below to add an activity </div>
     <span ng-if="type === 'milestone'" civicase-dropdown>
-      <div class="civicase__activity-card--big--empty-button btn"
-        civicase-dropdown-toggle>
-        <i class="material-icons">add_circle</i>ADD MILESTONE<i class="fa fa-caret-down"></i>
-      </div>
+      <button
+        class="civicase__activity-card--big--empty-button btn btn-default"
+        civicase-dropdown-toggle
+        ng-disabled="isReadOnly"
+      >
+        <i class="material-icons">add_circle</i>
+        ADD MILESTONE
+        <i class="fa fa-caret-down"></i>
+      </button>
       <civicase-add-activity-menu
         case="case"
         filter-activities-by="milestone">
       </civicase-add-activity-menu>
     </span>
     <span ng-if="type === 'activity'" civicase-dropdown>
-      <div class="civicase__activity-card--big--empty-button btn"
-        civicase-dropdown-toggle>
-        <i class="material-icons">add_circle</i>ADD ACTIVITY<i class="fa fa-caret-down"></i>
-      </div>
+      <button
+        class="civicase__activity-card--big--empty-button btn btn-default"
+        civicase-dropdown-toggle
+        ng-disabled="isReadOnly"
+      >
+        <i class="material-icons">add_circle</i>
+        {{ ts('ADD ACTIVITY') }}
+        <i class="fa fa-caret-down"></i>
+      </button>
       <civicase-add-activity-menu
         case="case"
         exclude-activities-by="milestone">

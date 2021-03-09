@@ -1,3 +1,5 @@
+$civicase-webform-dropdown-max-width: 500px;
+
 .civicase__case-header {
   background: $crm-white;
   position: relative;
@@ -58,11 +60,22 @@
     }
   }
 
+  .civicase__case-header__case-type + .civicase__pipe {
+    margin-right: 5px;
+  }
+
   .civicase__tags-container {
-    margin-left: 5px;
     position: relative;
     top: -1px;
   }
+}
+
+.civicase__case-header__webform-dropdown {
+  /* stylelint-disable selector-max-compound-selectors */
+  +.dropdown-menu > li a {
+    max-width: $civicase-webform-dropdown-max-width !important;
+  }
+  /* stylelint-enable selector-max-compound-selectors */
 }
 
 .civicase__case-header__content__first-row {
@@ -122,10 +135,14 @@
       }
 
       > .dropdown-menu.sub-menu {
-        left: -100%;
+        left: auto;
         margin-top: -40px;
         position: absolute;
-        width: 100%;
+        right: 100%;
+
+        a {
+          max-width: $civicase-webform-dropdown-max-width;
+        }
       }
 
       &:hover {

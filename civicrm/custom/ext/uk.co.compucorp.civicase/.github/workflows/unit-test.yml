@@ -29,7 +29,7 @@ jobs:
         run : amp config:set --mysql_dsn=mysql://root:root@mysql:3306
 
       - name: Build Drupal site
-        run: civibuild create drupal-clean --civi-ver 5.24.6 --web-root $GITHUB_WORKSPACE/site
+        run: civibuild create drupal-clean --civi-ver 5.28.3 --cms-ver 7.74 --web-root $GITHUB_WORKSPACE/site
 
       - uses: actions/checkout@v2
         with:

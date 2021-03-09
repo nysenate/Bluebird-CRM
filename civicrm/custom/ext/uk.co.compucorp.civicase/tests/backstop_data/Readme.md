@@ -1,20 +1,3 @@
-# Data Setup/Requirements
- The backstopJS test suite needs following to be setup in prior
-
-## Dashboard Section
-* The current calendar month has at least one day with some activities.
-* Have at least that many acitivities on activity panel, so that it shows load more button.
-
-## Contact Section
-* Make sure 'admin' contact have atleast one activity and atleast 4 cases for itself.
-
-## Activities Section
-* Make sure that there exists at least one tag and one tagset for activities.
-
-## Cases
-* Make sure there is a `sample.txt` file in the root of the folder. This is to test file upload functionality of files tab.
----
-
 # Covered Screens
 The backstop test suite for Civicase 5.1 extension covers following screens
 

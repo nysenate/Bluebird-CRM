@@ -3,39 +3,42 @@
 (($, _, getCrmUrl) => {
   describe('linked cases tab', () => {
     let $controller, $scope, LinkCasesCaseAction;
-    const mockLinkedCaseFormurl = {
-      path: '/linked-case-form',
-      query: 'linked-case-query'
-    };
 
     beforeEach(module('civicase'));
 
-    beforeEach(inject((_$controller_, _$rootScope_) => {
+    beforeEach(inject((_$controller_, _$rootScope_, _LinkCasesCaseAction_) => {
       $controller = _$controller_;
       $scope = _$rootScope_.$new();
+      LinkCasesCaseAction = _LinkCasesCaseAction_;
     }));
 
     beforeEach(() => {
-      LinkCasesCaseAction = jasmine.createSpyObj('LinkCasesCaseAction', ['doAction']);
       $scope.refresh = jasmine.createSpy('refresh');
-      $scope.item = { id: _.uniqueId() };
+      $scope.item = {
+        id: _.uniqueId(),
+        client: [
+          { contact_id: _.uniqueId() }
+        ]
+      };
 
-      LinkCasesCaseAction.doAction.and.returnValue(mockLinkedCaseFormurl);
-      initController({
-        $scope,
-        LinkCasesCaseAction
-      });
+      initController({ $scope });
     });
 
     describe('when linking the current case to a different one', () => {
       let $mockForm, expecteFormUrl;
 
-      beforeEach(() => {
+      beforeEach((done) => {
         $mockForm = $('<div></div>');
-        expecteFormUrl = getCrmUrl(mockLinkedCaseFormurl.path, mockLinkedCaseFormurl.query);
 
         CRM.loadForm.and.returnValue($mockForm);
         $scope.linkCase();
+
+        LinkCasesCaseAction.doAction([$scope.item])
+          .then(function (linkCaseForm) {
+            expecteFormUrl = getCrmUrl(linkCaseForm.path, linkCaseForm.query);
+            done();
+          });
+        $scope.$digest();
       });
 
       it('opens the link case form', () => {

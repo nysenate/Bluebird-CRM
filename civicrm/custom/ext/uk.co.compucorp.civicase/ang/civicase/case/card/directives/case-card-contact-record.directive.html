@@ -11,14 +11,20 @@
       <div class="pull-right">
         <span> {{ ts('Case ID :') }} </span>
         <strong> {{ data.id }} </strong>
-        <span class="civicase__pipe" ng-if="data.status !== 'Resolved'"> | </span>
-        <span ng-if="data.status !== 'Resolved'">
-          <span>Next Milestone: </span>
+        <strong ng-if="data['case_type_id.is_active'] === '0'">Disabled</strong>
+        <span class="civicase__pipe" ng-if="data['case_type_id.is_active'] === '0'" > | </span>
+        <strong> {{ data.status }} </strong>
+        <span class="civicase__pipe"> | </span>
+        <span>
+          <span>Last Activity: </span>
           <span
             class="civicase__case-card__date"
             ng-class="{'civicase__overdue-activity-icon': data.activity_summary.milestone[0].is_overdue}"
             >
-          {{ formatDate(data.activity_summary.milestone[0].activity_date_time, 'DD/MM/YYYY') }}
+            {{ data.activity_summary.last[0].activity_date_time ?
+              formatDate(data.activity_summary.last[0].activity_date_time, 'DD/MM/YYYY')
+              : ''
+            }}
           </span>
         </span>
       </div>

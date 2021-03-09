@@ -12,8 +12,15 @@
       </li>
       <li class="pull-right" civicase-dropdown>
         <div class="civicase__case-details__add-new-dropdown">
-          <button type="button" class="btn btn-primary" civicase-dropdown-toggle>
-            <i class="material-icons">add_circle</i>Add new<i class="fa fa-caret-down"></i>
+          <button
+            type="button"
+            class="btn btn-primary"
+            civicase-dropdown-toggle
+            ng-disabled="item['case_type_id.is_active'] === '0'"
+          >
+            <i class="material-icons">add_circle</i>
+            {{ ts('Add new') }}
+            <i class="fa fa-caret-down"></i>
           </button>
           <ul class="dropdown-menu">
             <li>
