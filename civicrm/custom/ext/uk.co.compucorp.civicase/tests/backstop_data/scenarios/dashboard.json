@@ -17,20 +17,10 @@
       ]
     },
     {
-      "label": "Civicase - Dashboard - Loading State",
-      "url": "{url}/civicrm/case/a/#/case?case_type_category=cases&drel=all",
-      "captureLoadingScreen": true
-    },
-    {
       "label": "Civicase - Dashboard - Calendar - Activity Card",
       "url": "{url}/civicrm/case/a/#/case?case_type_category=cases&drel=all",
       "clickSelector": ".civicase__activities-calendar__day-status",
       "waitForAjaxComplete": true
-    },
-    {
-      "label": "Civicase - Dashboard - Calendar - Activity Card - Loading state",
-      "url": "{url}/civicrm/case/a/#/case?case_type_category=cases&drel=all",
-      "clickSelector": ".civicase__activities-calendar__day-status"
     },
     {
       "label": "Civicase - Dashboard - Add case modal",

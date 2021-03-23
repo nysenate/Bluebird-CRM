@@ -21,16 +21,17 @@
    * @param {Function} ts translate service reference.
    * @param {Function} getServiceForInstance get service for a specific instance
    * @param {object} CaseTypeCategory the case type category service reference.
+   * @param {Function} civicaseCrmUrl crm url service.
    */
   function civicaseDashboardController ($scope, currentCaseCategory,
     DashboardActionItems, includeActivitiesForInvolvedContact, ts,
-    getServiceForInstance, CaseTypeCategory) {
+    getServiceForInstance, CaseTypeCategory, civicaseCrmUrl) {
     var categoryObject = CaseTypeCategory.findByName(currentCaseCategory);
     var instanceName = CaseTypeCategory.getCaseTypeCategoryInstance(categoryObject.value).name;
 
     $scope.checkPerm = CRM.checkPerm;
     $scope.actionBarItems = DashboardActionItems;
-    $scope.url = CRM.url;
+    $scope.url = civicaseCrmUrl;
     $scope.filters = {};
     $scope.activityFilters = getServiceForInstance(instanceName).getActivityFilters();
 

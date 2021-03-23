@@ -8,7 +8,7 @@ module.exports = async (page, scenario, vp) => {
   await utility.waitForAngular();
   await utility.waitForLoadingComplete();
 
-  await page.click('.civicase__activity-feed-pager__more .btn');
-  await page.waitForSelector('.civicase__activity-feed-pager__more .civicase__spinner', { hidden: true });
-  await page.waitFor(1000);
+  await page.click('.civicase__case-header__expand_button');
+
+  await page.waitFor(2000);
 };

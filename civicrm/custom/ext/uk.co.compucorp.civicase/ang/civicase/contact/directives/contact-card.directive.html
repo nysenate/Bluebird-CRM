@@ -47,7 +47,7 @@
         'civicase__contact-additional__container--avatar': isAvatar,
         'civicase__contact-additional__container': !isAvatar
       }">
-      +{{ contacts.length - 1 }}
+      +{{ totalContacts ? totalContacts -1 : contacts.length - 1 }}
     </civicase-popover-toggle-button>
     <civicase-popover-content>
       <div ng-include="'additional-contacts.html'"></div>
@@ -79,6 +79,11 @@
         <div ng-repeat="moreField in displayMoreFields" class="civicase__contact__more-field">
           {{contact[moreField]}}
         </div>
+      </li>
+      <li ng-if="totalContacts">
+        <span class="civicase__contact-additional__hidden_contacts_info">
+          {{ ts('Click the Activity to view all Contacts.') }}
+        </span>
       </li>
     </ul>
   </script>

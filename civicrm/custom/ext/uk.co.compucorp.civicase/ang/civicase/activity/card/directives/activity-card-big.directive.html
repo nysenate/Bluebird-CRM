@@ -39,6 +39,7 @@
           <!-- Contact icons -->
           <span
             ng-if="activity.assignee_contact_name"
+            total-contacts="activity.total_assignee_contacts"
             civicase-contact-card
             avatar="true"
             case-id="activity.case_id"
@@ -90,6 +91,7 @@
             class="civicase__contact-card"
             civicase-contact-card
             case-id="activity.case_id"
+            total-contacts="activity.total_target_contacts"
             contacts="activity.target_contact_name"
           ></span>
         </div>

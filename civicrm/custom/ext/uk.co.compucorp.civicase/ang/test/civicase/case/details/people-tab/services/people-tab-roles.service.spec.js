@@ -4,7 +4,9 @@
   describe('PeopleTabRoles', () => {
     let caseItem, caseType, peopleTabRoles, relationships, relationshipTypes;
 
-    beforeEach(module('civicase', 'civicase.data'));
+    beforeEach(module('civicase', 'civicase.data', ($provide) => {
+      $provide.constant('allowMultipleCaseClients', false);
+    }));
 
     beforeEach(inject((_CasesData_, _CaseTypesMockData_,
       _civicasePeopleTabRoles_, _RelationshipTypeData_) => {
@@ -179,6 +181,34 @@
           expect(peopleTabRoles.list).not.toContain(jasmine.objectContaining({
             contact_id: relationships[0].contact_id_b
           }));
+        });
+      });
+
+      describe('when showing inactive roles', () => {
+        describe('when the same contact holds multiple inactive roles', () => {
+          var displaysAllTheInactiveRoles;
+
+          beforeEach(() => {
+            peopleTabRoles.list = [];
+            peopleTabRoles.fullRolesList = [];
+            const inactiveRelationships = [
+              _.extend({}, relationships[0], { is_active: '0' }),
+              _.extend({}, relationships[0], { is_active: '0' }),
+              _.extend({}, relationships[0], { is_active: '0' }),
+              _.extend({}, relationships[0], { is_active: '0' })
+            ];
+
+            peopleTabRoles.setCaseRelationships(inactiveRelationships);
+            peopleTabRoles.updateRolesList({ showInactiveRoles: true });
+
+            displaysAllTheInactiveRoles = _.filter(peopleTabRoles.list, function (a) {
+              return a.relationship_type_id === relationships[0].relationship_type_id;
+            }).length === 4;
+          });
+
+          it('includes all the contact relations', () => {
+            expect(displaysAllTheInactiveRoles).toBe(true);
+          });
         });
       });
     });

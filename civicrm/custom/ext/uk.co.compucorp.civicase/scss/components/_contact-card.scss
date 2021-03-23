@@ -98,6 +98,11 @@ $contact-avatar-size: 30px;
   }
 }
 
+.civicase__contact-additional__hidden_contacts_info {
+  color: $crm-gray-matte;
+  font-size: $font-size-small;
+}
+
 .civicase__contact-avatar {
   background: $contact-avatar-background;
   min-width: $contact-avatar-size;

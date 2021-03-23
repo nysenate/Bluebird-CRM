@@ -22,7 +22,7 @@
       "--no-sandbox"
     ]
   },
-  "asyncCaptureLimit": 3,
+  "asyncCaptureLimit": 1,
   "asyncCompareLimit": 50,
   "debug": false,
   "debugWindow": false

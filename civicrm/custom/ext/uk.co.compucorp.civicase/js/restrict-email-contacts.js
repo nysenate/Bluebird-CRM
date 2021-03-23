@@ -22,7 +22,7 @@
       var isToField = $field.attr('name') === 'to';
       var contactSelect2Options = isToField
         ? getContactOptions({ idFieldName: 'value' })
-        : getContactOptions({ idFieldName: 'contact_id' });
+        : getContactOptions({ idFieldName: 'email_id' });
 
       $field.crmSelect2({
         multiple: true,

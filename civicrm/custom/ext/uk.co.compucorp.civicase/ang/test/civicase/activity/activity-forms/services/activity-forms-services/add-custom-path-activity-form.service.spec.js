@@ -1,11 +1,12 @@
 /* eslint-env jasmine */
-((_, getCrmUrl) => {
+((_) => {
   describe('AddCustomPathActivityForm', () => {
-    let AddCustomPathActivityForm, activity, activityFormUrl, expectedActivityFormUrl, canHandle;
+    let AddCustomPathActivityForm, activity, civicaseCrmUrl, canHandle;
 
     beforeEach(module('civicase', 'civicase-base', 'civicase.data'));
 
-    beforeEach(inject((_activitiesMockData_, _AddCustomPathActivityForm_) => {
+    beforeEach(inject((_civicaseCrmUrl_, _activitiesMockData_, _AddCustomPathActivityForm_) => {
+      civicaseCrmUrl = _civicaseCrmUrl_;
       AddCustomPathActivityForm = _AddCustomPathActivityForm_;
       activity = _.chain(_activitiesMockData_.get())
         .first()
@@ -90,26 +91,28 @@
       describe('when getting the form url to create a new Email activity', () => {
         beforeEach(() => {
           activity.type = 'Email';
-          activityFormUrl = AddCustomPathActivityForm.getActivityFormUrl(activity);
-          expectedActivityFormUrl = getCrmUrl('civicrm/activity/email/add', {
+          AddCustomPathActivityForm.getActivityFormUrl(activity);
+        });
+
+        it('returns the form url to create a new activity', () => {
+          expect(civicaseCrmUrl).toHaveBeenCalledWith('civicrm/activity/email/add', {
             action: 'add',
             reset: 1,
             caseid: activity.case_id,
             atype: activity.activity_type_id,
             context: 'standalone'
           });
-        });
-
-        it('returns the form url to create a new activity', () => {
-          expect(activityFormUrl).toEqual(expectedActivityFormUrl);
         });
       });
 
       describe('when getting the form url to create a new Print PDF Letter activity', () => {
         beforeEach(() => {
           activity.type = 'Print PDF Letter';
-          activityFormUrl = AddCustomPathActivityForm.getActivityFormUrl(activity);
-          expectedActivityFormUrl = getCrmUrl('civicrm/activity/pdf/add', {
+          AddCustomPathActivityForm.getActivityFormUrl(activity);
+        });
+
+        it('returns the form url to create a new activity', () => {
+          expect(civicaseCrmUrl).toHaveBeenCalledWith('civicrm/activity/pdf/add', {
             action: 'add',
             reset: 1,
             caseid: activity.case_id,
@@ -117,11 +120,7 @@
             context: 'standalone'
           });
         });
-
-        it('returns the form url to create a new activity', () => {
-          expect(activityFormUrl).toEqual(expectedActivityFormUrl);
-        });
       });
     });
   });
-})(CRM._, CRM.url);
+})(CRM._);

@@ -5,8 +5,9 @@
 
   /**
    * @param {object} $window browsers window object
+   * @param {Function} civicaseCrmUrl crm url service.
    */
-  function GoToWebformCaseAction ($window) {
+  function GoToWebformCaseAction ($window, civicaseCrmUrl) {
     this.doAction = doAction;
     this.isActionAllowed = isActionAllowed;
     this.checkIfWebformVisible = checkIfWebformVisible;
@@ -33,7 +34,7 @@
         { expires: 1800000 }
       );
 
-      window = $window.open(CRM.url(action.path, urlObject), '_blank');
+      window = $window.open(civicaseCrmUrl(action.path, urlObject), '_blank');
       window.focus();
     }
 

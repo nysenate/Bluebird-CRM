@@ -69,6 +69,20 @@
         });
       });
 
+      describe('when first name or last name does not exist, and display name is not an email id either', function () {
+        beforeEach(function () {
+          spyOn(ContactsCache, 'add').and.returnValue($q.resolve(ContactsData.values[0]));
+          spyOn(ContactsCache, 'getCachedContact').and.returnValue({
+            display_name: 'John Doe'
+          });
+          compileDirective(true, ContactsData.values[0].id);
+        });
+
+        it('sets the initial of the name as the avatar', function () {
+          expect(element.isolateScope().contacts[0].avatar).toBe('JD');
+        });
+      });
+
       describe('when the display name contains both prefix and suffix honorific', function () {
         beforeEach(function () {
           spyOn(ContactsCache, 'add').and.returnValue($q.resolve(ContactsData.values[0]));

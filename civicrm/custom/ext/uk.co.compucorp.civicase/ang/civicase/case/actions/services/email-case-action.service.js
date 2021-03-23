@@ -18,6 +18,22 @@
    */
   function EmailCaseAction ($q, ts, isTruthy, dialogService, CaseType,
     CaseTypeCategory, civicaseCrmApi, Select2Utils, currentCaseCategory) {
+    this.isActionAllowed = isActionAllowed;
+    this.doAction = doAction;
+
+    /**
+     * Check if action is allowed.
+     *
+     * @param {object} action - action data.
+     * @param {object} cases - cases.
+     * @param {object} attributes - item attributes.
+     *
+     * @returns {boolean} - true if action is allowed, false otherwise.
+     */
+    function isActionAllowed (action, cases, attributes) {
+      return attributes.mode === 'case-bulk-actions';
+    }
+
     /**
      * Returns the configuration options to open up a mail popup to
      * communicate with the selected role. Displays an error message
@@ -29,7 +45,7 @@
      *
      * @returns {Promise} promise which resolves to the path for the popup
      */
-    this.doAction = function (cases, action, callbackFn) {
+    function doAction (cases, action, callbackFn) {
       var model = {
         caseRoles: [],
         selectedCaseRoles: '',
@@ -46,7 +62,7 @@
       openRoleSelectorPopUp(model);
 
       return model.deferObject.promise;
-    };
+    }
 
     /**
      * @param {string|number[]} caseRoleIds list of case roles ids

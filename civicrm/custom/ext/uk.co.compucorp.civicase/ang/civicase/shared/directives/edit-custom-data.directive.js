@@ -2,7 +2,7 @@
   var module = angular.module('civicase');
 
   // Editable custom data blocks
-  module.directive('civicaseEditCustomData', function ($timeout) {
+  module.directive('civicaseEditCustomData', function (civicaseCrmUrl) {
     return {
       restrict: 'A',
       require: ['^civicaseCaseDetails'],
@@ -45,7 +45,7 @@
           return;
         }
 
-        var url = CRM.url('civicrm/case/cd/edit', {
+        var url = civicaseCrmUrl('civicrm/case/cd/edit', {
           cgcount: 1,
           action: 'update',
           reset: 1,

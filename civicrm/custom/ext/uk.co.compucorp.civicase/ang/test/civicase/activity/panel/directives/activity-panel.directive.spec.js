@@ -4,12 +4,13 @@
   describe('civicaseActivityPanel', function () {
     var $compile, $rootScope, $scope, activityPanel, activitiesMockData,
       refreshFunction, formatActivity, ActivityStatus, ActivityForms,
-      MockActivityFormsService;
+      MockActivityFormsService, civicaseCrmUrl;
 
     beforeEach(module('civicase', 'civicase.templates', 'civicase.data'));
 
     beforeEach(inject(function (_$compile_, _$rootScope_, _activitiesMockData_,
-      _formatActivity_, _ActivityStatus_, _ActivityForms_) {
+      _formatActivity_, _ActivityStatus_, _ActivityForms_, _civicaseCrmUrl_) {
+      civicaseCrmUrl = _civicaseCrmUrl_;
       $compile = _$compile_;
       $rootScope = _$rootScope_;
       activitiesMockData = _activitiesMockData_;
@@ -19,7 +20,7 @@
 
       $scope = $rootScope.$new();
 
-      CRM.url.and.returnValue('crm url mock');
+      civicaseCrmUrl.and.returnValue('crm url mock');
       refreshFunction = jasmine.createSpy('refresh');
       loadCrmForm.and.returnValue($('<div></div>'));
 

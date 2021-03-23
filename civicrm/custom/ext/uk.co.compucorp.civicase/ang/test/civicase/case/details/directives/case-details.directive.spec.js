@@ -3,7 +3,7 @@
   describe('civicaseCaseDetails', function () {
     var $httpBackend, element, controller, activitiesMockData, $controller, $compile,
       $document, $rootScope, $scope, $provide, civicaseCrmApi, civicaseCrmApiMock, $q,
-      formatCase, CasesData, CasesUtils, $route;
+      formatCase, CasesData, CasesUtils, $route, civicaseCrmUrl;
 
     beforeEach(module('civicase.templates', 'civicase', 'civicase.data', function (_$provide_) {
       $provide = _$provide_;
@@ -30,8 +30,9 @@
 
     beforeEach(inject(function (_$compile_, _$controller_, _$httpBackend_,
       _$rootScope_, _$document_, _activitiesMockData_, _CasesData_, _civicaseCrmApi_,
-      _$q_, _formatCase_, _CasesUtils_) {
+      _$q_, _formatCase_, _CasesUtils_, _civicaseCrmUrl_) {
       $compile = _$compile_;
+      civicaseCrmUrl = _civicaseCrmUrl_;
       $document = _$document_;
       $controller = _$controller_;
       $rootScope = _$rootScope_;
@@ -298,7 +299,7 @@
       });
 
       it('retuns the url to print the activities', function () {
-        expect(CRM.url).toHaveBeenCalledWith('civicrm/case/customreport/print', {
+        expect(civicaseCrmUrl).toHaveBeenCalledWith('civicrm/case/customreport/print', {
           all: 1,
           redact: 0,
           cid: $scope.item.client[0].contact_id,
@@ -406,7 +407,7 @@
   describe('civicaseCaseDetailsController', function () {
     let $controller, $provide, $rootScope, $route, $scope, apiResponses,
       CasesData, civicaseCrmApiMock, controller, DetailsCaseTab,
-      loadFormBefore;
+      loadFormBefore, civicaseCrmUrl;
 
     beforeEach(module('civicase', 'civicase.data', function (_$provide_) {
       $provide = _$provide_;
@@ -417,7 +418,8 @@
     }));
 
     beforeEach(inject(function (_$controller_, $q, _$rootScope_, _$route_,
-      _CasesData_, _DetailsCaseTab_) {
+      _CasesData_, _DetailsCaseTab_, _civicaseCrmUrl_) {
+      civicaseCrmUrl = _civicaseCrmUrl_;
       $controller = _$controller_;
       $rootScope = _$rootScope_;
       $route = _$route_;
@@ -605,9 +607,9 @@
             // refresh case details:
             caseItem['api.Case.getcaselist.relatedCasesByContact'] = { values: [] };
             caseItem['api.Case.getcaselist.linkedCases'] = { values: [] };
-            caseItem['api.Activity.get.recentCommunication'] = { values: [] };
-            caseItem['api.Activity.get.tasks'] = { values: [] };
-            caseItem['api.Activity.get.nextActivitiesWhichIsNotMileStone'] = { values: [] };
+            caseItem['api.Activity.getAll.recentCommunication'] = { values: [] };
+            caseItem['api.Activity.getAll.tasks'] = { values: [] };
+            caseItem['api.Activity.getAll.nextActivitiesWhichIsNotMileStone'] = { values: [] };
             caseItem['api.CustomValue.getalltreevalues'] = {
               values: customDataBlocks
             };
@@ -661,7 +663,7 @@
       });
 
       it('open a popup to create emails', function () {
-        expect(CRM.url).toHaveBeenCalledWith('civicrm/activity/email/add', {
+        expect(civicaseCrmUrl).toHaveBeenCalledWith('civicrm/activity/email/add', {
           action: 'add',
           caseid: $scope.item.id,
           atype: '3',

@@ -1,7 +1,8 @@
 /* eslint-env jasmine */
-((_, getCrmUrl) => {
+((_) => {
   describe('DraftPdfActivityForm', () => {
-    let activity, activityFormUrl, checkIfDraftActivity, DraftPdfActivityForm;
+    let civicaseCrmUrl, activity, checkIfDraftActivity,
+      DraftPdfActivityForm;
 
     beforeEach(module('civicase', 'civicase-base', 'civicase.data', ($provide) => {
       checkIfDraftActivity = jasmine.createSpy('checkIfDraftActivity');
@@ -9,8 +10,9 @@
       $provide.value('checkIfDraftActivity', checkIfDraftActivity);
     }));
 
-    beforeEach(inject((_activitiesMockData_, _DraftPdfActivityForm_) => {
+    beforeEach(inject((_civicaseCrmUrl_, _activitiesMockData_, _DraftPdfActivityForm_) => {
       DraftPdfActivityForm = _DraftPdfActivityForm_;
+      civicaseCrmUrl = _civicaseCrmUrl_;
       activity = _.chain(_activitiesMockData_.get())
         .first()
         .cloneDeep()
@@ -43,7 +45,7 @@
     });
 
     describe('when getting the form url', () => {
-      let activityFormUrlParams, expectedActivityFormUrl;
+      let activityFormUrlParams;
 
       beforeEach(() => {
         activity.target_contact_id = [_.uniqueId()];
@@ -62,29 +64,32 @@
       describe('when the activity is part of a case', () => {
         beforeEach(() => {
           activityFormUrlParams.action = 'add';
-          expectedActivityFormUrl = getCrmUrl('civicrm/activity/pdf/add', activityFormUrlParams);
-          activityFormUrl = DraftPdfActivityForm.getActivityFormUrl(activity);
+          DraftPdfActivityForm.getActivityFormUrl(activity);
         });
 
         it('returns the popup form url for the PDF draft activity', () => {
-          expect(activityFormUrl).toEqual(expectedActivityFormUrl);
+          expect(civicaseCrmUrl).toHaveBeenCalledWith(
+            'civicrm/activity/pdf/add',
+            activityFormUrlParams
+          );
         });
       });
 
       describe('when getting the form URL in view mode', () => {
         beforeEach(() => {
           activityFormUrlParams.action = 'view';
-          activityFormUrl = DraftPdfActivityForm.getActivityFormUrl(activity, {
+          DraftPdfActivityForm.getActivityFormUrl(activity, {
             action: 'view'
           });
-          expectedActivityFormUrl = getCrmUrl('civicrm/activity/pdf/view',
-            activityFormUrlParams);
         });
 
         it('returns the popup form URL for the draft activity in view mode', () => {
-          expect(activityFormUrl).toEqual(expectedActivityFormUrl);
+          expect(civicaseCrmUrl).toHaveBeenCalledWith(
+            'civicrm/activity/pdf/view',
+            activityFormUrlParams
+          );
         });
       });
     });
   });
-})(CRM._, CRM.url);
+})(CRM._);

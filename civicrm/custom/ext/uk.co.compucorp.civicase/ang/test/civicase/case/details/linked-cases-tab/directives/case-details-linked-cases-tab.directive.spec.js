@@ -1,12 +1,13 @@
 /* eslint-env jasmine */
 
-(($, _, getCrmUrl) => {
+(($, _) => {
   describe('linked cases tab', () => {
-    let $controller, $scope, LinkCasesCaseAction;
+    let $controller, $scope, LinkCasesCaseAction, civicaseCrmUrl;
 
     beforeEach(module('civicase'));
 
-    beforeEach(inject((_$controller_, _$rootScope_, _LinkCasesCaseAction_) => {
+    beforeEach(inject((_civicaseCrmUrl_, _$controller_, _$rootScope_, _LinkCasesCaseAction_) => {
+      civicaseCrmUrl = _civicaseCrmUrl_;
       $controller = _$controller_;
       $scope = _$rootScope_.$new();
       LinkCasesCaseAction = _LinkCasesCaseAction_;
@@ -25,7 +26,7 @@
     });
 
     describe('when linking the current case to a different one', () => {
-      let $mockForm, expecteFormUrl;
+      let $mockForm, expectedLinkCaseForm;
 
       beforeEach((done) => {
         $mockForm = $('<div></div>');
@@ -35,14 +36,14 @@
 
         LinkCasesCaseAction.doAction([$scope.item])
           .then(function (linkCaseForm) {
-            expecteFormUrl = getCrmUrl(linkCaseForm.path, linkCaseForm.query);
+            expectedLinkCaseForm = linkCaseForm;
             done();
           });
         $scope.$digest();
       });
 
       it('opens the link case form', () => {
-        expect(CRM.loadForm).toHaveBeenCalledWith(expecteFormUrl);
+        expect(civicaseCrmUrl).toHaveBeenCalledWith(expectedLinkCaseForm.path, expectedLinkCaseForm.query);
       });
 
       describe('after linking the case', () => {
@@ -66,4 +67,4 @@
       $controller('civicaseCaseDetailsLinkedCasesTabController', dependencies);
     }
   });
-})(CRM.$, CRM._, CRM.url);
+})(CRM.$, CRM._);

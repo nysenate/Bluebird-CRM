@@ -1,7 +1,7 @@
 (function (angular, $, _) {
   var module = angular.module('civicase');
 
-  module.directive('civicaseCaseListTable', function ($document, $timeout) {
+  module.directive('civicaseCaseListTable', function () {
     return {
       controller: 'CivicaseCaseListTableController',
       link: civicaseCaseListTableLink,
@@ -137,7 +137,13 @@
       backgroundLoading = backgroundLoading || false;
       $scope.isLoading = true && !backgroundLoading;
       apiCalls = apiCalls || [];
-      apiCalls = apiCalls.concat(getCaseApiParams(angular.extend({}, $scope.filters, $scope.hiddenFilters), $scope.sort, $scope.page));
+      apiCalls = apiCalls.concat(
+        getCaseApiParams(
+          angular.extend({}, $scope.filters, $scope.hiddenFilters),
+          $scope.sort,
+          $scope.page
+        )
+      );
 
       civicaseCrmApi(apiCalls, true)
         .then(function (result) {

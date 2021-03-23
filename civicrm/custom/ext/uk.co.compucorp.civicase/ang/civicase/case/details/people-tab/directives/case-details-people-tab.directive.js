@@ -46,9 +46,9 @@
   /**
    * civicaseViewPeopleController Controller
    *
-   * @param {object} $q $q
    * @param {object} $scope $scope
    * @param {object} allowMultipleCaseClients allow multiple clients configuration value
+   * @param {Function} civicaseCrmUrl crm url service.
    * @param {object} civicaseCrmApi service to interact with civicrm api
    * @param {object} civicasePeopleTabRoles People's tab roles list service
    * @param {object} DateHelper DateHelper
@@ -60,8 +60,8 @@
    * @param {object} dialogService A reference to the dialog service
    * @param {Function} removeDatePickerHrefs Removes date picker href attributes
    */
-  function civicaseViewPeopleController ($q, $scope,
-    allowMultipleCaseClients,
+  function civicaseViewPeopleController ($scope,
+    allowMultipleCaseClients, civicaseCrmUrl,
     civicaseCrmApi, civicasePeopleTabRoles, DateHelper,
     PeoplesTabMessageConstants, ts, RelationshipType,
     civicaseRoleDatesUpdater, civicaseSingleCaseRolePerType, dialogService,
@@ -219,7 +219,7 @@
     function doContactTask (tab) {
       var task = $scope.contactTasks[$scope[tab + 'SelectedTask']];
       $scope[tab + 'SelectedTask'] = '';
-      CRM.loadForm(CRM.url(task.url, { cids: $scope.getSelectedContacts(tab).join(',') }))
+      CRM.loadForm(civicaseCrmUrl(task.url, { cids: $scope.getSelectedContacts(tab).join(',') }))
         .on('crmFormSuccess', $scope.refresh)
         .on('crmFormSuccess', function () {
           $scope.refresh();

@@ -407,7 +407,7 @@
     function loadActivities (mode) {
       var options = setActivityAPIOptions(mode);
       var isMyActivitiesFilter = $scope.filters['@involvingContact'] === 'myActivities';
-      var apiAction = isMyActivitiesFilter ? 'getcontactactivities' : 'get';
+      var apiAction = isMyActivitiesFilter ? 'getcontactactivities' : 'getAll';
       var apiActionAll = isMyActivitiesFilter ? 'getcontactactivitiescount' : 'getcount';
       var returnParams = {
         sequential: 1,
@@ -423,7 +423,6 @@
         is_current_revision: 1,
         is_deleted: 0,
         is_test: 0,
-        activity_type_id: { '!=': 'Bulk Email' },
         options: {}
       };
 

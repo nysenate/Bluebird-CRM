@@ -2,16 +2,17 @@
 
 ((_, $) => {
   describe('DownloadAllActivityAction', () => {
-    var DownloadAllActivityAction, $window;
+    var DownloadAllActivityAction, $window, civicaseCrmUrl;
     var $scope = {};
 
     beforeEach(module('civicase', ($provide) => {
       $provide.value('$window', jasmine.createSpyObj('$window', ['open']));
     }));
 
-    beforeEach(inject((_DownloadAllActivityAction_, _$window_) => {
+    beforeEach(inject((_civicaseCrmUrl_, _DownloadAllActivityAction_, _$window_) => {
       DownloadAllActivityAction = _DownloadAllActivityAction_;
       $window = _$window_;
+      civicaseCrmUrl = _civicaseCrmUrl_;
     }));
 
     describe('visibility of action', () => {
@@ -109,7 +110,7 @@
 
     describe('when action is clicked', () => {
       beforeEach(() => {
-        CRM.url.and.returnValue('CRM Mock URL');
+        civicaseCrmUrl.and.returnValue('CRM Mock URL');
       });
 
       describe('when used inside the activity feed', () => {
@@ -120,7 +121,7 @@
         });
 
         it('downloads all the files for the sent activity', () => {
-          expect(CRM.url).toHaveBeenCalledWith('civicrm/case/activity/download-all-files', {
+          expect(civicaseCrmUrl).toHaveBeenCalledWith('civicrm/case/activity/download-all-files', {
             activity_ids: ['1']
           });
           expect($window.open).toHaveBeenCalledWith('CRM Mock URL', '_blank');
@@ -137,7 +138,7 @@
           });
 
           it('downloads all the files for all the selected activities', () => {
-            expect(CRM.url).toHaveBeenCalledWith('civicrm/case/activity/download-all-files', {
+            expect(civicaseCrmUrl).toHaveBeenCalledWith('civicrm/case/activity/download-all-files', {
               activity_ids: ['1', '2']
             });
             expect($window.open).toHaveBeenCalledWith('CRM Mock URL', '_blank');
@@ -153,7 +154,7 @@
           });
 
           it('downloads all the files for all the activities matching the search parameters', () => {
-            expect(CRM.url).toHaveBeenCalledWith('civicrm/case/activity/download-all-files', {
+            expect(civicaseCrmUrl).toHaveBeenCalledWith('civicrm/case/activity/download-all-files', {
               searchParams: { key: 'value' }
             });
             expect($window.open).toHaveBeenCalledWith('CRM Mock URL', '_blank');

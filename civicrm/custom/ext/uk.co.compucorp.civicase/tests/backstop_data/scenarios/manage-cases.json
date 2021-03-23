@@ -1,11 +1,6 @@
 {
   "scenarios": [
     {
-      "label": "Manage Cases - List Loading",
-      "url": "{url}/civicrm/case/a/?case_type_category=cases#/case/list?cf=%7B\"case_type_category\":\"cases\"%7D",
-      "captureLoadingScreen": true
-    },
-    {
       "label": "Manage Cases - List",
       "url": "{url}/civicrm/case/a/?case_type_category=cases#/case/list?cf=%7B\"case_type_category\":\"cases\"%7D",
       "waitForLoadingComplete": ".civicase__case-list-panel"
@@ -32,15 +27,9 @@
       ]
     },
     {
-      "label": "Manage Cases - Case Overview - Loading",
-      "url": "{url}/civicrm/case/a/?case_type_category=cases#/case/list?cf=%7B\"case_type_category\":\"cases\"%7D&caseId={caseId}",
-      "captureLoadingScreen": true
-    },
-    {
       "label": "Manage Cases - Case Overview - Full Screen",
       "url": "{url}/civicrm/case/a/?case_type_category=cases#/case/list?cf=%7B\"case_type_category\":\"cases\"%7D&caseId={caseId}",
-      "clickSelector": ".civicase__case-header__expand_button",
-      "delay": 300
+      "onReadyScript": "manage-cases/case-overview-fullscreen.js"
     },
     {
       "label": "Manage Cases - Case Overview - Empty Case",
@@ -75,24 +64,9 @@
       "waitForLoadingComplete": ".civicase__people-tab__sub-tab:not([ng-show=\"tab == 'relations'\"])"
     },
     {
-      "label": "Manage Cases - Case Overview - People tab - Loading",
-      "url": "{url}/civicrm/case/a/?case_type_category=cases#/case/list?cf=%7B\"case_type_category\":\"cases\"%7D&caseId={caseId}&tab=People",
-      "captureLoadingScreen": true
-    },
-    {
       "label": "Manage Cases - Case Overview - People tab - Other Relationships",
       "url": "{url}/civicrm/case/a/?case_type_category=cases#/case/list?cf=%7B\"case_type_category\":\"cases\"%7D&caseId={caseId}&tab=People&peopleTab=relations",
       "waitForLoadingComplete": ".civicase__people-tab__sub-tab:not([ng-show=\"tab == 'roles'\"])"
-    },
-    {
-      "label": "Manage Cases - Case Overview - People tab - Other Relationships - Loading",
-      "url": "{url}/civicrm/case/a/?case_type_category=cases#/case/list?cf=%7B\"case_type_category\":\"cases\"%7D&caseId={caseId}&tab=People",
-      "onReadyScript": "manage-cases/people-tab-other-relationships-loading.js"
-    },
-    {
-      "label": "Manage Cases - Case Overview - Files tab - Loading",
-      "url": "{url}/civicrm/case/a/?case_type_category=cases#/case/list?cf=%7B\"case_type_category\":\"cases\"%7D&caseId={caseId}&tab=Files",
-      "captureLoadingScreen": true
     },
     {
       "label": "Manage Cases - Case Overview - Files tab",
@@ -159,7 +133,10 @@
     {
       "label": "Manage Cases - Case Overview - Action Dropdown - Lock case",
       "url": "{url}/civicrm/case/a/?case_type_category=cases#/case/list?cf=%7B\"case_type_category\":\"cases\"%7D&caseId={caseId}",
-      "onReadyScript": "manage-cases/action-dropdown-lock.js"
+      "onReadyScript": "manage-cases/action-dropdown-lock.js",
+      "apiCalls": [
+        "setting.create civicaseAllowCaseLocks=1"
+      ]
     },
     {
       "label": "Manage Cases - Case Overview - Action Dropdown - Delete case",
@@ -170,11 +147,6 @@
       "label": "Manage Cases - Case Overview - Status Dropdown",
       "url": "{url}/civicrm/case/a/?case_type_category=cases#/case/list?cf=%7B\"case_type_category\":\"cases\"%7D&caseId={caseId}",
       "onReadyScript": "manage-cases/status-dropdown.js"
-    },
-    {
-      "label": "Manage Cases - Case Overview - Status Dropdown - Change status",
-      "url": "{url}/civicrm/case/a/?case_type_category=cases#/case/list?cf=%7B\"case_type_category\":\"cases\"%7D&caseId={caseId}",
-      "onReadyScript": "manage-cases/status-dropdown-change-status.js"
     },
     {
       "label": "Manage Cases - Case Overview - Status Dropdown - Change status",
@@ -204,18 +176,6 @@
         ".civicase__people-tab__table-body tr:first-child .btn",
         ".civicase__people-tab__table-body tr:first-child .dropdown-menu li:nth-child(3) a"
       ]
-    },
-    {
-      "label": "manage Cases - Cases Overview - Actions Menu - Edit Tags",
-      "url": "{url}/civicrm/case/a/#/case/list?caseId={caseId}",
-      "clickSelectors": [
-        ".civicase__case-header__action-icon",
-        ".civicase__case-header__action-icon + ul .fa-tags"
-      ],
-      "selectors": [
-        ".ui-dialog"
-      ],
-      "waitForAjaxComplete": true
     }
   ]
 }

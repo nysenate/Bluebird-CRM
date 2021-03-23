@@ -3,23 +3,12 @@
     {
       "label": "Contact - Case Tab",
       "url": "{url}/civicrm/contact/view?cid={contactName:Arnold Backstop}&selectedChild=case",
-      "readySelector": ".civicase__contact-cases-tab-container"
-    },
-    {
-      "label": "Contact - Case Tab - loading",
-      "url": "{url}/civicrm/contact/view?cid={contactName:Arnold Backstop}&selectedChild=case",
-      "readySelector": ".civicase__contact-cases-tab-container",
-      "captureLoadingScreen": true
-    },
-    {
-      "label": "Contact - Case Tab - Load More loading icon",
-      "url": "{url}/civicrm/contact/view?cid={contactName:Arnold Backstop}&selectedChild=case",
-      "clickSelector": ".civicase__contact-case-tab__case-list__footer button"
+      "readySelector": ".civicase__contact-cases-tab-details .civicase__contact-name"
     },
     {
       "label": "Contact - Case Tab - Action Dropdown",
       "url": "{url}/civicrm/contact/view?cid={contactName:Arnold Backstop}&selectedChild=case",
-      "readySelector": ".civicase__contact-cases-tab-container",
+      "readySelector": ".civicase__contact-cases-tab-details .civicase__contact-name",
       "clickSelector": ".civicase__case-header__action-icon"
     },
     {

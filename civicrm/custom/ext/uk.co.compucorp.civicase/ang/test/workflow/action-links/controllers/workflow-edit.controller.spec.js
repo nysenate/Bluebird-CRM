@@ -1,8 +1,8 @@
 /* eslint-env jasmine */
 
-((_, getCrmUrl) => {
+((_) => {
   describe('workflow edit controller', () => {
-    let $controller, $rootScope, $scope, $window,
+    let $controller, $rootScope, $scope, $window, civicaseCrmUrl,
       CaseTypesMockData, CaseManagementWorkflow;
 
     beforeEach(module('workflow', 'civicase.data', ($provide) => {
@@ -10,7 +10,8 @@
     }));
 
     beforeEach(inject((_$controller_, _$rootScope_, _$window_,
-      _CaseTypesMockData_, _CaseManagementWorkflow_) => {
+      _CaseTypesMockData_, _CaseManagementWorkflow_, _civicaseCrmUrl_) => {
+      civicaseCrmUrl = _civicaseCrmUrl_;
       $controller = _$controller_;
       $rootScope = _$rootScope_;
       $window = _$window_;
@@ -26,16 +27,15 @@
       beforeEach(() => {
         workflow = CaseTypesMockData.getSequential()[0];
 
-        getCrmUrl.and.returnValue('crm url mock');
+        civicaseCrmUrl.and.returnValue('crm url mock');
         CaseManagementWorkflow.getEditWorkflowURL.and.returnValue('mock/url');
-        getCrmUrl.calls.reset();
         initController();
         $scope.clickHandler(workflow);
       });
 
       it('redirects to the case type page for the clicked workflow', () => {
         expect(CaseManagementWorkflow.getEditWorkflowURL).toHaveBeenCalledWith(workflow);
-        expect(getCrmUrl).toHaveBeenCalledWith('mock/url');
+        expect(civicaseCrmUrl).toHaveBeenCalledWith('mock/url');
         expect($window.location.href).toBe('crm url mock');
       });
     });
@@ -49,4 +49,4 @@
       $controller('WorkflowEditController', { $scope: $scope });
     }
   });
-})(CRM._, CRM.url);
+})(CRM._);

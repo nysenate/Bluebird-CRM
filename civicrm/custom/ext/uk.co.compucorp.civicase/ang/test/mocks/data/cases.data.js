@@ -194,7 +194,7 @@
           'api.Case.getcaselist.relatedCasesByContact': { values: [] },
           'api.Case.getcaselist.linkedCases': { values: [] },
           'api.Relationship.get': { values: [] },
-          'api.Activity.get.1': {
+          'api.Activity.getAll.1': {
             is_error: 0,
             version: 3,
             count: 18,
@@ -491,9 +491,9 @@
           },
           'api.Activity.getcount.scheduled': 2,
           'api.Activity.getcount.scheduled_overdue': 3,
-          'api.Activity.get.recentCommunication': { values: [] },
-          'api.Activity.get.tasks': { values: [] },
-          'api.Activity.get.nextActivitiesWhichIsNotMileStone': {
+          'api.Activity.getAll.recentCommunication': { values: [] },
+          'api.Activity.getAll.tasks': { values: [] },
+          'api.Activity.getAll.nextActivitiesWhichIsNotMileStone': {
             values: [
               {
                 id: '1009',
@@ -807,7 +807,7 @@
           'api.Case.getcaselist.relatedCasesByContact': { values: [] },
           'api.Case.getcaselist.linkedCases': { values: [] },
           'api.Relationship.get': { values: [] },
-          'api.Activity.get.1': {
+          'api.Activity.getAll.1': {
             is_error: 0,
             version: 3,
             count: 18,
@@ -1104,9 +1104,9 @@
           },
           'api.Activity.getcount.scheduled': 4,
           'api.Activity.getcount.scheduled_overdue': 5,
-          'api.Activity.get.recentCommunication': { values: [] },
-          'api.Activity.get.tasks': { values: [] },
-          'api.Activity.get.nextActivitiesWhichIsNotMileStone': {
+          'api.Activity.getAll.recentCommunication': { values: [] },
+          'api.Activity.getAll.tasks': { values: [] },
+          'api.Activity.getAll.nextActivitiesWhichIsNotMileStone': {
             values: [
               {
                 id: '1009',
@@ -1377,7 +1377,7 @@
           'api.Case.getcaselist.relatedCasesByContact': { values: [] },
           'api.Case.getcaselist.linkedCases': { values: [] },
           'api.Relationship.get': { values: [] },
-          'api.Activity.get.1': {
+          'api.Activity.getAll.1': {
             is_error: 0,
             version: 3,
             count: 18,
@@ -1674,9 +1674,9 @@
           },
           'api.Activity.getcount.scheduled': 6,
           'api.Activity.getcount.scheduled_overdue': 7,
-          'api.Activity.get.recentCommunication': { values: [] },
-          'api.Activity.get.tasks': { values: [] },
-          'api.Activity.get.nextActivitiesWhichIsNotMileStone': {
+          'api.Activity.getAll.recentCommunication': { values: [] },
+          'api.Activity.getAll.tasks': { values: [] },
+          'api.Activity.getAll.nextActivitiesWhichIsNotMileStone': {
             values: [
               {
                 id: '1009',

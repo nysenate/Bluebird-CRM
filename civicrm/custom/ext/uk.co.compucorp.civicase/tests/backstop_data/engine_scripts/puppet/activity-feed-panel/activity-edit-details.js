@@ -13,4 +13,5 @@ module.exports = async (page, scenario, vp) => {
   await page.click('.civicase__activity-feed__body__details .edit.button');
   await page.waitFor('.blockUI.blockOverlay', { hidden: true });
   await utility.openAllAccordions();
+  await page.waitFor(1000);
 };

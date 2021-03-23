@@ -1,4 +1,4 @@
-(function (_, angular, getCrmUrl) {
+(function (_, angular) {
   var module = angular.module('civicase');
 
   module.service('DraftEmailActivityForm', DraftEmailActivityForm);
@@ -7,8 +7,9 @@
    * Draft email activity form service.
    *
    * @param {Function} checkIfDraftActivity the check if draft activity function.
+   * @param {Function} civicaseCrmUrl crm url service.
    */
-  function DraftEmailActivityForm (checkIfDraftActivity) {
+  function DraftEmailActivityForm (checkIfDraftActivity, civicaseCrmUrl) {
     this.canChangeStatus = false;
     this.canHandleActivity = checkIfDraftEmailOrPDFActivity;
     this.getActivityFormUrl = getActivityFormUrl;
@@ -44,10 +45,10 @@
         draftFormParameters.caseid = activity.case_id;
       }
 
-      return getCrmUrl(
+      return civicaseCrmUrl(
         'civicrm/activity/email/' + action,
         draftFormParameters
       );
     }
   }
-})(CRM._, angular, CRM.url);
+})(CRM._, angular);

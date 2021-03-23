@@ -1,8 +1,8 @@
 /* eslint-env jasmine */
 
-(($, loadForm, getCrmUrl) => {
+(($, loadForm) => {
   describe('AddCaseService', () => {
-    let $window, AddCase, CaseCategoryWebformSettings;
+    let $window, AddCase, CaseCategoryWebformSettings, civicaseCrmUrl;
 
     beforeEach(module('civicase-base', 'civicase', ($provide) => {
       $window = { location: { href: '' } };
@@ -65,19 +65,8 @@
       });
 
       describe('when the new case web form url configuration value is not defined', () => {
-        let expectedFormUrl;
-
         beforeEach(() => {
           CaseCategoryWebformSettings.getSettingsFor.and.returnValue({ newCaseWebformUrl: null });
-
-          expectedFormUrl = getCrmUrl('civicrm/case/add', {
-            action: 'add',
-            case_type_category: 'case',
-            civicase_cid: '5',
-            context: 'standalone',
-            reset: 1
-          });
-
           AddCase.clickHandler({
             caseTypeCategoryName: 'case',
             contactId: '5'
@@ -89,7 +78,13 @@
         });
 
         it('opens the new case form', () => {
-          expect(loadForm).toHaveBeenCalledWith(expectedFormUrl);
+          expect(civicaseCrmUrl).toHaveBeenCalledWith('civicrm/case/add', {
+            action: 'add',
+            case_type_category: 'case',
+            civicase_cid: '5',
+            context: 'standalone',
+            reset: 1
+          });
         });
       });
     });
@@ -98,7 +93,8 @@
      * Injects and hoists the dependencies used by this spec file.
      */
     function injectDependencies () {
-      inject((_$window_, _AddCase_) => {
+      inject((_civicaseCrmUrl_, _$window_, _AddCase_) => {
+        civicaseCrmUrl = _civicaseCrmUrl_;
         $window = _$window_;
         AddCase = _AddCase_;
       });
@@ -111,4 +107,4 @@
       loadForm.and.returnValue($('<div></div>'));
     }
   });
-})(CRM.$, CRM.loadForm, CRM.url);
+})(CRM.$, CRM.loadForm);

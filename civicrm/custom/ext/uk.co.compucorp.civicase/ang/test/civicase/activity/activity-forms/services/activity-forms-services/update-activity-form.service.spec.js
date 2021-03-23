@@ -1,11 +1,12 @@
 /* eslint-env jasmine */
-((_, getCrmUrl) => {
+((_) => {
   describe('UpdateActivityForm', () => {
-    let activity, activityFormUrl, UpdateActivityForm, expectedActivityFormUrl, canHandle;
+    let civicaseCrmUrl, activity, UpdateActivityForm, canHandle;
 
     beforeEach(module('civicase', 'civicase-base', 'civicase.data'));
 
-    beforeEach(inject((_activitiesMockData_, _UpdateActivityForm_) => {
+    beforeEach(inject((_civicaseCrmUrl_, _activitiesMockData_, _UpdateActivityForm_) => {
+      civicaseCrmUrl = _civicaseCrmUrl_;
       UpdateActivityForm = _UpdateActivityForm_;
       activity = _.chain(_activitiesMockData_.get())
         .first()
@@ -48,35 +49,33 @@
         beforeEach(() => {
           delete activity.case_id;
 
-          activityFormUrl = UpdateActivityForm.getActivityFormUrl(activity);
-          expectedActivityFormUrl = getCrmUrl('civicrm/activity', {
+          UpdateActivityForm.getActivityFormUrl(activity);
+        });
+
+        it('returns the update form url for the stand alone activity', () => {
+          expect(civicaseCrmUrl).toHaveBeenCalledWith('civicrm/activity', {
             action: 'update',
             id: activity.id,
             reset: 1
           });
-        });
-
-        it('returns the update form url for the stand alone activity', () => {
-          expect(activityFormUrl).toEqual(expectedActivityFormUrl);
         });
       });
 
       describe('when getting the form url for a case activity', () => {
         beforeEach(() => {
           activity.case_id = _.uniqueId();
-          activityFormUrl = UpdateActivityForm.getActivityFormUrl(activity);
-          expectedActivityFormUrl = getCrmUrl('civicrm/case/activity', {
+          UpdateActivityForm.getActivityFormUrl(activity);
+        });
+
+        it('returns the update form url for the case activity', () => {
+          expect(civicaseCrmUrl).toHaveBeenCalledWith('civicrm/case/activity', {
             action: 'update',
             id: activity.id,
             reset: 1,
             caseid: activity.case_id
           });
         });
-
-        it('returns the update form url for the case activity', () => {
-          expect(activityFormUrl).toEqual(expectedActivityFormUrl);
-        });
       });
     });
   });
-})(CRM._, CRM.url);
+})(CRM._);

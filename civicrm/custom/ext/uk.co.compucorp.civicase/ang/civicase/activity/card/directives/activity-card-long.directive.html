@@ -98,6 +98,7 @@
           <!-- Avatar -->
           <span
             ng-if="activity.assignee_contact_name"
+            total-contacts="activity.total_assignee_contacts"
             civicase-contact-card
             avatar="true"
             case-id="activity.case_id"
@@ -121,6 +122,7 @@
           <span
             ng-if="activity.target_contact_name"
             civicase-contact-card
+            total-contacts="activity.total_target_contacts"
             contacts="activity.target_contact_name"
             case-id="activity.case_id"
           ></span>

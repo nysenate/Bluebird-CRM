@@ -4,19 +4,19 @@
   module.service('PrintCaseAction', PrintCaseAction);
 
   /**
-   *
+   * @param {Function} civicaseCrmUrl crm url service.
    */
-  function PrintCaseAction () {
+  function PrintCaseAction (civicaseCrmUrl) {
     /**
      * Click event handler for the Action
      *
-     * @param {Array} cases
-     * @param {object} action
-     * @param {Function} callbackFn
+     * @param {Array} cases list of cases
+     * @param {object} action action object
+     * @param {Function} callbackFn callback function
      */
     this.doAction = function (cases, action, callbackFn) {
       var selectedCase = cases[0];
-      var url = CRM.url('civicrm/case/report/print', {
+      var url = civicaseCrmUrl('civicrm/case/report/print', {
         all: 1,
         redact: 0,
         cid: selectedCase.client[0].contact_id,

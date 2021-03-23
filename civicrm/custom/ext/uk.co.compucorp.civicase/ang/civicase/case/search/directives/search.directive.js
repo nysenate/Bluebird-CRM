@@ -34,9 +34,9 @@
       tag_id: { label: ts('Tags') }
     };
     var caseRelationshipConfig = [
-      { text: ts('All Cases'), id: 'all' },
       { text: ts('My Cases'), id: 'is_case_manager' },
-      { text: ts('Cases I am involved in'), id: 'is_involved' }
+      { text: ts('Cases I am involved in'), id: 'is_involved' },
+      { text: ts('All Cases'), id: 'all' }
     ];
     var DEFAULT_CASE_FILTERS = {
       case_type_category: currentCaseCategory

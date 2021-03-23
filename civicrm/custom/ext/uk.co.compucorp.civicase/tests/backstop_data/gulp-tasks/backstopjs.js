@@ -14,7 +14,6 @@ var execSync = require('child_process').execSync;
 var file = require('gulp-file');
 var fs = require('fs');
 var gulp = require('gulp');
-var notify = require('gulp-notify');
 var moment = require('moment');
 var path = require('path');
 var PluginError = require('plugin-error');
@@ -126,18 +125,11 @@ function checkAndThrowApiResponseErrors (responses) {
 /**
  * Removes the temp config file and sends a notification
  * based on the given outcome from BackstopJS
- *
- * @param {boolean} success if backstop ran with a success
  */
-function cleanUpAndNotify (success) {
+function cleanUp () {
   gulp
     .src(FILES.temp, { read: false })
-    .pipe(clean())
-    .pipe(notify({
-      message: success ? 'Success' : 'Error',
-      title: 'BackstopJS',
-      sound: 'Beep'
-    }));
+    .pipe(clean());
 }
 
 /**
@@ -152,7 +144,11 @@ function createTempConfig () {
   var list = buildScenariosList(group);
   var content = JSON.parse(fs.readFileSync(FILES.tpl));
 
-  content.scenarios = list;
+  content.scenarios = list.map((item) => {
+    item.delay = item.delay || 2000;
+
+    return item;
+  });
 
   return JSON.stringify(content);
 }
@@ -388,7 +384,7 @@ function runBackstopJS (command) {
 
           success = true;
         } finally {
-          cleanUpAndNotify(success);
+          cleanUp();
 
           success ? resolve() : reject(new Error('BackstopJS error'));
         }
@@ -404,7 +400,7 @@ function runBackstopJS (command) {
  *
  * @returns {Promise} An empty promise that is resolved when the task is done.
  */
-function setupData () {
+async function setupData () {
   var homelessCoordinatorRelType = createUniqueRelationshipType({
     name_a_b: RECORD_IDENTIFIERS.relationshipTypes.homelessCoordinator
   });
@@ -474,6 +470,8 @@ function setupData () {
     description: 'Manager Role Assigned'
   });
 
+  await sleep(500);
+
   createUniqueRelationship({
     contact_id_a: activeContact.id,
     relationship_type_id: homelessCoordinatorRelType.id,
@@ -483,6 +481,8 @@ function setupData () {
     case_id: caseIds[0],
     description: 'Homeless Coordinator Assigned'
   });
+
+  await sleep(500);
 
   var fileUploadActivity = createUniqueActivity({
     activity_type_id: 'File Upload',
@@ -666,7 +666,9 @@ async function writeCookies () {
     headless: true,
     args: ['--no-sandbox']
   });
+
   var page = await browser.newPage();
+
   await page.goto(loginUrl);
 
   var cookies = await page.cookies();
@@ -676,6 +678,13 @@ async function writeCookies () {
   fs.existsSync(cookieFilePath) && fs.unlinkSync(cookieFilePath);
 
   fs.writeFileSync(cookieFilePath, JSON.stringify(cookies));
+}
+
+/**
+ * @param {number} ms milliseconds
+ */
+async function sleep (ms) {
+  await new Promise((resolve) => setTimeout(resolve, ms));
 }
 
 /**

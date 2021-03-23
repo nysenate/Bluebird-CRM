@@ -1,8 +1,8 @@
 /* eslint-env jasmine */
-((_, getCrmUrl) => {
+((_) => {
   describe('DraftEmailActivityForm', () => {
-    let activity, activityFormUrl, checkIfDraftActivity,
-      DraftEmailActivityForm, expectedActivityFormUrl;
+    let activity, checkIfDraftActivity,
+      DraftEmailActivityForm, civicaseCrmUrl;
 
     beforeEach(module('civicase', 'civicase-base', 'civicase.data', ($provide) => {
       checkIfDraftActivity = jasmine.createSpy('checkIfDraftActivity');
@@ -10,7 +10,8 @@
       $provide.value('checkIfDraftActivity', checkIfDraftActivity);
     }));
 
-    beforeEach(inject((_activitiesMockData_, _DraftEmailActivityForm_) => {
+    beforeEach(inject((_civicaseCrmUrl_, _activitiesMockData_, _DraftEmailActivityForm_) => {
+      civicaseCrmUrl = _civicaseCrmUrl_;
       DraftEmailActivityForm = _DraftEmailActivityForm_;
       activity = _.chain(_activitiesMockData_.get())
         .first()
@@ -63,13 +64,12 @@
       describe('when getting the form URL for a case activity', () => {
         beforeEach(() => {
           expectedActivityFormUrlParams.action = 'add';
-          activityFormUrl = DraftEmailActivityForm.getActivityFormUrl(activity);
-          expectedActivityFormUrl = getCrmUrl('civicrm/activity/email/add',
-            expectedActivityFormUrlParams);
+          DraftEmailActivityForm.getActivityFormUrl(activity);
         });
 
         it('returns the popup form URL for the draft activity in create mode by default', () => {
-          expect(activityFormUrl).toEqual(expectedActivityFormUrl);
+          expect(civicaseCrmUrl).toHaveBeenCalledWith('civicrm/activity/email/add',
+            expectedActivityFormUrlParams);
         });
       });
 
@@ -80,30 +80,28 @@
           delete expectedActivityFormUrlParams.caseid;
           delete activity.case_id;
 
-          activityFormUrl = DraftEmailActivityForm.getActivityFormUrl(activity);
-          expectedActivityFormUrl = getCrmUrl('civicrm/activity/email/add',
-            expectedActivityFormUrlParams);
+          DraftEmailActivityForm.getActivityFormUrl(activity);
         });
 
         it('returns the popup form URL for the draft activity in create mode by default', () => {
-          expect(activityFormUrl).toEqual(expectedActivityFormUrl);
+          expect(civicaseCrmUrl).toHaveBeenCalledWith('civicrm/activity/email/add',
+            expectedActivityFormUrlParams);
         });
       });
 
       describe('when getting the form URL in view mode', () => {
         beforeEach(() => {
           expectedActivityFormUrlParams.action = 'view';
-          activityFormUrl = DraftEmailActivityForm.getActivityFormUrl(activity, {
+          DraftEmailActivityForm.getActivityFormUrl(activity, {
             action: 'view'
           });
-          expectedActivityFormUrl = getCrmUrl('civicrm/activity/email/view',
-            expectedActivityFormUrlParams);
         });
 
         it('returns the popup form URL for the draft activity in view mode', () => {
-          expect(activityFormUrl).toEqual(expectedActivityFormUrl);
+          expect(civicaseCrmUrl).toHaveBeenCalledWith('civicrm/activity/email/view',
+            expectedActivityFormUrlParams);
         });
       });
     });
   });
-})(CRM._, CRM.url);
+})(CRM._);

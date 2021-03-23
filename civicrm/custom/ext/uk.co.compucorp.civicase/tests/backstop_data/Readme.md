@@ -92,5 +92,4 @@ This test suite is customised for angular app specific to civicase, so it uses s
 ```
 waitForAjaxComplete             // Set to true if any event (click/hover) loads some content through AJAX
 isUIBPopover                    // Set to true if the hover state opens a uib popover
-captureLoadingScreen            // Sets to true if backstop don't want to wait for loading state to complete and capture the loading screen
 ```

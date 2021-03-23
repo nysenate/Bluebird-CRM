@@ -249,7 +249,6 @@ function _civicrm_api3_case_get_activities(array $case_ids, array $params = []) 
     'case_id' => ['IN' => $case_ids],
     'is_current_revision' => 1,
     'is_test' => 0,
-    'activity_type_id' => ['!=' => 'Bulk Email'],
     'options' => [
       'limit' => 0,
       'sort' => 'activity_date_time',
@@ -258,7 +257,7 @@ function _civicrm_api3_case_get_activities(array $case_ids, array $params = []) 
 
   $params = array_merge($default_params, $params);
 
-  return civicrm_api3('Activity', 'get', $params);
+  return civicrm_api3('Activity', 'getAll', $params);
 }
 
 /**

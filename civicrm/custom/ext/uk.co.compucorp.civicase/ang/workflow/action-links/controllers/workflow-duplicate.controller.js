@@ -1,4 +1,4 @@
-(function ($, _, angular, getCrmUrl) {
+(function ($, _, angular) {
   var module = angular.module('workflow');
 
   module.controller('WorkflowDuplicateController', WorkflowDuplicateController);
@@ -164,4 +164,4 @@
         .toLowerCase();
     }
   }
-})(CRM.$, CRM._, angular, CRM.url);
+})(CRM.$, CRM._, angular);

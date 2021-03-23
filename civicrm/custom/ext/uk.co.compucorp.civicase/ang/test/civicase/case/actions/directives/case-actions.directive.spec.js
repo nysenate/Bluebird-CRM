@@ -4,7 +4,8 @@
   describe('case actions', function () {
     let $q, element, $provide, $compile, $rootScope, CaseActionsData,
       PrintCaseAction, loadFormOnListener, crmFormSuccessFunction,
-      dialogCloseFunction, originalTriggerFunction, civicaseCrmLoadForm;
+      dialogCloseFunction, originalTriggerFunction, civicaseCrmLoadForm,
+      civicaseCrmUrl;
 
     beforeEach(module('civicase', 'civicase.data', 'civicase.templates', (_$provide_) => {
       $provide = _$provide_;
@@ -34,8 +35,9 @@
     }));
 
     beforeEach(inject(function (_$q_, _$compile_, _$rootScope_, _CaseActionsData_,
-      _PrintCaseAction_, _civicaseCrmLoadForm_) {
+      _civicaseCrmUrl_, _PrintCaseAction_, _civicaseCrmLoadForm_) {
       $q = _$q_;
+      civicaseCrmUrl = _civicaseCrmUrl_;
       $compile = _$compile_;
       $rootScope = _$rootScope_;
       CaseActionsData = _CaseActionsData_;
@@ -350,7 +352,7 @@
               },
               path: 'some_path'
             }));
-            CRM.url.and.returnValue('CRM Mock URL');
+            civicaseCrmUrl.and.returnValue('CRM Mock URL');
             element.isolateScope().popupParams = jasmine.createSpy('popupParams');
             element.isolateScope().popupParams.and.returnValue('some_params');
 

@@ -9,6 +9,22 @@
    * @param {object} $q $q service
    */
   function PrintMergeCaseAction ($q) {
+    this.isActionAllowed = isActionAllowed;
+    this.doAction = doAction;
+
+    /**
+     * Check if action is allowed.
+     *
+     * @param {object} action - action data.
+     * @param {object} cases - cases.
+     * @param {object} attributes - item attributes.
+     *
+     * @returns {boolean} - true if action is allowed, false otherwise.
+     */
+    function isActionAllowed (action, cases, attributes) {
+      return attributes.mode === 'case-bulk-actions';
+    }
+
     /**
      * Click event handler for the Action
      *
@@ -18,7 +34,7 @@
      *
      * @returns {Promise} promise which resolves to the path for the popup
      */
-    this.doAction = function (cases, action, callbackFn) {
+    function doAction (cases, action, callbackFn) {
       var contactIds = [];
       var caseIds = [];
 
@@ -37,6 +53,6 @@
           caseid: caseIds.join()
         }
       });
-    };
+    }
   }
 })(angular, CRM.$, CRM._);

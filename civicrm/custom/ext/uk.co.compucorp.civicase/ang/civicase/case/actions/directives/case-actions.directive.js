@@ -2,7 +2,7 @@
   var module = angular.module('civicase');
 
   module.directive('civicaseCaseActions', function ($q, $rootScope,
-    $injector, allowCaseLocks, CaseActions, civicaseCrmLoadForm) {
+    $injector, allowCaseLocks, CaseActions, civicaseCrmLoadForm, civicaseCrmUrl) {
     return {
       restrict: 'A',
       templateUrl: '~/civicase/case/actions/directives/case-actions.directive.html',
@@ -116,7 +116,7 @@
                   result.query.civicase_reload = $scope.popupParams();
                 }
 
-                url = CRM.url(result.path, result.query);
+                url = civicaseCrmUrl(result.path, result.query);
               } else {
                 url = result;
               }

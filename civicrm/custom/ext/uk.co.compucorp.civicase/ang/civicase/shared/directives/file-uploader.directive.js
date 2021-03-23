@@ -22,9 +22,10 @@
    * @param {Function} FileUploader file uploader service
    * @param {object} $q angular queue service
    * @param {object} $timeout timeout service
+   * @param {Function} civicaseCrmUrl crm url service.
    */
   function civicaseFilesUploaderController ($scope, civicaseCrmApi, crmBlocker,
-    crmStatus, FileUploader, $q, $timeout) {
+    crmStatus, FileUploader, $q, $timeout, civicaseCrmUrl) {
     $scope.block = crmBlocker();
     $scope.ts = CRM.ts('civicase');
     $scope.uploader = createUploader();
@@ -51,7 +52,7 @@
      */
     function createUploader () {
       return new FileUploader({
-        url: CRM.url('civicrm/ajax/attachment'),
+        url: civicaseCrmUrl('civicrm/ajax/attachment'),
         onAfterAddingFile: function onAfterAddingFile (item) {
           item.crmData = { description: '' };
         },

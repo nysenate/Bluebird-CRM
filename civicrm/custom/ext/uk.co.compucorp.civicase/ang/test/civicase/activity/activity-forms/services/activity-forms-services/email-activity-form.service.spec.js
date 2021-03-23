@@ -1,11 +1,12 @@
 /* eslint-env jasmine */
-((_, getCrmUrl) => {
+((_) => {
   describe('EmailActivityForm', () => {
-    let activity, activityFormUrl, EmailActivityForm, expectedActivityFormUrl, canHandle;
+    let civicaseCrmUrl, activity, EmailActivityForm, canHandle;
 
     beforeEach(module('civicase', 'civicase-base', 'civicase.data'));
 
-    beforeEach(inject((_activitiesMockData_, _EmailActivityForm_) => {
+    beforeEach(inject((_civicaseCrmUrl_, _activitiesMockData_, _EmailActivityForm_) => {
+      civicaseCrmUrl = _civicaseCrmUrl_;
       EmailActivityForm = _EmailActivityForm_;
       activity = _.chain(_activitiesMockData_.get())
         .first()
@@ -50,35 +51,34 @@
         beforeEach(() => {
           delete activity.case_id;
 
-          activityFormUrl = EmailActivityForm.getActivityFormUrl(activity);
-          expectedActivityFormUrl = getCrmUrl('civicrm/activity', {
-            action: 'view',
-            id: activity.id,
-            reset: 1
-          });
+          EmailActivityForm.getActivityFormUrl(activity);
         });
 
         it('returns the email form url for the stand alone activity', () => {
-          expect(activityFormUrl).toEqual(expectedActivityFormUrl);
+          expect(civicaseCrmUrl).toHaveBeenCalledWith('civicrm/activity', {
+            action: 'view',
+            id: activity.id,
+            reset: 1,
+            context: 'activity'
+          });
         });
       });
 
       describe('when getting the form url for a case activity', () => {
         beforeEach(() => {
           activity.case_id = _.uniqueId();
-          activityFormUrl = EmailActivityForm.getActivityFormUrl(activity);
-          expectedActivityFormUrl = getCrmUrl('civicrm/case/activity', {
-            action: 'view',
-            id: activity.id,
-            reset: 1,
-            caseid: activity.case_id
-          });
+          EmailActivityForm.getActivityFormUrl(activity);
         });
 
         it('returns the email form url for the case activity', () => {
-          expect(activityFormUrl).toEqual(expectedActivityFormUrl);
+          expect(civicaseCrmUrl).toHaveBeenCalledWith('civicrm/activity', {
+            action: 'view',
+            id: activity.id,
+            reset: 1,
+            context: 'case'
+          });
         });
       });
     });
   });
-})(CRM._, CRM.url);
+})(CRM._);

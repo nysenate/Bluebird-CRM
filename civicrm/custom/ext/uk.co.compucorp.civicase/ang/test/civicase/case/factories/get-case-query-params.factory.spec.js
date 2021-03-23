@@ -47,11 +47,10 @@
               'end_date', 'status_id', 'contacts', 'subject']
           },
           // For the "recent communication" panel
-          'api.Activity.get.recentCommunication': {
+          'api.Activity.getAll.recentCommunication': {
             case_id: '11',
             is_current_revision: 1,
             is_test: 0,
-            activity_type_id: { '!=': 'Bulk Email' },
             'activity_type_id.grouping': { LIKE: '%communication%' },
             'status_id.filter': 1,
             options: { limit: 5, sort: 'activity_date_time DESC' },
@@ -63,11 +62,10 @@
             ]
           },
           // For the "tasks" panel
-          'api.Activity.get.tasks': {
+          'api.Activity.getAll.tasks': {
             case_id: '11',
             is_current_revision: 1,
             is_test: 0,
-            activity_type_id: { '!=': 'Bulk Email' },
             'activity_type_id.grouping': { LIKE: '%task%' },
             'status_id.filter': 0,
             options: { limit: 5, sort: 'activity_date_time ASC' },
@@ -79,10 +77,9 @@
             ]
           },
           // For the "Next Activity" panel
-          'api.Activity.get.nextActivitiesWhichIsNotMileStone': {
+          'api.Activity.getAll.nextActivitiesWhichIsNotMileStone': {
             case_id: '11',
             status_id: { '!=': 'Completed' },
-            activity_type_id: { '!=': 'Bulk Email' },
             'activity_type_id.grouping': { 'NOT LIKE': '%milestone%' },
             options: {
               limit: 1
@@ -98,7 +95,6 @@
             case_id: '11',
             is_current_revision: 1,
             is_deleted: 0,
-            activity_type_id: { '!=': 'Bulk Email' },
             status_id: 'Scheduled'
           },
           // For the "scheduled-overdue" count
@@ -107,7 +103,6 @@
             is_current_revision: 1,
             is_deleted: 0,
             is_overdue: 1,
-            activity_type_id: { '!=': 'Bulk Email' },
             status_id: 'Scheduled'
           },
           // Custom data

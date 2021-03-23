@@ -391,7 +391,7 @@
         });
 
         it('makes an api request', function () {
-          expect(civicaseCrmApi).toHaveBeenCalledWith('Activity', 'get', jasmine.any(Object));
+          expect(civicaseCrmApi).toHaveBeenCalledWith('Activity', 'getAll', jasmine.any(Object));
         });
 
         describe('api request params', function () {

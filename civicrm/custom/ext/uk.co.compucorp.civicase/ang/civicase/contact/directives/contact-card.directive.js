@@ -10,6 +10,7 @@
       scope: {
         caseId: '<?',
         data: '=contacts',
+        totalContacts: '=',
         isAvatar: '=avatar',
         noIcon: '=',
         displayMoreFields: '=',
@@ -21,9 +22,10 @@
      * Contact Card directive's controller
      *
      * @param {object} $scope scope object reference.
+     * @param {Function} civicaseCrmUrl crm url service.
      */
-    function civicaseContactCardController ($scope) {
-      $scope.url = CRM.url;
+    function civicaseContactCardController ($scope, civicaseCrmUrl) {
+      $scope.url = civicaseCrmUrl;
       $scope.mainContact = null;
 
       (function init () {
@@ -35,10 +37,10 @@
        * Watch function for data refresh
        */
       function refresh () {
-        $scope.contacts = [];
-
         fetchContactsInfo()
           .then(function () {
+            $scope.contacts = [];
+
             if (_.isPlainObject($scope.data)) {
               _.each($scope.data, function (name, contactID) {
                 if ($scope.isAvatar) {
@@ -93,8 +95,20 @@
        * @returns {string} the contact's initials.
        */
       function getInitials (contactObj) {
-        return contactObj.first_name.substring(0, 1).toUpperCase() +
-          contactObj.last_name.substring(0, 1).toUpperCase();
+        // for organisation contact types
+        if (contactObj.first_name || contactObj.last_name) {
+          return contactObj.first_name.substring(0, 1).toUpperCase() +
+            contactObj.last_name.substring(0, 1).toUpperCase();
+        } else {
+          var names = contactObj.display_name.split(' ');
+          var initials = names[0].substring(0, 1).toUpperCase();
+
+          if (names.length > 1) {
+            initials += names[names.length - 1].substring(0, 1).toUpperCase();
+          }
+
+          return initials;
+        }
       }
 
       /**

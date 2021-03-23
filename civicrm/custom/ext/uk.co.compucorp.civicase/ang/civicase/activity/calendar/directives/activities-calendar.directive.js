@@ -438,7 +438,7 @@
         params.case_filter = $scope.caseParams;
       }
 
-      return civicaseCrmApi('Activity', 'get', _.assign(params, {
+      return civicaseCrmApi('Activity', 'getAll', _.assign(params, {
         return: [
           'subject', 'details', 'activity_type_id', 'status_id',
           'source_contact_name', 'target_contact_name', 'assignee_contact_name',
@@ -446,7 +446,6 @@
           'tag_id.color', 'file_id', 'is_overdue', 'case_id', 'priority_id',
           'case_id.case_type_id', 'case_id.status_id', 'case_id.contacts'
         ],
-        activity_type_id: { '!=': 'Bulk Email' },
         sequential: 1,
         options: {
           // We try to get one activity more than the display limit, so we can
@@ -516,7 +515,6 @@
       var params = {};
       var dateMoment = moment(date);
 
-      params.activity_type_id = { '!=': 'Bulk Email' };
       params.is_deleted = '0';
       params.status_id = { IN: _.union(incompleteActivityStatusTypes, completeActivityStatusTypes) };
       params.activity_date_time = {

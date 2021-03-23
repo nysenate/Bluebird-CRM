@@ -67,9 +67,9 @@
             expectedActivityTypeIDs.push($scope.filters.activity_type_id);
           });
 
-          it('requests the activities using the "get" api action', () => {
+          it('requests the activities using the "getAll" api action', () => {
             expect(civicaseCrmApi).toHaveBeenCalledWith({
-              acts: ['Activity', 'get', jasmine.any(Object)],
+              acts: ['Activity', 'getAll', jasmine.any(Object)],
               all: ['Activity', 'getcount', jasmine.any(Object)]
             });
           });
@@ -113,7 +113,7 @@
 
           it('updates the activity feed', () => {
             expect(civicaseCrmApi).toHaveBeenCalledWith({
-              acts: ['Activity', 'get', jasmine.any(Object)],
+              acts: ['Activity', 'getAll', jasmine.any(Object)],
               all: ['Activity', 'getcount', jasmine.any(Object)]
             });
           });
@@ -292,7 +292,7 @@
 
         it('shows records starting from the clicked month', () => {
           expect(civicaseCrmApi).toHaveBeenCalledWith(jasmine.objectContaining({
-            acts: ['Activity', 'get', jasmine.objectContaining({
+            acts: ['Activity', 'getAll', jasmine.objectContaining({
               options: jasmine.objectContaining({
                 offset: 10
               })

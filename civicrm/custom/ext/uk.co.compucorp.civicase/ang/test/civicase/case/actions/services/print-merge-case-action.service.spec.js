@@ -39,5 +39,31 @@
         });
       });
     });
+
+    describe('visibility of the action', () => {
+      var caseObj, isVisible;
+
+      describe('when inside the bulk action', () => {
+        beforeEach(function () {
+          caseObj = CasesMockData.get().values[0];
+          isVisible = PrintMergeCaseAction.isActionAllowed('email', [caseObj], { mode: 'case-bulk-actions' });
+        });
+
+        it('shows the action', () => {
+          expect(isVisible).toBe(true);
+        });
+      });
+
+      describe('when outside the bulk block', () => {
+        beforeEach(function () {
+          caseObj = CasesMockData.get().values[0];
+          isVisible = PrintMergeCaseAction.isActionAllowed('email', [caseObj], { mode: 'not-case-bulk-actions' });
+        });
+
+        it('hides the action', () => {
+          expect(isVisible).toBe(false);
+        });
+      });
+    });
   });
 })(CRM._, CRM.$);

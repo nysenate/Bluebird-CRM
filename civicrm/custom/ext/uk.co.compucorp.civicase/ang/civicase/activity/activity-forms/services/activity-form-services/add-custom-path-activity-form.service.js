@@ -1,12 +1,14 @@
-(function (_, angular, getCrmUrl) {
+(function (_, angular) {
   var module = angular.module('civicase');
 
   module.service('AddCustomPathActivityForm', AddCustomPathActivityForm);
 
   /**
    * Add Custom Path Activity Form service.
+   *
+   * @param {Function} civicaseCrmUrl crm url service.
    */
-  function AddCustomPathActivityForm () {
+  function AddCustomPathActivityForm (civicaseCrmUrl) {
     var ACTIVITY_TYPES_CUSTOM_PATHS = {
       Email: 'civicrm/activity/email/add',
       'Print PDF Letter': 'civicrm/activity/pdf/add'
@@ -45,7 +47,7 @@
         context: 'standalone'
       });
 
-      return getCrmUrl(path, options);
+      return civicaseCrmUrl(path, options);
     }
   }
-})(CRM._, angular, CRM.url);
+})(CRM._, angular);

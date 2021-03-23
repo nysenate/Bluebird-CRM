@@ -111,6 +111,50 @@ class api_v3_CaseRoleCreationTest extends BaseHeadlessTest {
   }
 
   /**
+   * Test an existent relationship is not created again.
+   */
+  public function testExistentRelationshipIsNotCreatedAgain() {
+    $caseClient = ContactFabricator::fabricate();
+    $contact = ContactFabricator::fabricate();
+    $relationshipParams = $this->getRelationshipBaseParamsForCaseClient($caseClient);
+
+    $relationshipParams['contact_id_b'] = $contact['id'];
+    $relationshipCreated = civicrm_api3('Relationship', 'create', $relationshipParams);
+    $relationshipCreatedAgain = civicrm_api3('Relationship', 'create', $relationshipParams);
+
+    $this->assertEquals($relationshipCreated['id'], $relationshipCreatedAgain['id']);
+  }
+
+  /**
+   * Test an existent relationship is correctly updated.
+   */
+  public function testExistentRelationshipIsCorrectlyUpdated() {
+    $caseClient = ContactFabricator::fabricate();
+    $firstContact = ContactFabricator::fabricate();
+    $secondContact = ContactFabricator::fabricate();
+    $relationshipParams = $this->getRelationshipBaseParamsForCaseClient($caseClient);
+
+    // Create first relationship.
+    $relationshipParams['contact_id_b'] = $firstContact['id'];
+    $relationshipCreated = civicrm_api3('Relationship', 'create', $relationshipParams);
+    $relationshipCreatedId = array_shift($relationshipCreated['values'])['id'];
+
+    // Update relationship with second contact.
+    $relationshipParams['contact_id_b'] = $secondContact['id'];
+    $relationshipUpdated = civicrm_api3('Relationship', 'create', $relationshipParams);
+    $relationshipUpdated = array_shift($relationshipUpdated['values']);
+
+    // Refresh previous relationship.
+    $relationshipCreated = new CRM_Contact_DAO_Relationship();
+    $relationshipCreated->id = $relationshipCreatedId;
+    $relationshipCreated->find();
+
+    $this->assertNotEquals($relationshipCreated->id, $relationshipUpdated['id']);
+    $this->assertEquals(1, $relationshipUpdated['is_active']);
+    $this->assertEquals(0, $relationshipCreated->is_active);
+  }
+
+  /**
    * Get created activity data.
    *
    * @param int|null $caseId
@@ -134,6 +178,28 @@ class api_v3_CaseRoleCreationTest extends BaseHeadlessTest {
     $result = civicrm_api3('Activity', 'get', $params);
 
     return $result;
+  }
+
+  /**
+   * Return the params for creating a relationship, for the given contact.
+   *
+   * @param array $caseClient
+   *   Contact details.
+   */
+  private function getRelationshipBaseParamsForCaseClient(array $caseClient) {
+    $case = CaseFabricator::fabricate(
+      [
+        'case_type_id' => CaseTypeFabricator::fabricate()['id'],
+        'contact_id' => $caseClient['id'],
+        'creator_id' => $caseClient['id'],
+      ]
+    );
+
+    return [
+      'relationship_type_id' => RelationshipTypeFabricator::fabricate()['id'],
+      'contact_id_a' => $caseClient['id'],
+      'case_id' => $case['id'],
+    ];
   }
 
 }

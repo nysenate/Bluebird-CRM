@@ -5,7 +5,8 @@
     return {
       scope: {
         activityFilters: '=',
-        filters: '='
+        filters: '=',
+        linkToManageCase: '='
       },
       restrict: 'E',
       controller: 'dashboardTabController',
@@ -39,7 +40,6 @@
       is_deleted: 0,
       is_test: 0,
       'activity_type_id.grouping': { 'NOT LIKE': '%milestone%' },
-      activity_type_id: { '!=': 'Bulk Email' },
       status_id: { IN: ActivityStatusType.getAll().incomplete },
       options: { sort: 'is_overdue DESC, activity_date_time ASC' },
       return: [

@@ -1,21 +1,46 @@
 name: Backstop Tests
 
 on:
-  pull_request:
-    types:
-      - labeled
+  workflow_dispatch:
+    inputs:
+      civicase_reference_branch:
+        description: CiviCase Reference Branch/Tag Name
+        default: master
+        required: true
+      civicase_test_branch:
+        description: CiviCase Test Branch/tag Name
+        required: true
+      civicrm_reference_version:
+        description: CiviCRM Reference Version
+        default: 5.28 # change this to the current civicrm version in use
+        required: true
+      civicrm_test_version:
+        description: CiviCRM Test Version
+        default: 5.28 # change this to the current civicrm version in use
+        required: true
+      reference_shoreditch_branch:
+        description: Shoreditch Reference Branch/Tag Name
+        default: master
+        required: true
+      test_shoreditch_branch:
+        description: Shoreditch Test Branch/Tag Name
+        default: master
+        required: true
 
 jobs:
   run-backstop-tests:
-    if: github.event.label.name == 'run backstop'
     runs-on: ubuntu-latest
     container:
       image: compucorp/civicrm-buildkit:1.1.0-php7.2-chrome
 
     env:
-      CIVICRM_EXTENSIONS_DIR: site/web/sites/all/modules/civicrm/tools/extensions
-      CIVICASE_BACKSTOP_DIR: site/web/sites/all/modules/civicrm/tools/extensions/uk.co.compucorp.civicase/tests/backstop_data
-      DRUPAL_THEME_DIR: site/web/sites/all/themes
+      REFERENCE_SITE_FOLDER: reference_site
+      REFERENCE_SITE_URL: http://localhost:7979
+      TEST_SITE_FOLDER: test_site
+      TEST_SITE_URL: http://localhost:7980
+      CIVICRM_EXTENSIONS_DIR: web/sites/all/modules/civicrm/tools/extensions
+      CIVICASE_BACKSTOP_DIR: uk.co.compucorp.civicase/tests/backstop_data
+      DRUPAL_THEME_DIR: web/sites/all/themes
 
     services:
       mysql:
@@ -36,23 +61,28 @@ jobs:
           echo "IncludeOptional $HOME/.amp/apache.d/*.conf" >> /etc/apache2/apache2.conf
           /usr/sbin/apache2ctl restart
 
-      - name: Build Drupal site
+      - name: Build Reference Drupal site (CiviCRM - ${{ github.event.inputs.civicrm_reference_version }}, CiviCase - ${{ github.event.inputs.civicase_reference_branch }}, Shoreditch - ${{ github.event.inputs.reference_shoreditch_branch }})
         run: |
-          civibuild create drupal-clean --civi-ver 5.28.3 --cms-ver 7.74 --web-root $GITHUB_WORKSPACE/site
-          chmod -R 777 $GITHUB_WORKSPACE/site
+          civibuild create drupal-clean --civi-ver ${{ github.event.inputs.civicrm_reference_version }} --cms-ver 7.74 --web-root $GITHUB_WORKSPACE/${{ env.REFERENCE_SITE_FOLDER }} --url ${{ env.REFERENCE_SITE_URL }}
+          chmod -R 777 $GITHUB_WORKSPACE/${{ env.REFERENCE_SITE_FOLDER }}
 
-      - name: Installing CiviCase and Shoreditch
-        working-directory: ${{ env.CIVICRM_EXTENSIONS_DIR }}
+      - name: Build Test Drupal site (CiviCRM - ${{ github.event.inputs.civicrm_test_version }}, CiviCase - ${{ github.event.inputs.civicase_test_branch }}, Shoreditch - ${{ github.event.inputs.test_shoreditch_branch }})
         run: |
-          git clone https://github.com/compucorp/uk.co.compucorp.civicase.git --branch "${{ github.head_ref }}"
-          git clone --depth 1 https://github.com/civicrm/org.civicrm.shoreditch.git
+          civibuild create drupal-clean --civi-ver ${{ github.event.inputs.civicrm_test_version }} --cms-ver 7.74 --web-root $GITHUB_WORKSPACE/${{ env.TEST_SITE_FOLDER }} --url ${{ env.TEST_SITE_URL }}
+          chmod -R 777 $GITHUB_WORKSPACE/${{ env.TEST_SITE_FOLDER }}
+
+      - name: Installing CiviCase and Shoreditch in Reference Site
+        working-directory: ${{ env.REFERENCE_SITE_FOLDER }}/${{ env.CIVICRM_EXTENSIONS_DIR }}
+        run: |
+          git clone https://github.com/compucorp/uk.co.compucorp.civicase.git --branch ${{ github.event.inputs.civicase_reference_branch }}
+          git clone https://github.com/civicrm/org.civicrm.shoreditch.git --branch ${{ github.event.inputs.reference_shoreditch_branch }}
           cv en shoreditch civicase
           drush en civicrmtheme -y
           drush en bootstrap -y
           drush vset theme_default bootstrap
 
-      - name: Installing Shoreditch Companion Theme
-        working-directory: ${{ env.DRUPAL_THEME_DIR }}
+      - name: Installing Shoreditch Companion Theme in Reference Site
+        working-directory: ${{ env.REFERENCE_SITE_FOLDER }}/${{ env.DRUPAL_THEME_DIR }}
         run: |
           git clone https://github.com/compucorp/shoreditch-companion-d7-theme.git depth=1
           drush en -y shoreditch_companion_d7_theme
@@ -64,32 +94,68 @@ jobs:
 
           drush cc all && drush cc civicrm
 
-      - name: Setup data and site-config.json for Backstop tests
-        working-directory: ${{ env.CIVICASE_BACKSTOP_DIR }}
+      - name: Setup data and site-config.json for Backstop tests in Reference Site
+        working-directory: ${{ env.REFERENCE_SITE_FOLDER }}/${{ env.CIVICRM_EXTENSIONS_DIR }}/${{ env.CIVICASE_BACKSTOP_DIR }}
         run: |
           cp site-config.json.sample site-config.json
-          sed -i 's+<url>+http://localhost:7979+' site-config.json
-          sed -i 's+<path-to-site-root>+'"$GITHUB_WORKSPACE"'/site/web+' site-config.json
+          sed -i 's+<url>+${{ env.REFERENCE_SITE_URL }}+' site-config.json
+          sed -i 's+<path-to-site-root>+'"$GITHUB_WORKSPACE"'/${{ env.REFERENCE_SITE_FOLDER }}/web+' site-config.json
           npm install
           npx gulp backstopjs:setup-data
 
-      - name: Reference Screenshots in "master" Branch
+      - name: Reference Screenshots in (CiviCRM - ${{ github.event.inputs.civicrm_reference_version }}, CiviCase - ${{ github.event.inputs.civicase_reference_branch }}, Shoreditch - ${{ github.event.inputs.reference_shoreditch_branch }})
         continue-on-error: true
-        working-directory: ${{ env.CIVICASE_BACKSTOP_DIR }}
+        working-directory: ${{ env.REFERENCE_SITE_FOLDER }}/${{ env.CIVICRM_EXTENSIONS_DIR }}/${{ env.CIVICASE_BACKSTOP_DIR }}
         run: |
-          git checkout master
           npx gulp backstopjs:reference
 
-      - name: Test Screenshots in "${{ github.head_ref }}" Branch
-        working-directory: ${{ env.CIVICASE_BACKSTOP_DIR }}
-        continue-on-error: true
+      - name: Installing CiviCase and Shoreditch in Test Site
+        working-directory: ${{ env.TEST_SITE_FOLDER }}/${{ env.CIVICRM_EXTENSIONS_DIR }}
         run: |
-          git checkout "${{ github.head_ref }}"
+          git clone https://github.com/compucorp/uk.co.compucorp.civicase.git --branch ${{ github.event.inputs.civicase_test_branch }}
+          git clone https://github.com/civicrm/org.civicrm.shoreditch.git --branch ${{ github.event.inputs.test_shoreditch_branch }}
+          cv en shoreditch civicase
+          drush en civicrmtheme -y
+          drush en bootstrap -y
+          drush vset theme_default bootstrap
+
+      - name: Installing Shoreditch Companion Theme in Test Site
+        working-directory: ${{ env.TEST_SITE_FOLDER }}/${{ env.DRUPAL_THEME_DIR }}
+        run: |
+          git clone https://github.com/compucorp/shoreditch-companion-d7-theme.git depth=1
+          drush en -y shoreditch_companion_d7_theme
+          drush vset civicrmtheme_theme_admin shoreditch_companion_d7_theme
+
+          drush sql-query "UPDATE block SET status = 0 WHERE theme='shoreditch_companion_d7_theme' AND module='civicrm' AND delta IN ('1', '2', '3', '4', '5');" -y
+          drush sql-query "UPDATE block SET status = 0 WHERE theme='shoreditch_companion_d7_theme' AND module='search' AND delta='form';" -y
+          drush sql-query "UPDATE block SET status = 0 WHERE theme='shoreditch_companion_d7_theme' AND module='system' AND delta IN ('navigation', 'powered-by');" -y
+
+          drush cc all && drush cc civicrm
+
+      - name: Setup data for Backstop tests in Test Site
+        working-directory: ${{ env.TEST_SITE_FOLDER }}/${{ env.CIVICRM_EXTENSIONS_DIR }}/${{ env.CIVICASE_BACKSTOP_DIR }}
+        run: |
+          cp site-config.json.sample site-config.json
+          sed -i 's+<url>+${{ env.TEST_SITE_URL }}+' site-config.json
+          sed -i 's+<path-to-site-root>+'"$GITHUB_WORKSPACE"'/${{ env.TEST_SITE_FOLDER }}/web+' site-config.json
+          npm install
+          npx gulp backstopjs:setup-data
+
+      - name: Update site-config.json for Reference Site to target Test Site
+        working-directory: ${{ env.REFERENCE_SITE_FOLDER }}/${{ env.CIVICRM_EXTENSIONS_DIR }}/${{ env.CIVICASE_BACKSTOP_DIR }}
+        run: |
+          sed -i 's+${{ env.REFERENCE_SITE_URL }}+${{ env.TEST_SITE_URL }}+' site-config.json
+          sed -i 's+${{ env.REFERENCE_SITE_FOLDER }}+${{ env.TEST_SITE_FOLDER }}+' site-config.json
+
+      - name: Test Screenshots in (CiviCRM - ${{ github.event.inputs.civicrm_test_version }}, CiviCase - ${{ github.event.inputs.civicase_test_branch }}, Shoreditch - ${{ github.event.inputs.test_shoreditch_branch }})
+        continue-on-error: true
+        working-directory: ${{ env.REFERENCE_SITE_FOLDER }}/${{ env.CIVICRM_EXTENSIONS_DIR }}/${{ env.CIVICASE_BACKSTOP_DIR }}
+        run: |
           npx gulp backstopjs:test
 
       - name: Prepare test report for download
         if: ${{ always() }}
-        working-directory: ${{ env.CIVICASE_BACKSTOP_DIR }}
+        working-directory: ${{ env.REFERENCE_SITE_FOLDER }}/${{ env.CIVICRM_EXTENSIONS_DIR }}/${{ env.CIVICASE_BACKSTOP_DIR }}
         run: |
           mkdir backstop_report
           cp -r html_report backstop_report
@@ -99,4 +165,4 @@ jobs:
         if: ${{ always() }}
         with:
           name: backstop-report
-          path: ${{ env.CIVICASE_BACKSTOP_DIR }}/backstop_report
+          path: ${{ env.REFERENCE_SITE_FOLDER }}/${{ env.CIVICRM_EXTENSIONS_DIR }}/${{ env.CIVICASE_BACKSTOP_DIR }}/backstop_report

@@ -147,29 +147,5 @@
         ]));
       });
     });
-
-    describe('when updating the previous end date value', () => {
-      beforeEach(() => {
-        roleData.relationship.end_date = '2000-12-31';
-
-        roleDatesUpdater.updatePreviousValue(roleData, 'end_date');
-      });
-
-      it('updates the previous end date value', () => {
-        expect(roleData.previousValues.end_date).toBe('2000-12-31');
-      });
-    });
-
-    describe('when updating the previous start date value', () => {
-      beforeEach(() => {
-        roleData.relationship.start_date = '2000-01-31';
-
-        roleDatesUpdater.updatePreviousValue(roleData, 'start_date');
-      });
-
-      it('updates the previous start date value', () => {
-        expect(roleData.previousValues.start_date).toBe('2000-01-31');
-      });
-    });
   });
 })(CRM._);

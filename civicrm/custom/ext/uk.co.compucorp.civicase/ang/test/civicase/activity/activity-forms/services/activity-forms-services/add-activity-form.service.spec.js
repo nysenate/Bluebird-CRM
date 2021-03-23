@@ -1,11 +1,13 @@
 /* eslint-env jasmine */
-((_, getCrmUrl) => {
+((_) => {
   describe('AddActivityForm', () => {
-    let AddActivityForm, activity, activityFormUrl, expectedActivityFormUrl, canHandle;
+    let civicaseCrmUrl, AddActivityForm, activity, canHandle;
 
     beforeEach(module('civicase', 'civicase-base', 'civicase.data'));
 
-    beforeEach(inject((_activitiesMockData_, _AddActivityForm_) => {
+    beforeEach(inject((_civicaseCrmUrl_, _activitiesMockData_,
+      _AddActivityForm_) => {
+      civicaseCrmUrl = _civicaseCrmUrl_;
       AddActivityForm = _AddActivityForm_;
       activity = _.chain(_activitiesMockData_.get())
         .first()
@@ -48,19 +50,18 @@
     describe('getting the activity form url', () => {
       describe('when getting the form url to create a new activity', () => {
         beforeEach(() => {
-          activityFormUrl = AddActivityForm.getActivityFormUrl(activity);
-          expectedActivityFormUrl = getCrmUrl('civicrm/case/activity', {
+          AddActivityForm.getActivityFormUrl(activity);
+        });
+
+        it('returns the form url to create a new activity', () => {
+          expect(civicaseCrmUrl).toHaveBeenCalledWith('civicrm/case/activity', {
             action: 'add',
             reset: 1,
             caseid: activity.case_id,
             atype: activity.activity_type_id
           });
         });
-
-        it('returns the form url to create a new activity', () => {
-          expect(activityFormUrl).toEqual(expectedActivityFormUrl);
-        });
       });
     });
   });
-})(CRM._, CRM.url);
+})(CRM._);

@@ -1,4 +1,4 @@
-(function ($, _, angular, getCrmUrl) {
+(function ($, _, angular) {
   var module = angular.module('workflow');
 
   module.controller('WorkflowEditController', WorkflowEditController);
@@ -9,9 +9,10 @@
    * @param {object} $injector injector service of angular
    * @param {object} pascalCase service to convert a string to pascal case
    * @param {object} CaseTypeCategory case type category service
+   * @param {Function} civicaseCrmUrl crm url service
    */
   function WorkflowEditController ($scope, $window, $injector, pascalCase,
-    CaseTypeCategory) {
+    CaseTypeCategory, civicaseCrmUrl) {
     $scope.clickHandler = clickHandler;
 
     /**
@@ -23,7 +24,7 @@
       var instanceName = CaseTypeCategory
         .getCaseTypeCategoryInstance(workflow.case_type_category).name;
 
-      var url = getCrmUrl(
+      var url = civicaseCrmUrl(
         getServiceForInstance(instanceName).getEditWorkflowURL(workflow)
       );
 
@@ -52,4 +53,4 @@
       }
     }
   }
-})(CRM.$, CRM._, angular, CRM.url);
+})(CRM.$, CRM._, angular);

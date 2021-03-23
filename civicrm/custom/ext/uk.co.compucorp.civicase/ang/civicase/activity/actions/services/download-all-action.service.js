@@ -7,8 +7,9 @@
    * Edit Activity Action
    *
    * @param {object} $window window object
+   * @param {object} civicaseCrmUrl civicrm url service
    */
-  function DownloadAllActivityAction ($window) {
+  function DownloadAllActivityAction ($window, civicaseCrmUrl) {
     /**
      * Check if the Action is enabled
      *
@@ -56,7 +57,7 @@
         }
       }
 
-      $window.open(CRM.url('civicrm/case/activity/download-all-files', downloadAllParams), '_blank');
+      $window.open(civicaseCrmUrl('civicrm/case/activity/download-all-files', downloadAllParams), '_blank');
     };
   }
 })(angular, CRM, CRM._);

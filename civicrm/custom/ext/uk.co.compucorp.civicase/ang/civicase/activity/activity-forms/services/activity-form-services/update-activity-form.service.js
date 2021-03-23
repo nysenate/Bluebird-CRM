@@ -1,4 +1,4 @@
-(function (angular, getCrmUrl) {
+(function (angular) {
   var module = angular.module('civicase');
 
   module.service('UpdateActivityForm', UpdateActivityForm);
@@ -6,12 +6,12 @@
   /**
    * Update Activity Form service.
    *
-   * @param {Function} getActivityFormUrl The get activity form URL service.
+   * @param {Function} civicaseCrmUrl crm URL service.
    */
-  function UpdateActivityForm (getActivityFormUrl) {
+  function UpdateActivityForm (civicaseCrmUrl) {
     this.canChangeStatus = true;
     this.canHandleActivity = canHandleActivity;
-    this.getActivityFormUrl = getUpdateActivityFormUrl;
+    this.getActivityFormUrl = getActivityFormUrl;
 
     /**
      * Only handles activity forms that will be updated.
@@ -27,10 +27,22 @@
 
     /**
      * @param {object} activity an activity object.
-     * @returns {string} the URL for the activity form that will be updated.
+     * @returns {string} the URL for the activity form that will be displayed.
      */
-    function getUpdateActivityFormUrl (activity) {
-      return getActivityFormUrl(activity, { action: 'update' });
+    function getActivityFormUrl (activity) {
+      var urlPath = 'civicrm/activity';
+      var urlParams = {
+        action: 'update',
+        id: activity.id,
+        reset: 1
+      };
+
+      if (activity.case_id) {
+        urlPath = 'civicrm/case/activity';
+        urlParams.caseid = activity.case_id;
+      }
+
+      return civicaseCrmUrl(urlPath, urlParams);
     }
   }
-})(angular, CRM.url);
+})(angular);

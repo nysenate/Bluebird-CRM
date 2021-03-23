@@ -1,12 +1,14 @@
-(function (_, angular, getCrmUrl) {
+(function (_, angular) {
   var module = angular.module('civicase');
 
   module.service('AddActivityForm', AddActivityForm);
 
   /**
    * Add Activity Form service.
+   *
+   * @param {Function} civicaseCrmUrl crm url service.
    */
-  function AddActivityForm () {
+  function AddActivityForm (civicaseCrmUrl) {
     this.canChangeStatus = true;
     this.canHandleActivity = canHandleActivity;
     this.getActivityFormUrl = getActivityFormUrl;
@@ -35,7 +37,7 @@
         atype: activity.activity_type_id
       });
 
-      return getCrmUrl('civicrm/case/activity', options);
+      return civicaseCrmUrl('civicrm/case/activity', options);
     }
   }
-})(CRM._, angular, CRM.url);
+})(CRM._, angular);

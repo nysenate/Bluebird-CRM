@@ -9,4 +9,5 @@ module.exports = async (page, scenario, vp) => {
 
   await page.click('.civicase__case-body_tab > li:nth-child(2) a');
   await utility.waitForLoadingComplete();
+  await page.waitFor(500);
 };
