@@ -215,6 +215,13 @@
   > .panel-body {
     background: none;
   }
+
+  .civicase__panel-empty {
+    background: $crm-white;
+    height: 100%;
+    margin: 0;
+    padding: $panel-body-padding;
+  }
 }
 
 .civicase__case-details-panel--summary {

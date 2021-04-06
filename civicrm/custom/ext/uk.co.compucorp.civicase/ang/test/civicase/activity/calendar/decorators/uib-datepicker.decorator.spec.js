@@ -1,5 +1,3 @@
-/* eslint-env jasmine */
-
 (function (angular) {
   describe('day picker decorator', function () {
     var $compile, $rootScope, $scope, daypicker;
@@ -54,7 +52,7 @@
        * Setups the test for the current week day by mocking the clock's date,
        * initializing the directive and ticking the clock forward.
        *
-       * @param {Object} momentDate a reference to a moment date.
+       * @param {object} momentDate a reference to a moment date.
        * @param {Function} done the function to execute after the clock moves forward.
        */
       function setupCUrrentWeekDayTest (momentDate, done) {

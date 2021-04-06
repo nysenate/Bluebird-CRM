@@ -8,13 +8,20 @@
       content: none;
     }
   }
+
+  .civicase__bulkactions-message {
+    margin: 0 85px 10px;
+
+    .alert {
+      border-bottom: 1px solid $crm-grayblue-dark !important;
+      box-shadow: none;
+    }
+  }
 }
 
-.civicase__file-tab-actions {
-  display: flex;
-  flex-direction: row;
-  justify-content: flex-end;
-  margin-bottom: 24px;
+.civicase__file-tab-filters {
+  display: inline-block;
+  float: right;
 }
 
 .civicase__file-filters-container {

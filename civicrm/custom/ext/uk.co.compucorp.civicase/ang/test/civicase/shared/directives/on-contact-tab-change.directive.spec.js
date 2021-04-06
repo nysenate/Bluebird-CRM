@@ -1,5 +1,3 @@
-/* eslint-env jasmine */
-
 (($) => {
   describe('civicaseOnContactTabChange', () => {
     let $compile, $rootScope, $scope, element;

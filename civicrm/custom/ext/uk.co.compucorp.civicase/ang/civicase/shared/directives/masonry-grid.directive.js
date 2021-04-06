@@ -11,10 +11,10 @@
     /**
      * Masonry Grid link function.
      *
-     * @param {Object} $scope the directive's scope.
-     * @param {Object} $element a reference to the directive's element.
-     * @param {Object} attrs a map of attributes associated to the element.
-     * @param {Object} ctrl a reference to the directive's controller.
+     * @param {object} $scope the directive's scope.
+     * @param {object} $element a reference to the directive's element.
+     * @param {object} attrs a map of attributes associated to the element.
+     * @param {object} ctrl a reference to the directive's controller.
      */
     function civicaseMasonryGridLink ($scope, $element, attrs, ctrl) {
       var NO_OF_COLUMNS = 2;
@@ -61,7 +61,7 @@
     /**
      * Adds an item element to the grid.
      *
-     * @param {Object} $gridItem a reference to the item element to be added.
+     * @param {object} $gridItem a reference to the item element to be added.
      */
     vm.addGridItem = function ($gridItem) {
       removeDuplicatedGridItem($gridItem);
@@ -72,7 +72,8 @@
     /**
      * Adds an item element to the grid at the given index.
      *
-     * @param {Object} $gridItem a reference to the item element to be added.
+     * @param {object} $gridItem a reference to the item element to be added.
+     * @param {number} atIndex index
      */
     vm.addGridItemAt = function ($gridItem, atIndex) {
       removeDuplicatedGridItem($gridItem);
@@ -83,7 +84,7 @@
     /**
      * Removes the item element from the grid.
      *
-     * @param {Object} $gridItem a reference to the item element to be removed.
+     * @param {object} $gridItem a reference to the item element to be removed.
      */
     vm.removeGridItem = function ($gridItem) {
       _.remove(vm.$gridItems, $gridItem);
@@ -95,7 +96,7 @@
      * This is done in case the grid item needs to be moved from one position to
      * another.
      *
-     * @param {Object} $gridItem a reference to the item element to be removed.
+     * @param {object} $gridItem a reference to the item element to be removed.
      */
     function removeDuplicatedGridItem ($gridItem) {
       _.remove(vm.$gridItems, $gridItem);
@@ -112,10 +113,10 @@
     /**
      * Masonry grid item link function.
      *
-     * @param {Object} $scope the directive's scope.
-     * @param {Object} $element a reference to the directive's element.
-     * @param {Object} attrs a map of attributes associated to the element.
-     * @param {Object} masonryGrid a reference to the parent masonry grid directive's controller.
+     * @param {object} $scope the directive's scope.
+     * @param {object} $element a reference to the directive's element.
+     * @param {object} attrs a map of attributes associated to the element.
+     * @param {object} masonryGrid a reference to the parent masonry grid directive's controller.
      */
     function civicaseMasonryGridItemLink ($scope, $element, attrs, masonryGrid) {
       (function init () {

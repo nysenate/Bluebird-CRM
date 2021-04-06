@@ -1,26 +1,27 @@
-/* eslint-env jasmine */
-
 ((_) => {
   describe('Contact Case Tab', () => {
-    var $controller, $rootScope, $scope, CaseTypeCategoryTranslationService,
-      crmApi, mockContactId, mockContactService, AddCase;
+    var $q, $controller, $rootScope, $scope, CaseTypeCategoryTranslationService,
+      civicaseCrmApi, mockContactId, mockContactService, AddCase;
 
     beforeEach(module('civicase.data', 'civicase', ($provide) => {
       mockContactService = jasmine.createSpyObj('Contact', ['getCurrentContactID']);
 
       $provide.value('Contact', mockContactService);
+      $provide.value('civicaseCrmApi', jasmine.createSpy('civicaseCrmApi'));
     }));
 
-    beforeEach(inject((_$controller_, _$rootScope_, _CaseTypeCategoryTranslationService_,
-      _crmApi_, _AddCase_) => {
+    beforeEach(inject((_$q_, _$controller_, _$rootScope_,
+      _CaseTypeCategoryTranslationService_, _civicaseCrmApi_, _AddCase_) => {
       $controller = _$controller_;
       $rootScope = _$rootScope_;
+      $q = _$q_;
       CaseTypeCategoryTranslationService = _CaseTypeCategoryTranslationService_;
       AddCase = _AddCase_;
-      crmApi = _crmApi_;
+      civicaseCrmApi = _civicaseCrmApi_;
 
       spyOn(CaseTypeCategoryTranslationService, 'restoreTranslation');
       spyOn(CaseTypeCategoryTranslationService, 'storeTranslation');
+      civicaseCrmApi.and.returnValue($q.resolve());
     }));
 
     beforeEach(() => {
@@ -48,7 +49,7 @@
 
     describe('when loading cases', () => {
       it('requests non deleted opened cases for the given contact', () => {
-        expect(crmApi.calls.allArgs()).toContain(jasmine.arrayContaining([
+        expect(civicaseCrmApi.calls.allArgs()).toContain(jasmine.arrayContaining([
           jasmine.objectContaining({
             cases: ['Case', 'getcaselist', jasmine.objectContaining({
               'status_id.grouping': 'Opened',
@@ -61,7 +62,7 @@
       });
 
       it('requests non deleted closed cases for the given contact', () => {
-        expect(crmApi.calls.allArgs()).toContain(jasmine.arrayContaining([
+        expect(civicaseCrmApi.calls.allArgs()).toContain(jasmine.arrayContaining([
           jasmine.objectContaining({
             cases: ['Case', 'getcaselist', jasmine.objectContaining({
               'status_id.grouping': 'Closed',
@@ -74,13 +75,23 @@
       });
 
       it('requests non deleted cases where the contact has a role other than client', () => {
-        expect(crmApi.calls.allArgs()).toContain(jasmine.arrayContaining([
+        expect(civicaseCrmApi.calls.allArgs()).toContain(jasmine.arrayContaining([
           jasmine.objectContaining({
             cases: ['Case', 'getcaselist', jasmine.objectContaining({
               exclude_for_client_id: $scope.contactId,
               contact_involved: $scope.contactId,
               'case_type_id.case_type_category': 2,
               is_deleted: 0
+            })]
+          })
+        ]));
+      });
+
+      it('requests all cases even disabled ones', () => {
+        expect(civicaseCrmApi.calls.allArgs()).not.toContain(jasmine.arrayContaining([
+          jasmine.objectContaining({
+            cases: ['Case', 'getcaselist', jasmine.objectContaining({
+              'case_type_id.is_active': jasmine.anything()
             })]
           })
         ]));

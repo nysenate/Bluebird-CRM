@@ -9,7 +9,10 @@
         element
           .on('crmFormSuccess', function (event, data) {
             scope.$apply(function () {
-              scope.$eval(attrs.crmFormSuccess, {'$event': event, '$data': data});
+              scope.$eval(attrs.crmFormSuccess, {
+                $event: event,
+                $data: data
+              });
             });
           });
       }

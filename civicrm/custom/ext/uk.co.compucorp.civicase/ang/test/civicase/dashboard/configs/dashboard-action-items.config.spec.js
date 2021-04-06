@@ -1,5 +1,3 @@
-/* eslint-env jasmine */
-
 (() => {
   describe('Dashboard Action Buttons', () => {
     let DashboardActionItemsProvider;

@@ -1,26 +1,28 @@
-/* eslint-env jasmine */
-
 (function ($, _) {
   describe('civicaseActivityPanel', function () {
     var $compile, $rootScope, $scope, activityPanel, activitiesMockData,
       refreshFunction, formatActivity, ActivityStatus, ActivityForms,
-      MockActivityFormsService;
+      MockActivityFormsService, civicaseCrmUrl, civicaseCrmLoadForm;
 
     beforeEach(module('civicase', 'civicase.templates', 'civicase.data'));
 
     beforeEach(inject(function (_$compile_, _$rootScope_, _activitiesMockData_,
-      _formatActivity_, _ActivityStatus_, _ActivityForms_) {
+      _formatActivity_, _ActivityStatus_, _ActivityForms_, _civicaseCrmUrl_,
+      _civicaseCrmLoadForm_) {
+      civicaseCrmUrl = _civicaseCrmUrl_;
       $compile = _$compile_;
       $rootScope = _$rootScope_;
       activitiesMockData = _activitiesMockData_;
       formatActivity = _formatActivity_;
       ActivityStatus = _ActivityStatus_;
       ActivityForms = _ActivityForms_;
+      civicaseCrmLoadForm = _civicaseCrmLoadForm_;
 
       $scope = $rootScope.$new();
 
-      CRM.url.and.returnValue('crm url mock');
+      civicaseCrmUrl.and.returnValue('crm url mock');
       refreshFunction = jasmine.createSpy('refresh');
+      civicaseCrmLoadForm.and.returnValue($('<div></div>'));
 
       spyOn($rootScope, '$broadcast').and.callThrough();
       spyOn(ActivityForms, 'getActivityFormService');
@@ -60,7 +62,7 @@
           .toHaveBeenCalledWith($scope.viewingActivity, { action: 'view' });
         expect(MockActivityFormsService.getActivityFormUrl)
           .toHaveBeenCalledWith($scope.viewingActivity, { action: 'view' });
-        expect(CRM.loadForm).toHaveBeenCalledWith('/mockactivityurl', jasmine.objectContaining({
+        expect(civicaseCrmLoadForm).toHaveBeenCalledWith('/mockactivityurl', jasmine.objectContaining({
           target: jasmine.any(Object)
         }));
       });

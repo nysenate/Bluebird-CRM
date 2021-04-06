@@ -1,5 +1,3 @@
-/* eslint-env jasmine */
-
 ((_, CRM) => {
   describe('CaseTypeCategoryTranslationService', () => {
     const CIVICASE_TRANSLATION_DOMAIN_NAME = 'strings::uk.co.compucorp.civicase';

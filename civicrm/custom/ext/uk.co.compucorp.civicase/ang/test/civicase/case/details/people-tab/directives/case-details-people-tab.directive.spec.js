@@ -1,18 +1,26 @@
-/* eslint-env jasmine */
-
 describe('Case Details People Tab', () => {
   let $controller, $rootScope, $scope, CasesData, caseRoleSelectorContact,
-    ContactsData, crmConfirmDialog, crmConfirmYesEvent, originalCrmConfirm,
-    originalSelect2;
-  const CONTACT_CANT_HAVE_ROLE_MESSAGE = 'Case clients cannot be selected for a case role. Please select another contact.';
+    civicasePeopleTabRoles, civicaseRoleDatesUpdater, ContactsData,
+    crmConfirmDialog, crmConfirmYesEvent, originalCrmConfirm, originalSelect2,
+    dialogServiceMock, CaseTypesMockData, PeoplesTabMessageConstants;
 
-  beforeEach(module('civicase', 'civicase.data'));
+  beforeEach(module('civicase', 'civicase.data', ($provide) => {
+    dialogServiceMock = jasmine.createSpyObj('dialogService', ['open', 'close']);
 
-  beforeEach(inject(function (_$controller_, _$q_, _$rootScope_, _CasesData_, _ContactsData_) {
+    $provide.value('dialogService', dialogServiceMock);
+  }));
+
+  beforeEach(inject(function (_$controller_, _$q_, _$rootScope_,
+    _CasesData_, _civicasePeopleTabRoles_, _civicaseRoleDatesUpdater_,
+    _ContactsData_, _CaseTypesMockData_, _PeoplesTabMessageConstants_) {
     $controller = _$controller_;
     $rootScope = _$rootScope_;
     CasesData = _CasesData_;
+    civicasePeopleTabRoles = _civicasePeopleTabRoles_;
+    civicaseRoleDatesUpdater = _civicaseRoleDatesUpdater_;
     ContactsData = _ContactsData_;
+    CaseTypesMockData = _CaseTypesMockData_;
+    PeoplesTabMessageConstants = _PeoplesTabMessageConstants_;
 
     $scope = $rootScope.$new();
     $scope.$bindToRoute = jasmine.createSpy('$bindToRoute');
@@ -34,8 +42,6 @@ describe('Case Details People Tab', () => {
     CRM.$.fn.select2 = jasmine.createSpy('select2').and.callFake(function (option) {
       if (option === 'data') {
         return caseRoleSelectorContact;
-      } else if (option === 'container') {
-        return crmConfirmDialog.find('[name=caseRoleSelector]');
       }
     });
   }));
@@ -48,10 +54,22 @@ describe('Case Details People Tab', () => {
   });
 
   beforeEach(() => {
+    const caseType = CaseTypesMockData.get()[1];
     $scope.item = CasesData.get().values[0];
+    $scope.item.definition = caseType.definition;
 
     initController({
       $scope: $scope
+    });
+  });
+
+  describe('on init', () => {
+    it('stores a reference to the people tab roles service', () => {
+      expect($scope.roles).toBe(civicasePeopleTabRoles);
+    });
+
+    it('stores a reference to the role dates updater service', () => {
+      expect($scope.roleDatesUpdater).toBe(civicaseRoleDatesUpdater);
     });
   });
 
@@ -69,11 +87,14 @@ describe('Case Details People Tab', () => {
       beforeEach(() => {
         $scope.assignRoleOrClient({
           relationship_type_id: relationshipTypeId,
-          role: roleName
+          role: roleName,
+          start_date: moment().add(5, 'day')
         });
-        setRoleContact(contact);
-        setRoleDescription(roleDescription);
-        crmConfirmDialog.trigger(crmConfirmYesEvent);
+        selectDialogContact(contact);
+        updateDialogModel({
+          description: roleDescription
+        });
+        submitDialog();
         $rootScope.$digest();
       });
 
@@ -81,7 +102,7 @@ describe('Case Details People Tab', () => {
         expect($scope.refresh).toHaveBeenCalledWith(jasmine.arrayContaining([
           ['Relationship', 'create', {
             relationship_type_id: relationshipTypeId,
-            start_date: 'now',
+            start_date: getDialogModel().startDate,
             end_date: null,
             contact_id_b: contact.contact_id,
             case_id: $scope.item.id,
@@ -91,84 +112,90 @@ describe('Case Details People Tab', () => {
         ]));
       });
 
-      it('creates a new completed activity to record the contact being assigned a role to the case', () => {
-        expect($scope.refresh).toHaveBeenCalledWith(jasmine.arrayContaining([
-          ['Activity', 'create', {
-            case_id: $scope.item.id,
-            target_contact_id: contact.contact_id,
-            status_id: 'Completed',
-            activity_type_id: 'Assign Case Role',
-            subject: `${contact.display_name} added as ${roleName}`
-          }]
-        ]));
-      });
-
       it('closes the contact selection dialog', () => {
-        expect(crmConfirmYesEvent.preventDefault).not.toHaveBeenCalled();
+        expect(dialogServiceMock.close).toHaveBeenCalled();
       });
     });
 
     describe('when replacing a role', () => {
-      beforeEach(() => {
-        previousContact = CRM._.sample(ContactsData.values);
+      describe('when reassignment date is before start date', () => {
+        beforeEach(() => {
+          previousContact = CRM._.sample(ContactsData.values);
 
-        $scope.replaceRoleOrClient({
-          contact_id: previousContact.contact_id,
-          display_name: previousContact.display_name,
-          relationship_type_id: relationshipTypeId,
-          role: roleName
-        });
-        setRoleContact(contact);
-        setRoleDescription(roleDescription);
-        crmConfirmDialog.trigger(crmConfirmYesEvent);
-        $rootScope.$digest();
-      });
-
-      it('marks the current role relationship as finished', () => {
-        expect($scope.refresh).toHaveBeenCalledWith(jasmine.arrayContaining([
-          ['Relationship', 'get', {
+          $scope.replaceRoleOrClient({
+            contact_id: previousContact.contact_id,
+            display_name: previousContact.display_name,
             relationship_type_id: relationshipTypeId,
-            contact_id_b: previousContact.contact_id,
-            case_id: $scope.item.id,
-            is_active: 1,
-            'api.Relationship.create': {
-              is_active: 0, end_date: 'now'
+            role: roleName,
+            id: '101',
+            relationship: {
+              start_date: moment().add(5, 'day')
             }
-          }]
-        ]));
+          });
+          selectDialogContact(contact);
+          updateDialogModel({
+            description: roleDescription
+          });
+          submitDialog();
+          $rootScope.$digest();
+        });
+
+        it('does not creates a new relationship', () => {
+          expect($scope.refresh).not.toHaveBeenCalled();
+        });
+
+        it('does not close the contact selection dialog', () => {
+          expect(dialogServiceMock.close).not.toHaveBeenCalled();
+        });
       });
 
-      it('creates a new relationship between the case client and the selected contact using the given role', () => {
-        expect($scope.refresh).toHaveBeenCalledWith(jasmine.arrayContaining([
-          ['Relationship', 'create', {
+      describe('when reassignment date is not before start date', () => {
+        beforeEach(() => {
+          previousContact = CRM._.sample(ContactsData.values);
+
+          $scope.replaceRoleOrClient({
+            contact_id: previousContact.contact_id,
+            display_name: previousContact.display_name,
             relationship_type_id: relationshipTypeId,
-            start_date: 'now',
-            end_date: null,
-            contact_id_b: contact.contact_id,
-            case_id: $scope.item.id,
-            description: roleDescription,
-            contact_id_a: $scope.item.client[0].contact_id
-          }]
-        ]));
-      });
+            role: roleName,
+            id: '101',
+            relationship: {
+              start_date: moment().add(-1, 'day')
+            }
+          });
+          selectDialogContact(contact);
+          updateDialogModel({
+            description: roleDescription
+          });
+          submitDialog();
+          $rootScope.$digest();
+        });
 
-      it('creates a new completed activity to record the case role has been reassigned', () => {
-        expect($scope.refresh).toHaveBeenCalledWith(jasmine.arrayContaining([
-          ['Activity', 'create', {
-            case_id: $scope.item.id,
-            target_contact_id: jasmine.arrayContaining([
-              previousContact.contact_id,
-              contact.contact_id
-            ]),
-            status_id: 'Completed',
-            activity_type_id: 'Assign Case Role',
-            subject: `${contact.display_name} replaced ${previousContact.display_name} as ${roleName}`
-          }]
-        ]));
-      });
+        it('creates a new relationship between the case client and the selected contact using the given role', () => {
+          expect($scope.refresh).toHaveBeenCalledWith(jasmine.arrayContaining([
+            ['Relationship', 'get', {
+              case_id: $scope.item.id,
+              contact_id_b: previousContact.contact_id,
+              is_active: 1,
+              relationship_type_id: relationshipTypeId,
+              'api.Relationship.create': {
+                id: false,
+                relationship_type_id: relationshipTypeId,
+                start_date: getDialogModel().reassignmentDate.value,
+                end_date: null,
+                contact_id_a: $scope.item.client[0].contact_id,
+                contact_id_b: contact.contact_id,
+                case_id: $scope.item.id,
+                description: roleDescription,
+                reassign_rel_id: '$value.id'
+              }
+            }]
+          ]));
+        });
 
-      it('closes the contact selection dialog', () => {
-        expect(crmConfirmYesEvent.preventDefault).not.toHaveBeenCalled();
+        it('closes the contact selection dialog', () => {
+          expect(dialogServiceMock.close).toHaveBeenCalled();
+        });
       });
     });
 
@@ -179,16 +206,19 @@ describe('Case Details People Tab', () => {
           relationship_type_id: relationshipTypeId,
           role: roleName
         });
-        setRoleContact(CRM._.assign({}, client, {
+        selectDialogContact(CRM._.assign({}, client, {
           id: client.contact_id
         }));
-        setRoleDescription(roleDescription);
-        crmConfirmDialog.trigger(crmConfirmYesEvent);
+        updateDialogModel({
+          description: roleDescription
+        });
+        submitDialog();
         $rootScope.$digest();
       });
 
       it('displays an error message', () => {
-        expect(crmConfirmDialog.text()).toContain(CONTACT_CANT_HAVE_ROLE_MESSAGE);
+        expect(getDialogModel().errorMessage.contactSelection)
+          .toBe(PeoplesTabMessageConstants.CONTACT_CANT_HAVE_ROLE_MESSAGE);
       });
 
       it('does not make api requests', () => {
@@ -196,7 +226,7 @@ describe('Case Details People Tab', () => {
       });
 
       it('does not close the contact selection dialog', () => {
-        expect(crmConfirmYesEvent.preventDefault).toHaveBeenCalled();
+        expect(dialogServiceMock.close).not.toHaveBeenCalled();
       });
     });
 
@@ -205,18 +235,24 @@ describe('Case Details People Tab', () => {
         var client = CRM._.first($scope.item.client);
         $scope.replaceRoleOrClient({
           relationship_type_id: relationshipTypeId,
-          role: roleName
+          role: roleName,
+          relationship: {
+            start_date: moment().format('YYYY-MM-DD')
+          }
         });
-        setRoleContact(CRM._.assign({}, client, {
+        selectDialogContact(CRM._.assign({}, client, {
           id: client.contact_id
         }));
-        setRoleDescription(roleDescription);
-        crmConfirmDialog.trigger(crmConfirmYesEvent);
+        updateDialogModel({
+          description: roleDescription
+        });
+        submitDialog();
         $rootScope.$digest();
       });
 
       it('displays an error message', () => {
-        expect(crmConfirmDialog.text()).toContain(CONTACT_CANT_HAVE_ROLE_MESSAGE);
+        expect(getDialogModel().errorMessage.contactSelection)
+          .toBe(PeoplesTabMessageConstants.CONTACT_CANT_HAVE_ROLE_MESSAGE);
       });
 
       it('does not make api requests', () => {
@@ -224,7 +260,35 @@ describe('Case Details People Tab', () => {
       });
 
       it('does not close the contact selection dialog', () => {
-        expect(crmConfirmYesEvent.preventDefault).toHaveBeenCalled();
+        expect(dialogServiceMock.close).not.toHaveBeenCalled();
+      });
+    });
+
+    describe('when not selecting a contact', () => {
+      beforeEach(() => {
+        $scope.assignRoleOrClient({
+          relationship_type_id: relationshipTypeId,
+          role: roleName
+        });
+        CRM.$.fn.select2.and.returnValue();
+        updateDialogModel({
+          description: roleDescription
+        });
+        submitDialog();
+        $rootScope.$digest();
+      });
+
+      it('displays an error message', () => {
+        expect(getDialogModel().errorMessage.contactSelection)
+          .toBe(PeoplesTabMessageConstants.CONTACT_NOT_SELECTED_MESSAGE);
+      });
+
+      it('does not make api requests', () => {
+        expect($scope.refresh).not.toHaveBeenCalled();
+      });
+
+      it('does not close the contact selection dialog', () => {
+        expect(dialogServiceMock.close).not.toHaveBeenCalled();
       });
     });
 
@@ -233,8 +297,8 @@ describe('Case Details People Tab', () => {
         $scope.assignRoleOrClient({
           role: 'Client'
         });
-        setRoleContact(contact);
-        crmConfirmDialog.trigger(crmConfirmYesEvent);
+        selectDialogContact(contact);
+        submitDialog();
         $rootScope.$digest();
       });
 
@@ -279,7 +343,7 @@ describe('Case Details People Tab', () => {
       });
 
       it('closes the contact selection dialog', () => {
-        expect(crmConfirmYesEvent.preventDefault).not.toHaveBeenCalled();
+        expect(dialogServiceMock.close).toHaveBeenCalled();
       });
     });
 
@@ -292,9 +356,24 @@ describe('Case Details People Tab', () => {
           display_name: previousContact.display_name,
           role: 'Client'
         }, true);
-        setRoleContact(contact);
-        crmConfirmDialog.trigger(crmConfirmYesEvent);
+        selectDialogContact(contact);
+        submitDialog();
         $rootScope.$digest();
+      });
+
+      it('does not show the reassignment datepicker', () => {
+        expect(dialogServiceMock.open).toHaveBeenCalledWith(
+          'PromptForContactDialog',
+          '~/civicase/case/details/people-tab/directives/contact-prompt-dialog.html',
+          jasmine.objectContaining({
+            reassignmentDate: {
+              value: undefined,
+              show: false,
+              maxDate: undefined
+            }
+          }),
+          jasmine.any(Object)
+        );
       });
 
       it('replaces the old client with the new selected contact', () => {
@@ -337,7 +416,7 @@ describe('Case Details People Tab', () => {
       });
 
       it('closes the contact selection dialog', () => {
-        expect(crmConfirmYesEvent.preventDefault).not.toHaveBeenCalled();
+        expect(dialogServiceMock.close).toHaveBeenCalled();
       });
     });
 
@@ -384,6 +463,117 @@ describe('Case Details People Tab', () => {
         }]]));
       });
     });
+
+    describe('when unassigning a role', () => {
+      let sampleContact, relationshipTypeId;
+
+      describe('when start date is after role end date', () => {
+        beforeEach(() => {
+          sampleContact = CRM._.sample(ContactsData.values);
+          relationshipTypeId = CRM._.uniqueId();
+
+          $scope.unassignRole({
+            contact_id: sampleContact.contact_id,
+            display_name: sampleContact.display_name,
+            relationship_type_id: relationshipTypeId,
+            role: 'Role',
+            relationship: {
+              start_date: moment().add(5, 'day')
+            }
+          });
+
+          updateDialogModel({
+            description: roleDescription
+          });
+          submitDialog();
+
+          $rootScope.$digest();
+        });
+
+        it('does not make an api call to update relationship', () => {
+          expect($scope.refresh).not.toHaveBeenCalled();
+        });
+      });
+
+      describe('when start date is before role end date', () => {
+        beforeEach(() => {
+          sampleContact = CRM._.sample(ContactsData.values);
+          relationshipTypeId = CRM._.uniqueId();
+
+          $scope.unassignRole({
+            contact_id: sampleContact.contact_id,
+            display_name: sampleContact.display_name,
+            relationship_type_id: relationshipTypeId,
+            role: 'Role',
+            relationship: {
+              start_date: moment().add(-5, 'day')
+            }
+          });
+
+          updateDialogModel({
+            description: roleDescription
+          });
+          submitDialog();
+
+          $rootScope.$digest();
+        });
+
+        it('marks the current role relationship as finished using the active field', () => {
+          expect($scope.refresh).toHaveBeenCalledWith(jasmine.arrayContaining([
+            ['Relationship', 'get', {
+              relationship_type_id: relationshipTypeId,
+              contact_id_b: sampleContact.contact_id,
+              case_id: $scope.item.id,
+              is_active: 1,
+              'api.Relationship.create': {
+                end_date: moment().format('YYYY-MM-DD'),
+                is_active: 0
+              }
+            }]
+          ]));
+        });
+      });
+
+      describe('when reassining to a past date', () => {
+        beforeEach(() => {
+          sampleContact = CRM._.sample(ContactsData.values);
+          relationshipTypeId = CRM._.uniqueId();
+
+          $scope.unassignRole({
+            contact_id: sampleContact.contact_id,
+            display_name: sampleContact.display_name,
+            relationship_type_id: relationshipTypeId,
+            role: 'Role',
+            relationship: {
+              start_date: moment().add(-5, 'day')
+            }
+          });
+
+          updateDialogModel({
+            description: roleDescription,
+            endDate: { value: moment().add(-3, 'day').format('YYYY-MM-DD') }
+          });
+          submitDialog();
+
+          $rootScope.$digest();
+        });
+
+        it('marks the current role relationship as finished using the end date of the new relationship start date', () => {
+          expect($scope.refresh).toHaveBeenCalledWith(jasmine.arrayContaining([
+            ['Relationship', 'get', {
+              relationship_type_id: relationshipTypeId,
+              contact_id_b: sampleContact.contact_id,
+              case_id: $scope.item.id,
+              is_active: 1,
+              'api.Relationship.create': {
+                end_date: moment().add(-3, 'day').format('YYYY-MM-DD'),
+                is_active: 0
+              }
+            }]
+          ]));
+        });
+      });
+    });
   });
 
   describe('bulk action', () => {
@@ -398,6 +588,14 @@ describe('Case Details People Tab', () => {
       expect($scope.doContactTask).toHaveBeenCalledWith('roles');
     });
   });
+
+  /**
+   * @returns {object} The dialog's model object data.
+   */
+  function getDialogModel () {
+    return dialogServiceMock.open.calls.mostRecent().args[2];
+  }
+
   /**
    * Initializes the controller.
    *
@@ -408,25 +606,37 @@ describe('Case Details People Tab', () => {
   }
 
   /**
-   * Sets the given contact as the selected value of the case role selector dropdown.
+   * Makes the select2 function return the information for the given object.
    *
-   * @param {object} contact a contact.
+   * @param {object} contact contact's data.
    */
-  function setRoleContact (contact) {
-    CRM.$('[name=caseRoleSelector]', crmConfirmDialog).val(contact.id);
-    caseRoleSelectorContact = {
+  function selectDialogContact (contact) {
+    CRM.$.fn.select2.and.returnValue({
       id: contact.id,
-      text: contact.display_name,
-      extra: contact
-    };
+      label: contact.sort_name,
+      icon_class: contact.contact_type,
+      description: [contact.email],
+      extra: {
+        display_name: contact.display_name
+      }
+    });
   }
 
   /**
-   * Sets the description for the role being created using the confirm dialog.
-   *
-   * @param {string} description a description for the role.
+   * Submits the active modal dialog by clicking on the first configured button.
    */
-  function setRoleDescription (description) {
-    CRM.$('[name=description]', crmConfirmDialog).val(description);
+  function submitDialog () {
+    dialogServiceMock.open.calls.mostRecent().args[3].buttons[0].click();
+  }
+
+  /**
+   * Updates the dialog's model with the given data.
+   *
+   * @param {object} newModelData new data to append to the model.
+   */
+  function updateDialogModel (newModelData) {
+    var currentModelData = getDialogModel();
+
+    Object.assign(currentModelData, newModelData);
   }
 });

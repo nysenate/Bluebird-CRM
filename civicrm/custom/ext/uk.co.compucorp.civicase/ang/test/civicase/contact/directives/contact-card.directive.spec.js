@@ -1,15 +1,17 @@
-/* eslint-env jasmine */
 (function ($) {
   describe('contactCard', function () {
-    var element, crmApi, $q, $compile, $rootScope, $scope, ContactsData, ContactsCache;
+    var element, civicaseCrmApi, $q, $compile, $rootScope, $scope, ContactsData, ContactsCache;
 
-    beforeEach(module('civicase.templates', 'civicase', 'civicase.data'));
+    beforeEach(module('civicase.templates', 'civicase', 'civicase.data', function ($provide) {
+      $provide.value('civicaseCrmApi', jasmine.createSpy('civicaseCrmApi'));
+    }));
 
-    beforeEach(inject(function (_$compile_, _$rootScope_, _$q_, _crmApi_, _ContactsData_, _ContactsCache_) {
+    beforeEach(inject(function (_$compile_, _$rootScope_, _$q_, _civicaseCrmApi_,
+      _ContactsData_, _ContactsCache_) {
       $q = _$q_;
       $compile = _$compile_;
       $rootScope = _$rootScope_;
-      crmApi = _crmApi_;
+      civicaseCrmApi = _civicaseCrmApi_;
       ContactsData = _ContactsData_;
       ContactsCache = _ContactsCache_;
       $scope = $rootScope.$new();
@@ -17,6 +19,7 @@
 
     describe('basic tests', function () {
       beforeEach(function () {
+        spyOn(ContactsCache, 'add').and.returnValue($q.resolve(ContactsData.values[0]));
         compileDirective(false);
       });
 
@@ -27,21 +30,25 @@
 
     describe('when contacts data are set', function () {
       beforeEach(function () {
-        compileDirective(false, ContactsData.values[0].contact_id, ContactsData.values[0].display_name);
+        spyOn(ContactsCache, 'add').and.returnValue($q.resolve(ContactsData.values[0]));
+        compileDirective(false, [ContactsData.values[0].contact_id]);
       });
 
-      it('sets the display name and contact id of the sent contant', function () {
-        expect(element.isolateScope().contacts).toEqual([{
-          display_name: ContactsData.values[0].display_name,
-          contact_id: ContactsData.values[0].contact_id
-        }]);
+      it('displays the contact', function () {
+        expect(element.isolateScope().contacts).toEqual([ContactsData.values[0].contact_id]);
       });
     });
 
     describe('when the contact card is of avatar type', function () {
       describe('when the display name is a name', function () {
         beforeEach(function () {
-          compileDirective(true, 1, 'John Doe');
+          spyOn(ContactsCache, 'add').and.returnValue($q.resolve(ContactsData.values[0]));
+          spyOn(ContactsCache, 'getCachedContact').and.returnValue({
+            display_name: 'John Doe',
+            first_name: 'John',
+            last_name: 'Doe'
+          });
+          compileDirective(true, ContactsData.values[0].id);
         });
 
         it('sets the initial of the name as the avatar', function () {
@@ -51,7 +58,9 @@
 
       describe('when the display name is an email', function () {
         beforeEach(function () {
-          compileDirective(true, 1, 'example@example.com');
+          spyOn(ContactsCache, 'add').and.returnValue($q.resolve(ContactsData.values[0]));
+          spyOn(ContactsCache, 'getCachedContact').and.returnValue({ display_name: 'example@example.com' });
+          compileDirective(true, ContactsData.values[0].id);
         });
 
         it('sets the first letter of the email address as the avatar', function () {
@@ -59,9 +68,40 @@
         });
       });
 
+      describe('when first name or last name does not exist, and display name is not an email id either', function () {
+        beforeEach(function () {
+          spyOn(ContactsCache, 'add').and.returnValue($q.resolve(ContactsData.values[0]));
+          spyOn(ContactsCache, 'getCachedContact').and.returnValue({
+            display_name: 'John Doe'
+          });
+          compileDirective(true, ContactsData.values[0].id);
+        });
+
+        it('sets the initial of the name as the avatar', function () {
+          expect(element.isolateScope().contacts[0].avatar).toBe('JD');
+        });
+      });
+
+      describe('when the display name contains both prefix and suffix honorific', function () {
+        beforeEach(function () {
+          spyOn(ContactsCache, 'add').and.returnValue($q.resolve(ContactsData.values[0]));
+          spyOn(ContactsCache, 'getCachedContact').and.returnValue({
+            display_name: 'Mr. John Doe Jr.',
+            first_name: 'John',
+            last_name: 'Doe'
+          });
+
+          compileDirective(true, ContactsData.values[0].id);
+        });
+
+        it('ignores the honorific while creating the avatar', function () {
+          expect(element.isolateScope().contacts[0].avatar).toBe('JD');
+        });
+      });
+
       describe('image url', function () {
         beforeEach(function () {
-          crmApi.and.returnValue($q.resolve(ContactsData));
+          civicaseCrmApi.and.returnValue($q.resolve(ContactsData));
           ContactsCache.add(ContactsData.values);
           compileDirective(true, ContactsData.values[0].contact_id, ContactsData.values[0].display_name);
         });
@@ -75,15 +115,13 @@
     /**
      * Compiles the contact card directive.
      *
-     * @param {Boolean} isAvatar
-     * @param {Number} contactID
-     * @param {String} contactDisplayName
+     * @param {boolean} isAvatar is avatar
+     * @param {number} contactID contact id
      */
-    function compileDirective (isAvatar, contactID, contactDisplayName) {
+    function compileDirective (isAvatar, contactID) {
       element = $compile('<div civicase-contact-card contacts="contacts" avatar="isAvatar">')($scope);
       $scope.isAvatar = isAvatar;
-      $scope.contacts = {};
-      $scope.contacts[contactID] = contactDisplayName;
+      $scope.contacts = contactID || [ContactsData.values[0]];
       $scope.$digest();
     }
   });

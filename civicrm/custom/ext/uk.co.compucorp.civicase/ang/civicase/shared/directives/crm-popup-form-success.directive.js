@@ -9,7 +9,7 @@
         element.addClass('crm-popup')
           .on('crmPopupFormSuccess', function (event, element, data) {
             scope.$apply(function () {
-              scope.$eval(attrs.crmPopupFormSuccess, {'$event': event, '$data': data});
+              scope.$eval(attrs.crmPopupFormSuccess, { $event: event, $data: data });
             });
           });
       }

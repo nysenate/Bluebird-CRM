@@ -1,14 +1,13 @@
-/* eslint-env jasmine */
-
 ((_, $) => {
   describe('EditActivityAction', () => {
-    var EditActivityAction;
+    var EditActivityAction, civicaseCrmLoadForm;
     var $scope = {};
 
     beforeEach(module('civicase'));
 
-    beforeEach(inject((_EditActivityAction_) => {
+    beforeEach(inject((_EditActivityAction_, _civicaseCrmLoadForm_) => {
       EditActivityAction = _EditActivityAction_;
+      civicaseCrmLoadForm = _civicaseCrmLoadForm_;
     }));
 
     describe('visibility of action', () => {
@@ -71,7 +70,7 @@
 
       it('open a popup to edit the form', () => {
         expect($scope.getEditActivityUrl).toHaveBeenCalledWith('2');
-        expect(CRM.loadForm).toHaveBeenCalledWith('getEditActivityUrl return value');
+        expect(civicaseCrmLoadForm).toHaveBeenCalledWith('getEditActivityUrl return value');
       });
     });
   });

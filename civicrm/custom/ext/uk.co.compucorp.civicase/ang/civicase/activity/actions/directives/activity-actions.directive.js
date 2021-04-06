@@ -7,6 +7,7 @@
         mode: '@',
         selectedActivities: '=',
         isSelectAll: '=',
+        isReadOnly: '<',
         totalCount: '=',
         params: '='
       },
@@ -89,7 +90,13 @@
       var service = getActionService(action.name);
       var isActionEnabledFn = service ? service.isActionEnabled : false;
 
-      return isActionEnabledFn ? isActionEnabledFn($scope) : true;
+      if ($scope.isReadOnly && action.isWriteAction) {
+        return false;
+      } else if (isActionEnabledFn) {
+        return isActionEnabledFn($scope);
+      } else {
+        return true;
+      }
     }
 
     /**

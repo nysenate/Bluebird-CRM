@@ -1,7 +1,7 @@
 <?php
 
 /**
- * Class CRM_Civicase_Hook_ValidateForm_SaveCaseTypeCategory.
+ * Validates Case type category.
  */
 class CRM_Civicase_Hook_ValidateForm_SaveCaseTypeCategory {
 
@@ -26,8 +26,8 @@ class CRM_Civicase_Hook_ValidateForm_SaveCaseTypeCategory {
 
     // Validate the label (category name).
     $field_name = 'label';
-    if (!empty($fields[$field_name]) && !preg_match('!^[a-zA-Z0-9 -]+$!', $fields[$field_name])) {
-      $errors[$field_name] = ts('Allowed characters: letters (a-z), numbers, space and hyphen.');
+    if (!empty($fields[$field_name]) && !preg_match('!^[a-zA-Z0-9-]+$!', $fields[$field_name])) {
+      $errors[$field_name] = ts('Allowed characters: letters (a-z), numbers and hyphen.');
     }
   }
 

@@ -1,4 +1,3 @@
-/* eslint-env jasmine */
 ((_, angular) => {
   describe('CaseDetailsTabs Provider', () => {
     let $injector, CaseDetailsTabs;

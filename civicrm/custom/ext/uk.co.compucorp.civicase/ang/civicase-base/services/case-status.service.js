@@ -5,12 +5,14 @@
 
   /**
    * Case Status Service
+   *
+   * @param {Function} isTruthy service to check if value is truthy
    */
-  function CaseStatus () {
+  function CaseStatus (isTruthy) {
     var allCaseStatuses = CRM['civicase-base'].caseStatuses;
     var activeCaseStatus = _.chain(allCaseStatuses)
       .filter(function (caseStatus) {
-        return caseStatus.is_active === '1';
+        return isTruthy(caseStatus.is_active);
       })
       .indexBy('value')
       .value();

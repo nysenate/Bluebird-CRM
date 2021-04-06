@@ -1,5 +1,3 @@
-/* eslint-env jasmine */
-
 (function ($) {
   describe('Popover', function () {
     var $compile, $rootScope, $scope, $sampleReference, $timeout, $toggleButton,
@@ -276,7 +274,7 @@
         beforeEach(function () {
           $scope.isOpen = false;
 
-          spyOn($rootScope, '$broadcast');
+          spyOn($rootScope, '$broadcast').and.callThrough();
           $rootScope.$digest();
           $toggleButton.click();
           $rootScope.$digest();
@@ -292,7 +290,7 @@
           $scope.isOpen = true;
           $scope.autoCloseOtherPopovers = false;
 
-          spyOn($rootScope, '$broadcast');
+          spyOn($rootScope, '$broadcast').and.callThrough();
           initDirective();
         });
 

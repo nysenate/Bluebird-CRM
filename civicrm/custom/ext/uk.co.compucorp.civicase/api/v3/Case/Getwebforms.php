@@ -30,17 +30,17 @@ function _civicrm_api3_case_getwebforms_spec(array &$spec) {
  * @throws API_Exception
  */
 function civicrm_api3_case_getwebforms(array $params) {
-  $webforms = array();
+  $webforms = [];
   $sysInfo = civicrm_api3('System', 'get')['values'][0];
 
   if (!isset($sysInfo['uf']) || $sysInfo['uf'] != 'Drupal') {
-    $out = civicrm_api3_create_success(array());
+    $out = civicrm_api3_create_success([]);
     $out['warning_message'] = 'Only Drupal CMS is supported!';
     return $out;
   }
 
   if (!module_exists('webform_civicrm')) {
-    $out = civicrm_api3_create_success(array());
+    $out = civicrm_api3_create_success([]);
     $out['warning_message'] = '<p>Webform CiviCRM Drupal module is not installed</p>
       <ul><li>In order to link Drupal Webforms directly from CiviCase you need to install the following Drupal module:
       <a href="https://www.drupal.org/project/webform_civicrm">webform_civicrm</a>.</li></ul>';
@@ -59,12 +59,12 @@ function civicrm_api3_case_getwebforms(array $params) {
     $data = unserialize($dao->data);
 
     if ($data['case']['number_of_case'] >= 0) {
-      $webforms[] = array(
+      $webforms[] = [
         'nid' => $dao->nid,
         'title' => $dao->title,
         'case_type_ids' => _get_case_type_ids_from_webform($data),
         'path' => drupal_get_path_alias('node/' . $dao->nid),
-      );
+      ];
     }
   }
 
@@ -88,7 +88,9 @@ function _get_case_type_ids_from_webform(array $webform) {
 
   foreach ($webform['case'] as $cases) {
     foreach ($cases['case'] as $case) {
-      array_push($caseTypeIds, $case['case_type_id']);
+      if (!empty($case['case_type_id'])) {
+        array_push($caseTypeIds, $case['case_type_id']);
+      }
     }
   }
 

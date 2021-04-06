@@ -5,6 +5,7 @@
   <div ng-if="isMainContentVisible()" class="panel-body">
     <div
       case-activity-card="item.nextActivityNotMilestone"
+      is-read-only="item['case_type_id.is_active'] === '0'"
       crm-popup-form-success="pushCaseData($data.civicase_reload[0])"
       refresh-callback="refresh"
       mode="big"

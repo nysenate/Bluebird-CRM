@@ -6,12 +6,31 @@
   /**
    * Tags Activity Action Service
    *
+   * @param {object} $injector angulars injector service
    * @param {object} $rootScope rootscope object
-   * @param {object} crmApi service to use civicrm api
-   * @param {object} dialogService service to open dialog box
+   * @param {object} civicaseCrmApi service to use civicrm api
+   * @param {object} pascalCase pascal case service
+   * @param {Function} ts Translation Service
    */
-  function DeleteActivityAction ($rootScope, crmApi, dialogService) {
-    var ts = CRM.ts('civicase');
+  function DeleteActivityAction ($injector, $rootScope, civicaseCrmApi, pascalCase,
+    ts) {
+    /**
+     * Check if the Action is enabled
+     *
+     * @param {object} $scope scope object
+     * @returns {boolean} if the action is enabled
+     */
+    this.isActionEnabled = function ($scope) {
+      return _.every($scope.selectedActivities, function (activity) {
+        var activityStatusService = getActivityStatusService(activity.type);
+
+        if (activityStatusService && activityStatusService.isDeleteVisible) {
+          return activityStatusService.isDeleteVisible(activity);
+        }
+
+        return true;
+      });
+    };
 
     /**
      * Perform the action
@@ -19,7 +38,12 @@
      * @param {object} $scope scope object
      */
     this.doAction = function ($scope) {
-      deleteActivity($scope.selectedActivities, $scope.isSelectAll, $scope.params, $scope.totalCount);
+      deleteActivity(
+        $scope.selectedActivities,
+        $scope.isSelectAll,
+        $scope.params,
+        $scope.totalCount
+      );
     };
 
     /**
@@ -39,7 +63,7 @@
       }).on('crmConfirm:yes', function () {
         var apiCalls = prepareApiCalls(activities, isSelectAll, params);
 
-        crmApi(apiCalls)
+        civicaseCrmApi(apiCalls)
           .then(function () {
             $rootScope.$broadcast('civicase::activity::updated');
           });
@@ -63,6 +87,20 @@
             return activity.id;
           })
         }]];
+      }
+    }
+
+    /**
+     * Get Activity Status Action Service
+     *
+     * @param {string} statusName name of the status
+     * @returns {object/null} action service
+     */
+    function getActivityStatusService (statusName) {
+      try {
+        return $injector.get(pascalCase(statusName) + 'ActivityStatus');
+      } catch (e) {
+        return null;
       }
     }
   }

@@ -1,4 +1,4 @@
-(function (_, angular, checkPerm, loadForm, getCrmUrl) {
+(function (_, angular, checkPerm) {
   var module = angular.module('civicase');
 
   module.service('AddCase', AddCaseService);
@@ -8,8 +8,11 @@
    *
    * @param {object} $window the window service.
    * @param {string} CaseCategoryWebformSettings service to fetch case category webform settings
+   * @param {Function} civicaseCrmUrl crm url service.
+   * @param {Function} civicaseCrmLoadForm service to load civicrm forms
    */
-  function AddCaseService ($window, CaseCategoryWebformSettings) {
+  function AddCaseService ($window, CaseCategoryWebformSettings, civicaseCrmUrl,
+    civicaseCrmLoadForm) {
     this.clickHandler = clickHandler;
     this.isVisible = isVisible;
 
@@ -57,9 +60,9 @@
         formParams.civicase_cid = params.contactId;
       }
 
-      var formUrl = getCrmUrl('civicrm/case/add', formParams);
+      var formUrl = civicaseCrmUrl('civicrm/case/add', formParams);
 
-      loadForm(formUrl)
+      civicaseCrmLoadForm(formUrl)
         .on('crmFormSuccess crmPopupFormSuccess', params.callbackFn);
     }
 
@@ -86,4 +89,4 @@
      * @property {number} callbackFn callback function
      */
   }
-})(CRM._, angular, CRM.checkPerm, CRM.loadForm, CRM.url);
+})(CRM._, angular, CRM.checkPerm);

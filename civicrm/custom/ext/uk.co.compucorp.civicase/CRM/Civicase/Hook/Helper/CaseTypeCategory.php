@@ -4,7 +4,7 @@ use CRM_Civicase_Helper_CaseCategory as CaseCategoryHelper;
 use CRM_Civicase_Service_CaseCategorySetting as CaseCategorySetting;
 
 /**
- * CRM_Civicase_Hook_Helper_CaseTypeCategory class.
+ * Case type category helper class.
  */
 class CRM_Civicase_Hook_Helper_CaseTypeCategory {
 
@@ -46,7 +46,9 @@ class CRM_Civicase_Hook_Helper_CaseTypeCategory {
     try {
       $result = civicrm_api3('CaseType', 'get', [
         'return' => ['id'],
+        'is_active' => 1,
         'case_type_category' => $caseCategoryName,
+        'options' => ['limit' => 0],
       ]);
 
       if ($result['count'] == 0) {
@@ -54,7 +56,8 @@ class CRM_Civicase_Hook_Helper_CaseTypeCategory {
       }
 
       return array_column($result['values'], 'id');
-    } catch (Exception $e) {
+    }
+    catch (Exception $e) {
     }
 
   }

@@ -5,12 +5,14 @@
 
   /**
    * Priority Service
+   *
+   * @param {Function} isTruthy service to check if value is truthy
    */
-  function Priority () {
+  function Priority (isTruthy) {
     var allPriorities = CRM['civicase-base'].priority;
     var activePriorities = _.chain(allPriorities)
       .filter(function (priority) {
-        return priority.is_active === '1';
+        return isTruthy(priority.is_active);
       })
       .indexBy('value')
       .value();

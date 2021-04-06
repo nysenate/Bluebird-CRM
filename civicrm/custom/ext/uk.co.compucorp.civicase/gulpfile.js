@@ -32,7 +32,8 @@ gulp.task('sass', gulp.series('sass:sync', sassTask));
 /**
  * Runs Karma unit tests
  */
-gulp.task('test', testTask);
+gulp.task('test', (done) => testTask(done, { singleRun: true }));
+gulp.task('test:watch', (done) => testTask(done, { singleRun: false }));
 
 /**
  * Watches for scss and js file changes and run sass task and karma unit tests

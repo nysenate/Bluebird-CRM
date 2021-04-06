@@ -1,5 +1,3 @@
-/* eslint-env jasmine */
-
 (() => {
   describe('civicaseTag', () => {
     let $controller, $rootScope, $scope, mockTags;

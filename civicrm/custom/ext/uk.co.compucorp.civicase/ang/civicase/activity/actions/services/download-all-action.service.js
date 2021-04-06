@@ -7,8 +7,9 @@
    * Edit Activity Action
    *
    * @param {object} $window window object
+   * @param {object} civicaseCrmUrl civicrm url service
    */
-  function DownloadAllActivityAction ($window) {
+  function DownloadAllActivityAction ($window, civicaseCrmUrl) {
     /**
      * Check if the Action is enabled
      *
@@ -16,8 +17,20 @@
      * @returns {boolean} if the action is enabled
      */
     this.isActionEnabled = function ($scope) {
-      return $scope.mode === 'case-activity-feed' &&
-        $scope.selectedActivities[0].type === 'File Upload';
+      var isCaseActivityFeedMenu = $scope.mode === 'case-activity-feed-menu';
+      var isCaseActivityBulkAction = $scope.mode === 'case-activity-bulk-action';
+      var isCaseFilesTabBulkAction = $scope.mode === 'case-files-activity-bulk-action';
+      var areAllSelectedActivitiesFileUploadType = _.every($scope.selectedActivities, {
+        type: 'File Upload'
+      });
+
+      var showActionInActivityFeed = (
+        (isCaseActivityFeedMenu || isCaseActivityBulkAction) &&
+        areAllSelectedActivitiesFileUploadType &&
+        !$scope.isSelectAll
+      );
+
+      return showActionInActivityFeed || isCaseFilesTabBulkAction;
     };
 
     /**
@@ -26,9 +39,25 @@
      * @param {object} $scope scope object
      */
     this.doAction = function ($scope) {
-      $window.open(CRM.url('civicrm/case/activity/download-all-files', {
-        activity_id: $scope.selectedActivities[0].id
-      }), '_blank');
+      var downloadAllParams = {};
+
+      var isCaseActivityFeedMenu = $scope.mode === 'case-activity-feed-menu';
+      var isCaseActivityBulkAction = $scope.mode === 'case-activity-bulk-action';
+      var isCaseFilesTabBulkAction = $scope.mode === 'case-files-activity-bulk-action';
+
+      if (isCaseActivityFeedMenu || isCaseActivityBulkAction) {
+        downloadAllParams.activity_ids = _.map($scope.selectedActivities, 'id');
+      } else if (isCaseFilesTabBulkAction) {
+        if ($scope.isSelectAll) {
+          downloadAllParams.searchParams = $scope.params;
+        } else {
+          downloadAllParams.activity_ids = $scope.selectedActivities.map(function (activity) {
+            return activity.id;
+          });
+        }
+      }
+
+      $window.open(civicaseCrmUrl('civicrm/case/activity/download-all-files', downloadAllParams), '_blank');
     };
   }
 })(angular, CRM, CRM._);

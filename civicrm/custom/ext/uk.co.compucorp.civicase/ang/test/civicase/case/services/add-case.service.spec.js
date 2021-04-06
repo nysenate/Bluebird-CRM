@@ -1,8 +1,7 @@
-/* eslint-env jasmine */
-
-(($, loadForm, getCrmUrl) => {
+(($) => {
   describe('AddCaseService', () => {
-    let $window, AddCase, CaseCategoryWebformSettings;
+    let $window, AddCase, CaseCategoryWebformSettings, civicaseCrmUrl,
+      civicaseCrmLoadForm;
 
     beforeEach(module('civicase-base', 'civicase', ($provide) => {
       $window = { location: { href: '' } };
@@ -13,8 +12,8 @@
     }));
 
     beforeEach(() => {
-      mockFormPopUpDom();
       injectDependencies();
+      mockFormPopUpDom();
     });
 
     describe('Button Visibility', () => {
@@ -65,19 +64,8 @@
       });
 
       describe('when the new case web form url configuration value is not defined', () => {
-        let expectedFormUrl;
-
         beforeEach(() => {
           CaseCategoryWebformSettings.getSettingsFor.and.returnValue({ newCaseWebformUrl: null });
-
-          expectedFormUrl = getCrmUrl('civicrm/case/add', {
-            action: 'add',
-            case_type_category: 'case',
-            civicase_cid: '5',
-            context: 'standalone',
-            reset: 1
-          });
-
           AddCase.clickHandler({
             caseTypeCategoryName: 'case',
             contactId: '5'
@@ -89,7 +77,13 @@
         });
 
         it('opens the new case form', () => {
-          expect(loadForm).toHaveBeenCalledWith(expectedFormUrl);
+          expect(civicaseCrmUrl).toHaveBeenCalledWith('civicrm/case/add', {
+            action: 'add',
+            case_type_category: 'case',
+            civicase_cid: '5',
+            context: 'standalone',
+            reset: 1
+          });
         });
       });
     });
@@ -98,9 +92,11 @@
      * Injects and hoists the dependencies used by this spec file.
      */
     function injectDependencies () {
-      inject((_$window_, _AddCase_) => {
+      inject((_civicaseCrmUrl_, _$window_, _AddCase_, _civicaseCrmLoadForm_) => {
+        civicaseCrmUrl = _civicaseCrmUrl_;
         $window = _$window_;
         AddCase = _AddCase_;
+        civicaseCrmLoadForm = _civicaseCrmLoadForm_;
       });
     }
 
@@ -108,7 +104,7 @@
      * Creates a mocked popup element that will be returned by the load form function.
      */
     function mockFormPopUpDom () {
-      loadForm.and.returnValue($('<div></div>'));
+      civicaseCrmLoadForm.and.returnValue($('<div></div>'));
     }
   });
-})(CRM.$, CRM.loadForm, CRM.url);
+})(CRM.$);

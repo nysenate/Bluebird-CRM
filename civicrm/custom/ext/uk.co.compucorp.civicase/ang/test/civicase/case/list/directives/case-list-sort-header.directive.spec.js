@@ -1,5 +1,3 @@
-/* eslint-env jasmine */
-
 describe('civicaseCaseListSortHeader directive', function () {
   var element, $compile, $rootScope, scope;
 
@@ -148,8 +146,8 @@ describe('civicaseCaseListSortHeader directive', function () {
   /**
    * Compiles the directive
    *
-   * @param {object} scope
-   * @param {string} header
+   * @param {object} scope scope object
+   * @param {string} header header
    */
   function compileDirective (scope, header) {
     element = $compile(angular.element('<div civicase-case-list-sort-header=' + header + '></div>'))(scope);

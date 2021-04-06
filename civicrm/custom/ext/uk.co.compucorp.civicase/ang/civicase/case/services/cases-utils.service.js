@@ -3,6 +3,14 @@
 
   module.service('CasesUtils', function (ContactsCache) {
     /**
+     * @param {object} role role object
+     * @returns {boolean} if its a client role
+     */
+    this.isClientRole = function (role) {
+      return !role.relationship_type_id;
+    };
+
+    /**
      * Fetch additional information about the contacts
      *
      * @param {Array} cases list of cases
@@ -15,24 +23,6 @@
       });
 
       ContactsCache.add(contacts);
-    };
-
-    /**
-     * Get all case clients ids for a case contacts list
-     *
-     * @param {Array} contacts contacts of a case
-     *
-     * @returns {Array} contact contacts of all client ids
-     */
-    this.getAllCaseClientContactIds = function (contacts) {
-      return _.chain(contacts)
-        .filter(function (contact) {
-          return contact.role === 'Client';
-        })
-        .map(function (client) {
-          return client.contact_id;
-        })
-        .value();
     };
 
     /**

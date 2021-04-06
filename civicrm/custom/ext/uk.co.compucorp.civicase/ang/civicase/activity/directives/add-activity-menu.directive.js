@@ -15,9 +15,10 @@
     };
   });
 
-  module.controller('civicaseAddActivityMenuController', function ($scope, getCaseQueryParams, CaseType, ActivityType,
-    ActivityForms) {
-    var definition = CaseType.getAll()[$scope.case.case_type_id].definition;
+  module.controller('civicaseAddActivityMenuController', function ($scope,
+    getCaseQueryParams, CaseType, ActivityType, ActivityForms, isTruthy) {
+    var caseType = CaseType.getById($scope.case.case_type_id);
+    var definition = caseType.definition;
 
     (function init () {
       if (_.isEmpty($scope.case.activity_count)) {
@@ -44,7 +45,7 @@
       _.each(definition.activityTypes, function (actSpec) {
         if (exclude.indexOf(actSpec.name) < 0) {
           var actTypeId = _.findKey(ActivityType.getAll(true), { name: actSpec.name });
-          var ifActivityTypeIsActive = ActivityType.findById(actTypeId).is_active === '1';
+          var ifActivityTypeIsActive = isTruthy(ActivityType.findById(actTypeId).is_active);
 
           if (ifActivityTypeIsActive &&
             (!actSpec.max_instances || !activityCount[actTypeId] || (actSpec.max_instances > parseInt(activityCount[actTypeId])))) {
@@ -94,6 +95,7 @@
      * @returns {string} url
      */
     $scope.newActivityUrl = function (actType) {
+      var caseClientId = _.first($scope.case.client).contact_id;
       var caseType = CaseType.getById($scope.case.case_type_id);
       var caseQueryParams = JSON.stringify(getCaseQueryParams({
         caseId: $scope.case.id,
@@ -106,7 +108,8 @@
       };
       var options = {
         action: 'add',
-        civicase_reload: caseQueryParams
+        civicase_reload: caseQueryParams,
+        cid: caseClientId
       };
       var activityForm = ActivityForms.getActivityFormService(newActivity, options);
 

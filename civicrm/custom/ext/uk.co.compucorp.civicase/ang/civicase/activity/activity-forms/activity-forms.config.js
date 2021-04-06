@@ -20,20 +20,24 @@
         weight: 1
       },
       {
-        name: 'DraftPdfActivityForm',
+        name: 'EmailActivityForm',
         weight: 2
       },
       {
-        name: 'DraftEmailActivityForm',
+        name: 'DraftPdfActivityForm',
         weight: 3
       },
       {
-        name: 'UpdateActivityForm',
+        name: 'DraftEmailActivityForm',
         weight: 4
       },
       {
-        name: 'ViewActivityForm',
+        name: 'UpdateActivityForm',
         weight: 5
+      },
+      {
+        name: 'ViewActivityForm',
+        weight: 6
       }
     ];
 

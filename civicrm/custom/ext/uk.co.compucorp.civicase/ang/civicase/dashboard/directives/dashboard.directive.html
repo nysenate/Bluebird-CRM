@@ -8,7 +8,12 @@
         uib-tabset-class="civicase__affix__activity-filters nav-pills-horizontal nav-pills-horizontal-primary clearfix">
         <!-- Dashboard Tab -->
         <uib-tab index="0" heading="{{ ts('Dashboard') }}" select="navTabs()">
-          <civicase-dashboard-tab ng-if="activeTab === 0"></civicase-dashboard-tab>
+          <civicase-dashboard-tab
+            activity-filters="activityFilters"
+            link-to-manage-case="linkToManageCase"
+            filters="filters"
+            ng-if="activeTab === 0">
+          </civicase-dashboard-tab>
         </uib-tab>
         <!-- End - Dashboard Tab -->
         <!-- Activities Tab -->

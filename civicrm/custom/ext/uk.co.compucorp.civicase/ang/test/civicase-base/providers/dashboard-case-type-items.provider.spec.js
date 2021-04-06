@@ -1,5 +1,3 @@
-/* eslint-env jasmine */
-
 (function (_, angular) {
   describe('DashboardCaseTypeItems', () => {
     let DashboardCaseTypeItems, DashboardCaseTypeItemsProvider;

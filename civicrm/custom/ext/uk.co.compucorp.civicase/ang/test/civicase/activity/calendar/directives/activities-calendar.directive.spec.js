@@ -1,8 +1,6 @@
-/* eslint-env jasmine */
-
 (function ($, _, moment) {
   describe('civicaseActivitiesCalendarController', function () {
-    var $controller, $q, $scope, $rootScope, $route, crmApi, formatActivity, dates,
+    var $controller, $q, $scope, $rootScope, $route, civicaseCrmApi, formatActivity, dates,
       mockedActivities, ActivityStatusType;
 
     beforeEach(function () {
@@ -15,31 +13,36 @@
       $route = { current: { params: {} } };
 
       $provide.value('$route', $route);
+      $provide.value('civicaseCrmApi', jasmine.createSpy('civicaseCrmApi'));
     }));
 
     afterEach(function () {
       jasmine.clock().uninstall();
     });
 
-    beforeEach(inject(function (_$controller_, _$q_, _$rootScope_, _crmApi_,
+    beforeEach(inject(function (_$controller_, _$q_, _$rootScope_, _civicaseCrmApi_,
       _formatActivity_, datesMockData, _ActivityStatusType_) {
       $controller = _$controller_;
       $q = _$q_;
       $rootScope = _$rootScope_;
-      crmApi = _crmApi_;
+      civicaseCrmApi = _civicaseCrmApi_;
       formatActivity = _formatActivity_;
       ActivityStatusType = _ActivityStatusType_;
 
       $scope = $rootScope.$new();
       dates = datesMockData;
 
-      crmApi.and.returnValue($q.resolve({ values: [] }));
+      civicaseCrmApi.and.returnValue($q.resolve({ values: [] }));
     }));
 
     describe('when uib-datepicker signals that it is ready', function () {
-      var endOfMonth, startOfMonth;
+      var endOfMonth, startOfMonth, completeAndIncompleteStatusTypes;
 
       beforeEach(function () {
+        completeAndIncompleteStatusTypes = _.union(
+          ActivityStatusType.getAll().incomplete,
+          ActivityStatusType.getAll().completed
+        );
         startOfMonth = moment(dates.today).startOf('month').format('YYYY-MM-DD');
         endOfMonth = moment(dates.today).endOf('month').format('YYYY-MM-DD');
 
@@ -49,39 +52,13 @@
         $rootScope.$emit('civicase::uibDaypicker::compiled', dates.today);
       });
 
-      it('loads the days with incomplete activities of the currently selected month', function () {
-        expect(crmApi).toHaveBeenCalledWith('Activity', 'getdayswithactivities', jasmine.objectContaining({
-          status_id: { IN: ActivityStatusType.getAll().incomplete },
+      it('loads the days with incomplete and complete activities of the currently selected month', function () {
+        expect(civicaseCrmApi).toHaveBeenCalledWith('Activity', 'getdayswithactivities', jasmine.objectContaining({
+          status_id: { IN: completeAndIncompleteStatusTypes },
           activity_date_time: {
             BETWEEN: [startOfMonth + ' 00:00:00', endOfMonth + ' 23:59:59']
           }
         }));
-      });
-
-      it('does not load the days with complete activities right away', function () {
-        expect(crmApi.calls.count()).toBe(1);
-      });
-
-      describe('when loading is complete', function () {
-        beforeEach(function () {
-          crmApi.calls.reset();
-          $scope.$digest();
-        });
-
-        it('loads the days with complete activities of the currently selected month', function () {
-          expect(crmApi).toHaveBeenCalledWith('Activity', 'getdayswithactivities', jasmine.objectContaining({
-            status_id: ActivityStatusType.getAll().completed[0],
-            activity_date_time: {
-              BETWEEN: [startOfMonth + ' 00:00:00', endOfMonth + ' 23:59:59']
-            }
-          }));
-        });
-
-        it('has triggered the datepicker refresh twice, one for each request', function () {
-          _.times(2, function (i) {
-            expect($scope.$emit.calls.argsFor(i)[0]).toBe('civicase::ActivitiesCalendar::refreshDatepicker');
-          });
-        });
       });
     });
 
@@ -92,11 +69,9 @@
         });
 
         it('loads the days with activities from that single cases', function () {
-          var apiParams1 = crmApi.calls.argsFor(0)[2];
-          var apiParams2 = crmApi.calls.argsFor(1)[2];
+          var apiParams1 = civicaseCrmApi.calls.argsFor(0)[2];
 
           expect(apiParams1.case_id).toEqual($scope.caseId);
-          expect(apiParams2.case_id).toEqual($scope.caseId);
         });
 
         describe('when selecting a date with activities', function () {
@@ -105,7 +80,7 @@
           });
 
           it('loads activities from that single cases when selecting a day', function () {
-            var apiParams = crmApi.calls.argsFor(0)[2];
+            var apiParams = civicaseCrmApi.calls.argsFor(0)[2];
 
             expect(apiParams.case_id).toEqual($scope.caseId);
           });
@@ -121,14 +96,21 @@
       });
 
       describe('when case parameters are passed', function () {
+        var startOfMonth;
+
         beforeEach(function () {
+          startOfMonth = moment(dates.today).startOf('month').format('YYYY-MM-DD');
+
           commonControllerSetup({ caseParams: { a: 'b' } });
         });
 
         it('loads the days with activities from all the given cases', function () {
-          var apiParams1 = crmApi.calls.argsFor(0)[2];
+          var apiParams1 = civicaseCrmApi.calls.argsFor(0)[2];
 
-          expect(apiParams1.case_filter).toEqual({ a: 'b' });
+          expect(apiParams1.case_filter).toEqual({
+            a: 'b',
+            modified_date: { '>=': moment(startOfMonth).format('YYYY-MM-DD HH:mm:ss') }
+          });
         });
 
         describe('when selecting a date with activities', function () {
@@ -137,9 +119,12 @@
           });
 
           it('loads activities from all the given cases when selecting a day', function () {
-            var apiParams = crmApi.calls.argsFor(0)[2];
+            var apiParams = civicaseCrmApi.calls.argsFor(0)[2];
 
-            expect(apiParams.case_filter).toEqual({ a: 'b' });
+            expect(apiParams.case_filter).toEqual({
+              a: 'b',
+              modified_date: { '>=': moment(startOfMonth).format('YYYY-MM-DD HH:mm:ss') }
+            });
           });
 
           describe('case info footer on activity card', function () {
@@ -160,22 +145,18 @@
           newCaseId = 30;
 
           commonControllerSetup(oldCaseId);
-          crmApi.calls.reset();
+          civicaseCrmApi.calls.reset();
 
           $scope.caseId = newCaseId;
           $scope.$digest();
         });
 
         it('triggers a full reload', function () {
-          expect(crmApi.calls.count()).toBe(2);
-
-          _.times(2, function (i) {
-            expect(crmApi.calls.argsFor(i)).toEqual([
-              'Activity', 'getdayswithactivities', jasmine.objectContaining({
-                case_id: newCaseId
-              })
-            ]);
-          });
+          expect(civicaseCrmApi).toHaveBeenCalledWith(
+            'Activity', 'getdayswithactivities', jasmine.objectContaining({
+              case_id: newCaseId
+            })
+          );
         });
       });
 
@@ -197,8 +178,8 @@
        */
       function commonDateSelectSetup () {
         generateMockActivities();
-        crmApi.calls.reset();
-        crmApi.and.returnValue($q.resolve({
+        civicaseCrmApi.calls.reset();
+        civicaseCrmApi.and.returnValue($q.resolve({
           values: mockedActivities
         }));
 
@@ -408,14 +389,14 @@
         });
 
         it('makes an api request', function () {
-          expect(crmApi).toHaveBeenCalledWith('Activity', 'get', jasmine.any(Object));
+          expect(civicaseCrmApi).toHaveBeenCalledWith('Activity', 'getAll', jasmine.any(Object));
         });
 
         describe('api request params', function () {
           var params;
 
           beforeEach(function () {
-            params = crmApi.calls.argsFor(0)[2];
+            params = civicaseCrmApi.calls.argsFor(0)[2];
           });
 
           it('fetches the activities of the selected date', function () {
@@ -496,13 +477,13 @@
 
           $scope.onDateSelected();
           $scope.$digest();
-          crmApi.calls.reset();
+          civicaseCrmApi.calls.reset();
           $scope.onDateSelected();
           $scope.$digest();
         });
 
         it('uses the cache instead of making an api request', function () {
-          expect(crmApi).not.toHaveBeenCalled();
+          expect(civicaseCrmApi).not.toHaveBeenCalled();
           expect($scope.selectedActivites.length).not.toBe(0);
         });
       });
@@ -527,8 +508,8 @@
         $rootScope.$emit('civicase::uibDaypicker::compiled');
         $scope.$digest();
 
-        crmApi.calls.reset();
-        crmApi.and.returnValue((function () {
+        civicaseCrmApi.calls.reset();
+        civicaseCrmApi.and.returnValue((function () {
           return $q.resolve({
             values: returnDateFromApi ? mockedActivities : []
           });
@@ -539,13 +520,13 @@
     describe('refresh listener', function () {
       beforeEach(function () {
         initControllerAndEmitDatepickerReadyEvent();
-        crmApi.calls.reset();
+        civicaseCrmApi.calls.reset();
         $rootScope.$emit('civicase::ActivitiesCalendar::reload');
         $scope.$digest();
       });
 
       it('triggers a full reload', function () {
-        expect(crmApi.calls.count()).toBe(2);
+        expect(civicaseCrmApi.calls.count()).toBe(1);
       });
     });
 
@@ -564,11 +545,11 @@
         endOfMonth = nextMonth.endOf('month').format('YYYY-MM-DD');
 
         initControllerAndEmitDatepickerReadyEvent();
-        crmApi.calls.reset();
+        civicaseCrmApi.calls.reset();
         $rootScope.$emit('civicase::uibDaypicker::monthSelected', nextMonth.toDate());
         $scope.$digest();
 
-        allArgs = crmApi.calls.allArgs();
+        allArgs = civicaseCrmApi.calls.allArgs();
       });
 
       // @NOTE: the function that loads the data when a new month is selected
@@ -578,11 +559,11 @@
 
       it('invokes the load function after 300ms', function () {
         expect(_.debounce).toHaveBeenCalledWith(jasmine.any(Function), 300);
-        expect(crmApi).toHaveBeenCalled();
+        expect(civicaseCrmApi).toHaveBeenCalled();
       });
 
       it('loads the days with activities of the month of the selected date', function () {
-        expect(crmApi.calls.count()).toBe(2);
+        expect(civicaseCrmApi.calls.count()).toBe(1);
         allArgs.forEach(function (args) {
           expect(args[2].activity_date_time).toEqual({
             BETWEEN: [startOfMonth + ' 00:00:00', endOfMonth + ' 23:59:59']
@@ -605,11 +586,7 @@
         initController(null);
 
         url = $scope.seeAllLinkUrl(dates.yesterday);
-        queryParams = CRM.testUtils.extractQueryStringParams(url.$$unwrapTrustedValue());
-      });
-
-      it('is a trusted url', function () {
-        expect(url.$$unwrapTrustedValue).toBeDefined();
+        queryParams = CRM.testUtils.extractQueryStringParams(url);
       });
 
       it('displays the activities from the dashboard by default', function () {
@@ -663,15 +640,19 @@
      * @param {string} status any|completed|incomplete
      */
     function returnDateForStatus (date, status) {
-      crmApi.and.callFake(function (entity, action, params) {
-        var dates = [];
-        var isCompleteActivitiesApiCall = params.status_id === ActivityStatusType.getAll().completed[0];
-        var isIncompleteActivitiesApiCall = _.isEqual(params.status_id.IN, ActivityStatusType.getAll().incomplete);
+      civicaseCrmApi.and.callFake(function (entity, action, params) {
+        var completedActivityStatus = ActivityStatusType.getAll().completed[0];
+        var incompleteActivityStatus = ActivityStatusType.getAll().incomplete[0];
 
-        if (status === 'any' ||
-          (status === 'completed' && isCompleteActivitiesApiCall) ||
-          (status === 'incomplete' && isIncompleteActivitiesApiCall)) {
-          dates = [moment(date).format('YYYY-MM-DD')];
+        var dates = {};
+
+        if (status === 'completed') {
+          dates[completedActivityStatus] = [moment(date).format('YYYY-MM-DD')];
+        } else {
+          dates[incompleteActivityStatus] = [
+            moment(date).add(1).format('YYYY-MM-DD'),
+            moment(date).add(2).format('YYYY-MM-DD')
+          ];
         }
 
         return $q.resolve({ values: dates });
@@ -703,7 +684,7 @@
 
   describe('Activities Calendar DOM Events', function () {
     var $compile, $q, $rootScope, $scope, $timeout, $uibPosition, activitiesCalendar,
-      crmApi, datepickerMock;
+      civicaseCrmApi, datepickerMock;
 
     beforeEach(module('civicase', 'civicase.data', 'civicase.templates', function ($compileProvider, $provide) {
       $uibPosition = jasmine.createSpyObj('$uibPosition', ['positionElements']);
@@ -711,6 +692,7 @@
 
       $uibPosition.positionElements.and.returnValue({ top: 0, left: 0 });
       $provide.value('$uibPosition', $uibPosition);
+      $provide.value('civicaseCrmApi', jasmine.createSpy('civicaseCrmApi'));
       $provide.decorator('uibDatepickerDirective', function ($delegate) {
         return [{
           restrict: 'A',
@@ -722,14 +704,14 @@
       });
     }));
 
-    beforeEach(inject(function (_$compile_, _$q_, _$rootScope_, _$timeout_, _crmApi_) {
+    beforeEach(inject(function (_$compile_, _$q_, _$rootScope_, _$timeout_, _civicaseCrmApi_) {
       $compile = _$compile_;
       $q = _$q_;
       $rootScope = _$rootScope_;
       $timeout = _$timeout_;
-      crmApi = _crmApi_;
+      civicaseCrmApi = _civicaseCrmApi_;
 
-      crmApi.and.returnValue($q.resolve({ values: [] }));
+      civicaseCrmApi.and.returnValue($q.resolve({ values: [] }));
 
       $('<div id="bootstrap-theme"></div>').appendTo('body');
     }));

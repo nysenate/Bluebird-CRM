@@ -10,6 +10,7 @@
     var allCaseActions = _.cloneDeep(CivicaseSettings.caseActions);
 
     this.getAll = getAll;
+    this.findByActionName = findByActionName;
 
     /**
      * Get all Case actions
@@ -18,6 +19,18 @@
      */
     function getAll () {
       return allCaseActions;
+    }
+
+    /**
+     * Finds a specific action object for the sent action name
+     *
+     * @param {string} actionName action name
+     * @returns {object} action object
+     */
+    function findByActionName (actionName) {
+      return _.find(allCaseActions, function (action) {
+        return action.action === actionName;
+      });
     }
   }
 })(angular, CRM.$, CRM._, CRM.civicase);

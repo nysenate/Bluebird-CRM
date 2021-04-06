@@ -91,5 +91,22 @@
         <div class="civicase__case-overview__breakdown-field" ng-if="areAllStatusesHidden()"> - </div>
       </div>
     </div>
+    <div ng-if="caseTypes.length > 0 && showBreakdown" class="text-center">
+      <paging
+        ng-show="pageObj.total > 1"
+        page="pageObj.num"
+        page-size="pageObj.size"
+        total="totalCount"
+        adjacent="1"
+        dots="..."
+        show-prev-next="true"
+        show-first-last="true"
+        text-first="&laquo;"
+        text-last="&raquo;"
+        text-next="&rsaquo;"
+        text-prev="&lsaquo;"
+        paging-action="setPageTo(page)"
+      ></paging>
+    </div>
   </div>
 </div>

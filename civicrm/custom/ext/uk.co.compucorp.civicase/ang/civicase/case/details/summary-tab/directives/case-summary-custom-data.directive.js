@@ -5,7 +5,10 @@
     return {
       replace: true,
       restrict: 'E',
-      templateUrl: '~/civicase/case/details/summary-tab/directives/case-summary-custom-data.directive.html'
+      templateUrl: '~/civicase/case/details/summary-tab/directives/case-summary-custom-data.directive.html',
+      scope: {
+        customData: '<'
+      }
     };
   });
 })(angular, CRM.$, CRM._);

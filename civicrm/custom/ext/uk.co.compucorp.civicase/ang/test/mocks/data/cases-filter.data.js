@@ -1,13 +1,13 @@
 (function () {
   var module = angular.module('civicase.data');
   var filter = {
-    'case_type_id': [
+    case_type_id: [
       'housing_support'
     ]
   };
   var hiddenFilters = {
-    'hiddenfilter1': {},
-    'hiddenfilter2': {}
+    hiddenfilter1: {},
+    hiddenfilter2: {}
   };
 
   module.constant('CaseFilters', {

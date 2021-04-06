@@ -1,3 +1,5 @@
+[![Build Status](https://github.com/compucorp/uk.co.compucorp.civicase/workflows/Tests/badge.svg)](https://github.com/compucorp/uk.co.compucorp.civicase/workflows/Tests/badge.svg)
+
 # CiviCase ReadMe
 
 The new CiviCase is a major redesign of the Case Management interface for CiviCRM, with a cleaner look, improved functionality

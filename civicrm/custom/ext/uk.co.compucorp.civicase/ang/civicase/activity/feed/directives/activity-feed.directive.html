@@ -9,7 +9,7 @@
 
   <civicase-bulk-actions-message
     selected-items="selectedActivities.length" total-count="totalCount"
-    is-select-all-available="true" show-checkboxes="showCheckboxes"
+    show-checkboxes="showCheckboxes"
     is-select-all="isSelectAll">
   </civicase-bulk-actions-message>
 
@@ -70,6 +70,7 @@
                   avatar="true"
                   case-id="activity.case_id"
                   contacts="activity.source_contact_id"
+                  show-full-name-on-hover="showFullContactNameOnActivityFeed"
                 ></span>
                 <div class="civicase__activity-feed__activity-container">
                   <div

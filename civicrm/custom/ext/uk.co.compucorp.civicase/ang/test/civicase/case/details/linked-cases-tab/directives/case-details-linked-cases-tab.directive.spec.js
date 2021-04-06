@@ -1,45 +1,50 @@
-/* eslint-env jasmine */
-
-(($, _, getCrmUrl) => {
+(($, _) => {
   describe('linked cases tab', () => {
-    let $controller, $scope, LinkCasesCaseAction;
-    const mockLinkedCaseFormurl = {
-      path: '/linked-case-form',
-      query: 'linked-case-query'
-    };
+    let $controller, $scope, LinkCasesCaseAction, civicaseCrmUrl,
+      civicaseCrmLoadForm;
 
     beforeEach(module('civicase'));
 
-    beforeEach(inject((_$controller_, _$rootScope_) => {
+    beforeEach(inject((_civicaseCrmUrl_, _$controller_, _$rootScope_,
+      _LinkCasesCaseAction_, _civicaseCrmLoadForm_) => {
+      civicaseCrmUrl = _civicaseCrmUrl_;
       $controller = _$controller_;
+      civicaseCrmLoadForm = _civicaseCrmLoadForm_;
       $scope = _$rootScope_.$new();
+      LinkCasesCaseAction = _LinkCasesCaseAction_;
     }));
 
     beforeEach(() => {
-      LinkCasesCaseAction = jasmine.createSpyObj('LinkCasesCaseAction', ['doAction']);
       $scope.refresh = jasmine.createSpy('refresh');
-      $scope.item = { id: _.uniqueId() };
+      $scope.item = {
+        id: _.uniqueId(),
+        client: [
+          { contact_id: _.uniqueId() }
+        ]
+      };
 
-      LinkCasesCaseAction.doAction.and.returnValue(mockLinkedCaseFormurl);
-      initController({
-        $scope,
-        LinkCasesCaseAction
-      });
+      initController({ $scope });
     });
 
     describe('when linking the current case to a different one', () => {
-      let $mockForm, expecteFormUrl;
+      let $mockForm, expectedLinkCaseForm;
 
-      beforeEach(() => {
+      beforeEach((done) => {
         $mockForm = $('<div></div>');
-        expecteFormUrl = getCrmUrl(mockLinkedCaseFormurl.path, mockLinkedCaseFormurl.query);
 
-        CRM.loadForm.and.returnValue($mockForm);
+        civicaseCrmLoadForm.and.returnValue($mockForm);
         $scope.linkCase();
+
+        LinkCasesCaseAction.doAction([$scope.item])
+          .then(function (linkCaseForm) {
+            expectedLinkCaseForm = linkCaseForm;
+            done();
+          });
+        $scope.$digest();
       });
 
       it('opens the link case form', () => {
-        expect(CRM.loadForm).toHaveBeenCalledWith(expecteFormUrl);
+        expect(civicaseCrmUrl).toHaveBeenCalledWith(expectedLinkCaseForm.path, expectedLinkCaseForm.query);
       });
 
       describe('after linking the case', () => {
@@ -63,4 +68,4 @@
       $controller('civicaseCaseDetailsLinkedCasesTabController', dependencies);
     }
   });
-})(CRM.$, CRM._, CRM.url);
+})(CRM.$, CRM._);

@@ -1,11 +1,11 @@
-/* eslint-env jasmine */
-((_, getCrmUrl) => {
+((_) => {
   describe('ViewActivityForm', () => {
-    let activity, activityFormUrl, expectedActivityFormUrl, canHandle, ViewActivityForm;
+    let activity, civicaseCrmUrl, canHandle, ViewActivityForm;
 
     beforeEach(module('civicase', 'civicase-base', 'civicase.data'));
 
-    beforeEach(inject((_activitiesMockData_, _ViewActivityForm_) => {
+    beforeEach(inject((_civicaseCrmUrl_, _activitiesMockData_, _ViewActivityForm_) => {
+      civicaseCrmUrl = _civicaseCrmUrl_;
       ViewActivityForm = _ViewActivityForm_;
       activity = _.chain(_activitiesMockData_.get())
         .first()
@@ -47,35 +47,33 @@
         beforeEach(() => {
           delete activity.case_id;
 
-          activityFormUrl = ViewActivityForm.getActivityFormUrl(activity);
-          expectedActivityFormUrl = getCrmUrl('civicrm/activity', {
+          ViewActivityForm.getActivityFormUrl(activity);
+        });
+
+        it('returns the form url for the stand alone activity', () => {
+          expect(civicaseCrmUrl).toHaveBeenCalledWith('civicrm/activity', {
             action: 'view',
             id: activity.id,
             reset: 1,
             context: 'activity'
           });
         });
-
-        it('returns the form url for the stand alone activity', () => {
-          expect(activityFormUrl).toEqual(expectedActivityFormUrl);
-        });
       });
 
       describe('when getting the form url for a case activity', () => {
         beforeEach(() => {
-          activityFormUrl = ViewActivityForm.getActivityFormUrl(activity);
-          expectedActivityFormUrl = getCrmUrl('civicrm/activity', {
+          ViewActivityForm.getActivityFormUrl(activity);
+        });
+
+        it('returns the form url for the case activity', () => {
+          expect(civicaseCrmUrl).toHaveBeenCalledWith('civicrm/activity', {
             action: 'view',
             id: activity.id,
             reset: 1,
             context: 'case'
           });
         });
-
-        it('returns the form url for the case activity', () => {
-          expect(activityFormUrl).toEqual(expectedActivityFormUrl);
-        });
       });
     });
   });
-})(CRM._, CRM.url);
+})(CRM._);

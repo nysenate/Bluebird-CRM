@@ -3,6 +3,7 @@
 
   CRM['civicase-base'].activityStatuses = {
     1: {
+      value: '1',
       label: 'Scheduled',
       color: '#42afcb',
       name: 'Scheduled',
@@ -10,6 +11,7 @@
       is_active: '1'
     },
     2: {
+      value: '2',
       label: 'Completed',
       color: '#8ec68a',
       name: 'Completed',
@@ -17,12 +19,14 @@
       is_active: '1'
     },
     3: {
+      value: '3',
       label: 'Cancelled',
       name: 'Cancelled',
       grouping: 'none,communication,milestone,alert',
       is_active: '1'
     },
     4: {
+      value: '4',
       label: 'Left Message',
       color: '#eca67f',
       name: 'Left Message',
@@ -30,18 +34,21 @@
       is_active: '1'
     },
     5: {
+      value: '5',
       label: 'Unreachable',
       name: 'Unreachable',
       grouping: 'none,communication,milestone',
       is_active: '1'
     },
     6: {
+      value: '6',
       label: 'Not Required',
       name: 'Not Required',
       grouping: 'none,task,milestone',
       is_active: '1'
     },
     7: {
+      value: '7',
       label: 'Available',
       color: '#5bc0de',
       name: 'Available',
@@ -49,12 +56,14 @@
       is_active: '1'
     },
     8: {
+      value: '8',
       label: 'No-show',
       name: 'No_show',
       grouping: 'none,milestone',
       is_active: '1'
     },
     9: {
+      value: '9',
       label: 'Unread',
       color: '#d9534f',
       name: 'Unread',
@@ -62,6 +71,7 @@
       is_active: '1'
     },
     10: {
+      value: '10',
       label: 'Draft',
       color: '#c2cfd8',
       name: 'Draft',

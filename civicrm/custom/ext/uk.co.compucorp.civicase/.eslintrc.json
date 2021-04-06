@@ -1,5 +1,6 @@
 {
   "extends": ["semistandard", "plugin:jsdoc/recommended"],
+  "ignorePatterns": ["packages/*.js"],
   "globals": {
     "CRM": "writable",
     "angular": "readonly",

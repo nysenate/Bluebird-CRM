@@ -3,11 +3,14 @@
 
   module.service('BulkActions', BulkActionsService);
 
+  /**
+   * Bulk Action service.
+   */
   function BulkActionsService () {
     /**
      * Checks if bulkactions are available
      *
-     * @return {Boolean}
+     * @returns {boolean} if allowed
      */
     this.isAllowed = function () {
       if (CRM.checkPerm('basic case information') &&

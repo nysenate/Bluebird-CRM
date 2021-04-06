@@ -9,7 +9,9 @@
       scope: {
         activeTab: '=civicaseTab',
         isFocused: '=civicaseFocused',
+        viewingCaseId: '=',
         item: '=civicaseCaseDetails',
+        showClearfiltersUi: '=',
         caseTypeCategory: '='
       }
     };
@@ -20,7 +22,7 @@
   /**
    * Case Details Controller
    *
-   * @param {object} $location $location service
+   * @param {Function} civicaseCrmUrl crm url service.
    * @param {object} $sce angular Strict Contextual Escaping service
    * @param {object} $rootScope $rootScope
    * @param {object} $scope $scope
@@ -43,16 +45,21 @@
    * @param {object} CaseStatus case status service
    * @param {object} CaseType case type service
    * @param {object} CaseDetailsSummaryBlocks case details summary blocks
+   * @param {object} DetailsCaseTab case details case tab service reference
+   * @param {Function} civicaseCrmLoadForm service to load civicrm forms
    */
-  function civicaseCaseDetailsController ($location, $sce, $rootScope, $scope,
+  function civicaseCaseDetailsController (civicaseCrmUrl, $sce, $rootScope, $scope,
     $document, allowLinkedCasesTab, BulkActions, CaseDetailsTabs, civicaseCrmApi,
     formatActivity, formatCase, getActivityFeedUrl, getCaseQueryParams, $route,
     $timeout, crmStatus, CasesUtils, PrintMergeCaseAction, ts, ActivityType,
-    CaseStatus, CaseType, CaseDetailsSummaryBlocks) {
+    CaseStatus, CaseType, CaseDetailsSummaryBlocks, DetailsCaseTab,
+    civicaseCrmLoadForm) {
+    // Makes the scope available to child directives when they require this parent directive:
+    this.$scope = $scope;
+
     // The ts() and hs() functions help load strings for this module.
     // TODO: Move the common logic into a common controller (based on the usage of ContactCaseTabCaseDetails)
     $scope.ts = ts;
-    var caseTypes = CaseType.getAll();
     var caseStatuses = $scope.caseStatuses = CaseStatus.getAll();
     var activityTypes = $scope.activityTypes = ActivityType.getAll(true);
     var panelLimit = 5;
@@ -63,12 +70,32 @@
     $scope.getActivityFeedUrl = getActivityFeedUrl;
     $scope.bulkAllowed = BulkActions.isAllowed();
     $scope.caseDetailsSummaryBlocks = CaseDetailsSummaryBlocks;
-    $scope.caseTypesLength = _.size(caseTypes);
+    $scope.caseTypesLength = _.size(CaseType.getAll());
     $scope.CRM = CRM;
-    $scope.tabs = CaseDetailsTabs;
+    $scope.tabs = _.cloneDeep(CaseDetailsTabs);
     $scope.trustAsHtml = $sce.trustAsHtml;
     $scope.isMainContentVisible = isMainContentVisible;
     $scope.isPlaceHolderVisible = isPlaceHolderVisible;
+    $scope.markCompleted = markCompleted;
+    $scope.onChangeSubject = onChangeSubject;
+    $scope.clearAllFiltersToLoadSpecificCase = clearAllFiltersToLoadSpecificCase;
+    $scope.addTimeline = addTimeline;
+    $scope.caseGetParamsAsString = caseGetParamsAsString;
+    $scope.createEmail = createEmail;
+    $scope.createPDFLetter = createPDFLetter;
+    $scope.focusToggle = focusToggle;
+    $scope.formatDate = formatDate;
+    $scope.getActivityType = getActivityType;
+    $scope.gotoCase = gotoCase;
+    $scope.isCurrentRelatedCaseVisible = isCurrentRelatedCaseVisible;
+    $scope.isSameDate = isSameDate;
+    $scope.refresh = refresh;
+    $scope.selectTab = selectTab;
+    $scope.viewActivityUrl = viewActivityUrl;
+    $scope.pushCaseData = pushCaseData;
+
+    this.getEditActivityUrl = getEditActivityUrl;
+    this.getPrintActivityUrl = getPrintActivityUrl;
 
     (function init () {
       $scope.$watch('activeTab', activeTabWatcher);
@@ -78,52 +105,74 @@
         showActivityPanelListener);
     }());
 
-    $scope.addTimeline = function (name) {
-      $scope.refresh([['Case', 'addtimeline', { case_id: $scope.item.id, timeline: name }]]);
-    };
+    /**
+     * Broadcast an event to clear all filters and focus on a specific case.
+     */
+    function clearAllFiltersToLoadSpecificCase () {
+      $rootScope.$broadcast('civicase::case-details::clear-filter-and-focus-specific-case', {
+        caseId: $scope.viewingCaseId
+      });
+    }
 
-    $scope.caseGetParams = function () {
+    /**
+     * Adds the sent timeline to the current case
+     *
+     * @param {string} name name of the timeline
+     */
+    function addTimeline (name) {
+      $scope.refresh([['Case', 'addtimeline', {
+        case_id: $scope.item.id,
+        timeline: name
+      }]]);
+    }
+
+    /**
+     * @returns {string} case params as string
+     */
+    function caseGetParamsAsString () {
       return JSON.stringify(caseGetParams());
-    };
+    }
 
     /**
      * Opens the popup for Creating Email
      */
-    $scope.createEmail = function () {
+    function createEmail () {
       var createEmailURLParams = {
         action: 'add',
         caseid: $scope.item.id,
         atype: '3',
         reset: 1,
-        cid: CasesUtils.getAllCaseClientContactIds($scope.item.contacts).join(',')
+        cid: $scope.item.client.map(function (client) {
+          return client.contact_id;
+        }).join(',')
       };
 
-      CRM
-        .loadForm(CRM.url('civicrm/activity/email/add', createEmailURLParams))
+      civicaseCrmLoadForm(civicaseCrmUrl('civicrm/activity/email/add', createEmailURLParams))
         .on('crmFormSuccess', function () {
           $rootScope.$broadcast('civicase::activity::updated');
         });
-    };
+    }
 
     /**
      * Opens the popup for Creating PDF letter
      */
-    $scope.createPDFLetter = function () {
-      var pdfLetter = PrintMergeCaseAction.doAction([$scope.item]);
-
-      CRM.loadForm(CRM.url(pdfLetter.path, pdfLetter.query));
-    };
+    function createPDFLetter () {
+      PrintMergeCaseAction.doAction([$scope.item])
+        .then(function (pdfLetter) {
+          civicaseCrmLoadForm(civicaseCrmUrl(pdfLetter.path, pdfLetter.query));
+        });
+    }
 
     /**
      * Toggle focus of the Summary View
      */
-    $scope.focusToggle = function () {
+    function focusToggle () {
       $scope.isFocused = !$scope.isFocused;
 
       if (!$scope.isFocused && checkIfWindowWidthBreakpointIsReached()) {
         $rootScope.$broadcast('civicase::case-details::unfocused');
       }
-    };
+    }
 
     /**
      * Formats Date in given format
@@ -132,25 +181,36 @@
      * @param {string} format Date format
      * @returns {string} the formatted date
      */
-    $scope.formatDate = function (date, format) {
+    function formatDate (date, format) {
       return moment(date).format(format);
-    };
+    }
 
-    $scope.getActivityType = function (name) {
+    /**
+     * @param {string} name name of the activity type
+     * @returns {object} Activity Type for the sent name
+     */
+    function getActivityType (name) {
       return _.findKey(activityTypes, { name: name });
-    };
+    }
 
-    $scope.gotoCase = function (item, $event) {
+    /**
+     * Go to the sent case
+     *
+     * @param {object} item case object
+     * @param {object} $event event object
+     */
+    function gotoCase (item, $event) {
       if ($event && $($event.target).is('a, a *, input, button, button *')) {
         return;
       }
       var cf = {
-        case_type_id: [caseTypes[item.case_type_id].name],
-        status_id: [caseStatuses[item.status_id].name]
+        case_type_id: [CaseType.getById(item.case_type_id).name],
+        status_id: [caseStatuses[item.status_id].name],
+        'case_type_id.is_active': item['case_type_id.is_active']
       };
       var p = angular.extend({}, $route.current.params, { caseId: item.id, cf: JSON.stringify(cf) });
       $route.updateParams(p);
-    };
+    }
 
     /**
      * Decide if the sent related case is visible with respect to the pager
@@ -158,7 +218,7 @@
      * @param {number} index index
      * @returns {boolean} if current related case visible
      */
-    $scope.isCurrentRelatedCaseVisible = function (index) {
+    function isCurrentRelatedCaseVisible (index) {
       $scope.relatedCasesPager.range.from = (($scope.relatedCasesPager.num - 1) * $scope.relatedCasesPager.size) + 1;
       $scope.relatedCasesPager.range.to = ($scope.relatedCasesPager.num * $scope.relatedCasesPager.size);
 
@@ -167,48 +227,70 @@
       }
 
       return index >= ($scope.relatedCasesPager.range.from - 1) && index < $scope.relatedCasesPager.range.to;
-    };
+    }
 
-    // Copied from ActivityFeed.js - used by the Recent Communication panel
-    $scope.isSameDate = function (d1, d2) {
+    /**
+     * Checks if the sent dates are same.
+     *
+     * @param {Date} d1 date 1
+     * @param {Date} d2 date 2
+     * @returns {boolean} if the sent dates are same
+     */
+    function isSameDate (d1, d2) {
       return d1 && d2 && (d1.slice(0, 10) === d2.slice(0, 10));
-    };
+    }
 
-    $scope.markCompleted = function (act) {
+    /**
+     * Marks sent activity as completed.
+     *
+     * @param {object} act activity object
+     */
+    function markCompleted (act) {
       $scope.refresh([['Activity', 'create', {
         id: act.id,
         status_id: act.is_completed ? 'Scheduled' : 'Completed'
       }]]);
-    };
+    }
 
-    // Create activity when changing case subject
-    $scope.onChangeSubject = function (newSubject) {
+    /**
+     * Create activity when changing case subject
+     *
+     * @param {string} newSubject new subject for the case
+     */
+    function onChangeSubject (newSubject) {
       CRM.api3('Activity', 'create', {
         case_id: $scope.item.id,
         activity_type_id: 'Change Case Subject',
         subject: newSubject,
         status_id: 'Completed'
       });
-    };
+    }
 
-    $scope.panelPlaceholders = function (num) {
-      return _.range(num > panelLimit ? panelLimit : num);
-    };
+    /**
+     * Updates case data
+     *
+     * @param {object} data data to be pushed
+     */
+    function pushCaseData (data) {
+      var isDataResponseForCurrentCase = $scope.item && data &&
+        data.id === $scope.item.id;
 
-    $scope.pushCaseData = function (data) {
       // If the user has already clicked through to another case by the time we get this data back, stop.
-      if ($scope.item && data && data.id === $scope.item.id) {
-        // Maintain the reference to the variable in the parent scope.
-        delete ($scope.item.tag_id);
-        _.assign($scope.item, formatCaseDetails(data));
-        $scope.allowedCaseStatuses = getAllowedCaseStatuses($scope.item.definition);
-        $scope.areRelatedCasesVisibleOnSummaryTab = !allowLinkedCasesTab &&
-          $scope.item.relatedCases.length > 0;
-
-        $scope.$broadcast('updateCaseData');
-        $scope.$emit('civicase::ActivitiesCalendar::reload');
+      if (!isDataResponseForCurrentCase) {
+        return;
       }
-    };
+
+      // Maintain the reference to the variable in the parent scope.
+      delete ($scope.item.tag_id);
+      _.assign($scope.item, formatCaseDetails(data));
+      $scope.allowedCaseStatuses = getAllowedCaseStatuses($scope.item.definition);
+      $scope.areRelatedCasesVisibleOnSummaryTab = !allowLinkedCasesTab &&
+        $scope.item.relatedCases.length > 0;
+
+      includeDetailsTab();
+      $scope.$broadcast('updateCaseData');
+      $scope.$emit('civicase::ActivitiesCalendar::reload');
+    }
 
     /**
      * Refreshes the Case Details data
@@ -216,7 +298,7 @@
      * @param {Array} apiCalls extra api calls to load on refresh.
      * @returns {Promise} promise
      */
-    $scope.refresh = function (apiCalls) {
+    function refresh (apiCalls) {
       if (!_.isArray(apiCalls)) {
         apiCalls = [];
       }
@@ -232,35 +314,48 @@
         start: 'Saving',
         success: 'Saved'
       }, promise);
-    };
+    }
 
-    $scope.selectTab = function (tab) {
+    /**
+     * Selects the sent tab as active
+     *
+     * @param {object} tab tab name
+     */
+    function selectTab (tab) {
       $scope.activeTab = tab;
       if (typeof $scope.isFocused === 'boolean') {
         $scope.isFocused = true;
       }
-    };
+    }
 
-    $scope.viewActivityUrl = function (id) {
-      return CRM.url('civicrm/case/activity', {
+    /**
+     * @param {string} id activity id
+     * @returns {object} url to view the activity
+     */
+    function viewActivityUrl (id) {
+      return civicaseCrmUrl('civicrm/case/activity', {
         action: 'update',
         reset: 1,
         cid: $scope.item.client[0].contact_id,
         caseid: $scope.item.id,
         id: id,
-        civicase_reload: $scope.caseGetParams()
+        civicase_reload: caseGetParamsAsString()
       });
-    };
+    }
 
-    this.getEditActivityUrl = function (id) {
-      return CRM.url('civicrm/case/activity', {
+    /**
+     * @param {string} id activity id
+     * @returns {object} url to edit the activity
+     */
+    function getEditActivityUrl (id) {
+      return civicaseCrmUrl('civicrm/case/activity', {
         action: 'update',
         reset: 1,
         caseid: $scope.item.id,
         id: id,
-        civicase_reload: $scope.caseGetParams()
+        civicase_reload: caseGetParamsAsString()
       });
-    };
+    }
 
     /**
      * Get the url to print activities
@@ -268,12 +363,12 @@
      * @param {Array} selectedActivities selected activities
      * @returns {string} url
      */
-    this.getPrintActivityUrl = function (selectedActivities) {
+    function getPrintActivityUrl (selectedActivities) {
       selectedActivities = selectedActivities.map(function (item) {
         return item.id;
       }).join(',');
 
-      return CRM.url('civicrm/case/customreport/print', {
+      return civicaseCrmUrl('civicrm/case/customreport/print', {
         all: 1,
         redact: 0,
         cid: $scope.item.client[0].contact_id,
@@ -281,7 +376,7 @@
         caseID: $scope.item.id,
         sact: selectedActivities
       });
-    };
+    }
 
     /**
      * Listener for civicase::activity-feed::show-activity-panel
@@ -333,7 +428,7 @@
      */
     function formatCaseDetails (item) {
       formatCase(item);
-      item.definition = caseTypes[item.case_type_id].definition;
+      item.definition = CaseType.getById(item.case_type_id).definition;
 
       prepareRelatedCases(item);
 
@@ -344,20 +439,37 @@
       delete (item['api.Activity.getcount.scheduled']);
       delete (item['api.Activity.getcount.scheduled_overdue']);
       // Recent communications
-      item.recentCommunication = _.each(_.cloneDeep(item['api.Activity.get.recentCommunication'].values), formatAct);
-      delete (item['api.Activity.get.recentCommunication']);
+      item.recentCommunication = _.each(_.cloneDeep(item['api.Activity.getAll.recentCommunication'].values), formatAct);
+      delete (item['api.Activity.getAll.recentCommunication']);
       // Tasks
-      item.tasks = _.each(_.cloneDeep(item['api.Activity.get.tasks'].values), formatAct);
-      delete (item['api.Activity.get.tasks']);
+      item.tasks = _.each(_.cloneDeep(item['api.Activity.getAll.tasks'].values), formatAct);
+      delete (item['api.Activity.getAll.tasks']);
       // nextActivitiesWhichIsNotMileStoneList
-      item.nextActivityNotMilestone = _.each(_.cloneDeep(item['api.Activity.get.nextActivitiesWhichIsNotMileStone'].values), formatAct)[0];
-      delete (item['api.Activity.get.nextActivitiesWhichIsNotMileStone']);
-
-      // Custom fields
-      item.customData = item['api.CustomValue.gettreevalues'].values || [];
-      delete (item['api.CustomValue.gettreevalues']);
+      item.nextActivityNotMilestone = _.each(_.cloneDeep(item['api.Activity.getAll.nextActivitiesWhichIsNotMileStone'].values), formatAct)[0];
+      delete (item['api.Activity.getAll.nextActivitiesWhichIsNotMileStone']);
 
       return item;
+    }
+
+    /**
+     * It includes the details tab when there are custom data that are assigned
+     * to be displayed in a tab.
+     */
+    function includeDetailsTab () {
+      var shouldAddDetailsTab = !_.isEmpty($scope.item.customData.Tab);
+      var isDetailsTabIncluded = !!_.find($scope.tabs, { name: 'Details' });
+
+      if (!shouldAddDetailsTab || isDetailsTabIncluded) {
+        return;
+      }
+
+      $scope.tabs.splice(1, 0, {
+        name: 'Details',
+        label: ts('Details'),
+        service: DetailsCaseTab
+      });
+
+      activeTabWatcher();
     }
 
     /**
@@ -415,7 +527,7 @@
      * placeholder and content template.
      */
     function activeTabWatcher () {
-      var activeCaseTab = _.find(CaseDetailsTabs, {
+      var activeCaseTab = _.find($scope.tabs, {
         name: $scope.activeTab
       });
 

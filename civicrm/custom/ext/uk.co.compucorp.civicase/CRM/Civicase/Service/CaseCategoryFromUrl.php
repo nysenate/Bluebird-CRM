@@ -6,6 +6,8 @@ use CRM_Case_BAO_CaseType as CaseType;
 
 /**
  * Class CRM_Civicase_Service_CaseCategoryFromUrl.
+ *
+ * Service for detecting the category name from a Url.
  */
 class CRM_Civicase_Service_CaseCategoryFromUrl {
 
@@ -142,6 +144,10 @@ class CRM_Civicase_Service_CaseCategoryFromUrl {
   private function getCaseCategoryFromActivityIdInUrl($activityIdParamName) {
     $activityId = CRM_Utils_Request::retrieve($activityIdParamName, 'Integer');
 
+    if (!$activityId) {
+      $activityId = $this->getActivityIdFromArrayInUrl($activityIdParamName);
+    }
+
     if ($activityId) {
       $result = civicrm_api3('Activity', 'get', [
         'sequential' => 1,
@@ -157,6 +163,26 @@ class CRM_Civicase_Service_CaseCategoryFromUrl {
 
       return NULL;
     }
+
+    return NULL;
+  }
+
+  /**
+   * Return an Activity ID from an array received on the query string.
+   *
+   * @param string $activityIdParamName
+   *   Activity ID param name.
+   *
+   * @return int|null
+   *   The first activity ID found, or null.
+   */
+  private function getActivityIdFromArrayInUrl($activityIdParamName) {
+    $activityIds = CRM_Utils_Array::value($activityIdParamName, $_GET);
+    if ($activityIds) {
+      return array_shift($activityIds);
+    }
+
+    return NULL;
   }
 
   /**
@@ -200,8 +226,8 @@ class CRM_Civicase_Service_CaseCategoryFromUrl {
     }
 
     if (strtolower($entity) == 'api3') {
-      foreach ($json as $entity) {
-        [$entityName, $action, $params] = $entity;
+      foreach ($json as $entityParam) {
+        [$entityName, $action, $params] = $entityParam;
 
         if (strtolower($entityName) == 'case') {
           $this->isCaseEntity = TRUE;
@@ -211,6 +237,8 @@ class CRM_Civicase_Service_CaseCategoryFromUrl {
         }
       }
     }
+
+    return NULL;
   }
 
   /**

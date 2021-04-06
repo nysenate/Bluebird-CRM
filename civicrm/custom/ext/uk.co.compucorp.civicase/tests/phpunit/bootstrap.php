@@ -4,6 +4,16 @@ ini_set('memory_limit', '2G');
 ini_set('safe_mode', 0);
 eval(cv('php:boot --level=classloader', 'phpcode'));
 
+// Allow autoloading of PHPUnit helper classes in this extension.
+$loader = new \Composer\Autoload\ClassLoader();
+$loader->add('CRM_', __DIR__);
+$loader->add('Civi\\', __DIR__);
+$loader->add('api_', __DIR__);
+$loader->add('api\\', __DIR__);
+$loader->register();
+
+require_once 'BaseHeadlessTest.php';
+
 /**
  * Call the "cv" command.
  *
@@ -11,8 +21,10 @@ eval(cv('php:boot --level=classloader', 'phpcode'));
  *   The rest of the command to send.
  * @param string $decode
  *   Ex: 'json' or 'phpcode'.
+ *
  * @return string
  *   Response output (if the command executed normally).
+ *
  * @throws \RuntimeException
  *   If the command terminates abnormally.
  */

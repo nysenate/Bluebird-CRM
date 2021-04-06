@@ -1,12 +1,14 @@
-(function (angular, getCrmUrl) {
+(function (angular) {
   var module = angular.module('civicase');
 
   module.service('ViewActivityForm', ViewActivityForm);
 
   /**
    * View Activity Form service.
+   *
+   * @param {object} civicaseCrmUrl civicrm url service
    */
-  function ViewActivityForm () {
+  function ViewActivityForm (civicaseCrmUrl) {
     this.canChangeStatus = true;
     this.canHandleActivity = canHandleActivity;
     this.getActivityFormUrl = getActivityFormUrl;
@@ -28,7 +30,7 @@
     function getActivityFormUrl (activity) {
       var context = activity.case_id ? 'case' : 'activity';
 
-      return getCrmUrl('civicrm/activity', {
+      return civicaseCrmUrl('civicrm/activity', {
         action: 'view',
         id: activity.id,
         reset: 1,
@@ -36,4 +38,4 @@
       });
     }
   }
-})(angular, CRM.url);
+})(angular);

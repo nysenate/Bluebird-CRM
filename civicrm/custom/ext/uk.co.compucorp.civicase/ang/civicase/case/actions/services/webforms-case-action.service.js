@@ -8,8 +8,9 @@
    *
    * @param {object} $window - window object.
    * @param {object} GoToWebformCaseAction - GoToWebformCaseAction object.
+   * @param {object} webformsList - configuration for webforms list.
    */
-  function WebformsCaseAction ($window, GoToWebformCaseAction) {
+  function WebformsCaseAction ($window, GoToWebformCaseAction, webformsList) {
     this.isActionAllowed = isActionAllowed;
 
     /**
@@ -22,9 +23,11 @@
      * @returns {boolean} - true if action is allowed, false otherwise.
      */
     function isActionAllowed (action, cases, attributes) {
-      // Allow this action on Case details page only.
-      return attributes && attributes.mode === 'case-details' &&
-       checkIfWebformsExist(action.items, cases[0].case_type_id);
+      if (attributes && attributes.mode === 'case-details') {
+        return checkIfWebformsExist(action.items, cases[0].case_type_id) && !webformsList.isVisible;
+      } else if (attributes && attributes.mode === 'case-details-header') {
+        return checkIfWebformsExist(action.items, cases[0].case_type_id) && webformsList.isVisible;
+      }
     }
 
     /**
@@ -36,7 +39,7 @@
      */
     function checkIfWebformsExist (webforms, caseTypeID) {
       return !!_.find(webforms, function (webform) {
-        return GoToWebformCaseAction.checkIfWebformContainsCaseTypeId(webform, caseTypeID);
+        return GoToWebformCaseAction.checkIfWebformVisible(webform, caseTypeID);
       });
     }
   }

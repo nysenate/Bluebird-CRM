@@ -6,7 +6,7 @@ module.exports = async (page, scenario, vp) => {
   const utility = new Utility(page, scenario, vp);
 
   await utility.waitForAngular();
-  await utility.waitForLoadingComplete();
+  await utility.waitForLoadingComplete(".civicase__people-tab__sub-tab:not([ng-show=\"tab == 'relations'\"])");
 
   // For some reason page.click is not working for this dom element. So, we
   // have used evalute and triggered click using DOM events separately.

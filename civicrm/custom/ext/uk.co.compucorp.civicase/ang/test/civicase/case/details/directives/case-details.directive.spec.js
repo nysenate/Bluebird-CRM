@@ -1,9 +1,8 @@
-/* eslint-env jasmine */
-(function (_) {
+(function ($, _) {
   describe('civicaseCaseDetails', function () {
-    var element, controller, activitiesMockData, $controller, $compile,
+    var $httpBackend, element, controller, activitiesMockData, $controller, $compile,
       $document, $rootScope, $scope, $provide, civicaseCrmApi, civicaseCrmApiMock, $q,
-      formatCase, CasesData, CasesUtils, $route;
+      formatCase, CasesData, CasesUtils, $route, civicaseCrmUrl;
 
     beforeEach(module('civicase.templates', 'civicase', 'civicase.data', function (_$provide_) {
       $provide = _$provide_;
@@ -11,29 +10,26 @@
       killDirective('civicaseActivitiesCalendar');
       killDirective('civicaseCaseActions');
       killDirective('civicaseCaseDetailsPeopleTab');
+      killDirective('civicaseContactCard');
     }));
 
     beforeEach(inject(function ($q) {
-      var formatCaseMock = jasmine.createSpy('formatCase');
       civicaseCrmApiMock = jasmine.createSpy('civicaseCrmApi').and.returnValue($q.resolve());
       $route = { current: { params: {} } };
 
-      formatCaseMock.and.callFake(function (data) {
-        return data;
-      });
-
       $provide.value('$route', $route);
       $provide.value('civicaseCrmApi', civicaseCrmApiMock);
-      $provide.value('formatCase', formatCaseMock);
     }));
 
-    beforeEach(inject(function (_$compile_, _$controller_, _$rootScope_,
-      _$document_, _activitiesMockData_, _CasesData_, _civicaseCrmApi_, _$q_,
-      _formatCase_, _CasesUtils_) {
+    beforeEach(inject(function (_$compile_, _$controller_, _$httpBackend_,
+      _$rootScope_, _$document_, _activitiesMockData_, _CasesData_, _civicaseCrmApi_,
+      _$q_, _formatCase_, _CasesUtils_, _civicaseCrmUrl_) {
       $compile = _$compile_;
+      civicaseCrmUrl = _civicaseCrmUrl_;
       $document = _$document_;
       $controller = _$controller_;
       $rootScope = _$rootScope_;
+      $httpBackend = _$httpBackend_;
       activitiesMockData = _activitiesMockData_;
       CasesData = _CasesData_;
       CasesUtils = _CasesUtils_;
@@ -57,14 +53,37 @@
     });
 
     describe('activeTab watcher', function () {
-      beforeEach(function () {
-        compileDirective();
-        element.isolateScope().activeTab = 'People';
-        element.isolateScope().$digest();
+      describe('when switching to an existing tab', () => {
+        beforeEach(function () {
+          compileDirective();
+          element.isolateScope().activeTab = 'People';
+          element.isolateScope().$digest();
+        });
+
+        it('should return active tab content url', function () {
+          expect(element.isolateScope().activeTabContentUrl).toEqual('~/civicase/case/details/directives/tab-content/people.html');
+        });
       });
 
-      it('should return active tab content url', function () {
-        expect(element.isolateScope().activeTabContentUrl).toEqual('~/civicase/case/details/directives/tab-content/people.html');
+      describe('when switching to a custom active tab', () => {
+        beforeEach(function () {
+          $httpBackend.when('GET', '~/civicase/custom-tab.html')
+            .respond(200, '');
+          compileDirective();
+          element.isolateScope().tabs.push({
+            name: 'CustomTab',
+            label: ts('Custom Tab'),
+            service: {
+              activeTabContentUrl: () => '~/civicase/custom-tab.html'
+            }
+          });
+          element.isolateScope().activeTab = 'CustomTab';
+          element.isolateScope().$digest();
+        });
+
+        it('should return active tab content url', function () {
+          expect(element.isolateScope().activeTabContentUrl).toEqual('~/civicase/custom-tab.html');
+        });
       });
     });
 
@@ -98,7 +117,7 @@
 
       describe('when case is unfocused and screen width is more than 1690px', function () {
         beforeEach(function () {
-          spyOn($rootScope, '$broadcast');
+          spyOn($rootScope, '$broadcast').and.callThrough();
           spyOn($document, 'width').and.returnValue(1700);
           compileDirective();
           element.isolateScope().isFocused = true;
@@ -106,7 +125,7 @@
         });
 
         it('does not fire the case details unfocused event', function () {
-          expect($rootScope.$broadcast).not.toHaveBeenCalled();
+          expect($rootScope.$broadcast).not.toHaveBeenCalledWith('civicase::case-details::unfocused');
         });
       });
     });
@@ -273,7 +292,7 @@
       });
 
       it('retuns the url to print the activities', function () {
-        expect(CRM.url).toHaveBeenCalledWith('civicrm/case/customreport/print', {
+        expect(civicaseCrmUrl).toHaveBeenCalledWith('civicrm/case/customreport/print', {
           all: 1,
           redact: 0,
           cid: $scope.item.client[0].contact_id,
@@ -310,13 +329,37 @@
       });
     });
 
+    describe('when clear all filters button is pressed', function () {
+      beforeEach(function () {
+        spyOn($rootScope, '$broadcast').and.callThrough();
+        compileDirective();
+
+        element.isolateScope().clearAllFiltersToLoadSpecificCase();
+      });
+
+      it('clears all filters and focuses on current case', function () {
+        expect($rootScope.$broadcast).toHaveBeenCalledWith('civicase::case-details::clear-filter-and-focus-specific-case', {
+          caseId: '141'
+        });
+      });
+    });
+
     /**
      * Compiles the civicase-case-details directive.
      */
     function compileDirective () {
-      $scope.viewingCaseDetails = formatCase(CasesData.get().values[0]);
+      var caseObj = CasesData.get().values[0];
+
+      $scope.viewingCaseId = caseObj.id;
+      $scope.viewingCaseDetails = formatCase(caseObj);
       $scope.caseTypeCategory = 'cases';
-      element = $compile('<div civicase-case-details="viewingCaseDetails" case-type-category="caseTypeCategory"></div>')($scope);
+      element = $compile(`
+        <div
+          civicase-case-details="viewingCaseDetails"
+          viewing-case-id="viewingCaseId"
+          case-type-category="caseTypeCategory">
+        </div>`
+      )($scope);
       $scope.$digest();
     }
 
@@ -355,23 +398,40 @@
   });
 
   describe('civicaseCaseDetailsController', function () {
-    var $controller, $provide, $rootScope, $route, $scope, CasesData, CasesUtils, civicaseCrmApiMock, loadFormBefore;
+    let $controller, $provide, $rootScope, $route, $scope, apiResponses,
+      CasesData, civicaseCrmApiMock, controller, DetailsCaseTab,
+      civicaseCrmUrl, civicaseCrmLoadForm;
 
     beforeEach(module('civicase', 'civicase.data', function (_$provide_) {
       $provide = _$provide_;
       civicaseCrmApiMock = jasmine.createSpy('civicaseCrmApi');
 
       $provide.value('civicaseCrmApi', civicaseCrmApiMock);
+      $provide.value('crmApi', civicaseCrmApiMock);
     }));
 
-    beforeEach(inject(function (_$controller_, $q, _$rootScope_, _$route_, _CasesData_, _CasesUtils_) {
+    beforeEach(inject(function (_$controller_, $q, _$rootScope_, _$route_,
+      _CasesData_, _DetailsCaseTab_, _civicaseCrmUrl_, _civicaseCrmLoadForm_) {
+      civicaseCrmUrl = _civicaseCrmUrl_;
       $controller = _$controller_;
       $rootScope = _$rootScope_;
       $route = _$route_;
       CasesData = _CasesData_;
-      CasesUtils = _CasesUtils_;
+      DetailsCaseTab = _DetailsCaseTab_;
+      civicaseCrmLoadForm = _civicaseCrmLoadForm_;
+      apiResponses = {
+        'Contact.get': { values: [] }
+      };
       civicaseCrmApiMock.and
-        .returnValue($q.resolve({ values: CasesData.get() }));
+        .callFake((entity, action, params) => {
+          const entityActionName = `${entity}.${action}`;
+
+          if (apiResponses[entityActionName]) {
+            return $q.resolve(apiResponses[entityActionName]);
+          } else {
+            return $q.resolve({ values: CasesData.get() });
+          }
+        });
     }));
 
     describe('linked cases', () => {
@@ -411,6 +471,16 @@
     });
 
     describe('viewing the case', function () {
+      describe('on init', () => {
+        beforeEach(() => {
+          initController();
+        });
+
+        it('binds the scope to the controller function', () => {
+          expect(controller.$scope).toBe($scope);
+        });
+      });
+
       describe('when requesting to view a case that is missing its details', function () {
         beforeEach(function () {
           initController();
@@ -436,6 +506,111 @@
           expect($route.updateParams).toHaveBeenCalledWith({ caseId: null });
         });
       });
+
+      describe('Custom Data', () => {
+        let caseItem, customDataBlocks;
+
+        beforeEach(() => {
+          customDataBlocks = [];
+          caseItem = _.cloneDeep(CasesData.get().values[0]);
+          apiResponses['Case.getdetails'] = {
+            values: [caseItem]
+          };
+        });
+
+        describe('when there are tab custom data blocks', () => {
+          beforeEach(() => {
+            customDataBlocks = [
+              generateCustomDataBlock({ style: 'Inline' }),
+              generateCustomDataBlock({ style: 'Tab' }),
+              generateCustomDataBlock({ style: 'Inline' })
+            ];
+            caseItem['api.CustomValue.getalltreevalues'] = {
+              values: customDataBlocks
+            };
+            initController(caseItem);
+          });
+
+          it('adds the Details tab to display custom tab blocks', () => {
+            expect($scope.tabs).toContain({
+              name: 'Details',
+              label: ts('Details'),
+              service: DetailsCaseTab
+            });
+          });
+        });
+
+        describe('when there are no tab custom data blocks', () => {
+          beforeEach(() => {
+            customDataBlocks = [
+              generateCustomDataBlock({ style: 'Inline' }),
+              generateCustomDataBlock({ style: 'Inline' }),
+              generateCustomDataBlock({ style: 'Inline' })
+            ];
+            caseItem['api.CustomValue.getalltreevalues'] = {
+              values: customDataBlocks
+            };
+            initController(caseItem);
+          });
+
+          it('does not add the details tab', () => {
+            expect($scope.tabs).not.toContain({
+              name: 'Details',
+              label: ts('Details'),
+              service: DetailsCaseTab
+            });
+          });
+        });
+
+        describe('when there are data custom blocks and the case details are updated', () => {
+          let detailsTabsCount;
+
+          beforeEach(() => {
+            customDataBlocks = [
+              generateCustomDataBlock({ style: 'Inline' }),
+              generateCustomDataBlock({ style: 'Tab' }),
+              generateCustomDataBlock({ style: 'Inline' })
+            ];
+            caseItem['api.CustomValue.getalltreevalues'] = {
+              values: customDataBlocks
+            };
+            initController(caseItem);
+
+            // refresh case details:
+            caseItem['api.Case.getcaselist.relatedCasesByContact'] = { values: [] };
+            caseItem['api.Case.getcaselist.linkedCases'] = { values: [] };
+            caseItem['api.Activity.getAll.recentCommunication'] = { values: [] };
+            caseItem['api.Activity.getAll.tasks'] = { values: [] };
+            caseItem['api.Activity.getAll.nextActivitiesWhichIsNotMileStone'] = { values: [] };
+            caseItem['api.CustomValue.getalltreevalues'] = {
+              values: customDataBlocks
+            };
+            $scope.pushCaseData(caseItem);
+
+            detailsTabsCount = _.where($scope.tabs, { name: 'Details' }).length;
+          });
+
+          it('does not add the case details tab multiple times', () => {
+            expect(detailsTabsCount).toBe(1);
+          });
+        });
+
+        /**
+         * @param {object} defaultValues default values to use when generating the
+         *   custom data block.
+         * @returns {object} a mock custom data block.
+         */
+        function generateCustomDataBlock (defaultValues) {
+          const uniqueId = _.uniqueId();
+
+          return _.extend({}, {
+            id: uniqueId,
+            name: `Custom_Data_Block_${uniqueId}`,
+            title: `Custom Data Block ${uniqueId}`,
+            style: 'Inline'
+          }, defaultValues);
+        }
+      });
     });
 
     describe('when creating an email', function () {
@@ -443,10 +618,8 @@
 
       beforeEach(function () {
         initController();
-        spyOn($rootScope, '$broadcast');
-        loadFormBefore = CRM.loadForm;
-        CRM.loadForm = jasmine.createSpy();
-        CRM.loadForm.and.returnValue({
+        spyOn($rootScope, '$broadcast').and.callThrough();
+        civicaseCrmLoadForm.and.returnValue({
           on: function () {
             loadFormArguments = arguments;
           }
@@ -455,17 +628,13 @@
         $scope.createEmail();
       });
 
-      afterEach(function () {
-        CRM.loadForm = loadFormBefore;
-      });
-
       it('open a popup to create emails', function () {
-        expect(CRM.url).toHaveBeenCalledWith('civicrm/activity/email/add', {
+        expect(civicaseCrmUrl).toHaveBeenCalledWith('civicrm/activity/email/add', {
           action: 'add',
           caseid: $scope.item.id,
           atype: '3',
           reset: 1,
-          cid: CasesUtils.getAllCaseClientContactIds($scope.item.contacts).join(',')
+          cid: '170'
         });
       });
 
@@ -484,6 +653,70 @@
       });
     });
 
+    describe('going to other cases', () => {
+      let caseItem, clickEvent;
+
+      beforeEach(() => {
+        spyOn($route, 'updateParams');
+        initController();
+
+        clickEvent = $.Event('click');
+        clickEvent.target = document.createElement('span');
+        caseItem = {
+          id: _.uniqueId(),
+          case_type_id: '1',
+          status_id: '1',
+          'case_type_id.is_active': '0'
+        };
+      });
+
+      describe('when clicking on a non button element', () => {
+        beforeEach(() => {
+          $route.current = {
+            params: {
+              customParam: 'custom-value'
+            }
+          };
+
+          $scope.gotoCase(caseItem, clickEvent);
+        });
+
+        it('goes to the other case', () => {
+          expect($route.updateParams).toHaveBeenCalledWith(jasmine.objectContaining({
+            caseId: caseItem.id
+          }));
+        });
+
+        it('retains existing route filters', () => {
+          expect($route.updateParams).toHaveBeenCalledWith(jasmine.objectContaining({
+            customParam: 'custom-value'
+          }));
+        });
+
+        it('adds filters for the case\'s case type, status, and active status', () => {
+          expect($route.updateParams).toHaveBeenCalledWith(jasmine.objectContaining({
+            cf: JSON.stringify({
+              case_type_id: ['housing_support'],
+              status_id: ['Open'],
+              'case_type_id.is_active': '0'
+            })
+          }));
+        });
+      });
+
+      describe('when a button element is clicked', () => {
+        beforeEach(() => {
+          clickEvent.target = document.createElement('a');
+
+          $scope.gotoCase(caseItem, clickEvent);
+        });
+
+        it('does not go to the other case', () => {
+          expect($route.updateParams).not.toHaveBeenCalled();
+        });
+      });
+    });
+
     /**
      * Initializes the case details controller.
      *
@@ -494,11 +727,11 @@
     function initController (caseItem, dependencies) {
       $scope = $rootScope.$new();
 
-      $controller('civicaseCaseDetailsController', _.extend({}, {
+      controller = $controller('civicaseCaseDetailsController', _.extend({}, {
         $scope: $scope
       }, dependencies));
       $scope.item = caseItem || _.cloneDeep(CasesData.get().values[0]);
       $scope.$digest();
     }
   });
-})(CRM._);
+})(CRM.$, CRM._);

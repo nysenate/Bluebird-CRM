@@ -43,7 +43,7 @@
               <li ng-if="activity.attachments.length" role="separator" class="divider"></li>
               <li ng-if="activity.attachments.length">
                 <a class="civicase__activity-attachment__file-name"
-                  ng-href="{{ 'civicrm/case/activity/download-all-files' | civicaseCrmUrl:{ activity_id: activity.id } }}">
+                  ng-href="{{ 'civicrm/case/activity/download-all-files' | civicaseCrmUrl:{ activity_ids: activity.id } }}">
                   <i class="civicase__activity-attachment__file-icon crm-i fa-download"></i> &nbsp;Download all
                 </a>
               </li>
@@ -61,6 +61,7 @@
           <!-- Avatar -->
           <span
             ng-if="activity.assignee_contact_name"
+            total-contacts="activity.total_assignee_contacts"
             civicase-contact-card
             avatar="true"
             case-id="activity.case_id"
@@ -98,6 +99,7 @@
           class="civicase__contact-card"
           civicase-contact-card
           case-id="activity.case_id"
+          total-contacts="activity.total_target_contacts"
           contacts="activity.target_contact_name"
         ></div>
         <!-- End - With -->
@@ -123,7 +125,12 @@
       <div>
         <div class="civicase__activity-empty-message">No upcoming activity</div>
         <span civicase-dropdown>
-          <a class="civicase__activity-empty-link" href civicase-dropdown-toggle>
+          <a
+            ng-if="isReadOnly !== true"
+            class="civicase__activity-empty-link"
+            href
+            civicase-dropdown-toggle
+          >
             Click here to add an activity
           </a>
           <civicase-add-activity-menu

@@ -1,5 +1,3 @@
-/* eslint-env jasmine */
-
 (() => {
   describe('$rootScope decorator', () => {
     let $rootScope, ts;

@@ -15,11 +15,11 @@
     /**
      * Link function for civicaseActivityMonthNav
      *
-     * @param {Object} scope
-     * @param {Object} $el
-     * @param {Object} attr
+     * @param {object} scope scope object
+     * @param {object} $element directives html element
+     * @param {object} attr attributes of the directive
      */
-    function civicaseActivityMonthNavLink (scope, $el, attr) {
+    function civicaseActivityMonthNavLink (scope, $element, attr) {
       (function init () {
         scope.$watch('isLoading', checkIfLoadingCompleted);
       }());
@@ -46,7 +46,13 @@
 
   module.controller('civicaseActivityMonthNavController', civicaseActivityMonthNavController);
 
-  function civicaseActivityMonthNavController ($rootScope, $scope, crmApi) {
+  /**
+   *
+   * @param {object} $rootScope rootscope object
+   * @param {object} $scope scope object of the controller
+   * @param {Function} civicaseCrmApi service to access civicrm api
+   */
+  function civicaseActivityMonthNavController ($rootScope, $scope, civicaseCrmApi) {
     var previousApiCalls = null;
     var currentlyActiveMonth = null;
     $scope.navigateToMonth = navigateToMonth;
@@ -58,7 +64,8 @@
     /**
      * Checks if the first record of the month is already rendered
      *
-     * @param {Object} monthObj
+     * @param {object} monthObj month object
+     * @returns {boolean} if the first record of the month is already rendered
      */
     function checkIfMonthIsAlreadyLoaded (monthObj) {
       var selector = '[data-offset-number="' + monthObj.startingOffset + '"]';
@@ -69,8 +76,9 @@
     /**
      * Subscribe listener for civicaseActivityFeed.query
      *
-     * @param {Object} event
-     * @param {Object} feedQueryParams
+     * @param {object} event event object
+     * @param {object} feedQueryParams query parameters for activity feed
+     * @returns {Promise} promise
      */
     function feedQueryListener (event, feedQueryParams) {
       if (feedQueryParams.isMyActivitiesFilter) {
@@ -88,7 +96,7 @@
       }
       previousApiCalls = apiCalls;
 
-      return crmApi(apiCalls).then(function (result) {
+      return civicaseCrmApi(apiCalls).then(function (result) {
         initGroups();
 
         if (feedQueryParams.overdueFirst) {
@@ -109,9 +117,9 @@
     /**
      * Get API calls to load the months for the month nav
      *
-     * @param {Boolean} overdueFirst
-     * @param {Object} params
-     * @return {Array}
+     * @param {boolean} overdueFirst if overdues should be displayed first
+     * @param {object} params parameters of the api call
+     * @returns {Array} list of api calls
      */
     function getAPICalls (overdueFirst, params) {
       var apiCalls;
@@ -120,11 +128,11 @@
         apiCalls = {
           months_wo_overdue: [
             'Activity', 'getmonthswithactivities',
-            $.extend(true, {is_overdue: 0}, params)
+            $.extend(true, { is_overdue: 0 }, params)
           ],
           months_with_overdue: [
             'Activity', 'getmonthswithactivities',
-            $.extend(true, {is_overdue: 1}, params)
+            $.extend(true, { is_overdue: 1 }, params)
           ]
         };
       } else {
@@ -141,9 +149,9 @@
     /**
      * Group Dates into year and month for the given category
      *
-     * @param {Array} category
-     * @param {Object} dateObject
-     * @param {Boolean} isOverDueGroup
+     * @param {object} category category object
+     * @param {object} dateObject date object
+     * @param {boolean} isOverDueGroup if overdue group
      */
     function groupByYearFor (category, dateObject, isOverDueGroup) {
       var yearObject = _.find(category.records, function (yearObj) {
@@ -171,7 +179,7 @@
     /**
      * Group Months into year
      *
-     * @param {Array} monthsArray
+     * @param {Array} monthsArray list of months
      */
     function groupOthersByYear (monthsArray) {
       var current = {
@@ -203,7 +211,7 @@
     /**
      * Group Overdue Activity Months into year
      *
-     * @param {Array} monthsArray
+     * @param {Array} monthsArray list of months
      */
     function groupOverdueByYear (monthsArray) {
       var overdueGroup = _.find($scope.groups, function (group) {
@@ -240,7 +248,7 @@
      *  scrolls to the first record of the month
      * If Not, emits an event with the starting offset for that month
      *
-     * @param {Object} monthObj
+     * @param {object} monthObj month object
      */
     function navigateToMonth (monthObj) {
       if (currentlyActiveMonth) {
@@ -264,7 +272,7 @@
     /**
      * Scrolls and Highlights the first records of the month
      *
-     * @param {Object} monthObj
+     * @param {object} monthObj month object
      */
     function scrollAndHighlight (monthObj) {
       var selector = '[data-offset-number=' + monthObj.startingOffset + ']';

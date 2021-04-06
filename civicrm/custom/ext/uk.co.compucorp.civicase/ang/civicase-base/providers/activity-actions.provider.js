@@ -5,48 +5,58 @@
     var actions = [{
       title: ts('Resume Draft'),
       icon: 'play_circle_filled',
-      name: 'ResumeDraft'
+      name: 'ResumeDraft',
+      isWriteAction: true
     }, {
       title: ts('View in Feed'),
       icon: 'pageview',
-      name: 'ViewInFeed'
+      name: 'ViewInFeed',
+      isWriteAction: false
     }, {
       title: ts('Edit'),
       icon: 'edit',
-      name: 'Edit'
+      name: 'Edit',
+      isWriteAction: true
     }, {
       title: ts('Print Report'),
       icon: 'print',
-      name: 'PrintReport'
+      name: 'PrintReport',
+      isWriteAction: false
     }, {
       title: ts('Move to Case'),
       icon: 'next_week',
       name: 'MoveCopy',
-      operation: 'move'
+      operation: 'move',
+      isWriteAction: true
     }, {
       title: ts('Copy to Case'),
       icon: 'filter_none',
       name: 'MoveCopy',
-      operation: 'copy'
+      operation: 'copy',
+      isWriteAction: false
     }, {
       title: ts('Tag - add to activities'),
       icon: 'add_circle',
       name: 'Tags',
-      operation: 'add'
+      operation: 'add',
+      isWriteAction: true
     }, {
       title: ts('Tag - remove from activities'),
       icon: 'remove_circle',
       name: 'Tags',
-      operation: 'remove'
+      operation: 'remove',
+      isWriteAction: true
     }, {
       title: ts('Download All'),
       icon: 'file_download',
-      name: 'DownloadAll'
+      name: 'DownloadAll',
+      isWriteAction: false
     }, {
       showDividerBeforeThisAction: true,
       title: ts('Delete'),
       icon: 'delete',
-      name: 'Delete'
+      name: 'Delete',
+      isWriteAction: true
     }];
 
     this.$get = function () {

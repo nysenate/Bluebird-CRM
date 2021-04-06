@@ -4,13 +4,13 @@
   .panel-body {
     display: flex;
     flex-direction: row;
-    padding: 32px 48px;
+    padding: 20px;
   }
 }
 
 .civicase__summary-tab__subject-container {
-  flex-basis: 50%;
-  padding-right: 48px;
+  flex-basis: 56%;
+  padding-right: 15px;
 }
 
 .civicase__summary-tab__subject {
@@ -64,13 +64,13 @@
   }
 
   .civicase__summary-activity-count__number {
-    font-size: 56px;
+    font-size: 50px;
     line-height: 76px;
   }
 
   .civicase__summary-activity-count__description {
     color: $crm-gray-matte;
-    font-size: 16px;
+    font-size: 15px;
     line-height: 22px;
   }
 }

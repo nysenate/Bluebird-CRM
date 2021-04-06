@@ -12,6 +12,7 @@ use CRM_Civicase_Helper_GlobRecursive as GlobRecursive;
 use CRM_Civicase_Service_CaseCategoryPermission as CaseCategoryPermission;
 use CRM_Civicase_Helper_NewCaseWebform as NewCaseWebform;
 use CRM_Civicase_Helper_CaseCategory as CaseCategoryHelper;
+use CRM_Civicase_Hook_Permissions_ExportCasesAndReports as ExportCasesAndReports;
 
 load_resources();
 $caseCategoryName = CRM_Utils_Request::retrieve('case_type_category', 'String');
@@ -37,7 +38,6 @@ $requires = [
   'crmUi',
   'ngRoute',
   'angularFileUpload',
-  'bw.paging',
   'crmRouteBinder',
   'crmResource',
   'ui.bootstrap',
@@ -82,12 +82,18 @@ function adds_shoreditch_css() {
  * Get a list of JS files.
  */
 function get_js_files() {
-  return array_merge([
-    // At the moment, it's safe to include this multiple times.
-    // deduped by resource manager.
-    'assetBuilder://visual-bundle.js',
-    'ang/civicase.js',
-  ], GlobRecursive::get(dirname(__FILE__) . '/civicase/*.js'));
+  return array_merge(
+    [
+      // At the moment, it's safe to include this multiple times.
+      // deduped by resource manager.
+      'assetBuilder://visual-bundle.js',
+      'ang/civicase.js',
+    ],
+    GlobRecursive::getRelativeToExtension(
+      'uk.co.compucorp.civicase',
+      'ang/civicase/*.js'
+    )
+  );
 }
 
 /**
@@ -101,45 +107,47 @@ function set_case_actions(&$options, $caseCategoryPermissions) {
       'title' => ts('Change Case Status'),
       'action' => 'ChangeStatus',
       'icon' => 'fa-pencil-square-o',
+      'is_write_action' => TRUE,
     ],
     [
       'title' => ts('Edit Tags'),
       'action' => 'EditTags',
       'icon' => 'fa-tags',
       'number' => 1,
+      'is_write_action' => TRUE,
     ],
     [
       'title' => ts('Print Case'),
       'action' => 'Print',
       'number' => 1,
       'icon' => 'fa-print',
+      'is_write_action' => FALSE,
     ],
     [
-      'title' => ts('Email Case Manager'),
-      'action' => 'EmailManagers',
+      'title' => ts('Email - send now'),
+      'action' => 'Email',
       'icon' => 'fa-envelope-o',
+      'is_write_action' => TRUE,
     ],
     [
       'title' => ts('Print/Merge Document'),
       'action' => 'PrintMerge',
       'icon' => 'fa-file-pdf-o',
-    ],
-    [
-      'title' => ts('Export Cases'),
-      'action' => 'ExportCases',
-      'icon' => 'fa-file-excel-o',
+      'is_write_action' => TRUE,
     ],
     [
       'title' => ts('Link Cases'),
       'action' => 'LinkCases',
       'number' => 1,
       'icon' => 'fa-link',
+      'is_write_action' => TRUE,
     ],
     [
       'title' => ts('Link 2 Cases'),
       'action' => 'LinkCases',
       'number' => 2,
       'icon' => 'fa-link',
+      'is_write_action' => TRUE,
     ],
   ];
   if (CRM_Core_Permission::check('administer CiviCase')) {
@@ -148,12 +156,14 @@ function set_case_actions(&$options, $caseCategoryPermissions) {
       'number' => 2,
       'action' => 'MergeCases',
       'icon' => 'fa-compress',
+      'is_write_action' => TRUE,
     ];
     $options['caseActions'][] = [
       'title' => ts('Lock Case'),
       'action' => 'LockCases',
       'number' => 1,
       'icon' => 'fa-lock',
+      'is_write_action' => TRUE,
     ];
   }
   if (CRM_Core_Permission::check($caseCategoryPermissions['DELETE_IN_CASE_CATEGORY']['name'])) {
@@ -161,6 +171,15 @@ function set_case_actions(&$options, $caseCategoryPermissions) {
       'title' => ts('Delete Case'),
       'action' => 'DeleteCases',
       'icon' => 'fa-trash',
+      'is_write_action' => TRUE,
+    ];
+  }
+  if (CRM_Core_Permission::check(ExportCasesAndReports::PERMISSION_NAME)) {
+    $options['caseActions'][] = [
+      'title' => ts('Export Cases'),
+      'action' => 'ExportCases',
+      'icon' => 'fa-file-excel-o',
+      'is_write_action' => FALSE,
     ];
   }
 
@@ -194,7 +213,7 @@ function add_webforms_case_action(&$options) {
           'path' => $webform['path'],
           'case_type_ids' => $webform['case_type_ids'],
           'clientID' => $client,
-          'icon' => 'fa-link',
+          'is_write_action' => FALSE,
         ];
       }
       $options['caseActions'][] = [
@@ -202,6 +221,7 @@ function add_webforms_case_action(&$options) {
         'action' => 'Webforms',
         'icon' => 'fa-file-text-o',
         'items' => $items,
+        'is_write_action' => FALSE,
       ];
     }
   }

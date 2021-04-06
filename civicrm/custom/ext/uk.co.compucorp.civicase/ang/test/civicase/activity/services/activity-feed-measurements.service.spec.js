@@ -1,4 +1,3 @@
-/* eslint-env jasmine */
 (function (_) {
   describe('ActivityFeedMeasurements', function () {
     var ActivityFeedMeasurements;

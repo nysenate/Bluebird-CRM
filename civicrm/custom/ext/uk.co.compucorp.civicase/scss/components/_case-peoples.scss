@@ -54,6 +54,16 @@
   }
 }
 
+.civicase__people-tab__add-role-dropdown {
+  [disabled] {
+    &,
+    &:hover {
+      color: $crm-gray-matte;
+      cursor: $cursor-disabled;
+    }
+  }
+}
+
 .civicase__people-tab__search {
   background: $crm-white;
   padding: 20px 30px;
@@ -175,6 +185,17 @@
   .material-icons {
     font-size: 18px;
     padding: 0;
+  }
+}
+
+.civicase__people-tab__inactive-filter {
+  margin-left: auto;
+  margin-right: $case-gutter-width;
+
+  .civicase__checkbox {
+    display: inline-block;
+    margin-right: $basic-gutter;
+    top: $basic-gutter;
   }
 }
 

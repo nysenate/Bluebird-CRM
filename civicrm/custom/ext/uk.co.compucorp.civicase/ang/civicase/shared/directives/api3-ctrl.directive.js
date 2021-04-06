@@ -9,7 +9,7 @@
         onRefresh: '@'
       },
       controllerAs: 'civicaseApi3Ctrl',
-      controller: function ($scope, $parse, crmThrottle, crmApi) {
+      controller: function ($scope, $parse, crmThrottle, civicaseCrmApi) {
         var ctrl = this;
 
         // CONSIDER: Trade-offs of upfront vs ongoing evaluation.
@@ -23,7 +23,7 @@
         ctrl.refresh = function refresh () {
           ctrl.loading = true;
           crmThrottle(function () {
-            return crmApi(ctrl.entity, ctrl.action, ctrl.params)
+            return civicaseCrmApi(ctrl.entity, ctrl.action, ctrl.params)
               .then(function (response) {
                 ctrl.result = response;
                 ctrl.loading = ctrl.firstLoad = false;
