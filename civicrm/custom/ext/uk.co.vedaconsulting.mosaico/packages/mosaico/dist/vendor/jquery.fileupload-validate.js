@@ -33,7 +33,7 @@
         {
             action: 'validate',
             // Always trigger this action,
-            // even if the previous action was rejected: 
+            // even if the previous action was rejected:
             always: true,
             // Options taken from the global options map:
             acceptFileTypes: '@',
@@ -80,6 +80,7 @@
                 if (options.disabled) {
                     return data;
                 }
+                
                 var dfd = $.Deferred(),
                     settings = this.options,
                     file = data.files[data.index],
