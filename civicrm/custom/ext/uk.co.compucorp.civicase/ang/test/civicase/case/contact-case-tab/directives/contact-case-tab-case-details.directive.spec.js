@@ -1,5 +1,3 @@
-/* eslint-env jasmine */
-
 ((_) => {
   describe('Contact Case Tab Case Details', () => {
     let $controller, $rootScope, $scope, CaseTypeCategory, mockCase;

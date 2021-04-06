@@ -1,5 +1,3 @@
-/* eslint-env jasmine */
-
 ((_) => {
   describe('RoleDatesUpdater', () => {
     let roleDatesUpdater, roleData, caseId, loggedInContactId, returnedApiCalls;

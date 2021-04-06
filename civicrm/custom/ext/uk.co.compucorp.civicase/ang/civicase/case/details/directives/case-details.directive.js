@@ -46,12 +46,14 @@
    * @param {object} CaseType case type service
    * @param {object} CaseDetailsSummaryBlocks case details summary blocks
    * @param {object} DetailsCaseTab case details case tab service reference
+   * @param {Function} civicaseCrmLoadForm service to load civicrm forms
    */
   function civicaseCaseDetailsController (civicaseCrmUrl, $sce, $rootScope, $scope,
     $document, allowLinkedCasesTab, BulkActions, CaseDetailsTabs, civicaseCrmApi,
     formatActivity, formatCase, getActivityFeedUrl, getCaseQueryParams, $route,
     $timeout, crmStatus, CasesUtils, PrintMergeCaseAction, ts, ActivityType,
-    CaseStatus, CaseType, CaseDetailsSummaryBlocks, DetailsCaseTab) {
+    CaseStatus, CaseType, CaseDetailsSummaryBlocks, DetailsCaseTab,
+    civicaseCrmLoadForm) {
     // Makes the scope available to child directives when they require this parent directive:
     this.$scope = $scope;
 
@@ -145,8 +147,7 @@
         }).join(',')
       };
 
-      CRM
-        .loadForm(civicaseCrmUrl('civicrm/activity/email/add', createEmailURLParams))
+      civicaseCrmLoadForm(civicaseCrmUrl('civicrm/activity/email/add', createEmailURLParams))
         .on('crmFormSuccess', function () {
           $rootScope.$broadcast('civicase::activity::updated');
         });
@@ -158,7 +159,7 @@
     function createPDFLetter () {
       PrintMergeCaseAction.doAction([$scope.item])
         .then(function (pdfLetter) {
-          CRM.loadForm(civicaseCrmUrl(pdfLetter.path, pdfLetter.query));
+          civicaseCrmLoadForm(civicaseCrmUrl(pdfLetter.path, pdfLetter.query));
         });
     }
 
@@ -446,11 +447,6 @@
       // nextActivitiesWhichIsNotMileStoneList
       item.nextActivityNotMilestone = _.each(_.cloneDeep(item['api.Activity.getAll.nextActivitiesWhichIsNotMileStone'].values), formatAct)[0];
       delete (item['api.Activity.getAll.nextActivitiesWhichIsNotMileStone']);
-
-      // Custom fields
-      var customData = item['api.CustomValue.getalltreevalues'].values || [];
-      item.customData = _.groupBy(customData, 'style');
-      delete (item['api.CustomValue.getalltreevalues']);
 
       return item;
     }

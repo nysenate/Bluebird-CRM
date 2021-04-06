@@ -3,6 +3,7 @@
 use CRM_Civicase_Service_CaseCategoryInstance as CaseCategoryInstanceService;
 use CRM_Civicase_Test_Fabricator_CaseCategoryInstance as CaseCategoryInstanceFabricator;
 use CRM_Civicase_Test_Fabricator_CaseCategory as CaseCategoryFabricator;
+use CRM_Civicase_Test_Fabricator_CaseCategoryInstanceType as CaseCategoryInstanceTypeFabricator;
 
 /**
  * Runs tests on CaseCategoryInstance Service tests.
@@ -59,8 +60,8 @@ class CRM_Civicase_Service_CaseCategoryInstanceTest extends BaseHeadlessTest {
     // Clean current category instances for doing an appropriate count later.
     $this->cleanCategoryInstances();
     // We generate two different category instance types.
-    $categoryInstanceTypeOne = $this->createCategoryInstanceType();
-    $categoryInstanceTypeTwo = $this->createCategoryInstanceType();
+    $categoryInstanceTypeOne = CaseCategoryInstanceTypeFabricator::fabricate();
+    $categoryInstanceTypeTwo = CaseCategoryInstanceTypeFabricator::fabricate();
     // And two random category instances associated with them.
     $categoryInstanceOne = CaseCategoryInstanceFabricator::fabricate([
       'instance_id' => $categoryInstanceTypeOne['value'],
@@ -121,28 +122,6 @@ class CRM_Civicase_Service_CaseCategoryInstanceTest extends BaseHeadlessTest {
     }
 
     return FALSE;
-  }
-
-  /**
-   * Generates a random category instance type.
-   *
-   * @return array
-   *   Category instance type details.
-   */
-  private function createCategoryInstanceType() {
-    $randomIdentifier = rand();
-    $params = [
-      'option_group_id' => 'case_category_instance_type',
-      'name' => 'test_category_instance_type_' . $randomIdentifier,
-      'label' => 'Test Category Instance Type ' . $randomIdentifier,
-      'grouping' => 'CRM_Civicase_Service_CaseManagementUtils',
-      'is_active' => TRUE,
-      'is_reserved' => TRUE,
-    ];
-
-    $result = civicrm_api3('OptionValue', 'create', $params);
-
-    return array_shift($result['values']);
   }
 
   /**

@@ -1,5 +1,3 @@
-/* eslint-env jasmine */
-
 ((_) => {
   describe('civicaseActivityActions', () => {
     describe('Activity Actions Controller', () => {

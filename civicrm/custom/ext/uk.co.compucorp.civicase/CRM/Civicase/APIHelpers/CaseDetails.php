@@ -229,7 +229,7 @@ class CRM_Civicase_APIHelpers_CaseDetails {
    * @return array
    *   The Query Object and Where string used for filtering by role.
    */
-  private function getRoleQuery(array $params) {
+  private static function getRoleQuery(array $params) {
     $where = '';
     $canBeAClient = !isset($params['can_be_client']) || $params['can_be_client'];
     $hasOtherRolesThanClient = isset($params['role_type']);

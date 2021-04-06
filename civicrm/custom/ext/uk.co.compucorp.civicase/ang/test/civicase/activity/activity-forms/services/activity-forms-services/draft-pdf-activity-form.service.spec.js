@@ -1,4 +1,3 @@
-/* eslint-env jasmine */
 ((_) => {
   describe('DraftPdfActivityForm', () => {
     let civicaseCrmUrl, activity, checkIfDraftActivity,

@@ -1,4 +1,3 @@
-/* eslint-env jasmine */
 ((_, angular) => {
   describe('CaseTypeCategory Provider', () => {
     let CaseTypeCategory, CaseCategoryInstanceTypeData;

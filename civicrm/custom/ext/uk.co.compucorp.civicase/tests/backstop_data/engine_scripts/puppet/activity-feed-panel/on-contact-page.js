@@ -6,7 +6,7 @@ module.exports = async (page, scenario, vp) => {
   const utility = new Utility(page, scenario, vp);
 
   await utility.waitForAngular();
-  await page.waitFor('.blockUI.blockOverlay', { hidden: true });
+  await page.waitForSelector('.blockUI.blockOverlay', { hidden: true });
   await page.waitForSelector('#civicaseActivitiesTab #bootstrap-theme .civicase__activity-feed');
   await utility.waitForLoadingComplete();
 };

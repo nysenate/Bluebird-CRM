@@ -1,5 +1,3 @@
-/* eslint-env jasmine */
-
 (function (_, $) {
   describe('Email Case Action', function () {
     var $q, $rootScope, EmailCaseAction, CasesMockData, caseObj,

@@ -62,6 +62,6 @@ async function clickSelectorAction ({ page, scenario, viewport, wait = 1000 }) {
       await utility.waitForUIModalLoad();
     }
 
-    await page.waitFor(wait);
+    await page.waitForTimeout(wait);
   }
 }

@@ -1,5 +1,3 @@
-/* eslint-env jasmine */
-
 (() => {
   describe('DeleteActivityAction', () => {
     var DeleteActivityAction, $provide;

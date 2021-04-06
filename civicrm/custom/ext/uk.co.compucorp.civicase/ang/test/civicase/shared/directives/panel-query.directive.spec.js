@@ -1,4 +1,3 @@
-/* eslint-env jasmine */
 (function ($, _) {
   describe('panelQuery', function () {
     var element, $compile, $q, $rootScope, $scope, civicaseCrmApi, panelQueryScope, mockedResults;

@@ -2,7 +2,8 @@
   var module = angular.module('civicase');
 
   // Editable custom data blocks
-  module.directive('civicaseEditCustomData', function (civicaseCrmUrl) {
+  module.directive('civicaseEditCustomData', function (civicaseCrmUrl,
+    civicaseCrmLoadForm) {
     return {
       restrict: 'A',
       require: ['^civicaseCaseDetails'],
@@ -69,7 +70,7 @@
               closeEditForm();
             });
           });
-        CRM.loadForm(url, { target: form });
+        civicaseCrmLoadForm(url, { target: form });
       }
     }
   });

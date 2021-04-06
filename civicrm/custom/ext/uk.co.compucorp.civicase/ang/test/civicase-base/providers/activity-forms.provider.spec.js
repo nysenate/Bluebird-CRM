@@ -1,4 +1,3 @@
-/* eslint-env jasmine */
 ((_, angular) => {
   describe('ActivityForms', () => {
     let activity, activityForm, ActivityForms, CatchAllActivityFormSpy, SpyActivityForm2;

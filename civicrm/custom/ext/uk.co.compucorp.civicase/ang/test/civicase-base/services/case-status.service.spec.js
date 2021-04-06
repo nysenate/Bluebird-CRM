@@ -1,5 +1,3 @@
-/* eslint-env jasmine */
-
 (() => {
   describe('Case Status', () => {
     let CaseStatus, CaseStatusData;

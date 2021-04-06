@@ -1,5 +1,3 @@
-/* eslint-env jasmine */
-
 (function (_, $) {
   describe('TagsActivityAction', function () {
     var $q, $rootScope, TagsActivityAction, activitiesMockData, TagsMockData,
@@ -22,7 +20,7 @@
       TagsActivityAction = _TagsActivityAction_;
 
       spyOn($.fn, 'dialog');
-      spyOn($rootScope, '$broadcast');
+      spyOn($rootScope, '$broadcast').and.callThrough();
     }));
 
     describe('Add Tags to Activities bulk action', function () {

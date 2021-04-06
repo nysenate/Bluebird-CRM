@@ -2,7 +2,7 @@
   var module = angular.module('civicase');
 
   module.directive('civicaseActivityPanel', function ($timeout,
-    ActivityFeedMeasurements, ActivityForms, BulkActions) {
+    ActivityFeedMeasurements, ActivityForms, BulkActions, civicaseCrmLoadForm) {
     return {
       restrict: 'A',
       templateUrl: '~/civicase/activity/panel/directives/activity-panel.directive.html',
@@ -63,15 +63,13 @@
 
         scope.canChangeStatus = activityForm.canChangeStatus;
 
-        CRM
-          .loadForm(activityForm.getActivityFormUrl(activity, activityFormOptions), {
-            target: $(element).find('.civicase__activity-panel__core_container')
-          })
-          .one('crmAjaxError', function () {
-            scope.$apply(function () {
-              scope.closeDetailsPanel();
-            });
+        civicaseCrmLoadForm(activityForm.getActivityFormUrl(activity, activityFormOptions), {
+          target: $(element).find('.civicase__activity-panel__core_container')
+        }).one('crmAjaxError', function () {
+          scope.$apply(function () {
+            scope.closeDetailsPanel();
           });
+        });
 
         element.find('.crm-submit-buttons a.edit').addClass('btn btn-primary');
       }

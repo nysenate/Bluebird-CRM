@@ -1,14 +1,15 @@
-/* eslint-env jasmine */
-
 (($, _) => {
   describe('linked cases tab', () => {
-    let $controller, $scope, LinkCasesCaseAction, civicaseCrmUrl;
+    let $controller, $scope, LinkCasesCaseAction, civicaseCrmUrl,
+      civicaseCrmLoadForm;
 
     beforeEach(module('civicase'));
 
-    beforeEach(inject((_civicaseCrmUrl_, _$controller_, _$rootScope_, _LinkCasesCaseAction_) => {
+    beforeEach(inject((_civicaseCrmUrl_, _$controller_, _$rootScope_,
+      _LinkCasesCaseAction_, _civicaseCrmLoadForm_) => {
       civicaseCrmUrl = _civicaseCrmUrl_;
       $controller = _$controller_;
+      civicaseCrmLoadForm = _civicaseCrmLoadForm_;
       $scope = _$rootScope_.$new();
       LinkCasesCaseAction = _LinkCasesCaseAction_;
     }));
@@ -31,7 +32,7 @@
       beforeEach((done) => {
         $mockForm = $('<div></div>');
 
-        CRM.loadForm.and.returnValue($mockForm);
+        civicaseCrmLoadForm.and.returnValue($mockForm);
         $scope.linkCase();
 
         LinkCasesCaseAction.doAction([$scope.item])

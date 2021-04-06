@@ -1,5 +1,3 @@
-/* eslint-env jasmine */
-
 describe('BulkActionsMessage', function () {
   var $compile, $rootScope, $scope, element;
 

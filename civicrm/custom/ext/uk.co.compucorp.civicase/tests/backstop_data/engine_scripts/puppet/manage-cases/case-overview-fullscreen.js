@@ -10,5 +10,5 @@ module.exports = async (page, scenario, vp) => {
 
   await page.click('.civicase__case-header__expand_button');
 
-  await page.waitFor(2000);
+  await page.waitForTimeout(2000);
 };

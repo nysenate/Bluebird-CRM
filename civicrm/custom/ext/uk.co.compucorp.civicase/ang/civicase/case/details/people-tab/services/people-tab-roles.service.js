@@ -2,7 +2,7 @@
   var module = angular.module('civicase');
 
   module.service('civicasePeopleTabRoles', function (isTruthy, RelationshipType,
-    ts, allowMultipleCaseClients) {
+    ts, allowMultipleCaseClients, CasesUtils) {
     var caseContacts = [];
     var caseRelationships = [];
     var roles = this;
@@ -33,7 +33,7 @@
         caseTypeRole.count = _.filter(roles.list, function (role) {
           var roleIsAssigned = !!role.display_name;
           var roleBelongsToType = role.role === caseTypeRole.role;
-          var isClientRole = role.role === ts('Client');
+          var isClientRole = role.is_client === '1';
 
           return roleIsAssigned && roleBelongsToType &&
             (isClientRole || role.is_active === '1');
@@ -166,8 +166,8 @@
      *   contacts list.
      */
     function getClientRoles () {
-      return _.filter(caseContacts, {
-        role: ts('Client')
+      return _.filter(caseContacts, function (role) {
+        return CasesUtils.isClientRole(role);
       })
         .map(function (contact) {
           return {
@@ -179,6 +179,7 @@
             email: contact.email,
             phone: contact.phone,
             role: ts('Client'),
+            is_client: '1',
             start_date: null
           };
         });

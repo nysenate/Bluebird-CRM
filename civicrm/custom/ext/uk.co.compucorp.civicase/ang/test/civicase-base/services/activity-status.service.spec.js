@@ -1,5 +1,3 @@
-/* eslint-env jasmine */
-
 (() => {
   describe('Activity Status', () => {
     let ActivityStatus, ActivityStatusesData;

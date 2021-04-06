@@ -1,4 +1,3 @@
-/* eslint-env jasmine */
 (($, _) => {
   describe('CaseOverview', () => {
     let $compile, $provide, $q, $rootScope, $scope, BrowserCache,

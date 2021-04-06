@@ -1,5 +1,3 @@
-/* eslint-env jasmine */
-
 (function (_, $) {
   describe('MoveCopyActivityAction', function () {
     var $rootScope, PrintMergeCaseAction, CasesMockData;

@@ -53,8 +53,7 @@
         finalUrlParams.caseId = parseInt(urlParams.caseId, 10);
       }
 
-      // The value to mark as trusted in angular context for security.
-      return $sce.trustAsResourceUrl(baseUrl + $.param(finalUrlParams));
+      return baseUrl + $.param(finalUrlParams);
     };
   });
 })(angular, CRM.$, CRM._, CRM);

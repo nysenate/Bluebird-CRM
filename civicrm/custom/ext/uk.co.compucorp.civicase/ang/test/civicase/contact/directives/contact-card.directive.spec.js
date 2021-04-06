@@ -1,4 +1,3 @@
-/* eslint-env jasmine */
 (function ($) {
   describe('contactCard', function () {
     var element, civicaseCrmApi, $q, $compile, $rootScope, $scope, ContactsData, ContactsCache;

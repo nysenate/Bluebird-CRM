@@ -59,13 +59,13 @@
    * @param {boolean} civicaseSingleCaseRolePerType if a single case role can be assigned per type
    * @param {object} dialogService A reference to the dialog service
    * @param {Function} removeDatePickerHrefs Removes date picker href attributes
+   * @param {Function} civicaseCrmLoadForm service to load civicrm forms
    */
-  function civicaseViewPeopleController ($scope,
-    allowMultipleCaseClients, civicaseCrmUrl,
-    civicaseCrmApi, civicasePeopleTabRoles, DateHelper,
+  function civicaseViewPeopleController ($scope, allowMultipleCaseClients,
+    civicaseCrmUrl, civicaseCrmApi, civicasePeopleTabRoles, DateHelper,
     PeoplesTabMessageConstants, ts, RelationshipType,
     civicaseRoleDatesUpdater, civicaseSingleCaseRolePerType, dialogService,
-    removeDatePickerHrefs) {
+    removeDatePickerHrefs, civicaseCrmLoadForm) {
     // The ts() and hs() functions help load strings for this module.
     var clients = _.indexBy($scope.item.client, 'contact_id');
     var item = $scope.item;
@@ -219,7 +219,7 @@
     function doContactTask (tab) {
       var task = $scope.contactTasks[$scope[tab + 'SelectedTask']];
       $scope[tab + 'SelectedTask'] = '';
-      CRM.loadForm(civicaseCrmUrl(task.url, { cids: $scope.getSelectedContacts(tab).join(',') }))
+      civicaseCrmLoadForm(civicaseCrmUrl(task.url, { cids: $scope.getSelectedContacts(tab).join(',') }))
         .on('crmFormSuccess', $scope.refresh)
         .on('crmFormSuccess', function () {
           $scope.refresh();

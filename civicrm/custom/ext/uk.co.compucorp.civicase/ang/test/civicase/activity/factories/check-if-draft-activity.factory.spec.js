@@ -1,4 +1,3 @@
-/* eslint-env jasmine */
 ((_) => {
   describe('checkIfDraftActivity', () => {
     let activity, checkIfDraftActivity, emailActivityTypeId,

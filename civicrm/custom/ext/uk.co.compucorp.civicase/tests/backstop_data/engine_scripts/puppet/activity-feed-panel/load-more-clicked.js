@@ -10,5 +10,5 @@ module.exports = async (page, scenario, vp) => {
 
   await page.click('.civicase__activity-feed-pager__more .btn');
   await page.waitForSelector('.civicase__activity-feed-pager__more .civicase__spinner', { hidden: true });
-  await page.waitFor(1000);
+  await page.waitForTimeout(1000);
 };

@@ -1,5 +1,3 @@
-/* eslint-env jasmine */
-
 (($, _) => {
   describe('civicaseInlineDatepicker', () => {
     const NG_INVALID_CLASS = 'ng-invalid';

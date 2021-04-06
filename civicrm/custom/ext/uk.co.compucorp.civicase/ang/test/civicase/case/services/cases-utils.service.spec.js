@@ -1,5 +1,3 @@
-/* eslint-env jasmine */
-
 ((_) => {
   describe('CasesUtils', () => {
     var CasesData, ContactsCache, CasesUtils, mockTs;
@@ -38,6 +36,34 @@
 
       it('fetches all contacts of the case', () => {
         expect(contactsFetched).toEqual(expectedContacts);
+      });
+    });
+
+    describe('when checking if a role is client', () => {
+      let role;
+
+      describe('and the role is client', () => {
+        beforeEach(() => {
+          role = CasesData.get().values[0].contacts[0];
+
+          role.relationship_type_id = false;
+        });
+
+        it('returns true', () => {
+          expect(CasesUtils.isClientRole(role)).toEqual(true);
+        });
+      });
+
+      describe('and the role is not client', () => {
+        beforeEach(() => {
+          role = CasesData.get().values[0].contacts[0];
+
+          role.relationship_type_id = '11';
+        });
+
+        it('returns false', () => {
+          expect(CasesUtils.isClientRole(role)).toEqual(false);
+        });
       });
     });
   });

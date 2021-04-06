@@ -1,8 +1,7 @@
-/* eslint-env jasmine */
-
-(($, loadForm) => {
+(($) => {
   describe('AddCaseService', () => {
-    let $window, AddCase, CaseCategoryWebformSettings, civicaseCrmUrl;
+    let $window, AddCase, CaseCategoryWebformSettings, civicaseCrmUrl,
+      civicaseCrmLoadForm;
 
     beforeEach(module('civicase-base', 'civicase', ($provide) => {
       $window = { location: { href: '' } };
@@ -13,8 +12,8 @@
     }));
 
     beforeEach(() => {
-      mockFormPopUpDom();
       injectDependencies();
+      mockFormPopUpDom();
     });
 
     describe('Button Visibility', () => {
@@ -93,10 +92,11 @@
      * Injects and hoists the dependencies used by this spec file.
      */
     function injectDependencies () {
-      inject((_civicaseCrmUrl_, _$window_, _AddCase_) => {
+      inject((_civicaseCrmUrl_, _$window_, _AddCase_, _civicaseCrmLoadForm_) => {
         civicaseCrmUrl = _civicaseCrmUrl_;
         $window = _$window_;
         AddCase = _AddCase_;
+        civicaseCrmLoadForm = _civicaseCrmLoadForm_;
       });
     }
 
@@ -104,7 +104,7 @@
      * Creates a mocked popup element that will be returned by the load form function.
      */
     function mockFormPopUpDom () {
-      loadForm.and.returnValue($('<div></div>'));
+      civicaseCrmLoadForm.and.returnValue($('<div></div>'));
     }
   });
-})(CRM.$, CRM.loadForm);
+})(CRM.$);

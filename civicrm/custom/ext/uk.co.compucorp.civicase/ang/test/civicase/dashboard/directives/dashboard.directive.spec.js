@@ -1,5 +1,3 @@
-/* eslint-env jasmine */
-
 (function (_, $) {
   describe('civicaseDashboardController', function () {
     var $controller, $rootScope, $scope, DashboardActionItems;

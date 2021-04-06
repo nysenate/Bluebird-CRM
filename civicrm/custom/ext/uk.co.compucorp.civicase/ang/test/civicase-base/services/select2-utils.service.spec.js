@@ -1,5 +1,3 @@
-/* eslint-env jasmine */
-
 (() => {
   describe('Select2Utils', () => {
     let Select2Utils;

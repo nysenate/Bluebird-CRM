@@ -17,9 +17,15 @@ use CRM_Civicase_Helper_GlobRecursive as GlobRecursive;
  *   list of js files
  */
 function get_workflow_js_files() {
-  return array_merge([
-    'ang/workflow.js',
-  ], GlobRecursive::get(dirname(__FILE__) . '/workflow/*.js'));
+  return array_merge(
+    [
+      'ang/workflow.js',
+    ],
+    GlobRecursive::getRelativeToExtension(
+      'uk.co.compucorp.civicase',
+      'ang/workflow/*.js'
+    )
+  );
 }
 
 $requires = [

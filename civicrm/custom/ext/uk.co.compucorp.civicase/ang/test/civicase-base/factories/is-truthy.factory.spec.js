@@ -1,4 +1,3 @@
-/* eslint-env jasmine */
 (() => {
   describe('isTruthy', () => {
     let isTruthy;

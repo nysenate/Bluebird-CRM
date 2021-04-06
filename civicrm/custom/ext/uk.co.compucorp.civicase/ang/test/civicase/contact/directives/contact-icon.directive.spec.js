@@ -1,5 +1,3 @@
-/* eslint-env jasmine */
-
 (function (_) {
   describe('ContactPopoverContent', function () {
     var $controller, $rootScope, $scope, contactsDataServiceMock;
@@ -46,6 +44,9 @@
       });
     });
 
+    /**
+     * Initialise controller
+     */
     function initController () {
       $scope = $rootScope.$new();
       $scope.contactId = _.uniqueId();

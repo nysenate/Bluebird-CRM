@@ -1,5 +1,3 @@
-/* eslint-env jasmine */
-
 (function ($, _) {
   describe('Masonry Grid', function () {
     var $compile, $masonryGrid, $rootScope, $scope, $timeout;
@@ -74,8 +72,8 @@
        * Returns a string representation of the elements inside a given column.
        * Ex.: "1, 2, Special, 3"
        *
-       * @param {Number} columnIndex
-       * @return {String}
+       * @param {number} columnIndex column index
+       * @returns {string} text
        */
       function getGridItemsTextsForColumn (columnIndex) {
         return $masonryGrid.find('.civicase__masonry-grid__column')
@@ -91,6 +89,8 @@
 
     /**
      * Initialzes the masonry grid directive.
+     *
+     * @param {object} scopeValues scope values
      */
     function initDirective (scopeValues) {
       var defaultScopeValues = {

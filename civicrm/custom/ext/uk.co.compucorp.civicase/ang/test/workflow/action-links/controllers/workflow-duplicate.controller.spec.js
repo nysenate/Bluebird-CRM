@@ -1,11 +1,10 @@
-/* eslint-env jasmine */
-
 ((_) => {
   describe('workflow duplicate controller', () => {
     let $controller, $rootScope, $q, $scope, dialogService, CaseTypesMockData,
       crmStatus, CaseManagementWorkflow;
 
-    beforeEach(module('workflow', 'civicase.data', ($provide) => {
+    beforeEach(module('workflow.mock', 'workflow', 'civicase.data', ($provide, $qProvider) => {
+      $qProvider.errorOnUnhandledRejections(false);
       $provide.value('dialogService',
         jasmine.createSpyObj('dialogService', ['open', 'close'])
       );

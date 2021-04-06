@@ -45,18 +45,4 @@
     <page_callback>CRM_Civicase_XMLProcessor_Report::printCaseReport</page_callback>
     <access_arguments>access all cases and activities</access_arguments>
   </item>
-  <item>
-    <path>civicrm/dashboard</path>
-    <page_callback>CRM_Civicase_Page_DashboardTabs</page_callback>
-    <access_arguments>access CiviCRM</access_arguments>
-  </item>
-    <item>
-    <path>civicrm</path>
-    <access_callback>CRM_Core_Permission::checkMenu</access_callback>
-    <page_callback>CRM_Civicase_Page_DashboardTabs</page_callback>
-    <access_arguments>access CiviCRM</access_arguments>
-    <page_arguments>null</page_arguments>
-    <is_ssl>false</is_ssl>
-    <weight>0</weight>
-  </item>
 </menu>

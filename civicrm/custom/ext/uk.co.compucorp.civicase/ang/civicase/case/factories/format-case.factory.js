@@ -1,7 +1,7 @@
 (function (angular, $, _, CRM) {
   var module = angular.module('civicase');
 
-  module.factory('formatCase', function (formatActivity, ContactsCache,
+  module.factory('formatCase', function (formatActivity, CasesUtils,
     CaseStatus, CaseType, isTruthy) {
     var caseStatuses = CaseStatus.getAll(true);
 
@@ -15,6 +15,7 @@
       item.is_deleted = isTruthy(item.is_deleted);
 
       countIncompleteOtherTasks(item);
+      formatCaseCustomData(item);
 
       _.each(item.activity_summary, function (activities) {
         _.each(activities, function (act) {
@@ -29,7 +30,7 @@
       });
 
       _.each(item.contacts, function (contact) {
-        if (!contact.relationship_type_id) {
+        if (CasesUtils.isClientRole(contact)) {
           item.client.push(contact);
         }
 
@@ -60,6 +61,32 @@
           item.category_count.other.overdue += item.category_count[category].overdue || 0;
         }
       });
+    }
+
+    /**
+     * Groups the the given case's custom data by its style field (Inline or Tab)
+     * and parses their wight field into numbers so they can be properly sorted.
+     *
+     * @param {object} item case
+     */
+    function formatCaseCustomData (item) {
+      if (!item['api.CustomValue.getalltreevalues']) {
+        item.customData = {};
+
+        return;
+      }
+
+      var customData = item['api.CustomValue.getalltreevalues'].values;
+      delete item['api.CustomValue.getalltreevalues'];
+
+      item.customData = _.chain(customData)
+        .map(function (fieldSet) {
+          return _.extend({}, fieldSet, {
+            weight: parseInt(fieldSet.weight, 10)
+          });
+        })
+        .groupBy('style')
+        .value();
     }
   });
 })(angular, CRM.$, CRM._, CRM);

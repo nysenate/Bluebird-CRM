@@ -51,8 +51,6 @@
       /**
        * Loads only if loading completes and case is not focused and
        * not viewing the case details for fixed header
-       *
-       * @param {boolean} loading
        */
       function fixPositioning () {
         if (!scope.loading && !scope.caseIsFocused && !scope.viewingCase) {

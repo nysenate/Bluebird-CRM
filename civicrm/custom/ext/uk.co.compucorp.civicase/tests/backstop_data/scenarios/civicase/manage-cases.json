@@ -111,16 +111,6 @@
       "onReadyScript": "manage-cases/action-dropdown-edit-tags.js"
     },
     {
-      "label": "Manage Cases - Case Overview - Action Dropdown - Email Case Manager",
-      "url": "{url}/civicrm/case/a/?case_type_category=cases#/case/list?cf=%7B\"case_type_category\":\"cases\"%7D&caseId={caseId}",
-      "onReadyScript": "manage-cases/action-dropdown-email-case-manager.js"
-    },
-    {
-      "label": "Manage Cases - Case Overview - Action Dropdown - Print/Merge Document",
-      "url": "{url}/civicrm/case/a/?case_type_category=cases#/case/list?cf=%7B\"case_type_category\":\"cases\"%7D&caseId={caseId}",
-      "onReadyScript": "manage-cases/action-dropdown-print-merge.js"
-    },
-    {
       "label": "Manage Cases - Case Overview - Action Dropdown - Export cases",
       "url": "{url}/civicrm/case/a/?case_type_category=cases#/case/list?cf=%7B\"case_type_category\":\"cases\"%7D&caseId={caseId}",
       "onReadyScript": "manage-cases/action-dropdown-export.js"

@@ -1,5 +1,3 @@
-/* eslint-env jasmine */
-
 ((url) => {
   describe('crm url service', () => {
     let civicaseCrmUrl;

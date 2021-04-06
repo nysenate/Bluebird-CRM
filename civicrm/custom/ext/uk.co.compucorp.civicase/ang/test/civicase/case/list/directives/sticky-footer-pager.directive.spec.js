@@ -1,5 +1,3 @@
-/* eslint-env jasmine */
-
 describe('civicaseStickyFooterPager directive', function () {
   var element, $compile, $rootScope, scope, offsetOriginalFunction, scrollTopOriginalFunction, $timeout;
 
@@ -89,9 +87,9 @@ describe('civicaseStickyFooterPager directive', function () {
   /**
    * Common setup for tests
    *
-   * @params {boolean} loading - wheather loading is complete
-   * @params {Object} scope
-   * @params {Number} top - px from top the screen should scroll to.
+   * @param {boolean} loading wheather loading is complete
+   * @param {object} scope scope object
+   * @param {number} top px from top the screen should scroll to.
    */
   function setupCommonSteps (loading, scope, top) {
     scope.isLoading = loading;

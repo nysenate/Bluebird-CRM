@@ -44,7 +44,8 @@ module.exports = function (config) {
 
       // Spec files
       { pattern: extPath + '/ang/test/mocks/modules.mock.js' },
-      { pattern: extPath + '/ang/test/mocks/**/*.js' },
+      { pattern: extPath + '/ang/test/**/mocks/*.module.mock.js' },
+      { pattern: extPath + '/ang/test/**/mocks/**/*.js' },
       { pattern: extPath + '/ang/test/civicase/**/*.js' },
       { pattern: extPath + '/ang/test/civicase-base/**/*.js' },
       { pattern: extPath + '/ang/test/workflow/**/*.js' }

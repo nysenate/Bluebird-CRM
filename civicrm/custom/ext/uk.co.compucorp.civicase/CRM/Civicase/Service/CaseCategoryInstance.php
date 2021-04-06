@@ -11,18 +11,18 @@ class CRM_Civicase_Service_CaseCategoryInstance {
   /**
    * Get case categories instances.
    *
-   * @param string $instanceName
-   *   Instance ID.
+   * @param string $instanceTypeName
+   *   Case Category Instance Type name.
    */
-  public function getCaseCategoryInstances($instanceName = NULL) {
+  public function getCaseCategoryInstances($instanceTypeName = NULL) {
     $caseCategoryInstances = [];
     $caseCategoryInstance = new CaseCategoryInstance();
 
-    if ($instanceName) {
+    if ($instanceTypeName) {
       $instanceId = civicrm_api3('OptionValue', 'get', [
         'sequential' => 1,
         'option_group_id' => 'case_category_instance_type',
-        'name' => $instanceName,
+        'name' => $instanceTypeName,
       ])['values'][0]['value'];
 
       $caseCategoryInstance->instance_id = $instanceId;

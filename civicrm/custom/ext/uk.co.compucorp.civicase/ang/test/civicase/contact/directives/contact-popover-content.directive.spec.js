@@ -1,5 +1,3 @@
-/* eslint-env jasmine */
-
 (function (_) {
   describe('ContactPopoverContent', function () {
     var $controller, $rootScope, $scope, contactsDataServiceMock, civicaseCrmUrl;

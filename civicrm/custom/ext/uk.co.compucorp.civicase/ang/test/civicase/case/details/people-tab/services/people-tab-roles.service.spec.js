@@ -1,16 +1,16 @@
-/* eslint-env jasmine */
-
 ((_) => {
   describe('PeopleTabRoles', () => {
-    let caseItem, caseType, peopleTabRoles, relationships, relationshipTypes;
+    let caseItem, caseType, peopleTabRoles, relationships, relationshipTypes,
+      CasesUtils;
 
     beforeEach(module('civicase', 'civicase.data', ($provide) => {
       $provide.constant('allowMultipleCaseClients', false);
     }));
 
     beforeEach(inject((_CasesData_, _CaseTypesMockData_,
-      _civicasePeopleTabRoles_, _RelationshipTypeData_) => {
+      _civicasePeopleTabRoles_, _RelationshipTypeData_, _CasesUtils_) => {
       peopleTabRoles = _civicasePeopleTabRoles_;
+      CasesUtils = _CasesUtils_;
       caseItem = _.first(_CasesData_.get().values);
       caseType = _CaseTypesMockData_.get()['1'];
       relationshipTypes = _RelationshipTypeData_.values;
@@ -61,7 +61,9 @@
         let caseClient;
 
         beforeEach(() => {
-          caseClient = _.find(caseItem.contacts, { role: 'Client' });
+          caseClient = _.find(caseItem.contacts, function (role) {
+            return CasesUtils.isClientRole(role);
+          });
 
           peopleTabRoles.updateRolesList();
         });
@@ -283,7 +285,9 @@
         let caseClient;
 
         beforeEach(() => {
-          caseClient = _.find(caseItem.contacts, { role: 'Client' });
+          caseClient = _.find(caseItem.contacts, function (role) {
+            return CasesUtils.isClientRole(role);
+          });
 
           peopleTabRoles.updateRolesList();
           peopleTabRoles.filterRoles(caseClient.display_name[0], '');
@@ -300,7 +304,9 @@
         let caseClient;
 
         beforeEach(() => {
-          caseClient = _.find(caseItem.contacts, { role: 'Client' });
+          caseClient = _.find(caseItem.contacts, function (role) {
+            return CasesUtils.isClientRole(role);
+          });
 
           peopleTabRoles.updateRolesList();
           peopleTabRoles.filterRoles(caseClient.display_name[0], 'Client');

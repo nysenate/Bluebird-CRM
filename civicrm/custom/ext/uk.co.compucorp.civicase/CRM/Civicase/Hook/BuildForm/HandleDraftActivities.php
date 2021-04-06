@@ -76,10 +76,15 @@ class CRM_Civicase_Hook_BuildForm_HandleDraftActivities {
       if (($form->_action & (CRM_Core_Action::ADD + CRM_Core_Action::UPDATE)) && !$hideDraftButton) {
         $buttonGroup = $form->getElement('buttons');
         $buttons = $buttonGroup->getElements();
-        $buttons[] = $form->createElement('submit', $form->getButtonName('refresh'), ts('Save Draft'), [
-          'crm-icon' => 'fa-pencil-square-o',
-          'class' => 'crm-form-submit',
-        ]);
+        $buttons[] = $form->createElement(
+          'xbutton',
+          $form->getButtonName('refresh'),
+          ts('Save Draft'), [
+            'type' => 'submit',
+            'crm-icon' => 'fa-pencil-square-o',
+            'class' => 'crm-form-submit',
+          ]
+        );
         $buttonGroup->setElements($buttons);
         $form->addGroup($buttons, 'buttons');
         $form->setDefaults(['status_id' => 2]);

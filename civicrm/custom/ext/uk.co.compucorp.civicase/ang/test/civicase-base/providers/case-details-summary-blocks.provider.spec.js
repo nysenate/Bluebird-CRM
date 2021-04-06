@@ -1,4 +1,3 @@
-/* eslint-env jasmine */
 ((_, angular) => {
   describe('CaseDetailsSummaryBlocks Provider', () => {
     let CaseDetailsSummaryBlocks;

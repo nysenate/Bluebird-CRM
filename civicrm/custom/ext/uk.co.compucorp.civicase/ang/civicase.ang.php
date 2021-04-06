@@ -82,12 +82,18 @@ function adds_shoreditch_css() {
  * Get a list of JS files.
  */
 function get_js_files() {
-  return array_merge([
-    // At the moment, it's safe to include this multiple times.
-    // deduped by resource manager.
-    'assetBuilder://visual-bundle.js',
-    'ang/civicase.js',
-  ], GlobRecursive::get(dirname(__FILE__) . '/civicase/*.js'));
+  return array_merge(
+    [
+      // At the moment, it's safe to include this multiple times.
+      // deduped by resource manager.
+      'assetBuilder://visual-bundle.js',
+      'ang/civicase.js',
+    ],
+    GlobRecursive::getRelativeToExtension(
+      'uk.co.compucorp.civicase',
+      'ang/civicase/*.js'
+    )
+  );
 }
 
 /**

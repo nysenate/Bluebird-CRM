@@ -1,5 +1,3 @@
-/* eslint-env jasmine */
-
 describe('Case Details People Tab', () => {
   let $controller, $rootScope, $scope, CasesData, caseRoleSelectorContact,
     civicasePeopleTabRoles, civicaseRoleDatesUpdater, ContactsData,

@@ -1,4 +1,4 @@
-(function (angular, loadCrmForm) {
+(function (angular) {
   var module = angular.module('civicase');
 
   module.directive('civicaseCaseDetailsLinkedCasesTab', function () {
@@ -18,9 +18,10 @@
    * @param {object} $scope the scope object.
    * @param {object} LinkCasesCaseAction the link case action service.
    * @param {Function} civicaseCrmUrl crm url service.
+   * @param {Function} civicaseCrmLoadForm service to load civicrm forms
    */
   function civicaseCaseDetailsLinkedCasesTabController ($scope,
-    LinkCasesCaseAction, civicaseCrmUrl) {
+    LinkCasesCaseAction, civicaseCrmUrl, civicaseCrmLoadForm) {
     $scope.linkCase = linkCase;
 
     /**
@@ -32,11 +33,11 @@
     function linkCase () {
       LinkCasesCaseAction.doAction([$scope.item])
         .then(function (linkCaseForm) {
-          loadCrmForm(civicaseCrmUrl(linkCaseForm.path, linkCaseForm.query))
+          civicaseCrmLoadForm(civicaseCrmUrl(linkCaseForm.path, linkCaseForm.query))
             .on('crmFormSuccess crmPopupFormSuccess', function () {
               $scope.refresh();
             });
         });
     }
   }
-})(angular, CRM.loadForm);
+})(angular);

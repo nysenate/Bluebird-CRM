@@ -1,4 +1,3 @@
-/* eslint-env jasmine */
 (function (_) {
   describe('ActivityIcon', function () {
     var $compile, $rootScope, $scope, ActivityType;

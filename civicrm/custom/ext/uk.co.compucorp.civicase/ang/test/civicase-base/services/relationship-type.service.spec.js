@@ -1,5 +1,3 @@
-/* eslint-env jasmine */
-
 (() => {
   describe('Relationship Type', () => {
     let RelationshipType, RelationshipTypeData;

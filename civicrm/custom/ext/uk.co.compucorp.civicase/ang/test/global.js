@@ -1,5 +1,3 @@
-/* eslint-env jasmine */
-
 (function (CRM) {
   CRM['civicase-base'] = {};
   CRM.civicase = {};
@@ -17,24 +15,9 @@
 
   CRM.checkPerm = jasmine.createSpy('checkPerm');
   CRM.loadForm = jasmine.createSpy('loadForm');
-  CRM.loadForm.and.returnValue({
-    one: jasmine.createSpy(),
-    on: jasmine.createSpy()
-  });
   CRM.confirm = jasmine.createSpy('confirm');
   CRM.status = jasmine.createSpy('status');
-  CRM.url = jasmine.createSpy('url').and.callFake((url, searchParamsObject) => {
-    const searchParamsString = CRM._.chain(searchParamsObject)
-      .map((value, key) => ({ key, value }))
-      .sortBy('key')
-      .map((parameter) => {
-        return `${parameter.key}=${parameter.value}`;
-      })
-      .join('&')
-      .value();
-
-    return `${url}?${searchParamsString}`;
-  });
+  CRM.url = jasmine.createSpy('url');
 
   // Common utility functions for tests
   CRM.testUtils = {
