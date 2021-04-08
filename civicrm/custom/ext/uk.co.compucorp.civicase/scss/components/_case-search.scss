@@ -71,22 +71,17 @@
     max-width: 385px;
   }
 
-  label {
-    color: $crm-gray-matte;
-    font-weight: $font-weight-content;
-  }
-
-  .civicase__checkbox {
-    display: inline-block;
-    margin-right: 5px;
-    top: 4px;
-  }
-
   &.civicase__case-filter-form-elements--case-id {
     .form-control {
       max-width: 160px;
     }
   }
+}
+
+.civicase__case-filter-form-elements label,
+.civicase__case-filter-form-elements-container .civicase__checkbox__container label {
+  color: $crm-gray-matte;
+  font-weight: $font-weight-content;
 }
 
 .civicase__case-filter-panel__description {

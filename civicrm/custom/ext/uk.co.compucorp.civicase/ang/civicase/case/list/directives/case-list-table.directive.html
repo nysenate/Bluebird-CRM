@@ -2,7 +2,7 @@
 <div class="civicase__case-list" ng-class="{'civicase__case-list--summary': viewingCase}">
   <civicase-bulk-actions-message
     selected-items="selectedCases.length" total-count="totalCount"
-    is-select-all-available="isSelectAllAvailable" show-checkboxes="showCheckboxes"
+    show-checkboxes="showCheckboxes"
     ng-hide="viewingCase">
   </civicase-bulk-actions-message>
   <div ng-show="viewingCase"
@@ -111,8 +111,10 @@
   <div
     class="panel panel-default civicase__case-details-panel"
     ng-class="{'civicase__case-details-panel--focused': caseIsFocused, 'civicase__case-details-panel--summary': viewingCase}"
+    viewing-case-id="viewingCase"
     civicase-case-details="viewingCaseDetails"
     civicase-tab="viewingCaseTab"
+    show-clearfilters-ui="caseNotFound"
     civicase-focused="caseIsFocused"
     case-type-category="filters.case_type_category">
   </div>

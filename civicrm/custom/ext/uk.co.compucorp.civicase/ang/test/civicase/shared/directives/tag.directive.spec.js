@@ -1,5 +1,3 @@
-/* eslint-env jasmine */
-
 (function (colorContrast) {
   describe('civicaseTag', function () {
     var $controller, $rootScope, $scope, mockTag;
@@ -52,6 +50,9 @@
       });
     });
 
+    /**
+     * @param {object} tag tag object
+     */
     function initController (tag) {
       $scope = $rootScope.$new();
       $scope.tag = tag;

@@ -11,5 +11,5 @@ module.exports = async (page, scenario, vp) => {
   const input = await page.$('#civicase__file-upload-button');
 
   await input.uploadFile('sample.txt');
-  await page.waitFor(1000);
+  await page.waitForTimeout(1000);
 };

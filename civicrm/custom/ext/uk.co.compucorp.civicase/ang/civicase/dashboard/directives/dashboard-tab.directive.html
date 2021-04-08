@@ -8,8 +8,15 @@
   <div class="civicase__dashboard__tab__main">
     <div class="civicase__dashboard__tab__col-wrapper">
       <div class="civicase__dashboard__tab__col civicase__dashboard__tab__col--left">
-        <civicase-activities-calendar case-params="calendarCaseParams" refresh-callback="activityCardRefreshCalendar" ng-if="calendarCaseParams"></civicase-activities-calendar>
-        <civicase-activities-calendar-placeholder ng-if="!calendarCaseParams" style="padding-top: 0;"></civicase-activities-calendar-placeholder>
+        <civicase-activities-calendar
+          case-params="calendarCaseParams"
+          refresh-callback="activityCardRefreshCalendar"
+          ng-if="calendarCaseParams">
+        </civicase-activities-calendar>
+        <civicase-activities-calendar-placeholder
+          ng-if="!calendarCaseParams"
+          style="padding-top: 0;">
+        </civicase-activities-calendar-placeholder>
       </div>
       <div class="civicase__dashboard__tab__col civicase__dashboard__tab__col--right">
         <!-- New Cases -->
@@ -27,7 +34,12 @@
             You have {{loading.full ? '-' : total}} new {{ts("cases")}}
           </panel-query-title>
           <panel-query-results>
-            <civicase-case-card ng-repeat="case in results" ng-click="customData.caseClick(case)" mode="dashboard" case="case"></civicase-case-card>
+            <civicase-case-card
+              ng-repeat="case in results"
+              ng-click="customData.caseClick(case)"
+              mode="dashboard"
+              case="case">
+            </civicase-case-card>
           </panel-query-results>
           <panel-query-empty>
             <div class="civicase__activity-card--empty">
@@ -50,7 +62,11 @@
             You have {{loading.full ? '-' : total}} milestones due
           </panel-query-title>
           <panel-query-actions>
-            <div ng-if="customData.involvementFilter" civicase-activity-filters-contact="customData.involvementFilter" class="panel-heading-control"></div>
+            <div
+              ng-if="customData.involvementFilter"
+              civicase-activity-filters-contact="customData.involvementFilter"
+              class="panel-heading-control">
+            </div>
           </panel-query-actions>
           <panel-query-results>
             <div ng-repeat="activity in results"
@@ -82,7 +98,11 @@
             You have {{loading.full ? '-' : total}} {{customData.itemName}} due
           </panel-query-title>
           <panel-query-actions>
-            <div ng-if="customData.involvementFilter" civicase-activity-filters-contact="customData.involvementFilter" class="panel-heading-control"></div>
+            <div
+              ng-if="customData.involvementFilter"
+              civicase-activity-filters-contact="customData.involvementFilter"
+              class="panel-heading-control">
+            </div>
           </panel-query-actions>
           <panel-query-results>
             <div ng-repeat="activity in results"

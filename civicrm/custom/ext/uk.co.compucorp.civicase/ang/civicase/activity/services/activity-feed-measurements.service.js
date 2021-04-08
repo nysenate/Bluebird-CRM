@@ -7,7 +7,7 @@
     /**
      * Returns the offset of feed body from top
      *
-     * @return {Number}
+     * @returns {number} top offset
      */
     function getTopOffset () {
       var $feedBody = $('.civicase__activity-feed__body');
@@ -29,7 +29,7 @@
      * So If that height is fetched and again set to activity feed,
      * means nothing has changed, Thats why calculating child height is necessary.
      *
-     * @return {Number}
+     * @returns {number} tab height
      */
     function getCivicrmContactTabHeight () {
       var height = 0;
@@ -45,8 +45,7 @@
     /**
      * Sets height of the given element for scrolling
      *
-     * @param {Object} $element
-     * @return {Number}
+     * @param {object} $element element
      */
     function setScrollHeightOf ($element) {
       var $civicrmContactTabs = $('.crm-contact-tabs-list');

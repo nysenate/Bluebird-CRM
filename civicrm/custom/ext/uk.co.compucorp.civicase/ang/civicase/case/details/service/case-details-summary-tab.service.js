@@ -7,9 +7,8 @@
    * Summary Case Tab service.
    *
    * @param {object} $location the location service.
-   * @param {Function} crmApi the CRM API service.
    */
-  function SummaryCaseTab ($location, crmApi) {
+  function SummaryCaseTab ($location) {
     /**
      * @returns {string} Returns tab content HTMl template url.
      */

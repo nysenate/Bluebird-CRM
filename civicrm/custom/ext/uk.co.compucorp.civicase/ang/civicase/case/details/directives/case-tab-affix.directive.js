@@ -9,9 +9,9 @@
     /**
      * Link function for civicaseCaseTabAffix
      *
-     * @param {Object} scope
-     * @param {Object} $el
-     * @param {Object} attrs
+     * @param {object} scope scope object
+     * @param {object} $el element
+     * @param {object} attrs attributes
      */
     function civicaseCaseTabAffixLink (scope, $el, attrs) {
       var $caseNavigation = $('.civicase__case-body_tab');

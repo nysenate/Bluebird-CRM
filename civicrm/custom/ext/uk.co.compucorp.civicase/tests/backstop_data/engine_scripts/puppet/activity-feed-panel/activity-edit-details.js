@@ -11,6 +11,7 @@ module.exports = async (page, scenario, vp) => {
 
   await require('./activity-detail.js')(page, scenario, vp);
   await page.click('.civicase__activity-feed__body__details .edit.button');
-  await page.waitFor('.blockUI.blockOverlay', { hidden: true });
+  await page.waitForSelector('.blockUI.blockOverlay', { hidden: true });
   await utility.openAllAccordions();
+  await page.waitForTimeout(1000);
 };

@@ -1,8 +1,6 @@
-/* eslint-env jasmine */
-
-(function (_, getCrmUrl) {
+(function (_) {
   describe('ContactPopoverContent', function () {
-    var $controller, $rootScope, $scope, contactsDataServiceMock;
+    var $controller, $rootScope, $scope, contactsDataServiceMock, civicaseCrmUrl;
     var mockContact = { id: _.uniqueId() };
 
     beforeEach(module('civicase', function ($provide) {
@@ -12,7 +10,8 @@
       $provide.value('ContactsCache', contactsDataServiceMock);
     }));
 
-    beforeEach(inject(function (_$controller_, _$rootScope_) {
+    beforeEach(inject(function (_civicaseCrmUrl_, _$controller_, _$rootScope_) {
+      civicaseCrmUrl = _civicaseCrmUrl_;
       $controller = _$controller_;
       $rootScope = _$rootScope_;
     }));
@@ -34,8 +33,6 @@
     });
 
     describe('getting the email URL', () => {
-      let expectedEmailUrl, returnedEmailUrl;
-
       describe('when a case id is not provided', () => {
         beforeEach(() => {
           initController({
@@ -43,16 +40,15 @@
             contactId: mockContact.id
           });
 
-          returnedEmailUrl = $scope.getEmailUrl();
-          expectedEmailUrl = getCrmUrl('civicrm/activity/email/add', {
+          $scope.getEmailUrl();
+        });
+
+        it('returns the URL for sending a standalone email activity', () => {
+          expect(civicaseCrmUrl).toHaveBeenCalledWith('civicrm/activity/email/add', {
             action: 'add',
             cid: $scope.contactId,
             reset: 1
           });
-        });
-
-        it('returns the URL for sending a standalone email activity', () => {
-          expect(returnedEmailUrl).toEqual(expectedEmailUrl);
         });
       });
 
@@ -63,17 +59,16 @@
             contactId: mockContact.id
           });
 
-          returnedEmailUrl = $scope.getEmailUrl();
-          expectedEmailUrl = getCrmUrl('civicrm/activity/email/add', {
+          $scope.getEmailUrl();
+        });
+
+        it('returns the URL for sending a case email activity', () => {
+          expect(civicaseCrmUrl).toHaveBeenCalledWith('civicrm/activity/email/add', {
             action: 'add',
             caseid: $scope.caseId,
             cid: $scope.contactId,
             reset: 1
           });
-        });
-
-        it('returns the URL for sending a case email activity', () => {
-          expect(returnedEmailUrl).toEqual(expectedEmailUrl);
         });
       });
     });
@@ -90,4 +85,4 @@
       $controller('civicaseContactPopoverContentController', { $scope: $scope });
     }
   });
-})(CRM._, CRM.url);
+})(CRM._);

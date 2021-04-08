@@ -1,5 +1,3 @@
-/* eslint-env jasmine */
-
 (function ($) {
   describe('PopoverAppendToElement', function () {
     var $compile, $rootScope, $timeout, popover, popoverContainer, originalJQueryOffset;
@@ -47,6 +45,9 @@
       });
     });
 
+    /**
+     * @param {object} options options
+     */
     function initDirective (options) {
       var scope;
       var html = `<div class="popover-container">
@@ -66,6 +67,9 @@
       $rootScope.$digest();
     }
 
+    /**
+     * Simulate popover open
+     */
     function simulatePopoverOpen () {
       popover = $('<div class="popover"></div>');
 

@@ -1,0 +1,7 @@
+.crm-clear-link {
+  color: $brand-primary;
+
+  .fa-times::before {
+    content: '\f057';
+  }
+}

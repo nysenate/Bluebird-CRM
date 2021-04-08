@@ -1,0 +1,21 @@
+{
+  "scenarios": [
+    {
+      "label": "Workflows - List",
+      "url": "{url}/civicrm/workflow/a?case_type_category=cases#/list"
+    },
+    {
+      "label": "Workflows - Action Menu",
+      "url": "{url}/civicrm/workflow/a?case_type_category=cases#/list",
+      "clickSelector": "tbody tr:nth-child(1) .btn-group .dropdown-toggle"
+    },
+    {
+      "label": "Workflows - Duplicate Workflow Popup",
+      "url": "{url}/civicrm/workflow/a?case_type_category=cases#/list",
+      "clickSelectors": [
+        "tbody tr:nth-child(1) .btn-group .dropdown-toggle",
+        "tbody tr:nth-child(1) .btn-group a[ng-controller='WorkflowDuplicateController']"
+      ]
+    }
+  ]
+}

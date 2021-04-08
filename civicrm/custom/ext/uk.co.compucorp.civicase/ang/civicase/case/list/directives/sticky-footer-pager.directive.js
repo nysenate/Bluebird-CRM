@@ -30,7 +30,7 @@
        * Checks if loading completes and add logic
        * for fixed footer
        *
-       * @param {boolean} loading
+       * @param {boolean} loading if loading
        */
       function checkIfLoadingCompleted (loading) {
         if (!loading) {
@@ -54,7 +54,7 @@
       /**
        * Applies fixed pager class based on scroll position
        *
-       * @param {int} topPos
+       * @param {number} topPos top position
        */
       function applyFixedPager (topPos) {
         if ((topPos - $($window).height() - $($window).scrollTop()) > 0) {

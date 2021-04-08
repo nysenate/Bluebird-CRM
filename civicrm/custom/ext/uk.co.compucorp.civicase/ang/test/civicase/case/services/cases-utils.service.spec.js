@@ -1,10 +1,16 @@
-/* eslint-env jasmine */
-
 ((_) => {
   describe('CasesUtils', () => {
-    var CasesData, ContactsCache, CasesUtils;
+    var CasesData, ContactsCache, CasesUtils, mockTs;
 
-    beforeEach(module('civicase', 'civicase.data'));
+    beforeEach(module('civicase', 'civicase.data', ($provide) => {
+      mockTs = jasmine.createSpy('ts');
+
+      mockTs.and.callFake((string) => {
+        return string;
+      });
+
+      $provide.value('ts', mockTs);
+    }));
 
     beforeEach(inject((_ContactsCache_, _CasesData_, _CasesUtils_) => {
       ContactsCache = _ContactsCache_;
@@ -33,15 +39,31 @@
       });
     });
 
-    describe('getAllCaseClientContactIds()', () => {
-      let cases;
+    describe('when checking if a role is client', () => {
+      let role;
 
-      beforeEach(() => {
-        cases = CasesData.get().values[0];
+      describe('and the role is client', () => {
+        beforeEach(() => {
+          role = CasesData.get().values[0].contacts[0];
+
+          role.relationship_type_id = false;
+        });
+
+        it('returns true', () => {
+          expect(CasesUtils.isClientRole(role)).toEqual(true);
+        });
       });
 
-      it('fetches all client contact ids of the case', () => {
-        expect(CasesUtils.getAllCaseClientContactIds(cases.contacts)).toEqual(['170']);
+      describe('and the role is not client', () => {
+        beforeEach(() => {
+          role = CasesData.get().values[0].contacts[0];
+
+          role.relationship_type_id = '11';
+        });
+
+        it('returns false', () => {
+          expect(CasesUtils.isClientRole(role)).toEqual(false);
+        });
       });
     });
   });

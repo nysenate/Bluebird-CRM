@@ -11,6 +11,7 @@
     ng-repeat="activity in item.recentCommunication"
     ng-if="item.recentCommunication.length"
     case-activity-card="activity"
+    is-read-only="item['case_type_id.is_active'] === '0'"
     crm-popup-form-success="pushCaseData($data.civicase_reload[0])"
     refresh-callback="refresh"
     bulk-allowed="bulkAllowed"
@@ -24,10 +25,15 @@
       communication to this case") }}
     </div>
     <span civicase-dropdown>
-      <div class="civicase__activity-card--big--empty-button btn"
-        civicase-dropdown-toggle>
-        <i class="material-icons">add_circle</i>Create new communication <i class="fa fa-caret-down"></i>
-      </div>
+      <button
+        class="civicase__activity-card--big--empty-button btn btn-default"
+        civicase-dropdown-toggle
+        ng-disabled="item['case_type_id.is_active'] === '0'"
+      >
+        <i class="material-icons">add_circle</i>
+        {{ ts('Create new communication') }}
+        <i class="fa fa-caret-down"></i>
+    </button>
       <civicase-add-activity-menu
         case="item"
         filter-activities-by="communication"

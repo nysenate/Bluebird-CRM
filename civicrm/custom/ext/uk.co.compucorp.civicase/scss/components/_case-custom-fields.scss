@@ -93,17 +93,3 @@
     }
   }
 }
-
-.civicase__case-custom-fields {
-  &:not(:first-child) {
-    margin-top: 16px;
-  }
-}
-
-.civicase__case-custom-field__label {
-  color: $crm-gray-matte;
-}
-
-.civicase__case-custom-field__value {
-  color: $gray-darker;
-}

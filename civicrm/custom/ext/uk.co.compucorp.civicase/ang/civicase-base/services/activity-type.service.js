@@ -5,12 +5,14 @@
 
   /**
    * Activity Types Service
+   *
+   * @param {Function} isTruthy service to check if value is truthy
    */
-  function ActivityType () {
+  function ActivityType (isTruthy) {
     var allActivityTypes = CRM['civicase-base'].activityTypes;
     var activeActivityTypes = _.chain(allActivityTypes)
       .filter(function (activityType) {
-        return activityType.is_active === '1';
+        return isTruthy(activityType.is_active);
       })
       .indexBy('value')
       .value();

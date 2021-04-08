@@ -1,5 +1,3 @@
-/* eslint-env jasmine */
-
 ((_, $) => {
   describe('ViewActivityAction', () => {
     var ViewActivityAction;

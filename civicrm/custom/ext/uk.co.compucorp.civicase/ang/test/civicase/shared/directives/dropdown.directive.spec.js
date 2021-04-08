@@ -1,5 +1,3 @@
-/* eslint-env jasmine */
-
 (($) => {
   describe('Dropdown', () => {
     var $compile, $rootScope, dropdowns, dropdownContainer, scope;

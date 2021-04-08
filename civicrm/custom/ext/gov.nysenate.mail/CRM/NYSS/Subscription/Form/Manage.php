@@ -221,17 +221,25 @@ class CRM_NYSS_Subscription_Form_Manage extends CRM_Core_Form
       $opt = 2;
       $hold_date = "'".date('Y-m-d h:i:s')."'";
 
+      //13861 if opting out, don't modify categories
+      $mc = 'null';
+
       self::storeUnsubscribe($formParams['eq']);
     }
 
     //set values
     $sql = "
       UPDATE civicrm_email
-      SET mailing_categories = {$mc}, on_hold = {$opt}, hold_date = {$hold_date}
-      WHERE id = {$formParams['emailID']}
+      SET mailing_categories = %1, on_hold = %2, hold_date = %3
+      WHERE id = %4
     ";
-    //CRM_Core_Error::debug_var('sql', $sql);
-    CRM_Core_DAO::executeQuery($sql);
+
+    CRM_Core_DAO::executeQuery($sql, [
+      1 => [$mc, 'String'],
+      2 => [$opt, 'Integer'],
+      3 => [$hold_date, 'String'],
+      4 => [$formParams['emailID'], 'Positive'],
+    ]);
 
     //now redirect
     $bbconfig = get_bluebird_instance_config();
@@ -244,11 +252,11 @@ class CRM_NYSS_Subscription_Form_Manage extends CRM_Core_Form
   function storeUnsubscribe($eqId) {
     try {
       CRM_Core_DAO::executeQuery("
-      INSERT IGNORE INTO civicrm_mailing_event_unsubscribe
-      (event_queue_id, org_unsubscribe, time_stamp)
-      VALUES
-      (%1, 1, %2)
-    ", [
+        INSERT IGNORE INTO civicrm_mailing_event_unsubscribe
+        (event_queue_id, org_unsubscribe, time_stamp)
+        VALUES
+        (%1, 1, %2)
+      ", [
         1 => [$eqId, 'Positive'],
         2 => [date('YmdHis'), 'Timestamp'],
       ]);

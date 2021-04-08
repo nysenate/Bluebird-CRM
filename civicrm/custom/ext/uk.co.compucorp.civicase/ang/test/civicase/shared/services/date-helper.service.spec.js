@@ -1,4 +1,3 @@
-/* eslint-env jasmine */
 (function ($) {
   describe('DateHelper', function () {
     var DateHelper;

@@ -1,5 +1,3 @@
-/* eslint-env jasmine */
-
 (function (_, angular) {
   describe('DashboardActionItems', () => {
     let DashboardActionItems, DashboardActionItemsProvider;

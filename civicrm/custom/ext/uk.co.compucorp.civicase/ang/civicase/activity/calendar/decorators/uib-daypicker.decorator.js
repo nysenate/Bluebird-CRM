@@ -33,7 +33,7 @@
         /**
          * Returns the current day of the week.
          *
-         * @return {Number}
+         * @returns {number} current day of the week
          */
         function getCurrentWeekDay () {
           var currentWeekDay = moment().isoWeekday() - 1; // Force Monday as the first day

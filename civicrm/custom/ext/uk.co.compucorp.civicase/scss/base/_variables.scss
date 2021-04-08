@@ -22,10 +22,14 @@ $case-card-hover: #d9edf7;
 $calendar-due-text-color: #a9a9b7;
 $placeholder-grey: #edf3f5;
 $upload-icon-color: #bfcfd9;
+$light-danger: #fbe3e4;
 
 // Panel secondary
 $case-panel-secondary-padding: 24px;
 $case-panel-secondary-padding-small: 16px;
+
+// Font sizes
+$font-size-large-icon: 64px;
 
 // Font weights
 $font-weight-heading:   600 !default;
@@ -45,3 +49,5 @@ $case-gutter-width: 30px;
 $case-max-width: 1081px;
 $activity-filter-responsive-width-breakpoint: 1420px;
 $activity-feed-responsive-width-breakpoint: 1300px;
+$contact-case-tab-breakpoint: 1400px;
+$email-modal-breakpoint: 1455px;

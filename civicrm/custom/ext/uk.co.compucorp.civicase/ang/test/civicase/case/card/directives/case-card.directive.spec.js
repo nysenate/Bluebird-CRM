@@ -1,4 +1,3 @@
-/* eslint-env jasmine */
 (($) => {
   describe('civicaseCaseCard', () => {
     let element, $compile, $rootScope, $route, $scope, CasesData;
@@ -7,6 +6,8 @@
       $route = { current: { params: {} } };
 
       $provide.value('$route', $route);
+
+      killDirective('civicaseContactCard');
     }));
 
     beforeEach(inject((_$compile_, _$rootScope_, _CasesData_) => {
@@ -78,6 +79,23 @@
       element = $compile('<civicase-case-card case="case"></civicase-case-card>')($scope);
       $scope.case = caseObj;
       $scope.$digest();
+    }
+
+    /**
+     * Mocks a directive
+     * TODO: Have a more generic usage - Maybe create a service/factory
+     *
+     * @param {string} directiveName name of the directive
+     */
+    function killDirective (directiveName) {
+      angular.mock.module(function ($compileProvider) {
+        $compileProvider.directive(directiveName, function () {
+          return {
+            priority: 9999999,
+            terminal: true
+          };
+        });
+      });
     }
   });
 })(CRM.$);

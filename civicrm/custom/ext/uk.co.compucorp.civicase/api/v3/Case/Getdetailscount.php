@@ -1,15 +1,24 @@
 <?php
 
 /**
- * Case.getdetailscount API
+ * @file
+ * Case.getdetailscount file.
+ */
+
+/**
+ * Case getdetailscount API function.
  *
  * Provides a count of cases but properly respects filters unlike `getcount`.
  *
  * @param array $params
- * @return array API result
+ *   List of parameters to use for filtering.
+ *
+ * @return array
+ *   API result.
+ *
  * @throws API_Exception
  */
-function civicrm_api3_case_getdetailscount($params) {
+function civicrm_api3_case_getdetailscount(array $params) {
   $params['options'] = CRM_Utils_Array::value('options', $params, []);
   $params['options']['is_count'] = 1;
 

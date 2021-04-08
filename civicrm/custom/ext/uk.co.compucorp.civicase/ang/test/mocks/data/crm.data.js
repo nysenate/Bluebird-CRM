@@ -15,7 +15,7 @@
     userFramework: 'Drupal',
     resourceBase: 'http://civicase.local/sites/all/modules/civicrm/',
     lcMessages: 'en_US',
-    dateInputFormat: 'mm/dd/yy',
+    dateInputFormat: 'dd/mm/yy',
     timeIs24Hr: false,
     ajaxPopupsEnabled: true,
     allowAlertAutodismissal: true,

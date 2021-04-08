@@ -16,8 +16,8 @@
     /**
      * Link function for caseTooltip
      *
-     * @param {Object} scope
-     * @param {Object} $elm
+     * @param {object} scope scope object
+     * @param {object} $elm element
      */
     function caseTooltipLink (scope, $elm) {
       scope.tooltipEnabled = false;

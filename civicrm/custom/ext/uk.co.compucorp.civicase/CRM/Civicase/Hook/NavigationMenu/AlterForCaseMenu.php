@@ -1,7 +1,6 @@
 <?php
 
 use CRM_Civicase_Service_CaseCategorySetting as CaseCategorySetting;
-use CRM_Civicase_Hook_Helper_CaseTypeCategory as CaseTypeCategoryHelper;
 
 /**
  * Class CRM_Civicase_Hook_Navigation_AlterForCaseMenu.
@@ -44,26 +43,13 @@ class CRM_Civicase_Hook_NavigationMenu_AlterForCaseMenu {
       'civicrm/case/search?reset=1' => 'civicrm/case/a/#/case/list?sx=1',
     ];
 
-    $addCaseUrl = 'civicrm/case/add';
-
-    $this->menuWalk($menu, function (&$item) use ($rewriteMap, $addCaseUrl) {
+    $this->menuWalk($menu, function (&$item) use ($rewriteMap) {
       if (!isset($item['url'])) {
         return;
       }
 
       if (isset($rewriteMap[$item['url']])) {
         $item['url'] = $rewriteMap[$item['url']];
-
-        return;
-      }
-
-      if (strpos($item['url'], $addCaseUrl) !== FALSE) {
-        $caseCategoryName = $this->getCaseCategoryName($item['url']);
-        $webformUrl = CaseTypeCategoryHelper::getNewCaseCategoryWebformUrl($caseCategoryName, $this->caseCategorySetting);
-
-        if (!empty($webformUrl)) {
-          $item['url'] = $webformUrl;
-        }
 
         return;
       }
@@ -99,7 +85,7 @@ class CRM_Civicase_Hook_NavigationMenu_AlterForCaseMenu {
         'label' => ts('CiviCase Webforms'),
         'name' => 'CiviCase Webforms',
         'url' => 'civicrm/case/webforms',
-        'permission' => 'access CiviCase',
+        'permission' => 'access all cases and activities',
         'operator' => 'OR',
         'separator' => 1,
         'parentID' => $caseID,
@@ -107,19 +93,6 @@ class CRM_Civicase_Hook_NavigationMenu_AlterForCaseMenu {
         'active' => 1,
       ],
     ];
-  }
-
-  /**
-   * Gets the Case Category Name.
-   *
-   * @param string $url
-   *   Menu URL.
-   */
-  private function getCaseCategoryName($url) {
-    $urlParams = parse_url(htmlspecialchars_decode($url), PHP_URL_QUERY);
-    parse_str($urlParams, $urlParams);
-
-    return !empty($urlParams['case_type_category']) ? $urlParams['case_type_category'] : 'Cases';
   }
 
   /**

@@ -1,2 +1,8 @@
-<civicase-case-details-header></civicase-case-details-header>
-<civicase-case-details-tabs></civicase-case-details-tabs>
+<div
+  ng-if="showClearfiltersUi"
+  class="civicase__panel-empty"
+  ng-include="'~/civicase/case/details/directives/case-details-clear-filters.html'">
+</div>
+
+<civicase-case-details-header ng-if="item && !showClearfiltersUi"></civicase-case-details-header>
+<civicase-case-details-tabs ng-if="!showClearfiltersUi"></civicase-case-details-tabs>

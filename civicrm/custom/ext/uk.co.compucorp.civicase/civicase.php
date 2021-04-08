@@ -6,6 +6,7 @@
  */
 
 use Civi\Angular\AngularLoader;
+use Civi\Angular\Manager;
 
 require_once 'civicase.civix.php';
 
@@ -47,8 +48,35 @@ function civicase_civicrm_config(&$config) {
   }
   Civi::$statics[__FUNCTION__] = 1;
 
-  Civi::dispatcher()->addListener('civi.api.prepare', ['CRM_Civicase_Event_Listener_ActivityFilter', 'onPrepare'], 10);
-  Civi::dispatcher()->addListener('civi.api.respond', ['CRM_Civicase_Event_Listener_CaseTypeCategoryIsActiveToggler', 'onRespond'], 10);
+  Civi::dispatcher()->addListener(
+    'civi.api.prepare',
+    ['CRM_Civicase_Event_Listener_ActivityFilter', 'onPrepare'],
+    10
+  );
+  Civi::dispatcher()->addListener(
+    'civi.api.respond',
+    [
+      'CRM_Civicase_Event_Listener_CaseTypeCategoryIsActiveToggler',
+      'onRespond',
+    ],
+    10
+  );
+  Civi::dispatcher()->addListener(
+    'civi.api.respond',
+    ['CRM_Civicase_Event_Listener_CaseRoleCreation', 'onRespond'],
+    10
+  );
+  Civi::dispatcher()->addListener(
+    'civi.api.prepare',
+    ['CRM_Civicase_Event_Listener_CaseRoleCreation', 'onPrepare'],
+    10
+  );
+
+  Civi::dispatcher()->addListener(
+    'civi.api.prepare',
+    ['CRM_Civicase_Event_Listener_CaseCustomFields', 'loadOnDemand'],
+    10
+  );
 }
 
 /**
@@ -187,6 +215,16 @@ function civicase_civicrm_buildForm($formName, &$form) {
     new CRM_Civicase_Hook_BuildForm_EnableCaseCategoryIconField(),
     new CRM_Civicase_Hook_BuildForm_CaseCategoryCustomGroupDisplay(),
     new CRM_Civicase_Hook_BuildForm_ModifyCaseTypesForAdvancedSearch(),
+    new CRM_Civicase_Hook_BuildForm_AddCaseCategoryInstanceField(),
+    new CRM_Civicase_Hook_BuildForm_AddStyleFieldToCaseCustomGroups(),
+    new CRM_Civicase_Hook_BuildForm_DisplayAllCustomGroupsInCaseForm(),
+    new CRM_Civicase_Hook_BuildForm_LinkToCaseSearchByCaseId(),
+    new CRM_Civicase_Hook_BuildForm_RemoveExportActionFromReports(),
+    new CRM_Civicase_Hook_BuildForm_RestrictCaseEmailContacts(),
+    new CRM_Civicase_Hook_BuildForm_LimitRecipientFieldsToOnlySelectedContacts(),
+    new CRM_Civicase_Hook_BuildForm_TokenTree(),
+    new CRM_Civicase_Hook_BuildForm_LinkCaseActivityDefaultStatus(),
+    new CRM_Civicase_Hook_BuildForm_HandleDraftActivities(),
   ];
 
   foreach ($hooks as $hook) {
@@ -194,7 +232,11 @@ function civicase_civicrm_buildForm($formName, &$form) {
   }
 
   // Display category option for activity types and activity statuses.
-  if ($formName == 'CRM_Admin_Form_Options' && in_array($form->getVar('_gName'), ['activity_type', 'activity_status'])) {
+  if ($formName == 'CRM_Admin_Form_Options'
+    && in_array($form->getVar('_gName'), [
+      'activity_type',
+      'activity_status',
+    ])) {
     $options = civicrm_api3('optionValue', 'get', [
       'option_group_id' => 'activity_category',
       'is_active' => 1,
@@ -253,99 +295,6 @@ function civicase_civicrm_buildForm($formName, &$form) {
   if (!empty($_REQUEST['civicase_reload'])) {
     $form->civicase_reload = json_decode($_REQUEST['civicase_reload'], TRUE);
   }
-  // Add save draft button to Communication activities.
-  $specialForms = ['CRM_Contact_Form_Task_PDF', 'CRM_Contact_Form_Task_Email'];
-  $specialTypes = ['Print PDF Letter', 'Email'];
-  if (is_a($form, 'CRM_Activity_Form_Activity') || in_array($formName, $specialForms)) {
-    $activityTypeId = $form->getVar('_activityTypeId');
-    if ($activityTypeId) {
-      $activityType = civicrm_api3('OptionValue', 'getvalue', [
-        'return' => "name",
-        'option_group_id' => "activity_type",
-        'value' => $activityTypeId,
-      ]);
-    }
-    else {
-      $activityType = $formName == 'CRM_Contact_Form_Task_PDF' ? 'Print PDF Letter' : 'Email';
-    }
-    $id = $form->getVar('_activityId');
-    $status = NULL;
-    if ($id) {
-      $status = civicrm_api3('Activity', 'getsingle', ['id' => $id, 'return' => 'status_id.name']);
-      $status = $status['status_id.name'];
-    }
-    $checkParams = [
-      'option_group_id' => 'activity_type',
-      'grouping' => ['LIKE' => '%communication%'],
-      'value' => $activityTypeId,
-    ];
-    if (in_array($activityType, $specialTypes) || ($activityTypeId && civicrm_api3('OptionValue', 'getcount', $checkParams))) {
-      if ($form->_action & (CRM_Core_Action::ADD + CRM_Core_Action::UPDATE)) {
-        $buttonGroup = $form->getElement('buttons');
-        $buttons = $buttonGroup->getElements();
-        $buttons[] = $form->createElement('submit', $form->getButtonName('refresh'), ts('Save Draft'), [
-          'crm-icon' => 'fa-pencil-square-o',
-          'class' => 'crm-form-submit',
-        ]);
-        $buttonGroup->setElements($buttons);
-        $form->addGroup($buttons, 'buttons');
-        $form->setDefaults(['status_id' => 2]);
-      }
-      if ($status == 'Draft' && ($form->_action & CRM_Core_Action::VIEW)) {
-        if (in_array($activityType, $specialTypes)) {
-          $atype = $activityType == 'Email' ? 'email' : 'pdf';
-          $caseId = civicrm_api3('Activity', 'getsingle', ['id' => $id, 'return' => 'case_id']);
-          $composeUrl = CRM_Utils_System::url("civicrm/activity/$atype/add", [
-            'action' => 'add',
-            'reset' => 1,
-            'caseId' => $caseId['case_id'][0],
-            'context' => 'standalone',
-            'draft_id' => $id,
-          ]);
-          $buttonMarkup = '<a class="button" href="' . $composeUrl . '"><i class="crm-i fa-pencil-square-o"></i> &nbsp;' . ts('Continue Editing') . '</a>';
-          $form->assign('activityTypeDescription', $buttonMarkup);
-        }
-        else {
-          $form->assign('activityTypeDescription', '<i class="crm-i fa-pencil-square-o"></i> &nbsp;' . ts('Saved as a Draft'));
-        }
-      }
-    }
-    // Form email/print activities, set defaults from the original draft
-    // activity (which will be deleted on submit)
-    if (in_array($formName, $specialForms) && !empty($_GET['draft_id'])) {
-      $draft = civicrm_api3('Activity', 'get', [
-        'id' => $_GET['draft_id'],
-        'check_permissions' => TRUE,
-        'sequential' => TRUE,
-      ]);
-      $form->setVar('_activityId', $_GET['draft_id']);
-      if (isset($draft['values'][0])) {
-        $draft = $draft['values'][0];
-        if (in_array($formName, $specialForms)) {
-          $draft['html_message'] = CRM_Utils_Array::value('details', $draft);
-        }
-        // Set defaults for to email addresses.
-        if ($formName == 'CRM_Contact_Form_Task_Email') {
-          $cids = CRM_Utils_Array::value('target_contact_id', civicrm_api3('Activity', 'getsingle', ['id' => $draft['id'], 'return' => 'target_contact_id']));
-          if ($cids) {
-            $toContacts = civicrm_api3('Contact', 'get', [
-              'id' => ['IN' => $cids],
-              'return' => ['email', 'sort_name'],
-            ]);
-            $toArray = [];
-            foreach ($toContacts['values'] as $cid => $contact) {
-              $toArray[] = [
-                'text' => '"' . $contact['sort_name'] . '" <' . $contact['email'] . '>',
-                'id' => "$cid::{$contact['email']}",
-              ];
-            }
-            $form->assign('toContact', json_encode($toArray));
-          }
-        }
-        $form->setDefaults($draft);
-      }
-    }
-  }
 }
 
 /**
@@ -383,9 +332,12 @@ function civicase_civicrm_post($op, $objectName, $objectId, &$objectRef) {
 function civicase_civicrm_postProcess($formName, &$form) {
   $hooks = [
     new CRM_Civicase_Hook_PostProcess_SetUserContextForSaveAndNewCase(),
+    new CRM_Civicase_Hook_PostProcess_SaveCaseCategoryInstance(),
     new CRM_Civicase_Hook_PostProcess_CaseCategoryPostProcessor(),
     new CRM_Civicase_Hook_PostProcess_ActivityFormStatusWordReplacement(),
     new CRM_Civicase_Hook_PostProcess_RedirectToCaseDetails(),
+    new CRM_Civicase_Hook_PostProcess_AttachEmailActivityToAllCases(),
+    new CRM_Civicase_Hook_PostProcess_HandleDraftActivity(),
   ];
 
   foreach ($hooks as $hook) {
@@ -396,23 +348,20 @@ function civicase_civicrm_postProcess($formName, &$form) {
     $api = civicrm_api3('Case', 'getdetails', ['check_permissions' => 1] + $form->civicase_reload);
     $form->ajaxResponse['civicase_reload'] = $api['values'];
   }
-  // When emailing/printing - delete draft.
-  $specialForms = ['CRM_Contact_Form_Task_PDF', 'CRM_Contact_Form_Task_Email'];
-  if (in_array($formName, $specialForms)) {
-    $urlParams = parse_url(htmlspecialchars_decode($form->controller->_entryURL), PHP_URL_QUERY);
-    parse_str($urlParams, $urlParams);
-    if (!empty($urlParams['draft_id'])) {
-      civicrm_api3('Activity', 'delete', ['id' => $urlParams['draft_id']]);
-    }
-  }
 }
 
 /**
  * Implements hook_civicrm_permission().
  */
 function civicase_civicrm_permission(&$permissions) {
-  $permissionHook = new CRM_Civicase_Hook_Permissions_CaseCategory($permissions);
-  $permissionHook->run();
+  $hooks = [
+    new CRM_Civicase_Hook_Permissions_CaseCategory($permissions),
+    new CRM_Civicase_Hook_Permissions_ExportCasesAndReports($permissions),
+  ];
+
+  foreach ($hooks as $hook) {
+    $hook->run();
+  }
 }
 
 /**
@@ -438,6 +387,34 @@ function civicase_civicrm_alterAPIPermissions($entity, $action, &$params, &$perm
 
   foreach ($hooks as $hook) {
     $hook->run($entity, $action, $params, $permissions);
+  }
+}
+
+/**
+ * Implements hook_civicrm_tokens().
+ */
+function civicase_civicrm_tokens(&$tokens) {
+  $contactFieldsService = new CRM_Civicase_Service_ContactFieldsProvider();
+  $contactCustomFieldsService = new CRM_Civicase_Service_ContactCustomFieldsProvider();
+  $hooks = [
+    new CRM_Civicase_Hook_Tokens_AddContactTokens($contactFieldsService, $contactCustomFieldsService),
+  ];
+  foreach ($hooks as &$hook) {
+    $hook->run($tokens);
+  }
+}
+
+/**
+ * Implements hook_civicrm_tokenValues().
+ */
+function civicase_civicrm_tokenValues(&$values, $cids, $job = NULL, $tokens = [], $context = NULL) {
+  $contactFieldsService = new CRM_Civicase_Service_ContactFieldsProvider();
+  $contactCustomFieldsService = new CRM_Civicase_Service_ContactCustomFieldsProvider();
+  $hooks = [
+    new CRM_Civicase_Hook_Tokens_AddContactTokensValues($contactFieldsService, $contactCustomFieldsService),
+  ];
+  foreach ($hooks as &$hook) {
+    $hook->run($values, $cids, $job, $tokens, $context);
   }
 }
 
@@ -488,18 +465,21 @@ function civicase_civicrm_selectWhereClause($entity, &$clauses) {
   if ($entity === 'Case') {
     unset($clauses['id']);
   }
+
+  $hooks = [
+    new CRM_Civicase_Hook_SelectWhereClause_LimitCaseQueryToAccessibleCaseCategories(),
+  ];
+
+  foreach ($hooks as $hook) {
+    $hook->run($entity, $clauses);
+  }
 }
 
 /**
  * Implements hook_civicrm_entityTypes().
  */
 function civicase_civicrm_entityTypes(&$entityTypes) {
-  $entityTypes[] = [
-    'name'  => 'CaseContactLock',
-    'class' => 'CRM_Civicase_DAO_CaseContactLock',
-    'table' => 'civicase_contactlock',
-  ];
-
+  _civicase_civix_civicrm_entityTypes($entityTypes);
   _civicase_add_case_category_case_type_entity($entityTypes);
 }
 
@@ -509,7 +489,6 @@ function civicase_civicrm_entityTypes(&$entityTypes) {
 function civicase_civicrm_queryObjects(&$queryObjects, $type) {
   if ($type == 'Contact') {
     $queryObjects[] = new CRM_Civicase_BAO_Query_ContactLock();
-    $queryObjects[] = new CRM_Civicase_BAO_Query_CaseCategory();
   }
 }
 
@@ -535,10 +514,36 @@ function civicase_civicrm_preProcess($formName, &$form) {
     new CRM_Civicase_Hook_PreProcess_CaseCategoryWordReplacementsForNewCase(),
     new CRM_Civicase_Hook_PreProcess_CaseCategoryWordReplacementsForChangeCase(),
     new CRM_Civicase_Hook_PreProcess_AddCaseAdminSettings(),
+    new CRM_Civicase_Hook_PreProcess_CaseTypeCategoryWebFormRedirect(),
   ];
 
   foreach ($hooks as $hook) {
     $hook->run($formName, $form);
+  }
+}
+
+/**
+ * Implements hook_civicrm_summaryActions().
+ */
+function civicase_civicrm_summaryActions(&$actions, $contactID) {
+  $hooks = [
+    new CRM_Civicase_Hook_SummaryActions_AlterAddCaseAction(),
+  ];
+
+  foreach ($hooks as $hook) {
+    $hook->run($actions, $contactID);
+  }
+}
+
+/**
+ * Implements hook_civicrm_alterAngular().
+ */
+function civicase_civicrm_alterAngular(Manager $angular) {
+  if (CRM_Core_Permission::check(
+    [['administer CiviCase', 'administer CiviCRM']]
+  )) {
+    $angular->add(CRM_Civicase_Hook_alterAngular_AngularChangeSet::getForCaseTypeCategoryField());
+    $angular->add(CRM_Civicase_Hook_alterAngular_AngularChangeSet::getForHidingNewCaseTypeButton());
   }
 }
 

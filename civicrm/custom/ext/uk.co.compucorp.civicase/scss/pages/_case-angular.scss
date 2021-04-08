@@ -1,3 +1,11 @@
 .page-civicrm-case-a {
   @include case-page;
+
+  @media (max-width: $email-modal-breakpoint) {
+    .crm-contactEmail-form-block-subject {
+      .crm-token-selector {
+        margin-top: $basic-gutter;
+      }
+    }
+  }
 }

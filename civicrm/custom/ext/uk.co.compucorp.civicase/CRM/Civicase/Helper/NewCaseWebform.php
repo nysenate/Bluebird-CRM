@@ -5,7 +5,7 @@ use CRM_Civicase_Hook_Helper_CaseTypeCategory as CaseTypeCategoryHelper;
 use CRM_Civicase_Service_CaseCategorySetting as CaseCategorySetting;
 
 /**
- * CRM_Civicase_Helper_NewCaseWebform class.
+ * Webform helper class.
  */
 class CRM_Civicase_Helper_NewCaseWebform {
 
@@ -26,14 +26,32 @@ class CRM_Civicase_Helper_NewCaseWebform {
       $options['caseCategoryWebformSettings'][$caseTypeCategoryNameLowerCase]['newCaseWebformClient'] = 'cid';
       $options['caseCategoryWebformSettings'][$caseTypeCategoryNameLowerCase]['newCaseWebformUrl'] = $newCaseWebformUrl;
       if ($newCaseWebformUrl) {
-        $path = explode('/', $newCaseWebformUrl);
-        $webformId = array_pop($path);
-        $clientId = self::getCaseWebformClientId($webformId);
+        $clientId = self::getClientIdFromWebformUrl($newCaseWebformUrl);
         if ($clientId) {
           $options['caseCategoryWebformSettings'][$caseTypeCategoryNameLowerCase]['newCaseWebformClient'] = 'cid' . $clientId;
         }
       }
     }
+  }
+
+  /**
+   * Gets the case client id from webform URL.
+   *
+   * @param string $webformUrl
+   *   Webform URL.
+   *
+   * @return int|null
+   *   client ID.
+   */
+  public static function getClientIdFromWebformUrl($webformUrl) {
+    $path = explode('/', $webformUrl);
+    $webformId = array_pop($path);
+
+    if (!$webformId) {
+      return NULL;
+    }
+
+    return self::getCaseWebformClientId($webformId);
   }
 
   /**
@@ -51,7 +69,7 @@ class CRM_Civicase_Helper_NewCaseWebform {
     $client = 0;
 
     if (isset($data['case'][1]['case'][1]['client_id'])) {
-      $clients = $data['case'][1]['case'][1]['client_id'];
+      $clients = (array) $data['case'][1]['case'][1]['client_id'];
       $client = reset($clients);
     }
 

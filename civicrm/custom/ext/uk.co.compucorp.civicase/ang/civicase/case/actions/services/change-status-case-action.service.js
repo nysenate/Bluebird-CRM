@@ -37,7 +37,8 @@
       });
 
       _.each(types, function (caseTypeId) {
-        var allowedStatuses = CaseType.getAll()[caseTypeId].definition.statuses || [];
+        var statuses = CaseType.getById(caseTypeId).definition.statuses;
+        var allowedStatuses = statuses || [];
 
         if (allowedStatuses.length) {
           _.remove(statuses, function (status) {

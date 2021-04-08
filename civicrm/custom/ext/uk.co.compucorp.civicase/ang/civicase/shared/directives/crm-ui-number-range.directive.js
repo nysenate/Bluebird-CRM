@@ -20,11 +20,11 @@
         element.on('change', function () {
           $timeout(function () {
             if (scope.input.from && scope.input.to) {
-              scope.data = {BETWEEN: [scope.input.from, scope.input.to]};
+              scope.data = { BETWEEN: [scope.input.from, scope.input.to] };
             } else if (scope.input.from) {
-              scope.data = {'>=': scope.input.from};
+              scope.data = { '>=': scope.input.from };
             } else if (scope.input.to) {
-              scope.data = {'<=': scope.input.to};
+              scope.data = { '<=': scope.input.to };
             } else {
               scope.data = null;
             }
@@ -38,9 +38,9 @@
             scope.input.from = scope.data.BETWEEN[0];
             scope.input.to = scope.data.BETWEEN[1];
           } else if (scope.data['>=']) {
-            scope.input = {from: scope.data['>=']};
+            scope.input = { from: scope.data['>='] };
           } else if (scope.data['<=']) {
-            scope.input = {to: scope.data['<=']};
+            scope.input = { to: scope.data['<='] };
           }
         });
       }

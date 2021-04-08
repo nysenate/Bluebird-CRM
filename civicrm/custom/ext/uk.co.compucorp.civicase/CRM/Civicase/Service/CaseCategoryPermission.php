@@ -3,7 +3,7 @@
 use CRM_Civicase_Helper_CaseCategory as CaseCategoryHelper;
 
 /**
- * Class CRM_Civicase_Service_CaseCategoryPermission.
+ * Helper class for case category permissions.
  */
 class CRM_Civicase_Service_CaseCategoryPermission {
 
@@ -49,6 +49,11 @@ class CRM_Civicase_Service_CaseCategoryPermission {
         'name' => $this->replaceWords('basic case information', $caseCategoryName),
         'label' => $this->replaceWords('CiviCase: basic case information', $caseCategoryName),
         'description' => $this->replaceWords('Allows a user to view only basic information of cases.', $caseCategoryName),
+      ],
+      'ADMINISTER_CASE_CATEGORY' => [
+        'name' => $this->replaceWords('administer CiviCase', $caseCategoryName),
+        'label' => $this->replaceWords('CiviCase: administer CiviCase', $caseCategoryName),
+        'description' => 'Allows a user to manage case types for this instance of CiviCase only',
       ],
     ];
   }

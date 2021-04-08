@@ -1,7 +1,10 @@
+$tag-max-width: 36ch; // holds about 40 characters of variable width text
+$tags-margin-right: 4px;
+
 .civicase__tags-container,
 .civicase__tags-container__additional__list {
   .badge {
-    margin-right: 4px;
+    margin-right: $tags-margin-right;
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
@@ -12,7 +15,7 @@
   display: inline-block;
 
   .badge {
-    max-width: 50px;
+    max-width: $tag-max-width;
   }
 }
 
@@ -34,7 +37,7 @@
   }
 
   .badge {
-    max-width: 80px;
+    max-width: $tag-max-width;
   }
 }
 
@@ -49,6 +52,7 @@
   border-radius: 0;
   box-shadow: $box-shadow-tooltip;
   cursor: pointer;
+  max-width: calc(#{$tag-max-width} + #{$padding-small-horizontal * 2} + #{$tags-margin-right});
   padding: 0;
 
   a {

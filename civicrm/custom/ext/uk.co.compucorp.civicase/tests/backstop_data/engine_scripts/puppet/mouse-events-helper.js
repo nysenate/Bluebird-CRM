@@ -2,7 +2,7 @@
 
 const Utility = require('./utility.js');
 
-module.exports = async (page, scenario, viewport) => {
+module.exports = async (options) => {
   const actions = [
     { name: 'hoverSelector', execute: hoverSelectorAction },
     { name: 'hoverSelectors', execute: hoverSelectorAction },
@@ -11,20 +11,21 @@ module.exports = async (page, scenario, viewport) => {
   ];
 
   for (const action of actions) {
-    const scenarioHasAction = !!scenario[action.name];
+    const scenarioHasAction = !!options.scenario[action.name];
 
-    scenarioHasAction && await action.execute(page, scenario, viewport);
+    scenarioHasAction && await action.execute(options);
   }
 };
 
 /**
  * Action handler for hover event
  *
- * @param {object} page pupettter engine object
- * @param {object} scenario object of each scenario
- * @param {object} viewport viewport configurations
+ * @param {object} options options
+ * @param {object} options.page pupettter engine object
+ * @param {object} options.scenario object of each scenario
+ * @param {object} options.viewport viewport configurations
  */
-async function hoverSelectorAction (page, scenario, viewport) {
+async function hoverSelectorAction ({ page, scenario, viewport }) {
   const hoverSelectors = scenario.hoverSelectors || [scenario.hoverSelector];
   const utility = new Utility(page, scenario, viewport);
 
@@ -40,11 +41,13 @@ async function hoverSelectorAction (page, scenario, viewport) {
 /**
  * Action handler for click event
  *
- * @param {object} page pupettter engine object
- * @param {object} scenario object of each scenario
- * @param {object} viewport viewport configurations
+ * @param {object} options options
+ * @param {object} options.page pupettter engine object
+ * @param {object} options.scenario object of each scenario
+ * @param {object} options.viewport viewport configurations
+ * @param {boolean} options.wait whether to apply additional wait
  */
-async function clickSelectorAction (page, scenario, viewport) {
+async function clickSelectorAction ({ page, scenario, viewport, wait = 1000 }) {
   const clickSelectors = scenario.clickSelectors || [scenario.clickSelector];
   const utility = new Utility(page, scenario, viewport);
 
@@ -58,5 +61,7 @@ async function clickSelectorAction (page, scenario, viewport) {
     if (scenario.waitForUIModalLoad) {
       await utility.waitForUIModalLoad();
     }
+
+    await page.waitForTimeout(wait);
   }
 }

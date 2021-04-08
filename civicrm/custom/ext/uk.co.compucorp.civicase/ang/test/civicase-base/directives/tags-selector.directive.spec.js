@@ -1,5 +1,3 @@
-/* eslint-env jasmine */
-
 ((_) => {
   describe('civicaseTagsSelector', () => {
     let $controller, TagsMockData, $rootScope, $scope;
@@ -134,6 +132,25 @@
           tagSets: {
             6: [],
             14: ['15']
+          }
+        });
+      });
+    });
+
+    describe('when tags are reselected', () => {
+      beforeEach(() => {
+        initController(['1', '12', '15']);
+        $rootScope.$digest();
+        $scope.model = ['1'];
+        $rootScope.$digest();
+      });
+
+      it('resets the selected tags in the UI', () => {
+        expect($scope.tags).toEqual({
+          genericTags: ['1'],
+          tagSets: {
+            6: [],
+            14: []
           }
         });
       });

@@ -13,9 +13,9 @@
     /**
      * Link function for civicaseSortheaderLink Directive
      *
-     * @param {object} scope
-     * @param {object} $el
-     * @param {object} attrs
+     * @param {object} scope scope object
+     * @param {object} element element
+     * @param {object} attrs attributes
      */
     function civicaseSortheaderLink (scope, element, attrs) {
       (function init () {

@@ -20,6 +20,7 @@
       scope: {
         activity: '=caseActivityCard',
         case: '=?',
+        isReadOnly: '<',
         customDropdownClass: '@',
         refresh: '=refreshCallback',
         refreshOnCheckboxToggle: '=?',
@@ -47,16 +48,17 @@
    * @param {object} CaseType a reference to the Case Type service
    * @param {object} CaseTypeCategory a reference to the Case Type Category service
    * @param {object} dialogService service to open the dialog box
-   * @param {Function} crmApi service to interact with the civicrm api
+   * @param {Function} civicaseCrmApi service to interact with the civicrm api
    * @param {object} crmBlocker crm blocker service
    * @param {object} crmStatus crm status service
    * @param {object} DateHelper date helper service
    * @param {object} ts ts service
    * @param {Function} viewInPopup factory to view an activity in a popup
+   * @param {Function} isTruthy service to check if value is truthy
    */
-  function caseActivityCardController ($filter, $scope, CaseType, CaseTypeCategory, dialogService, crmApi,
-    crmBlocker, crmStatus, DateHelper, ts, viewInPopup) {
-    var caseTypes = CaseType.getAll();
+  function caseActivityCardController ($filter, $scope, CaseType,
+    CaseTypeCategory, dialogService, civicaseCrmApi, crmBlocker, crmStatus,
+    DateHelper, ts, viewInPopup, isTruthy) {
     var caseTypeCategories = CaseTypeCategory.getAll();
 
     $scope.areFromAndToFieldsVisible = false;
@@ -80,7 +82,10 @@
      * @returns {Promise} api call promise
      */
     $scope.markCompleted = function (activity) {
-      return crmApi([['Activity', 'create', { id: activity.id, status_id: activity.is_completed ? 'Scheduled' : 'Completed' }]])
+      return civicaseCrmApi([['Activity', 'create', {
+        id: activity.id,
+        status_id: activity.is_completed ? 'Scheduled' : 'Completed'
+      }]])
         .then(function (data) {
           if (!data[0].is_error) {
             activity.is_completed = !activity.is_completed;
@@ -97,7 +102,7 @@
      */
     $scope.toggleActivityStar = function ($event, activity) {
       $event.stopPropagation();
-      activity.is_star = activity.is_star === '1' ? '0' : '1';
+      activity.is_star = isTruthy(activity.is_star) ? '0' : '1';
       // Setvalue api avoids messy revisioning issues
       $scope.refresh([['Activity', 'setvalue', {
         id: activity.id,
@@ -127,7 +132,9 @@
      * @param {object} activity activity object
      */
     $scope.viewInPopup = function ($event, activity) {
-      var response = viewInPopup($event, activity);
+      var response = viewInPopup($event, activity, {
+        isReadOnly: $scope.isReadOnly
+      });
 
       if (response) {
         response
@@ -163,7 +170,7 @@
        * @returns {Promise} promise
        */
       $scope.deleteFile = function (activity, file) {
-        var promise = crmApi('Attachment', 'delete', { id: file.id })
+        var promise = civicaseCrmApi('Attachment', 'delete', { id: file.id })
           .then(function () {
             $scope.refresh();
           });
@@ -182,12 +189,17 @@
      */
     function getCaseDetailUrl () {
       var caseTypeId = $scope.activity.case.case_type_id;
-      var caseType = caseTypes[caseTypeId];
+      var caseType = CaseType.getById(caseTypeId);
       var caseTypeCategory = caseTypeCategories[caseType.case_type_category];
       var caseDetailUrl = 'civicrm/case/a/?' +
         $.param({ case_type_category: caseTypeCategory.name }) +
         '#/case/list';
-      var angularParams = $.param({ caseId: $scope.activity.case_id });
+      var angularParams = $.param({
+        caseId: $scope.activity.case_id,
+        cf: JSON.stringify({
+          'case_type_id.is_active': caseType.is_active
+        })
+      });
 
       return $filter('civicaseCrmUrl')(caseDetailUrl) + '?' + angularParams;
     }

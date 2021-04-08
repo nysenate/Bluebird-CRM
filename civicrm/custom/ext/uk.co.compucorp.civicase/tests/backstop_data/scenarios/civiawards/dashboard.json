@@ -1,0 +1,13 @@
+{
+  "scenarios": [
+    {
+      "label": "CiviAwards - Dashboard",
+      "url": "{url}/civicrm/case/a/?case_type_category=awards#/case?case_type_category=awards&drel=all"
+    },
+    {
+      "label": "CiviAwards - Dashboard - More Filters Button",
+      "url": "{url}/civicrm/case/a/?case_type_category=awards#/case?case_type_category=awards&drel=all",
+      "clickSelector": ".civicase__dashboard__action-btn--more-filter"
+    }
+  ]
+}

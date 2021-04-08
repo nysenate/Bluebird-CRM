@@ -1,9 +1,10 @@
-<span class="civicase__contact-card">
+<span class="civicase__contact-card" ng-class="{'civicase__contact-card__with-more-fields': displayMoreFields.length > 0}">
   <span ng-if="!isAvatar" class="civicase__contact-name-container">
     <!-- Contact Icons -->
     <span ng-if="!noIcon">
       <civicase-contact-icon
         case-id="caseId"
+        ng-if="contacts[0].contact_id"
         contact-id="contacts[0].contact_id"
       ></civicase-contact-icon>
     </span>
@@ -21,10 +22,18 @@
     <a
       href="{{ url('civicrm/contact/view', {cid: contacts[0].contact_id}) }}"
       class="civicase__contact-avatar crm_notification-badge"
-      ng-class="{'civicase__contact-avatar--image': contacts[0].image_URL}"
-      title="{{contacts[0].display_name}}">
+      ng-class="{
+        'civicase__contact-avatar--image': contacts[0].image_URL,
+        'civicase__contact-avatar--has-full-name': showFullNameOnHover
+      }"
+      ng-attr-title="{{showFullNameOnHover ? '' : contacts[0].display_name}}">
       <img ng-if="contacts[0].image_URL" ng-src={{contacts[0].image_URL}}>
       <span ng-if="!contacts[0].image_URL">{{contacts[0].avatar}}</span>
+      <span
+        ng-if="showFullNameOnHover"
+        class="civicase__contact-avatar__full-name">
+        {{contacts[0].display_name}}
+      </span>
     </a>
     <!-- End - Contact Avatar -->
   </span>
@@ -38,7 +47,7 @@
         'civicase__contact-additional__container--avatar': isAvatar,
         'civicase__contact-additional__container': !isAvatar
       }">
-      +{{ contacts.length - 1 }}
+      +{{ totalContacts ? totalContacts -1 : contacts.length - 1 }}
     </civicase-popover-toggle-button>
     <civicase-popover-content>
       <div ng-include="'additional-contacts.html'"></div>
@@ -46,8 +55,15 @@
   </civicase-popover>
   <!-- End - Additional Contact Dropdown -->
 
+  <!-- More Fields -->
+  <div ng-repeat-start="moreField in displayMoreFields" ng-show="contacts[0][moreField]" class="civicase__contact__break"></div>
+  <div ng-repeat-end class="civicase__contact__more-field">
+    {{contacts[0][moreField]}}
+  </div>
+  <!-- End - More Fields -->
+
   <script type="text/ng-template" id="additional-contacts.html">
-    <ul class="civicase__contact-additional__list">
+    <ul class="civicase__contact-additional__list" ng-class="{'civicase__contact-additional__list__with-more-fields': displayMoreFields.length > 0}">
       <li ng-repeat="(index, contact) in contacts" ng-if="index">
         <a
           title="{{ ts('View Contact') }}"
@@ -55,10 +71,19 @@
           <civicase-contact-icon
             auto-close-other-popovers="false"
             case-id="caseId"
+            ng-if="contact.contact_id"
             contact-id="contact.contact_id"
           ></civicase-contact-icon>
           <span class="civicase__contact-name-additional">{{ contact.display_name }}</span>
         </a>
+        <div ng-repeat="moreField in displayMoreFields" class="civicase__contact__more-field">
+          {{contact[moreField]}}
+        </div>
+      </li>
+      <li ng-if="totalContacts">
+        <span class="civicase__contact-additional__hidden_contacts_info">
+          {{ ts('Click the Activity to view all Contacts.') }}
+        </span>
       </li>
     </ul>
   </script>

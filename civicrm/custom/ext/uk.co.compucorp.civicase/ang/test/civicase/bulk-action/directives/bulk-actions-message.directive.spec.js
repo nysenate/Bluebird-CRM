@@ -1,5 +1,3 @@
-/* eslint-env jasmine */
-
 describe('BulkActionsMessage', function () {
   var $compile, $rootScope, $scope, element;
 
@@ -98,38 +96,6 @@ describe('BulkActionsMessage', function () {
     });
   });
 
-  describe('isSelectAllAvailable', function () {
-    describe('isSelectAllAvailable is true', function () {
-      beforeEach(function () {
-        element.isolateScope().isSelectAllAvailable = true;
-        $scope.$digest();
-      });
-
-      it('doesn\'t add class civicase__link-disabled to buttons', function () {
-        expect(element.find('a[ng-click*="select(\'all\')"]').hasClass('civicase__link-disabled')).toBe(false);
-      });
-
-      it('doesn\'t add class civicase__link-disabled to buttons', function () {
-        expect(element.find('a[ng-click*="select(\'none\')"]').hasClass('civicase__link-disabled')).toBe(false);
-      });
-    });
-
-    describe('isSelectAllAvailable is false', function () {
-      beforeEach(function () {
-        element.isolateScope().isSelectAllAvailable = false;
-        $scope.$digest();
-      });
-
-      it('adds class civicase__link-disabled to buttons', function () {
-        expect(element.find('a[ng-click*="select(\'all\')"]').hasClass('civicase__link-disabled')).toBe(true);
-      });
-
-      it('adds class civicase__link-disabled to buttons', function () {
-        expect(element.find('a[ng-click*="select(\'none\')"]').hasClass('civicase__link-disabled')).toBe(true);
-      });
-    });
-  });
-
   /**
    * Function responsible for setting up compilation of the directive
    */
@@ -137,9 +103,8 @@ describe('BulkActionsMessage', function () {
     $scope.selectedItems = 10;
     $scope.totalCount = 20;
     $scope.showCheckboxes = true;
-    $scope.isSelectAllAvailable = false;
     $scope.isSelectAll = false;
-    element = $compile('<civicase-bulk-actions-message selected-items="selectedItems" total-count="totalCount" is-select-all-available="isSelectAllAvailable" is-select-all="isSelectAll" show-checkboxes="showCheckboxes"></civicase-bulk-actions-message>')($scope);
+    element = $compile('<civicase-bulk-actions-message selected-items="selectedItems" total-count="totalCount" is-select-all="isSelectAll" show-checkboxes="showCheckboxes"></civicase-bulk-actions-message>')($scope);
     $scope.$digest();
   }
 });

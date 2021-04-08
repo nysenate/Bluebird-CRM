@@ -21,12 +21,16 @@
         'activity_summary', 'activity_count', 'category_count', 'tag_id.name',
         'tag_id.color', 'tag_id.description', 'tag_id.parent_id', 'related_case_ids'
       ];
-      var caseListReturnParams = ['case_type_id', 'start_date', 'end_date', 'status_id', 'contacts', 'subject'];
+      var caseListReturnParams = ['case_type_id', 'case_type_id.is_active',
+        'start_date', 'end_date', 'status_id', 'contacts', 'subject'];
       var customValuesReturnParams = [
         'custom_group.id', 'custom_group.name', 'custom_group.title',
-        'custom_field.name', 'custom_field.label', 'custom_value.display'
+        'custom_group.weight', 'custom_group.style',
+        'custom_field.name', 'custom_field.label',
+        'custom_value.display'
       ];
-      var relationshipReturnParams = ['id', 'relationship_type_id', 'contact_id_a', 'contact_id_b', 'description', 'start_date'];
+      var relationshipReturnParams = ['id', 'relationship_type_id', 'contact_id_a',
+        'contact_id_b', 'description', 'end_date', 'is_active', 'start_date'];
 
       return {
         id: filters.caseId,
@@ -47,32 +51,29 @@
           return: caseListReturnParams
         },
         // For the "recent communication" panel
-        'api.Activity.get.recentCommunication': {
+        'api.Activity.getAll.recentCommunication': {
           case_id: filters.caseId,
           is_current_revision: 1,
           is_test: 0,
-          activity_type_id: { '!=': 'Bulk Email' },
           'activity_type_id.grouping': { LIKE: '%communication%' },
           'status_id.filter': 1,
           options: { limit: filters.panelLimit, sort: 'activity_date_time DESC' },
           return: activityReturnParams
         },
         // For the "tasks" panel
-        'api.Activity.get.tasks': {
+        'api.Activity.getAll.tasks': {
           case_id: filters.caseId,
           is_current_revision: 1,
           is_test: 0,
-          activity_type_id: { '!=': 'Bulk Email' },
           'activity_type_id.grouping': { LIKE: '%task%' },
           'status_id.filter': 0,
           options: { limit: filters.panelLimit, sort: 'activity_date_time ASC' },
           return: activityReturnParams
         },
         // For the "Next Activity" panel
-        'api.Activity.get.nextActivitiesWhichIsNotMileStone': {
+        'api.Activity.getAll.nextActivitiesWhichIsNotMileStone': {
           case_id: filters.caseId,
           status_id: { '!=': 'Completed' },
-          activity_type_id: { '!=': 'Bulk Email' },
           'activity_type_id.grouping': { 'NOT LIKE': '%milestone%' },
           options: {
             limit: 1
@@ -83,7 +84,6 @@
           case_id: filters.caseId,
           is_current_revision: 1,
           is_deleted: 0,
-          activity_type_id: { '!=': 'Bulk Email' },
           status_id: 'Scheduled'
         },
         // For the "scheduled-overdue" count
@@ -92,11 +92,10 @@
           is_current_revision: 1,
           is_deleted: 0,
           is_overdue: 1,
-          activity_type_id: { '!=': 'Bulk Email' },
           status_id: 'Scheduled'
         },
         // Custom data
-        'api.CustomValue.gettreevalues': {
+        'api.CustomValue.getalltreevalues': {
           entity_id: '$value.id',
           entity_type: 'Case',
           return: customValuesReturnParams
@@ -104,8 +103,13 @@
         // Relationship description field
         'api.Relationship.get': {
           case_id: filters.caseId,
-          is_active: 1,
-          return: relationshipReturnParams
+          return: relationshipReturnParams,
+          'api.Contact.get': {
+            contact_id: '$value.contact_id_b'
+          },
+          options: {
+            limit: 0
+          }
         },
         sequential: 1
       };

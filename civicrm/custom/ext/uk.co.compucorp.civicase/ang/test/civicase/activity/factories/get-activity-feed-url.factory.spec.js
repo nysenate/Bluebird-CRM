@@ -1,5 +1,3 @@
-/* eslint-env jasmine */
-
 (function (_, extractQueryStringParams) {
   describe('getActivityFeedUrl', function () {
     var $location, $route, $sce, activityFeedUrlObject, getActivityFeedUrl, ActivityStatusType;

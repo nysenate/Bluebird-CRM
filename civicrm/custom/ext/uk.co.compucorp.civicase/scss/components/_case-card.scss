@@ -1,3 +1,4 @@
+$tags-max-width: 195px; // Displays the tag's ellipsis element next to the last tag
 
 .civicase__case-card {
   border-radius: 0 !important; // Todo remove important after general.css is refactored.
@@ -34,6 +35,10 @@
   .civicase__checkbox {
     left: 20px;
     top: 15px;
+  }
+
+  .civicase__tags-container .badge {
+    max-width: $tags-max-width;
   }
 }
 

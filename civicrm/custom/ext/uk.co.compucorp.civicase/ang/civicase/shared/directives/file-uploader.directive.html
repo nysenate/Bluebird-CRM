@@ -1,4 +1,4 @@
-<form class="panel panel-default civicase__panel-transparent-header">
+<form name="fileUploadForm" class="panel panel-default civicase__panel-transparent-header" ng-submit="saveActivity()">
   <fieldset class="panel-body" ng-disabled="block.check()">
     <div crm-ui-debug="activity"></div>
     <div crm-ui-debug="uploader.queue.length"></div>
@@ -14,8 +14,10 @@
       </div>
       <div class="civicase__file-upload-details civicase__file-upload-item pull-right">
         <div class="form-group">
-          <label for="uploadSubject">{{ts('Activity Subject')}}</label>
-          <input type="text" class="form-control" id="uploadSubject" placeholder="" ng-model="activity.subject">
+          <label for="uploadSubject" class="required-mark">
+            {{ts('Activity Subject')}}
+          </label>
+          <input type="text" class="form-control" id="uploadSubject" required placeholder="" ng-model="activity.subject">
         </div>
         <div class="row">
           <div class="civicase__file-upload-name col-md-8"><label>{{ts('Name')}}</label></div>
@@ -50,7 +52,7 @@
           <div class="pull-right">
             <button type="button" class="btn btn-default cancel" ng-click="deleteActivity()" >
               <span class="btn-icon"></span> {{ts('Cancel')}}</button>
-            <button type="button" class="btn btn-primary" ng-click="saveActivity()" >
+            <button type="submit" class="btn btn-primary">
               <span class="btn-icon"></span> {{ts('Upload File(s)')}}</button>
           </div>
         </div>

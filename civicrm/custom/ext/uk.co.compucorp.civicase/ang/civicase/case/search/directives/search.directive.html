@@ -1,4 +1,6 @@
-<div class="panel panel-default civicase__case-filter-panel clearfix" ng-class="{'case-is-focused': $parent.caseIsFocused}">
+<div
+  class="panel panel-default civicase__case-filter-panel clearfix"
+  ng-class="{'case-is-focused': $parent.caseIsFocused}">
   <div crm-ui-debug="filters"></div>
   <div class="panel-header">
     <h3 class="civicase__case-filter-panel__title" title="{{ pageTitle }}">
@@ -8,38 +10,64 @@
       <input
         class="form-control civicase__case-filter__input"
         ng-list
-        crm-ui-select="{allowClear: true, multiple: true, placeholder: ts('Case Type: Any'), data: caseTypeOptions}"
+        crm-ui-select="{
+          allowClear: true,
+          multiple: true,
+          placeholder: ts('Case Type: Any'),
+          data: caseTypeOptions
+        }"
         ng-model="filters.case_type_id"
         ng-change="doSearchIfNotExpanded()"
       />
       <input
         class="form-control civicase__case-filter__input"
-        ng-list crm-ui-select="{allowClear: true, multiple: true, placeholder: ts('Status: All open cases'), data: caseStatusOptions}"
+        ng-list crm-ui-select="{
+          allowClear: true,
+          multiple: true,
+          placeholder: showCasesFromAllStatuses ? ts('Status: All cases') : ts('Status: All open cases'),
+          data: caseStatusOptions
+        }"
         ng-model="filters.status_id"
         ng-change="doSearchIfNotExpanded()"
       />
       <input
         class="form-control civicase__case-filter__input"
         ng-list
-        crm-ui-select="{allowClear: false, multiple: false, placeholder: ts('Relationship Type: All'), data: caseRelationshipOptions}"
+        crm-ui-select="{
+          allowClear: false,
+          multiple: false,
+          placeholder: ts('Relationship Type: All'),
+          data: caseRelationshipOptions
+        }"
         ng-model="relationshipType"
         ng-change="doSearchIfNotExpanded()"
       />
-      <button class="btn btn-primary btn-sm pull-right civicase__case-filter-panel__button" ng-click="expanded = true" ng-show="!expanded">
-        <i class="fa fa-gear"></i> {{ filterDescription.length ? ts('Edit Search') : ts('Other Criteria') }}
+      <button
+        class="btn btn-primary btn-sm pull-right civicase__case-filter-panel__button"
+        ng-click="expanded = true" ng-show="!expanded">
+        <i class="fa fa-gear"></i>
+        {{ filterDescription.length ? ts('Edit Search') : ts('Other Criteria') }}
       </button>
-      <button class="btn btn-primary btn-sm pull-right civicase__case-filter-panel__button" ng-click="handleSearchSubmit()" ng-show="expanded">
+      <button
+        class="btn btn-primary btn-sm pull-right civicase__case-filter-panel__button"
+        ng-click="handleSearchSubmit()" ng-show="expanded">
         <i class="fa fa-search"></i> {{ ts('Search') }}
       </button>
     </form>
   </div>
-  <form class="panel-body form-horizontal civicase__case-filter-panel__form" ng-show="expanded">
+  <form
+    class="panel-body form-horizontal civicase__case-filter-panel__form"
+    ng-show="expanded">
     <div class="civicase__case-filter-form-elements-container">
-      <div ng-if="isEnabled('id')" class="civicase__case-filter-form-elements civicase__case-filter-form-elements--case-id">
+      <div
+        ng-if="isEnabled('id')"
+        class="civicase__case-filter-form-elements civicase__case-filter-form-elements--case-id">
         <label >{{ ts('Case ID') }}</label>
         <input class="form-control" type="number" ng-model="filters.id" />
       </div>
-      <div ng-if="isEnabled('contact_id')" class="civicase__case-filter-form-elements row">
+      <div
+        ng-if="isEnabled('contact_id')"
+        class="civicase__case-filter-form-elements row">
         <label class="col-sm-12">{{ ts('Contact Search') }}</label>
         <div class="col-sm-3">
           <input class="form-control"
@@ -63,11 +91,21 @@
           />
         </div>
       </div>
-      <div class="civicase__case-filter-form-elements" ng-if="checkPerm('administer CiviCase') && isEnabled('is_deleted')">
-        <span class="civicase__checkbox" role="checkbox" aria-checked="{{filters.is_deleted}}" tabindex="0" aria-labelledby="Deleted Cases" ng-click="toggleIsDeleted($event)" ng-keydown="toggleIsDeleted($event)">
-          <i ng-if="filters.is_deleted" class="civicase__checkbox--checked material-icons">check_box</i>
-        </span>
-        <label ng-click="toggleIsDeleted($event)" for="case_search_field_is_deleted" class="control-label">{{ ts('Deleted Cases') }}</label>
+      <div
+        civicase-checkbox
+        ng-if="checkPerm('administer CiviCase') && isEnabled('is_deleted')"
+        ng-model="filters.is_deleted"
+      >
+        {{ ts('Deleted Cases') }}
+      </div>
+      <div
+        civicase-checkbox
+        civicase-checkbox-false-value="1"
+        civicase-checkbox-true-value="0"
+        ng-if="checkPerm('administer CiviCase') && isEnabled('case_type_id.is_active')"
+        ng-model="filters['case_type_id.is_active']"
+      >
+        {{ts('Only Show Disabled Cases')}}
       </div>
       <div ng-if="isEnabled('start_date')" class="civicase__case-filter-form-elements">
         <label>{{ ts('Case Start Date') }}</label>
@@ -80,19 +118,34 @@
       <div class="civicase__case-filter-form-elements">
         <label>{{ ts('Tagged') }}</label>
         <div>
-          <input class="form-control" ng-list crm-entityref="{entity: 'Tag', api: {params: {used_for: {'LIKE':'%civicrm_case%'}, is_selectable: 1}}, select: {multiple: true}}" ng-model="filters.tag_id">
+          <input
+            class="form-control"
+            ng-list crm-entityref="{
+              entity: 'Tag',
+              api: {
+                params: {used_for: {'LIKE':'%civicrm_case%'}, is_selectable: 1}
+              },
+              select: {multiple: true}
+            }"
+            ng-model="filters.tag_id">
         </div>
       </div>
       <div ng-include="'~/civicase/case/search/directives/search-custom.html'"></div>
     </div>
   </form>
-  <div class="panel-body civicase__case-filter-panel__description" ng-if="!expanded && filterDescription.length">
+  <div
+    class="panel-body civicase__case-filter-panel__description"
+    ng-if="!expanded && filterDescription.length">
     <ul class="civicase__filter-search-description-list-container">
-      <li ng-repeat="des in filterDescription" class="col-lg-6 civicase__filter-search-description-list">
+      <li
+        ng-repeat="des in filterDescription"
+        class="col-lg-6 civicase__filter-search-description-list">
         <strong>{{ des.label }}:</strong> {{ des.text }}
       </li>
     </ul>
-    <button class="btn btn-danger btn-sm pull-right civicase__case-filter-panel__button" ng-click="clearSearch()">
+    <button
+      class="btn btn-danger btn-sm pull-right civicase__case-filter-panel__button"
+      ng-click="clearSearch()">
       <i class="fa fa-ban"></i> {{ ts('Clear Search') }}
     </button>
   </div>

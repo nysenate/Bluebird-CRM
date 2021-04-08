@@ -16,14 +16,16 @@
   module.controller('civicaseFilesUploaderController', civicaseFilesUploaderController);
   /**
    * @param {object} $scope controllers scope object
-   * @param {object} crmApi service to access civicrm api
+   * @param {object} civicaseCrmApi service to access civicrm api
    * @param {object} crmBlocker crm blocker service
    * @param {object} crmStatus crm status service
    * @param {Function} FileUploader file uploader service
    * @param {object} $q angular queue service
    * @param {object} $timeout timeout service
+   * @param {Function} civicaseCrmUrl crm url service.
    */
-  function civicaseFilesUploaderController ($scope, crmApi, crmBlocker, crmStatus, FileUploader, $q, $timeout) {
+  function civicaseFilesUploaderController ($scope, civicaseCrmApi, crmBlocker,
+    crmStatus, FileUploader, $q, $timeout, civicaseCrmUrl) {
     $scope.block = crmBlocker();
     $scope.ts = CRM.ts('civicase');
     $scope.uploader = createUploader();
@@ -50,7 +52,7 @@
      */
     function createUploader () {
       return new FileUploader({
-        url: CRM.url('civicrm/ajax/attachment'),
+        url: civicaseCrmUrl('civicrm/ajax/attachment'),
         onAfterAddingFile: function onAfterAddingFile (item) {
           item.crmData = { description: '' };
         },
@@ -104,7 +106,7 @@
      * @returns {Promise} promise
      */
     function saveActivity () {
-      var promise = crmApi('Activity', 'create', $scope.activity)
+      var promise = civicaseCrmApi('Activity', 'create', $scope.activity)
         .then(function (activity) {
           saveTags(activity.id);
 
@@ -120,6 +122,7 @@
           return delayPromiseBy(1000); // Let the user absorb what happened.
         }).then(function () {
           $scope.uploader.clearQueue();
+          $scope.fileUploadForm.$setPristine();
           initActivity();
           if ($scope.onUpload) {
             $scope.$parent.$eval($scope.onUpload);
@@ -137,7 +140,7 @@
      * @returns {Promise} promise
      */
     function saveTags (activityID) {
-      return crmApi('EntityTag', 'create', {
+      return civicaseCrmApi('EntityTag', 'createByQuery', {
         entity_table: 'civicrm_activity',
         tag_id: $scope.tags.selected,
         entity_id: activityID
@@ -174,7 +177,7 @@
      * @returns {Promise} api call promise
      */
     function getTags () {
-      return crmApi('Tag', 'get', {
+      return civicaseCrmApi('Tag', 'get', {
         sequential: 1,
         used_for: { LIKE: '%civicrm_activity%' },
         options: { limit: 0 }

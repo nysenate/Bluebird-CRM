@@ -1,4 +1,4 @@
-(function (angular, getCrmUrl) {
+(function (angular) {
   var module = angular.module('civicase');
 
   module.directive('civicaseContactPopoverContent', function () {
@@ -19,8 +19,10 @@
    *
    * @param {object} $scope Scope object.
    * @param {object} ContactsCache Contacts Cache service reference.
+   * @param {Function} civicaseCrmUrl crm url service.
    */
-  function civicaseContactPopoverContentController ($scope, ContactsCache) {
+  function civicaseContactPopoverContentController ($scope, ContactsCache,
+    civicaseCrmUrl) {
     $scope.contact = ContactsCache.getCachedContact($scope.contactId);
     $scope.getEmailUrl = getEmailUrl;
 
@@ -38,7 +40,7 @@
         emailUrlParameters.caseid = $scope.caseId;
       }
 
-      return getCrmUrl('civicrm/activity/email/add', emailUrlParameters);
+      return civicaseCrmUrl('civicrm/activity/email/add', emailUrlParameters);
     }
   }
-})(angular, CRM.url);
+})(angular);

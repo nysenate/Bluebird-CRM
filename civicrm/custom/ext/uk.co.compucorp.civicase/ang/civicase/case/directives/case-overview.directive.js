@@ -41,14 +41,17 @@
    * Controller for civicaseCaseOverview.
    *
    * @param {object} $scope the controller's $scope object.
-   * @param {object} crmApi the crm api service reference.
+   * @param {object} civicaseCrmApi the crm api service reference.
    * @param {object} BrowserCache the browser cache service reference.
    * @param {object} CaseStatus the case status service reference.
    * @param {object} CaseType the case type service reference.
-   * @param {object} CaseTypeFilterer the case type filterer service reference.
+   * @param {object} CaseTypeCategory the case type category service reference.
+   * @param {Function} getServiceForInstance get service for a specific instance
+   * @param {string} currentCaseCategory current case category
    */
-  function civicaseCaseOverviewController ($scope, crmApi, BrowserCache, CaseStatus,
-    CaseType, CaseTypeFilterer) {
+  function civicaseCaseOverviewController ($scope, civicaseCrmApi, BrowserCache,
+    CaseStatus, CaseType, CaseTypeCategory, getServiceForInstance,
+    currentCaseCategory) {
     var BROWSER_CACHE_IDENTIFIER = 'civicase.CaseOverview.hiddenCaseStatuses';
     var MAXIMUM_CASE_TYPES_TO_DISPLAY_BREAKDOWN = 1;
     var allCaseStatusNames = _.map(CaseStatus.getAll(true), 'name');
@@ -58,11 +61,14 @@
     $scope.caseTypes = [];
     $scope.hiddenCaseStatuses = {};
     $scope.summaryData = [];
+    $scope.pageObj = { total: 0, size: 10, num: 1 };
+    $scope.totalCount = 0;
 
     $scope.areAllStatusesHidden = areAllStatusesHidden;
     $scope.getItemsForCaseType = CaseType.getItemsForCaseType;
     $scope.toggleBreakdownVisibility = toggleBreakdownVisibility;
     $scope.toggleStatusVisibility = toggleStatusVisibility;
+    $scope.setPageTo = setPageTo;
 
     (function init () {
       $scope.$watch('caseFilter', caseFilterWatcher, true);
@@ -87,15 +93,45 @@
      */
     function caseFilterWatcher (caseFilters) {
       var caseStatusNames;
+      $scope.pageObj = { total: 0, size: 10, num: 1 };
 
-      $scope.caseTypes = getFilteredCaseTypes(caseFilters);
-      caseStatusNames = getCaseStatusNamesBelongingToCaseTypes($scope.caseTypes);
-      $scope.caseStatuses = getSortedCaseStatusesByName(caseStatusNames);
-      $scope.showBreakdown = $scope.caseTypes.length <=
-        MAXIMUM_CASE_TYPES_TO_DISPLAY_BREAKDOWN;
+      getCaseTypes()
+        .then(function () {
+          caseStatusNames = getCaseStatusNamesBelongingToCaseTypes($scope.caseTypes);
+          $scope.caseStatuses = getSortedCaseStatusesByName(caseStatusNames);
+          $scope.showBreakdown = $scope.caseTypes.length <=
+            MAXIMUM_CASE_TYPES_TO_DISPLAY_BREAKDOWN;
+          loadStatsData(caseFilters);
+          $scope.$emit('civicase::custom-scrollbar::recalculate');
+        });
+    }
 
-      loadStatsData(caseFilters);
-      $scope.$emit('civicase::custom-scrollbar::recalculate');
+    /**
+     * Get Case Types based on filters
+     *
+     * @returns {Promise} promise
+     */
+    function getCaseTypes () {
+      var categoryObject = CaseTypeCategory.findByName(currentCaseCategory);
+      var instanceName = CaseTypeCategory.getCaseTypeCategoryInstance(categoryObject.value).name;
+      var params = {};
+
+      // extract the params starting with `case_type_id` from case filters
+      // Which means those params are meant for CaseType api.
+      _.each($scope.caseFilter, function (value, key) {
+        if (_.startsWith(key, 'case_type_id.')) {
+          params[key.substr('case_type_id.'.length)] = value;
+        }
+      });
+
+      return getServiceForInstance(instanceName)
+        .getWorkflowsListForCaseOverview(params, $scope.pageObj)
+        .then(function (result) {
+          $scope.totalCount = result.count;
+          $scope.pageObj.total = Math.ceil(result.count / $scope.pageObj.size);
+
+          $scope.caseTypes = result.values;
+        });
     }
 
     /**
@@ -117,17 +153,6 @@
         .flatten()
         .unique()
         .value();
-    }
-
-    /**
-     * @param {object} caseFilters parameters to use for filtering case types.
-     * @returns {object[]} a list of filtered case types.
-     */
-    function getFilteredCaseTypes (caseFilters) {
-      return CaseTypeFilterer.filter({
-        case_type_category: caseFilters['case_type_id.case_type_category'],
-        id: caseFilters.case_type_id
-      });
     }
 
     /**
@@ -172,9 +197,20 @@
       delete params.status_id;
 
       apiCalls.push(['Case', 'getstats', params]);
-      crmApi(apiCalls).then(function (response) {
+      civicaseCrmApi(apiCalls).then(function (response) {
         $scope.summaryData = response[0].values;
       });
+    }
+
+    /**
+     * Set Page Number
+     *
+     * @param {number} page new page number
+     */
+    function setPageTo (page) {
+      $scope.pageObj.num = page;
+
+      getCaseTypes();
     }
 
     /**

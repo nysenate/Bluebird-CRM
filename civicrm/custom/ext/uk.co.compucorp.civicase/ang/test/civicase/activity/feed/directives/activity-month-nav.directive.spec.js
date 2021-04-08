@@ -1,5 +1,3 @@
-/* eslint-env jasmine */
-
 (function (_) {
   describe('civicaseActivityMonthNav', function () {
     beforeEach(function () {
@@ -81,18 +79,20 @@
     });
 
     describe('Activity Month Nav Controller', function () {
-      var $scope, $controller, $rootScope, crmApi, $q, monthNavMockData;
+      var $scope, $controller, $rootScope, civicaseCrmApi, $q, monthNavMockData;
 
-      beforeEach(module('civicase', 'civicase.data'));
+      beforeEach(module('civicase', 'civicase.data', function ($provide) {
+        $provide.value('civicaseCrmApi', jasmine.createSpy('civicaseCrmApi'));
+      }));
 
-      beforeEach(inject(function (_$controller_, _$rootScope_, _crmApi_, _$q_, _monthNavMockData_) {
+      beforeEach(inject(function (_$controller_, _$rootScope_, _civicaseCrmApi_, _$q_, _monthNavMockData_) {
         $controller = _$controller_;
         $rootScope = _$rootScope_;
         $q = _$q_;
         monthNavMockData = _monthNavMockData_;
 
         $scope = $rootScope.$new();
-        crmApi = _crmApi_;
+        civicaseCrmApi = _civicaseCrmApi_;
       }));
 
       describe('when activity feed has loaded all records', function () {
@@ -104,7 +104,7 @@
             var overdueFirst = false;
             monthData = monthNavMockData.get();
 
-            crmApi.and.returnValue($q.resolve({
+            civicaseCrmApi.and.returnValue($q.resolve({
               months: { values: monthData }
             }));
 
@@ -178,7 +178,7 @@
             var overdueFirst = true;
             monthData = monthNavMockData.get();
 
-            crmApi.and.returnValue($q.resolve({
+            civicaseCrmApi.and.returnValue($q.resolve({
               months_with_overdue: { values: monthData },
               months_wo_overdue: { values: [] }
             }));
@@ -232,7 +232,7 @@
            different params`, function () {
           beforeEach(function () {
             var monthData = monthNavMockData.get();
-            crmApi.and.returnValue($q.resolve({
+            civicaseCrmApi.and.returnValue($q.resolve({
               months: { values: monthData }
             }));
 
@@ -253,14 +253,14 @@
           });
 
           it('fetches the months data for changed parameters', function () {
-            expect(crmApi.calls.count()).toBe(2);
+            expect(civicaseCrmApi.calls.count()).toBe(2);
           });
         });
 
         describe(`when activity feed query event is fired with
            same params`, function () {
           beforeEach(function () {
-            crmApi.and.returnValue($q.resolve({
+            civicaseCrmApi.and.returnValue($q.resolve({
               months: { values: monthNavMockData.get() }
             }));
 
@@ -281,7 +281,7 @@
           });
 
           it('does not fetch the months data again', function () {
-            expect(crmApi.calls.count()).toBe(1);
+            expect(civicaseCrmApi.calls.count()).toBe(1);
           });
         });
       });
@@ -289,7 +289,7 @@
       describe('my activities filter', function () {
         beforeEach(function () {
           var monthData = monthNavMockData.get();
-          crmApi.and.returnValue($q.resolve({
+          civicaseCrmApi.and.returnValue($q.resolve({
             months: { values: monthData }
           }));
 
@@ -306,7 +306,7 @@
           });
 
           it('creates the month list based on the my activity filter', function () {
-            expect(crmApi).toHaveBeenCalledWith({
+            expect(civicaseCrmApi).toHaveBeenCalledWith({
               months: [
                 'Activity', 'getmonthswithactivities', {
                   isMyActivitiesFilter: true
@@ -325,7 +325,7 @@
           });
 
           it('creates the month list without the my activity filter', function () {
-            expect(crmApi).toHaveBeenCalledWith({
+            expect(civicaseCrmApi).toHaveBeenCalledWith({
               months: [
                 'Activity', 'getmonthswithactivities', {}
               ]

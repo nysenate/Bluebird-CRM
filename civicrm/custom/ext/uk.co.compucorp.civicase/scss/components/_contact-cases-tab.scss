@@ -69,6 +69,10 @@
     }
   }
 
+  .civicase__tags-container {
+    max-width: 80%;
+  }
+
   .civicase__activity-card {
     width: 100%;
   }
@@ -76,11 +80,16 @@
   .civicase__summary-tab__subject {
     margin-bottom: 3px;
     margin-left: -2px;
-    margin-top: 5px;
+    margin-top: 20px;
   }
 
   .civicase__summary-tab__description {
     margin-bottom: 5px;
+  }
+
+  .civicase__contact-card--client {
+    position: relative;
+    top: 8px;
   }
 
   .civicase__contact-card--client,
@@ -93,6 +102,25 @@
   .civicase__contact-card--manager {
     position: relative;
     top: 2px;
+  }
+
+  .civicase__contact-cases-tab__status-label {
+    display: inline-block;
+    max-width: 250px;
+    overflow: hidden;
+    position: relative;
+    text-overflow: ellipsis;
+    top: 3px;
+    white-space: nowrap;
+  }
+
+  .civicase__contact-cases-tab__case-link {
+    .fa {
+      font-size: $font-size-large;
+      margin-right: 5px;
+      position: relative;
+      top: 1px;
+    }
   }
 
   .list-group-item-info {
@@ -164,5 +192,11 @@
       padding: 30px;
       width: calc(100% - 200px);
     }
+  }
+}
+
+@media (max-width: $contact-case-tab-breakpoint) {
+  .civicase__contact-card--client {
+    clear: both;
   }
 }

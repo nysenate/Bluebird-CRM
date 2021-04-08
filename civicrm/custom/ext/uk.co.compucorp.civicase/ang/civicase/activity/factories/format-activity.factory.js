@@ -1,21 +1,23 @@
 (function (angular, $, _, CRM) {
   var module = angular.module('civicase');
 
-  module.factory('formatActivity', function (ContactsCache, ActivityStatusType, ActivityStatus, ActivityType, CaseStatus, CaseType) {
+  module.factory('formatActivity', function (CasesUtils, ActivityStatusType,
+    ActivityStatus, ActivityType, CaseStatus, CaseType, isTruthy) {
     var activityTypes = ActivityType.getAll(true);
     var activityStatuses = ActivityStatus.getAll();
-    var caseTypes = CaseType.getAll();
     var caseStatuses = CaseStatus.getAll();
 
     return function (act, caseId) {
-      act.category = (activityTypes[act.activity_type_id].grouping ? activityTypes[act.activity_type_id].grouping.split(',') : []);
+      act.category = (activityTypes[act.activity_type_id].grouping
+        ? activityTypes[act.activity_type_id].grouping.split(',')
+        : []);
       act.icon = activityTypes[act.activity_type_id].icon;
       act.type = activityTypes[act.activity_type_id].label;
       act.status = activityStatuses[act.status_id].label;
       act.status_name = activityStatuses[act.status_id].name;
       act.status_type = getStatusType(act.status_id);
       act.is_completed = act.status_type !== 'incomplete'; // FIXME doesn't distinguish cancelled from completed
-      act.is_overdue = (typeof act.is_overdue === 'string') ? (act.is_overdue === '1') : act.is_overdue;
+      act.is_overdue = isTruthy(act.is_overdue);
       act.color = activityStatuses[act.status_id].color || '#42afcb';
       act.status_css = 'status-type-' + act.status_type + ' activity-status-' + act.status_name.toLowerCase().replace(' ', '-');
 
@@ -43,13 +45,13 @@
 
         act.case.client = [];
         act.case.status = caseStatuses[act.case.status_id];
-        act.case.type = caseTypes[act.case.case_type_id];
+        act.case.type = CaseType.getById(act.case.case_type_id);
 
         _.each(act.case.contacts, function (contact) {
-          if (!contact.relationship_type_id) {
+          if (CasesUtils.isClientRole(contact)) {
             act.case.client.push(contact);
           }
-          if (contact.manager) {
+          if (isTruthy(contact.manager)) {
             act.case.manager = contact;
           }
         });

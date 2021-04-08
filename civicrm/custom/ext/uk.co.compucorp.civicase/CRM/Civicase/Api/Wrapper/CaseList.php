@@ -15,58 +15,58 @@ class CRM_Civicase_Api_Wrapper_CaseList implements API_Wrapper {
    *   Allowed headers.
    */
   public function getAllowedHeaders() {
-    return array(
-      'values' => array(
-        array(
+    return [
+      'values' => [
+        [
           'name' => 'next_activity',
           'label' => ts('Next Activity'),
           'sort' => 'next_activity',
           'display_type' => 'activity_card',
-        ),
-        array(
+        ],
+        [
           'name' => 'subject',
           'label' => ts('Subject'),
           'sort' => 'subject',
           'display_type' => 'default',
-        ),
-        array(
+        ],
+        [
           'name' => 'status',
           'label' => ts('Status'),
           'sort' => 'status_id.label',
           'display_type' => 'status_badge',
-        ),
-        array(
+        ],
+        [
           'name' => 'case_type',
           'label' => ts('Type'),
           'sort' => 'case_type_id.title',
           'display_type' => 'default',
-        ),
-        array(
+        ],
+        [
           'name' => 'manager',
           'label' => ts('Case Manager'),
           'sort' => 'case_manager.sort_name',
           'display_type' => 'contact_reference',
-        ),
-        array(
+        ],
+        [
           'name' => 'start_date',
           'label' => ts('Start Date'),
           'sort' => 'start_date',
           'display_type' => 'date',
-        ),
-        array(
+        ],
+        [
           'name' => 'modified_date',
           'label' => ts('Last Updated'),
           'sort' => 'modified_date',
           'display_type' => 'date',
-        ),
-        array(
+        ],
+        [
           'name' => 'myRole',
           'label' => ts('My Role'),
           'sort' => 'my_role.label_b_a',
           'display_type' => 'multiple_values',
-        ),
-      ),
-    );
+        ],
+      ],
+    ];
   }
 
   /**
@@ -81,24 +81,24 @@ class CRM_Civicase_Api_Wrapper_CaseList implements API_Wrapper {
   public function getCaseList(array $params) {
     $loggedContactID = CRM_Core_Session::singleton()->getLoggedInContactID();
 
-    $defaultAPIReturnedColumns = array(
+    $defaultAPIReturnedColumns = [
       'subject', 'case_type_id', 'status_id', 'is_deleted', 'start_date',
       'modified_date', 'contacts', 'activity_summary', 'category_count',
       'tag_id.name', 'tag_id.color', 'tag_id.description',
-    );
+    ];
     $params['return'] = (isset($params['return']) ? array_merge($defaultAPIReturnedColumns, $params['return']) : $defaultAPIReturnedColumns);
     $cases = civicrm_api3('Case', 'getdetails', $params);
 
     foreach ($cases['values'] as &$case) {
-      $caseLockedContacts = civicrm_api3('CaseContactLock', 'get', array(
+      $caseLockedContacts = civicrm_api3('CaseContactLock', 'get', [
         'case_id' => $case['id'],
         'contact_id' => $loggedContactID,
-      ));
+      ]);
 
       // If case is locked for current user, activities should not be sent in
       // response.
       if ($caseLockedContacts['count'] > 0) {
-        $case['activity_summary'] = array();
+        $case['activity_summary'] = [];
         $case['lock'] = 1;
       }
       else {
@@ -106,7 +106,7 @@ class CRM_Civicase_Api_Wrapper_CaseList implements API_Wrapper {
       }
 
       foreach ($case['contacts'] as $contact) {
-        if ($contact['manager'] == 1) {
+        if (isset($contact['manager']) && $contact['manager'] == 1) {
           $case['manager'] = $contact;
         }
 
@@ -115,7 +115,7 @@ class CRM_Civicase_Api_Wrapper_CaseList implements API_Wrapper {
         }
       }
 
-      $case['next_activity'] = CRM_Utils_Array::value(0, $case['activity_summary']['next']);
+      $case['next_activity'] = isset($case['activity_summary']['next'][0]) ? $case['activity_summary']['next'][0] : NULL;
     }
 
     return $cases;

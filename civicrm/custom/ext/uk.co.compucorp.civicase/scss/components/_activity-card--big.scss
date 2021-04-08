@@ -160,6 +160,11 @@
   line-height: $font-size-h2;
   padding: 10px 16px;
 
+  &,
+  &:active,
+  &:focus {
+    background-color: inherit;
+  }
 
   .material-icons {
     color: $brand-primary;
@@ -172,7 +177,10 @@
     margin-left: 8px;
   }
 
+  &:active,
+  &.btn-default:active,
   &:hover,
+  &[disabled]:hover,
   &:hover .material-icons {
     background-color: $brand-primary;
     color: $crm-white;

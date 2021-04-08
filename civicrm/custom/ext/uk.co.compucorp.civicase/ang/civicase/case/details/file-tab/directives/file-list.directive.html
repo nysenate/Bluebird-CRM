@@ -1,10 +1,25 @@
-<div crm-ui-debug="filesByAct"></div>
-<div civicase-util="caseutil"></div>
-
 <form>
   <fieldset ng-disabled="block.check()">
   <!-- Activity Feed -->
-  <div class="civicase__activity-feed__list"  ng-show="fileLists.result.count">
+  <div
+    class="civicase__activity-feed__list civicase__animated-checkbox-card"
+    ng-class="{
+      'civicase__animated-checkbox-card--expanded': showCheckboxes && bulkAllowed
+    }"
+    ng-show="activities.length"
+    ng-repeat="activity in activities">
+    <span
+      class="civicase__checkbox civicase__checkbox--bulk-action"
+      role="checkbox"
+      tabindex="0"
+      aria-labelledby="Select/Unselect"
+      ng-click="toggleSelected(activity); $event.stopPropagation();">
+      <i
+        ng-if="findActivityById(selectedActivities, activity.id)"
+        class="civicase__checkbox--checked material-icons">
+        check_box
+      </i>
+    </span>
     <div class="civicase__activity-feed__list-item">
       <div
         case-activity-card="activity"
@@ -12,7 +27,6 @@
         refresh-on-checkbox-toggle="true"
         bulk-allowed="bulkAllowed"
         refresh-callback="refresh"
-        ng-repeat="activity in activities"
         >
       </div>
     </div>
@@ -20,7 +34,7 @@
   <!-- End Activity Feed -->
 
   <!-- Loading Placeholder -->
-  <div class="civicase__activity-feed__list" ng-if="fileLists.loading && !fileLists.result.count">
+  <div class="civicase__activity-feed__list" ng-if="isLoading && !activities.length">
     <div class="civicase__activity-feed__list-item">
       <div class="civicase__activity-card civicase__activity-card--long" ng-repeat="i in [0,1,2]">
         <div class="panel panel-default">
@@ -40,7 +54,7 @@
   <!-- End of Loading Placeholder -->
 
   <!-- No result HTML -->
-  <div ng-hide="fileLists.loading || fileLists.result.count" class="civicase__panel-empty">
+  <div ng-hide="isLoading || activities.length" class="civicase__panel-empty">
     <i class="fa fa-file-o fa-big"></i>
     <div class="empty-label">{{ ts('No files found') }}</div>
   </div>

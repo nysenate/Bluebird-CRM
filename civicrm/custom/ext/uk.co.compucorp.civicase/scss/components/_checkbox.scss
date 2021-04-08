@@ -4,9 +4,19 @@
   border-radius: 2px;
   box-shadow: $box-shadow-checkbox;
   box-sizing: border-box;
+  cursor: pointer;
+  display: inline-block;
   height: 18px;
+  margin-right: 5px;
   position: relative;
   width: 18px;
+}
+
+.civicase__checkbox__container {
+  .control-label {
+    position: relative;
+    top: -4px;
+  }
 }
 
 .civicase__checkbox--checked {
@@ -30,6 +40,7 @@
     cursor: pointer;
     left: 14px;
     opacity: 0;
+    outline: 0;
     position: absolute;
     top: 15px;
     transform: scale(0.3);

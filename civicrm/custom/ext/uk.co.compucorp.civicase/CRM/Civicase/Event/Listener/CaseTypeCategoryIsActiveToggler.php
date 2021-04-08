@@ -1,6 +1,7 @@
 <?php
 
 use CRM_Civicase_Factory_CaseTypeCategoryEventHandler as CaseTypeCategoryEventHandlerFactory;
+use CRM_Civicase_Helper_CaseCategory as CaseTypeCategoryHelper;
 use Civi\API\Event\RespondEvent;
 
 /**
@@ -18,13 +19,21 @@ class CRM_Civicase_Event_Listener_CaseTypeCategoryIsActiveToggler {
    *   Event data.
    */
   public static function onRespond(RespondEvent $e) {
-    $apiRequest = (array) $e->getApiRequest();
+    $apiRequest = $e->getApiRequest();
+
+    if ($apiRequest['version'] != 3) {
+      return;
+    }
+
     if (!self::shouldRun($apiRequest)) {
       return;
     }
 
+    $caseCategoryValue = self::getCaseCategoryValue($apiRequest['params']['id']);
+    $caseCategoryInstance = CaseTypeCategoryHelper::getInstanceObject($caseCategoryValue);
     $handler = CaseTypeCategoryEventHandlerFactory::create();
     $handler->onUpdate(
+      $caseCategoryInstance,
       $apiRequest['params']['id'],
       isset($apiRequest['params']['is_active']) ? $apiRequest['params']['is_active'] : NULL,
       isset($apiRequest['params']['icon']) ? $apiRequest['params']['icon'] : NULL
@@ -63,7 +72,7 @@ class CRM_Civicase_Event_Listener_CaseTypeCategoryIsActiveToggler {
    *   TRUE if request is sent from civicrm Option Groups page, FALSE otherwise.
    */
   protected static function isFromOptionGroupPage() {
-    return strpos($_SERVER['HTTP_REFERER'], '/civicrm/admin/options') !== FALSE;
+    return isset($_SERVER['HTTP_REFERER']) && strpos($_SERVER['HTTP_REFERER'], '/civicrm/admin/options') !== FALSE;
   }
 
   /**
@@ -98,6 +107,21 @@ class CRM_Civicase_Event_Listener_CaseTypeCategoryIsActiveToggler {
     }
 
     return $res;
+  }
+
+  /**
+   * Returns the Case type category Value.
+   *
+   * @param int $categoryId
+   *   Category Id.
+   *
+   * @return mixed
+   *   Case category Value
+   */
+  private static function getCaseCategoryValue($categoryId) {
+    $categoryOptions = CRM_Core_OptionGroup::values('case_type_categories', FALSE, FALSE, TRUE, NULL, 'value', TRUE, FALSE, 'id');
+
+    return $categoryOptions[$categoryId];
   }
 
 }

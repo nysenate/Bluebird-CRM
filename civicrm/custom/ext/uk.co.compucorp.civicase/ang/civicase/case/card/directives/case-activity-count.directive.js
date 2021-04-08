@@ -11,8 +11,8 @@
     /**
      * Link function for civicaseCaseActivityCount
      *
-     * @param {Object} scope
-     * @param {Object} $elm
+     * @param {object} scope scope object
+     * @param {object} $elm element
      */
     function civicaseCaseActivityCountLink (scope, $elm) {
       (function init () {
@@ -22,7 +22,7 @@
       /**
        * Detect the elements which needs to be moved to the tooltip
        *
-       * @return {Array}
+       * @returns {Array} elements to be moved
        */
       function detectElementsToBeMoved () {
         var parentWidth = $elm[0].offsetWidth;
@@ -41,7 +41,7 @@
       /**
        * Detect if tooltip needs to be shown
        *
-       * @return {Boolean}
+       * @returns {boolean} if tooltip is necessary
        */
       function detectIfToolTipIsNecessary () {
         var $element = $elm[0];
@@ -52,7 +52,7 @@
       /**
        * Hide the Moved elements
        *
-       * @param {Array} elementsToBeMoved
+       * @param {Array} elementsToBeMoved elements to be moved
        */
       function hideMovedElements (elementsToBeMoved) {
         _.each(elementsToBeMoved, function ($element) {
@@ -81,7 +81,7 @@
       /**
        * Move the sent elements to the tooltip
        *
-       * @param {Array} elementsToBeMoved
+       * @param {Array} elementsToBeMoved elements to be moved
        */
       function moveElements (elementsToBeMoved) {
         var dynamicTooltipContent = '';

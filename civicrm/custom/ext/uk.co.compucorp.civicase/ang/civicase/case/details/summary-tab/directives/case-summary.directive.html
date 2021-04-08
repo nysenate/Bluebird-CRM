@@ -2,15 +2,30 @@
   <div ng-if="isMainContentVisible()" class="panel-body">
     <div class="civicase__summary-tab__subject-container">
       <div class="civicase__summary-tab__subject">
-        <p crm-editable="item" data-field="subject" data-type="text" data-placeholder="Click to add subject" crm-form-success="onChangeSubject($data)"></p>
+        <p
+          ng-if="item['case_type_id.is_active'] !== '0'"
+          crm-editable="item"
+          data-field="subject"
+          data-type="text"
+          data-placeholder="Click to add subject"
+          crm-form-success="onChangeSubject($data)"
+        ></p>
+        <p ng-if="item['case_type_id.is_active'] === '0'">
+          {{item.subject}}
+        </p>
       </div>
       <div class="civicase__summary-tab__description">
         <p
+          ng-if="item['case_type_id.is_active'] !== '0'"
           crm-editable="item"
           data-field="details"
           data-type="textarea"
           data-placeholder="{{ ts('This case doesn\'t currently have a description. Click here to add now.') }}">
         </p>
+        <div
+          ng-if="item['case_type_id.is_active'] === '0'"
+          ng-bind-html="trustAsHtml(item.details)"
+        ></div>
       </div>
       <div class="civicase__summary-tab__last-updated">
         <span class="civicase__summary-tab__last-updated__label">{{ts("Case last updated: ")}}</span>

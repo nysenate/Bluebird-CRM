@@ -18,11 +18,12 @@
    * @param {object} $scope the controller scope
    * @param {Function} ts translation service
    * @param {Function} $rootScope the root scope
-   * @param {Function} crmApi the crm api service
+   * @param {Function} civicaseCrmApi the crm api service
    * @param {Function} formatCase the format case service
    * @param {Function} DateHelper the date helper service
    */
-  function CivicaseContactCaseTabCaseListController ($scope, ts, $rootScope, crmApi, formatCase, DateHelper) {
+  function CivicaseContactCaseTabCaseListController ($scope, ts, $rootScope,
+    civicaseCrmApi, formatCase, DateHelper) {
     var defaultPageSize = 2;
 
     $scope.loadingPlaceholders = _.range($scope.casesList.page.size || defaultPageSize);

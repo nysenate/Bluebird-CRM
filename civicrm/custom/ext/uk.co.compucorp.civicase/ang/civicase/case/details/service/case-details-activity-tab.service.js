@@ -7,9 +7,8 @@
    * Activities Case Tab service.
    *
    * @param {object} $location the location service.
-   * @param {Function} crmApi the CRM API service.
    */
-  function ActivitiesCaseTab ($location, crmApi) {
+  function ActivitiesCaseTab ($location) {
     /**
      * @returns {string} Returns tab content HTMl template url.
      */

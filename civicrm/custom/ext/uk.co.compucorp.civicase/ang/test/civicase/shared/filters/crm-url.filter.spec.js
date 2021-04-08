@@ -1,13 +1,12 @@
-/* eslint-env jasmine */
-(function (CRM, _) {
+(function (_) {
   describe('crmUrl', function () {
-    var $filter, crmUrl;
+    var $filter, crmUrl, civicaseCrmUrl;
 
     beforeEach(module('civicase'));
 
-    beforeEach(inject(function (_$filter_) {
+    beforeEach(inject(function (_$filter_, _civicaseCrmUrl_) {
       $filter = _$filter_;
-      CRM.url = jasmine.createSpy('url');
+      civicaseCrmUrl = _civicaseCrmUrl_;
 
       initCrmUrlFilter();
     }));
@@ -23,13 +22,13 @@
           expectedHrefLocation = 'http://civicrm.org/' + expectedHref;
           expectedQuery = { cid: _.uniqueId() };
 
-          CRM.url.and.returnValue(expectedHrefLocation);
+          civicaseCrmUrl.and.returnValue(expectedHrefLocation);
 
           hrefLocation = crmUrl(originalHref, expectedQuery);
         });
 
         it('removes the slash before passing the href and query to CRM url', function () {
-          expect(CRM.url).toHaveBeenCalledWith(expectedHref, expectedQuery);
+          expect(civicaseCrmUrl).toHaveBeenCalledWith(expectedHref, expectedQuery);
         });
 
         it('returns the result from CRM url', function () {
@@ -44,13 +43,13 @@
           expectedHrefLocation = 'http://civicrm.org/' + expectedHref;
           expectedQuery = { cid: _.uniqueId() };
 
-          CRM.url.and.returnValue(expectedHrefLocation);
+          civicaseCrmUrl.and.returnValue(expectedHrefLocation);
 
           hrefLocation = crmUrl(originalHref, expectedQuery);
         });
 
         it('passes the href and query to CRM url', function () {
-          expect(CRM.url).toHaveBeenCalledWith(expectedHref, expectedQuery);
+          expect(civicaseCrmUrl).toHaveBeenCalledWith(expectedHref, expectedQuery);
         });
 
         it('returns the result from CRM url', function () {
@@ -66,4 +65,4 @@
       crmUrl = $filter('civicaseCrmUrl');
     }
   });
-})(CRM, CRM._);
+})(CRM._);
