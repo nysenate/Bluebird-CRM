@@ -158,3 +158,10 @@ function mosaicoimageeditor_civicrm_mosaicoScripts(&$scripts) {
 function mosaicoimageeditor_civicrm_mosaicoPlugins(&$plugins) {
   $plugins[] = 'function(viewModel) { frie(viewModel); }';
 }
+
+function mosaicoimageeditor_civicrm_idsException(&$skip) {
+  //Civi::log()->debug(__FUNCTION__, ['skip' => $skip]);
+
+  $skip[] = 'civicrm/mosaico/iframe';
+  $skip[] = 'civicrm/mosaicoimageditor/storefrie';
+}
