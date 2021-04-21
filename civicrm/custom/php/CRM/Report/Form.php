@@ -4984,7 +4984,11 @@ LEFT JOIN civicrm_contact {$field['alias']} ON {$field['alias']}.id = {$this->_a
       $select = preg_replace('/SELECT(\s+SQL_CALC_FOUND_ROWS)?\s+/i', $select, $this->_select);
       $sql = "{$select} {$this->_from} {$this->_where} {$this->_groupBy} {$this->_having} {$this->_orderBy}";
       $sql = str_replace('WITH ROLLUP', '', $sql);
+
+      //NYSS 13967
+      CRM_Core_DAO::disableFullGroupByMode();
       $dao = CRM_Core_DAO::executeQuery($sql);
+      CRM_Core_DAO::reenableFullGroupByMode();
 
       $contact_ids = [];
       // Add resulting contacts to group
