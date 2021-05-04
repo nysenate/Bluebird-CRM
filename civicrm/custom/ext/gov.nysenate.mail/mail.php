@@ -1101,7 +1101,7 @@ function mail_civicrm_alterMailParams(&$params, $context) {
   $params['headers']['X-SMTPAPI'] = $hdr->asJSON();
 
   //13827 suppress draft text in subject when viewing via report;add some normalizing css;
-  if (current_path() == 'civicrm/mailing/view') {
+  if (function_exists('current_path') && current_path() == 'civicrm/mailing/view') {
     $params['Subject'] = str_replace('[BluebirdMail Draft] ', '', $params['Subject']);
 
     //CRM_Core_Error::debug_var('params[html]', $params['html']);
