@@ -133,4 +133,23 @@ class CRM_NYSS_BAO_NYSS {
 
     return FALSE;
   }
+
+  /**
+   * @return bool
+   *
+   * simple helper to determine if the logged in user is considered an admin user
+   */
+  static function isAdmin() {
+    global $user;
+
+    if ($user->uid == 1) {
+      return TRUE;
+    }
+
+    if (is_array($user->roles) && in_array('Administrator', $user->roles)) {
+      return TRUE;
+    }
+
+    return FALSE;
+  }
 }
