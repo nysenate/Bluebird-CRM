@@ -3471,30 +3471,25 @@ WHERE cg.extends IN ('" . implode("','", $this->_customGroupExtends) . "') AND
       $rowCount = (!empty($this->_contactSelected)) ? count($this->_contactSelected) : count($rows);
       //CRM_Core_Error::debug_var('$rowCount', $rowCount);
       if ($rowCount > $maxCountAllowed && !CRM_NYSS_BAO_NYSS::isAdmin()) {
-        if ($this->_id) {
-          $url = CRM_Utils_System::url("civicrm/report/instance/{$this->_id}", "reset=1", TRUE);
-        }
-        else {
-          $rptUrl = trim($this->_attributes['action'], '/');
-          $url = CRM_Utils_System::url($rptUrl);
-        }
-        CRM_Core_Error::statusBounce('You cannot print, export, or generate a PDF for reports with more than 10,000 records. Please adjust your criteria to reduce the report size and try again.', $url);
+        $msg = 'You cannot print, export, or generate a PDF for reports with more than 10,000 records. Please adjust your criteria to reduce the report size and try again.';
+        CRM_Core_Session::setStatus($msg, ts('Unable to Process Action'), 'error');
       }
+      //proceed only if we are under the 10k limit or an admin
+      else {
+        if ($this->_sendmail) {
+          //NYSS suppress email if no content
+          if (empty($rows)) {
+            CRM_Utils_System::civiExit();
+          }
 
-      if ($this->_sendmail) {
-        //NYSS suppress email if no content
-        if (empty($rows)) {
+          $this->sendEmail();
+        } elseif (!empty($this->outputHandler)) {
+          $this->outputHandler->download();
           CRM_Utils_System::civiExit();
         }
-    
-        $this->sendEmail();
+        // else we don't need to do anything here since it must have been
+        // outputMode=save or something like that
       }
-      elseif (!empty($this->outputHandler)) {
-        $this->outputHandler->download();
-        CRM_Utils_System::civiExit();
-      }
-      // else we don't need to do anything here since it must have been
-      // outputMode=save or something like that
     }
   }
 
