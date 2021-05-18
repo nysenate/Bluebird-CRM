@@ -1,5 +1,3 @@
-/* eslint-env jasmine */
-
 ((_) => {
   describe('civicaseTagsSelector', () => {
     let $controller, TagsMockData, $rootScope, $scope;

@@ -88,9 +88,9 @@ module.exports = class CrmPage {
     }
 
     try {
-      await this.engine.waitFor('.blockUI.blockOverlay', { hidden: true });
+      await this.engine.waitForSelector('.blockUI.blockOverlay', { hidden: true });
       // wait for reedjustment of the modal after ajax content load after opening accordion
-      await this.engine.waitFor(300);
+      await this.engine.waitForTimeout(300);
     } catch (e) {
       console.log('Loaders still visible and timeout reached!');
     }
@@ -120,7 +120,7 @@ module.exports = class CrmPage {
     const timeout = 100000;
     parentSelector = parentSelector !== undefined ? parentSelector + ' ' : '';
 
-    await this.engine.waitFor((parentSelector) => {
+    await this.engine.waitForFunction((parentSelector) => {
       const allLoadingElements = document.querySelectorAll(parentSelector + 'div[class*="civicase__loading-placeholder"]');
 
       return allLoadingElements.length === 0;
@@ -131,10 +131,10 @@ module.exports = class CrmPage {
    * Waits for the UI modal to load the form inside it.
    */
   async waitForUIModalLoad () {
-    await this.engine.waitFor('.modal-dialog > form');
+    await this.engine.waitForSelector('.modal-dialog > form');
     await this.cleanups();
     await this.openAllAccordions();
-    await this.engine.waitFor(1000);
+    await this.engine.waitForTimeout(1000);
   }
 
   /**
@@ -143,7 +143,7 @@ module.exports = class CrmPage {
    * @param {string} selector to wait for and click on
    */
   async waitForAndClick (selector) {
-    await this.engine.waitFor(selector);
+    await this.engine.waitForSelector(selector);
     await this.engine.click(selector);
   }
 
@@ -153,7 +153,7 @@ module.exports = class CrmPage {
    * @param {string} selector to wait for and hover on
    */
   async waitForAndHover (selector) {
-    await this.engine.waitFor(selector);
+    await this.engine.waitForSelector(selector);
     await this.engine.hover(selector);
   }
 
@@ -175,7 +175,7 @@ module.exports = class CrmPage {
     const isWysiwygVisible = await this.isElementVisible('.crm-form-wysiwyg');
 
     if (isWysiwygVisible) {
-      await this.engine.waitFor('.cke .cke_contents', { visible: true });
+      await this.engine.waitForSelector('.cke .cke_contents', { visible: true });
     }
   }
 
@@ -186,7 +186,7 @@ module.exports = class CrmPage {
    * look for.
    */
   async waitForVisibility (selector) {
-    await this.engine.waitFor((selector) => {
+    await this.engine.waitForSelector((selector) => {
       const uiBlock = document.querySelector(selector);
 
       return uiBlock.style.display === 'block';
@@ -203,7 +203,7 @@ module.exports = class CrmPage {
    */
   async waitForSelectorAndEvaluate (selector, fn) {
     try {
-      await this.engine.waitFor(selector, { timeout: 8000 });
+      await this.engine.waitForSelector(selector, { timeout: 8000 });
       await this.engine.evaluate(fn, selector);
     } catch (e) {
       console.log('Selector "' + selector + '" not found');

@@ -1,5 +1,3 @@
-/* eslint-env jasmine */
-
 describe('civicaseStickyTableHeader directive', function () {
   var element, $compile, $rootScope, scope, affixReturnValue, affixOriginalFunction;
 
@@ -51,7 +49,7 @@ describe('civicaseStickyTableHeader directive', function () {
     });
 
     it('does not makes the header sticky', function () {
-      expect(CRM.$.fn.affix).not.toHaveBeenCalledWith(jasmine.objectContaining({offset: {top: jasmine.any(Number)}}));
+      expect(CRM.$.fn.affix).not.toHaveBeenCalledWith(jasmine.objectContaining({ offset: { top: jasmine.any(Number) } }));
     });
 
     it('does not binds the scroll position of table content to the table header', function () {
@@ -75,7 +73,7 @@ describe('civicaseStickyTableHeader directive', function () {
     });
 
     it('does not makes the header sticky', function () {
-      expect(CRM.$.fn.affix).not.toHaveBeenCalledWith(jasmine.objectContaining({offset: {top: jasmine.any(Number)}}));
+      expect(CRM.$.fn.affix).not.toHaveBeenCalledWith(jasmine.objectContaining({ offset: { top: jasmine.any(Number) } }));
     });
 
     it('does not binds the scroll position of table content to the table header', function () {
@@ -99,7 +97,7 @@ describe('civicaseStickyTableHeader directive', function () {
     });
 
     it('does not makes the header sticky', function () {
-      expect(CRM.$.fn.affix).not.toHaveBeenCalledWith(jasmine.objectContaining({offset: {top: jasmine.any(Number)}}));
+      expect(CRM.$.fn.affix).not.toHaveBeenCalledWith(jasmine.objectContaining({ offset: { top: jasmine.any(Number) } }));
     });
 
     it('does not binds the scroll position of table content to the table header', function () {
@@ -127,7 +125,7 @@ describe('civicaseStickyTableHeader directive', function () {
       });
 
       it('makes the header sticky', function () {
-        expect(CRM.$.fn.affix).toHaveBeenCalledWith(jasmine.objectContaining({offset: {top: jasmine.any(Number)}}));
+        expect(CRM.$.fn.affix).toHaveBeenCalledWith(jasmine.objectContaining({ offset: { top: jasmine.any(Number) } }));
       });
 
       it('binds the scroll position of table content to the table header', function () {
@@ -152,7 +150,7 @@ describe('civicaseStickyTableHeader directive', function () {
       });
 
       it('does not makes the header sticky', function () {
-        expect(CRM.$.fn.affix).not.toHaveBeenCalledWith(jasmine.objectContaining({offset: {top: jasmine.any(Number)}}));
+        expect(CRM.$.fn.affix).not.toHaveBeenCalledWith(jasmine.objectContaining({ offset: { top: jasmine.any(Number) } }));
       });
 
       it('does not binds the scroll position of table content to the table header', function () {

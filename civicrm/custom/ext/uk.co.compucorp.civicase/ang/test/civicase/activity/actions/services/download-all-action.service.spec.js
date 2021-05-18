@@ -1,5 +1,3 @@
-/* eslint-env jasmine */
-
 ((_, $) => {
   describe('DownloadAllActivityAction', () => {
     var DownloadAllActivityAction, $window, civicaseCrmUrl;

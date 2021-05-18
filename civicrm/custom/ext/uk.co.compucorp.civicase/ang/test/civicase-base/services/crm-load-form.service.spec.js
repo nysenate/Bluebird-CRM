@@ -1,5 +1,3 @@
-/* eslint-env jasmine */
-
 ((loadForm) => {
   describe('crm load form service', () => {
     let civicaseCrmLoadForm;

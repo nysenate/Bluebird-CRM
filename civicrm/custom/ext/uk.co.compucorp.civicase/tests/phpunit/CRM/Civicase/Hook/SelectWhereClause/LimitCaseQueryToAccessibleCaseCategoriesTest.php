@@ -28,39 +28,64 @@ class CRM_Civicase_Hook_SelectWhereClause_LimitCaseQueryToAccessibleCaseCategori
   private static $caseTypes;
 
   /**
+   * Fabricated cases.
+   *
+   * @var array
+   */
+  private static $cases;
+
+  /**
    * Setup case types and cases before running of tests.
    */
   public static function setupBeforeClass() {
-    civicrm_api3('OptionValue', 'create', [
+    CRM_Core_BAO_OptionValue::ensureOptionValueExists([
       'option_group_id' => 'case_type_categories',
       'name' => 'award',
       'value' => 2,
     ]);
+
     static::$caseTypes[] = CaseTypeFabricator::fabricate([
       'name' => 'Case_type_first',
       'case_type_category' => 1,
-
     ]);
+
     static::$caseTypes[] = CaseTypeFabricator::fabricate([
       'name' => 'Case_type_second',
       'case_type_category' => 2,
     ]);
     static::$client = ContactFabricator::fabricate();
 
-    CaseFabricator::fabricate(
+    static::$cases[] = CaseFabricator::fabricate(
       [
         'case_type_id' => static::$caseTypes[0]['id'],
         'contact_id' => static::$client['id'],
         'creator_id' => static::$client['id'],
       ]
     );
-    CaseFabricator::fabricate(
+    static::$cases[] = CaseFabricator::fabricate(
       [
         'case_type_id' => static::$caseTypes[1]['id'],
         'contact_id' => static::$client['id'],
         'creator_id' => static::$client['id'],
       ]
     );
+  }
+
+  /**
+   * Clean the cases and types created.
+   */
+  public static function tearDownAfterClass() {
+    foreach (static::$cases as $case) {
+      civicrm_api3('Case', 'delete', [
+        'id' => $case['id'],
+      ]);
+    }
+
+    foreach (static::$caseTypes as $caseType) {
+      civicrm_api3('CaseType', 'delete', [
+        'id' => $caseType['id'],
+      ]);
+    }
   }
 
   /**

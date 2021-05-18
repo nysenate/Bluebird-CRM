@@ -1,8 +1,7 @@
-/* eslint-env jasmine */
-
-(($, _, loadCrmForm) => {
+(($, _) => {
   describe('viewInPopup', () => {
-    let viewInPopup, mockGetActivityFormService, mockGetActivityFormUrl;
+    let viewInPopup, mockGetActivityFormService, mockGetActivityFormUrl,
+      civicaseCrmLoadForm;
 
     beforeEach(module('civicase', 'civicase.data', ($provide) => {
       mockGetActivityFormService = jasmine.createSpy('getActivityFormService');
@@ -16,8 +15,9 @@
       $provide.value('ActivityForms', { getActivityFormService: mockGetActivityFormService });
     }));
 
-    beforeEach(inject((_viewInPopup_) => {
+    beforeEach(inject((_viewInPopup_, _civicaseCrmLoadForm_) => {
       viewInPopup = _viewInPopup_;
+      civicaseCrmLoadForm = _civicaseCrmLoadForm_;
     }));
 
     describe('when clicking a button', () => {
@@ -40,7 +40,7 @@
       let activity, returnValue, event;
 
       beforeEach(() => {
-        loadCrmForm.and.returnValue('loadForm');
+        civicaseCrmLoadForm.and.returnValue('loadForm');
 
         event = $.Event('click');
         event.target = document.createElement('span');
@@ -55,7 +55,7 @@
         it('shows the activity in a popup in update mode', function () {
           expect(mockGetActivityFormService).toHaveBeenCalledWith(activity, { action: 'update' });
           expect(mockGetActivityFormUrl).toHaveBeenCalledWith(activity, { action: 'update' });
-          expect(loadCrmForm).toHaveBeenCalledWith('mock GetActivityFormUrl return value');
+          expect(civicaseCrmLoadForm).toHaveBeenCalledWith('mock GetActivityFormUrl return value');
           expect(returnValue).toBe('loadForm');
         });
       });
@@ -71,10 +71,10 @@
         it('shows the activity in a popup in view mode', () => {
           expect(mockGetActivityFormService).toHaveBeenCalledWith(activity, { action: 'view' });
           expect(mockGetActivityFormUrl).toHaveBeenCalledWith(activity, { action: 'view' });
-          expect(loadCrmForm).toHaveBeenCalledWith('mock GetActivityFormUrl return value');
+          expect(civicaseCrmLoadForm).toHaveBeenCalledWith('mock GetActivityFormUrl return value');
           expect(returnValue).toBe('loadForm');
         });
       });
     });
   });
-})(CRM.$, CRM._, CRM.loadForm);
+})(CRM.$, CRM._);

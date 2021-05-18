@@ -15,7 +15,7 @@
     /**
      * Link function for civicaseActivityFiltersContact
      *
-     * @param {object} $scope
+     * @param {object} $scope scope object
      */
     function civicaseActivityFiltersContactLink ($scope) {
       $scope.ts = CRM.ts('civicase');
@@ -38,8 +38,8 @@
       /**
        * Subscribe listener for civicaseActivityFeed.query
        *
-       * @param {object} event
-       * @param {object} feedQueryParams
+       * @param {object} event event object
+       * @param {object} feedQueryParams query parameters
        */
       function feedQueryListener (event, feedQueryParams) {
         if (feedQueryParams.reset) {

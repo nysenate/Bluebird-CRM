@@ -7,8 +7,9 @@
    * Edit Activity Action
    *
    * @param {object} ActivityType service to fetch Activity Types
+   * @param {Function} civicaseCrmLoadForm service to load civicrm forms
    */
-  function EditActivityAction (ActivityType) {
+  function EditActivityAction (ActivityType, civicaseCrmLoadForm) {
     /**
      * Check if the Action is enabled
      *
@@ -18,14 +19,16 @@
     this.isActionEnabled = function ($scope) {
       if ($scope.mode === 'case-summary') {
         var activityTypes = ActivityType.getAll(true);
-        var selectedActivityType = activityTypes[$scope.selectedActivities[0].activity_type_id];
+        var selectedActivityType =
+          activityTypes[$scope.selectedActivities[0].activity_type_id];
 
         var nonEditableActivityTypes = [
           'Email',
           'Print PDF Letter'
         ];
 
-        return !_.includes(nonEditableActivityTypes, selectedActivityType.name) && !!$scope.getEditActivityUrl;
+        return !_.includes(nonEditableActivityTypes, selectedActivityType.name) &&
+         !!$scope.getEditActivityUrl;
       }
     };
 
@@ -35,7 +38,9 @@
      * @param {object} $scope scope object
      */
     this.doAction = function ($scope) {
-      CRM.loadForm($scope.getEditActivityUrl($scope.selectedActivities[0].id));
+      civicaseCrmLoadForm(
+        $scope.getEditActivityUrl($scope.selectedActivities[0].id)
+      );
     };
   }
 })(angular, CRM, CRM._);

@@ -1,4 +1,3 @@
-/* eslint-env jasmine */
 ((_) => {
   describe('AddCustomPathActivityForm', () => {
     let AddCustomPathActivityForm, activity, civicaseCrmUrl, canHandle;

@@ -1,12 +1,10 @@
-/* eslint-env jasmine */
-
 (() => {
   describe('workflow list', () => {
     let $q, $controller, $rootScope, $scope, $window, CaseTypesMockData,
       mockGotoFn, mockApiCalls, crmApiMock, crmApiReceievedInCaseTypeCtrl,
       apiCallsReceievedInCaseTypeCtrl;
 
-    beforeEach(module('workflow', 'civicase.data', ($provide, $controllerProvider) => {
+    beforeEach(module('workflow.mock', 'workflow', 'civicase.data', ($provide, $controllerProvider) => {
       crmApiMock = jasmine.createSpy('crmApi');
       $provide.value('crmApi', crmApiMock);
 

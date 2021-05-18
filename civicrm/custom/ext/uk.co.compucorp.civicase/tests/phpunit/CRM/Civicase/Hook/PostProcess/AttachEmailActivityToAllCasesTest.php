@@ -13,24 +13,23 @@ use CRM_Civicase_Test_Fabricator_Contact as ContactFabricator;
 class CRM_Civicase_Hook_PostProcess_AttachEmailActivityToAllCasesTest extends BaseHeadlessTest {
 
   /**
-   * Test the run method.
-   *
-   * @param int $activityId
-   *   Activity id.
-   * @param int $caseId
-   *   First case id.
-   * @param string $allCaseIds
-   *   All case ids.
-   *
-   * @dataProvider getTestDataForRunMethod
+   * Test the hook add activities to the cases selected.
    */
-  public function testRun($activityId, $caseId, $allCaseIds) {
-    $_GET['caseid'] = $_REQUEST['caseid'] = $caseId;
+  public function testHookAddActivitiesToAllSelectedCases() {
+    $cases = $this->createCases();
+    $firstCaseId = $cases[0];
+    $activityId = $this->createActivity($firstCaseId);
+    $allCaseIds = implode(',', $cases);
+
+    $_GET['caseid'] = $_REQUEST['caseid'] = $firstCaseId;
     $_GET['allCaseIds'] = $_REQUEST['allCaseIds'] = $allCaseIds;
-    $hook = new AttachEmailActivityToAllCases();
-    $hook->run(CRM_Contact_Form_Task_Email::class, new CRM_Contact_Form_Task_Email());
-    $allCaseIds = array_diff(explode(',', $allCaseIds), [$caseId]);
-    foreach ($allCaseIds as $caseId) {
+
+    (new AttachEmailActivityToAllCases())->run(
+      CRM_Contact_Form_Task_Email::class,
+      new CRM_Contact_Form_Task_Email()
+    );
+
+    foreach ($cases as $caseId) {
       $activity = civicrm_api3('Activity', 'get', [
         'case_id' => $caseId,
         'id' => $activityId,
@@ -39,27 +38,6 @@ class CRM_Civicase_Hook_PostProcess_AttachEmailActivityToAllCasesTest extends Ba
       ]);
       $this->assertNotEmpty($activity['id']);
     }
-  }
-
-  /**
-   * Provides data for run method testing.
-   *
-   * @return array
-   *   List of case and activity id.
-   */
-  public function getTestDataForRunMethod() {
-    $return = [];
-    for ($i = 0; $i < 2; $i++) {
-      $cases = $this->createCases();
-      $activityId = $this->createActivity($cases[0]);
-      $return[] = [
-        $activityId,
-        $cases[0],
-        implode(',', $cases),
-      ];
-    }
-
-    return $return;
   }
 
   /**
@@ -73,7 +51,7 @@ class CRM_Civicase_Hook_PostProcess_AttachEmailActivityToAllCasesTest extends Ba
     $creator = ContactFabricator::fabricate();
     $contact = ContactFabricator::fabricate();
     $caseType = CaseTypeFabricator::fabricate();
-    for ($i = 0; $i < 2; $i++) {
+    for ($i = 0; $i < 3; $i++) {
       $case = CaseFabricator::fabricate(
         [
           'case_type_id' => $caseType['id'],

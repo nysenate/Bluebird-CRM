@@ -1,4 +1,3 @@
-/* eslint-env jasmine */
 (($) => {
   describe('civicaseCaseCard', () => {
     let element, $compile, $rootScope, $route, $scope, CasesData;

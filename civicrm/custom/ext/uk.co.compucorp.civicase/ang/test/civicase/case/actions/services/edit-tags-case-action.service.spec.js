@@ -1,5 +1,3 @@
-/* eslint-env jasmine */
-
 (function (_, $) {
   describe('EditTagsCaseAction', function () {
     var $q, $rootScope, EditTagsCaseAction, CasesData,

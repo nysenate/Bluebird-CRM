@@ -1,4 +1,3 @@
-/* eslint-env jasmine */
 (($, _, crmCheckPerm) => {
   describe('civicaseSearch', () => {
     let $controller, $rootScope, $scope, $window, $timeout, CaseFilters,

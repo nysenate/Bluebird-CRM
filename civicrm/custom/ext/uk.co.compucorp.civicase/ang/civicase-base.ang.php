@@ -82,9 +82,16 @@ function expose_settings(array &$options, array $defaults) {
  *   list of js files
  */
 function get_base_js_files() {
-  return array_merge([
-    'ang/civicase-base.js',
-  ], GlobRecursive::get(dirname(__FILE__) . '/civicase-base/*.js'));
+  return array_merge(
+    [
+      'assetBuilder://visual-bundle.js',
+      'ang/civicase-base.js',
+    ],
+    GlobRecursive::getRelativeToExtension(
+      'uk.co.compucorp.civicase',
+      'ang/civicase-base/*.js'
+    )
+  );
 }
 
 /**

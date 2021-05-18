@@ -1,4 +1,3 @@
-/* eslint-env jasmine */
 ((_, angular) => {
   describe('WorkflowListFilters Provider', () => {
     let WorkflowListFilters;

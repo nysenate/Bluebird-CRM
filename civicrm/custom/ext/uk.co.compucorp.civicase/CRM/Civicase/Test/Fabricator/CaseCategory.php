@@ -31,7 +31,7 @@ class CRM_Civicase_Test_Fabricator_CaseCategory {
    *   Resulting merged parameters.
    */
   private static function mergeDefaultParams(array $params) {
-    $name = 'n' . substr(uniqid(), 1, 4);
+    $name = 'n' . rand(1000, 9999);
     $defaultParams = [
       'option_group_id' => 'case_type_categories',
       'label' => $name,

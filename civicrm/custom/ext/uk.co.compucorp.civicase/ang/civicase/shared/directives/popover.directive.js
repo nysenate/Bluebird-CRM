@@ -20,11 +20,18 @@
       link: civicasePopoverLink
     };
 
+    /**
+     * @param {object} $scope scope object
+     * @param {object} $element element
+     * @param {object} attrs attributes
+     * @param {object} ctrl controller
+     * @param {Function} $transcludeFn transclude function
+     */
     function civicasePopoverLink ($scope, $element, attrs, ctrl, $transcludeFn) {
       var $bootstrapThemeContainer, $popover, $popoverArrow, $toggleButton, mouseLeaveTimeout;
       var HOVER_THRESHOLD = 300;
       var ARROW_POSITION_VALUES = {
-        'bottom': '50%',
+        bottom: '50%',
         'bottom-left': '%width%px',
         'bottom-right': 'calc(100% - %width%px)'
       };
@@ -125,10 +132,11 @@
       }
 
       /**
-       * Returns the number of pixes the popover needs to be adjusted to take into
+       * Returns the number of pixels the popover needs to be adjusted to take into
        * consideration the position of the popover arrow.
        *
-       * @param {String} direction the direction the popover will be aligned to.
+       * @param {string} direction the direction the popover will be aligned to.
+       * @returns {number} pixels
        */
       function getArrowPositionModifier (direction) {
         if (direction === 'bottom-left') {
@@ -145,8 +153,8 @@
        * If the position would make the popover hidden from the viewport, it will return
        * the proper alignment, otherwise it returns "default".
        *
-       * @param {Object} position
-       * @return {String}
+       * @param {object} position position
+       * @returns {string} direction
        */
       function getPopoverDirection (position) {
         var directions = {
@@ -163,9 +171,10 @@
        * Get the left and top position for the popover relative to the given element
        * and direction.
        *
-       * @param {Object} $element the DOM element to use as reference.
-       * @param {String} direction which can be "bottom", "bottom-left", "bottom-right", etc.
+       * @param {object} $element the DOM element to use as reference.
+       * @param {string} direction which can be "bottom", "bottom-left", "bottom-right", etc.
        *   defaults to "bottom".
+       * @returns {object} position
        */
       function getPopoverPositionUnderElement ($element, direction) {
         var arrowPositionModifier, position, bootstrapThemeContainerOffset;
@@ -215,7 +224,7 @@
         initPopoverReference();
 
         /**
-         * @note The post digest helps determine the real width of the popover because
+         * The post digest helps determine the real width of the popover because
          * it waits for content to be rendered. $timeout is too slow for this and has a
          * noticeable delay that makes the popover jump for a brief second.
          */

@@ -19,6 +19,7 @@
     <exclude-pattern>CRM/Civicase/Form/Report/ExtendedReport.php</exclude-pattern>
     <exclude-pattern>civicase.civix.php</exclude-pattern>
     <exclude-pattern>CRM/Civicase/DAO/*</exclude-pattern>
+    <exclude-pattern>CRM/Civicase/Upgrader/Base.php</exclude-pattern>
     <!-- Civicrm APi tests classes do have names beginning with lower case -->
     <!-- Hence the following rule is excluded -->
     <exclude name="Drupal.NamingConventions.ValidClassName.StartWithCaptial"/>

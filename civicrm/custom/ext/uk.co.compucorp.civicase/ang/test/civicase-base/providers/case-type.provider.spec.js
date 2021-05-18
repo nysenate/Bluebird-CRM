@@ -1,5 +1,3 @@
-/* eslint-env jasmine */
-
 ((_) => {
   describe('Case Type', () => {
     let CaseType, CaseTypesData, CaseTypesMockData, CaseTypesMockDataProvider;

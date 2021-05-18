@@ -1,5 +1,3 @@
-/* eslint-env jasmine */
-
 (function (_) {
   describe('civicaseFileUploader', function () {
     var $q, $controller, $rootScope, $scope, $timeout, civicaseCrmApi,

@@ -1,5 +1,3 @@
-/* eslint-env jasmine */
-
 (($) => {
   describe('AddCaseDashboardActionButtonController', () => {
     let $rootScope, $scope, $controller, $window, AddCase, currentCaseCategory;

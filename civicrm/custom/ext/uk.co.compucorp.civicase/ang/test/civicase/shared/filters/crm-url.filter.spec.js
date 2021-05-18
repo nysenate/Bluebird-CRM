@@ -1,4 +1,3 @@
-/* eslint-env jasmine */
 (function (_) {
   describe('crmUrl', function () {
     var $filter, crmUrl, civicaseCrmUrl;

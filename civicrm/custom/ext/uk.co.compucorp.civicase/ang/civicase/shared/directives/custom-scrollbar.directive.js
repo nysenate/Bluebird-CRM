@@ -12,9 +12,9 @@
     /**
      * Link function for civicaseCustomScrollbar
      *
-     * @param {Object} $scope
-     * @param {jQuery} element
-     * @param {Object} attrs
+     * @param {object} $scope scope object
+     * @param {object} element element
+     * @param {object} attrs attributes
      */
     function civicaseCustomScrollbarLink ($scope, element, attrs) {
       var simplebarScroller, options;

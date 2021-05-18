@@ -1,5 +1,3 @@
-/* eslint-env jasmine */
-
 (function (_, $) {
   describe('CivicaseCaseListTable Directive', function () {
     var $compile, $rootScope, $scope, originaljQueryHeightFn;

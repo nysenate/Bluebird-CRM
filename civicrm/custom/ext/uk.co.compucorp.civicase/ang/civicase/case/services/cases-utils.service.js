@@ -1,7 +1,15 @@
 (function (angular, _) {
   var module = angular.module('civicase');
 
-  module.service('CasesUtils', function (ContactsCache, ts) {
+  module.service('CasesUtils', function (ContactsCache) {
+    /**
+     * @param {object} role role object
+     * @returns {boolean} if its a client role
+     */
+    this.isClientRole = function (role) {
+      return !role.relationship_type_id;
+    };
+
     /**
      * Fetch additional information about the contacts
      *

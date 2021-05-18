@@ -1,4 +1,3 @@
-/* eslint-env jasmine */
 /* global SimpleBar */
 /* eslint-disable no-global-assign */
 (function (_) {
@@ -12,7 +11,7 @@
       $rootScope = _$rootScope_;
       $scope = $rootScope.$new();
       $scope.options = {
-        'autoHide': true
+        autoHide: true
       };
     }));
 
@@ -29,16 +28,16 @@
       describe('called with default options overrided', function () {
         beforeEach(function () {
           $scope.options = {
-            'autoHide': true,
-            'otherOptions': 'otherValue'
+            autoHide: true,
+            otherOptions: 'otherValue'
           };
           compileDirective();
         });
 
         it('should call SimpleBar()', function () {
           expect(SimpleBar).toHaveBeenCalledWith(element[0], {
-            'autoHide': true,
-            'otherOptions': 'otherValue'
+            autoHide: true,
+            otherOptions: 'otherValue'
           });
         });
       });
@@ -46,15 +45,15 @@
       describe('called with default options not overrided', function () {
         beforeEach(function () {
           $scope.options = {
-            'otherOptions': 'otherValue'
+            otherOptions: 'otherValue'
           };
           compileDirective();
         });
 
         it('should call SimpleBar()', function () {
           expect(SimpleBar).toHaveBeenCalledWith(element[0], {
-            'autoHide': false,
-            'otherOptions': 'otherValue'
+            autoHide: false,
+            otherOptions: 'otherValue'
           });
         });
       });

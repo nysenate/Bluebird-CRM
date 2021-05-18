@@ -1,7 +1,7 @@
 (function (angular, $, _, CRM) {
   var module = angular.module('civicase');
 
-  module.factory('viewInPopup', function (ActivityForms) {
+  module.factory('viewInPopup', function (ActivityForms, civicaseCrmLoadForm) {
     /**
      * View activity in a popup
      *
@@ -25,7 +25,7 @@
         return;
       }
 
-      return CRM.loadForm(activityForm.getActivityFormUrl(activity, formOptions));
+      return civicaseCrmLoadForm(activityForm.getActivityFormUrl(activity, formOptions));
     }
 
     return viewInPopup;

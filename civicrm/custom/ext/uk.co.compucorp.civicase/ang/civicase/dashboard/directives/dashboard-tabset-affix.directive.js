@@ -6,6 +6,9 @@
       link: civicaseDashboardTabsetAffixLink
     };
 
+    /**
+     * @param {object} scope scope object
+     */
     function civicaseDashboardTabsetAffixLink (scope) {
       var $tabNavigation = $('.civicase__dashboard__tab-container ul.nav');
       var $civicrmMenu = $('#civicrm-menu');

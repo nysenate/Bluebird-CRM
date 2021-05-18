@@ -1,5 +1,3 @@
-/* eslint-env jasmine */
-
 (function (_) {
   describe('civicaseFileFilter', function () {
     var $controller, $rootScope, $scope;

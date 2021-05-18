@@ -7,6 +7,11 @@
       link: civicasePopoverAppendToElementLink
     };
 
+    /**
+     * @param {object} $scope scope object
+     * @param {object} $element element
+     * @param {object} attrs attributes
+     */
     function civicasePopoverAppendToElementLink ($scope, $element, attrs) {
       (function init () {
         $scope.$on('$includeContentLoaded', appendPopoverToElement);

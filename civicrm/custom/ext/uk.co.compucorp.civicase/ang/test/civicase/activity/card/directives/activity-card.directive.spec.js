@@ -1,5 +1,3 @@
-/* eslint-env jasmine */
-
 (($, _) => {
   describe('ActivityCard', () => {
     let $compile, $filter, $rootScope, $scope, viewInPopup, activityCard,

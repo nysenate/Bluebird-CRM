@@ -1,5 +1,3 @@
-/* eslint-env jasmine */
-
 describe('CRM Date Filter', () => {
   let crmDate;
 

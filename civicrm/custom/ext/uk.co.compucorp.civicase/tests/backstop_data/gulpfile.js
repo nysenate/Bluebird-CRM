@@ -15,6 +15,7 @@
 var gulp = require('gulp');
 
 var backstopJSTask = require('./gulp-tasks/backstopjs.js');
+const setupDataTask = require('./gulp-tasks/setup-data.js');
 
 /**
  * BackstopJS task
@@ -24,9 +25,13 @@ var backstopJSTask = require('./gulp-tasks/backstopjs.js');
  * backstopjs:openReport: Opens reports in the browser
  * backstopjs:approve: Approves reports
  */
-['reference', 'test', 'openReport', 'approve'].map(backstopJSTask.defineAction);
+['reference', 'test', 'openReport', 'approve'].map(action => {
+  gulp.task('backstopjs:' + action, () => {
+    return backstopJSTask(action);
+  });
+});
 
 /**
  * Setups required BackstopJS data.
  */
-gulp.task('backstopjs:setup-data', backstopJSTask.setupData);
+gulp.task('backstopjs:setup-data', setupDataTask);

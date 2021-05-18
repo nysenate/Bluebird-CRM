@@ -1,4 +1,3 @@
-/* eslint-env jasmine */
 (() => {
   describe('UrlParameters', () => {
     let UrlParameters;

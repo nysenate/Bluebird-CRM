@@ -1,5 +1,3 @@
-/* eslint-env jasmine */
-
 (function (_, $) {
   describe('WebformsCaseAction', function () {
     var WebformsCaseAction, attributes, CaseActionsData, CasesData, webformsList;

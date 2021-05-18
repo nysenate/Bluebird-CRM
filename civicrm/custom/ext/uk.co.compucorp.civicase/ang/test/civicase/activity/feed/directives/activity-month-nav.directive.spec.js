@@ -1,5 +1,3 @@
-/* eslint-env jasmine */
-
 (function (_) {
   describe('civicaseActivityMonthNav', function () {
     beforeEach(function () {

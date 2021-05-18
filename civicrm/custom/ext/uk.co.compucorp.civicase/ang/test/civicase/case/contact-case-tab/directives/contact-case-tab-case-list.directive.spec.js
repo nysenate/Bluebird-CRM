@@ -1,4 +1,3 @@
-/* eslint-env jasmine */
 (function ($, _) {
   describe('ContactCaseTabCaseList', function () {
     var $compile, $scope, $rootScope, element, eventResponse, CasesData;

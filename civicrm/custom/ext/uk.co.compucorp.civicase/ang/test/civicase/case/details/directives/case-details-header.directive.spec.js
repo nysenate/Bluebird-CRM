@@ -1,4 +1,3 @@
-/* eslint-env jasmine */
 (function (_) {
   describe('civicaseCaseDetailsHeaderController', function () {
     var $controller, $rootScope, $scope, CasesData,

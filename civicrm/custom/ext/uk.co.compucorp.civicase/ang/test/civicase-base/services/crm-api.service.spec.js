@@ -1,5 +1,3 @@
-/* eslint-env jasmine */
-
 ((_) => {
   describe('crm service', () => {
     let $q, $rootScope, crmApiMock, civicaseCrmApi;

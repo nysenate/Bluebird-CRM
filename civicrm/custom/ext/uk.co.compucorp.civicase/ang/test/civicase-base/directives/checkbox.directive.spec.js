@@ -1,5 +1,3 @@
-/* eslint-env jasmine */
-
 (() => {
   describe('checkbox', () => {
     let $controller, $scope, event;

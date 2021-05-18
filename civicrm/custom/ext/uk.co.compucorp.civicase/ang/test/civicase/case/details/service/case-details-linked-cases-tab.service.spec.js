@@ -1,4 +1,3 @@
-/* eslint-env jasmine */
 (() => {
   describe('case details linked cases tab service', () => {
     let LinkedCasesCaseTab;

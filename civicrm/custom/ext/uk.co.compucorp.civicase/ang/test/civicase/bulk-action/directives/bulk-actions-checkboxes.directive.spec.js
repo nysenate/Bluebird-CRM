@@ -1,4 +1,3 @@
-/* eslint-env jasmine */
 (function ($) {
   describe('BulkActionsCheckboxes', function () {
     var $compile, $rootScope, $scope, element;

@@ -1,5 +1,3 @@
-/* eslint-env jasmine */
-
 (() => {
   describe('Case Actions', () => {
     let CaseActions, CaseActionsData;

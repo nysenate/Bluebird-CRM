@@ -3470,7 +3470,7 @@ WHERE cg.extends IN ('" . implode("','", $this->_customGroupExtends) . "') AND
       //NYSS 4619 need to look for row count in two ways
       $rowCount = (!empty($this->_contactSelected)) ? count($this->_contactSelected) : count($rows);
       //CRM_Core_Error::debug_var('$rowCount', $rowCount);
-      if ($rowCount > $maxCountAllowed) {
+      if ($rowCount > $maxCountAllowed && !CRM_NYSS_BAO_NYSS::isAdmin()) {
         if ($this->_id) {
           $url = CRM_Utils_System::url("civicrm/report/instance/{$this->_id}", "reset=1", TRUE);
         }
@@ -3478,7 +3478,7 @@ WHERE cg.extends IN ('" . implode("','", $this->_customGroupExtends) . "') AND
           $rptUrl = trim($this->_attributes['action'], '/');
           $url = CRM_Utils_System::url($rptUrl);
         }
-        CRM_Core_Error::statusBounce('You cannot print or generate a PDF for reports with more than 10,000 records. Please adjust your criteria to reduce the report size and try again.', $url);
+        CRM_Core_Error::statusBounce('You cannot print, export, or generate a PDF for reports with more than 10,000 records. Please adjust your criteria to reduce the report size and try again.', $url);
       }
 
       if ($this->_sendmail) {
@@ -4984,7 +4984,11 @@ LEFT JOIN civicrm_contact {$field['alias']} ON {$field['alias']}.id = {$this->_a
       $select = preg_replace('/SELECT(\s+SQL_CALC_FOUND_ROWS)?\s+/i', $select, $this->_select);
       $sql = "{$select} {$this->_from} {$this->_where} {$this->_groupBy} {$this->_having} {$this->_orderBy}";
       $sql = str_replace('WITH ROLLUP', '', $sql);
+
+      //NYSS 13967
+      CRM_Core_DAO::disableFullGroupByMode();
       $dao = CRM_Core_DAO::executeQuery($sql);
+      CRM_Core_DAO::reenableFullGroupByMode();
 
       $contact_ids = [];
       // Add resulting contacts to group

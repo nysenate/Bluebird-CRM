@@ -1,5 +1,3 @@
-/* eslint-env jasmine */
-
 ((_) => {
   describe('civicaseActivityFeed', () => {
     describe('Activity Feed Controller', () => {

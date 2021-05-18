@@ -209,16 +209,16 @@ class CRM_Civicase_Service_CaseCategoryMenu {
   /**
    * Creates Manage Workflow menu for existing case categories.
    *
-   * @param string $instanceName
-   *   Case category instance name..
-   * @param bool $ifMenuLabelHasInstanceName
-   *   Label for the menu to be added.
+   * @param string $instanceTypeName
+   *   Case category instance type name..
+   * @param bool $showCategoryNameOnMenuLabel
+   *   Flag for using the case type category name on the menu label.
    */
-  public function createManageWorkflowMenu(string $instanceName, $ifMenuLabelHasInstanceName) {
+  public function createManageWorkflowMenu(string $instanceTypeName, bool $showCategoryNameOnMenuLabel) {
     $caseTypeCategories = CaseCategory::getCaseCategories();
 
     $instanceObj = new CaseCategoryInstance();
-    $instances = $instanceObj->getCaseCategoryInstances($instanceName);
+    $instances = $instanceObj->getCaseCategoryInstances($instanceTypeName);
 
     foreach ($caseTypeCategories as $caseTypeCategory) {
       $isInstanceCaseCategory = NULL;
@@ -239,7 +239,7 @@ class CRM_Civicase_Service_CaseCategoryMenu {
         'label' => $caseTypeCategory['name'],
       ])['values'][0];
 
-      $menuLabel = $ifMenuLabelHasInstanceName
+      $menuLabel = $showCategoryNameOnMenuLabel
         ? 'Manage ' . $caseTypeCategory['name']
         : 'Manage Workflows';
 
@@ -270,11 +270,11 @@ class CRM_Civicase_Service_CaseCategoryMenu {
     $caseCategoryPermission = new CaseCategoryPermission();
     $permissions = $caseCategoryPermission->get($caseTypeCategoryName);
 
-    $ifMenuExist = count(civicrm_api3('Navigation', 'get', [
+    $menuExists = civicrm_api3('Navigation', 'getcount', [
       'name' => 'manage_' . $caseTypeCategoryName . '_workflows',
-    ])['values']) > 0;
+    ]) > 0;
 
-    if (!$ifMenuExist) {
+    if (!$menuExists) {
       civicrm_api3('Navigation', 'create', [
         'parent_id' => $parentId,
         'url' => '/civicrm/workflow/a?case_type_category=' . $caseTypeCategoryName . '#/list',

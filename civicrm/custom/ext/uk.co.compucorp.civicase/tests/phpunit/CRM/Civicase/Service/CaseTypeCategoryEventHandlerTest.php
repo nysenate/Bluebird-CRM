@@ -42,6 +42,8 @@ class CRM_Civicase_Service_CaseTypeCategoryEventHandlerTest extends BaseHeadless
     $caseTypeCategory = CaseCategoryFabricator::fabricate(
       [
         'id' => $caseTypeCategory['id'],
+        'name' => $caseTypeCategory['name'],
+        'label' => $caseTypeCategory['label'],
         'is_active' => 0,
         'icon' => 'fa-folder-open-o',
       ]

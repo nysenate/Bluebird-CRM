@@ -1,5 +1,3 @@
-/* eslint-env jasmine */
-
 (function (_) {
   describe('civicaseCaseDetailsFileTab', function () {
     var $q, $controller, $rootScope, $scope, civicaseCrmApiMock, activitiesMockData;

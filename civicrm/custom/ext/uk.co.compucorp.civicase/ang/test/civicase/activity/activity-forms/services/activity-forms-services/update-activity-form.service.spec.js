@@ -1,4 +1,3 @@
-/* eslint-env jasmine */
 ((_) => {
   describe('UpdateActivityForm', () => {
     let civicaseCrmUrl, activity, UpdateActivityForm, canHandle;
