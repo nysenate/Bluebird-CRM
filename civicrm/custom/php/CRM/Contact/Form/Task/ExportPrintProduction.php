@@ -36,7 +36,7 @@
 
 define('PPDEBUG', 0); //set debug mode status
 define('EXITLOC', 0); //define exit location in script
-define('TRACKTIME', 1); //track time at points in the script
+define('TRACKTIME', 0); //track time at points in the script
 define('BATCH', 5000); //when processing in batches, amount we do at a time
 
 /**
