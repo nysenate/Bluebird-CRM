@@ -39,7 +39,8 @@ class CRM_Integration_Process
 
     $civicrm_root = $bbcfg['drupal.rootdir'].'/sites/all/modules/civicrm';
     $_SERVER['REMOTE_ADDR'] = '127.0.0.1';
-    if (!CRM_Utils_System::loadBootstrap(array(), false, false, $civicrm_root)) {
+    $_SERVER['REQUEST_METHOD'] = $_SERVER['REQUEST_METHOD'] ?? '';
+    if (!CRM_Utils_System::loadBootstrap([], false, false, $civicrm_root)) {
       CRM_Core_Error::debug_log_message('Failed to bootstrap CMS from cleanLogs.');
       return false;
     }

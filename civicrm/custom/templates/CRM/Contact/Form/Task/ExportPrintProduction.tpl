@@ -153,5 +153,6 @@
     <div class="content">{$form.buttons.html}</div>
   </div>
 
+  <br />
 </fieldset>
 </div>
