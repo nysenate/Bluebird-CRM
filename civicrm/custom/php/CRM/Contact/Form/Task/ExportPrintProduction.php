@@ -71,12 +71,12 @@ class CRM_Contact_Form_Task_ExportPrintProduction extends CRM_Contact_Form_Task
     //5174
     $this->addElement('checkbox', 'primaryAddress', ts('Export Primary Address'), null);
 
-    $select2style = array(
+    $select2style = [
       'multiple' => TRUE,
       'style' => 'width: 300px',
       'class' => 'crm-select2',
       'placeholder' => ts('- select -'),
-    );
+    ];
 
     $rts = CRM_Core_OptionGroup::values('record_type_20100906230753');
     $this->add( 'select',
@@ -122,11 +122,11 @@ class CRM_Contact_Form_Task_ExportPrintProduction extends CRM_Contact_Form_Task
     $this->add( 'select',
       'restrict_state',
       ts( 'Restrict by State' ),
-      array( 0 => '- select -' ) + $states,
+      [0 => '- select -'] + $states,
       false,
-      array(
+      [
         'id' => 'restrict_state',
-      )
+      ]
     );
 
     //8952
@@ -145,18 +145,18 @@ class CRM_Contact_Form_Task_ExportPrintProduction extends CRM_Contact_Form_Task
     $this->addElement('text', 'di_neighborhood_56', ts('Restrict by Neighborhood') );
 
     //6397
-    $orderBy = array(
+    $orderBy = [
       'male_eldest' => 'Eldest Male',
       'female_eldest' => 'Eldest Female',
-    );
+    ];
     $this->add( 'select',
       'orderBy',
       ts( 'Order By' ),
       $orderBy,
       false,
-      array(
+      [
         'id' => 'orderBy',
-      )
+      ]
     );
 
     $this->addDefaultButtons( 'Export Print Production' );
@@ -164,9 +164,9 @@ class CRM_Contact_Form_Task_ExportPrintProduction extends CRM_Contact_Form_Task
 
 
   function setDefaultValues() {
-    $defaults = array(
+    $defaults = [
       'orderBy' => 'male_eldest',
-    );
+    ];
     //$defaults['restrict_state'] = 1031; //NY
 
     return $defaults;
@@ -222,13 +222,13 @@ class CRM_Contact_Form_Task_ExportPrintProduction extends CRM_Contact_Form_Task
     //5150 add any members of the seed group unless intentionally excluding
     $localSeedsList = 0;
     if ( !$excludeSeeds ) {
-      $localSeeds = array();
+      $localSeeds = [];
       $sql = "
         SELECT contact_id
         FROM civicrm_group_contact
         WHERE group_id = (SELECT id FROM civicrm_group WHERE name LIKE 'Mailing_Seeds')
         AND status = 'Added';";
-      $dao = CRM_Core_DAO::executeQuery( $sql, CRM_Core_DAO::$_nullArray );
+      $dao = CRM_Core_DAO::executeQuery($sql);
       while ( $dao->fetch() ) {
         $this->_contactIds[] = $dao->contact_id;
         $localSeeds[] = $dao->contact_id;
@@ -249,10 +249,10 @@ class CRM_Contact_Form_Task_ExportPrintProduction extends CRM_Contact_Form_Task
       (id int not null primary key)
       ENGINE = myisam;
     ";
-    $dao = CRM_Core_DAO::executeQuery( $sql, CRM_Core_DAO::$_nullArray );
+    CRM_Core_DAO::executeQuery($sql);
 
     $sql = "INSERT INTO $tmpTblIds VALUES $ids;";
-    $dao = CRM_Core_DAO::executeQuery($sql, CRM_Core_DAO::$_nullArray);
+    CRM_Core_DAO::executeQuery($sql);
     itime('after building ID table');
 
     if ($excludeGroups) {
@@ -270,7 +270,7 @@ class CRM_Contact_Form_Task_ExportPrintProduction extends CRM_Contact_Form_Task
         INDEX match1 (first_name ( 50 ), middle_name ( 50 ), last_name ( 50 ), suffix_id (4), birth_date, gender_id)
       )
       ENGINE = myisam;";
-    $dao   = CRM_Core_DAO::executeQuery( $sql, CRM_Core_DAO::$_nullArray );
+    $dao = CRM_Core_DAO::executeQuery($sql);
     idebug($dao, 'dao tmp table2', 2);
 
     //begin with temp table so we work with a smaller data set
@@ -451,7 +451,7 @@ class CRM_Contact_Form_Task_ExportPrintProduction extends CRM_Contact_Form_Task
     //first set mysql group by mode
     CRM_Core_DAO::executeQuery("SET SESSION sql_mode = '';");
 
-    $dao = CRM_Core_DAO::executeQuery($sql, CRM_Core_DAO::$_nullArray);
+    $dao = CRM_Core_DAO::executeQuery($sql);
     idebug($dao, 'dao insert fields', 2);
     itime('after inserting into full temp table');
     iexit(1);
@@ -470,7 +470,7 @@ class CRM_Contact_Form_Task_ExportPrintProduction extends CRM_Contact_Form_Task
 
     //remove the household_id column so print prod processing is not altered
     $sql = "ALTER TABLE $tmpTbl DROP COLUMN household_id;";
-    CRM_Core_DAO::executeQuery( $sql );
+    CRM_Core_DAO::executeQuery($sql);
 
     //check if printProduction subfolder exists; if not, create it
     $config = CRM_Core_Config::singleton();
@@ -502,10 +502,10 @@ class CRM_Contact_Form_Task_ExportPrintProduction extends CRM_Contact_Form_Task
         ON t.entity_id = tmp.id
       WHERE tag_id IN ({$issueCodeIDs})
     ";
-    $issdao = CRM_Core_DAO::executeQuery( $sql, CRM_Core_DAO::$_nullArray );
+    $issdao = CRM_Core_DAO::executeQuery($sql);
     itime('after get entity_tag query');
 
-    $iss = array();
+    $iss = [];
     while ($issdao->fetch()) {
       $ic = $issueCodes[$issdao->tag_id];
       if (!empty($ic)) {
@@ -514,10 +514,9 @@ class CRM_Contact_Form_Task_ExportPrintProduction extends CRM_Contact_Form_Task
     }
     itime('after build $iss array');
 
-    $aHeader = array();
+    $aHeader = [];
     $firstLine = TRUE;
     $adjusted_count = 0;
-    $nonPrimaryMailing = array();
 
     //skip DAO fields
     $skipVars['_DB_DataObject_version'] = 1;
@@ -546,46 +545,62 @@ class CRM_Contact_Form_Task_ExportPrintProduction extends CRM_Contact_Form_Task
     while ($dao->fetch()) {
       idebug($dao, 'dao retrieve from temp table', 2);
 
-      //set ids to have primary address removed if mailing address exists and not primary
-      if ( $dao->addr_location_id == 13 && !$dao->addr_primary ) {
-        $nonPrimaryMailing[] = $dao->id;
-      }
-
       //add the issue codes
       if (!empty($iss[$dao->id])) $dao->issueCodes = implode(',',$iss[$dao->id]);
 
       //write out the header rowv2($fhout, $aOut,"\t",'',false,false);
       if ($firstLine) {
-        foreach($dao as $name=>$val) {
+        foreach($dao as $name => $val) {
           if (!isset($skipVars[$name])) {
             $aHeader[] = $name;
           }
         }
         //only append tags header if not already set
-        if ( end($aHeader) != 'issueCodes' ) {
+        if (end($aHeader) != 'issueCodes') {
           $aHeader[] = "issueCodes";
         }
 
         fputcsv2($fhout, $aHeader, "\t", '', FALSE, FALSE);
-        $firstLine=false;
+        $firstLine = false;
       }
 
-      $aOut = array();
-      foreach($dao as $name=>$val) {
+      //fields that have been preprocessed can be skipped
+      $excludeFields = ['issueCodes'];
+
+      $aOut = [];
+      foreach($dao as $name => $val) {
+        //replace IDs for option values; format dates; general string cleanup;
         if (!isset($skipVars[$name])) {
+          if (!empty($val) && !in_array($name, $excludeFields)) {
+            switch ($name) {
+              case 'gender_id':
+                $val = $aGender[$val];
+                break;
 
-          if ($name == "gender_id") $val = $aGender[$val];
-          if ($name == "suffix_id") $val = $aSuffix[$val];
-          if ($name == "prefix_id") $val = $aPrefix[$val];
-          if ($name == "state_province_id") $val = $aStates[$val];
+              case 'suffix_id':
+                $val = $aSuffix[$val];
+                break;
 
-          if ($name == "birth_date") {
-            if (strtotime($val)) $val = date("Y-m-d",strtotime($val));
+              case 'prefix_id':
+                $val = $aPrefix[$val];
+                break;
+
+              case 'state_province_id':
+                $val = $aStates[$val];
+                break;
+
+              case 'birth_date':
+                $val = date('Y-m-d', strtotime($val));
+                break;
+
+              default:
+            }
+
+            $val = str_replace("'", "", $val);
+            $val = str_replace("\"", "", $val);
           }
 
-          $val = str_replace("'", "", $val);
-          $val = str_replace("\"", "", $val);
-          $aOut[$name] =  $val;
+          $aOut[$name] = $val;
         }
       }
 
@@ -593,12 +608,12 @@ class CRM_Contact_Form_Task_ExportPrintProduction extends CRM_Contact_Form_Task
       iexit(2);
 
       //handle empty prefix values and special prefixes that need reinterpreting
-      if ( strlen(trim($aOut['prefix_id'])) == 0 && $aOut['contact_type'] == 'Individual' ) {
+      if (strlen(trim($aOut['prefix_id'])) == 0 && $aOut['contact_type'] == 'Individual') {
         //construct prefix using gender if possible
-        if ( $aOut['gender_id'] == 'Male' ) {
+        if ($aOut['gender_id'] == 'Male') {
           $aOut['prefix_id'] = 'Mr.';
         }
-        elseif ( $aOut['gender_id'] == "Female" ) {
+        elseif ($aOut['gender_id'] == "Female") {
           $aOut['prefix_id'] = "Ms.";
         }
         else {
@@ -606,24 +621,24 @@ class CRM_Contact_Form_Task_ExportPrintProduction extends CRM_Contact_Form_Task
         }
 
         //reconstruct postal_greeting if Dear Lastname; else assume it's been set purposely
-        if ( $aOut['postal_greeting_display'] == 'Dear '.$aOut['last_name'] ) {
+        if ($aOut['postal_greeting_display'] == 'Dear '.$aOut['last_name']) {
           $aOut['postal_greeting_display'] = 'Dear '.$aOut['prefix_id'].' '.$aOut['last_name'];
         }
       }
-      elseif ( $aOut['prefix_id'] == 'The Honorable' ) {
+      elseif ($aOut['prefix_id'] == 'The Honorable') {
         //construct prefix using gender if possible
-        if ( $aOut['gender_id'] == 'Male' ) {
+        if ($aOut['gender_id'] == 'Male') {
           $aOut['prefix_id'] = 'Mr.';
         }
-        elseif ( $aOut['gender_id'] == "Female" ) {
-          $aOut['prefix_id']="Ms.";
+        elseif ($aOut['gender_id'] == "Female") {
+          $aOut['prefix_id'] = "Ms.";
         }
         else {
-          $aOut['prefix_id']="";
+          $aOut['prefix_id'] = "";
         }
 
         //reconstruct postal_greeting if Dear The Honorable Lastname; else assume it's been set purposely
-        if ( $aOut['postal_greeting_display'] == 'Dear The Honorable '.$aOut['last_name'] ) {
+        if ($aOut['postal_greeting_display'] == 'Dear The Honorable '.$aOut['last_name']) {
           $aOut['postal_greeting_display'] = 'Dear '.$aOut['prefix_id'].' '.$aOut['last_name'];
         }
       }
@@ -631,6 +646,7 @@ class CRM_Contact_Form_Task_ExportPrintProduction extends CRM_Contact_Form_Task
       fputcsv2($fhout, $aOut, "\t", '', FALSE, FALSE, TRUE);
       $adjusted_count++;
     } //dao fetch end
+
     $dao->free();
 
     //batch cleanup
@@ -638,9 +654,9 @@ class CRM_Contact_Form_Task_ExportPrintProduction extends CRM_Contact_Form_Task
     itime('after fetching records and writing to file');
 
     //generate issue code and keyword stats
-    $ic_stats  = statsIssueCodes( $tmpTbl );
-    $key_stats = statsKeywords( $tmpTbl );
-    $tag_stats = array_merge( array('Issue Code'=>'Count'), $ic_stats, array(''=>'','Keyword'=>'Count'), $key_stats);
+    $ic_stats = statsIssueCodes($tmpTbl);
+    $key_stats = statsKeywords($tmpTbl);
+    $tag_stats = array_merge(['Issue Code'=>'Count'], $ic_stats, [''=>'','Keyword'=>'Count'], $key_stats);
 
     //set filename and full path
     $filenameStats = 'printExportTagStats_'.$instance.'_'.$avanti_job_id.$rnd.'.tsv';
@@ -651,7 +667,7 @@ class CRM_Contact_Form_Task_ExportPrintProduction extends CRM_Contact_Form_Task
     idebug($filenameStats, 'filenameStats', 2);
 
     //write to file
-    foreach ( $tag_stats as $tag_name => $tag_stat ) {
+    foreach ($tag_stats as $tag_name => $tag_stat) {
       fwrite($fhoutStats, $tag_name."\t".$tag_stat."\n" );
     }
 
@@ -661,7 +677,7 @@ class CRM_Contact_Form_Task_ExportPrintProduction extends CRM_Contact_Form_Task
 
     //get rid of temp tables
     $sql = "DROP TABLE $tmpTbl, $tmpTblIds;";
-    $dao = CRM_Core_DAO::executeQuery( $sql, CRM_Core_DAO::$_nullArray );
+    CRM_Core_DAO::executeQuery($sql);
 
     $url = "http://".$_SERVER['HTTP_HOST'].'/nyss_getfile?file='.$filename;
     $urlclean = urlencode( $url );
@@ -669,21 +685,20 @@ class CRM_Contact_Form_Task_ExportPrintProduction extends CRM_Contact_Form_Task
              Tag stats export: $urlcleanStats \r\n";
     $href = "mailto:?subject=print export: $filename&body=$body";
 
-    $status = array();
+    $status = [];
     $status[] = "Print Production Export";
     $status[] = "District: $instance (task $rnd).";
     $status[] = sizeof($this->_contactIds). " contact(s) were originally retrieved.";
     $status[] = $adjusted_count. " contact(s) were exported after adjustments.";
     $status[] = "<a href=\"$href\">Click here</a> to email the link to print production.";
 
-    require_once 'CRM/Core/Permission.php';
-    if ( CRM_Core_Permission::check( 'export print production files' ) ) {
+    if (CRM_Core_Permission::check('export print production files')) {
       $status[] = "Download the export file: <a href=\"$url\" target=\"_blank\">".$filename.'</a>';
       $status[] = "Download the stats file: <a href=\"$urlStats\" target=\"_blank\">".$filenameStats.'</a>';
     }
 
     $statusOutput = '<ul>';
-    foreach ( $status as $st ) {
+    foreach ($status as $st) {
       $statusOutput .= "<li>{$st}</li>";
     }
     $statusOutput .= "</ul>";
@@ -715,7 +730,7 @@ function fputcsv2 (
   $delimiter_esc = preg_quote($delimiter, '/');
   $enclosure_esc = preg_quote($enclosure, '/');
 
-  $output = array();
+  $output = [];
   foreach ($fields as $field) {
     if ( $mysql_null &&
       ($field === NULL || ($blank_as_null && strlen($field)==0))
@@ -748,24 +763,23 @@ function fputcsv2 (
 
 function getIssueCodesRecursive(&$issueCodes, $parent_id = NULL) {
   if ($parent_id == NULL) {
-    $issueCodes = array();
+    $issueCodes = [];
 
     $dao = CRM_Core_DAO::executeQuery("
       SELECT id
       FROM civicrm_tag
       WHERE name = 'Issue Codes';
-    ", CRM_Core_DAO::$_nullArray);
+    ");
     $dao->fetch();
     $parent_id = $dao->id;
     $dao->free();
   }
 
-  $newCodes = array();
   $dao = CRM_Core_DAO::executeQuery("
     SELECT id, name
     FROM civicrm_tag
     WHERE parent_id = $parent_id;
-  ", CRM_Core_DAO::$_nullArray);
+  ");
 
   while ($dao->fetch()) {
     $issueCodes[$dao->id] = $dao->name;
@@ -780,7 +794,7 @@ function getOptions($strGroup) {
     SELECT id
     FROM civicrm_option_group
     WHERE name='".$strGroup."';
-  ", CRM_Core_DAO::$_nullArray);
+  ");
   $dao->fetch();
   $optionGroupID = $dao->id;
   $dao->free();
@@ -789,10 +803,9 @@ function getOptions($strGroup) {
     SELECT name, label, value
     FROM civicrm_option_value
     WHERE option_group_id=$optionGroupID;
-  ", CRM_Core_DAO::$_nullArray);
+  ");
 
-  $options = array();
-
+  $options = [];
   while ($dao->fetch()) {
     $name = (strlen($dao->label) > 0) ? $dao->label : $dao->name;
     $options[$dao->value] = $name;
@@ -807,10 +820,9 @@ function getStates() {
   $dao = CRM_Core_DAO::executeQuery("
     SELECT id, abbreviation
     FROM civicrm_state_province
-  ", CRM_Core_DAO::$_nullArray);
+  ");
 
-  $options = array();
-
+  $options = [];
   while ($dao->fetch()) {
     $options[$dao->id] = $dao->abbreviation;
   }
@@ -835,8 +847,8 @@ function statsIssueCodes( $tmpTbl ) {
     GROUP BY name
     ORDER BY ic_count DESC;";
 
-  $dao = CRM_Core_DAO::executeQuery( $sql, CRM_Core_DAO::$_nullArray );
-  $ic_stats = array();
+  $dao = CRM_Core_DAO::executeQuery($sql);
+  $ic_stats = [];
   while ($dao->fetch()) {
     $ic_stats[stripslashes(iconv('UTF-8', 'Windows-1252', $dao->name))] = $dao->ic_count;
   }
@@ -859,8 +871,8 @@ function statsKeywords( $tmpTbl ) {
     GROUP BY name
     ORDER BY key_count DESC;";
 
-  $dao = CRM_Core_DAO::executeQuery( $sql, CRM_Core_DAO::$_nullArray );
-  $key_stats = array();
+  $dao = CRM_Core_DAO::executeQuery($sql);
+  $key_stats = [];
   while ($dao->fetch()) {
     $key_stats[stripslashes(iconv('UTF-8', 'Windows-1252', $dao->name))] = $dao->key_count;
   }
@@ -915,7 +927,7 @@ function mergeHouseholds( $tbl ) {
 
   //drop temp table
   $sql = "DROP TEMPORARY TABLE {$tbl}_hdupe;";
-  CRM_Core_DAO::executeQuery( $sql );
+  CRM_Core_DAO::executeQuery($sql);
 
   return;
 } // mergeHouseholds()
@@ -923,197 +935,191 @@ function mergeHouseholds( $tbl ) {
 
 //defines the columns in our table and select statement
 function getColumns( $output = 'select' ) {
-  $fields = array(
-    'c.id' => array(
+  $fields = [
+    'c.id' => [
       'alias' => 'id',
       'def'   => 'int not null primary key'
-    ),
-    'c.contact_type' => array(
+    ],
+    'c.contact_type' => [
       'alias' => 'contact_type',
       'def'   => 'varchar(64)'
-    ),
-    'c.first_name' => array(
+    ],
+    'c.first_name' => [
       'alias' => 'first_name',
       'def'   => 'varchar(64)'
-    ),
-    'c.last_name' => array(
+    ],
+    'c.last_name' => [
       'alias' => 'last_name',
       'def'   => 'varchar(64)'
-    ),
-    'c.middle_name' => array(
+    ],
+    'c.middle_name' => [
       'alias' => 'middle_name',
       'def'   => 'varchar(64)'
-    ),
-    'c.job_title' => array(
+    ],
+    'c.job_title' => [
       'alias' => 'job_title',
       'def'   => 'varchar(255)'
-    ),
-    'c.birth_date' => array(
+    ],
+    'c.birth_date' => [
       'alias' => 'birth_date',
       'def'   => 'varchar(32)'
-    ),
-    'c.organization_name' => array(
+    ],
+    'c.organization_name' => [
       'alias' => 'organization_name',
       'def'   => 'varchar(128)'
-    ),
-    'c.postal_greeting_display' => array(
+    ],
+    'c.postal_greeting_display' => [
       'alias' => 'postal_greeting_display',
       'def'   => 'varchar(255)'
-    ),
-    'c.addressee_display' => array(
+    ],
+    'c.addressee_display' => [
       'alias' => 'addressee_display',
       'def'   => 'varchar(255)'
-    ),
-    'c.gender_id' => array(
+    ],
+    'c.gender_id' => [
       'alias' => 'gender_id',
       'def'   => 'varchar(64)'
-    ),
-    'c.prefix_id' => array(
+    ],
+    'c.prefix_id' => [
       'alias' => 'prefix_id',
       'def'   => 'varchar(64)'
-    ),
-    'c.suffix_id' => array(
+    ],
+    'c.suffix_id' => [
       'alias' => 'suffix_id',
       'def'   => 'varchar(64)'
-    ),
-    'ch.id' => array(
+    ],
+    'ch.id' => [
       'alias' => 'household_id',
       'def'   => 'varchar(64)'
-    ),
-    'cr.relationship_type_id' => array(
+    ],
+    'cr.relationship_type_id' => [
       'alias' => 'relationship_type_id',
       'def'   => 'varchar(64)'
-    ),
-    'ch.household_name' => array(
+    ],
+    'ch.household_name' => [
       'alias' => 'household_name',
       'def'   => 'varchar(128)'
-    ),
-    'ch.nick_name' => array(
+    ],
+    'ch.nick_name' => [
       'alias' => 'household_nickname',
       'def'   => 'varchar(128)'
-    ),
-    'ch.postal_greeting_display' => array(
+    ],
+    'ch.postal_greeting_display' => [
       'alias' => 'household_postal_greeting_display',
       'def'   => 'varchar(255)'
-    ),
-    'ch.addressee_display' => array(
+    ],
+    'ch.addressee_display' => [
       'alias' => 'household_addressee_display',
       'def'   => 'varchar(255)'
-    ),
-    'LPAD(congressional_district_46,2,\'0\')'=> array(
+    ],
+    'LPAD(congressional_district_46,2,\'0\')'=> [
       'alias' => 'congressional_district_46',
       'def'   => 'varchar(64)'
-    ),
-    'LPAD(ny_senate_district_47,2,\'0\')' => array(
+    ],
+    'LPAD(ny_senate_district_47,2,\'0\')' => [
       'alias' => 'ny_senate_district_47',
       'def'   => 'varchar(64)'
-    ),
-    'LPAD(ny_assembly_district_48,3,\'0\')' => array(
+    ],
+    'LPAD(ny_assembly_district_48,3,\'0\')' => [
       'alias' => 'ny_assembly_district_48',
       'def'   => 'varchar(64)'
-    ),
-    'LPAD(election_district_49,3,\'0\')' => array(
+    ],
+    'LPAD(election_district_49,3,\'0\')' => [
       'alias' => 'election_district_49',
       'def'   => 'varchar(64)'
-    ),
-    'LPAD(county_50,2,\'0\')' => array(
+    ],
+    'LPAD(county_50,2,\'0\')' => [
       'alias' => 'county_50',
       'def'   => 'varchar(64)'
-    ),
-    'LPAD(county_legislative_district_51,2,\'0\')' => array(
+    ],
+    'LPAD(county_legislative_district_51,2,\'0\')' => [
       'alias' => 'county_legislative_district_51',
       'def'   => 'varchar(64)'
-    ),
-    'town_52' => array(
+    ],
+    'town_52' => [
       'alias' => 'town_52',
       'def'   => 'varchar(64)'
-    ),
-    'LPAD(ward_53,2,\'0\')' => array(
+    ],
+    'LPAD(ward_53,2,\'0\')' => [
       'alias' => 'ward_53',
       'def'   => 'varchar(64)'
-    ),
-    'LPAD(school_district_54,3,\'0\')' => array(
+    ],
+    'LPAD(school_district_54,3,\'0\')' => [
       'alias' => 'school_district_54',
       'def'   => 'varchar(64)'
-    ),
-    'LPAD(new_york_city_council_55,2,\'0\')' => array(
+    ],
+    'LPAD(new_york_city_council_55,2,\'0\')' => [
       'alias' => 'new_york_city_council_55',
       'def'   => 'varchar(64)'
-    ),
-    'neighborhood_56' => array(
+    ],
+    'neighborhood_56' => [
       'alias' => 'neighborhood_56',
       'def'   => 'varchar(64)'
-    ),
-    'street_address' => array(
+    ],
+    'street_address' => [
       'alias' => 'street_address',
       'def'   => 'varchar(96)'
-    ),
-    'supplemental_address_1' => array(
+    ],
+    'supplemental_address_1' => [
       'alias' => 'supplemental_address_1',
       'def'   => 'varchar(96)'
-    ),
-    'supplemental_address_2' => array(
+    ],
+    'supplemental_address_2' => [
       'alias' => 'supplemental_address_2',
       'def'   => 'varchar(96)'
-    ),
-    'street_number' => array(
+    ],
+    'street_number' => [
       'alias' => 'street_number',
       'def'   => 'varchar(16)'
-    ),
-    'street_number_suffix' => array(
+    ],
+    'street_number_suffix' => [
       'alias' => 'street_number_suffix',
       'def'   => 'varchar(8)'
-    ),
-    'street_name' => array(
+    ],
+    'street_name' => [
       'alias' => 'street_name',
       'def'   => 'varchar(64)'
-    ),
-    'street_unit' => array(
+    ],
+    'street_unit' => [
       'alias' => 'street_unit',
       'def'   => 'varchar(16)'
-    ),
-    'city' => array(
+    ],
+    'city' => [
       'alias' => 'city',
       'def'   => 'varchar(64)'
-    ),
-    'postal_code' => array(
+    ],
+    'postal_code' => [
       'alias' => 'postal_code',
       'def'   => 'varchar(12)'
-    ),
-    'postal_code_suffix' => array(
+    ],
+    'postal_code_suffix' => [
       'alias' => 'postal_code_suffix',
       'def'   => 'varchar(12)'
-    ),
-    'state_province_id' => array(
+    ],
+    'state_province_id' => [
       'alias' => 'state_province_id',
       'def'   => 'varchar(12)'
-    ),
-  );
+    ],
+  ];
 
   switch ( $output ) {
     case 'select':
-      $selectVals = array();
-      $selectList = '';
+      $selectVals = [];
 
-      foreach ( $fields as $field => $details ) {
+      foreach ($fields as $field => $details) {
         $selectVals[] = $field.' as '.$details['alias'];
       }
-      $selectList = implode( ', ', $selectVals );
-      return $selectList;
 
-      break;
+      return implode(', ', $selectVals);
 
     case 'columns':
-      $colVals = array();
-      $colList = '';
+      $colVals = [];
 
-      foreach ( $fields as $field => $details ) {
+      foreach ($fields as $field => $details) {
         $colVals[] = $details['alias'].' '.$details['def'];
       }
-      $colList = implode( ', ', $colVals );
-      return $colList;
 
-      break;
+      return implode( ', ', $colVals );
 
     default:
       return '';
@@ -1123,14 +1129,14 @@ function getColumns( $output = 'select' ) {
 
 function excludeGroupContacts( $tbl, $groups, $localSeedsList ) {
   //get group contacts
-  $excludeContacts = array();
+  $excludeContacts = [];
   foreach ( $groups as $group ) {
     $groupContacts = CRM_Contact_BAO_Group::getMember( $group );
     $excludeContacts = array_merge( $excludeContacts, array_keys($groupContacts) );
   }
-  $contactList = implode( ',', $excludeContacts );
+  $contactList = implode(',', $excludeContacts);
 
-  $localSeedsList = ( $localSeedsList ) ? $localSeedsList : 0;
+  $localSeedsList = (!empty($localSeedsList)) ? $localSeedsList : 0;
 
   //remove contacts from temp table
   $sql = "
@@ -1184,13 +1190,13 @@ function processDistrictExclude( $districtID, $tbl, $localSeedsList ) {
       ON c.id = sa.contact_id
     WHERE c.is_deleted = 0
       AND ( c.do_not_mail = 1 OR c.do_not_trade = 1 )";
-  $dao = CRM_Core_DAO::executeQuery( $sql, CRM_Core_DAO::$_nullArray );
+  CRM_Core_DAO::executeQuery($sql);
   itime('processDistrictExclude after query execute');
 
   //now compare the district exclude table ($dTbl) to the main export table ($tbl)
   //and remove matches from the main table
   //run with three separate queries as it's much faster than a single where clause with OR
-  $contactElements = array(
+  $contactElements = [
     "-- Individual check
     ( contact_type = 'Individual'
       AND BB_NORMALIZE(source.last_name) = district.last_name
@@ -1205,7 +1211,7 @@ function processDistrictExclude( $districtID, $tbl, $localSeedsList ) {
     "-- Household checks
     ( contact_type = 'Household'
       AND BB_NORMALIZE(source.household_name) = district.household_name )",
-  );
+  ];
   foreach ( $contactElements as $ele ) {
     $sql = "
       DELETE FROM $tbl
@@ -1224,13 +1230,13 @@ function processDistrictExclude( $districtID, $tbl, $localSeedsList ) {
       )
       AND id NOT IN ($localSeedsList);";
     idebug($sql, 'dedupe match sql');
-    $dao = CRM_Core_DAO::executeQuery( $sql, CRM_Core_DAO::$_nullArray );
+    $dao = CRM_Core_DAO::executeQuery($sql);
   }
   itime('processDistrictExclude after dedupe comparison');
 
   //remove temp exclusion table
   $sql = "DROP TABLE $dTbl;";
-  $dao = CRM_Core_DAO::executeQuery( $sql, CRM_Core_DAO::$_nullArray );
+  $dao = CRM_Core_DAO::executeQuery($sql);
 
   //now retrieve district seeds and add them to the main temp table
   addExternalSeeds($tbl, $db);
@@ -1312,7 +1318,7 @@ function addExternalSeeds($tbl, $db) {
   $sql .= " GROUP BY c.id ";
   //CRM_Core_Error::debug_var('sql',$sql);
 
-  $dao = CRM_Core_DAO::executeQuery( $sql, CRM_Core_DAO::$_nullArray );
+  $dao = CRM_Core_DAO::executeQuery($sql);
   $dao->free();
 
   return;
@@ -1342,39 +1348,39 @@ function idebug( $var, $varName = '', $level = 1 ) {
 
 
 //exit if debug enabled and exit location defined
-function iexit( $loc = 0 ) {
-  if ( !PPDEBUG )
+function iexit($loc = 0) {
+  if (!PPDEBUG)
     return;
 
-  if ( $loc == EXITLOC ) {
+  if ($loc == EXITLOC) {
     exit();
   }
-} // iexit()
+}
 
 function itime($location = 'elapsed time', $total = FALSE) {
-  if ( !TRACKTIME )
+  if (!TRACKTIME)
     return;
 
-  static $timeLogs = array();
+  static $timeLogs = [];
 
-  if ( empty($timeLogs) ) {
+  if (empty($timeLogs)) {
     $timeLogs[] = microtime(TRUE);
     CRM_Core_Error::debug_log_message("starting to track time...");
     return;
   }
   else {
-    $last = end(array_values($timeLogs));
+    $timeLogsValues = array_values($timeLogs);
+    $last = end($timeLogsValues);
     $timeLogs[] = $new = microtime(TRUE);
 
     $diff = $new - $last;
     CRM_Core_Error::debug_log_message("{$location}: $diff");
   }
 
-  if ( $total && count($timeLogs) > 1 ) {
-    $first = array_shift(array_values($timeLogs));
+  if ($total && count($timeLogs) > 1) {
+    $timeLogsValues = array_values($timeLogs);
+    $first = array_shift($timeLogsValues);
     $diff = $new - $first;
     CRM_Core_Error::debug_log_message("total elapsed time: $diff");
   }
-
-  return;
 }
