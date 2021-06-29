@@ -3332,7 +3332,8 @@ WHERE  $smartGroupClause
     $tagTree = CRM_Core_BAO_Tag::getChildTags();
     foreach ((array) $value as $tagID) {
       if (!empty($tagTree[$tagID])) {
-        $value = array_unique(array_merge($value, $tagTree[$tagID]));
+        //NYSS 14073 cast as array to ensure proper array_merge
+        $value = array_unique(array_merge((array) $value, $tagTree[$tagID]));
       }
     }
 

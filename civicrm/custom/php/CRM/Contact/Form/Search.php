@@ -763,6 +763,8 @@ class CRM_Contact_Form_Search extends CRM_Core_Form_Search {
       CRM_Utils_Array::collect('data_type', CRM_Contact_Form_Search_Criteria::getCustomSearchFields())
     );
     foreach ($searchFields as $name => $type) {
+      //NYSS 14073 set type to string if unset
+      $type = (!empty($type)) ? $type : 'String';
       if ($value = CRM_Utils_Request::retrieve($name, $type)) {
         $form->_formValues[$name] = $value;
       }
