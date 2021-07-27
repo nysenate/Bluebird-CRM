@@ -13,6 +13,9 @@
  * Class CRM_Report_Form
  */
 class CRM_Report_Form extends CRM_Core_Form {
+  /**
+   * Deprecated constant, Reports should be updated to use the getRowCount function.
+   */
   const ROW_COUNT_LIMIT = 50;
 
   /**
@@ -36,6 +39,12 @@ class CRM_Report_Form extends CRM_Core_Form {
    * @var int
    */
   protected $_id;
+
+  /**
+   * The Number of rows to display on screen
+   * @var int
+   */
+  protected $_rowCount;
 
   /**
    * The id of the report template
@@ -519,10 +528,28 @@ class CRM_Report_Form extends CRM_Core_Form {
   public $optimisedForOnlyFullGroupBy = TRUE;
 
   /**
+   * Get the number of rows to show
+   * @return int
+   */
+  public function getRowCount(): int {
+    return $this->_rowCount;
+  }
+
+  /**
+   * set the number of rows to show
+   * @param $rowCount int
+   */
+  public function setRowCount($rowCount): void {
+    $this->_rowCount = $rowCount;
+  }
+
+  /**
    * Class constructor.
    */
   public function __construct() {
     parent::__construct();
+
+    $this->setRowCount(\Civi::settings()->get('default_pager_size'));
 
     $this->addClass('crm-report-form');
 
@@ -2103,9 +2130,25 @@ class CRM_Report_Form extends CRM_Core_Form {
         break;
 
       case 'nll':
+        if ($type == 'String') {
+          $sqlOP = $this->getSQLOperator($op);
+          $clause = "( {$field['dbAlias']} $sqlOP OR {$field['dbAlias']} = '' )";
+        }
+        else {
+          $sqlOP = $this->getSQLOperator($op);
+          $clause = "( {$field['dbAlias']} $sqlOP )";
+        }
+        break;
+
       case 'nnll':
-        $sqlOP = $this->getSQLOperator($op);
-        $clause = "( {$field['dbAlias']} $sqlOP )";
+        if ($type == 'String') {
+          $sqlOP = $this->getSQLOperator($op);
+          $clause = "( {$field['dbAlias']} $sqlOP AND {$field['dbAlias']} <> '' )";
+        }
+        else {
+          $sqlOP = $this->getSQLOperator($op);
+          $clause = "( {$field['dbAlias']} $sqlOP )";
+        }
         break;
 
       case 'eq':
@@ -2216,7 +2259,7 @@ class CRM_Report_Form extends CRM_Core_Form {
     $relative, $from, $to, $type = NULL, $fromTime = NULL, $toTime = NULL
   ) {
     $clauses = [];
-    if (in_array($relative, array_keys($this->getOperationPair(CRM_Report_Form::OP_DATE)))) {
+    if (array_key_exists($relative, $this->getOperationPair(CRM_Report_Form::OP_DATE))) {
       $sqlOP = $this->getSQLOperator($relative);
       return "( {$fieldName} {$sqlOP} )";
     }
@@ -2393,7 +2436,7 @@ WHERE cg.extends IN ('" . implode("','", $this->_customGroupExtends) . "') AND
 
     $this->moveSummaryColumnsToTheRightHandSide();
 
-    if ($this->_limit && count($rows) >= self::ROW_COUNT_LIMIT) {
+    if ($this->_limit && count($rows) >= $this->getRowCount()) {
       return FALSE;
     }
 
@@ -3490,6 +3533,8 @@ WHERE cg.extends IN ('" . implode("','", $this->_customGroupExtends) . "') AND
         // else we don't need to do anything here since it must have been
         // outputMode=save or something like that
       }
+      // else we don't need to do anything here since it must have been
+      // outputMode=save or something like that
     }
   }
 
@@ -3577,11 +3622,12 @@ WHERE cg.extends IN ('" . implode("','", $this->_customGroupExtends) . "') AND
   /**
    * Set limit.
    *
-   * @param int $rowCount
+   * @param int|null $rowCount
    *
    * @return array
    */
-  public function limit($rowCount = self::ROW_COUNT_LIMIT) {
+  public function limit($rowCount = NULL) {
+    $rowCount = $rowCount ?? $this->getRowCount();
     // lets do the pager if in html mode
     $this->_limit = NULL;
 
@@ -3630,9 +3676,10 @@ WHERE cg.extends IN ('" . implode("','", $this->_customGroupExtends) . "') AND
   /**
    * Set pager.
    *
-   * @param int $rowCount
+   * @param int|null $rowCount
    */
-  public function setPager($rowCount = self::ROW_COUNT_LIMIT) {
+  public function setPager($rowCount = NULL) {
+    $rowCount = $rowCount ?? $this->getRowCount();
     // CRM-14115, over-ride row count if rowCount is specified in URL
     if ($this->_dashBoardRowCount) {
       $rowCount = $this->_dashBoardRowCount;
@@ -3736,7 +3783,7 @@ WHERE cg.extends IN ('" . implode("','", $this->_customGroupExtends) . "') AND
       return $this->legacySlowGroupFilterClause($field, $value, $op);
     }
     if ($op === 'notin') {
-      return " group_temp_table.id IS NULL ";
+      return " group_temp_table.contact_id IS NULL ";
     }
     // We will have used an inner join instead.
     return "1";
@@ -3746,39 +3793,17 @@ WHERE cg.extends IN ('" . implode("','", $this->_customGroupExtends) . "') AND
    * Create a table of the contact ids included by the group filter.
    *
    * This function is called by both the api (tests) and the UI.
+   *
+   * @throws \CiviCRM_API3_Exception
    */
-  public function buildGroupTempTable() {
+  public function buildGroupTempTable(): void {
     if (!empty($this->groupTempTable) || empty($this->_params['gid_value']) || $this->groupFilterNotOptimised) {
       return;
     }
+    $this->groupTempTable = $this->createTemporaryTable('groups', 'contact_id INT', TRUE);
     $filteredGroups = (array) $this->_params['gid_value'];
-
-    $groups = civicrm_api3('Group', 'get', [
-      'is_active' => 1,
-      'id' => ['IN' => $filteredGroups],
-      'saved_search_id' => ['>' => 0],
-      'return' => 'id',
-    ]);
-    $smartGroups = array_keys($groups['values']);
-
-    $query = "
-       SELECT DISTINCT group_contact.contact_id as id
-       FROM civicrm_group_contact group_contact
-       WHERE group_contact.group_id IN (" . implode(', ', $filteredGroups) . ")
-       AND group_contact.status = 'Added' ";
-
-    if (!empty($smartGroups)) {
-      CRM_Contact_BAO_GroupContactCache::check($smartGroups);
-      $smartGroups = implode(',', $smartGroups);
-      $query .= "
-        UNION DISTINCT
-        SELECT smartgroup_contact.contact_id as id
-        FROM civicrm_group_contact_cache smartgroup_contact
-        WHERE smartgroup_contact.group_id IN ({$smartGroups}) ";
-    }
-
-    $this->groupTempTable = $this->createTemporaryTable('rptgrp', $query);
-    CRM_Core_DAO::executeQuery("ALTER TABLE $this->groupTempTable ADD INDEX i_id(id)");
+    CRM_Contact_BAO_GroupContactCache::populateTemporaryTableWithContactsInGroups($filteredGroups, $this->groupTempTable);
+    CRM_Core_DAO::executeQuery("ALTER TABLE $this->groupTempTable ADD INDEX contact_id(contact_id)");
   }
 
   /**
@@ -3930,7 +3955,8 @@ WHERE cg.extends IN ('" . implode("','", $this->_customGroupExtends) . "') AND
     }
     $sql = "
 SELECT cg.table_name, cg.title, cg.extends, cf.id as cf_id, cf.label,
-       cf.column_name, cf.data_type, cf.html_type, cf.option_group_id, cf.time_format
+       cf.column_name, cf.data_type, cf.html_type, cf.option_group_id, cf.time_format,
+       cf.serialize as serialize
 FROM   civicrm_custom_group cg
 INNER  JOIN civicrm_custom_field cf ON cg.id = cf.custom_group_id
 WHERE cg.extends IN ('" . implode("','", $this->_customGroupExtends) . "') AND
@@ -4005,7 +4031,9 @@ ORDER BY cg.weight, cf.weight";
         case 'Money':
           $curFilters[$fieldName]['operatorType'] = CRM_Report_Form::OP_FLOAT;
           $curFilters[$fieldName]['type'] = CRM_Utils_Type::T_MONEY;
-          $curFields[$fieldName]['type'] = CRM_Utils_Type::T_MONEY;
+          // Use T_FLOAT instead of T_MONEY as the money number format happens
+          // by calling CRM_Core_BAO_CustomField::displayValue in alterCustomDataDisplay
+          $curFields[$fieldName]['type'] = CRM_Utils_Type::T_FLOAT;
           break;
 
         case 'Float':
@@ -4613,7 +4641,7 @@ LEFT JOIN civicrm_contact {$field['alias']} ON {$field['alias']}.id = {$this->_a
       }
     }
     $yesNoFields = [
-      'do_not_email', 'is_deceased', 'do_not_phone', 'do_not_sms', 'do_not_mail', 'is_opt_out',
+      'do_not_email', 'is_deceased', 'do_not_phone', 'do_not_sms', 'do_not_mail', 'do_not_trade', 'is_opt_out',
     ];
     foreach ($yesNoFields as $fieldName) {
       if (array_key_exists('civicrm_contact_' . $fieldName, $row)) {
@@ -4851,6 +4879,7 @@ LEFT JOIN civicrm_contact {$field['alias']} ON {$field['alias']}.id = {$this->_a
       'suffix_id' => [
         'title' => ts('Contact Suffix'),
       ],
+      'source' => ['title' => ts('Contact Source')],
       'postal_greeting_display' => ['title' => ts('Postal Greeting')],
       'email_greeting_display' => ['title' => ts('Email Greeting')],
       'addressee_display' => ['title' => ts('Addressee')],
@@ -4883,6 +4912,7 @@ LEFT JOIN civicrm_contact {$field['alias']} ON {$field['alias']}.id = {$this->_a
       'do_not_phone' => [],
       'do_not_mail' => [],
       'do_not_sms' => [],
+      'do_not_trade' => [],
       'is_opt_out' => [],
       'is_deceased' => [],
       'preferred_language' => [],
@@ -4953,6 +4983,10 @@ LEFT JOIN civicrm_contact {$field['alias']} ON {$field['alias']}.id = {$this->_a
         'title' => ts('Do not SMS'),
         'type' => CRM_Utils_Type::T_BOOLEAN,
       ],
+      'do_not_trade' => [
+        'title' => ts('Do not Trade'),
+        'type' => CRM_Utils_Type::T_BOOLEAN,
+      ],
       'is_opt_out' => [
         'title' => ts('Do not bulk email'),
         'type' => CRM_Utils_Type::T_BOOLEAN,
@@ -4979,9 +5013,9 @@ LEFT JOIN civicrm_contact {$field['alias']} ON {$field['alias']}.id = {$this->_a
       $select = preg_replace('/SELECT(\s+SQL_CALC_FOUND_ROWS)?\s+/i', $select, $this->_select);
       $sql = "{$select} {$this->_from} {$this->_where} {$this->_groupBy} {$this->_having} {$this->_orderBy}";
       $sql = str_replace('WITH ROLLUP', '', $sql);
-
-      //NYSS 13967
-      CRM_Core_DAO::disableFullGroupByMode();
+      if (!$this->optimisedForOnlyFullGroupBy) {
+        CRM_Core_DAO::disableFullGroupByMode();
+      }
       $dao = CRM_Core_DAO::executeQuery($sql);
       CRM_Core_DAO::reenableFullGroupByMode();
 
@@ -5186,12 +5220,12 @@ LEFT JOIN civicrm_contact {$field['alias']} ON {$field['alias']}.id = {$this->_a
     if ($this->groupTempTable) {
       if ($this->_params['gid_op'] == 'in') {
         $this->_from = " FROM $this->groupTempTable group_temp_table INNER JOIN $baseTable $tableAlias
-        ON group_temp_table.id = $tableAlias.{$field} ";
+        ON group_temp_table.contact_id = $tableAlias.{$field} ";
       }
       else {
         $this->_from .= "
           LEFT JOIN $this->groupTempTable group_temp_table
-          ON $tableAlias.{$field} = group_temp_table.id ";
+          ON $tableAlias.{$field} = group_temp_table.contact_id ";
       }
     }
   }
@@ -5471,7 +5505,7 @@ LEFT JOIN civicrm_contact {$field['alias']} ON {$field['alias']}.id = {$this->_a
         'is_group_bys' => FALSE,
       ];
     }
-    foreach (['do_not_email', 'do_not_phone', 'do_not_mail', 'do_not_sms', 'is_opt_out'] as $field) {
+    foreach (['do_not_email', 'do_not_phone', 'do_not_mail', 'do_not_sms', 'do_not_trade', 'is_opt_out'] as $field) {
       $spec[$options['prefix'] . $field] = [
         'name' => $field,
         'type' => CRM_Utils_Type::T_BOOLEAN,

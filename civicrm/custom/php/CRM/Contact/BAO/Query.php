@@ -1082,7 +1082,7 @@ class CRM_Contact_BAO_Query {
           $elementCmpName = 'phone';
         }
 
-        if (in_array($elementCmpName, array_keys($addressCustomFields))) {
+        if (array_key_exists($elementCmpName, $addressCustomFields)) {
           if ($cfID = CRM_Core_BAO_CustomField::getKeyID($elementCmpName)) {
             $addressCustomFieldIds[$cfID][$name] = 1;
           }
@@ -1119,8 +1119,10 @@ class CRM_Contact_BAO_Query {
         }
 
         $field = $this->_fields[$elementName] ?? NULL;
-        if (isset($this->_pseudoConstantsSelect[$field['name']])) {
-          $this->_pseudoConstantsSelect[$name . '-' . $field['name']] = $this->_pseudoConstantsSelect[$field['name']];
+        if (!empty($field)) {
+          if (isset($this->_pseudoConstantsSelect[$field['name']])) {
+            $this->_pseudoConstantsSelect[$name . '-' . $field['name']] = $this->_pseudoConstantsSelect[$field['name']];
+          }
         }
 
         // hack for profile, add location id
@@ -3162,7 +3164,7 @@ class CRM_Contact_BAO_Query {
    * @return string WHERE clause component for smart group criteria.
    * @throws \CRM_Core_Exception
    */
-  public function addGroupContactCache($groups, $tableAlias, $joinTable = "contact_a", $op, $joinColumn = 'id') {
+  public function addGroupContactCache($groups, $tableAlias, $joinTable, $op, $joinColumn = 'id') {
     $isNullOp = (strpos($op, 'NULL') !== FALSE);
     $groupsIds = $groups;
 
@@ -3332,7 +3334,7 @@ WHERE  $smartGroupClause
     $tagTree = CRM_Core_BAO_Tag::getChildTags();
     foreach ((array) $value as $tagID) {
       if (!empty($tagTree[$tagID])) {
-        //NYSS 14073 cast as array to ensure proper array_merge
+        // make sure value is an array here (see CORE-2502)
         $value = array_unique(array_merge((array) $value, $tagTree[$tagID]));
       }
     }
@@ -4552,7 +4554,6 @@ civicrm_relationship.start_date > {$today}
 
       if (empty(self::$_defaultReturnProperties[$mode])) {
         self::$_defaultReturnProperties[$mode] = [
-          'home_URL' => 1,
           'image_URL' => 1,
           'legal_identifier' => 1,
           'external_identifier' => 1,
@@ -5774,7 +5775,7 @@ civicrm_relationship.start_date > {$today}
         return $clause;
 
       case 'RLIKE':
-        return " {$clause} BINARY '{$value}' ";
+        return " CAST({$field} AS BINARY) RLIKE BINARY '{$value}' ";
 
       case 'IN':
       case 'NOT IN':
@@ -5949,7 +5950,7 @@ INNER JOIN civicrm_relationship displayRelType ON ( displayRelType.contact_id_a 
 INNER JOIN $tableName transform_temp ON ( transform_temp.contact_id = displayRelType.contact_id_a OR transform_temp.contact_id = displayRelType.contact_id_b )
 ";
         $qcache['where'] = "
-WHERE displayRelType.relationship_type_id = {$this->_displayRelationshipType}
+AND displayRelType.relationship_type_id = {$this->_displayRelationshipType}
 AND   displayRelType.is_active = 1
 ";
       }
@@ -5970,7 +5971,7 @@ INNER JOIN $tableName transform_temp ON ( transform_temp.contact_id = displayRel
 ";
         }
         $qcache['where'] = "
-WHERE displayRelType.relationship_type_id = $relType
+AND displayRelType.relationship_type_id = $relType
 AND   displayRelType.is_active = 1
 ";
       }
@@ -5983,11 +5984,27 @@ AND   displayRelType.is_active = 1
       $this->_qill[0][] = $iqill;
     }
     if (strpos($from, $qcache['from']) === FALSE) {
-      // lets replace all the INNER JOIN's in the $from so we dont exclude other data
-      // this happens when we have an event_type in the quert (CRM-7969)
-      $from = str_replace("INNER JOIN", "LEFT JOIN", $from);
-      $from .= $qcache['from'];
-      $where = $qcache['where'];
+      if (strpos($from, "INNER JOIN") !== FALSE) {
+        // lets replace all the INNER JOIN's in the $from so we dont exclude other data
+        // this happens when we have an event_type in the quert (CRM-7969)
+        $from = str_replace("INNER JOIN", "LEFT JOIN", $from);
+        // Make sure the relationship join right after the FROM and other joins afterwards.
+        // This gives us the possibility to change the join on civicrm case.
+        $from = preg_replace("/LEFT JOIN/", $qcache['from'] . " LEFT JOIN", $from, 1);
+      }
+      else {
+        $from .= $qcache['from'];
+      }
+      if (!strlen($where)) {
+        $where = " WHERE 1 ";
+      }
+      $where .= $qcache['where'];
+      if (!empty($this->_tables['civicrm_case'])) {
+        // Change the join on CiviCRM case so that it joins on the right contac from the relationship.
+        $from = str_replace("ON civicrm_case_contact.contact_id = contact_a.id", "ON civicrm_case_contact.contact_id = transform_temp.contact_id", $from);
+        $where = str_replace("AND civicrm_case_contact.contact_id = contact_a.id", "AND civicrm_case_contact.contact_id = transform_temp.contact_id", $where);
+        $where .= " AND displayRelType.case_id = civicrm_case_contact.case_id ";
+      }
       if (!empty($this->_permissionFromClause) && !stripos($from, 'aclContactCache')) {
         $from .= " $this->_permissionFromClause";
       }
@@ -6051,7 +6068,7 @@ AND   displayRelType.is_active = 1
     $op,
     $value,
     $grouping,
-    $daoName = NULL,
+    $daoName,
     $field,
     $label,
     $dataType = 'String'
@@ -6472,7 +6489,7 @@ AND   displayRelType.is_active = 1
       $value = $formValues[$element] ?? NULL;
       if ($value) {
         if (is_array($value)) {
-          if (in_array($element, array_keys($changeNames))) {
+          if (array_key_exists($element, $changeNames)) {
             unset($formValues[$element]);
             $element = $changeNames[$element];
           }

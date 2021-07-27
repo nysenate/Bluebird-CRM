@@ -431,6 +431,48 @@ class CRM_Contact_BAO_Contact extends CRM_Contact_DAO_Contact {
   }
 
   /**
+   * Check if a contact has a name.
+   *
+   * - Individuals need a first_name or last_name
+   * - Organizations need organization_name
+   * - Households need household_name
+   *
+   * @param array $contact
+   * @return bool
+   */
+  public static function hasName(array $contact): bool {
+    $nameFields = [
+      'Individual' => ['first_name', 'last_name'],
+      'Organization' => ['organization_name'],
+      'Household' => ['household_name'],
+    ];
+    // Casting to int filters out the string 'null'
+    $cid = (int) ($contact['id'] ?? NULL);
+    $contactType = $contact['contact_type'] ?? NULL;
+    if (!$contactType && $cid) {
+      $contactType = CRM_Core_DAO::getFieldValue(__CLASS__, $cid, 'contact_type');
+    }
+    if (!$contactType || !isset($nameFields[$contactType])) {
+      throw new CRM_Core_Exception('No contact_type given to ' . __CLASS__ . '::' . __FUNCTION__);
+    }
+    foreach ($nameFields[$contactType] as $field) {
+      if (isset($contact[$field]) && is_string($contact[$field]) && $contact[$field] !== '') {
+        return TRUE;
+      }
+    }
+    // For existing contacts, look up name from database
+    if ($cid) {
+      foreach ($nameFields[$contactType] as $field) {
+        $value = $contact[$field] ?? CRM_Core_DAO::getFieldValue(__CLASS__, $cid, $field);
+        if (isset($value) && $value !== '') {
+          return TRUE;
+        }
+      }
+    }
+    return FALSE;
+  }
+
+  /**
    * Format the output of the create contact function
    *
    * @param CRM_Contact_DAO_Contact[]|array[] $contacts
@@ -712,47 +754,6 @@ WHERE     civicrm_contact.id = " . CRM_Utils_Type::escape($id, 'Integer');
     CRM_Utils_Hook::post('update', $contact->contact_type, $contact->id, $contact);
 
     return TRUE;
-  }
-
-  /**
-   * Create last viewed link to recently updated contact.
-   *
-   * @param array $crudLinkSpec
-   *  - action: int, CRM_Core_Action::UPDATE or CRM_Core_Action::VIEW [default: VIEW]
-   *  - entity_table: string, eg "civicrm_contact"
-   *  - entity_id: int
-   *
-   * @return array|NULL
-   *   NULL if unavailable, or
-   *   [path: string, query: string, title: string]
-   * @see CRM_Utils_System::createDefaultCrudLink
-   */
-  public function createDefaultCrudLink($crudLinkSpec) {
-    switch ($crudLinkSpec['action']) {
-      case CRM_Core_Action::VIEW:
-        $result = [
-          'title' => $this->display_name,
-          'path' => 'civicrm/contact/view',
-          'query' => [
-            'reset' => 1,
-            'cid' => $this->id,
-          ],
-        ];
-        return $result;
-
-      case CRM_Core_Action::UPDATE:
-        $result = [
-          'title' => $this->display_name,
-          'path' => 'civicrm/contact/add',
-          'query' => [
-            'reset' => 1,
-            'action' => 'update',
-            'cid' => $this->id,
-          ],
-        ];
-        return $result;
-    }
-    return NULL;
   }
 
   /**
@@ -2115,7 +2116,7 @@ ORDER BY civicrm_email.is_primary DESC";
     else {
       //we should get contact type only if contact
       if ($ufGroupId) {
-        $data['contact_type'] = CRM_Core_BAO_UFField::getProfileType($ufGroupId);
+        $data['contact_type'] = CRM_Core_BAO_UFField::getProfileType($ufGroupId, TRUE, FALSE, TRUE);
 
         //special case to handle profile with only contact fields
         if ($data['contact_type'] == 'Contact') {
@@ -2648,7 +2649,11 @@ LEFT JOIN civicrm_email    ON ( civicrm_contact.id = civicrm_email.contact_id )
       if ($contact->birth_date) {
         $birthDate = CRM_Utils_Date::customFormat($contact->birth_date, '%Y%m%d');
         if ($birthDate < date('Ymd')) {
-          $age = CRM_Utils_Date::calculateAge($birthDate);
+          $deceasedDate = NULL;
+          if (!empty($contact->is_deceased) && !empty($contact->deceased_date)) {
+            $deceasedDate = $contact->deceased_date;
+          }
+          $age = CRM_Utils_Date::calculateAge($birthDate, $deceasedDate);
           $values['age']['y'] = $age['years'] ?? NULL;
           $values['age']['m'] = $age['months'] ?? NULL;
         }
@@ -2706,7 +2711,7 @@ LEFT JOIN civicrm_email    ON ( civicrm_contact.id = civicrm_email.contact_id )
         return CRM_Contribute_BAO_Contribution::contributionCount($contactId);
 
       case 'membership':
-        return CRM_Member_BAO_Membership::getContactMembershipCount($contactId, TRUE);
+        return CRM_Member_BAO_Membership::getContactMembershipCount((int) $contactId, TRUE);
 
       case 'participant':
         return CRM_Event_BAO_Participant::getContactParticipantCount($contactId);
@@ -3230,6 +3235,11 @@ LEFT JOIN civicrm_email    ON ( civicrm_contact.id = civicrm_email.contact_id )
         }
 
         // finally get menu item for -more- action widget.
+        while (!empty($contextMenu['moreActions'][$values['weight']])) {
+          // Quick & dirty way of handling 2 items with the same weight
+          // without clobbering one.
+          $values['weight']++;
+        }
         $contextMenu['moreActions'][$values['weight']] = [
           'title' => $values['title'],
           'ref' => $values['ref'],
@@ -3247,6 +3257,11 @@ LEFT JOIN civicrm_email    ON ( civicrm_contact.id = civicrm_email.contact_id )
           }
 
           // finally get menu item for -more- action widget.
+          while (!empty($contextMenu['otherActions'][$value['weight']])) {
+            // Quick & dirty way of handling 2 items with the same weight
+            // without clobbering one.
+            $value['weight']++;
+          }
           $contextMenu['otherActions'][$value['weight']] = [
             'title' => $value['title'],
             'ref' => $value['ref'],
@@ -3522,9 +3537,9 @@ LEFT JOIN civicrm_address ON ( civicrm_address.contact_id = civicrm_contact.id )
     $obj = new $daoName();
     $obj->id = $id;
     $obj->find();
-    $hookParams = [];
+
     if ($obj->fetch()) {
-      CRM_Utils_Hook::pre('delete', $type, $id, $hookParams);
+      CRM_Utils_Hook::pre('delete', $type, $id);
       $contactId = $obj->contact_id;
       $obj->delete();
     }
@@ -3716,10 +3731,38 @@ LEFT JOIN civicrm_address ON ( civicrm_address.contact_id = civicrm_contact.id )
       ['key' => 'organization_name', 'value' => ts('Employer name'), 'type' => 'text', 'condition' => ['contact_type' => 'Individual']],
       ['key' => 'gender_id', 'value' => ts('Gender'), 'condition' => ['contact_type' => 'Individual']],
       ['key' => 'is_deceased', 'value' => ts('Deceased'), 'condition' => ['contact_type' => 'Individual']],
-      ['key' => 'contact_id', 'value' => ts('Contact ID'), 'type' => 'text'],
       ['key' => 'external_identifier', 'value' => ts('External ID'), 'type' => 'text'],
       ['key' => 'source', 'value' => ts('Contact Source'), 'type' => 'text'],
     ];
+  }
+
+  /**
+   * @param string $entityName
+   * @param string $action
+   * @param array $record
+   * @param $userID
+   * @return bool
+   * @see CRM_Core_DAO::checkAccess
+   */
+  public static function _checkAccess(string $entityName, string $action, array $record, $userID): bool {
+    switch ($action) {
+      case 'create':
+        return CRM_Core_Permission::check('add contacts', $userID);
+
+      case 'get':
+        $actionType = CRM_Core_Permission::VIEW;
+        break;
+
+      case 'delete':
+        $actionType = CRM_Core_Permission::DELETE;
+        break;
+
+      default:
+        $actionType = CRM_Core_Permission::EDIT;
+        break;
+    }
+
+    return CRM_Contact_BAO_Contact_Permission::allow($record['id'], $actionType, $userID);
   }
 
 }

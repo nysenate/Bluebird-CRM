@@ -62,7 +62,7 @@ class CRM_Mailing_Selector_Browse extends CRM_Core_Selector_Base implements CRM_
    */
   public function getPagerParams($action, &$params) {
     $params['csvString'] = NULL;
-    $params['rowCount'] = CRM_Utils_Pager::ROWCOUNT;
+    $params['rowCount'] = Civi::settings()->get('default_pager_size');
     $params['status'] = ts('Mailings %%StatusMessage%%');
     $params['buttonTop'] = 'PagerTopButton';
     $params['buttonBottom'] = 'PagerBottomButton';
@@ -251,12 +251,6 @@ LEFT JOIN  civicrm_contact scheduledContact ON ( $mailing.scheduled_id = schedul
           'qs' => 'mid=%%mid%%&reset=1',
           'title' => ts('View Mailing Report'),
         ],
-        CRM_Core_Action::UPDATE => [
-          'name' => ts('Re-Use'),
-          'url' => 'civicrm/mailing/send',
-          'qs' => 'mid=%%mid%%&reset=1',
-          'title' => ts('Re-Send Mailing'),
-        ],
         CRM_Core_Action::DISABLE => [
           'name' => ts('Cancel'),
           'url' => 'civicrm/mailing/browse',
@@ -269,6 +263,12 @@ LEFT JOIN  civicrm_contact scheduledContact ON ( $mailing.scheduled_id = schedul
           'url' => 'civicrm/mailing/send',
           'qs' => 'mid=%%mid%%&continue=true&reset=1',
           'title' => ts('Continue Mailing'),
+        ],
+        CRM_Core_Action::UPDATE => [
+          'name' => ts('Copy'),
+          'url' => 'civicrm/mailing/send',
+          'qs' => 'mid=%%mid%%&reset=1',
+          'title' => ts('Copy Mailing'),
         ],
         CRM_Core_Action::DELETE => [
           'name' => ts('Delete'),
@@ -369,12 +369,6 @@ LEFT JOIN  civicrm_contact scheduledContact ON ( $mailing.scheduled_id = schedul
           if ($allAccess || $showCreateLinks) {
             $actionMask = CRM_Core_Action::VIEW;
           }
-
-          if (!in_array($row['id'], $searchMailings)) {
-            if ($allAccess || $showCreateLinks) {
-              $actionMask |= CRM_Core_Action::UPDATE;
-            }
-          }
         }
         else {
           if ($allAccess || ($showCreateLinks || $showScheduleLinks)) {
@@ -413,6 +407,10 @@ LEFT JOIN  civicrm_contact scheduledContact ON ( $mailing.scheduled_id = schedul
           if ($allAccess || $showCreateLinks) {
             $actionMask |= CRM_Core_Action::RENEW;
           }
+        }
+
+        if ($allAccess || $showCreateLinks) {
+          $actionMask |= CRM_Core_Action::UPDATE;
         }
 
         // check for delete permission.
