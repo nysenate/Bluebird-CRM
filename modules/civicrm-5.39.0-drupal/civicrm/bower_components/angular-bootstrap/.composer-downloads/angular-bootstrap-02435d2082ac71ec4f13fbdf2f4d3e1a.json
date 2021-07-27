@@ -1,0 +1,6 @@
+{
+    "name": "civicrm/civicrm-core:angular-bootstrap",
+    "url": "https://github.com/angular-ui/bootstrap-bower/archive/2.5.0.zip",
+    "checksum": "57dea2ac376e455a052f9a2329be20b1bf72107862c7fa04fa993f4ce396572b",
+    "ignore": null
+}

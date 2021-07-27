@@ -1,0 +1,25 @@
+{*
+ +--------------------------------------------------------------------+
+ | Copyright CiviCRM LLC. All rights reserved.                        |
+ |                                                                    |
+ | This work is published under the GNU AGPLv3 license with some      |
+ | permitted exceptions and without any warranty. For full license    |
+ | and copyright information, see https://civicrm.org/licensing       |
+ +--------------------------------------------------------------------+
+*}
+{htxt id="id-payment-reminders-title"}
+  {ts}Payment Reminders{/ts}
+{/htxt}
+{htxt id="id-payment-reminders"}
+<p>
+{ts}One or more payment reminders can be emailed to this contributor based on the values entered in this section. If a 'Self-service Payments Page' has been selected, the reminder will include a link for the contributor to make their payment online.{/ts}
+</p>
+<p>
+{ts}In order for reminders to be sent:{/ts}
+<ol>
+<li>{ts}Your site administrator must configure the scheduled job (Administer > System Settings > Scheduled Jobs) which updates pledge payment statuses and sends the reminders.{/ts}</li>
+<li>{ts}Your site administrator must also configure a "cron job" (scheduled server task) to run this script.{/ts}</li>
+<li>{ts}This contributor must have a valid email address (and must not have the "Do Not Email" flag checked).{/ts}</li>
+</ol>
+</p>
+{/htxt}

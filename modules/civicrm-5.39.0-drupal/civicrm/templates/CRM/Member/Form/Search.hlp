@@ -1,0 +1,43 @@
+{*
+ +--------------------------------------------------------------------+
+ | Copyright CiviCRM LLC. All rights reserved.                        |
+ |                                                                    |
+ | This work is published under the GNU AGPLv3 license with some      |
+ | permitted exceptions and without any warranty. For full license    |
+ | and copyright information, see https://civicrm.org/licensing       |
+ +--------------------------------------------------------------------+
+*}
+{htxt id="id-member_is_primary-title"}
+  {ts}Primary Members{/ts}
+{/htxt}
+{htxt id="id-member_is_primary"}
+  <ul>
+    <li>{ts}Select "Yes" to display only primary members (those contacts who have a membership directly attached to their record){/ts}</li>
+    <li>{ts}Select "No" to display only related records (those who inherit membership through a relationship as defined in the membership type configuration).{/ts}</li>
+    <li>{ts}Select neither to show all members, regardless of whether they are the direct member or inherit it through a relationship,{/ts}</li>
+  </ul>
+{/htxt}
+{htxt id="id-member_is_override-title"}
+  {ts}Membership Status Is Override?{/ts}
+{/htxt}
+{htxt id="id-member_is_override"}
+  <ul>
+    <li>{ts}Select "Yes" to display only membership with Status Override set (membership is manually forced to a specific status){/ts}</li>
+    <li>{ts}Select "No" to display only memberships without Status Override set (membership is subject to the normal status rules){/ts}</li>
+    <li>{ts}Select neither to show all memberships{/ts}</li>
+  </ul>
+{/htxt}
+{htxt id="id-member_auto_renew-title"}
+  {ts}Auto-Renew Subscription Status{/ts}
+{/htxt}
+{htxt id="id-member_auto_renew"}
+  <ul>
+    <li>{ts}Select "None" to display memberships that have never had an auto-renew subscription.{/ts}</li>
+    <li>{ts}Select "In Progress" to display memberships with current auto-renew subscriptions.{/ts}</li>
+    <li>{ts}Select "Failed" to display memberships with failed subscription payment.{/ts}</li>
+    <li>{ts}Select "Cancelled" to display memberships with cancelled auto-renew subscriptions.{/ts}</li>
+    <li>{ts}Select "Ended" to display memberships with an ended auto-renew subscription.{/ts}</li>
+    <li>{ts}Select "Any" to display memberships with auto-renew subscription irrespective of their status.{/ts}</li>
+  </ul>
+{/htxt}
+

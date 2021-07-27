@@ -1,0 +1,18 @@
+language: php
+
+php:
+  - 7.1
+  - 7.2
+  - 7.3
+  - nightly
+
+matrix:
+  allow_failures:
+    - php: nightly
+
+before_script:
+  - composer self-update
+  - composer update
+
+script: 
+  - vendor/bin/phpunit

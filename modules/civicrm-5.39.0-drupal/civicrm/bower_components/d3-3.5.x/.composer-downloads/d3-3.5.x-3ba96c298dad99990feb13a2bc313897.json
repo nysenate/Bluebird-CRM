@@ -1,0 +1,6 @@
+{
+    "name": "civicrm/civicrm-core:d3-3.5.x",
+    "url": "https://github.com/mbostock-bower/d3-bower/archive/v3.5.17.zip",
+    "checksum": "d6836da86c261cc430dbf838751e5fa33173d26115e8a7032819f59f442589a9",
+    "ignore": null
+}

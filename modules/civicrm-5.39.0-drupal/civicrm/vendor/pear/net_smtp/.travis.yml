@@ -1,0 +1,20 @@
+language: php
+branches:
+  only:
+    - "master"
+sudo: false
+php:
+  - 5.6
+  - 7.0
+  - 7.1
+  - 7.2
+  - 7.3
+install:
+  - pear channel-update pear.php.net
+  - pear list
+  - pear upgrade --force pear/pear
+  - pear list
+  - pear install package.xml
+  - pear list
+script:
+  - pear run-tests -d tests/

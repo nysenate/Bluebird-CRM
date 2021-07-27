@@ -1,0 +1,114 @@
+<?php
+/*
+ +--------------------------------------------------------------------+
+ | Copyright CiviCRM LLC. All rights reserved.                        |
+ |                                                                    |
+ | This work is published under the GNU AGPLv3 license with some      |
+ | permitted exceptions and without any warranty. For full license    |
+ | and copyright information, see https://civicrm.org/licensing       |
+ +--------------------------------------------------------------------+
+ */
+
+/**
+ *
+ * @package CRM
+ * @copyright CiviCRM LLC https://civicrm.org/licensing
+ */
+
+/**
+ * Get all available themes.
+ */
+function civicrmtheme_list_themes() {
+  $theme_list = array();
+  // Get current list of themes.
+  $themes = system_rebuild_theme_data();
+  uasort($themes, 'system_sort_modules_by_info_name');
+
+  foreach ($themes as & $theme) {
+    if (!empty($theme->info['hidden'])) {
+      continue;
+    }
+    $theme_list[$theme->name] = $theme->info['name'];
+  }
+
+  return $theme_list;
+}
+
+/**
+ * Implements hook_form_alter().
+ */
+function civicrmtheme_form_system_themes_admin_form_alter(&$form, $form_state) {
+  // Define a fieldset for civicrm theme setting section
+  $form['admin_theme']['civicrm'] = array(
+    '#type' => 'fieldset',
+    '#title' => t('CiviCRM'),
+    '#collapsible' => TRUE,
+    '#description' => t('Choose theme for CiviCRM.'),
+  );
+
+  $theme_list = civicrmtheme_list_themes();
+
+  $form['admin_theme']['civicrm']['civicrm_admin'] = array(
+    '#type' => 'select',
+    '#options' => array(
+      0 => t('Default theme'),
+    ) + $theme_list,
+    '#title' => t('CiviCRM Administration theme'),
+    '#description' => t('Choose theme for CiviCRM administration/backend pages.'),
+    '#default_value' => variable_get('civicrmtheme_theme_admin', 0),
+  );
+
+  $form['admin_theme']['civicrm']['civicrm_public'] = array(
+    '#type' => 'select',
+    '#options' => array(
+      0 => t('Default theme'),
+    ) + $theme_list,
+    '#title' => t('CiviCRM Public theme'),
+    '#description' => t('Choose theme for CiviCRM frontend pages.'),
+    '#default_value' => variable_get('civicrmtheme_theme_public', 0),
+  );
+
+  // Add extra submit
+  $form['#submit'][] = 'civicrmtheme_system_themes_admin_form_submit';
+  $form['admin_theme']['actions']['#weight'] = 10;
+}
+
+/**
+ * Process system_themes_form extra submit.
+ */
+function civicrmtheme_system_themes_admin_form_submit($form, &$form_state) {
+  variable_set('civicrmtheme_theme_admin', $form_state['values']['civicrm_admin']);
+  variable_set('civicrmtheme_theme_public', $form_state['values']['civicrm_public']);
+}
+
+/**
+ * Implements hook_custom_theme().
+ */
+function civicrmtheme_custom_theme() {
+  if (arg(0) != 'civicrm') {
+    return;
+  }
+  if (arg(1) == 'upgrade') {
+    return;
+  }
+
+  $admin_theme = variable_get('civicrmtheme_theme_admin', 0);
+  $public_theme = variable_get('civicrmtheme_theme_public', 0);
+
+  if ((!$admin_theme && !$public_theme) || !civicrm_initialize()) {
+    return;
+  }
+
+  // Check for public pages
+  // If public page and civicrm public theme is set, apply civicrm public theme
+  // If user does not have access to CiviCRM use the public page for the error message
+  if (!user_access('access CiviCRM') || CRM_Core_Config::singleton()->userSystem->isFrontEndPage()) {
+    if ($public_theme) {
+      return $public_theme;
+    }
+  }
+  elseif ($admin_theme) {
+    // If admin page and civicrm admin theme is set, apply civicrm admin theme
+    return $admin_theme;
+  }
+}

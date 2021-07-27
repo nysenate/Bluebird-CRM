@@ -1,0 +1,6 @@
+{
+    "name": "civicrm/civicrm-core:jquery",
+    "url": "https://github.com/civicrm/jquery/archive/1.12.4-civicrm-1.2.zip",
+    "checksum": "c93dbcf60dbcae6a36249a2e46f84e616b52579007abe35739c361f9cf3e9994",
+    "ignore": null
+}
