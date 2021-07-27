@@ -41,8 +41,8 @@ class CRM_Contactlayout_Page_Inline_ProfileBlock extends CRM_Core_Page {
     $values = [];
     $fields = CRM_Core_BAO_UFGroup::getFields($profileId, FALSE, CRM_Core_Action::VIEW, NULL, NULL, FALSE, NULL, TRUE);
     foreach ($fields as $name => $field) {
-      // eliminate all formatting fields
-      if (CRM_Utils_Array::value('field_type', $field) == 'Formatting') {
+      // Eliminate all formatting fields
+      if (($field['field_type'] ?? NULL) === 'Formatting') {
         unset($fields[$name]);
       }
     }
@@ -65,7 +65,7 @@ class CRM_Contactlayout_Page_Inline_ProfileBlock extends CRM_Core_Page {
         foreach (CRM_Contactlayout_Form_Inline_ProfileBlock::getEmployers($contactId) as $employer) {
           $org = $employer['display_name'];
           if (CRM_Contact_BAO_Contact_Permission::allow($employer['contact_id'])) {
-            $org = '<a href="' . CRM_Utils_System::url('civicrm/contact/view', ['reset' => 1, 'cid' => $employer['contact_id']]) . '" title="' . E::ts('view employer') . '">' . $org . '</a>';
+            $org = '<a href="' . CRM_Utils_System::url('civicrm/contact/view', ['reset' => 1, 'cid' => $employer['contact_id']]) . '" title="' . htmlspecialchars(E::ts('view employer')) . '">' . $org . '</a>';
           }
           $employers[] = $org;
         }
@@ -96,7 +96,7 @@ class CRM_Contactlayout_Page_Inline_ProfileBlock extends CRM_Core_Page {
       }
       $result[] = [
         'name' => $name,
-        'value' => CRM_Utils_Array::value($field['title'], $values),
+        'value' => $values[$field['title']] ?? NULL,
         'label' => $field['title'],
       ];
       // Birth date - show age

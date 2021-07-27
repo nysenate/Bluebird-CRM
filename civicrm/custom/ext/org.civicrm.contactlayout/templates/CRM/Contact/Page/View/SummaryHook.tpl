@@ -5,7 +5,7 @@
         {foreach from=$column item='block'}
           {* $viewCustomData is assigned by CRM_Core_BAO_CustomGroup::buildCustomDataView and contains an array of applicable custom fields keyed by group id *}
           {if empty($block.custom_group_id) || !empty($viewCustomData[$block.custom_group_id])}
-            <div class="{if $block.collapsible}crm-collapsible{if $block.collapsed} collapsed{/if}{/if}">
+            <div class="{if !empty($block.collapsible)}crm-collapsible{if !empty($block.collapsed)} collapsed{/if}{/if}">
               {if (!empty($block.collapsible) || !empty($block.showTitle))}
                 <div class="collapsible-title">
                   {$block.title}

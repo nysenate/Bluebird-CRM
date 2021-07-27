@@ -10,9 +10,7 @@ Have you ever wanted to rearrange the contact summary screen? Move the most impo
 
 ## Requirements
 
-* CiviCRM 5.19+
-* [Angular Profiles extension](https://github.com/ginkgostreet/org.civicrm.angularprofiles)
-* (Optional) Looks best with a bootstrap-based admin theme or the [Shoreditch exension](https://github.com/civicrm/org.civicrm.shoreditch).
+* CiviCRM 5.38+
 
 ## Basic Usage
 
@@ -20,6 +18,7 @@ Have you ever wanted to rearrange the contact summary screen? Move the most impo
 * Create one or more layouts, dragging the desired blocks from the palette.
 * Click the "New Block" button to create a block combining any contact fields you desire (including custom fields).
 * Your blocks can be added to one or more layouts.
+* Rearrange tabs along the top, change their labels or icons, per-layout or system-wide. 
 * **Note:** Block titles, collapsibility & positioning can be set on a per-layout basis, but editing the fields _within_ a block will affect all layouts the block appears in.
 
 ### Managing Multiple Layouts
@@ -33,6 +32,7 @@ Have you ever wanted to rearrange the contact summary screen? Move the most impo
 * [Shoreditch theme](https://github.com/civicrm/org.civicrm.shoreditch) - works with or without full theme override mode.
 * [Relationship block extension](https://github.com/eileenmcnaughton/org.wikimedia.relationshipblock) - provides a block for displaying important relationships.
 * [Extended Reports extension](https://civicrm.org/extensions/extended-reports) - allows reports to be displayed as blocks on the summary screen.
+* Form Builder & Search Kit - CiviCRM core extensions which can display custom forms & searches as contact summary blocks & tabs.
 
 ## For developers
 

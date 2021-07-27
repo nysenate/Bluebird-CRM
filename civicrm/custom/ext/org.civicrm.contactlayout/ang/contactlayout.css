@@ -41,33 +41,25 @@
   padding: 10px;
   margin: 0;
 }
-#bootstrap-theme #contactLayoutEditor .cse-deleted-msg a {
-  float: right;
-}
 
 #bootstrap-theme #contactLayoutEditor .cse-layout-item {
   border-radius: 4px;
   border: 1px solid grey;
   padding: 3px;
-  text-align: center;
   margin-bottom: 10px;
-  cursor: move;
   background-color: #f8f8f8;
   position: relative;
+}
+
+#bootstrap-theme #contactLayoutEditor .cse-layout-system-default {
+  border-radius: 4px;
+  font-style: italic;
+  cursor: pointer;
 }
 
 #bootstrap-theme #contactLayoutEditor h4.cse-layout-item-title {
   font-weight: 600;
   margin: 7px 0;
-}
-
-#bootstrap-theme #contactLayoutEditor .cse-layout-delete {
-  position: absolute;
-  top: 0;
-  right: 0;
-}
-#bootstrap-theme #contactLayoutEditor .cse-layout-delete .btn {
-  border: 0 none;
 }
 
 #bootstrap-theme #contactLayoutEditor .cse-item-selected {
@@ -85,29 +77,18 @@
   width: 20em;
 }
 
-#contactLayoutEditor,
-#cse-block-container,
-#cse-rows .cse-row {
-  display: flex;
-}
 #contactLayoutLayouts {
-  flex: 1;
   margin-right: 10px;
 }
-#contactLayoutEdit {
-  flex: 3;
-}
-#cse-rows {
-  flex: 2;
-}
 #cse-rows .cse-col {
-  flex: 1;
-  min-height: 50px;
   margin-right: 10px;
   margin-bottom: 10px;
   position: relative;
 }
-#cse-rows .cse-row:first-child .cse-col {
+.cse-block-container-editable #cse-rows .cse-col {
+  min-height: 50px;
+}
+.cse-block-container-editable #cse-rows .cse-row:first-child .cse-col {
   min-height: 200px;
 }
 #cse-rows .cse-drop {
@@ -119,13 +100,14 @@
 #cse-block-container > div:last-child {
   margin: 0;
 }
-#cse-block-container .cse-col {
-  border: 2px dashed #9c9c9c;
+.cse-block-container-editable .cse-col {
+  border: 2px dashed #adadad;
   background-color: #f8f8f8;
 }
 #cse-rows .cse-add-col,
 #cse-rows .cse-add-row {
   display: block;
+  flex: none;
   border: 2px dashed grey;
   width: 20px;
   height: 20px;
@@ -135,9 +117,6 @@
   line-height: 1.3;
 }
 
-#cse-block-container #cse-palette-col {
-  flex: 1;
-}
 #cse-block-container #cse-palette-col > h4 {
   padding: 11px 10px;
   border-radius: 2px 2px 0 0;
@@ -164,13 +143,13 @@
   min-height: 200px;
 }
 #cse-block-container .cse-block {
-  cursor: move;
   border-radius: 4px;
   border: 2px solid #0071bd;
   position: relative;
   background-color: white;
   margin-bottom: 14px;
   margin-top: 2px;
+  min-height: 28px;
 }
 #cse-block-container .cse-block .cse-block-buttons,
 #cse-rows .cse-remove-col {
@@ -248,7 +227,7 @@
   margin-bottom: 2px;
 }
 #cse-block-container .cse-block .cse-block-collapsible-toggle button {
-  background: white;
+  background: transparent;
 }
 #cse-block-container .cse-block .cse-block-collapsible-toggle button:active,
 #cse-block-container .cse-block .cse-block-collapsible-toggle button:focus {
@@ -284,7 +263,6 @@
 }
 #cse-block-container .cse-layout-col .block-multiple:not(.collapsed):after {
   display: block;
-  content: '+ Multiple';
   position: absolute;
   bottom: -28px;
   border: 2px solid grey;
@@ -318,7 +296,6 @@
   font-size: 12px;
   height: 30px;
   background-color: #f8f8f8;
-  cursor: move;
 }
 #cse-tabs-container .cse-tab[data-tab-id=summary] {
   background-color: #a2d2f3;
@@ -355,31 +332,7 @@
   cursor: move;
 }
 
-/**
- * Shims so the UI isn't completely broken when a Bootstrap theme is not installed
- */
-#contactLayoutEditor * {
-  box-sizing: border-box;
-}
-.panel {
-  border: 1px solid grey;
-}
-.panel-heading {
-  padding: 10px 20px;
-  color: #464354;
-  background-color: #f3f6f7;
-}
-.panel-primary>.panel-heading {
-  color: #fff;
-  background-color: #0071bd;
-}
-.btn:not([disabled]) {
-  cursor: pointer;
-}
-#contactLayoutEditor h5 {
-  font-size: 13px;
-}
-
+/* Relationship dialog styles */
 .crm-container .contactlayout__relatioonship-dialog .select2-container {
   min-width: calc(100% - 30px);
 }

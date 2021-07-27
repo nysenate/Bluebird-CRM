@@ -31,6 +31,10 @@ if ! $readConfig --instance $instance --quiet; then
   exit 1
 fi
 
+echo "disable various extensions..."
+$drush $instance cvapi extension.disable key=org.civicrm.doctorwhen --quiet
+$drush $instance cvapi extension.disable key=nz.co.fuzion.innodbtriggers --quiet
+
 echo "upgrade extensions..."
 $drush $instance cvapi extension.upgrade --quiet
 

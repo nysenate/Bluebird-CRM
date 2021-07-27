@@ -2,7 +2,7 @@
 <menu>
   <item>
     <path>civicrm/admin/contactlayout</path>
-    <page_callback>CRM_Contactlayout_Page_Angular</page_callback>
+    <page_callback>CRM_Contactlayout_Page_Base</page_callback>
     <title>CiviCRM</title>
     <access_arguments>administer CiviCRM</access_arguments>
   </item>

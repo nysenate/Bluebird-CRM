@@ -1,0 +1,27 @@
+<?xml version="1.0"?>
+<extension key="ca.bidon.reporterror" type="module">
+  <file>reporterror</file>
+  <name>CiviCRM Report Error</name>
+  <description>Advanced error handler for CiviCRM that sends an e-mail with detailed information when fatal errors are encountered. It can also handle a few common errors.</description>
+  <license>AGPL 3</license>
+  <maintainer>
+    <author>Mathieu Lutfy</author>
+    <email>mathieu@symbiotic.coop</email>
+  </maintainer>
+  <urls>
+    <url desc="Main Extension Page">https://lab.civicrm.org/extensions/reporterror</url>
+    <url desc="Documentation">https://lab.civicrm.org/extensions/reporterror/blob/master/README.md</url>
+    <url desc="Support">https://www.symbiotic.coop/en</url>
+    <url desc="Licensing">https://civicrm.org/licensing</url>
+  </urls>
+  <releaseDate>2021-02-28</releaseDate>
+  <version>3.4</version>
+  <develStage>stable</develStage>
+  <compatibility>
+    <ver>5.0</ver>
+  </compatibility>
+  <comments></comments>
+  <civix>
+    <namespace>CRM/ReportError</namespace>
+  </civix>
+</extension>

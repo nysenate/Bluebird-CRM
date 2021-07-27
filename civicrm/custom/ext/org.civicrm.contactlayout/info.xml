@@ -2,7 +2,7 @@
 <extension key="org.civicrm.contactlayout" type="module">
   <file>contactlayout</file>
   <name>Contact Layout Editor</name>
-  <description>Edit the contact summary screen. Create multiple layouts to display different types of contacts to different users.</description>
+  <description>Edit the contact summary screen tabs &amp; blocks. Create multiple layouts to display different types of contacts to different users.</description>
   <license>AGPL-3.0</license>
   <maintainer>
     <author>Coleman Watts</author>
@@ -14,16 +14,12 @@
     <url desc="Support">https://github.com/civicrm/org.civicrm.contactlayout/issues</url>
     <url desc="Licensing">http://www.gnu.org/licenses/agpl-3.0.html</url>
   </urls>
-  <releaseDate>2020-12-18</releaseDate>
-  <version>1.8.1</version>
+  <releaseDate>2021-06-18</releaseDate>
+  <version>2.0.3</version>
   <develStage>stable</develStage>
   <compatibility>
-    <ver>5.31</ver>
+    <ver>5.38</ver>
   </compatibility>
-  <comments>Looks best with a bootstrap theme such as Shoreditch.</comments>
-  <requires>
-    <ext>org.civicrm.angularprofiles</ext>
-  </requires>
   <civix>
     <namespace>CRM/Contactlayout</namespace>
   </civix>
