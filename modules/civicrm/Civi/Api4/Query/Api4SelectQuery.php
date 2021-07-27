@@ -11,6 +11,7 @@
 
 namespace Civi\Api4\Query;
 
+use Civi\API\Exception\UnauthorizedException;
 use Civi\Api4\Service\Schema\Joinable\CustomGroupJoinable;
 use Civi\Api4\Utils\FormattingUtil;
 use Civi\Api4\Utils\CoreUtil;
@@ -243,7 +244,6 @@ class Api4SelectQuery {
         // Remove expressions with unknown fields without raising an error
         if (!$field || !in_array($field['type'], ['Field', 'Custom'], TRUE)) {
           $select = array_diff($select, [$item]);
-          $this->debug('undefined_fields', $fieldName);
           $valid = FALSE;
         }
       }
@@ -291,7 +291,10 @@ class Api4SelectQuery {
    */
   protected function buildHavingClause() {
     foreach ($this->getHaving() as $clause) {
-      $this->query->having($this->treeWalkClauses($clause, 'HAVING'));
+      $sql = $this->treeWalkClauses($clause, 'HAVING');
+      if ($sql) {
+        $this->query->having($sql);
+      }
     }
   }
 
@@ -321,6 +324,11 @@ class Api4SelectQuery {
       }
       // If the expression could not be rendered, it might be a field alias
       catch (\API_Exception $e) {
+        // Silently ignore fields the user lacks permission to see
+        if (is_a($e, 'Civi\API\Exception\UnauthorizedException')) {
+          $this->debug('unauthorized_fields', $item);
+          continue;
+        }
         if (!empty($this->selectAliases[$item])) {
           $column = '`' . $item . '`';
         }
@@ -395,7 +403,13 @@ class Api4SelectQuery {
         return 'NOT (' . $this->treeWalkClauses($clause[1], $type, $depth + 1) . ')';
 
       default:
-        return $this->composeClause($clause, $type, $depth);
+        try {
+          return $this->composeClause($clause, $type, $depth);
+        }
+          // Silently ignore fields the user lacks permission to see
+        catch (UnauthorizedException $e) {
+          return '';
+        }
     }
   }
 
@@ -452,7 +466,12 @@ class Api4SelectQuery {
         }
       }
       if (!isset($fieldAlias)) {
-        throw new \API_Exception("Invalid expression in HAVING clause: '$expr'. Must use a value from SELECT clause.");
+        if (in_array($expr, $this->getSelect())) {
+          throw new UnauthorizedException("Unauthorized field '$expr'");
+        }
+        else {
+          throw new \API_Exception("Invalid expression in HAVING clause: '$expr'. Must use a value from SELECT clause.");
+        }
       }
       $fieldAlias = '`' . $fieldAlias . '`';
     }
@@ -603,8 +622,14 @@ class Api4SelectQuery {
       $this->autoJoinFK($fieldName);
     }
     $field = $this->apiFieldSpec[$fieldName] ?? NULL;
-    if ($strict && !$field) {
+    if (!$field) {
+      $this->debug($field === FALSE ? 'unauthorized_fields' : 'undefined_fields', $fieldName);
+    }
+    if ($strict && $field === NULL) {
       throw new \API_Exception("Invalid field '$fieldName'");
+    }
+    if ($strict && $field === FALSE) {
+      throw new UnauthorizedException("Unauthorized field '$fieldName'");
     }
     if ($field) {
       $this->apiFieldSpec[$expr] = $field;

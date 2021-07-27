@@ -460,9 +460,10 @@
         '<ul></ul>' +
       '</li>',
     branchTpl:
+      //NYSS 13087
       '<% _.forEach(items, function(item) { %>' +
         '<li <%= attr("li", item) %>>' +
-          '<a <%= attr("a", item) %>>' +
+          '<a <%= attr("a", item) %> <% if (item.target) { %>target=<%- item.target %><% } %>>' +
             '<% if (item.icon) { %>' +
               '<i class="<%- item.icon %>"></i>' +
             '<% } %>' +
