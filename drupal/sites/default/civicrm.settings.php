@@ -92,6 +92,7 @@ $prefsSearch = &$civicrm_setting['Search Preferences'];
 $prefsUrl = &$civicrm_setting['URL Preferences'];
 $prefsReportError = &$civicrm_setting['reporterror'];
 $prefsMosaico = &$civicrm_setting['mosaico'];
+$prefsResources = &$civicrm_setting['resources'];
 
 // Core settings, from Core.setting.php
 // contact_view_options, contact_edit_options
@@ -302,6 +303,10 @@ $prefsMosaico['mosaico_scale_factor2'] = 2;
 $prefsMosaico['mosaico_scale_width_limit2'] = 9999;
 $prefsMosaico['mosaico_plugins'] = 'link hr paste lists textcolor code civicrmtoken charmap';
 $prefsMosaico['mosaico_toolbar'] = 'bold italic forecolor backcolor hr bullist numlist charmap styleselect removeformat | civicrmtoken | link unlink | pastetext code';
+
+$prefsResources['resources_slack_url'] = 'https://hooks.slack.com/services/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';
+$prefsResources['resources_slack_channel'] = 'bluebird-notices';
+$prefsResources['resources_slack_title'] = "Notice from: http://{$bbcfg['servername']}";
 
 if (isset($bbcfg['xhprof.profile']) && $bbcfg['xhprof.profile']) {
   function xhprof_shutdown_func($source, $run_id = null) {
