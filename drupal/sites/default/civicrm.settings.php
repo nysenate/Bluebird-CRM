@@ -230,7 +230,7 @@ $prefsMail['mailing_backend'] = [
   'smtpPort' => get_config_value($bbcfg, 'smtp.port', 25),
   'smtpAuth' => get_config_value($bbcfg, 'smtp.auth', 0),
   'smtpUsername' => 'apikey',
-  'smtpPassword' => CRM_Utils_Crypt::encrypt(get_config_value($bbcfg, 'smtp.api.key', ''))
+  'smtpPassword' => get_config_value($bbcfg, 'smtp.api.key', ''),
 ];
 $prefsMail['profile_add_to_group_double_optin'] = false;
 $prefsMail['disable_mandatory_tokens_check'] = true;
