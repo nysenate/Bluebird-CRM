@@ -13,7 +13,7 @@ class CRM_NYSS_IMAP_Session
   private $_conn = null;
 
   private $_defaults = array(
-    'server'     => 'senmail.senate.state.ny.us',
+    'host'       => 'imap.example.com',
     'port'       => 143,
     'flags'      => array('imap'),
     'mailbox'    => 'INBOX',
@@ -121,7 +121,7 @@ class CRM_NYSS_IMAP_Session
 
   private function _buildServerRef()
   {
-    $serverRef = $this->_config['server'].':'.$this->_config['port'];
+    $serverRef = $this->_config['host'].':'.$this->_config['port'];
     $flags = $this->_config['flags'];
     if (self::$force_readonly && !in_array('readonly', $flags)) {
       $flags[] = 'readonly';
