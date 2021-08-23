@@ -301,13 +301,13 @@ class CRM_Core_BAO_CustomQuery {
             $distinfo = [46, 47, 48, 49, 50, 51, 53, 54, 55];
             if (in_array($id, $distinfo)) {
               if ($op == '=') {
-                $op = 'IN';
-                $field['data_type'] = 'nyss_Integer'; //flag for processing
-
                 //check for value existence
                 if (empty($value)) {
-                  continue;
+                  break;
                 }
+                
+                $op = 'IN';
+                $field['data_type'] = 'nyss_Integer'; //flag for processing
               }
               //13461 allow a percentage symbol
               elseif ($op == 'LIKE') {
