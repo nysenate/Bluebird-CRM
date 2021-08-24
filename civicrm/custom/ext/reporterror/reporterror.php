@@ -153,6 +153,20 @@ function reporterror_civicrm_handler($vars, $options_overrides = []) {
     }
   }
 
+  //NYSS 14116
+  /*Civi::log()->debug(__FUNCTION__, [
+    '$vars' => $vars,
+    '$options_overrides' => $options_overrides,
+  ]);*/
+  if (strpos($vars['message'], 'There is a validation error with your HTML input.') !== FALSE) {
+    //Civi::log()->debug(__FUNCTION__, ['REQUEST' => $_REQUEST]);
+
+    $url = CRM_Utils_Request::retrieve('entryURL', 'String').'?qfKey='.CRM_Utils_Request::retrieve('qfKey', 'String');
+    CRM_Core_Error::statusBounce('The content you entered into this form contains potentially harmful code. Please try pasting as plain text using [Ctrl+Shift+V].', $url);
+
+    return TRUE;
+  }
+
   // We let CiviCRM display the regular fatal error
   return FALSE;
 }
