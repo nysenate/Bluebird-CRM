@@ -161,7 +161,9 @@ SELECT DISTINCT lt.id FROM `{$this->db}`.`log_$table` lt
 WHERE lt.log_conn_id = %1
     $logDateClause
     {$contactIdClause}";
-    $dao = CRM_Core_DAO::executeQuery($sql, $params);
+
+    //NYSS 14165 - just skip tables that are not directly connected to contacts by trapping exception
+    $dao = CRM_Core_DAO::executeQuery($sql, $params, FALSE, NULL, FALSE, TRUE, TRUE);
     while ($dao->fetch()) {
       $diffs = array_merge($diffs, $this->diffsInTableForId($table, $dao->id));
     }
