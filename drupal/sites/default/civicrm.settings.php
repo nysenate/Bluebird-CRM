@@ -143,12 +143,19 @@ $prefsCore['versionCheck'] = false;
 $prefsCore['checksumTimeout'] = 7;
 $prefsCore['menubar_color'] = 'white';
 $prefsCore['ajaxPopupsEnabled'] = 1;
+$prefsCore['mailing_format'] = "{contact.addressee}
+{contact.job_title}
+{contact.current_employer}
+{contact.supplemental_address_2}
+{contact.street_address}
+{contact.supplemental_address_1}
+{contact.city}{, }{contact.state_province}{ }{contact.postal_code}";
 
 // Address settings, from Address.setting.php
 // address_standardization_provider
 // address_standardization_userid
 // address_standardization_url
-// hideCountryMailingLabels
+$prefsCore['hideCountryMailingLabels'] = 1;
 
 // Campaign settings, from Campaign.setting.php
 // tag_unconfirmed
