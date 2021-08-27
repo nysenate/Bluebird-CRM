@@ -487,7 +487,9 @@ function _civicrm_generate_settings_file($dbuser, $dbpass, $dbhost, $dbname, $mo
     'CMSdbPass' => $db_spec['password'],
     'CMSdbHost' => $db_spec['host'],
     'CMSdbName' => $db_spec['database'],
-    'siteKey' => md5(uniqid('', TRUE) . $baseUrl),
+    'siteKey' => preg_replace(';[^a-zA-Z0-9];', '', base64_encode(random_bytes(37))),
+    'credKeys' => 'aes-cbc:hkdf-sha256:' . preg_replace(';[^a-zA-Z0-9];', '', base64_encode(random_bytes(37))),
+    'signKeys' => 'jwt-hs256:hkdf-sha256:' . preg_replace(';[^a-zA-Z0-9];', '', base64_encode(random_bytes(37))),
   ];
   $str = file_get_contents($settingsTplFile);
   foreach ($params as $key => $value) {
@@ -607,7 +609,7 @@ function drush_civicrm_ext_install($extension_name) {
     return;
   }
   try {
-    $result = civicrm_api('extension', 'install', ['key' => $extension_name, 'version' => 3]);
+    $result = civicrm_api3('extension', 'install', ['key' => $extension_name]);
     if ($result['values'] && $result['values'] == 1) {
       drush_print(dt('Extension !ename installed.', ['!ename' => $extension_name]));
     }
@@ -633,7 +635,7 @@ function drush_civicrm_ext_disable($extension_name) {
     return;
   }
   try {
-    $result = civicrm_api('extension', 'disable', ['key' => $extension_name, 'version' => 3]);
+    $result = civicrm_api3('extension', 'disable', ['key' => $extension_name]);
     if ($result['values'] && $result['values'] == 1) {
       drush_print(dt("Extension !ename disabled.", ['!ename' => $extension_name]));
     }
@@ -659,7 +661,7 @@ function drush_civicrm_ext_uninstall($extension_name) {
     return;
   }
   try {
-    $result = civicrm_api('extension', 'uninstall', ['key' => $extension_name, 'version' => 3]);
+    $result = civicrm_api3('extension', 'uninstall', ['key' => $extension_name]);
     if ($result['values'] && $result['values'] == 1) {
       drush_print(dt('Extension !ename uninstalled.', ['!ename' => $extension_name]));
     }
@@ -809,12 +811,11 @@ function drush_civicrm_cacheclear() {
     $params['session'] = 1;
   }
 
-  // Need to set API version or drush cc civicrm fails
-  $params['version'] = 3;
-  $result = civicrm_api('System', 'flush', $params);
-
-  if ($result['is_error']) {
-    drush_log(dt('An error occurred: !message', ['!message' => $result['error_message']]), 'error');
+  try {
+    $result = civicrm_api3('System', 'flush', $params);
+  }
+  catch (CiviCRM_API3_Exception $e) {
+    drush_log(dt('An error occurred: !message', ['!message' => $e->getMessage()]), 'error');
     return;
   }
 
@@ -835,10 +836,11 @@ function drush_civicrm_enable_debug() {
   ];
 
   foreach ($settings as $key => $val) {
-    $result = civicrm_api('Setting', 'create', ['version' => 3, $key => $val]);
-
-    if ($result['is_error']) {
-      drush_log(dt('An error occurred: !message', ['!message' => $result['error_message']]), 'error');
+    try {
+      $result = civicrm_api3('Setting', 'create', [$key => $val]);
+    }
+    catch (CiviCRM_API3_Exception $e) {
+      drush_log(dt('An error occurred: !message', ['!message' => $e->getMessage()]), 'error');
       return;
     }
   }
@@ -860,10 +862,11 @@ function drush_civicrm_disable_debug() {
   ];
 
   foreach ($settings as $key => $val) {
-    $result = civicrm_api('Setting', 'create', ['version' => 3, $key => $val]);
-
-    if ($result['is_error']) {
-      drush_log(dt('An error occurred: !message', ['!message' => $result['error_message']]), 'error');
+    try {
+      $result = civicrm_api3('Setting', 'create', [$key => $val]);
+    }
+    catch (CiviCRM_API3_Exception $e) {
+      drush_log(dt('An error occurred: !message', ['!message' => $e->getMessage()]), 'error');
       return;
     }
   }
@@ -1506,14 +1509,8 @@ function _civicrm_init($fail = TRUE, $load_config = TRUE) {
     return drush_set_error('CIVICRM_INIT_CODEBASE_NOT_FOUND', dt('Could not locate CiviCRM codebase. Make sure CiviCRM settings file has correct information.'));
   }
 
-  // Autoload was added in 4.2
-  require_once 'CRM/Utils/System.php';
-  $codeVer = CRM_Utils_System::version();
-
-  if (substr($codeVer, 0, 3) >= '4.2') {
-    require_once $civicrm_root . '/CRM/Core/ClassLoader.php';
-    CRM_Core_ClassLoader::singleton()->register();
-  }
+  require_once $civicrm_root . '/CRM/Core/ClassLoader.php';
+  CRM_Core_ClassLoader::singleton()->register();
 
   if ($load_config) {
     require_once 'CRM/Core/Config.php';
@@ -1582,9 +1579,31 @@ function drush_civicrm_api() {
     civicrm_get_ctype('Individual')
   );
 
-  $result = civicrm_api($entity, $action, $params);
-  if (!empty($result['is_error'])) {
-    drush_set_error('CIVICRM api error', $result['error_message']);
+  switch ($params['version']) {
+    case 3:
+      try {
+        unset($params['version']);
+        $result = civicrm_api3($entity, $action, $params);
+      }
+      catch (CiviCRM_API3_Exception $e) {
+        drush_set_error('CIVICRM api error', $e->getMessage());
+      }
+      break;
+
+    case 4:
+      try {
+        unset($params['version']);
+        $result = civicrm_api4($entity, $action, $params);
+      }
+      catch (API_Exception $e) {
+        drush_set_error('CIVICRM api error', $e->getMessage());
+      }
+      break;
+
+    default:
+      drush_set_error(dt('Unknown api version: @version', ['@version' => $params['version']]));
+      break;
+
   }
 
   $format = drush_get_option('out', 'pretty');

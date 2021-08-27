@@ -16,7 +16,7 @@
  * @copyright CiviCRM LLC https://civicrm.org/licensing
  */
 
-
+use Civi\Core\Event\EventScanner;
 use Symfony\Component\DependencyInjection\Reference;
 use Symfony\Component\DependencyInjection\Loader\XmlFileLoader;
 use Symfony\Component\Config\FileLocator;
@@ -43,10 +43,8 @@ class CRM_Api4_Services {
     $subscribers = $container->findTaggedServiceIds('event_subscriber');
 
     foreach (array_keys($subscribers) as $subscriber) {
-      $dispatcher->addMethodCall(
-        'addSubscriber',
-        [new Reference($subscriber)]
-      );
+      $listenerMap = EventScanner::findListeners($container->findDefinition($subscriber)->getClass());
+      $dispatcher->addMethodCall('addSubscriberServiceMap', [$subscriber, $listenerMap]);
     }
 
     // add spec providers
@@ -60,7 +58,9 @@ class CRM_Api4_Services {
       );
     }
 
-    if (defined('CIVICRM_UF') && CIVICRM_UF === 'UnitTests') {
+    if (defined('CIVICRM_UF') && CIVICRM_UF === 'UnitTests'
+      && file_exists('tests/phpunit/api/v4/services.xml')
+    ) {
       $loader->load('tests/phpunit/api/v4/services.xml');
     }
   }
@@ -93,6 +93,7 @@ class CRM_Api4_Services {
           if ($serviceClass->isInstantiable()) {
             $definition = $container->register(str_replace('\\', '_', $serviceName), $serviceName);
             $definition->addTag($tag);
+            $definition->setPublic(TRUE);
           }
         }
         $container->addResource($resource);

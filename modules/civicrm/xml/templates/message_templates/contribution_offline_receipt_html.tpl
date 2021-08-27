@@ -22,7 +22,7 @@
   <tr>
    <td>
     {assign var="greeting" value="{contact.email_greeting}"}{if $greeting}<p>{$greeting},</p>{/if}
-    {if $formValues.receipt_text}
+    {if !empty($formValues.receipt_text)}
      <p>{$formValues.receipt_text|htmlize}</p>
     {else}
      <p>{ts}Below you will find a receipt for this contribution.{/ts}</p>
@@ -46,15 +46,17 @@
       </td>
      </tr>
      <tr>
-      <td {$labelStyle}>
-       {ts}Financial Type{/ts}
-      </td>
-      <td {$valueStyle}>
-       {$formValues.contributionType_name}
-      </td>
+      {if !empty($formValues.contributionType_name)}
+        <td {$labelStyle}>
+         {ts}Financial Type{/ts}
+        </td>
+        <td {$valueStyle}>
+         {$formValues.contributionType_name}
+        </td>
+      {/if}
      </tr>
 
-     {if $lineItem and !$is_quick_config}
+     {if !empty($lineItem) and empty($is_quick_config)}
       {foreach from=$lineItem item=value key=priceset}
        <tr>
         <td colspan="2" {$valueStyle}>
@@ -63,7 +65,7 @@
            <th>{ts}Item{/ts}</th>
            <th>{ts}Qty{/ts}</th>
            <th>{ts}Each{/ts}</th>
-           {if $getTaxDetails}
+           {if !empty($getTaxDetails)}
              <th>{ts}Subtotal{/ts}</th>
              <th>{ts}Tax Rate{/ts}</th>
              <th>{ts}Tax Amount{/ts}</th>
@@ -81,11 +83,11 @@
             <td>
              {$line.unit_price|crmMoney:$currency}
             </td>
-            {if $getTaxDetails}
+            {if !empty($getTaxDetails)}
               <td>
                 {$line.unit_price*$line.qty|crmMoney:$currency}
               </td>
-              {if $line.tax_rate != "" || $line.tax_amount != ""}
+              {if isset($line.tax_rate) and ($line.tax_rate != "" || $line.tax_amount != "")}
                 <td>
                   {$line.tax_rate|string_format:"%.2f"}%
                 </td>
@@ -107,7 +109,7 @@
        </tr>
       {/foreach}
      {/if}
-     {if $getTaxDetails && $dataArray}
+     {if !empty($getTaxDetails) && !empty($dataArray)}
        <tr>
          <td {$labelStyle}>
            {ts} Amount before Tax : {/ts}
@@ -120,10 +122,10 @@
       {foreach from=$dataArray item=value key=priceset}
         <tr>
         {if $priceset ||  $priceset == 0 || $value != ''}
-          <td>&nbsp;{$taxTerm} {$priceset|string_format:"%.2f"}%</td>
+          <td>&nbsp;{if isset($taxTerm)}{$taxTerm}{/if} {$priceset|string_format:"%.2f"}%</td>
           <td>&nbsp;{$value|crmMoney:$currency}</td>
         {else}
-          <td>&nbsp;{ts}No{/ts} {$taxTerm}</td>
+          <td>&nbsp;{ts}No{/ts} {if isset($taxTerm)}{$taxTerm}{/if}</td>
           <td>&nbsp;{$value|crmMoney:$currency}</td>
         {/if}
         </tr>
@@ -150,7 +152,7 @@
       </td>
      </tr>
 
-     {if $receive_date}
+     {if !empty($receive_date)}
       <tr>
        <td {$labelStyle}>
         {ts}Date Received{/ts}
@@ -172,7 +174,7 @@
       </tr>
      {/if}
 
-     {if $formValues.paidBy and !$formValues.hidden_CreditCard}
+     {if !empty($formValues.paidBy) and empty($formValues.hidden_CreditCard)}
       <tr>
        <td {$labelStyle}>
         {ts}Paid By{/ts}
@@ -181,7 +183,7 @@
         {$formValues.paidBy}
        </td>
       </tr>
-      {if $formValues.check_number}
+      {if !empty($formValues.check_number)}
        <tr>
         <td {$labelStyle}>
          {ts}Check Number{/ts}
@@ -193,7 +195,7 @@
       {/if}
      {/if}
 
-     {if $formValues.trxn_id}
+     {if !empty($formValues.trxn_id)}
       <tr>
        <td {$labelStyle}>
         {ts}Transaction ID{/ts}
@@ -204,7 +206,7 @@
       </tr>
      {/if}
 
-     {if $ccContribution}
+     {if !empty($ccContribution)}
       <tr>
        <th {$headerStyle}>
         {ts}Billing Name and Address{/ts}
@@ -230,7 +232,7 @@
       </tr>
      {/if}
 
-     {if $softCreditTypes and $softCredits}
+     {if !empty($softCreditTypes) and !empty($softCredits)}
       {foreach from=$softCreditTypes item=softCreditType key=n}
        <tr>
         <th {$headerStyle}>
@@ -250,7 +252,7 @@
        {/foreach}
      {/if}
 
-     {if $customGroup}
+     {if !empty($customGroup)}
       {foreach from=$customGroup item=value key=customName}
        <tr>
         <th {$headerStyle}>
@@ -270,7 +272,7 @@
       {/foreach}
      {/if}
 
-     {if $formValues.product_name}
+     {if !empty($formValues.product_name)}
       <tr>
        <th {$headerStyle}>
         {ts}Premium Information{/ts}

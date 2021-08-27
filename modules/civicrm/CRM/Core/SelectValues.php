@@ -204,8 +204,7 @@ class CRM_Core_SelectValues {
       'Address' => ts('Addresses'),
       'Campaign' => ts('Campaigns'),
     ];
-    $contactTypes = self::contactType();
-    $contactTypes = !empty($contactTypes) ? ['Contact' => 'Contacts'] + $contactTypes : [];
+    $contactTypes = ['Contact' => ts('Contacts')] + self::contactType();
     $extendObjs = CRM_Core_OptionGroup::values('cg_extend_objects');
     $customGroupExtends = array_merge($contactTypes, $customGroupExtends, $extendObjs);
     return $customGroupExtends;
@@ -438,7 +437,7 @@ class CRM_Core_SelectValues {
    *
    * @throws \CRM_Core_Exception
    */
-  public function taxDisplayOptions() {
+  public static function taxDisplayOptions() {
     return [
       'Do_not_show' => ts('Do not show breakdown, only show total - i.e %1', [
         1 => CRM_Utils_Money::format(120),
@@ -588,7 +587,7 @@ class CRM_Core_SelectValues {
       //'{contribution.address_id}' => ts('Address ID'),
       '{contribution.check_number}' => ts('Check Number'),
       '{contribution.campaign}' => ts('Contribution Campaign'),
-    ], CRM_Utils_Token::getCustomFieldTokens('contribution', TRUE));
+    ], CRM_Utils_Token::getCustomFieldTokens('Contribution', TRUE));
   }
 
   /**
@@ -620,6 +619,9 @@ class CRM_Core_SelectValues {
         'legal_identifier',
         'contact_sub_type',
         'user_unique_id',
+        'addressee_id',
+        'email_greeting_id',
+        'postal_greeting_id',
       ];
 
       $customFields = CRM_Core_BAO_CustomField::getFields(['Individual', 'Address']);

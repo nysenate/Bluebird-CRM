@@ -271,6 +271,7 @@ class CRM_Utils_System_WordPress extends CRM_Utils_System_Base {
       add_action('wp_head', [__CLASS__, '_showHTMLHead']);
       // back-end views
       add_action('admin_head', [__CLASS__, '_showHTMLHead']);
+      $registered = TRUE;
     }
     CRM_Core_Region::instance('wp_head')->add([
       'markup' => $head,
@@ -310,72 +311,63 @@ class CRM_Utils_System_WordPress extends CRM_Utils_System_Base {
     $config = CRM_Core_Config::singleton();
     $script = '';
     $separator = '&';
-    $wpPageParam = '';
     $fragment = isset($fragment) ? ('#' . $fragment) : '';
-
     $path = CRM_Utils_String::stripPathChars($path);
     $basepage = FALSE;
 
-    //this means wp function we are trying to use is not available,
-    //so load bootStrap
-    // FIXME: Why bootstrap in url()? Generally want to define 1-2 strategic places to put bootstrap
+    // FIXME: Why bootstrap in url()?
+    // Generally want to define 1-2 strategic places to put bootstrap.
     if (!function_exists('get_option')) {
       $this->loadBootStrap();
     }
 
+    // When on the front-end.
     if ($config->userFrameworkFrontend) {
+
+      // Try and find the "calling" page/post.
       global $post;
-      if (get_option('permalink_structure') != '') {
-        $script = $post ? get_permalink($post->ID) : "";
+      if ($post) {
+        $script = get_permalink($post->ID);
+        if ($config->wpBasePage == $post->post_name) {
+          $basepage = TRUE;
+        }
       }
-      if ($post && $config->wpBasePage == $post->post_name) {
+
+    }
+    else {
+
+      // Get the Base Page URL for building front-end URLs.
+      if ($frontend && !$forceBackend) {
+        $script = $this->getBasePageUrl();
         $basepage = TRUE;
       }
-      // when shortcode is included in page
-      // also make sure we have valid query object
-      // FIXME: $wpPageParam has no effect and is only set on the *basepage*
-      global $wp_query;
-      if (get_option('permalink_structure') == '' && method_exists($wp_query, 'get')) {
-        if (get_query_var('page_id')) {
-          $wpPageParam = "page_id=" . get_query_var('page_id');
-        }
-        elseif (get_query_var('p')) {
-          // when shortcode is inserted in post
-          $wpPageParam = "p=" . get_query_var('p');
-        }
-      }
+
     }
 
+    // Get either the relative Base Page URL or the relative Admin Page URL.
     $base = $this->getBaseUrl($absolute, $frontend, $forceBackend);
 
-    if (!isset($path) && !isset($query)) {
-      // FIXME: This short-circuited codepath is the same as the general one below, except
-      // in that it ignores "permlink_structure" /  $wpPageParam / $script . I don't know
-      // why it's different (and I can only find two obvious use-cases for this codepath,
-      // of which at least one looks gratuitous). A more ambitious person would simply remove
-      // this code.
-      return $base . $fragment;
-    }
-
-    if (!$forceBackend && get_option('permalink_structure') != '' && ($wpPageParam || $script != '')) {
+    // Overwrite base URL if we already have a front-end URL.
+    if (!$forceBackend && $script != '') {
       $base = $script;
     }
 
     $queryParts = [];
+    $admin_request = ((is_admin() && !$frontend) || $forceBackend);
 
     if (
-      // not using clean URLs
+      // If not using Clean URLs.
       !$config->cleanURL
-      // requesting an admin URL
-      || ((is_admin() && !$frontend) || $forceBackend)
-      // is shortcode
+      // Or requesting an admin URL.
+      || $admin_request
+      // Or this is a Shortcode.
       || (!$basepage && $script != '')
     ) {
 
-      // pre-existing logic
-      if (isset($path)) {
+      // Build URL according to pre-existing logic.
+      if (!empty($path)) {
         // Admin URLs still need "page=CiviCRM", front-end URLs do not.
-        if ((is_admin() && !$frontend) || $forceBackend) {
+        if ($admin_request) {
           $queryParts[] = 'page=CiviCRM';
         }
         else {
@@ -383,23 +375,26 @@ class CRM_Utils_System_WordPress extends CRM_Utils_System_Base {
         }
         $queryParts[] = 'q=' . rawurlencode($path);
       }
-      if ($wpPageParam) {
-        $queryParts[] = $wpPageParam;
-      }
       if (!empty($query)) {
         $queryParts[] = $query;
       }
 
-      $final = $base . '?' . implode($separator, $queryParts) . $fragment;
+      // Append our query parts, taking Permlink Structure into account.
+      if (get_option('permalink_structure') == '' && !$admin_request) {
+        $final = $base . $separator . implode($separator, $queryParts) . $fragment;
+      }
+      else {
+        $final = $base . '?' . implode($separator, $queryParts) . $fragment;
+      }
 
     }
     else {
 
-      // clean URLs
-      if (isset($path)) {
+      // Build Clean URL.
+      if (!empty($path)) {
         $base = trailingslashit($base) . str_replace('civicrm/', '', $path) . '/';
       }
-      if (isset($query)) {
+      if (!empty($query)) {
         $query = ltrim($query, '=?&');
         $queryParts[] = $query;
       }
@@ -417,19 +412,18 @@ class CRM_Utils_System_WordPress extends CRM_Utils_System_Base {
   }
 
   /**
-   * 27-09-2016
-   * CRM-16421 CRM-17633 WIP Changes to support WP in it's own directory
-   * https://wiki.civicrm.org/confluence/display/CRM/WordPress+installed+in+its+own+directory+issues
-   * For now leave hard coded wp-admin references.
-   * TODO: remove wp-admin references and replace with admin_url() in the future.  Look at best way to get path to admin_url
+   * Get either the relative Base Page URL or the relative Admin Page URL.
    *
-   * @param $absolute
-   * @param $frontend
-   * @param $forceBackend
+   * @param bool $absolute
+   *   Whether to force the output to be an absolute link beginning with http(s).
+   * @param bool $frontend
+   *   True if this link should be to the CMS front end.
+   * @param bool $forceBackend
+   *   True if this link should be to the CMS back end.
    *
    * @return mixed|null|string
    */
-  private function getBaseUrl($absolute, $frontend, $forceBackend) {
+  public function getBaseUrl($absolute, $frontend, $forceBackend) {
     $config = CRM_Core_Config::singleton();
     if ((is_admin() && !$frontend) || $forceBackend) {
       return Civi::paths()->getUrl('[wp.backend]/.', $absolute ? 'absolute' : 'relative');
@@ -437,6 +431,111 @@ class CRM_Utils_System_WordPress extends CRM_Utils_System_Base {
     else {
       return Civi::paths()->getUrl('[wp.frontend]/.', $absolute ? 'absolute' : 'relative');
     }
+  }
+
+  /**
+   * Get the URL of the WordPress Base Page.
+   *
+   * @return string|bool
+   *   The Base Page URL, or false on failure.
+   */
+  public function getBasePageUrl() {
+    static $basepage_url = '';
+    if ($basepage_url === '') {
+
+      // Get the Base Page config setting.
+      $config = CRM_Core_Config::singleton();
+      $basepage_slug = $config->wpBasePage;
+
+      // Did we get a value?
+      if (!empty($basepage_slug)) {
+
+        // Query for our Base Page.
+        $pages = get_posts([
+          'post_type' => 'page',
+          'name' => strtolower($basepage_slug),
+          'post_status' => 'publish',
+          'posts_per_page' => 1,
+        ]);
+
+        // Find the Base Page object and set the URL.
+        if (!empty($pages) && is_array($pages)) {
+          $basepage = array_pop($pages);
+          if ($basepage instanceof WP_Post) {
+            $basepage_url = get_permalink($basepage->ID);
+          }
+        }
+
+      }
+
+    }
+
+    return $basepage_url;
+  }
+
+  /**
+   * @inheritDoc
+   */
+  public function getNotifyUrl(
+    $path = NULL,
+    $query = NULL,
+    $absolute = FALSE,
+    $fragment = NULL,
+    $frontend = FALSE,
+    $forceBackend = FALSE,
+    $htmlize = TRUE
+  ) {
+    $config = CRM_Core_Config::singleton();
+    $separator = '&';
+    $fragment = isset($fragment) ? ('#' . $fragment) : '';
+    $path = CRM_Utils_String::stripPathChars($path);
+    $queryParts = [];
+
+    // Get the Base Page URL.
+    $base = $this->getBasePageUrl();
+
+    // If not using Clean URLs.
+    if (!$config->cleanURL) {
+
+      // Build URL according to pre-existing logic.
+      if (!empty($path)) {
+        $queryParts[] = 'civiwp=CiviCRM';
+        $queryParts[] = 'q=' . rawurlencode($path);
+      }
+      if (!empty($query)) {
+        $queryParts[] = $query;
+      }
+
+      // Append our query parts, taking Permlink Structure into account.
+      if (get_option('permalink_structure') == '') {
+        $final = $base . $separator . implode($separator, $queryParts) . $fragment;
+      }
+      else {
+        $final = $base . '?' . implode($separator, $queryParts) . $fragment;
+      }
+
+    }
+    else {
+
+      // Build Clean URL.
+      if (!empty($path)) {
+        $base = trailingslashit($base) . str_replace('civicrm/', '', $path) . '/';
+      }
+      if (!empty($query)) {
+        $query = ltrim($query, '=?&');
+        $queryParts[] = $query;
+      }
+
+      if (!empty($queryParts)) {
+        $final = $base . '?' . implode($separator, $queryParts) . $fragment;
+      }
+      else {
+        $final = $base . $fragment;
+      }
+
+    }
+
+    return $final;
   }
 
   /**
@@ -502,6 +601,7 @@ class CRM_Utils_System_WordPress extends CRM_Utils_System_Base {
    * @throws \CRM_Core_Exception
    */
   public function permissionDenied() {
+    status_header(403);
     throw new CRM_Core_Exception(ts('You do not have permission to access this page.'));
   }
 
@@ -765,12 +865,21 @@ class CRM_Utils_System_WordPress extends CRM_Utils_System_Base {
   public function createUser(&$params, $mail) {
     $user_data = [
       'ID' => '',
-      'user_pass' => $params['cms_pass'],
       'user_login' => $params['cms_name'],
       'user_email' => $params[$mail],
       'nickname' => $params['cms_name'],
       'role' => get_option('default_role'),
     ];
+
+    // If there's a password add it, otherwise generate one.
+    if (!empty($params['cms_pass'])) {
+      $user_data['user_pass'] = $params['cms_pass'];
+    }
+    else {
+      $user_data['user_pass'] = wp_generate_password(12, FALSE);;
+    }
+
+    // Assign WordPress User "name" field(s).
     if (isset($params['contactID'])) {
       $contactType = CRM_Contact_BAO_Contact::getContactType($params['contactID']);
       if ($contactType == 'Individual') {
@@ -781,17 +890,55 @@ class CRM_Utils_System_WordPress extends CRM_Utils_System_Base {
           $params['contactID'], 'last_name'
         );
       }
+      if ($contactType == 'Organization') {
+        $user_data['first_name'] = CRM_Core_DAO::getFieldValue('CRM_Contact_DAO_Contact',
+          $params['contactID'], 'organization_name'
+        );
+      }
+      if ($contactType == 'Household') {
+        $user_data['first_name'] = CRM_Core_DAO::getFieldValue('CRM_Contact_DAO_Contact',
+          $params['contactID'], 'household_name'
+        );
+      }
     }
 
+    /**
+     * Broadcast that CiviCRM is about to create a WordPress User.
+     *
+     * @since 5.37
+     */
+    do_action('civicrm_pre_create_user');
+
+    // Remove the CiviCRM-WordPress listeners.
+    $this->hooks_core_remove();
+
+    // Now go ahead and create a WordPress User.
     $uid = wp_insert_user($user_data);
 
-    $creds = [];
-    $creds['user_login'] = $params['cms_name'];
-    $creds['user_password'] = $params['cms_pass'];
-    $creds['remember'] = TRUE;
-    $user = wp_signon($creds, FALSE);
+    /*
+     * Call wp_signon if we aren't already logged in.
+     * For example, we might be creating a new user from the Contact record.
+     */
+    if (!current_user_can('create_users')) {
+      $creds = [];
+      $creds['user_login'] = $params['cms_name'];
+      $creds['remember'] = TRUE;
+      wp_signon($creds, FALSE);
+    }
 
-    wp_new_user_notification($uid, $user_data['user_pass']);
+    // Fire the new user action. Sends notification email by default.
+    do_action('register_new_user', $uid);
+
+    // Restore the CiviCRM-WordPress listeners.
+    $this->hooks_core_add();
+
+    /**
+     * Broadcast that CiviCRM has creates a WordPress User.
+     *
+     * @since 5.37
+     */
+    do_action('civicrm_post_create_user');
+
     return $uid;
   }
 
@@ -870,7 +1017,7 @@ class CRM_Utils_System_WordPress extends CRM_Utils_System_Base {
    * @inheritDoc
    */
   public function isPasswordUserGenerated() {
-    return TRUE;
+    return FALSE;
   }
 
   /**
@@ -924,20 +1071,42 @@ class CRM_Utils_System_WordPress extends CRM_Utils_System_Base {
    * @inheritDoc
    */
   public function getLoginURL($destination = '') {
-    $config = CRM_Core_Config::singleton();
-    $loginURL = wp_login_url();
-    return $loginURL;
+    return wp_login_url($destination);
   }
 
   /**
-   * FIXME: Do something.
-   *
    * @param \CRM_Core_Form $form
    *
    * @return NULL|string
    */
   public function getLoginDestination(&$form) {
-    return NULL;
+    $args = NULL;
+
+    $id = $form->get('id');
+    if ($id) {
+      $args .= "&id=$id";
+    }
+    else {
+      $gid = $form->get('gid');
+      if ($gid) {
+        $args .= "&gid=$gid";
+      }
+      else {
+        // Setup Personal Campaign Page link uses pageId
+        $pageId = $form->get('pageId');
+        if ($pageId) {
+          $component = $form->get('component');
+          $args .= "&pageId=$pageId&component=$component&action=add";
+        }
+      }
+    }
+
+    $destination = NULL;
+    if ($args) {
+      // append destination so user is returned to form they came from after login
+      $destination = CRM_Utils_System::url(CRM_Utils_System::currentPath(), 'reset=1' . $args);
+    }
+    return $destination;
   }
 
   /**
@@ -988,6 +1157,13 @@ class CRM_Utils_System_WordPress extends CRM_Utils_System_Base {
     if ($e->asset == 'crm-menubar.css') {
       $e->params['breakpoint'] = 783;
     }
+  }
+
+  /**
+   * @inheritDoc
+   */
+  public function checkPermissionAddUser() {
+    return current_user_can('create_users');
   }
 
   /**
@@ -1242,6 +1418,56 @@ class CRM_Utils_System_WordPress extends CRM_Utils_System_Base {
 
     header($header, FALSE);
     $_COOKIE[$name] = $value;
+  }
+
+  /**
+   * Return the CMS-specific url for its permissions page
+   * @return array
+   */
+  public function getCMSPermissionsUrlParams() {
+    return ['ufAccessURL' => CRM_Utils_System::url('civicrm/admin/access/wp-permissions', 'reset=1')];
+  }
+
+  /**
+   * Remove CiviCRM's callbacks.
+   *
+   * These may cause recursive updates when creating or editing a WordPress
+   * user. This doesn't seem to have been necessary in the past, but seems
+   * to be causing trouble when newer versions of BuddyPress and CiviCRM are
+   * active.
+   *
+   * Based on the civicrm-wp-profile-sync plugin by Christian Wach.
+   *
+   * @see self::hooks_core_add()
+   */
+  public function hooks_core_remove() {
+    $civicrm = civi_wp();
+
+    // Remove current CiviCRM plugin filters.
+    remove_action('user_register', [$civicrm->users, 'update_user']);
+    remove_action('profile_update', [$civicrm->users, 'update_user']);
+  }
+
+  /**
+   * Add back CiviCRM's callbacks.
+   * This method undoes the removal of the callbacks above.
+   *
+   * @see self::hooks_core_remove()
+   */
+  public function hooks_core_add() {
+    $civicrm = civi_wp();
+
+    // Re-add current CiviCRM plugin filters.
+    add_action('user_register', [$civicrm->users, 'update_user']);
+    add_action('profile_update', [$civicrm->users, 'update_user']);
+  }
+
+  /**
+   * Depending on configuration, either let the admin enter the password
+   * when creating a user or let the user do it via email link.
+   */
+  public function showPasswordFieldWhenAdminCreatesUser() {
+    return !$this->isUserRegistrationPermitted();
   }
 
 }

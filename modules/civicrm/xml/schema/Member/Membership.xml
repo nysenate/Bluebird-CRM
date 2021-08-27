@@ -8,6 +8,7 @@
   <add>1.5</add>
   <log>true</log>
   <icon>fa-id-badge</icon>
+  <component>CiviMember</component>
   <paths>
     <add>civicrm/member/add?reset=1&amp;action=add&amp;context=standalone</add>
     <view>civicrm/contact/view/membership?reset=1&amp;action=view&amp;id=[id]&amp;cid=[contact_id]</view>
@@ -22,8 +23,11 @@
     <import>true</import>
     <title>Membership ID</title>
     <headerPattern>/^(m(embership\s)?id)$/i</headerPattern>
-    <comment>Membership Id</comment>
+    <comment>Membership ID</comment>
     <add>1.5</add>
+    <html>
+      <type>Number</type>
+    </html>
   </field>
   <primaryKey>
     <name>id</name>
@@ -43,6 +47,7 @@
     <add>1.5</add>
     <html>
       <type>EntityRef</type>
+      <label>Contact</label>
     </html>
   </field>
   <foreignKey>
@@ -55,7 +60,7 @@
   <field>
     <name>membership_type_id</name>
     <type>int unsigned</type>
-    <title>Membership Type Id</title>
+    <title>Membership Type ID</title>
     <import>true</import>
     <headerPattern>/^(m(embership\s)?type)$/i</headerPattern>
     <export>false</export>
@@ -139,7 +144,7 @@
   </field>
   <field>
     <name>status_id</name>
-    <title>Membership Status Id</title>
+    <title>Status ID</title>
     <import>true</import>
     <headerPattern>/(member(ship|).)?(status)$/i</headerPattern>
     <type>int unsigned</type>
@@ -153,6 +158,7 @@
     </pseudoconstant>
     <html>
       <type>Select</type>
+      <label>Status</label>
     </html>
     <add>1.5</add>
   </field>
@@ -196,6 +202,9 @@
     <title>Primary Member ID</title>
     <comment>Optional FK to Parent Membership.</comment>
     <export>true</export>
+    <html>
+      <label>Primary Member</label>
+    </html>
     <add>1.7</add>
   </field>
   <foreignKey>
@@ -218,6 +227,7 @@
     <export>true</export>
     <html>
       <type>Text</type>
+      <label>Maximum number of related memberships</label>
     </html>
   </field>
   <field>
@@ -248,10 +258,13 @@
   <field>
     <name>contribution_recur_id</name>
     <uniqueName>membership_recur_id</uniqueName>
-    <title>Membership Recurring Contribution</title>
+    <title>Recurring Contribution ID</title>
     <type>int unsigned</type>
     <export>true</export>
     <comment>Conditional foreign key to civicrm_contribution_recur id. Each membership in connection with a recurring contribution carries a foreign key to the recurring contribution record. This assumes we can track these processor initiated events.</comment>
+    <html>
+      <label>Recurring Contribution</label>
+    </html>
     <add>3.3</add>
   </field>
   <foreignKey>
@@ -263,19 +276,16 @@
   </foreignKey>
   <field>
     <name>campaign_id</name>
+    <component>CiviCampaign</component>
     <uniqueName>member_campaign_id</uniqueName>
     <type>int unsigned</type>
-    <title>Campaign</title>
+    <title>Campaign ID</title>
     <import>true</import>
     <comment>The campaign for which this membership is attached.</comment>
-    <pseudoconstant>
-      <table>civicrm_campaign</table>
-      <keyColumn>id</keyColumn>
-      <labelColumn>title</labelColumn>
-    </pseudoconstant>
     <add>3.4</add>
     <html>
-      <type>Select</type>
+      <type>EntityRef</type>
+      <label>Campaign</label>
     </html>
   </field>
   <foreignKey>

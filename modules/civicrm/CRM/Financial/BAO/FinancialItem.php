@@ -183,7 +183,13 @@ class CRM_Financial_BAO_FinancialItem extends CRM_Financial_DAO_FinancialItem {
   }
 
   /**
-   * Retrive entity financial trxn details.
+   * Retrieve entity financial trxn details.
+   *
+   * @deprecated - only called by tests - to be replaced with
+   * $trxn = (array) EntityFinancialTrxn::get()
+   *  ->addWhere('id', '=', $contributionID)
+   *  ->addWhere('entity_table', '=', 'civicrm_contribution')
+   *  ->addSelect('*')->execute();
    *
    * @param array $params
    *   an assoc array of name/value pairs.
@@ -281,6 +287,18 @@ WHERE cc.id IN (' . implode(',', $contactIds) . ') AND con.is_test = 0';
       $params['financial_account_id'] = ['NOT IN' => array_keys($salesTaxFinancialAccounts['values'])];
     }
     return civicrm_api3('FinancialItem', 'getsingle', $params);
+  }
+
+  /**
+   * Whitelist of possible values for the entity_table field
+   *
+   * @return array
+   */
+  public static function entityTables(): array {
+    return [
+      'civicrm_line_item' => ts('Line Item'),
+      'civicrm_financial_trxn' => ts('Financial Trxn'),
+    ];
   }
 
 }

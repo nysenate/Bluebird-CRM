@@ -13,6 +13,9 @@
     <type>int unsigned</type>
     <required>true</required>
     <comment>primary key</comment>
+    <html>
+      <type>Number</type>
+    </html>
     <add>1.5</add>
   </field>
   <primaryKey>
@@ -40,18 +43,15 @@
     <typeColumn>entity_table</typeColumn>
     <add>1.5</add>
   </dynamicForeignKey>
-  <index>
-    <name>index_entity</name>
-    <fieldName>entity_table</fieldName>
-    <fieldName>entity_id</fieldName>
-    <add>1.5</add>
-  </index>
   <field>
     <name>file_id</name>
-    <title>File</title>
+    <title>File ID</title>
     <type>int unsigned</type>
     <required>true</required>
     <comment>FK to civicrm_file</comment>
+    <html>
+      <label>File</label>
+    </html>
     <add>1.5</add>
   </field>
   <foreignKey>
@@ -61,9 +61,9 @@
     <add>1.5</add>
   </foreignKey>
   <index>
-    <name>UI_entity_table_entity_id_file_id</name>
-    <fieldName>entity_table</fieldName>
+    <name>UI_entity_id_entity_table_file_id</name>
     <fieldName>entity_id</fieldName>
+    <fieldName>entity_table</fieldName>
     <fieldName>file_id</fieldName>
     <unique>true</unique>
     <add>1.1</add>

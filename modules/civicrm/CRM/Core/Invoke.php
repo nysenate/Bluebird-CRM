@@ -64,6 +64,7 @@ class CRM_Core_Invoke {
       // may exit
       self::hackMenuRebuild($args);
       self::init($args);
+      Civi::dispatcher()->dispatch('civi.invoke.auth', \Civi\Core\Event\GenericHookEvent::create(['args' => $args]));
       $item = self::getItem($args);
       return self::runItem($item);
     }
@@ -277,11 +278,11 @@ class CRM_Core_Invoke {
       if (is_array($item['page_callback']) || strpos($item['page_callback'], ':')) {
         $result = call_user_func(Civi\Core\Resolver::singleton()->get($item['page_callback']));
       }
-      elseif (strstr($item['page_callback'], '_Form')) {
+      elseif (strpos($item['page_callback'], '_Form') !== FALSE) {
         $wrapper = new CRM_Utils_Wrapper();
         $result = $wrapper->run(
-          CRM_Utils_Array::value('page_callback', $item),
-          CRM_Utils_Array::value('title', $item),
+          $item['page_callback'] ?? NULL,
+          $item['title'] ?? NULL,
           $pageArgs ?? NULL
         );
       }
@@ -364,7 +365,7 @@ class CRM_Core_Invoke {
    *
    * @throws Exception
    */
-  public static function rebuildMenuAndCaches($triggerRebuild = FALSE, $sessionReset = FALSE) {
+  public static function rebuildMenuAndCaches(bool $triggerRebuild = FALSE, bool $sessionReset = FALSE): void {
     $config = CRM_Core_Config::singleton();
     $config->clearModuleList();
 
@@ -392,7 +393,11 @@ class CRM_Core_Invoke {
       $triggerRebuild ||
       CRM_Utils_Request::retrieve('triggerRebuild', 'Boolean', CRM_Core_DAO::$_nullObject, FALSE, 0, 'GET')
     ) {
-      CRM_Core_DAO::triggerRebuild();
+      Civi::service('sql_triggers')->rebuild();
+      // Rebuild Drupal 8/9/10 route cache only if "triggerRebuild" is set to TRUE as it's
+      // computationally very expensive and only needs to be done when routes change on the Civi-side.
+      // For example - when uninstalling an extension. We already set "triggerRebuild" to true for these operations.
+      $config->userSystem->invalidateRouteCache();
     }
     CRM_Core_DAO_AllCoreTables::reinitializeCache(TRUE);
     CRM_Core_ManagedEntities::singleton(TRUE)->reconcile();

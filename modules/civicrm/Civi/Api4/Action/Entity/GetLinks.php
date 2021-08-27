@@ -33,14 +33,16 @@ class GetLinks extends \Civi\Api4\Generic\BasicGetAction {
     foreach ($schema->getTables() as $table) {
       $entity = CoreUtil::getApiNameFromTableName($table->getName());
       // Since this is an api function, exclude tables that don't have an api
-      if (strpos($entity, 'Custom_') === 0 || class_exists('\Civi\Api4\\' . $entity)) {
+      if ($entity) {
         $item = [
           'entity' => $entity,
           'table' => $table->getName(),
           'links' => [],
         ];
         foreach ($table->getTableLinks() as $link) {
-          $item['links'][] = $link->toArray();
+          if (!$link->isDeprecated()) {
+            $item['links'][] = $link->toArray();
+          }
         }
         $result[] = $item;
       }

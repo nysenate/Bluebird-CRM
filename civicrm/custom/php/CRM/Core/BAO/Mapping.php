@@ -1218,6 +1218,16 @@ class CRM_Core_BAO_Mapping extends CRM_Core_DAO_Mapping {
     }
   }
 
+  /**
+   * Remove references to a specific field from save Mappings
+   * @param string $fieldName
+   */
+  public static function removeFieldFromMapping($fieldName): void {
+    $mappingField = new CRM_Core_DAO_MappingField();
+    $mappingField->name = $fieldName;
+    $mappingField->delete();
+  }
+
   //NYSS 5848
   static function _removeFields($key, &$value) {
     //CRM_Core_Error::debug_var('key', $key);

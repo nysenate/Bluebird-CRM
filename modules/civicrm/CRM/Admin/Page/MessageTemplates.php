@@ -136,7 +136,7 @@ class CRM_Admin_Page_MessageTemplates extends CRM_Core_Page_Basic {
   public function action(&$object, $action, &$values, &$links, $permission, $forceAction = FALSE) {
     if ($object->workflow_id) {
       // do not expose action link for reverting to default if the template did not diverge or we just reverted it now
-      if (!in_array($object->id, array_keys($this->_revertible)) or
+      if (!array_key_exists($object->id, $this->_revertible) or
         ($this->_action & CRM_Core_Action::REVERT and $object->id == $this->_revertedId)
       ) {
         $action &= ~CRM_Core_Action::REVERT;
@@ -274,6 +274,11 @@ class CRM_Admin_Page_MessageTemplates extends CRM_Core_Page_Basic {
     $this->assign('canEditSystemTemplates', CRM_Core_Permission::check('edit system workflow message templates'));
     $this->assign('canEditMessageTemplates', CRM_Core_Permission::check('edit message templates'));
     $this->assign('canEditUserDrivenMessageTemplates', CRM_Core_Permission::check('edit user-driven message templates'));
+    Civi::resources()
+      ->addScriptFile('civicrm', 'templates/CRM/common/TabHeader.js', 1, 'html-header')
+      ->addSetting([
+        'tabSettings' => ['active' => $_GET['selectedChild'] ?? NULL],
+      ]);
   }
 
 }

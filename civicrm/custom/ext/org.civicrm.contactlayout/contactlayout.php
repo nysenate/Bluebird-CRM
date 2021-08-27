@@ -131,6 +131,10 @@ function contactlayout_civicrm_pageRun(&$page) {
   if (get_class($page) === 'CRM_Contact_Page_View_Summary') {
     $contactID = $page->getVar('_contactId');
     if ($contactID) {
+      $defaultTabs = \Civi\Api4\Setting::get(FALSE)
+        ->addSelect('contactlayout_default_tabs')
+        ->execute()
+        ->first()['value'] ?? NULL;
       $layout = CRM_Contactlayout_BAO_ContactLayout::getLayout($contactID);
       if ($layout) {
         $profileBlocks = [];
@@ -163,29 +167,39 @@ function contactlayout_civicrm_pageRun(&$page) {
             }
           }
         }
-        if (!empty($layout['tabs'])) {
-          $tabs = array_column($page->get_template_vars('allTabs'), NULL, 'id');
-          foreach ($layout['tabs'] as $weight => $tab) {
-            $id = $tab['id'];
-            if (empty($tab['is_active'])) {
-              unset($tabs[$id]);
-            }
-            elseif (isset($tabs[$id])) {
-              $tabs[$id]['weight'] = $weight;
-              $tabs[$id]['title'] = CRM_Utils_Array::value('title', $tab, $tabs[$id]['title']);
-              $tabs[$id]['icon'] = CRM_Utils_Array::value('icon', $tab, CRM_Utils_Array::value('icon', $tabs[$id]));
-            }
-          }
-          usort($tabs, ['CRM_Utils_Sort', 'cmpFunc']);
-          $page->assign('allTabs', array_values($tabs));
-        }
         $page->assign('layoutBlocks', $layout['blocks']);
         $page->assign('profileBlocks', $profileBlocks);
         // Setting these variables will make Summary.tpl replace the contents with SummaryHook.tpl which we override.
         $page->assign('hookContent', 1);
         $page->assign('hookContentPlacement', CRM_Utils_Hook::SUMMARY_REPLACE);
-        CRM_Core_Resources::singleton()
+        Civi::resources()
           ->addStyleFile('org.civicrm.contactlayout', 'css/contact-summary-layout.css');
+      }
+      if (!empty($layout['tabs']) || $defaultTabs) {
+        $tabs = array_column($page->get_template_vars('allTabs'), NULL, 'id');
+        foreach ($layout['tabs'] ?? $defaultTabs as $weight => $tab) {
+          $id = $tab['id'];
+          if (empty($tab['is_active'])) {
+            unset($tabs[$id]);
+          }
+          elseif (isset($tabs[$id])) {
+            $tabs[$id]['weight'] = $weight;
+            $tabs[$id]['title'] = $tab['title'] ?? $tabs[$id]['title'];
+            $tabs[$id]['icon'] = $tab['icon'] ?? $tabs[$id]['icon'] ?? NULL;
+          }
+        }
+        usort($tabs, ['CRM_Utils_Sort', 'cmpFunc']);
+        $page->assign('allTabs', array_values($tabs));
+      }
+      if (CRM_Core_Permission::check('administer CiviCRM')) {
+        CRM_Core_Region::instance('contact-actions-ribbon')
+          ->add([
+            'markup' => '<li style="float:right;">
+              <a class="crm-hover-button" title="' . htmlspecialchars(E::ts('Edit Layout')) . '" href="' . CRM_Utils_System::url('civicrm/admin/contactlayout') . '">
+                <i class="crm-i fa-edit"></i> ' . htmlspecialchars(E::ts('Layout: %1', [1 => $layout['label'] ?? E::ts('System Default')])) .
+            '</a>
+            </li>',
+          ]);
       }
     }
   }
@@ -209,10 +223,10 @@ function contactlayout_civicrm_postProcess($formName, &$form) {
         foreach ($group['blocks'] as $block) {
           if (
             $block['tpl_file'] == $tpl ||
-            ($formName == 'CRM_Contact_Form_Inline_CustomData' && $form->_groupID == CRM_Utils_Array::value('custom_group_id', $block)) ||
+            ($formName == 'CRM_Contact_Form_Inline_CustomData' && $form->_groupID == ($block['custom_group_id'] ?? NULL)) ||
             $block['name'] == 'Address' && $formName == 'CRM_Contact_Form_Inline_Address'
           ) {
-            $selector = CRM_Utils_Array::value('selector', $block);
+            $selector = $block['selector'] ?? NULL;
             break 2;
           }
         }

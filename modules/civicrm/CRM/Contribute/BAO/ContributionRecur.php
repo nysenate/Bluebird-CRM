@@ -9,6 +9,9 @@
  +--------------------------------------------------------------------+
  */
 
+use Civi\Api4\Contribution;
+use Civi\Api4\ContributionRecur;
+
 /**
  *
  * @package CRM
@@ -411,29 +414,39 @@ INNER JOIN civicrm_contribution       con ON ( con.id = mp.contribution_id )
    *
    * @return array
    *
-   * @throws \CiviCRM_API3_Exception
-   * @throws \Civi\API\Exception\UnauthorizedException
    * @throws \API_Exception
    */
-  public static function getTemplateContribution($id, $overrides = []) {
-    // use api3 because api4 doesn't handle ContributionRecur yet...
-    $is_test = civicrm_api3('ContributionRecur', 'getvalue', [
-      'return' => "is_test",
-      'id' => $id,
-    ]);
+  public static function getTemplateContribution(int $id, $overrides = []): array {
+    $recurFields = ['is_test', 'financial_type_id', 'total_amount', 'campaign_id'];
+    $recurringContribution = ContributionRecur::get(FALSE)
+      ->addWhere('id', '=', $id)
+      ->setSelect($recurFields)
+      ->execute()
+      ->first();
+    // If financial_type_id or total_amount are set on the
+    // recurring they are overrides, but of lower precedence
+    // than input parameters.
+    // we filter out null, '' and FALSE but not zero - I'm on the fence about zero.
+    $overrides = array_filter(array_merge(
+      // We filter recurringContribution as we only want the fields we asked for
+      // and specifically don't want 'id' added to overrides.
+      array_intersect_key($recurringContribution, array_fill_keys($recurFields, 1)),
+      $overrides
+    ), 'strlen');
+
     // First look for new-style template contribution with is_template=1
-    $templateContributions = \Civi\Api4\Contribution::get(FALSE)
+    $templateContributions = Contribution::get(FALSE)
       ->addWhere('contribution_recur_id', '=', $id)
       ->addWhere('is_template', '=', 1)
-      ->addWhere('is_test', '=', $is_test)
+      ->addWhere('is_test', '=', $recurringContribution['is_test'])
       ->addOrderBy('id', 'DESC')
       ->setLimit(1)
       ->execute();
     if (!$templateContributions->count()) {
       // Fall back to old style template contributions
-      $templateContributions = \Civi\Api4\Contribution::get(FALSE)
+      $templateContributions = Contribution::get(FALSE)
         ->addWhere('contribution_recur_id', '=', $id)
-        ->addWhere('is_test', '=', $is_test)
+        ->addWhere('is_test', '=', $recurringContribution['is_test'])
         ->addOrderBy('id', 'DESC')
         ->setLimit(1)
         ->execute();
@@ -450,6 +463,13 @@ INNER JOIN civicrm_contribution       con ON ( con.id = mp.contribution_id )
       }
       $result = array_merge($templateContribution, $overrides);
       $result['line_item'] = self::reformatLineItemsForRepeatContribution($result['total_amount'], $result['financial_type_id'], $lineItems, (array) $templateContribution);
+      // If the template contribution was made on-behalf then add the
+      // relevant values to ensure the activity reflects that.
+      $relatedContact = CRM_Contribute_BAO_Contribution::getOnbehalfIds($result['id']);
+      if (!empty($relatedContact['individual_id'])) {
+        $result['on_behalf'] = TRUE;
+        $result['source_contact_id'] = $relatedContact['individual_id'];
+      }
       return $result;
     }
     return [];
@@ -539,11 +559,10 @@ INNER JOIN civicrm_contribution       con ON ( con.id = mp.contribution_id )
       }
 
       //send recurring Notification email for user
-      CRM_Contribute_BAO_ContributionPage::recurringNotify($isFirstOrLastRecurringPayment,
-        $ids['contact'],
-        $ids['contributionPage'],
-        $recur,
-        $autoRenewMembership
+      CRM_Contribute_BAO_ContributionPage::recurringNotify(
+        $ids['contribution'],
+        $isFirstOrLastRecurringPayment,
+        $recur
       );
     }
   }

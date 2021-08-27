@@ -9,6 +9,8 @@
  +--------------------------------------------------------------------+
  */
 
+use Civi\Api4\Group;
+
 /**
  *
  * @package CRM
@@ -55,7 +57,7 @@ class CRM_Contact_BAO_Group extends CRM_Contact_DAO_Group {
     if (!$id || !is_numeric($id)) {
       throw new CRM_Core_Exception('Invalid group request attempted');
     }
-    CRM_Utils_Hook::pre('delete', 'Group', $id, CRM_Core_DAO::$_nullArray);
+    CRM_Utils_Hook::pre('delete', 'Group', $id);
 
     $transaction = new CRM_Core_Transaction();
 
@@ -93,6 +95,18 @@ class CRM_Contact_BAO_Group extends CRM_Contact_DAO_Group {
 
     $query = "DELETE FROM civicrm_acl_entity_role where entity_table = 'civicrm_group' AND entity_id = %1";
     CRM_Core_DAO::executeQuery($query, $params);
+
+    //check whether this group contains  any saved searches and check if that saved search is appropriate to delete.
+    $groupDetails = Group::get(FALSE)->addWhere('id', '=', $id)->execute();
+    if (!empty($groupDetails[0]['saved_search_id'])) {
+      $savedSearch = new CRM_Contact_DAO_SavedSearch();
+      $savedSearch->id = $groupDetails[0]['saved_search_id'];
+      $savedSearch->find(TRUE);
+      // If it is a traditional saved search i.e has form values and there is no linked api_entity then delete the saved search as well.
+      if (!empty($savedSearch->form_values) && empty($savedSearch->api_entity) && empty($savedSearch->api_params)) {
+        $savedSearch->delete();
+      }
+    }
 
     // delete from group table
     $group = new CRM_Contact_DAO_Group();
@@ -458,7 +472,7 @@ class CRM_Contact_BAO_Group extends CRM_Contact_DAO_Group {
       // update group contact cache for all parent groups
       $parentIds = CRM_Contact_BAO_GroupNesting::getParentGroupIds($group->id);
       foreach ($parentIds as $parentId) {
-        CRM_Contact_BAO_GroupContactCache::add($parentId);
+        CRM_Contact_BAO_GroupContactCache::invalidateGroupContactCache($parentId);
       }
     }
 
@@ -472,7 +486,7 @@ class CRM_Contact_BAO_Group extends CRM_Contact_DAO_Group {
     }
 
     self::flushCaches();
-    CRM_Contact_BAO_GroupContactCache::add($group->id);
+    CRM_Contact_BAO_GroupContactCache::invalidateGroupContactCache($group->id);
 
     if (!empty($params['id'])) {
       CRM_Utils_Hook::post('edit', 'Group', $group->id, $group);

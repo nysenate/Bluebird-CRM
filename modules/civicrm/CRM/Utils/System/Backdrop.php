@@ -292,9 +292,11 @@ class CRM_Utils_System_Backdrop extends CRM_Utils_System_DrupalBase {
     $config = CRM_Core_Config::singleton();
 
     $ufDSN = CRM_Utils_SQL::autoSwitchDSN($config->userFrameworkDSN);
-    $dbBackdrop = DB::connect($ufDSN);
-    if (DB::isError($dbBackdrop)) {
-      throw new CRM_Core_Exception("Cannot connect to Backdrop database via $ufDSN, " . $dbBackdrop->getMessage());
+    try {
+      $dbBackdrop = DB::connect($ufDSN);
+    }
+    catch (Exception $e) {
+      throw new CRM_Core_Exception("Cannot connect to Backdrop database via $ufDSN, " . $e->getMessage());
     }
 
     $account = $userUid = $userMail = NULL;
@@ -539,9 +541,6 @@ AND    u.status = 1
     require_once "$cmsPath/core/includes/config.inc";
     backdrop_bootstrap(BACKDROP_BOOTSTRAP_FULL);
 
-    // Explicitly setting error reporting, since we cannot handle Backdrop
-    // related notices.
-    error_reporting(1);
     if (!function_exists('module_exists') || !module_exists('civicrm')) {
       if ($throwError) {
         echo '<br />Sorry, could not load Backdrop bootstrap.';
@@ -1047,6 +1046,14 @@ AND    u.status = 1
     else {
       session_start();
     }
+  }
+
+  /**
+   * Return the CMS-specific url for its permissions page
+   * @return array
+   */
+  public function getCMSPermissionsUrlParams() {
+    return ['ufAccessURL' => url('admin/config/people/permissions')];
   }
 
 }

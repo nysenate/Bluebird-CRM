@@ -6,11 +6,15 @@
   <name>civicrm_mailing_trackable_url</name>
   <comment>Stores URLs for which we should track click-throughs from mailings</comment>
   <archive>true</archive>
+  <component>CiviMail</component>
   <field>
     <name>id</name>
     <title>Trackable URL ID</title>
     <type>int unsigned</type>
     <required>true</required>
+    <html>
+      <type>Number</type>
+    </html>
   </field>
   <primaryKey>
     <name>id</name>
@@ -25,9 +29,12 @@
   </field>
   <field>
     <name>mailing_id</name>
-    <title>Mailing</title>
+    <title>Mailing ID</title>
     <type>int unsigned</type>
     <required>true</required>
+    <html>
+      <label>Mailing</label>
+    </html>
     <comment>FK to the mailing</comment>
   </field>
   <foreignKey>

@@ -142,7 +142,6 @@ class Kernel {
    */
   public function runRequest($apiRequest) {
     $this->boot($apiRequest);
-    $errorScope = \CRM_Core_TemporaryErrorScope::useException();
 
     list($apiProvider, $apiRequest) = $this->resolve($apiRequest);
     $this->authorize($apiProvider, $apiRequest);
@@ -160,12 +159,15 @@ class Kernel {
    */
   public function boot($apiRequest) {
     require_once 'api/Exception.php';
+    // the create error function loads some functions from utils
+    // so this require is also needed for apiv4 until such time as
+    // we alter create error.
+    require_once 'api/v3/utils.php';
     switch ($apiRequest['version']) {
       case 3:
         if (!is_array($apiRequest['params'])) {
           throw new \API_Exception('Input variable `params` is not an array', 2000);
         }
-        require_once 'api/v3/utils.php';
         _civicrm_api3_initialize();
         break;
 
@@ -216,7 +218,7 @@ class Kernel {
    */
   public function authorize($apiProvider, $apiRequest) {
     /** @var \Civi\API\Event\AuthorizeEvent $event */
-    $event = $this->dispatcher->dispatch('civi.api.authorize', new AuthorizeEvent($apiProvider, $apiRequest, $this));
+    $event = $this->dispatcher->dispatch('civi.api.authorize', new AuthorizeEvent($apiProvider, $apiRequest, $this, \CRM_Core_Session::getLoggedInContactID() ?: 0));
     if (!$event->isAuthorized()) {
       throw new \Civi\API\Exception\UnauthorizedException("Authorization failed");
     }

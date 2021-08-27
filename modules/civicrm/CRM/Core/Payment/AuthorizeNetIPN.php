@@ -9,6 +9,8 @@
  +--------------------------------------------------------------------+
  */
 
+use Civi\Api4\PaymentProcessor;
+
 /**
  *
  * @package CRM
@@ -30,11 +32,14 @@ class CRM_Core_Payment_AuthorizeNetIPN extends CRM_Core_Payment_BaseIPN {
   }
 
   /**
-   * @param string $component
+   * Main IPN processing function.
    *
    * @return bool|void
+   *
+   * @throws \CiviCRM_API3_Exception
+   * @throws \API_Exception
    */
-  public function main($component = 'contribute') {
+  public function main() {
     try {
       //we only get invoice num as a key player from payment gateway response.
       //for ARB we get x_subscription_id and x_subscription_paynum
@@ -43,12 +48,12 @@ class CRM_Core_Payment_AuthorizeNetIPN extends CRM_Core_Payment_BaseIPN {
         // Presence of the id means it is approved.
         return TRUE;
       }
-      $ids = $objects = $input = [];
+      $ids = $input = [];
 
-      $input['component'] = $component;
+      $input['component'] = 'contribute';
 
       // load post vars in $input
-      $this->getInput($input, $ids);
+      $this->getInput($input);
 
       // load post ids in $ids
       $this->getIDs($ids, $input);
@@ -57,23 +62,12 @@ class CRM_Core_Payment_AuthorizeNetIPN extends CRM_Core_Payment_BaseIPN {
       // Check if the contribution exists
       // make sure contribution exists and is valid
       $contribution = new CRM_Contribute_BAO_Contribution();
-      $contribution->id = $ids['contribution'];
+      $contribution->id = $contributionID = $ids['contribution'];
       if (!$contribution->find(TRUE)) {
         throw new CRM_Core_Exception('Failure: Could not find contribution record for ' . (int) $contribution->id, NULL, ['context' => "Could not find contribution record: {$contribution->id} in IPN request: " . print_r($input, TRUE)]);
       }
-      $ids['contributionPage'] = $contribution->contribution_page_id;
 
-      // make sure contact exists and is valid
-      // use the contact id from the contribution record as the id in the IPN may not be valid anymore.
-      $contact = new CRM_Contact_BAO_Contact();
-      $contact->id = $contribution->contact_id;
-      $contact->find(TRUE);
-      if ($contact->id != $ids['contact']) {
-        // If the ids do not match then it is possible the contact id in the IPN has been merged into another contact which is why we use the contact_id from the contribution
-        CRM_Core_Error::debug_log_message("Contact ID in IPN {$ids['contact']} not found but contact_id found in contribution {$contribution->contact_id} used instead");
-        echo "WARNING: Could not find contact record: {$ids['contact']}<p>";
-        $ids['contact'] = $contribution->contact_id;
-      }
+      $ids['contributionPage'] = $contribution->contribution_page_id;
 
       $contributionRecur = new CRM_Contribute_BAO_ContributionRecur();
       $contributionRecur->id = $ids['contributionRecur'];
@@ -81,47 +75,22 @@ class CRM_Core_Payment_AuthorizeNetIPN extends CRM_Core_Payment_BaseIPN {
         throw new CRM_Core_Exception("Could not find contribution recur record: {$ids['ContributionRecur']} in IPN request: " . print_r($input, TRUE));
       }
 
-      $objects['contact'] = &$contact;
-      $objects['contribution'] = &$contribution;
+      // check if first contribution is completed, else complete first contribution
+      $first = TRUE;
+      if ($contribution->contribution_status_id == 1) {
+        $first = FALSE;
+        //load new contribution object if required.
+        // create a contribution and then get it processed
+        $contribution = new CRM_Contribute_BAO_Contribution();
+      }
+      $input['payment_processor_id'] = $paymentProcessorID;
+      $isFirstOrLastRecurringPayment = $this->recur($input, $contributionRecur, $contribution, $first);
 
-      $this->loadObjects($input, $ids, $objects, TRUE, $paymentProcessorID);
-
-      if ($component == 'contribute') {
-        // check if first contribution is completed, else complete first contribution
-        $first = TRUE;
-        if ($objects['contribution']->contribution_status_id == 1) {
-          $first = FALSE;
-          //load new contribution object if required.
-          // create a contribution and then get it processed
-          $contribution = new CRM_Contribute_BAO_Contribution();
-          $contribution->contact_id = $ids['contact'];
-          $contribution->financial_type_id = $objects['contributionType']->id;
-          $contribution->contribution_page_id = $ids['contributionPage'];
-          $contribution->contribution_recur_id = $ids['contributionRecur'];
-          $contribution->receive_date = $input['receive_date'];
-          $contribution->currency = $objects['contribution']->currency;
-          $contribution->amount_level = $objects['contribution']->amount_level;
-          $contribution->address_id = $objects['contribution']->address_id;
-          $contribution->campaign_id = $objects['contribution']->campaign_id;
-
-          $objects['contribution'] = &$contribution;
-        }
-        $input['payment_processor_id'] = $paymentProcessorID;
-        $isFirstOrLastRecurringPayment = $this->recur($input, [
-          'related_contact' => $ids['related_contact'] ?? NULL,
-          'participant' => !empty($objects['participant']) ? $objects['participant']->id : NULL,
-          'contributionRecur' => $contributionRecur->id,
-        ], $contributionRecur, $objects['contribution'], $first);
-
-        if ($isFirstOrLastRecurringPayment) {
-          //send recurring Notification email for user
-          CRM_Contribute_BAO_ContributionPage::recurringNotify(TRUE,
-            $ids['contact'],
-            $ids['contributionPage'],
-            $contributionRecur,
-            (bool) $this->getMembershipID($contribution->id, $contributionRecur->id)
-          );
-        }
+      if ($isFirstOrLastRecurringPayment) {
+        //send recurring Notification email for user
+        CRM_Contribute_BAO_ContributionPage::recurringNotify($contributionID, TRUE,
+          $contributionRecur
+        );
       }
 
       return TRUE;
@@ -134,7 +103,6 @@ class CRM_Core_Payment_AuthorizeNetIPN extends CRM_Core_Payment_BaseIPN {
 
   /**
    * @param array $input
-   * @param array $ids
    * @param \CRM_Contribute_BAO_ContributionRecur $recur
    * @param \CRM_Contribute_BAO_Contribution $contribution
    * @param bool $first
@@ -143,7 +111,7 @@ class CRM_Core_Payment_AuthorizeNetIPN extends CRM_Core_Payment_BaseIPN {
    * @throws \CRM_Core_Exception
    * @throws \CiviCRM_API3_Exception
    */
-  public function recur($input, $ids, $recur, $contribution, $first) {
+  public function recur($input, $recur, $contribution, $first) {
 
     // do a subscription check
     if ($recur->processor_id != $input['subscription_id']) {
@@ -202,7 +170,7 @@ class CRM_Core_Payment_AuthorizeNetIPN extends CRM_Core_Payment_BaseIPN {
       return FALSE;
     }
 
-    CRM_Contribute_BAO_Contribution::completeOrder($input, $ids, $contribution);
+    CRM_Contribute_BAO_Contribution::completeOrder($input, $recur->id, $contribution->id ?? NULL);
     return $isFirstOrLastRecurringPayment;
   }
 
@@ -259,11 +227,9 @@ class CRM_Core_Payment_AuthorizeNetIPN extends CRM_Core_Payment_BaseIPN {
    * @throws \CRM_Core_Exception
    */
   public function getIDs(&$ids, $input) {
-    $ids['contact'] = (int) $this->retrieve('x_cust_id', 'Integer', FALSE, 0);
     $ids['contribution'] = (int) $this->retrieve('x_invoice_num', 'Integer');
-    $contributionRecur = $this->getContributionRecurObject($input['subscription_id'], $ids['contact'], $ids['contribution']);
+    $contributionRecur = $this->getContributionRecurObject($input['subscription_id'], (int) $this->retrieve('x_cust_id', 'Integer', FALSE, 0), $ids['contribution']);
     $ids['contributionRecur'] = (int) $contributionRecur->id;
-    $ids['contact'] = $contributionRecur->contact_id;
   }
 
   /**
@@ -345,12 +311,18 @@ INNER JOIN civicrm_contribution co ON co.contribution_recur_id = cr.id
    *
    * @return int
    *
+   * @throws \API_Exception
    * @throws \CRM_Core_Exception
    * @throws \CiviCRM_API3_Exception
    */
   protected function getPaymentProcessorID(): int {
     // Attempt to get payment processor ID from URL
-    if (!empty($this->_inputParameters['processor_id'])) {
+    if (!empty($this->_inputParameters['processor_id']) &&
+      'AuthNet' === PaymentProcessor::get(FALSE)
+        ->addSelect('payment_processor_type_id:name')
+        ->addWhere('id', '=', $this->_inputParameters['processor_id'])
+        ->execute()->first()['payment_processor_type_id:name']
+    ) {
       return (int) $this->_inputParameters['processor_id'];
     }
     // This is an unreliable method as there could be more than one instance.

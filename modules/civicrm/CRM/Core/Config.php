@@ -86,12 +86,8 @@ class CRM_Core_Config extends CRM_Core_Config_MagicMerge {
    */
   public static function &singleton($loadFromDB = TRUE, $force = FALSE) {
     if (self::$_singleton === NULL || $force) {
-      $GLOBALS['civicrm_default_error_scope'] = CRM_Core_TemporaryErrorScope::create(['CRM_Core_Error', 'handle']);
+      $GLOBALS['civicrm_default_error_scope'] = CRM_Core_TemporaryErrorScope::create(['CRM_Core_Error', 'exceptionHandler'], 1);
       $errorScope = CRM_Core_TemporaryErrorScope::create(['CRM_Core_Error', 'simpleHandler']);
-
-      if (defined('E_DEPRECATED')) {
-        error_reporting(error_reporting() & ~E_DEPRECATED);
-      }
 
       self::$_singleton = new CRM_Core_Config();
       \Civi\Core\Container::boot($loadFromDB);
@@ -409,6 +405,11 @@ class CRM_Core_Config extends CRM_Core_Config_MagicMerge {
       return TRUE;
     }
 
+    $upgradeInProcess = CRM_Core_Session::singleton()->get('isUpgradePending');
+    if ($upgradeInProcess) {
+      return TRUE;
+    }
+
     if (!$path) {
       // note: do not re-initialize config here, since this function is part of
       // config initialization itself
@@ -422,18 +423,6 @@ class CRM_Core_Config extends CRM_Core_Config_MagicMerge {
 
     if ($path && preg_match('/^civicrm\/upgrade(\/.*)?$/', $path)) {
       return TRUE;
-    }
-
-    if ($path && preg_match('/^civicrm\/ajax\/l10n-js/', $path)
-      && !empty($_SERVER['HTTP_REFERER'])
-    ) {
-      $ref = parse_url($_SERVER['HTTP_REFERER']);
-      if (
-        (!empty($ref['path']) && preg_match('/civicrm\/upgrade/', $ref['path'])) ||
-        (!empty($ref['query']) && preg_match('/civicrm\/upgrade/', urldecode($ref['query'])))
-      ) {
-        return TRUE;
-      }
     }
 
     return FALSE;

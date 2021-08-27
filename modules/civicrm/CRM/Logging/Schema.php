@@ -242,6 +242,9 @@ AND    (TABLE_NAME LIKE 'log_civicrm_%' $nonStandardTableNameString )
       $tableNames = $this->tables;
     }
 
+    // Sort the table names so the sql output is consistent for those sites
+    // loading it asynchronously (using the setting 'logging_no_trigger_permission')
+    asort($tableNames);
     foreach ($tableNames as $table) {
       $validName = CRM_Core_DAO::shortenSQLName($table, 48, TRUE);
 
@@ -518,10 +521,8 @@ AND    (TABLE_NAME LIKE 'log_civicrm_%' $nonStandardTableNameString )
 
   /**
    * Fix schema differences.
-   *
-   * @param bool $rebuildTrigger
    */
-  public function fixSchemaDifferencesForAll($rebuildTrigger = FALSE) {
+  public function fixSchemaDifferencesForAll(): void {
     $diffs = [];
     $this->resetTableColumnsCache();
 
@@ -536,10 +537,6 @@ AND    (TABLE_NAME LIKE 'log_civicrm_%' $nonStandardTableNameString )
 
     foreach ($diffs as $table => $cols) {
       $this->fixSchemaDifferencesFor($table, $cols);
-    }
-    if ($rebuildTrigger) {
-      // invoke the meta trigger creation call
-      CRM_Core_DAO::triggerRebuild(NULL, TRUE);
     }
   }
 
@@ -619,7 +616,6 @@ AND    (TABLE_NAME LIKE 'log_civicrm_%' $nonStandardTableNameString )
   private function columnsOf($table, $force = FALSE) {
     if ($force || !isset(\Civi::$statics[__CLASS__]['columnsOf'][$table])) {
       $from = (substr($table, 0, 4) == 'log_') ? "`{$this->db}`.$table" : $table;
-      CRM_Core_TemporaryErrorScope::ignoreException();
       $dao = CRM_Core_DAO::executeQuery("SHOW COLUMNS FROM $from", [], TRUE, NULL, FALSE, FALSE);
       if (is_a($dao, 'DB_Error')) {
         return [];
@@ -649,7 +645,7 @@ AND    (TABLE_NAME LIKE 'log_civicrm_%' $nonStandardTableNameString )
         $dao = new CRM_Contact_DAO_Contact();
         $civiDB = $dao->_database;
       }
-      CRM_Core_TemporaryErrorScope::ignoreException();
+
       // NOTE: W.r.t Performance using one query to find all details and storing in static array is much faster
       // than firing query for every given table.
       $query = "
@@ -705,40 +701,44 @@ WHERE  table_schema IN ('{$this->db}', '{$civiDB}')";
     $logTableSpecs = $this->columnSpecsOf($logTable);
 
     $diff = ['ADD' => [], 'MODIFY' => [], 'OBSOLETE' => []];
-    // columns to be added
+
+    // Columns to be added
     $diff['ADD'] = array_diff(array_keys($civiTableSpecs), array_keys($logTableSpecs));
-    // columns to be modified
-    // NOTE: we consider only those columns for modifications where there is a spec change, and that the column definition
-    // wasn't deliberately modified by fixTimeStampAndNotNullSQL() method.
+
+    // Columns to be modified
+    // Only pick columns where there is a spec change and the column definition was not deliberately modified by
+    // fixTimeStampAndNotNullSQL() method, also accounting for differences in db version.
     foreach ($civiTableSpecs as $col => $colSpecs) {
       if (!isset($logTableSpecs[$col]) || !is_array($logTableSpecs[$col])) {
         $logTableSpecs[$col] = [];
       }
       $specDiff = array_diff($civiTableSpecs[$col], $logTableSpecs[$col]);
-      if (!empty($specDiff) && $col != 'id' && !in_array($col, $diff['ADD'])) {
+      if (!empty($specDiff) && $col !== 'id' && !in_array($col, $diff['ADD'])) {
         if (empty($colSpecs['EXTRA']) || (!empty($colSpecs['EXTRA']) && $colSpecs['EXTRA'] !== 'auto_increment')) {
           // ignore 'id' column for any spec changes, to avoid any auto-increment mysql errors
           if ($civiTableSpecs[$col]['DATA_TYPE'] != CRM_Utils_Array::value('DATA_TYPE', $logTableSpecs[$col])
-          // We won't alter the log if the length is decreased in case some of the existing data won't fit.
-          || CRM_Utils_Array::value('LENGTH', $civiTableSpecs[$col]) > CRM_Utils_Array::value('LENGTH', $logTableSpecs[$col])
+            // We won't alter the log if the length is decreased in case some of the existing data won't fit.
+            || CRM_Utils_Array::value('LENGTH', $civiTableSpecs[$col]) > CRM_Utils_Array::value('LENGTH', $logTableSpecs[$col])
           ) {
             // if data-type is different, surely consider the column
             $diff['MODIFY'][] = $col;
           }
-          elseif ($civiTableSpecs[$col]['DATA_TYPE'] == 'enum' &&
+          elseif ($civiTableSpecs[$col]['DATA_TYPE'] === 'enum' &&
             CRM_Utils_Array::value('ENUM_VALUES', $civiTableSpecs[$col]) != CRM_Utils_Array::value('ENUM_VALUES', $logTableSpecs[$col])
           ) {
             // column is enum and the permitted values have changed
             $diff['MODIFY'][] = $col;
           }
           elseif ($civiTableSpecs[$col]['IS_NULLABLE'] != CRM_Utils_Array::value('IS_NULLABLE', $logTableSpecs[$col]) &&
-            $logTableSpecs[$col]['IS_NULLABLE'] == 'NO'
+            $logTableSpecs[$col]['IS_NULLABLE'] === 'NO'
           ) {
             // if is-null property is different, and log table's column is NOT-NULL, surely consider the column
             $diff['MODIFY'][] = $col;
           }
-          elseif ($civiTableSpecs[$col]['COLUMN_DEFAULT'] != CRM_Utils_Array::value('COLUMN_DEFAULT', $logTableSpecs[$col]) &&
-            !strstr($civiTableSpecs[$col]['COLUMN_DEFAULT'], 'TIMESTAMP')
+          elseif (
+            $civiTableSpecs[$col]['COLUMN_DEFAULT'] != ($logTableSpecs[$col]['COLUMN_DEFAULT'] ?? NULL)
+            && !stristr($civiTableSpecs[$col]['COLUMN_DEFAULT'], 'timestamp')
+            && !($civiTableSpecs[$col]['COLUMN_DEFAULT'] === NULL && ($logTableSpecs[$col]['COLUMN_DEFAULT'] ?? NULL) === 'NULL')
           ) {
             // if default property is different, and its not about a timestamp column, consider it
             $diff['MODIFY'][] = $col;
@@ -751,7 +751,9 @@ WHERE  table_schema IN ('{$this->db}', '{$civiDB}')";
     $oldCols = array_diff(array_keys($logTableSpecs), array_keys($civiTableSpecs));
     foreach ($oldCols as $col) {
       if (!in_array($col, ['log_date', 'log_conn_id', 'log_user_id', 'log_action']) &&
-        $logTableSpecs[$col]['IS_NULLABLE'] == 'NO'
+        $logTableSpecs[$col]['IS_NULLABLE'] === 'NO'
+        // This could be to support replication - https://lab.civicrm.org/dev/core/-/issues/2120
+        && $logTableSpecs[$col]['EXTRA'] !== 'auto_increment'
       ) {
         // if its a column present only in log table, not among those used by log tables for special purpose, and not-null
         $diff['OBSOLETE'][] = $col;
@@ -803,18 +805,14 @@ COLS;
     // - drop non-column rows of the query (keys, constraints, etc.)
     // - set the ENGINE to the specified engine (default is INNODB)
     // - add log-specific columns (at the end of the table)
-    $mysqlEngines = [];
-    $engines = CRM_Core_DAO::executeQuery("SHOW ENGINES");
-    while ($engines->fetch()) {
-      if ($engines->Support == 'YES' || $engines->Support == 'DEFAULT') {
-        $mysqlEngines[] = $engines->Engine;
-      }
-    }
     $query = preg_replace("/^CREATE TABLE `$table`/i", "CREATE TABLE `{$this->db}`.log_$table", $query);
     $query = preg_replace("/ AUTO_INCREMENT/i", '', $query);
     $query = preg_replace("/^  [^`].*$/m", '', $query);
-    $engine = strtoupper(CRM_Utils_Array::value('engine', $this->logTableSpec[$table], self::ENGINE));
-    $engine .= " " . CRM_Utils_Array::value('engine_config', $this->logTableSpec[$table]);
+    $engine = strtoupper(empty($this->logTableSpec[$table]['engine']) ? self::ENGINE : $this->logTableSpec[$table]['engine']);
+    $engine .= " " . ($this->logTableSpec[$table]['engine_config'] ?? '');
+    if (strpos($engine, 'ROW_FORMAT') !== FALSE) {
+      $query = preg_replace("/ROW_FORMAT=\w+/m", '', $query);
+    }
     $query = preg_replace("/^\) ENGINE=[^ ]+ /im", ') ENGINE=' . $engine . ' ', $query);
 
     // log_civicrm_contact.modified_date for example would always be copied from civicrm_contact.modified_date,

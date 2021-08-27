@@ -52,9 +52,9 @@ class CRM_Core_Session {
    * We only need one instance of this object. So we use the singleton
    * pattern and cache the instance in this variable
    *
-   * @var object
+   * @var \CRM_Core_Session
    */
-  static private $_singleton = NULL;
+  static private $_singleton;
 
   /**
    * Constructor.
@@ -82,6 +82,39 @@ class CRM_Core_Session {
   public static function &singleton() {
     if (self::$_singleton === NULL) {
       self::$_singleton = new CRM_Core_Session();
+    }
+    return self::$_singleton;
+  }
+
+  /**
+   * Replace the session object with a fake session.
+   */
+  public static function useFakeSession() {
+    self::$_singleton = new class() extends CRM_Core_Session {
+
+      public function initialize($isRead = FALSE) {
+        if ($isRead) {
+          return;
+        }
+
+        if (!isset($this->_session)) {
+          $this->_session = [];
+        }
+
+        if (!isset($this->_session[$this->_key]) || !is_array($this->_session[$this->_key])) {
+          $this->_session[$this->_key] = [];
+        }
+      }
+
+      public function isEmpty() {
+        return empty($this->_session);
+      }
+
+    };
+    self::$_singleton->_session = NULL;
+    // This is not a revocable proposition. Should survive, even with things 'System.flush'.
+    if (!defined('_CIVICRM_FAKE_SESSION')) {
+      define('_CIVICRM_FAKE_SESSION', TRUE);
     }
     return self::$_singleton;
   }
@@ -530,7 +563,7 @@ class CRM_Core_Session {
     if (!is_numeric($session->get('userID'))) {
       return NULL;
     }
-    return $session->get('userID');
+    return (int) $session->get('userID');
   }
 
   /**

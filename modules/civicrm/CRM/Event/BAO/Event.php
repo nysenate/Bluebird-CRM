@@ -171,7 +171,7 @@ class CRM_Event_BAO_Event extends CRM_Event_DAO_Event {
       return NULL;
     }
 
-    CRM_Utils_Hook::pre('delete', 'Event', $id, CRM_Core_DAO::$_nullArray);
+    CRM_Utils_Hook::pre('delete', 'Event', $id);
 
     $extends = ['event'];
     $groupTree = CRM_Core_BAO_CustomGroup::getGroupDetail(NULL, NULL, $extends);
@@ -994,6 +994,15 @@ WHERE civicrm_event.is_active = 1
     $copyEvent->save();
 
     if ($blockCopyOfCustomValue) {
+      foreach ($params['custom'] as &$values) {
+        foreach ($values as &$value) {
+          // Ensure we don't copy over the template's id if it is passed in
+          // This is a bit hacky but it's unclear what the
+          // right behaviour is given the whole 'custom'
+          // field is form layer formatting that is reaching the BAO.
+          $value['id'] = NULL;
+        }
+      }
       CRM_Core_BAO_CustomValueTable::store($params['custom'], 'civicrm_event', $copyEvent->id);
     }
 
@@ -1160,6 +1169,7 @@ WHERE civicrm_event.is_active = 1
           'credit_card_exp_date' => CRM_Utils_Date::mysqlToIso(CRM_Utils_Date::format(CRM_Utils_Array::value('credit_card_exp_date', $participantParams))),
           'selfcancelxfer_time' => abs($values['event']['selfcancelxfer_time']),
           'selfservice_preposition' => $values['event']['selfcancelxfer_time'] < 0 ? 'after' : 'before',
+          'currency' => $values['event']['currency'] ?? CRM_Core_Config::singleton()->defaultCurrency,
         ]);
 
         // CRM-13890 : NOTE wait list condition need to be given so that
@@ -1231,10 +1241,8 @@ WHERE civicrm_event.is_active = 1
           $sendTemplateParams['bcc'] = CRM_Utils_Array::value('bcc_confirm',
             $values['event']
           );
-          // append invoice pdf to email
-          $prefixValue = Civi::settings()->get('contribution_invoice_settings');
-          $invoicing = $prefixValue['invoicing'] ?? NULL;
-          if (isset($invoicing) && isset($prefixValue['is_email_pdf']) && !empty($values['contributionId'])) {
+
+          if (Civi::settings()->get('invoicing') && Civi::settings()->get('invoice_is_email_pdf') && !empty($values['contributionId'])) {
             $sendTemplateParams['isEmailPdf'] = TRUE;
             $sendTemplateParams['contributionId'] = $values['contributionId'];
           }
@@ -1322,7 +1330,7 @@ WHERE civicrm_event.is_active = 1
         $groupTitle = NULL;
         foreach ($fields as $k => $v) {
           if (!$groupTitle) {
-            $groupTitle = $v['groupTitle'];
+            $groupTitle = $v['groupDisplayTitle'];
           }
           // suppress all file fields from display
           if (
@@ -2297,6 +2305,13 @@ LEFT  JOIN  civicrm_price_field_value value ON ( value.id = lineItem.price_field
       'template_title',
     ];
     $defaults = array_diff_key($defaults, array_flip($fieldsToExclude));
+    foreach ($defaults as $key => $value) {
+      $customFieldInfo = CRM_Core_BAO_CustomField::getKeyID($key, TRUE);
+      if (!empty($customFieldInfo[1])) {
+        $defaults[str_replace($customFieldInfo[1], '-' . $customFieldInfo[1], $key)] = $value;
+        unset($defaults[$key]);
+      }
+    }
     return $defaults;
   }
 

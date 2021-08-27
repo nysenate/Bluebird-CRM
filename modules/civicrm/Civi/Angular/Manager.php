@@ -70,6 +70,8 @@ class Manager {
     $this->cache->clear();
     $this->modules = NULL;
     $this->changeSets = NULL;
+    // Force-refresh assetBuilder files
+    \Civi::container()->get('asset_builder')->clear(FALSE);
     return $this;
   }
 
@@ -105,22 +107,25 @@ class Manager {
       $angularModules['crmAttachment'] = include "$civicrm_root/ang/crmAttachment.ang.php";
       $angularModules['crmAutosave'] = include "$civicrm_root/ang/crmAutosave.ang.php";
       $angularModules['crmCxn'] = include "$civicrm_root/ang/crmCxn.ang.php";
-      // $angularModules['crmExample'] = include "$civicrm_root/ang/crmExample.ang.php";
+      $angularModules['crmMonaco'] = include "$civicrm_root/ang/crmMonaco.ang.php";
       $angularModules['crmResource'] = include "$civicrm_root/ang/crmResource.ang.php";
       $angularModules['crmRouteBinder'] = include "$civicrm_root/ang/crmRouteBinder.ang.php";
       $angularModules['crmUi'] = include "$civicrm_root/ang/crmUi.ang.php";
       $angularModules['crmUtil'] = include "$civicrm_root/ang/crmUtil.ang.php";
       $angularModules['dialogService'] = include "$civicrm_root/ang/dialogService.ang.php";
+      $angularModules['jsonFormatter'] = include "$civicrm_root/ang/jsonFormatter.ang.php";
       $angularModules['ngRoute'] = include "$civicrm_root/ang/ngRoute.ang.php";
       $angularModules['ngSanitize'] = include "$civicrm_root/ang/ngSanitize.ang.php";
       $angularModules['ui.utils'] = include "$civicrm_root/ang/ui.utils.ang.php";
       $angularModules['ui.bootstrap'] = include "$civicrm_root/ang/ui.bootstrap.ang.php";
       $angularModules['ui.sortable'] = include "$civicrm_root/ang/ui.sortable.ang.php";
       $angularModules['unsavedChanges'] = include "$civicrm_root/ang/unsavedChanges.ang.php";
-      $angularModules['statuspage'] = include "$civicrm_root/ang/crmStatusPage.ang.php";
+      $angularModules['crmStatusPage'] = include "$civicrm_root/ang/crmStatusPage.ang.php";
       $angularModules['exportui'] = include "$civicrm_root/ang/exportui.ang.php";
       $angularModules['api4Explorer'] = include "$civicrm_root/ang/api4Explorer.ang.php";
       $angularModules['api4'] = include "$civicrm_root/ang/api4.ang.php";
+      $angularModules['crmDashboard'] = include "$civicrm_root/ang/crmDashboard.ang.php";
+      $angularModules['crmD3'] = include "$civicrm_root/ang/crmD3.ang.php";
 
       foreach (\CRM_Core_Component::getEnabledComponents() as $component) {
         $angularModules = array_merge($angularModules, $component->getAngularModules());
@@ -177,6 +182,7 @@ class Manager {
    * @return array
    *   List of Angular modules, include all dependencies.
    *   Ex: array('crmMailing', 'crmUi', 'crmUtil', 'ngRoute').
+   * @throws \CRM_Core_Exception
    */
   public function resolveDependencies($names) {
     $allModules = $this->getModules();
@@ -186,10 +192,7 @@ class Manager {
       foreach ($missingModules as $module) {
         $visited[$module] = 1;
         if (!isset($allModules[$module])) {
-          \Civi::log()->warning('Unrecognized Angular module {name}. Please ensure that all Angular modules are declared.', [
-            'name' => $module,
-            'civi.tag' => 'deprecated',
-          ]);
+          throw new \CRM_Core_Exception("Unrecognized Angular module {$module}. Please ensure that all Angular modules are declared.");
         }
         elseif (isset($allModules[$module]['requires'])) {
           $result = array_unique(array_merge($result, $allModules[$module]['requires']));
@@ -416,6 +419,7 @@ class Manager {
             case 'settingsFactory':
             case 'requires':
             case 'permissions':
+            case 'bundles':
               if (!empty($module[$resType])) {
                 $result[$moduleName] = $module[$resType];
               }

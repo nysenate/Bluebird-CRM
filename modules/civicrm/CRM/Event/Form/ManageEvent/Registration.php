@@ -126,7 +126,6 @@ class CRM_Event_Form_ManageEvent_Registration extends CRM_Event_Form_ManageEvent
 
       if (!empty($defaults['is_multiple_registrations'])) {
         // CRM-4377: set additional participants’ profiles – set to ‘none’ if explicitly unset (non-active)
-
         $ufJoinAddParams = [
           'entity_table' => 'civicrm_event',
           'module' => 'CiviEvent_Additional',
@@ -151,6 +150,10 @@ class CRM_Event_Form_ManageEvent_Registration extends CRM_Event_Form_ManageEvent
           }
         }
         $this->assign('profilePostMultipleAdd', CRM_Utils_Array::value('additional_custom_post', $defaults, []));
+      }
+      else {
+        // Avoid PHP notices in the template
+        $this->assign('profilePostMultipleAdd', []);
       }
     }
     else {
@@ -233,7 +236,7 @@ class CRM_Event_Form_ManageEvent_Registration extends CRM_Event_Form_ManageEvent
       'used' => 'Supervised',
       'contact_type' => 'Individual',
     ];
-    $dedupeRuleFields = CRM_Dedupe_BAO_Rule::dedupeRuleFields($params);
+    $dedupeRuleFields = CRM_Dedupe_BAO_DedupeRule::dedupeRuleFields($params);
 
     foreach ($dedupeRuleFields as $key => $fields) {
       $ruleFields[$key] = ucwords(str_replace('_', ' ', $fields));
@@ -257,7 +260,7 @@ class CRM_Event_Form_ManageEvent_Registration extends CRM_Event_Form_ManageEvent
     $dedupeRules = [
       '' => '- Unsupervised rule -',
     ];
-    $dedupeRules += CRM_Dedupe_BAO_RuleGroup::getByType('Individual');
+    $dedupeRules += CRM_Dedupe_BAO_DedupeRuleGroup::getByType('Individual');
     $this->add('select', 'dedupe_rule_group_id', ts('Duplicate matching rule'), $dedupeRules);
 
     $participantStatuses = CRM_Event_PseudoConstant::participantStatus();
@@ -685,11 +688,11 @@ class CRM_Event_Form_ManageEvent_Registration extends CRM_Event_Form_ManageEvent
     if ($rgId > 0) {
       $rgParams['id'] = $rgId;
     }
-    $activeRg = CRM_Dedupe_BAO_RuleGroup::dedupeRuleFieldsWeight($rgParams);
+    $activeRg = CRM_Dedupe_BAO_DedupeRuleGroup::dedupeRuleFieldsWeight($rgParams);
 
     // get the combinations that could be a match for the rule
     $okCombos = $combos = [];
-    CRM_Dedupe_BAO_RuleGroup::combos($activeRg[0], $activeRg[1], $combos);
+    CRM_Dedupe_BAO_DedupeRuleGroup::combos($activeRg[0], $activeRg[1], $combos);
 
     // create an index of what combinations involve each field
     $index = [];

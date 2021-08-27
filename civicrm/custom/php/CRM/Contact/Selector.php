@@ -212,14 +212,14 @@ class CRM_Contact_Selector extends CRM_Core_Selector_Base implements CRM_Core_Se
     // CRM-7021
     if (!empty($this->_params)) {
       //NYSS 6605 set country default when using prox search
-      if ( !empty($formValues['prox_distance']) ) {
-        $this->_params[] = array(
+      if (!empty($formValues['prox_distance'])) {
+        $this->_params[] = [
           'country',
           '=',
           '1228',
           0,
           0,
-        );
+        ];
       }
       CRM_Contact_BAO_ProximityQuery::fixInputParams($this->_params);
     }
@@ -339,7 +339,7 @@ class CRM_Contact_Selector extends CRM_Core_Selector_Base implements CRM_Core_Se
   public function getPagerParams($action, &$params) {
     $params['status'] = ts('Contact %%StatusMessage%%');
     $params['csvString'] = NULL;
-    $params['rowCount'] = CRM_Utils_Pager::ROWCOUNT;
+    $params['rowCount'] = Civi::settings()->get('default_pager_size');
 
     $params['buttonTop'] = 'PagerTopButton';
     $params['buttonBottom'] = 'PagerBottomButton';
@@ -527,7 +527,7 @@ class CRM_Contact_Selector extends CRM_Core_Selector_Base implements CRM_Core_Se
     }
 
     //NYSS 4979/7319 hack to allow phone searching
-    foreach ( $headers as $k => $details ) {
+    foreach ($headers as $k => $details) {
       if ($details['name'] == 'Phone') {
         $headers[$k]['sort'] = 'phone';
         $headers[$k]['direction'] = 4;
@@ -1040,8 +1040,6 @@ class CRM_Contact_Selector extends CRM_Core_Selector_Base implements CRM_Core_Se
    */
   public function fillupPrevNextCache($sort, $cacheKey, $start = 0, $end = self::CACHE_SIZE) {
     $coreSearch = TRUE;
-    // This ensures exceptions are caught in the try-catch.
-    $handling = CRM_Core_TemporaryErrorScope::useException();
     // For custom searches, use the contactIDs method
     if (is_a($this, 'CRM_Contact_Selector_Custom')) {
       $sql = $this->_search->contactIDs($start, $end, $sort, TRUE);

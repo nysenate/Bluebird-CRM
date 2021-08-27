@@ -7,6 +7,8 @@
   <add>1.7</add>
   <log>true</log>
   <icon>fa-calendar</icon>
+  <labelField>title</labelField>
+  <component>CiviEvent</component>
   <paths>
     <add>civicrm/event/add?reset=1</add>
     <view>civicrm/event/info?reset=1&amp;id=[id]</view>
@@ -17,6 +19,9 @@
     <title>Event ID</title>
     <required>true</required>
     <comment>Event</comment>
+    <html>
+      <type>Number</type>
+    </html>
     <add>1.7</add>
   </field>
   <primaryKey>
@@ -175,6 +180,7 @@
     <html>
       <type>Select Date</type>
       <formatType>activityDateTime</formatType>
+      <label>Registration Start Date</label>
     </html>
   </field>
   <field>
@@ -185,6 +191,7 @@
     <html>
       <type>Select Date</type>
       <formatType>activityDateTime</formatType>
+      <label>Registration End Date</label>
     </html>
   </field>
   <field>
@@ -251,6 +258,7 @@
     </pseudoconstant>
     <html>
       <type>Select</type>
+      <label>Payment Processors</label>
     </html>
     <add>1.8</add>
   </field>
@@ -305,6 +313,9 @@
     <type>int unsigned</type>
     <title>Location Block ID</title>
     <comment>FK to Location Block ID</comment>
+    <html>
+      <label>Location Block</label>
+    </html>
     <add>2.0</add>
   </field>
   <foreignKey>
@@ -449,6 +460,7 @@
     <comment>comma-separated list of email addresses to cc each time a confirmation is sent</comment>
     <html>
       <type>Text</type>
+      <label>CC Confirm</label>
     </html>
     <add>1.7</add>
   </field>
@@ -459,6 +471,7 @@
     <comment>comma-separated list of email addresses to bcc each time a confirmation is sent</comment>
     <html>
       <type>Text</type>
+      <label>BCC Confirm</label>
     </html>
     <add>1.7</add>
   </field>
@@ -639,6 +652,7 @@
     <add>3.0</add>
     <html>
       <type>CheckBox</type>
+      <label>Requires Approval</label>
     </html>
   </field>
   <field>
@@ -648,6 +662,7 @@
     <add>3.0</add>
     <html>
       <type>Text</type>
+      <label>Expiration Time</label>
     </html>
   </field>
   <field>
@@ -679,6 +694,7 @@
       <type>TextArea</type>
       <rows>4</rows>
       <cols>60</cols>
+      <label>Waitlist Text</label>
     </html>
     <localizable>true</localizable>
     <comment>Text to display when the event is full, but participants can signup for a waitlist.</comment>
@@ -691,6 +707,7 @@
       <type>TextArea</type>
       <rows>4</rows>
       <cols>60</cols>
+      <label>Approval Required Text</label>
     </html>
     <localizable>true</localizable>
     <comment>Text to display when the approval is required to complete registration for an event.</comment>
@@ -728,6 +745,9 @@
     <type>int unsigned</type>
     <title>Created By Contact ID</title>
     <comment>FK to civicrm_contact, who created this event</comment>
+    <html>
+      <label>Created By</label>
+    </html>
     <add>3.0</add>
   </field>
   <foreignKey>
@@ -762,22 +782,20 @@
     </pseudoconstant>
     <html>
       <type>Select</type>
+      <label>Currency</label>
     </html>
   </field>
   <field>
     <name>campaign_id</name>
+    <component>CiviCampaign</component>
     <type>int unsigned</type>
-    <title>Campaign</title>
+    <title>Campaign ID</title>
     <comment>The campaign for which this event has been created.</comment>
-    <pseudoconstant>
-      <table>civicrm_campaign</table>
-      <keyColumn>id</keyColumn>
-      <labelColumn>title</labelColumn>
-    </pseudoconstant>
     <add>3.4</add>
     <html>
        <type>EntityRef</type>
-     </html>
+       <label>Campaign</label>
+    </html>
   </field>
   <foreignKey>
     <name>campaign_id</name>
@@ -837,7 +855,7 @@
   <field>
     <name>dedupe_rule_group_id</name>
     <type>int unsigned</type>
-    <title>Dedupe Rule</title>
+    <title>Dedupe Rule ID</title>
     <default>NULL</default>
     <comment>Rule to use when matching registrations for this event</comment>
     <pseudoconstant>
@@ -849,6 +867,7 @@
     <add>4.5</add>
     <html>
       <type>Select</type>
+      <label>Dedupe Rule</label>
     </html>
   </field>
   <foreignKey>

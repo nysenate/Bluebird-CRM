@@ -10,6 +10,9 @@ use Civi\Afform\Event\AfformSubmitEvent;
  */
 class Submit extends AbstractProcessor {
 
+  /**
+   * @deprecated - You may simply use the event name directly. dev/core#1744
+   */
   const EVENT_NAME = 'civi.afform.submit';
 
   /**
@@ -22,23 +25,38 @@ class Submit extends AbstractProcessor {
   protected function processForm() {
     $entityValues = [];
     foreach ($this->_formDataModel->getEntities() as $entityName => $entity) {
+      $entityValues[$entityName] = [];
+
+      // Gather submitted field values from $values['fields'] and sub-entities from $values['joins']
       foreach ($this->values[$entityName] ?? [] as $values) {
-        $entityValues[$entity['type']][$entityName][] = $values + ['fields' => []];
-        // Predetermined values override submitted values
-        if (!empty($entity['af-values'])) {
-          foreach ($entityValues[$entity['type']][$entityName] as $index => $vals) {
-            $entityValues[$entity['type']][$entityName][$index]['fields'] = $entity['af-values'] + $vals['fields'];
+        // Only accept values from fields on the form
+        $values['fields'] = array_intersect_key($values['fields'] ?? [], $entity['fields']);
+        // Only accept joins set on the form
+        $values['joins'] = array_intersect_key($values['joins'] ?? [], $entity['joins']);
+        foreach ($values['joins'] as $joinEntity => &$joinValues) {
+          // Enforce the limit set by join[max]
+          $joinValues = array_slice($joinValues, 0, $entity['joins'][$joinEntity]['max'] ?? NULL);
+          // Only accept values from join fields on the form
+          foreach ($joinValues as $index => $vals) {
+            $joinValues[$index] = array_intersect_key($vals, $entity['joins'][$joinEntity]['fields']);
           }
+        }
+        $entityValues[$entityName][] = $values;
+      }
+      // Predetermined values override submitted values
+      if (!empty($entity['data'])) {
+        foreach ($entityValues[$entityName] as $index => $vals) {
+          $entityValues[$entityName][$index]['fields'] = $entity['data'] + $vals['fields'];
         }
       }
     }
-
-    $event = new AfformSubmitEvent($this->_formDataModel->getEntities(), $entityValues);
-    \Civi::dispatcher()->dispatch(self::EVENT_NAME, $event);
-    foreach ($event->entityValues as $entityType => $entities) {
-      if (!empty($entities)) {
-        throw new \API_Exception(sprintf("Failed to process entities (type=%s; name=%s)", $entityType, implode(',', array_keys($entities))));
-      }
+    $entityWeights = \Civi\Afform\Utils::getEntityWeights($this->_formDataModel->getEntities(), $entityValues);
+    foreach ($entityWeights as $entityName) {
+      $entityType = $this->_formDataModel->getEntity($entityName)['type'];
+      $records = $this->replaceReferences($entityName, $entityValues[$entityName]);
+      $this->fillIdFields($records, $entityName);
+      $event = new AfformSubmitEvent($this->_afform, $this->_formDataModel, $this, $records, $entityType, $entityName, $this->_entityIds);
+      \Civi::dispatcher()->dispatch('civi.afform.submit', $event);
     }
 
     // What should I return?
@@ -46,18 +64,62 @@ class Submit extends AbstractProcessor {
   }
 
   /**
+   * Replace Entity reference fields with the id of the referenced entity.
+   * @param string $entityName
+   * @param $records
+   */
+  private function replaceReferences($entityName, $records) {
+    $entityNames = array_diff(array_keys($this->_entityIds), [$entityName]);
+    $entityType = $this->_formDataModel->getEntity($entityName)['type'];
+    foreach ($records as $key => $record) {
+      foreach ($record['fields'] as $field => $value) {
+        if (array_intersect($entityNames, (array) $value) && $this->getEntityField($entityType, $field)['input_type'] === 'EntityRef') {
+          if (is_array($value)) {
+            foreach ($value as $i => $val) {
+              if (in_array($val, $entityNames, TRUE)) {
+                $records[$key]['fields'][$field][$i] = $this->_entityIds[$val][0]['id'] ?? NULL;
+              }
+            }
+          }
+          else {
+            $records[$key]['fields'][$field] = $this->_entityIds[$value][0]['id'] ?? NULL;
+          }
+        }
+      }
+    }
+    return $records;
+  }
+
+  /**
+   * Validate contact(s) meet the minimum requirements to be created (name and/or email).
+   *
+   * This requires a function because simple required fields validation won't work
+   * across multiple entities (contact + n email addresses).
+   *
    * @param \Civi\Afform\Event\AfformSubmitEvent $event
    * @throws \API_Exception
    * @see afform_civicrm_config
    */
-  public static function processContacts(AfformSubmitEvent $event) {
-    foreach ($event->entityValues['Contact'] ?? [] as $entityName => $contacts) {
-      foreach ($contacts as $contact) {
-        $saved = civicrm_api4('Contact', 'save', ['records' => [$contact['fields']]])->first();
-        self::saveJoins('Contact', $saved['id'], $contact['joins'] ?? []);
-      }
+  public static function preprocessContact(AfformSubmitEvent $event): void {
+    if ($event->getEntityType() !== 'Contact') {
+      return;
     }
-    unset($event->entityValues['Contact']);
+    // When creating a contact, verify they have a name or email address
+    foreach ($event->records as $index => $contact) {
+      if (!empty($contact['fields']['id'])) {
+        continue;
+      }
+      if (empty($contact['fields']) || \CRM_Contact_BAO_Contact::hasName($contact['fields'])) {
+        continue;
+      }
+      foreach ($contact['joins']['Email'] ?? [] as $email) {
+        if (!empty($email['email'])) {
+          continue 2;
+        }
+      }
+      // Contact has no id, name, or email. Stop creation.
+      $event->records[$index]['fields'] = NULL;
+    }
   }
 
   /**
@@ -66,31 +128,52 @@ class Submit extends AbstractProcessor {
    * @see afform_civicrm_config
    */
   public static function processGenericEntity(AfformSubmitEvent $event) {
-    foreach ($event->entityValues as $entityType => $entities) {
-      // Each record is an array of one or more items (can be > 1 if af-repeat is used)
-      foreach ($entities as $entityName => $records) {
-        foreach ($records as $record) {
-          $saved = civicrm_api4($entityType, 'save', ['records' => [$record['fields']]])->first();
-          self::saveJoins($entityType, $saved['id'], $record['joins'] ?? []);
-        }
+    $api4 = $event->getSecureApi4();
+    foreach ($event->records as $index => $record) {
+      if (empty($record['fields'])) {
+        continue;
       }
-      unset($event->entityValues[$entityType]);
+      try {
+        $saved = $api4($event->getEntityType(), 'save', ['records' => [$record['fields']]])->first();
+        $event->setEntityId($index, $saved['id']);
+        self::saveJoins($event->getEntityType(), $saved['id'], $record['joins'] ?? []);
+      }
+      catch (\API_Exception $e) {
+        // What to do here? Sometimes we should silently ignore errors, e.g. an optional entity
+        // intentionally left blank. Other times it's a real error the user should know about.
+      }
     }
   }
 
+  /**
+   * This saves joins (sub-entities) such as Email, Address, Phone, etc.
+   *
+   * @param $mainEntityName
+   * @param $entityId
+   * @param $joins
+   * @throws \API_Exception
+   * @throws \Civi\API\Exception\NotImplementedException
+   */
   protected static function saveJoins($mainEntityName, $entityId, $joins) {
     foreach ($joins as $joinEntityName => $join) {
       $values = self::filterEmptyJoins($joinEntityName, $join);
-      // FIXME: Replace/delete should only be done to known contacts
+      // TODO: REPLACE works for creating or updating contacts, but different logic would be needed if
+      // the contact was being auto-updated via a dedupe rule; in that case we would not want to
+      // delete any existing records.
       if ($values) {
         civicrm_api4($joinEntityName, 'replace', [
+          // Disable permission checks because the main entity has already been vetted
+          'checkPermissions' => FALSE,
           'where' => self::getJoinWhereClause($mainEntityName, $joinEntityName, $entityId),
           'records' => $values,
         ]);
       }
+      // REPLACE doesn't work if there are no records, have to use DELETE
       else {
         try {
           civicrm_api4($joinEntityName, 'delete', [
+            // Disable permission checks because the main entity has already been vetted
+            'checkPermissions' => FALSE,
             'where' => self::getJoinWhereClause($mainEntityName, $joinEntityName, $entityId),
           ]);
         }
@@ -128,6 +211,34 @@ class Submit extends AbstractProcessor {
           return (bool) array_filter($item);
       }
     });
+  }
+
+  /**
+   * @return array
+   */
+  public function getValues():array {
+    return $this->values;
+  }
+
+  /**
+   * @param array $values
+   * @return $this
+   */
+  public function setValues(array $values) {
+    $this->values = $values;
+    return $this;
+  }
+
+  /**
+   * @param array $records
+   * @param string $entityName
+   */
+  private function fillIdFields(array &$records, string $entityName): void {
+    foreach ($records as $index => &$record) {
+      if (empty($record['fields']['id']) && !empty($this->_entityIds[$entityName][$index]['id'])) {
+        $record['fields']['id'] = $this->_entityIds[$entityName][$index]['id'];
+      }
+    }
   }
 
 }

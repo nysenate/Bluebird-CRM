@@ -7,6 +7,7 @@
   <comment>Stores information about a mailing.</comment>
   <archive>true</archive>
   <icon>fa-envelope-o</icon>
+  <component>CiviMail</component>
   <paths>
     <add>civicrm/a/#/mailing/new</add>
     <update>civicrm/a/#/mailing/[id]</update>
@@ -16,6 +17,9 @@
     <title>Mailing ID</title>
     <type>int unsigned</type>
     <required>true</required>
+    <html>
+      <type>Number</type>
+    </html>
   </field>
   <primaryKey>
     <name>id</name>
@@ -23,7 +27,7 @@
   </primaryKey>
   <field>
     <name>domain_id</name>
-    <title>Mailing Domain</title>
+    <title>Domain ID</title>
     <type>int unsigned</type>
     <pseudoconstant>
       <table>civicrm_domain</table>
@@ -31,6 +35,9 @@
       <labelColumn>name</labelColumn>
     </pseudoconstant>
     <comment>Which site is this mailing for</comment>
+    <html>
+      <label>Domain</label>
+    </html>
     <add>3.4</add>
   </field>
   <foreignKey>
@@ -42,7 +49,7 @@
   </foreignKey>
   <field>
     <name>header_id</name>
-    <title>Mailing Header</title>
+    <title>Header ID</title>
     <type>int unsigned</type>
     <pseudoconstant>
       <table>civicrm_mailing_component</table>
@@ -51,6 +58,9 @@
       <condition>component_type = "Header"</condition>
     </pseudoconstant>
     <comment>FK to the header component.</comment>
+    <html>
+      <label>Header</label>
+    </html>
   </field>
   <foreignKey>
     <name>header_id</name>
@@ -60,7 +70,7 @@
   </foreignKey>
   <field>
     <name>footer_id</name>
-    <title>Mailing Footer</title>
+    <title>Footer ID</title>
     <type>int unsigned</type>
     <pseudoconstant>
       <table>civicrm_mailing_component</table>
@@ -69,6 +79,9 @@
       <condition>component_type = "Footer"</condition>
     </pseudoconstant>
     <comment>FK to the footer component.</comment>
+    <html>
+      <label>Footer</label>
+    </html>
   </field>
   <foreignKey>
     <name>footer_id</name>
@@ -78,9 +91,12 @@
   </foreignKey>
   <field>
     <name>reply_id</name>
-    <title>Mailing Reply</title>
+    <title>Reply ID</title>
     <type>int unsigned</type>
     <comment>FK to the auto-responder component.</comment>
+    <html>
+      <label>Reply</label>
+    </html>
   </field>
   <foreignKey>
     <name>reply_id</name>
@@ -90,9 +106,12 @@
   </foreignKey>
   <field>
     <name>unsubscribe_id</name>
-    <title>Mailing Unsubscribe</title>
+    <title>Unsubscribe ID</title>
     <type>int unsigned</type>
     <comment>FK to the unsubscribe component.</comment>
+    <html>
+      <label>Unsubscribe</label>
+    </html>
   </field>
   <foreignKey>
     <name>unsubscribe_id</name>
@@ -105,17 +124,14 @@
     <title>Mailing Resubscribe</title>
     <type>int unsigned</type>
   </field>
-  <foreignKey>
-    <name>optout_id</name>
-    <table>civicrm_mailing_component</table>
-    <key>id</key>
-    <onDelete>SET NULL</onDelete>
-  </foreignKey>
   <field>
     <name>optout_id</name>
-    <title>Mailing Opt Out</title>
+    <title>Opt Out ID</title>
     <type>int unsigned</type>
     <comment>FK to the opt-out component.</comment>
+    <html>
+      <label>Opt Out</label>
+    </html>
   </field>
   <foreignKey>
     <name>optout_id</name>
@@ -175,6 +191,7 @@
     <comment>Reply-To Email of mailing</comment>
     <html>
       <type>Text</type>
+      <label>Reply-To Email</label>
     </html>
   </field>
   <field>
@@ -202,17 +219,24 @@
     <comment>Subject of mailing</comment>
     <html>
       <type>Text</type>
+      <label>Subject</label>
     </html>
   </field>
   <field>
     <name>body_text</name>
     <type>longtext</type>
     <comment>Body of the mailing in text format.</comment>
+    <html>
+      <label>Body Text</label>
+    </html>
   </field>
   <field>
     <name>body_html</name>
     <type>longtext</type>
     <comment>Body of the mailing in html format.</comment>
+    <html>
+      <label>Body HTML</label>
+    </html>
   </field>
   <field>
     <name>url_tracking</name>
@@ -220,6 +244,7 @@
     <comment>Should we track URL click-throughs for this mailing?</comment>
     <html>
       <type>CheckBox</type>
+      <label>Url Tracking</label>
     </html>
   </field>
   <field>
@@ -228,6 +253,7 @@
     <comment>Should we forward replies back to the author?</comment>
     <html>
       <type>CheckBox</type>
+      <label>Forward Replies</label>
     </html>
   </field>
   <field>
@@ -236,6 +262,7 @@
     <comment>Should we enable the auto-responder?</comment>
     <html>
       <type>CheckBox</type>
+      <label>Auto Responder</label>
     </html>
   </field>
   <field>
@@ -255,9 +282,12 @@
   </field>
   <field>
     <name>msg_template_id</name>
-    <title>Mailing Message Template</title>
+    <title>Message Template ID</title>
     <type>int unsigned</type>
     <comment>FK to the message template.</comment>
+    <html>
+      <label>Message Template</label>
+    </html>
   </field>
   <foreignKey>
     <name>msg_template_id</name>
@@ -273,13 +303,17 @@
     <comment>Overwrite the VERP address in Reply-To</comment>
     <html>
       <type>CheckBox</type>
+      <label>Overwrite VERP</label>
     </html>
   </field>
   <field>
     <name>created_id</name>
-    <title>Mailing Creator</title>
+    <title>Created By Contact ID</title>
     <type>int unsigned</type>
     <comment>FK to Contact ID who first created this mailing</comment>
+    <html>
+      <label>Creator</label>
+    </html>
   </field>
   <foreignKey>
     <name>created_id</name>
@@ -308,13 +342,20 @@
    <required>false</required>
    <export>true</export>
    <default>CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP</default>
+    <html>
+      <label>Modified Date</label>
+    </html>
+    <readonly>true</readonly>
    <add>4.7</add>
   </field>
   <field>
     <name>scheduled_id</name>
-    <title>Scheduled By</title>
+    <title>Scheduled By Contact ID</title>
     <type>int unsigned</type>
     <comment>FK to Contact ID who scheduled this mailing</comment>
+    <html>
+      <label>Scheduled By</label>
+    </html>
   </field>
   <foreignKey>
     <name>scheduled_id</name>
@@ -337,9 +378,12 @@
   </field>
   <field>
     <name>approver_id</name>
-    <title>Approved By</title>
+    <title>Approved By Contact ID</title>
     <type>int unsigned</type>
     <comment>FK to Contact ID who approved this mailing</comment>
+    <html>
+      <label>Approved By</label>
+    </html>
   </field>
   <foreignKey>
     <name>approver_id</name>
@@ -411,17 +455,14 @@
   </field>
   <field>
     <name>campaign_id</name>
+    <component>CiviCampaign</component>
     <type>int unsigned</type>
-    <title>Mailing Campaign</title>
+    <title>Campaign ID</title>
     <comment>The campaign for which this mailing has been initiated.</comment>
-    <pseudoconstant>
-      <table>civicrm_campaign</table>
-      <keyColumn>id</keyColumn>
-      <labelColumn>title</labelColumn>
-    </pseudoconstant>
     <add>3.4</add>
     <html>
-      <type>Select</type>
+      <type>EntityRef</type>
+      <label>Campaign</label>
     </html>
   </field>
   <foreignKey>
@@ -443,11 +484,12 @@
   </field>
   <field>
     <name>sms_provider_id</name>
-    <title>Mailing SMS Provider</title>
+    <title>SMS Provider ID</title>
     <type>int unsigned</type>
     <add>4.2</add>
     <html>
       <type>Select</type>
+      <label>SMS Provider</label>
     </html>
   </field>
   <foreignKey>
@@ -463,6 +505,7 @@
     <type>varchar</type>
     <length>16</length>
     <comment>Key for validating requests related to this mailing.</comment>
+    <readonly>true</readonly>
     <add>4.5</add>
   </field>
   <index>
@@ -472,7 +515,7 @@
   </index>
   <field>
     <name>location_type_id</name>
-    <title>Location Type</title>
+    <title>Location Type ID</title>
     <type>int unsigned</type>
     <comment>With email_selection_method, determines which email address to use</comment>
     <pseudoconstant>
@@ -480,6 +523,9 @@
       <keyColumn>id</keyColumn>
       <labelColumn>display_name</labelColumn>
     </pseudoconstant>
+    <html>
+      <label>Location Type</label>
+    </html>
     <add>4.6</add>
   </field>
   <foreignKey>
@@ -498,6 +544,9 @@
     <pseudoconstant>
       <callback>CRM_Core_SelectValues::emailSelectMethods</callback>
     </pseudoconstant>
+    <html>
+      <label>Email Selection Method</label>
+    </html>
     <add>4.6</add>
   </field>
   <field>

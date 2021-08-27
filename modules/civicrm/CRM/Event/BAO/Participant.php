@@ -80,10 +80,6 @@ class CRM_Event_BAO_Participant extends CRM_Event_DAO_Participant {
       $params['participant_fee_amount'] = CRM_Utils_Rule::cleanMoney($params['participant_fee_amount']);
     }
 
-    if (!empty($params['fee_amount'])) {
-      $params['fee_amount'] = CRM_Utils_Rule::cleanMoney($params['fee_amount']);
-    }
-
     // ensure that role ids are encoded as a string
     if (isset($params['role_id']) && is_array($params['role_id'])) {
       if (in_array(key($params['role_id']), CRM_Core_DAO::acceptedSQLOperators(), TRUE)) {
@@ -656,7 +652,7 @@ INNER JOIN  civicrm_price_field field       ON ( value.price_field_id = field.id
           'contact_type' => $contactType,
           'used' => 'Unsupervised',
         ];
-        $fieldsArray = CRM_Dedupe_BAO_Rule::dedupeRuleFields($ruleParams);
+        $fieldsArray = CRM_Dedupe_BAO_DedupeRule::dedupeRuleFields($ruleParams);
 
         if (is_array($fieldsArray)) {
           foreach ($fieldsArray as $value) {
@@ -736,7 +732,6 @@ INNER JOIN  civicrm_price_field field       ON ( value.price_field_id = field.id
         ],
       ];
 
-      $participantFields['participant_status_id']['title'] .= ' (ID)';
       $participantFields['participant_role_id']['title'] .= ' (ID)';
 
       $discountFields = CRM_Core_DAO_Discount::export();
@@ -843,7 +838,7 @@ WHERE  civicrm_participant.id = {$participantId}
     if (!$participant->find()) {
       return FALSE;
     }
-    CRM_Utils_Hook::pre('delete', 'Participant', $id, CRM_Core_DAO::$_nullArray);
+    CRM_Utils_Hook::pre('delete', 'Participant', $id);
 
     $transaction = new CRM_Core_Transaction();
 
@@ -1903,7 +1898,7 @@ WHERE    civicrm_participant.contact_id = {$contactID} AND
       $eventTitle = $dao->title;
       $eventId = $dao->event_id;
     }
-    if (!$details['allow_selfcancelxfer']) {
+    if (!$details['allow_selfcancelxfer'] && !$isBackOffice) {
       $details['eligible'] = FALSE;
       $details['ineligible_message'] = ts('This event registration can not be transferred or cancelled. Contact the event organizer if you have questions.');
       return $details;
@@ -1922,7 +1917,7 @@ WHERE    civicrm_participant.contact_id = {$contactID} AND
       $start_date = $dao->start;
     }
     $timenow = new Datetime();
-    if (!$isBackOffice && !empty($time_limit)) {
+    if (!$isBackOffice && isset($time_limit)) {
       $cancelHours = abs($time_limit);
       $cancelInterval = new DateInterval("PT${cancelHours}H");
       $cancelInterval->invert = $time_limit < 0 ? 1 : 0;
@@ -1930,9 +1925,9 @@ WHERE    civicrm_participant.contact_id = {$contactID} AND
       if ($timenow > $cancelDeadline) {
         $details['eligible'] = FALSE;
         // Change the language of the status message based on whether the waitlist time limit is positive or negative.
-        $afterOrPrior = $time_limit < 0 ? 'after' : 'prior';
-        $moreOrLess = $time_limit < 0 ? 'more' : 'less';
-        $details['ineligible_message'] = ts("Registration for this event cannot be cancelled or transferred %1 than %2 hours %3 to the event's start time. Contact the event organizer if you have questions.",
+        $afterOrPrior = $time_limit <= 0 ? 'after' : 'prior to';
+        $moreOrLess = $time_limit <= 0 ? 'more' : 'fewer';
+        $details['ineligible_message'] = ts("Registration for this event cannot be cancelled or transferred %1 than %2 hours %3 the event's start time. Contact the event organizer if you have questions.",
         [1 => $moreOrLess, 2 => $cancelHours, 3 => $afterOrPrior]);
 
       }

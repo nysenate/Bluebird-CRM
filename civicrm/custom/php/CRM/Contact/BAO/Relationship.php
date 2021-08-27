@@ -717,7 +717,7 @@ class CRM_Contact_BAO_Relationship extends CRM_Contact_DAO_Relationship {
    */
   public static function del($id) {
     // delete from relationship table
-    CRM_Utils_Hook::pre('delete', 'Relationship', $id, CRM_Core_DAO::$_nullArray);
+    CRM_Utils_Hook::pre('delete', 'Relationship', $id);
 
     $relationship = self::clearCurrentEmployer($id, CRM_Core_Action::DELETE);
     $relationship->delete();
@@ -2206,69 +2206,17 @@ AND cc.sort_name LIKE '%$name%'";
    * @inheritdoc
    */
   public static function buildOptions($fieldName, $context = NULL, $props = []) {
-    if ($fieldName === 'relationship_type_id') {
-      return self::buildRelationshipTypeOptions($props);
+    // Quickform-specific format, for use when editing relationship type options in a popup from the contact relationship form
+    if ($fieldName === 'relationship_type_id' && !empty($props['is_form'])) {
+      return self::getContactRelationshipType(
+        $props['contact_id'] ?? NULL,
+        $props['relationship_direction'] ?? 'a_b',
+        $props['relationship_id'] ?? NULL,
+        $props['contact_type'] ?? NULL
+      );
     }
 
     return parent::buildOptions($fieldName, $context, $props);
-  }
-
-  /**
-   * Builds a list of options available for relationship types
-   *
-   * @param array $params
-   *   - contact_type: Limits by contact type on the "A" side
-   *   - relationship_id: Used to find the value for contact type for "B" side.
-   *     If contact_a matches provided contact_id then type of contact_b will
-   *     be used. Otherwise uses type of contact_a. Must be used with contact_id
-   *   - contact_id: Limits by contact types of this contact on the "A" side
-   *   - is_form: Returns array with keys indexed for use in a quickform
-   *   - relationship_direction: For relationship types with duplicate names
-   *     on both sides, defines which option should be returned, a_b or b_a
-   *
-   * @return array
-   */
-  public static function buildRelationshipTypeOptions($params = []) {
-    $contactId = $params['contact_id'] ?? NULL;
-    $direction = CRM_Utils_Array::value('relationship_direction', $params, 'a_b');
-    $relationshipId = $params['relationship_id'] ?? NULL;
-    $contactType = $params['contact_type'] ?? NULL;
-    $isForm = $params['is_form'] ?? NULL;
-    $showAll = FALSE;
-
-    // getContactRelationshipType will return an empty set if these are not set
-    if (!$contactId && !$relationshipId && !$contactType) {
-      $showAll = TRUE;
-    }
-
-    $labels = self::getContactRelationshipType(
-      $contactId,
-      $direction,
-      $relationshipId,
-      $contactType,
-      $showAll,
-      'label'
-    );
-
-    if ($isForm) {
-      return $labels;
-    }
-
-    $names = self::getContactRelationshipType(
-      $contactId,
-      $direction,
-      $relationshipId,
-      $contactType,
-      $showAll,
-      'name'
-    );
-
-    // ensure $names contains only entries in $labels
-    $names = array_intersect_key($names, $labels);
-
-    $nameToLabels = array_combine($names, $labels);
-
-    return $nameToLabels;
   }
 
   /**
@@ -2434,6 +2382,25 @@ SELECT count(*)
     AND is_current_member = 1";
     $result = CRM_Core_DAO::singleValueQuery($query);
     if ($result < CRM_Utils_Array::value('max_related', $membershipValues, PHP_INT_MAX)) {
+      // Convert custom_xx_id fields to custom_xx
+      // See https://lab.civicrm.org/dev/membership/-/issues/37
+      // This makes sure the value is copied and not the looked up value.
+      // Which is the case when the custom field is a contact reference field.
+      // The custom_xx contains the display name of the contact, instead of the contact id.
+      // The contact id is then available in custom_xx_id.
+      foreach ($membershipValues as $field => $value) {
+        if (stripos($field, 'custom_') !== 0) {
+          // No a custom field
+          continue;
+        }
+        $custom_id = substr($field, 7);
+        if (substr($custom_id, -3) === '_id') {
+          $custom_id = substr($custom_id, 0, -3);
+          unset($membershipValues[$field]);
+          $membershipValues['custom_' . $custom_id] = $value;
+        }
+      }
+
       civicrm_api3('Membership', 'create', $membershipValues);
     }
     return $membershipValues;

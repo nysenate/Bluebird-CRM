@@ -72,6 +72,7 @@ class CRM_Core_CodeGen_Specification {
     $attributes = '';
     $this->checkAndAppend($attributes, $dbXML, 'character_set', 'DEFAULT CHARACTER SET ', '');
     $this->checkAndAppend($attributes, $dbXML, 'collate', 'COLLATE ', '');
+    $attributes .= ' ROW_FORMAT=DYNAMIC';
     $database['attributes'] = $attributes;
 
     $tableAttributes_modern = $tableAttributes_simple = '';
@@ -214,7 +215,9 @@ class CRM_Core_CodeGen_Specification {
       'title' => $tableXML->title ?? $titleFromClass,
       'titlePlural' => $tableXML->titlePlural ?? CRM_Utils_String::pluralize($tableXML->title ?? $titleFromClass),
       'icon' => $tableXML->icon ?? NULL,
+      'labelField' => $tableXML->labelField ?? NULL,
       'add' => $tableXML->add ?? NULL,
+      'component' => $tableXML->component ?? NULL,
       'paths' => (array) ($tableXML->paths ?? []),
       'labelName' => substr($name, 8),
       'className' => $this->classNames[$name],
@@ -269,7 +272,9 @@ class CRM_Core_CodeGen_Specification {
           $this->getForeignKey($foreignXML, $fields, $foreign, $name);
         }
       }
-      $table['foreignKey'] = &$foreign;
+      if (!empty($foreign)) {
+        $table['foreignKey'] = &$foreign;
+      }
     }
 
     if ($this->value('dynamicForeignKey', $tableXML)) {
@@ -282,7 +287,9 @@ class CRM_Core_CodeGen_Specification {
           $this->getDynamicForeignKey($foreignXML, $dynamicForeign, $name);
         }
       }
-      $table['dynamicForeignKey'] = $dynamicForeign;
+      if (!empty($dynamicForeign)) {
+        $table['dynamicForeignKey'] = $dynamicForeign;
+      }
     }
 
     $tables[$name] = &$table;
@@ -313,8 +320,6 @@ class CRM_Core_CodeGen_Specification {
         $field['rows'] = isset($fieldXML->html) ? $this->value('rows', $fieldXML->html) : NULL;
         $field['cols'] = isset($fieldXML->html) ? $this->value('cols', $fieldXML->html) : NULL;
         break;
-
-      break;
 
       case 'datetime':
         $field['sqlType'] = $field['phpType'] = $type;
@@ -374,9 +379,11 @@ class CRM_Core_CodeGen_Specification {
     }
     $field['headerPattern'] = $this->value('headerPattern', $fieldXML);
     $field['dataPattern'] = $this->value('dataPattern', $fieldXML);
+    $field['readonly'] = $this->value('readonly', $fieldXML);
     $field['uniqueName'] = $this->value('uniqueName', $fieldXML);
     $field['uniqueTitle'] = $this->value('uniqueTitle', $fieldXML);
     $field['serialize'] = $this->value('serialize', $fieldXML);
+    $field['component'] = $this->value('component', $fieldXML);
     $field['html'] = $this->value('html', $fieldXML);
     $field['contactType'] = $this->value('contactType', $fieldXML);
     if (isset($fieldXML->permission)) {
@@ -530,7 +537,7 @@ class CRM_Core_CodeGen_Specification {
     // all fieldnames have to be defined and should exist in schema.
     foreach ($primaryKey['field'] as $fieldName) {
       if (!$fieldName) {
-        echo "Invalid field defination for index $name\n";
+        echo "Invalid field definition for index '$name' in table ${table['name']}\n";
         return;
       }
       $parenOffset = strpos($fieldName, '(');
@@ -538,7 +545,7 @@ class CRM_Core_CodeGen_Specification {
         $fieldName = substr($fieldName, 0, $parenOffset);
       }
       if (!array_key_exists($fieldName, $fields)) {
-        echo "Table does not contain $fieldName\n";
+        echo "Missing definition of field '$fieldName' for index '$name' in table ${table['name']}\n";
         print_r($fields);
         exit();
       }
@@ -594,7 +601,7 @@ class CRM_Core_CodeGen_Specification {
     // all fieldnames have to be defined and should exist in schema.
     foreach ($index['field'] as $fieldName) {
       if (!$fieldName) {
-        echo "Invalid field defination for index $indexName\n";
+        echo "Invalid field definition for index '$indexName'\n";
         return;
       }
       $parenOffset = strpos($fieldName, '(');
@@ -602,7 +609,7 @@ class CRM_Core_CodeGen_Specification {
         $fieldName = substr($fieldName, 0, $parenOffset);
       }
       if (!array_key_exists($fieldName, $fields)) {
-        echo "Table does not contain $fieldName\n";
+        echo "Missing definition of field '$fieldName' for index '$indexName'. Fields defined:\n";
         print_r($fields);
         exit();
       }
@@ -621,7 +628,7 @@ class CRM_Core_CodeGen_Specification {
 
     /** need to make sure there is a field of type name */
     if (!array_key_exists($name, $fields)) {
-      echo "foreign $name in $currentTableName does not have a field definition, ignoring\n";
+      echo "Foreign key '$name' in $currentTableName does not have a field definition, ignoring\n";
       return;
     }
 

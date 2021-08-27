@@ -51,6 +51,28 @@ class CRM_Extension_Info {
   public $tags = [];
 
   /**
+   * @var array
+   *   List of authors.
+   *   Ex: [0 => ['name' => 'Alice', 'email' => 'a@b', 'homepage' => 'https://example.com', 'role' => 'Person']]
+   */
+  public $authors = [];
+
+  /**
+   * @var array|null
+   *   The current maintainer at time of publication.
+   *   This is deprecated in favor of $authors.
+   * @deprecated
+   */
+  public $maintainer = NULL;
+
+  /**
+   * @var string|null
+   *  The name of a class which handles the install/upgrade lifecycle.
+   * @see \CRM_Extension_Upgrader_Interface
+   */
+  public $upgrader = NULL;
+
+  /**
    * Load extension info an XML file.
    *
    * @param $file
@@ -135,13 +157,14 @@ class CRM_Extension_Info {
     $this->type = (string) $info->attributes()->type;
     $this->file = (string) $info->file;
     $this->label = (string) $info->name;
+    $this->upgrader = (string) $info->upgrader;
 
     // Convert first level variables to CRM_Core_Extension properties
     // and deeper into arrays. An exception for URLS section, since
     // we want them in special format.
     foreach ($info as $attr => $val) {
       if (count($val->children()) == 0) {
-        $this->$attr = (string) $val;
+        $this->$attr = trim((string) $val);
       }
       elseif ($attr === 'urls') {
         $this->urls = [];
@@ -160,6 +183,13 @@ class CRM_Extension_Info {
             'path' => (string) $psr4->attributes()->path,
           ];
         }
+        foreach ($val->psr0 as $psr0) {
+          $this->classloader[] = [
+            'type' => 'psr0',
+            'prefix' => (string) $psr0->attributes()->prefix,
+            'path' => (string) $psr0->attributes()->path,
+          ];
+        }
       }
       elseif ($attr === 'tags') {
         $this->tags = [];
@@ -169,6 +199,22 @@ class CRM_Extension_Info {
       }
       elseif ($attr === 'requires') {
         $this->requires = $this->filterRequirements($val);
+      }
+      elseif ($attr === 'maintainer') {
+        $this->maintainer = CRM_Utils_XML::xmlObjToArray($val);
+        $this->authors[] = [
+          'name' => (string) $val->author,
+          'email' => (string) $val->email,
+          'role' => 'Maintainer',
+        ];
+      }
+      elseif ($attr === 'authors') {
+        foreach ($val->author as $author) {
+          $this->authors[] = $thisAuthor = CRM_Utils_XML::xmlObjToArray($author);
+          if ('maintainer' === strtolower($thisAuthor['role'] ?? '')) {
+            $this->maintainer = ['author' => $thisAuthor['name'], 'email' => $thisAuthor['email'] ?? NULL];
+          }
+        }
       }
       else {
         $this->$attr = CRM_Utils_XML::xmlObjToArray($val);

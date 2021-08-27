@@ -6,12 +6,16 @@
   <comment>various types of CiviEvent participant statuses</comment>
   <add>3.0</add>
   <log>true</log>
+  <component>CiviEvent</component>
   <field>
     <name>id</name>
     <title>Participant Status Type ID</title>
     <type>int unsigned</type>
     <required>true</required>
     <comment>unique participant status type id</comment>
+    <html>
+      <type>Number</type>
+    </html>
     <add>3.0</add>
   </field>
   <primaryKey>

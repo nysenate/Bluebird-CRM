@@ -23,9 +23,12 @@ namespace Civi\Api4;
  *
  * This places a dashboard item on a user's home screen.
  *
+ * @searchable bridge
  * @see \Civi\Api4\Dashboard
+ * @searchable none
  * @package Civi\Api4
  */
-class DashboardContact extends Generic\BridgeEntity {
+class DashboardContact extends Generic\DAOEntity {
+  use Generic\Traits\EntityBridge;
 
 }

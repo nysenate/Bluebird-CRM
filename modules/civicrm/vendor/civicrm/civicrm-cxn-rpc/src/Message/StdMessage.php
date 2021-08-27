@@ -1,20 +1,22 @@
 <?php
 
-/*
+/**
+ *
  * This file is part of the civicrm-cxn-rpc package.
  *
  * Copyright (c) CiviCRM LLC <info@civicrm.org>
  *
  * For the full copyright and license information, please view the LICENSE
  * file that was distributed with this package.
+ *
  */
+
 
 namespace Civi\Cxn\Rpc\Message;
 
 use Civi\Cxn\Rpc\AesHelper;
 use Civi\Cxn\Rpc\Exception\InvalidMessageException;
 use Civi\Cxn\Rpc\Message;
-use Civi\Cxn\Rpc\CxnStore\CxnStoreInterface;
 use Civi\Cxn\Rpc\Constants;
 
 class StdMessage extends Message {
@@ -42,14 +44,16 @@ class StdMessage extends Message {
    */
   public function encode() {
     list($body, $signature) = AesHelper::encryptThenSign($this->secret, json_encode($this->data));
-    return self::NAME // unsignable; determines decoder
-    . Constants::PROTOCOL_DELIM . $this->cxnId // unsignable; determines key
+    // unsignable; determines decoder
+    return self::NAME
+    // unsignable; determines key
+    . Constants::PROTOCOL_DELIM . $this->cxnId
     . Constants::PROTOCOL_DELIM . $signature
     . Constants::PROTOCOL_DELIM . $body;
   }
 
   /**
-   * @param CxnStoreInterface $cxnStore
+   * @param \Civi\Cxn\Rpc\CxnStore\CxnStoreInterface $cxnStore
    *   A repository that contains shared secrets.
    * @param string $message
    *   Ciphertext.
@@ -98,6 +102,5 @@ class StdMessage extends Message {
   public function setSecret($secret) {
     $this->secret = $secret;
   }
-
 
 }

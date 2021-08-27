@@ -19,6 +19,7 @@
  * This class contains functions for email handling.
  */
 class CRM_Core_BAO_Email extends CRM_Core_DAO_Email {
+  use CRM_Contact_AccessTrait;
 
   /**
    * Create email address.
@@ -44,13 +45,17 @@ class CRM_Core_BAO_Email extends CRM_Core_DAO_Email {
       $email->email = $strtolower($email->email);
     }
 
-    /*
-     * since we're setting bulkmail for 1 of this contact's emails, first reset all their other emails to is_bulkmail false
-     *  We shouldn't set the current email to false even though we
-     *  are about to reset it to avoid contaminating the changelog if logging is enabled.
-     * (only 1 email address can have is_bulkmail = true)
-     */
-    if ($email->is_bulkmail && !empty($params['contact_id']) && !self::isMultipleBulkMail()) {
+    //
+    // Since we're setting bulkmail for 1 of this contact's emails, first reset
+    // all their other emails to is_bulkmail false. We shouldn't set the current
+    // email to false even though we are about to reset it to avoid
+    // contaminating the changelog if logging is enabled.  (only 1 email
+    // address can have is_bulkmail = true)
+    //
+    // Note setting a the is_bulkmail to '' in $params results in $email->is_bulkmail === 'null'.
+    // @see https://lab.civicrm.org/dev/core/-/issues/2254
+    //
+    if ($email->is_bulkmail == 1 && !empty($params['contact_id']) && !self::isMultipleBulkMail()) {
       $sql = "
 UPDATE civicrm_email
 SET    is_bulkmail = 0
@@ -66,6 +71,12 @@ WHERE  contact_id = {$params['contact_id']}
     self::holdEmail($email);
 
     $email->save();
+
+    $contactId = (int) ($email->contact_id ?? CRM_Core_DAO::getFieldValue(__CLASS__, $email->id, 'contact_id'));
+    if ($contactId && $email->is_primary) {
+      $address = $email->email ?? CRM_Core_DAO::getFieldValue(__CLASS__, $email->id, 'email');
+      self::updateContactName($contactId, $address);
+    }
 
     if ($email->is_primary) {
       // update the UF user email if that has changed
@@ -355,6 +366,21 @@ AND    reset_date IS NULL
       }
     }
     return $contactFields;
+  }
+
+  /**
+   *
+   *
+   * @param int $contactId
+   * @param string $primaryEmail
+   */
+  public static function updateContactName($contactId, string $primaryEmail) {
+    if (is_string($primaryEmail) && $primaryEmail !== '' &&
+      !CRM_Contact_BAO_Contact::hasName(['id' => $contactId])
+    ) {
+      CRM_Core_DAO::setFieldValue('CRM_Contact_DAO_Contact', $contactId, 'display_name', $primaryEmail);
+      CRM_Core_DAO::setFieldValue('CRM_Contact_DAO_Contact', $contactId, 'sort_name', $primaryEmail);
+    }
   }
 
 }

@@ -430,7 +430,7 @@ function _civicrm_api3_profile_getbillingpseudoprofile(&$params) {
     'api.address.get.2' => ['is_billing' => TRUE, 'return' => $addressFields],
     'api.email.get.1' => ['location_type_id' => 'Billing'],
     'api.email.get.2' => ['is_billing' => TRUE],
-    'return' => 'api.email.get, api.address.get, api.address.getoptions, country, state_province, email, first_name, last_name, middle_name, ' . implode($addressFields, ','),
+    'return' => 'api.email.get, api.address.get, api.address.getoptions, country, state_province, email, first_name, last_name, middle_name, ' . implode(',', $addressFields),
   ]
   );
 
@@ -489,7 +489,7 @@ function _civicrm_api3_profile_getbillingpseudoprofile(&$params) {
  *
  * @return array|void
  */
-function _civicrm_api3_buildprofile_submitfields($profileID, $optionsBehaviour = 1, $is_flush) {
+function _civicrm_api3_buildprofile_submitfields($profileID, $optionsBehaviour, $is_flush) {
   static $profileFields = [];
   if ($is_flush) {
     $profileFields = [];
@@ -533,6 +533,7 @@ function _civicrm_api3_buildprofile_submitfields($profileID, $optionsBehaviour =
     $hardCodedEntityFields = [
       'state_province' => 'state_province_id',
       'country' => 'country_id',
+      'county' => 'county_id',
       'participant_status' => 'status_id',
       'gender' => 'gender_id',
       'financial_type' => 'financial_type_id',
@@ -614,7 +615,7 @@ function _civicrm_api3_buildprofile_submitfields($profileID, $optionsBehaviour =
  * @return bool
  */
 function _civicrm_api3_order_by_weight($a, $b) {
-  return ($b['weight'] ?? 0) < ($a['weight'] ?? 0);
+  return ($b['weight'] ?? 0) < ($a['weight'] ?? 0) ? 1 : -1;
 }
 
 /**
@@ -632,23 +633,23 @@ function _civicrm_api3_map_profile_fields_to_entity(&$field) {
     $entity = 'contact';
   }
   $entity = _civicrm_api_get_entity_name_from_camel($entity);
-  $locationFields = ['email' => 'email'];
+  $locationFields = ['email', 'phone'];
   $fieldName = $field['field_name'];
   if (!empty($field['location_type_id'])) {
-    if ($fieldName == 'email') {
-      $entity = 'email';
+    if (in_array($fieldName, $locationFields)) {
+      $entity = $fieldName;
     }
     else {
       $entity = 'address';
     }
     $fieldName .= '-' . $field['location_type_id'];
   }
-  elseif (array_key_exists($fieldName, $locationFields)) {
+  elseif (in_array($fieldName, $locationFields)) {
+    $entity = $fieldName;
     $fieldName .= '-Primary';
-    $entity = 'email';
   }
   if (!empty($field['phone_type_id'])) {
-    $fieldName .= '-' . $field['location_type_id'];
+    $fieldName .= '-' . $field['phone_type_id'];
     $entity = 'phone';
   }
 

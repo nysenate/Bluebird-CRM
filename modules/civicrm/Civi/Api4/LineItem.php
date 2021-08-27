@@ -21,8 +21,10 @@ namespace Civi\Api4;
 /**
  * LineItem entity.
  *
+ * @searchable secondary
  * @package Civi\Api4
  */
 class LineItem extends Generic\DAOEntity {
+  use Generic\Traits\ReadOnly;
 
 }

@@ -34,21 +34,6 @@ class CRM_Contact_Import_Form_DataSource extends CRM_Core_Form {
    * @throws \CRM_Core_Exception
    */
   public function preProcess() {
-
-    //Test database user privilege to create table(Temporary) CRM-4725
-    $errorScope = CRM_Core_TemporaryErrorScope::ignoreException();
-    $daoTestPrivilege = new CRM_Core_DAO();
-    $tempTable1 = CRM_Utils_SQL_TempTable::build()->getName();
-    $tempTable2 = CRM_Utils_SQL_TempTable::build()->getName();
-    $daoTestPrivilege->query("CREATE TEMPORARY TABLE {$tempTable1} (test int) ENGINE=InnoDB");
-    $daoTestPrivilege->query("CREATE TEMPORARY TABLE {$tempTable2} (test int) ENGINE=InnoDB");
-    $daoTestPrivilege->query("DROP TEMPORARY TABLE IF EXISTS {$tempTable1}, {$tempTable2}");
-    unset($errorScope);
-
-    if ($daoTestPrivilege->_lastError) {
-      $this->invalidConfig(ts('Database Configuration Error: Insufficient permissions. Import requires that the CiviCRM database user has permission to create temporary tables. Contact your site administrator for assistance.'));
-    }
-
     $results = [];
     $config = CRM_Core_Config::singleton();
     $handler = opendir($config->uploadDir);
@@ -181,7 +166,7 @@ class CRM_Contact_Import_Form_DataSource extends CRM_Core_Form {
 
     $this->addElement('text', 'fieldSeparator', ts('Import Field Separator'), ['size' => 2]);
 
-    if (Civi::settings()->get('address_standardization_provider') == 'USPS') {
+    if (Civi::settings()->get('address_standardization_provider') === 'USPS') {
       $this->addElement('checkbox', 'disableUSPS', ts('Disable USPS address validation during import?'));
     }
 
@@ -248,7 +233,7 @@ class CRM_Contact_Import_Form_DataSource extends CRM_Core_Form {
     while (($dataSourceFile = readdir($dataSourceHandle)) !== FALSE) {
       $fileType = filetype($dataSourceDir . $dataSourceFile);
       $matches = [];
-      if (($fileType == 'file' || $fileType == 'link') &&
+      if (($fileType === 'file' || $fileType === 'link') &&
         preg_match('/^(.+)\.php$/', $dataSourceFile, $matches)
       ) {
         $dataSourceClass = "CRM_Import_DataSource_" . $matches[1];
@@ -293,8 +278,7 @@ class CRM_Contact_Import_Form_DataSource extends CRM_Core_Form {
       $this->set('dataSource', $this->_params['dataSource']);
       $this->set('skipColumnHeader', CRM_Utils_Array::value('skipColumnHeader', $this->_params));
 
-      $session = CRM_Core_Session::singleton();
-      $session->set('dateTypes', $storeParams['dateFormats']);
+      CRM_Core_Session::singleton()->set('dateTypes', $storeParams['dateFormats']);
 
       // Get the PEAR::DB object
       $dao = new CRM_Core_DAO();
@@ -393,10 +377,9 @@ class CRM_Contact_Import_Form_DataSource extends CRM_Core_Form {
   /**
    * Return a descriptive name for the page, used in wizard header
    *
-   *
    * @return string
    */
-  public function getTitle() {
+  public function getTitle(): string {
     return ts('Choose Data Source');
   }
 

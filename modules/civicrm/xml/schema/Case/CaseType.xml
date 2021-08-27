@@ -6,12 +6,16 @@
   <comment>Case type definition</comment>
   <add>4.5</add>
   <log>true</log>
+  <component>CiviCase</component>
   <field>
     <name>id</name>
     <title>Case Type ID</title>
     <type>int unsigned</type>
     <required>true</required>
     <comment>Autoincremented type id</comment>
+    <html>
+      <type>Number</type>
+    </html>
     <add>4.5</add>
   </field>
   <primaryKey>
@@ -56,7 +60,8 @@
     <name>is_active</name>
     <title>Case Type Is Active</title>
     <type>boolean</type>
-    <comment>Is this entry active?</comment>
+    <comment>Is this case type enabled?</comment>
+    <default>1</default>
     <add>4.5</add>
   </field>
   <field>

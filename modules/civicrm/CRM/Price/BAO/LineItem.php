@@ -52,11 +52,8 @@ class CRM_Price_BAO_LineItem extends CRM_Price_DAO_LineItem {
         $params['unit_price'] = 0;
       }
     }
-
-    $taxRates = CRM_Core_PseudoConstant::getTaxRates();
-    if (isset($params['financial_type_id'], $params['line_total'], $taxRates[$params['financial_type_id']])) {
-      $taxRate = $taxRates[$params['financial_type_id']];
-      $params['tax_amount'] = ($taxRate / 100) * $params['line_total'];
+    if (isset($params['financial_type_id'], $params['line_total'])) {
+      $params['tax_amount'] = self::getTaxAmountForLineItem($params);
     }
 
     $lineItemBAO = new CRM_Price_BAO_LineItem();
@@ -424,7 +421,7 @@ WHERE li.contribution_id = %1";
    * @param $amount
    * @param array $otherParams
    */
-  public static function syncLineItems($entityId, $entityTable = 'civicrm_contribution', $amount, $otherParams = NULL) {
+  public static function syncLineItems($entityId, $entityTable, $amount, $otherParams = NULL) {
     if (!$entityId || CRM_Utils_System::isNull($amount)) {
       return;
     }
@@ -490,10 +487,10 @@ WHERE li.contribution_id = %1";
   public static function getLineItemArray(&$params, $entityId = NULL, $entityTable = 'contribution', $isRelatedID = FALSE) {
     if (!$entityId) {
       $priceSetDetails = CRM_Price_BAO_PriceSet::getDefaultPriceSet($entityTable);
-      $totalAmount = CRM_Utils_Array::value('partial_payment_total', $params, CRM_Utils_Array::value('total_amount', $params));
+      $totalAmount = $params['total_amount'] ?? 0;
       $financialType = $params['financial_type_id'] ?? NULL;
       foreach ($priceSetDetails as $values) {
-        if ($entityTable == 'membership') {
+        if ($entityTable === 'membership') {
           if ($isRelatedID != $values['membership_type_id']) {
             continue;
           }
@@ -502,7 +499,7 @@ WHERE li.contribution_id = %1";
           }
           $financialType = $values['financial_type_id'];
         }
-        $params['line_item'][$values['setID']][$values['priceFieldID']] = [
+        $lineItem = [
           'price_field_id' => $values['priceFieldID'],
           'price_field_value_id' => $values['priceFieldValueID'],
           'label' => $values['label'],
@@ -512,6 +509,8 @@ WHERE li.contribution_id = %1";
           'financial_type_id' => $financialType,
           'membership_type_id' => $values['membership_type_id'],
         ];
+        $lineItem['tax_amount'] = self::getTaxAmountForLineItem($lineItem);
+        $params['line_item'][$values['setID']][$values['priceFieldID']] = $lineItem;
         break;
       }
     }
@@ -529,7 +528,7 @@ WHERE li.contribution_id = %1";
             $params['is_quick_config'] = CRM_Core_DAO::getFieldValue('CRM_Price_DAO_PriceSet', $setID, 'is_quick_config');
           }
           if (!empty($params['is_quick_config']) && array_key_exists('total_amount', $params)
-            && $totalEntityId == 1
+            && $totalEntityId == 1 && count($lineItems) == 1
           ) {
             $values['line_total'] = $values['unit_price'] = $params['total_amount'];
           }
@@ -1072,6 +1071,19 @@ WHERE li.contribution_id = %1";
   }
 
   /**
+   * Get the tax rate for the given line item.
+   *
+   * @param array $params
+   *
+   * @return float
+   */
+  protected static function getTaxAmountForLineItem(array $params): float {
+    $taxRates = CRM_Core_PseudoConstant::getTaxRates();
+    $taxRate = $taxRates[$params['financial_type_id']] ?? 0;
+    return ($taxRate / 100) * $params['line_total'];
+  }
+
+  /**
    * Helper function to retrieve financial trxn parameters to reverse
    *  for given financial item identified by $financialItemID
    *
@@ -1227,6 +1239,19 @@ WHERE li.contribution_id = %1";
    */
   protected function getSalesTaxTerm() {
     return CRM_Contribute_BAO_Contribution::checkContributeSettings('tax_term');
+  }
+
+  /**
+   * Whitelist of possible values for the entity_table field
+   *
+   * @return array
+   */
+  public static function entityTables(): array {
+    return [
+      'civicrm_contribution' => ts('Contribution'),
+      'civicrm_participant' => ts('Participant'),
+      'civicrm_membership' => ts('Membership'),
+    ];
   }
 
 }

@@ -42,7 +42,7 @@ Once the extension is installed, you need to add the payment processor(s) and in
 
 5. For the legacy processor, you can use a shared test account with Agent Code = TEST88 and Password = TEST88. This is a shared test account, so don't put in any private information.
 
-6. For the 1stPay processor, you should be able to use the same credentials with the different site URL as pre-populated.
+6. For the 1stPay processor, you may be able to use the same credentials with the different site URL as pre-populated, but some set up is needed. Documentation of this thanks to @twjordan https://gist.github.com/twjordan/68451998a68f072e079536f205486007
 
 7. If you'd like to test using live workflows, you can just temporarily use the test account credentials in your live processor fields.
 

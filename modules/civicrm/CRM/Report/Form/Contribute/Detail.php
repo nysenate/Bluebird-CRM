@@ -321,8 +321,8 @@ class CRM_Report_Form_Contribute_Detail extends CRM_Report_Form {
               'title' => ts('Contribution Ordinality'),
               'operatorType' => CRM_Report_Form::OP_MULTISELECT,
               'options' => [
-                0 => 'First by Contributor',
-                1 => 'Second or Later by Contributor',
+                0 => ts('First by Contributor'),
+                1 => ts('Second or Later by Contributor'),
               ],
               'type' => CRM_Utils_Type::T_INT,
             ],
@@ -572,6 +572,7 @@ GROUP BY {$this->_aliases['civicrm_contribution']}.currency";
 
     // we inner join with temp1 to restrict soft contributions to those in temp1 table.
     // no group by here as we want to display as many soft credit rows as actually exist.
+    CRM_Utils_Hook::alterReportVar('sql', $this, $this);
     $sql = "{$select} {$this->_from} {$this->_where} $this->_groupBy";
     $this->createTemporaryTable('civireport_contribution_detail_temp2', $sql);
 

@@ -50,12 +50,6 @@
     {include file="CRM/Contribute/Form/Contribution/PreviewHeader.tpl"}
   {/if}
 
-  {if $displayCaptchaWarning}
-    <div class="messages status no-popup">
-      {ts}To display reCAPTCHA on form you must get an API key from<br /> <a href='https://www.google.com/recaptcha/admin/create'>https://www.google.com/recaptcha/admin/create</a>{/ts}
-    </div>
-  {/if}
-
   {if call_user_func(array('CRM_Core_Permission','check'), 'administer CiviCRM') }
     {capture assign="buttonTitle"}{ts}Configure Contribution Page{/ts}{/capture}
     {crmButton target="_blank" p="civicrm/admin/contribute/settings" q="reset=1&action=update&id=`$contributionPageID`" fb=1 title="$buttonTitle" icon="fa-wrench"}{ts}Configure{/ts}{/crmButton}
@@ -96,7 +90,7 @@
       {else}
         <div class="display-block">
           <td class="label">{$form.total_amount.label}</td>
-          <td><span>{$form.total_amount.html|crmMoney}&nbsp;&nbsp;{if $taxAmount}{ts 1=$taxTerm 2=$taxAmount|crmMoney}(includes %1 of %2){/ts}{/if}</span></td>
+          <td><span>{$form.total_amount.html}&nbsp;&nbsp;{if $taxAmount}{ts 1=$taxTerm 2=$taxAmount|crmMoney}(includes %1 of %2){/ts}{/if}</span></td>
         </div>
       {/if}
     {else}
@@ -145,14 +139,16 @@
         <div class="crm-public-form-item crm-section {$form.is_recur.name}-section">
           <div class="label">&nbsp;</div>
           <div class="content">
-            {$form.is_recur.html} {$form.is_recur.label} {ts}every{/ts}
+            {$form.is_recur.html} {$form.is_recur.label}
             {if $is_recur_interval}
               {$form.frequency_interval.html}
             {/if}
-            {if $one_frequency_unit}
-              {$frequency_unit}
-            {else}
-              {$form.frequency_unit.html}
+            {if !$all_text_recur}
+              {if $one_frequency_unit}
+                {$form.frequency_interval.label}
+              {else}
+                {$form.frequency_unit.html}
+              {/if}
             {/if}
             {if $is_recur_installments}
               <span id="recur_installments_num">

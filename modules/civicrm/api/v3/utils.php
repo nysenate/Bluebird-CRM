@@ -89,7 +89,7 @@ function civicrm_api3_verify_mandatory($params, $daoName = NULL, $keys = [], $ve
     else {
       // Disallow empty values except for the number zero.
       // TODO: create a utility for this since it's needed in many places.
-      if (!array_key_exists($key, $params) || (empty($params[$key]) && $params[$key] !== 0 && $params[$key] !== '0')) {
+      if (!array_key_exists($key, $params) || (empty($params[$key]) && $params[$key] !== 0.0 && $params[$key] !== 0 && $params[$key] !== '0')) {
         $unmatched[] = $key;
       }
     }
@@ -320,9 +320,8 @@ function _civicrm_api3_get_DAO($name) {
   if ($name === 'MailingRecipients') {
     return 'CRM_Mailing_DAO_Recipients';
   }
-  // FIXME: DAO should be renamed CRM_ACL_DAO_AclRole
   if ($name === 'AclRole') {
-    return 'CRM_ACL_DAO_EntityRole';
+    return 'CRM_ACL_DAO_ACLEntityRole';
   }
   // FIXME: DAO should be renamed CRM_SMS_DAO_SmsProvider
   // But this would impact SMS extensions so need to coordinate
@@ -330,10 +329,23 @@ function _civicrm_api3_get_DAO($name) {
   if ($name === 'SmsProvider') {
     return 'CRM_SMS_DAO_Provider';
   }
+  // Entity was renamed to CRM_Dedupe_DAO_DedupeRule for APIv4
+  if ($name === 'Rule') {
+    return 'CRM_Dedupe_DAO_DedupeRule';
+  }
+  // Entity was renamed to CRM_Dedupe_DAO_DedupeRuleGroup for APIv4
+  if ($name === 'RuleGroup') {
+    return 'CRM_Dedupe_DAO_DedupeRuleGroup';
+  }
+  // Entity was renamed to CRM_Dedupe_DAO_DedupeException for APIv4
+  if ($name === 'Exception') {
+    return 'CRM_Dedupe_DAO_DedupeException';
+  }
   // FIXME: DAO names should follow CamelCase convention
   if ($name === 'Im' || $name === 'Acl' || $name === 'Pcp') {
     $name = strtoupper($name);
   }
+
   $dao = CRM_Core_DAO_AllCoreTables::getFullName($name);
   if ($dao || !$name) {
     return $dao;
@@ -1076,6 +1088,11 @@ function _civicrm_api3_object_to_array_unique_fields(&$dao, &$values) {
  *   ID of entity per $extends.
  */
 function _civicrm_api3_custom_format_params($params, &$values, $extends, $entityId = NULL) {
+  if (!empty($params['custom'])) {
+    // The Import class does the formatting first - ideally it wouldn't but this early return
+    // provides transitional support.
+    return;
+  }
   $values['custom'] = [];
   $checkCheckBoxField = FALSE;
   $entity = $extends;
@@ -2061,7 +2078,7 @@ function _civicrm_api3_validate_integer(&$params, $fieldName, &$fieldInfo, $enti
         $fieldValue = NULL;
       }
     }
-    if (!empty($fieldInfo['pseudoconstant']) || !empty($fieldInfo['options'])) {
+    if (!empty($fieldInfo['pseudoconstant']) || !empty($fieldInfo['options']) || $fieldName === 'campaign_id') {
       $additional_lookup_params = [];
       if (strtolower($entity) == 'address' && $fieldName == 'state_province_id') {
         $country_id = _civicrm_api3_resolve_country_id($params);
@@ -2186,11 +2203,6 @@ function _civicrm_api3_validate_html(&$params, &$fieldName, $fieldInfo) {
   if (strpos($op, 'NULL') || strpos($op, 'EMPTY')) {
     return;
   }
-  if ($fieldValue) {
-    if (!CRM_Utils_Rule::xssString($fieldValue)) {
-      throw new API_Exception('Input contains illegal SCRIPT tag.', ["field" => $fieldName, "error_code" => "xss"]);
-    }
-  }
 }
 
 /**
@@ -2219,11 +2231,6 @@ function _civicrm_api3_validate_string(&$params, &$fieldName, &$fieldInfo, $enti
 
   if ($fieldValue) {
     foreach ((array) $fieldValue as $key => $value) {
-      foreach ([$fieldValue, $key, $value] as $input) {
-        if (!CRM_Utils_Rule::xssString($input)) {
-          throw new Exception('Input contains illegal SCRIPT tag.');
-        }
-      }
       if ($fieldName == 'currency') {
         //When using IN operator $fieldValue is a array of currency codes
         if (!CRM_Utils_Rule::currencyCode($value)) {
@@ -2481,11 +2488,77 @@ function _civicrm_api3_field_value_check(&$params, $fieldName, $type = NULL) {
  */
 function _civicrm_api3_basic_array_get($entity, $params, $records, $idCol, $filterableFields) {
   $options = _civicrm_api3_get_options_from_params($params, TRUE, $entity, 'get');
-  // TODO // $sort = CRM_Utils_Array::value('sort', $options, NULL);
   $offset = $options['offset'] ?? NULL;
   $limit = $options['limit'] ?? NULL;
 
+  $sort = !empty($options['sort']) ? explode(', ', $options['sort']) : NULL;
+  if ($sort) {
+    usort($records, function($a, $b) use ($sort) {
+      foreach ($sort as $field) {
+        [$field, $dir] = array_pad(explode(' ', $field), 2, 'asc');
+        $modifier = strtolower($dir) == 'asc' ? 1 : -1;
+        if (isset($a[$field]) && isset($b[$field])) {
+          if ($a[$field] == $b[$field]) {
+            continue;
+          }
+          return (strnatcasecmp($a[$field], $b[$field]) * $modifier);
+        }
+        elseif (isset($a[$field]) || isset($b[$field])) {
+          return ((isset($a[$field]) ? 1 : -1) * $modifier);
+        }
+      }
+      return 0;
+    });
+  }
+
   $matches = [];
+
+  $isMatch = function($recordVal, $searchVal) {
+    $operator = '=';
+    if (is_array($searchVal) && count($searchVal) === 1 && in_array(array_keys($searchVal)[0], CRM_Core_DAO::acceptedSQLOperators())) {
+      $operator = array_keys($searchVal)[0];
+      $searchVal = array_values($searchVal)[0];
+    }
+    switch ($operator) {
+      case '=':
+      case '!=':
+      case '<>':
+        return ($recordVal == $searchVal) == ($operator == '=');
+
+      case 'IS NULL':
+      case 'IS NOT NULL':
+        return is_null($recordVal) == ($operator == 'IS NULL');
+
+      case '>':
+        return $recordVal > $searchVal;
+
+      case '>=':
+        return $recordVal >= $searchVal;
+
+      case '<':
+        return $recordVal < $searchVal;
+
+      case '<=':
+        return $recordVal <= $searchVal;
+
+      case 'BETWEEN':
+      case 'NOT BETWEEN':
+        $between = ($recordVal >= $searchVal[0] && $recordVal <= $searchVal[1]);
+        return $between == ($operator == 'BETWEEN');
+
+      case 'LIKE':
+      case 'NOT LIKE':
+        $pattern = '/^' . str_replace('%', '.*', preg_quote($searchVal, '/')) . '$/i';
+        return !preg_match($pattern, $recordVal) == ($operator != 'LIKE');
+
+      case 'IN':
+      case 'NOT IN':
+        return in_array($recordVal, $searchVal) == ($operator == 'IN');
+
+      default:
+        throw new API_Exception("Unsupported operator: '$operator' cannot be used with array data");
+    }
+  };
 
   $currentOffset = 0;
   foreach ($records as $record) {
@@ -2497,7 +2570,7 @@ function _civicrm_api3_basic_array_get($entity, $params, $records, $idCol, $filt
       if ($k == 'id') {
         $k = $idCol;
       }
-      if (in_array($k, $filterableFields) && $record[$k] != $v) {
+      if (in_array($k, $filterableFields) && !$isMatch($record[$k] ?? NULL, $v)) {
         $match = FALSE;
         break;
       }

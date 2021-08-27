@@ -23,8 +23,10 @@ namespace Civi\Api4;
  * UFJoin entity - links profiles to the components/extensions they are used for.
  *
  * @see \Civi\Api4\UFGroup
+ * @searchable none
  * @package Civi\Api4
  */
 class UFJoin extends Generic\DAOEntity {
+  use Generic\Traits\EntityBridge;
 
 }

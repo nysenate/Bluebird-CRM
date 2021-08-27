@@ -23,13 +23,12 @@ class CRM_NYSS_Slack_BAO {
 
       // Get default title if none is passed in.
       if (empty($title)) {
-        $title = Civi::settings()->get('resources_slack_channel');
+        $title = Civi::settings()->get('resources_slack_title');
       }
-      else {
-        //append site url
-        $bbcfg = get_bluebird_instance_config();
-        $title .= " (http://{$bbcfg['servername']})";
-      }
+
+      //append site url
+      $bbcfg = get_bluebird_instance_config();
+      $title .= ' (' . $bbcfg['servername'] . ')';
 
       // Set a default for attachment color, which can be any of the following:
       // - good (green)

@@ -105,9 +105,8 @@ class CRM_Utils_System_Joomla extends CRM_Utils_System_Base {
   public function checkUserNameEmailExists(&$params, &$errors, $emailName = 'email') {
     $config = CRM_Core_Config::singleton();
 
-    $dao = new CRM_Core_DAO();
-    $name = $dao->escape(CRM_Utils_Array::value('name', $params));
-    $email = $dao->escape(CRM_Utils_Array::value('mail', $params));
+    $name = CRM_Utils_Array::value('name', $params);
+    $email = CRM_Utils_Array::value('mail', $params);
     //don't allow the special characters and min. username length is two
     //regex \\ to match a single backslash would become '/\\\\/'
     $isNotValid = (bool) preg_match('/[\<|\>|\"|\'|\%|\;|\(|\)|\&|\\\\|\/]/im', $name);
@@ -123,7 +122,7 @@ class CRM_Utils_System_Joomla extends CRM_Utils_System_Base {
     $query->from($JUserTable->getTableName());
 
     // LOWER in query below roughly translates to 'hurt my database without deriving any benefit' See CRM-19811.
-    $query->where('(LOWER(username) = LOWER(\'' . $name . '\')) OR (LOWER(email) = LOWER(\'' . $email . '\'))');
+    $query->where('(LOWER(username) = LOWER(' . $db->quote($name) . ')) OR (LOWER(email) = LOWER(' . $db->quote($email) . '))');
     $db->setQuery($query, 0, 10);
     $users = $db->loadAssocList();
 
@@ -343,7 +342,7 @@ class CRM_Utils_System_Joomla extends CRM_Utils_System_Base {
     $query = $db->getQuery(TRUE);
     $query->select('id, name, username, email, password');
     $query->from($JUserTable->getTableName());
-    $query->where('(LOWER(username) = LOWER(\'' . $name . '\')) AND (block = 0)');
+    $query->where('(LOWER(username) = LOWER(' . $db->quote($name) . ')) AND (block = 0)');
     $db->setQuery($query, 0, 0);
     $users = $db->loadObjectList();
 
@@ -454,6 +453,12 @@ class CRM_Utils_System_Joomla extends CRM_Utils_System_Base {
     $session->set('ufID', $uid);
     $session->set('userID', $contactID);
     return TRUE;
+  }
+
+  public function getUfId($username) {
+    jimport('joomla.user.helper');
+    $uid = JUserHelper::getUserId($username);
+    return empty($uid) ? NULL : $uid;
   }
 
   /**
@@ -836,7 +841,7 @@ class CRM_Utils_System_Joomla extends CRM_Utils_System_Base {
     $mail = 'email';
     $name = 'name';
 
-    $JUserTable = &JTable::getInstance('User', 'JTable');
+    $JUserTable = JTable::getInstance('User', 'JTable');
 
     $db = $JUserTable->getDbo();
     $query = $db->getQuery(TRUE);
@@ -914,6 +919,31 @@ class CRM_Utils_System_Joomla extends CRM_Utils_System_Base {
     return [
       'url' => CRM_Utils_File::addTrailingSlash($userFrameworkResourceURL, '/'),
       'path' => CRM_Utils_File::addTrailingSlash($civicrm_root),
+    ];
+  }
+
+  /**
+   * Return the CMS-specific url for its permissions page
+   * @return array
+   */
+  public function getCMSPermissionsUrlParams() {
+    $ufAccessURL = '';
+    $jAccessParams = '';
+    $config = CRM_Core_Config::singleton();
+    //condition based on Joomla version; <= 2.5 uses modal window; >= 3.0 uses full page with return value
+    if (version_compare(JVERSION, '3.0', 'lt')) {
+      JHTML::_('behavior.modal');
+      $ufAccessURL = $config->userFrameworkBaseURL . 'index.php?option=com_config&view=component&component=com_civicrm&tmpl=component';
+      $jAccessParams = 'rel="{handler: \'iframe\', size: {x: 875, y: 550}, onClose: function() {}}" class="modal"';
+    }
+    else {
+      $uri = (string) JUri::getInstance();
+      $return = urlencode(base64_encode($uri));
+      $ufAccessURL = $config->userFrameworkBaseURL . 'index.php?option=com_config&view=component&component=com_civicrm&return=' . $return;
+    }
+    return [
+      'ufAccessURL' => $ufAccessURL,
+      'jAccessParams' => $jAccessParams,
     ];
   }
 

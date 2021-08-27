@@ -28,7 +28,7 @@
     </ul>
       {foreach from=$tabHeader key=tabName item=tabValue}
         {if !empty($tabValue.template)}
-          <div id="#panel_{$tabName}">
+          <div id="panel_{$tabName}">
             {include file=$tabValue.template}
           </div>
         {/if}
@@ -37,4 +37,3 @@
   {/if}
   <div class="clear"></div>
 </div> {* crm-content-block ends here *}
-{include file="CRM/common/TabSelected.tpl" defaultTab="settings"}

@@ -31,10 +31,6 @@ class CRM_Admin_Form_Setting_Miscellaneous extends CRM_Admin_Form_Setting {
     'recordGeneratedLetters' => CRM_Core_BAO_Setting::SYSTEM_PREFERENCES_NAME,
     'secondDegRelPermissions' => CRM_Core_BAO_Setting::SYSTEM_PREFERENCES_NAME,
     'checksum_timeout' => CRM_Core_BAO_Setting::SYSTEM_PREFERENCES_NAME,
-    'recaptchaOptions' => CRM_Core_BAO_Setting::SYSTEM_PREFERENCES_NAME,
-    'recaptchaPublicKey' => CRM_Core_BAO_Setting::SYSTEM_PREFERENCES_NAME,
-    'recaptchaPrivateKey' => CRM_Core_BAO_Setting::SYSTEM_PREFERENCES_NAME,
-    'forceRecaptcha' => CRM_Core_BAO_Setting::SYSTEM_PREFERENCES_NAME,
     'wkhtmltopdfPath' => CRM_Core_BAO_Setting::SYSTEM_PREFERENCES_NAME,
     'recentItemsMaxCount' => CRM_Core_BAO_Setting::SYSTEM_PREFERENCES_NAME,
     'recentItemsProviders' => CRM_Core_BAO_Setting::SYSTEM_PREFERENCES_NAME,
@@ -44,13 +40,10 @@ class CRM_Admin_Form_Setting_Miscellaneous extends CRM_Admin_Form_Setting {
     'prevNextBackend' => CRM_Core_BAO_Setting::SEARCH_PREFERENCES_NAME,
   ];
 
-  public $_uploadMaxSize;
-
   /**
    * Basic setup.
    */
   public function preProcess() {
-    $this->_uploadMaxSize = (int) ini_get('upload_max_filesize');
     // check for post max size
     CRM_Utils_Number::formatUnitSize(ini_get('post_max_size'), TRUE);
     // This is a temp hack for the fact we really don't need to hard-code each setting in the tpl but
@@ -72,7 +65,7 @@ class CRM_Admin_Form_Setting_Miscellaneous extends CRM_Admin_Form_Setting {
    * Build the form object.
    */
   public function buildQuickForm() {
-    CRM_Utils_System::setTitle(ts('Misc (Undelete, PDFs, Limits, Logging, Captcha, etc.)'));
+    CRM_Utils_System::setTitle(ts('Misc (Undelete, PDFs, Limits, Logging, etc.)'));
 
     $this->assign('validTriggerPermission', CRM_Core_DAO::checkTriggerViewPermission(FALSE));
     // dev/core#1812 Assign multilingual status.
@@ -101,8 +94,13 @@ class CRM_Admin_Form_Setting_Miscellaneous extends CRM_Admin_Form_Setting {
     $errors = [];
 
     // validate max file size
-    if ($fields['maxFileSize'] > $options->_uploadMaxSize) {
-      $errors['maxFileSize'] = ts("Maximum file size cannot exceed Upload max size ('upload_max_filesize') as defined in PHP.ini.");
+    $iniBytes = CRM_Utils_Number::formatUnitSize(ini_get('upload_max_filesize'), FALSE);
+    $inputBytes = CRM_Utils_Number::formatUnitSize($fields['maxFileSize'] . 'M', FALSE);
+
+    if ($inputBytes > $iniBytes) {
+      $errors['maxFileSize'] = ts("Maximum file size cannot exceed limit defined in \"php.ini\" (\"upload_max_filesize=%1\").", [
+        1 => ini_get('upload_max_filesize'),
+      ]);
     }
 
     // validate recent items stack size

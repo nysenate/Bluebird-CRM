@@ -6,6 +6,7 @@
   <add>1.6</add>
   <log>true</log>
   <title>Recurring Contribution</title>
+  <component>CiviContribute</component>
   <field>
     <name>id</name>
     <uniqueName>contribution_recur_id</uniqueName>
@@ -13,6 +14,9 @@
     <type>int unsigned</type>
     <required>true</required>
     <comment>Contribution Recur ID</comment>
+    <html>
+      <type>Number</type>
+    </html>
     <add>1.6</add>
   </field>
   <primaryKey>
@@ -21,13 +25,14 @@
   </primaryKey>
   <field>
     <name>contact_id</name>
-    <title>Contact</title>
+    <title>Contact ID</title>
     <type>int unsigned</type>
     <required>true</required>
     <comment>Foreign key to civicrm_contact.id.</comment>
     <add>1.6</add>
     <html>
       <type>EntityRef</type>
+      <label>Contact</label>
     </html>
   </field>
   <foreignKey>
@@ -88,6 +93,7 @@
     <title>Interval (number of units)</title>
     <type>int unsigned</type>
     <required>true</required>
+    <default>1</default>
     <comment>Number of time units for recurrence of payment.</comment>
     <add>1.6</add>
     <html>
@@ -109,6 +115,7 @@
     <title>Start Date</title>
     <type>datetime</type>
     <required>true</required>
+    <default>CURRENT_TIMESTAMP</default>
     <comment>The date the first scheduled recurring contribution occurs.</comment>
     <add>1.6</add>
     <html>
@@ -123,6 +130,7 @@
     <title>Created Date</title>
     <type>datetime</type>
     <required>true</required>
+    <default>CURRENT_TIMESTAMP</default>
     <comment>When this recurring contribution record was created.</comment>
     <add>1.6</add>
     <html>
@@ -136,6 +144,7 @@
     <name>modified_date</name>
     <title>Modified Date</title>
     <type>datetime</type>
+    <default>CURRENT_TIMESTAMP</default>
     <comment>Last updated date for this record. mostly the last time a payment was received</comment>
     <add>1.6</add>
     <html>
@@ -144,6 +153,7 @@
     </html>
     <uniqueName>contribution_recur_modified_date</uniqueName>
     <uniqueTitle>Recurring Contribution Modified Date</uniqueTitle>
+    <readonly>true</readonly>
   </field>
   <field>
     <name>cancel_date</name>
@@ -201,6 +211,9 @@
     <title>Payment Token ID</title>
     <type>int unsigned</type>
     <comment>Optionally used to store a link to a payment token used for this recurring contribution.</comment>
+    <html>
+      <label>Payment Token</label>
+    </html>
     <add>4.6</add>
   </field>
   <foreignKey>
@@ -250,7 +263,7 @@
     <uniqueName>contribution_recur_contribution_status_id</uniqueName>
     <title>Status</title>
     <type>int unsigned</type>
-    <default>1</default>
+    <default>2</default>
     <import>true</import>
     <add>1.6</add>
     <pseudoconstant>
@@ -338,7 +351,7 @@
   </field>
   <field>
     <name>payment_processor_id</name>
-    <title>Payment Processor</title>
+    <title>Payment Processor ID</title>
     <uniqueName>contribution_recur_payment_processor_id</uniqueName>
     <type>int unsigned</type>
     <comment>Foreign key to civicrm_payment_processor.id</comment>
@@ -350,6 +363,7 @@
     </pseudoconstant>
     <html>
       <type>Select</type>
+      <label>Payment Processor</label>
     </html>
   </field>
   <foreignKey>
@@ -361,7 +375,7 @@
   </foreignKey>
   <field>
     <name>financial_type_id</name>
-    <title>Financial Type</title>
+    <title>Financial Type ID</title>
     <export>false</export>
     <type>int unsigned</type>
     <comment>FK to Financial Type</comment>
@@ -373,6 +387,7 @@
     </pseudoconstant>
     <html>
       <type>Select</type>
+      <label>Financial Type</label>
     </html>
   </field>
   <foreignKey>
@@ -402,19 +417,16 @@
   </index>
   <field>
     <name>campaign_id</name>
+    <component>CiviCampaign</component>
     <uniqueName>contribution_campaign_id</uniqueName>
     <type>int unsigned</type>
-    <title>Campaign</title>
+    <title>Campaign ID</title>
     <import>true</import>
     <comment>The campaign for which this contribution has been triggered.</comment>
-    <pseudoconstant>
-      <table>civicrm_campaign</table>
-      <keyColumn>id</keyColumn>
-      <labelColumn>title</labelColumn>
-    </pseudoconstant>
     <add>4.1</add>
     <html>
-      <type>Select</type>
+      <type>EntityRef</type>
+      <label>Campaign</label>
     </html>
   </field>
   <foreignKey>

@@ -8,13 +8,13 @@ class api_v4_AfformRoutingTest extends \PHPUnit\Framework\TestCase implements \C
 
   protected $formName = 'mockPage';
 
-  public static function setUpBeforeClass() {
+  public static function setUpBeforeClass(): void {
     \Civi\Test::e2e()
       ->install(['org.civicrm.afform', 'org.civicrm.afform-mock'])
       ->apply();
   }
 
-  public function setUp() {
+  public function setUp(): void {
     parent::setUp();
     Civi\Api4\Afform::revert()
       ->setCheckPermissions(FALSE)
@@ -22,7 +22,7 @@ class api_v4_AfformRoutingTest extends \PHPUnit\Framework\TestCase implements \C
       ->execute();
   }
 
-  public function tearDown() {
+  public function tearDown(): void {
     parent::tearDown();
     Civi\Api4\Afform::revert()
       ->setCheckPermissions(FALSE)
@@ -30,14 +30,14 @@ class api_v4_AfformRoutingTest extends \PHPUnit\Framework\TestCase implements \C
       ->execute();
   }
 
-  public function testChangingPermissions() {
+  public function testChangingPermissions(): void {
     $http = new \GuzzleHttp\Client(['http_errors' => FALSE]);
     $url = function ($path, $query = NULL) {
       return CRM_Utils_System::url($path, $query, TRUE, NULL, FALSE);
     };
 
     $result = $http->get($url('civicrm/mock-page'));
-    $this->assertNotAuthorized($result);
+    $this->assertNotAuthorized($result, 'mock-page');
 
     Civi\Api4\Afform::update()
       ->setCheckPermissions(FALSE)
@@ -49,7 +49,7 @@ class api_v4_AfformRoutingTest extends \PHPUnit\Framework\TestCase implements \C
     $this->assertOpensPage($result, 'mock-page');
   }
 
-  public function testChangingPath() {
+  public function testChangingPath(): void {
     $http = new \GuzzleHttp\Client(['http_errors' => FALSE]);
     $url = function ($path, $query = NULL) {
       return CRM_Utils_System::url($path, $query, TRUE, NULL, FALSE);
@@ -62,7 +62,7 @@ class api_v4_AfformRoutingTest extends \PHPUnit\Framework\TestCase implements \C
       ->execute();
 
     $this->assertOpensPage($http->get($url('civicrm/mock-page')), 'mock-page');
-    $this->assertNotAuthorized($http->get($url('civicrm/mock-page-renamed')));
+    $this->assertNotAuthorized($http->get($url('civicrm/mock-page-renamed')), 'mock-page');
 
     Civi\Api4\Afform::update()
       ->setCheckPermissions(FALSE)
@@ -70,18 +70,19 @@ class api_v4_AfformRoutingTest extends \PHPUnit\Framework\TestCase implements \C
       ->addValue('server_route', 'civicrm/mock-page-renamed')
       ->execute();
 
-    $this->assertNotAuthorized($http->get($url('civicrm/mock-page')));
+    $this->assertNotAuthorized($http->get($url('civicrm/mock-page')), 'mock-page');
     $this->assertOpensPage($http->get($url('civicrm/mock-page-renamed')), 'mock-page');
   }
 
   /**
    * @param $result
+   * @param string $directive
    */
-  private function assertNotAuthorized(Psr\Http\Message\ResponseInterface $result) {
+  private function assertNotAuthorized(Psr\Http\Message\ResponseInterface $result, $directive) {
     $contents = $result->getBody()->getContents();
     $this->assertEquals(403, $result->getStatusCode());
     $this->assertRegExp(';You are not authorized to access;', $contents);
-    $this->assertNotRegExp(';afform":\{"open":".*"\};', $contents);
+    $this->assertNotRegExp(';' . preg_quote("<$directive>", ';') . ';', $contents);
   }
 
   /**
@@ -93,7 +94,7 @@ class api_v4_AfformRoutingTest extends \PHPUnit\Framework\TestCase implements \C
     $contents = $result->getBody()->getContents();
     $this->assertEquals(200, $result->getStatusCode());
     $this->assertNotRegExp(';You are not authorized to access;', $contents);
-    $this->assertRegExp(';afform":\{"open":"' . preg_quote($directive, ';') . '"\};', $contents);
+    $this->assertRegExp(';' . preg_quote("<$directive>", ';') . ';', $contents);
   }
 
 }

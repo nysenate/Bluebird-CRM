@@ -453,8 +453,8 @@ class CRM_Core_Payment_iATSServiceACHEFT extends CRM_Core_Payment_iATSService {
     }
     // The "&" character is badly handled by the processor,
     // so we sanitize it to "and"
-    $request['firstName'] = str_replace('&', ts('and'), $request['firstName']);
-    $request['lastName'] = str_replace('&', ts('and'), $request['lastName']);
+    $request['firstName'] = str_replace('&', 'and', $request['firstName']);
+    $request['lastName'] = str_replace('&', 'and', $request['lastName']);
     $request['total'] = sprintf('%01.2f', CRM_Utils_Rule::cleanMoney($params['amount']));
     // Place for ugly hacks.
     switch ($method) {

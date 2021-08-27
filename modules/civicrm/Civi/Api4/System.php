@@ -21,6 +21,7 @@ namespace Civi\Api4;
 /**
  * A collection of system maintenance/diagnostic utilities.
  *
+ * @searchable none
  * @package Civi\Api4
  */
 class System extends Generic\AbstractEntity {
@@ -45,12 +46,31 @@ class System extends Generic\AbstractEntity {
 
   /**
    * @param bool $checkPermissions
+   *
+   * @return Action\System\RotateKey
+   */
+  public static function rotateKey($checkPermissions = TRUE) {
+    return (new Action\System\RotateKey(__CLASS__, __FUNCTION__))
+      ->setCheckPermissions($checkPermissions);
+  }
+
+  /**
+   * @param bool $checkPermissions
    * @return Generic\BasicGetFieldsAction
    */
   public static function getFields($checkPermissions = TRUE) {
     return (new Generic\BasicGetFieldsAction(__CLASS__, __FUNCTION__, function() {
       return [];
     }))->setCheckPermissions($checkPermissions);
+  }
+
+  /**
+   * @param bool $checkPermissions
+   * @return Action\System\ResetPaths
+   */
+  public static function resetPaths($checkPermissions = TRUE) {
+    return (new Action\System\ResetPaths(__CLASS__, __FUNCTION__))
+      ->setCheckPermissions($checkPermissions);
   }
 
 }

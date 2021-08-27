@@ -18,6 +18,7 @@
 
 namespace Civi\Api4\Generic;
 
+use Civi\Api4\Utils\CoreUtil;
 use Civi\Api4\Utils\FormattingUtil;
 use Civi\Api4\Utils\ReflectionUtils;
 
@@ -389,8 +390,9 @@ abstract class AbstractAction implements \ArrayAccess {
    * This function is called if checkPermissions is set to true.
    *
    * @return bool
+   * @internal Implement/override in civicrm-core.git only. Signature may evolve.
    */
-  public function isAuthorized() {
+  public function isAuthorized(): bool {
     $permissions = $this->getPermissions();
     return \CRM_Core_Permission::check($permissions);
   }
@@ -399,7 +401,7 @@ abstract class AbstractAction implements \ArrayAccess {
    * @return array
    */
   public function getPermissions() {
-    $permissions = call_user_func(["\\Civi\\Api4\\" . $this->_entityName, 'permissions']);
+    $permissions = call_user_func([CoreUtil::getApiClass($this->_entityName), 'permissions']);
     $permissions += [
       // applies to getFields, getActions, etc.
       'meta' => ['access CiviCRM'],
@@ -432,14 +434,19 @@ abstract class AbstractAction implements \ArrayAccess {
    */
   public function entityFields() {
     if (!$this->_entityFields) {
+      $allowedTypes = ['Field', 'Filter', 'Extra'];
+      if (method_exists($this, 'getCustomGroup')) {
+        $allowedTypes[] = 'Custom';
+      }
       $getFields = \Civi\API\Request::create($this->getEntityName(), 'getFields', [
         'version' => 4,
         'checkPermissions' => FALSE,
         'action' => $this->getActionName(),
-        'includeCustom' => FALSE,
+        'where' => [['type', 'IN', $allowedTypes]],
       ]);
       $result = new Result();
-      $getFields->_run($result);
+      // Pass TRUE for the private $isInternal param
+      $getFields->_run($result, TRUE);
       $this->_entityFields = (array) $result->indexBy('name');
     }
     return $this->_entityFields;
@@ -498,7 +505,7 @@ abstract class AbstractAction implements \ArrayAccess {
             'val' => $record[$expr],
             'field' => $field,
             'suffix' => substr($expr, $suffix + 1),
-            'depends' => $field['input_attrs']['controlField'] ?? NULL,
+            'depends' => $field['input_attrs']['control_field'] ?? NULL,
           ];
           unset($record[$expr]);
         }

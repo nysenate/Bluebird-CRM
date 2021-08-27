@@ -333,16 +333,8 @@ class IDS_Monitor
             }
         }
 
-        // check for magic quotes and remove them if necessary
-        if (function_exists('get_magic_quotes_gpc')
-            && get_magic_quotes_gpc()) {
-            $value = stripslashes($value);
-        }
-        if(function_exists('get_magic_quotes_gpc')
-            && !get_magic_quotes_gpc() 
-            && version_compare(PHP_VERSION, '5.3.0', '>=')) {
-            $value = preg_replace('/\\\(["\'\/])/im', '$1', $value);
-        }
+        // handle quotes
+        $value = preg_replace('/\\\(["\'\/])/im', '$1', $value);
 
         // if html monitoring is enabled for this field - then do it!
         if (is_array($this->html) && in_array($key, $this->html, true)) {

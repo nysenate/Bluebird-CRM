@@ -413,13 +413,13 @@ WHERE     cpf.price_set_id = %1";
    *   Price Set ID.
    * @param bool $required
    *   Appears to have no effect based on reading the code.
-   * @param bool $validOnly
+   * @param bool $doNotIncludeExpiredFields
    *   Should only fields where today's date falls within the valid range be returned?
    *
    * @return array
    *   Array consisting of field details
    */
-  public static function getSetDetail($setID, $required = TRUE, $validOnly = FALSE) {
+  public static function getSetDetail($setID, $required = TRUE, $doNotIncludeExpiredFields = FALSE) {
     // create a new tree
     $setTree = [];
 
@@ -459,7 +459,7 @@ AND is_active = 1
 AND ( active_on IS NULL OR active_on <= {$currentTime} )
 ";
     $dateSelect = '';
-    if ($validOnly) {
+    if ($doNotIncludeExpiredFields) {
       $dateSelect = "
 AND ( expire_on IS NULL OR expire_on >= {$currentTime} )
 ";
@@ -554,11 +554,11 @@ WHERE  id = %1";
    * @param CRM_Core_Form $form
    *   Form entity id.
    * @param string $entityTable
-   * @param bool $validOnly
+   * @param bool $doNotIncludeExpiredFields
    * @param int $priceSetId
    *   Price Set ID
    */
-  public static function initSet(&$form, $entityTable = 'civicrm_event', $validOnly = FALSE, $priceSetId = NULL) {
+  public static function initSet(&$form, $entityTable = 'civicrm_event', $doNotIncludeExpiredFields = FALSE, $priceSetId = NULL) {
 
     //check if price set is is_config
     if (is_numeric($priceSetId)) {
@@ -599,7 +599,7 @@ WHERE  id = %1";
       }
 
       $form->_priceSetId = $priceSetId;
-      $priceSet = self::getSetDetail($priceSetId, $required, $validOnly);
+      $priceSet = self::getSetDetail($priceSetId, $required, $doNotIncludeExpiredFields);
       $form->_priceSet = $priceSet[$priceSetId] ?? NULL;
       $form->_values['fee'] = $form->_priceSet['fields'] ?? NULL;
 
@@ -843,9 +843,9 @@ WHERE  id = %1";
     // Mark which field should have the auto-renew checkbox, if any. CRM-18305
     if (!empty($form->_membershipTypeValues) && is_array($form->_membershipTypeValues)) {
       $autoRenewMembershipTypes = [];
-      foreach ($form->_membershipTypeValues as $membershiptTypeValue) {
-        if ($membershiptTypeValue['auto_renew']) {
-          $autoRenewMembershipTypes[] = $membershiptTypeValue['id'];
+      foreach ($form->_membershipTypeValues as $membershipTypeValue) {
+        if ($membershipTypeValue['auto_renew']) {
+          $autoRenewMembershipTypes[] = $membershipTypeValue['id'];
         }
       }
       foreach ($form->_priceSet['fields'] as $field) {
@@ -1657,7 +1657,7 @@ WHERE     ct.id = cp.financial_type_id AND
       case 'Text':
         $firstOption = reset($field['options']);
         $params["price_{$id}"] = [$firstOption['id'] => $params["price_{$id}"]];
-        CRM_Price_BAO_LineItem::format($id, $params, $field, $lineItem, CRM_Utils_Array::value('partial_payment_total', $params));
+        CRM_Price_BAO_LineItem::format($id, $params, $field, $lineItem);
         $optionValueId = key($field['options']);
 
         if (CRM_Utils_Array::value('name', $field['options'][$optionValueId]) === 'contribution_amount') {
@@ -1691,7 +1691,7 @@ WHERE     ct.id = cp.financial_type_id AND
         $amount_override = NULL;
 
         if ($priceSetID && count(self::filterPriceFieldsFromParams($priceSetID, $params)) === 1) {
-          $amount_override = CRM_Utils_Array::value('partial_payment_total', $params, CRM_Utils_Array::value('total_amount', $params));
+          $amount_override = CRM_Utils_Array::value('total_amount', $params);
         }
         CRM_Price_BAO_LineItem::format($id, $params, $field, $lineItem, $amount_override);
         if (!empty($field['options'][$optionValueId]['tax_rate'])) {
@@ -1706,7 +1706,7 @@ WHERE     ct.id = cp.financial_type_id AND
         $params["price_{$id}"] = [$params["price_{$id}"] => 1];
         $optionValueId = CRM_Utils_Array::key(1, $params["price_{$id}"]);
 
-        CRM_Price_BAO_LineItem::format($id, $params, $field, $lineItem, CRM_Utils_Array::value('partial_payment_total', $params));
+        CRM_Price_BAO_LineItem::format($id, $params, $field, $lineItem);
         if (!empty($field['options'][$optionValueId]['tax_rate'])) {
           $lineItem = self::setLineItem($field, $lineItem, $optionValueId, $totalTax);
         }
@@ -1714,7 +1714,7 @@ WHERE     ct.id = cp.financial_type_id AND
 
       case 'CheckBox':
 
-        CRM_Price_BAO_LineItem::format($id, $params, $field, $lineItem, CRM_Utils_Array::value('partial_payment_total', $params));
+        CRM_Price_BAO_LineItem::format($id, $params, $field, $lineItem);
         foreach ($params["price_{$id}"] as $optionId => $option) {
           if (!empty($field['options'][$optionId]['tax_rate'])) {
             $lineItem = self::setLineItem($field, $lineItem, $optionId, $totalTax);

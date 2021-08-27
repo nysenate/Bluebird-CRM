@@ -123,7 +123,7 @@ class CRM_Contribute_Form_Contribution_Main extends CRM_Contribute_Form_Contribu
       $this->_defaults = array_merge($this->_defaults, $billingDefaults);
     }
     if (!empty($this->_ccid) && !empty($this->_pendingAmount)) {
-      $this->_defaults['total_amount'] = CRM_Utils_Money::format($this->_pendingAmount, NULL, '%a');
+      $this->_defaults['total_amount'] = CRM_Utils_Money::formatLocaleNumericRoundedForDefaultCurrency($this->_pendingAmount);
     }
 
     /*
@@ -290,12 +290,9 @@ class CRM_Contribute_Form_Contribution_Main extends CRM_Contribute_Form_Contribu
       $this->buildComponentForm($this->_id, $this);
     }
 
-    if (count($this->_paymentProcessors) >= 1 && !$this->get_template_vars("isCaptcha") && $this->hasToAddForcefully()) {
+    if (\Civi::settings()->get('forceRecaptcha')) {
       if (!$this->_userID) {
-        $this->enableCaptchaOnForm();
-      }
-      else {
-        $this->displayCaptchaWarning();
+        CRM_Utils_ReCAPTCHA::enableCaptchaOnForm($this);
       }
     }
 
@@ -361,7 +358,7 @@ class CRM_Contribute_Form_Contribution_Main extends CRM_Contribute_Form_Contribu
 
         $this->_separateMembershipPayment = $this->buildMembershipBlock(
           $this->_membershipContactID,
-          TRUE, NULL, FALSE,
+          NULL,
           $isTest
         );
       }
@@ -371,7 +368,7 @@ class CRM_Contribute_Form_Contribution_Main extends CRM_Contribute_Form_Contribu
     // If we configured price set for contribution page
     // we are not allow membership signup as well as any
     // other contribution amount field, CRM-5095
-    if (isset($this->_priceSetId) && $this->_priceSetId) {
+    if (!empty($this->_priceSetId)) {
       $this->add('hidden', 'priceSetId', $this->_priceSetId);
       // build price set form.
       $this->set('priceSetId', $this->_priceSetId);
@@ -505,6 +502,212 @@ class CRM_Contribute_Form_Contribution_Main extends CRM_Contribute_Form_Contribu
   }
 
   /**
+   * Build Membership  Block in Contribution Pages.
+   * @todo this was shared on CRM_Contribute_Form_ContributionBase but we are refactoring and simplifying for each
+   *   step (main/confirm/thankyou)
+   *
+   * @param int $cid
+   *   Contact checked for having a current membership for a particular membership.
+   * @param int|array $selectedMembershipTypeID
+   *   Selected membership id.
+   * @param null $isTest
+   *
+   * @return bool
+   *   Is this a separate membership payment
+   *
+   * @throws \CiviCRM_API3_Exception
+   * @throws \CRM_Core_Exception
+   */
+  private function buildMembershipBlock($cid, $selectedMembershipTypeID = NULL, $isTest = NULL) {
+    $separateMembershipPayment = FALSE;
+    if ($this->_membershipBlock) {
+      $this->_currentMemberships = [];
+
+      $membershipTypeIds = $membershipTypes = $radio = $radioOptAttrs = [];
+      $membershipPriceset = (!empty($this->_priceSetId) && $this->_useForMember);
+
+      $allowAutoRenewMembership = $autoRenewOption = FALSE;
+      $autoRenewMembershipTypeOptions = [];
+
+      $separateMembershipPayment = $this->_membershipBlock['is_separate_payment'] ?? NULL;
+
+      if ($membershipPriceset) {
+        foreach ($this->_priceSet['fields'] as $pField) {
+          if (empty($pField['options'])) {
+            continue;
+          }
+          foreach ($pField['options'] as $opId => $opValues) {
+            if (empty($opValues['membership_type_id'])) {
+              continue;
+            }
+            $membershipTypeIds[$opValues['membership_type_id']] = $opValues['membership_type_id'];
+          }
+        }
+      }
+      elseif (!empty($this->_membershipBlock['membership_types'])) {
+        $membershipTypeIds = explode(',', $this->_membershipBlock['membership_types']);
+      }
+
+      if (!empty($membershipTypeIds)) {
+        //set status message if wrong membershipType is included in membershipBlock
+        if (isset($this->_mid) && !$membershipPriceset) {
+          $membershipTypeID = CRM_Core_DAO::getFieldValue('CRM_Member_DAO_Membership',
+            $this->_mid,
+            'membership_type_id'
+          );
+          if (!in_array($membershipTypeID, $membershipTypeIds)) {
+            CRM_Core_Session::setStatus(ts("Oops. The membership you're trying to renew appears to be invalid. Contact your site administrator if you need assistance. If you continue, you will be issued a new membership."), ts('Invalid Membership'), 'error');
+          }
+        }
+
+        $membershipTypeValues = CRM_Member_BAO_Membership::buildMembershipTypeValues($this, $membershipTypeIds);
+        $this->_membershipTypeValues = $membershipTypeValues;
+        $endDate = NULL;
+
+        // Check if we support auto-renew on this contribution page
+        // FIXME: If any of the payment processors do NOT support recurring you cannot setup an
+        //   auto-renew payment even if that processor is not selected.
+        $allowAutoRenewOpt = TRUE;
+        if (is_array($this->_paymentProcessors)) {
+          foreach ($this->_paymentProcessors as $id => $val) {
+            if ($id && !$val['is_recur']) {
+              $allowAutoRenewOpt = FALSE;
+            }
+          }
+        }
+        foreach ($membershipTypeIds as $value) {
+          $memType = $membershipTypeValues[$value];
+          if ($selectedMembershipTypeID != NULL) {
+            if ($memType['id'] == $selectedMembershipTypeID) {
+              $this->assign('minimum_fee', $memType['minimum_fee'] ?? NULL);
+              $this->assign('membership_name', $memType['name']);
+              if ($cid) {
+                $membership = new CRM_Member_DAO_Membership();
+                $membership->contact_id = $cid;
+                $membership->membership_type_id = $memType['id'];
+                if ($membership->find(TRUE)) {
+                  $this->assign('renewal_mode', TRUE);
+                  $memType['current_membership'] = $membership->end_date;
+                  $this->_currentMemberships[$membership->membership_type_id] = $membership->membership_type_id;
+                }
+              }
+              $membershipTypes[] = $memType;
+            }
+          }
+          elseif ($memType['is_active']) {
+
+            if ($allowAutoRenewOpt) {
+              $javascriptMethod = ['onclick' => "return showHideAutoRenew( this.value );"];
+              $isAvailableAutoRenew = $this->_membershipBlock['auto_renew'][$value] ?? 1;
+              $autoRenewMembershipTypeOptions["autoRenewMembershipType_{$value}"] = (int) $memType['auto_renew'] * $isAvailableAutoRenew;
+              $allowAutoRenewMembership = TRUE;
+            }
+            else {
+              $javascriptMethod = NULL;
+              $autoRenewMembershipTypeOptions["autoRenewMembershipType_{$value}"] = 0;
+            }
+
+            //add membership type.
+            $radio[$memType['id']] = NULL;
+            $radioOptAttrs[$memType['id']] = $javascriptMethod;
+            if ($cid) {
+              $membership = new CRM_Member_DAO_Membership();
+              $membership->contact_id = $cid;
+              $membership->membership_type_id = $memType['id'];
+
+              //show current membership, skip pending and cancelled membership records,
+              //because we take first membership record id for renewal
+              $membership->whereAdd('status_id != 5 AND status_id !=6');
+
+              if (!is_null($isTest)) {
+                $membership->is_test = $isTest;
+              }
+
+              //CRM-4297
+              $membership->orderBy('end_date DESC');
+
+              if ($membership->find(TRUE)) {
+                if (!$membership->end_date) {
+                  unset($radio[$memType['id']]);
+                  unset($radioOptAttrs[$memType['id']]);
+                  $this->assign('islifetime', TRUE);
+                  continue;
+                }
+                $this->assign('renewal_mode', TRUE);
+                $this->_currentMemberships[$membership->membership_type_id] = $membership->membership_type_id;
+                $memType['current_membership'] = $membership->end_date;
+                if (!$endDate) {
+                  $endDate = $memType['current_membership'];
+                  $this->_defaultMemTypeId = $memType['id'];
+                }
+                if ($memType['current_membership'] < $endDate) {
+                  $endDate = $memType['current_membership'];
+                  $this->_defaultMemTypeId = $memType['id'];
+                }
+              }
+            }
+            $membershipTypes[] = $memType;
+          }
+        }
+      }
+
+      $this->assign('membershipBlock', $this->_membershipBlock);
+      $this->assign('showRadio', TRUE);
+      $this->assign('membershipTypes', $membershipTypes);
+      $this->assign('allowAutoRenewMembership', $allowAutoRenewMembership);
+      $this->assign('autoRenewMembershipTypeOptions', json_encode($autoRenewMembershipTypeOptions));
+      //give preference to user submitted auto_renew value.
+      $takeUserSubmittedAutoRenew = (!empty($_POST) || $this->isSubmitted());
+      $this->assign('takeUserSubmittedAutoRenew', $takeUserSubmittedAutoRenew);
+
+      // Assign autorenew option (0:hide,1:optional,2:required) so we can use it in confirmation etc.
+      $autoRenewOption = CRM_Price_BAO_PriceSet::checkAutoRenewForPriceSet($this->_priceSetId);
+      //$selectedMembershipTypeID is retrieved as an array for membership priceset if multiple
+      //options for different organisation is selected on the contribution page.
+      if (is_numeric($selectedMembershipTypeID) && isset($membershipTypeValues[$selectedMembershipTypeID]['auto_renew'])) {
+        $this->assign('autoRenewOption', $membershipTypeValues[$selectedMembershipTypeID]['auto_renew']);
+      }
+      else {
+        $this->assign('autoRenewOption', $autoRenewOption);
+      }
+
+      if (!$membershipPriceset) {
+        if (!$this->_membershipBlock['is_required']) {
+          $this->assign('showRadioNoThanks', TRUE);
+          $radio['no_thanks'] = NULL;
+          $this->addRadio('selectMembership', NULL, $radio, [], NULL, FALSE, $radioOptAttrs);
+        }
+        elseif ($this->_membershipBlock['is_required'] && count($radio) == 1) {
+          $temp = array_keys($radio);
+          $this->add('hidden', 'selectMembership', $temp[0], ['id' => 'selectMembership']);
+          $this->assign('singleMembership', TRUE);
+          $this->assign('showRadio', FALSE);
+        }
+        else {
+          foreach ($radioOptAttrs as $opt => $attrs) {
+            $attrs['class'] = ' required';
+          }
+          $this->addRadio('selectMembership', NULL, $radio, [], NULL, FALSE, $radioOptAttrs);
+        }
+
+        $this->addRule('selectMembership', ts('Please select one of the memberships.'), 'required');
+      }
+
+      if ((!$this->_values['is_pay_later'] || is_array($this->_paymentProcessors)) && ($allowAutoRenewMembership || $autoRenewOption)) {
+        if ($autoRenewOption == 2) {
+          $this->addElement('hidden', 'auto_renew', ts('Please renew my membership automatically.'));
+        }
+        else {
+          $this->addElement('checkbox', 'auto_renew', ts('Please renew my membership automatically.'));
+        }
+      }
+
+    }
+
+    return $separateMembershipPayment;
+  }
+
+  /**
    * Build elements to collect information for recurring contributions.
    *
    *
@@ -524,17 +727,6 @@ class CRM_Contribute_Form_Contribution_Main extends CRM_Contribute_Form_Contribu
       ]));
     }
 
-    $form->add('checkbox', 'is_recur', ts('I want to contribute this amount'), NULL);
-
-    if (!empty($form->_values['is_recur_interval']) || $className == 'CRM_Contribute_Form_Contribution') {
-      $form->add('text', 'frequency_interval', ts('Every'), $attributes['frequency_interval'] + ['aria-label' => ts('Every')]);
-      $form->addRule('frequency_interval', ts('Frequency must be a whole number (EXAMPLE: Every 3 months).'), 'integer');
-    }
-    else {
-      // make sure frequency_interval is submitted as 1 if given no choice to user.
-      $form->add('hidden', 'frequency_interval', 1);
-    }
-
     $frUnits = $form->_values['recur_frequency_unit'] ?? NULL;
     if (empty($frUnits) &&
       $className == 'CRM_Contribute_Form_Contribution'
@@ -546,31 +738,6 @@ class CRM_Contribute_Form_Contribution_Main extends CRM_Contribute_Form_Contribu
 
     $unitVals = explode(CRM_Core_DAO::VALUE_SEPARATOR, $frUnits);
 
-    // CRM 10860, display text instead of a dropdown if there's only 1 frequency unit
-    if (count($unitVals) == 1) {
-      $form->assign('one_frequency_unit', TRUE);
-      $unit = $unitVals[0];
-      $form->add('hidden', 'frequency_unit', $unit);
-      if (!empty($form->_values['is_recur_interval']) || $className == 'CRM_Contribute_Form_Contribution') {
-        $unit .= "(s)";
-      }
-      $form->assign('frequency_unit', $unit);
-    }
-    else {
-      $form->assign('one_frequency_unit', FALSE);
-      $units = [];
-      $frequencyUnits = CRM_Core_OptionGroup::values('recur_frequency_units', FALSE, FALSE, TRUE);
-      foreach ($unitVals as $key => $val) {
-        if (array_key_exists($val, $frequencyUnits)) {
-          $units[$val] = $frequencyUnits[$val];
-          if (!empty($form->_values['is_recur_interval']) || $className == 'CRM_Contribute_Form_Contribution') {
-            $units[$val] = "{$frequencyUnits[$val]}(s)";
-          }
-        }
-      }
-      $frequencyUnit = &$form->addElement('select', 'frequency_unit', NULL, $units, ['aria-label' => ts('Frequency Unit')]);
-    }
-
     // FIXME: Ideally we should freeze select box if there is only
     // one option but looks there is some problem /w QF freeze.
     //if ( count( $units ) == 1 ) {
@@ -581,6 +748,51 @@ class CRM_Contribute_Form_Contribution_Main extends CRM_Contribute_Form_Contribu
       $attributes['installments']
     );
     $form->addRule('installments', ts('Number of installments must be a whole number.'), 'integer');
+
+    $is_recur_label = ts('I want to contribute this amount every');
+
+    // CRM 10860, display text instead of a dropdown if there's only 1 frequency unit
+    if (count($unitVals) == 1) {
+      $form->assign('one_frequency_unit', TRUE);
+      $unit = $unitVals[0];
+      $form->add('hidden', 'frequency_unit', $unit);
+      if (!empty($form->_values['is_recur_interval']) || $className == 'CRM_Contribute_Form_Contribution') {
+        $unit .= "(s)";
+        $form->assign('frequency_unit', $unit);
+      }
+      else {
+        $is_recur_label = ts('I want to contribute this amount every %1',
+          [1 => $unit]
+        );
+        $form->assign('all_text_recur', TRUE);
+      }
+    }
+    else {
+      $form->assign('one_frequency_unit', FALSE);
+      $units = [];
+      $frequencyUnits = CRM_Core_OptionGroup::values('recur_frequency_units', FALSE, FALSE, TRUE);
+      foreach ($unitVals as $key => $val) {
+        if (array_key_exists($val, $frequencyUnits)) {
+          $units[$val] = $frequencyUnits[$val];
+          if (!empty($form->_values['is_recur_interval']) || $className == 'CRM_Contribute_Form_Contribution') {
+            $units[$val] = "{$frequencyUnits[$val]}(s)";
+            $unit = ts('Every');
+          }
+        }
+      }
+      $frequencyUnit = &$form->addElement('select', 'frequency_unit', NULL, $units, ['aria-label' => ts('Frequency Unit')]);
+    }
+
+    if (!empty($form->_values['is_recur_interval']) || $className == 'CRM_Contribute_Form_Contribution') {
+      $form->add('text', 'frequency_interval', $unit, $attributes['frequency_interval'] + ['aria-label' => ts('Every')]);
+      $form->addRule('frequency_interval', ts('Frequency must be a whole number (EXAMPLE: Every 3 months).'), 'integer');
+    }
+    else {
+      // make sure frequency_interval is submitted as 1 if given no choice to user.
+      $form->add('hidden', 'frequency_interval', 1);
+    }
+
+    $form->add('checkbox', 'is_recur', $is_recur_label, NULL);
   }
 
   /**
@@ -1167,7 +1379,7 @@ class CRM_Contribute_Form_Contribution_Main extends CRM_Contribute_Form_Contribu
       $this->assign('pay_later_receipt', CRM_Utils_Array::value('pay_later_receipt', $this->_values));
     }
 
-    if ($this->_membershipBlock['is_separate_payment'] && !empty($params['separate_amount'])) {
+    if ($this->_membershipBlock && $this->_membershipBlock['is_separate_payment'] && !empty($params['separate_amount'])) {
       $this->set('amount', $params['separate_amount']);
     }
     else {
@@ -1266,7 +1478,7 @@ class CRM_Contribute_Form_Contribution_Main extends CRM_Contribute_Form_Contribu
 
     $paymentBalance = CRM_Contribute_BAO_Contribution::getContributionBalance($this->_ccid);
     //bounce if the contribution is not pending.
-    if ((int) $paymentBalance <= 0) {
+    if ((float) $paymentBalance <= 0) {
       CRM_Core_Error::statusBounce(ts("Returning since contribution has already been handled."));
     }
     if (!empty($paymentBalance)) {

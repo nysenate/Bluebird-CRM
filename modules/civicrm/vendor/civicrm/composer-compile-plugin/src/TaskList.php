@@ -37,10 +37,14 @@ class TaskList
     {
         $this->tasks = [];
         $this->sourceFiles = [];
-        $this->packageWeights = array_flip(PackageSorter::sortPackages(array_merge(
+        $allPackages = array_merge(
             $this->composer->getRepositoryManager()->getLocalRepository()->getCanonicalPackages(),
             [$this->composer->getPackage()]
-        )));
+        );
+        $compilePackages = $this->filterByHavingCompileTasks($allPackages);
+        $this->packageWeights = array_flip(PackageSorter::sortPackages(
+            $compilePackages
+        ));
 
         $rootPackage = $this->composer->getPackage();
         $localRepo = $this->composer->getRepositoryManager()->getLocalRepository();
@@ -56,6 +60,74 @@ class TaskList
         }
 
         return $this;
+    }
+
+    /**
+     * @param \Composer\Package\PackageInterface[] $installedPackages
+     * @return array
+     * List of installed packages (PackageInterface) with compilation tasks
+     */
+    protected function filterByHavingCompileTasks($installedPackages)
+    {
+        $rootPackage = $this->composer->getPackage();
+        $localRepo = $this->composer->getRepositoryManager()->getLocalRepository();
+        $packagesWithCompileTasks = [];
+
+        foreach ($installedPackages as $package) {
+            $path = '';
+            if ($package->getName() === $rootPackage->getName()) {
+                $installPath = realpath('.');
+                // I'm not a huge fan of using 'realpath()' here, but other tasks (using `getInstallPath()`)
+                // are effectively using `realpath()`, so we should be consistent.
+            } else {
+                $package = $localRepo->findPackage($package->getName(), '*');
+                $installPath = $this->composer->getInstallationManager()->getInstallPath($package);
+            }
+            if ($this->packageHasCompileTasks($package, $installPath)) {
+                $packagesWithCompileTasks[] = $package;
+            }
+        }
+        return $packagesWithCompileTasks;
+    }
+
+    /**
+     * @param \Composer\Package\PackageInterface $package
+     * @param string $installPath The package's location on disk.
+     * @return True if compile tasks are defined for this package.
+     */
+    protected function packageHasCompileTasks(PackageInterface $package, $installPath)
+    {
+        $extra = null;
+
+        // Replicate behaviour from loadPackage which prefers
+        // composer.json on disk values over use of getExtra.
+
+        if (file_exists("$installPath/composer.json")) {
+            $json = json_decode(file_get_contents("$installPath/composer.json"), 1);
+            $extra = $json['extra'] ?? null;
+        }
+        if ($extra === null) {
+            $extra = $package->getExtra();
+        }
+        if (!empty($extra['compile'])) {
+            return true;
+        }
+
+        if (empty($extra['compile-includes'])) {
+            return false;
+        }
+
+        foreach ($extra['compile-includes'] as $includeFile) {
+            $includePathFull = "$installPath/$includeFile";
+            if (!file_exists($includePathFull) || !is_readable($includePathFull)) {
+                $this->io->writeError("<warning>Failed to read $includePathFull</warning>");
+                continue;
+            }
+            $inc = json_decode(file_get_contents($includePathFull), 1);
+            if (!empty($inc['compile'])) {
+                return true;
+            }
+        }
     }
 
     /**

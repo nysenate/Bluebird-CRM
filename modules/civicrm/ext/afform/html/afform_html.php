@@ -4,7 +4,7 @@ require_once 'afform_html.civix.php';
 use CRM_AfformHtml_ExtensionUtil as E;
 
 if (!defined('AFFORM_HTML_MONACO')) {
-  define('AFFORM_HTML_MONACO', 'node_modules/monaco-editor/min/vs');
+  define('AFFORM_HTML_MONACO', 'bower_components/monaco-editor/min/vs');
 }
 
 /**
@@ -143,20 +143,4 @@ function afform_html_civicrm_entityTypes(&$entityTypes) {
  */
 function afform_html_civicrm_themes(&$themes) {
   _afform_html_civix_civicrm_themes($themes);
-}
-
-/**
- * Implements hook_civicrm_check().
- */
-function afform_html_civicrm_check(&$messages) {
-  $dir = E::path(AFFORM_HTML_MONACO);
-  if (!file_exists($dir)) {
-    $messages[] = new CRM_Utils_Check_Message(
-      'afform_html_monaco',
-      ts('Afform HTML is missing its "node_modules" folder. Please consult the README.md for current installation instructions.'),
-      ts('Afform HTML: Packages are missing'),
-      \Psr\Log\LogLevel::CRITICAL,
-      'fa-chain-broken'
-    );
-  }
 }

@@ -314,7 +314,7 @@ class CRM_Contact_Page_View_Summary extends CRM_Contact_Page_View {
     return [
       [
         'id' => 'summary',
-        'url' => '#contact-summary',
+        'template' => 'CRM/Contact/Page/View/Summary-tab.tpl',
         'title' => ts('Summary'),
         'weight' => 0,
         'icon' => 'crm-i fa-address-card-o',

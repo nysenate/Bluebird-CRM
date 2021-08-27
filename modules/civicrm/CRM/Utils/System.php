@@ -282,6 +282,43 @@ class CRM_Utils_System {
   }
 
   /**
+   * Return the Notification URL for Payments.
+   *
+   * @param string $path
+   *   The path being linked to, such as "civicrm/add".
+   * @param array|string $query
+   *   A query string to append to the link, or an array of key-value pairs.
+   * @param bool $absolute
+   *   Whether to force the output to be an absolute link (beginning with a
+   *   URI-scheme such as 'http:'). Useful for links that will be displayed
+   *   outside the site, such as in an RSS feed.
+   * @param string $fragment
+   *   A fragment identifier (named anchor) to append to the link.
+   * @param bool $htmlize
+   *   Whether to encode special html characters such as &.
+   * @param bool $frontend
+   *   This link should be to the CMS front end (applies to WP & Joomla).
+   * @param bool $forceBackend
+   *   This link should be to the CMS back end (applies to WP & Joomla).
+   *
+   * @return string
+   *   The Notification URL.
+   */
+  public static function getNotifyUrl(
+    $path = NULL,
+    $query = NULL,
+    $absolute = FALSE,
+    $fragment = NULL,
+    $htmlize = TRUE,
+    $frontend = FALSE,
+    $forceBackend = FALSE
+  ) {
+    $config = CRM_Core_Config::singleton();
+    $query = self::makeQueryString($query);
+    return $config->userSystem->getNotifyUrl($path, $query, $absolute, $fragment, $frontend, $forceBackend, $htmlize);
+  }
+
+  /**
    * Generates an extern url.
    *
    * @param string $path
@@ -629,7 +666,7 @@ class CRM_Utils_System {
       );
     }
 
-    if ($key !== $siteKey) {
+    if (!hash_equals($siteKey, $key)) {
       return self::authenticateAbort(
         "ERROR: Invalid key value sent. " . $docAdd . "\n",
         $abort
@@ -1829,11 +1866,23 @@ class CRM_Utils_System {
   }
 
   /**
-   * Determine whether this is a developmental system.
+   * @deprecated
+   * Determine whether this system is deployed using version control.
+   *
+   * Normally sites would tune their php error settings to prevent deprecation
+   * notices appearing on a live site. However, on some systems the user
+   * does not have control over this setting. Sites with version-controlled
+   * deployments are unlikely to be in a situation where they cannot alter their
+   * php error level reporting so we can trust that the are able to set them
+   * to suppress deprecation / php error level warnings if appropriate but
+   * in order to phase in deprecation warnings we originally chose not to
+   * show them on sites who might not be able to set their error_level in
+   * a way that is appropriate to their site.
    *
    * @return bool
    */
   public static function isDevelopment() {
+    CRM_Core_Error::deprecatedWarning('isDevelopment() is deprecated. Set your php error_reporting or MySQL settings appropriately instead.');
     static $cache = NULL;
     if ($cache === NULL) {
       global $civicrm_root;
@@ -1846,70 +1895,77 @@ class CRM_Utils_System {
    * Is in upgrade mode.
    *
    * @return bool
+   * @deprecated
+   * @see CRM_Core_Config::isUpgradeMode()
    */
   public static function isInUpgradeMode() {
-    $args = explode('/', CRM_Utils_Array::value('q', $_GET));
-    $upgradeInProcess = CRM_Core_Session::singleton()->get('isUpgradePending');
-    if ((isset($args[1]) && $args[1] == 'upgrade') || $upgradeInProcess) {
-      return TRUE;
-    }
-    else {
-      return FALSE;
-    }
+    return CRM_Core_Config::isUpgradeMode();
   }
 
   /**
-   * Determine the standard URL for viewing or editing the specified link.
-   *
-   * This function delegates the decision-making to (a) the hook system and
-   * (b) the BAO system.
+   * Determine the standard URL for view/update/delete of a given entity.
    *
    * @param array $crudLinkSpec
    *   With keys:.
-   *   - action: int, CRM_Core_Action::UPDATE or CRM_Core_Action::VIEW [default: VIEW]
-   *   - entity_table: string, eg "civicrm_contact"
-   *   - entity_id: int
+   *   - action: sting|int, e.g. 'update' or CRM_Core_Action::UPDATE or 'view' or CRM_Core_Action::VIEW [default: 'view']
+   *   - entity|entity_table: string, eg "Contact" or "civicrm_contact"
+   *   - id|entity_id: int
+   *
+   * @param bool $absolute whether the generated link should have an absolute (external) URL beginning with http
    *
    * @return array|NULL
    *   NULL if unavailable, or an array. array has keys:
-   *   - path: string
-   *   - query: array
    *   - title: string
    *   - url: string
-   * @deprecated
    */
-  public static function createDefaultCrudLink($crudLinkSpec) {
-    $crudLinkSpec['action'] = CRM_Utils_Array::value('action', $crudLinkSpec, CRM_Core_Action::VIEW);
-    $daoClass = CRM_Core_DAO_AllCoreTables::getClassForTable($crudLinkSpec['entity_table']);
-    if (!$daoClass) {
+  public static function createDefaultCrudLink($crudLinkSpec, $absolute = FALSE) {
+    $action = $crudLinkSpec['action'] ?? 'view';
+    if (is_numeric($action)) {
+      $action = CRM_Core_Action::description($action);
+    }
+    else {
+      $action = strtolower($action);
+    }
+
+    $daoClass = isset($crudLinkSpec['entity']) ? CRM_Core_DAO_AllCoreTables::getFullName($crudLinkSpec['entity']) : CRM_Core_DAO_AllCoreTables::getClassForTable($crudLinkSpec['entity_table']);
+    $paths = $daoClass ? $daoClass::getEntityPaths() : [];
+    $path = $paths[$action] ?? NULL;
+    if (!$path) {
       return NULL;
     }
 
-    $baoClass = str_replace('_DAO_', '_BAO_', $daoClass);
-    if (!class_exists($baoClass)) {
-      return NULL;
+    if (empty($crudLinkSpec['id']) && !empty($crudLinkSpec['entity_id'])) {
+      $crudLinkSpec['id'] = $crudLinkSpec['entity_id'];
+    }
+    foreach ($crudLinkSpec as $key => $value) {
+      $path = str_replace('[' . $key . ']', $value, $path);
     }
 
-    $bao = new $baoClass();
-    $bao->id = $crudLinkSpec['entity_id'];
-    if (!$bao->find(TRUE)) {
-      return NULL;
+    switch ($action) {
+      case 'add':
+        $title = ts('New %1', [1 => $daoClass::getEntityTitle()]);
+        break;
+
+      case 'view':
+        $title = ts('View %1', [1 => $daoClass::getEntityTitle()]);
+        break;
+
+      case 'update':
+        $title = ts('Edit %1', [1 => $daoClass::getEntityTitle()]);
+        break;
+
+      case 'delete':
+        $title = ts('Delete %1', [1 => $daoClass::getEntityTitle()]);
+        break;
+
+      default:
+        $title = ts(ucfirst($action)) . ' ' . $daoClass::getEntityTitle();
     }
 
-    $link = [];
-    CRM_Utils_Hook::crudLink($crudLinkSpec, $bao, $link);
-    if (empty($link) && is_callable([$bao, 'createDefaultCrudLink'])) {
-      $link = $bao->createDefaultCrudLink($crudLinkSpec);
-    }
-
-    if (!empty($link)) {
-      if (!isset($link['url'])) {
-        $link['url'] = self::url($link['path'], $link['query'], TRUE, NULL, FALSE);
-      }
-      return $link;
-    }
-
-    return NULL;
+    return [
+      'title' => $title,
+      'url' => self::url($path, NULL, $absolute, NULL, FALSE),
+    ];
   }
 
   /**

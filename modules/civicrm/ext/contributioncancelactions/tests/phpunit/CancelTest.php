@@ -1,5 +1,9 @@
 <?php
 
+use Civi\Api4\Activity;
+use Civi\Api4\Contribution;
+use Civi\Test\Api3TestTrait;
+use Civi\Test\CiviEnvBuilder;
 use Civi\Test\HeadlessInterface;
 use Civi\Test\HookInterface;
 use Civi\Test\TransactionalInterface;
@@ -10,6 +14,8 @@ use Civi\Api4\Relationship;
 use Civi\Api4\Event;
 use Civi\Api4\PriceField;
 use Civi\Api4\Participant;
+use PHPUnit\Framework\TestCase;
+use Civi\Test\ContactTestTrait;
 
 /**
  * FIXME - Add test description.
@@ -25,9 +31,10 @@ use Civi\Api4\Participant;
  *
  * @group headless
  */
-class CancelTest extends \PHPUnit\Framework\TestCase implements HeadlessInterface, HookInterface, TransactionalInterface {
+class CancelTest extends TestCase implements HeadlessInterface, HookInterface, TransactionalInterface {
 
-  use \Civi\Test\Api3TestTrait;
+  use Api3TestTrait;
+  use ContactTestTrait;
 
   /**
    * Created ids.
@@ -37,8 +44,8 @@ class CancelTest extends \PHPUnit\Framework\TestCase implements HeadlessInterfac
   protected $ids = [];
 
   /**
-   * The setupHeadless function runs at the start of each test case, right before
-   * the headless environment reboots.
+   * The setupHeadless function runs at the start of each test case, right
+   * before the headless environment reboots.
    *
    * It should perform any necessary steps required for putting the database
    * in a consistent baseline -- such as loading schema and extensions.
@@ -47,9 +54,10 @@ class CancelTest extends \PHPUnit\Framework\TestCase implements HeadlessInterfac
    * for managing this setup, and it includes optimizations to avoid redundant
    * setup work.
    *
+   * @throws \CRM_Extension_Exception_ParseException
    * @see \Civi\Test
    */
-  public function setUpHeadless() {
+  public function setUpHeadless(): CiviEnvBuilder {
     // Civi\Test has many helpers, like install(), uninstall(), sql(), and sqlFile().
     // See: https://docs.civicrm.org/dev/en/latest/testing/phpunit/#civitest
     return \Civi\Test::headless()
@@ -64,7 +72,7 @@ class CancelTest extends \PHPUnit\Framework\TestCase implements HeadlessInterfac
    * @throws \CRM_Core_Exception
    * @throws \Civi\API\Exception\UnauthorizedException
    */
-  public function testPaypalProCancel() {
+  public function testPaypalProCancel(): void {
     $this->createContact();
     $this->createMembershipType();
     Relationship::create()->setValues([
@@ -97,11 +105,9 @@ class CancelTest extends \PHPUnit\Framework\TestCase implements HeadlessInterfac
   /**
    * Create an order with more than one membership.
    *
-   * @throws \API_Exception
    * @throws \CRM_Core_Exception
-   * @throws \Civi\API\Exception\UnauthorizedException
    */
-  protected function createMembershipOrder() {
+  protected function createMembershipOrder(): void {
     $priceFieldID = $this->callAPISuccessGetValue('price_field', [
       'return' => 'id',
       'label' => 'Membership Amount',
@@ -178,7 +184,7 @@ class CancelTest extends \PHPUnit\Framework\TestCase implements HeadlessInterfac
    * @return int
    * @throws \CRM_Core_Exception
    */
-  public function createPaymentProcessor($params = []) {
+  public function createPaymentProcessor($params = []): int {
     $params = array_merge([
       'name' => 'demo',
       'domain_id' => CRM_Core_Config::domainID(),
@@ -215,9 +221,9 @@ class CancelTest extends \PHPUnit\Framework\TestCase implements HeadlessInterfac
    * Test that a cancel from paypal pro results in an order being cancelled.
    *
    * @throws \API_Exception
-   * @throws \CRM_Core_Exception
+   * @throws \CRM_Core_Exception|\CiviCRM_API3_Exception
    */
-  public function testPaypalStandardCancel() {
+  public function testPaypalStandardCancel(): void {
     $this->createContact();
     $orderID = $this->createEventOrder();
     $ipn = new CRM_Core_Payment_PayPalIPN([
@@ -241,7 +247,7 @@ class CancelTest extends \PHPUnit\Framework\TestCase implements HeadlessInterfac
    * @throws API_Exception
    * @throws CRM_Core_Exception
    */
-  public function testCancelOrderWithParticipant() {
+  public function testCancelOrderWithParticipant(): void {
     $this->createContact();
     $orderID = $this->createEventOrder();
     $this->callAPISuccess('Order', 'cancel', ['contribution_id' => $orderID]);
@@ -251,27 +257,42 @@ class CancelTest extends \PHPUnit\Framework\TestCase implements HeadlessInterfac
   }
 
   /**
-   * Test cancel order api when a pledge is linked.
+   * Test cancelling a contribution with a membership on the contribution edit
+   * form.
    *
-   * The pledge status should be updated. I believe the contribution should also be unlinked but
-   * the goal at this point is no change.
-   *
-   * @throws CRM_Core_Exception
-   * @throws API_Exception
+   * @throws \API_Exception
+   * @throws \CRM_Core_Exception
+   * @throws \CiviCRM_API3_Exception
    */
-  public function testCancelOrderWithPledge() {
+  public function testCancelFromContributionForm(): void {
     $this->createContact();
-    $pledgeID = (int) $this->callAPISuccess('Pledge', 'create', ['contact_id' => $this->ids['contact'][0], 'amount' => 4, 'installments' => 2, 'frequency_unit' => 'month', 'original_installment_amount' => 2, 'create_date' => 'now', 'financial_type_id' => 'Donation', 'start_date' => '+5 days'])['id'];
-    $orderID = (int) $this->callAPISuccess('Order', 'create', ['contact_id' => $this->ids['contact'][0], 'total_amount' => 2, 'financial_type_id' => 'Donation', 'api.Payment.create' => ['total_amount' => 2]])['id'];
-    $pledgePayments = $this->callAPISuccess('PledgePayment', 'get')['values'];
-    $this->callAPISuccess('PledgePayment', 'create', ['id' => key($pledgePayments), 'pledge_id' => $pledgeID, 'contribution_id' => $orderID, 'status_id' => 'Completed', 'actual_amount' => 2]);
-    $beforePledge = $this->callAPISuccessGetSingle('Pledge', ['id' => $pledgeID]);
-    $this->assertEquals(2, $beforePledge['pledge_total_paid']);
-    $this->callAPISuccess('Order', 'cancel', ['contribution_id' => $orderID]);
+    $this->createMembershipType();
+    $this->createMembershipOrder();
+    $this->createLoggedInUser();
+    $formValues = [
+      'id' => $this->ids['Contribution'][0],
+      'contact_id' => $this->ids['contact'][0],
+      'contribution_status_id' => CRM_Core_PseudoConstant::getKey('CRM_Contribute_BAO_Contribution', 'contribution_status_id', 'Cancelled'),
+    ];
+    $form = new CRM_Contribute_Form_Contribution();
+    $_SERVER['REQUEST_METHOD'] = 'GET';
+    $form->controller = new CRM_Core_Controller();
+    $form->controller->setStateMachine(new CRM_Core_StateMachine($form->controller));
+    $form->testSubmit($formValues, CRM_Core_Action::UPDATE);
 
-    $this->callAPISuccessGetSingle('Contribution', ['contribution_status_id' => 'Cancelled']);
-    $afterPledge = $this->callAPISuccessGetSingle('Pledge', ['id' => $pledgeID]);
-    $this->assertEquals('', $afterPledge['pledge_total_paid']);
+    $contribution = Contribution::get()
+      ->addWhere('id', '=', $this->ids['Contribution'][0])
+      ->addSelect('contribution_status_id:name')
+      ->execute()->first();
+    $this->assertEquals('Cancelled', $contribution['contribution_status_id:name']);
+    $membership = $this->callAPISuccessGetSingle('Membership', []);
+    $this->assertEquals('Cancelled', CRM_Core_PseudoConstant::getName('CRM_Member_BAO_Membership', 'status_id', $membership['status_id']));
+    $activity = Activity::get()
+      ->addSelect('subject', 'source_record_id', 'status_id')
+      ->addWhere('activity_type_id:name', '=', 'Change Membership Status')
+      ->execute();
+    $this->assertCount(1, $activity);
+    $this->assertEquals('Status changed from Pending to Cancelled', $activity->first()['subject']);
   }
 
   /**
@@ -281,7 +302,7 @@ class CancelTest extends \PHPUnit\Framework\TestCase implements HeadlessInterfac
    * @throws API_Exception
    * @throws CRM_Core_Exception
    */
-  protected function createEventOrder() {
+  protected function createEventOrder(): int {
     $this->ids['event'][0] = (int) Event::create()->setValues(['title' => 'Event', 'start_date' => 'tomorrow', 'event_type_id:name' => 'Workshop'])->execute()->first()['id'];
     $order = $this->callAPISuccess('Order', 'create', [
       'contact_id' => $this->ids['contact'][0],

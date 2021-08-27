@@ -15,7 +15,6 @@
  * @copyright CiviCRM LLC https://civicrm.org/licensing
  */
 class CRM_Report_Form_Contact_Detail extends CRM_Report_Form {
-  const ROW_COUNT_LIMIT = 10;
 
   protected $_summary = NULL;
 
@@ -364,6 +363,7 @@ class CRM_Report_Form_Contact_Detail extends CRM_Report_Form {
     $this->_groupFilter = TRUE;
     $this->_tagFilter = TRUE;
     parent::__construct();
+    $this->setRowCount(10);
   }
 
   public function preProcess() {
@@ -805,30 +805,27 @@ HERESQL;
 
   /**
    * Override to set limit is 10
-   * @param int $rowCount
+   * @param int|null $rowCount
    */
-  public function limit($rowCount = self::ROW_COUNT_LIMIT) {
+  public function limit($rowCount = NULL) {
+    $rowCount = $rowCount ?? $this->getRowCount();
     parent::limit($rowCount);
   }
 
   /**
    * Override to set pager with limit is 10
-   * @param int $rowCount
+   * @param int|null $rowCount
    */
-  public function setPager($rowCount = self::ROW_COUNT_LIMIT) {
+  public function setPager($rowCount = NULL) {
+    $rowCount = $rowCount ?? $this->getRowCount();
     parent::setPager($rowCount);
   }
 
   public function postProcess() {
-
     $this->beginPostProcess();
-
-    // get the acl clauses built before we assemble the query
-    $this->buildACLClause($this->_aliases['civicrm_contact']);
-
     $sql = $this->buildQuery(TRUE);
 
-    $rows = $graphRows = $this->_contactSelected = [];
+    $rows = $this->_contactSelected = [];
     $this->buildRows($sql, $rows);
     foreach ($rows as $key => $val) {
       $rows[$key]['contactID'] = $val['civicrm_contact_id'];

@@ -15,7 +15,7 @@
  *
  * You should obtain a singleton of this class via
  *
- * $manager = CRM_Extension_Manager::singleton()->getManager();
+ * $manager = CRM_Extension_System::singleton()->getManager();
  *
  * @package CRM
  * @copyright CiviCRM LLC https://civicrm.org/licensing
@@ -310,11 +310,12 @@ class CRM_Extension_Manager {
 
     $this->statuses = NULL;
     $this->mapper->refresh();
-    CRM_Core_Invoke::rebuildMenuAndCaches(TRUE);
+    if (!CRM_Core_Config::isUpgradeMode()) {
+      CRM_Core_Invoke::rebuildMenuAndCaches(TRUE);
 
-    $schema = new CRM_Logging_Schema();
-    $schema->fixSchemaDifferences();
-
+      $schema = new CRM_Logging_Schema();
+      $schema->fixSchemaDifferences();
+    }
     foreach ($keys as $key) {
       // throws Exception
       list ($info, $typeManager) = $this->_getInfoTypeHandler($key);
@@ -381,36 +382,41 @@ class CRM_Extension_Manager {
     $this->addProcess($keys, 'disable');
 
     foreach ($keys as $key) {
-      switch ($origStatuses[$key]) {
-        case self::STATUS_INSTALLED:
-          $this->addProcess([$key], 'disabling');
-          // throws Exception
-          list ($info, $typeManager) = $this->_getInfoTypeHandler($key);
-          $typeManager->onPreDisable($info);
-          $this->_setExtensionActive($info, 0);
-          $typeManager->onPostDisable($info);
-          $this->popProcess([$key]);
-          break;
+      if (isset($origStatuses[$key])) {
+        switch ($origStatuses[$key]) {
+          case self::STATUS_INSTALLED:
+            $this->addProcess([$key], 'disabling');
+            // throws Exception
+            list ($info, $typeManager) = $this->_getInfoTypeHandler($key);
+            $typeManager->onPreDisable($info);
+            $this->_setExtensionActive($info, 0);
+            $typeManager->onPostDisable($info);
+            $this->popProcess([$key]);
+            break;
 
-        case self::STATUS_INSTALLED_MISSING:
-          // throws Exception
-          list ($info, $typeManager) = $this->_getMissingInfoTypeHandler($key);
-          $typeManager->onPreDisable($info);
-          $this->_setExtensionActive($info, 0);
-          $typeManager->onPostDisable($info);
-          break;
+          case self::STATUS_INSTALLED_MISSING:
+            // throws Exception
+            list ($info, $typeManager) = $this->_getMissingInfoTypeHandler($key);
+            $typeManager->onPreDisable($info);
+            $this->_setExtensionActive($info, 0);
+            $typeManager->onPostDisable($info);
+            break;
 
-        case self::STATUS_DISABLED:
-        case self::STATUS_DISABLED_MISSING:
-        case self::STATUS_UNINSTALLED:
-          // ok, nothing to do
-          // Remove the 'disable' process as we're not doing that.
-          $this->popProcess([$key]);
-          break;
+          case self::STATUS_DISABLED:
+          case self::STATUS_DISABLED_MISSING:
+          case self::STATUS_UNINSTALLED:
+            // ok, nothing to do
+            // Remove the 'disable' process as we're not doing that.
+            $this->popProcess([$key]);
+            break;
 
-        case self::STATUS_UNKNOWN:
-        default:
-          throw new CRM_Extension_Exception("Cannot disable unknown extension: $key");
+          case self::STATUS_UNKNOWN:
+          default:
+            throw new CRM_Extension_Exception("Cannot disable unknown extension: $key");
+        }
+      }
+      else {
+        throw new CRM_Extension_Exception("Cannot disable unknown extension: $key");
       }
     }
 

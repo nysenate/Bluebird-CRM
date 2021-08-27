@@ -68,11 +68,6 @@ class CRM_Core_Payment_AuthorizeNet extends CRM_Core_Payment {
     $this->_setParam('apiLogin', $paymentProcessor['user_name']);
     $this->_setParam('paymentKey', $paymentProcessor['password']);
     $this->_setParam('paymentType', 'AIM');
-    $this->_setParam('md5Hash', $paymentProcessor['signature'] ?? NULL);
-
-    $this->_setParam('timestamp', time());
-    srand(time());
-    $this->_setParam('sequence', rand(1, 1000));
   }
 
   /**
@@ -103,15 +98,29 @@ class CRM_Core_Payment_AuthorizeNet extends CRM_Core_Payment {
   /**
    * Submit a payment using Advanced Integration Method.
    *
-   * @param array $params
-   *   Assoc array of input parameters for this transaction.
+   * @param array|\Civi\Payment\PropertyBag $params
+   *
+   * @param string $component
    *
    * @return array
-   *   the result in a nice formatted array (or an error object)
+   *   Result array (containing at least the key payment_status_id)
    *
    * @throws \Civi\Payment\Exception\PaymentProcessorException
    */
-  public function doDirectPayment(&$params) {
+  public function doPayment(&$params, $component = 'contribute') {
+    $propertyBag = \Civi\Payment\PropertyBag::cast($params);
+    $this->_component = $component;
+    $statuses = CRM_Contribute_BAO_Contribution::buildOptions('contribution_status_id', 'validate');
+
+    // If we have a $0 amount, skip call to processor and set payment_status to Completed.
+    // Conceivably a processor might override this - perhaps for setting up a token - but we don't
+    // have an example of that at the moment.
+    if ($propertyBag->getAmount() == 0) {
+      $result['payment_status_id'] = array_search('Completed', $statuses);
+      $result['payment_status'] = 'Completed';
+      return $result;
+    }
+
     if (!defined('CURLOPT_SSLCERT')) {
       // Note that guzzle doesn't necessarily require CURL, although it prefers it. But we should leave this error
       // here unless someone suggests it is not required since it's likely helpful.
@@ -136,6 +145,8 @@ class CRM_Core_Payment_AuthorizeNet extends CRM_Core_Payment {
 
     if (!empty($params['is_recur']) && !empty($params['contributionRecurID'])) {
       $this->doRecurPayment();
+      $params['payment_status_id'] = array_search('Pending', $statuses);
+      $params['payment_status'] = 'Pending';
       return $params;
     }
 
@@ -156,7 +167,7 @@ class CRM_Core_Payment_AuthorizeNet extends CRM_Core_Payment {
     }
 
     // Authorize.Net will not refuse duplicates, so we should check if the user already submitted this transaction
-    if ($this->checkDupe($authorizeNetFields['x_invoice_num'], CRM_Utils_Array::value('contributionID', $params))) {
+    if ($this->checkDupe($authorizeNetFields['x_invoice_num'], $params['contributionID'] ?? NULL)) {
       throw new PaymentProcessorException('It appears that this transaction is a duplicate.  Have you already submitted the form once?  If so there may have been a connection problem.  Check your email for a receipt from Authorize.net.  If you do not receive a receipt within 2 hours you can try your transaction again.  If you continue to have problems please contact the site administrator.', 9004);
     }
 
@@ -179,10 +190,10 @@ class CRM_Core_Payment_AuthorizeNet extends CRM_Core_Payment {
     switch ($response_fields[0]) {
       case self::AUTH_REVIEW:
         $params['payment_status_id'] = array_search('Pending', $contributionStatus);
+        $params['payment_status'] = 'Pending';
         break;
 
       case self::AUTH_ERROR:
-        $params['payment_status_id'] = array_search('Failed', $contributionStatus);
         $errormsg = $response_fields[2] . ' ' . $response_fields[3];
         throw new PaymentProcessorException($errormsg, $response_fields[1]);
 
@@ -193,10 +204,10 @@ class CRM_Core_Payment_AuthorizeNet extends CRM_Core_Payment {
       default:
         // Success
         $params['trxn_id'] = !empty($response_fields[6]) ? $response_fields[6] : $this->getTestTrxnID();
+        $params['payment_status_id'] = array_search('Completed', $statuses);
+        $params['payment_status'] = 'Completed';
         break;
     }
-
-    // TODO: include authorization code?
 
     return $params;
   }
@@ -374,56 +385,6 @@ class CRM_Core_Payment_AuthorizeNet extends CRM_Core_Payment {
   }
 
   /**
-   * Generate HMAC_MD5
-   *
-   * @param string $key
-   * @param string $data
-   *
-   * @return string
-   *   the HMAC_MD5 encoding string
-   */
-  public function hmac($key, $data) {
-    if (function_exists('mhash')) {
-      // Use PHP mhash extension
-      return (bin2hex(mhash(MHASH_MD5, $data, $key)));
-    }
-    else {
-      // RFC 2104 HMAC implementation for php.
-      // Creates an md5 HMAC.
-      // Eliminates the need to install mhash to compute a HMAC
-      // Hacked by Lance Rushing
-      // byte length for md5
-      $b = 64;
-      if (strlen($key) > $b) {
-        $key = pack("H*", md5($key));
-      }
-      $key = str_pad($key, $b, chr(0x00));
-      $ipad = str_pad('', $b, chr(0x36));
-      $opad = str_pad('', $b, chr(0x5c));
-      $k_ipad = $key ^ $ipad;
-      $k_opad = $key ^ $opad;
-      return md5($k_opad . pack("H*", md5($k_ipad . $data)));
-    }
-  }
-
-  /**
-   * Calculate and return the transaction fingerprint.
-   *
-   * @return string
-   *   fingerprint
-   */
-  public function CalculateFP() {
-    $x_tran_key = $this->_getParam('paymentKey');
-    $loginid = $this->_getParam('apiLogin');
-    $sequence = $this->_getParam('sequence');
-    $timestamp = $this->_getParam('timestamp');
-    $amount = $this->_getParam('amount');
-    $currency = $this->_getParam('currencyID');
-    $transaction = "$loginid^$sequence^$timestamp^$amount^$currency";
-    return $this->hmac($x_tran_key, $transaction);
-  }
-
-  /**
    * Split a CSV file.  Requires , as delimiter and " as enclosure.
    * Based off notes from http://php.net/fgetcsv
    *
@@ -584,7 +545,7 @@ class CRM_Core_Payment_AuthorizeNet extends CRM_Core_Payment {
    * @return bool|object
    * @throws \Civi\Payment\Exception\PaymentProcessorException
    */
-  public function cancelSubscription(&$message = '', $params) {
+  public function cancelSubscription(&$message = '', $params = []) {
     $template = CRM_Core_Smarty::singleton();
 
     $template->assign('subscriptionType', 'cancel');

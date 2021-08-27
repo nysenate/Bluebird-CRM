@@ -241,7 +241,7 @@ WHERE  id IN ( $idString )
    */
   public static function createCurrentEmployerRelationship($contactID, $organization, $previousEmployerID = NULL, $newContact = FALSE) {
     //if organization name is passed. CRM-15368,CRM-15547
-    if ($organization && !is_numeric($organization)) {
+    if (!CRM_Utils_System::isNull($organization) && !is_numeric($organization)) {
       $dupeIDs = CRM_Contact_BAO_Contact::getDuplicateContacts(['organization_name' => $organization], 'Organization', 'Unsupervised', [], FALSE);
 
       if (is_array($dupeIDs) && !empty($dupeIDs)) {
@@ -600,7 +600,7 @@ LEFT JOIN  civicrm_email ce ON ( ce.contact_id=c.id AND ce.is_primary = 1 )
         }
       }
       if (!empty($originalId) && array_key_exists('merge', $hasPermissions)) {
-        $rgBao = new CRM_Dedupe_BAO_RuleGroup();
+        $rgBao = new CRM_Dedupe_BAO_DedupeRuleGroup();
         $rgBao->contact_type = $dao->contact_type;
         $rgBao->used = 'Supervised';
         if ($rgBao->find(TRUE)) {
@@ -866,7 +866,7 @@ INNER JOIN civicrm_contact contact_target ON ( contact_target.id = act.contact_i
    *   likely affect user experience in unexpected ways. Existing behaviour retained
    *   ... reluctantly.
    */
-  public static function clearContactCaches($isEmptyPrevNextTable = FALSE) {
+  public static function clearContactCaches($isEmptyPrevNextTable = FALSE): void {
     if (!CRM_Core_Config::isPermitCacheFlushMode()) {
       return;
     }
@@ -876,8 +876,8 @@ INNER JOIN civicrm_contact contact_target ON ( contact_target.id = act.contact_i
       Civi::service('prevnext')->deleteItem();
       CRM_Core_BAO_PrevNextCache::deleteItem();
     }
-    // clear acl cache if any.
-    CRM_ACL_BAO_Cache::resetCache();
+
+    CRM_ACL_BAO_Cache::opportunisticCacheFlush();
     CRM_Contact_BAO_GroupContactCache::opportunisticCacheFlush();
   }
 
@@ -967,16 +967,13 @@ INNER JOIN civicrm_contact contact_target ON ( contact_target.id = act.contact_i
     }
 
     if (empty($filterContactFldIds)) {
+      $greetingDetails = [];
       $filterContactFldIds[] = 0;
     }
-
-    // retrieve only required contact information
-    $extraParams[] = ['contact_type', '=', $contactType, 0, 0];
-    // we do token replacement in the replaceGreetingTokens hook
-    list($greetingDetails) = CRM_Utils_Token::getTokenDetails(array_keys($filterContactFldIds),
-      $greetingsReturnProperties,
-      FALSE, FALSE, $extraParams
-    );
+    else {
+      // we do token replacement in the replaceGreetingTokens hook
+      [$greetingDetails] = CRM_Utils_Token::getTokenDetails(array_keys($filterContactFldIds), $greetingsReturnProperties, FALSE, FALSE);
+    }
     // perform token replacement and build update SQL
     $contactIds = [];
     $cacheFieldQuery = "UPDATE civicrm_contact SET {$greeting}_display = CASE id ";

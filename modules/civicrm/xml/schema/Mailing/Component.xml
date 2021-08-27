@@ -5,11 +5,15 @@
   <class>MailingComponent</class>
   <name>civicrm_mailing_component</name>
   <comment>Stores information about the mailing components (header/footer).</comment>
+  <component>CiviMail</component>
   <field>
     <name>id</name>
     <title>Mailing Component ID</title>
     <type>int unsigned</type>
     <required>true</required>
+    <html>
+      <type>Number</type>
+    </html>
   </field>
   <primaryKey>
     <name>id</name>
@@ -39,6 +43,9 @@
     <name>subject</name>
     <type>varchar</type>
     <length>255</length>
+    <html>
+      <label>Subject</label>
+    </html>
   </field>
   <field>
     <name>body_html</name>
@@ -59,6 +66,7 @@
       <type>TextArea</type>
       <rows>8</rows>
       <cols>80</cols>
+      <label>Body in Text Format</label>
     </html>
   </field>
   <field>

@@ -30,6 +30,7 @@ class CRM_Upgrade_DispatchPolicy {
     // mixed: it depends on the specific hook and the specific upgrade-step.
     //
     // Some example considerations:
+    //
     // - If the "log_civicrm_*" tables and triggers are to be reconciled during
     //   the upgrade, then one probably needs access to the list of tables and
     //   triggers defined by extensions. These are provided by hooks.
@@ -47,7 +48,18 @@ class CRM_Upgrade_DispatchPolicy {
     //   they probably are not intended to fire during DB upgrade. Then again,
     //   upgrade-logic is usually written with lower-level semantics that avoid firing hooks.
     //
+    // To balance these mixed considerations, the upgrade runs in two phases:
+    //
+    // - Defensive/conservative/closed phase ("upgrade.main"): Likely mismatch
+    //   between schema+code. Low-confidence in most services (APIs/hooks/etc).
+    //   Ignore caches/indices/etc. Only perform low-level schema revisions.
+    // - Constructive/liberal/open phase ("upgrade.finish"): Schema+code match.
+    //   Higher confidence in most services (APIs/hooks/etc).
+    //   Rehydrate caches/indices/etc.
+    //
     // Related discussions:
+    //
+    // - https://github.com/civicrm/civicrm-core/pull/17126
     // - https://github.com/civicrm/civicrm-core/pull/13551
     // - https://lab.civicrm.org/dev/core/issues/1449
     // - https://lab.civicrm.org/dev/core/issues/1460
@@ -59,10 +71,9 @@ class CRM_Upgrade_DispatchPolicy {
     // It's more restrictive, preventing interference from unexpected callpaths.
     $policies['upgrade.main'] = [
       'hook_civicrm_config' => 'run',
-      'hook_civicrm_container' => 'run',
-      'hook_civicrm_alterSettingsFolders' => 'run',
-      'hook_civicrm_alterSettingsMetaData' => 'run',
-      'hook_civicrm_permission' => 'run',
+      // cleanupPermissions() in some UF's can be destructive. Running prematurely could be actively harmful.
+      'hook_civicrm_permission' => 'fail',
+      'hook_civicrm_crypto' => 'drop',
       '/^hook_civicrm_(pre|post)$/' => 'drop',
       '/^hook_civicrm_/' => $strict ? 'warn-drop' : 'drop',
       '/^civi\./' => 'run',

@@ -43,9 +43,9 @@ class CRM_Contribute_Form_SoftCredit {
 
           // radio button for Honor Type
           foreach ($jsonData['soft_credit_types'] as $value) {
-            $honorTypes[$value] = $form->createElement('radio', NULL, NULL, $softCreditTypes[$value], $value);
+            $honorTypes[$value] = $softCreditTypes[$value];
           }
-          $form->addGroup($honorTypes, 'soft_credit_type_id', NULL)->setAttribute('allowClear', TRUE);
+          $form->addRadio('soft_credit_type_id', NULL, $honorTypes, ['allowClear' => TRUE]);
         }
       }
       return $form;
@@ -140,7 +140,7 @@ class CRM_Contribute_Form_SoftCredit {
     if (!empty($form->_softCreditInfo['soft_credit'])) {
       $noSoftCredit = FALSE;
       foreach ($form->_softCreditInfo['soft_credit'] as $key => $value) {
-        $defaults["soft_credit_amount[$key]"] = CRM_Utils_Money::format($value['amount'], NULL, '%a');
+        $defaults["soft_credit_amount[$key]"] = CRM_Utils_Money::formatLocaleNumericRoundedForDefaultCurrency($value['amount']);
         $defaults["soft_credit_contact_id[$key]"] = $value['contact_id'];
         $defaults["soft_credit_type[$key]"] = $value['soft_credit_type'];
       }

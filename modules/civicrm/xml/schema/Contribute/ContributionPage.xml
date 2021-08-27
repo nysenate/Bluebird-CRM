@@ -7,12 +7,17 @@
   <comment>A Contribution object store meta information about a single customized contribution page</comment>
   <add>1.3</add>
   <log>true</log>
+  <component>CiviContribute</component>
+  <labelField>title</labelField>
   <field>
     <name>id</name>
     <title>Contribution Page ID</title>
     <type>int unsigned</type>
     <required>true</required>
-    <comment>Contribution Id</comment>
+    <comment>Contribution ID</comment>
+    <html>
+      <type>Number</type>
+    </html>
     <add>1.3</add>
   </field>
   <primaryKey>
@@ -43,7 +48,7 @@
   </field>
   <field>
     <name>financial_type_id</name>
-    <title>Financial Type</title>
+    <title>Financial Type ID</title>
     <type>int unsigned</type>
     <comment>default financial type assigned to contributions submitted via this page, e.g. Contribution, Campaign Contribution</comment>
     <pseudoconstant>
@@ -53,6 +58,7 @@
     </pseudoconstant>
     <html>
       <type>Select</type>
+      <label>Financial Type</label>
     </html>
     <add>4.3</add>
   </field>
@@ -75,6 +81,7 @@
     </pseudoconstant>
     <html>
       <type>Select</type>
+      <label>Payment Processors</label>
     </html>
     <add>1.8</add>
   </field>
@@ -189,6 +196,9 @@
     <length>255</length>
     <localizable>true</localizable>
     <comment>Initial amount label for partial payment</comment>
+    <html>
+      <label>Initial Amount Label</label>
+    </html>
     <add>4.3</add>
   </field>
   <field>
@@ -196,12 +206,18 @@
     <type>text</type>
     <localizable>true</localizable>
     <comment>Initial amount help text for partial payment</comment>
+    <html>
+      <label>Initial Amount Help Text</label>
+    </html>
     <add>4.3</add>
   </field>
   <field>
     <name>min_initial_amount</name>
     <type>decimal</type>
     <comment>Minimum initial amount for partial payment</comment>
+    <html>
+      <label>Min. Initial Amount</label>
+    </html>
     <add>4.3</add>
   </field>
   <field>
@@ -237,6 +253,9 @@
     <name>goal_amount</name>
     <type>decimal</type>
     <comment>The target goal for this page, allows people to build a goal meter</comment>
+    <html>
+      <label>Goal Amount</label>
+    </html>
     <add>1.5</add>
   </field>
   <field>
@@ -360,7 +379,6 @@
     <name>start_date</name>
     <title>Contribution Page Start Date</title>
     <type>datetime</type>
-    <title>Contribution Page Start Date</title>
     <comment>Date and time that this page starts.</comment>
     <add>1.8</add>
   </field>
@@ -373,9 +391,12 @@
   </field>
   <field>
     <name>created_id</name>
-    <title>Contribution Page Created By</title>
+    <title>Created By Contact ID</title>
     <type>int unsigned</type>
     <comment>FK to civicrm_contact, who created this contribution page</comment>
+    <html>
+      <label>Created By</label>
+    </html>
     <add>3.0</add>
   </field>
   <foreignKey>
@@ -415,14 +436,14 @@
   </field>
   <field>
     <name>campaign_id</name>
-    <title>Contribution Page Campaign ID</title>
+    <component>CiviCampaign</component>
+    <title>Campaign ID</title>
     <type>int unsigned</type>
     <comment>The campaign for which we are collecting contributions with this page.</comment>
-    <pseudoconstant>
-      <table>civicrm_campaign</table>
-      <keyColumn>id</keyColumn>
-      <labelColumn>title</labelColumn>
-    </pseudoconstant>
+    <html>
+      <type>EntityRef</type>
+      <label>Campaign</label>
+    </html>
     <add>3.4</add>
   </field>
   <foreignKey>

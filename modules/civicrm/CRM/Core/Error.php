@@ -829,7 +829,7 @@ class CRM_Core_Error extends PEAR_ErrorStack {
     // Exception backtrace
     if ($e instanceof PEAR_Exception) {
       $ei = $e;
-      while (is_callable([$ei, 'getCause'])) {
+      if (is_callable([$ei, 'getCause'])) {
         // DB_ERROR doesn't have a getCause but does have a __call function which tricks is_callable.
         if (!$ei instanceof DB_Error) {
           if ($ei->getCause() instanceof PEAR_Error) {
@@ -1039,7 +1039,18 @@ class CRM_Core_Error extends PEAR_ErrorStack {
       $callerClass = $dbt[1]['class'] ?? NULL;
       $oldMethod = "{$callerClass}::{$callerFunction}";
     }
-    Civi::log()->warning("Deprecated function $oldMethod, use $newMethod.", ['civi.tag' => 'deprecated']);
+    self::deprecatedWarning("Deprecated function $oldMethod, use $newMethod.");
+  }
+
+  /**
+   * Output a deprecated notice about a deprecated call path, rather than deprecating a whole function.
+   * @param string $message
+   */
+  public static function deprecatedWarning($message) {
+    // Even though the tag is no longer used within the log() function,
+    // \Civi\API\LogObserver instances may still be monitoring it.
+    Civi::log()->warning($message, ['civi.tag' => 'deprecated']);
+    trigger_error($message, E_USER_DEPRECATED);
   }
 
 }

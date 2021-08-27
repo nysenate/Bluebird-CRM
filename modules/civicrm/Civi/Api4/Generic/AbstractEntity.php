@@ -46,7 +46,7 @@ abstract class AbstractEntity {
    * @return \Civi\Api4\Action\GetActions
    */
   public static function getActions($checkPermissions = TRUE) {
-    return (new \Civi\Api4\Action\GetActions(self::getEntityName(), __FUNCTION__))
+    return (new \Civi\Api4\Action\GetActions(static::getEntityName(), __FUNCTION__))
       ->setCheckPermissions($checkPermissions);
   }
 
@@ -54,6 +54,13 @@ abstract class AbstractEntity {
    * @return \Civi\Api4\Generic\BasicGetFieldsAction
    */
   abstract public static function getFields();
+
+  /**
+   * @return \Civi\Api4\Generic\CheckAccessAction
+   */
+  public static function checkAccess() {
+    return new CheckAccessAction(self::getEntityName(), __FUNCTION__);
+  }
 
   /**
    * Returns a list of permissions needed to access the various actions in this api.
@@ -86,7 +93,9 @@ abstract class AbstractEntity {
    * @return string
    */
   protected static function getEntityTitle($plural = FALSE) {
-    return static::getEntityName();
+    $name = static::getEntityName();
+    $dao = \CRM_Core_DAO_AllCoreTables::getFullName($name);
+    return $dao ? $dao::getEntityTitle($plural) : ($plural ? \CRM_Utils_String::pluralize($name) : $name);
   }
 
   /**
@@ -107,9 +116,10 @@ abstract class AbstractEntity {
    * @throws NotImplementedException
    */
   public static function __callStatic($action, $args) {
-    $entity = self::getEntityName();
+    $entity = static::getEntityName();
+    $nameSpace = str_replace('Civi\Api4\\', 'Civi\Api4\Action\\', static::class);
     // Find class for this action
-    $entityAction = "\\Civi\\Api4\\Action\\$entity\\" . ucfirst($action);
+    $entityAction = "$nameSpace\\" . ucfirst($action);
     if (class_exists($entityAction)) {
       $actionObject = new $entityAction($entity, $action);
       if (isset($args[0]) && $args[0] === FALSE) {
@@ -133,11 +143,27 @@ abstract class AbstractEntity {
       'name' => static::getEntityName(),
       'title' => static::getEntityTitle(),
       'title_plural' => static::getEntityTitle(TRUE),
-      'type' => self::stripNamespace(get_parent_class(static::class)),
+      'type' => [self::stripNamespace(get_parent_class(static::class))],
       'paths' => static::getEntityPaths(),
+      'class' => static::class,
+      'id_field' => 'id',
     ];
+    // Add info for entities with a corresponding DAO
+    $dao = \CRM_Core_DAO_AllCoreTables::getFullName($info['name']);
+    if ($dao) {
+      $info['paths'] = $dao::getEntityPaths();
+      $info['icon'] = $dao::$_icon;
+      $info['label_field'] = $dao::$_labelField;
+      $info['dao'] = $dao;
+    }
+    foreach (ReflectionUtils::getTraits(static::class) as $trait) {
+      $info['type'][] = self::stripNamespace($trait);
+    }
+    // Entities without a @searchable annotation will default to secondary,
+    // which makes them visible in SearchKit but not at the top of the list.
+    $info['searchable'] = 'secondary';
     $reflection = new \ReflectionClass(static::class);
-    $info += ReflectionUtils::getCodeDocs($reflection, NULL, ['entity' => $info['name']]);
+    $info = array_merge($info, ReflectionUtils::getCodeDocs($reflection, NULL, ['entity' => $info['name']]));
     unset($info['package'], $info['method']);
     return $info;
   }

@@ -179,6 +179,19 @@ class CRM_Core_Form extends HTML_QuickForm_Page {
   public $submitOnce = FALSE;
 
   /**
+   * Values submitted by the user.
+   *
+   * These values have been checked for injection per
+   * https://pear.php.net/manual/en/package.html.html-quickform.html-quickform.exportvalues.php
+   * and are as submitted.
+   *
+   * Once set this array should be treated as read only.
+   *
+   * @var array
+   */
+  protected $exportedValues = [];
+
+  /**
    * @return string
    */
   public function getContext() {
@@ -330,7 +343,6 @@ class CRM_Core_Form extends HTML_QuickForm_Page {
       'postalCode',
       'money',
       'positiveInteger',
-      'xssString',
       'fileExists',
       'settingPath',
       'autocomplete',
@@ -374,7 +386,7 @@ class CRM_Core_Form extends HTML_QuickForm_Page {
       // The $attributes param used to allow for strings and would default to an
       // empty string.  However, now that the variable is heavily manipulated,
       // we should expect it to always be an array.
-      Civi::log()->warning('Attributes passed to CRM_Core_Form::add() are not an array.', ['civi.tag' => 'deprecated']);
+      CRM_Core_Error::deprecatedWarning('Attributes passed to CRM_Core_Form::add() are not an array.');
     }
     // Fudge some extra types that quickform doesn't support
     $inputType = $type;
@@ -804,8 +816,8 @@ class CRM_Core_Form extends HTML_QuickForm_Page {
   /**
    * @return int
    */
-  public function getPaymentProcessorID() {
-    return $this->_paymentProcessorID;
+  public function getPaymentProcessorID(): int {
+    return (int) $this->_paymentProcessorID;
   }
 
   /**
@@ -2694,6 +2706,7 @@ class CRM_Core_Form extends HTML_QuickForm_Page {
     if (!empty($selectedChild)) {
       $this->set('selectedChild', $selectedChild);
       $this->assign('selectedChild', $selectedChild);
+      Civi::resources()->addSetting(['tabSettings' => ['active' => $selectedChild]]);
     }
   }
 
@@ -2717,6 +2730,23 @@ class CRM_Core_Form extends HTML_QuickForm_Page {
     }
     $userChecksum = CRM_Utils_Request::retrieve('cs', 'String', $this);
     return CRM_Contact_BAO_Contact_Utils::validChecksum($contactID, $userChecksum) ? $contactID : FALSE;
+  }
+
+  /**
+   * Get values submitted by the user.
+   *
+   * These values have been validated against the fields added to the form.
+   * https://pear.php.net/manual/en/package.html.html-quickform.html-quickform.exportvalues.php
+   *
+   * @param string $fieldName
+   *
+   * @return mixed|null
+   */
+  protected function getSubmittedValue(string $fieldName) {
+    if (empty($this->exportedValues)) {
+      $this->exportedValues = $this->controller->exportValues($this->_name);
+    }
+    return $this->exportedValues[$fieldName] ?? NULL;
   }
 
 }

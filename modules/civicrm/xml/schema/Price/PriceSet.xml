@@ -6,16 +6,18 @@
   <name>civicrm_price_set</name>
   <add>1.8</add>
   <log>true</log>
+  <component>CiviContribute</component>
   <field>
     <name>id</name>
     <title>Price Set</title>
     <type>int unsigned</type>
     <required>true</required>
     <comment>Price Set</comment>
-    <add>1.8</add>
     <html>
-      <type>Select</type>
+      <type>Number</type>
+      <label>ID</label>
     </html>
+    <add>1.8</add>
   </field>
   <primaryKey>
     <name>id</name>
@@ -23,7 +25,7 @@
   </primaryKey>
   <field>
     <name>domain_id</name>
-    <title>Price Set Domain</title>
+    <title>Domain ID</title>
     <type>int unsigned</type>
     <pseudoconstant>
       <table>civicrm_domain</table>
@@ -34,6 +36,7 @@
     <add>3.1</add>
     <html>
       <type>Text</type>
+      <label>Domain</label>
     </html>
   </field>
   <foreignKey>
@@ -51,6 +54,7 @@
     <add>1.8</add>
     <html>
       <type>Text</type>
+      <label>Name</label>
     </html>
   </field>
   <index>
@@ -139,7 +143,7 @@
   </field>
   <field>
     <name>financial_type_id</name>
-    <title>Financial Type</title>
+    <title>Financial Type ID</title>
     <type>int unsigned</type>
     <default>NULL</default>
     <comment>FK to Financial Type(for membership price sets only).</comment>
@@ -151,6 +155,7 @@
     </pseudoconstant>
     <html>
       <type>Select</type>
+      <label>Financial Type</label>
     </html>
   </field>
   <foreignKey>

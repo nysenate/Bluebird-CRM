@@ -17,8 +17,8 @@
 
 namespace PhpOffice\PhpWord\Writer\Word2007\Element;
 
-use PhpOffice\Common\XMLWriter;
 use PhpOffice\PhpWord\Element\Image as ImageElement;
+use PhpOffice\PhpWord\Shared\XMLWriter;
 use PhpOffice\PhpWord\Style\Font as FontStyle;
 use PhpOffice\PhpWord\Style\Frame as FrameStyle;
 use PhpOffice\PhpWord\Writer\Word2007\Style\Font as FontStyleWriter;
@@ -103,7 +103,9 @@ class Image extends AbstractElement
         $style->setPositioning('absolute');
         $styleWriter = new ImageStyleWriter($xmlWriter, $style);
 
-        $xmlWriter->startElement('w:p');
+        if (!$this->withoutP) {
+            $xmlWriter->startElement('w:p');
+        }
         $xmlWriter->startElement('w:r');
         $xmlWriter->startElement('w:pict');
         $xmlWriter->startElement('v:shape');
@@ -118,6 +120,8 @@ class Image extends AbstractElement
         $xmlWriter->endElement(); // v:shape
         $xmlWriter->endElement(); // w:pict
         $xmlWriter->endElement(); // w:r
-        $xmlWriter->endElement(); // w:p
+        if (!$this->withoutP) {
+            $xmlWriter->endElement(); // w:p
+        }
     }
 }

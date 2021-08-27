@@ -69,6 +69,9 @@ function civicrm_api3_custom_field_create($params) {
  * Flush static caches in functions that might have stored available custom fields.
  */
 function _civicrm_api3_custom_field_flush_static_caches() {
+  if (isset(\Civi::$statics['CRM_Core_BAO_OptionGroup']['titles_by_name'])) {
+    unset(\Civi::$statics['CRM_Core_BAO_OptionGroup']['titles_by_name']);
+  }
   civicrm_api('CustomField', 'getfields', ['version' => 3, 'cache_clear' => 1]);
   CRM_Core_BAO_UFField::getAvailableFieldsFlat(TRUE);
 }
@@ -179,7 +182,7 @@ function civicrm_api3_custom_field_get($params) {
         if (in_array($result['data_type'], $legacyDataTypes)) {
           $result['html_type'] = array_search($result['data_type'], $legacyDataTypes);
         }
-        if (!empty($result['serialize'])) {
+        if (!empty($result['serialize']) && $result['html_type'] !== 'Autocomplete-Select') {
           $result['html_type'] = str_replace('Select', 'Multi-Select', $result['html_type']);
         }
       }

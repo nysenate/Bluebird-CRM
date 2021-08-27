@@ -7,6 +7,7 @@
   <add>1.1</add>
   <log>true</log>
   <icon>fa-tasks</icon>
+  <labelField>subject</labelField>
   <paths>
     <add>civicrm/activity?reset=1&amp;action=add&amp;context=standalone</add>
     <view>civicrm/activity?reset=1&amp;action=view&amp;id=[id]</view>
@@ -21,6 +22,9 @@
     <type>int unsigned</type>
     <required>true</required>
     <comment>Unique  Other Activity ID</comment>
+    <html>
+      <type>Number</type>
+    </html>
     <add>1.1</add>
   </field>
   <primaryKey>
@@ -32,6 +36,7 @@
     <type>int unsigned</type>
     <title>Source Record</title>
     <comment>Artificial FK to original transaction (e.g. contribution) IF it is not an Activity. Table can be figured out through activity_type_id, and further through component registry.</comment>
+    <readonly>true</readonly>
     <add>2.0</add>
   </field>
   <index>
@@ -129,7 +134,7 @@
   <field>
     <name>phone_id</name>
     <type>int unsigned</type>
-    <title>Phone (called) ID</title>
+    <title>Phone ID (called)</title>
     <comment>Phone ID of the number called (optional - used if an existing phone number is selected).</comment>
     <add>2.0</add>
     <html>
@@ -209,9 +214,13 @@
   </field>
   <field>
     <name>parent_id</name>
-    <title>Parent Activity Id</title>
+    <title>Parent Activity ID</title>
     <type>int unsigned</type>
     <comment>Parent meeting ID (if this is a follow-up item). This is not currently implemented</comment>
+    <readonly>true</readonly>
+    <html>
+      <label>Parent Activity</label>
+    </html>
     <add>1.1</add>
   </field>
   <foreignKey>
@@ -264,10 +273,13 @@
   </field>
   <field>
     <name>relationship_id</name>
-    <title>Relationship Id</title>
+    <title>Relationship ID</title>
     <type>int unsigned</type>
     <default>NULL</default>
     <comment>FK to Relationship ID</comment>
+    <html>
+      <label>Relationship</label>
+    </html>
     <add>2.2</add>
   </field>
   <foreignKey>
@@ -293,8 +305,12 @@
   <field>
     <name>original_id</name>
     <type>int unsigned</type>
-    <title>Original Activity ID </title>
+    <title>Original Activity ID</title>
     <comment>Activity ID of the first activity record in versioning chain.</comment>
+    <readonly>true</readonly>
+    <html>
+      <label>Original Activity</label>
+    </html>
     <add>2.2</add>
   </field>
   <foreignKey>
@@ -333,19 +349,16 @@
   </index>
   <field>
     <name>campaign_id</name>
+    <component>CiviCampaign</component>
     <uniqueName>activity_campaign_id</uniqueName>
     <type>int unsigned</type>
-    <title>Campaign</title>
+    <title>Campaign ID</title>
     <import>true</import>
     <comment>The campaign for which this activity has been triggered.</comment>
-    <pseudoconstant>
-      <table>civicrm_campaign</table>
-      <keyColumn>id</keyColumn>
-      <labelColumn>title</labelColumn>
-    </pseudoconstant>
     <add>3.4</add>
     <html>
-      <type>Select</type>
+      <type>EntityRef</type>
+      <label>Campaign</label>
     </html>
   </field>
   <foreignKey>
@@ -396,6 +409,9 @@
     <required>false</required>
     <export>true</export>
     <default>CURRENT_TIMESTAMP</default>
+    <html>
+      <label>Created Date</label>
+    </html>
     <add>4.7</add>
   </field>
   <field>
@@ -406,6 +422,10 @@
     <required>false</required>
     <export>true</export>
     <default>CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP</default>
+    <html>
+      <label>Modified Date</label>
+    </html>
+    <readonly>true</readonly>
     <add>4.7</add>
   </field>
 </table>

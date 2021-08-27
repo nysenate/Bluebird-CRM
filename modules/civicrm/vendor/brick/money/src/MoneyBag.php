@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace Brick\Money;
 
 use Brick\Math\BigRational;
-use Brick\Money\Tests\CurrencyTest;
 
 /**
  * Container for monies in different currencies.
@@ -17,6 +16,8 @@ final class MoneyBag implements MoneyContainer
     /**
      * The amounts in this bag, indexed by currency code.
      *
+     * @psalm-var array<string, BigRational>
+     *
      * @var BigRational[]
      */
     private $amounts = [];
@@ -24,7 +25,9 @@ final class MoneyBag implements MoneyContainer
     /**
      * Returns the amount in the given currency contained in the bag, as a rational number.
      *
-     * @param Currency|string|int $currency The Currency instance, ISO currency code or ISO numeric currency code.
+     * Non-ISO (non-numeric) currency codes are accepted.
+     *
+     * @param Currency|string|int $currency The Currency instance, currency code or ISO numeric currency code.
      *
      * @return BigRational
      */
@@ -43,6 +46,8 @@ final class MoneyBag implements MoneyContainer
 
     /**
      * Returns the amounts contained in this bag, as rational numbers, indexed by currency code.
+     *
+     * @psalm-return array<string, BigRational>
      *
      * @return BigRational[]
      */

@@ -682,13 +682,6 @@ class HTML_QuickForm extends HTML_Common
             $elementObject->freeze();
         }
 
-        if ( $elementObject->getType( ) == 'text' ||
-             $elementObject->getType( ) == 'textarea' ) {
-            $this->addRule( $elementName,
-                            ts( 'Illegal characters in input (potential scripting attack)' ),
-                            'xssString' );
-        }
-
         return $elementObject;
     } // end func addElement
 

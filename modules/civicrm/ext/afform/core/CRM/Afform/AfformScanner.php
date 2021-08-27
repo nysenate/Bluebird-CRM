@@ -132,13 +132,21 @@ class CRM_Afform_AfformScanner {
       'requires' => [],
       'title' => '',
       'description' => '',
+      'is_dashlet' => FALSE,
       'is_public' => FALSE,
+      'is_token' => FALSE,
       'permission' => 'access CiviCRM',
+      'type' => 'system',
     ];
 
     $metaFile = $this->findFilePath($name, self::METADATA_FILE);
     if ($metaFile !== NULL) {
-      return array_merge($defaults, json_decode(file_get_contents($metaFile), 1));
+      $r = array_merge($defaults, json_decode(file_get_contents($metaFile), 1));
+      // Previous revisions of GUI allowed permission==''. array_merge() doesn't catch all forms of missing-ness.
+      if ($r['permission'] === '') {
+        $r['permission'] = $defaults['permission'];
+      }
+      return $r;
     }
     elseif ($this->findFilePath($name, self::LAYOUT_FILE)) {
       return $defaults;
@@ -156,7 +164,7 @@ class CRM_Afform_AfformScanner {
   public function addComputedFields(&$record) {
     $name = $record['name'];
     // Ex: $allPaths['viewIndividual'][0] == '/var/www/foo/afform/view-individual'].
-    $allPaths = $this->findFilePaths()[$name];
+    $allPaths = $this->findFilePaths()[$name] ?? [];
     // $activeLayoutPath = $this->findFilePath($name, self::LAYOUT_FILE);
     // $activeMetaPath = $this->findFilePath($name, self::METADATA_FILE);
     $localLayoutPath = $this->createSiteLocalPath($name, self::LAYOUT_FILE);

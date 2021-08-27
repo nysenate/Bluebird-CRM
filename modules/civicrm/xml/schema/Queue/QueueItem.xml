@@ -15,6 +15,9 @@
     <title>Queue ID</title>
     <type>int unsigned</type>
     <required>true</required>
+    <html>
+      <type>Number</type>
+    </html>
   </field>
   <primaryKey>
     <name>id</name>
@@ -65,7 +68,7 @@
   <field>
     <name>data</name>
     <title>Queue item data</title>
-    <type>text</type>
+    <type>longtext</type>
     <comment>Serialized queue data</comment>
     <serialize>PHP</serialize>
   </field>

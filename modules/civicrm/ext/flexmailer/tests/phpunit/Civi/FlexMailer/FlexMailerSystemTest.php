@@ -39,7 +39,7 @@ class FlexMailerSystemTest extends \CRM_Mailing_BaseMailingSystemTest {
 
   private $counts;
 
-  public function setUp() {
+  public function setUp(): void {
     // Activate before transactions are setup.
     $manager = \CRM_Extension_System::singleton()->getManager();
     if ($manager->getStatus('org.civicrm.flexmailer') !== \CRM_Extension_Manager::STATUS_INSTALLED) {
@@ -80,7 +80,7 @@ class FlexMailerSystemTest extends \CRM_Mailing_BaseMailingSystemTest {
     $this->assertEquals('flexmailer', $context);
   }
 
-  public function tearDown() {
+  public function tearDown(): void {
     parent::tearDown();
     $this->assertNotEmpty($this->counts['hook_alterMailParams']);
     foreach (FlexMailer::getEventTypes() as $event => $class) {
@@ -106,23 +106,45 @@ class FlexMailerSystemTest extends \CRM_Mailing_BaseMailingSystemTest {
     $htmlUrlRegex,
     $textUrlRegex,
     $params
-  ) {
+  ): void {
     parent::testUrlTracking($inputHtml, $htmlUrlRegex, $textUrlRegex, $params);
   }
 
-  public function testBasicHeaders() {
+  /**
+   *
+   * This takes CiviMail's own ones, but removes one that tested for a
+   * non-feature (i.e. that tokenised links are not handled).
+   *
+   * @return array
+   */
+  public function urlTrackingExamples() {
+    $cases = parent::urlTrackingExamples();
+
+    // When it comes to URLs with embedded tokens, support diverges - Flexmailer
+    // can track them, but BAO mailer cannot.
+    $cases[6] = [
+      '<p><a href="http://example.net/?id={contact.contact_id}">Foo</a></p>',
+      ';<p><a href=[\'"].*(extern/url.php|civicrm/mailing/url)(\?|&amp\\;)u=\d+.*&amp\\;id=\d+.*[\'"]>Foo</a></p>;',
+      ';\\[1\\] .*(extern/url.php|civicrm/mailing/url)[\?&]u=\d+.*&id=\d+.*;',
+      ['url_tracking' => 1],
+    ];
+
+    return $cases;
+  }
+
+  public function testBasicHeaders(): void {
     parent::testBasicHeaders();
   }
 
-  public function testText() {
+  public function testText(): void {
     parent::testText();
   }
 
-  public function testHtmlWithOpenTracking() {
+  public function testHtmlWithOpenTracking(): void {
     parent::testHtmlWithOpenTracking();
   }
 
-  public function testHtmlWithOpenAndUrlTracking() {
+  public function testHtmlWithOpenAndUrlTracking(): void {
     parent::testHtmlWithOpenAndUrlTracking();
   }
 

@@ -316,6 +316,7 @@ ORDER BY {$this->_aliases['civicrm_log']}.modified_date DESC, {$this->_aliases['
   public function alterDisplay(&$rows) {
 
     $entryFound = FALSE;
+    //NYSS
     $display_flag = $prev_cid = $cid = 0;
     //CRM_Core_Error::debug($rows);
     foreach ($rows as $rowNum => $row) {
@@ -359,7 +360,7 @@ ORDER BY {$this->_aliases['civicrm_log']}.modified_date DESC, {$this->_aliases['
       }
       
       //NYSS strip out the activity targets (could be multiple)
-      if ( array_key_exists('civicrm_activity_activity_type_id', $row ) &&
+      if (array_key_exists('civicrm_activity_activity_type_id', $row) &&
         $row['civicrm_activity_activity_type_id'] != '' &&
         strpos( $row['civicrm_log_data'], 'target=' ) ) {
         // source, target, assignee are concatenated; we need to strip out the target
@@ -397,7 +398,7 @@ ORDER BY {$this->_aliases['civicrm_log']}.modified_date DESC, {$this->_aliases['
         
         //NYSS add details about touched contact via API
         //Gender, DOB, ALL District Information.
-        if ( $row['civicrm_contact_touched_id'] ) {
+        if ($row['civicrm_contact_touched_id']) {
           //get address, phone, email
           require_once 'api/api.php';
         

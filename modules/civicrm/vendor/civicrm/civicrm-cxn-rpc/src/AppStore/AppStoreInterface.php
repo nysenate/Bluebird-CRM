@@ -11,8 +11,6 @@
 
 namespace Civi\Cxn\Rpc\AppStore;
 
-use Civi\Cxn\Rpc\AppMeta;
-
 interface AppStoreInterface {
 
   /**
@@ -55,4 +53,5 @@ interface AppStoreInterface {
    *     - privatekey: string, pem
    */
   public function getKeyPair($appId);
+
 }

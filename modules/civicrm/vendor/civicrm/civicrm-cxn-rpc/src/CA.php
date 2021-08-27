@@ -11,9 +11,6 @@
 
 namespace Civi\Cxn\Rpc;
 
-use Civi\Cxn\Rpc\Exception\ExpiredCertException;
-use Civi\Cxn\Rpc\Exception\InvalidCertException;
-
 class CA {
 
   /**
@@ -27,26 +24,33 @@ class CA {
    *   Certificate data.
    */
   public static function create($keyPair, $dn) {
-    $privKey = new \Crypt_RSA();
+    $privKey = new \phpseclib\Crypt\RSA();
     $privKey->loadKey($keyPair['privatekey']);
 
-    $pubKey = new \Crypt_RSA();
+    $pubKey = new \phpseclib\Crypt\RSA();
     $pubKey->loadKey($keyPair['publickey']);
     $pubKey->setPublicKey();
 
-    $subject = new \File_X509();
-    $subject->setDN($dn);
+    $subject = new \phpseclib\File\X509();
+    if (!$subject->setDN($dn)) {
+      throw new \InvalidArgumentException("Malformed DN: $dn");
+    }
     $subject->setPublicKey($pubKey);
 
-    $issuer = new \File_X509();
+    $issuer = new \phpseclib\File\X509();
     $issuer->setPrivateKey($privKey);
-    $issuer->setDN($dn);
+    if (!$issuer->setDN($dn)) {
+      throw new \InvalidArgumentException("Malformed DN: $dn");
+    }
 
-    $x509 = new \File_X509();
+    $x509 = new \phpseclib\File\X509();
     $x509->makeCA();
     $x509->setEndDate(date('c', strtotime(Constants::CA_DURATION, Time::getTime())));
 
     $result = $x509->sign($issuer, $subject, Constants::CERT_SIGNATURE_ALGORITHM);
+    if ($result === FALSE) {
+      throw new \RuntimeException("Failed to generate CA certificate for $dn ($subject->dn)");
+    }
     return $x509->saveX509($result);
   }
 
@@ -85,16 +89,18 @@ class CA {
    *   CSR data.
    */
   public static function createAppCSR($keyPair, $dn) {
-    $privKey = new \Crypt_RSA();
+    $privKey = new \phpseclib\Crypt\RSA();
     $privKey->loadKey($keyPair['privatekey']);
 
-    $pubKey = new \Crypt_RSA();
+    $pubKey = new \phpseclib\Crypt\RSA();
     $pubKey->loadKey($keyPair['publickey']);
     $pubKey->setPublicKey();
 
-    $x509 = new \File_X509();
+    $x509 = new \phpseclib\File\X509();
     $x509->setPrivateKey($privKey);
-    $x509->setDN($dn);
+    if (!$x509->setDN($dn)) {
+      throw new \InvalidArgumentException("Malformed DN: $dn");
+    }
 
     $x509->loadCSR($x509->saveCSR($x509->signCSR(Constants::CERT_SIGNATURE_ALGORITHM)));
     $x509->setExtension('id-ce-keyUsage', array('keyEncipherment'));
@@ -117,16 +123,18 @@ class CA {
    *   CSR data.
    */
   public static function createDirSvcCSR($keyPair, $dn) {
-    $privKey = new \Crypt_RSA();
+    $privKey = new \phpseclib\Crypt\RSA();
     $privKey->loadKey($keyPair['privatekey']);
 
-    $pubKey = new \Crypt_RSA();
+    $pubKey = new \phpseclib\Crypt\RSA();
     $pubKey->loadKey($keyPair['publickey']);
     $pubKey->setPublicKey();
 
-    $x509 = new \File_X509();
+    $x509 = new \phpseclib\File\X509();
     $x509->setPrivateKey($privKey);
-    $x509->setDN($dn);
+    if (!$x509->setDN($dn)) {
+      throw new \InvalidArgumentException("Malformed DN: $dn");
+    }
 
     $x509->loadCSR($x509->saveCSR($x509->signCSR(Constants::CERT_SIGNATURE_ALGORITHM)));
     $x509->setExtension('id-ce-keyUsage', array('digitalSignature'));
@@ -144,21 +152,26 @@ class CA {
    *   PEM-encoded CSR.
    */
   public static function createCrlDistCSR($keyPair, $dn) {
-    $privKey = new \Crypt_RSA();
+    $privKey = new \phpseclib\Crypt\RSA();
     $privKey->loadKey($keyPair['privatekey']);
 
-    $pubKey = new \Crypt_RSA();
+    $pubKey = new \phpseclib\Crypt\RSA();
     $pubKey->loadKey($keyPair['publickey']);
     $pubKey->setPublicKey();
 
-    $csr = new \File_X509();
+    $csr = new \phpseclib\File\X509();
     $csr->setPrivateKey($privKey);
     $csr->setPublicKey($pubKey);
-    $csr->setDN($dn);
+    if (!$csr->setDN($dn)) {
+      throw new \InvalidArgumentException("Malformed DN: $dn");
+    }
     $csr->loadCSR($csr->saveCSR($csr->signCSR(Constants::CERT_SIGNATURE_ALGORITHM)));
     $csr->setExtension('id-ce-keyUsage', array('cRLSign'));
 
     $csrData = $csr->signCSR(Constants::CERT_SIGNATURE_ALGORITHM);
+    if ($csrData === FALSE) {
+      throw new \RuntimeException("Failed to generate CRL CSR for $dn");
+    }
     return $csr->saveCSR($csrData);
   }
 
@@ -173,21 +186,25 @@ class CA {
    *   PEM-encoded cert.
    */
   public static function signCSR($caKeyPair, $caCert, $csr, $serialNumber = 1) {
-    $privKey = new \Crypt_RSA();
+    $privKey = new \phpseclib\Crypt\RSA();
     $privKey->loadKey($caKeyPair['privatekey']);
 
-    $subject = new \File_X509();
+    $subject = new \phpseclib\File\X509();
     $subject->loadCSR($csr);
 
-    $issuer = new \File_X509();
+    $issuer = new \phpseclib\File\X509();
     $issuer->loadX509($caCert);
     $issuer->setPrivateKey($privKey);
 
-    $x509 = new \File_X509();
+    $x509 = new \phpseclib\File\X509();
     $x509->setSerialNumber($serialNumber, 10);
     $x509->setEndDate(date('c', strtotime(Constants::APP_DURATION, Time::getTime())));
 
     $result = $x509->sign($issuer, $subject, Constants::CERT_SIGNATURE_ALGORITHM);
+    if ($result === FALSE) {
+      $subjectDn = $subject->getDN(\phpseclib\File\X509::DN_ASN1);
+      throw new \RuntimeException("Failed to sign CSR ($subjectDn)");
+    }
     return $x509->saveX509($result);
   }
 

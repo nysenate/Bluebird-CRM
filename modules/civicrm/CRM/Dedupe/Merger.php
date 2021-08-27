@@ -233,8 +233,7 @@ class CRM_Dedupe_Merger {
 
     CRM_Utils_Hook::merge('cidRefs', $contactReferences);
     if ($contactReferences !== $coreReferences) {
-      Civi::log()
-        ->warning("Deprecated hook ::merge in context of 'cidRefs. Use entityTypes instead.", ['civi.tag' => 'deprecated']);
+      CRM_Core_Error::deprecatedWarning("Deprecated hook ::merge in context of 'cidRefs. Use entityTypes instead.");
     }
     \Civi::$statics[__CLASS__]['contact_references'] = $contactReferences;
     return \Civi::$statics[__CLASS__]['contact_references'];
@@ -504,6 +503,7 @@ INNER JOIN  civicrm_membership membership2 ON membership1.membership_type_id = m
     $cpTables = self::cpTables();
     $paymentTables = self::paymentTables();
     self::filterRowBasedCustomDataFromCustomTables($cidRefs);
+    $multiValueCidRefs = self::getMultiValueCidRefs();
 
     $affected = array_merge(array_keys($cidRefs), array_keys($eidRefs));
 
@@ -582,7 +582,14 @@ INNER JOIN  civicrm_membership membership2 ON membership1.membership_type_id = m
 
           $preOperationSqls = self::operationSql($mainId, $otherId, $table, $tableOperations);
           $sqls = array_merge($sqls, $preOperationSqls);
-          $sqls[] = "UPDATE $table SET $field = $mainId WHERE $field = $otherId";
+
+          if (!empty($multiValueCidRefs[$table][$field])) {
+            $sep = CRM_Core_DAO::VALUE_SEPARATOR;
+            $sqls[] = "UPDATE $table SET $field = REPLACE($field, '$sep$otherId$sep', '$sep$mainId$sep') WHERE $field LIKE '%$sep$otherId$sep%'";
+          }
+          else {
+            $sqls[] = "UPDATE $table SET $field = $mainId WHERE $field = $otherId";
+          }
         }
       }
 
@@ -639,6 +646,28 @@ INNER JOIN  civicrm_membership membership2 ON membership1.membership_type_id = m
   }
 
   /**
+   * Return an array of tables & fields which hold serialized arrays of contact ids
+   *
+   * Return format is ['table_name' => ['field_name' => SERIALIZE_METHOD]]
+   *
+   * For now, only custom fields can be serialized and the only
+   * method used is CRM_Core_DAO::SERIALIZE_SEPARATOR_BOOKEND.
+   */
+  protected static function getMultiValueCidRefs() {
+    $fields = \Civi\Api4\CustomField::get(FALSE)
+      ->addSelect('custom_group.table_name', 'column_name', 'serialize')
+      ->addWhere('data_type', '=', 'ContactReference')
+      ->addWhere('serialize', 'IS NOT EMPTY')
+      ->execute();
+
+    $map = [];
+    foreach ($fields as $field) {
+      $map[$field['custom_group.table_name']][$field['column_name']] = $field['serialize'];
+    }
+    return $map;
+  }
+
+  /**
    * Update the contact with the new parameters.
    *
    * This function is intended as an interim function, with the intent being
@@ -658,35 +687,8 @@ INNER JOIN  civicrm_membership membership2 ON membership1.membership_type_id = m
     // This parameter causes blank fields to be be emptied out.
     // We can probably remove.
     $params['updateBlankLocInfo'] = TRUE;
-    list($data) = CRM_Contact_BAO_Contact::formatProfileContactParams($params, [], $contactID);
+    [$data] = CRM_Contact_BAO_Contact::formatProfileContactParams($params, [], $contactID);
     CRM_Contact_BAO_Contact::create($data);
-  }
-
-  /**
-   * Given a contact ID, will check if a record exists in given table.
-   *
-   * @param int $contactID
-   * @param string $table
-   * @param string $idField
-   *   Field where the contact's ID is stored in the table
-   *
-   * @return bool
-   *   True if a record is found for the given contact ID, false otherwise
-   */
-  private static function customRecordExists($contactID, $table, $idField) {
-    $sql = "
-      SELECT COUNT(*) AS count
-      FROM $table
-      WHERE $idField = $contactID
-    ";
-    $dbResult = CRM_Core_DAO::executeQuery($sql);
-    $dbResult->fetch();
-
-    if ($dbResult->count > 0) {
-      return TRUE;
-    }
-
-    return FALSE;
   }
 
   /**
@@ -1022,7 +1024,7 @@ INNER JOIN  civicrm_membership membership2 ON membership1.membership_type_id = m
    */
   public static function skipMerge($mainId, $otherId, &$migrationInfo, $mode = 'safe', &$conflicts = []) {
 
-    $conflicts = self::getConflicts($migrationInfo, $mainId, $otherId, $mode)['conflicts'];
+    $conflicts = self::getConflicts($migrationInfo, (int) $mainId, (int) $otherId, $mode)['conflicts'];
     // A hook could have set skip_merge in order to alter merge behaviour.
     // This is a something we might ideally deprecate since they really 'should'
     // mess with the conflicts array instead.
@@ -1177,7 +1179,6 @@ INNER JOIN  civicrm_membership membership2 ON membership1.membership_type_id = m
    *
    * @throws \CRM_Core_Exception
    * @throws \CiviCRM_API3_Exception
-   * @throws \Exception
    */
   public static function getRowsElementsAndInfo($mainId, $otherId, $checkPermissions = TRUE) {
     $qfZeroBug = 'e8cddb72-a257-11dc-b9cc-0016d3330ee9';
@@ -1238,7 +1239,7 @@ INNER JOIN  civicrm_membership membership2 ON membership1.membership_type_id = m
     $locations = ['main' => [], 'other' => []];
 
     foreach ($locationBlocks as $blockName => $blockInfo) {
-      list($locations, $rows, $elements, $migrationInfo) = self::addLocationFieldInfo($mainId, $otherId, $blockInfo, $blockName, $locations, $rows, $elements, $migrationInfo);
+      [$locations, $rows, $elements, $migrationInfo] = self::addLocationFieldInfo($mainId, $otherId, $blockInfo, $blockName, $locations, $rows, $elements, $migrationInfo);
     } // End loop through each location block entity
 
     // add the related tables and unset the ones that don't sport any of the duplicate contact's info
@@ -1403,7 +1404,7 @@ INNER JOIN  civicrm_membership membership2 ON membership1.membership_type_id = m
     }
     $mergeHandler = new CRM_Dedupe_MergeHandler((int) $mainId, (int) $otherId);
     $mergeHandler->setMigrationInfo($migrationInfo);
-    self::mergeLocations($mergeHandler);
+    $mergeHandler->mergeLocations();
 
     // **** Do contact related migrations
     // @todo - move all custom field processing to the move class & eventually have an
@@ -1456,7 +1457,7 @@ INNER JOIN  civicrm_membership membership2 ON membership1.membership_type_id = m
       $submitted = [];
     }
     foreach ($submitted as $key => $value) {
-      list($cFields, $submitted) = self::processCustomFields($mainId, $key, $cFields, $submitted, $value);
+      [$cFields, $submitted] = self::processCustomFields($mainId, $key, $cFields, $submitted, $value);
     }
 
     // move view only custom fields CRM-5362
@@ -1701,7 +1702,7 @@ INNER JOIN  civicrm_membership membership2 ON membership1.membership_type_id = m
    * @return string
    */
   public static function getMergeCacheKeyString($rule_group_id, $group_id, $criteria, $checkPermissions, $searchLimit) {
-    $contactType = CRM_Dedupe_BAO_RuleGroup::getContactTypeForRuleGroup($rule_group_id);
+    $contactType = CRM_Dedupe_BAO_DedupeRuleGroup::getContactTypeForRuleGroup($rule_group_id);
     $cacheKeyString = "merge_{$contactType}";
     $cacheKeyString .= $rule_group_id ? "_{$rule_group_id}" : '_0';
     $cacheKeyString .= $group_id ? "_{$group_id}" : '_0';
@@ -1770,114 +1771,6 @@ INNER JOIN  civicrm_membership membership2 ON membership1.membership_type_id = m
     }
 
     return $result['values'][$contact_id];
-  }
-
-  /**
-   * Merge location.
-   *
-   * Based on the data in the $locationMigrationInfo merge the locations for 2 contacts.
-   *
-   * The data is in the format received from the merge form (which is a fairly confusing format).
-   *
-   * It is converted into an array of DAOs which is passed to the alterLocationMergeData hook
-   * before saving or deleting the DAOs. A new hook is added to allow these to be altered after they have
-   * been calculated and before saving because
-   * - the existing format & hook combo is so confusing it is hard for developers to change & inherently fragile
-   * - passing to a hook right before save means calculations only have to be done once
-   * - the existing pattern of passing dissimilar data to the same (merge) hook with a different 'type' is just
-   *  ugly.
-   *
-   * The use of the new hook is tested, including the fact it is called before contributions are merged, as this
-   * is likely to be significant data in merge hooks.
-   *
-   * @param \CRM_Dedupe_MergeHandler $mergeHandler
-   */
-  public static function mergeLocations($mergeHandler) {
-    $locBlocks = $mergeHandler->getLocationBlocksToMerge();
-    $blocksDAO = [];
-    $migrationInfo = $mergeHandler->getMigrationInfo();
-
-    // @todo Handle OpenID (not currently in API).
-    if (!empty($locBlocks)) {
-      $locationBlocks = self::getLocationBlockInfo();
-
-      $primaryBlockIds = CRM_Contact_BAO_Contact::getLocBlockIds($mergeHandler->getToKeepID(), ['is_primary' => 1]);
-      $billingBlockIds = CRM_Contact_BAO_Contact::getLocBlockIds($mergeHandler->getToKeepID(), ['is_billing' => 1]);
-
-      foreach ($locBlocks as $name => $block) {
-        $blocksDAO[$name] = ['delete' => [], 'update' => []];
-        $daoName = 'CRM_Core_DAO_' . $locationBlocks[$name]['label'];
-        $changePrimary = FALSE;
-        $primaryDAOId = (array_key_exists($name, $primaryBlockIds)) ? array_pop($primaryBlockIds[$name]) : NULL;
-        $billingDAOId = (array_key_exists($name, $billingBlockIds)) ? array_pop($billingBlockIds[$name]) : NULL;
-
-        foreach ($block as $blkCount => $values) {
-          $otherBlockId = $migrationInfo['other_details']['location_blocks'][$name][$blkCount]['id'] ?? NULL;
-          $mainBlockId = CRM_Utils_Array::value('mainContactBlockId', $migrationInfo['location_blocks'][$name][$blkCount], 0);
-          if (!$otherBlockId) {
-            continue;
-          }
-          $otherBlockDAO = $mergeHandler->copyDataToNewBlockDAO($otherBlockId, $name, $blkCount);
-
-          // If we're deliberately setting this as primary then add the flag
-          // and remove it from the current primary location (if there is one).
-          // But only once for each entity.
-          $set_primary = $migrationInfo['location_blocks'][$name][$blkCount]['set_other_primary'] ?? NULL;
-          if (!$changePrimary && $set_primary == "1") {
-            $otherBlockDAO->is_primary = 1;
-            if ($primaryDAOId) {
-              $removePrimaryDAO = $mergeHandler->getDAOForLocationEntity($name);
-              $removePrimaryDAO->id = $primaryDAOId;
-              $removePrimaryDAO->is_primary = 0;
-              $blocksDAO[$name]['update'][$primaryDAOId] = $removePrimaryDAO;
-            }
-            $changePrimary = TRUE;
-          }
-          // Otherwise, if main contact already has primary, set it to 0.
-          elseif ($primaryDAOId) {
-            $otherBlockDAO->is_primary = 0;
-          }
-
-          // If the main contact already has a billing location, set this to 0.
-          if ($billingDAOId) {
-            $otherBlockDAO->is_billing = 0;
-          }
-
-          // overwrite - need to delete block which belongs to main-contact.
-          if (!empty($mainBlockId) && $values['is_replace']) {
-            $deleteDAO = $mergeHandler->getDAOForLocationEntity($name);
-            $deleteDAO->id = $mainBlockId;
-            $deleteDAO->find(TRUE);
-
-            // if we about to delete a primary / billing block, set the flags for new block
-            // that we going to assign to main-contact
-            if ($primaryDAOId && ($primaryDAOId == $deleteDAO->id)) {
-              $otherBlockDAO->is_primary = 1;
-            }
-            if ($billingDAOId && ($billingDAOId == $deleteDAO->id)) {
-              $otherBlockDAO->is_billing = 1;
-            }
-            $blocksDAO[$name]['delete'][$deleteDAO->id] = $deleteDAO;
-          }
-          $blocksDAO[$name]['update'][$otherBlockDAO->id] = $otherBlockDAO;
-        }
-        $blocksDAO[$name]['update'] += $mergeHandler->getBlocksToUpdateForDeletedContact($name);
-      }
-    }
-
-    CRM_Utils_Hook::alterLocationMergeData($blocksDAO, $mergeHandler->getToKeepID(), $mergeHandler->getToRemoveID(), $migrationInfo);
-    foreach ($blocksDAO as $blockDAOs) {
-      if (!empty($blockDAOs['update'])) {
-        foreach ($blockDAOs['update'] as $blockDAO) {
-          $blockDAO->save();
-        }
-      }
-      if (!empty($blockDAOs['delete'])) {
-        foreach ($blockDAOs['delete'] as $blockDAO) {
-          $blockDAO->delete();
-        }
-      }
-    }
   }
 
   /**
@@ -2121,7 +2014,7 @@ INNER JOIN  civicrm_membership membership2 ON membership1.membership_type_id = m
    * @throws \CRM_Core_Exception
    * @throws \CiviCRM_API3_Exception
    */
-  public static function getConflicts(&$migrationInfo, $mainId, $otherId, $mode) {
+  public static function getConflicts(array &$migrationInfo, int $mainId, int $otherId, string $mode): array {
     $conflicts = [];
     // Generate var $migrationInfo. The variable structure is exactly same as
     // $formValues submitted during a UI merge for a pair of contacts.
@@ -2140,8 +2033,8 @@ INNER JOIN  civicrm_membership membership2 ON membership1.membership_type_id = m
         continue;
       }
       elseif ((in_array(substr($key, 5), CRM_Dedupe_Merger::getContactFields()) or
-          substr($key, 0, 12) === 'move_custom_'
-        ) and $val != NULL
+          strpos($key, 'move_custom_') === 0
+        ) and $val !== NULL
       ) {
         // Rule: If both main-contact, and other-contact have a field with a
         // different value, then let $mode decide if to merge it or not
@@ -2546,7 +2439,7 @@ INNER JOIN  civicrm_membership membership2 ON membership1.membership_type_id = m
             ) {
               // Set this value as the default against the 'other' contact value
               $rows["move_location_{$blockName}_{$count}"]['main'] = $mainValueCheck[$blockInfo['displayField']];
-              $rows["move_location_{$blockName}_{$count}"]['main_is_primary'] = $mainValueCheck['is_primary'];
+              $rows["move_location_{$blockName}_{$count}"]['main_is_primary'] = $mainValueCheck['is_primary'] ?? 0;
               $rows["move_location_{$blockName}_{$count}"]['location_entity'] = $blockName;
               $mainContactBlockId = $mainValueCheck['id'];
               break;

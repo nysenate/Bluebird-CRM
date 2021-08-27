@@ -1120,6 +1120,11 @@ class CRM_Export_BAO_ExportProcessor {
           return $result['values'][$result['id']]['url'];
         }
 
+        // Do not export HTML markup for links
+        if ($html_type === 'Link' && $fieldValue) {
+          return $fieldValue;
+        }
+
         return CRM_Core_BAO_CustomField::displayValue($fieldValue, $cfID);
       }
       elseif (in_array($field, [
@@ -1453,7 +1458,9 @@ class CRM_Export_BAO_ExportProcessor {
           if (in_array(CRM_Utils_Array::value('data_type', $fieldSpec), ['Country', 'StateProvince', 'ContactReference'])) {
             return "`$fieldName` varchar(255)";
           }
-          return "`$fieldName` varchar(16)";
+          // some of those will be exported as a (localisable) string
+          // @see https://lab.civicrm.org/dev/core/-/issues/2164
+          return "`$fieldName` varchar(64)";
 
         case CRM_Utils_Type::T_STRING:
           if (isset($fieldSpec['maxlength'])) {
@@ -1985,7 +1992,7 @@ SET    addressee = %1, postal_greeting = %2, email_greeting = %3
 WHERE  id = %4
 ";
       $params = [
-        1 => [$values['addressee'], 'String'],
+        1 => [CRM_Utils_String::ellipsify($values['addressee'], 255), 'String'],
         2 => [$values['postalGreeting'], 'String'],
         3 => [$values['emailGreeting'], 'String'],
         4 => [$masterID, 'Integer'],

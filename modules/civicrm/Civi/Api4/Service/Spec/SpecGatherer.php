@@ -48,7 +48,7 @@ class SpecGatherer {
     // Real entities
     if (strpos($entity, 'Custom_') !== 0) {
       $this->addDAOFields($entity, $action, $specification, $values);
-      if ($includeCustom && array_key_exists($entity, \CRM_Core_SelectValues::customGroupExtends())) {
+      if ($includeCustom) {
         $this->addCustomFields($entity, $specification, $values);
       }
     }
@@ -96,6 +96,11 @@ class SpecGatherer {
       if (array_key_exists('contactType', $DAOField) && !empty($values['contact_type']) && $DAOField['contactType'] != $values['contact_type']) {
         continue;
       }
+      if (!empty($DAOField['component']) &&
+        !in_array($DAOField['component'], \Civi::settings()->get('enable_components'), TRUE)
+      ) {
+        continue;
+      }
       if ($action !== 'create' || isset($DAOField['default'])) {
         $DAOField['required'] = FALSE;
       }
@@ -118,19 +123,21 @@ class SpecGatherer {
    * @throws \API_Exception
    */
   private function addCustomFields($entity, RequestSpec $specification, $values = []) {
-    // Custom_group.extends pretty much maps 1-1 with entity names, except for a couple oddballs (Contact, Participant).
-    $extends = [$entity];
-    if ($entity === 'Contact') {
-      $contactType = !empty($values['contact_type']) ? [$values['contact_type']] : \CRM_Contact_BAO_ContactType::basicTypes();
-      $extends = array_merge(['Contact'], $contactType);
+    $customInfo = \Civi\Api4\Utils\CoreUtil::getCustomGroupExtends($entity);
+    if (!$customInfo) {
+      return;
     }
-    if ($entity === 'Participant') {
-      $extends = ['Participant', 'ParticipantRole', 'ParticipantEventName', 'ParticipantEventType'];
+    // If a contact_type was passed in, exclude custom groups for other contact types
+    if ($entity === 'Contact' && !empty($values['contact_type'])) {
+      $extends = ['Contact', $values['contact_type']];
+    }
+    else {
+      $extends = $customInfo['extends'];
     }
     $customFields = CustomField::get(FALSE)
       ->addWhere('custom_group.extends', 'IN', $extends)
       ->addWhere('custom_group.is_multiple', '=', '0')
-      ->setSelect(['custom_group.name', '*'])
+      ->setSelect(['custom_group.name', 'custom_group.title', '*'])
       ->execute();
 
     foreach ($customFields as $fieldArray) {
@@ -146,7 +153,7 @@ class SpecGatherer {
   private function getCustomGroupFields($customGroup, RequestSpec $specification) {
     $customFields = CustomField::get(FALSE)
       ->addWhere('custom_group.name', '=', $customGroup)
-      ->setSelect(['custom_group.name', 'custom_group.table_name', '*'])
+      ->setSelect(['custom_group.name', 'custom_group.table_name', 'custom_group.title', '*'])
       ->execute();
 
     foreach ($customFields as $fieldArray) {

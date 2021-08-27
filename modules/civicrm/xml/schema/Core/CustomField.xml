@@ -7,12 +7,16 @@
   <comment>Stores info about an extended (custom) property (data and form field info).</comment>
   <add>1.1</add>
   <log>true</log>
+  <labelField>label</labelField>
   <field>
     <name>id</name>
     <type>int unsigned</type>
     <title>Custom Field ID</title>
     <required>true</required>
     <comment>Unique Custom Field ID</comment>
+    <html>
+      <type>Number</type>
+    </html>
     <add>1.1</add>
   </field>
   <primaryKey>
@@ -22,7 +26,7 @@
   <field>
     <name>custom_group_id</name>
     <type>int unsigned</type>
-    <title>Custom Group</title>
+    <title>Custom Group ID</title>
     <required>true</required>
     <comment>FK to civicrm_custom_group.</comment>
     <add>1.1</add>
@@ -33,6 +37,7 @@
     </pseudoconstant>
     <html>
       <type>Select</type>
+      <label>Custom Group</label>
     </html>
   </field>
   <foreignKey>
@@ -47,7 +52,7 @@
     <type>varchar</type>
     <title>Custom Field Name</title>
     <length>64</length>
-    <comment>Variable name/programmatic handle for this group.</comment>
+    <comment>Variable name/programmatic handle for this field.</comment>
     <add>3.3</add>
   </field>
   <field>
@@ -63,7 +68,7 @@
   <field>
     <name>data_type</name>
     <type>varchar</type>
-    <title>Custom Field Data Type</title>
+    <title>Data Type</title>
     <length>16</length>
     <required>true</required>
     <comment>Controls location of data storage in extended_data table.</comment>
@@ -79,7 +84,7 @@
   <field>
     <name>html_type</name>
     <type>varchar</type>
-    <title>Custom Field HTML Type</title>
+    <title>HTML Type</title>
     <length>32</length>
     <required>true</required>
     <comment>HTML types plus several built-in extended types.</comment>
@@ -262,8 +267,11 @@
   <field>
     <name>option_group_id</name>
     <type>int unsigned</type>
-    <title>Field Option Group</title>
+    <title>Field Option Group ID</title>
     <comment>For elements with options, the option group id that is used</comment>
+    <html>
+      <label>Field Option Group</label>
+    </html>
     <add>1.4</add>
     <pseudoconstant>
       <table>civicrm_option_group</table>

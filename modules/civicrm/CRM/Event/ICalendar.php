@@ -12,7 +12,7 @@
 /**
  * Class to generate various "icalendar" type event feeds
  */
-class CRM_Event_ICalendar extends CRM_Core_Page {
+class CRM_Event_ICalendar {
 
   /**
    * Heart of the iCalendar data assignment process. The runner gets all the meta
@@ -21,7 +21,7 @@ class CRM_Event_ICalendar extends CRM_Core_Page {
    * Else outputs iCalendar format per IETF RFC2445. Page param true means send
    * to browser as inline content. Else, we send .ics file as attachment.
    */
-  public function run() {
+  public static function run() {
     $id = CRM_Utils_Request::retrieveValue('id', 'Positive', NULL, FALSE, 'GET');
     $type = CRM_Utils_Request::retrieveValue('type', 'Positive', 0);
     $start = CRM_Utils_Request::retrieveValue('start', 'Positive', 0);
@@ -70,7 +70,7 @@ class CRM_Event_ICalendar extends CRM_Core_Page {
         CRM_Utils_ICalendar::send($calendar, 'text/xml', 'utf-8');
       }
       else {
-        CRM_Utils_ICalendar::send($calendar, 'text/plain', 'utf-8');
+        CRM_Utils_ICalendar::send($calendar, 'text/calendar', 'utf-8');
       }
     }
     else {

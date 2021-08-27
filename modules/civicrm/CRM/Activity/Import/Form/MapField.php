@@ -21,6 +21,11 @@
 class CRM_Activity_Import_Form_MapField extends CRM_Import_Form_MapField {
 
   /**
+   * @var bool
+   */
+  public $submitOnce = TRUE;
+
+  /**
    * Set variables up before form is built.
    */
   public function preProcess() {
@@ -108,17 +113,13 @@ class CRM_Activity_Import_Form_MapField extends CRM_Import_Form_MapField {
     $hasHeaders = !empty($this->_columnHeaders);
     $headerPatterns = $this->get('headerPatterns');
     $dataPatterns = $this->get('dataPatterns');
-    $hasLocationTypes = $this->get('fieldTypes');
 
     // Initialize all field usages to false.
 
     foreach ($mapperKeys as $key) {
       $this->_fieldUsed[$key] = FALSE;
     }
-    $this->_location_types = CRM_Core_PseudoConstant::get('CRM_Core_DAO_Address', 'location_type_id');
     $sel1 = $this->_mapperFields;
-
-    $sel2[''] = NULL;
 
     $js = "<script type='text/javascript'>\n";
     $formName = 'document.forms.' . $this->_name;
@@ -135,19 +136,11 @@ class CRM_Activity_Import_Form_MapField extends CRM_Import_Form_MapField {
 
             $mappingHeader = array_keys($this->_mapperFields, $mappingName[$i]);
 
-            if (!isset($locationId) || !$locationId) {
-              $js .= "{$formName}['mapper[$i][1]'].style.display = 'none';\n";
-            }
-
-            if (!isset($phoneType) || !$phoneType) {
-              $js .= "{$formName}['mapper[$i][2]'].style.display = 'none';\n";
-            }
-
             $js .= "{$formName}['mapper[$i][3]'].style.display = 'none';\n";
             $defaults["mapper[$i]"] = [
               $mappingHeader[0],
-              (isset($locationId)) ? $locationId : "",
-              (isset($phoneType)) ? $phoneType : "",
+              '',
+              '',
             ];
             $jsSet = TRUE;
           }
@@ -190,9 +183,9 @@ class CRM_Activity_Import_Form_MapField extends CRM_Import_Form_MapField {
 
       $sel->setOptions([
         $sel1,
-        $sel2,
-        (isset($sel3)) ? $sel3 : "",
-        (isset($sel4)) ? $sel4 : "",
+        ['' => NULL],
+        '',
+        '',
       ]);
     }
     $js .= "</script>\n";
@@ -205,12 +198,10 @@ class CRM_Activity_Import_Form_MapField extends CRM_Import_Form_MapField {
       }
     }
     if ($warning != 0 && $this->get('savedMapping')) {
-      $session = CRM_Core_Session::singleton();
-      $session->setStatus(ts('The data columns in this import file appear to be different from the saved mapping. Please verify that you have selected the correct saved mapping before continuing.'));
+      CRM_Core_Session::singleton()->setStatus(ts('The data columns in this import file appear to be different from the saved mapping. Please verify that you have selected the correct saved mapping before continuing.'));
     }
     else {
-      $session = CRM_Core_Session::singleton();
-      $session->setStatus(NULL);
+      CRM_Core_Session::singleton()->setStatus(NULL);
     }
 
     $this->setDefaults($defaults);
@@ -262,34 +253,20 @@ class CRM_Activity_Import_Form_MapField extends CRM_Import_Form_MapField {
         'activity_type_id' => ts('Activity Type ID'),
       ];
 
-      $params = [
-        'used' => 'Unsupervised',
-        'contact_type' => 'Individual',
-      ];
-      list($ruleFields, $threshold) = CRM_Dedupe_BAO_RuleGroup::dedupeRuleFieldsWeight($params);
-      $weightSum = 0;
-      foreach ($importKeys as $key => $val) {
-        if (array_key_exists($val, $ruleFields)) {
-          $weightSum += $ruleFields[$val];
-        }
-      }
-      foreach ($ruleFields as $field => $weight) {
-        $fieldMessage .= ' ' . $field . '(weight ' . $weight . ')';
-      }
+      $contactFieldsBelowWeightMessage = self::validateRequiredContactMatchFields('Individual', $importKeys);
       foreach ($requiredFields as $field => $title) {
         if (!in_array($field, $importKeys)) {
-          if ($field == 'target_contact_id') {
-            if ($weightSum >= $threshold || in_array('external_identifier', $importKeys)) {
+          if ($field === 'target_contact_id') {
+            if (!$contactFieldsBelowWeightMessage || in_array('external_identifier', $importKeys)) {
               continue;
             }
             else {
               $errors['_qf_default'] .= ts('Missing required contact matching fields.')
-                . $fieldMessage . ' '
-                . ts('(Sum of all weights should be greater than or equal to threshold: %1).', [1 => $threshold])
+                . $contactFieldsBelowWeightMessage
                 . '<br />';
             }
           }
-          elseif ($field == 'activity_type_id') {
+          elseif ($field === 'activity_type_id') {
             if (in_array('activity_label', $importKeys)) {
               continue;
             }
@@ -357,26 +334,10 @@ class CRM_Activity_Import_Form_MapField extends CRM_Import_Form_MapField {
     $mapper = [];
     $mapperKeys = $this->controller->exportValue($this->_name, 'mapper');
     $mapperKeysMain = [];
-    $mapperLocType = [];
-    $mapperPhoneType = [];
 
     for ($i = 0; $i < $this->_columnCount; $i++) {
       $mapper[$i] = $this->_mapperFields[$mapperKeys[$i][0]];
       $mapperKeysMain[$i] = $mapperKeys[$i][0];
-
-      if ((CRM_Utils_Array::value(1, $mapperKeys[$i])) && (is_numeric($mapperKeys[$i][1]))) {
-        $mapperLocType[$i] = $mapperKeys[$i][1];
-      }
-      else {
-        $mapperLocType[$i] = NULL;
-      }
-
-      if ((CRM_Utils_Array::value(2, $mapperKeys[$i])) && (!is_numeric($mapperKeys[$i][2]))) {
-        $mapperPhoneType[$i] = $mapperKeys[$i][2];
-      }
-      else {
-        $mapperPhoneType[$i] = NULL;
-      }
     }
 
     $this->set('mapper', $mapper);
@@ -430,7 +391,7 @@ class CRM_Activity_Import_Form_MapField extends CRM_Import_Form_MapField {
       $this->set('savedMapping', $saveMappingFields->mapping_id);
     }
 
-    $parser = new CRM_Activity_Import_Parser_Activity($mapperKeysMain, $mapperLocType, $mapperPhoneType);
+    $parser = new CRM_Activity_Import_Parser_Activity($mapperKeysMain);
     $parser->run($fileName, $separator, $mapper, $skipColumnHeader,
       CRM_Import_Parser::MODE_PREVIEW
     );

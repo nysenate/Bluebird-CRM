@@ -18,6 +18,31 @@
 class CRM_Utils_Array {
 
   /**
+   * Cast a value to an array.
+   *
+   * This is similar to PHP's `(array)`, but it also converts iterators.
+   *
+   * @param mixed $value
+   * @return array
+   */
+  public static function cast($value) {
+    if (is_array($value)) {
+      return $value;
+    }
+    if ($value instanceof CRM_Utils_LazyArray || $value instanceof ArrayObject) {
+      // iterator_to_array() would work here, but getArrayCopy() doesn't require actual iterations.
+      return $value->getArrayCopy();
+    }
+    if (is_iterable($value)) {
+      return iterator_to_array($value);
+    }
+    if (is_scalar($value)) {
+      return [$value];
+    }
+    throw new \RuntimeException(sprintf("Cannot cast %s to array", gettype($value)));
+  }
+
+  /**
    * Returns $list[$key] if such element exists, or a default value otherwise.
    *
    * If $list is not actually an array at all, then the default value is
@@ -61,23 +86,59 @@ class CRM_Utils_Array {
    * @return mixed
    *   The value of the key, or null if the key is not found.
    */
-  public static function retrieveValueRecursive(&$params, $key) {
-    if (!is_array($params)) {
-      return NULL;
+  public static function retrieveValueRecursive(array $params, string $key) {
+    // Note that !empty means funky handling for 0
+    // but it is 'baked in'. We should probably deprecate this
+    // for a more logical approach.
+    // see https://github.com/civicrm/civicrm-core/pull/19478#issuecomment-785388559
+    if (!empty($params[$key])) {
+      return $params[$key];
     }
-    elseif ($value = CRM_Utils_Array::value($key, $params)) {
-      return $value;
-    }
-    else {
-      foreach ($params as $subParam) {
-        if (is_array($subParam) &&
-          $value = self::retrieveValueRecursive($subParam, $key)
-        ) {
-          return $value;
-        }
+    foreach ($params as $subParam) {
+      if (is_array($subParam) &&
+        // @todo - this will mishandle values like 0 and false
+        // but it's a little scary to fix.
+        $value = self::retrieveValueRecursive($subParam, $key)
+      ) {
+        return $value;
       }
     }
     return NULL;
+  }
+
+  /**
+   * Recursively searches through a given array for all matches
+   *
+   * @param $collection
+   * @param $predicate
+   * @return array
+   */
+  public static function findAll($collection, $predicate) {
+    $results = [];
+    $search = function($collection) use (&$search, &$results, $predicate) {
+      if (is_array($collection)) {
+        if (is_callable($predicate)) {
+          if ($predicate($collection)) {
+            $results[] = $collection;
+          }
+        }
+        elseif (is_array($predicate)) {
+          if (count(array_intersect_assoc($collection, $predicate)) === count($predicate)) {
+            $results[] = $collection;
+          }
+        }
+        else {
+          if (array_key_exists($predicate, $collection)) {
+            $results[] = $collection;
+          }
+        }
+        foreach ($collection as $item) {
+          $search($item);
+        }
+      }
+    };
+    $search($collection);
+    return $results;
   }
 
   /**

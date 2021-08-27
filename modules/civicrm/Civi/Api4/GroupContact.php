@@ -24,11 +24,14 @@ namespace Civi\Api4;
  * A contact can either be "Added" "Removed" or "Pending" in a group.
  * CiviCRM only considers them to be "in" a group if their status is "Added".
  *
- * @see \Civi\Api4\Group
+ * @ui_join_filters status
  *
+ * @searchable bridge
+ * @see \Civi\Api4\Group
  * @package Civi\Api4
  */
-class GroupContact extends Generic\BridgeEntity {
+class GroupContact extends Generic\DAOEntity {
+  use Generic\Traits\EntityBridge;
 
   /**
    * @param bool $checkPermissions
@@ -55,6 +58,18 @@ class GroupContact extends Generic\BridgeEntity {
   public static function update($checkPermissions = TRUE) {
     return (new Action\GroupContact\Update(__CLASS__, __FUNCTION__))
       ->setCheckPermissions($checkPermissions);
+  }
+
+  /**
+   * @return array
+   */
+  public static function getInfo() {
+    $info = parent::getInfo();
+    $info['bridge'] = [
+      'group_id' => ['description' => ts('Static (non-smart) group contacts')],
+      'contact_id' => ['description' => ts('Static (non-smart) group contacts')],
+    ];
+    return $info;
   }
 
 }

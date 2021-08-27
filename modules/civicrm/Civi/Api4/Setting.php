@@ -25,6 +25,7 @@ namespace Civi\Api4;
  * Used to read/write persistent setting data from CiviCRM.
  *
  * @see \Civi\Core\SettingsBag
+ * @searchable none
  * @package Civi\Api4
  */
 class Setting extends Generic\AbstractEntity {

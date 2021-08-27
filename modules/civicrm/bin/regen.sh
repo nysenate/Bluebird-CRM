@@ -47,7 +47,7 @@ php GenerateData.php
 
 ## Prune local data
 $MYSQLCMD -e "DROP TABLE IF EXISTS civicrm_install_canary; DELETE FROM civicrm_cache; DELETE FROM civicrm_setting;"
-$MYSQLCMD -e "DELETE FROM civicrm_extension WHERE full_name NOT IN ('sequentialcreditnotes', 'eventcart', 'greenwich', 'search', 'flexmailer', 'financialacls', 'contributioncancelactions');"
+$MYSQLCMD -e "DELETE FROM civicrm_extension WHERE full_name NOT IN ('sequentialcreditnotes', 'eventcart', 'greenwich', 'search', 'flexmailer', 'financialacls', 'contributioncancelactions', 'recaptcha');"
 TABLENAMES=$( echo "show tables like 'civicrm_%'" | $MYSQLCMD | grep ^civicrm_ | xargs )
 
 cd $CIVISOURCEDIR/sql
@@ -57,6 +57,9 @@ $MYSQLDUMP -cent --skip-triggers $DBNAME $TABLENAMES > civicrm_generated.mysql
 cat civicrm_sample_custom_data.mysql >> civicrm_generated.mysql
 #cat civicrm_devel_config.mysql >> civicrm_generated.mysql
 cat civicrm_dummy_processor.mysql >> civicrm_generated.mysql
+# adapted from https://bugs.mysql.com/bug.php?id=65465
+sed -i -e 's/VALUES (/VALUES\n (/g' civicrm_generated.mysql
+sed -i -e 's/),(\|), (/),\n (/g' civicrm_generated.mysql
 $MYSQLADMCMD -f drop $DBNAME
 $MYSQLADMCMD create $DBNAME
 $MYSQLCMD < civicrm.mysql

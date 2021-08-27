@@ -1357,12 +1357,12 @@
 }
 
 #bootstrap-theme a {
-	color: black;
+	color: #2786c2;
 	text-decoration: none;
 }
 
 #bootstrap-theme a:hover, #bootstrap-theme a:focus {
-	color: black;
+	color: #1a5a82;
 	text-decoration: underline;
 }
 
@@ -3722,7 +3722,7 @@
 
 #bootstrap-theme .btn-link {
 	font-weight: 400;
-	color: black;
+	color: #2786c2;
 	border-radius: 0;
 }
 
@@ -3737,7 +3737,7 @@
 }
 
 #bootstrap-theme .btn-link:hover, #bootstrap-theme .btn-link:focus {
-	color: black;
+	color: #1a5a82;
 	text-decoration: underline;
 	background-color: transparent;
 }
@@ -4329,7 +4329,7 @@
 
 #bootstrap-theme .nav .open > a, #bootstrap-theme .nav .open > a:hover, #bootstrap-theme .nav .open > a:focus {
 	background-color: #eee;
-	border-color: black;
+	border-color: #2786c2;
 }
 
 #bootstrap-theme .nav .nav-divider {
@@ -5103,7 +5103,7 @@
 	padding: 4px 8px;
 	margin-left: -1px;
 	line-height: 1.428571429;
-	color: black;
+	color: #2786c2;
 	text-decoration: none;
 	background-color: white;
 	border: 1px solid #ddd;
@@ -5111,7 +5111,7 @@
 
 #bootstrap-theme .pagination > li > a:hover, #bootstrap-theme .pagination > li > a:focus, #bootstrap-theme .pagination > li > span:hover, #bootstrap-theme .pagination > li > span:focus {
 	z-index: 2;
-	color: black;
+	color: #1a5a82;
 	background-color: #eee;
 	border-color: #ddd;
 }
@@ -5327,7 +5327,7 @@
 }
 
 .list-group-item.active > #bootstrap-theme .badge, .nav-pills > .active > a > #bootstrap-theme .badge {
-	color: black;
+	color: #2786c2;
 	background-color: white;
 }
 
@@ -5424,7 +5424,7 @@
 }
 
 #bootstrap-theme a.thumbnail:hover, #bootstrap-theme a.thumbnail:focus, #bootstrap-theme a.thumbnail.active {
-	border-color: black;
+	border-color: #2786c2;
 }
 
 #bootstrap-theme .alert {
@@ -7268,6 +7268,27 @@
 	#bootstrap-theme .hidden-print {
 		display: none !important;
 	}
+}
+
+#bootstrap-theme ul, #bootstrap-theme ol {
+	margin-left: 0;
+	margin-right: 0;
+}
+
+#bootstrap-theme .form-control.checkbox-inline > label {
+	margin-left: 9px;
+}
+
+#bootstrap-theme label input[type=checkbox]:not(:checked) + * {
+	font-weight: normal;
+}
+
+#bootstrap-theme .select2-choices {
+	margin-bottom: 0;
+}
+
+#bootstrap-theme input[type="search"]::-webkit-search-cancel-button {
+	-webkit-appearance: searchfield-cancel-button;
 }
 
 #bootstrap-theme .form-control .select2-choice {

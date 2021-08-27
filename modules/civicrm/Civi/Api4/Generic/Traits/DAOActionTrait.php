@@ -15,6 +15,7 @@ namespace Civi\Api4\Generic\Traits;
 use Civi\Api4\CustomField;
 use Civi\Api4\Service\Schema\Joinable\CustomGroupJoinable;
 use Civi\Api4\Utils\FormattingUtil;
+use Civi\Api4\Utils\CoreUtil;
 
 /**
  * @method string getLanguage()
@@ -35,8 +36,7 @@ trait DAOActionTrait {
    * @return \CRM_Core_DAO|string
    */
   protected function getBaoName() {
-    require_once 'api/v3/utils.php';
-    return \_civicrm_api3_get_BAO($this->getEntityName());
+    return CoreUtil::getBAOFromApiName($this->getEntityName());
   }
 
   /**
@@ -103,25 +103,32 @@ trait DAOActionTrait {
    * @throws \API_Exception
    * @throws \CRM_Core_Exception
    */
-  protected function writeObjects($items) {
+  protected function writeObjects(&$items) {
     $baoName = $this->getBaoName();
 
-    // Some BAOs are weird and don't support a straightforward "create" method.
-    $oddballs = [
+    // TODO: Opt-in more entities to use the new writeRecords BAO method.
+    $functionNames = [
+      'Address' => 'add',
+      'CustomField' => 'writeRecords',
       'EntityTag' => 'add',
       'GroupContact' => 'add',
     ];
-    $method = $oddballs[$this->getEntityName()] ?? 'create';
-    if (!method_exists($baoName, $method)) {
-      $method = 'add';
+    $method = $functionNames[$this->getEntityName()] ?? NULL;
+    if (!isset($method)) {
+      $method = method_exists($baoName, 'create') ? 'create' : (method_exists($baoName, 'add') ? 'add' : 'writeRecords');
     }
 
     $result = [];
 
-    foreach ($items as $item) {
+    foreach ($items as &$item) {
       $entityId = $item['id'] ?? NULL;
       FormattingUtil::formatWriteParams($item, $this->entityFields());
       $this->formatCustomParams($item, $entityId);
+
+      // Skip individual processing if using writeRecords
+      if ($method === 'writeRecords') {
+        continue;
+      }
       $item['check_permissions'] = $this->getCheckPermissions();
 
       // For some reason the contact bao requires this
@@ -129,18 +136,11 @@ trait DAOActionTrait {
         $item['contact_id'] = $entityId;
       }
 
-      if ($this->getCheckPermissions()) {
-        $this->checkContactPermissions($baoName, $item);
-      }
-
       if ($this->getEntityName() === 'Address') {
         $createResult = $baoName::$method($item, $this->fixAddress);
       }
-      elseif (method_exists($baoName, $method)) {
-        $createResult = $baoName::$method($item);
-      }
       else {
-        $createResult = $baoName::writeRecord($item);
+        $createResult = $baoName::$method($item);
       }
 
       if (!$createResult) {
@@ -150,6 +150,16 @@ trait DAOActionTrait {
 
       $result[] = $this->baoToArray($createResult, $item);
     }
+
+    // Use bulk `writeRecords` method if the BAO doesn't have a create or add method
+    // TODO: reverse this from opt-in to opt-out and default to using `writeRecords` for all BAOs
+    if ($method === 'writeRecords') {
+      $items = array_values($items);
+      foreach ($baoName::writeRecords($items) as $i => $createResult) {
+        $result[] = $this->baoToArray($createResult, $items[$i]);
+      }
+    }
+
     FormattingUtil::formatOutputValues($result, $this->entityFields(), $this->getEntityName());
     return $result;
   }
@@ -157,8 +167,6 @@ trait DAOActionTrait {
   /**
    * @param array $params
    * @param int $entityId
-   *
-   * @return mixed
    *
    * @throws \API_Exception
    * @throws \CRM_Core_Exception
@@ -185,6 +193,14 @@ trait DAOActionTrait {
         if ($field['html_type'] === 'CheckBox') {
           // this function should be part of a class
           formatCheckBoxField($value, 'custom_' . $field['id'], $this->getEntityName());
+        }
+
+        if ($field['data_type'] === 'ContactReference' && !is_numeric($value)) {
+          require_once 'api/v3/utils.php';
+          $value = \_civicrm_api3_resolve_contactID($value);
+          if ('unknown-user' === $value) {
+            throw new \API_Exception("\"{$field['name']}\" \"{$value}\" cannot be resolved to a contact ID", 2002, ['error_field' => $field['name'], "type" => "integer"]);
+          }
         }
 
         \CRM_Core_BAO_CustomField::formatCustomField(
@@ -225,7 +241,7 @@ trait DAOActionTrait {
     if (!isset($info[$fieldName])) {
       $info = [];
       $fields = CustomField::get(FALSE)
-        ->addSelect('id', 'name', 'html_type', 'custom_group.extends')
+        ->addSelect('id', 'name', 'html_type', 'data_type', 'custom_group.extends')
         ->addWhere('custom_group.name', '=', $groupName)
         ->execute()->indexBy('name');
       foreach ($fields as $name => $field) {
@@ -237,28 +253,6 @@ trait DAOActionTrait {
       \Civi::cache('metadata')->set($cacheKey, $info);
     }
     return isset($info[$fieldName]) ? ['suffix' => $suffix] + $info[$fieldName] : NULL;
-  }
-
-  /**
-   * Check edit/delete permissions for contacts and related entities.
-   *
-   * @param string $baoName
-   * @param array $item
-   *
-   * @throws \Civi\API\Exception\UnauthorizedException
-   */
-  protected function checkContactPermissions($baoName, $item) {
-    if ($baoName === 'CRM_Contact_BAO_Contact' && !empty($item['id'])) {
-      $permission = $this->getActionName() === 'delete' ? \CRM_Core_Permission::DELETE : \CRM_Core_Permission::EDIT;
-      if (!\CRM_Contact_BAO_Contact_Permission::allow($item['id'], $permission)) {
-        throw new \Civi\API\Exception\UnauthorizedException('Permission denied to modify contact record');
-      }
-    }
-    else {
-      // Fixme: decouple from v3
-      require_once 'api/v3/utils.php';
-      _civicrm_api3_check_edit_permissions($baoName, $item);
-    }
   }
 
 }
