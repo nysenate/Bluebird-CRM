@@ -291,8 +291,8 @@ $prefsUrl['imageUploadURL'] = "data/$datadirname/pubfiles";
 $prefsUrl['extensionsURL'] = 'sites/all/ext';
 
 // Report Error extension settings
-$prefsReportError['reporterror_mailto'] = 'zalewski@nysenate.gov,dev+nyss@lcdservices.biz';
-$prefsReportError['reporterror_fromemail'] = '"Bluebird Error" <bluebird-no-reply@nysenate.gov>';
+$prefsReportError['reporterror_mailto'] = get_config_value($bbcfg, 'reporterror.email.to', 'civicrm-error@nysenate.gov');
+$prefsReportError['reporterror_fromemail'] = get_config_value($bbcfg, 'reporterror.email.from', '"CiviCRM Error" <civicrm-no-reply@nysenate.gov>');
 $prefsReportError['reporterror_show_full_backtrace'] = TRUE;
 $prefsReportError['reporterror_show_post_data'] = TRUE;
 $prefsReportError['reporterror_smartgroups_autodisable'] = TRUE;
@@ -311,9 +311,9 @@ $prefsMosaico['mosaico_scale_width_limit2'] = 9999;
 $prefsMosaico['mosaico_plugins'] = 'link hr paste lists textcolor code civicrmtoken charmap';
 $prefsMosaico['mosaico_toolbar'] = 'bold italic forecolor backcolor hr bullist numlist charmap styleselect removeformat | civicrmtoken | link unlink | pastetext code';
 
-$prefsResources['resources_slack_url'] = 'https://hooks.slack.com/services/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';
-$prefsResources['resources_slack_channel'] = 'bluebird-notices';
-$prefsResources['resources_slack_title'] = "Notice from: http://{$bbcfg['servername']}";
+$prefsResources['resources_slack_url'] = get_config_value($bbcfg, 'reporterror.slack.url', 'https://hooks.slack.com/');
+$prefsResources['resources_slack_channel'] = get_config_value($bbcfg, 'reporterror.slack.channel', 'civicrm-notices');
+$prefsResources['resources_slack_title'] = get_config_value($bbcfg, 'reporterror.slack.title', 'Notice from CRM');
 
 if (isset($bbcfg['xhprof.profile']) && $bbcfg['xhprof.profile']) {
   function xhprof_shutdown_func($source, $run_id = null) {
