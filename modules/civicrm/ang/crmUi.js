@@ -106,7 +106,11 @@
         },
         template: function() {
           var args = $location.search();
-          return (args && args.angularDebug) ? '<div crm-ui-accordion=\'{title: ts("Debug (%1)", {1: crmUiDebug}), collapsed: true}\'><pre>{{data|json}}</pre></div>' : '';
+          if (args && args.angularDebug) {
+            var jsonTpl = (CRM.angular.modules.indexOf('jsonFormatter') < 0) ? '<pre>{{data|json}}</pre>' : '<json-formatter json="data" open="1"></json-formatter>';
+            return '<div crm-ui-accordion=\'{title: ts("Debug (%1)", {1: crmUiDebug}), collapsed: true}\'>' + jsonTpl + '</div>';
+          }
+          return '';
         },
         link: function(scope, element, attrs) {
           var args = $location.search();
@@ -1080,13 +1084,60 @@
       };
     })
 
+    // Editable text using ngModel & html5 contenteditable
+    // Usage: <span crm-ui-editable ng-model="my.data">{{ my.data }}</span>
+    .directive("crmUiEditable", function() {
+      return {
+        restrict: "A",
+        require: "ngModel",
+        scope: {
+          defaultValue: '='
+        },
+        link: function(scope, element, attrs, ngModel) {
+          var ts = CRM.ts();
+
+          function read() {
+            var htmlVal = element.html();
+            if (!htmlVal) {
+              htmlVal = scope.defaultValue || '';
+              element.text(htmlVal);
+            }
+            ngModel.$setViewValue(htmlVal);
+          }
+
+          ngModel.$render = function() {
+            element.text(ngModel.$viewValue || scope.defaultValue || '');
+          };
+
+          // Special handling for enter and escape keys
+          element.on('keydown', function(e) {
+            // Enter: prevent line break and save
+            if (e.which === 13) {
+              e.preventDefault();
+              element.blur();
+            }
+            // Escape: undo
+            if (e.which === 27) {
+              element.text(ngModel.$viewValue || scope.defaultValue || '');
+              element.blur();
+            }
+          });
+
+          element.on("blur change", function() {
+            scope.$apply(read);
+          });
+
+          element.attr('contenteditable', 'true').addClass('crm-editable-enabled');
+        }
+      };
+    })
+
     .run(function($rootScope, $location) {
       /// Example: <button ng-click="goto('home')">Go home!</button>
       $rootScope.goto = function(path) {
         $location.path(path);
       };
       // useful for debugging: $rootScope.log = console.log || function() {};
-    })
-  ;
+    });
 
 })(angular, CRM.$, CRM._);

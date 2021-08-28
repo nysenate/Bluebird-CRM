@@ -301,9 +301,11 @@ class CRM_Utils_System_Drupal6 extends CRM_Utils_System_DrupalBase {
     $config = CRM_Core_Config::singleton();
 
     $ufDSN = CRM_Utils_SQL::autoSwitchDSN($config->userFrameworkDSN);
-    $dbDrupal = DB::connect($ufDSN);
-    if (DB::isError($dbDrupal)) {
-      throw new CRM_Core_Exception("Cannot connect to drupal db via $ufDSN, " . $dbDrupal->getMessage());
+    try {
+      $dbDrupal = DB::connect($ufDSN);
+    }
+    catch (Exception $e) {
+      throw new CRM_Core_Exception("Cannot connect to drupal db via $ufDSN, " . $e->getMessage());
     }
 
     $strtolower = function_exists('mb_strtolower') ? 'mb_strtolower' : 'strtolower';
@@ -807,6 +809,14 @@ class CRM_Utils_System_Drupal6 extends CRM_Utils_System_DrupalBase {
       'contactMatching' => $contactMatching,
       'contactCreated' => $contactCreated,
     ];
+  }
+
+  /**
+   * Return the CMS-specific url for its permissions page
+   * @return array
+   */
+  public function getCMSPermissionsUrlParams() {
+    return ['ufAccessURL' => url('admin/user/permissions')];
   }
 
 }

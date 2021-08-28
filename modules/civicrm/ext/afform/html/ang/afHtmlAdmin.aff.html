@@ -1,7 +1,7 @@
 <div ng-if="!routeParams.name">
-  <div af-html-list=""></div>
+  <af-html-list></af-html-list>
 </div>
 
 <div ng-if="routeParams.name">
-  <div af-html-editor="{name: routeParams.name}"></div>
+  <af-html-editor options="{name: routeParams.name}"></af-html-editor>
 </div>

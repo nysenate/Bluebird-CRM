@@ -413,7 +413,7 @@ trait CRM_Contact_Form_Task_EmailTrait {
     }
 
     // send the mail
-    list($sent, $activityId) = CRM_Activity_BAO_Activity::sendEmail(
+    list($sent, $activityIds) = CRM_Activity_BAO_Activity::sendEmail(
       $formattedContactDetails,
       $this->getSubject($formValues['subject']),
       $formValues['text_message'],
@@ -432,7 +432,12 @@ trait CRM_Contact_Form_Task_EmailTrait {
     );
 
     if ($sent) {
-      $followupStatus = $this->createFollowUpActivities($formValues, $activityId);
+      // Only use the first activity id if there's multiple.
+      // If there's multiple recipients the idea behind multiple activities
+      // is to record the token value replacements separately, but that
+      // has no meaning for followup activities, and this doesn't prevent
+      // creating more manually if desired.
+      $followupStatus = $this->createFollowUpActivities($formValues, $activityIds[0]);
       $count_success = count($this->_toContactDetails);
       CRM_Core_Session::setStatus(ts('One message was sent successfully. ', [
         'plural' => '%count messages were sent successfully. ',
@@ -446,20 +451,6 @@ trait CRM_Contact_Form_Task_EmailTrait {
         'count' => count($this->suppressedEmails),
         'plural' => '%count Messages Not Sent',
       ]), 'info');
-    }
-
-    if (isset($this->_caseId)) {
-      // if case-id is found in the url, create case activity record
-      $cases = explode(',', $this->_caseId);
-      foreach ($cases as $key => $val) {
-        if (is_numeric($val)) {
-          $caseParams = [
-            'activity_id' => $activityId,
-            'case_id' => $val,
-          ];
-          CRM_Case_BAO_Case::processCaseActivity($caseParams);
-        }
-      }
     }
   }
 
@@ -630,7 +621,7 @@ trait CRM_Contact_Form_Task_EmailTrait {
       $params['followup_activity_subject'] = $formValues['followup_activity_subject'];
       $params['followup_date'] = $formValues['followup_date'];
       $params['target_contact_id'] = $this->_contactIds;
-      $params['followup_assignee_contact_id'] = explode(',', $formValues['followup_assignee_contact_id']);
+      $params['followup_assignee_contact_id'] = array_filter(explode(',', $formValues['followup_assignee_contact_id']));
       $followupActivity = CRM_Activity_BAO_Activity::createFollowupActivity($activityId, $params);
       $followupStatus = ts('A followup activity has been scheduled.');
 

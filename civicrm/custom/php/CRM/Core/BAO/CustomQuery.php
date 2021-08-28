@@ -215,6 +215,7 @@ class CRM_Core_BAO_CustomQuery {
           case 'String':
           case 'StateProvince':
           case 'Country':
+          case 'ContactReference':
 
             if ($field['is_search_range'] && is_array($value)) {
               //didn't found any field under any of these three data-types as searchable by range
@@ -293,12 +294,6 @@ class CRM_Core_BAO_CustomQuery {
             }
             break;
 
-          case 'ContactReference':
-            $label = $value ? CRM_Core_DAO::getFieldValue('CRM_Contact_DAO_Contact', $value, 'sort_name') : '';
-            $this->_where[$grouping][] = CRM_Contact_BAO_Query::buildClause($fieldName, $op, $value, 'String');
-            $this->_qill[$grouping][] = $field['label'] . " $qillOp $label";
-            break;
-
           case 'Int':
             //NYSS build district id fields using IN to allow multiple values
             $field['data_type'] = 'Integer';
@@ -306,13 +301,13 @@ class CRM_Core_BAO_CustomQuery {
             $distinfo = [46, 47, 48, 49, 50, 51, 53, 54, 55];
             if (in_array($id, $distinfo)) {
               if ($op == '=') {
-                $op = 'IN';
-                $field['data_type'] = 'nyss_Integer'; //flag for processing
-
                 //check for value existence
                 if (empty($value)) {
-                  continue;
+                  break;
                 }
+                
+                $op = 'IN';
+                $field['data_type'] = 'nyss_Integer'; //flag for processing
               }
               //13461 allow a percentage symbol
               elseif ($op == 'LIKE') {

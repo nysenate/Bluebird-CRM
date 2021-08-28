@@ -359,4 +359,113 @@ class CRM_Dedupe_MergeHandler {
     return $this->getMigrationInfo()['location_blocks'][$entity][$blockIndex]['typeTypeId'] ?? NULL;
   }
 
+  /**
+   * Merge location.
+   *
+   * Based on the data in the $locationMigrationInfo merge the locations for 2 contacts.
+   *
+   * The data is in the format received from the merge form (which is a fairly confusing format).
+   *
+   * It is converted into an array of DAOs which is passed to the alterLocationMergeData hook
+   * before saving or deleting the DAOs. A new hook is added to allow these to be altered after they have
+   * been calculated and before saving because
+   * - the existing format & hook combo is so confusing it is hard for developers to change & inherently fragile
+   * - passing to a hook right before save means calculations only have to be done once
+   * - the existing pattern of passing dissimilar data to the same (merge) hook with a different 'type' is just
+   *  ugly.
+   *
+   * The use of the new hook is tested, including the fact it is called before contributions are merged, as this
+   * is likely to be significant data in merge hooks.
+   *
+   * @throws \API_Exception
+   * @throws \CRM_Core_Exception
+   */
+  public function mergeLocations(): void {
+    $locBlocks = $this->getLocationBlocksToMerge();
+    $blocksDAO = [];
+    $migrationInfo = $this->getMigrationInfo();
+
+    // @todo Handle OpenID (not currently in API).
+    if (!empty($locBlocks)) {
+
+      $primaryBlockIds = CRM_Contact_BAO_Contact::getLocBlockIds($this->getToKeepID(), ['is_primary' => 1]);
+      $billingBlockIds = CRM_Contact_BAO_Contact::getLocBlockIds($this->getToKeepID(), ['is_billing' => 1]);
+
+      foreach ($locBlocks as $name => $block) {
+        $blocksDAO[$name] = ['delete' => [], 'update' => []];
+        $changePrimary = FALSE;
+        $primaryDAOId = (array_key_exists($name, $primaryBlockIds)) ? array_pop($primaryBlockIds[$name]) : NULL;
+        $billingDAOId = (array_key_exists($name, $billingBlockIds)) ? array_pop($billingBlockIds[$name]) : NULL;
+
+        foreach ($block as $blkCount => $values) {
+          $otherBlockId = $migrationInfo['other_details']['location_blocks'][$name][$blkCount]['id'] ?? NULL;
+          $mainBlockId = CRM_Utils_Array::value('mainContactBlockId', $migrationInfo['location_blocks'][$name][$blkCount], 0);
+          if (!$otherBlockId) {
+            continue;
+          }
+          $otherBlockDAO = $this->copyDataToNewBlockDAO($otherBlockId, $name, $blkCount);
+
+          // If we're deliberately setting this as primary then add the flag
+          // and remove it from the current primary location (if there is one).
+          // But only once for each entity.
+          $set_primary = $migrationInfo['location_blocks'][$name][$blkCount]['set_other_primary'] ?? NULL;
+          if (!$changePrimary && $set_primary == "1") {
+            $otherBlockDAO->is_primary = 1;
+            $changePrimary = TRUE;
+          }
+          // Otherwise, if main contact already has primary, set it to 0.
+          elseif ($primaryDAOId) {
+            $otherBlockDAO->is_primary = 0;
+          }
+
+          // If the main contact already has a billing location, set this to 0.
+          if ($billingDAOId) {
+            $otherBlockDAO->is_billing = 0;
+          }
+
+          // overwrite - need to delete block which belongs to main-contact.
+          if (!empty($mainBlockId) && $values['is_replace']) {
+            $deleteDAO = $this->getDAOForLocationEntity($name);
+            $deleteDAO->id = $mainBlockId;
+            $deleteDAO->find(TRUE);
+
+            // if we about to delete a primary / billing block, set the flags for new block
+            // that we going to assign to main-contact
+            if ($primaryDAOId && ($primaryDAOId == $deleteDAO->id)) {
+              $otherBlockDAO->is_primary = 1;
+            }
+            if ($billingDAOId && ($billingDAOId == $deleteDAO->id)) {
+              $otherBlockDAO->is_billing = 1;
+            }
+            $blocksDAO[$name]['delete'][$deleteDAO->id] = $deleteDAO;
+          }
+          $blocksDAO[$name]['update'][$otherBlockDAO->id] = $otherBlockDAO;
+        }
+        $blocksDAO[$name]['update'] += $this->getBlocksToUpdateForDeletedContact($name);
+      }
+    }
+
+    CRM_Utils_Hook::alterLocationMergeData($blocksDAO, $this->getToKeepID(), $this->getToRemoveID(), $migrationInfo);
+    foreach ($blocksDAO as $blockDAOs) {
+      if (!empty($blockDAOs['update'])) {
+        foreach ($blockDAOs['update'] as $blockDAO) {
+          $entity = CRM_Core_DAO_AllCoreTables::getBriefName(get_class($blockDAO));
+          $values = ['checkPermissions' => FALSE];
+          foreach ($blockDAO->fields() as $field) {
+            if (isset($blockDAO->{$field['name']})) {
+              $values['values'][$field['name']] = $blockDAO->{$field['name']};
+            }
+          }
+          civicrm_api4($entity, 'update', $values);
+        }
+      }
+      if (!empty($blockDAOs['delete'])) {
+        foreach ($blockDAOs['delete'] as $blockDAO) {
+          $entity = CRM_Core_DAO_AllCoreTables::getBriefName(get_class($blockDAO));
+          civicrm_api4($entity, 'delete', ['where' => [['id', '=', $blockDAO->id]], 'checkPermissions' => FALSE]);
+        }
+      }
+    }
+  }
+
 }

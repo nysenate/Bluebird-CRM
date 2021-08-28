@@ -11,6 +11,9 @@
     <title>Action Schedule ID</title>
     <type>int unsigned</type>
     <required>true</required>
+    <html>
+      <type>Number</type>
+    </html>
     <add>3.4</add>
   </field>
   <primaryKey>
@@ -38,12 +41,18 @@
     <type>varchar</type>
     <length>64</length>
     <comment>Recipient</comment>
+    <html>
+      <label>Recipient</label>
+    </html>
     <add>3.4</add>
   </field>
   <field>
     <name>limit_to</name>
     <type>boolean</type>
     <comment>Is this the recipient criteria limited to OR in addition to?</comment>
+    <html>
+      <label>Limit To</label>
+    </html>
     <add>4.4</add>
   </field>
   <field>
@@ -52,6 +61,9 @@
     <length>255</length>
     <comment>Entity value</comment>
     <serialize>SEPARATOR_TRIMMED</serialize>
+    <html>
+      <label>Entity value</label>
+    </html>
     <add>3.4</add>
   </field>
   <field>
@@ -60,6 +72,9 @@
     <length>64</length>
     <comment>Entity status</comment>
     <serialize>SEPARATOR_TRIMMED</serialize>
+    <html>
+      <label>Entity Status</label>
+    </html>
     <add>3.4</add>
   </field>
   <field>
@@ -67,6 +82,9 @@
     <type>int unsigned</type>
     <comment>Reminder Interval.</comment>
     <default>0</default>
+    <html>
+      <label>Start Action Offset</label>
+    </html>
     <add>3.4</add>
   </field>
   <field>
@@ -80,6 +98,7 @@
     <add>3.4</add>
     <html>
       <type>Select</type>
+      <label>Start Action Unit</label>
     </html>
   </field>
   <field>
@@ -87,6 +106,9 @@
     <type>varchar</type>
     <length>64</length>
     <comment>Reminder Action</comment>
+    <html>
+      <label>Start Action condition</label>
+    </html>
     <add>3.4</add>
   </field>
   <field>
@@ -94,6 +116,9 @@
     <type>varchar</type>
     <length>64</length>
     <comment>Entity date</comment>
+    <html>
+      <label>Start Action Date</label>
+    </html>
     <add>3.4</add>
   </field>
   <field>
@@ -114,6 +139,7 @@
     <add>3.4</add>
     <html>
       <type>Select</type>
+      <label>Repetition Frequency Unit</label>
     </html>
   </field>
   <field>
@@ -121,6 +147,9 @@
     <type>int unsigned</type>
     <default>0</default>
     <comment>Time interval for repeating the reminder.</comment>
+    <html>
+      <label>Repetition Frequency Interval</label>
+    </html>
     <add>3.4</add>
   </field>
   <field>
@@ -134,12 +163,16 @@
     <add>3.4</add>
     <html>
       <type>Select</type>
+      <label>End Frequency Unit</label>
     </html>
   </field>
   <field>
     <name>end_frequency_interval</name>
     <type>int unsigned</type>
     <comment>Time interval till repeating the reminder.</comment>
+    <html>
+      <label>End Frequency Interval</label>
+    </html>
     <add>3.4</add>
     <default>0</default>
   </field>
@@ -148,6 +181,9 @@
     <type>varchar</type>
     <length>32</length>
     <comment>Reminder Action till repeating the reminder.</comment>
+    <html>
+      <label>End Action</label>
+    </html>
     <add>3.4</add>
   </field>
   <field>
@@ -155,6 +191,9 @@
     <type>varchar</type>
     <length>64</length>
     <comment>Entity end date</comment>
+    <html>
+      <label>End Date</label>
+    </html>
     <add>3.4</add>
   </field>
   <field>
@@ -229,7 +268,7 @@
   </field>
   <field>
     <name>group_id</name>
-    <title>Reminder Group</title>
+    <title>Group ID</title>
     <type>int unsigned</type>
     <comment>FK to Group</comment>
     <pseudoconstant>
@@ -239,6 +278,7 @@
     </pseudoconstant>
     <html>
       <type>Select</type>
+      <label>Group</label>
     </html>
     <add>3.4</add>
   </field>
@@ -250,9 +290,12 @@
   </foreignKey>
   <field>
     <name>msg_template_id</name>
-    <title>Reminder Template</title>
+    <title>Message Template ID</title>
     <type>int unsigned</type>
     <comment>FK to the message template.</comment>
+    <html>
+      <label>Message Template</label>
+    </html>
   </field>
   <foreignKey>
     <name>msg_template_id</name>
@@ -262,9 +305,12 @@
   </foreignKey>
   <field>
     <name>sms_template_id</name>
-    <title>SMS Reminder Template</title>
+    <title>SMS Template ID</title>
     <type>int unsigned</type>
     <comment>FK to the message template.</comment>
+    <html>
+      <label>SMS Template</label>
+    </html>
   </field>
   <foreignKey>
     <name>sms_template_id</name>
@@ -312,11 +358,12 @@
   </field>
   <field>
     <name>sms_provider_id</name>
-    <title>SMS Provider</title>
+    <title>SMS Provider ID</title>
     <type>int unsigned</type>
     <add>4.5</add>
     <html>
       <type>Select</type>
+      <label>SMS Provider</label>
     </html>
   </field>
   <foreignKey>
@@ -331,6 +378,9 @@
     <type>varchar</type>
     <length>64</length>
     <comment>Used for repeating entity</comment>
+    <html>
+      <label>Used For</label>
+    </html>
     <add>4.6</add>
   </field>
   <field>
@@ -338,6 +388,9 @@
     <type>varchar</type>
     <length>128</length>
     <comment>Used for multilingual installation</comment>
+    <html>
+      <label>Filter Contact Language</label>
+    </html>
     <add>4.7</add>
   </field>
   <field>
@@ -345,6 +398,52 @@
     <type>varchar</type>
     <length>8</length>
     <comment>Used for multilingual installation</comment>
+    <html>
+      <label>Communication Language</label>
+    </html>
     <add>4.7</add>
+  </field>
+  <field>
+    <name>created_date</name>
+    <title>Created Date</title>
+    <uniqueName>action_schedule_created_date</uniqueName>
+    <type>timestamp</type>
+    <comment>When was the scheduled reminder created.</comment>
+    <required>false</required>
+    <export>true</export>
+    <default>CURRENT_TIMESTAMP</default>
+    <add>5.34</add>
+  </field>
+  <field>
+    <name>modified_date</name>
+    <type>timestamp</type>
+    <comment>When the reminder was created or modified.</comment>
+    <required>false</required>
+    <default>CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP</default>
+    <html>
+      <label>Modified Date</label>
+    </html>
+    <add>5.34</add>
+    <readonly>true</readonly>
+  </field>
+  <field>
+    <name>effective_start_date</name>
+    <title>Effective start date</title>
+    <uniqueName>action_schedule_effective_start_date</uniqueName>
+    <type>timestamp</type>
+    <comment>Earliest date to consider start events from.</comment>
+    <required>false</required>
+    <export>true</export>
+    <add>5.34</add>
+  </field>
+  <field>
+    <name>effective_end_date</name>
+    <title>Effective end date</title>
+    <uniqueName>action_schedule_effective_end_date</uniqueName>
+    <type>timestamp</type>
+    <comment>Latest date to consider end events from.</comment>
+    <required>false</required>
+    <export>true</export>
+    <add>5.34</add>
   </field>
 </table>

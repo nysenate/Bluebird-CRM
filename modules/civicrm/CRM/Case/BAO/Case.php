@@ -187,7 +187,7 @@ WHERE civicrm_case.id = %1";
    *   is successful
    */
   public static function deleteCase($caseId, $moveToTrash = FALSE) {
-    CRM_Utils_Hook::pre('delete', 'Case', $caseId, CRM_Core_DAO::$_nullArray);
+    CRM_Utils_Hook::pre('delete', 'Case', $caseId);
 
     //delete activities
     $activities = self::getCaseActivityDates($caseId);
@@ -227,6 +227,14 @@ WHERE civicrm_case.id = %1";
     }
 
     return FALSE;
+  }
+
+  /**
+   * @param $id
+   * @return bool
+   */
+  public static function del($id) {
+    return self::deleteCase($id);
   }
 
   /**
@@ -392,7 +400,7 @@ WHERE cc.contact_id = %1 AND civicrm_case_type.name = '{$caseType}'";
    *
    * @return string
    */
-  public static function getCaseActivityCountQuery($type = 'upcoming', $userID, $condition = NULL) {
+  public static function getCaseActivityCountQuery($type, $userID, $condition = NULL) {
     return sprintf(" SELECT COUNT(*) FROM (%s) temp ", self::getCaseActivityQuery($type, $userID, $condition));
   }
 
@@ -405,7 +413,7 @@ WHERE cc.contact_id = %1 AND civicrm_case_type.name = '{$caseType}'";
    *
    * @return string
    */
-  public static function getCaseActivityQuery($type = 'upcoming', $userID, $condition = NULL, $limit = NULL, $order = NULL) {
+  public static function getCaseActivityQuery($type, $userID, $condition = NULL, $limit = NULL, $order = NULL) {
     $selectClauses = [
       'civicrm_case.id as case_id',
       'civicrm_case.subject as case_subject',
@@ -432,16 +440,37 @@ WHERE cc.contact_id = %1 AND civicrm_case_type.name = '{$caseType}'";
         INNER JOIN civicrm_contact ON civicrm_case_contact.contact_id = civicrm_contact.id
 HERESQL;
 
+    // 'upcoming' and 'recent' show the next scheduled and most recent
+    // not-scheduled activity on each case, respectively.
+    $scheduled_id = CRM_Core_PseudoConstant::getKey('CRM_Activity_BAO_Activity', 'activity_status_id', 'Scheduled');
     switch ($type) {
       case 'upcoming':
-      case 'recent':
-        // civicrm_view_case_activity_upcoming and
-        // civicrm_view_case_activity_recent are views that show the next
-        // scheduled and most recent not-scheduled activity on each case,
-        // respectively.
         $query .= <<<HERESQL
-        INNER JOIN civicrm_view_case_activity_$type t_act
-          ON t_act.case_id = civicrm_case.id
+        INNER JOIN (SELECT ca.case_id, a.id, a.activity_date_time, a.status_id, a.activity_type_id
+         FROM civicrm_case_activity ca
+         INNER JOIN civicrm_activity a ON ca.activity_id=a.id
+         WHERE a.id =
+        (SELECT b.id FROM civicrm_case_activity bca
+         INNER JOIN civicrm_activity b ON bca.activity_id=b.id
+         WHERE b.activity_date_time <= DATE_ADD( NOW(), INTERVAL 14 DAY )
+         AND b.is_current_revision = 1 AND b.is_deleted=0 AND b.status_id = $scheduled_id
+         AND bca.case_id = ca.case_id ORDER BY b.activity_date_time ASC LIMIT 1)) t_act
+        ON t_act.case_id = civicrm_case.id
+HERESQL;
+        break;
+
+      case 'recent':
+        $query .= <<<HERESQL
+        INNER JOIN (SELECT ca.case_id, a.id, a.activity_date_time, a.status_id, a.activity_type_id
+         FROM civicrm_case_activity ca
+         INNER JOIN civicrm_activity a ON ca.activity_id=a.id
+         WHERE a.id =
+        (SELECT b.id FROM civicrm_case_activity bca
+         INNER JOIN civicrm_activity b ON bca.activity_id=b.id
+         WHERE b.activity_date_time >= DATE_SUB( NOW(), INTERVAL 14 DAY )
+         AND b.is_current_revision = 1 AND b.is_deleted=0 AND b.status_id <> $scheduled_id
+         AND bca.case_id = ca.case_id ORDER BY b.activity_date_time DESC LIMIT 1)) t_act
+        ON t_act.case_id = civicrm_case.id
 HERESQL;
         break;
 
@@ -523,7 +552,7 @@ HERESQL;
       $whereClauses[] = "(case_relationship.contact_id_b = {$userID} OR case_relationship.contact_id_a = {$userID})";
       $whereClauses[] = 'case_relationship.is_active';
     }
-    if (empty($params['status_id']) && ($type == 'upcoming' || $type == 'any')) {
+    if (empty($params['status_id']) && $type == 'upcoming') {
       $whereClauses[] = "civicrm_case.status_id != " . CRM_Core_PseudoConstant::getKey('CRM_Case_BAO_Case', 'case_status_id', 'Closed');
     }
 
@@ -1229,7 +1258,7 @@ HERESQL;
    *
    * @return bool |array
    */
-  public static function sendActivityCopy($clientId, $activityId, $contacts, $attachments = NULL, $caseId) {
+  public static function sendActivityCopy($clientId, $activityId, $contacts, $attachments, $caseId) {
     if (!$activityId) {
       return FALSE;
     }
@@ -2781,82 +2810,6 @@ WHERE id IN (' . implode(',', $copiedActivityIds) . ')';
     }
 
     return $configured;
-  }
-
-  /**
-   * Used during case component enablement and during ugprade.
-   *
-   * @return bool
-   */
-  public static function createCaseViews() {
-    $errorScope = CRM_Core_TemporaryErrorScope::ignoreException();
-    $dao = new CRM_Core_DAO();
-
-    $sql = self::createCaseViewsQuery('upcoming');
-    $dao->query($sql);
-    if (PEAR::getStaticProperty('DB_DataObject', 'lastError')) {
-      return FALSE;
-    }
-
-    // Above error doesn't get caught?
-    $doublecheck = $dao->singleValueQuery("SELECT count(id) FROM civicrm_view_case_activity_upcoming");
-    if (is_null($doublecheck)) {
-      return FALSE;
-    }
-
-    $sql = self::createCaseViewsQuery('recent');
-    $dao->query($sql);
-    if (PEAR::getStaticProperty('DB_DataObject', 'lastError')) {
-      return FALSE;
-    }
-
-    // Above error doesn't get caught?
-    $doublecheck = $dao->singleValueQuery("SELECT count(id) FROM civicrm_view_case_activity_recent");
-    if (is_null($doublecheck)) {
-      return FALSE;
-    }
-
-    return TRUE;
-  }
-
-  /**
-   * Helper function, also used by the upgrade in case of error
-   *
-   * @param string $section
-   *
-   * @return string
-   */
-  public static function createCaseViewsQuery($section = 'upcoming') {
-    $sql = "";
-    $scheduled_id = CRM_Core_PseudoConstant::getKey('CRM_Activity_BAO_Activity', 'activity_status_id', 'Scheduled');
-    switch ($section) {
-      case 'upcoming':
-        $sql = "CREATE OR REPLACE VIEW `civicrm_view_case_activity_upcoming`
- AS SELECT ca.case_id, a.id, a.activity_date_time, a.status_id, a.activity_type_id
- FROM civicrm_case_activity ca
- INNER JOIN civicrm_activity a ON ca.activity_id=a.id
- WHERE a.id =
-(SELECT b.id FROM civicrm_case_activity bca
- INNER JOIN civicrm_activity b ON bca.activity_id=b.id
- WHERE b.activity_date_time <= DATE_ADD( NOW(), INTERVAL 14 DAY )
- AND b.is_current_revision = 1 AND b.is_deleted=0 AND b.status_id = $scheduled_id
- AND bca.case_id = ca.case_id ORDER BY b.activity_date_time ASC LIMIT 1)";
-        break;
-
-      case 'recent':
-        $sql = "CREATE OR REPLACE VIEW `civicrm_view_case_activity_recent`
- AS SELECT ca.case_id, a.id, a.activity_date_time, a.status_id, a.activity_type_id
- FROM civicrm_case_activity ca
- INNER JOIN civicrm_activity a ON ca.activity_id=a.id
- WHERE a.id =
-(SELECT b.id FROM civicrm_case_activity bca
- INNER JOIN civicrm_activity b ON bca.activity_id=b.id
- WHERE b.activity_date_time >= DATE_SUB( NOW(), INTERVAL 14 DAY )
- AND b.is_current_revision = 1 AND b.is_deleted=0 AND b.status_id <> $scheduled_id
- AND bca.case_id = ca.case_id ORDER BY b.activity_date_time DESC LIMIT 1)";
-        break;
-    }
-    return $sql;
   }
 
   /**

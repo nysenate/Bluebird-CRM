@@ -117,7 +117,6 @@
     <comment>Contains json encoded layout tabs.</comment>
     <add>1.2</add>
     <serialize>JSON</serialize>
-    <required>true</required>
   </field>
 
 </table>

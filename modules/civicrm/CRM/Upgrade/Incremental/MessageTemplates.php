@@ -232,6 +232,23 @@ class CRM_Upgrade_Incremental_MessageTemplates {
           ['name' => 'contribution_invoice_receipt', 'type' => 'html'],
         ],
       ],
+      [
+        'version' => '5.38.alpha1',
+        'upgrade_descriptor' => ts('Fix Petition Confirmation email having a blank space at the end of url'),
+        'templates' => [
+          ['name' => 'petition_confirmation_needed', 'type' => 'html'],
+        ],
+      ],
+      [
+        'version' => '5.38.alpha1',
+        'upgrade_descriptor' => ts('Fix Pledge and PCP urls to go to the front end site rather than backend site'),
+        'templates' => [
+          ['name' => 'pcp_notify', 'type' => 'html'],
+          ['name' => 'pcp_notify', 'type' => 'text'],
+          ['name' => 'pledge_reminder', 'type' => 'html'],
+          ['name' => 'pledge_reminder', 'type' => 'text'],
+        ],
+      ],
     ];
   }
 

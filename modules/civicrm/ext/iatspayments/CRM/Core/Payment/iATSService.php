@@ -102,7 +102,7 @@ class CRM_Core_Payment_iATSService extends CRM_Core_Payment {
         if ('CRM_Core_Payment_iATSServiceACHEFT' == CRM_Utils_System::getClassName($this)) {
           return FALSE;
         }
-        elseif (!CRM_Core_Permission::check('access CiviContribution')) {
+        elseif (!CRM_Core_Permission::check('access CiviContribute')) {
           // disable self-service update of billing info if the admin has not allowed it
           if (FALSE == $this->getSettings('enable_update_subscription_billing_info')) {
             return FALSE;
@@ -120,10 +120,7 @@ class CRM_Core_Payment_iATSService extends CRM_Core_Payment {
    * @return bool
    */
   protected function allowSelfService($action) {
-    if ('CRM_Core_Payment_iATSServiceACHEFT' == CRM_Utils_System::getClassName($this)) {
-      return FALSE;
-    }
-    elseif (!CRM_Core_Permission::check('access CiviContribution')) {
+    if (!CRM_Core_Permission::check('access CiviContribute')) {
       // disable self-service 'action' if the admin has not allowed it
       if (FALSE == $this->getSettings('enable_'.$action)) {
 	return FALSE;
@@ -149,6 +146,10 @@ class CRM_Core_Payment_iATSService extends CRM_Core_Payment {
    */
 
   public function supportsUpdateSubscriptionBillingInfo() {
+    // the CiviCRM internal form for updating billing info for ACHEFT is inadequate
+    if ('CRM_Core_Payment_iATSServiceACHEFT' == CRM_Utils_System::getClassName($this)) {
+      return FALSE;
+    }
     return $this->allowSelfService('update_subscription_billing_info');
   }
 
@@ -417,9 +418,9 @@ class CRM_Core_Payment_iATSService extends CRM_Core_Payment {
     }
     // The "&" character is badly handled by the processor,
     // so we sanitize it to "and"
-    $request['firstName'] = str_replace('&', ts('and'), $request['firstName']);
-    $request['lastName'] = str_replace('&', ts('and'), $request['lastName']);
-    $request['creditCardExpiry'] = sprintf('%02d/%02d', $params['month'], ($params['year'] % 100));
+    $request['firstName'] = str_replace('&', 'and', $request['firstName']);
+    $request['lastName'] = str_replace('&', 'and', $request['lastName']);
+    $request['creditCardExpiry'] = sprintf('%02d/%02d', intval($params['month']), (intval($params['year']) % 100));
     $request['total'] = sprintf('%01.2f', CRM_Utils_Rule::cleanMoney($params['amount']));
     // Place for ugly hacks.
     switch ($method) {
@@ -495,7 +496,7 @@ class CRM_Core_Payment_iATSService extends CRM_Core_Payment {
       'state' => $state_province['abbreviation'],
       'zipCode' => $params['postal_code'],
       'creditCardNum' => $params['credit_card_number'],
-      'creditCardExpiry' => sprintf('%02d/%02d', $params['month'], $params['year'] % 100),
+      'creditCardExpiry' => sprintf('%02d/%02d', intval($params['month']), intval($params['year']) % 100),
       'mop' => $mop[$params['credit_card_type']],
     );
 

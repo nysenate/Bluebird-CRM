@@ -14,12 +14,13 @@ namespace Civi\Cxn\Rpc;
 use Civi\Cxn\Rpc\Exception\InvalidMessageException;
 
 class AesHelper {
+
   /**
    * @return string
    *   A secret, expressed in a series of printable ASCII characters.
    */
   public static function createSecret() {
-    return base64_encode(crypt_random_string(Constants::AES_BYTES));
+    return base64_encode(\phpseclib\Crypt\Random::string(Constants::AES_BYTES));
   }
 
   /**
@@ -56,11 +57,11 @@ class AesHelper {
    * @throws InvalidMessageException
    */
   public static function encryptThenSign($secret, $plaintext) {
-    $iv = crypt_random_string(Constants::AES_BYTES);
+    $iv = \phpseclib\Crypt\Random::string(Constants::AES_BYTES);
 
     $keys = AesHelper::deriveAesKeys($secret);
 
-    $cipher = new \Crypt_AES(CRYPT_AES_MODE_CBC);
+    $cipher = new \phpseclib\Crypt\AES(\phpseclib\Crypt\AES::MODE_CBC);
     $cipher->setKeyLength(Constants::AES_BYTES);
     $cipher->setKey($keys['enc']);
     $cipher->setIV($iv);
@@ -116,7 +117,7 @@ class AesHelper {
     }
 
     $jsonPlaintext = UserError::adapt('Civi\Cxn\Rpc\Exception\InvalidMessageException', function () use ($jsonEncrypted, $envelope, $keys) {
-      $cipher = new \Crypt_AES(CRYPT_AES_MODE_CBC);
+      $cipher = new \phpseclib\Crypt\AES(\phpseclib\Crypt\AES::MODE_CBC);
       $cipher->setKeyLength(Constants::AES_BYTES);
       $cipher->setKey($keys['enc']);
       $cipher->setIV(BinHex::hex2bin($envelope['iv']));

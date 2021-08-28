@@ -6,6 +6,8 @@
   <comment>Campaign Details.</comment>
   <add>3.3</add>
   <icon>fa-bullhorn</icon>
+  <labelField>title</labelField>
+  <component>CiviCampaign</component>
   <paths>
     <add>civicrm/campaign/add?reset=1</add>
     <update>civicrm/campaign/add?reset=1&amp;action=update&amp;id=[id]</update>
@@ -18,6 +20,9 @@
     <required>true</required>
     <comment>Unique Campaign ID.</comment>
     <import>true</import>
+    <html>
+      <type>Number</type>
+    </html>
     <add>3.3</add>
   </field>
   <primaryKey>
@@ -38,7 +43,11 @@
     </html>
     <add>3.3</add>
   </field>
-
+  <index>
+    <name>UI_campaign_name</name>
+    <fieldName>name</fieldName>
+    <add>5.34</add>
+  </index>
   <field>
     <name>title</name>
     <title>Campaign Title</title>
@@ -158,7 +167,7 @@
 
   <field>
     <name>parent_id</name>
-    <title>Parent Campaign</title>
+    <title>Parent Campaign ID</title>
     <type>int unsigned</type>
     <default>NULL</default>
     <comment>Optional parent id for this Campaign.</comment>
@@ -166,6 +175,7 @@
     <add>3.3</add>
     <html>
       <type>EntityRef</type>
+      <label>Parent Campaign</label>
     </html>
   </field>
   <foreignKey>
@@ -191,8 +201,11 @@
   <field>
     <name>created_id</name>
     <type>int unsigned</type>
-    <title>Campaign Created By</title>
+    <title>Created By Contact ID</title>
     <comment>FK to civicrm_contact, who created this Campaign.</comment>
+    <html>
+      <label>Created By</label>
+    </html>
     <add>3.3</add>
   </field>
   <foreignKey>
@@ -218,8 +231,11 @@
   <field>
     <name>last_modified_id</name>
     <type>int unsigned</type>
-    <title>Campaign Modified By</title>
+    <title>Modified By Contact ID</title>
     <comment>FK to civicrm_contact, who recently edited this Campaign.</comment>
+    <html>
+      <label>Modified By</label>
+    </html>
     <add>3.3</add>
   </field>
   <foreignKey>
@@ -254,6 +270,7 @@
     <add>3.4</add>
     <html>
       <type>Text</type>
+      <label>Goal Revenue</label>
     </html>
   </field>
 </table>

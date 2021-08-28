@@ -92,6 +92,7 @@ $prefsSearch = &$civicrm_setting['Search Preferences'];
 $prefsUrl = &$civicrm_setting['URL Preferences'];
 $prefsReportError = &$civicrm_setting['reporterror'];
 $prefsMosaico = &$civicrm_setting['mosaico'];
+$prefsResources = &$civicrm_setting['resources'];
 
 // Core settings, from Core.setting.php
 // contact_view_options, contact_edit_options
@@ -142,12 +143,19 @@ $prefsCore['versionCheck'] = false;
 $prefsCore['checksumTimeout'] = 7;
 $prefsCore['menubar_color'] = 'white';
 $prefsCore['ajaxPopupsEnabled'] = 1;
+$prefsCore['mailing_format'] = "{contact.addressee}
+{contact.job_title}
+{contact.current_employer}
+{contact.supplemental_address_2}
+{contact.street_address}
+{contact.supplemental_address_1}
+{contact.city}{, }{contact.state_province}{ }{contact.postal_code}";
 
 // Address settings, from Address.setting.php
 // address_standardization_provider
 // address_standardization_userid
 // address_standardization_url
-// hideCountryMailingLabels
+$prefsCore['hideCountryMailingLabels'] = 1;
 
 // Campaign settings, from Campaign.setting.php
 // tag_unconfirmed
@@ -229,7 +237,7 @@ $prefsMail['mailing_backend'] = [
   'smtpPort' => get_config_value($bbcfg, 'smtp.port', 25),
   'smtpAuth' => get_config_value($bbcfg, 'smtp.auth', 0),
   'smtpUsername' => 'apikey',
-  'smtpPassword' => CRM_Utils_Crypt::encrypt(get_config_value($bbcfg, 'smtp.api.key', ''))
+  'smtpPassword' => get_config_value($bbcfg, 'smtp.api.key', ''),
 ];
 $prefsMail['profile_add_to_group_double_optin'] = false;
 $prefsMail['disable_mandatory_tokens_check'] = true;
@@ -283,8 +291,8 @@ $prefsUrl['imageUploadURL'] = "data/$datadirname/pubfiles";
 $prefsUrl['extensionsURL'] = 'sites/all/ext';
 
 // Report Error extension settings
-$prefsReportError['reporterror_mailto'] = 'zalewski@nysenate.gov,dev+nyss@lcdservices.biz';
-$prefsReportError['reporterror_fromemail'] = '"Bluebird Error" <bluebird-no-reply@nysenate.gov>';
+$prefsReportError['reporterror_mailto'] = get_config_value($bbcfg, 'reporterror.email.to', 'civicrm-error@nysenate.gov');
+$prefsReportError['reporterror_fromemail'] = get_config_value($bbcfg, 'reporterror.email.from', '"CiviCRM Error" <civicrm-no-reply@nysenate.gov>');
 $prefsReportError['reporterror_show_full_backtrace'] = TRUE;
 $prefsReportError['reporterror_show_post_data'] = TRUE;
 $prefsReportError['reporterror_smartgroups_autodisable'] = TRUE;
@@ -302,6 +310,10 @@ $prefsMosaico['mosaico_scale_factor2'] = 2;
 $prefsMosaico['mosaico_scale_width_limit2'] = 9999;
 $prefsMosaico['mosaico_plugins'] = 'link hr paste lists textcolor code civicrmtoken charmap';
 $prefsMosaico['mosaico_toolbar'] = 'bold italic forecolor backcolor hr bullist numlist charmap styleselect removeformat | civicrmtoken | link unlink | pastetext code';
+
+$prefsResources['resources_slack_url'] = get_config_value($bbcfg, 'reporterror.slack.url', 'https://hooks.slack.com/');
+$prefsResources['resources_slack_channel'] = get_config_value($bbcfg, 'reporterror.slack.channel', 'civicrm-notices');
+$prefsResources['resources_slack_title'] = get_config_value($bbcfg, 'reporterror.slack.title', 'Notice from CRM');
 
 if (isset($bbcfg['xhprof.profile']) && $bbcfg['xhprof.profile']) {
   function xhprof_shutdown_func($source, $run_id = null) {

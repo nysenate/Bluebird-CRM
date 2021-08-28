@@ -40,10 +40,11 @@ class CRM_Batch_BAO_Batch extends CRM_Batch_DAO_Batch {
    *
    * @return object
    *   $batch batch object
+   * @throws \Exception
    */
   public static function create(&$params) {
     if (empty($params['id']) && empty($params['name'])) {
-      $params['name'] = CRM_Utils_String::titleToVar($params['title']);
+      $params['name'] = CRM_Utils_String::titleToVar($params['title'] ?? 'batch_ref_' . random_int(0, 100000));
     }
     return self::writeRecord($params);
   }
@@ -119,7 +120,7 @@ class CRM_Batch_BAO_Batch extends CRM_Batch_DAO_Batch {
    */
   public static function deleteBatch($batchId) {
     // delete entry from batch table
-    CRM_Utils_Hook::pre('delete', 'Batch', $batchId, CRM_Core_DAO::$_nullArray);
+    CRM_Utils_Hook::pre('delete', 'Batch', $batchId);
     $batch = new CRM_Batch_DAO_Batch();
     $batch->id = $batchId;
     $batch->delete();
@@ -450,8 +451,8 @@ class CRM_Batch_BAO_Batch extends CRM_Batch_DAO_Batch {
         'export' => [
           'name' => ts('Export'),
           'title' => ts('Export Batch'),
-          'url' => '#',
-          'extra' => 'rel="export"',
+          'url' => 'civicrm/financial/batch/export',
+          'qs' => 'reset=1&id=%%id%%&status=1',
         ],
         'reopen' => [
           'name' => ts('Re-open'),
@@ -616,7 +617,7 @@ class CRM_Batch_BAO_Batch extends CRM_Batch_DAO_Batch {
    * @param array $batchIds
    * @param $status
    */
-  public static function closeReOpen($batchIds = [], $status) {
+  public static function closeReOpen($batchIds, $status) {
     $batchStatus = CRM_Core_PseudoConstant::get('CRM_Batch_DAO_Batch', 'status_id');
     $params['status_id'] = CRM_Utils_Array::key($status, $batchStatus);
     $session = CRM_Core_Session::singleton();

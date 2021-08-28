@@ -15,18 +15,23 @@
 //                     - added more default value constants
 // Revised: 2019-04-17 - changed mangleHTML() to renderAsHtml()
 // Revised: 2020-01-30 - must bootstrap Drupal now
+// Revised: 2021-08-12 - change 'server' to 'host'
+//                     - end support for multiple IMAP accounts per CRM
+//                     - add --deny-unauthorized to reject any emails from
+//                       a sender that is not in the forwarder whitelist
 //
 
 // Version number, used for debugging
 define('VERSION_NUMBER', 2.1);
 
 // Mailbox settings common to all CRM instances
-define('DEFAULT_IMAP_SERVER', 'senmail.nysenate.gov');
+define('DEFAULT_IMAP_HOST', 'imap.example.com');
 define('DEFAULT_IMAP_PORT', 143);
 define('DEFAULT_IMAP_FLAGS', '/imap/notls');
 define('DEFAULT_IMAP_MAILBOX', 'INBOX');
 define('DEFAULT_IMAP_ARCHIVEBOX', 'Archive');
 define('DEFAULT_IMAP_VALID_SENDERS', false);
+define('DEFAULT_IMAP_DENY_UNAUTH', false);
 define('DEFAULT_IMAP_ACTIVITY_STATUS', 'Completed');
 define('DEFAULT_IMAP_NO_ARCHIVE', false);
 define('DEFAULT_IMAP_NO_EMAIL', false);
@@ -71,11 +76,12 @@ $prog = basename(__FILE__);
 
 require_once 'script_utils.php';
 $stdusage = civicrm_script_usage();
-$usage = "[--imap-user|-u username]  [--imap-pass|-P password]  [--cmd|-c <poll|list|delarchive>]  [--log-level|-l LEVEL]  [--server|-s imap_server]  [--port|-p imap_port]  [--imap-flags|-f imap_flags]  [--mailbox|-m name]  [--archivebox|-a name]  [--valid-senders|-v EMAILS]  [--default-activity-status|-d <Completed|Scheduled|Cancelled>]  [--no-archive|-n]  [--no-email|-e]  [--recheck-unmatched|-r]";
-$shortopts = "u:P:c:l:s:p:f:m:a:v:d:ner";
+$usage = "[--imap-user|-u username]  [--imap-pass|-s password]  [--cmd|-c <poll|list|delarchive>]  [--log-level|-l LEVEL]  [--host|-h imap_host]  [--port|-p imap_port]  [--imap-flags|-f imap_flags]  [--mailbox|-m name]  [--archivebox|-a name]  [--valid-senders|-v EMAILS]  [--deny-unauthorized|-x]  [--default-activity-status|-d <Completed|Scheduled|Cancelled>]  [--no-archive|-n]  [--no-email|-e]  [--recheck-unmatched|-r]";
+$shortopts = "u:s:c:l:h:p:f:m:a:v:xd:ner";
 $longopts = array("imap-user=", "imap-pass=", "cmd=", "log-level=",
-                  "server=", "port=", "imap-flags=", "mailbox=", "archivebox=",
-                  "valid-senders=", "default-activity-status=",
+                  "host=", "port=", "imap-flags=", "mailbox=", "archivebox=",
+                  "valid-senders=", "deny-unauthorized",
+                  "default-activity-status=",
                   "no-archive", "no-email", "recheck-unmatched");
 
 $optlist = civicrm_script_init($shortopts, $longopts);
@@ -89,12 +95,10 @@ if (!empty($optlist['log-level'])) {
   set_bbscript_log_level($optlist['log-level']);
 }
 
-/* More than one IMAP account can be checked per CRM instance.
-** The username and password for each account is specified in the Bluebird
-** config file.
-**
-** The user= and pass= command line args can be used to override the IMAP
-** accounts from the config file.
+/*
+** All IMAP parameters for a CRM instance can be specified in the Bluebird
+** configuration file.  Each parameter can also be overridden by command
+** line options.
 */
 
 $bbconfig = get_bluebird_instance_config();
@@ -106,12 +110,15 @@ $g_crm_instance = $site;
 $all_params = [
   // Each element is: paramName, optName, bbcfgName, defaultVal
   array('site', 'site', null, null),
-  array('server', 'server', 'imap.server', DEFAULT_IMAP_SERVER),
+  array('host', 'host', 'imap.host', DEFAULT_IMAP_HOST),
   array('port', 'port', 'imap.port', DEFAULT_IMAP_PORT),
+  array('user', 'imap-user', 'imap.user', null),
+  array('password', 'imap-pass', 'imap.pass', null),
   array('flags', 'imap-flags', 'imap.flags', DEFAULT_IMAP_FLAGS),
   array('mailbox', 'mailbox', 'imap.mailbox', DEFAULT_IMAP_MAILBOX),
   array('archivebox', 'archivebox', 'imap.archivebox', DEFAULT_IMAP_ARCHIVEBOX),
   array('validsenders', 'valid-senders', 'imap.validsenders', DEFAULT_IMAP_VALID_SENDERS),
+  array('denyunauth', 'deny-unauthorized', 'imap.deny.unauth', DEFAULT_IMAP_DENY_UNAUTH),
   array('actstatus', 'default-activity-status', 'imap.activity.status.default', DEFAULT_IMAP_ACTIVITY_STATUS),
   array('noarchive', 'no-archive', null, DEFAULT_IMAP_NO_ARCHIVE),
   array('noemail', 'no-email', null, DEFAULT_IMAP_NO_EMAIL),
@@ -127,18 +134,12 @@ foreach ($all_params as $param) {
   }
 }
 
-if (!empty($optlist['imap-user']) && !empty($optlist['imap-pass'])) {
-  $imap_accounts = $optlist['imap-user'].'|'.$optlist['imap-pass'];
+if (empty($imap_params['user'])) {
+  echo "$prog: No IMAP username was specified for CRM instance [$site]\n";
+  exit(1);
 }
-else if (isset($bbconfig['imap.accounts'])) {
-  $imap_accounts = $bbconfig['imap.accounts'];
-}
-else {
-  $imap_accounts = '';
-}
-
-if (empty($imap_accounts)) {
-  echo "$prog: No IMAP accounts to process for CRM instance [$site]\n";
+elseif (empty($imap_params['password'])) {
+  echo "$prog: No IMAP password was specified for CRM instance [$site]\n";
   exit(1);
 }
 
@@ -219,18 +220,17 @@ $imap_params['uploadDir'] = $uploadDir;
 $imap_params['uploadInbox'] = $uploadInbox;
 $imap_params['authForwarders'] = $authForwarders;
 
-bbscript_log(LL::DEBUG, "imap_params before account loop:", $imap_params);
+bbscript_log(LL::DEBUG, "imap_params before processing mailbox:", $imap_params);
 
 
-// Iterate over all IMAP accounts associated with the current CRM instance.
-
-foreach (explode(',', $imap_accounts) as $imap_account) {
-  list($imapUser, $imapPass) = explode("|", $imap_account);
-  $imap_params['user'] = $imapUser;
-  $imap_params['password'] = $imapPass;
+// Previously, this script would Iterate over all IMAP accounts associated
+// with the current CRM instance.  In practice, multiple IMAP accounts were
+// never used.  This has been simplified to support a single IMAP username
+// and password for each CRM instance.
+{
   $rc = processMailboxCommand($cmd, $imap_params);
   if ($rc == false) {
-    bbscript_log(LL::ERROR, "Failed to process IMAP account $imapUser@{$imap_params['server']}\n".print_r(imap_errors(), true));
+    bbscript_log(LL::ERROR, "Failed to process IMAP account {$imap_params['user']}@{$imap_params['host']}\n".print_r(imap_errors(), true));
   }
 }
 
@@ -344,10 +344,10 @@ function processMailboxCommand($cmd, $params)
 
 function checkImapAccount($imapSess, $params)
 {
-  bbscript_log(LL::NOTICE, "Polling CRM [".$params['site']."] using IMAP account ".$params['user'].'@'.$params['server'].$params['flags']);
+  bbscript_log(LL::NOTICE, "Polling CRM [".$params['site']."] using IMAP account ".$params['user'].'@'.$params['host'].$params['flags']);
 
   $imap_conn = $imapSess->getConnection();
-  $crm_archivebox = '{'.$params['server'].'}'.$params['archivebox'];
+  $crm_archivebox = '{'.$params['host'].'}'.$params['archivebox'];
 
   //create archive box in case it doesn't exist
   //don't report errors since it will almost always fail
@@ -379,10 +379,21 @@ function checkImapAccount($imapSess, $params)
     $msgMetaData = $imap_message->getMetaData();
     bbscript_log(LL::DEBUG, "metadata", $msgMetaData);
     $fwder = strtolower($msgMetaData->fromEmail);
+    $isAuth = isAuthForwarder($fwder, $params['authForwarders']);
 
-    // check whether or not the forwarder is valid
-    if (isAuthForwarder($fwder, $params['authForwarders'])) {
-      bbscript_log(LL::DEBUG, "Forwarder [$fwder] is allowed to send to this mailbox");
+    // If the top-level sender is in the authForwarders list, then the message
+    // is assumed to be forwarded from a constituent by a staff member.
+    // Otherwise, the message is assumed to have originated directly
+    // from a constituent, UNLESS --deny-unauthorized was specified, in
+    // which case, the message is not processed.
+    //
+    if ($isAuth === true || $params['denyunauth'] === false) {
+      if ($isAuth) {
+        bbscript_log(LL::DEBUG, "Sender [$fwder] is an authorized forwarder; message is assumed to be forwarded");
+      }
+      else {
+        bbscript_log(LL::DEBUG, "Sender [$fwder] is not in the forwarder whitelist; message is assumed to be sent directly from a constituent");
+      }
 
       // retrieved msg, now store to Civi and if successful move to archive
       if (storeMessage($imap_message, $dbconn, $params) == true) {
@@ -425,7 +436,7 @@ function checkImapAccount($imapSess, $params)
     }
   }
 
-  bbscript_log(LL::NOTICE, "Finished checking IMAP account ".$params['user'].'@'.$params['server'].$params['flags']);
+  bbscript_log(LL::NOTICE, "Finished checking IMAP account ".$params['user'].'@'.$params['host'].$params['flags']);
 
   bbscript_log(LL::NOTICE, "Searching for matches between message senders and contact records");
   searchForMatches($dbconn, $params);
@@ -535,7 +546,6 @@ function storeMessage($imapMsg, $db, $params)
   $all_addr = $imapMsg->findFromAddresses();
 
   // check for plain/html body text
-  $msgStruct = $imapMsg->getStructure();
   bbscript_log(LL::DEBUG, "all_addr", $all_addr);
 
   // formatting headers
@@ -543,9 +553,9 @@ function storeMessage($imapMsg, $db, $params)
   $fromName = substr($msgMeta->fromName, 0, 200);  // appears to be unused
   // the subject could be UTF-8
   // CiviCRM will force '<' and '>' to htmlentities, so handle it here
-  $fwdSubject = mb_strcut(htmlspecialchars($msgMeta->subject, ENT_QUOTES), 0, 255);
-  $fwdDate = $msgMeta->date;
-  $fwdBody = $imapMsg->renderAsHtml();
+  $msgSubject = mb_strcut(htmlspecialchars($msgMeta->subject, ENT_QUOTES), 0, 255);
+  $msgDate = $msgMeta->date;
+  $msgBody = $imapMsg->renderAsHtml();
   $msgUid = $msgMeta->uid;
 
   /** If there is at least one secondary address, we WILL use an address from
@@ -561,25 +571,29 @@ function storeMessage($imapMsg, $db, $params)
         break;
       }
     }
-    $fwdEmail = $all_addr['secondary'][$foundIndex]['address'];
-    $fwdName = $all_addr['secondary'][$foundIndex]['name'];
+    $senderEmail = $all_addr['secondary'][$foundIndex]['address'];
+    $senderName = $all_addr['secondary'][$foundIndex]['name'];
+    $fwderEmail = $fromEmail;
   }
   elseif (!isAuthForwarder($all_addr['primary']['address'], $authForwarders)) {
-    // if secondary addresses were not populated, we can use the primary if
-    // it is not an authorized forwarder
-    $fwdEmail = $all_addr['primary']['address'];
-    $fwdName  = $all_addr['primary']['name'];
+    // If secondary addresses were not populated, we can use the primary if
+    // it is not an authorized forwarder.  This is a direct (non-forwarded)
+    // message.
+    $senderEmail = $all_addr['primary']['address'];
+    $senderName  = $all_addr['primary']['name'];
+    $fwderEmail = '';
   }
   else {
     // final failure - no addresses found
-    $fwdEmail = $fwdName = null;
+    $senderEmail = $senderName = null;
+    $fwderEmail = $fromEmail;
   }
 
-  if ($fwdEmail === null) {
-    $fwdEmail = '';
+  if ($senderEmail === null) {
+    $senderEmail = '';
   }
-  if ($fwdName === null) {
-    $fwdName = '';
+  if ($senderName === null) {
+    $senderName = '';
   }
 
   // The default status for newly saved messages is UNPROCESSED.
@@ -596,9 +610,9 @@ function storeMessage($imapMsg, $db, $params)
     return false;
   }
 
-  if (mysqli_stmt_bind_param($sql_stmt, 'isssssis', $msgUid, $fwdName,
-                             $fwdEmail, $fwdSubject, $fwdBody, $fromEmail,
-                             $status, $fwdDate) == false) {
+  if (mysqli_stmt_bind_param($sql_stmt, 'isssssis', $msgUid, $senderName,
+                             $senderEmail, $msgSubject, $msgBody, $fwderEmail,
+                             $status, $msgDate) == false) {
     bbscript_log(LL::ERROR, "Unable to bind params for msgUid=$msgUid");
     mysqli_stmt_close($sql_stmt);
     return false;
@@ -843,7 +857,7 @@ function listMailboxes($imapSess, $params) {
 
 
 function deleteArchiveBox($imapSess, $params) {
-  $crm_archivebox = '{'.$params['server'].'}'.$params['archivebox'];
+  $crm_archivebox = '{'.$params['host'].'}'.$params['archivebox'];
   bbscript_log(LL::NOTICE, "Deleting archive mailbox: $crm_archivebox");
   return imap_deletemailbox($imapSess->getConnection(), $crm_archivebox);
 } // deleteArchiveBox()

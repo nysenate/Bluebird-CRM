@@ -5,12 +5,16 @@
   <class>PaymentProcessorType</class>
   <name>civicrm_payment_processor_type</name>
   <add>1.8</add>
+  <component>CiviContribute</component>
   <field>
     <name>id</name>
     <title>Payment Processor Type ID</title>
     <type>int unsigned</type>
     <required>true</required>
     <comment>Payment Processor Type ID</comment>
+    <html>
+      <type>Number</type>
+    </html>
     <add>1.8</add>
   </field>
   <primaryKey>
@@ -167,6 +171,7 @@
     </pseudoconstant>
     <html>
       <type>Select</type>
+      <label>Billing Mode</label>
     </html>
     <add>1.8</add>
   </field>

@@ -19,6 +19,8 @@
 
 namespace Civi\Api4\Service\Spec;
 
+use Civi\Api4\Utils\CoreUtil;
+
 class RequestSpec {
 
   /**
@@ -32,6 +34,11 @@ class RequestSpec {
   protected $action;
 
   /**
+   * @var string
+   */
+  protected $entityTableName;
+
+  /**
    * @var FieldSpec[]
    */
   protected $fields = [];
@@ -43,9 +50,16 @@ class RequestSpec {
   public function __construct($entity, $action) {
     $this->entity = $entity;
     $this->action = $action;
+    $this->entityTableName = CoreUtil::getTableName($entity);
   }
 
   public function addFieldSpec(FieldSpec $field) {
+    if (!$field->getEntity()) {
+      $field->setEntity($this->entity);
+    }
+    if (!$field->getTableName()) {
+      $field->setTableName($this->entityTableName);
+    }
     $this->fields[] = $field;
   }
 
@@ -101,13 +115,15 @@ class RequestSpec {
     if (!$fieldNames) {
       return $this->fields;
     }
-    $fields = [];
-    foreach ($this->fields as $field) {
-      if (in_array($field->getName(), $fieldNames)) {
-        $fields[] = $field;
+    // Return all exact matches plus partial matches (to support retrieving fk fields)
+    return array_filter($this->fields, function($field) use($fieldNames) {
+      foreach ($fieldNames as $fieldName) {
+        if (strpos($fieldName, $field->getName()) === 0) {
+          return TRUE;
+        }
       }
-    }
-    return $fields;
+      return FALSE;
+    });
   }
 
   /**

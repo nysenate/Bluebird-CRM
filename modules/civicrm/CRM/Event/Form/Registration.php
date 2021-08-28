@@ -30,21 +30,30 @@ class CRM_Event_Form_Registration extends CRM_Core_Form {
   const LOCATION_BLOCKS = 1;
 
   /**
-   * The id of the event we are proceessing.
+   * The id of the event we are processing.
    *
    * @var int
    */
   public $_eventId;
 
   /**
-   * The array of ids of all the participant we are proceessing.
+   * Get the event it.
+   *
+   * @return int
+   */
+  protected function getEventID(): int {
+    return $this->_eventId;
+  }
+
+  /**
+   * The array of ids of all the participant we are processing.
    *
    * @var int
    */
   protected $_participantIDS = NULL;
 
   /**
-   * The id of the participant we are proceessing.
+   * The id of the participant we are processing.
    *
    * @var int
    */
@@ -108,7 +117,7 @@ class CRM_Event_Form_Registration extends CRM_Core_Form {
   public $_fields;
 
   /**
-   * The billing location id for this contribiution page.
+   * The billing location id for this contribution page.
    *
    * @var int
    */
@@ -138,8 +147,6 @@ class CRM_Event_Form_Registration extends CRM_Core_Form {
    * @var bool
    *
    */
-
-
   public $_isEventFull;
 
   public $_lineItem;
@@ -175,7 +182,7 @@ class CRM_Event_Form_Registration extends CRM_Core_Form {
    * Set variables up before form is built.
    */
   public function preProcess() {
-    $this->_eventId = CRM_Utils_Request::retrieve('id', 'Positive', $this, TRUE);
+    $this->_eventId = (int) CRM_Utils_Request::retrieve('id', 'Positive', $this, TRUE);
     $this->_action = CRM_Utils_Request::retrieve('action', 'Alphanumeric', $this, FALSE, CRM_Core_Action::ADD);
     //CRM-4320
     $this->_participantId = CRM_Utils_Request::retrieve('participantId', 'Positive', $this);
@@ -210,17 +217,11 @@ class CRM_Event_Form_Registration extends CRM_Core_Form {
 
     //get the additional participant ids.
     $this->_additionalParticipantIds = $this->get('additionalParticipantIds');
-    $config = CRM_Core_Config::singleton();
 
     if (!$this->_values) {
-      // create redirect URL to send folks back to event info page is registration not available
-      $infoUrl = CRM_Utils_System::url('civicrm/event/info', "reset=1&id={$this->_eventId}",
-        FALSE, NULL, FALSE, TRUE
-      );
-
       // this is the first time we are hitting this, so check for permissions here
       if (!CRM_Core_Permission::event(CRM_Core_Permission::EDIT, $this->_eventId, 'register for events')) {
-        CRM_Core_Error::statusBounce(ts('You do not have permission to register for this event'), $infoUrl);
+        CRM_Core_Error::statusBounce(ts('You do not have permission to register for this event'), $this->getInfoPageUrl());
       }
 
       // get all the values from the dao object
@@ -239,7 +240,7 @@ class CRM_Event_Form_Registration extends CRM_Core_Form {
         CRM_Core_Error::statusBounce(ts('You do not have permission to access this page.'));
       }
 
-      $this->checkValidEvent($infoUrl);
+      $this->checkValidEvent();
       // get the participant values, CRM-4320
       $this->_allowConfirmation = FALSE;
       if ($this->_participantId) {
@@ -266,7 +267,7 @@ class CRM_Event_Form_Registration extends CRM_Core_Form {
         //lets redirecting to info only when to waiting list.
         $this->_allowWaitlist = $this->_values['event']['has_waitlist'] ?? NULL;
         if (!$this->_allowWaitlist) {
-          CRM_Utils_System::redirect($infoUrl);
+          CRM_Utils_System::redirect($this->getInfoPageUrl());
         }
       }
       $this->set('isEventFull', $this->_isEventFull);
@@ -299,24 +300,20 @@ class CRM_Event_Form_Registration extends CRM_Core_Form {
       // get the profile ids
       $ufJoinParams = [
         'entity_table' => 'civicrm_event',
-        // CRM-4377: CiviEvent for the main participant, CiviEvent_Additional for additional participants
+        // CRM-4377: CiviEvent for the main participant, CiviEvent_Additional for additional participants
         'module' => 'CiviEvent',
         'entity_id' => $this->_eventId,
       ];
-      list($this->_values['custom_pre_id'],
-        $this->_values['custom_post_id']
-        ) = CRM_Core_BAO_UFJoin::getUFGroupIds($ufJoinParams);
+      [$this->_values['custom_pre_id'], $this->_values['custom_post_id']] = CRM_Core_BAO_UFJoin::getUFGroupIds($ufJoinParams);
 
       // set profiles for additional participants
       if ($this->_values['event']['is_multiple_registrations']) {
-        // CRM-4377: CiviEvent for the main participant, CiviEvent_Additional for additional participants
+        // CRM-4377: CiviEvent for the main participant, CiviEvent_Additional for additional participants
         $ufJoinParams['module'] = 'CiviEvent_Additional';
 
-        list($this->_values['additional_custom_pre_id'],
-          $this->_values['additional_custom_post_id'], $preActive, $postActive
-          ) = CRM_Core_BAO_UFJoin::getUFGroupIds($ufJoinParams);
+        [$this->_values['additional_custom_pre_id'], $this->_values['additional_custom_post_id'], $preActive, $postActive] = CRM_Core_BAO_UFJoin::getUFGroupIds($ufJoinParams);
 
-        // CRM-4377: we need to maintain backward compatibility, hence if there is profile for main contact
+        // CRM-4377: we need to maintain backward compatibility, hence if there is profile for main contact
         // set same profile for additional contacts.
         if ($this->_values['custom_pre_id'] && !$this->_values['additional_custom_pre_id']) {
           $this->_values['additional_custom_pre_id'] = $this->_values['custom_pre_id'];
@@ -443,7 +440,7 @@ class CRM_Event_Form_Registration extends CRM_Core_Form {
 
     foreach ($vars as $v) {
       if (!empty($params[$v])) {
-        if ($v == 'receive_date') {
+        if ($v === 'receive_date') {
           $this->assign($v, CRM_Utils_Date::mysqlToIso($params[$v]));
         }
         else {
@@ -466,9 +463,6 @@ class CRM_Event_Form_Registration extends CRM_Core_Form {
         CRM_Utils_System::mungeCreditCard(CRM_Utils_Array::value('credit_card_number', $params))
       );
     }
-
-    // get the email that the confirmation would have been sent to
-    $session = CRM_Core_Session::singleton();
 
     // assign is_email_confirm to templates
     if (isset($this->_values['event']['is_email_confirm'])) {
@@ -493,97 +487,89 @@ class CRM_Event_Form_Registration extends CRM_Core_Form {
    *
    * @param int $id
    * @param string $name
-   * @param bool $viewOnly
    */
-  public function buildCustom($id, $name, $viewOnly = FALSE) {
-    if ($id) {
-      $button = substr($this->controller->getButtonName(), -4);
-      $cid = CRM_Utils_Request::retrieve('cid', 'Positive', $this);
-      $session = CRM_Core_Session::singleton();
-      $contactID = $session->get('userID');
+  public function buildCustom($id, $name) {
+    if (!$id) {
+      return;
+    }
 
-      // we don't allow conflicting fields to be
-      // configured via profile
-      $fieldsToIgnore = [
-        'participant_fee_amount' => 1,
-        'participant_fee_level' => 1,
-      ];
-      if ($contactID) {
-        //FIX CRM-9653
-        if (is_array($id)) {
-          $fields = [];
-          foreach ($id as $profileID) {
-            $field = CRM_Core_BAO_UFGroup::getFields($profileID, FALSE, CRM_Core_Action::ADD,
-              NULL, NULL, FALSE, NULL,
-              FALSE, NULL, CRM_Core_Permission::CREATE,
-              'field_name', TRUE
-            );
-            $fields = array_merge($fields, $field);
-          }
-        }
-        else {
-          if (CRM_Core_BAO_UFGroup::filterUFGroups($id, $contactID)) {
-            $fields = CRM_Core_BAO_UFGroup::getFields($id, FALSE, CRM_Core_Action::ADD,
-              NULL, NULL, FALSE, NULL,
-              FALSE, NULL, CRM_Core_Permission::CREATE,
-              'field_name', TRUE
-            );
-          }
+    $cid = CRM_Utils_Request::retrieve('cid', 'Positive', $this);
+    $contactID = CRM_Core_Session::getLoggedInContactID();
+
+    // we don't allow conflicting fields to be
+    // configured via profile
+    $fieldsToIgnore = [
+      'participant_fee_amount' => 1,
+      'participant_fee_level' => 1,
+    ];
+    if ($contactID) {
+      //FIX CRM-9653
+      if (is_array($id)) {
+        $fields = [];
+        foreach ($id as $profileID) {
+          $field = CRM_Core_BAO_UFGroup::getFields($profileID, FALSE, CRM_Core_Action::ADD,
+            NULL, NULL, FALSE, NULL,
+            FALSE, NULL, CRM_Core_Permission::CREATE,
+            'field_name', TRUE
+          );
+          $fields = array_merge($fields, $field);
         }
       }
       else {
-        $fields = CRM_Core_BAO_UFGroup::getFields($id, FALSE, CRM_Core_Action::ADD,
-          NULL, NULL, FALSE, NULL,
-          FALSE, NULL, CRM_Core_Permission::CREATE,
-          'field_name', TRUE
-        );
-      }
-
-      if (array_intersect_key($fields, $fieldsToIgnore)) {
-        $fields = array_diff_key($fields, $fieldsToIgnore);
-        CRM_Core_Session::setStatus(ts('Some of the profile fields cannot be configured for this page.'));
-      }
-      $addCaptcha = FALSE;
-
-      if (!empty($this->_fields)) {
-        $fields = @array_diff_assoc($fields, $this->_fields);
-      }
-
-      if (empty($this->_params[0]['additional_participants']) &&
-        is_null($cid)
-      ) {
-        CRM_Core_BAO_Address::checkContactSharedAddressFields($fields, $contactID);
-      }
-      $this->assign($name, $fields);
-      if (is_array($fields)) {
-        foreach ($fields as $key => $field) {
-          if ($viewOnly &&
-            isset($field['data_type']) &&
-            $field['data_type'] == 'File' || ($viewOnly && $field['name'] == 'image_URL')
-          ) {
-            // ignore file upload fields
-            continue;
-          }
-          //make the field optional if primary participant
-          //have been skip the additional participant.
-          if ($button == 'skip') {
-            $field['is_required'] = FALSE;
-          }
-          // CRM-11316 Is ReCAPTCHA enabled for this profile AND is this an anonymous visitor
-          elseif ($field['add_captcha'] && !$contactID) {
-            // only add captcha for first page
-            $addCaptcha = TRUE;
-          }
-          list($prefixName, $index) = CRM_Utils_System::explode('-', $key, 2);
-          CRM_Core_BAO_UFGroup::buildProfile($this, $field, CRM_Profile_Form::MODE_CREATE, $contactID, TRUE);
-
-          $this->_fields[$key] = $field;
+        if (CRM_Core_BAO_UFGroup::filterUFGroups($id, $contactID)) {
+          $fields = CRM_Core_BAO_UFGroup::getFields($id, FALSE, CRM_Core_Action::ADD,
+            NULL, NULL, FALSE, NULL,
+            FALSE, NULL, CRM_Core_Permission::CREATE,
+            'field_name', TRUE
+          );
         }
       }
+    }
+    else {
+      $fields = CRM_Core_BAO_UFGroup::getFields($id, FALSE, CRM_Core_Action::ADD,
+        NULL, NULL, FALSE, NULL,
+        FALSE, NULL, CRM_Core_Permission::CREATE,
+        'field_name', TRUE
+      );
+    }
 
-      if ($addCaptcha && !$viewOnly) {
-        CRM_Utils_ReCAPTCHA::enableCaptchaOnForm($this);
+    if (array_intersect_key($fields, $fieldsToIgnore)) {
+      $fields = array_diff_key($fields, $fieldsToIgnore);
+      CRM_Core_Session::setStatus(ts('Some of the profile fields cannot be configured for this page.'));
+    }
+    $addCaptcha = FALSE;
+
+    if (!empty($this->_fields)) {
+      $fields = @array_diff_assoc($fields, $this->_fields);
+    }
+
+    if (empty($this->_params[0]['additional_participants']) &&
+      is_null($cid)
+    ) {
+      CRM_Core_BAO_Address::checkContactSharedAddressFields($fields, $contactID);
+    }
+    $this->assign($name, $fields);
+    if (is_array($fields)) {
+      $button = substr($this->controller->getButtonName(), -4);
+      foreach ($fields as $key => $field) {
+        //make the field optional if primary participant
+        //have been skip the additional participant.
+        if ($button == 'skip') {
+          $field['is_required'] = FALSE;
+        }
+        // CRM-11316 Is ReCAPTCHA enabled for this profile AND is this an anonymous visitor
+        elseif ($field['add_captcha'] && !$contactID) {
+          // only add captcha for first page
+          $addCaptcha = TRUE;
+        }
+        CRM_Core_BAO_UFGroup::buildProfile($this, $field, CRM_Profile_Form::MODE_CREATE, $contactID, TRUE);
+
+        $this->_fields[$key] = $field;
       }
+    }
+
+    if ($addCaptcha) {
+      CRM_Utils_ReCAPTCHA::enableCaptchaOnForm($this);
     }
   }
 
@@ -592,12 +578,12 @@ class CRM_Event_Form_Registration extends CRM_Core_Form {
    *
    * @param CRM_Core_Form $form
    * @param int $eventID
-   * @param bool $includeExpiredFields
+   * @param bool $doNotIncludeExpiredFields
    *   See CRM-16456.
    *
    * @throws Exception
    */
-  public static function initEventFee(&$form, $eventID, $includeExpiredFields = TRUE) {
+  public static function initEventFee(&$form, $eventID, $doNotIncludeExpiredFields = TRUE) {
     // get price info
 
     // retrive all active price set fields.
@@ -608,12 +594,11 @@ class CRM_Event_Form_Registration extends CRM_Core_Form {
 
     if ($discountId) {
       $priceSetId = CRM_Core_DAO::getFieldValue('CRM_Core_BAO_Discount', $discountId, 'price_set_id');
-      CRM_Price_BAO_PriceSet::initSet($form, 'civicrm_event', $includeExpiredFields, $priceSetId);
     }
     else {
       $priceSetId = CRM_Price_BAO_PriceSet::getFor('civicrm_event', $eventID);
-      CRM_Price_BAO_PriceSet::initSet($form, 'civicrm_event', $includeExpiredFields, $priceSetId);
     }
+    CRM_Price_BAO_PriceSet::initSet($form, 'civicrm_event', $doNotIncludeExpiredFields, $priceSetId);
 
     if (property_exists($form, '_context') && ($form->_context == 'standalone'
         || $form->_context == 'participant')
@@ -1115,7 +1100,7 @@ class CRM_Event_Form_Registration extends CRM_Core_Form {
    * @param array $optionFullIds
    * @param CRM_Core_Form $form
    */
-  public static function resetElementValue($optionFullIds = [], &$form) {
+  public static function resetElementValue($optionFullIds, &$form) {
     if (!is_array($optionFullIds) ||
       empty($optionFullIds) ||
       !$form->isSubmitted()
@@ -1188,7 +1173,7 @@ class CRM_Event_Form_Registration extends CRM_Core_Form {
    * @param array $optionIds
    * @param CRM_Core_Form $form
    */
-  public static function resetSubmittedValue($elementName, $optionIds = [], &$form) {
+  public static function resetSubmittedValue($elementName, $optionIds, &$form) {
     if (empty($elementName) ||
       !$form->elementExists($elementName) ||
       !$form->getSubmitValue($elementName)
@@ -1390,14 +1375,12 @@ class CRM_Event_Form_Registration extends CRM_Core_Form {
   /**
    * Check if event is valid.
    *
-   * @param string $redirect
-   *
    * @todo - combine this with CRM_Event_BAO_Event::validRegistrationRequest
    * (probably extract relevant values here & call that with them & handle bounces & redirects here -as
    * those belong in the form layer)
    *
    */
-  public function checkValidEvent($redirect = NULL) {
+  protected function checkValidEvent(): void {
     // is the event active (enabled)?
     if (!$this->_values['event']['is_active']) {
       // form is inactive, die a fatal death
@@ -1406,12 +1389,12 @@ class CRM_Event_Form_Registration extends CRM_Core_Form {
 
     // is online registration is enabled?
     if (!$this->_values['event']['is_online_registration']) {
-      CRM_Core_Error::statusBounce(ts('Online registration is not currently available for this event (contact the site administrator for assistance).'), $redirect);
+      CRM_Core_Error::statusBounce(ts('Online registration is not currently available for this event (contact the site administrator for assistance).'), $this->getInfoPageUrl());
     }
 
     // is this an event template ?
     if (!empty($this->_values['event']['is_template'])) {
-      CRM_Core_Error::statusBounce(ts('Event templates are not meant to be registered.'), $redirect);
+      CRM_Core_Error::statusBounce(ts('Event templates are not meant to be registered.'), $this->getInfoPageUrl());
     }
 
     $now = date('YmdHis');
@@ -1423,7 +1406,7 @@ class CRM_Event_Form_Registration extends CRM_Core_Form {
       $startDate &&
       $startDate >= $now
     ) {
-      CRM_Core_Error::statusBounce(ts('Registration for this event begins on %1', [1 => CRM_Utils_Date::customFormat(CRM_Utils_Array::value('registration_start_date', $this->_values['event']))]), $redirect, ts('Sorry'));
+      CRM_Core_Error::statusBounce(ts('Registration for this event begins on %1', [1 => CRM_Utils_Date::customFormat(CRM_Utils_Array::value('registration_start_date', $this->_values['event']))]), $this->getInfoPageUrl(), ts('Sorry'));
     }
 
     $regEndDate = CRM_Utils_Date::processDate(CRM_Utils_Array::value('registration_end_date',
@@ -1435,7 +1418,7 @@ class CRM_Event_Form_Registration extends CRM_Core_Form {
       if (empty($regEndDate)) {
         $endDate = CRM_Utils_Date::customFormat(CRM_Utils_Array::value('event_end_date', $this->_values['event']));
       }
-      CRM_Core_Error::statusBounce(ts('Registration for this event ended on %1', [1 => $endDate]), $redirect, ts('Sorry'));
+      CRM_Core_Error::statusBounce(ts('Registration for this event ended on %1', [1 => $endDate]), $this->getInfoPageUrl(), ts('Sorry'));
     }
   }
 
@@ -1655,6 +1638,17 @@ class CRM_Event_Form_Registration extends CRM_Core_Form {
       //send Confirmation mail to Primary & additional Participants if exists
       CRM_Event_BAO_Event::sendMail($contactId, $this->_values, $participantID, $isTest);
     }
+  }
+
+  /**
+   * Get redirect URL to send folks back to event info page is registration not available.
+   *
+   * @return string
+   */
+  private function getInfoPageUrl(): string {
+    return CRM_Utils_System::url('civicrm/event/info', 'reset=1&id=' . $this->getEventID(),
+      FALSE, NULL, FALSE, TRUE
+    );
   }
 
 }

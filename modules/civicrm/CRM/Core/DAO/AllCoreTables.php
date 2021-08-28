@@ -203,7 +203,7 @@ class CRM_Core_DAO_AllCoreTables {
    */
   public static function getBAOClassName($daoName) {
     $baoName = str_replace('_DAO_', '_BAO_', $daoName);
-    return class_exists($baoName) ? $baoName : $daoName;
+    return $daoName === $baoName || class_exists($baoName) ? $baoName : $daoName;
   }
 
   /**
@@ -277,6 +277,23 @@ class CRM_Core_DAO_AllCoreTables {
   }
 
   /**
+   * Get a list of all extant BAO classes.
+   *
+   * @return array
+   *   Ex: ['Contact' => 'CRM_Contact_BAO_Contact']
+   */
+  public static function getBaoClasses() {
+    $r = [];
+    foreach (\CRM_Core_DAO_AllCoreTables::daoToClass() as $entity => $daoClass) {
+      $baoClass = str_replace('_DAO_', '_BAO_', $daoClass);
+      if (class_exists($baoClass)) {
+        $r[$entity] = $baoClass;
+      }
+    }
+    return $r;
+  }
+
+  /**
    * Get the classname for the table.
    *
    * @param string $tableName
@@ -334,6 +351,17 @@ class CRM_Core_DAO_AllCoreTables {
    */
   public static function getTableForEntityName($entityBriefName) {
     return self::getTableForClass(self::getFullName($entityBriefName));
+  }
+
+  /**
+   * Convert table name to brief entity name.
+   *
+   * @param string $tableName
+   *
+   * @return FALSE|string
+   */
+  public static function getEntityNameForTable(string $tableName) {
+    return self::getBriefName(self::getClassForTable($tableName));
   }
 
   /**

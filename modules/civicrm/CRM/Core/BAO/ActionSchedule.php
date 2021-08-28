@@ -15,6 +15,8 @@
  * @copyright CiviCRM LLC https://civicrm.org/licensing
  */
 
+use Civi\ActionSchedule\Event\MappingRegisterEvent;
+
 /**
  * This class contains functions for managing Scheduled Reminders
  */
@@ -35,26 +37,24 @@ class CRM_Core_BAO_ActionSchedule extends CRM_Core_DAO_ActionSchedule {
     if ($_action_mapping === NULL) {
       $event = \Civi::dispatcher()
         ->dispatch('civi.actionSchedule.getMappings',
-          new \Civi\ActionSchedule\Event\MappingRegisterEvent());
+          new MappingRegisterEvent());
       $_action_mapping = $event->getMappings();
     }
 
     if (empty($filters)) {
       return $_action_mapping;
     }
-    elseif (isset($filters['id'])) {
-      return [
-        $filters['id'] => $_action_mapping[$filters['id']],
-      ];
+    if (isset($filters['id'])) {
+      return [$filters['id'] => $_action_mapping[$filters['id']]];
     }
-    else {
-      throw new CRM_Core_Exception("getMappings() called with unsupported filter: " . implode(', ', array_keys($filters)));
-    }
+    throw new CRM_Core_Exception("getMappings() called with unsupported filter: " . implode(', ', array_keys($filters)));
   }
 
   /**
    * @param string|int $id
+   *
    * @return \Civi\ActionSchedule\Mapping|NULL
+   * @throws \CRM_Core_Exception
    */
   public static function getMapping($id) {
     $mappings = self::getMappings();
@@ -102,9 +102,6 @@ class CRM_Core_BAO_ActionSchedule extends CRM_Core_DAO_ActionSchedule {
   /**
    * Retrieve list of Scheduled Reminders.
    *
-   * @param bool $namesOnly
-   *   Return simple list of names.
-   *
    * @param \Civi\ActionSchedule\Mapping|null $filterMapping
    *   Filter by the schedule's mapping type.
    * @param int $filterValue
@@ -114,7 +111,8 @@ class CRM_Core_BAO_ActionSchedule extends CRM_Core_DAO_ActionSchedule {
    *   (reference)   reminder list
    * @throws \CRM_Core_Exception
    */
-  public static function &getList($namesOnly = FALSE, $filterMapping = NULL, $filterValue = NULL) {
+  public static function getList($filterMapping = NULL, $filterValue = NULL): array {
+    $list = [];
     $query = "
 SELECT
        title,
@@ -171,20 +169,16 @@ FROM civicrm_action_schedule cas
   }
 
   /**
-   * Add the schedules reminders in the db.
+   * Add the scheduled reminders in the db.
    *
    * @param array $params
-   *   (reference ) an assoc array of name/value pairs.
-   * @param array $ids
-   *   Unused variable.
+   *   An assoc array of name/value pairs.
    *
    * @return CRM_Core_DAO_ActionSchedule
+   * @throws \CRM_Core_Exception
    */
-  public static function add(&$params, $ids = []) {
-    $actionSchedule = new CRM_Core_DAO_ActionSchedule();
-    $actionSchedule->copyValues($params);
-
-    return $actionSchedule->save();
+  public static function add(array $params): CRM_Core_DAO_ActionSchedule {
+    return self::writeRecord($params);
   }
 
   /**
@@ -209,10 +203,7 @@ FROM civicrm_action_schedule cas
     $actionSchedule->copyValues($params);
 
     if ($actionSchedule->find(TRUE)) {
-      $ids['actionSchedule'] = $actionSchedule->id;
-
       CRM_Core_DAO::storeValues($actionSchedule, $values);
-
       return $actionSchedule;
     }
     return NULL;
@@ -290,11 +281,11 @@ FROM civicrm_action_schedule cas
             ->context('contactId', $dao->contactID)
             ->context('actionSearchResult', (object) $dao->toArray());
           foreach ($tokenProcessor->evaluate()->getRows() as $tokenRow) {
-            if ($actionSchedule->mode == 'SMS' or $actionSchedule->mode == 'User_Preference') {
+            if ($actionSchedule->mode === 'SMS' || $actionSchedule->mode === 'User_Preference') {
               CRM_Utils_Array::extend($errors, self::sendReminderSms($tokenRow, $actionSchedule, $dao->contactID));
             }
 
-            if ($actionSchedule->mode == 'Email' or $actionSchedule->mode == 'User_Preference') {
+            if ($actionSchedule->mode === 'Email' || $actionSchedule->mode === 'User_Preference') {
               CRM_Utils_Array::extend($errors, self::sendReminderEmail($tokenRow, $actionSchedule, $dao->contactID));
             }
             // insert activity log record if needed
@@ -363,7 +354,7 @@ FROM civicrm_action_schedule cas
    * @throws \API_Exception
    * @throws \CRM_Core_Exception
    */
-  public static function processQueue($now = NULL, $params = []) {
+  public static function processQueue($now = NULL, $params = []): void {
     $now = $now ? CRM_Utils_Time::setTime($now) : CRM_Utils_Time::getTime();
 
     $mappings = CRM_Core_BAO_ActionSchedule::getMappings();
@@ -492,6 +483,7 @@ FROM civicrm_action_schedule cas
   /**
    * @param \Civi\ActionSchedule\MappingInterface $mapping
    * @param \CRM_Core_DAO_ActionSchedule $actionSchedule
+   *
    * @return string
    */
   protected static function prepareMailingQuery($mapping, $actionSchedule) {
@@ -506,7 +498,7 @@ FROM civicrm_action_schedule cas
         'casMailingJoinType' => ($actionSchedule->limit_to == 0) ? 'LEFT JOIN' : 'INNER JOIN',
         'casMappingId' => $mapping->getId(),
         'casMappingEntity' => $mapping->getEntity(),
-        'casEntityJoinExpr' => 'e.id = reminder.entity_id',
+        'casEntityJoinExpr' => 'e.id = IF(reminder.entity_table = "civicrm_contact", reminder.contact_id, reminder.entity_id)',
       ]);
 
     if ($actionSchedule->limit_to == 0) {
@@ -581,14 +573,16 @@ FROM civicrm_action_schedule cas
 
   /**
    * @param CRM_Core_DAO_ActionSchedule $actionSchedule
+   *
    * @return string
    *   Ex: "Alice <alice@example.org>".
+   * @throws \CRM_Core_Exception
    */
   protected static function pickFromEmail($actionSchedule) {
     $domainValues = CRM_Core_BAO_Domain::getNameAndEmail();
     $fromEmailAddress = "$domainValues[0] <$domainValues[1]>";
     if ($actionSchedule->from_email) {
-      $fromEmailAddress = "$actionSchedule->from_name <$actionSchedule->from_email>";
+      $fromEmailAddress = "\"$actionSchedule->from_name\" <$actionSchedule->from_email>";
       return $fromEmailAddress;
     }
     return $fromEmailAddress;
@@ -601,7 +595,7 @@ FROM civicrm_action_schedule cas
    * @return array
    *   List of error messages.
    */
-  protected static function sendReminderEmail($tokenRow, $schedule, $toContactID) {
+  protected static function sendReminderEmail($tokenRow, $schedule, $toContactID): array {
     $toEmail = CRM_Contact_BAO_Contact::getPrimaryEmail($toContactID, TRUE);
     if (!$toEmail) {
       return ["email_missing" => "Couldn't find recipient's email address."];
@@ -624,20 +618,20 @@ FROM civicrm_action_schedule cas
       'entity_id' => $schedule->id,
     ];
 
-    if (!$body_html || $tokenRow->context['contact']['preferred_mail_format'] == 'Text' ||
-      $tokenRow->context['contact']['preferred_mail_format'] == 'Both'
+    if (!$body_html || $tokenRow->context['contact']['preferred_mail_format'] === 'Text' ||
+      $tokenRow->context['contact']['preferred_mail_format'] === 'Both'
     ) {
       // render the &amp; entities in text mode, so that the links work
       $mailParams['text'] = str_replace('&amp;', '&', $body_text);
     }
-    if ($body_html && ($tokenRow->context['contact']['preferred_mail_format'] == 'HTML' ||
-        $tokenRow->context['contact']['preferred_mail_format'] == 'Both'
+    if ($body_html && ($tokenRow->context['contact']['preferred_mail_format'] === 'HTML' ||
+        $tokenRow->context['contact']['preferred_mail_format'] === 'Both'
       )
     ) {
       $mailParams['html'] = $body_html;
     }
     $result = CRM_Utils_Mail::send($mailParams);
-    if (!$result || is_a($result, 'PEAR_Error')) {
+    if (!$result) {
       return ['email_fail' => 'Failed to send message'];
     }
 
@@ -691,7 +685,7 @@ FROM civicrm_action_schedule cas
    * @return array
    *   array(mixed $value => string $label).
    */
-  public static function getAdditionalRecipients() {
+  public static function getAdditionalRecipients(): array {
     return [
       'manual' => ts('Choose Recipient(s)'),
       'group' => ts('Select Group'),

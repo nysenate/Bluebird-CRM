@@ -37,16 +37,15 @@ class TokenCompatSubscriber implements EventSubscriberInterface {
    * @throws TokenException
    */
   public function onEvaluate(TokenValueEvent $e) {
-    // For reasons unknown, replaceHookTokens requires a pre-computed list of
-    // hook *categories* (aka entities aka namespaces). We'll cache
-    // this in the TokenProcessor's context.
+    // For reasons unknown, replaceHookTokens used to require a pre-computed list of
+    // hook *categories* (aka entities aka namespaces). We cache
+    // this in the TokenProcessor's context but can likely remove it now.
 
-    $hookTokens = [];
-    \CRM_Utils_Hook::tokens($hookTokens);
-    $categories = array_keys($hookTokens);
-    $e->getTokenProcessor()->context['hookTokenCategories'] = $categories;
+    $e->getTokenProcessor()->context['hookTokenCategories'] = \CRM_Utils_Token::getTokenCategories();
 
     $messageTokens = $e->getTokenProcessor()->getMessageTokens();
+    $returnProperties = array_fill_keys($messageTokens['contact'] ?? [], 1);
+    $returnProperties = array_merge(\CRM_Contact_BAO_Query::defaultReturnProperties(), $returnProperties);
 
     foreach ($e->getRows() as $row) {
       if (empty($row->context['contactId'])) {
@@ -58,12 +57,16 @@ class TokenCompatSubscriber implements EventSubscriberInterface {
         $params = [
           ['contact_id', '=', $contactId, 0, 0],
         ];
-        [$contact] = \CRM_Contact_BAO_Query::apiQuery($params);
+        [$contact] = \CRM_Contact_BAO_Query::apiQuery($params, $returnProperties ?? NULL);
         //CRM-4524
         $contact = reset($contact);
+        // Test cover for greeting in CRM_Core_BAO_ActionScheduleTest::testMailer
+        $contact['email_greeting'] = $contact['email_greeting_display'] ?? '';
+        $contact['postal_greeting'] = $contact['postal_greeting_display'] ?? '';
+        $contact['addressee'] = $contact['address_display'] ?? '';
         if (!$contact || is_a($contact, 'CRM_Core_Error')) {
           // FIXME: Need to differentiate errors which kill the batch vs the individual row.
-          \Civi::log()->debug("Failed to generate token data. Invalid contact ID: " . $row->context['contactId']);
+          \Civi::log()->debug('Failed to generate token data. Invalid contact ID: ' . $row->context['contactId']);
           continue;
         }
 
@@ -71,10 +74,7 @@ class TokenCompatSubscriber implements EventSubscriberInterface {
         if (!empty($messageTokens['contact'])) {
           foreach ($messageTokens['contact'] as $token) {
             if (\CRM_Core_BAO_CustomField::getKeyID($token)) {
-              $contact[$token] = civicrm_api3('Contact', 'getvalue', [
-                'return' => $token,
-                'id' => $contactId,
-              ]);
+              $contact[$token] = \CRM_Core_BAO_CustomField::displayValue($contact[$token], \CRM_Core_BAO_CustomField::getKeyID($token));
             }
           }
         }

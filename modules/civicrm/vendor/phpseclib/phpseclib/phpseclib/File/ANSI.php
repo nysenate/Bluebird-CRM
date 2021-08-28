@@ -3,47 +3,31 @@
 /**
  * Pure-PHP ANSI Decoder
  *
- * PHP versions 4 and 5
+ * PHP version 5
  *
- * If you call read() in Net_SSH2 you may get {@link http://en.wikipedia.org/wiki/ANSI_escape_code ANSI escape codes} back.
+ * If you call read() in \phpseclib\Net\SSH2 you may get {@link http://en.wikipedia.org/wiki/ANSI_escape_code ANSI escape codes} back.
  * They'd look like chr(0x1B) . '[00m' or whatever (0x1B = ESC).  They tell a
  * {@link http://en.wikipedia.org/wiki/Terminal_emulator terminal emulator} how to format the characters, what
- * color to display them in, etc. File_ANSI is a {@link http://en.wikipedia.org/wiki/VT100 VT100} terminal emulator.
- *
- * LICENSE: Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in
- * all copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
- * THE SOFTWARE.
+ * color to display them in, etc. \phpseclib\File\ANSI is a {@link http://en.wikipedia.org/wiki/VT100 VT100} terminal emulator.
  *
  * @category  File
- * @package   File_ANSI
+ * @package   ANSI
  * @author    Jim Wigginton <terrafrost@php.net>
  * @copyright 2012 Jim Wigginton
  * @license   http://www.opensource.org/licenses/mit-license.html  MIT License
  * @link      http://phpseclib.sourceforge.net
  */
 
+namespace phpseclib\File;
+
 /**
  * Pure-PHP ANSI Decoder
  *
- * @package File_ANSI
+ * @package ANSI
  * @author  Jim Wigginton <terrafrost@php.net>
  * @access  public
  */
-class File_ANSI
+class ANSI
 {
     /**
      * Max Width
@@ -176,34 +160,23 @@ class File_ANSI
     /**
      * Default Constructor.
      *
-     * @return File_ANSI
+     * @return \phpseclib\File\ANSI
      * @access public
      */
     function __construct()
     {
-        $attr_cell = new stdClass();
+        $attr_cell = new \stdClass();
         $attr_cell->bold = false;
         $attr_cell->underline = false;
         $attr_cell->blink = false;
         $attr_cell->background = 'black';
         $attr_cell->foreground = 'white';
         $attr_cell->reverse = false;
-        $this->base_attr_cell = clone($attr_cell);
-        $this->attr_cell = clone($attr_cell);
+        $this->base_attr_cell = clone $attr_cell;
+        $this->attr_cell = clone $attr_cell;
 
         $this->setHistory(200);
         $this->setDimensions(80, 24);
-    }
-
-    /**
-     * PHP4 compatible Default Constructor.
-     *
-     * @see self::__construct()
-     * @access public
-     */
-    function File_ANSI()
-    {
-        $this->__construct($mode);
     }
 
     /**
@@ -230,8 +203,7 @@ class File_ANSI
     /**
      * Set the number of lines that should be logged past the terminal height
      *
-     * @param int $x
-     * @param int $y
+     * @param int $history
      * @access public
      */
     function setHistory($history)
@@ -299,7 +271,7 @@ class File_ANSI
                     case "\x1B[K": // Clear screen from cursor right
                         $this->screen[$this->y] = substr($this->screen[$this->y], 0, $this->x);
 
-                        array_splice($this->attrs[$this->y], $this->x + 1, $this->max_x - $this->x, array_fill($this->x, $this->max_x - $this->x - 1, $this->base_attr_cell));
+                        array_splice($this->attrs[$this->y], $this->x + 1, $this->max_x - $this->x, array_fill($this->x, $this->max_x - ($this->x - 1), $this->base_attr_cell));
                         break;
                     case "\x1B[2K": // Clear entire line
                         $this->screen[$this->y] = str_repeat(' ', $this->x);
@@ -332,6 +304,9 @@ class File_ANSI
                             case preg_match('#\x1B\[(\d+)D#', $this->ansi, $match): // Move cursor left n lines
                                 $this->old_x = $this->x;
                                 $this->x-= $match[1];
+                                if ($this->x < 0) {
+                                    $this->x = 0;
+                                }
                                 break;
                             case preg_match('#\x1B\[(\d+);(\d+)r#', $this->ansi, $match): // Set top and bottom lines of a window
                                 break;
@@ -340,19 +315,20 @@ class File_ANSI
                                 $mods = explode(';', $match[1]);
                                 foreach ($mods as $mod) {
                                     switch ($mod) {
-                                        case 0: // Turn off character attributes
-                                            $attr_cell = clone($this->base_attr_cell);
+                                        case '':
+                                        case '0': // Turn off character attributes
+                                            $attr_cell = clone $this->base_attr_cell;
                                             break;
-                                        case 1: // Turn bold mode on
+                                        case '1': // Turn bold mode on
                                             $attr_cell->bold = true;
                                             break;
-                                        case 4: // Turn underline mode on
+                                        case '4': // Turn underline mode on
                                             $attr_cell->underline = true;
                                             break;
-                                        case 5: // Turn blinking mode on
+                                        case '5': // Turn blinking mode on
                                             $attr_cell->blink = true;
                                             break;
-                                        case 7: // Turn reverse video on
+                                        case '7': // Turn reverse video on
                                             $attr_cell->reverse = !$attr_cell->reverse;
                                             $temp = $attr_cell->background;
                                             $attr_cell->background = $attr_cell->foreground;
@@ -365,23 +341,23 @@ class File_ANSI
                                             $back = &$attr_cell->{ $attr_cell->reverse ? 'foreground' : 'background' };
                                             switch ($mod) {
                                                 // @codingStandardsIgnoreStart
-                                                case 30: $front = 'black'; break;
-                                                case 31: $front = 'red'; break;
-                                                case 32: $front = 'green'; break;
-                                                case 33: $front = 'yellow'; break;
-                                                case 34: $front = 'blue'; break;
-                                                case 35: $front = 'magenta'; break;
-                                                case 36: $front = 'cyan'; break;
-                                                case 37: $front = 'white'; break;
+                                                case '30': $front = 'black'; break;
+                                                case '31': $front = 'red'; break;
+                                                case '32': $front = 'green'; break;
+                                                case '33': $front = 'yellow'; break;
+                                                case '34': $front = 'blue'; break;
+                                                case '35': $front = 'magenta'; break;
+                                                case '36': $front = 'cyan'; break;
+                                                case '37': $front = 'white'; break;
 
-                                                case 40: $back = 'black'; break;
-                                                case 41: $back = 'red'; break;
-                                                case 42: $back = 'green'; break;
-                                                case 43: $back = 'yellow'; break;
-                                                case 44: $back = 'blue'; break;
-                                                case 45: $back = 'magenta'; break;
-                                                case 46: $back = 'cyan'; break;
-                                                case 47: $back = 'white'; break;
+                                                case '40': $back = 'black'; break;
+                                                case '41': $back = 'red'; break;
+                                                case '42': $back = 'green'; break;
+                                                case '43': $back = 'yellow'; break;
+                                                case '44': $back = 'blue'; break;
+                                                case '45': $back = 'magenta'; break;
+                                                case '46': $back = 'cyan'; break;
+                                                case '47': $back = 'white'; break;
                                                 // @codingStandardsIgnoreEnd
 
                                                 default:
@@ -411,7 +387,7 @@ class File_ANSI
                 case "\x08": // backspace
                     if ($this->x) {
                         $this->x--;
-                        $this->attrs[$this->y][$this->x] = clone($this->base_attr_cell);
+                        $this->attrs[$this->y][$this->x] = clone $this->base_attr_cell;
                         $this->screen[$this->y] = substr_replace(
                             $this->screen[$this->y],
                             $source[$i],
@@ -430,7 +406,7 @@ class File_ANSI
                     $this->ansi.= "\x1B";
                     break;
                 default:
-                    $this->attrs[$this->y][$this->x] = clone($this->attr_cell);
+                    $this->attrs[$this->y][$this->x] = clone $this->attr_cell;
                     if ($this->x > strlen($this->screen[$this->y])) {
                         $this->screen[$this->y] = str_repeat(' ', $this->x);
                     }
@@ -443,7 +419,7 @@ class File_ANSI
 
                     if ($this->x > $this->max_x) {
                         $this->x = 0;
-                        $this->y++;
+                        $this->_newLine();
                     } else {
                         $this->x++;
                     }

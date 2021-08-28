@@ -19,6 +19,36 @@
    position: absolute;
 }
 
+.crm-container .crm-flex-box {
+  display: flex;
+  flex-wrap: wrap;
+  box-sizing: border-box;
+}
+.crm-flex-box > * {
+  flex: 1;
+  box-sizing: border-box;
+  min-width: 0; /* prevents getting squashed by whitespace:nowrap content */
+}
+.crm-container .crm-flex-1 {
+  flex: 1;
+}
+.crm-container .crm-flex-2 {
+  flex: 2;
+}
+.crm-container .crm-flex-3 {
+  flex: 3;
+}
+.crm-container .crm-flex-4 {
+  flex: 4;
+}
+.crm-container .crm-flex-5 {
+  flex: 5;
+}
+
+.crm-container .crm-draggable {
+  cursor: move;
+}
+
 .crm-container input {
   box-sizing: content-box;
 }
@@ -383,10 +413,13 @@ input.crm-form-entityref {
   margin-bottom: 1em;
 }
 
-.crm-container .crm-section .label {
-  float: left;
-  width: 17%;
-  text-align: right;
+/* todo: See PR#19968 to move towards configurable breakpoints */
+@media (min-width: 480px) {
+  .crm-container .crm-section .label {
+    float: left;
+    width: 17%;
+    text-align: right;
+  }
 }
 
 .crm-container .crm-section .label label{
@@ -397,8 +430,10 @@ input.crm-form-entityref {
   text-align: left;
 }
 
-.crm-container .crm-section .content {
-  margin-left: 19%;
+@media (min-width: 480px) {
+  .crm-container .crm-section .content {
+    margin-left: 19%;
+  }
 }
 
 .crm-container .no-label .content {
@@ -2945,9 +2980,13 @@ tbody.scrollContent tr.alternateRow {
 .crm-container .select2-container-multi.crm-ajax-select .select2-choices:before {
   background-position: right -26px;
 }
+.crm-container .select2-container.select2-container-disabled .select2-choice .select2-arrow b {
+  visibility: hidden;
+}
 .crm-container .select2-container-multi.loading .select2-choices:before,
 .crm-container .select2-container.loading .select2-choice .select2-arrow b {
-  background: url('../i/loading.gif') no-repeat center center;
+  background: url('../i/loading.gif') no-repeat center center !important;
+  visibility: visible;
 }
 /* Reduce select2 size to match other inputs */
 .crm-container .select2-container-multi .select2-choices {
@@ -3070,6 +3109,22 @@ tbody.scrollContent tr.alternateRow {
 /* Restore this property otherwise our css overrides it */
 .select2-search input {
   box-sizing: border-box;
+}
+
+/* Collapsible optgroups for select2 */
+div.select2-drop.collapsible-optgroups-enabled .select2-result-with-children:not(.optgroup-expanded) > .select2-result-sub > li.select2-result {
+  display: none;
+}
+div.select2-drop.collapsible-optgroups-enabled .select2-result-with-children > .select2-result-label:before {
+  font-family: FontAwesome;
+  content: "\f0da";
+  display: inline-block;
+  padding-right: 3px;
+  vertical-align: middle;
+  font-weight: normal;
+}
+div.select2-drop.collapsible-optgroups-enabled .select2-result-with-children.optgroup-expanded > .select2-result-label:before {
+  content: "\f0d7";
 }
 
 span.crm-select-item-color {
@@ -3327,6 +3382,9 @@ span.crm-select-item-color {
 }
 .crm-container span.crm-editable-enabled {
   display: inline-block !important;
+  padding-right: 2px;
+  min-height: 1em;
+  min-width: 3em;
 }
 
 .crm-container .crm-editable-enabled .crm-i {

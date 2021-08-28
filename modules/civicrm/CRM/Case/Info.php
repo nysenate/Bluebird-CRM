@@ -239,9 +239,6 @@ class CRM_Case_Info extends CRM_Core_Component_Info {
     ) {
       $pathToCaseSampleTpl = __DIR__ . '/xml/configuration.sample/';
       self::loadCaseSampleData($pathToCaseSampleTpl . 'case_sample.mysql.tpl');
-      if (!CRM_Case_BAO_Case::createCaseViews()) {
-        throw new CRM_Core_Exception(ts("Could not create the MySQL views for CiviCase. Your mysql user needs to have the 'CREATE VIEW' permission"));
-      }
     }
   }
 
@@ -275,9 +272,11 @@ class CRM_Case_Info extends CRM_Core_Component_Info {
       foreach ($queries as $query) {
         $query = trim($query);
         if (!empty($query)) {
-          $res = &$db->query($query);
-          if (PEAR::isError($res)) {
-            die("Cannot execute $query: " . $res->getMessage());
+          try {
+            $res = &$db->query($query);
+          }
+          catch (Exception $e) {
+            die("Cannot execute $query: " . $e->getMessage());
           }
         }
       }
@@ -290,9 +289,11 @@ class CRM_Case_Info extends CRM_Core_Component_Info {
 
         $string = trim($string);
         if (!empty($string)) {
-          $res = &$db->query($string);
-          if (PEAR::isError($res)) {
-            die("Cannot execute $string: " . $res->getMessage());
+          try {
+            $res = &$db->query($string);
+          }
+          catch (Exception $e) {
+            die("Cannot execute $string: " . $e->getMessage());
           }
         }
       }

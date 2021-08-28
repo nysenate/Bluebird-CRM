@@ -56,8 +56,8 @@
     $scope.loading = false;
     $scope.controls = {};
     $scope.langs = ['php', 'js', 'ang', 'cli'];
-    $scope.joinTypes = [{k: false, v: 'FALSE (LEFT JOIN)'}, {k: true, v: 'TRUE (INNER JOIN)'}];
-    $scope.bridgeEntities = _.filter(schema, {type: 'BridgeEntity'});
+    $scope.joinTypes = [{k: 'LEFT', v: 'LEFT JOIN'}, {k: 'INNER', v: 'INNER JOIN'}, {k: 'EXCLUDE', v: 'EXCLUDE'}];
+    $scope.bridgeEntities = _.filter(schema, function(entity) {return _.includes(entity.type, 'EntityBridge');});
     $scope.code = {
       php: [
         {name: 'oop', label: ts('OOP Style'), code: ''},
@@ -194,16 +194,20 @@
       $scope.helpContent = helpContent = formatHelp(content);
     }
 
-    // Convert plain-text help to markdown; replace variables and format links
+    // Format help text with markdown; replace variables and format links
     function formatHelp(rawContent) {
       function formatRefs(see) {
         _.each(see, function(ref, idx) {
-          var match = ref.match(/^\\Civi\\Api4\\([a-zA-Z]+)$/);
+          var match = ref.match(/^(\\Civi\\Api4\\)?([a-zA-Z]+)$/);
           if (match) {
-            ref = '#/explorer/' + match[1];
+            ref = '#/explorer/' + match[2];
           }
-          if (ref[0] === '\\') {
-            ref = 'https://github.com/civicrm/civicrm-core/blob/master' + ref.replace(/\\/i, '/') + '.php';
+          // Link to php classes on GitHub.
+          // Fixme: Only works for files in the core repo
+          if (ref[0] === '\\' || ref.indexOf('Civi\\') === 0 || ref.indexOf('CRM_') === 0) {
+            var classFunction = _.trim(ref, '\\').split('::'),
+              replacement = new RegExp(classFunction[0].indexOf('CRM_') === 0 ? '_' : '\\\\', 'g');
+            ref = 'https://github.com/civicrm/civicrm-core/blob/master/' + classFunction[0].replace(replacement, '/') + '.php';
           }
           see[idx] = '<a target="' + (ref[0] === '#' ? '_self' : '_blank') + '" href="' + ref + '">' + see[idx] + '</a>';
         });
@@ -280,7 +284,7 @@
         specialParams.push('limit', 'offset');
       }
       return _.transform($scope.availableParams, function(genericParams, param, name) {
-        if (!_.contains(specialParams, name) &&
+        if (!_.contains(specialParams, name) && !param.deprecated &&
           !(typeof paramType !== 'undefined' && !_.contains(paramType, param.type[0])) &&
           !(typeof defaultNull !== 'undefined' && ((param.default === null) !== defaultNull))
         ) {
@@ -525,7 +529,7 @@
               $timeout(function() {
                 if (field) {
                   if (name === 'join') {
-                    $scope.params[name].push([field + ' AS ' + _.snakeCase(field), false]);
+                    $scope.params[name].push([field + ' AS ' + _.snakeCase(field), 'LEFT']);
                     ctrl.buildFieldList();
                   }
                   else if (typeof objectParams[name] === 'undefined') {
@@ -702,20 +706,21 @@
       }
       _.each($scope.code, function(vals) {
         _.each(vals, function(style) {
-          style.code = code[style.name] ? prettyPrintOne(code[style.name]) : '';
+          style.code = code[style.name] ? prettyPrintOne(_.escape(code[style.name])) : '';
         });
       });
     }
 
     // Format oop params
     function formatOOP(entity, action, params, indent) {
-      var code = '',
+      var info = getEntity(entity),
         newLine = "\n" + _.repeat(' ', indent),
+        code = '\\' + info.class + '::' + action + '(',
         perm = params.checkPermissions === false ? 'FALSE' : '';
       if (entity.substr(0, 7) !== 'Custom_') {
-        code = "\\Civi\\Api4\\" + entity + '::' + action + '(' + perm + ')';
+        code += perm + ')';
       } else {
-        code = "\\Civi\\Api4\\CustomValue::" + action + "('" + entity.substr(7) + "'" + (perm ? ', ' : '') + perm + ")";
+        code += "'" + entity.substr(7) + "'" + (perm ? ', ' : '') + perm + ")";
       }
       _.each(params, function(param, key) {
         var val = '';
@@ -873,6 +878,7 @@
       setHelp($scope.entity, {
         description: entityInfo.description,
         comment: entityInfo.comment,
+        type: entityInfo.type,
         see: entityInfo.see
       });
     }
@@ -1097,7 +1103,7 @@
 
       // Add/remove value if operator allows for one
       this.changeClauseOperator = function(clause) {
-        if (_.contains(clause[1], 'NULL')) {
+        if (_.contains(clause[1], 'IS ')) {
           clause.length = 2;
         } else if (clause.length === 2) {
           clause.push('');
@@ -1137,7 +1143,8 @@
             op = field.serialize || dataType === 'Array' ? 'IN' : '=';
           }
           multi = _.includes(['IN', 'NOT IN', 'BETWEEN', 'NOT BETWEEN'], op);
-          if (op === 'IS NULL' || op === 'IS NOT NULL') {
+          // IS NULL, IS EMPTY, etc.
+          if (_.contains(op, 'IS ')) {
             $el.hide();
             return;
           }
@@ -1156,7 +1163,7 @@
                 $el.removeClass('loading').crmSelect2({data: options, multiple: multi});
               });
             } else if (field.fk_entity) {
-              $el.crmEntityRef({entity: field.fk_entity, select:{multiple: multi}});
+              $el.crmEntityRef({entity: field.fk_entity, select:{multiple: multi}, static: field.fk_entity === 'Contact' ? ['user_contact_id'] : []});
             } else if (dataType === 'Boolean') {
               $el.attr('placeholder', ts('- select -')).crmSelect2({allowClear: false, multiple: multi, placeholder: ts('- select -'), data: [
                 {id: 'true', text: ts('Yes')},

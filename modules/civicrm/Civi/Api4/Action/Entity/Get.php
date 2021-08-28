@@ -20,33 +20,75 @@
 namespace Civi\Api4\Action\Entity;
 
 use Civi\Api4\CustomGroup;
+use Civi\Api4\CustomValue;
 use Civi\Api4\Service\Schema\Joinable\CustomGroupJoinable;
+use Civi\Api4\Utils\CoreUtil;
 
 /**
  * Get the names & docblocks of all APIv4 entities.
  *
- * Scans for api entities in core + enabled extensions.
+ * Scans for api entities in core, enabled components & enabled extensions.
  *
- * Also includes pseudo-entities from multi-record custom groups by default.
- *
- * @method $this setIncludeCustom(bool $value)
- * @method bool getIncludeCustom()
+ * Also includes pseudo-entities from multi-record custom groups.
  */
 class Get extends \Civi\Api4\Generic\BasicGetAction {
 
   /**
-   * Include custom-field-based pseudo-entities?
-   *
    * @var bool
+   * @deprecated
    */
-  protected $includeCustom = TRUE;
+  protected $includeCustom;
 
   /**
    * Scan all api directories to discover entities
    */
   protected function getRecords() {
     $entities = [];
-    $toGet = $this->_itemsToGet('name');
+    $namesRequested = $this->_itemsToGet('name');
+
+    if ($namesRequested) {
+      foreach ($namesRequested as $entityName) {
+        if (strpos($entityName, 'Custom_') !== 0) {
+          $className = CoreUtil::getApiClass($entityName);
+          if ($className) {
+            $this->loadEntity($className, $entities);
+          }
+        }
+      }
+    }
+    else {
+      foreach ($this->getAllApiClasses() as $className) {
+        $this->loadEntity($className, $entities);
+      }
+    }
+
+    // Fetch custom entities unless we've already fetched everything requested
+    if (!$namesRequested || array_diff($namesRequested, array_keys($entities))) {
+      $this->addCustomEntities($entities);
+    }
+
+    ksort($entities);
+    return $entities;
+  }
+
+  /**
+   * @param \Civi\Api4\Generic\AbstractEntity $className
+   * @param array $entities
+   */
+  private function loadEntity($className, array &$entities) {
+    $info = $className::getInfo();
+    $daoName = $info['dao'] ?? NULL;
+    // Only include DAO entities from enabled components
+    if (!$daoName || !defined("{$daoName}::COMPONENT") || array_key_exists($daoName::COMPONENT, \CRM_Core_Component::getEnabledComponents())) {
+      $entities[$info['name']] = $info;
+    }
+  }
+
+  /**
+   * @return \Civi\Api4\Generic\AbstractEntity[]
+   */
+  private function getAllApiClasses() {
+    $classNames = [];
     $locations = array_merge([\Civi::paths()->getPath('[civicrm.root]/Civi.php')],
       array_column(\CRM_Extension_System::singleton()->getMapper()->getActiveModuleFiles(), 'filePath')
     );
@@ -54,27 +96,14 @@ class Get extends \Civi\Api4\Generic\BasicGetAction {
       $dir = \CRM_Utils_File::addTrailingSlash(dirname($location)) . 'Civi/Api4';
       if (is_dir($dir)) {
         foreach (glob("$dir/*.php") as $file) {
-          $matches = [];
-          preg_match('/(\w*)\.php$/', $file, $matches);
-          $entity = '\Civi\Api4\\' . $matches[1];
-          if (
-            (!$toGet || in_array($matches[1], $toGet))
-            && is_a($entity, '\Civi\Api4\Generic\AbstractEntity', TRUE)
-          ) {
-            $info = $entity::getInfo();
-            $entities[$info['name']] = $info;
+          $className = 'Civi\Api4\\' . basename($file, '.php');
+          if (is_a($className, 'Civi\Api4\Generic\AbstractEntity', TRUE)) {
+            $classNames[] = $className;
           }
         }
       }
     }
-
-    // Fetch custom entities unless we've already fetched everything requested
-    if ($this->includeCustom && (!$toGet || array_diff($toGet, array_keys($entities)))) {
-      $this->addCustomEntities($entities);
-    }
-
-    ksort($entities);
-    return $entities;
+    return $classNames;
   }
 
   /**
@@ -90,20 +119,20 @@ class Get extends \Civi\Api4\Generic\BasicGetAction {
       ->setSelect(['name', 'title', 'help_pre', 'help_post', 'extends', 'icon'])
       ->setCheckPermissions(FALSE)
       ->execute();
+    $baseInfo = CustomValue::getInfo();
     foreach ($customEntities as $customEntity) {
       $fieldName = 'Custom_' . $customEntity['name'];
-      $baseEntity = '\Civi\Api4\\' . CustomGroupJoinable::getEntityFromExtends($customEntity['extends']);
+      $baseEntity = CoreUtil::getApiClass(CustomGroupJoinable::getEntityFromExtends($customEntity['extends']));
       $entities[$fieldName] = [
         'name' => $fieldName,
         'title' => $customEntity['title'],
         'title_plural' => $customEntity['title'],
         'description' => ts('Custom group for %1', [1 => $baseEntity::getInfo()['title_plural']]),
-        'see' => [
-          'https://docs.civicrm.org/user/en/latest/organising-your-data/creating-custom-fields/#multiple-record-fieldsets',
-          '\\Civi\\Api4\\CustomGroup',
+        'paths' => [
+          'view' => "civicrm/contact/view/cd?reset=1&gid={$customEntity['id']}&recId=[id]&multiRecordDisplay=single",
         ],
-        'icon' => $customEntity['icon'],
-      ];
+        'icon' => $customEntity['icon'] ?: NULL,
+      ] + $baseInfo;
       if (!empty($customEntity['help_pre'])) {
         $entities[$fieldName]['comment'] = $this->plainTextify($customEntity['help_pre']);
       }

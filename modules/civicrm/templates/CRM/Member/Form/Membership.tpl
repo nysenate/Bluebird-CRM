@@ -163,9 +163,9 @@
             <span class="description">{ts}When <strong>Status Override</strong> is active, the selected status will remain in force (it will NOT be subject to membership status rules) until it is cancelled or become inactive.{/ts}</span></td></tr>
         {/if}
 
-        {if $accessContribution and !$membershipMode AND ($action neq 2 or (!$rows.0.contribution_id AND !$softCredit) or $onlinePendingContributionId)}
+        {if $accessContribution and !$membershipMode AND ($action neq 2 or (!$rows.0.contribution_id AND !$softCredit))}
           <tr id="contri">
-            <td class="label">{if $onlinePendingContributionId}{ts}Update Payment Status{/ts}{else}{$form.record_contribution.label}{/if}</td>
+            <td class="label">{$form.record_contribution.label}</td>
             <td>{$form.record_contribution.html}<br />
               <span class="description">{ts}Check this box to enter or update payment information. You will also be able to generate a customized receipt.{/ts}</span></td>
           </tr>
@@ -251,7 +251,7 @@
   </div> <!-- end form-block -->
 
   {if $action neq 8} {* Jscript additions not need for Delete action *}
-    {if $accessContribution and !$membershipMode AND ($action neq 2 or !$rows.0.contribution_id or $onlinePendingContributionId)}
+    {if $accessContribution and !$membershipMode AND ($action neq 2 or !$rows.0.contribution_id)}
 
     {include file="CRM/common/showHideByFieldValue.tpl"
     trigger_field_id    ="record_contribution"
@@ -266,24 +266,21 @@
     {literal}
     <script type="text/javascript">
       function setPaymentBlock(mode, checkboxEvent) {
-        var memType = parseInt(cj('#membership_type_id_1').val( ));
-        var isPriceSet = 0;
-        var existingAmount = {/literal}{if !empty($onlinePendingContributionId)}1{else}0{/if}{literal};
-
-        if ( cj('#price_set_id').length > 0 && cj('#price_set_id').val() ) {
-          isPriceSet = 1;
+        if (cj('#price_set_id').length > 0 && cj('#price_set_id').val()) {
+          return;
         }
-
-        if ( !memType || isPriceSet ) {
+        var membershipTypeID = parseInt(cj('#membership_type_id_1').val());
+        if (!membershipTypeID) {
           return;
         }
 
         var allMemberships = {/literal}{$allMembershipInfo}{literal};
+        membershipType = allMemberships[membershipTypeID];
         if (!mode) {
           //check the record_contribution checkbox if membership is a paid one
           {/literal}{if $action eq 1}{literal}
           if (!checkboxEvent) {
-            if (allMemberships[memType]['total_amount_numeric'] > 0) {
+            if (membershipType['total_amount_numeric'] > 0) {
               cj('#record_contribution').prop('checked','checked');
               cj('#recordContribution').show();
             }
@@ -296,38 +293,17 @@
         }
 
         // skip this for test and live modes because financial type is set automatically
-        cj("#financial_type_id").val(allMemberships[memType]['financial_type_id']);
-        var term = cj('#num_terms').val();
-        var taxRates = {/literal}{$taxRates}{literal};
+        cj("#financial_type_id").val(membershipType['financial_type_id']);
+        // Get the number of terms from the form, default to 1 if no num_terms element.
+        var term = cj('#num_terms').val() || 1;
         var taxTerm = {/literal}{$taxTerm|@json_encode}{literal};
-        var taxRate = taxRates[allMemberships[memType]['financial_type_id']];
         var currency = {/literal}{$currency_symbol|@json_encode}{literal};
-        var taxAmount = (taxRate/100)*allMemberships[memType]['total_amount_numeric'];
+        var taxExclusiveAmount = membershipType['total_amount_numeric'] * term;
+        var taxAmount = (membershipType['tax_rate']/100)*taxExclusiveAmount;
         taxAmount = isNaN (taxAmount) ? 0:taxAmount;
-        if (term) {
-          if (!taxRate) {
-            var feeTotal = allMemberships[memType]['total_amount_numeric'] * term;
-          }
-          else {
-            var feeTotal = Number((taxRate/100) * (allMemberships[memType]['total_amount_numeric'] * term))+Number
-           (allMemberships[memType]['total_amount_numeric'] * term );
-          }
-          cj("#total_amount").val(CRM.formatMoney(feeTotal, true));
-        }
-        else {
-          if (taxRate) {
-            var feeTotal = parseFloat(Number((taxRate/100) * allMemberships[memType]['total_amount'])+Number(allMemberships[memType]['total_amount_numeric'])).toFixed(2);
-            cj("#total_amount").val(CRM.formatMoney(feeTotal, true));
-          }
-          else {
-            var feeTotal = allMemberships[memType]['total_amount'];
-            if (!existingAmount) {
-              // CRM-16680 don't set amount if there is an existing contribution.
-              cj("#total_amount").val(allMemberships[memType]['total_amount']);
-            }
-          }
-        }
-        var taxMessage = taxRate!=undefined ? 'Includes '+taxTerm+' amount of '+currency+' '+taxAmount:'';
+        cj("#total_amount").val(CRM.formatMoney(taxExclusiveAmount + taxAmount, true));
+
+        var taxMessage = taxAmount > 0 ? 'Includes '+taxTerm+' amount of '+currency+' '+taxAmount:'';
         cj('.totaltaxAmount').html(taxMessage);
       }
 
@@ -353,7 +329,6 @@
       cj('#num_terms').change( function( ) {
         setPaymentBlock(mode);
       });
-      setPaymentBlock(mode);
 
       // show/hide different contact section
       setDifferentContactBlock();
@@ -554,7 +529,7 @@
       buildAutoRenew( null, null, '{$membershipMode}');
     {/if}
     {literal}
-    function buildAutoRenew( membershipType, processorId, mode ) {
+    function buildAutoRenew(membershipTypeID, processorId, mode ) {
       var action = {/literal}'{$action}'{literal};
 
       //for update lets hide it when not already recurring.
@@ -577,12 +552,12 @@
       if (!processorId) {
         processorId = cj( '#payment_processor_id' ).val( );
       }
-      if (!membershipType) {
-        membershipType = parseInt( cj('#membership_type_id_1').val( ) );
+      if (!membershipTypeID) {
+        membershipTypeID = parseInt( cj('#membership_type_id_1').val( ) );
       }
 
       //we don't have both required values.
-      if (!processorId || !membershipType) {
+      if (!processorId || !membershipTypeID) {
         cj("#auto_renew").prop('checked', false);
         cj("#autoRenew").hide();
         showEmailOptions();
@@ -591,7 +566,7 @@
 
       var recurProcessors  = {/literal}{$recurProcessor}{literal};
       var autoRenewOptions = {/literal}{$autoRenewOptions}{literal};
-      var currentOption    = autoRenewOptions[membershipType];
+      var currentOption    = autoRenewOptions[membershipTypeID];
 
       if (!currentOption || !recurProcessors[processorId]) {
         cj("#auto_renew").prop('checked', false );

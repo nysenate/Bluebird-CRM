@@ -31,14 +31,14 @@
  *   multilingualized query
  */
 function smarty_block_localize($params, $text, &$smarty) {
-  if (!$smarty->_tpl_vars['multilingual']) {
+  if (!array_key_exists('multilingual', $smarty->_tpl_vars) || !$smarty->_tpl_vars['multilingual']) {
     return $text;
   }
 
   $lines = [];
   foreach ($smarty->_tpl_vars['locales'] as $locale) {
     $line = $text;
-    if ($params['field']) {
+    if (isset($params['field'])) {
       $fields = explode(',', $params['field']);
       foreach ($fields as $field) {
         $field = trim($field);

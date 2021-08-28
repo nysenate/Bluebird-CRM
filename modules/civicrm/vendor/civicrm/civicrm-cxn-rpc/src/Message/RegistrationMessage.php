@@ -13,7 +13,6 @@ namespace Civi\Cxn\Rpc\Message;
 
 use Civi\Cxn\Rpc\AesHelper;
 use Civi\Cxn\Rpc\Exception\InvalidMessageException;
-use Civi\Cxn\Rpc\AppStore\AppStoreInterface;
 use Civi\Cxn\Rpc\Message;
 use Civi\Cxn\Rpc\UserError;
 use Civi\Cxn\Rpc\Constants;
@@ -29,7 +28,7 @@ use Civi\Cxn\Rpc\Constants;
  * real data. This will allow us to expand the registration data (i.e.
  * passing along more fields) without changing the protocol.
  *
- * Note: Crypt_RSA can encrypt oversized messages using an adhoc block
+ * Note: \phpseclib\Crypt\RSA can encrypt oversized messages using an adhoc block
  * mode that smells like ECB. This doesn't compromise confidentiality,
  * but long messages could have their ciphertext spliced -- compromising
  * integrity.
@@ -65,13 +64,14 @@ class RegistrationMessage extends Message {
 
     return self::NAME
     . Constants::PROTOCOL_DELIM . $this->appId
-    . Constants::PROTOCOL_DELIM . base64_encode($rsaCiphertext) // escape PROTOCOL_DELIM
+    // escape PROTOCOL_DELIM
+    . Constants::PROTOCOL_DELIM . base64_encode($rsaCiphertext)
     . Constants::PROTOCOL_DELIM . $signature
     . Constants::PROTOCOL_DELIM . $body;
   }
 
   /**
-   * @param AppStoreInterface $appStore
+   * @param \Civi\Cxn\Rpc\AppStore\AppStoreInterface $appStore
    * @param string $blob
    * @return array
    *   Decoded data.
@@ -114,10 +114,10 @@ class RegistrationMessage extends Message {
    * @param string $key
    * @param string $type
    *   'public' or 'private'
-   * @return \Crypt_RSA
+   * @return \phpseclib\Crypt\RSA
    */
   public static function getRsa($key, $type) {
-    $rsa = new \Crypt_RSA();
+    $rsa = new \phpseclib\Crypt\RSA();
     $rsa->loadKey($key);
     if ($type == 'public') {
       $rsa->setPublicKey();

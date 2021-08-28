@@ -237,7 +237,7 @@ class CRM_Core_ManagedEntities {
    */
   public function insertNewEntity($todo) {
     $result = civicrm_api($todo['entity'], 'create', $todo['params']);
-    if ($result['is_error']) {
+    if (!empty($result['is_error'])) {
       $this->onApiError($todo['entity'], 'create', $todo['params'], $result);
     }
 
@@ -245,7 +245,9 @@ class CRM_Core_ManagedEntities {
     $dao->module = $todo['module'];
     $dao->name = $todo['name'];
     $dao->entity_type = $todo['entity'];
-    $dao->entity_id = $result['id'];
+    // A fatal error will result if there is no valid id but if
+    // this is v4 api we might need to access it via ->first().
+    $dao->entity_id = $result['id'] ?? $result->first()['id'];
     $dao->cleanup = $todo['cleanup'] ?? NULL;
     $dao->save();
   }
@@ -259,10 +261,13 @@ class CRM_Core_ManagedEntities {
    */
   public function updateExistingEntity($dao, $todo) {
     $policy = CRM_Utils_Array::value('update', $todo, 'always');
-    $doUpdate = ($policy == 'always');
+    $doUpdate = ($policy === 'always');
 
     if ($doUpdate) {
-      $defaults = ['id' => $dao->entity_id, 'is_active' => 1];
+      $defaults = ['id' => $dao->entity_id];
+      if ($this->isActivationSupported($dao->entity_type)) {
+        $defaults['is_active'] = 1;
+      }
       $params = array_merge($defaults, $todo['params']);
 
       $manager = CRM_Extension_System::singleton()->getManager();
@@ -299,10 +304,12 @@ class CRM_Core_ManagedEntities {
    * inactive.
    *
    * @param CRM_Core_DAO_Managed $dao
+   *
+   * @throws \CiviCRM_API3_Exception
    */
-  public function disableEntity($dao) {
-    // FIXME: if ($dao->entity_type supports is_active) {
-    if (TRUE) {
+  public function disableEntity($dao): void {
+    $entity_type = $dao->entity_type;
+    if ($this->isActivationSupported($entity_type)) {
       // FIXME cascading for payproc types?
       $params = [
         'version' => 3,
@@ -474,7 +481,28 @@ class CRM_Core_ManagedEntities {
       'params' => $params,
       'result' => $result,
     ]);
-    throw new Exception('API error: ' . $result['error_message']);
+    throw new Exception('API error: ' . $result['error_message'] . ' on ' . $entity . '.' . $action
+      . !empty($params['name']) ? '( entity name ' . $params['name'] . ')' : ''
+    );
+  }
+
+  /**
+   * Determine if an entity supports APIv3-based activation/de-activation.
+   * @param string $entity_type
+   *
+   * @return bool
+   * @throws \CiviCRM_API3_Exception
+   */
+  private function isActivationSupported(string $entity_type): bool {
+    if (!isset(Civi::$statics[__CLASS__][__FUNCTION__][$entity_type])) {
+      $actions = civicrm_api3($entity_type, 'getactions', [])['values'];
+      Civi::$statics[__CLASS__][__FUNCTION__][$entity_type] = FALSE;
+      if (in_array('create', $actions, TRUE) && in_array('getfields', $actions)) {
+        $fields = civicrm_api3($entity_type, 'getfields', ['action' => 'create'])['values'];
+        Civi::$statics[__CLASS__][__FUNCTION__][$entity_type] = array_key_exists('is_active', $fields);
+      }
+    }
+    return Civi::$statics[__CLASS__][__FUNCTION__][$entity_type];
   }
 
 }

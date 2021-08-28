@@ -21,7 +21,7 @@ class MailingPreviewTest extends \CiviUnitTestCase {
    */
   protected $footer;
 
-  public function setUp() {
+  public function setUp(): void {
     // Activate before transactions are setup.
     $manager = \CRM_Extension_System::singleton()->getManager();
     if ($manager->getStatus('org.civicrm.flexmailer') !== \CRM_Extension_Manager::STATUS_INSTALLED) {
@@ -56,13 +56,13 @@ class MailingPreviewTest extends \CiviUnitTestCase {
     ));
   }
 
-  public function tearDown() {
+  public function tearDown(): void {
     // DGW
     \CRM_Mailing_BAO_MailingJob::$mailsProcessed = 0;
     parent::tearDown();
   }
 
-  public function testMailerPreview() {
+  public function testMailerPreview(): void {
     // BEGIN SAMPLE DATA
     $contactID = $this->individualCreate();
     $displayName = $this->callAPISuccess('contact', 'get',
@@ -86,20 +86,20 @@ class MailingPreviewTest extends \CiviUnitTestCase {
     $this->assertEquals("[CiviMail Draft] Hello $displayName",
       $previewResult['values']['subject']);
 
-    $this->assertContains("This is $displayName", $previewResult['values']['body_text']);
-    $this->assertContains("civicrm/mailing/optout", $previewResult['values']['body_text']);
-    $this->assertContains("&jid=&qid=&h=fakehash", $previewResult['values']['body_text']);
-    $this->assertContains("subj=(Hello ", $previewResult['values']['body_text']);
+    $this->assertStringContainsString("This is $displayName", $previewResult['values']['body_text']);
+    $this->assertStringContainsString("civicrm/mailing/optout", $previewResult['values']['body_text']);
+    $this->assertStringContainsString("&jid=&qid=&h=fakehash", $previewResult['values']['body_text']);
+    $this->assertStringContainsString("subj=(Hello ", $previewResult['values']['body_text']);
 
-    $this->assertContains("<p>This is $displayName.</p>", $previewResult['values']['body_html']);
-    $this->assertContains("civicrm/mailing/optout", $previewResult['values']['body_html']);
-    $this->assertContains("&amp;jid=&amp;qid=&amp;h=fakehash", $previewResult['values']['body_html']);
-    $this->assertContains("subj=(Hello ", $previewResult['values']['body_html']);
+    $this->assertStringContainsString("<p>This is $displayName.</p>", $previewResult['values']['body_html']);
+    $this->assertStringContainsString("civicrm/mailing/optout", $previewResult['values']['body_html']);
+    $this->assertStringContainsString("&amp;jid=&amp;qid=&amp;h=fakehash", $previewResult['values']['body_html']);
+    $this->assertStringContainsString("subj=(Hello ", $previewResult['values']['body_html']);
 
     $this->assertEquals('flexmailer', $previewResult['values']['_rendered_by_']);
   }
 
-  public function testMailerPreviewWithoutId() {
+  public function testMailerPreviewWithoutId(): void {
     // BEGIN SAMPLE DATA
     $contactID = $this->createLoggedInUser();
     $displayName = $this->callAPISuccess('contact', 'get', ['id' => $contactID]);
@@ -115,15 +115,15 @@ class MailingPreviewTest extends \CiviUnitTestCase {
     $this->assertEquals("[CiviMail Draft] Hello $displayName",
       $previewResult['values']['subject']);
 
-    $this->assertContains("This is $displayName", $previewResult['values']['body_text']);
-    $this->assertContains("civicrm/mailing/optout", $previewResult['values']['body_text']);
-    $this->assertContains("&jid=&qid=&h=fakehash", $previewResult['values']['body_text']);
-    $this->assertContains("subj=(Hello ", $previewResult['values']['body_text']);
+    $this->assertStringContainsString("This is $displayName", $previewResult['values']['body_text']);
+    $this->assertStringContainsString("civicrm/mailing/optout", $previewResult['values']['body_text']);
+    $this->assertStringContainsString("&jid=&qid=&h=fakehash", $previewResult['values']['body_text']);
+    $this->assertStringContainsString("subj=(Hello ", $previewResult['values']['body_text']);
 
-    $this->assertContains("<p>This is $displayName.</p>", $previewResult['values']['body_html']);
-    $this->assertContains("civicrm/mailing/optout", $previewResult['values']['body_html']);
-    $this->assertContains("&amp;jid=&amp;qid=&amp;h=fakehash", $previewResult['values']['body_html']);
-    $this->assertContains("subj=(Hello ", $previewResult['values']['body_html']);
+    $this->assertStringContainsString("<p>This is $displayName.</p>", $previewResult['values']['body_html']);
+    $this->assertStringContainsString("civicrm/mailing/optout", $previewResult['values']['body_html']);
+    $this->assertStringContainsString("&amp;jid=&amp;qid=&amp;h=fakehash", $previewResult['values']['body_html']);
+    $this->assertStringContainsString("subj=(Hello ", $previewResult['values']['body_html']);
 
     $this->assertEquals('flexmailer', $previewResult['values']['_rendered_by_']);
   }
@@ -147,7 +147,7 @@ class MailingPreviewTest extends \CiviUnitTestCase {
    * @param array $expectMaxIds
    *   Array(string $table => int $maxId).
    */
-  protected function assertMaxIds($expectMaxIds) {
+  protected function assertMaxIds($expectMaxIds): void {
     foreach ($expectMaxIds as $table => $maxId) {
       $this->assertDBQuery($expectMaxIds[$table], 'SELECT MAX(id) FROM ' . $table, [], "Table $table should have a maximum ID of $maxId");
     }

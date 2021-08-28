@@ -11,6 +11,9 @@
     <title>Print Label ID</title>
     <type>int unsigned</type>
     <required>true</required>
+    <html>
+      <type>Number</type>
+    </html>
     <add>4.4</add>
   </field>
   <primaryKey>
@@ -37,6 +40,9 @@
     <name>description</name>
     <type>text</type>
     <comment>Description of this label layout</comment>
+    <html>
+      <label>Description</label>
+    </html>
     <add>4.4</add>
   </field>
   <field>
@@ -70,6 +76,9 @@
     <name>data</name>
     <type>longtext</type>
     <comment>contains json encode configurations options</comment>
+    <html>
+      <label>Data</label>
+    </html>
     <add>4.4</add>
     <serialize>JSON</serialize>
   </field>
@@ -99,10 +108,12 @@
   </field>
   <field>
     <name>created_id</name>
-    <title>Label Created By</title>
     <type>int unsigned</type>
     <title>Created By Contact ID</title>
     <comment>FK to civicrm_contact, who created this label layout</comment>
+    <html>
+      <label>Created By</label>
+    </html>
     <add>4.4</add>
   </field>
   <foreignKey>

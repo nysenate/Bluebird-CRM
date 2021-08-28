@@ -16,16 +16,9 @@
 #bootstrap-theme .explorer-params-panel .panel-heading .form-inline > .select2-container {
   max-width: 25% !important;
 }
-#bootstrap-theme.api4-explorer-page .api4-explorer-row {
-  display: flex;
-}
-#bootstrap-theme.api4-explorer-page > div > .panel {
-  flex: 1;
+#bootstrap-theme .api4-explorer-row > .panel {
   margin: 10px;
   min-height: 500px;
-}
-#bootstrap-theme.api4-explorer-page > div > form.panel {
-  flex: 2;
 }
 /* Fix weird shorditch style */
 #bootstrap-theme.api4-explorer-page .api4-explorer-row .panel .panel-heading {
@@ -39,12 +32,10 @@
 #bootstrap-theme .panel-heading>li>a {
   background-color: #f1f1f18c
 }
-#bootstrap-theme.api4-explorer-page .explorer-code-panel table td:first-child {
-  width: 6em;
-  word-break: break-word;
-}
-#bootstrap-theme.api4-explorer-page .explorer-code-panel table td pre {
+#bootstrap-theme.api4-explorer-page .explorer-code-panel pre {
   min-height: 3.3em;
+  word-break: break-all;
+  white-space: pre-wrap;
 }
 #bootstrap-theme.api4-explorer-page .explorer-code-panel .panel-heading.nav li a {
   text-transform: uppercase;
@@ -103,27 +94,6 @@
   background-color: rgba(255, 255, 255, .9);
 }
 
-#bootstrap-theme.api4-explorer-page div.api4-input.form-inline label.form-control {
-  margin-right: 6px;
-}
-#bootstrap-theme.api4-explorer-page div.api4-input.form-inline label.form-control input[type=checkbox] {
-  margin: 0 2px 0 0;
-}
-
-#bootstrap-theme.api4-explorer-page div.api4-input.form-inline label.form-control:not(.api4-option-selected) {
-  transition: none;
-  box-shadow: none;
-  -webkit-box-shadow: none;
-  -moz-box-shadow: none;
-  font-weight: normal;
-}
-
-#bootstrap-theme.api4-explorer-page div.api4-input.form-inline .form-control label {
-  font-weight: normal;
-  position: relative;
-  top: -2px;
-}
-
 #bootstrap-theme.api4-explorer-page .api4-clause-fieldset fieldset {
   float: right;
   width: calc(100% - 58px);
@@ -180,22 +150,6 @@
 }
 #bootstrap-theme.api4-explorer-page .api4-add-where-group-menu a {
   padding: 5px 10px;
-}
-
-/* Collapsible optgroups for select2 */
-div.select2-drop.collapsible-optgroups-enabled .select2-result-with-children:not(.optgroup-expanded) > .select2-result-sub > li.select2-result {
-  display: none;
-}
-div.select2-drop.collapsible-optgroups-enabled .select2-result-with-children > .select2-result-label:before {
-  font-family: FontAwesome;
-  content: "\f0da";
-  display: inline-block;
-  padding-right: 3px;
-  vertical-align: middle;
-  font-weight: normal;
-}
-div.select2-drop.collapsible-optgroups-enabled .select2-result-with-children.optgroup-expanded > .select2-result-label:before {
-  content: "\f0d7";
 }
 
 #bootstrap-theme.api4-explorer-page .form-control.huge {

@@ -96,7 +96,7 @@ class CRM_Core_BAO_Setting extends CRM_Core_DAO_Setting {
    *
    * @return array
    */
-  public static function getItems(&$params, $domains = NULL, $settingsToReturn) {
+  public static function getItems(&$params, $domains, $settingsToReturn) {
     $originalDomain = CRM_Core_Config::domainID();
     if (empty($domains)) {
       $domains[] = $originalDomain;
@@ -186,7 +186,7 @@ class CRM_Core_BAO_Setting extends CRM_Core_DAO_Setting {
 
     foreach ($fieldsToSet as $settingField => &$settingValue) {
       if (empty($fields['values'][$settingField])) {
-        Civi::log()->warning('Deprecated Path: There is a setting (' . $settingField . ') not correctly defined. You may see unpredictability due to this. CRM_Core_Setting::setItems', ['civi.tag' => 'deprecated']);
+        CRM_Core_Error::deprecatedWarning('Deprecated Path: There is a setting (' . $settingField . ') not correctly defined. You may see unpredictability due to this. CRM_Core_Setting::setItems');
         $fields['values'][$settingField] = [];
       }
       self::validateSetting($settingValue, $fields['values'][$settingField]);
@@ -272,13 +272,15 @@ class CRM_Core_BAO_Setting extends CRM_Core_DAO_Setting {
    *   value of the setting to be set
    * @param array $fieldSpec
    *   Metadata for given field (drawn from the xml)
+   * @param bool $convertToSerializedString
+   *   Deprecated mode
    *
    * @return bool
    * @throws \API_Exception
    */
-  public static function validateSetting(&$value, array $fieldSpec) {
+  public static function validateSetting(&$value, array $fieldSpec, $convertToSerializedString = TRUE) {
     // Deprecated guesswork - should use $fieldSpec['serialize']
-    if ($fieldSpec['type'] == 'String' && is_array($value)) {
+    if ($convertToSerializedString && $fieldSpec['type'] == 'String' && is_array($value)) {
       $value = CRM_Core_DAO::VALUE_SEPARATOR . implode(CRM_Core_DAO::VALUE_SEPARATOR, $value) . CRM_Core_DAO::VALUE_SEPARATOR;
     }
     if (empty($fieldSpec['validate_callback'])) {

@@ -326,15 +326,14 @@ class CRM_Utils_File {
     else {
       require_once 'DB.php';
       $dsn = CRM_Utils_SQL::autoSwitchDSN($dsn);
-      $db = DB::connect($dsn);
+      try {
+        $db = DB::connect($dsn);
+      }
+      catch (Exception $e) {
+        die("Cannot open $dsn: " . $e->getMessage());
+      }
     }
 
-    if (PEAR::isError($db)) {
-      die("Cannot open $dsn: " . $db->getMessage());
-    }
-    if (CRM_Utils_Constant::value('CIVICRM_MYSQL_STRICT', CRM_Utils_System::isDevelopment())) {
-      $db->query('SET SESSION sql_mode = STRICT_TRANS_TABLES');
-    }
     $db->query('SET NAMES utf8mb4');
     $transactionId = CRM_Utils_Type::escape(CRM_Utils_Request::id(), 'String');
     $db->query('SET @uniqueID = ' . "'$transactionId'");
@@ -348,13 +347,15 @@ class CRM_Utils_File {
       $query = trim($query);
       if (!empty($query)) {
         CRM_Core_Error::debug_query($query);
-        $res = &$db->query($query);
-        if (PEAR::isError($res)) {
+        try {
+          $res = &$db->query($query);
+        }
+        catch (Exception $e) {
           if ($dieOnErrors) {
-            die("Cannot execute $query: " . $res->getMessage());
+            die("Cannot execute $query: " . $e->getMessage());
           }
           else {
-            echo "Cannot execute $query: " . $res->getMessage() . "<p>";
+            echo "Cannot execute $query: " . $e->getMessage() . "<p>";
           }
         }
       }
@@ -619,38 +620,6 @@ HTACCESS;
       }
     }
     return FALSE;
-  }
-
-  /**
-   * @param $directory
-   *
-   * @return string
-   * @deprecated
-   *   Computation of a relative path requires some base.
-   *   This implementation is problematic because it relies on an
-   *   implicit base which was constructed problematically.
-   */
-  public static function relativeDirectory($directory) {
-    // Do nothing on windows
-    if (strtoupper(substr(PHP_OS, 0, 3)) === 'WIN') {
-      return $directory;
-    }
-
-    // check if directory is relative, if so return immediately
-    if (!self::isAbsolute($directory)) {
-      return $directory;
-    }
-
-    // make everything relative from the baseFilePath
-    $basePath = self::baseFilePath();
-    // check if basePath is a substr of $directory, if so
-    // return rest of string
-    if (substr($directory, 0, strlen($basePath)) == $basePath) {
-      return substr($directory, strlen($basePath));
-    }
-
-    // return the original value
-    return $directory;
   }
 
   /**

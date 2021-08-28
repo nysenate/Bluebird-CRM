@@ -2,7 +2,6 @@
 
 require_once 'afform.civix.php';
 use CRM_Afform_ExtensionUtil as E;
-use Civi\Api4\Action\Afform\Submit;
 
 /**
  * Filter the content of $params to only have supported afform fields.
@@ -12,7 +11,7 @@ use Civi\Api4\Action\Afform\Submit;
  */
 function _afform_fields_filter($params) {
   $result = [];
-  $fields = \Civi\Api4\Afform::getfields()->setCheckPermissions(FALSE)->setAction('create')->execute()->indexBy('name');
+  $fields = \Civi\Api4\Afform::getfields(FALSE)->setAction('create')->execute()->indexBy('name');
   foreach ($fields as $fieldName => $field) {
     if (isset($params[$fieldName])) {
       $result[$fieldName] = $params[$fieldName];
@@ -49,9 +48,19 @@ function afform_civicrm_config(&$config) {
   }
   Civi::$statics[__FUNCTION__] = 1;
 
-  Civi::dispatcher()->addListener(Submit::EVENT_NAME, [Submit::class, 'processContacts'], 500);
-  Civi::dispatcher()->addListener(Submit::EVENT_NAME, [Submit::class, 'processGenericEntity'], -1000);
-  Civi::dispatcher()->addListener('hook_civicrm_angularModules', '_afform_civicrm_angularModules_autoReq', -1000);
+  $dispatcher = Civi::dispatcher();
+  $dispatcher->addListener('civi.afform.submit', ['\Civi\Api4\Action\Afform\Submit', 'processGenericEntity'], 0);
+  $dispatcher->addListener('civi.afform.submit', ['\Civi\Api4\Action\Afform\Submit', 'preprocessContact'], 10);
+  $dispatcher->addListener('hook_civicrm_angularModules', ['\Civi\Afform\AngularDependencyMapper', 'autoReq'], -1000);
+  $dispatcher->addListener('hook_civicrm_alterAngular', ['\Civi\Afform\AfformMetadataInjector', 'preprocess']);
+  $dispatcher->addListener('hook_civicrm_check', ['\Civi\Afform\StatusChecks', 'hook_civicrm_check']);
+
+  // Register support for email tokens
+  if (CRM_Extension_System::singleton()->getMapper()->isActiveModule('authx')) {
+    $dispatcher->addListener('hook_civicrm_alterMailContent', ['\Civi\Afform\Tokens', 'applyCkeditorWorkaround']);
+    $dispatcher->addListener('hook_civicrm_tokens', ['\Civi\Afform\Tokens', 'hook_civicrm_tokens']);
+    $dispatcher->addListener('hook_civicrm_tokenValues', ['\Civi\Afform\Tokens', 'hook_civicrm_tokenValues']);
+  }
 }
 
 /**
@@ -127,19 +136,135 @@ function afform_civicrm_upgrade($op, CRM_Queue_Queue $queue = NULL) {
  */
 function afform_civicrm_managed(&$entities) {
   _afform_civix_civicrm_managed($entities);
+
+  /** @var \CRM_Afform_AfformScanner $scanner */
+  if (\Civi::container()->has('afform_scanner')) {
+    $scanner = \Civi::service('afform_scanner');
+  }
+  else {
+    // This might happen at oddballs points - e.g. while you're in the middle of re-enabling the ext.
+    // This AfformScanner instance only lives during this method call, and it feeds off the regular cache.
+    $scanner = new CRM_Afform_AfformScanner();
+  }
+
+  foreach ($scanner->getMetas() as $afform) {
+    if (empty($afform['is_dashlet']) || empty($afform['name'])) {
+      continue;
+    }
+    $entities[] = [
+      'module' => E::LONG_NAME,
+      'name' => 'afform_dashlet_' . $afform['name'],
+      'entity' => 'Dashboard',
+      'update' => 'always',
+      // ideal cleanup policy might be to (a) deactivate if used and (b) remove if unused
+      'cleanup' => 'always',
+      'params' => [
+        'version' => 3,
+        // Q: Should we loop through all domains?
+        'domain_id' => CRM_Core_BAO_Domain::getDomain()->id,
+        'is_active' => TRUE,
+        'name' => $afform['name'],
+        'label' => $afform['title'] ?? E::ts('(Untitled)'),
+        'directive' => _afform_angular_module_name($afform['name'], 'dash'),
+        'permission' => "@afform:" . $afform['name'],
+      ],
+    ];
+  }
 }
 
 /**
- * Implements hook_civicrm_caseTypes().
+ * Implements hook_civicrm_tabset().
  *
- * Generate a list of case-types.
- *
- * Note: This hook only runs in CiviCRM 4.4+.
- *
- * @link http://wiki.civicrm.org/confluence/display/CRMDOC/hook_civicrm_caseTypes
+ * Adds afforms as contact summary tabs.
  */
-function afform_civicrm_caseTypes(&$caseTypes) {
-  _afform_civix_civicrm_caseTypes($caseTypes);
+function afform_civicrm_tabset($tabsetName, &$tabs, $context) {
+  if ($tabsetName !== 'civicrm/contact/view') {
+    return;
+  }
+  $scanner = \Civi::service('afform_scanner');
+  $weight = 111;
+  foreach ($scanner->getMetas() as $afform) {
+    if (!empty($afform['contact_summary']) && $afform['contact_summary'] === 'tab') {
+      $module = _afform_angular_module_name($afform['name']);
+      $tabs[] = [
+        'id' => $afform['name'],
+        'title' => $afform['title'],
+        'weight' => $weight++,
+        'icon' => 'crm-i fa-list-alt',
+        'is_active' => TRUE,
+        'template' => 'afform/contactSummary/AfformTab.tpl',
+        'module' => $module,
+        'directive' => _afform_angular_module_name($afform['name'], 'dash'),
+      ];
+      // If this is the real contact summary page (and not a callback from ContactLayoutEditor), load module.
+      if (empty($context['caller'])) {
+        Civi::service('angularjs.loader')->addModules($module);
+      }
+    }
+  }
+}
+
+/**
+ * Implements hook_civicrm_pageRun().
+ *
+ * Adds afforms as contact summary blocks.
+ */
+function afform_civicrm_pageRun(&$page) {
+  if (get_class($page) !== 'CRM_Contact_Page_View_Summary') {
+    return;
+  }
+  $scanner = \Civi::service('afform_scanner');
+  $cid = $page->get('cid');
+  $side = 'left';
+  foreach ($scanner->getMetas() as $afform) {
+    if (!empty($afform['contact_summary']) && $afform['contact_summary'] === 'block') {
+      $module = _afform_angular_module_name($afform['name']);
+      $block = [
+        'module' => $module,
+        'directive' => _afform_angular_module_name($afform['name'], 'dash'),
+      ];
+      $content = CRM_Core_Smarty::singleton()->fetchWith('afform/contactSummary/AfformBlock.tpl', ['contactId' => $cid, 'block' => $block]);
+      CRM_Core_Region::instance("contact-basic-info-$side")->add([
+        'markup' => '<div class="crm-summary-block">' . $content . '</div>',
+        'weight' => 1,
+      ]);
+      Civi::service('angularjs.loader')->addModules($module);
+      $side = $side === 'left' ? 'right' : 'left';
+    }
+  }
+}
+
+/**
+ * Implements hook_civicrm_contactSummaryBlocks().
+ *
+ * @link https://github.com/civicrm/org.civicrm.contactlayout
+ */
+function afform_civicrm_contactSummaryBlocks(&$blocks) {
+  $afforms = \Civi\Api4\Afform::get(FALSE)
+    ->setSelect(['name', 'title', 'directive_name', 'module_name', 'type', 'type:icon', 'type:label'])
+    ->addWhere('contact_summary', '=', 'block')
+    ->execute();
+  foreach ($afforms as $index => $afform) {
+    // Create a group per afform type
+    $blocks += [
+      "afform_{$afform['type']}" => [
+        'title' => $afform['type:label'],
+        'icon' => $afform['type:icon'],
+        'blocks' => [],
+      ],
+    ];
+    $blocks["afform_{$afform['type']}"]['blocks'][$afform['name']] = [
+      'title' => $afform['title'],
+      'tpl_file' => 'afform/contactSummary/AfformBlock.tpl',
+      'module' => $afform['module_name'],
+      'directive' => $afform['directive_name'],
+      'sample' => [
+        $afform['type:label'],
+      ],
+      'edit' => 'civicrm/admin/afform#/edit/' . $afform['name'],
+      'system_default' => [0, $index % 2],
+    ];
+  }
 }
 
 /**
@@ -162,8 +287,10 @@ function afform_civicrm_angularModules(&$angularModules) {
       'basePages' => [],
       'partialsCallback' => '_afform_get_partials',
       '_afform' => $afform['name'],
+      // TODO: Allow afforms to declare their own theming requirements
+      'bundles' => ['bootstrap3'],
       'exports' => [
-        $afform['directive_name'] => 'AE',
+        $afform['directive_name'] => 'E',
       ],
     ];
   }
@@ -192,212 +319,6 @@ function _afform_get_partials($moduleName, $module) {
   return [
     "~/$moduleName/$moduleName.aff.html" => $afform['layout'],
   ];
-}
-
-/**
- * Scan the list of Angular modules and inject automatic-requirements.
- *
- * TLDR: if an afform uses element "<other-el/>", and if another module defines
- * `$angularModules['otherMod']['exports']['el'][0] === 'other-el'`, then
- * the 'otherMod' is automatically required.
- *
- * @param \Civi\Core\Event\GenericHookEvent $e
- * @see CRM_Utils_Hook::angularModules()
- */
-function _afform_civicrm_angularModules_autoReq($e) {
-  /** @var CRM_Afform_AfformScanner $scanner */
-  $scanner = Civi::service('afform_scanner');
-  $moduleEnvId = md5(\CRM_Core_Config_Runtime::getId() . implode(',', array_keys($e->angularModules)));
-  $depCache = CRM_Utils_Cache::create([
-    'name' => 'afdep_' . substr($moduleEnvId, 0, 32 - 6),
-    'type' => ['*memory*', 'SqlGroup', 'ArrayCache'],
-    'withArray' => 'fast',
-    'prefetch' => TRUE,
-  ]);
-  $depCacheTtl = 2 * 60 * 60;
-
-  $revMap = _afform_reverse_deps($e->angularModules);
-
-  $formNames = array_keys($scanner->findFilePaths());
-  foreach ($formNames as $formName) {
-    $angModule = _afform_angular_module_name($formName, 'camel');
-    $cacheLine = $depCache->get($formName, NULL);
-
-    $jFile = $scanner->findFilePath($formName, 'aff.json');
-    $hFile = $scanner->findFilePath($formName, 'aff.html');
-
-    $jStat = stat($jFile);
-    $hStat = stat($hFile);
-
-    if ($cacheLine === NULL) {
-      $needsUpdate = TRUE;
-    }
-    elseif ($jStat !== FALSE && $jStat['size'] !== $cacheLine['js']) {
-      $needsUpdate = TRUE;
-    }
-    elseif ($jStat !== FALSE && $jStat['mtime'] > $cacheLine['jm']) {
-      $needsUpdate = TRUE;
-    }
-    elseif ($hStat !== FALSE && $hStat['size'] !== $cacheLine['hs']) {
-      $needsUpdate = TRUE;
-    }
-    elseif ($hStat !== FALSE && $hStat['mtime'] > $cacheLine['hm']) {
-      $needsUpdate = TRUE;
-    }
-    else {
-      $needsUpdate = FALSE;
-    }
-
-    if ($needsUpdate) {
-      $cacheLine = [
-        'js' => $jStat['size'] ?? NULL,
-        'jm' => $jStat['mtime'] ?? NULL,
-        'hs' => $hStat['size'] ?? NULL,
-        'hm' => $hStat['mtime'] ?? NULL,
-        'r' => array_values(array_unique(array_merge(
-          [CRM_Afform_AfformScanner::DEFAULT_REQUIRES],
-          $e->angularModules[$angModule]['requires'] ?? [],
-          _afform_reverse_deps_find($formName, file_get_contents($hFile), $revMap)
-        ))),
-      ];
-      // print_r(['cache update:' . $formName => $cacheLine]);
-      $depCache->set($formName, $cacheLine, $depCacheTtl);
-    }
-
-    $e->angularModules[$angModule]['requires'] = $cacheLine['r'];
-  }
-}
-
-/**
- * @param $angularModules
- * @return array
- *   'attr': array(string $attrName => string $angModuleName)
- *   'el': array(string $elementName => string $angModuleName)
- */
-function _afform_reverse_deps($angularModules) {
-  $revMap = ['attr' => [], 'el' => []];
-  foreach (array_keys($angularModules) as $module) {
-    if (!isset($angularModules[$module]['exports'])) {
-      continue;
-    }
-    foreach ($angularModules[$module]['exports'] as $symbolName => $symbolTypes) {
-      if (strpos($symbolTypes, 'A') !== FALSE) {
-        $revMap['attr'][$symbolName] = $module;
-      }
-      if (strpos($symbolTypes, 'E') !== FALSE) {
-        $revMap['el'][$symbolName] = $module;
-      }
-    }
-  }
-  return $revMap;
-}
-
-/**
- * @param string $formName
- * @param string $html
- * @param array $revMap
- *   The reverse-dependencies map from _afform_reverse_deps().
- * @return array
- * @see _afform_reverse_deps()
- */
-function _afform_reverse_deps_find($formName, $html, $revMap) {
-  $symbols = \Civi\Afform\Symbols::scan($html);
-  $elems = array_intersect_key($revMap['el'], $symbols->elements);
-  $attrs = array_intersect_key($revMap['attr'], $symbols->attributes);
-  return array_values(array_unique(array_merge($elems, $attrs)));
-}
-
-/**
- * @param \Civi\Angular\Manager $angular
- * @see CRM_Utils_Hook::alterAngular()
- */
-function afform_civicrm_alterAngular($angular) {
-  $fieldMetadata = \Civi\Angular\ChangeSet::create('fieldMetadata')
-    ->alterHtml(';\\.aff\\.html$;', function($doc, $path) {
-      try {
-        $module = \Civi::service('angular')->getModule(basename($path, '.aff.html'));
-        $meta = \Civi\Api4\Afform::get()->addWhere('name', '=', $module['_afform'])->setSelect(['join', 'block'])->setCheckPermissions(FALSE)->execute()->first();
-      }
-      catch (Exception $e) {
-      }
-
-      $blockEntity = $meta['join'] ?? $meta['block'] ?? NULL;
-      if (!$blockEntity) {
-        $entities = _afform_getMetadata($doc);
-      }
-
-      foreach (pq('af-field', $doc) as $afField) {
-        /** @var DOMElement $afField */
-        $entityName = pq($afField)->parents('[af-fieldset]')->attr('af-fieldset');
-        $joinName = pq($afField)->parents('[af-join]')->attr('af-join');
-        if (!$blockEntity && !preg_match(';^[a-zA-Z0-9\_\-\. ]+$;', $entityName)) {
-          throw new \CRM_Core_Exception("Cannot process $path: malformed entity name ($entityName)");
-        }
-        $entityType = $blockEntity ?? $entities[$entityName]['type'];
-        _af_fill_field_metadata($joinName ? $joinName : $entityType, $afField);
-      }
-    });
-  $angular->add($fieldMetadata);
-}
-
-/**
- * Merge field definition metadata into an afform field's definition
- *
- * @param $entityType
- * @param DOMElement $afField
- * @throws API_Exception
- */
-function _af_fill_field_metadata($entityType, DOMElement $afField) {
-  $params = [
-    'action' => 'create',
-    'where' => [['name', '=', $afField->getAttribute('name')]],
-    'select' => ['title', 'input_type', 'input_attrs', 'options'],
-    'loadOptions' => TRUE,
-  ];
-  if (in_array($entityType, CRM_Contact_BAO_ContactType::basicTypes(TRUE))) {
-    $params['values'] = ['contact_type' => $entityType];
-    $entityType = 'Contact';
-  }
-  $getFields = civicrm_api4($entityType, 'getFields', $params);
-  // Merge field definition data with whatever's already in the markup
-  $deep = ['input_attrs'];
-  foreach ($getFields as $fieldInfo) {
-    $existingFieldDefn = trim(pq($afField)->attr('defn') ?: '');
-    if ($existingFieldDefn && $existingFieldDefn[0] != '{') {
-      // If it's not an object, don't mess with it.
-      continue;
-    }
-    // TODO: Teach the api to return options in this format
-    if (!empty($fieldInfo['options'])) {
-      $fieldInfo['options'] = CRM_Utils_Array::makeNonAssociative($fieldInfo['options'], 'key', 'label');
-    }
-    // Default placeholder for select inputs
-    if ($fieldInfo['input_type'] === 'Select') {
-      $fieldInfo['input_attrs'] = ($fieldInfo['input_attrs'] ?? []) + ['placeholder' => ts('Select')];
-    }
-
-    $fieldDefn = $existingFieldDefn ? CRM_Utils_JS::getRawProps($existingFieldDefn) : [];
-    foreach ($fieldInfo as $name => $prop) {
-      // Merge array props 1 level deep
-      if (in_array($name, $deep) && !empty($fieldDefn[$name])) {
-        $fieldDefn[$name] = CRM_Utils_JS::writeObject(CRM_Utils_JS::getRawProps($fieldDefn[$name]) + array_map(['CRM_Utils_JS', 'encode'], $prop));
-      }
-      elseif (!isset($fieldDefn[$name])) {
-        $fieldDefn[$name] = CRM_Utils_JS::encode($prop);
-      }
-    }
-    pq($afField)->attr('defn', htmlspecialchars(CRM_Utils_JS::writeObject($fieldDefn)));
-  }
-}
-
-function _afform_getMetadata(phpQueryObject $doc) {
-  $entities = [];
-  foreach ($doc->find('af-entity') as $afmModelProp) {
-    $entities[$afmModelProp->getAttribute('name')] = [
-      'type' => $afmModelProp->getAttribute('type'),
-    ];
-  }
-  return $entities;
 }
 
 /**
@@ -440,10 +361,15 @@ function afform_civicrm_buildAsset($asset, $params, &$mimeType, &$content) {
   }
 
   $moduleName = _afform_angular_module_name($params['name'], 'camel');
+  $formMetaData = (array) civicrm_api4('Afform', 'get', [
+    'checkPermissions' => FALSE,
+    'select' => ['redirect', 'name'],
+    'where' => [['name', '=', $params['name']]],
+  ], 0);
   $smarty = CRM_Core_Smarty::singleton();
   $smarty->assign('afform', [
     'camel' => $moduleName,
-    'meta' => ['name' => $params['name']],
+    'meta' => $formMetaData,
     'templateUrl' => "~/$moduleName/$moduleName.aff.html",
   ]);
   $mimeType = 'text/javascript';
@@ -508,6 +434,23 @@ function afform_civicrm_permission_check($permission, &$granted, $contactId) {
 }
 
 /**
+ * Implements hook_civicrm_permissionList().
+ *
+ * @see CRM_Utils_Hook::permissionList()
+ */
+function afform_civicrm_permissionList(&$permissions) {
+  $scanner = Civi::service('afform_scanner');
+  foreach ($scanner->getMetas() as $name => $meta) {
+    $permissions['@afform:' . $name] = [
+      'group' => 'afform',
+      'title' => E::ts('Afform: Inherit permission of %1', [
+        1 => $name,
+      ]),
+    ];
+  }
+}
+
+/**
  * Clear any local/in-memory caches based on afform data.
  */
 function _afform_clear() {
@@ -540,4 +483,76 @@ function _afform_angular_module_name($fileBaseName, $format = 'camel') {
     default:
       throw new \Exception("Unrecognized format");
   }
+}
+
+/**
+ * Implements hook_civicrm_alterApiRoutePermissions().
+ *
+ * @see CRM_Utils_Hook::alterApiRoutePermissions
+ */
+function afform_civicrm_alterApiRoutePermissions(&$permissions, $entity, $action) {
+  if ($entity == 'Afform') {
+    if ($action == 'prefill' || $action == 'submit') {
+      $permissions = CRM_Core_Permission::ALWAYS_ALLOW_PERMISSION;
+    }
+  }
+}
+
+/**
+ * Implements hook_civicrm_preProcess().
+ *
+ * Wordpress only: Adds Afforms to the shortcode dialog (when editing pages/posts).
+ */
+function afform_civicrm_preProcess($formName, &$form) {
+  if ($formName === 'CRM_Core_Form_ShortCode') {
+    $form->components['afform'] = [
+      'label' => E::ts('Form Builder'),
+      'select' => [
+        'key' => 'name',
+        'entity' => 'Afform',
+        'select' => ['minimumInputLength' => 0],
+        'api' => [
+          'params' => ['type' => ['IN' => ['form', 'search']]],
+        ],
+      ],
+    ];
+  }
+}
+
+// Wordpress only: Register callback for rendering shortcodes
+if (function_exists('add_filter')) {
+  add_filter('civicrm_shortcode_get_markup', 'afform_shortcode_content', 10, 4);
+}
+
+/**
+ * Wordpress only: Render Afform content for shortcodes.
+ *
+ * @param string $content
+ *   HTML Markup
+ * @param array $atts
+ *   Shortcode attributes.
+ * @param array $args
+ *   Existing shortcode arguments.
+ * @param string $context
+ *   How many shortcodes are present on the page: 'single' or 'multiple'.
+ * @return string
+ *   Modified markup.
+ */
+function afform_shortcode_content($content, $atts, $args, $context) {
+  if ($atts['component'] === 'afform') {
+    $afform = civicrm_api4('Afform', 'get', [
+      'select' => ['directive_name', 'module_name'],
+      'where' => [['name', '=', $atts['name']]],
+    ])->first();
+    if ($afform) {
+      Civi::service('angularjs.loader')->addModules($afform['module_name']);
+      $content = "
+        <div class='crm-container' id='bootstrap-theme'>
+          <crm-angular-js modules='{$afform['module_name']}'>
+            <{$afform['directive_name']}></{$afform['directive_name']}>
+          </crm-angular-js>
+        </div>";
+    }
+  }
+  return $content;
 }

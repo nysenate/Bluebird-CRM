@@ -5,14 +5,12 @@ namespace Civi\Angular;
  * The AngularLoader loads any JS/CSS/JSON resources
  * required for setting up AngularJS.
  *
- * The AngularLoader stops short of bootstrapping AngularJS. You may
- * need to `<div ng-app="..."></div>` or `angular.bootstrap(...)`.
+ * This class is returned by 'angularjs.loader' service. Example use:
  *
  * ```
- * $loader = new AngularLoader();
- * $loader->setPageName('civicrm/case/a');
- * $loader->setModules(array('crmApp'));
- * $loader->load();
+ * Civi::service('angularjs.loader')
+ *   ->addModules('moduleFoo')
+ *   ->useApp(); // Optional, if Civi's routing is desired (full-page apps only)
  * ```
  *
  * @link https://docs.angularjs.org/guide/bootstrap
@@ -73,24 +71,36 @@ class AngularLoader {
     $this->res = \CRM_Core_Resources::singleton();
     $this->angular = \Civi::service('angular');
     $this->region = \CRM_Utils_Request::retrieve('snippet', 'String') ? 'ajax-snippet' : 'html-header';
-    $this->pageName = $_GET['q'] ?? NULL;
+    $this->pageName = \CRM_Utils_System::currentPath();
     $this->modules = [];
   }
 
   /**
-   * Register resources required by Angular.
+   * Calling this method from outside this class is deprecated.
    *
-   * @return AngularLoader
+   * Use the `angularjs.loader` service instead.
+   *
+   * @deprecated
+   * @return $this
    */
   public function load() {
+    \CRM_Core_Error::deprecatedFunctionWarning('angularjs.loader service');
+    return $this->loadAngularResources();
+  }
+
+  /**
+   * Load scripts, styles & settings for the active modules.
+   *
+   * @return $this
+   * @throws \CRM_Core_Exception
+   */
+  private function loadAngularResources() {
     $angular = $this->getAngular();
     $res = $this->getRes();
 
     if ($this->crmApp !== NULL) {
       $this->addModules($this->crmApp['modules']);
-      $region = \CRM_Core_Region::instance($this->crmApp['region']);
-      $region->update('default', ['disabled' => TRUE]);
-      $region->add(['template' => $this->crmApp['file'], 'weight' => 0]);
+
       $this->res->addSetting([
         'crmApp' => [
           'defaultRoute' => $this->crmApp['defaultRoute'],
@@ -143,11 +153,12 @@ class AngularLoader {
     });
 
     $res->addScriptFile('civicrm', 'bower_components/angular/angular.min.js', 100, $this->getRegion(), FALSE);
-    $res->addScriptFile('civicrm', 'js/crm.angular.js', 101, $this->getRegion(), FALSE);
 
     $headOffset = 0;
     $config = \CRM_Core_Config::singleton();
     if ($config->debug) {
+      // FIXME: The `resetLocationProviderHashPrefix.js` has to stay in sync with `\Civi\Angular\Page\Modules::buildAngularModules()`.
+      $res->addScriptFile('civicrm', 'ang/resetLocationProviderHashPrefix.js', 101, $this->getRegion(), FALSE);
       foreach ($moduleNames as $moduleName) {
         foreach ($this->angular->getResources($moduleName, 'css', 'cacheUrl') as $url) {
           $res->addStyleUrl($url, self::DEFAULT_MODULE_WEIGHT + (++$headOffset), $this->getRegion());
@@ -174,6 +185,10 @@ class AngularLoader {
       foreach ($this->angular->getResources($moduleNames, 'css', 'cacheUrl') as $url) {
         $res->addStyleUrl($url, self::DEFAULT_MODULE_WEIGHT + (++$headOffset), $this->getRegion());
       }
+    }
+    // Add bundles
+    foreach ($this->angular->getResources($moduleNames, 'bundles', 'bundles') as $bundles) {
+      $res->addBundle($bundles);
     }
 
     return $this;
@@ -213,6 +228,9 @@ class AngularLoader {
       'file' => 'Civi/Angular/Page/Main.tpl',
     ];
     $this->crmApp = array_merge($defaults, $settings);
+    $region = \CRM_Core_Region::instance($this->crmApp['region']);
+    $region->update('default', ['disabled' => TRUE]);
+    $region->add(['template' => $this->crmApp['file'], 'weight' => 0]);
     return $this;
   }
 
@@ -324,12 +342,30 @@ class AngularLoader {
   }
 
   /**
+   * Replace all previously set modules.
+   *
+   * Use with caution, as it can cause conflicts with other extensions who have added modules.
+   *
    * @param array $modules
    * @return AngularLoader
    */
   public function setModules($modules) {
     $this->modules = $modules;
     return $this;
+  }
+
+  /**
+   * Loader service callback when rendering a page region.
+   *
+   * Loads Angular resources if any modules have been requested for this page.
+   *
+   * @param \Civi\Core\Event\GenericHookEvent $e
+   */
+  public function onRegionRender($e) {
+    if ($e->region->_name === $this->region && ($this->modules || $this->crmApp)) {
+      $this->loadAngularResources();
+      $this->res->addScriptFile('civicrm', 'js/crm-angularjs-loader.js', 200, $this->getRegion(), FALSE);
+    }
   }
 
 }

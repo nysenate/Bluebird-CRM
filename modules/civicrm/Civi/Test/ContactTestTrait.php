@@ -18,12 +18,14 @@ trait ContactTestTrait {
   /**
    * Emulate a logged in user since certain functions use that.
    * value to store a record in the DB (like activity)
+   *
    * @see https://issues.civicrm.org/jira/browse/CRM-8180
    *
    * @return int
    *   Contact ID of the created user.
+   * @throws \CiviCRM_API3_Exception
    */
-  public function createLoggedInUser() {
+  public function createLoggedInUser(): int {
     $params = [
       'first_name' => 'Logged In',
       'last_name' => 'User ' . rand(),
@@ -53,8 +55,10 @@ trait ContactTestTrait {
    *
    * @return int
    *   id of Organisation created
+   *
+   * @throws \CiviCRM_API3_Exception
    */
-  public function organizationCreate($params = [], $seq = 0) {
+  public function organizationCreate($params = [], $seq = 0): int {
     if (!$params) {
       $params = [];
     }
@@ -76,7 +80,7 @@ trait ContactTestTrait {
    *
    * @throws \CiviCRM_API3_Exception
    */
-  public function individualCreate($params = [], $seq = 0, $random = FALSE) {
+  public function individualCreate($params = [], $seq = 0, $random = FALSE): int {
     $params = array_merge($this->sampleContact('Individual', $seq, $random), $params);
     return $this->_contactCreate($params);
   }
@@ -160,7 +164,7 @@ trait ContactTestTrait {
    *
    * @throws \CiviCRM_API3_Exception
    */
-  private function _contactCreate($params) {
+  private function _contactCreate($params): int {
     $result = civicrm_api3('contact', 'create', $params);
     return (int) $result['id'];
   }

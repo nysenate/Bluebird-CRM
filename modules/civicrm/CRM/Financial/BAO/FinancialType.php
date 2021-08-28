@@ -70,37 +70,40 @@ class CRM_Financial_BAO_FinancialType extends CRM_Financial_DAO_FinancialType {
   }
 
   /**
-   * Add the financial types.
+   * Create a financial type.
    *
    * @param array $params
-   *   Reference array contains the values submitted by the form.
+   *
+   * @return \CRM_Financial_DAO_FinancialType
+   */
+  public static function create(array $params) {
+    $hook = empty($params['id']) ? 'create' : 'edit';
+    CRM_Utils_Hook::pre($hook, 'FinancialType', $params['id'] ?? NULL, $params);
+    $financialType = self::add($params);
+    CRM_Utils_Hook::post($hook, 'FinancialType', $financialType->id, $financialType);
+    return $financialType;
+  }
+
+  /**
+   * Add the financial types.
+   *
+   * Note that add functions are being deprecated in favour of create.
+   * The steps here are to remove direct calls to this function from
+   * core & then move the innids of the function to the create function.
+   * This function would remain for 6 months or so as a wrapper of create with
+   * a deprecation notice.
+   *
+   * @param array $params
+   *   Values from the database object.
    * @param array $ids
-   *   Reference array contains the id.
+   *   Array that we wish to deprecate and remove.
    *
    * @return object
    */
-  public static function add(&$params, &$ids = []) {
-    if (empty($params['id'])) {
-      $params['is_active'] = CRM_Utils_Array::value('is_active', $params, FALSE);
-      $params['is_deductible'] = CRM_Utils_Array::value('is_deductible', $params, FALSE);
-      $params['is_reserved'] = CRM_Utils_Array::value('is_reserved', $params, FALSE);
-    }
-
-    // action is taken depending upon the mode
+  public static function add(array $params, $ids = []) {
+    // @todo deprecate this function, move the code to create & call create from add.
     $financialType = new CRM_Financial_DAO_FinancialType();
     $financialType->copyValues($params);
-    if (!empty($ids['financialType'])) {
-      $financialType->id = $ids['financialType'] ?? NULL;
-      if (self::isACLFinancialTypeStatus()) {
-        $prevName = CRM_Core_DAO::getFieldValue('CRM_Financial_DAO_FinancialType', $financialType->id, 'name');
-        if ($prevName != $params['name']) {
-          CRM_Core_Session::setStatus(ts("Changing the name of a Financial Type will result in losing the current permissions associated with that Financial Type.
-            Before making this change you should likely note the existing permissions at Administer > Users and Permissions > Permissions (Access Control),
-            then clicking the Access Control link for your Content Management System, then noting down the permissions for 'CiviCRM: {financial type name} view', etc.
-            Then after making the change of name, reset the permissions to the way they were."), ts('Warning'), 'warning');
-        }
-      }
-    }
     $financialType->save();
     // CRM-12470
     if (empty($ids['financialType']) && empty($params['id'])) {
@@ -197,6 +200,7 @@ class CRM_Financial_BAO_FinancialType extends CRM_Financial_DAO_FinancialType {
    * @return bool
    */
   public static function permissionedFinancialTypes(&$permissions, $descriptions) {
+    CRM_Core_Error::deprecatedFunctionWarning('not done via hook.');
     if (!self::isACLFinancialTypeStatus()) {
       return FALSE;
     }
@@ -416,20 +420,20 @@ class CRM_Financial_BAO_FinancialType extends CRM_Financial_DAO_FinancialType {
    * @param string $op
    *   the mode of operation, can be add, view, edit, delete
    * @param bool $force
+   * @param int $contactID
    *
    * @return bool
    */
-  public static function checkPermissionedLineItems($id, $op, $force = TRUE) {
+  public static function checkPermissionedLineItems($id, $op, $force = TRUE, $contactID = NULL) {
     if (!self::isACLFinancialTypeStatus()) {
       return TRUE;
     }
     $lineItems = CRM_Price_BAO_LineItem::getLineItemsByContributionID($id);
     $flag = FALSE;
     foreach ($lineItems as $items) {
-      if (!CRM_Core_Permission::check($op . ' contributions of type ' . CRM_Contribute_PseudoConstant::financialType($items['financial_type_id']))) {
+      if (!CRM_Core_Permission::check($op . ' contributions of type ' . CRM_Contribute_PseudoConstant::financialType($items['financial_type_id']), $contactID)) {
         if ($force) {
           throw new CRM_Core_Exception(ts('You do not have permission to access this page.'));
-          break;
         }
         $flag = FALSE;
         break;

@@ -1251,6 +1251,23 @@ ORDER BY civicrm_custom_group.weight,
   }
 
   /**
+   * Delete a record from supplied params.
+   * API3 calls deleteGroup() which removes the related civicrm_value_X table.
+   * This function does the same for API4.
+   *
+   * @param array $record
+   *   'id' is required.
+   * @return CRM_Core_DAO
+   * @throws CRM_Core_Exception
+   */
+  public static function deleteRecord(array $record) {
+    $table = CRM_Core_DAO::getFieldValue(__CLASS__, $record['id'], 'table_name');
+    $result = parent::deleteRecord($record);
+    CRM_Core_BAO_SchemaHandler::dropTable($table);
+    return $result;
+  }
+
+  /**
    * Set defaults.
    *
    * @param array $groupTree
@@ -1288,7 +1305,7 @@ ORDER BY civicrm_custom_group.weight,
         $serialize = CRM_Core_BAO_CustomField::isSerialized($field);
 
         if ($serialize) {
-          if ($field['data_type'] != 'Country' && $field['data_type'] != 'StateProvince') {
+          if ($field['data_type'] != 'Country' && $field['data_type'] != 'StateProvince' && $field['data_type'] != 'ContactReference') {
             $defaults[$elementName] = [];
             $customOption = CRM_Core_BAO_CustomOption::getCustomOption($field['id'], $inactiveNeeded);
             if ($viewMode) {
@@ -1355,8 +1372,13 @@ ORDER BY civicrm_custom_group.weight,
                 CRM_Utils_Array::formatArrayKeys($value);
                 $checkedValue = $value;
               }
+              // Serialized values from db
+              elseif ($value === '' || strpos($value, CRM_Core_DAO::VALUE_SEPARATOR) !== FALSE) {
+                $checkedValue = CRM_Utils_Array::explodePadded($value);
+              }
+              // Comma-separated values e.g. from a select2 widget during reload on form error
               else {
-                $checkedValue = explode(CRM_Core_DAO::VALUE_SEPARATOR, substr($value, 1, -1));
+                $checkedValue = explode(',', $value);
               }
               foreach ($checkedValue as $val) {
                 if ($val) {
@@ -1383,7 +1405,7 @@ ORDER BY civicrm_custom_group.weight,
             elseif ($field['data_type'] == 'Money' &&
               $field['html_type'] == 'Text'
             ) {
-              $defaults[$elementName] = CRM_Utils_Money::format($value, NULL, '%a');
+              $defaults[$elementName] = CRM_Utils_Money::formatLocaleNumericRoundedForDefaultCurrency($value);
             }
             else {
               $defaults[$elementName] = $value;
@@ -1885,13 +1907,19 @@ SELECT IF( EXISTS(SELECT name FROM civicrm_contact_type WHERE name like %1), 1, 
               $details[$groupID][$values['id']]['editable'] = TRUE;
             }
             // also return contact reference contact id if user has view all or edit all contacts perm
-            if ((CRM_Core_Permission::check('view all contacts') ||
-                CRM_Core_Permission::check('edit all contacts'))
-              &&
-              $details[$groupID][$values['id']]['fields'][$k]['field_data_type'] ==
-              'ContactReference'
+            if ($details[$groupID][$values['id']]['fields'][$k]['field_data_type'] === 'ContactReference'
+              && CRM_Core_Permission::check([['view all contacts', 'edit all contacts']])
             ) {
-              $details[$groupID][$values['id']]['fields'][$k]['contact_ref_id'] = $values['data'] ?? NULL;
+              $details[$groupID][$values['id']]['fields'][$k]['contact_ref_links'] = [];
+              $path = CRM_Contact_DAO_Contact::getEntityPaths()['view'];
+              foreach (CRM_Utils_Array::explodePadded($values['data'] ?? []) as $contactId) {
+                $displayName = CRM_Core_DAO::getFieldValue('CRM_Contact_DAO_Contact', $contactId, 'display_name');
+                if ($displayName) {
+                  $url = CRM_Utils_System::url(str_replace('[id]', $contactId, $path));
+                  $details[$groupID][$values['id']]['fields'][$k]['contact_ref_links'][] = '<a href="' . $url . '" title="' . htmlspecialchars(ts('View Contact')) . '">' .
+                    $displayName . '</a>';
+                }
+              }
             }
           }
         }
@@ -1903,7 +1931,7 @@ SELECT IF( EXISTS(SELECT name FROM civicrm_contact_type WHERE name like %1), 1, 
           $details[$groupID][0]['collapse_display'] = $group['collapse_display'] ?? NULL;
           $details[$groupID][0]['collapse_adv_display'] = $group['collapse_adv_display'] ?? NULL;
           $details[$groupID][0]['style'] = $group['style'] ?? NULL;
-          $details[$groupID][0]['fields'][$k] = ['field_title' => CRM_Utils_Array::value('label', $properties)];
+          $details[$groupID][0]['fields'][$k] = ['field_title' => $properties['label'] ?? NULL];
         }
       }
     }

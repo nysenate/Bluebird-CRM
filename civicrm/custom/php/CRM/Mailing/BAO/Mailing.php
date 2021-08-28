@@ -120,7 +120,7 @@ class CRM_Mailing_BAO_Mailing extends CRM_Mailing_DAO_Mailing {
     $mailingGroup = new CRM_Mailing_DAO_MailingGroup();
     $recipientsGroup = $excludeSmartGroupIDs = $includeSmartGroupIDs = $priorMailingIDs = [];
     $dao = CRM_Utils_SQL_Select::from('civicrm_mailing_group')
-      ->select('GROUP_CONCAT(entity_id SEPARATOR ",") as group_ids, group_type, entity_table')
+      ->select('GROUP_CONCAT(DISTINCT entity_id SEPARATOR ",") as group_ids, group_type, entity_table')
       ->where('mailing_id = #mailing_id AND entity_table RLIKE "^civicrm_(group.*|mailing)$" ')
       ->groupBy(['group_type', 'entity_table'])
       ->param('!groupTableName', CRM_Contact_BAO_Group::getTableName())
@@ -221,6 +221,7 @@ class CRM_Mailing_BAO_Mailing extends CRM_Mailing_DAO_Mailing {
 
     if ($isSMSmode) {
       $criteria = [
+        'is_deleted' => CRM_Utils_SQL_Select::fragment()->where("$contact.is_deleted = 0"),
         'is_opt_out' => CRM_Utils_SQL_Select::fragment()->where("$contact.is_opt_out = 0"),
         'is_deceased' => CRM_Utils_SQL_Select::fragment()->where("$contact.is_deceased <> 1"),
         'do_not_sms' => CRM_Utils_SQL_Select::fragment()->where("$contact.do_not_sms = 0"),
@@ -233,8 +234,9 @@ class CRM_Mailing_BAO_Mailing extends CRM_Mailing_DAO_Mailing {
       ];
     }
     else {
-      // Criterias to filter recipients that need to be included
+      // Criteria to filter recipients that need to be included
       $criteria = [
+        'is_deleted' => CRM_Utils_SQL_Select::fragment()->where("$contact.is_deleted = 0"),
         'do_not_email' => CRM_Utils_SQL_Select::fragment()->where("$contact.do_not_email = 0"),
         'is_opt_out' => CRM_Utils_SQL_Select::fragment()->where("$contact.is_opt_out = 0"),
         'is_deceased' => CRM_Utils_SQL_Select::fragment()->where("$contact.is_deceased <> 1"),
@@ -691,6 +693,7 @@ class CRM_Mailing_BAO_Mailing extends CRM_Mailing_DAO_Mailing {
       }
 
       $this->templates['mailingID'] = $this->id;
+      $this->templates['campaign_id'] = $this->campaign_id;
       $this->templates['template_type'] = $this->template_type;
       CRM_Utils_Hook::alterMailContent($this->templates);
     }
@@ -1081,15 +1084,18 @@ ORDER BY   civicrm_email.is_bulkmail DESC
     elseif ($contactId === 0) {
       //anonymous user
       $contact = [];
-      CRM_Utils_Hook::tokenValues($contact, $contactId, $job_id);
+      CRM_Utils_Hook::tokenValues($contact, [$contactId], $job_id);
     }
     else {
       $params = [['contact_id', '=', $contactId, 0, 0]];
       list($contact) = CRM_Contact_BAO_Query::apiQuery($params);
+      // $contact is an array of [ contactID => contactDetails ]
 
-      //CRM-4524
+      // also call the hook to get contact details
+      CRM_Utils_Hook::tokenValues($contact, [$contactId], $job_id);
+
+      // Don't send if contact doesn't exist
       $contact = reset($contact);
-
       if (!$contact || is_a($contact, 'CRM_Core_Error')) {
         CRM_Core_Error::debug_log_message(ts('CiviMail will not send email to a non-existent contact: %1',
           [1 => $contactId]
@@ -1099,9 +1105,6 @@ ORDER BY   civicrm_email.is_bulkmail DESC
         $res = NULL;
         return $res;
       }
-
-      // also call the hook to get contact details
-      CRM_Utils_Hook::tokenValues($contact, $contactId, $job_id);
     }
 
     $pTemplates = $this->getPreparedTemplates();
@@ -1330,7 +1333,7 @@ ORDER BY   civicrm_email.is_bulkmail DESC
    *
    * @return bool|mixed|null|string
    */
-  private function getTokenData(&$token_a, $html = FALSE, &$contact, &$verp, &$urls, $event_queue_id) {
+  private function getTokenData(&$token_a, $html, &$contact, &$verp, &$urls, $event_queue_id) {
     $type = $token_a['type'];
     $token = $token_a['token'];
     $data = $token;
@@ -1451,7 +1454,7 @@ ORDER BY   civicrm_email.is_bulkmail DESC
     $id = $params['id'] ?? $ids['mailing_id'] ?? NULL;
 
     if (empty($params['id']) && !empty($ids)) {
-      \Civi::log('Parameter $ids is no longer used by Mailing::add. Use the api or just pass $params', ['civi.tag' => 'deprecated']);
+      CRM_Core_Error::deprecatedWarning('Parameter $ids is no longer used by Mailing::add. Use the api or just pass $params');
     }
 
     if ($id) {
@@ -1530,7 +1533,13 @@ ORDER BY   civicrm_email.is_bulkmail DESC
 
     if (empty($params['id']) && (array_filter($ids) !== [])) {
       $params['id'] = $ids['mailing_id'] ?? $ids['id'];
-      \Civi::log('Parameter $ids is no longer used by Mailing::create. Use the api or just pass $params', ['civi.tag' => 'deprecated']);
+      CRM_Core_Error::deprecatedWarning('Parameter $ids is no longer used by Mailing::create. Use the api or just pass $params');
+    }
+
+    // CRM-#1843
+    // If it is a mass sms, set url_tracking to false
+    if (!empty($params['sms_provider_id'])) {
+      $params['url_tracking'] = 0;
     }
 
     // CRM-12430
@@ -1564,8 +1573,8 @@ ORDER BY   civicrm_email.is_bulkmail DESC
         // correct template IDs here
         'override_verp' => TRUE,
         'forward_replies' => FALSE,
-        'open_tracking' => TRUE,
-        'url_tracking' => TRUE,
+        'open_tracking' => Civi::settings()->get('open_tracking_default'),
+        'url_tracking' => Civi::settings()->get('url_tracking_default'),
         'visibility' => 'Public Pages',
         'replyto_email' => $domain_email,
         'header_id' => CRM_Mailing_PseudoConstant::defaultComponent('header_id', ''),
@@ -2483,7 +2492,7 @@ LEFT JOIN civicrm_mailing_group g ON g.mailing_id   = m.id
       throw new CRM_Core_Exception(ts('No id passed to mailing del function'));
     }
 
-    CRM_Utils_Hook::pre('delete', 'Mailing', $id, CRM_Core_DAO::$_nullArray);
+    CRM_Utils_Hook::pre('delete', 'Mailing', $id);
 
     // delete all file attachments
     CRM_Core_BAO_File::deleteEntityFile('civicrm_mailing',
@@ -2513,7 +2522,7 @@ LEFT JOIN civicrm_mailing_group g ON g.mailing_id   = m.id
       throw new CRM_Core_Exception(ts('No id passed to mailing delJob function'));
     }
 
-    \Civi::log('This function is deprecated, use CRM_Mailing_BAO_MailingJob::del instead', ['civi.tag' => 'deprecated']);
+    CRM_Core_Error::deprecatedWarning('This function is deprecated, use CRM_Mailing_BAO_MailingJob::del instead');
 
     CRM_Mailing_BAO_MailingJob::del($id);
 

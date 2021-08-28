@@ -318,9 +318,11 @@ class CRM_Utils_System_Drupal extends CRM_Utils_System_DrupalBase {
     $config = CRM_Core_Config::singleton();
 
     $ufDSN = CRM_Utils_SQL::autoSwitchDSN($config->userFrameworkDSN);
-    $dbDrupal = DB::connect($ufDSN);
-    if (DB::isError($dbDrupal)) {
-      throw new CRM_Core_Exception("Cannot connect to drupal db via $ufDSN, " . $dbDrupal->getMessage());
+    try {
+      $dbDrupal = DB::connect($ufDSN);
+    }
+    catch (Exception $e) {
+      throw new CRM_Core_Exception("Cannot connect to drupal db via $ufDSN, " . $e->getMessage());
     }
 
     $account = $userUid = $userMail = NULL;
@@ -491,10 +493,6 @@ AND    u.status = 1
     // @ to suppress notices eg 'DRUPALFOO already defined'.
     @drupal_bootstrap(DRUPAL_BOOTSTRAP_FULL);
 
-    // explicitly setting error reporting, since we cannot handle drupal related notices
-    // @todo 1 = E_ERROR, but more to the point setting error reporting deep in code
-    // causes grief with debugging scripts
-    error_reporting(1);
     if (!function_exists('module_exists')) {
       if ($throwError) {
         throw new Exception('Sorry, could not load drupal bootstrap.');
@@ -852,7 +850,9 @@ AND    u.status = 1
       if (!defined('MAINTENANCE_MODE') || MAINTENANCE_MODE != 'update') {
         module_invoke_all('exit');
       }
-      drupal_session_commit();
+      if (!defined('_CIVICRM_FAKE_SESSION')) {
+        drupal_session_commit();
+      }
     }
   }
 

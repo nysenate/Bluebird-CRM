@@ -21,6 +21,11 @@
 class CRM_ACL_Form_WordPress_Permissions extends CRM_Core_Form {
 
   /**
+   * @var bool
+   */
+  public $submitOnce = TRUE;
+
+  /**
    * Build the form object.
    */
   public function buildQuickForm() {
@@ -64,7 +69,7 @@ class CRM_ACL_Form_WordPress_Permissions extends CRM_Core_Form {
     $descArray = [];
     foreach ($permissionsDesc as $perm => $attr) {
       if (count($attr) > 1) {
-        $descArray[$perm] = $attr[1];
+        $descArray[$perm] = $attr['description'] ?? $attr[1];
       }
     }
 

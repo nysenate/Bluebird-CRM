@@ -7,12 +7,16 @@
   <add>4.3</add>
   <comment>Map between an entity and a financial account, where there is a specific relationship between the financial account and the entity, e.g. Income Account for or AR Account for</comment>
   <log>true</log>
+  <component>CiviContribute</component>
   <field>
     <name>id</name>
     <title>Entity Financial Account ID</title>
     <type>int unsigned</type>
     <required>true</required>
     <comment>ID</comment>
+    <html>
+      <type>Number</type>
+    </html>
     <add>4.3</add>
   </field>
   <primaryKey>
@@ -28,6 +32,9 @@
     <import>true</import>
     <add>4.3</add>
     <comment>Links to an entity_table like civicrm_financial_type</comment>
+    <pseudoconstant>
+      <callback>CRM_Financial_BAO_EntityFinancialAccount::entityTables</callback>
+    </pseudoconstant>
   </field>
   <field>
     <name>entity_id</name>
@@ -59,7 +66,7 @@
   <field>
     <name>financial_account_id</name>
     <type>int unsigned</type>
-    <title>Financial Account</title>
+    <title>Financial Account ID</title>
     <required>true</required>
     <add>4.3</add>
     <comment>FK to the financial_account_id</comment>
@@ -70,6 +77,7 @@
     </pseudoconstant>
     <html>
       <type>Select</type>
+      <label>Financial Account</label>
     </html>
   </field>
   <foreignKey>

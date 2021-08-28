@@ -419,8 +419,23 @@ function civicrm_api3_generic_getoptions($apiRequest) {
   CRM_Core_DAO::buildOptionsContext($context);
   unset($apiRequest['params']['context'], $apiRequest['params']['field'], $apiRequest['params']['condition']);
 
-  $baoName = _civicrm_api3_get_BAO($apiRequest['entity']);
-  $options = $baoName::buildOptions($fieldName, $context, $apiRequest['params']);
+  // Legacy support for campaign_id fields which used to have a pseudoconstant
+  if ($fieldName === 'campaign_id') {
+    $campaignParams = [
+      'select' => ['id', 'name', 'title'],
+      'options' => ['limit' => 0],
+    ];
+    if ($context === 'match' || $context === 'create') {
+      $campaignParams['is_active'] = 1;
+    }
+    $labelField = $context === 'validate' ? 'name' : 'title';
+    $keyField = $context === 'match' ? 'name' : 'id';
+    $options = array_column(civicrm_api3('Campaign', 'get', $campaignParams)['values'], $labelField, $keyField);
+  }
+  else {
+    $baoName = _civicrm_api3_get_BAO($apiRequest['entity']);
+    $options = $baoName::buildOptions($fieldName, $context, $apiRequest['params']);
+  }
   if ($options === FALSE) {
     return civicrm_api3_create_error("The field '{$fieldName}' has no associated option list.");
   }
@@ -496,7 +511,12 @@ function _civicrm_api3_generic_get_metadata_options(&$metadata, $apiRequest, $fi
     return;
   }
 
-  $fieldsToResolve = $apiRequest['params']['options']['get_options'];
+  if (!is_array($apiRequest['params']['options'])) {
+    $fieldsToResolve = [];
+  }
+  else {
+    $fieldsToResolve = $apiRequest['params']['options']['get_options'];
+  }
 
   if (!empty($metadata[$fieldname]['options']) || (!in_array($fieldname, $fieldsToResolve) && !in_array('all', $fieldsToResolve))) {
     return;

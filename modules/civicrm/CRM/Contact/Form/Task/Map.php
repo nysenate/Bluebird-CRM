@@ -168,7 +168,11 @@ class CRM_Contact_Form_Task_Map extends CRM_Contact_Form_Task {
         }
         $session->pushUserContext(CRM_Utils_System::url('civicrm/event/info', "{$args}{$ids}"));
       }
-      CRM_Utils_System::appendBreadCrumb($bcTitle, $redirect);
+      // dev/core#2307
+      // CRM_Utils_System::appendBreadCrumb only takes one argument, an array
+      // of breadcrumbs, not two.
+      $breadcrumbs = [0 => ['title' => $bcTitle, 'url' => $redirect]];
+      CRM_Utils_System::appendBreadCrumb($breadcrumbs);
     }
 
     $page->assign_by_ref('locations', $locations);

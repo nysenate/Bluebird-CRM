@@ -98,7 +98,7 @@ class CRM_Iats_iATSServiceRequest {
           break;
       }
       if (!$valid) {
-        CRM_Core_Error::fatal('Invalid currency selection: ' . $options['currencyID'] . ' for domain ' . $iats_domain);
+        throw new PaymentProcessorException(ts('Invalid currency selection: %1 for domain %2', [1 => $options['currencyID'], 2=> $iats_domain]));
       }
     }
   }
@@ -122,7 +122,7 @@ class CRM_Iats_iATSServiceRequest {
     // Attempt the SOAP request and log the exception on failure.
     $method = $this->method['method'];
     if (empty($method)) {
-      CRM_Core_Error::fatal('No method for request.');
+      throw new PaymentProcessorException(ts('No method for request.'));
       return FALSE;
     }
     // Do some massaging of parameters for badly behaving iATS methods ($method is now the iATS method, not our internal key)

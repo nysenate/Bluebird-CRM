@@ -6,11 +6,17 @@
   <name>civicrm_mailing_event_delivered</name>
   <comment>Tracks when a queued email is actually delivered to the MTA</comment>
   <archive>true</archive>
+  <component>CiviMail</component>
+  <title>Mailing Delivery Event</title>
+  <titlePlural>Mailing Delivery Events</titlePlural>
   <field>
     <name>id</name>
     <title>Delivered ID</title>
     <type>int unsigned</type>
     <required>true</required>
+    <html>
+      <type>Number</type>
+    </html>
   </field>
   <primaryKey>
     <name>id</name>
@@ -18,10 +24,13 @@
   </primaryKey>
   <field>
     <name>event_queue_id</name>
-    <title>Event Queue</title>
+    <title>Event Queue ID</title>
     <type>int unsigned</type>
     <required>true</required>
     <comment>FK to EventQueue</comment>
+    <html>
+      <label>Event Queue</label>
+    </html>
   </field>
   <foreignKey>
     <name>event_queue_id</name>

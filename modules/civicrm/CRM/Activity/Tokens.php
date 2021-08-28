@@ -15,6 +15,10 @@
  * @copyright CiviCRM LLC https://civicrm.org/licensing
  */
 
+use Civi\Token\AbstractTokenSubscriber;
+use Civi\Token\Event\TokenValueEvent;
+use Civi\Token\TokenRow;
+
 /**
  * Class CRM_Member_Tokens
  *
@@ -29,7 +33,7 @@
  *
  * This has been enhanced to work with PDF/letter merge
  */
-class CRM_Activity_Tokens extends \Civi\Token\AbstractTokenSubscriber {
+class CRM_Activity_Tokens extends AbstractTokenSubscriber {
 
   use CRM_Core_TokenTrait;
 
@@ -56,7 +60,8 @@ class CRM_Activity_Tokens extends \Civi\Token\AbstractTokenSubscriber {
 
   /**
    * Mapping from tokenName to api return field
-   * Use lists since we might need multiple fields
+   * Using arrays allows more complex tokens to be handled that require more than one API field.
+   * For example, an address token might want ['street_address', 'city', 'postal_code']
    *
    * @var array
    */
@@ -84,7 +89,7 @@ class CRM_Activity_Tokens extends \Civi\Token\AbstractTokenSubscriber {
   /**
    * @inheritDoc
    */
-  public function prefetch(\Civi\Token\Event\TokenValueEvent $e) {
+  public function prefetch(TokenValueEvent $e) {
     // Find all the entity IDs
     $entityIds
       = $e->getTokenProcessor()->getContextValues('actionSearchResult', 'entityID')
@@ -95,25 +100,24 @@ class CRM_Activity_Tokens extends \Civi\Token\AbstractTokenSubscriber {
     }
 
     // Get data on all activities for basic and customfield tokens
-    $activities = civicrm_api3('Activity', 'get', [
+    $prefetch['activity'] = civicrm_api3('Activity', 'get', [
       'id' => ['IN' => $entityIds],
       'options' => ['limit' => 0],
       'return' => self::getReturnFields($this->activeTokens),
-    ]);
-    $prefetch['activity'] = $activities['values'];
+    ])['values'];
 
     // Store the activity types if needed
-    if (in_array('activity_type', $this->activeTokens)) {
+    if (in_array('activity_type', $this->activeTokens, TRUE)) {
       $this->activityTypes = \CRM_Core_OptionGroup::values('activity_type');
     }
 
     // Store the activity statuses if needed
-    if (in_array('status', $this->activeTokens)) {
+    if (in_array('status', $this->activeTokens, TRUE)) {
       $this->activityStatuses = \CRM_Core_OptionGroup::values('activity_status');
     }
 
     // Store the campaigns if needed
-    if (in_array('campaign', $this->activeTokens)) {
+    if (in_array('campaign', $this->activeTokens, TRUE)) {
       $this->campaigns = \CRM_Campaign_BAO_Campaign::getCampaigns();
     }
 
@@ -121,9 +125,20 @@ class CRM_Activity_Tokens extends \Civi\Token\AbstractTokenSubscriber {
   }
 
   /**
-   * @inheritDoc
+   * Evaluate the content of a single token.
+   *
+   * @param \Civi\Token\TokenRow $row
+   *   The record for which we want token values.
+   * @param string $entity
+   *   The name of the token entity.
+   * @param string $field
+   *   The name of the token field.
+   * @param mixed $prefetch
+   *   Any data that was returned by the prefetch().
+   *
+   * @throws \CRM_Core_Exception
    */
-  public function evaluateToken(\Civi\Token\TokenRow $row, $entity, $field, $prefetch = NULL) {
+  public function evaluateToken(TokenRow $row, $entity, $field, $prefetch = NULL) {
     // maps token name to api field
     $mapping = [
       'activity_id' => 'id',
@@ -132,37 +147,37 @@ class CRM_Activity_Tokens extends \Civi\Token\AbstractTokenSubscriber {
     // Get ActivityID either from actionSearchResult (for scheduled reminders) if exists
     $activityId = $row->context['actionSearchResult']->entityID ?? $row->context[$this->getEntityContextSchema()];
 
-    $activity = (object) $prefetch['activity'][$activityId];
+    $activity = $prefetch['activity'][$activityId];
 
     if (in_array($field, ['activity_date_time', 'created_date', 'modified_date'])) {
-      $row->tokens($entity, $field, \CRM_Utils_Date::customFormat($activity->$field));
+      $row->tokens($entity, $field, \CRM_Utils_Date::customFormat($activity[$field]));
     }
-    elseif (isset($mapping[$field]) and (isset($activity->{$mapping[$field]}))) {
-      $row->tokens($entity, $field, $activity->{$mapping[$field]});
+    elseif (isset($mapping[$field]) and (isset($activity[$mapping[$field]]))) {
+      $row->tokens($entity, $field, $activity[$mapping[$field]]);
     }
     elseif (in_array($field, ['activity_type'])) {
-      $row->tokens($entity, $field, $this->activityTypes[$activity->activity_type_id]);
+      $row->tokens($entity, $field, $this->activityTypes[$activity['activity_type_id']]);
     }
     elseif (in_array($field, ['status'])) {
-      $row->tokens($entity, $field, $this->activityStatuses[$activity->status_id]);
+      $row->tokens($entity, $field, $this->activityStatuses[$activity['status_id']]);
     }
     elseif (in_array($field, ['campaign'])) {
-      $row->tokens($entity, $field, $this->campaigns[$activity->campaign_id]);
+      $row->tokens($entity, $field, $this->campaigns[$activity['campaign_id']]);
     }
     elseif (in_array($field, ['case_id'])) {
       // An activity can be linked to multiple cases so case_id is always an array.
       // We just return the first case ID for the token.
-      $row->tokens($entity, $field, is_array($activity->case_id) ? reset($activity->case_id) : $activity->case_id);
+      $row->tokens($entity, $field, is_array($activity['case_id']) ? reset($activity['case_id']) : $activity['case_id']);
     }
     elseif (array_key_exists($field, $this->customFieldTokens)) {
       $row->tokens($entity, $field,
-        isset($activity->$field)
-          ? \CRM_Core_BAO_CustomField::displayValue($activity->$field, $field)
+        isset($activity[$field])
+          ? \CRM_Core_BAO_CustomField::displayValue($activity[$field], $field)
           : ''
       );
     }
-    elseif (isset($activity->$field)) {
-      $row->tokens($entity, $field, $activity->$field);
+    elseif (isset($activity[$field])) {
+      $row->tokens($entity, $field, $activity[$field]);
     }
   }
 
@@ -171,7 +186,7 @@ class CRM_Activity_Tokens extends \Civi\Token\AbstractTokenSubscriber {
    *
    * @return array token name => token label
    */
-  protected function getBasicTokens() {
+  protected function getBasicTokens(): array {
     if (!isset($this->basicTokens)) {
       $this->basicTokens = [
         'activity_id' => ts('Activity ID'),

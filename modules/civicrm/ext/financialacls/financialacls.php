@@ -15,6 +15,15 @@ function financialacls_civicrm_config(&$config) {
 }
 
 /**
+ * @param \Symfony\Component\DependencyInjection\ContainerBuilder $container
+ */
+function financialacls_civicrm_container($container) {
+  $dispatcherDefn = $container->getDefinition('dispatcher');
+  $container->addResource(new \Symfony\Component\Config\Resource\FileResource(__FILE__));
+  $dispatcherDefn->addMethodCall('addListener', ['civi.api4.authorizeRecord::Contribution', '_financialacls_civi_api4_authorizeContribution']);
+}
+
+/**
  * Implements hook_civicrm_xmlMenu().
  *
  * @link https://docs.civicrm.org/dev/en/latest/hooks/hook_civicrm_xmlMenu
@@ -164,8 +173,17 @@ function financialacls_civicrm_pre($op, $objectName, $id, &$params) {
     if (empty($params['financial_type_id'])) {
       $params['financial_type_id'] = CRM_Core_DAO::getFieldValue('CRM_Price_DAO_LineItem', $params['id'], 'financial_type_id');
     }
-    if (!in_array($params['financial_type_id'], array_keys($types))) {
+    if (!array_key_exists($params['financial_type_id'], $types)) {
       throw new API_Exception('You do not have permission to ' . $op . ' this line item');
+    }
+  }
+  if ($objectName === 'FinancialType' && !empty($params['id']) && !empty($params['name'])) {
+    $prevName = CRM_Core_DAO::getFieldValue('CRM_Financial_DAO_FinancialType', $params['id']);
+    if ($prevName !== $params['name']) {
+      CRM_Core_Session::setStatus(ts("Changing the name of a Financial Type will result in losing the current permissions associated with that Financial Type.
+            Before making this change you should likely note the existing permissions at Administer > Users and Permissions > Permissions (Access Control),
+            then clicking the Access Control link for your Content Management System, then noting down the permissions for 'CiviCRM: {financial type name} view', etc.
+            Then after making the change of name, reset the permissions to the way they were."), ts('Warning'), 'warning');
     }
   }
 }
@@ -179,15 +197,21 @@ function financialacls_civicrm_selectWhereClause($entity, &$clauses) {
   if (!financialacls_is_acl_limiting_enabled()) {
     return;
   }
-  if ($entity === 'LineItem') {
-    $types = [];
-    CRM_Financial_BAO_FinancialType::getAvailableFinancialTypes($types);
-    if ($types) {
-      $clauses['financial_type_id'] = 'IN (' . implode(',', array_keys($types)) . ')';
-    }
-    else {
-      $clauses['financial_type_id'] = '= 0';
-    }
+
+  switch ($entity) {
+    case 'LineItem':
+    case 'MembershipType':
+    case 'ContributionRecur':
+      $types = [];
+      CRM_Financial_BAO_FinancialType::getAvailableFinancialTypes($types);
+      if ($types) {
+        $clauses['financial_type_id'] = 'IN (' . implode(',', array_keys($types)) . ')';
+      }
+      else {
+        $clauses['financial_type_id'] = '= 0';
+      }
+      break;
+
   }
 
 }
@@ -240,6 +264,61 @@ function financialacls_civicrm_membershipTypeValues($form, &$membershipTypeValue
 }
 
 /**
+ * Add permissions.
+ *
+ * @see https://docs.civicrm.org/dev/en/latest/hooks/hook_civicrm_permission/
+ *
+ * @param array $permissions
+ */
+function financialacls_civicrm_permission(&$permissions) {
+  if (!financialacls_is_acl_limiting_enabled()) {
+    return;
+  }
+  $actions = [
+    'add' => ts('add'),
+    'view' => ts('view'),
+    'edit' => ts('edit'),
+    'delete' => ts('delete'),
+  ];
+  $financialTypes = \CRM_Contribute_BAO_Contribution::buildOptions('financial_type_id', 'validate');
+  foreach ($financialTypes as $id => $type) {
+    foreach ($actions as $action => $action_ts) {
+      $permissions[$action . ' contributions of type ' . $type] = [
+        ts("CiviCRM: %1 contributions of type %2", [1 => $action_ts, 2 => $type]),
+        ts('%1 contributions of type %2', [1 => $action_ts, 2 => $type]),
+      ];
+    }
+  }
+  $permissions['administer CiviCRM Financial Types'] = [
+    ts('CiviCRM: administer CiviCRM Financial Types'),
+    ts('Administer access to Financial Types'),
+  ];
+}
+
+/**
+ * Listener for 'civi.api4.authorizeRecord::Contribution'
+ *
+ * @param \Civi\Api4\Event\AuthorizeRecordEvent $e
+ * @throws \CRM_Core_Exception
+ */
+function _financialacls_civi_api4_authorizeContribution(\Civi\Api4\Event\AuthorizeRecordEvent $e) {
+  if (!financialacls_is_acl_limiting_enabled()) {
+    return;
+  }
+  if ($e->getActionName() === 'delete' && $e->getEntityName() === 'Contribution') {
+    $contributionID = $e->getRecord()['id'];
+    // First check contribution financial type
+    $financialType = CRM_Core_PseudoConstant::getName('CRM_Contribute_DAO_Contribution', 'financial_type_id', CRM_Core_DAO::getFieldValue('CRM_Contribute_DAO_Contribution', $contributionID, 'financial_type_id'));
+    // Now check permissioned line items & permissioned contribution
+    if (!CRM_Core_Permission::check('delete contributions of type ' . $financialType, $e->getUserID()) ||
+      !CRM_Financial_BAO_FinancialType::checkPermissionedLineItems($contributionID, 'delete', FALSE, $e->getUserID())
+    ) {
+      $e->setAuthorized(FALSE);
+    }
+  }
+}
+
+/**
  * Remove unpermitted financial types from field Options in search context.
  *
  * Search context is described as
@@ -257,7 +336,7 @@ function financialacls_civicrm_fieldOptions($entity, $field, &$options, $params)
   if (!financialacls_is_acl_limiting_enabled()) {
     return;
   }
-  if ($entity === 'Contribution' && $field === 'financial_type_id' && $params['context'] === 'search') {
+  if (in_array($entity, ['Contribution', 'ContributionRecur'], TRUE) && $field === 'financial_type_id' && $params['context'] === 'search') {
     $action = CRM_Core_Action::VIEW;
     // At this stage we are only considering the view action. Code from
     // CRM_Financial_BAO_FinancialType::getAvailableFinancialTypes().
@@ -288,7 +367,7 @@ function financialacls_civicrm_fieldOptions($entity, $field, &$options, $params)
  *
  * @return bool
  */
-function financialacls_is_acl_limiting_enabled() {
+function financialacls_is_acl_limiting_enabled(): bool {
   return (bool) Civi::settings()->get('acl_financial_type');
 }
 

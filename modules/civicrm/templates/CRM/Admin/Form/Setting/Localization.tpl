@@ -69,10 +69,6 @@
                 <td class="label">{$form.moneyformat.label} {help id='moneyformat' title=$form.moneyformat.label}</td>
                 <td>{$form.moneyformat.html}</td>
             </tr>
-            <tr class="crm-localization-form-block-moneyvalueformat">
-                <td class="label">{$form.moneyvalueformat.label} {help id='moneyvalueformat' title=$form.moneyvalueformat.label}</td>
-                <td>{$form.moneyvalueformat.html}<br> Note that this setting is proposed to be deprecated as per this <a href="https://lab.civicrm.org/dev/core/-/issues/1494">Gitlab Issue</a></td>
-            </tr>
             <tr class="crm-localization-form-block-customTranslateFunction">
                 <td class="label">{$form.customTranslateFunction.label} {help id='customTranslateFunction' title=$form.customTranslateFunction.label}</td>
                 <td>{$form.customTranslateFunction.html}</td>
@@ -88,9 +84,10 @@
         </table>
     <h3>{ts}Contact Address Fields - Selection Values{/ts}</h3>
         <table class="form-layout-compressed">
-            <tr class="crm-localization-form-block-defaultContactCountry">
-                <td class="label">{$form.defaultContactCountry.label} {help id='defaultContactCountry' title=$form.defaultContactCountry.label}</td>
-                <td>{$form.defaultContactCountry.html}</td>
+            {include file='CRM/Admin/Form/Setting/SettingField.tpl' setting_name='defaultContactCountry' fieldSpec=$settings_fields.defaultContactCountry}
+            <tr class="crm-localization-form-block-pinnedContactCountries">
+                <td class="label">{$form.pinnedContactCountries.label} {help id='pinnedContactCountries' title=$form.pinnedContactCountries.label}</td>
+                <td>{$form.pinnedContactCountries.html}</td>
             </tr>
            <tr class="crm-localization-form-block-defaultContactStateProvince">
                 <td class="label">{$form.defaultContactStateProvince.label} {help id='defaultContactCountry' title=$form.defaultContactStateProvince.label}</td>

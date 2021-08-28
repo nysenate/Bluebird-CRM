@@ -69,6 +69,12 @@ class BasicGetFieldsAction extends BasicGetAction {
   protected $values = [];
 
   /**
+   * @var bool
+   * @deprecated
+   */
+  protected $includeCustom;
+
+  /**
    * To implement getFields for your own entity:
    *
    * 1. From your entity class add a static getFields method.
@@ -94,7 +100,9 @@ class BasicGetFieldsAction extends BasicGetAction {
     else {
       $values = $this->getRecords();
     }
-    $this->formatResults($values);
+    // $isInternal param is not part of function signature (to be compatible with parent class)
+    $isInternal = func_get_args()[1] ?? FALSE;
+    $this->formatResults($values, $isInternal);
     $this->queryArray($values, $result);
   }
 
@@ -109,9 +117,11 @@ class BasicGetFieldsAction extends BasicGetAction {
    * Instead just override $this->fields and this function will respect that.
    *
    * @param array $values
+   * @param bool $isInternal
    */
-  protected function formatResults(&$values) {
-    $fields = array_column($this->fields(), 'name');
+  protected function formatResults(&$values, $isInternal) {
+    $fieldDefaults = array_column($this->fields(), 'default_value', 'name') +
+      array_fill_keys(array_column($this->fields(), 'name'), NULL);
     // Enforce field permissions
     if ($this->checkPermissions) {
       foreach ($values as $key => $field) {
@@ -120,20 +130,22 @@ class BasicGetFieldsAction extends BasicGetAction {
         }
       }
     }
+    // Unless this is an internal getFields call, filter out @internal properties
+    $internalProps = $isInternal ? [] : array_filter(array_column($this->fields(), '@internal', 'name'));
     foreach ($values as &$field) {
       $defaults = array_intersect_key([
         'title' => empty($field['name']) ? NULL : ucwords(str_replace('_', ' ', $field['name'])),
         'entity' => $this->getEntityName(),
-        'required' => FALSE,
         'options' => !empty($field['pseudoconstant']),
-        'data_type' => \CRM_Utils_Array::value('type', $field, 'String'),
-      ], array_flip($fields));
-      $field += $defaults;
-      $field['label'] = $field['label'] ?? $field['title'];
+      ], $fieldDefaults);
+      $field += $defaults + $fieldDefaults;
+      if (array_key_exists('label', $fieldDefaults)) {
+        $field['label'] = $field['label'] ?? $field['title'] ?? $field['name'];
+      }
       if (isset($defaults['options'])) {
         $field['options'] = $this->formatOptionList($field['options']);
       }
-      $field += array_fill_keys($fields, NULL);
+      $field = array_diff_key($field, $internalProps);
     }
   }
 
@@ -202,15 +214,21 @@ class BasicGetFieldsAction extends BasicGetAction {
   }
 
   /**
-   * @param bool $includeCustom
-   * @return $this
+   * Helper function to retrieve options from an option group (for non-DAO entities).
+   *
+   * @param string $optionGroupName
    */
-  public function setIncludeCustom(bool $includeCustom) {
-    // Be forgiving if the param doesn't exist and don't throw an exception
-    if (property_exists($this, 'includeCustom')) {
-      $this->includeCustom = $includeCustom;
+  public function pseudoconstantOptions(string $optionGroupName) {
+    if ($this->getLoadOptions()) {
+      $options = \CRM_Core_OptionValue::getValues(['name' => $optionGroupName]);
+      foreach ($options as &$option) {
+        $option['id'] = $option['value'];
+      }
     }
-    return $this;
+    else {
+      $options = TRUE;
+    }
+    return $options;
   }
 
   public function fields() {
@@ -236,12 +254,24 @@ class BasicGetFieldsAction extends BasicGetAction {
         'description' => ts('Explanation of the purpose of the field'),
       ],
       [
+        'name' => 'type',
+        'data_type' => 'String',
+        'default_value' => 'Field',
+        'options' => [
+          'Field' => ts('Primary Field'),
+          'Custom' => ts('Custom Field'),
+          'Filter' => ts('Search Filter'),
+          'Extra' => ts('Extra API Field'),
+        ],
+      ],
+      [
         'name' => 'default_value',
         'data_type' => 'String',
       ],
       [
         'name' => 'required',
         'data_type' => 'Boolean',
+        'default_value' => FALSE,
       ],
       [
         'name' => 'required_if',
@@ -250,14 +280,41 @@ class BasicGetFieldsAction extends BasicGetAction {
       [
         'name' => 'options',
         'data_type' => 'Array',
+        'default_value' => FALSE,
+      ],
+      [
+        'name' => 'operators',
+        'data_type' => 'Array',
+        'description' => 'If set, limits the operators that can be used on this field for "get" actions.',
       ],
       [
         'name' => 'data_type',
-        'data_type' => 'String',
+        'default_value' => 'String',
+        'options' => [
+          'Array' => ts('Array'),
+          'Boolean' => ts('Boolean'),
+          'Date' => ts('Date'),
+          'Float' => ts('Float'),
+          'Integer' => ts('Integer'),
+          'String' => ts('String'),
+          'Text' => ts('Text'),
+          'Timestamp' => ts('Timestamp'),
+        ],
       ],
       [
         'name' => 'input_type',
         'data_type' => 'String',
+        'options' => [
+          'ChainSelect' => ts('Chain-Select'),
+          'CheckBox' => ts('Checkboxes'),
+          'Date' => ts('Date Picker'),
+          'EntityRef' => ts('Autocomplete Entity'),
+          'File' => ts('File'),
+          'Number' => ts('Number'),
+          'Radio' => ts('Radio Buttons'),
+          'Select' => ts('Select'),
+          'Text' => ts('Text'),
+        ],
       ],
       [
         'name' => 'input_attrs',
@@ -274,6 +331,17 @@ class BasicGetFieldsAction extends BasicGetAction {
       [
         'name' => 'entity',
         'data_type' => 'String',
+      ],
+      [
+        'name' => 'readonly',
+        'data_type' => 'Boolean',
+        'description' => 'True for auto-increment, calculated, or otherwise non-editable fields.',
+        'default_value' => FALSE,
+      ],
+      [
+        'name' => 'output_formatters',
+        'data_type' => 'Array',
+        '@internal' => TRUE,
       ],
     ];
   }

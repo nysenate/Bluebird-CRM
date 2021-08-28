@@ -19,11 +19,6 @@ class CiviTestListenerPHPUnit7 implements \PHPUnit\Framework\TestListener {
   use \PHPUnit\Framework\TestListenerDefaultImplementation;
 
   /**
-   * @var \CRM_Core_TemporaryErrorScope
-   */
-  private $errorScope;
-
-  /**
    * @var array
    *  Ex: $cache['Some_Test_Class']['civicrm_foobar'] = 'hook_civicrm_foobar';
    *  Array(string $testClass => Array(string $hookName => string $methodName)).
@@ -48,17 +43,11 @@ class CiviTestListenerPHPUnit7 implements \PHPUnit\Framework\TestListener {
   public function startTest(\PHPUnit\Framework\Test $test): void {
     if ($this->isCiviTest($test)) {
       error_reporting(E_ALL);
-      $this->errorScope = \CRM_Core_TemporaryErrorScope::useException();
+      $GLOBALS['CIVICRM_TEST_CASE'] = $test;
     }
 
     if ($test instanceof HeadlessInterface) {
       $this->bootHeadless($test);
-    }
-
-    if ($test instanceof HookInterface) {
-      // Note: bootHeadless() indirectly resets any hooks, which means that hook_civicrm_config
-      // is unsubscribable. However, after bootHeadless(), we're free to subscribe to hooks again.
-      $this->registerHooks($test);
     }
 
     if ($test instanceof TransactionalInterface) {
@@ -78,7 +67,9 @@ class CiviTestListenerPHPUnit7 implements \PHPUnit\Framework\TestListener {
     if ($test instanceof HookInterface) {
       \CRM_Utils_Hook::singleton()->reset();
     }
+    \CRM_Utils_Time::resetTime();
     if ($this->isCiviTest($test)) {
+      unset($GLOBALS['CIVICRM_TEST_CASE']);
       error_reporting(E_ALL & ~E_NOTICE);
       $this->errorScope = NULL;
     }
@@ -109,49 +100,11 @@ class CiviTestListenerPHPUnit7 implements \PHPUnit\Framework\TestListener {
   }
 
   /**
-   * @param \Civi\Test\HookInterface $test
-   * @return array
-   *   Array(string $hookName => string $methodName)).
-   */
-  protected function findTestHooks(HookInterface $test) {
-    $class = get_class($test);
-    if (!isset($this->cache[$class])) {
-      $funcs = [];
-      foreach (get_class_methods($class) as $func) {
-        if (preg_match('/^hook_/', $func)) {
-          $funcs[substr($func, 5)] = $func;
-        }
-      }
-      $this->cache[$class] = $funcs;
-    }
-    return $this->cache[$class];
-  }
-
-  /**
    * @param \PHPUnit\Framework\Test $test
    * @return bool
    */
   protected function isCiviTest(\PHPUnit\Framework\Test $test) {
     return $test instanceof HookInterface || $test instanceof HeadlessInterface;
-  }
-
-  /**
-   * Find any hook functions in $test and register them.
-   *
-   * @param \Civi\Test\HookInterface $test
-   */
-  protected function registerHooks(HookInterface $test) {
-    if (CIVICRM_UF !== 'UnitTests') {
-      // This is not ideal -- it's just a side-effect of how hooks and E2E tests work.
-      // We can temporarily subscribe to hooks in-process, but for other processes, it gets messy.
-      throw new \RuntimeException('CiviHookTestInterface requires CIVICRM_UF=UnitTests');
-    }
-    \CRM_Utils_Hook::singleton()->reset();
-    /** @var \CRM_Utils_Hook_UnitTests $hooks */
-    $hooks = \CRM_Utils_Hook::singleton();
-    foreach ($this->findTestHooks($test) as $hook => $func) {
-      $hooks->setHook($hook, [$test, $func]);
-    }
   }
 
   /**

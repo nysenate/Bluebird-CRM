@@ -15,6 +15,7 @@ class {$table.className} extends CRM_Core_DAO {ldelim}
 
      const EXT = {$ext};
      const TABLE_ADDED = '{$table.add}';
+     {if !empty($table.component)}const COMPONENT = '{$table.component}';{/if}
 
      /**
       * Static instance to hold the table name.
@@ -30,6 +31,15 @@ class {$table.className} extends CRM_Core_DAO {ldelim}
       * @var string
       */
       public static $_icon = '{$table.icon}';
+   {/if}
+
+   {if $table.labelField}
+     /**
+      * Field to show when displaying a record.
+      *
+      * @var string
+      */
+      public static $_labelField = '{$table.labelField}';
    {/if}
       /**
        * Should CiviCRM log any modifications to this table in the civicrm_log table.
@@ -79,7 +89,7 @@ class {$table.className} extends CRM_Core_DAO {ldelim}
 
 
 
-{if $table.foreignKey || $table.dynamicForeignKey}
+{if !empty($table.foreignKey) || !empty($table.dynamicForeignKey)}
     /**
      * Returns foreign keys and entity references.
      *
@@ -89,13 +99,16 @@ class {$table.className} extends CRM_Core_DAO {ldelim}
     public static function getReferenceColumns() {ldelim}
       if (!isset(Civi::$statics[__CLASS__]['links'])) {ldelim}
         Civi::$statics[__CLASS__]['links'] = static::createReferenceColumns(__CLASS__);
+{if isset($table.foreignKey)}
 {foreach from=$table.foreignKey item=foreign}
         Civi::$statics[__CLASS__]['links'][] = new CRM_Core_Reference_Basic(self::getTableName(), '{$foreign.name}', '{$foreign.table}', '{$foreign.key}');
 {/foreach}
-
+{/if}
+{if isset($table.dynamicForeignKey)}
 {foreach from=$table.dynamicForeignKey item=foreign}
         Civi::$statics[__CLASS__]['links'][] = new CRM_Core_Reference_Dynamic(self::getTableName(), '{$foreign.idColumn}', NULL, '{$foreign.key|default:'id'}', '{$foreign.typeColumn}');
 {/foreach}
+{/if}
         CRM_Core_DAO_AllCoreTables::invoke(__CLASS__, 'links_callback', Civi::$statics[__CLASS__]['links']);
       {rdelim}
       return Civi::$statics[__CLASS__]['links'];
@@ -129,19 +142,19 @@ class {$table.className} extends CRM_Core_DAO {ldelim}
 {if $field.required}
                                         'required'  => {$field.required|strtoupper},
 {/if} {* field.required *}
-{if $field.length}
+{if isset($field.length)}
                       'maxlength' => {$field.length},
 {/if} {* field.length *}
-{if $field.precision}
+{if isset($field.precision)}
                       'precision'      => array({$field.precision}),
 {/if}
-{if $field.size}
+{if isset($field.size)}
                       'size'      => {$field.size},
 {/if} {* field.size *}
-{if $field.rows}
+{if isset($field.rows)}
                       'rows'      => {$field.rows},
 {/if} {* field.rows *}
-{if $field.cols}
+{if isset($field.cols)}
                       'cols'      => {$field.cols},
 {/if} {* field.cols *}
 
@@ -171,10 +184,13 @@ class {$table.className} extends CRM_Core_DAO {ldelim}
   'entity' => '{$table.entity}',
   'bao' => '{$table.bao}',
   'localizable' => {if $field.localizable}1{else}0{/if},
-  {if $field.localize_context}'localize_context' => '{$field.localize_context}',{/if}
+  {if isset($field.localize_context)}'localize_context' => '{$field.localize_context}',{/if}
 
-{if $field.FKClassName}
+{if isset($field.FKClassName)}
                       'FKClassName' => '{$field.FKClassName}',
+{/if}
+{if !empty($field.component)}
+                      'component' => '{$field.component}',
 {/if}
 {if $field.serialize}
   'serialize' => self::SERIALIZE_{$field.serialize|strtoupper},
@@ -191,6 +207,9 @@ class {$table.className} extends CRM_Core_DAO {ldelim}
 {/if}
 {if $field.pseudoconstant}
   'pseudoconstant' => {$field.pseudoconstant|@print_array},
+{/if}
+{if $field.readonly || $field.name === $table.primaryKey.name}
+  'readonly' => TRUE,
 {/if}
   'add' => {if $field.add}'{$field.add}'{else}NULL{/if},
 ),
@@ -245,7 +264,7 @@ class {$table.className} extends CRM_Core_DAO {ldelim}
        */
        public static function &import( $prefix = FALSE ) {ldelim}
             $r = CRM_Core_DAO_AllCoreTables::getImports(__CLASS__, '{$table.labelName}', $prefix, array(
-            {if $table.foreignKey}{foreach from=$table.foreignKey item=foreign}
+            {if isset($table.foreignKey)}{foreach from=$table.foreignKey item=foreign}
               {if $foreign.import}'{$foreign.className}',{/if}
             {/foreach}{/if}
             ));
@@ -261,7 +280,7 @@ class {$table.className} extends CRM_Core_DAO {ldelim}
         */
        public static function &export( $prefix = FALSE ) {ldelim}
             $r = CRM_Core_DAO_AllCoreTables::getExports(__CLASS__, '{$table.labelName}', $prefix, array(
-            {if $table.foreignKey}{foreach from=$table.foreignKey item=foreign}
+            {if isset($table.foreignKey)}{foreach from=$table.foreignKey item=foreign}
               {if $foreign.export}'{$foreign.className}',{/if}
             {/foreach}{/if}
             ));

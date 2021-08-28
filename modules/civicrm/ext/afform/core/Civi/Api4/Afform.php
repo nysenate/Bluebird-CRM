@@ -16,6 +16,7 @@ use Civi\Api4\Generic\BasicBatchAction;
  *      The `prefill` and `submit` actions are used for preparing forms and processing submissions.
  *
  * @see https://lab.civicrm.org/extensions/afform
+ * @searchable none
  * @package Civi\Api4
  */
 class Afform extends Generic\AbstractEntity {
@@ -53,6 +54,15 @@ class Afform extends Generic\AbstractEntity {
    */
   public static function save($checkPermissions = TRUE) {
     return (new Action\Afform\Save('Afform', __FUNCTION__, 'name'))
+      ->setCheckPermissions($checkPermissions);
+  }
+
+  /**
+   * @param bool $checkPermissions
+   * @return Action\Afform\Convert
+   */
+  public static function convert($checkPermissions = TRUE) {
+    return (new Action\Afform\Convert('Afform', __FUNCTION__))
       ->setCheckPermissions($checkPermissions);
   }
 
@@ -116,7 +126,12 @@ class Afform extends Generic\AbstractEntity {
           'name' => 'name',
         ],
         [
+          'name' => 'type',
+          'options' => $self->pseudoconstantOptions('afform_type'),
+        ],
+        [
           'name' => 'requires',
+          'data_type' => 'Array',
         ],
         [
           'name' => 'block',
@@ -132,8 +147,24 @@ class Afform extends Generic\AbstractEntity {
           'name' => 'description',
         ],
         [
+          'name' => 'is_dashlet',
+          'data_type' => 'Boolean',
+        ],
+        [
           'name' => 'is_public',
           'data_type' => 'Boolean',
+        ],
+        [
+          'name' => 'is_token',
+          'data_type' => 'Boolean',
+        ],
+        [
+          'name' => 'contact_summary',
+          'data_type' => 'String',
+          'options' => [
+            'block' => ts('Contact Summary Block'),
+            'tab' => ts('Contact Summary Tab'),
+          ],
         ],
         [
           'name' => 'repeat',
@@ -146,22 +177,32 @@ class Afform extends Generic\AbstractEntity {
           'name' => 'permission',
         ],
         [
+          'name' => 'redirect',
+        ],
+        [
           'name' => 'layout',
+          'data_type' => 'Array',
         ],
       ];
-
+      // Calculated fields returned by get action
       if ($self->getAction() === 'get') {
         $fields[] = [
           'name' => 'module_name',
+          'readonly' => TRUE,
         ];
         $fields[] = [
           'name' => 'directive_name',
+          'readonly' => TRUE,
         ];
         $fields[] = [
           'name' => 'has_local',
+          'data_type' => 'Boolean',
+          'readonly' => TRUE,
         ];
         $fields[] = [
           'name' => 'has_base',
+          'data_type' => 'Boolean',
+          'readonly' => TRUE,
         ];
       }
 
@@ -176,9 +217,20 @@ class Afform extends Generic\AbstractEntity {
     return [
       "meta" => ["access CiviCRM"],
       "default" => ["administer CiviCRM"],
+      // These all check form-level permissions
+      'get' => [],
       'prefill' => [],
       'submit' => [],
     ];
+  }
+
+  /**
+   * @inheritDoc
+   */
+  public static function getInfo() {
+    $info = parent::getInfo();
+    $info['id_field'] = 'name';
+    return $info;
   }
 
 }

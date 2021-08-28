@@ -22,18 +22,20 @@ namespace Civi\Api4;
 /**
  * RelationshipCache - readonly table to facilitate joining and finding contacts by relationship.
  *
+ * @searchable secondary
  * @see \Civi\Api4\Relationship
- *
+ * @ui_join_filters near_relation
  * @package Civi\Api4
  */
 class RelationshipCache extends Generic\AbstractEntity {
+  use Generic\Traits\EntityBridge;
 
   /**
    * @param bool $checkPermissions
    * @return Generic\DAOGetAction
    */
   public static function get($checkPermissions = TRUE) {
-    return (new Generic\DAOGetAction(static::class, __FUNCTION__))
+    return (new Generic\DAOGetAction(__CLASS__, __FUNCTION__))
       ->setCheckPermissions($checkPermissions);
   }
 
@@ -42,8 +44,20 @@ class RelationshipCache extends Generic\AbstractEntity {
    * @return Generic\DAOGetFieldsAction
    */
   public static function getFields($checkPermissions = TRUE) {
-    return (new Generic\DAOGetFieldsAction(static::class, __FUNCTION__))
+    return (new Generic\DAOGetFieldsAction(__CLASS__, __FUNCTION__))
       ->setCheckPermissions($checkPermissions);
+  }
+
+  /**
+   * @return array
+   */
+  public static function getInfo() {
+    $info = parent::getInfo();
+    $info['bridge'] = [
+      'near_contact_id' => ['description' => ts('One or more contacts with a relationship to this contact')],
+      'far_contact_id' => ['description' => ts('One or more contacts with a relationship to this contact')],
+    ];
+    return $info;
   }
 
 }

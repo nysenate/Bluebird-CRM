@@ -49,7 +49,7 @@ class CRM_Utils_System_Drupal8 extends CRM_Utils_System_DrupalBase {
     if ($user_register_conf != 'visitors' && !$user->hasPermission('administer users')) {
       $account->block();
     }
-    elseif ($verify_mail_conf) {
+    else {
       $account->activate();
     }
 
@@ -658,7 +658,7 @@ class CRM_Utils_System_Drupal8 extends CRM_Utils_System_DrupalBase {
       return NULL;
     }
 
-    return \Drupal::languageManager()->getCurrentLanguage()->getId();
+    return \Drupal::languageManager()->getConfigOverrideLanguage()->getId();
   }
 
   /**
@@ -825,6 +825,47 @@ class CRM_Utils_System_Drupal8 extends CRM_Utils_System_DrupalBase {
       return TRUE;
     }
     return FALSE;
+  }
+
+  /**
+   * Return the CMS-specific url for its permissions page
+   * @return array
+   */
+  public function getCMSPermissionsUrlParams() {
+    return ['ufAccessURL' => \Drupal\Core\Url::fromRoute('user.admin_permissions')->toString()];
+  }
+
+  /**
+   * Start a new session.
+   */
+  public function sessionStart() {
+    if (\Drupal::hasContainer()) {
+      $session = \Drupal::service('session');
+      if (!$session->isStarted()) {
+        $session->start();
+      }
+    }
+  }
+
+  /**
+   * Load the user object.
+   *
+   * @param int $userID
+   *
+   * @return object
+   */
+  public function getUserObject($userID) {
+    return \Drupal::entityTypeManager()->getStorage('user')->load($userID);
+  }
+
+  /**
+   * Helper function to rebuild the Drupal 8 or 9 dynamic routing cache.
+   * We need to do this after enabling extensions that add routes and it's worth doing when we reset Civi paths.
+   */
+  public function invalidateRouteCache() {
+    if (class_exists('\Drupal') && \Drupal::hasContainer()) {
+      \Drupal::service('router.builder')->rebuild();
+    }
   }
 
 }

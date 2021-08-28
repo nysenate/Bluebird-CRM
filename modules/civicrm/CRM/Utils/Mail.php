@@ -31,6 +31,7 @@ class CRM_Utils_Mail {
   public static function createMailer() {
     $mailingInfo = Civi::settings()->get('mailing_backend');
 
+    /*@var Mail $mailer*/
     if ($mailingInfo['outBound_option'] == CRM_Mailing_Config::OUTBOUND_OPTION_REDIRECT_TO_DB ||
       (defined('CIVICRM_MAILER_SPOOL') && CIVICRM_MAILER_SPOOL)
     ) {
@@ -47,7 +48,7 @@ class CRM_Utils_Mail {
 
       if ($mailingInfo['smtpAuth']) {
         $params['username'] = $mailingInfo['smtpUsername'];
-        $params['password'] = CRM_Utils_Crypt::decrypt($mailingInfo['smtpPassword']);
+        $params['password'] = \Civi::service('crypto.token')->decrypt($mailingInfo['smtpPassword']);
         $params['auth'] = TRUE;
       }
       else {
@@ -94,7 +95,7 @@ class CRM_Utils_Mail {
       $mailer = self::_createMailer('mail', []);
     }
     elseif ($mailingInfo['outBound_option'] == CRM_Mailing_Config::OUTBOUND_OPTION_MOCK) {
-      $mailer = self::_createMailer('mock', []);
+      $mailer = self::_createMailer('mock', $mailingInfo);
     }
     elseif ($mailingInfo['outBound_option'] == CRM_Mailing_Config::OUTBOUND_OPTION_DISABLED) {
       CRM_Core_Error::debug_log_message(ts('Outbound mail has been disabled. Click <a href=\'%1\'>Administer >> System Setting >> Outbound Email</a> to set the OutBound Email.', [1 => CRM_Utils_System::url('civicrm/admin/setting/smtp', 'reset=1')]));
@@ -165,7 +166,7 @@ class CRM_Utils_Mail {
    * @return bool
    *   TRUE if a mail was sent, else FALSE.
    */
-  public static function send(&$params) {
+  public static function send(array &$params): bool {
     $defaultReturnPath = CRM_Core_BAO_MailSettings::defaultReturnPath();
     $includeMessageId = CRM_Core_BAO_MailSettings::includeMessageId();
     $emailDomain = CRM_Core_BAO_MailSettings::defaultDomain();
@@ -259,7 +260,7 @@ class CRM_Utils_Mail {
     }
 
     if (!empty($attachments)) {
-      foreach ($attachments as $fileID => $attach) {
+      foreach ($attachments as $attach) {
         $msg->addAttachment(
           $attach['fullPath'],
           $attach['mime_type'],
@@ -276,7 +277,6 @@ class CRM_Utils_Mail {
     $headers = $msg->headers($headers);
 
     $to = [$params['toEmail']];
-    $result = NULL;
     $mailer = \Civi::service('pear_mail');
 
     // CRM-3795, CRM-7355, CRM-7557, CRM-9058, CRM-9887, CRM-12883, CRM-19173 and others ...
@@ -301,8 +301,13 @@ class CRM_Utils_Mail {
     }
 
     if (is_object($mailer)) {
-      $errorScope = CRM_Core_TemporaryErrorScope::ignoreException();
-      $result = $mailer->send($to, $headers, $message);
+      try {
+        $result = $mailer->send($to, $headers, $message);
+      }
+      catch (Exception $e) {
+        CRM_Core_Session::setStatus($e->getMessage(), ts('Mailing Error'), 'error');
+        return FALSE;
+      }
       if (is_a($result, 'PEAR_Error')) {
         $message = self::errorMessage($mailer, $result);
         // append error message in case multiple calls are being made to

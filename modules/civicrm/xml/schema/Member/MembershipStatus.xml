@@ -7,13 +7,18 @@
   <comment>Membership Status stores admin configurable rules for assigning status to memberships.</comment>
   <add>1.5</add>
   <log>true</log>
+  <component>CiviMember</component>
+  <labelField>label</labelField>
   <field>
     <name>id</name>
     <title>Membership Status ID</title>
     <type>int unsigned</type>
     <required>true</required>
-    <comment>Membership Id</comment>
+    <comment>Membership ID</comment>
     <add>1.5</add>
+    <html>
+      <type>Number</type>
+    </html>
   </field>
   <primaryKey>
     <name>id</name>
@@ -52,6 +57,7 @@
     <add>1.5</add>
     <html>
       <type>Select</type>
+      <label>Start Event</label>
     </html>
   </field>
   <field>
@@ -65,12 +71,16 @@
     <add>1.5</add>
     <html>
       <type>Select</type>
+      <label>Start Event Adjust Unit</label>
     </html>
   </field>
   <field>
     <name>start_event_adjust_interval</name>
     <type>int</type>
     <comment>Status range begins this many units from start_event.</comment>
+    <html>
+      <label>Start Event Adjust Interval</label>
+    </html>
     <add>1.5</add>
   </field>
   <field>
@@ -84,6 +94,7 @@
     <add>1.5</add>
     <html>
       <type>Select</type>
+      <label>End Event</label>
     </html>
   </field>
   <field>
@@ -97,12 +108,16 @@
     <add>1.5</add>
     <html>
       <type>Select</type>
+      <label>End Event Adjust Unit</label>
     </html>
   </field>
   <field>
     <name>end_event_adjust_interval</name>
     <type>int</type>
     <comment>Status range ends this many units from end_event.</comment>
+    <html>
+      <label>End Event Adjust Interval</label>
+    </html>
     <add>1.5</add>
   </field>
   <field>

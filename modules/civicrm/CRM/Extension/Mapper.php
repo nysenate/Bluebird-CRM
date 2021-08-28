@@ -67,6 +67,12 @@ class CRM_Extension_Mapper {
   protected $civicrmUrl;
 
   /**
+   * @var array
+   *   Array(string $extKey => CRM_Extension_Upgrader_Interface $upgrader)
+   */
+  protected $upgraders = [];
+
+  /**
    * @param CRM_Extension_Container_Interface $container
    * @param CRM_Utils_Cache_Interface $cache
    * @param null $cacheKey
@@ -533,6 +539,58 @@ class CRM_Extension_Mapper {
     }
     // FIXME: How can code so code wrong be so right?
     CRM_Extension_System::singleton()->getClassLoader()->refresh();
+  }
+
+  /**
+   * This returns a formatted string containing an extension upgrade link for the UI.
+   * @todo We should improve this to return more appropriate text. eg. when an extension is not installed
+   *   it should not say "version xx is installed".
+   *
+   * @param array $remoteExtensionInfo
+   * @param array $localExtensionInfo
+   *
+   * @return string
+   */
+  public function getUpgradeLink($remoteExtensionInfo, $localExtensionInfo) {
+    if (!empty($remoteExtensionInfo) && version_compare($localExtensionInfo['version'], $remoteExtensionInfo->version, '<')) {
+      return ts('Version %1 is installed. <a %2>Upgrade to version %3</a>.', [
+        1 => $localExtensionInfo['version'],
+        2 => 'href="' . CRM_Utils_System::url('civicrm/admin/extensions', "action=update&id={$localExtensionInfo['key']}&key={$localExtensionInfo['key']}") . '"',
+        3 => $remoteExtensionInfo->version,
+      ]);
+    }
+  }
+
+  /**
+   * @param string $key
+   *   Long name of the extension.
+   *   Ex: 'org.example.myext'
+   *
+   * @return \CRM_Extension_Upgrader_Interface
+   */
+  public function getUpgrader(string $key) {
+    if (!array_key_exists($key, $this->upgraders)) {
+      $this->upgraders[$key] = NULL;
+
+      try {
+        $info = $this->keyToInfo($key);
+      }
+      catch (CRM_Extension_Exception_ParseException $e) {
+        CRM_Core_Session::setStatus(ts('Parse error in extension: %1', [
+          1 => $e->getMessage(),
+        ]), '', 'error');
+        CRM_Core_Error::debug_log_message("Parse error in extension: " . $e->getMessage());
+        return NULL;
+      }
+
+      if (!empty($info->upgrader)) {
+        $class = $info->upgrader;
+        $u = new $class();
+        $u->init(['key' => $key]);
+        $this->upgraders[$key] = $u;
+      }
+    }
+    return $this->upgraders[$key];
   }
 
 }

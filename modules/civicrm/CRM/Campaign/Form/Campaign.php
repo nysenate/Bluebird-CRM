@@ -188,10 +188,10 @@ class CRM_Campaign_Form_Campaign extends CRM_Core_Form {
     $this->add('datepicker', 'end_date', ts('End Date'));
 
     // add campaign type
-    $this->addSelect('campaign_type_id', ['onChange' => "CRM.buildCustomData( 'Campaign', this.value );"], TRUE);
+    $this->addSelect('campaign_type_id', ['placeholder' => ts('- select type -'), 'onChange' => "CRM.buildCustomData( 'Campaign', this.value );"], TRUE);
 
     // add campaign status
-    $this->addSelect('status_id');
+    $this->addSelect('status_id', ['placeholder' => ts('- select status -')]);
 
     // add External Identifier Element
     $this->add('text', 'external_identifier', ts('External ID'),
@@ -314,7 +314,7 @@ class CRM_Campaign_Form_Campaign extends CRM_Core_Form {
     }
   }
 
-  public static function submit($params = [], $form) {
+  public static function submit($params, $form) {
     $groups = [];
     if (!empty($params['includeGroups']) && is_array($params['includeGroups'])) {
       foreach ($params['includeGroups'] as $key => $id) {

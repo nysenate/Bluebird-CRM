@@ -91,8 +91,15 @@ class SchemaMapBuilder {
     if ($fkClass) {
       $tableName = AllCoreTables::getTableForClass($fkClass);
       $fkKey = $data['FKKeyColumn'] ?? 'id';
-      $alias = str_replace('_id', '', $field);
-      $joinable = new Joinable($tableName, $fkKey, $alias);
+      // Backward-compatibility for older api calls using e.g. "contact" instead of "contact_id"
+      if (strpos($field, '_id')) {
+        $alias = str_replace('_id', '', $field);
+        $joinable = new Joinable($tableName, $fkKey, $alias);
+        $joinable->setJoinType($joinable::JOIN_TYPE_MANY_TO_ONE);
+        $joinable->setDeprecated();
+        $table->addTableLink($field, $joinable);
+      }
+      $joinable = new Joinable($tableName, $fkKey, $field);
       $joinable->setJoinType($joinable::JOIN_TYPE_MANY_TO_ONE);
       $table->addTableLink($field, $joinable);
     }
@@ -144,21 +151,18 @@ class SchemaMapBuilder {
   /**
    * @param \Civi\Api4\Service\Schema\SchemaMap $map
    * @param \Civi\Api4\Service\Schema\Table $baseTable
-   * @param string $entity
+   * @param string $entityName
    */
-  private function addCustomFields(SchemaMap $map, Table $baseTable, $entity) {
+  private function addCustomFields(SchemaMap $map, Table $baseTable, string $entityName) {
+    $customInfo = \Civi\Api4\Utils\CoreUtil::getCustomGroupExtends($entityName);
     // Don't be silly
-    if (!array_key_exists($entity, \CRM_Core_SelectValues::customGroupExtends())) {
+    if (!$customInfo) {
       return;
-    }
-    $queryEntity = (array) $entity;
-    if ($entity == 'Contact') {
-      $queryEntity = ['Contact', 'Individual', 'Organization', 'Household'];
     }
     $fieldData = \CRM_Utils_SQL_Select::from('civicrm_custom_field f')
       ->join('custom_group', 'INNER JOIN civicrm_custom_group g ON g.id = f.custom_group_id')
-      ->select(['g.name as custom_group_name', 'g.table_name', 'g.is_multiple', 'f.name', 'label', 'column_name', 'option_group_id'])
-      ->where('g.extends IN (@entity)', ['@entity' => $queryEntity])
+      ->select(['g.name as custom_group_name', 'g.table_name', 'g.is_multiple', 'f.name', 'f.data_type', 'label', 'column_name', 'option_group_id'])
+      ->where('g.extends IN (@entity)', ['@entity' => $customInfo['extends']])
       ->where('g.is_active')
       ->where('f.is_active')
       ->execute();
@@ -182,14 +186,19 @@ class SchemaMapBuilder {
 
       // Add backreference
       if (!empty($fieldData->is_multiple)) {
-        $joinable = new Joinable($baseTable->getName(), 'id', AllCoreTables::convertEntityNameToLower($entity));
+        $joinable = new Joinable($baseTable->getName(), $customInfo['column'], AllCoreTables::convertEntityNameToLower($entityName));
         $customTable->addTableLink('entity_id', $joinable);
+      }
+
+      if ($fieldData->data_type === 'ContactReference') {
+        $joinable = new Joinable('civicrm_contact', 'id', $fieldData->name);
+        $customTable->addTableLink($fieldData->column_name, $joinable);
       }
     }
 
     foreach ($links as $alias => $link) {
       $joinable = new CustomGroupJoinable($link['tableName'], $alias, $link['isMultiple'], $link['columns']);
-      $baseTable->addTableLink('id', $joinable);
+      $baseTable->addTableLink($customInfo['column'], $joinable);
     }
   }
 

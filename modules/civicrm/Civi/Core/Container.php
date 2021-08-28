@@ -1,6 +1,7 @@
 <?php
 namespace Civi\Core;
 
+use Civi\Core\Event\EventScanner;
 use Civi\Core\Lock\LockManager;
 use Symfony\Component\Config\ConfigCache;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
@@ -123,6 +124,9 @@ class Container {
     ))
       ->setFactory([new Reference(self::SELF), 'createAngularManager'])->setPublic(TRUE);
 
+    $container->setDefinition('angularjs.loader', new Definition('Civi\Angular\AngularLoader', []))
+      ->setPublic(TRUE);
+
     $container->setDefinition('dispatcher', new Definition(
       'Civi\Core\CiviEventDispatcher',
       []
@@ -147,6 +151,9 @@ class Container {
       ->setFactory('CRM_Cxn_BAO_Cxn::createRegistrationClient')->setPublic(TRUE);
 
     $container->setDefinition('psr_log', new Definition('CRM_Core_Error_Log', []))->setPublic(TRUE);
+    $container->setDefinition('psr_log_manager', new Definition('Civi\Core\LogManager', []))->setPublic(TRUE);
+    // With the default log-manager, you may overload a channel by defining a service, e.g.
+    // $container->setDefinition('log.ipn', new Definition('CRM_Core_Error_Log', []))->setPublic(TRUE);
 
     $basicCaches = [
       'js_strings' => 'js_strings',
@@ -217,6 +224,15 @@ class Container {
 
     $container->setDefinition('pear_mail', new Definition('Mail'))
       ->setFactory('CRM_Utils_Mail::createMailer')->setPublic(TRUE);
+
+    $container->setDefinition('crypto.registry', new Definition('Civi\Crypto\CryptoService'))
+      ->setFactory('Civi\Crypto\CryptoRegistry::createDefaultRegistry')->setPublic(TRUE);
+
+    $container->setDefinition('crypto.token', new Definition('Civi\Crypto\CryptoToken', []))
+      ->setPublic(TRUE);
+
+    $container->setDefinition('crypto.jwt', new Definition('Civi\Crypto\CryptoJwt', []))
+      ->setPublic(TRUE);
 
     if (empty(\Civi::$statics[__CLASS__]['boot'])) {
       throw new \RuntimeException('Cannot initialize container. Boot services are undefined.');
@@ -323,6 +339,16 @@ class Container {
       ))->addTag('kernel.event_subscriber')->setPublic(TRUE);
     }
 
+    $dispatcherDefn = $container->getDefinition('dispatcher');
+    foreach (\CRM_Core_DAO_AllCoreTables::getBaoClasses() as $baoEntity => $baoClass) {
+      $listenerMap = EventScanner::findListeners($baoClass, $baoEntity);
+      if ($listenerMap) {
+        $file = (new \ReflectionClass($baoClass))->getFileName();
+        $container->addResource(new \Symfony\Component\Config\Resource\FileResource($file));
+        $dispatcherDefn->addMethodCall('addListenerMap', [$baoClass, $listenerMap]);
+      }
+    }
+
     \CRM_Api4_Services::hook_container($container);
 
     \CRM_Utils_Hook::container($container);
@@ -342,34 +368,53 @@ class Container {
    */
   public function createEventDispatcher() {
     // Continue building on the original dispatcher created during bootstrap.
+    /** @var CiviEventDispatcher $dispatcher */
     $dispatcher = static::getBootService('dispatcher.boot');
+
+    // Sometimes, you have a generic event ('hook_pre') and wish to fire more targeted aliases ('hook_pre::MyEntity') to allow shorter subscriber lists.
+    $aliasEvent = function($eventName, $fieldName) {
+      return function($e) use ($eventName, $fieldName) {
+        \Civi::dispatcher()->dispatch($eventName . "::" . $e->{$fieldName}, $e);
+      };
+    };
+    $aliasMethodEvent = function($eventName, $methodName) {
+      return function($e) use ($eventName, $methodName) {
+        \Civi::dispatcher()->dispatch($eventName . "::" . $e->{$methodName}(), $e);
+      };
+    };
+
+    $dispatcher->addListener('civi.api4.validate', $aliasMethodEvent('civi.api4.validate', 'getEntityName'), 100);
+    $dispatcher->addListener('civi.api4.authorizeRecord', $aliasMethodEvent('civi.api4.authorizeRecord', 'getEntityName'), 100);
 
     $dispatcher->addListener('civi.core.install', ['\Civi\Core\InstallationCanary', 'check']);
     $dispatcher->addListener('civi.core.install', ['\Civi\Core\DatabaseInitializer', 'initialize']);
     $dispatcher->addListener('civi.core.install', ['\Civi\Core\LocalizationInitializer', 'initialize']);
     $dispatcher->addListener('hook_civicrm_post', ['\CRM_Core_Transaction', 'addPostCommit'], -1000);
-    $dispatcher->addListener('hook_civicrm_pre', ['\Civi\Core\Event\PreEvent', 'dispatchSubevent'], 100);
+    $dispatcher->addListener('hook_civicrm_pre', $aliasEvent('hook_civicrm_pre', 'entity'), 100);
     $dispatcher->addListener('civi.dao.preDelete', ['\CRM_Core_BAO_EntityTag', 'preDeleteOtherEntity']);
-    $dispatcher->addListener('hook_civicrm_post', ['\Civi\Core\Event\PostEvent', 'dispatchSubevent'], 100);
+    $dispatcher->addListener('hook_civicrm_post', $aliasEvent('hook_civicrm_post', 'entity'), 100);
     $dispatcher->addListener('hook_civicrm_post::Activity', ['\Civi\CCase\Events', 'fireCaseChange']);
     $dispatcher->addListener('hook_civicrm_post::Case', ['\Civi\CCase\Events', 'fireCaseChange']);
     $dispatcher->addListener('hook_civicrm_caseChange', ['\Civi\CCase\Events', 'delegateToXmlListeners']);
     $dispatcher->addListener('hook_civicrm_caseChange', ['\Civi\CCase\SequenceListener', 'onCaseChange_static']);
+    $dispatcher->addListener('hook_civicrm_cryptoRotateKey', ['\Civi\Crypto\RotateKeys', 'rotateSmtp']);
     $dispatcher->addListener('hook_civicrm_eventDefs', ['\Civi\Core\CiviEventInspector', 'findBuiltInEvents']);
     // TODO We need a better code-convention for metadata about non-hook events.
     $dispatcher->addListener('hook_civicrm_eventDefs', ['\Civi\API\Events', 'hookEventDefs']);
     $dispatcher->addListener('hook_civicrm_eventDefs', ['\Civi\Core\Event\SystemInstallEvent', 'hookEventDefs']);
     $dispatcher->addListener('hook_civicrm_buildAsset', ['\Civi\Angular\Page\Modules', 'buildAngularModules']);
+    $dispatcher->addListenerService('civi.region.render', ['angularjs.loader', 'onRegionRender']);
     $dispatcher->addListener('hook_civicrm_buildAsset', ['\CRM_Utils_VisualBundle', 'buildAssetJs']);
     $dispatcher->addListener('hook_civicrm_buildAsset', ['\CRM_Utils_VisualBundle', 'buildAssetCss']);
     $dispatcher->addListener('hook_civicrm_buildAsset', ['\CRM_Core_Resources', 'renderMenubarStylesheet']);
+    $dispatcher->addListener('hook_civicrm_buildAsset', ['\CRM_Core_Resources', 'renderL10nJs']);
     $dispatcher->addListener('hook_civicrm_coreResourceList', ['\CRM_Utils_System', 'appendCoreResources']);
     $dispatcher->addListener('hook_civicrm_getAssetUrl', ['\CRM_Utils_System', 'alterAssetUrl']);
     $dispatcher->addListener('hook_civicrm_alterExternUrl', ['\CRM_Utils_System', 'migrateExternUrl'], 1000);
-    $dispatcher->addListener('hook_civicrm_triggerInfo', ['\CRM_Contact_BAO_RelationshipCache', 'onHookTriggerInfo']);
-    $dispatcher->addListener('civi.dao.postInsert', ['\CRM_Core_BAO_RecurringEntity', 'triggerInsert']);
-    $dispatcher->addListener('civi.dao.postUpdate', ['\CRM_Core_BAO_RecurringEntity', 'triggerUpdate']);
-    $dispatcher->addListener('civi.dao.postDelete', ['\CRM_Core_BAO_RecurringEntity', 'triggerDelete']);
+    $dispatcher->addListener('hook_civicrm_permissionList', ['CRM_Core_Permission_List', 'findConstPermissions'], 975);
+    $dispatcher->addListener('hook_civicrm_permissionList', ['CRM_Core_Permission_List', 'findCiviPermissions'], 950);
+    $dispatcher->addListener('hook_civicrm_permissionList', ['CRM_Core_Permission_List', 'findCmsPermissions'], 925);
+
     $dispatcher->addListener('hook_civicrm_postSave_civicrm_domain', ['\CRM_Core_BAO_Domain', 'onPostSave']);
     $dispatcher->addListener('hook_civicrm_unhandled_exception', [
       'CRM_Core_LegacyErrorHandler',
@@ -555,6 +600,10 @@ class Container {
         $container->set($name, $obj);
       }
       \Civi::$statics[__CLASS__]['container'] = $container;
+      // Ensure all container-based serivces have a chance to add their listeners.
+      // Without this, it's a matter of happenstance (dependent upon particular page-request/configuration/etc).
+      $container->get('dispatcher');
+
     }
     else {
       $bootServices['dispatcher.boot']->setDispatchPolicy($mainDispatchPolicy);

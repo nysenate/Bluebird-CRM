@@ -6,6 +6,7 @@
   <name>civicrm_pcp</name>
   <add>2.2</add>
   <log>true</log>
+  <component>CiviContribute</component>
   <field>
     <name>id</name>
     <uniqueName>pcp_id</uniqueName>
@@ -14,6 +15,9 @@
     <title>Personal Campaign Page ID</title>
     <comment>Personal Campaign Page ID</comment>
     <add>2.2</add>
+    <html>
+      <type>Number</type>
+    </html>
   </field>
   <primaryKey>
     <name>id</name>
@@ -29,6 +33,7 @@
     <add>2.2</add>
     <html>
       <type>EntityRef</type>
+      <label>Contact</label>
     </html>
   </field>
   <foreignKey>
@@ -69,6 +74,7 @@
     <add>2.2</add>
     <html>
       <type>TextArea</type>
+      <label>Intro Text</label>
     </html>
   </field>
   <field>
@@ -78,6 +84,7 @@
     <add>2.2</add>
     <html>
       <type>TextArea</type>
+      <label>Page Text</label>
     </html>
   </field>
   <field>

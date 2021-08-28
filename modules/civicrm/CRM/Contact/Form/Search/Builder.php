@@ -51,7 +51,9 @@ class CRM_Contact_Form_Search_Builder extends CRM_Contact_Form_Search {
     // Initialize new form
     if (!$this->_blockCount) {
       $this->_blockCount = 4;
-      $this->set('newBlock', 1);
+      if (!$this->_ssID) {
+        $this->set('newBlock', 1);
+      }
     }
 
     //get the column count
@@ -90,6 +92,7 @@ class CRM_Contact_Form_Search_Builder extends CRM_Contact_Form_Search {
         $searchByLabelFields[] = $name;
       }
     }
+    [$fieldOptions, $fkEntities] = self::fieldOptions();
     // Add javascript
     CRM_Core_Resources::singleton()
       ->addScriptFile('civicrm', 'templates/CRM/Contact/Form/Search/Builder.js', 1, 'html-header')
@@ -97,7 +100,8 @@ class CRM_Contact_Form_Search_Builder extends CRM_Contact_Form_Search {
         'searchBuilder' => [
           // Index of newly added/expanded block (1-based index)
           'newBlock' => $this->get('newBlock'),
-          'fieldOptions' => self::fieldOptions(),
+          'fieldOptions' => $fieldOptions,
+          'fkEntities' => $fkEntities,
           'searchByLabelFields' => $searchByLabelFields,
           'fieldTypes' => $fieldNameTypes,
           'generalOperators' => ['' => ts('-operator-')] + CRM_Core_SelectValues::getSearchBuilderOperators(),
@@ -448,6 +452,7 @@ class CRM_Contact_Form_Search_Builder extends CRM_Contact_Form_Search {
       'grant',
     ];
     CRM_Contact_BAO_Query_Hook::singleton()->alterSearchBuilderOptions($entities, $options);
+    $fkEntities = [];
     foreach ($entities as $entity) {
       $fields = civicrm_api3($entity, 'getfields');
       foreach ($fields['values'] as $field => $info) {
@@ -462,6 +467,9 @@ class CRM_Contact_Form_Search_Builder extends CRM_Contact_Form_Search {
           if (in_array($info['data_type'], ['StateProvince', 'Country'])) {
             $options[$field] = $entity;
           }
+        }
+        elseif (!empty($info['FKApiName'])) {
+          $fkEntities[$field] = $info['FKApiName'];
         }
         elseif (in_array(substr($field, 0, 3), [
           'is_',
@@ -478,7 +486,7 @@ class CRM_Contact_Form_Search_Builder extends CRM_Contact_Form_Search {
         }
       }
     }
-    return $options;
+    return [$options, $fkEntities];
   }
 
   /**

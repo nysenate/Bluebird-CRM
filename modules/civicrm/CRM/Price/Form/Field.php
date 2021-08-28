@@ -129,7 +129,7 @@ class CRM_Price_Form_Field extends CRM_Core_Form {
         CRM_Price_BAO_PriceFieldValue::retrieve($valueParams, $defaults);
 
         // fix the display of the monetary value, CRM-4038
-        $defaults['price'] = CRM_Utils_Money::format($defaults['amount'], NULL, '%a');
+        $defaults['price'] = CRM_Utils_Money::formatLocaleNumericRoundedForDefaultCurrency($defaults['amount']);
         $defaults['is_active'] = $isActive;
       }
 
@@ -316,13 +316,13 @@ class CRM_Price_Form_Field extends CRM_Core_Form {
       $this->add('checkbox', 'option_status[' . $i . ']', ts('Active?'));
 
       $this->add('select', 'option_visibility_id[' . $i . ']', ts('Visibility'), $visibilityType);
-      $defaultOption[$i] = $this->createElement('radio', NULL, NULL, NULL, $i);
+      $defaultOption[$i] = NULL;
 
       //for checkbox handling of default option
       $this->add('checkbox', "default_checkbox_option[$i]", NULL);
     }
     //default option selection
-    $this->addGroup($defaultOption, 'default_option');
+    $this->addRadio('default_option', NULL, $defaultOption);
     $_showHide->addToTemplate();
 
     // is_display_amounts
@@ -337,7 +337,7 @@ class CRM_Price_Form_Field extends CRM_Core_Form {
     $this->addRule('options_per_line', ts('must be a numeric value'), 'numeric');
 
     $this->add('textarea', 'help_pre', ts('Pre Field Help'),
-      CRM_Core_DAO::getAttribute('CRM_Price_DAO_PriceField', 'help_post')
+      CRM_Core_DAO::getAttribute('CRM_Price_DAO_PriceField', 'help_pre')
     );
 
     // help post, mask, attributes, javascript ?

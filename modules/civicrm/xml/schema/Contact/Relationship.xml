@@ -8,12 +8,20 @@
   <add>1.1</add>
   <log>true</log>
   <icon>fa-handshake-o</icon>
+  <paths>
+    <view>civicrm/contact/view/rel?action=view&amp;reset=1&amp;cid=[contact_id_a]&amp;id=[id]</view>
+    <delete>civicrm/contact/view/rel?action=delete&amp;reset=1&amp;cid=[contact_id_a]&amp;id=[id]</delete>
+  </paths>
+
   <field>
     <name>id</name>
     <type>int unsigned</type>
     <title>Relationship ID</title>
     <required>true</required>
     <comment>Relationship ID</comment>
+    <html>
+      <type>Number</type>
+    </html>
     <add>1.1</add>
   </field>
   <primaryKey>
@@ -23,9 +31,12 @@
   <field>
     <name>contact_id_a</name>
     <type>int unsigned</type>
-    <title>Contact A</title>
+    <title>Contact A ID</title>
     <required>true</required>
     <comment>id of the first contact</comment>
+    <html>
+      <label>Contact A</label>
+    </html>
     <add>1.1</add>
   </field>
   <foreignKey>
@@ -38,12 +49,13 @@
   <field>
     <name>contact_id_b</name>
     <type>int unsigned</type>
-    <title>Contact B</title>
+    <title>Contact B ID</title>
     <required>true</required>
     <comment>id of the second contact</comment>
     <add>1.1</add>
     <html>
       <type>EntityRef</type>
+      <label>Contact B</label>
     </html>
   </field>
   <foreignKey>
@@ -56,13 +68,20 @@
   <field>
     <name>relationship_type_id</name>
     <type>int unsigned</type>
-    <title>Relationship Type</title>
+    <title>Relationship Type ID</title>
     <required>true</required>
-    <comment>id of the relationship</comment>
+    <comment>Type of relationship</comment>
     <add>1.1</add>
     <html>
       <type>Select</type>
+      <label>Relationship Type</label>
     </html>
+    <pseudoconstant>
+      <table>civicrm_relationship_type</table>
+      <keyColumn>id</keyColumn>
+      <nameColumn>name_a_b</nameColumn>
+      <labelColumn>label_a_b</labelColumn>
+    </pseudoconstant>
   </field>
   <foreignKey>
     <name>relationship_type_id</name>
@@ -150,9 +169,12 @@
   <field>
     <name>case_id</name>
     <type>int unsigned</type>
-    <title>Relationship Case</title>
+    <title>Case ID</title>
     <default>NULL</default>
     <comment>FK to civicrm_case</comment>
+    <html>
+      <label>Case</label>
+    </html>
     <add>2.2</add>
   </field>
   <foreignKey>

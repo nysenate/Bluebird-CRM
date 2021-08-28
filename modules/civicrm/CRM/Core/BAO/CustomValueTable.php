@@ -34,21 +34,18 @@ class CRM_Core_BAO_CustomValueTable {
     }
 
     $paramFieldsExtendContactForEntities = [];
+    $VS = CRM_Core_DAO::VALUE_SEPARATOR;
 
     foreach ($customParams as $tableName => $tables) {
-      foreach ($tables as $index => $fields) {
-        $sqlOP = NULL;
+      foreach ($tables as $fields) {
         $hookID = NULL;
-        $hookOP = NULL;
         $entityID = NULL;
-        $isMultiple = FALSE;
         $set = [];
         $params = [];
         $count = 1;
 
         $firstField = reset($fields);
-        $entityID = $firstField['entity_id'];
-        $hookID = $firstField['custom_group_id'];
+        $entityID = (int) $firstField['entity_id'];
         $isMultiple = $firstField['is_multiple'];
         if (array_key_exists('id', $firstField)) {
           $sqlOP = "UPDATE $tableName ";
@@ -63,8 +60,9 @@ class CRM_Core_BAO_CustomValueTable {
           $hookOP = 'create';
         }
 
-        CRM_Utils_Hook::customPre($hookOP,
-          $hookID,
+        CRM_Utils_Hook::customPre(
+          $hookOP,
+          (int) $firstField['custom_group_id'],
           $entityID,
           $fields
         );
@@ -187,8 +185,17 @@ class CRM_Core_BAO_CustomValueTable {
               break;
 
             case 'ContactReference':
-              if ($value == NULL) {
+              if ($value == NULL || $value === '' || $value === $VS . $VS) {
                 $type = 'Timestamp';
+                $value = NULL;
+              }
+              elseif (strpos($value, $VS) !== FALSE) {
+                $type = 'String';
+                // Validate the string contains only integers and value-separators
+                $validChars = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, $VS];
+                if (str_replace($validChars, '', $value)) {
+                  throw new CRM_Core_Exception('Contact ID must be of type Integer');
+                }
               }
               else {
                 $type = 'Integer';
@@ -217,17 +224,21 @@ class CRM_Core_BAO_CustomValueTable {
           }
           else {
             $set[$field['column_name']] = "%{$count}";
-            $params[$count] = [$value, $type];
+            // The second parameter is the type of the db field, which
+            // would be 'String' for a concatenated set of integers.
+            // However, the god-forsaken timestamp hack also needs to be kept
+            // if value is NULL.
+            $params[$count] = [$value, ($value && $field['is_multiple']) ? 'String' : $type];
             $count++;
           }
 
           $fieldExtends = $field['extends'] ?? NULL;
           if (
-            CRM_Utils_Array::value('entity_table', $field) == 'civicrm_contact'
-            || $fieldExtends == 'Contact'
-            || $fieldExtends == 'Individual'
-            || $fieldExtends == 'Organization'
-            || $fieldExtends == 'Household'
+            CRM_Utils_Array::value('entity_table', $field) === 'civicrm_contact'
+            || $fieldExtends === 'Contact'
+            || $fieldExtends === 'Individual'
+            || $fieldExtends === 'Organization'
+            || $fieldExtends === 'Household'
           ) {
             $paramFieldsExtendContactForEntities[$entityID]['custom_' . CRM_Utils_Array::value('custom_field_id', $field)] = $field['custom_field_id'] ?? NULL;
           }
@@ -256,10 +267,10 @@ class CRM_Core_BAO_CustomValueTable {
           else {
             $query = "$sqlOP SET $setClause $where";
           }
-          $dao = CRM_Core_DAO::executeQuery($query, $params);
+          CRM_Core_DAO::executeQuery($query, $params);
 
           CRM_Utils_Hook::custom($hookOP,
-            $hookID,
+            (int) $firstField['custom_group_id'],
             $entityID,
             $fields
           );

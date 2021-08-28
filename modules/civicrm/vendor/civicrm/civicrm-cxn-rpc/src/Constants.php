@@ -30,11 +30,11 @@ class Constants {
    */
   const APP_ID_CHARS = 16;
 
-  const RSA_ENC_MODE = CRYPT_RSA_ENCRYPTION_OAEP;
+  const RSA_ENC_MODE = \phpseclib\Crypt\RSA::ENCRYPTION_OAEP;
 
   const RSA_HASH = 'sha256';
 
-  const RSA_SIG_MODE = CRYPT_RSA_SIGNATURE_PSS;
+  const RSA_SIG_MODE = \phpseclib\Crypt\RSA::SIGNATURE_PSS;
 
   const RSA_KEYLEN = 2048;
 
@@ -45,13 +45,15 @@ class Constants {
 
   const MIME_TYPE = 'application/x-civi-cxn';
 
-  const PROTOCOL_DELIM = ""; // ^A, not visible in some editors
+  // ^A, not visible in some editors
+  const PROTOCOL_DELIM = "";
 
   const CA_DURATION = '+10 years';
 
   const APP_DURATION = '+1 year';
 
-  const AES_BYTES = 32; // 32 bytes = 256 bits
+  // 32 bytes = 256 bits
+  const AES_BYTES = 32;
 
   const CXN_ID_CHARS = 16;
 
@@ -72,7 +74,7 @@ class Constants {
    *   live CiviCRM Certificate Authority.
    */
   public static function getCert() {
-    return dirname(__DIR__) . '/certs/CiviRootCA.crt';
+    return dirname(__DIR__) . '/certs/CiviConnectRootCA.crt';
   }
 
   /**
@@ -82,6 +84,15 @@ class Constants {
    */
   public static function getTestCert() {
     return dirname(__DIR__) . '/certs/CiviTestRootCA.crt';
+  }
+
+  /**
+   * @return string
+   *   The path to the PEM-encode X.509 certificate of the
+   *   live CiviCRM Certificate Authority.
+   */
+  public static function getOldCert() {
+    return dirname(__DIR__) . '/certs/CiviRootCA.crt';
   }
 
 }

@@ -7,6 +7,8 @@
   <add>1.3</add>
   <comment>Formerly civicrm_contribution_type merged into this table in 4.3</comment>
   <log>true</log>
+  <component>CiviContribute</component>
+  <labelField>name</labelField>
   <field>
     <name>id</name>
     <title>Financial Type ID</title>
@@ -14,6 +16,9 @@
     <length>10</length>
     <required>true</required>
     <comment>ID of original financial_type so you can search this table by the financial_type.id and then select the relevant version based on the timestamp</comment>
+    <html>
+      <type>Number</type>
+    </html>
     <add>1.3</add>
   </field>
   <primaryKey>
@@ -54,8 +59,9 @@
     <name>is_deductible</name>
     <title>Is Tax Deductible?</title>
     <type>boolean</type>
+    <required>true</required>
     <length>4</length>
-    <default>1</default>
+    <default>0</default>
     <comment>Is this financial type tax-deductible? If true, contributions of this type may be fully OR partially deductible - non-deductible amount is stored in the Contribution record.</comment>
     <add>1.3</add>
     <html>
@@ -68,8 +74,10 @@
     <title>Financial Type is Reserved?</title>
     <type>boolean</type>
     <length>4</length>
+    <required>true</required>
     <comment>Is this a predefined system object?</comment>
     <add>1.3</add>
+    <default>0</default>
     <html>
       <type>CheckBox</type>
       <label>Reserved?</label>
@@ -78,8 +86,10 @@
   <field>
     <name>is_active</name>
     <type>boolean</type>
+    <default>1</default>
     <title>Financial Type Is Active?</title>
     <length>4</length>
+    <required>true</required>
     <comment>Is this property active?</comment>
     <add>1.3</add>
     <html>
@@ -87,10 +97,4 @@
       <label>Enabled?</label>
     </html>
   </field>
-  <index>
-    <name>UI_id</name>
-    <fieldName>id</fieldName>
-    <unique>true</unique>
-    <add>4.3</add>
-  </index>
 </table>

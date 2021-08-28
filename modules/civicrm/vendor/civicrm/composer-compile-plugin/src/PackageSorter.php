@@ -7,7 +7,10 @@ class PackageSorter
 {
 
     /**
-     * Get the list of installed packages (sorted topologically).
+     * Given a list of installed packages sort such that dependant
+     * packages come after there dependencies.
+     *
+     * TODO handle cycles.
      *
      * @param PackageInterface[] $installedPackages
      *   All installed packages, including the root.

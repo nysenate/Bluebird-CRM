@@ -24,6 +24,11 @@ class CRM_Admin_Form_MailSettings extends CRM_Admin_Form {
   protected $_testButtonName;
 
   /**
+   * @var bool
+   */
+  public $submitOnce = TRUE;
+
+  /**
    * Build the form object.
    */
   public function buildQuickForm() {
@@ -34,7 +39,7 @@ class CRM_Admin_Form_MailSettings extends CRM_Admin_Form {
       return;
     }
 
-    $this->_testButtonName = $this->getButtonName('refresh', 'test');
+    $this->_testButtonName = $this->getButtonName('upload', 'test');
     $buttons = $this->getElement('buttons')->getElements();
     $buttons[] = $this->createElement(
       'xbutton',

@@ -33,13 +33,11 @@ class DAOCreateAction extends AbstractCreateAction {
    */
   public function _run(Result $result) {
     $this->formatWriteValues($this->values);
+    $this->fillDefaults($this->values);
     $this->validateValues();
-    $params = $this->values;
-    $this->fillDefaults($params);
 
-    $resultArray = $this->writeObjects([$params]);
-
-    $result->exchangeArray($resultArray);
+    $items = [$this->values];
+    $result->exchangeArray($this->writeObjects($items));
   }
 
   /**
