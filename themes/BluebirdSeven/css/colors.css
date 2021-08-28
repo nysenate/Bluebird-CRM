@@ -44,7 +44,8 @@ ul#civicrm-menu.sm {
 .crm-container .btn-primary, .crm-container .ui-dialog .ui-dialog-content .button:not(.hr-job-info-close), .crm-container #crm-submit-buttons input.crm-form-submit:not(.cancel), .crm-container .crm-button input.crm-form-submit:not(.cancel), .crm-container .crm-form-submit.crm-hover-button:not(.cancel), .crm-container .ui-dialog-buttonset .crm-form-submit.ui-button:not(.cancel), .crm-container a.crm-form-submit.button:not(.cancel), .crm-container input.crm-form-submit:not(.cancel)[type=button], .crm-container input.crm-form-submit:not(.cancel)[type=file], .page-civicrm-group .crm-submit-buttons a.newGroup.button, .page-civicrm-admin #crm-main-content-wrapper .crm-submit-buttons a.button, .page-civicrm-a #crm-main-content-wrapper .crm-submit-buttons a.button, .page-civicrm-admin #crm-main-content-wrapper .crm-submit-buttons .crm-button[crm-icon=fa-check], .page-civicrm-a #crm-main-content-wrapper .crm-submit-buttons .crm-button[crm-icon=fa-check], .crm-container.ui-dialog .ui-dialog-content .button:not(.hr-job-info-close), body[class*='page-civicrm-report-'] #report-tab-order-by-elements #optionFieldLink>.form-link, .crm-container #contact-summary-relationship-tab.view-content div.action-link>a.button {
   background: #393D3F !important;
 }
-.crm-container #civicrm-dashboard .column .widget-controls {
+.crm-container #civicrm-dashboard .column .widget-controls,
+.crm-container #civicrm-dashboard .crm-dashlet-header {
   background: #546A7B !important;
 }
 .page-civicrm-contact-view .crm-contact-page #mainTabContainer li.crm-tab-button.ui-tabs-active a,
