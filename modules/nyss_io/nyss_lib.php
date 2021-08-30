@@ -3,11 +3,10 @@
 /**
  * get a mysqli connection from the db string
  */
-function nyss_getConnection($bbconfig) {
-  //Civi::log()->debug('getConnection', array('bbconfig' => $bbconfig));
+function nyss_getConnection($bbcfg) {
+  //Civi::log()->debug('getConnection', array('bbcfg' => $bbcfg));
 
-  $conn = mysqli_connect($bbconfig['db.host'], $bbconfig['db.user'], $bbconfig['db.pass'],
-    $bbconfig['db.civicrm.prefix'].$bbconfig['shortname']);
+  $conn = mysqli_connect($bbcfg['db.host'], $bbcfg['db.user'], $bbcfg['db.pass'], $bbcfg['civicrm_db_name']);
 
   if (mysqli_connect_errno()) {
     echo "Failed to connect to MySQL: " . mysqli_connect_error();
