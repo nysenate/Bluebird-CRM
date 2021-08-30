@@ -1313,28 +1313,24 @@ function _mail_alterMailingBlockMosaico(phpQueryObject $doc) {
       </div>
     </div>
   ');
-} // _mail_alterMailingBlockMosaico()
-
+}
 
 function _mail_alterMailingReview(phpQueryObject $doc) {
   $extDir = CRM_Core_Resources::singleton()->getPath('gov.nysenate.mail');
   $html = file_get_contents($extDir.'/html/BlockReview.html');
   $doc->find('.crm-group')->html($html);
-} // _mail_alterMailingReview()
-
+}
 
 function _mail_alterMailingSchedule(phpQueryObject $doc) {
   $extDir = CRM_Core_Resources::singleton()->getPath('gov.nysenate.mail');
   $html = file_get_contents($extDir.'/html/BlockSchedule.html');
   $doc->find('.crmMosaico-schedule-outer')->prepend($html);
-} // _mail_alterMailingSchedule()
-
+}
 
 function _mail_alterMailingPreview(phpQueryObject $doc) {
   //12136 set var so we can manipulate in apiWrappers
   CRM_Core_Session::singleton()->set('nyss-mailing-preview', TRUE);
-} // _mail_alterMailingPreview()
-
+}
 
 // NYSS 4628
 function _mail_addAllEmails($mailingID, $excludeOOD = FILTER_ALL) {
