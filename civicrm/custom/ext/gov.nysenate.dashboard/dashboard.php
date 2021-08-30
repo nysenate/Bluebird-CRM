@@ -190,6 +190,13 @@ function dashboard_civicrm_pageRun(&$page) {
   }
 }
 
+function dashboard_civicrm_alterAngular(\Civi\Angular\Manager $angular) {
+  //inject wizard
+  $changeSet = \Civi\Angular\ChangeSet::create('user_dashboard')
+    ->alterHtml('~/crmDashboard/Dashboard.html', '_dashboard_alterUserDashboard');
+  $angular->add($changeSet);
+}
+
 function _dashboard_RSStoArray($tag, $array, $url) {
   $doc = new DOMdocument();
   $doc->load($url);
@@ -213,4 +220,16 @@ function _dashboard_RSStoArray($tag, $array, $url) {
   }
 
   return $rss_array;
+}
+
+/**
+ * @param phpQueryObject $doc
+ *
+ * main user dashboard html
+ * limit columns to 1
+ */
+function _dashboard_alterUserDashboard(phpQueryObject $doc) {
+  $extDir = CRM_Core_Resources::singleton()->getPath(E::LONG_NAME);
+  $html = file_get_contents($extDir.'/html/dashboard.html');
+  $doc->find('div.crm-flex-box')->html($html);
 }

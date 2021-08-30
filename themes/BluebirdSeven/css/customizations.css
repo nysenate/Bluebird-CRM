@@ -78,8 +78,12 @@ input[type=color] {
 }
 
 /*dashboard*/
-.crm-container #civicrm-dashboard .column .widget-wrapper .widget-controls {
+.crm-container #civicrm-dashboard .column .widget-wrapper .widget-controls,
+.crm-container #civicrm-dashboard .crm-dashlet-header {
   padding: 10px;
+}
+.crm-container #civicrm-dashboard .crm-dashlet-header h3 {
+  font-size: 15px;
 }
 .crm-container .crm-dashboard-controls {
   margin-top: 0;
