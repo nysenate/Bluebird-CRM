@@ -189,4 +189,14 @@ function contact_civicrm_buildForm($formName, &$form) {
 
     CRM_Core_Resources::singleton()->addScriptFile('gov.nysenate.contact', 'js/InlineAddress.js');
   }
+
+  //14192
+  if ($formName == 'CRM_Contact_Form_Task_Label') {
+    $form->addElement('checkbox', 'include_title_org', ts('Include Job Title and Organization Name'), NULL);
+
+    CRM_Core_Region::instance('form-body')->add([
+      'template' => 'CRM/NYSS/TaskLabels.tpl',
+    ]);
+    CRM_Core_Resources::singleton()->addScriptFile('gov.nysenate.contact', 'js/TaskLabels.js');
+  }
 }
