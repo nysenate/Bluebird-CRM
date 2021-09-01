@@ -2,7 +2,7 @@
 <extension key="gov.nysenate.reports" type="module">
   <file>reports</file>
   <name>NYSS: Reports</name>
-  <description></description>
+  <description/>
   <license>AGPL-3.0</license>
   <maintainer>
     <author>NYS Senate</author>

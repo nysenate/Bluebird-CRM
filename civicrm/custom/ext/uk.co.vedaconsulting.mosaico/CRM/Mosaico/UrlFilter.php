@@ -42,7 +42,7 @@ class CRM_Mosaico_UrlFilter extends \Civi\FlexMailer\Listener\BaseListener {
         return $matches[0];
       }
 
-      if ($matches[2]{0} === '/') {
+      if ($matches[2][0] === '/') {
         return $matches[1] . $domainBase . $matches[2] . $matches[3];
       }
       else {

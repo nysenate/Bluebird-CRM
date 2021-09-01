@@ -19,7 +19,8 @@ echo "enable logging and rebuild triggers...\n";
 Civi::settings()->set('logging', TRUE);
 
 $logging = new CRM_Logging_Schema;
-$logging->enableLogging();
+$logging->fixSchemaDifferences(TRUE);
+$logging->addReports();
 
 Civi::service('sql_triggers')->rebuild(NULL, TRUE);
 
