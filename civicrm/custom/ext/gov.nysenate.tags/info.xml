@@ -17,7 +17,7 @@
   <compatibility>
     <ver>4.7</ver>
   </compatibility>
-  <comments></comments>
+  <comments/>
   <civix>
     <namespace>CRM/NYSS/Tags</namespace>
   </civix>
