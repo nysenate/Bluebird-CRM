@@ -212,6 +212,10 @@ function reports_civicrm_alterReportVar($varType, &$var, &$object) {
           _reports_MailingSummary_rows($var, $object);
           break;
 
+        case 'CRM_Report_Form_Contact_LoggingDetail':
+          _reports_LoggingDetails_rows($var, $object);
+          break;
+
         default:
       }
 
@@ -275,6 +279,17 @@ function _reports_LoggingSummary_sql(&$var, &$object) {
 
     $where .= " AND extra_table.id IS NULL AND extra_table_2.id IS NULL";
     $var->setVar('_where', $where);
+  }
+}
+
+function _reports_LoggingDetails_rows(&$var, &$object) {
+  //11730 remove Modified/Created date from log detail report
+  foreach ($var as $rowNum => $row) {
+    if (strpos($row['field'][0], 'Modified Date') !== FALSE ||
+      strpos($row['field'][0], 'Created Date') !== FALSE
+    ) {
+      unset($var[$rowNum]);
+    }
   }
 }
 
