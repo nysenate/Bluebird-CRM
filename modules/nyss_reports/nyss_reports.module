@@ -114,10 +114,6 @@ function nyss_reports_civicrm_alterReportVar($varType, &$var, &$object) {
           _nyss_reports_Activity_rows($var, $object);
           break;
 
-        case 'CRM_Report_Form_Contact_LoggingDetail':
-          _nyss_reports_LogDetail_rows($var, $object);
-          break;
-
         default:
       }
       break;
@@ -426,14 +422,3 @@ function _nyss_reports_CaseSummary_cols(&$var, &$object) {
     'default' => 1,
   );
 }//_nyss_reports_CaseSummary_cols
-
-//11730 remove Modified/Created date from log detail report
-function _nyss_reports_LogDetail_rows(&$var, &$object) {
-  foreach ($var as $rowNum => $row) {
-    if (strpos($row['field'], 'Modified Date') !== FALSE ||
-      strpos($row['field'], 'Created Date') !== FALSE
-    ) {
-      unset($var[$rowNum]);
-    }
-  }
-}

@@ -451,32 +451,31 @@ class CRM_Logging_ReportDetail extends CRM_Report_Form {
 
   //NYSS 6268 display attachment filename instead of ID
   function alterDisplay(&$rows) {
-    //CRM_Core_Error::debug_var('ReportDetail alterDisplay rows',$rows);
+    //CRM_Core_Error::debug_var('ReportDetail alterDisplay rows', $rows);
 
-    static $fileRecords = array();
+    static $fileRecords = [];
 
-    if ( empty($fileRecords) ) {
+    if (empty($fileRecords)) {
       $sql = "
         SELECT id, uri
         FROM civicrm_file;
       ";
       $files = CRM_Core_DAO::executeQuery($sql);
 
-      while ( $files->fetch() ) {
+      while ($files->fetch()) {
         $fileRecords[$files->id] = CRM_Utils_File::cleanFileName($files->uri);
       }
     }
 
     foreach ($rows as $key => &$row) {
-      if ( strstr($row['field'], 'File Attachments') !== FALSE ) {
-        if ( !empty($row['from']) ) {
+      if (strpos($row['field'][0], 'File Attachments') !== FALSE) {
+        if (!empty($row['from'])) {
           $row['from'] = $fileRecords[$row['from']];
         }
-        if ( !empty($row['to']) ) {
+        if (!empty($row['to'])) {
           $row['to'] = $fileRecords[$row['to']];
         }
       }
     }
   }
-
 }
