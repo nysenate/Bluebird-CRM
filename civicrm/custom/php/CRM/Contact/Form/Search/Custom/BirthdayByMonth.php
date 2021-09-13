@@ -113,7 +113,7 @@ class CRM_Contact_Form_Search_Custom_BirthdayByMonth
   }
   
 
-  function formRule($fields) {
+  function formRule($fields, $files, $self) {
     $errors = [];
     
     //days cannot be > 31
