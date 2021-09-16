@@ -1,7 +1,7 @@
 <?php
 
 require_once 'merge.civix.php';
-use CRM_Merge_ExtensionUtil as E;
+use CRM_NYSS_Merge_ExtensionUtil as E;
 
 /**
  * Implements hook_civicrm_config().
@@ -172,7 +172,7 @@ function merge_civicrm_merge($type, &$data, $mainId = NULL, $otherId = NULL, $ta
 
 function merge_civicrm_buildForm($formName, &$form) {
   if ($formName == 'CRM_Contact_Form_Merge') {
-    CRM_Core_Resources::singleton()->addScriptFile(CRM_Merge_ExtensionUtil::LONG_NAME, 'js/Merge.js');
+    CRM_Core_Resources::singleton()->addScriptFile(CRM_NYSS_Merge_ExtensionUtil::LONG_NAME, 'js/Merge.js');
   }
 }
 
