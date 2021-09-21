@@ -361,9 +361,14 @@ function _reports_CaseDetail_sql(&$var, &$object) {
 }
 
 function _reports_CaseSummary_col(&$var, &$object) {
+  //Civi::log()->debug(__FUNCTION__, ['var' => $var]);
+
   //12635
   $relTypes = CRM_Utils_Array::index(['name_a_b'], CRM_Core_PseudoConstant::relationshipType('name'));
   $var['civicrm_relationship']['filters']['relationship_type_id']['default'] = [$relTypes['Case Manager']['id']];
+
+  //4940
+  asort($var['civicrm_relationship']['filters']['relationship_type_id']['options']);
 }
 
 function _reports_CaseSummary_rows(&$var, &$object) {
