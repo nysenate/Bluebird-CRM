@@ -216,6 +216,10 @@ function reports_civicrm_alterReportVar($varType, &$var, &$object) {
           _reports_LoggingDetails_rows($var, $object);
           break;
 
+        case 'CRM_Report_Form_Case_Summary':
+          _reports_CaseSummary_rows($var, $object);
+          break;
+
         default:
       }
 
@@ -360,6 +364,29 @@ function _reports_CaseSummary_col(&$var, &$object) {
   //12635
   $relTypes = CRM_Utils_Array::index(['name_a_b'], CRM_Core_PseudoConstant::relationshipType('name'));
   $var['civicrm_relationship']['filters']['relationship_type_id']['default'] = [$relTypes['Case Manager']['id']];
+}
+
+function _reports_CaseSummary_rows(&$var, &$object) {
+  //Civi::log()->debug(__FUNCTION__, ['var' => $var]);
+
+  //14256
+  foreach ($var as &$row) {
+    //break out of loop if these fields are not even present
+    if (!isset($row['civicrm_c2_client_name']) && !isset($row['civicrm_c2_id'])) {
+      break;
+    }
+
+    //if values present, construct link to contact
+    if (!empty($row['civicrm_c2_client_name']) && !empty($row['civicrm_c2_id'])) {
+      $url = CRM_Utils_System::url('civicrm/contact/view',
+        'reset=1&cid=' . $row['civicrm_c2_id'],
+        $object->_absoluteUrl
+      );
+      $row['civicrm_c2_client_name_link'] = $url;
+      $row['civicrm_c2_client_name_hover'] = ts('View Contact Record');
+    }
+  }
+
 }
 
 //12558
