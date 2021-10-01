@@ -197,6 +197,10 @@ function reports_civicrm_alterReportVar($varType, &$var, &$object) {
           _reports_CaseDetail_sql($var, $object);
           break;
 
+        case 'CRM_Report_Form_Case_Summary':
+          _reports_CaseSummary_sql($var, $object);
+          break;
+
         default:
       }
 
@@ -369,13 +373,57 @@ function _reports_CaseSummary_col(&$var, &$object) {
 
   //4940
   asort($var['civicrm_relationship']['filters']['relationship_type_id']['options']);
+
+  //14267
+  $var['civicrm_address'] = [
+    'dao' => 'CRM_Core_DAO_Address',
+    'fields' => [
+      'id' => [
+        'title' => ts('Address ID'),
+        'no_display' => TRUE,
+        'required' => TRUE,
+      ],
+      'street_address' => [
+        'title' => ts('Street Address'),
+      ],
+      'supplemental_address_1' => [
+        'title' => ts('Mailing Address'),
+      ],
+      'city' => [
+        'title' => ts('City'),
+      ],
+      'state_province_id' => [
+        'title' => ts('State/Province'),
+      ],
+      'postal_code' => [
+        'title' => ts('Postal Code'),
+      ],
+    ],
+    'grouping' => 'address-fields',
+  ];
+
+}
+
+function _reports_CaseSummary_sql(&$var, &$object) {
+  //Civi::log()->debug(__FUNCTION__, ['var' => $var]);
+
+  //14267
+  $from = $var->getVar('_from');
+  $from .= "
+    LEFT JOIN civicrm_address address_civireport
+      ON case_contact_civireport.contact_id = address_civireport.contact_id
+      AND address_civireport.is_primary = 1
+  ";
+  $var->setVar('_from', $from);
+
+
 }
 
 function _reports_CaseSummary_rows(&$var, &$object) {
   //Civi::log()->debug(__FUNCTION__, ['var' => $var]);
 
   //14256
-  foreach ($var as &$row) {
+  foreach ($var as $rowNum => &$row) {
     //break out of loop if these fields are not even present
     if (!isset($row['civicrm_c2_client_name']) && !isset($row['civicrm_c2_id'])) {
       break;
@@ -390,6 +438,8 @@ function _reports_CaseSummary_rows(&$var, &$object) {
       $row['civicrm_c2_client_name_link'] = $url;
       $row['civicrm_c2_client_name_hover'] = ts('View Contact Record');
     }
+
+    $object->alterDisplayAddressFields($row, $var, $rowNum, NULL, NULL);
   }
 
 }
