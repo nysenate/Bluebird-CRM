@@ -3,14 +3,14 @@
 // Project: BluebirdCRM
 // Authors: Brian Shaughnessy
 // Organization: New York State Senate
-// Date: 2021-10-01
+// Date: 2021-10-04
 
 error_reporting(E_ERROR | E_PARSE | E_WARNING);
 set_time_limit(0);
 
 define('DEFAULT_LOG_LEVEL', 'INFO');
 
-class CRM_NYSS_Scripts_RestoreOnHold {
+class CRM_NYSS_Scripts_RestoreCaseRoles {
 
   function run() {
     require_once 'script_utils.php';
@@ -28,7 +28,7 @@ class CRM_NYSS_Scripts_RestoreOnHold {
       exit(1);
     }
 
-    echo "Initiating cleanup for 14263...\n";
+    echo "Initiating cleanup for 14282...\n";
 
     //get instance settings
     $bbcfg = get_bluebird_instance_config($optlist['site']);
@@ -38,7 +38,7 @@ class CRM_NYSS_Scripts_RestoreOnHold {
     $civicrm_root = $bbcfg['drupal.rootdir'].'/sites/all/modules/civicrm';
     $_SERVER['REMOTE_ADDR'] = '127.0.0.1';
     if (!CRM_Utils_System::loadBootstrap([], FALSE, FALSE, $civicrm_root)) {
-      CRM_Core_Error::debug_log_message('Failed to bootstrap CMS from CRM_NYSS_Scripts_RestoreOnHold.');
+      CRM_Core_Error::debug_log_message('Failed to bootstrap CMS from CRM_NYSS_Scripts_RestoreCaseRoles.');
       return FALSE;
     }
 
@@ -46,36 +46,40 @@ class CRM_NYSS_Scripts_RestoreOnHold {
     $civiDB = $bbcfg['db.civicrm.prefix'].$bbcfg['db.basename'];
 
     $sql = "
-      SELECT ec.id, ec.email, el.email, ec.on_hold ec_on_hold, el.on_hold el_on_hold
-      FROM {$civiDB}.civicrm_email ec
+      SELECT c.id case_id, r.id rel_id
+      FROM {$civiDB}.civicrm_case c
       JOIN (
-        SELECT id, email, on_hold
-        FROM {$logDB}.log_civicrm_email
-        WHERE on_hold = 2
-          AND log_date >= '2021-07-01'
-        GROUP BY id, email, on_hold
-      ) el
-        ON el.id = ec.id
-      WHERE ec.on_hold = 0
-        AND ec.email = el.email
-      GROUP BY ec.id
+        SELECT case_id, max(log_date) max_log_date
+        FROM {$logDB}.log_civicrm_relationship
+        WHERE case_id IS NOT NULL
+		    AND relationship_type_id = 13
+		    GROUP BY case_id
+      ) most_recent_log
+        ON c.id = most_recent_log.case_id
+      JOIN {$logDB}.log_civicrm_relationship r
+        ON most_recent_log.case_id = r.case_id
+        AND most_recent_log.max_log_date = r.log_date
+      WHERE c.status_id = 2
     ";
     $dao = CRM_Core_DAO::executeQuery($sql);
-    Civi::log()->debug(__FUNCTION__, ['$sql' => $sql,'dao' => $dao]);
+    //Civi::log()->debug(__FUNCTION__, ['$sql' => $sql,'dao' => $dao]);
 
     bbscript_log(LL::INFO, "processing {$dao->N} records...");
 
     $i = 0;
+    $ids = [];
     while ($dao->fetch()) {
       try {
         if (!$optlist['dryrun']) {
-          civicrm_api3('Email', 'create', [
-            'id' => $dao->id,
-            'on_hold' => 2,
+          civicrm_api3('Relationship', 'create', [
+            'id' => $dao->rel_id,
+            'is_active' => 1,
+            'end_date' => 'null',
           ]);
         }
 
         $i++;
+        $ids[] = $dao->rel_id;
         if ($i % 500 == 0) {
           echo "proceessed {$i} records...\n";
         }
@@ -83,13 +87,14 @@ class CRM_NYSS_Scripts_RestoreOnHold {
       catch (CiviCRM_API3_Exception $e) {}
     }
 
-    return $i;
+    return ['count' => $i, 'ids' => $ids];
   }
 }
 
 //run the script
-$class = new CRM_NYSS_Scripts_RestoreOnHold();
-$i = $class->run();
+$class = new CRM_NYSS_Scripts_RestoreCaseRoles();
+$results = $class->run();
 
-echo "proceessed {$i} total records.\n";
+echo "proceessed {$results['count']} total records.\n";
+print_r($results['ids']);
 echo "processing completed.\n";
