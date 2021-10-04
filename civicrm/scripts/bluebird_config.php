@@ -156,9 +156,7 @@ function get_bluebird_instance_config($instance = null, $filename = null)
     if (isset($bbini['globals'])) {
       $s_bbcfg = array_merge($s_bbcfg, $bbini['globals']);
     }
-    if (isset($bbini[$instance_key])) {
-      $s_bbcfg = array_merge($s_bbcfg, $bbini[$instance_key]);
-    }
+    $s_bbcfg = array_merge($s_bbcfg, $bbini[$instance_key]);
   }
   else {
     error_log(PROG.": CRM instance [$instance] could not be configured.");
