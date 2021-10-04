@@ -70,7 +70,7 @@ class CRM_NYSS_Scripts_RestoreOnHold {
       try {
         if (!$optlist['dryrun']) {
           civicrm_api3('Email', 'create', [
-            'contact_id' => $dao->id,
+            'id' => $dao->id,
             'on_hold' => 2,
           ]);
         }
