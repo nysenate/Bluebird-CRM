@@ -60,6 +60,7 @@ class CRM_NYSS_Scripts_RestoreCaseRoles {
         ON most_recent_log.case_id = r.case_id
         AND most_recent_log.max_log_date = r.log_date
       WHERE c.status_id = 2
+        AND c.is_deleted = 0
     ";
     $dao = CRM_Core_DAO::executeQuery($sql);
     //Civi::log()->debug(__FUNCTION__, ['$sql' => $sql,'dao' => $dao]);
