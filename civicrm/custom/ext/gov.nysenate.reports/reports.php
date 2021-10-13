@@ -137,6 +137,11 @@ function reports_civicrm_buildForm($formName, &$form) {
       _reports_GroupRole($ele);
     }
   }
+
+  //14267 include Address custom data
+  if ($formName == 'CRM_Report_Form_Case_Summary') {
+    $form->set('_customGroupExtends', ['Case', 'Address']);
+  }
 }
 
 function reports_civicrm_validateForm($formName, &$fields, &$files, &$form, &$errors) {
@@ -407,7 +412,8 @@ function _reports_CaseSummary_col(&$var, &$object) {
 function _reports_CaseSummary_sql(&$var, &$object) {
   //Civi::log()->debug(__FUNCTION__, ['var' => $var]);
 
-  //14267
+  //14267 - regenerate from, append address, then re-append custom data
+  $object->from();
   $from = $var->getVar('_from');
   $from .= "
     LEFT JOIN civicrm_address address_civireport
@@ -415,8 +421,7 @@ function _reports_CaseSummary_sql(&$var, &$object) {
       AND address_civireport.is_primary = 1
   ";
   $var->setVar('_from', $from);
-
-
+  $object->customDataFrom();
 }
 
 function _reports_CaseSummary_rows(&$var, &$object) {
