@@ -9,30 +9,39 @@
  */
 
 class CRM_Tags_APIWrapper {
-  public function fromApiInput($apiRequest) {
-    /*Civi::log()->debug('fromApiInput', array(
-      '$apiRequest' => $apiRequest,
-    ));*/
-    //TODO should we be calling the nyss_tags api here?
+  /**
+   * Callback to wrap completetransaction API calls.
+   */
+  public static function PREPARE ($event) {
+    $request = $event->getApiRequestSig();
+    //Civi::log()->debug(__FUNCTION__, ['request' => $request]);
 
-    return $apiRequest;
+    switch($request) {
+      // Wrap completetransaction in the v3 API.
+      // Doesn't exist yet in the v4 API.
+      case '3.tag.get':
+        $event->wrapAPI(['CRM_Tags_APIWrapper', 'completeTransaction']);
+        break;
+      default:
+    }
   }
 
   /**
-   * alter the result before returning it to the caller.
+   * <insert appropriate docs here>
+   * @param array $apiRequest
+   * @param array $callsame - function callback see \Civi\Api\Provider\WrappingProvider
+   *
+   * #14336
    */
-  public function toApiOutput($apiRequest, $result) {
-    /*Civi::log()->debug('toApiOutput', array(
-      '$apiRequest' => $apiRequest,
-      '$result' => $result,
-    ));*/
+  public function completeTransaction($apiRequest, $callsame) {
+    //Civi::log()->debug(__FUNCTION__, ['$apiRequest' => $apiRequest]);
 
-    /*$result = civicrm_api3('nyss_tags', 'getlist', $apiRequest['params']);
-    Civi::log()->debug('toApiOutput AFTER', array(
-      '$apiRequest' => $apiRequest,
-      '$result (after)' => $result,
-    ));*/
+    if (!empty($term = $apiRequest['params']['name']['LIKE']) &&
+      strpos($term, '%') !== 0
+    ) {
+      $apiRequest['params']['name']['LIKE'] = '%'.$term;
+    }
 
-    return $result;
+    return $callsame($apiRequest);
   }
 }
