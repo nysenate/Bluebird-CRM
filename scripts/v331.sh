@@ -41,5 +41,15 @@ sql="
 "
 $execSql $instance -c "$sql" -q
 
+## 14356 add activity type
+echo "$prog: create Request Assistance activity type"
+sql="
+SELECT @optGroup := id FROM civicrm_option_group WHERE name = 'activity_type';
+SELECT @maxVal := max(value) FROM civicrm_option_value WHERE option_group_id = @optGroup;
+INSERT INTO civicrm_option_value (id, option_group_id, label, value, name, grouping, filter, is_default, weight, description, is_optgroup, is_reserved, is_active, component_id, domain_id, visibility_id)
+VALUES (NULL, @optGroup, 'Request Assistance', @maxVal + 1, 'Request Assistance', NULL, '0', NULL, @maxVal + 1, NULL, '0', '0', '1', NULL, NULL, NULL);
+"
+$execSql $instance -c "$sql" -q
+
 ## record completion
 echo "$prog: upgrade process is complete."
