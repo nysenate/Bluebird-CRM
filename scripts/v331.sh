@@ -34,6 +34,7 @@ fi
 ## 14355 create new case type
 echo "$prog: create new case type"
 sql="
+  DELETE FROM civicrm_case_type WHERE name = 'government_service_problem_federal';
   INSERT INTO civicrm_case_type
   (name, title, description, is_active, is_reserved, weight, definition)
   VALUES
@@ -44,12 +45,27 @@ $execSql $instance -c "$sql" -q
 ## 14356 add activity type
 echo "$prog: create Request Assistance activity type"
 sql="
-SELECT @optGroup := id FROM civicrm_option_group WHERE name = 'activity_type';
-SELECT @maxVal := max(value) FROM civicrm_option_value WHERE option_group_id = @optGroup;
-INSERT INTO civicrm_option_value (id, option_group_id, label, value, name, grouping, filter, is_default, weight, description, is_optgroup, is_reserved, is_active, component_id, domain_id, visibility_id)
-VALUES (NULL, @optGroup, 'Request Assistance', @maxVal + 1, 'Request Assistance', NULL, '0', NULL, @maxVal + 1, NULL, '0', '0', '1', NULL, NULL, NULL);
+  SELECT @optGroup := id FROM civicrm_option_group WHERE name = 'activity_type';
+  DELETE FROM civicrm_option_value WHERE option_group_id = @optGroup AND name = 'Request Assistance';
+  SELECT @maxVal := max(value) FROM civicrm_option_value WHERE option_group_id = @optGroup;
+  INSERT INTO civicrm_option_value (option_group_id, label, value, name, grouping, filter, is_default, weight, description, is_optgroup, is_reserved, is_active, component_id, domain_id, visibility_id)
+  VALUES (@optGroup, 'Request Assistance', @maxVal + 1, 'Request Assistance', NULL, '0', NULL, @maxVal + 1, NULL, '0', '0', '1', NULL, NULL, NULL);
 "
 $execSql $instance -c "$sql" -q
+
+## 5335 add bmp to safe file extensions
+sql="
+  SELECT @safe:= id FROM civicrm_option_group WHERE name = 'safe_file_extension';
+  DELETE FROM civicrm_option_value WHERE option_group_id = @safe AND name = 'webp';
+  SELECT @maxval:= MAX(CAST(value AS UNSIGNED)) FROM civicrm_option_value WHERE option_group_id = @safe;
+  INSERT INTO civicrm_option_value (
+    option_group_id, label, value, name, grouping, filter, is_default, weight, description, is_optgroup, is_reserved,
+    is_active, component_id, domain_id, visibility_id )
+  VALUES (
+    @safe, 'webp', @maxval+1, 'webp' , NULL , '0', '0', @maxval+1, NULL , '0', '0', '1', NULL , NULL , NULL
+  );
+"
+$execSql -i $instance -c "$sql" -q
 
 ## record completion
 echo "$prog: upgrade process is complete."
