@@ -4,7 +4,7 @@
    * The class CrmMosaicoIframe allows you to instantiate and manage a
    * full-screen IFRAME with embedded Mosaico runtime.
    */
-  angular.module('crmMosaico').factory('CrmMosaicoIframe', function(crmUiAlert, $q, $timeout, $rootScope) {
+  angular.module('crmMosaico').factory('CrmMosaicoIframe', function(crmUiAlert, $q, $timeout, $rootScope, CrmMosaicoSyncMonitor) {
 
     /**
      * @param Object newOptions
@@ -40,6 +40,7 @@
 
       var model = cfg.model, actions = cfg.actions;
       var isVisible = false, $iframe = null, iframe = null;
+      var syncMonitor = new CrmMosaicoSyncMonitor();
 
       if (actions.save && actions.close) {
         throw "Error: Save and Close actions are mutually exclusive";
@@ -67,7 +68,7 @@
       }
 
       this.render = function render() {
-        $iframe = $('<iframe frameborder="0" class="ui-front">');
+        $iframe = $('<iframe id="crm-mosaico" frameborder="0" class="ui-front">');
         $('body').append($iframe);
         onResize();
         $(window).on('resize', onResize);
@@ -116,6 +117,7 @@
       this.hide = function hide() {
         isVisible = false;
         if ($iframe) {
+          syncMonitor.stop($iframe);
           scrollRestore();
           $iframe.hide();
         }
@@ -128,6 +130,7 @@
           scrollHide();
           onResize();
           $iframe.show();
+          syncMonitor.start($iframe);
         }
         return this;
       };
@@ -170,6 +173,10 @@
         if (actions.test) {
           viewModel.test = mkCmd("Test", actions.test);
         }
+
+        syncMonitor.onSync = function () {
+          if (actions.sync) actions.sync(ko, viewModel);
+        };
       }
 
     };

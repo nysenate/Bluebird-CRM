@@ -1,0 +1,116 @@
+<?xml version="1.0" encoding="iso-8859-1" ?>
+
+<CaseType>
+  <name>Government Service Problem - Federal</name>
+  <ActivityAsgmtGrps>
+    <Group>Office_Staff</Group>
+  </ActivityAsgmtGrps>
+  <RestrictActivityAsgmtToCmsUser>0</RestrictActivityAsgmtToCmsUser>
+  
+  <ActivityTypes>
+    <ActivityType>
+      <name>Open Case</name>
+      <max_instances>1</max_instances>
+    </ActivityType>
+    <ActivityType>
+      <name>Follow up</name>
+    </ActivityType>
+    <ActivityType>
+      <name>Change Case Type</name>
+    </ActivityType>
+    <ActivityType>
+      <name>Change Case Status</name>
+    </ActivityType>
+    <ActivityType>
+      <name>Change Case Start Date</name>
+    </ActivityType>
+    <ActivityType>
+      <name>Link Cases</name>
+    </ActivityType>
+
+    <ActivityType>
+      <name>Supervisor Review</name>
+    </ActivityType>
+    <ActivityType>
+      <name>State Agency Support</name>
+    </ActivityType>
+    <ActivityType>
+      <name>Local Government Contact</name>
+    </ActivityType>
+    <ActivityType>
+      <name>Record SSN</name>
+    </ActivityType>
+    <ActivityType>
+      <name>Phone Call</name>
+    </ActivityType>
+    <ActivityType>
+      <name>Phone Call Received</name>
+    </ActivityType>
+    <ActivityType>
+      <name>Letter Sent</name>
+    </ActivityType>
+    <ActivityType>
+      <name>Letter Received</name>
+    </ActivityType>
+    <ActivityType>
+      <name>Email</name>
+    </ActivityType>
+    <ActivityType>
+      <name>Email Sent</name>
+    </ActivityType>
+    <ActivityType>
+      <name>Email Received</name>
+    </ActivityType>
+    <ActivityType>
+      <name>Fax Sent</name>
+    </ActivityType>
+    <ActivityType>
+      <name>Fax Received</name>
+    </ActivityType>
+    <ActivityType>
+      <name>In Person</name>
+    </ActivityType>
+    <ActivityType>
+      <name>Meeting</name>
+    </ActivityType>
+    <ActivityType>
+      <name>Other</name>
+    </ActivityType>
+  </ActivityTypes>
+
+  <ActivitySets>
+    <ActivitySet>
+      <name>standard_timeline</name>
+      <label>Standard Timeline</label>
+      <timeline>true</timeline>
+      <ActivityTypes>
+        <ActivityType>
+          <name>Open Case</name>
+          <status>Completed</status>
+        </ActivityType>
+      </ActivityTypes>
+    </ActivitySet>
+  </ActivitySets>
+
+  <CaseRoles>
+    <RelationshipType>
+      <name>Case Manager</name>
+      <creator>1</creator>
+      <manager>1</manager>
+      <groups>Office_Staff</groups>
+    </RelationshipType>
+    <RelationshipType>
+      <name>Case Coordinator</name>
+      <groups>Office_Staff</groups>
+    </RelationshipType>
+    <RelationshipType>
+      <name>Support Staff</name>
+      <groups>Office_Staff</groups>
+    </RelationshipType>
+    <RelationshipType>
+      <name>Non-District Staff</name>
+      <groups>Office_Staff</groups>
+    </RelationshipType>
+  </CaseRoles>
+
+</CaseType>
