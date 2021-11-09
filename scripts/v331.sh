@@ -38,7 +38,13 @@ sql="
   INSERT INTO civicrm_case_type
   (name, title, description, is_active, is_reserved, weight, definition)
   VALUES
-  ('government_service_problem_federal', 'Government Service Problem - Federal', 'Problem with a federal government entity.', 1, 0, 9, NULL);
+  ('government_service_problem_federal', 'Government Service Problem - Federal', 'Problem with a federal government entity.', 1, 0, 3, NULL);
+  UPDATE civicrm_case_type SET weight = 4 WHERE name = 'government_service_problem_local';
+  UPDATE civicrm_case_type SET weight = 5 WHERE name = 'government_service_problem_state';
+  UPDATE civicrm_case_type SET weight = 6 WHERE name = 'letter_of_support';
+  UPDATE civicrm_case_type SET weight = 7 WHERE name = 'other';
+  UPDATE civicrm_case_type SET weight = 8 WHERE name = 'request_for_assistance';
+  UPDATE civicrm_case_type SET weight = 9 WHERE name = 'request_for_information';
 "
 $execSql $instance -c "$sql" -q
 
