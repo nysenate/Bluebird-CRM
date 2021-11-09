@@ -1,10 +1,5 @@
 <?php
 
-require_once 'CRM/Core/BAO/Setting.php';
-require_once 'CRM/Core/Error.php';
-require_once 'CRM/Core/BAO/Address.php';
-require_once 'CRM/Core/PseudoConstant.php';
-
 define('MAX_STATUS_LEN', 200); //threshold length for status message
 
 /**
@@ -16,8 +11,7 @@ class CRM_Utils_SAGE
   * Produces a SAGE warning.
   * @param string $message  Error message. 
   */
-  private static function warn(string $message)
-  {
+  private static function warn(string $message) {
     $session = CRM_Core_Session::singleton();
     $config = CRM_Core_Config::singleton();
 
@@ -25,7 +19,7 @@ class CRM_Utils_SAGE
     //NYSS 7340
     //TODO setStatus doesn't trigger the js warning message as expected, when triggered via inline;
     //disable for now, but investigate ways to handle that better
-    if ( CRM_Utils_Array::value('class_name', $_REQUEST, '') != 'CRM_Contact_Form_Inline_Address' &&
+    if (CRM_Utils_Array::value('class_name', $_REQUEST, '') != 'CRM_Contact_Form_Inline_Address' &&
       strlen($session->getStatus()) < MAX_STATUS_LEN
     ) {
       // NYSS 5798 - Only show details in debug mode
@@ -36,7 +30,7 @@ class CRM_Utils_SAGE
         $session->setStatus(ts("SAGE Warning: Address lookup failed.<br/>"));
       }
     }
-  } // warn()
+  }
 
   /**
    * Builds the full URL with query string for a SAGE call.  This adds the
@@ -153,7 +147,7 @@ class CRM_Utils_SAGE
     }
 
     return $ret;
-  } // checkAddress()
+  }
 
 
   /**
@@ -181,7 +175,7 @@ class CRM_Utils_SAGE
       return true;
     }
     return false;
-  } // batchCheckAddress()
+  }
 
   /**
   * Performs geocoding by address and stores the geocodes in {$values}
@@ -190,7 +184,6 @@ class CRM_Utils_SAGE
   * @return boolean if response validated successfully.
   */
   public static function geocode(&$values): bool {
-
     [$addr_field, $addr] = self::getAddress($values);
 
     // Generate a cache key from the address parameters.
@@ -218,7 +211,7 @@ class CRM_Utils_SAGE
     }
 
     return $ret;
-  } // geocode()
+  }
 
 
   /**
@@ -247,7 +240,7 @@ class CRM_Utils_SAGE
       return true;
     }
     return false;
-  } // batchGeocode()
+  }
 
 
   /**
@@ -305,7 +298,7 @@ class CRM_Utils_SAGE
 
     return $ret;
 
-  } // distAssign()
+  }
 
 
   /**
@@ -351,7 +344,7 @@ class CRM_Utils_SAGE
       }
     }
     return $ret;
-  } // batchDistAssign()
+  }
 
 
   /**
@@ -369,6 +362,7 @@ class CRM_Utils_SAGE
       ];
     $xml = self::callSAGE($url, $params);
     $ret = self::validateResponse($xml);
+    CRM_Core_Error::backtrace(__FUNCTION__, TRUE);
     if ($ret) {
       self::storeDistricts($values, $xml, $overwrite_districts);
     }
@@ -377,7 +371,7 @@ class CRM_Utils_SAGE
       self::warn("Lookup for [$params] has failed.");
     }
     return $ret;
-  } // lookupFromPoint()
+  }
 
 
   /**
@@ -408,7 +402,7 @@ class CRM_Utils_SAGE
     }
 
     return $ret;
-  } // batchLookupFromPoint()
+  }
 
 
   /**
@@ -419,8 +413,7 @@ class CRM_Utils_SAGE
   * @param boolean $overwrite_point      If true, geocode will be written by default to {$values}
   * @return true if response validated successfully, false otherwise.
   */
-  public static function lookup(&$values, $overwrite_districts=true, $overwrite_point=true)
-  {
+  public static function lookup(&$values, $overwrite_districts=true, $overwrite_point=true) {
     [$addr_field, $addr] = self::getAddress($values);
     if (!$addr) {
       self::warn("Not enough address info.");
@@ -468,9 +461,8 @@ class CRM_Utils_SAGE
       self::warn("Lookup for [$params] has failed.");
     }
 
-
     return $ret;
-  } // lookup()
+  }
 
 
   /**
@@ -484,8 +476,7 @@ class CRM_Utils_SAGE
   * @param boolean $overwrite_point      If true, geocodes written to each row by default.
   * @return true if response was valid, false otherwise.
   */
-  public static function batchLookup(&$rows, $overwrite_districts=true, $overwrite_point=true)
-  {
+  public static function batchLookup(&$rows, $overwrite_districts=true, $overwrite_point=true) {
     $addresses = self::getAddressesFromRows($rows);
     $url = '/district/bluebird/batch';
     $batchXml = self::callSAGEPost($url, [], json_encode($addresses));
@@ -510,7 +501,7 @@ class CRM_Utils_SAGE
     }
 
     return $ret;
-  } // batchLookup()
+  }
 
 
   /**
@@ -538,8 +529,7 @@ class CRM_Utils_SAGE
       $addresses[] = $address;
     }
     return $addresses;
-  } // getAddressesFromRows()
-
+  }
 
   /**
    * Returns an array of lat/lng points using data in the supplied {$rows}.
@@ -557,8 +547,7 @@ class CRM_Utils_SAGE
       );
     }
     return $points;
-  } // getPointsFromRows()
-
+  }
 
   /**
   * Fail silently if the XML response from SAGE was invalid and could not
@@ -570,8 +559,7 @@ class CRM_Utils_SAGE
   */
   protected static function validateResponse($xml): bool {
     return ($xml instanceof SimpleXMLElement) && ($xml->statusCode == 0);
-  } // validateResponse()
-
+  }
 
   /** 
   * Historically there have been several fields to store the address.
@@ -589,7 +577,7 @@ class CRM_Utils_SAGE
       }
     }
     return array('street_address', "");
-  } // getAddress()
+  }
 
 
   /**
@@ -600,8 +588,7 @@ class CRM_Utils_SAGE
    * @param SimpleXMLElement $xml SimpleXml object containing SAGE xml response.
    * @param string $addr_field Column name where original street address was obtained.
    */
-  protected static function storeAddress(array &$values, SimpleXMLElement $xml, string $addr_field)
-  {
+  protected static function storeAddress(array &$values, SimpleXMLElement $xml, string $addr_field) {
     //Forced type cast required to convert the simplexml objects to strings
     $values['city'] = ucwords(strtolower((string)$xml->address->city));
     $values['state_province'] = (string)$xml->address->state;
@@ -613,7 +600,7 @@ class CRM_Utils_SAGE
 
     // Since standardization could change the street address, fix the parts
     self::fixStreetAddressParts($values);
-  } // storeAddress()
+  }
 
 
   /**
@@ -624,8 +611,7 @@ class CRM_Utils_SAGE
    * @param \SimpleXMLElement $xml SimpleXml object containing SAGE xml response.
    * @param boolean $overwrite If true, geocode data is written by default.
    */
-  protected static function storeGeocodes(&$values, $xml, $overwrite = false)
-  {
+  protected static function storeGeocodes(&$values, $xml, $overwrite = false) {
     //Forced type cast required to convert the simplexml objects to strings
     if ($overwrite || empty($values["geo_code_1"]) || !$values["geo_code_1"]) {
      $values["geo_method"] = (string)$xml->geocode->method;
@@ -634,7 +620,7 @@ class CRM_Utils_SAGE
     if ($overwrite || empty($values["geo_code_2"]) || !$values["geo_code_2"]) {
      $values["geo_code_2"] = (string)$xml->geocode->lon;
     }
-  } // storeGeocodes()
+  }
 
 
   /**
@@ -645,8 +631,7 @@ class CRM_Utils_SAGE
   * @param \SimpleXMLElement $xml        SimpleXml object containing SAGE xml response.
   * @param boolean   $overwrite  If true, district data is written by default.
   */
-  protected static function storeDistricts(&$values, $xml, $overwrite)
-  {
+  protected static function storeDistricts(&$values, $xml, $overwrite) {
     // The form includes the address primary key in the field name so we
     // must detect the address pk to store addresses in the right slots.
     // Get the pk from the form input names using the following method,
@@ -684,7 +669,7 @@ class CRM_Utils_SAGE
     if ($overwrite || empty($values["custom_54_$id"]) || !$values["custom_54_$id"]) {
       $values["custom_54_$id"] = (string)$xml->districts->school->district;
     }
-  } // storeDistricts()
+  }
 
 
   /**
@@ -693,8 +678,7 @@ class CRM_Utils_SAGE
   * @param string $addr       String containing the validated address line 1 value.
   * @param string $orig_addr  String containing the original address line 1 value. 
   */
-  private static function normalizeAddr($addr, $orig_addr)
-  {
+  private static function normalizeAddr($addr, $orig_addr) {
     //Fix the PO Box which doesn't follow ucwords() rules
     if (substr($addr, 0, 6) == "Po Box") {
       $addr = "PO Box".substr($addr, 6); // issue #4277
@@ -733,7 +717,7 @@ class CRM_Utils_SAGE
     }
 
     return $addr;
-  } // normalizeAddr()
+  }
 
 
   /**
@@ -746,8 +730,7 @@ class CRM_Utils_SAGE
   *
   * @param &$values - An array representing address, geocode, and district values
   */
-  private static function fixStreetAddressParts(&$values)
-  {
+  private static function fixStreetAddressParts(&$values) {
     $addr = $values['street_address'];
 
     // Don't bother if there is no address to fix
@@ -767,14 +750,93 @@ class CRM_Utils_SAGE
       $addr_parts = CRM_Core_BAO_Address::parseStreetAddress($addr);
       $values = array_merge($values, $addr_parts);
     }
-  } // fixStreetAddressParts()
-
+  }
 
   /**
    * wrapper function to retain compatibility with expected methods in core
    */
-  public static function format(&$values, $stateName = false)
-  {
+  public static function format(&$values, $stateName = false) {
     self::geocode($values);
-  } // format()
+  }
+
+  /**
+   * @param $id
+   * @return CRM_Core_DAO_Address|null
+   *
+   * Retrieve the full address record associated with the given address ID.
+   */
+  static function retrieveAddress($id) {
+    if ($id) {
+      $address = new CRM_Core_DAO_Address();
+      $address->id = $id;
+      if ($address->find(TRUE)) {
+        return $address;
+      }
+    }
+
+    return NULL;
+  }
+
+  /**
+   * @param $addr
+   * @param $params
+   * @return bool
+   *
+   * Return true if all components of the address are equal to the params.
+   */
+  static function compareAddressComponents($addr, $params) {
+    if ($addr === NULL || !is_array($params)) {
+      return FALSE;
+    }
+
+    $cmp_keys = [
+      'street_address', 'city', 'postal_code', 'postal_code_suffix',
+      'state_province_id', 'supplemental_address_1',
+    ];
+    foreach ($cmp_keys as $akey) {
+      if ($addr->$akey != $params[$akey]) {
+        return FALSE;
+      }
+    }
+
+    return TRUE;
+  }
+
+  /**
+   * @param $params
+   * @param $id
+   * @return mixed|null
+   *
+   * Search through parameters for a key that starts with "custom_NN_", where
+   * "NN" is the custom key ID.  If found, return the value associated with
+   * the partial key.  If not found, return null.
+   */
+  static function customValue($params, $id) {
+    foreach ($params as $k => $v) {
+      $key_prefix = "custom_{$id}_";
+      $len = strlen($key_prefix);
+      if (substr($k, 0, $len) === $key_prefix) {
+        return $v;
+      }
+    }
+
+    return NULL;
+  }
+
+  /**
+   * @param $params
+   * @return bool
+   *
+   * Return true if all 7 district info parameters are populated, false otherwise.
+   * NYSS 5308
+   */
+  static function districtInfoPopulated($params) {
+    foreach ([46,47,48,49,50,52,54] as $cidx) {
+      if (empty(self::customValue($params, $cidx))) {
+        return FALSE;
+      }
+    }
+
+    return TRUE;
+  }
 }

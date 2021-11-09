@@ -67,5 +67,13 @@ sql="
 "
 $execSql -i $instance -c "$sql" -q
 
+echo "disable SAGE module; enable SAGE extension..."
+$drush $instance pm-disable nyss_sage -y
+$execSql -i $instance -c "DELETE FROM system WHERE type='module' AND name='nyss_sage';" --drupal -q
+$drush $instance cvapi extension.enable key=gov.nysenate.sage --quiet
+
+echo "remove old BOE module (previously disabled)"
+$execSql -i $instance -c "DELETE FROM system WHERE type='module' AND name='nyss_boe';" --drupal -q
+
 ## record completion
 echo "$prog: upgrade process is complete."
