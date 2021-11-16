@@ -136,7 +136,7 @@ function boe_civicrm_entityTypes(&$entityTypes) {
 
 function boe_civicrm_buildForm($formName, &$form) {
   if ($formName == 'CRM_Contact_Form_Contact') {
-    //don't allow editing for BOE location type; don't allow setting 'Board of Election' loc type
+    //don't allow editing or setting0 BOE/NCOA location type;
     CRM_Core_Resources::singleton()->addScriptFile(E::LONG_NAME, 'js/ContactFormAddressBOE.js');
 
     $blocks = [
@@ -152,8 +152,11 @@ function boe_civicrm_buildForm($formName, &$form) {
     //Civi::log()->debug(__FUNCTION__, ['$values' => $values]);
 
     $locationTypes = CRM_Core_PseudoConstant::get('CRM_Core_DAO_Address', 'location_type_id');
-    $boardOfElectionId = array_search('BOE', $locationTypes);
-    //Civi::log()->debug(__FUNCTION__, ['$boardOfElectionId' => $boardOfElectionId]);
+    $skippedLocTypes = [
+      array_search('BOE', $locationTypes),
+      array_search('NCOA', $locationTypes),
+    ];
+    //Civi::log()->debug(__FUNCTION__, ['$skippedLocTypes' => $skippedLocTypes]);
 
     $addressOptions = $form->get('addressOptions');
     if (!isset($addressOptions)) {
@@ -164,14 +167,14 @@ function boe_civicrm_buildForm($formName, &$form) {
     }
     //Civi::log()->debug(__FUNCTION__, ['addressOptions' => $addressOptions]);
 
-    $boeAddressBlockId = NULL;
+    $specialBlockIds = [];
 
     foreach ($blocks as $label => $name) {
       foreach ($values[$name] as $blockId => $block) {
         //process BOE locking, etc.
-        if ($boardOfElectionId == CRM_Utils_Array::value('location_type_id', $block)) {
+        if (in_array(CRM_Utils_Array::value('location_type_id', $block), $skippedLocTypes)) {
           if ($name == 'address') {
-            $boeAddressBlockId = $blockId;
+            $specialBlockIds[] = $blockId;
 
             foreach ($addressOptions as $key => $value) {
               //empty means the option is not enabled and can be skipped
@@ -224,14 +227,16 @@ function boe_civicrm_buildForm($formName, &$form) {
         }
       }
 
-      //if block is empty, run unsetLocTypeOptions for blockId 1 (new row; no existing values)
-      if (empty($values[$name])) {
-        _boe_unsetLocTypeOptions($form, $name, 1);
+      //unset special location types for 10 blocks (we don't expect more than that to be used)
+      for ($x = 1; $x <= 10; $x++) {
+        if (!in_array($x, $specialBlockIds)) {
+          _boe_unsetLocTypeOptions($form, $name, $x);
+        }
       }
     }
 
     CRM_Core_Resources::singleton()->addVars('NYSS', [
-      'boeAddressBlockId' => $boeAddressBlockId,
+      'specialBlockIds' => $specialBlockIds,
     ]);
   }
 
@@ -243,7 +248,11 @@ function boe_civicrm_buildForm($formName, &$form) {
 
   if (in_array($formName, $inlineBlockBOE)) {
     $locationTypes = CRM_Core_PseudoConstant::get('CRM_Core_DAO_Address', 'location_type_id');
-    $boardOfElectionId = array_search('BOE', $locationTypes);
+    $skippedLocTypes = [
+      array_search('BOE', $locationTypes),
+      array_search('NCOA', $locationTypes),
+      array_search('Billing', $locationTypes)
+    ];
 
     //determine name and object
     switch ($formName) {
@@ -278,7 +287,7 @@ function boe_civicrm_buildForm($formName, &$form) {
       //CRM_Core_Error::debug_var('elements', $form->_elementIndex);
       //CRM_Core_Error::debug_var('form->_defaultValues', $form->_defaultValues);
 
-      if ($block['location_type_id'] == $boardOfElectionId) {
+      if (in_array($block['location_type_id'], $skippedLocTypes)) {
         $elementLoc = "{$name}[$blockId][location_type_id]";
         $elementName = "{$name}[$blockId]";
 
@@ -333,7 +342,7 @@ function boe_civicrm_buildForm($formName, &$form) {
     $b = ($b < 5) ? 5 : $b;
 
     //suppress special location type options
-    for ($i = 1; $i <= $b; $i++) {
+    for ($i = 1; $i <= 5; $i++) {
       $elementLoc = "{$name}[$i][location_type_id]";
       if (!$form->elementExists($elementLoc)) {
         continue;
@@ -375,7 +384,6 @@ function _boe_unsetLocTypeOptions(&$form, $name, $blockId) {
   //Civi::log()->debug(__FUNCTION__, ['$name' => $name]);
   //Civi::log()->debug(__FUNCTION__, ['$blockId' => $blockId]);
 
-  $newOptions = [];
   $elementName = "{$name}[{$blockId}][location_type_id]";
 
   if (!$form->elementExists($elementName)) {

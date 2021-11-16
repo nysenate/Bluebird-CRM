@@ -38,7 +38,13 @@ sql="
   INSERT INTO civicrm_case_type
   (name, title, description, is_active, is_reserved, weight, definition)
   VALUES
-  ('government_service_problem_federal', 'Government Service Problem - Federal', 'Problem with a federal government entity.', 1, 0, 9, NULL);
+  ('government_service_problem_federal', 'Government Service Problem - Federal', 'Problem with a federal government entity.', 1, 0, 3, NULL);
+  UPDATE civicrm_case_type SET weight = 4 WHERE name = 'government_service_problem_local';
+  UPDATE civicrm_case_type SET weight = 5 WHERE name = 'government_service_problem_state';
+  UPDATE civicrm_case_type SET weight = 6 WHERE name = 'letter_of_support';
+  UPDATE civicrm_case_type SET weight = 7 WHERE name = 'other';
+  UPDATE civicrm_case_type SET weight = 8 WHERE name = 'request_for_assistance';
+  UPDATE civicrm_case_type SET weight = 9 WHERE name = 'request_for_information';
 "
 $execSql $instance -c "$sql" -q
 
@@ -66,6 +72,14 @@ sql="
   );
 "
 $execSql -i $instance -c "$sql" -q
+
+echo "disable SAGE module; enable SAGE extension..."
+$drush $instance pm-disable nyss_sage -y
+$execSql -i $instance -c "DELETE FROM system WHERE type='module' AND name='nyss_sage';" --drupal -q
+$drush $instance cvapi extension.enable key=gov.nysenate.sage --quiet
+
+echo "remove old BOE module (previously disabled)"
+$execSql -i $instance -c "DELETE FROM system WHERE type='module' AND name='nyss_boe';" --drupal -q
 
 ## record completion
 echo "$prog: upgrade process is complete."
