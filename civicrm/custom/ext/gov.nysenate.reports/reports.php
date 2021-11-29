@@ -407,6 +407,8 @@ function _reports_CaseSummary_col(&$var, &$object) {
     'grouping' => 'address-fields',
   ];
 
+  //14378
+  $var['civicrm_case']['order_bys']['id']['title'] = ts('Case ID');
 }
 
 function _reports_CaseSummary_sql(&$var, &$object) {
