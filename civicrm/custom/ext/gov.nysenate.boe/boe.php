@@ -253,6 +253,7 @@ function boe_civicrm_buildForm($formName, &$form) {
       array_search('NCOA', $locationTypes),
       array_search('Billing', $locationTypes)
     ];
+    $skippedLocTypes = array_values(array_filter($skippedLocTypes));
 
     //determine name and object
     switch ($formName) {
@@ -287,7 +288,7 @@ function boe_civicrm_buildForm($formName, &$form) {
       //CRM_Core_Error::debug_var('elements', $form->_elementIndex);
       //CRM_Core_Error::debug_var('form->_defaultValues', $form->_defaultValues);
 
-      if (in_array($block['location_type_id'], $skippedLocTypes)) {
+      if (!empty($block['location_type_id']) && in_array($block['location_type_id'], $skippedLocTypes)) {
         $elementLoc = "{$name}[$blockId][location_type_id]";
         $elementName = "{$name}[$blockId]";
 
