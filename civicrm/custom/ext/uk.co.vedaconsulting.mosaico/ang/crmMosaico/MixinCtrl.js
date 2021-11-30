@@ -66,6 +66,9 @@
             content: mailing.template_options.mosaicoContent
           },
           actions: {
+            sync: function(ko, viewModel) {
+              syncModel(viewModel);
+            },
             close: function(ko, viewModel) {
               viewModel.metadata.changed = Date.now();
               syncModel(viewModel);
