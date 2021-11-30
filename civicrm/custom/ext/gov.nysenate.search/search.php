@@ -279,6 +279,17 @@ function search_civicrm_coreResourceList(&$list, $region) {
   }
 }
 
+function search_civicrm_apiWrappers(&$wrappers, $apiRequest) {
+  if ($apiRequest['entity'] == 'Contact' && $apiRequest['action'] == 'getquick') {
+    //Civi::log()->debug(__FUNCTION__, ['apiRequest' => $apiRequest]);
+
+    //14379 search by case_id
+    if ($apiRequest['params']['field_name'] == 'case_id') {
+      $wrappers[] = new CRM_NYSS_QuickSearchAPIWrapper();
+    }
+  }
+}
+
 function _get_searchresults_items($obj = NULL) {
   $menu = [];
 

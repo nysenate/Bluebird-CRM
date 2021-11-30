@@ -173,4 +173,36 @@ class CRM_NYSS_BAO_NYSS {
       }
     }
   }
+
+  /**
+   * @param $params
+   * @return array
+   *
+   * Callback for APIWrapper modification to support quicksearch by Case ID
+   * 14379
+   */
+  static function getQuickSearchCaseId($params) {
+    //Civi::log()->debug(__FUNCTION__, ['params' => $params]);
+    $result = [];
+
+    try {
+      $cases = civicrm_api3('Case', 'get', [
+        'sequential' => 1,
+        'id' => $params['name'],
+        'is_deleted' => 0,
+        'options' => ['limit' => 0],
+      ]);
+      //Civi::log()->debug(__FUNCTION__, ['$cases' => $cases]);
+
+      foreach ($cases['values'] as $idx => $case) {
+        $contact = civicrm_api3('Contact', 'getsingle', ['id' => $case['client_id'][1]]);
+        $result['values'][$idx]['id'] = $case['client_id'][1];
+        $result['values'][$idx]['data'] = "{$contact['sort_name']} [Case #{$case['id']} :: {$case['subject']}]";
+      }
+    }
+    catch (CiviCRM_API3_Exception $e) {}
+
+    //Civi::log()->debug(__FUNCTION__, ['$result' => $result]);
+    return $result;
+  }
 }
