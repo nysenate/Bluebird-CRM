@@ -13,3 +13,7 @@ body[class*='page-civicrm-report-'] #crm-container .crm-report-form-block .repor
 body[class*='page-civicrm-report-'] #crm-container .crm-report-form-block .report-layout.display tr.odd-row td {
   background-color: #FAFAFA !important;
 }
+
+.crm-container table.display thead th.reports-header {
+  cursor: auto;
+}

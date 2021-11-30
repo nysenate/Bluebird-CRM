@@ -1136,6 +1136,8 @@ class CRM_Core_SelectValues {
       'city' => ts('City'),
       'postal_code' => ts('Postal Code'),
       'job_title' => ts('Job Title'),
+      //NYSS 14379
+      'case_id' => ts('Case ID'),
     ];
     $custom = civicrm_api3('CustomField', 'get', [
       'return' => ['name', 'label', 'custom_group_id.title'],
