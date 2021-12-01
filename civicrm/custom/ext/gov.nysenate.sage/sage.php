@@ -190,13 +190,13 @@ function sage_civicrm_pre($op, $objectName, $id, &$params) {
       CRM_Utils_SAGE::lookup($params, $addr_changed, true);
     }
 
-    Civi::log()->debug(__FUNCTION__, [
+    /*Civi::log()->debug(__FUNCTION__, [
       'op' => $op,
       'id' => $id,
       'params' => $params,
       '$addr_changed' => $addr_changed,
       '$geo_missing' => $geo_missing,
       '$district_info_missing' => $district_info_missing,
-    ]);
+    ]);*/
   }
 }

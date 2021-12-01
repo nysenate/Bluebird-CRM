@@ -169,7 +169,7 @@ function boe_civicrm_buildForm($formName, &$form) {
 
     $specialBlockIds = [];
 
-    foreach ($blocks as $label => $name) {
+    foreach ($blocks as $name) {
       foreach ($values[$name] as $blockId => $block) {
         //process BOE locking, etc.
         if (in_array(CRM_Utils_Array::value('location_type_id', $block), $skippedLocTypes)) {
@@ -399,4 +399,6 @@ function _boe_unsetLocTypeOptions(&$form, $name, $blockId) {
       unset($element->_options[$index]);
     }
   }
+
+  $element->_options = array_values($element->_options);
 }
