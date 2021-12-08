@@ -1,7 +1,6 @@
 div.crmMailing a.helpicon[title="From Help"] {
   display: none;
 }
-li[aria-controls=tab-attachment],
 li[aria-controls=tab-pub],
 li[aria-controls=tab-response],
 li[aria-controls=tab-tracking] {
@@ -31,11 +30,6 @@ a[title^="Preview a List of Recipients"] {
 }
 .select2-drop {
   z-index: 100000 !important;
-}
-
-/*13304 hide advance mailing options*/
-div.crmb-wizard-step button {
-  display: none !important;
 }
 
 /*13556*/

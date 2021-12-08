@@ -179,6 +179,11 @@ function mail_civicrm_alterAngular(\Civi\Angular\Manager $angular) {
     ->alterHtml('~/crmMosaico/BlockSchedule.html', '_mail_alterMailingSchedule');
   $angular->add($changeSet);
 
+  //14402 adjust Mosaico advanced settings
+  $changeSet = \Civi\Angular\ChangeSet::create('modify_advanced')
+    ->alterHtml('~/crmMosaico/AdvancedDialogCtrl.html', '_mail_alterMailingAdvancedSettings');
+  $angular->add($changeSet);
+
   //13305 add Senate custom fields
   $changeSet = \Civi\Angular\ChangeSet::create('inject_options_mosaico')
     ->alterHtml('~/crmMosaico/BlockMailing.html', '_mail_alterMailingBlockMosaico');
@@ -216,6 +221,22 @@ function mail_civicrm_pageRun(&$page) {
   if (is_a($page, 'Civi\Angular\Page\Main')) {
     CRM_Core_Resources::singleton()->addStyleFile('gov.nysenate.mail', 'css/mail.css');
     CRM_Core_Resources::singleton()->addScriptFile('gov.nysenate.mail', 'js/mail.js');
+
+    $bbconfig = get_bluebird_instance_config();
+
+    //14402
+    Civi::resources()->addVars('NYSS', ['displayAttachments' => TRUE]);
+    if (empty($bbconfig['email.attachments'])) {
+      Civi::resources()->addStyle('
+        li[aria-controls=tab-attachments] { display: none; }
+
+        /*13304 hide advance mailing options*/
+        div.crmb-wizard-step button {
+          display: none !important;
+        }
+      ');
+      Civi::resources()->addVars('NYSS', ['displayAttachments' => FALSE]);
+    }
 
     //13627 - if only a scheduler, jump to schedule tab
     $schedulerOnly = FALSE;
@@ -1326,6 +1347,12 @@ function _mail_alterMailingSchedule(phpQueryObject $doc) {
   $extDir = CRM_Core_Resources::singleton()->getPath('gov.nysenate.mail');
   $html = file_get_contents($extDir.'/html/BlockSchedule.html');
   $doc->find('.crmMosaico-schedule-outer')->prepend($html);
+}
+
+function _mail_alterMailingAdvancedSettings(phpQueryObject $doc) {
+  $extDir = CRM_Core_Resources::singleton()->getPath('gov.nysenate.mail');
+  $html = file_get_contents($extDir.'/html/AdvancedDialogCtrl.html');
+  $doc->find('#bootstrap-theme')->html($html);
 }
 
 function _mail_alterMailingPreview(phpQueryObject $doc) {

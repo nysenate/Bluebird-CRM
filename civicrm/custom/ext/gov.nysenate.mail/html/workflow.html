@@ -15,6 +15,9 @@
             </div>
             <span ng-model="placeholder" crm-ui-validate="mailing.body_html || mailing.body_text"></span>
           </div>
+          <div crm-ui-tab id="tab-attachments" crm-title="ts('Attachments')">
+            <div crm-attachments="attachments"></div>
+          </div>
           <div crm-ui-tab id="tab-header" crm-title="ts('Header and Footer')">
             <div crm-mailing-block-header-footer crm-mailing="mailing"></div>
           </div>
