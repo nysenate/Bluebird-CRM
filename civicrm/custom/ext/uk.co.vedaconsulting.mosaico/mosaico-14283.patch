@@ -1,0 +1,366 @@
+diff --git a/CRM/Mosaico/Form/TemplateFilter.php b/CRM/Mosaico/Form/TemplateFilter.php
+new file mode 100644
+index 000000000..d1f434a11
+--- /dev/null
++++ b/CRM/Mosaico/Form/TemplateFilter.php
+@@ -0,0 +1,19 @@
++<?php
++
++use CRM_Mosaico_ExtensionUtil as E;
++
++/**
++ * Form controller class
++ *
++ * @see https://wiki.civicrm.org/confluence/display/CRMDOC/QuickForm+Reference
++ */
++class CRM_Mosaico_Form_TemplateFilter extends CRM_Core_Form {
++
++  public function buildQuickForm() {
++    $this->add('text', 'title', ts('Template Title'));
++    $this->add('select', 'category_id', ts('Category'), \CRM_Core_OptionGroup::values('mailing_template_category'), FALSE, ['class' => 'crm-select2', 'multiple' => TRUE, 'placeholder' => ts('- select one or more category -')]);
++
++    $this->assign('suppressForm', TRUE);
++  }
++
++}
+diff --git a/CRM/Mosaico/Page/TemplateListing.php b/CRM/Mosaico/Page/TemplateListing.php
+new file mode 100644
+index 000000000..765099e06
+--- /dev/null
++++ b/CRM/Mosaico/Page/TemplateListing.php
+@@ -0,0 +1,26 @@
++<?php
++use CRM_Mosaico_ExtensionUtil as E;
++
++class CRM_Mosaico_Page_TemplateListing extends CRM_Core_Page {
++  
++  /**
++   * Browse all mosaico templates
++   */
++  public function browse() {
++    $controller = new CRM_Core_Controller_Simple(
++      'CRM_Mosaico_Form_TemplateFilter',
++      ts('Template Filter'),
++      NULL,
++      FALSE, FALSE, TRUE
++    );
++    $controller->setEmbedded(TRUE);
++    $controller->run();
++  }
++
++  public function run() {
++    $this->browse();
++
++    parent::run();
++  }
++
++}
+diff --git a/CRM/Mosaico/Upgrader.php b/CRM/Mosaico/Upgrader.php
+index 5325c216c..032469112 100644
+--- a/CRM/Mosaico/Upgrader.php
++++ b/CRM/Mosaico/Upgrader.php
+@@ -123,6 +123,35 @@ public function upgrade_4704() {
+ 
+     return TRUE;
+   }
++  
++  /**
++   * Add menu for traditional mailing.
++   */
++  public function upgrade_4705() {
++    $this->ctx->log->info('Applying update 4705');
++
++    CRM_Core_DAO::executeQuery('
++      ALTER TABLE civicrm_mosaico_template
++      ADD COLUMN `category_id` int unsigned NULL COMMENT \'ID of the category this mailing template is currently belongs. Foreign key to civicrm_option_value.\'
++    ');
++
++    civicrm_api3('Navigation', 'create', [
++      'sequential' => 1,
++      'domain_id' => CRM_Core_Config::domainID(),
++      'url' => "civicrm/mosaico-template/list",
++      'permission' => "access CiviMail,create mailings",
++      'label' => "Mosaico Template List",
++      'permission_operator' => "OR",
++      'has_separator' => 0,
++      'is_active' => 1,
++      'parent_id' => "Mailings",
++    ]);
++
++    CRM_Core_Invoke::rebuildMenuAndCaches(TRUE);
++
++    return TRUE;
++  }
++  
+ 
+   /**
+    * Example: Run an external SQL script.
+diff --git a/CRM/Mosaico/Utils.php b/CRM/Mosaico/Utils.php
+index 740da2bb4..93ae6579f 100644
+--- a/CRM/Mosaico/Utils.php
++++ b/CRM/Mosaico/Utils.php
+@@ -444,5 +444,75 @@ public static function sendImage($file) {
+     }
+     fclose($fh);
+   }
++  
++  public static function getTemplateListing() {
++    $optionalParameters = [
++      'title' => 'String',
++      'category_id' => 'String',
++    ];
++    
++    $requiredParameters = [];
++    $params = CRM_Core_Page_AJAX::defaultSortAndPagerParams();
++    $params += CRM_Core_Page_AJAX::validateParams($requiredParameters, $optionalParameters);
++    
++    $params['offset'] = ($params['page'] - 1) * $params['rp'];
++    $params['rowCount'] = $params['rp'];
++    $params['sort'] = $params['sortBy'] ?? NULL;
++
++    $templateParams = [];
++    if (!empty($params['rowCount']) &&
++      $params['rowCount'] > 0
++    ) {
++      $templateParams['options']['limit'] = $params['rowCount'];
++    }
++    
++    if (!empty($params['sort'])) {
++      if (is_a($params['sort'], 'CRM_Utils_Sort')) {
++        $order = $params['sort']->orderBy();
++      }
++      elseif (trim($params['sort'])) {
++        $order = CRM_Utils_Type::escape($params['sort'], 'String');
++      }
++    }
++    $templateParams['options']['sort'] = empty($order) ? "id DESC" : $order;
++    $params['total'] = civicrm_api3('MosaicoTemplate', 'getcount', $templateParams);
++    $templateParams['return'] = [
++      'title',
++      'base',
++      'category_id',
++    ];
++    foreach (['title', 'category_id'] as $filter) {
++      if (!empty($params[$filter])) {
++        if ($filter == 'category_id') {
++          $templateParams[$filter] = ['IN' => explode(',', $params[$filter])];
++        }
++        else {
++          $templateParams[$filter] = ['LIKE' => '%' . $params[$filter] . '%'];
++        }
++      }
++    }
++    $result = civicrm_api3('MosaicoTemplate', 'Get', $templateParams)['values'];
++
++    $categories = CRM_Core_OptionGroup::values('mailing_template_category');
++    $templates = [];
++    foreach ($result as $templateID => $values) {
++      $template = ['DT_RowId' => $templateID];
++      $template['DT_RowClass'] = "crm-entity category-id-{$values['category_id']}";
++      $template['DT_RowAttr'] = [];
++      $template['DT_RowAttr']['data-entity'] = 'MosaicoTemplate';
++      $template['DT_RowAttr']['data-id'] = $templateID;
++      $template['title'] = $values['title'];
++      $template['base'] = $values['base'];
++      $template['category_id'] = $categories[$values['category_id']];
++      array_push($templates, $template);
++    }
++
++    $templatesDT = [];
++    $templatesDT['data'] = $templates;
++    $templatesDT['recordsTotal'] = $params['total'];
++    $templatesDT['recordsFiltered'] = $params['total'];
++    
++    CRM_Utils_JSON::output($templatesDT);
++  }
+ 
+ }
+diff --git a/managed/Mailing_Template_Category.mgd.php b/managed/Mailing_Template_Category.mgd.php
+new file mode 100644
+index 000000000..bce2f949d
+--- /dev/null
++++ b/managed/Mailing_Template_Category.mgd.php
+@@ -0,0 +1,77 @@
++<?php
++return [
++  [
++    'name' => 'OptionGroup_mailing_template_category',
++    'entity' => 'OptionGroup',
++    'cleanup' => 'unused',
++    'update' => 'unmodified',
++    'params' => [
++      'version' => 4,
++      'values' => [
++        'name' => 'mailing_template_category',
++        'title' => 'Mailing Template Category',
++        'description' => NULL,
++        'data_type' => NULL,
++        'is_reserved' => TRUE,
++        'is_active' => TRUE,
++        'is_locked' => FALSE,
++      ],
++    ],
++  ],
++  [
++    'name' => 'OptionGroup_mailing_template_category_newsletters',
++    'entity' => 'OptionValue',
++    'cleanup' => 'unused',
++    'update' => 'unmodified',
++    'params' => [
++      'version' => 4,
++      'values' => [
++        'option_group_id.name' => 'mailing_template_category',
++        'label' => 'Newsletters',
++        'value' => '1',
++        'name' => 'newsletters',
++        'grouping' => NULL,
++        'filter' => 0,
++        'is_default' => TRUE,
++        'weight' => 1,
++        'description' => NULL,
++        'is_optgroup' => FALSE,
++        'is_reserved' => FALSE,
++        'is_active' => TRUE,
++        'icon' => NULL,
++        'color' => NULL,
++        'component_id' => NULL,
++        'visibility_id' => NULL,
++        'domain_id' => 'current_domain',
++      ],
++    ],
++  ],
++  [
++    'name' => 'OptionGroup_mailing_template_category_legislative_announcements',
++    'entity' => 'OptionValue',
++    'cleanup' => 'unused',
++    'update' => 'unmodified',
++    'params' => [
++      'version' => 4,
++      'values' => [
++        'option_group_id.name' => 'mailing_template_category',
++        'label' => 'Legislative Announcements',
++        'value' => '2',
++        'name' => 'legislative_announcements',
++        'grouping' => NULL,
++        'filter' => 0,
++        'is_default' => TRUE,
++        'weight' => 1,
++        'description' => NULL,
++        'is_optgroup' => FALSE,
++        'is_reserved' => FALSE,
++        'is_active' => TRUE,
++        'icon' => NULL,
++        'color' => NULL,
++        'component_id' => NULL,
++        'visibility_id' => NULL,
++        'domain_id' => 'current_domain',
++      ],
++    ],
++  ],
++];
+\ No newline at end of file
+diff --git a/templates/CRM/Mosaico/Page/TemplateListing.tpl b/templates/CRM/Mosaico/Page/TemplateListing.tpl
+new file mode 100644
+index 000000000..c792aa052
+--- /dev/null
++++ b/templates/CRM/Mosaico/Page/TemplateListing.tpl
+@@ -0,0 +1,56 @@
++<div class="crm-mailing-template-category-selector">
++  <div class="crm-accordion-wrapper crm-search_filters-accordion">
++    <div class="crm-accordion-header">
++    {ts}Filter by Mailing Template{/ts}</a>
++    </div><!-- /.crm-accordion-header -->
++    <div class="crm-accordion-body">
++      <form><!-- form element is here to fool the datepicker widget -->
++      <table class="no-border form-layout-compressed template-search-options">
++        <tr>
++          <td class="crm-contact-form-block-title crm-inline-edit-field">
++            {$form.title.label}<br /> {$form.title.html|crmAddClass:huge}
++          </td>
++          <td class="crm-contact-form-block-category_id crm-inline-edit-field">
++            <label>{$form.category_id.label}</label><br /> {$form.category_id.html}
++          </td>
++        </tr>
++      </table>
++      </form>
++    </div><!-- /.crm-accordion-body -->
++  </div>
++  <table class="mailing-template-category-selector crm-ajax-table" style="width: 100%;">
++    <thead>
++    <tr>
++      <th data-data="title" cell-class="crmf-title crm-editable" class="crm-mailing-template-category-title">{ts}Title{/ts}</th>
++      <th data-data="base" class="crm-mailing-template-category-base">{ts}Base{/ts}</th>
++      <th data-data="category_id" cell-class="crmf-category_id crm-editable" cell-data-type="select" cell-data-refresh="true" class="crm-mailing-template-category-category_id">{ts}Category{/ts}</th>
++    <!--  <th data-data="links" data-orderable="false" class="crm-mailing-template-category-links">&nbsp;</th> -->
++    </tr>
++    </thead>
++  </table>
++  
++  {literal}
++    <script type="text/javascript">
++      (function($, _) {
++        var context = {/literal}"{$context}"{literal};
++        CRM.$('table.mailing-template-category-selector').data({
++          "ajax": {
++            "url": {/literal}'{crmURL p="civicrm/ajax/mosaico/template/listing" h=0 q="snippet=4"}'{literal},
++            "data": function (d) {
++              var category_id = $('.crm-mailing-template-category-selector select#category_id').val() || [];
++              d.title = $('.crm-mailing-template-category-selector #title').val(),
++              d.category_id = category_id.join(',')
++            }
++          }
++        });
++        $(function($) {
++          $('.template-search-options :input').change(function(){
++            $('table.mailing-template-category-selector').DataTable().draw();
++          });
++        });
++      })(CRM.$, CRM._);
++    </script>
++  {/literal}
++
++</div>
++  
+diff --git a/xml/Menu/mosaico.xml b/xml/Menu/mosaico.xml
+index 3c555d895..3d68fc7bd 100644
+--- a/xml/Menu/mosaico.xml
++++ b/xml/Menu/mosaico.xml
+@@ -40,4 +40,15 @@
+     <access_callback>1</access_callback>
+     <is_public>true</is_public>
+   </item>
++  <item>
++    <path>civicrm/ajax/mosaico/template/listing</path>
++    <page_callback>CRM_Mosaico_Utils::getTemplateListing</page_callback>
++    <access_arguments>access CiviMail;edit message templates</access_arguments>
++  </item>
++  <item>
++    <path>civicrm/mosaico-template/list</path>
++    <page_callback>CRM_Mosaico_Page_TemplateListing</page_callback>
++    <title>Mosaico Template List</title>
++    <access_arguments>access CiviCRM</access_arguments>
++  </item>
+ </menu>
+diff --git a/xml/schema/CRM/Mosaico/MosaicoTemplate.xml b/xml/schema/CRM/Mosaico/MosaicoTemplate.xml
+index 4439199b0..827b50509 100644
+--- a/xml/schema/CRM/Mosaico/MosaicoTemplate.xml
++++ b/xml/schema/CRM/Mosaico/MosaicoTemplate.xml
+@@ -76,5 +76,18 @@
+     <key>id</key>
+     <onDelete>SET NULL</onDelete>
+   </foreignKey>
++  <field>
++    <name>category_id</name>
++    <type>int unsigned</type>
++    <title>Category ID</title>
++    <required>false</required>
++    <comment>ID of the category this mailing template is currently belongs. Foreign key to civicrm_option_value.</comment>
++    <pseudoconstant>
++      <optionGroupName>mailing_template_category</optionGroupName>
++    </pseudoconstant>
++    <html>
++      <type>Select</type>
++    </html>
++  </field>
+ 
+ </table>
