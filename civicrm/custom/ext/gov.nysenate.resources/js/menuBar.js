@@ -8,20 +8,6 @@ CRM.$(function($) {
       }
     }, 5);
 
-    //14379 wait for quick search results the first time
-    var caseId = setInterval(function(){
-      if ($('li#crm-qsearch input[value=case_id]').length > 0 && $('ul.crm-quickSearch-results div.ui-menu-item-uiMenuItemWrapper a').length > 0){
-        clearInterval(caseId);
-        buildCaseLink();
-
-        $('input[name=case_id]').on('input', function() {
-          setTimeout(function () {
-            buildCaseLink();
-          }, 1500);
-        });
-      }
-    }, 5);
-
     function buildQSearchHelp() {
       $('li#crm-qsearch input[value=sort_name]')
         .parents('label')
@@ -46,21 +32,21 @@ CRM.$(function($) {
       });
     }
 
-    //14379
-    function buildCaseLink() {
-      var caseId = $('input[name=case_id]').val();
-      //console.log('caseId: ', caseId);
+    //NYSS 14379 - overwrite autocomplete.select from crm.menubar.js
+    //direct to either contact or case record
+    $('#crm-qsearch-input').autocomplete({
+      select: function (event, ui) {
+        var selectedOpt = $('input[name=quickSearchField]:checked').val();
+        if (ui.item.value > 0) {
+          var linkUrl = CRM.url('civicrm/contact/view', {reset: 1, cid: ui.item.value});
+          if (selectedOpt === 'case_id') {
+            linkUrl = CRM.url('civicrm/contact/view/case', {reset: 1, action: 'view', context: 'case', cid: ui.item.value, id: $(this).val()});
+          }
 
-      $('ul.crm-quickSearch-results div.ui-menu-item-uiMenuItemWrapper a').each(function() {
-        var href = $(this).prop('href');
-        //console.log('href: ', href);
-
-        var urlParams = new URLSearchParams(href);
-        var cid = urlParams.get('cid');
-        //console.log('cid: ', cid);
-
-        $(this).prop('href', '/civicrm/contact/view/case?reset=1&id=' + caseId + '&cid=' + cid + '&action=view&context=case');
-      })
-    }
+          document.location = linkUrl;
+        }
+        return false;
+      }
+    });
   });
 });
