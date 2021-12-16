@@ -33,4 +33,15 @@
     <access_callback>1</access_callback>
     <is_public>true</is_public>
   </item>
+  <item>
+    <path>civicrm/ajax/mosaico/template/listing</path>
+    <page_callback>CRM_Mosaico_Utils::getTemplateListing</page_callback>
+    <access_arguments>access CiviMail;edit message templates</access_arguments>
+  </item>
+  <item>
+    <path>civicrm/mosaico-template/list</path>
+    <page_callback>CRM_Mosaico_Page_TemplateListing</page_callback>
+    <title>Mosaico Template List</title>
+    <access_arguments>access CiviCRM</access_arguments>
+  </item>
 </menu>

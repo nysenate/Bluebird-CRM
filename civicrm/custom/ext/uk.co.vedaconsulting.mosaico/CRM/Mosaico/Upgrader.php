@@ -1,5 +1,7 @@
 <?php
 
+use CRM_Mosaico_ExtensionUtil as E;
+
 /**
  * Collection of upgrade steps.
  */
@@ -123,6 +125,35 @@ class CRM_Mosaico_Upgrader extends CRM_Mosaico_Upgrader_Base {
 
     return TRUE;
   }
+  
+  /**
+   * Add menu for traditional mailing.
+   */
+  public function upgrade_4705() {
+    $this->ctx->log->info('Applying update 4705');
+
+    CRM_Core_DAO::executeQuery('
+      ALTER TABLE civicrm_mosaico_template
+      ADD COLUMN `category_id` int unsigned NULL COMMENT \'ID of the category this mailing template is currently belongs. Foreign key to civicrm_option_value.\'
+    ');
+
+    /*civicrm_api3('Navigation', 'create', [
+      'sequential' => 1,
+      'domain_id' => CRM_Core_Config::domainID(),
+      'url' => "civicrm/mosaico-template/list",
+      'permission' => "access CiviMail,create mailings",
+      'label' => "Mosaico Template List",
+      'permission_operator' => "OR",
+      'has_separator' => 0,
+      'is_active' => 1,
+      'parent_id' => "Mailings",
+    ]);*/
+
+    CRM_Core_Invoke::rebuildMenuAndCaches(TRUE);
+
+    return TRUE;
+  }
+  
 
   /**
    * Example: Run an external SQL script.

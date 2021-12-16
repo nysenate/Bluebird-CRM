@@ -76,5 +76,18 @@
     <key>id</key>
     <onDelete>SET NULL</onDelete>
   </foreignKey>
+  <field>
+    <name>category_id</name>
+    <type>int unsigned</type>
+    <title>Category ID</title>
+    <required>false</required>
+    <comment>ID of the category this mailing template is currently belongs. Foreign key to civicrm_option_value.</comment>
+    <pseudoconstant>
+      <optionGroupName>mailing_template_category</optionGroupName>
+    </pseudoconstant>
+    <html>
+      <type>Select</type>
+    </html>
+  </field>
 
 </table>
