@@ -399,5 +399,75 @@ class CRM_Mosaico_Utils {
     }
     fclose($fh);
   }
+  
+  public static function getTemplateListing() {
+    $optionalParameters = [
+      'title' => 'String',
+      'category_id' => 'String',
+    ];
+    
+    $requiredParameters = [];
+    $params = CRM_Core_Page_AJAX::defaultSortAndPagerParams();
+    $params += CRM_Core_Page_AJAX::validateParams($requiredParameters, $optionalParameters);
+    
+    $params['offset'] = ($params['page'] - 1) * $params['rp'];
+    $params['rowCount'] = $params['rp'];
+    $params['sort'] = $params['sortBy'] ?? NULL;
+
+    $templateParams = [];
+    if (!empty($params['rowCount']) &&
+      $params['rowCount'] > 0
+    ) {
+      $templateParams['options']['limit'] = $params['rowCount'];
+    }
+    
+    if (!empty($params['sort'])) {
+      if (is_a($params['sort'], 'CRM_Utils_Sort')) {
+        $order = $params['sort']->orderBy();
+      }
+      elseif (trim($params['sort'])) {
+        $order = CRM_Utils_Type::escape($params['sort'], 'String');
+      }
+    }
+    $templateParams['options']['sort'] = empty($order) ? "id DESC" : $order;
+    $params['total'] = civicrm_api3('MosaicoTemplate', 'getcount', $templateParams);
+    $templateParams['return'] = [
+      'title',
+      'base',
+      'category_id',
+    ];
+    foreach (['title', 'category_id'] as $filter) {
+      if (!empty($params[$filter])) {
+        if ($filter == 'category_id') {
+          $templateParams[$filter] = ['IN' => explode(',', $params[$filter])];
+        }
+        else {
+          $templateParams[$filter] = ['LIKE' => '%' . $params[$filter] . '%'];
+        }
+      }
+    }
+    $result = civicrm_api3('MosaicoTemplate', 'Get', $templateParams)['values'];
+
+    $categories = CRM_Core_OptionGroup::values('mailing_template_category');
+    $templates = [];
+    foreach ($result as $templateID => $values) {
+      $template = ['DT_RowId' => $templateID];
+      $template['DT_RowClass'] = "crm-entity category-id-{$values['category_id']}";
+      $template['DT_RowAttr'] = [];
+      $template['DT_RowAttr']['data-entity'] = 'MosaicoTemplate';
+      $template['DT_RowAttr']['data-id'] = $templateID;
+      $template['title'] = $values['title'];
+      $template['base'] = $values['base'];
+      $template['category_id'] = $categories[$values['category_id']];
+      array_push($templates, $template);
+    }
+
+    $templatesDT = [];
+    $templatesDT['data'] = $templates;
+    $templatesDT['recordsTotal'] = $params['total'];
+    $templatesDT['recordsFiltered'] = $params['total'];
+    
+    CRM_Utils_JSON::output($templatesDT);
+  }
 
 }

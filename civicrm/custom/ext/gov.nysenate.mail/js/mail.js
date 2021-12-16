@@ -104,7 +104,13 @@ CRM.$(function($) {
             }
             else if (stepText.lastChild.nodeValue.trim() === 'Options') {
               //console.log('stepText: ', stepText);
-              stepText.lastChild.nodeValue = 'Schedule';
+              //14402
+              var stepTextSchedule = 'Schedule';
+              if (CRM.vars.NYSS.displayAttachments) {
+                stepTextSchedule = 'Schedule/Attachments';
+              }
+
+              stepText.lastChild.nodeValue = stepTextSchedule;
             }
           });
 
@@ -121,6 +127,16 @@ CRM.$(function($) {
           }
         }, 100);
       }
+
+      //14402 change advanced mailing options text
+      var advancedExists = setInterval(function () {
+        var advBtn = $('button span.glyphicon-cog');
+        if (advBtn.length) {
+          var btnText = advBtn.parents('button').html();
+          advBtn.parents('button').html(btnText.replace('Advanced Mailing Options', 'Attachments'));
+          clearInterval(advancedExists);
+        }
+      }, 100);
     }
   });
 });
