@@ -56,7 +56,8 @@ function civicrm_api3_mailing_create($params) {
     unset($safeParams['modified_date']);
   }
   if (!$timestampCheck) {
-    throw new API_Exception("Mailing has not been saved, Content maybe out of date, please refresh the page and try again");
+    //NYSS 14454
+    throw new API_Exception("Mailing has not been saved. Content may be out of date as a result of other users working in the mailing. Please refresh the page and try again.");
   }
 
   // FlexMailer is a refactoring of CiviMail which provides new hooks/APIs/docs. If the sysadmin has opted to enable it, then use that instead of CiviMail.
