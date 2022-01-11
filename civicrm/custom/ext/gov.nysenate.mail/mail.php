@@ -225,8 +225,7 @@ function mail_civicrm_pageRun(&$page) {
     $bbconfig = get_bluebird_instance_config();
 
     //14402
-    Civi::resources()->addVars('NYSS', ['displayAttachments' => TRUE]);
-    if (empty($bbconfig['email.attachments'])) {
+    if (empty($bbconfig['email.allow_attachments'])) {
       Civi::resources()->addStyle('
         li[aria-controls=tab-attachments] { display: none; }
 
@@ -236,6 +235,9 @@ function mail_civicrm_pageRun(&$page) {
         }
       ');
       Civi::resources()->addVars('NYSS', ['displayAttachments' => FALSE]);
+    }
+    else {
+      Civi::resources()->addVars('NYSS', ['displayAttachments' => TRUE]);
     }
 
     //13627 - if only a scheduler, jump to schedule tab
