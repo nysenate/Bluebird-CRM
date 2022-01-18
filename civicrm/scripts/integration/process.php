@@ -16,8 +16,8 @@ class CRM_Integration_Process
   function run()
   {
     // Parse the options
-    $shortopts = "dsat:l:";
-    $longopts = array("dryrun", "stats", "archive", "type=", "log-level=");
+    $shortopts = 'dsat:l:';
+    $longopts = [ 'dryrun', 'stats', 'archive', 'type=', 'log-level=' ];
     $optlist = civicrm_script_init($shortopts, $longopts);
 
     if ($optlist === null) {
@@ -70,14 +70,14 @@ class CRM_Integration_Process
     $row = CRM_Core_DAO::executeQuery($sql);
     bbscript_log(LL::DEBUG, 'SQL query:', $sql);
 
-    $errors = $status = array();
+    $stats = [ 'processed' => [], 'unprocessed' => [], 'error' => [] ];
 
     while ($row->fetch()) {
       bbscript_log(LL::TRACE, 'fetched row:', $row);
 
       //if context/direct message and target != user, skip
       if ($row->target_shortname != $row->user_shortname &&
-        in_array($row->msg_type, array('DIRECTMSG', 'CONTEXTMSG'))
+          in_array($row->msg_type, ['DIRECTMSG', 'CONTEXTMSG'])
       ) {
         CRM_NYSS_BAO_Integration_Website::archiveRecord($intDB, 'other', $row, null);
         continue;
@@ -135,11 +135,11 @@ class CRM_Integration_Process
 
       if (!$cid) {
         bbscript_log(LL::DEBUG, 'Failed to match or create contact', $contactParams);
-        $stats['error'][] = array(
+        $stats['error'][] = [
           'is_error' => 1,
           'error_message' => 'Unable to match or create contact',
           'params' => $contactParams
-        );
+        ];
 
         //archive row with null date
         if ($optlist['archive']) {
@@ -183,14 +183,14 @@ class CRM_Integration_Process
           $result = CRM_NYSS_BAO_Integration_Website::processCommunication($cid, $row->msg_action, $params, $row->msg_type);
           $activity_type = 'Direct Message';
           $activity_details = ($row->subject) ? $row->subject : '';
-          $activity_data = json_encode(array('note_id' => $result['id']));
+          $activity_data = json_encode(['note_id' => $result['id']]);
           break;
 
         case 'CONTEXTMSG':
           $result = CRM_NYSS_BAO_Integration_Website::processCommunication($cid, $row->msg_action, $params, $row->msg_type);
           $activity_type = 'Context Message';
           $activity_details = ($row->subject) ? $row->subject : '';
-          $activity_data = json_encode(array('note_id' => $result['id']));
+          $activity_data = json_encode(['note_id' => $result['id']]);
           break;
 
         case 'PETITION':
@@ -231,11 +231,11 @@ class CRM_Integration_Process
           break;
 
         default:
-          $result = array(
+          $result = [
             'is_error' => 1,
             'error_message' => "Unable to process row; message type [{$row->msg_type}] is unknown"
-          );
-          $stats['unprocessed'][$row->msg_type][] = $row;
+          ];
+          $stats['unprocessed'][] = $row;
       }
 
       if ($result['is_error'] || $result == FALSE) {
@@ -269,13 +269,13 @@ class CRM_Integration_Process
     }
 
     //report stats
-    $stats['counts'] = array(
+    $counts = [
       'processed' => count($stats['processed']),
       'unprocessed' => count($stats['unprocessed']),
-      'error' => count($stats['error']),
-    );
+      'error' => count($stats['error'])
+    ];
 
-    bbscript_log(LL::NOTICE, "Processing stats:", $stats['counts']);
+    bbscript_log(LL::NOTICE, "Processing stats:", $counts);
 
     if ($optlist['stats']) {
       bbscript_log(LL::NOTICE, "\nProcessing details:");
