@@ -1,7 +1,5 @@
 <?php
 
-define('MAX_STATUS_LEN', 200); //threshold length for status message
-
 /**
 * Utility class to handle SAGE requests and responses.
 */
@@ -17,11 +15,9 @@ class CRM_Utils_SAGE
 
     // Limit the length of the status message.
     //NYSS 7340
-    //TODO setStatus doesn't trigger the js warning message as expected, when triggered via inline;
+    //TODO setStatus doesn't trigger the js warning message when triggered via inline;
     //disable for now, but investigate ways to handle that better
-    if (CRM_Utils_Array::value('class_name', $_REQUEST, '') != 'CRM_Contact_Form_Inline_Address' &&
-      strlen($session->getStatus()) < MAX_STATUS_LEN
-    ) {
+    if (CRM_Utils_Array::value('class_name', $_REQUEST, '') != 'CRM_Contact_Form_Inline_Address') {
       // NYSS 5798 - Only show details in debug mode
       if ($config->debug) {
         $session->setStatus(ts("SAGE Warning: $message<br/>"));
@@ -794,7 +790,10 @@ class CRM_Utils_SAGE
       'state_province_id', 'supplemental_address_1',
     ];
     foreach ($cmp_keys as $akey) {
-      if ($addr->$akey != $params[$akey]) {
+      $val1 = $addr->$akey ?? NULL;
+      $val2 = $params[$akey] ?? NULL;
+
+      if ($val1 != $val2) {
         return FALSE;
       }
     }
