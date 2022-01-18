@@ -20,7 +20,7 @@ class CRM_NYSS_Page_MosaicoEditor extends CRM_Mosaico_Page_Editor {
     CRM_Utils_System::civiExit();
   }
 
-  protected function getScriptUrls() {
+  public function getScriptUrls() {
     $scripts = parent::getScriptUrls();
 
     // Allow scripts to be added by a hook
@@ -37,7 +37,7 @@ class CRM_NYSS_Page_MosaicoEditor extends CRM_Mosaico_Page_Editor {
     return $scripts;
   }
 
-  protected function getStyleUrls() {
+  public function getStyleUrls() {
     $styles = parent::getStyleUrls();
 
     // Allow styles to be added by a hook
@@ -53,7 +53,7 @@ class CRM_NYSS_Page_MosaicoEditor extends CRM_Mosaico_Page_Editor {
     return $styles;
   }
 
-  protected function getMosaicoPlugins() {
+  public function getMosaicoPlugins() {
     $plugins = [];
 
     // Allow plugins to be added by a hook
