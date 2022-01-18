@@ -16,7 +16,7 @@ class CRM_Mosaico_ResizeScaleTest extends CRM_Mosaico_TestCase implements EndToE
   /**
    * Test adjustResizeDimensions method for various inputs.
    */
-  public function testResizeScaleFactor() {
+  public function testResizeScaleFactor(): void {
     // 3x - upto 190 pixels
     Civi::settings()->set('mosaico_scale_width_limit1', 190);
     Civi::settings()->set('mosaico_scale_factor1', 3);

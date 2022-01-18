@@ -1,0 +1,15 @@
+<div>
+  <button type="button" class="btn btn-primary" crm-dialog-popup="crmMosaicoCreatePopup" popup-tpl="~/crmMosaico/CreateFromBaseTemplate.html">
+    <i class="crm-i fa-plus-circle"></i>
+    {{:: ts('New Template') }}
+  </button>
+</div>
+<div af-fieldset="">
+  <div class="af-container af-layout-cols">
+    <af-field name="title" />
+    <af-field name="base" />
+    <af-field name="category_id" defn="{input_attrs: {multiple: true}}" />
+    <a ng-href="{{ crmUrl('civicrm/admin/options/mailing_template_category', {reset: 1}) }}" title="{{:: ts('Configure template categories') }}" target="crm-popup"><i class="crm-i fa-wrench" aria-hidden="true"></i></a>
+  </div>
+  <crm-search-display-table search-name="Mosaico_Template_List" display-name="Mosaico_Template_List"></crm-search-display-table>
+</div>

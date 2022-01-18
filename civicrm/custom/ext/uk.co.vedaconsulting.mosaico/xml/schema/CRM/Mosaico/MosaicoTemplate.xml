@@ -24,6 +24,9 @@
     <length>255</length>
     <comment>Title</comment>
     <title>Title</title>
+    <html>
+      <type>Text</type>
+    </html>
   </field>
 
   <field>
@@ -32,6 +35,9 @@
     <length>64</length>
     <comment>Name of the Mosaico base template (e.g. versafix-1)</comment>
     <title>Base Template</title>
+    <html>
+      <type>Text</type>
+    </html>
   </field>
 
   <field>
@@ -86,6 +92,7 @@
       <optionGroupName>mailing_template_category</optionGroupName>
     </pseudoconstant>
     <html>
+      <label>Category</label>
       <type>Select</type>
     </html>
   </field>

@@ -22,12 +22,20 @@
         return;
       }
 
-      var plugins = [];
+      var plugins = {/literal}{$mosaicoPlugins}{literal};
       var config = {/literal}{$mosaicoConfig}{literal};
       //NYSS 13567/13916
       if (config.fileuploadConfig.acceptFileTypes) {
         config.fileuploadConfig.acceptFileTypes = /(\.|\/)(|gif|p?jpe?g|png|x-png|webp)$/i;
       }
+      
+      window.addEventListener('beforeunload', function(e) {
+        if(window.parent.document.getElementById('crm-mosaico').style.display !== "none") {
+          e.preventDefault();
+          e.returnValue = "{/literal}{ts}Exit email composer without saving?{/ts}{literal}";
+        }
+      });
+
       if (window.top.crmMosaicoIframe) {
         window.top.crmMosaicoIframe(window, Mosaico, config, plugins);
       }

@@ -115,6 +115,9 @@
 
     crmMosaicoTemplates.whenLoaded().then(function(){
       $scope.mosaicoCtrl.templates = crmMosaicoTemplates.getAll();
+      $scope.mosaicoCtrl.categoryFilters = _.transform(crmMosaicoTemplates.getCategories(), function(filters, category) {
+        filters.push({id: filters.length, text: category.label, filter: {category_id: category.value}});
+      }, [{id: 0, text: ts('Base Template'), filter: {isBase: true}}]);
     });
 
     $scope.$on("$destroy", function() {
