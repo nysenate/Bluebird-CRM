@@ -303,9 +303,9 @@ inner join civicrm_contact $c2 on ${c2}.id=${ccc}.contact_id
   public function groupBy() {
     $this->_groupBy = "";
 
-    //NYSS 14297
+    //NYSS 14297/14476
     if ($this->_relField) {
-      $this->_groupBy = "GROUP BY c2_civireport.id, contact_civireport.id";
+      $this->_groupBy = "GROUP BY c2_civireport.id, contact_civireport.id, case_civireport.id";
     }
   }
 
