@@ -302,9 +302,7 @@
         var taxAmount = (membershipType['tax_rate']/100)*taxExclusiveAmount;
         taxAmount = isNaN (taxAmount) ? 0:taxAmount;
         cj("#total_amount").val(CRM.formatMoney(taxExclusiveAmount + taxAmount, true));
-
-        var taxMessage = taxAmount > 0 ? 'Includes '+taxTerm+' amount of '+currency+' '+taxAmount:'';
-        cj('.totaltaxAmount').html(taxMessage);
+        cj('.totaltaxAmount').html(allMemberships[membershipTypeID]['tax_message']);
       }
 
 
@@ -423,6 +421,7 @@
           cj('#memberStatus').hide();
           cj('#memberStatus_show').show();
           cj('#status-override-end-date').hide();
+          cj('#status_id option[selected]').removeAttr('selected');
           break;
         case '1':
           cj('#memberStatus').show();
@@ -438,6 +437,7 @@
           cj('#memberStatus').hide( );
           cj('#memberStatus_show').show( );
           cj('#status-override-end-date').hide();
+          cj('#status_id option[selected]').removeAttr('selected');
           break;
       }
     }

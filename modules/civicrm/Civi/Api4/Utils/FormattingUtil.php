@@ -10,13 +10,6 @@
  +--------------------------------------------------------------------+
  */
 
-/**
- *
- * @package CRM
- * @copyright CiviCRM LLC https://civicrm.org/licensing
- */
-
-
 namespace Civi\Api4\Utils;
 
 use Civi\Api4\Query\SqlExpression;
@@ -25,12 +18,18 @@ require_once 'api/v3/utils.php';
 
 class FormattingUtil {
 
+  /**
+   * @var string[]
+   */
   public static $pseudoConstantContexts = [
     'name' => 'validate',
     'abbr' => 'abbreviate',
     'label' => 'get',
   ];
 
+  /**
+   * @var string[]
+   */
   public static $pseudoConstantSuffixes = ['name', 'abbr', 'label', 'color', 'description', 'icon'];
 
   /**
@@ -91,7 +90,7 @@ class FormattingUtil {
     // Evaluate pseudoconstant suffix
     $suffix = strpos($fieldName, ':');
     if ($suffix) {
-      $options = self::getPseudoconstantList($fieldSpec, substr($fieldName, $suffix + 1), [], $operator ? 'get' : 'create');
+      $options = self::getPseudoconstantList($fieldSpec, $fieldName, [], $operator ? 'get' : 'create');
       $value = self::replacePseudoconstant($options, $value, TRUE);
       return;
     }
@@ -186,28 +185,24 @@ class FormattingUtil {
    *
    * @param array $results
    * @param array $fields
-   * @param string $entity
    * @param string $action
    * @param array $selectAliases
    * @throws \API_Exception
    * @throws \CRM_Core_Exception
    */
-  public static function formatOutputValues(&$results, $fields, $entity, $action = 'get', $selectAliases = []) {
+  public static function formatOutputValues(&$results, $fields, $action = 'get', $selectAliases = []) {
     $fieldOptions = [];
     foreach ($results as &$result) {
       $contactTypePaths = [];
       foreach ($result as $key => $value) {
         $fieldExpr = SqlExpression::convert($selectAliases[$key] ?? $key);
         $fieldName = \CRM_Utils_Array::first($fieldExpr->getFields());
-        $field = $fieldName && isset($fields[$fieldName]) ? $fields[$fieldName] : NULL;
+        $baseName = $fieldName ? \CRM_Utils_Array::first(explode(':', $fieldName)) : NULL;
+        $field = $fields[$fieldName] ?? $fields[$baseName] ?? NULL;
         $dataType = $field['data_type'] ?? ($fieldName == 'id' ? 'Integer' : NULL);
-        // If Sql Function e.g. GROUP_CONCAT or COUNT wants to do its own formatting, apply and skip dataType conversion
+        // Allow Sql Functions to do special formatting and/or alter the $dataType
         if (method_exists($fieldExpr, 'formatOutputValue') && is_string($value)) {
-          $result[$key] = $value = $fieldExpr->formatOutputValue($value);
-          $dataType = NULL;
-        }
-        if (!$field) {
-          continue;
+          $result[$key] = $value = $fieldExpr->formatOutputValue($value, $dataType);
         }
         if (!empty($field['output_formatters'])) {
           self::applyFormatters($result, $fieldName, $field, $value);
@@ -216,7 +211,7 @@ class FormattingUtil {
         // Evaluate pseudoconstant suffixes
         $suffix = strrpos($fieldName, ':');
         if ($suffix) {
-          $fieldOptions[$fieldName] = $fieldOptions[$fieldName] ?? self::getPseudoconstantList($field, substr($fieldName, $suffix + 1), $result, $action);
+          $fieldOptions[$fieldName] = $fieldOptions[$fieldName] ?? self::getPseudoconstantList($field, $fieldName, $result, $action);
           $dataType = NULL;
         }
         if ($fieldExpr->supportsExpansion) {
@@ -245,15 +240,16 @@ class FormattingUtil {
    * Retrieves pseudoconstant option list for a field.
    *
    * @param array $field
-   * @param string $valueType
-   *   name|label|abbr from self::$pseudoConstantContexts
+   * @param string $fieldAlias
+   *   Field path plus pseudoconstant suffix, e.g. 'contact.employer_id.contact_sub_type:label'
    * @param array $params
    *   Other values for this object
    * @param string $action
    * @return array
    * @throws \API_Exception
    */
-  public static function getPseudoconstantList($field, $valueType, $params = [], $action = 'get') {
+  public static function getPseudoconstantList(array $field, string $fieldAlias, $params = [], $action = 'get') {
+    [$fieldPath, $valueType] = explode(':', $fieldAlias);
     $context = self::$pseudoConstantContexts[$valueType] ?? NULL;
     // For create actions, only unique identifiers can be used.
     // For get actions any valid suffix is ok.
@@ -264,7 +260,7 @@ class FormattingUtil {
     // Use BAO::buildOptions if possible
     if ($baoName) {
       $fieldName = empty($field['custom_field_id']) ? $field['name'] : 'custom_' . $field['custom_field_id'];
-      $options = $baoName::buildOptions($fieldName, $context, $params);
+      $options = $baoName::buildOptions($fieldName, $context, self::filterByPrefix($params, $fieldPath, $field['name']));
     }
     // Fallback for option lists that exist in the api but not the BAO
     if (!isset($options) || $options === FALSE) {
@@ -302,14 +298,17 @@ class FormattingUtil {
     return is_array($value) ? $matches : $matches[0] ?? NULL;
   }
 
-  private static function applyFormatters($result, $fieldName, $field, &$value) {
-    $row = [];
-    $prefix = substr($fieldName, 0, strpos($fieldName, $field['name']));
-    foreach ($result as $key => $val) {
-      if (!$prefix || strpos($key, $prefix) === 0) {
-        $row[substr($key, strlen($prefix))] = $val;
-      }
-    }
+  /**
+   * Apply a field's output_formatters callback functions
+   *
+   * @param array $result
+   * @param string $fieldPath
+   * @param array $field
+   * @param mixed $value
+   */
+  private static function applyFormatters(array $result, string $fieldPath, array $field, &$value) {
+    $row = self::filterByPrefix($result, $fieldPath, $field['name']);
+
     foreach ($field['output_formatters'] as $formatter) {
       $formatter($value, $row, $field);
     }
@@ -372,6 +371,48 @@ class FormattingUtil {
     return array_map(function($name) use ($prefix) {
       return $prefix . $name;
     }, \Civi::$statics[__CLASS__][__FUNCTION__][$contactType]);
+  }
+
+  /**
+   * Given a field belonging to either the main entity or a joined entity,
+   * and a values array of [path => value], this returns all values which share the same root path.
+   *
+   * Works by filtering array keys to only include those with the same prefix as a given field,
+   * stripping them of that prefix.
+   *
+   * Ex:
+   * ```
+   * $values = [
+   *   'first_name' => 'a',
+   *   'middle_name' => 'b',
+   *   'related_contact.first_name' => 'c',
+   *   'related_contact.last_name' => 'd',
+   *   'activity.subject' => 'e',
+   * ]
+   * $fieldPath = 'related_contact.id'
+   * $fieldName = 'id'
+   *
+   * filterByPrefix($values, $fieldPath, $fieldName)
+   * returns [
+   *   'first_name' => 'c',
+   *   'last_name' => 'd',
+   * ]
+   * ```
+   *
+   * @param array $values
+   * @param string $fieldPath
+   * @param string $fieldName
+   * @return array
+   */
+  public static function filterByPrefix(array $values, string $fieldPath, string $fieldName): array {
+    $filtered = [];
+    $prefix = substr($fieldPath, 0, strpos($fieldPath, $fieldName));
+    foreach ($values as $key => $val) {
+      if (!$prefix || strpos($key, $prefix) === 0) {
+        $filtered[substr($key, strlen($prefix))] = $val;
+      }
+    }
+    return $filtered;
   }
 
 }

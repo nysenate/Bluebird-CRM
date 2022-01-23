@@ -16,21 +16,31 @@ namespace Civi\Api4\Query;
  */
 class SqlFunctionUPPER extends SqlFunction {
 
+  protected static $dataType = 'String';
+
   protected static $category = self::CATEGORY_STRING;
 
-  protected static $params = [
-    [
-      'expr' => 1,
-      'optional' => FALSE,
-      'must_be' => ['SqlField', 'SqlString'],
-    ],
-  ];
+  protected static function params(): array {
+    return [
+      [
+        'optional' => FALSE,
+        'must_be' => ['SqlField', 'SqlString'],
+      ],
+    ];
+  }
 
   /**
    * @return string
    */
   public static function getTitle(): string {
     return ts('Uppercase');
+  }
+
+  /**
+   * @return string
+   */
+  public static function getDescription(): string {
+    return ts('Uppercase version of text.');
   }
 
 }

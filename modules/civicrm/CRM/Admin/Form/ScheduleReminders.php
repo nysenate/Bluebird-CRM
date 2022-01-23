@@ -59,7 +59,7 @@ class CRM_Admin_Form_ScheduleReminders extends CRM_Admin_Form {
 
     if ($isEvent) {
       $this->setComponentID(CRM_Utils_Request::retrieve('compId', 'Integer', $this));
-      if (!CRM_Event_BAO_Event::checkPermission($this->getComponentID(), CRM_Core_Permission::EDIT)) {
+      if (!CRM_Event_BAO_Event::checkPermission((int) $this->getComponentID(), CRM_Core_Permission::EDIT)) {
         throw new CRM_Core_Exception(ts('You do not have permission to access this page.'));
       }
     }
@@ -215,6 +215,9 @@ class CRM_Admin_Form_ScheduleReminders extends CRM_Admin_Form {
 
     $this->add('text', 'from_name', ts('From Name'));
     $this->add('text', 'from_email', ts('From Email'));
+
+    $this->add('datepicker', 'effective_start_date', ts('Effective start date'), [], FALSE);
+    $this->add('datepicker', 'effective_end_date', ts('Effective end date'), [], FALSE);
 
     $recipientListingOptions = [];
 
@@ -387,6 +390,7 @@ class CRM_Admin_Form_ScheduleReminders extends CRM_Admin_Form {
       $defaults['is_active'] = 1;
       $defaults['mode'] = 'Email';
       $defaults['record_activity'] = 1;
+      $defaults['start_action_unit'] = 'hour';
     }
     else {
       $defaults = $this->_values;
@@ -516,6 +520,8 @@ class CRM_Admin_Form_ScheduleReminders extends CRM_Admin_Form {
       'end_frequency_interval',
       'end_action',
       'end_date',
+      'effective_end_date',
+      'effective_start_date',
     ];
 
     if (empty($params['absolute_date'])) {
@@ -690,8 +696,14 @@ class CRM_Admin_Form_ScheduleReminders extends CRM_Admin_Form {
    * @return array
    */
   public function listTokens() {
-    $tokens = CRM_Core_SelectValues::contactTokens();
-    $tokens = array_merge(CRM_Core_SelectValues::activityTokens(), $tokens);
+    $tokenProcessor = new \Civi\Token\TokenProcessor(\Civi::dispatcher(), [
+      'controller' => get_class(),
+      'smarty' => FALSE,
+      'schema' => ['activityId', 'participantId'],
+    ]);
+    $tokens = $tokenProcessor->listTokens();
+
+    $tokens = array_merge(CRM_Core_SelectValues::contactTokens(), $tokens);
     $tokens = array_merge(CRM_Core_SelectValues::eventTokens(), $tokens);
     $tokens = array_merge(CRM_Core_SelectValues::membershipTokens(), $tokens);
     $tokens = array_merge(CRM_Core_SelectValues::contributionTokens(), $tokens);

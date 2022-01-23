@@ -34,6 +34,7 @@
         _.each(ctrl.clauses, updateOperators);
       };
 
+      // Return a list of operators allowed for the field in a given clause
       this.getOperators = function(clause) {
         var field = ctrl.getField(clause[0]);
         if (!field || !field.operators) {
@@ -48,25 +49,33 @@
         return ctrl.operators[opKey];
       };
 
+      // Ensures a clause is using an operator that is allowed for the field
       function updateOperators(clause) {
-        if (!ctrl.skip && (!clause[1] || !_.includes(_.pluck(ctrl.getOperators(clause), 'key'), clause[1]))) {
+        // Recurse into AND/OR/NOT groups
+        if (ctrl.conjunctions[clause[0]]) {
+          _.each(clause[1], updateOperators);
+        }
+        else if (!ctrl.skip && (!clause[1] || !_.includes(_.pluck(ctrl.getOperators(clause), 'key'), clause[1]))) {
           clause[1] = ctrl.getOperators(clause)[0].key;
           ctrl.changeClauseOperator(clause);
         }
       }
 
-      this.getField = function(expr) {
-        if (!meta[expr]) {
-          meta[expr] = searchMeta.parseExpr(expr);
+      // Gets the first arg of type "field"
+      function getFirstArgFromExpr(expr) {
+        if (!(expr in meta)) {
+          meta[expr] = _.findWhere(searchMeta.parseExpr(expr).args, {type: 'field'});
         }
-        return meta[expr].field;
+        return meta[expr] || {};
+      }
+
+      this.getField = function(expr) {
+        return getFirstArgFromExpr(expr).field;
       };
 
       this.getOptionKey = function(expr) {
-        if (!meta[expr]) {
-          meta[expr] = searchMeta.parseExpr(expr);
-        }
-        return meta[expr].suffix ? meta[expr].suffix.slice(1) : 'id';
+        var arg = getFirstArgFromExpr(expr);
+        return arg.suffix ? arg.suffix.slice(1) : 'id';
       };
 
       this.addGroup = function(op) {
@@ -87,15 +96,12 @@
         $('.api4-input.form-inline.ui-sortable-helper').css('margin-left', '' + offset + 'px');
       }
 
-      this.addClause = function() {
-        $timeout(function() {
-          if (ctrl.newClause) {
-            var newIndex = ctrl.clauses.length;
-            ctrl.clauses.push([ctrl.newClause, '=', '']);
-            ctrl.newClause = null;
-            updateOperators(ctrl.clauses[newIndex]);
-          }
-        });
+      this.addClause = function(value) {
+        if (value) {
+          var newIndex = ctrl.clauses.length;
+          ctrl.clauses.push([value, '=', '']);
+          updateOperators(ctrl.clauses[newIndex]);
+        }
       };
 
       this.deleteRow = function(index) {

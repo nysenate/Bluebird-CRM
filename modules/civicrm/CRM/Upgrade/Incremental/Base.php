@@ -221,6 +221,26 @@ class CRM_Upgrade_Incremental_Base {
   }
 
   /**
+   * Add the specified option group, gracefully if it already exists.
+   *
+   * @param CRM_Queue_TaskContext $ctx
+   * @param array $params
+   * @param array $options
+   *
+   * @return bool
+   */
+  public static function addOptionGroup(CRM_Queue_TaskContext $ctx, $params, $options): bool {
+    $defaults = ['is_active' => 1];
+    $optionDefaults = ['is_active' => 1];
+    $optionDefaults['option_group_id'] = \CRM_Core_BAO_OptionGroup::ensureOptionGroupExists(array_merge($defaults, $params));
+
+    foreach ($options as $option) {
+      \CRM_Core_BAO_OptionValue::ensureOptionValueExists(array_merge($optionDefaults, $option));
+    }
+    return TRUE;
+  }
+
+  /**
    * Do any relevant message template updates.
    *
    * @param CRM_Queue_TaskContext $ctx
@@ -229,7 +249,131 @@ class CRM_Upgrade_Incremental_Base {
   public static function updateMessageTemplates($ctx, $version) {
     $messageTemplateObject = new CRM_Upgrade_Incremental_MessageTemplates($version);
     $messageTemplateObject->updateTemplates();
+  }
 
+  /**
+   * Updated a message token within a template.
+   *
+   * @param CRM_Queue_TaskContext $ctx
+   * @param string $workflowName
+   * @param string $old
+   * @param string $new
+   * @param $version
+   *
+   * @return bool
+   */
+  public static function updateMessageToken($ctx, string $workflowName, string $old, string $new, $version):bool {
+    $messageObj = new CRM_Upgrade_Incremental_MessageTemplates($version);
+    if (!empty($workflowName)) {
+      $messageObj->replaceTokenInTemplate($workflowName, $old, $new);
+    }
+    else {
+      $messageObj->replaceTokenInMessageTemplates($old, $new);
+    }
+    return TRUE;
+  }
+
+  /**
+   * Updated a message token within a scheduled reminder.
+   *
+   * @param CRM_Queue_TaskContext $ctx
+   * @param string $old
+   * @param string $new
+   * @param $version
+   *
+   * @return bool
+   */
+  public static function updateActionScheduleToken($ctx, string $old, string $new, $version):bool {
+    $messageObj = new CRM_Upgrade_Incremental_MessageTemplates($version);
+    $messageObj->replaceTokenInActionSchedule($old, $new);
+    return TRUE;
+  }
+
+  /**
+   * Updated a message token within a label.
+   *
+   * @param CRM_Queue_TaskContext $ctx
+   * @param string $old
+   * @param string $new
+   * @param $version
+   *
+   * @return bool
+   */
+  public static function updatePrintLabelToken($ctx, string $old, string $new, $version):bool {
+    $messageObj = new CRM_Upgrade_Incremental_MessageTemplates($version);
+    $messageObj->replaceTokenInPrintLabel($old, $new);
+    return TRUE;
+  }
+
+  /**
+   * Updated a message token within greeting options.
+   *
+   * @param CRM_Queue_TaskContext $ctx
+   * @param string $old
+   * @param string $new
+   * @param $version
+   *
+   * @return bool
+   */
+  public static function updateGreetingOptions($ctx, string $old, string $new, $version):bool {
+    $messageObj = new CRM_Upgrade_Incremental_MessageTemplates($version);
+    $messageObj->replaceTokenInGreetingOptions($old, $new);
+    return TRUE;
+  }
+
+  /**
+   * Updated a currency in civicrm_currency and related configurations
+   *
+   * @param CRM_Queue_TaskContext $ctx
+   * @param string $old_name
+   * @param string $new_name
+   *
+   * @return bool
+   */
+  public static function updateCurrencyName($ctx, string $old_name, string $new_name): bool {
+    CRM_Core_DAO::executeQuery('UPDATE civicrm_currency SET name = %1 WHERE name = %2', [
+      1 => [$new_name, 'String'],
+      2 => [$old_name, 'String'],
+    ]);
+
+    $oid = CRM_Core_DAO::singleValueQuery("SELECT id FROM civicrm_option_group WHERE name = 'currencies_enabled'");
+    if ($oid) {
+      CRM_Core_DAO::executeQuery('UPDATE civicrm_option_value SET value = %1 WHERE value = %2 AND option_group_id = %3', [
+        1 => [$new_name, 'String'],
+        2 => [$old_name, 'String'],
+        3 => [$oid, 'String'],
+      ]);
+    }
+
+    CRM_Core_DAO::executeQuery('UPDATE civicrm_participant SET fee_currency = %1 WHERE fee_currency = %2', [
+      1 => [$new_name, 'String'],
+      2 => [$old_name, 'String'],
+    ]);
+
+    $tables = [
+      'civicrm_contribution',
+      'civicrm_contribution_page',
+      'civicrm_contribution_recur',
+      'civicrm_contribution_soft',
+      'civicrm_event',
+      'civicrm_financial_item',
+      'civicrm_financial_trxn',
+      'civicrm_grant',
+      'civicrm_pcp',
+      'civicrm_pledge_payment',
+      'civicrm_pledge',
+      'civicrm_product',
+    ];
+
+    foreach ($tables as $table) {
+      CRM_Core_DAO::executeQuery('UPDATE %3 SET currency = %1 WHERE currency = %2', [
+        1 => [$new_name, 'String'],
+        2 => [$old_name, 'String'],
+        3 => [$table, 'MysqlColumnNameOrAlias'],
+      ]);
+    }
+
+    return TRUE;
   }
 
   /**

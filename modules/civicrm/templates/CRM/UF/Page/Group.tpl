@@ -23,7 +23,7 @@
     <div id="standalone-form">
         <textarea rows="20" cols="80" name="profile" id="profile">{$profile}</textarea>
         <div class="spacer"></div>
-        <a href="#" onclick="html_code.profile.select(); return false;" class="button"><span>Select HTML Code</span></a>
+        <a href="#" onclick="html_code.profile.select(); return false;" class="button"><span>{ts}Select HTML Code{/ts}</span></a>
     </div>
     <div class="action-link">
         &nbsp; <a href="{crmURL p='civicrm/admin/uf/group' q="reset=1"}"><i class="crm-i fa-chevron-left" aria-hidden="true"></i>  {ts}Back to Profile Listings{/ts}</a>
@@ -69,7 +69,7 @@
             <tbody>
             {foreach from=$rows item=row}
             {if !$row.is_reserved }
-              <tr id="UFGroup-{$row.id}" data-action="setvalue" class="crm-entity {$row.class}{if NOT $row.is_active} disabled{/if}">
+              <tr id="UFGroup-{$row.id}" data-action="setvalue" class="crm-entity{if !empty($row.class)} {$row.class}{/if}{if NOT $row.is_active} disabled{/if}">
                 <td class="crmf-title crm-editable">{$row.title}</td>
                 <td class="crmf-frontend_title crm-editable">{$row.frontend_title}</td>
                 <td>
@@ -114,7 +114,7 @@
             <tbody>
             {foreach from=$rows item=row}
             {if $row.is_reserved}
-              <tr id="UFGroup-{$row.id}" class="crm-entity {$row.class}{if NOT $row.is_active} disabled{/if}">
+              <tr id="UFGroup-{$row.id}" class="crm-entity{if !empty($row.class)} {$row.class}{/if}{if NOT $row.is_active} disabled{/if}">
                 <td>{$row.title}</td>
                 <td>{$row.frontend_title}</td>
                 <td>

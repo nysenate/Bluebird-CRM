@@ -96,7 +96,8 @@ class CRM_Core_BAO_EntityTag extends CRM_Core_DAO_EntityTag {
    * Delete the tag for a contact.
    *
    * @param array $params
-   *   (reference ) an assoc array of name/value pairs.
+   * @deprecated
+   * WARNING: Nonstandard params searches by tag_id rather than id!
    */
   public static function del(&$params) {
     //invoke pre hook
@@ -291,26 +292,6 @@ class CRM_Core_BAO_EntityTag extends CRM_Core_DAO_EntityTag {
   }
 
   /**
-   * This function returns all entities assigned to a specific tag.
-   *
-   * @param object $tag
-   *   An object of a tag.
-   *
-   * @return array
-   *   array of entity ids
-   */
-  public function getEntitiesByTag($tag) {
-    $entityIds = [];
-    $entityTagDAO = new CRM_Core_DAO_EntityTag();
-    $entityTagDAO->tag_id = $tag->id;
-    $entityTagDAO->find();
-    while ($entityTagDAO->fetch()) {
-      $entityIds[] = $entityTagDAO->entity_id;
-    }
-    return $entityIds;
-  }
-
-  /**
    * Get contact tags.
    *
    * @param int $contactID
@@ -456,16 +437,17 @@ class CRM_Core_BAO_EntityTag extends CRM_Core_DAO_EntityTag {
     $params = [];
 
     if ($fieldName == 'tag' || $fieldName == 'tag_id') {
+      $table = 'civicrm_contact';
       if (!empty($props['entity_table'])) {
-        $entity = CRM_Utils_Type::escape($props['entity_table'], 'String');
-        $params[] = "used_for LIKE '%$entity%'";
+        $table = CRM_Utils_Type::escape($props['entity_table'], 'String');
+        $params['condition'][] = "used_for LIKE '%$table%'";
       }
 
       // Output tag list as nested hierarchy
       // TODO: This will only work when api.entity is "entity_tag". What about others?
       if ($context == 'search' || $context == 'create') {
         $dummyArray = [];
-        return CRM_Core_BAO_Tag::getTags(CRM_Utils_Array::value('entity_table', $props, 'civicrm_contact'), $dummyArray, CRM_Utils_Array::value('parent_id', $params), '- ');
+        return CRM_Core_BAO_Tag::getTags($table, $dummyArray, NULL, '- ');
       }
     }
 
@@ -504,13 +486,13 @@ class CRM_Core_BAO_EntityTag extends CRM_Core_DAO_EntityTag {
     // This is probably fairly mild in terms of helping performance - a case could be made to check if tags
     // exist before deleting (further down) as delete is a locking action.
     $entity = CRM_Core_DAO_AllCoreTables::getBriefName(get_class($event->object));
-    if (!isset(Civi::$statics[__CLASS__]['tagged_entities'][$entity])) {
+    if ($entity && !isset(Civi::$statics[__CLASS__]['tagged_entities'][$entity])) {
       $tableName = CRM_Core_DAO_AllCoreTables::getTableForEntityName($entity);
       $used_for = CRM_Core_OptionGroup::values('tag_used_for');
       Civi::$statics[__CLASS__]['tagged_entities'][$entity] = !empty($used_for[$tableName]) ? $tableName : FALSE;
     }
 
-    if (Civi::$statics[__CLASS__]['tagged_entities'][$entity]) {
+    if (!empty(Civi::$statics[__CLASS__]['tagged_entities'][$entity])) {
       CRM_Core_DAO::executeQuery('DELETE FROM civicrm_entity_tag WHERE entity_table = %1 AND entity_id = %2',
         [1 => [Civi::$statics[__CLASS__]['tagged_entities'][$entity], 'String'], 2 => [$event->object->id, 'Integer']]
       );

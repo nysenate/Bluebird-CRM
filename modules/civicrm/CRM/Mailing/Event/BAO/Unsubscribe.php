@@ -132,10 +132,10 @@ WHERE  email = %2
     $relevant_mailing_id = $mailing_id;
 
     // Special case for AB Tests:
-    if (in_array($mailing_type, ['experiement', 'winner'])) {
+    if (in_array($mailing_type, ['experiment', 'winner'])) {
       // The mailing belongs to an AB test.
       // See if we can find an AB test where this is variant B.
-      $mailing_id_a = CRM_Core_DAO::getFieldValue('CRM_Mailing_DAO_MailingAB', mailing_id, 'mailing_id_a', 'mailing_id_b');
+      $mailing_id_a = CRM_Core_DAO::getFieldValue('CRM_Mailing_DAO_MailingAB', $mailing_id, 'mailing_id_a', 'mailing_id_b');
       if (!empty($mailing_id_a)) {
         // OK, we were given mailing B and we looked up variant A which is the relevant one.
         $relevant_mailing_id = $mailing_id_a;
@@ -226,23 +226,33 @@ WHERE  email = %2
     $groupIdClause = '';
     if ($groupIds || $baseGroupIds) {
       $groupIdClause = "AND grp.id IN (" . implode(', ', array_merge($groupIds, $baseGroupIds)) . ")";
+      // Check that groupcontactcache is up to date so we can get smartgroups
+      CRM_Contact_BAO_GroupContactCache::check(array_merge($groupIds, $baseGroupIds));
     }
-    $do = CRM_Core_DAO::executeQuery("
+
+    $groupsSQL = "
             SELECT      grp.id as group_id,
                         grp.title as title,
                         grp.frontend_title as frontend_title,
                         grp.frontend_description as frontend_description,
-                        grp.description as description
+                        grp.description as description,
+                        grp.saved_search_id as saved_search_id
             FROM        civicrm_group grp
             LEFT JOIN   civicrm_group_contact gc
                 ON      gc.group_id = grp.id
+            LEFT JOIN     civicrm_group_contact_cache gcc
+                ON      gcc.group_id = grp.id
             WHERE       grp.is_hidden = 0
                         $groupIdClause
-                AND     (grp.saved_search_id is not null
-                            OR  (gc.contact_id = $contact_id
+                AND     ((grp.saved_search_id is not null AND gcc.contact_id = %1)
+                            OR  (gc.contact_id = %1
                                 AND gc.status = 'Added')
                             $baseGroupClause
-                        )");
+                        ) GROUP BY grp.id";
+    $groupsParams = [
+      1 => [$contact_id, 'Positive'],
+    ];
+    $do = CRM_Core_DAO::executeQuery($groupsSQL, $groupsParams);
 
     if ($return) {
       $returnGroups = [];
@@ -384,7 +394,7 @@ WHERE  email = %2
 
     $params = [
       'subject' => $component->subject,
-      'from' => "\"$domainEmailName\" <" . CRM_Core_BAO_Domain::getNoReplyEmailAddress() . '>',
+      'from' => "\"{$domainEmailName}\" <{$domainEmailAddress}>",
       'toEmail' => $eq->email,
       'replyTo' => CRM_Core_BAO_Domain::getNoReplyEmailAddress(),
       'returnPath' => CRM_Core_BAO_Domain::getNoReplyEmailAddress(),

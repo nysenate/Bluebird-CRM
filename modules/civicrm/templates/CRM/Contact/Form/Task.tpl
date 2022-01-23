@@ -9,10 +9,10 @@
 *}
 {ts 1=$totalSelectedContacts}Number of selected contacts: %1{/ts}
 
-{if $searchtype eq 'ts_sel'}
+{if !empty($searchtype) && $searchtype eq 'ts_sel'}
 <div id="popupContainer">
   <div class="crm-block crm-form-block crm-search-form-block">
-    <table id="selectedRecords-{$group.id}" class="display crm-copy-fields crm-sortable">
+    <table id="selectedRecords-{if !empty($group)}{$group.id}{/if}" class="display crm-copy-fields crm-sortable">
       <thead>
       <tr class="columnheader">
         <th class="contact_details">{ts}Name{/ts}</th>
@@ -32,7 +32,7 @@
 <a href="#" id="popup-button" title="{ts}View Selected Contacts{/ts}">{ts}View Selected Contacts{/ts}</a>
 {/if}
 
-{if $searchtype eq 'ts_sel'}
+{if !empty($searchtype) && $searchtype eq 'ts_sel'}
 {literal}
 <script type="text/javascript">
   CRM.$(function($) {
@@ -73,7 +73,7 @@
 {/literal}
 {/if}
 
-{if $rows}
+{if !empty($rows)}
 <div class="form-item">
   <table width="30%">
     <tr class="columnheader">

@@ -10,13 +10,6 @@
  +--------------------------------------------------------------------+
  */
 
-/**
- *
- * @package CRM
- * @copyright CiviCRM LLC https://civicrm.org/licensing
- */
-
-
 namespace Civi\Api4\Service\Schema;
 
 use Civi\Api4\Entity;
@@ -65,9 +58,9 @@ class SchemaMapBuilder {
    */
   private function loadTables(SchemaMap $map) {
     /** @var \CRM_Core_DAO $daoName */
-    foreach (AllCoreTables::get() as $daoName => $data) {
+    foreach (AllCoreTables::get() as $data) {
       $table = new Table($data['table']);
-      foreach ($daoName::fields() as $fieldData) {
+      foreach ($data['class']::fields() as $fieldData) {
         $this->addJoins($table, $fieldData['name'], $fieldData);
       }
       $map->addTable($table);
@@ -75,8 +68,6 @@ class SchemaMapBuilder {
         $this->addCustomFields($map, $table, $data['name']);
       }
     }
-
-    $this->addBackReferences($map);
   }
 
   /**
@@ -106,49 +97,6 @@ class SchemaMapBuilder {
   }
 
   /**
-   * Loop through existing links and provide link from the other side
-   *
-   * @param SchemaMap $map
-   */
-  private function addBackReferences(SchemaMap $map) {
-    foreach ($map->getTables() as $table) {
-      foreach ($table->getTableLinks() as $link) {
-        $target = $map->getTableByName($link->getTargetTable());
-        $tableName = $link->getBaseTable();
-        // Exclude custom field tables
-        if (strpos($link->getTargetTable(), 'civicrm_value_') !== 0 && strpos($link->getBaseTable(), 'civicrm_value_') !== 0) {
-          $plural = str_replace('civicrm_', '', $this->getPlural($tableName));
-          $joinable = new Joinable($tableName, $link->getBaseColumn(), $plural);
-          $joinable->setJoinType($joinable::JOIN_TYPE_ONE_TO_MANY);
-          $target->addTableLink($link->getTargetColumn(), $joinable);
-        }
-      }
-    }
-  }
-
-  /**
-   * Simple implementation of pluralization.
-   * Could be replaced with symfony/inflector
-   *
-   * @param string $singular
-   *
-   * @return string
-   */
-  private function getPlural($singular) {
-    $last_letter = substr($singular, -1);
-    switch ($last_letter) {
-      case 'y':
-        return substr($singular, 0, -1) . 'ies';
-
-      case 's':
-        return $singular . 'es';
-
-      default:
-        return $singular . 's';
-    }
-  }
-
-  /**
    * @param \Civi\Api4\Service\Schema\SchemaMap $map
    * @param \Civi\Api4\Service\Schema\Table $baseTable
    * @param string $entityName
@@ -161,7 +109,7 @@ class SchemaMapBuilder {
     }
     $fieldData = \CRM_Utils_SQL_Select::from('civicrm_custom_field f')
       ->join('custom_group', 'INNER JOIN civicrm_custom_group g ON g.id = f.custom_group_id')
-      ->select(['g.name as custom_group_name', 'g.table_name', 'g.is_multiple', 'f.name', 'f.data_type', 'label', 'column_name', 'option_group_id'])
+      ->select(['g.name as custom_group_name', 'g.table_name', 'g.is_multiple', 'f.name', 'f.data_type', 'label', 'column_name', 'option_group_id', 'serialize'])
       ->where('g.extends IN (@entity)', ['@entity' => $customInfo['extends']])
       ->where('g.is_active')
       ->where('f.is_active')
@@ -192,6 +140,9 @@ class SchemaMapBuilder {
 
       if ($fieldData->data_type === 'ContactReference') {
         $joinable = new Joinable('civicrm_contact', 'id', $fieldData->name);
+        if ($fieldData->serialize) {
+          $joinable->setSerialize((int) $fieldData->serialize);
+        }
         $customTable->addTableLink($fieldData->column_name, $joinable);
       }
     }

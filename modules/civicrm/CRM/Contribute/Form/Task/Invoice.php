@@ -123,10 +123,10 @@ class CRM_Contribute_Form_Task_Invoice extends CRM_Contribute_Form_Task {
 
     CRM_Contact_Form_Task_EmailCommon::preProcessFromAddress($this);
     if ($this->_selectedOutput == 'email') {
-      CRM_Utils_System::setTitle(ts('Email Invoice'));
+      $this->setTitle(ts('Email Invoice'));
     }
     else {
-      CRM_Utils_System::setTitle(ts('Print Contribution Invoice'));
+      $this->setTitle(ts('Print Contribution Invoice'));
     }
   }
 
@@ -135,9 +135,7 @@ class CRM_Contribute_Form_Task_Invoice extends CRM_Contribute_Form_Task {
    */
   public function buildQuickForm() {
     $this->preventAjaxSubmit();
-    if (CRM_Core_Permission::check('administer CiviCRM')) {
-      $this->assign('isAdmin', 1);
-    }
+    $this->assign('isAdmin', CRM_Core_Permission::check('administer CiviCRM'));
 
     $this->add('select', 'from_email_address', ts('From'), $this->_fromEmails, TRUE);
     if ($this->_selectedOutput != 'email') {
@@ -374,7 +372,6 @@ class CRM_Contribute_Form_Task_Invoice extends CRM_Contribute_Form_Task {
         'invoice_date' => $invoiceDate,
         'dueDate' => $dueDate,
         'notes' => $invoiceNotes,
-        'display_name' => $contribution->_relatedObjects['contact']->display_name,
         'lineItem' => $lineItem,
         'dataArray' => $dataArray,
         'refundedStatusId' => $refundedStatusId,
@@ -430,13 +427,13 @@ class CRM_Contribute_Form_Task_Invoice extends CRM_Contribute_Form_Task {
         $emails = Email::get()
           ->addWhere('id', 'IN', $emailIDs)
           ->setCheckPermissions(FALSE)
-          ->setSelect(['contact_id', 'email', 'contact.sort_name', 'contact.display_name'])->execute();
+          ->setSelect(['contact_id', 'email', 'contact_id.sort_name', 'contact_id.display_name'])->execute();
         $emailStrings = $contactUrlStrings = [];
         foreach ($emails as $email) {
-          $emailStrings[] = '"' . $email['contact.sort_name'] . '" <' . $email['email'] . '>';
+          $emailStrings[] = '"' . $email['contact_id.sort_name'] . '" <' . $email['email'] . '>';
           // generate the contact url to put in Activity
           $contactURL = CRM_Utils_System::url('civicrm/contact/view', ['reset' => 1, 'force' => 1, 'cid' => $email['contact_id']], TRUE);
-          $contactUrlStrings[] = "<a href='{$contactURL}'>" . $email['contact.display_name'] . '</a>';
+          $contactUrlStrings[] = "<a href='{$contactURL}'>" . $email['contact_id.display_name'] . '</a>';
         }
         $cc_emails = implode(',', $emailStrings);
         $values['cc_receipt'] = $cc_emails;

@@ -18,24 +18,33 @@ class SqlFunctionROUND extends SqlFunction {
 
   protected static $category = self::CATEGORY_MATH;
 
-  protected static $params = [
-    [
-      'expr' => 1,
-      'optional' => FALSE,
-      'must_be' => ['SqlField', 'SqlNumber'],
-    ],
-    [
-      'expr' => 1,
-      'optional' => TRUE,
-      'must_be' => ['SqlNumber'],
-    ],
-  ];
+  protected static function params(): array {
+    return [
+      [
+        'optional' => FALSE,
+        'must_be' => ['SqlField', 'SqlNumber'],
+        'label' => ts('Number'),
+      ],
+      [
+        'optional' => TRUE,
+        'must_be' => ['SqlNumber'],
+        'label' => ts('Decimal places'),
+      ],
+    ];
+  }
 
   /**
    * @return string
    */
   public static function getTitle(): string {
     return ts('Round');
+  }
+
+  /**
+   * @return string
+   */
+  public static function getDescription(): string {
+    return ts('Number rounded to specified number of decimal places.');
   }
 
 }

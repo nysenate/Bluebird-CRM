@@ -13,24 +13,29 @@ function search_kit_civicrm_config(&$config) {
 }
 
 /**
- * Implements hook_civicrm_xmlMenu().
- *
- * @link https://docs.civicrm.org/dev/en/latest/hooks/hook_civicrm_xmlMenu
+ * @param \Symfony\Component\DependencyInjection\ContainerBuilder $container
  */
-function search_kit_civicrm_xmlMenu(&$files) {
-  _search_kit_civix_civicrm_xmlMenu($files);
+function search_kit_civicrm_container($container) {
+  $container->getDefinition('dispatcher')
+    ->addMethodCall('addListener', [
+      'civi.api4.authorizeRecord::SavedSearch',
+      ['CRM_Search_BAO_SearchDisplay', 'savedSearchCheckAccessByDisplay'],
+    ]);
 }
 
 /**
- * Implements hook_civicrm_managed().
+ * Implements hook_civicrm_alterApiRoutePermissions().
  *
- * Generate a list of entities to create/deactivate/delete when this module
- * is installed, disabled, uninstalled.
+ * Allow anonymous users to run a search display. Permissions are checked internally.
  *
- * @link https://docs.civicrm.org/dev/en/latest/hooks/hook_civicrm_managed
+ * @see CRM_Utils_Hook::alterApiRoutePermissions
  */
-function search_kit_civicrm_managed(&$entities) {
-  _search_kit_civix_civicrm_managed($entities);
+function search_kit_civicrm_alterApiRoutePermissions(&$permissions, $entity, $action) {
+  if ($entity === 'SearchDisplay') {
+    if ($action === 'run' || $action === 'download' || $action === 'getSearchTasks') {
+      $permissions = CRM_Core_Permission::ALWAYS_ALLOW_PERMISSION;
+    }
+  }
 }
 
 /**
@@ -44,7 +49,6 @@ function search_kit_civicrm_managed(&$entities) {
  * @link https://docs.civicrm.org/dev/en/latest/hooks/hook_civicrm_angularModules
  */
 function search_kit_civicrm_angularModules(&$angularModules) {
-  _search_kit_civix_civicrm_angularModules($angularModules);
   // Fetch all search tasks provided by extensions and add their Angular modules as crmSearchTasks dependencies
   $tasks = [];
   $null = NULL;
@@ -65,15 +69,6 @@ function search_kit_civicrm_angularModules(&$angularModules) {
 }
 
 /**
- * Implements hook_civicrm_alterSettingsFolders().
- *
- * @link https://docs.civicrm.org/dev/en/latest/hooks/hook_civicrm_alterSettingsFolders
- */
-function search_kit_civicrm_alterSettingsFolders(&$metaDataFolders = NULL) {
-  _search_kit_civix_civicrm_alterSettingsFolders($metaDataFolders);
-}
-
-/**
  * Implements hook_civicrm_entityTypes().
  *
  * Declare entity types provided by this module.
@@ -82,13 +77,6 @@ function search_kit_civicrm_alterSettingsFolders(&$metaDataFolders = NULL) {
  */
 function search_kit_civicrm_entityTypes(&$entityTypes) {
   _search_kit_civix_civicrm_entityTypes($entityTypes);
-}
-
-/**
- * Implements hook_civicrm_themes().
- */
-function search_kit_civicrm_themes(&$themes) {
-  _search_kit_civix_civicrm_themes($themes);
 }
 
 /**
@@ -103,5 +91,13 @@ function search_kit_civicrm_pre($op, $entity, $id, &$params) {
     elseif (empty($params['name'])) {
       $params['name'] = \CRM_Utils_String::munge($params['label']);
     }
+  }
+  // When deleting a saved search, also delete the displays
+  // This would happen anyway in sql because of the ON DELETE CASCADE foreign key,
+  // But this ensures that pre and post hooks are called
+  if ($entity === 'SavedSearch' && $op === 'delete') {
+    \Civi\Api4\SearchDisplay::delete(FALSE)
+      ->addWhere('saved_search_id', '=', $id)
+      ->execute();
   }
 }

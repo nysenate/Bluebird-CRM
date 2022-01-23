@@ -744,13 +744,6 @@ class CRM_Contact_BAO_Relationship extends CRM_Contact_DAO_Relationship {
 
     CRM_Utils_Hook::post('delete', 'Relationship', $id, $relationship);
 
-    // delete the recently created Relationship
-    $relationshipRecent = [
-      'id' => $id,
-      'type' => 'Relationship',
-    ];
-    CRM_Utils_Recent::del($relationshipRecent);
-
     return $relationship;
   }
 
@@ -1011,7 +1004,7 @@ WHERE  relationship_type_id = " . CRM_Utils_Type::escape($type, 'Integer');
     $existingValues = CRM_Core_BAO_CustomValueTable::getEntityValues($relationshipId, 'Relationship');
     // Create a similar array for the new relationship.
     $newValues = [];
-    if (array_key_exists('custom', $params)) {
+    if (isset($params['custom']) && is_array($params['custom'])) {
       // $params['custom'] seems to be an array. Each value is again an array.
       // This array contains one value (key -1), and this value seems to be
       // an array with the information about the custom value.

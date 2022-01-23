@@ -22,8 +22,12 @@
       mode = CRM.config && CRM.config.isFrontend ? 'front' : 'back';
     }
     query = query || '';
-    var url,
-      frag = path.split('?');
+    var url, frag, hash = '';
+    if (path.indexOf('#') > -1) {
+      hash = '#' + path.split('#')[1];
+      path = path.split('#')[0];
+    }
+    frag = path.split('?');
     // Encode url path only if slashes in placeholder were also encoded
     if (tplURL[mode].indexOf('civicrm/placeholder-url-path') >= 0) {
       url = tplURL[mode].replace('civicrm/placeholder-url-path', frag[0]);
@@ -39,7 +43,7 @@
     if (frag[1]) {
       url += (url.indexOf('?') < 0 ? '?' : '&') + frag[1];
     }
-    return url;
+    return url + hash;
   };
 
   $.fn.crmURL = function () {
@@ -507,6 +511,7 @@
           var $el = $(this),
             label = $el.is('input') ? $el.attr('value') : $el.text(),
             identifier = $el.attr('name') || $el.attr('href');
+          $el.attr('tabindex', '-1');
           if (!identifier || identifier === '#' || $.inArray(identifier, added) < 0) {
             var $icon = $el.find('.icon, .crm-i'),
               button = {'data-identifier': identifier, text: label, click: function() {
@@ -522,7 +527,7 @@
             added.push(identifier);
           }
           // display:none causes the form to not submit when pressing "enter"
-          $el.parents(buttonContainers).css({height: 0, padding: 0, margin: 0, overflow: 'hidden'});
+          $el.parents(buttonContainers).css({height: 0, padding: 0, margin: 0, overflow: 'hidden'}).attr('aria-hidden', 'true');
         });
         $el.dialog('option', 'buttons', buttons);
       }

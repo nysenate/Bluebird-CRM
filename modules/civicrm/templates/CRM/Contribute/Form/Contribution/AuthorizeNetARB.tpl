@@ -42,7 +42,7 @@
     </billTo>
   </subscription>
 </ARBUpdateSubscriptionRequest>
-{elseif $subscriptionType eq 'update'}
+{elseif isset($subscriptionType) && $subscriptionType eq 'update'}
 <?xml version="1.0" encoding="utf-8"?>
 <ARBUpdateSubscriptionRequest xmlns="AnetApi/xml/v1/schema/AnetApiSchema.xsd">
   <merchantAuthentication>

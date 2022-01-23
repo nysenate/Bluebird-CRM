@@ -89,7 +89,7 @@ function civicrm_main(&$config) {
   civicrm_source($dsn, $sqlPath . DIRECTORY_SEPARATOR . 'civicrm.mysql');
 
   if (!empty($config['loadGenerated'])) {
-    civicrm_source($dsn, $sqlPath . DIRECTORY_SEPARATOR . 'civicrm_generated.mysql', TRUE);
+    civicrm_source($dsn, $sqlPath . DIRECTORY_SEPARATOR . 'civicrm_generated.mysql');
   }
   else {
     if (isset($config['seedLanguage'])
@@ -205,6 +205,10 @@ function civicrm_config(&$config) {
     'dbPass' => addslashes($config['mysql']['password']),
     'dbHost' => $config['mysql']['server'],
     'dbName' => addslashes($config['mysql']['database']),
+    // These need to be filled manually when using the old installer if an
+    // SSL connection to MySQL is needed.
+    'dbSSL' => '',
+    'CMSdbSSL' => '',
   );
 
   $params['baseURL'] = $config['base_url'] ?? civicrm_cms_base();

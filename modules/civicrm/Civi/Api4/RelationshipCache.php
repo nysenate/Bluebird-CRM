@@ -1,5 +1,4 @@
 <?php
-
 /*
  +--------------------------------------------------------------------+
  | Copyright CiviCRM LLC. All rights reserved.                        |
@@ -9,14 +8,6 @@
  | and copyright information, see https://civicrm.org/licensing       |
  +--------------------------------------------------------------------+
  */
-
-/**
- *
- * @package CRM
- * @copyright CiviCRM LLC https://civicrm.org/licensing
- */
-
-
 namespace Civi\Api4;
 
 /**
@@ -25,6 +16,7 @@ namespace Civi\Api4;
  * @searchable secondary
  * @see \Civi\Api4\Relationship
  * @ui_join_filters near_relation
+ * @since 5.29
  * @package Civi\Api4
  */
 class RelationshipCache extends Generic\AbstractEntity {
@@ -53,10 +45,21 @@ class RelationshipCache extends Generic\AbstractEntity {
    */
   public static function getInfo() {
     $info = parent::getInfo();
+    $info['bridge_title'] = ts('Relationship');
     $info['bridge'] = [
-      'near_contact_id' => ['description' => ts('One or more contacts with a relationship to this contact')],
-      'far_contact_id' => ['description' => ts('One or more contacts with a relationship to this contact')],
+      'near_contact_id' => [
+        'to' => 'far_contact_id',
+        'label' => ts('Related Contacts'),
+        'description' => ts('One or more related contacts'),
+      ],
     ];
+    if (in_array('CiviCase', \Civi::settings()->get('enable_components'), TRUE)) {
+      $info['bridge']['case_id'] = [
+        'to' => 'far_contact_id',
+        'label' => ts('Case Roles'),
+        'description' => ts('Cases in which this contact has a role'),
+      ];
+    }
     return $info;
   }
 

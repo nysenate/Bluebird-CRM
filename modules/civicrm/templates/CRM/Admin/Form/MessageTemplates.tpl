@@ -8,7 +8,6 @@
  +--------------------------------------------------------------------+
 *}
 {* this template is used for adding/editing/deleting Message Templates *}
-
 {if $action neq 8}
   <div class="help">
     {ts}Use this form to add or edit re-usable message templates.{/ts} {help id="id-intro" file="CRM/Admin/Page/MessageTemplates.hlp"}
@@ -50,7 +49,7 @@
         <tr>
           <td class="label-left">{$form.file_id.label}</td>
           <td>{$form.file_id.html}
-            {if $attachment}
+            {if !empty($attachment)}
             {foreach from=$attachment key=attKey item=attVal}
             <div class="crm-attachment-wrapper crm-entity" id="file_{$attVal.fileID}">
               <strong><a class="crm-attachment" href="{$attVal.url}">{$attVal.cleanName}</a></strong>
@@ -116,7 +115,7 @@
         </div><!-- /.crm-accordion-body -->
       </div><!-- /.crm-accordion-wrapper -->
 
-      {if !$workflow_id}
+      {if !$isWorkflow}
         <table class="form-layout-compressed">
           <tr>
             <td class="label-left">{$form.is_active.label}</td>

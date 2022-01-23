@@ -130,7 +130,7 @@ class CRM_Event_Page_EventInfo extends CRM_Core_Page {
             $invoiceSettings = Civi::settings()->get('contribution_invoice_settings');
             $taxTerm = Civi::settings()->get('tax_term');
             $displayOpt = $invoiceSettings['tax_display_settings'] ?? NULL;
-            $invoicing = $invoiceSettings['invoicing'] ?? NULL;
+
             foreach ($fieldValues['options'] as $optionId => $optionVal) {
               if (CRM_Utils_Array::value('visibility_id', $optionVal) != array_search('public', $visibility) &&
                 $adminFieldVisible == FALSE
@@ -139,7 +139,7 @@ class CRM_Event_Page_EventInfo extends CRM_Core_Page {
               }
 
               $values['feeBlock']['isDisplayAmount'][$fieldCnt] = $fieldValues['is_display_amounts'] ?? NULL;
-              if ($invoicing && isset($optionVal['tax_amount'])) {
+              if (Civi::settings()->get('invoicing') && isset($optionVal['tax_amount'])) {
                 $values['feeBlock']['value'][$fieldCnt] = CRM_Price_BAO_PriceField::getTaxLabel($optionVal, 'amount', $displayOpt, $taxTerm);
                 $values['feeBlock']['tax_amount'][$fieldCnt] = $optionVal['tax_amount'];
               }
@@ -172,7 +172,8 @@ class CRM_Event_Page_EventInfo extends CRM_Core_Page {
     }
 
     //retrieve custom field information
-    $groupTree = CRM_Core_BAO_CustomGroup::getTree('Event', NULL, $this->_id, 0, $values['event']['event_type_id'], NULL, TRUE, NULL, FALSE, TRUE, NULL, TRUE);
+    $groupTree = CRM_Core_BAO_CustomGroup::getTree('Event', NULL, $this->_id, 0, $values['event']['event_type_id'], NULL,
+      TRUE, NULL, FALSE, CRM_Core_Permission::VIEW, NULL, TRUE);
     CRM_Core_BAO_CustomGroup::buildCustomDataView($this, $groupTree, FALSE, NULL, NULL, NULL, $this->_id);
     $this->assign('action', CRM_Core_Action::VIEW);
     //To show the event location on maps directly on event info page

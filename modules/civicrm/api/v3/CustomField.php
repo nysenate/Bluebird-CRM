@@ -19,20 +19,21 @@
  * Create a 'custom field' within a custom field group.
  *
  * We also empty the static var in the getfields
- * function after deletion so that the field is available for us (getfields manages date conversion
- * among other things
+ * function after deletion so that the field is available for us (getfields
+ * manages date conversion among other things
  *
  * @param array $params
  *   Array per getfields metadata.
  *
  * @return array
  *   API success array
+ * @throws \CiviCRM_API3_Exception
  */
-function civicrm_api3_custom_field_create($params) {
+function civicrm_api3_custom_field_create(array $params): array {
 
   // Legacy handling for old way of naming serialized fields
   if (!empty($params['html_type'])) {
-    if ($params['html_type'] == 'CheckBox' || strpos($params['html_type'], 'Multi-') === 0) {
+    if ($params['html_type'] === 'CheckBox' || strpos($params['html_type'], 'Multi-') === 0) {
       $params['serialize'] = 1;
     }
     $params['html_type'] = str_replace(['Multi-Select', 'Select Country', 'Select State/Province'], 'Select', $params['html_type']);
@@ -57,6 +58,18 @@ function civicrm_api3_custom_field_create($params) {
       $params['option_status'][$key] = $value['is_active'];
       $params['option_weight'][$key] = $value['weight'];
     }
+  }
+  elseif (
+    // Legacy handling for historical apiv3 behaviour.
+    empty($params['id'])
+    && !empty($params['html_type'])
+    && $params['html_type'] !== 'Text'
+    && empty($params['option_group_id'])
+    && empty($params['option_value'])
+    && in_array($params['data_type'] ?? '', ['String', 'Int', 'Float', 'Money'])) {
+    // Trick the BAO into creating an option group even though no option values exist
+    // because that odd behaviour is locked in via a test.
+    $params['option_value'] = 1;
   }
   $values = [];
   $customField = CRM_Core_BAO_CustomField::create($params);
@@ -89,13 +102,6 @@ function _civicrm_api3_custom_field_create_spec(&$params) {
   $params['option_values'] = [
     'title' => 'Option Values',
     'description' => "Pass an array of options (value => label) to create this field's option values",
-  ];
-  // TODO: Why expose this to the api at all?
-  $params['option_type'] = [
-    'title' => 'Option Type',
-    'description' => 'This (boolean) field tells the BAO to create an option group for the field if the field type is appropriate',
-    'api.default' => 1,
-    'type' => CRM_Utils_Type::T_BOOLEAN,
   ];
   $params['data_type']['api.default'] = 'String';
   $params['is_active']['api.default'] = 1;

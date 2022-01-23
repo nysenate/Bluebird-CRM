@@ -1,5 +1,4 @@
 <?php
-
 /*
  +--------------------------------------------------------------------+
  | Copyright CiviCRM LLC. All rights reserved.                        |
@@ -9,7 +8,6 @@
  | and copyright information, see https://civicrm.org/licensing       |
  +--------------------------------------------------------------------+
  */
-
 namespace Civi\Api4;
 
 /**
@@ -17,7 +15,8 @@ namespace Civi\Api4;
  *
  * Links addresses, emails & phones to Events.
  *
- * @searchable none
+ * @searchable secondary
+ * @since 5.31
  * @package Civi\Api4
  */
 class LocBlock extends Generic\DAOEntity {

@@ -19,7 +19,7 @@
     {if $multiRecordDisplay neq 'single'}
     <table class="no-border">
       {assign var='index' value=$groupId|cat:"_$cvID"}
-      {if ($showEdit && $cd_edit.editable && $groupId) && ($editOwnCustomData or $editCustomData)}
+      {if $showEdit && $cd_edit.editable && $groupId && $editPermission}
         <tr>
           <td>
             <a
@@ -31,14 +31,14 @@
       {assign var="showEdit" value=0}
       <tr>
         <td id="{$cd_edit.name}_{$index}" class="section-shown form-item">
-          <div class="crm-accordion-wrapper {if $cd_edit.collapse_display eq 0 or $skipTitle} {else}collapsed{/if}">
+          <div class="crm-accordion-wrapper{if !empty($cd_edit.collapse_display) && empty($skipTitle)} collapsed{/if}">
             {if !$skipTitle}
               <div class="crm-accordion-header">
                 {$cd_edit.title}
               </div>
             {/if}
             <div class="crm-accordion-body">
-              {if $groupId and $cvID and $editCustomData and $cd_edit.editable}
+              {if $groupId and $cvID and $editPermission and $cd_edit.editable}
                 <div class="crm-submit-buttons">
                   <a href="#" class="crm-hover-button crm-custom-value-del"
                      data-post='{ldelim}"valueID": "{$cvID}", "groupID": "{$customGroupId}", "contactId": "{$contactId}", "key": "{crmKey name='civicrm/ajax/customvalue'}"{rdelim}'

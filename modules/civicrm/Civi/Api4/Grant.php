@@ -1,5 +1,4 @@
 <?php
-
 /*
  +--------------------------------------------------------------------+
  | Copyright CiviCRM LLC. All rights reserved.                        |
@@ -9,13 +8,6 @@
  | and copyright information, see https://civicrm.org/licensing       |
  +--------------------------------------------------------------------+
  */
-
-/**
- *
- * @package CRM
- * @copyright CiviCRM LLC https://civicrm.org/licensing
- */
-
 namespace Civi\Api4;
 
 /**
@@ -26,6 +18,7 @@ namespace Civi\Api4;
  * @see https://docs.civicrm.org/user/en/latest/grants/what-is-civigrant/
  *
  * @searchable primary
+ * @since 5.33
  * @package Civi\Api4
  */
 class Grant extends Generic\DAOEntity {

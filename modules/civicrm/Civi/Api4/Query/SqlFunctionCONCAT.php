@@ -18,19 +18,31 @@ class SqlFunctionCONCAT extends SqlFunction {
 
   protected static $category = self::CATEGORY_STRING;
 
-  protected static $params = [
-    [
-      'expr' => 99,
-      'optional' => FALSE,
-      'must_be' => ['SqlField', 'SqlString'],
-    ],
-  ];
+  protected static $dataType = 'String';
+
+  protected static function params(): array {
+    return [
+      [
+        'max_expr' => 99,
+        'optional' => FALSE,
+        'must_be' => ['SqlField', 'SqlString'],
+        'label' => ts('And'),
+      ],
+    ];
+  }
 
   /**
    * @return string
    */
   public static function getTitle(): string {
-    return ts('Combine');
+    return ts('Combine if');
+  }
+
+  /**
+   * @return string
+   */
+  public static function getDescription(): string {
+    return ts('Joined text, only if all values are not null.');
   }
 
 }

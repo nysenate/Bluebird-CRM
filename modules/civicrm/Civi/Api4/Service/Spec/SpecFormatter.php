@@ -10,13 +10,6 @@
  +--------------------------------------------------------------------+
  */
 
-/**
- *
- * @package CRM
- * @copyright CiviCRM LLC https://civicrm.org/licensing
- */
-
-
 namespace Civi\Api4\Service\Spec;
 
 use Civi\Api4\Utils\CoreUtil;
@@ -36,20 +29,27 @@ class SpecFormatter {
     if (!empty($data['custom_group_id'])) {
       $field = new CustomFieldSpec($data['name'], $entity, $dataTypeName);
       if (strpos($entity, 'Custom_') !== 0) {
-        $field->setName($data['custom_group.name'] . '.' . $data['name']);
+        $field->setName($data['custom_group_id.name'] . '.' . $data['name']);
       }
       else {
-        $field->setTableName($data['custom_group.table_name']);
+        // Fields belonging to custom entities are treated as normal; type = Field instead of Custom
+        $field->setType('Field');
+        $field->setTableName($data['custom_group_id.table_name']);
       }
       $field->setColumnName($data['column_name']);
       $field->setCustomFieldId($data['id'] ?? NULL);
-      $field->setCustomGroupName($data['custom_group.name']);
+      $field->setCustomGroupName($data['custom_group_id.name']);
       $field->setTitle($data['label']);
-      $field->setLabel($data['custom_group.title'] . ': ' . $data['label']);
+      $field->setLabel($data['custom_group_id.title'] . ': ' . $data['label']);
       $field->setHelpPre($data['help_pre'] ?? NULL);
       $field->setHelpPost($data['help_post'] ?? NULL);
       if (self::customFieldHasOptions($data)) {
         $field->setOptionsCallback([__CLASS__, 'getOptions']);
+        if (!empty($data['option_group_id'])) {
+          // Option groups support other stuff like description, icon & color,
+          // but at time of this writing, custom fields do not.
+          $field->setSuffixes(['id', 'name', 'label']);
+        }
       }
       $field->setReadonly($data['is_view']);
     }
@@ -62,7 +62,19 @@ class SpecFormatter {
       $field->setTitle($data['title'] ?? NULL);
       $field->setLabel($data['html']['label'] ?? NULL);
       if (!empty($data['pseudoconstant'])) {
-        $field->setOptionsCallback([__CLASS__, 'getOptions']);
+        // Do not load options if 'prefetch' is explicitly FALSE
+        if (!isset($data['pseudoconstant']['prefetch']) || $data['pseudoconstant']['prefetch'] === FALSE) {
+          $field->setOptionsCallback([__CLASS__, 'getOptions']);
+        }
+        // These suffixes are always supported if a field has options
+        $suffixes = ['name', 'label'];
+        // Add other columns specified in schema (e.g. 'abbrColumn')
+        foreach (['description', 'abbr', 'icon', 'color'] as $suffix) {
+          if (isset($data['pseudoconstant'][$suffix . 'Column'])) {
+            $suffixes[] = $suffix;
+          }
+        }
+        $field->setSuffixes($suffixes);
       }
       $field->setReadonly(!empty($data['readonly']));
     }

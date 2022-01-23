@@ -23,7 +23,6 @@ trait ContactTestTrait {
    *
    * @return int
    *   Contact ID of the created user.
-   * @throws \CiviCRM_API3_Exception
    */
   public function createLoggedInUser(): int {
     $params = [
@@ -55,8 +54,6 @@ trait ContactTestTrait {
    *
    * @return int
    *   id of Organisation created
-   *
-   * @throws \CiviCRM_API3_Exception
    */
   public function organizationCreate($params = [], $seq = 0): int {
     if (!$params) {
@@ -77,12 +74,11 @@ trait ContactTestTrait {
    *
    * @return int
    *   id of Individual created
-   *
-   * @throws \CiviCRM_API3_Exception
    */
-  public function individualCreate($params = [], $seq = 0, $random = FALSE): int {
+  public function individualCreate(array $params = [], $seq = 0, $random = FALSE): int {
     $params = array_merge($this->sampleContact('Individual', $seq, $random), $params);
-    return $this->_contactCreate($params);
+    $this->ids['Contact']['individual_' . $seq] = $this->_contactCreate($params);
+    return $this->ids['Contact']['individual_' . $seq];
   }
 
   /**
@@ -161,11 +157,12 @@ trait ContactTestTrait {
    *
    * @return int
    *   id of contact created
-   *
-   * @throws \CiviCRM_API3_Exception
    */
-  private function _contactCreate($params): int {
-    $result = civicrm_api3('contact', 'create', $params);
+  private function _contactCreate(array $params): int {
+    $version = $this->_apiversion;
+    $this->_apiversion = 3;
+    $result = $this->callAPISuccess('contact', 'create', $params);
+    $this->_apiversion = $version;
     return (int) $result['id'];
   }
 

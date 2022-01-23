@@ -18,19 +18,27 @@ class SqlFunctionABS extends SqlFunction {
 
   protected static $category = self::CATEGORY_MATH;
 
-  protected static $params = [
-    [
-      'expr' => 1,
-      'optional' => FALSE,
-      'must_be' => ['SqlField', 'SqlNumber'],
-    ],
-  ];
+  protected static function params(): array {
+    return [
+      [
+        'optional' => FALSE,
+        'must_be' => ['SqlField', 'SqlNumber'],
+      ],
+    ];
+  }
 
   /**
    * @return string
    */
   public static function getTitle(): string {
-    return ts('Absolute');
+    return ts('Absolute value');
+  }
+
+  /**
+   * @return string
+   */
+  public static function getDescription(): string {
+    return ts('The positive value of a number.');
   }
 
 }

@@ -2,8 +2,6 @@
 
   // Schema metadata
   var schema = CRM.vars.api4.schema;
-  // FK schema data
-  var links = CRM.vars.api4.links;
   // Cache list of entities
   var entities = [];
   // Cache list of actions
@@ -12,7 +10,6 @@
   var fieldOptions = {};
   // Api params
   var params;
-
 
   angular.module('api4Explorer').config(function($routeProvider) {
     $routeProvider.when('/explorer/:api4entity?/:api4action?', {
@@ -45,6 +42,7 @@
     var getMetaParams = {},
       objectParams = {orderBy: 'ASC', values: '', defaults: '', chain: ['Entity', '', '{}']},
       docs = CRM.vars.api4.docs,
+      response,
       helpTitle = '',
       helpContent = {};
     $scope.helpTitle = '';
@@ -77,6 +75,17 @@
         {name: 'pipe', label: ts('CV (pipe)'), code: ''}
       ]
     };
+    this.resultFormat = 'json';
+    this.resultFormats = [
+      {
+        name: 'json',
+        label: ts('View as JSON')
+      },
+      {
+        name: 'php',
+        label: ts('View as PHP')
+      },
+    ];
 
     if (!entities.length) {
       formatForSelect2(schema, entities, 'name', ['description', 'icon']);
@@ -122,11 +131,14 @@
     }
 
     // Replaces contents of fieldList array with current fields formatted for select2
-    function getFieldList(fieldList, action, addPseudoconstant) {
+    function getFieldList(fieldList, action, addPseudoconstant, addWriteJoins) {
       var fieldInfo = _.cloneDeep(_.findWhere(getEntity().actions, {name: action}).fields);
       fieldList.length = 0;
       if (addPseudoconstant) {
         addPseudoconstants(fieldInfo, addPseudoconstant);
+      }
+      if (addWriteJoins) {
+        addWriteJoinFields(fieldInfo);
       }
       formatForSelect2(fieldInfo, fieldList, 'name', ['description', 'required', 'default_value']);
     }
@@ -134,32 +146,51 @@
     // Note: this function expects fieldList to be select2-formatted already
     function addJoins(fieldList, addWildcard, addPseudoconstant) {
       // Add entities specified by the join param
-      _.each(getExplicitJoins(), function(joinEntity, joinAlias) {
-        var wildCard = addWildcard ? [{id: joinAlias + '.*', text: joinAlias + '.*', 'description': 'All core ' + joinEntity + ' fields'}] : [],
-          joinFields = _.cloneDeep(entityFields(joinEntity));
+      _.each(getExplicitJoins(), function(join) {
+        var wildCard = addWildcard ? [{id: join.alias + '.*', text: join.alias + '.*', 'description': 'All core ' + join.entity + ' fields'}] : [],
+          joinFields = _.cloneDeep(entityFields(join.entity));
         if (joinFields) {
+          // Add fields from bridge entity
+          if (join.bridge) {
+            var bridgeFields = _.cloneDeep(entityFields(join.bridge)),
+              bridgeEntity = getEntity(join.bridge),
+              joinFieldNames = _.pluck(joinFields, 'name'),
+              // Check if this is a symmetric bridge e.g. RelationshipCache joins Contact to Contact
+              bridgePair = _.keys(bridgeEntity.bridge),
+              symmetric = getField(bridgePair[0], join.bridge).entity === getField(bridgePair[1], join.bridge).entity;
+            _.each(bridgeFields, function(field) {
+              if (
+                // Only include bridge fields that link back to the original entity
+                (!bridgeEntity.bridge[field.name] || field.fk_entity !== join.entity || symmetric) &&
+                // Exclude fields with the same name as those in the original entity
+                !_.includes(joinFieldNames, field.name)
+              ) {
+                joinFields.push(field);
+              }
+            });
+          }
           if (addPseudoconstant) {
             addPseudoconstants(joinFields, addPseudoconstant);
           }
           fieldList.push({
-            text: joinEntity + ' AS ' + joinAlias,
-            description: 'Explicit join to ' + joinEntity,
-            children: wildCard.concat(formatForSelect2(joinFields, [], 'name', ['description'], joinAlias + '.'))
+            text: join.entity + ' AS ' + join.alias,
+            description: 'Explicit join to ' + join.entity,
+            children: wildCard.concat(formatForSelect2(joinFields, [], 'name', ['description'], join.alias + '.'))
           });
         }
       });
       // Add implicit joins based on schema links
-      _.each(links[$scope.entity], function(link) {
-        var linkFields = _.cloneDeep(entityFields(link.entity)),
-          wildCard = addWildcard ? [{id: link.alias + '.*', text: link.alias + '.*', 'description': 'All core ' + link.entity + ' fields'}] : [];
-        if (linkFields) {
+      _.each(entityFields($scope.entity, $scope.action), function(field) {
+        if (field.fk_entity) {
+          var linkFields = _.cloneDeep(entityFields(field.fk_entity)),
+            wildCard = addWildcard ? [{id: field.name + '.*', text: field.name + '.*', 'description': 'All core ' + field.fk_entity + ' fields'}] : [];
           if (addPseudoconstant) {
             addPseudoconstants(linkFields, addPseudoconstant);
           }
           fieldList.push({
-            text: link.alias,
-            description: 'Implicit join to ' + link.entity,
-            children: wildCard.concat(formatForSelect2(linkFields, [], 'name', ['description'], link.alias + '.'))
+            text: field.name,
+            description: 'Implicit join to ' + field.fk_entity,
+            children: wildCard.concat(formatForSelect2(linkFields, [], 'name', ['description'], field.name + '.'))
           });
         }
       });
@@ -175,6 +206,19 @@
           newField.name += ':' + suffix;
           fieldList.splice(pos, 0, newField);
         });
+      });
+    }
+
+    // Adds join fields for create actions
+    // Note: this function transforms a raw list a-la getFields; not a select2-formatted list
+    function addWriteJoinFields(fieldList) {
+      _.eachRight(fieldList, function(field, pos) {
+        var fkNameField = field.fk_entity && getField('name', field.fk_entity, $scope.action);
+        if (fkNameField) {
+          var newField = _.cloneDeep(fkNameField);
+          newField.name = field.name + '.' + newField.name;
+          fieldList.splice(pos, 0, newField);
+        }
       });
     }
 
@@ -229,9 +273,9 @@
         return;
       }
       var info = {
-          description: field.description,
-          type: field.data_type
-        };
+        description: field.description,
+        type: field.data_type
+      };
       if (field.default_value) {
         info.default = field.default_value;
       }
@@ -247,12 +291,13 @@
     $scope.fieldList = function(param) {
       return function() {
         var fields = [];
-        getFieldList(fields, $scope.action === 'getFields' ? ($scope.params.action || 'get') : $scope.action, ['name']);
+        getFieldList(fields, $scope.action === 'getFields' ? ($scope.params.action || 'get') : $scope.action, ['name'], true);
         // Disable fields that are already in use
         _.each($scope.params[param] || [], function(val) {
-          var usedField = val[0].replace(':name', '');
+          var usedField = val[0].replace(/[:.]name/, '');
           (_.findWhere(fields, {id: usedField}) || {}).disabled = true;
           (_.findWhere(fields, {id: usedField + ':name'}) || {}).disabled = true;
+          (_.findWhere(fields, {id: usedField + '.name'}) || {}).disabled = true;
         });
         return {results: fields};
       };
@@ -326,15 +371,15 @@
         path = alias.split('.');
       // First check explicit joins
       if (joins[alias]) {
-        return joins[alias];
+        return joins[alias].entity;
       }
-      // Then lookup implicit links
+      // Then lookup implicit joins
       _.each(path, function(node) {
-        var link = _.find(links[entity], {alias: node});
-        if (!link) {
+        var field = getField(node, entity, $scope.action);
+        if (!field || !field.fk_entity) {
           return false;
         }
-        entity = link.entity;
+        entity = field.fk_entity;
       });
       return entity;
     }
@@ -351,6 +396,16 @@
           }
         }
       });
+      _.each(params.join, function(join) {
+        // Add alias if not specified
+        if (!_.contains(join[0], 'AS')) {
+          join[0] += ' AS ' + join[0].toLowerCase();
+        }
+        // Remove EntityBridge from join if empty
+        if (!join[2]) {
+          join.splice(2, 1);
+        }
+      });
       _.each(objectParams, function(defaultVal, key) {
         if (params[key]) {
           var newParam = {};
@@ -358,7 +413,7 @@
             var val = _.cloneDeep(item[1]);
             // Remove blank items from "chain" array
             if (_.isArray(val)) {
-              _.eachRight(item[1], function(v, k) {
+              _.eachRight(item[1], function(v) {
                 if (v) {
                   return false;
                 }
@@ -413,8 +468,8 @@
             children: _.transform(CRM.vars.api4.functions, function(result, fn) {
               result.push({
                 id: fn.name + '() AS ' + fn.name.toLowerCase(),
-                text: fn.name + '()',
-                description: fn.name + '(' + describeSqlFn(fn.params) + ')'
+                description: fn.description,
+                text: fn.name + '(' + describeSqlFn(fn.params) + ')'
               });
             })
           };
@@ -433,10 +488,15 @@
       $scope.fieldsAndJoinsAndFunctionsAndWildcards.unshift({id: '*', text: '*', 'description': 'All core ' + $scope.entity + ' fields'});
     };
 
+    // Select2 formatter: Add 'strikethrough' class to deprecated items
+    $scope.formatResultCssClass = function(result) {
+      return result.deprecated ? 'strikethrough' : '';
+    };
+
     function selectAction() {
       $scope.action = $routeParams.api4action;
       if (!actions.length) {
-        formatForSelect2(getEntity().actions, actions, 'name', ['description', 'params']);
+        formatForSelect2(getEntity().actions, actions, 'name', ['description', 'params', 'deprecated']);
       }
       if ($scope.action) {
         var actionInfo = _.findWhere(actions, {id: $scope.action});
@@ -458,7 +518,7 @@
               default:
                 format = 'raw';
             }
-            if (name === 'limit') {
+            if (name === 'limit' && $scope.action === 'get') {
               defaultVal = 25;
             }
             if (name === 'debug') {
@@ -559,16 +619,19 @@
       var desc = ' ';
       _.each(params, function(param) {
         desc += ' ';
-        if (param.prefix) {
-          desc += _.filter(param.prefix).join('|') + ' ';
+        if (param.name) {
+          desc += param.name + ' ';
         }
-        if (param.expr === 1) {
+        if (!_.isEmpty(param.flag_before)) {
+          desc += '[' + _.filter(param.name ? [param.name] : _.keys(param.flag_before)).join('|') + '] ';
+        }
+        if (param.max_expr === 1) {
           desc += 'expr ';
-        } else if (param.expr > 1) {
+        } else if (param.max_expr > 1) {
           desc += 'expr, ... ';
         }
-        if (param.suffix) {
-          desc += ' ' + _.filter(param.suffix).join('|') + ' ';
+        if (!_.isEmpty(param.flag_after)) {
+          desc += ' [' + _.filter(param.flag_after).join('|') + '] ';
         }
       });
       return desc.replace(/[ ]+/g, ' ');
@@ -752,6 +815,10 @@
             code += newLine + "->addChain('" + name + "', " + formatOOP(chain[0], chain[1], chain[2], 2 + indent);
             code += (chain.length > 3 ? ',' : '') + (!_.isEmpty(chain[2]) ? newLine : ' ') + (chain.length > 3 ? phpFormat(chain[3]) : '') + ')';
           });
+        } else if (key === 'join') {
+          _.each(param, function(join) {
+            code += newLine + "->addJoin(" + phpFormat(join).slice(1, -1) + ')';
+          });
         }
         else if (key !== 'checkPermissions') {
           code += newLine + "->set" + ucfirst(key) + '(' + phpFormat(param, 2 + indent) + ')';
@@ -791,22 +858,37 @@
           'X-Requested-With': 'XMLHttpRequest'
         }
       }).then(function(resp) {
-          $scope.loading = false;
-          $scope.status = resp.data && resp.data.debug && resp.data.debug.log ? 'warning' : 'success';
-          $scope.debug = debugFormat(resp.data);
-          $scope.result = [
-            formatMeta(resp.data),
-            prettyPrintOne((_.isArray(resp.data.values) ? '(' + resp.data.values.length + ') ' : '') + _.escape(JSON.stringify(resp.data.values, null, 2)), 'js', 1)
-          ];
-        }, function(resp) {
-          $scope.loading = false;
-          $scope.status = 'danger';
-          $scope.debug = debugFormat(resp.data);
-          $scope.result = [
-            formatMeta(resp),
-            prettyPrintOne(_.escape(JSON.stringify(resp.data, null, 2)))
-          ];
-        });
+        $scope.loading = false;
+        $scope.status = resp.data && resp.data.debug && resp.data.debug.log ? 'warning' : 'success';
+        $scope.debug = debugFormat(resp.data);
+        response = {
+          meta: resp.data,
+          values: resp.data.values
+        };
+        ctrl.formatResult();
+      }, function(resp) {
+        $scope.loading = false;
+        $scope.status = 'danger';
+        $scope.debug = debugFormat(resp.data);
+        response = {
+          meta: resp,
+          values: resp.data
+        };
+        ctrl.formatResult();
+      });
+    };
+
+    ctrl.formatResult = function() {
+      $scope.result = [formatMeta(response.meta)];
+      switch (ctrl.resultFormat) {
+        case 'json':
+          $scope.result.push(prettyPrintOne((_.isArray(response.values) ? '(' + response.values.length + ') ' : '') + _.escape(JSON.stringify(response.values, null, 2)), 'js', 1));
+          break;
+
+        case 'php':
+          $scope.result.push(prettyPrintOne((_.isArray(response.values) ? '(' + response.values.length + ') ' : '') + _.escape(phpFormat(response.values, 2, 2)), 'php', 1));
+          break;
+      }
     };
 
     function debugFormat(data) {
@@ -818,27 +900,34 @@
     /**
      * Format value to look like php code
      */
-    function phpFormat(val, indent) {
+    function phpFormat(val, indent, indentChildren) {
       if (typeof val === 'undefined') {
         return '';
       }
       if (val === null || val === true || val === false) {
         return JSON.stringify(val).toUpperCase();
       }
+      var indentChild = indentChildren ? indent + indentChildren : null;
       indent = (typeof indent === 'number') ? _.repeat(' ', indent) : (indent || '');
       var ret = '',
         baseLine = indent ? indent.slice(0, -2) : '',
         newLine = indent ? '\n' : '',
         trailingComma = indent ? ',' : '';
       if ($.isPlainObject(val)) {
+        if ($.isEmptyObject(val)) {
+          return '[]';
+        }
         $.each(val, function(k, v) {
-          ret += (ret ? ', ' : '') + newLine + indent + "'" + k + "' => " + phpFormat(v);
+          ret += (ret ? ', ' : '') + newLine + indent + "'" + k + "' => " + phpFormat(v, indentChild, indentChildren);
         });
         return '[' + ret + trailingComma + newLine + baseLine + ']';
       }
       if ($.isArray(val)) {
+        if (!val.length) {
+          return '[]';
+        }
         $.each(val, function(k, v) {
-          ret += (ret ? ', ' : '') + newLine + indent + phpFormat(v);
+          ret += (ret ? ', ' : '') + newLine + indent + phpFormat(v, indentChild, indentChildren);
         });
         return '[' + ret + trailingComma + newLine + baseLine + ']';
       }
@@ -879,6 +968,7 @@
         description: entityInfo.description,
         comment: entityInfo.comment,
         type: entityInfo.type,
+        since: entityInfo.since,
         see: entityInfo.see
       });
     }
@@ -910,7 +1000,7 @@
       if ($scope.entity && $routeParams.api4action !== newVal && !_.isUndefined(newVal)) {
         $location.url('/explorer/' + $scope.entity + '/' + newVal);
       } else if (newVal) {
-        setHelp($scope.entity + '::' + newVal, _.pick(_.findWhere(getEntity().actions, {name: newVal}), ['description', 'comment', 'see']));
+        setHelp($scope.entity + '::' + newVal, _.pick(_.findWhere(getEntity().actions, {name: newVal}), ['description', 'comment', 'see', 'deprecated']));
       }
     });
 
@@ -1163,7 +1253,8 @@
                 $el.removeClass('loading').crmSelect2({data: options, multiple: multi});
               });
             } else if (field.fk_entity) {
-              $el.crmEntityRef({entity: field.fk_entity, select:{multiple: multi}, static: field.fk_entity === 'Contact' ? ['user_contact_id'] : []});
+              var apiParams = field.id_field ? {id_field: field.id_field} : {};
+              $el.crmEntityRef({entity: field.fk_entity, api: apiParams, select: {multiple: multi}, static: field.fk_entity === 'Contact' ? ['user_contact_id'] : []});
             } else if (dataType === 'Boolean') {
               $el.attr('placeholder', ts('- select -')).crmSelect2({allowClear: false, multiple: multi, placeholder: ts('- select -'), data: [
                 {id: 'true', text: ts('Yes')},
@@ -1325,10 +1416,17 @@
 
   function getExplicitJoins() {
     return _.transform(params.join, function(joins, join) {
+      // Fix capitalization of AS
+      join[0] = join[0].replace(/ as /i, ' AS ');
       var j = join[0].split(' AS '),
         joinEntity = _.trim(j[0]),
         joinAlias = _.trim(j[1]) || joinEntity.toLowerCase();
-      joins[joinAlias] = joinEntity;
+      joins[joinAlias] = {
+        entity: joinEntity,
+        alias: joinAlias,
+        side: join[1] || 'LEFT',
+        bridge: _.isString(join[2]) ? join[2] : null
+      };
     }, {});
   }
 
@@ -1336,9 +1434,14 @@
     var suffix = fieldName.split(':')[1];
     fieldName = fieldName.split(':')[0];
     var fieldNames = fieldName.split('.');
-    var field = get(entity, fieldNames);
+    var field = _.cloneDeep(get(entity, fieldNames));
     if (field && suffix) {
       field.pseudoconstant = suffix;
+    }
+    // When joining to a 'name' field, value fields should render an appropriate entityRef
+    if (field && field.type === 'Field' && field.name === 'name' && _.includes(fieldName, '.')) {
+      field.fk_entity = field.entity;
+      field.id_field = 'name';
     }
     return field;
 
@@ -1351,7 +1454,8 @@
         return comboName;
       }
       var linkName = fieldNames.shift(),
-        newEntity = getExplicitJoins()[linkName] || _.findWhere(links[entity], {alias: linkName}).entity;
+        join = getExplicitJoins()[linkName],
+        newEntity = join ? join.entity : _.findWhere(entityFields(entity, action), {name: linkName}).fk_entity;
       return get(newEntity, fieldNames);
     }
   }

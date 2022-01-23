@@ -18,18 +18,30 @@ class SqlFunctionCOALESCE extends SqlFunction {
 
   protected static $category = self::CATEGORY_COMPARISON;
 
-  protected static $params = [
-    [
-      'expr' => 99,
-      'optional' => FALSE,
-    ],
-  ];
+  protected static $dataType = 'String';
+
+  protected static function params(): array {
+    return [
+      [
+        'max_expr' => 99,
+        'optional' => FALSE,
+        'label' => ts('Value?'),
+      ],
+    ];
+  }
 
   /**
    * @return string
    */
   public static function getTitle(): string {
     return ts('Coalesce');
+  }
+
+  /**
+   * @return string
+   */
+  public static function getDescription(): string {
+    return ts('The first value that is not null.');
   }
 
 }

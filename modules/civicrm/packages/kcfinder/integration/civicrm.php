@@ -98,7 +98,7 @@ function authenticate_drupal8($config) {
     $connection = \Drupal::database();
     $query = $connection->query("SELECT uid FROM {sessions} WHERE sid = :sid", array(":sid" => \Drupal\Component\Utility\Crypt::hashBase64($session)));
     if (($uid = $query->fetchField()) > 0) {
-      $username = \Drupal\user\Entity\User::load($uid)->getUsername();
+      $username = \Drupal\user\Entity\User::load($uid)->getAccountName();
       if ($username) {
         $config->userSystem->loadUser($username);
       }

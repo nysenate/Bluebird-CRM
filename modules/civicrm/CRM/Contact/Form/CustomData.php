@@ -112,15 +112,15 @@ class CRM_Contact_Form_CustomData extends CRM_Core_Form {
         $groupTitle = CRM_Core_BAO_CustomGroup::getTitle($this->_groupID);
         switch ($mode) {
           case 'add':
-            CRM_Utils_System::setTitle(ts('Add %1', [1 => $groupTitle]));
+            $this->setTitle(ts('Add %1', [1 => $groupTitle]));
             break;
 
           case 'edit':
-            CRM_Utils_System::setTitle(ts('Edit %1', [1 => $groupTitle]));
+            $this->setTitle(ts('Edit %1', [1 => $groupTitle]));
             break;
 
           case 'copy':
-            CRM_Utils_System::setTitle(ts('Copy %1', [1 => $groupTitle]));
+            $this->setTitle(ts('Copy %1', [1 => $groupTitle]));
             break;
         }
 
@@ -138,7 +138,7 @@ class CRM_Contact_Form_CustomData extends CRM_Core_Form {
     $this->assign('contact_type', $this->_contactType);
     $this->assign('contact_subtype', $this->_contactSubType);
     list($displayName, $contactImage) = CRM_Contact_BAO_Contact::getDisplayAndImage($this->_tableID);
-    CRM_Utils_System::setTitle($displayName, $contactImage . ' ' . $displayName);
+    $this->setTitle($displayName, $contactImage . ' ' . $displayName);
 
     // when custom data is included in this page
     if (!empty($_POST['hidden_custom'])) {
@@ -224,13 +224,12 @@ class CRM_Contact_Form_CustomData extends CRM_Core_Form {
           TRUE,
           NULL,
           FALSE,
-          TRUE,
+          CRM_Core_Permission::EDIT,
           $this->_copyValueId
         );
         $valueIdDefaults = [];
         $groupTreeValueId = CRM_Core_BAO_CustomGroup::formatGroupTree($groupTree, $this->_copyValueId, $this);
         CRM_Core_BAO_CustomGroup::setDefaults($groupTreeValueId, $valueIdDefaults, FALSE, FALSE, $this->get('action'));
-        $tableId = $groupTreeValueId[$this->_groupID]['table_id'];
         foreach ($valueIdDefaults as $valueIdElementName => $value) {
           // build defaults for COPY action for new record saving
           $valueIdElementNamePieces = explode('_', $valueIdElementName);
@@ -244,13 +243,6 @@ class CRM_Contact_Form_CustomData extends CRM_Core_Form {
       }
       return $customDefaultValue;
     }
-
-    $groupTree = CRM_Core_BAO_CustomGroup::getTree($this->_contactType,
-      NULL,
-      $this->_tableID,
-      $this->_groupID,
-      $this->_contactSubType
-    );
 
     if (empty($_POST['hidden_custom_group_count'])) {
       // custom data building in edit mode (required to handle multi-value)

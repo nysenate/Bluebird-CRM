@@ -10,19 +10,12 @@
  +--------------------------------------------------------------------+
  */
 
-/**
- *
- * @package CRM
- * @copyright CiviCRM LLC https://civicrm.org/licensing
- */
-
-
 namespace Civi\Api4\Action\Entity;
 
-use Civi\Api4\CustomGroup;
 use Civi\Api4\CustomValue;
 use Civi\Api4\Service\Schema\Joinable\CustomGroupJoinable;
 use Civi\Api4\Utils\CoreUtil;
+use Civi\Core\Event\GenericHookEvent;
 
 /**
  * Get the names & docblocks of all APIv4 entities.
@@ -43,31 +36,23 @@ class Get extends \Civi\Api4\Generic\BasicGetAction {
    * Scan all api directories to discover entities
    */
   protected function getRecords() {
-    $entities = [];
-    $namesRequested = $this->_itemsToGet('name');
+    $cache = \Civi::cache('metadata');
+    $entities = $cache->get('api4.entities.info', []);
 
-    if ($namesRequested) {
-      foreach ($namesRequested as $entityName) {
-        if (strpos($entityName, 'Custom_') !== 0) {
-          $className = CoreUtil::getApiClass($entityName);
-          if ($className) {
-            $this->loadEntity($className, $entities);
-          }
-        }
-      }
-    }
-    else {
+    if (!$entities) {
+      // Load entities declared in API files
       foreach ($this->getAllApiClasses() as $className) {
         $this->loadEntity($className, $entities);
       }
+      // Load entities based on custom data
+      $entities = array_merge($entities, $this->getCustomEntities());
+      // Allow extensions to modify the list of entities
+      $event = GenericHookEvent::create(['entities' => &$entities]);
+      \Civi::dispatcher()->dispatch('civi.api4.entityTypes', $event);
+      ksort($entities);
+      $cache->set('api4.entities.info', $entities);
     }
 
-    // Fetch custom entities unless we've already fetched everything requested
-    if (!$namesRequested || array_diff($namesRequested, array_keys($entities))) {
-      $this->addCustomEntities($entities);
-    }
-
-    ksort($entities);
     return $entities;
   }
 
@@ -107,40 +92,42 @@ class Get extends \Civi\Api4\Generic\BasicGetAction {
   }
 
   /**
-   * Add custom-field pseudo-entities
+   * Get custom-field pseudo-entities
    *
-   * @param $entities
-   * @throws \API_Exception
+   * @return array[]
    */
-  private function addCustomEntities(&$entities) {
-    $customEntities = CustomGroup::get()
-      ->addWhere('is_multiple', '=', 1)
-      ->addWhere('is_active', '=', 1)
-      ->setSelect(['name', 'title', 'help_pre', 'help_post', 'extends', 'icon'])
-      ->setCheckPermissions(FALSE)
-      ->execute();
+  private function getCustomEntities() {
+    $entities = [];
     $baseInfo = CustomValue::getInfo();
-    foreach ($customEntities as $customEntity) {
-      $fieldName = 'Custom_' . $customEntity['name'];
-      $baseEntity = CoreUtil::getApiClass(CustomGroupJoinable::getEntityFromExtends($customEntity['extends']));
+    $select = \CRM_Utils_SQL_Select::from('civicrm_custom_group')
+      ->where('is_multiple = 1')
+      ->where('is_active = 1')
+      ->toSQL();
+    $group = \CRM_Core_DAO::executeQuery($select);
+    while ($group->fetch()) {
+      $fieldName = 'Custom_' . $group->name;
+      $baseEntity = CoreUtil::getApiClass(CustomGroupJoinable::getEntityFromExtends($group->extends));
       $entities[$fieldName] = [
         'name' => $fieldName,
-        'title' => $customEntity['title'],
-        'title_plural' => $customEntity['title'],
+        'title' => $group->title,
+        'title_plural' => $group->title,
         'description' => ts('Custom group for %1', [1 => $baseEntity::getInfo()['title_plural']]),
         'paths' => [
-          'view' => "civicrm/contact/view/cd?reset=1&gid={$customEntity['id']}&recId=[id]&multiRecordDisplay=single",
+          'view' => "civicrm/contact/view/cd?reset=1&gid={$group->id}&recId=[id]&multiRecordDisplay=single",
         ],
-        'icon' => $customEntity['icon'] ?: NULL,
       ] + $baseInfo;
-      if (!empty($customEntity['help_pre'])) {
-        $entities[$fieldName]['comment'] = $this->plainTextify($customEntity['help_pre']);
+      if (!empty($group->icon)) {
+        $entities[$fieldName]['icon'] = $group->icon;
       }
-      if (!empty($customEntity['help_post'])) {
+      if (!empty($group->help_pre)) {
+        $entities[$fieldName]['comment'] = $this->plainTextify($group->help_pre);
+      }
+      if (!empty($group->help_post)) {
         $pre = empty($entities[$fieldName]['comment']) ? '' : $entities[$fieldName]['comment'] . "\n\n";
-        $entities[$fieldName]['comment'] = $pre . $this->plainTextify($customEntity['help_post']);
+        $entities[$fieldName]['comment'] = $pre . $this->plainTextify($group->help_post);
       }
     }
+    return $entities;
   }
 
   /**

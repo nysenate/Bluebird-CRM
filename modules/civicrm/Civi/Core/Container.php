@@ -213,6 +213,11 @@ class Container {
       []
     ))->setPublic(TRUE);
 
+    $container->setDefinition('format', new Definition(
+      '\Civi\Core\Format',
+      []
+    ))->setPublic(TRUE);
+
     $container->setDefinition('bundle.bootstrap3', new Definition('CRM_Core_Resources_Bundle', ['bootstrap3']))
       ->setFactory('CRM_Core_Resources_Common::createBootstrap3Bundle')->setPublic(TRUE);
 
@@ -285,11 +290,6 @@ class Container {
     $container->setDefinition('cache_config', new Definition('ArrayObject'))
       ->setFactory([new Reference(self::SELF), 'createCacheConfig'])->setPublic(TRUE);
 
-    $container->setDefinition('civi.mailing.triggers', new Definition(
-      'Civi\Core\SqlTrigger\TimestampTriggers',
-      ['civicrm_mailing', 'Mailing']
-    ))->addTag('kernel.event_listener', ['event' => 'hook_civicrm_triggerInfo', 'method' => 'onTriggerInfo'])->setPublic(TRUE);
-
     $container->setDefinition('civi.activity.triggers', new Definition(
       'Civi\Core\SqlTrigger\TimestampTriggers',
       ['civicrm_activity', 'Activity']
@@ -328,16 +328,32 @@ class Container {
       []
     ))->addTag('kernel.event_subscriber')->setPublic(TRUE);
     $container->setDefinition("crm_mailing_action_tokens", new Definition(
-      "CRM_Mailing_ActionTokens",
+      'CRM_Mailing_ActionTokens',
       []
     ))->addTag('kernel.event_subscriber')->setPublic(TRUE);
 
-    foreach (['Activity', 'Contribute', 'Event', 'Mailing', 'Member'] as $comp) {
-      $container->setDefinition("crm_" . strtolower($comp) . "_tokens", new Definition(
+    foreach (['Activity', 'Contact', 'Contribute', 'Event', 'Mailing', 'Member', 'Case'] as $comp) {
+      $container->setDefinition('crm_' . strtolower($comp) . '_tokens', new Definition(
         "CRM_{$comp}_Tokens",
         []
       ))->addTag('kernel.event_subscriber')->setPublic(TRUE);
     }
+    $container->setDefinition('civi_token_impliedcontext', new Definition(
+      'Civi\Token\ImpliedContextSubscriber',
+      []
+    ))->addTag('kernel.event_subscriber')->setPublic(TRUE);
+    $container->setDefinition('crm_participant_tokens', new Definition(
+      'CRM_Event_ParticipantTokens',
+      []
+    ))->addTag('kernel.event_subscriber')->setPublic(TRUE);
+    $container->setDefinition('crm_contribution_recur_tokens', new Definition(
+      'CRM_Contribute_RecurTokens',
+      []
+    ))->addTag('kernel.event_subscriber')->setPublic(TRUE);
+    $container->setDefinition('crm_domain_tokens', new Definition(
+      'CRM_Core_DomainTokens',
+      []
+    ))->addTag('kernel.event_subscriber')->setPublic(TRUE);
 
     $dispatcherDefn = $container->getDefinition('dispatcher');
     foreach (\CRM_Core_DAO_AllCoreTables::getBaoClasses() as $baoEntity => $baoClass) {
@@ -411,6 +427,8 @@ class Container {
     $dispatcher->addListener('hook_civicrm_coreResourceList', ['\CRM_Utils_System', 'appendCoreResources']);
     $dispatcher->addListener('hook_civicrm_getAssetUrl', ['\CRM_Utils_System', 'alterAssetUrl']);
     $dispatcher->addListener('hook_civicrm_alterExternUrl', ['\CRM_Utils_System', 'migrateExternUrl'], 1000);
+    // Not a BAO class so it can't implement hookInterface
+    $dispatcher->addListener('hook_civicrm_post', ['CRM_Utils_Recent', 'on_hook_civicrm_post']);
     $dispatcher->addListener('hook_civicrm_permissionList', ['CRM_Core_Permission_List', 'findConstPermissions'], 975);
     $dispatcher->addListener('hook_civicrm_permissionList', ['CRM_Core_Permission_List', 'findCiviPermissions'], 950);
     $dispatcher->addListener('hook_civicrm_permissionList', ['CRM_Core_Permission_List', 'findCmsPermissions'], 925);
@@ -589,7 +607,8 @@ class Container {
       \CRM_Core_DAO::init($runtime->dsn);
       \CRM_Utils_Hook::singleton(TRUE);
       \CRM_Extension_System::singleton(TRUE);
-      \CRM_Extension_System::singleton(TRUE)->getClassLoader()->register();
+      \CRM_Extension_System::singleton()->getClassLoader()->register();
+      \CRM_Extension_System::singleton()->getMixinLoader()->run();
       $bootServices['dispatcher.boot']->setDispatchPolicy($mainDispatchPolicy);
 
       $runtime->includeCustomPath();

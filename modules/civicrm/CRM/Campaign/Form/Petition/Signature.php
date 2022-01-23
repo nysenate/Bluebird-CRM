@@ -152,6 +152,27 @@ class CRM_Campaign_Form_Petition_Signature extends CRM_Core_Form {
     return $session->get('userID');
   }
 
+  /**
+   * Get the active UFGroups (profiles) on this form
+   * Many forms load one or more UFGroups (profiles).
+   * This provides a standard function to retrieve the IDs of those profiles from the form
+   * so that you can implement things such as "is is_captcha field set on any of the active profiles on this form?"
+   *
+   * NOT SUPPORTED FOR USE OUTSIDE CORE EXTENSIONS - Added for reCAPTCHA core extension.
+   *
+   * @return array
+   */
+  public function getUFGroupIDs() {
+    $ufGroupIDs = [];
+    if (!empty($this->_contactProfileId)) {
+      $ufGroupIDs[] = $this->_contactProfileId;
+    }
+    if (!empty($this->_activityProfileId)) {
+      $ufGroupIDs[] = $this->_activityProfileId;
+    }
+    return $ufGroupIDs;
+  }
+
   public function preProcess() {
     $this->bao = new CRM_Campaign_BAO_Petition();
     $this->_mode = self::MODE_CREATE;
@@ -161,7 +182,7 @@ class CRM_Campaign_Form_Petition_Signature extends CRM_Core_Form {
 
     //some sanity checks
     if (!$this->_surveyId) {
-      CRM_Core_Error::statusBounce('Petition id is not valid. (it needs a "sid" in the url).');
+      CRM_Core_Error::statusBounce(ts('Petition id is not valid. (it needs a "sid" in the url).'));
       return;
     }
     //check petition is valid and active
@@ -169,10 +190,10 @@ class CRM_Campaign_Form_Petition_Signature extends CRM_Core_Form {
     $this->petition = [];
     CRM_Campaign_BAO_Survey::retrieve($params, $this->petition);
     if (empty($this->petition)) {
-      CRM_Core_Error::statusBounce('Petition doesn\'t exist.');
+      CRM_Core_Error::statusBounce(ts('Petition doesn\'t exist.'));
     }
     if ($this->petition['is_active'] == 0) {
-      CRM_Core_Error::statusBounce('Petition is no longer active.');
+      CRM_Core_Error::statusBounce(ts('Petition is no longer active.'));
     }
 
     //get userID from session
@@ -198,7 +219,7 @@ class CRM_Campaign_Form_Petition_Signature extends CRM_Core_Form {
       $this->_contactProfileFields = CRM_Core_BAO_UFGroup::getFields($this->_contactProfileId, FALSE, CRM_Core_Action::ADD);
     }
     if (!isset($this->_contactProfileFields['email-Primary'])) {
-      CRM_Core_Error::statusBounce('The contact profile needs to contain the primary email address field');
+      CRM_Core_Error::statusBounce(ts('The contact profile needs to contain the primary email address field'));
     }
 
     $ufJoinParams['weight'] = 1;
@@ -209,7 +230,7 @@ class CRM_Campaign_Form_Petition_Signature extends CRM_Core_Form {
     }
 
     $this->setDefaultValues();
-    CRM_Utils_System::setTitle($this->petition['title']);
+    $this->setTitle($this->petition['title']);
   }
 
   /**
@@ -471,14 +492,6 @@ class CRM_Campaign_Form_Petition_Signature extends CRM_Core_Form {
     // get additional custom activity profile field data
     // to save with new signature activity record
     $surveyInfo = $this->bao->getSurveyInfo($this->_surveyId);
-    $customActivityFields = CRM_Core_BAO_CustomField::getFields('Activity', FALSE, FALSE,
-      $surveyInfo['activity_type_id']
-    );
-    $customActivityFields = CRM_Utils_Array::crmArrayMerge($customActivityFields,
-      CRM_Core_BAO_CustomField::getFields('Activity', FALSE, FALSE,
-        NULL, NULL, TRUE
-      )
-    );
 
     $params['custom'] = CRM_Core_BAO_CustomField::postProcess($params,
       NULL,

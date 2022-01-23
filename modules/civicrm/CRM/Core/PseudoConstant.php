@@ -193,6 +193,7 @@ class CRM_Core_PseudoConstant {
       'onlyActive' => !($context == 'validate' || $context == 'get'),
       'fresh' => FALSE,
       'context' => $context,
+      'condition' => [],
     ];
     $entity = CRM_Core_DAO_AllCoreTables::getBriefName($daoName);
 
@@ -232,10 +233,12 @@ class CRM_Core_PseudoConstant {
 
       // Merge params with schema defaults
       $params += [
-        'condition' => $pseudoconstant['condition'] ?? [],
         'keyColumn' => $pseudoconstant['keyColumn'] ?? NULL,
         'labelColumn' => $pseudoconstant['labelColumn'] ?? NULL,
       ];
+      if (!empty($pseudoconstant['condition'])) {
+        $params['condition'] = array_merge((array) $pseudoconstant['condition'], (array) $params['condition']);
+      }
 
       // Fetch option group from option_value table
       if (!empty($pseudoconstant['optionGroupName'])) {
@@ -1510,8 +1513,8 @@ WHERE  id = %1
     }
 
     // Use abbrColum if context is abbreviate
-    if ($context === 'abbreviate' && (in_array('abbreviation', $availableFields) || !empty($pseudoconstant['abbrColumn']))) {
-      $params['labelColumn'] = $pseudoconstant['abbrColumn'] ?? 'abbreviation';
+    if ($context === 'abbreviate' && !empty($pseudoconstant['abbrColumn'])) {
+      $params['labelColumn'] = $pseudoconstant['abbrColumn'];
     }
 
     // Condition param can be passed as an sql clause string or an array of clauses

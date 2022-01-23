@@ -984,6 +984,34 @@ class CRM_Utils_Array {
   }
 
   /**
+   * Rotate a matrix, converting from row-oriented array to a column-oriented array.
+   *
+   * @param iterable $rows
+   *   Ex: [['a'=>10,'b'=>'11'], ['a'=>20,'b'=>21]]
+   *   Formula: [scalar $rowId => [scalar $colId => mixed $value]]
+   * @param bool $unique
+   *   Only return unique values.
+   * @return array
+   *   Ex: ['a'=>[10,20], 'b'=>[11,21]]
+   *   Formula: [scalar $colId => [scalar $rowId => mixed $value]]
+   *   Note: In unique mode, the $rowId is not meaningful.
+   */
+  public static function asColumns(iterable $rows, bool $unique = FALSE) {
+    $columns = [];
+    foreach ($rows as $rowKey => $row) {
+      foreach ($row as $columnKey => $value) {
+        if (FALSE === $unique) {
+          $columns[$columnKey][$rowKey] = $value;
+        }
+        elseif (!in_array($value, $columns[$columnKey] ?? [])) {
+          $columns[$columnKey][] = $value;
+        }
+      }
+    }
+    return $columns;
+  }
+
+  /**
    * Rewrite the keys in an array.
    *
    * @param array $array
@@ -1059,6 +1087,40 @@ class CRM_Utils_Array {
   }
 
   /**
+   * Remove a key from an array.
+   *
+   * This is a helper for when the calling function does not know how many layers deep
+   * the path array is so cannot easily check.
+   *
+   * @param array $values
+   * @param array $path
+   * @param bool $cleanup
+   *   If removed item leaves behind an empty array, should you remove the empty array?
+   * @return bool
+   *   TRUE if anything has been removed. FALSE if no changes were required.
+   */
+  public static function pathUnset(&$values, $path, $cleanup = FALSE) {
+    if (count($path) === 1) {
+      if (isset($values[$path[0]])) {
+        unset($values[$path[0]]);
+        return TRUE;
+      }
+      else {
+        return FALSE;
+      }
+    }
+    else {
+      $next = array_shift($path);
+      $r = static::pathUnset($values[$next], $path, $cleanup);
+      if ($cleanup && $values[$next] === []) {
+        $r = TRUE;
+        unset($values[$next]);
+      }
+      return $r;
+    }
+  }
+
+  /**
    * Set a single value in an array tree.
    *
    * @param array $values
@@ -1078,6 +1140,63 @@ class CRM_Utils_Array {
       $r = &$r[$part];
     }
     $r[$last] = $value;
+  }
+
+  /**
+   * Move an item in an array-tree (if it exists).
+   *
+   * @param array $values
+   *   Data-tree
+   * @param string[] $src
+   *   Old path for the existing item
+   * @param string[] $dest
+   *   New path
+   * @param bool $cleanup
+   * @return int
+   *   Number of items moved (0 or 1).
+   */
+  public static function pathMove(&$values, $src, $dest, $cleanup = FALSE) {
+    if (!static::pathIsset($values, $src)) {
+      return 0;
+    }
+    else {
+      $value = static::pathGet($values, $src);
+      static::pathSet($values, $dest, $value);
+      static::pathUnset($values, $src, $cleanup);
+      return 1;
+    }
+  }
+
+  /**
+   * Attempt to synchronize or fill aliased items.
+   *
+   * If $canonPath is set, copy to $altPath; or...
+   * If $altPath is set, copy to $canonPath.
+   *
+   * @param array $params
+   *   Data-tree
+   * @param string[] $canonPath
+   *   Preferred path
+   * @param string[] $altPath
+   *   Old/alternate/deprecated path.
+   * @param callable|null $filter
+   *   Optional function to filter the value as it passes through (canonPath=>altPath or altPath=>canonPath).
+   *   function(mixed $v, bool $isCanon): mixed
+   */
+  public static function pathSync(&$params, $canonPath, $altPath, ?callable $filter = NULL) {
+    $MISSING = new \stdClass();
+
+    $v = static::pathGet($params, $canonPath, $MISSING);
+    if ($v !== $MISSING) {
+      static::pathSet($params, $altPath, $filter ? $filter($v, TRUE) : $v);
+      return;
+    }
+
+    $v = static::pathGet($params, $altPath, $MISSING);
+    if ($v !== $MISSING) {
+      static::pathSet($params, $canonPath, $filter ? $filter($v, FALSE) : $v);
+      return;
+    }
   }
 
   /**
@@ -1215,6 +1334,21 @@ class CRM_Utils_Array {
       }
     }
     return NULL;
+  }
+
+  /**
+   * Prepend string prefix to every key in an array
+   *
+   * @param array $collection
+   * @param string $prefix
+   * @return array
+   */
+  public static function prefixKeys(array $collection, string $prefix) {
+    $result = [];
+    foreach ($collection as $key => $value) {
+      $result[$prefix . $key] = $value;
+    }
+    return $result;
   }
 
 }

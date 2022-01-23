@@ -46,7 +46,7 @@ class CRM_Mailing_Form_ForwardMailing extends CRM_Core_Form {
     // Show the subject instead of the name here, since it's being
     // displayed to external contacts/users.
 
-    CRM_Utils_System::setTitle(ts('Forward Mailing: %1', [1 => $mailing->subject]));
+    $this->setTitle(ts('Forward Mailing: %1', [1 => $mailing->subject]));
 
     $this->set('queue_id', $queue_id);
     $this->set('job_id', $job_id);
@@ -74,10 +74,6 @@ class CRM_Mailing_Form_ForwardMailing extends CRM_Core_Form {
         'type' => 'next',
         'name' => ts('Forward'),
         'isDefault' => TRUE,
-      ],
-      [
-        'type' => 'cancel',
-        'name' => ts('Cancel'),
       ],
     ]);
   }
