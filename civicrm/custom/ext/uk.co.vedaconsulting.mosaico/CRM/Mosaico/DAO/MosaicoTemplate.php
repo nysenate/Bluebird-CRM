@@ -81,6 +81,13 @@ class CRM_Mosaico_DAO_MosaicoTemplate extends CRM_Core_DAO {
   public $msg_tpl_id;
 
   /**
+   * ID of the category this mailing template is currently belongs. Foreign key to civicrm_option_value.
+   *
+   * @var int
+   */
+  public $category_id;
+
+  /**
    * Class constructor.
    */
   public function __construct() {
@@ -131,6 +138,7 @@ class CRM_Mosaico_DAO_MosaicoTemplate extends CRM_Core_DAO {
           'entity' => 'MosaicoTemplate',
           'bao' => 'CRM_Mosaico_DAO_MosaicoTemplate',
           'localizable' => 0,
+          'readonly' => TRUE,
           'add' => NULL,
         ],
         'title' => [
@@ -145,6 +153,9 @@ class CRM_Mosaico_DAO_MosaicoTemplate extends CRM_Core_DAO {
           'entity' => 'MosaicoTemplate',
           'bao' => 'CRM_Mosaico_DAO_MosaicoTemplate',
           'localizable' => 0,
+          'html' => [
+            'type' => 'Text',
+          ],
           'add' => NULL,
         ],
         'base' => [
@@ -159,6 +170,9 @@ class CRM_Mosaico_DAO_MosaicoTemplate extends CRM_Core_DAO {
           'entity' => 'MosaicoTemplate',
           'bao' => 'CRM_Mosaico_DAO_MosaicoTemplate',
           'localizable' => 0,
+          'html' => [
+            'type' => 'Text',
+          ],
           'add' => NULL,
         ],
         'html' => [
@@ -216,6 +230,27 @@ class CRM_Mosaico_DAO_MosaicoTemplate extends CRM_Core_DAO {
             'table' => 'civicrm_msg_template',
             'keyColumn' => 'id',
             'labelColumn' => 'msg_title',
+          ],
+          'add' => NULL,
+        ],
+        'category_id' => [
+          'name' => 'category_id',
+          'type' => CRM_Utils_Type::T_INT,
+          'title' => E::ts('Category ID'),
+          'description' => E::ts('ID of the category this mailing template is currently belongs. Foreign key to civicrm_option_value.'),
+          'required' => FALSE,
+          'where' => 'civicrm_mosaico_template.category_id',
+          'table_name' => 'civicrm_mosaico_template',
+          'entity' => 'MosaicoTemplate',
+          'bao' => 'CRM_Mosaico_DAO_MosaicoTemplate',
+          'localizable' => 0,
+          'html' => [
+            'type' => 'Select',
+            'label' => E::ts("Category"),
+          ],
+          'pseudoconstant' => [
+            'optionGroupName' => 'mailing_template_category',
+            'optionEditPath' => 'civicrm/admin/options/mailing_template_category',
           ],
           'add' => NULL,
         ],

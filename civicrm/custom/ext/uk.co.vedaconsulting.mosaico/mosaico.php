@@ -139,7 +139,7 @@ function mosaico_civicrm_navigationMenu(&$params) {
     'child' => [],
     'operator' => 'AND',
     'separator' => 0,
-    'url' => CRM_Utils_System::url('civicrm/a/', NULL, TRUE, '/mosaico-template'),
+    'url' => CRM_Utils_System::url('civicrm/mosaico-template-list'),
   ]);
 
   _mosaico_civix_insert_navigation_menu($params, 'Mailings', [

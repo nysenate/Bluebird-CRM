@@ -4,7 +4,7 @@
 // http://wiki.civicrm.org/confluence/display/CRMDOC/hook_civicrm_angularModules
 
 $result = [
-  'requires' => ['crmUi', 'crmUtil', 'ngRoute', 'crmMailing'],
+  'requires' => ['crmUi', 'crmUtil', 'ngRoute', 'crmMailing', 'crmDialog'],
   'js' =>
   [
     0 => 'ang/crmMosaico.js',

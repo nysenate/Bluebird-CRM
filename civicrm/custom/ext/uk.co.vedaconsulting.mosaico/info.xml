@@ -19,13 +19,19 @@
   <version>2.8.1637146864</version>
   <develStage>stable</develStage>
   <compatibility>
-    <ver>5.36</ver>
+    <ver>5.46</ver>
   </compatibility>
   <requires>
     <ext>org.civicrm.flexmailer</ext>
+    <ext>org.civicrm.search_kit</ext>
+    <ext>org.civicrm.afform</ext>
   </requires>
   <comments>To help contribute please contact us on support@vedaconsulting.co.uk or initiate a conversation / issue on github.</comments>
   <civix>
     <namespace>CRM/Mosaico</namespace>
   </civix>
+  <classloader>
+    <psr0 prefix="CRM_" path=""/>
+    <psr4 prefix="Civi\" path="Civi"/>
+  </classloader>
 </extension>

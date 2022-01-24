@@ -129,6 +129,7 @@ class CRM_Mosaico_DAO_MessageTemplate extends CRM_Core_DAO {
           'entity' => 'MessageTemplate',
           'bao' => 'CRM_Mosaico_DAO_MessageTemplate',
           'localizable' => 0,
+          'readonly' => TRUE,
           'add' => NULL,
         ],
         'msg_tpl_id' => [

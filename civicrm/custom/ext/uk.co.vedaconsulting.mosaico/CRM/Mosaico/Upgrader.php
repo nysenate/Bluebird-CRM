@@ -121,6 +121,22 @@ class CRM_Mosaico_Upgrader extends CRM_Mosaico_Upgrader_Base {
       ON DELETE SET NULL
     ');
 
+    CRM_Core_Invoke::rebuildMenuAndCaches(TRUE);
+
+    return TRUE;
+  }
+
+  /**
+   * Add menu for traditional mailing.
+   */
+  public function upgrade_4705() {
+    $this->ctx->log->info('Applying update 4705');
+
+    CRM_Core_DAO::executeQuery('
+      ALTER TABLE civicrm_mosaico_template
+      ADD COLUMN `category_id` int unsigned NULL COMMENT \'ID of the category this mailing template is currently belongs. Foreign key to civicrm_option_value.\'
+    ');
+
     return TRUE;
   }
 
