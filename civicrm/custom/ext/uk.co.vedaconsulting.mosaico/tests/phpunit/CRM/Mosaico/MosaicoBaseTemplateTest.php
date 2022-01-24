@@ -12,7 +12,7 @@ require_once __DIR__ . '/TestCase.php';
  */
 class CRM_Mosaico_MosaicoBaseTemplateTest extends CRM_Mosaico_TestCase implements EndToEndInterface {
 
-  public static function setUpBeforeClass() {
+  public static function setUpBeforeClass(): void {
     // See: https://github.com/civicrm/org.civicrm.testapalooza/blob/master/civi-test.md
 
     // Example: Install this extension. Don't care about anything else.
@@ -25,15 +25,15 @@ class CRM_Mosaico_MosaicoBaseTemplateTest extends CRM_Mosaico_TestCase implement
     // \Civi\Test::e2e()->uninstall('*')->install('org.civicrm.*')->apply();
   }
 
-  public function setUp() {
+  public function setUp(): void {
     parent::setUp();
   }
 
-  public function tearDown() {
+  public function tearDown(): void {
     parent::tearDown();
   }
 
-  public function testGet() {
+  public function testGet(): void {
     $result = $this->callAPISuccess('MosaicoBaseTemplate', 'get', []);
     $this->assertTrue(is_array($result['values']));
     $this->assertEquals('versafix-1', $result['values']['versafix-1']['name']);
@@ -41,7 +41,7 @@ class CRM_Mosaico_MosaicoBaseTemplateTest extends CRM_Mosaico_TestCase implement
     $this->assertRegExp(';https?://.*mosaico.*versafix-1.*png;', $result['values']['versafix-1']['thumbnail']);
   }
 
-  public function testGetSingle() {
+  public function testGetSingle(): void {
     $result = $this->callAPISuccess('MosaicoBaseTemplate', 'getsingle', ['name' => 'tedc15']);
     $this->assertEquals('tedc15', $result['name']);
     $this->assertRegExp(';\.html$;', $result['path']);

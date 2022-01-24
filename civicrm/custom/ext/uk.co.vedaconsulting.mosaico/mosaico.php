@@ -112,6 +112,16 @@ function mosaico_civicrm_angularModules(&$angularModules) {
   _mosaico_civix_civicrm_angularModules($angularModules);
 }
 
+function mosaico_civicrm_alterAngular(\Civi\Angular\Manager $angular) {
+  $changeSet = \Civi\Angular\ChangeSet::create('mosaico_subject_list')
+    ->alterHtml('~/crmMailing/BlockMailing.html', function (phpQueryObject $doc) {
+      $field = $doc->find('[name=subject]')->parent('[crm-ui-field]');
+      $field->html('<crm-mosaico-subject-list crm-mailing="mailing"/>');
+      $field->after('<div crm-ui-field="{name: \'subform.dist\', title: ts(\'Distribution\')}" ng-if="mailing.template_options.variants"><crm-mosaico-distribution crm-mailing="mailing" /></div>');
+    });
+  $angular->add($changeSet);
+}
+
 /**
  * Implements hook_civicrm_alterSettingsFolders().
  *
@@ -149,7 +159,7 @@ function mosaico_civicrm_navigationMenu(&$params) {
     'child' => [],
     'operator' => 'AND',
     'separator' => 0,
-    'url' => CRM_Utils_System::url('civicrm/admin/mosaico', 'reset=1', TRUE),
+    'url' => CRM_Utils_System::url('civicrm/admin/setting/mosaico', 'reset=1', TRUE),
   ]);
 
   _mosaico_civix_navigationMenu($params);
@@ -191,7 +201,7 @@ function mosaico_civicrm_check(&$messages) {
     $messages[] = new CRM_Utils_Check_Message(
       'mosaico_graphics',
       E::ts('Mosaico requires a graphics driver such as PHP-ImageMagick or PHP-GD. For more information, see <a href="%1">Mosaico Settings</a>.', [
-        1 => \CRM_Utils_System::url('civicrm/admin/mosaico', 'reset=1'),
+        1 => \CRM_Utils_System::url('civicrm/admin/setting/mosaico', 'reset=1'),
       ])
       . "<p><em>" . E::ts("Error: %1", [1 => $e->getMessage()]) . "</em></p>",
       E::ts('Graphics driver not available'),
@@ -207,6 +217,15 @@ function mosaico_civicrm_check(&$messages) {
       'mosaico_packages',
       E::ts('Mosaico requires dependencies in its "packages" folder. Please consult the README.md for current installation instructions.'),
       E::ts('Mosaico: Packages are missing'),
+      \Psr\Log\LogLevel::CRITICAL,
+      'fa-chain-broken'
+    );
+  }
+  if (CRM_Mailing_Info::workflowEnabled()) {
+    $messages[] = new CRM_Utils_Check_Message(
+      'mosaico_workflow',
+      E::ts('CiviMail is configured to support advanced workflows. This is currently incompatible with the Mosaico mailer. Navigate to "Administer => CiviMail => CiviMail Component Settings" to disable it.'),
+      E::ts('Advanced CiviMail workflows unsupported'),
       \Psr\Log\LogLevel::CRITICAL,
       'fa-chain-broken'
     );
@@ -315,7 +334,7 @@ function _mosaico_civicrm_alterMailContent(&$content) {
   // Civi's delivery system and upstream Mosaico templates.
   $tokenAliases = [
     // '[profile_link]' => 'FIXME',
-    '[show_link]' => '{mailing.viewUrl}',
+    '[show_link]' => '{mailing.viewUrl}&cid={contact.contact_id}&{contact.checksum}',
     '[subject]' => '{mailing.subject}',
     '[unsubscribe_link]' => '{action.unsubscribeUrl}',
   ];
@@ -394,5 +413,30 @@ function mosaico_civicrm_searchTasks($objectName, &$tasks) {
       'title' => E::ts('Email - schedule/send via CiviMail (traditional)'),
       'class' => 'CRM_Mosaico_Form_Task_AdhocMailingTraditional',
     ];
+  }
+}
+
+/**
+ * Listen to prepare event and a mailing wrapper for the
+ * Mailing.submit and Mailing.send_test api actions.
+ *
+ * @param \Civi\API\Event\PrepareEvent $event
+ */
+function mosaico_wrapMailingApi($event) {
+  $a = $event->getApiRequest();
+  switch ($a['entity'] . '.' . $a['action']) {
+    case 'Mailing.submit':
+      if (is_numeric($a['params']['id'])) {
+        $abMux = \Civi::service('mosaico_ab_demux');
+        $event->wrapApi([$abMux,'onSubmitMailing']);
+      }
+      break;
+
+    case 'Mailing.send_test':
+      if (is_numeric($a['params']['mailing_id'])) {
+        $abMux = \Civi::service('mosaico_ab_demux');
+        $event->wrapApi([$abMux, 'onSendTestMailing']);
+      }
+      break;
   }
 }

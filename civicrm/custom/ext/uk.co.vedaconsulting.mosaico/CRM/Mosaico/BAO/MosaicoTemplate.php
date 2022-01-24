@@ -25,7 +25,7 @@ class CRM_Mosaico_BAO_MosaicoTemplate extends CRM_Mosaico_DAO_MosaicoTemplate {
   /**
    * Helps updating the URLs in templates so they can be reused
    * after restoring a dump database in a new server.
-   * 
+   *
    * @param string $fromUrl URL of the server where the
    *   templates were created
    * @param string $toUrl URL of the current server
@@ -49,8 +49,8 @@ class CRM_Mosaico_BAO_MosaicoTemplate extends CRM_Mosaico_DAO_MosaicoTemplate {
   /**
    * @return mixed
    */
-  public static function findBaseTemplates() {
-    if (!isset(Civi::$statics[__CLASS__]['bases'])) {
+  public static function findBaseTemplates($ignoreCache = FALSE, $dispatchHooks = TRUE) {
+    if (!isset(Civi::$statics[__CLASS__]['bases']) || $ignoreCache) {
       $templatesDir = CRM_Core_Resources::singleton()->getPath('uk.co.vedaconsulting.mosaico');
       if (!$templatesDir) {
         return FALSE;
@@ -72,6 +72,9 @@ class CRM_Mosaico_BAO_MosaicoTemplate extends CRM_Mosaico_DAO_MosaicoTemplate {
         }
       }
 
+      // get list of base templates that needs be to hidden from the UI
+      $templatesToHide = \Civi::settings()->get('mosaico_hide_base_templates');
+
       $records = [];
 
       foreach ($templatesLocation as $templateLocation) {
@@ -80,18 +83,25 @@ class CRM_Mosaico_BAO_MosaicoTemplate extends CRM_Mosaico_DAO_MosaicoTemplate {
           $templateHTML = "{$templateLocation['url']}/{$template}/template-{$template}.html";
           $templateThumbnail = "{$templateLocation['url']}/{$template}/edres/_full.png";
 
+          // let's add hidden flag to templates that needs to be excluded from the display
+          $isHidden = false;
+          if (!empty($templatesToHide) && in_array($template, $templatesToHide)) {
+            $isHidden = true;
+          }
+
           $records[$template] = [
             'name' => $template,
             'title' => $template,
             'thumbnail' => $templateThumbnail,
             'path' => $templateHTML,
+            'is_hidden' => $isHidden,
           ];
         }
       }
       // Sort the base templates into alphabetical order
       ksort($records, SORT_NATURAL | SORT_FLAG_CASE);
 
-      if (class_exists('\Civi\Core\Event\GenericHookEvent')) {
+      if (class_exists('\Civi\Core\Event\GenericHookEvent') && $dispatchHooks) {
         \Civi::dispatcher()->dispatch('hook_civicrm_mosaicoBaseTemplates',
           \Civi\Core\Event\GenericHookEvent::create([
             'templates' => &$records,

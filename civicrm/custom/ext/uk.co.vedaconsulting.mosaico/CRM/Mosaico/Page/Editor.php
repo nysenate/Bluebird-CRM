@@ -65,6 +65,7 @@ class CRM_Mosaico_Page_Editor extends CRM_Core_Page {
 
     $config = [
       'imgProcessorBackend' => $this->getUrl('civicrm/mosaico/img', NULL, TRUE),
+      'imgPlaceholderUrl' => $this->getUrl('civicrm/mosaico/img/placeholder', NULL, FALSE),
       'emailProcessorBackend' => 'unused-emailProcessorBackend',
       'titleToken' => 'MOSAICO Responsive Email Designer',
       'fileuploadConfig' => [
@@ -87,18 +88,13 @@ class CRM_Mosaico_Page_Editor extends CRM_Core_Page {
         'toolbar1' => 'bold italic civicrmtoken',
         'civicrmtoken' => [
           'tokens' => $mailTokens['values'],
-          'hotlist' => [
-            ts('First Name') => '{contact.first_name}',
-            ts('Last Name') => '{contact.last_name}',
-            ts('Display Name') => '{contact.display_name}',
-            ts('Contact ID') => '{contact.contact_id}',
-          ],
+          'hotlist' => CRM_Mosaico_Utils::getMailingTokens(TRUE),
         ],
         'browser_spellcheck' => TRUE,
       ],
       'tinymceConfigFull' => [
         'plugins' => ['link hr paste lists textcolor code civicrmtoken'],
-        'toolbar1' => 'bold italic forecolor backcolor hr styleselect removeformat | civicrmtoken | link unlink | pastetext code',
+        'toolbar1' => 'bold italic forecolor backcolor hr bullist styleselect removeformat | civicrmtoken | link unlink | pastetext code',
       ],
     ];
 

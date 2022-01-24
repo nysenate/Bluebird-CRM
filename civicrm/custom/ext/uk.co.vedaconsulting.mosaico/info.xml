@@ -11,17 +11,18 @@
   <urls>
     <url desc="Main Extension Page">https://github.com/veda-consulting-company/uk.co.vedaconsulting.mosaico</url>
     <url desc="Documentation">https://docs.civicrm.org/mosaico/en/latest</url>
+    <url desc="Release Notes">https://docs.civicrm.org/mosaico/en/latest/releasenotes/</url>
     <url desc="Support">https://vedaconsulting.co.uk</url>
     <url desc="Licensing">http://www.gnu.org/licenses/agpl-3.0.html</url>
   </urls>
-  <releaseDate>2020-06-22</releaseDate>
-  <version>2.4.1592820024</version>
+  <releaseDate>2021-11-17</releaseDate>
+  <version>2.8.1637146864</version>
   <develStage>stable</develStage>
   <compatibility>
-    <ver>5.24</ver>
+    <ver>5.36</ver>
   </compatibility>
   <requires>
-    <ext version="~1.1">org.civicrm.flexmailer</ext>
+    <ext>org.civicrm.flexmailer</ext>
   </requires>
   <comments>To help contribute please contact us on support@vedaconsulting.co.uk or initiate a conversation / issue on github.</comments>
   <civix>

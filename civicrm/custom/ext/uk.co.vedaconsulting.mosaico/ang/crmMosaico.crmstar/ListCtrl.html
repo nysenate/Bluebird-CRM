@@ -2,7 +2,7 @@
   <div crm-ui-debug="crmMosaicoTemplates.getBases()"></div>
   <div crm-ui-debug="crmMosaicoTemplates.getConfigured()"></div>
 
-  <div>
+  <div ng-show="crmMosaicoTemplates.getBases().length > 0">
     <h3>{{ts('New from base template:')}}</h3>
     <div class="mosaico-templates-wrapper">
       <div ng-repeat="template in crmMosaicoTemplates.getBases() | orderBy:'type'">

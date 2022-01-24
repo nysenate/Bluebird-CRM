@@ -20,16 +20,14 @@ Vars: mailing:obj, testContact:obj, testGroup:obj, crmMailing:FormController
 
 <div class="form-group">
   <label for="preview_test_email">{{ts('Send test email:')}} <a crm-ui-help="hs({id: 'test', title: ts('Test Email')})"></a> </label>
-  <!--NYSS 13425-->
   <input
     name="preview_test_email"
-    type="text"
+    type="email"
     class="form-control margin-bottom-10"
     ng-model="testContact.email"
-    placeholder="example@example.org"
-  />
+    placeholder="example@example.org" />
   <!--fa-paper-plane-->
-  <button class="btn btn-sm btn-primary" title="{{crmMailing.$invalid || !testContact.email ? ts('Complete all required-mark fields first') : !validateMultipleEmail(testContact.email) ? ts('Not a valid email address') : ts('Send test message to %1', {1: testContact.email})}}" ng-disabled="crmMailing.$invalid || !testContact.email || !validateMultipleEmail(testContact.email)" ng-click="doSend({email: testContact.email})">{{ts('Send test')}}</button>
+  <button class="btn btn-sm btn-primary" title="{{crmMailing.$invalid || !testContact.email ? ts('Complete all required-mark fields first') : ts('Send test message to %1', {1: testContact.email})}}" ng-disabled="crmMailing.$invalid || !testContact.email" ng-click="doSend({email: testContact.email})">{{ts('Send test')}}</button>
 </div>
 
 <div class="form-group">

@@ -27,9 +27,11 @@ $result = [
     'joomlaNav' => '.com_civicrm > .navbar',
     'leftNav' => '.wp-admin #adminmenu',
     'useBootstrap' => CRM_Mosaico_Utils::isBootstrap(),
+    'variantsPct' => CRM_Mosaico_AbDemux::DEFAULT_AB_PERCENTAGE,
   ],
 ];
 
 $result['css'][]= ($result['settings']['useBootstrap']) ? 'css/mosaico-bootstrap.css' : 'css/mosaico-crmstar.css';
+$result['bundles']= ($result['settings']['useBootstrap']) ? ['bootstrap3'] : [];
 
 return $result;

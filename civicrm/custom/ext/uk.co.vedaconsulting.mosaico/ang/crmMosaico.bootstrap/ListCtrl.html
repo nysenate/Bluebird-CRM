@@ -4,7 +4,7 @@
     <div crm-ui-debug="crmMosaicoTemplates.getBases()"></div>
     <div crm-ui-debug="crmMosaicoTemplates.getConfigured()"></div>
     <div class="mosaico-panels-group">
-      <div class="panel panel-default">
+      <div class="panel panel-default" ng-show="crmMosaicoTemplates.getBases().length > 0">
         <div class="panel-heading">
           <h3 class="panel-title">{{ts('New from base template:')}}</h3>
         </div>

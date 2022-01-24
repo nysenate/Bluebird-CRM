@@ -24,7 +24,7 @@ class api_v3_Job_MosaicoMigrateTest extends \PHPUnit\Framework\TestCase implemen
   /**
    * The setup() method is executed before the test is executed (optional).
    */
-  public function setUp() {
+  public function setUp(): void {
     parent::setUp();
   }
 
@@ -32,7 +32,7 @@ class api_v3_Job_MosaicoMigrateTest extends \PHPUnit\Framework\TestCase implemen
    * The tearDown() method is executed after the test was executed (optional)
    * This can be used for cleanup.
    */
-  public function tearDown() {
+  public function tearDown(): void {
     parent::tearDown();
   }
 
@@ -41,7 +41,7 @@ class api_v3_Job_MosaicoMigrateTest extends \PHPUnit\Framework\TestCase implemen
    *
    * Note how the function name begins with the word "test".
    */
-  public function testMigrate() {
+  public function testMigrate(): void  {
     $this->createExampleLegacyTemplate();
     $this->assertEquals(1, CRM_Core_DAO::singleValueQuery('SELECT count(*) FROM civicrm_mosaico_msg_template'));
     $this->assertEquals(0, CRM_Core_DAO::singleValueQuery('SELECT count(*) FROM civicrm_mosaico_template'));
@@ -64,7 +64,7 @@ class api_v3_Job_MosaicoMigrateTest extends \PHPUnit\Framework\TestCase implemen
     $this->assertEquals(1, CRM_Core_DAO::singleValueQuery('SELECT count(*) FROM civicrm_mosaico_template'));
   }
 
-  protected function createExampleLegacyTemplate() {
+  protected function createExampleLegacyTemplate(): void {
     $msgTpl = civicrm_api3('MessageTemplate', 'create', [
       'msg_title' => 'The Title',
       'msg_subject' => 'The Subject',

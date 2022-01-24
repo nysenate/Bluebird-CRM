@@ -1,0 +1,55 @@
+<table class="crm-mosaico-subject" ng-if="!mailing.template_options.variants">
+  <tbody>
+  <tr>
+    <td>
+      <input
+        crm-ui-id="subform.subject"
+        crm-ui-insert-rx="insert:subject"
+        name="subject"
+        type="text"
+        class="crm-form-text"
+        placeholder="Subject"
+        ng-model="mailing.subject"
+        required
+      />
+    </td>
+    <td>
+      <input crm-mailing-token on-select="$broadcast('insert:subject', token.name)" tabindex="-1"/>
+    </td>
+    <td>
+      <a ng-click="addSubj()" class="button" title="{{ts('Add subject')}}">
+        <span><i class="crm-i fa-plus-circle"></i></span>
+      </a>
+    </td>
+  </tr>
+  </tbody>
+</table>
+
+<table class="crm-mosaico-subject" ng-if="!!mailing.template_options.variants">
+  <tbody>
+  <tr ng-repeat="(vid, variant) in mailing.template_options.variants">
+    <td>({{labels[vid]}})</td>
+    <td>
+      <input
+        crm-ui-id="subform.subject"
+        crm-ui-insert-rx="insert:subject"
+        name="subjectA"
+        type="text"
+        class="crm-form-text"
+        placeholder="Subject ({{labels[vid]}})"
+        ng-model="variant.subject"
+        required
+      />
+    </td>
+    <td>
+      <input crm-mailing-token on-select="$broadcast('insert:subject', token.name)" tabindex="-1"/>
+    </td>
+    <td>
+      <a ng-click="rmSubj(vid)" class="button" title="{{ts('Remove subject')}}">
+        <span><i class="crm-i fa-trash"></i></span>
+      </a>
+    </td>
+  </tr>
+  </tbody>
+</table>
+

@@ -21,7 +21,6 @@
           var crmbWizardCtrl = this;
           var maxVisited = 0;
           var selectedIndex = null;
-          $scope.checkPerm = CRM.checkPerm;
 
           var findIndex = function() {
             var found = null;
@@ -41,26 +40,21 @@
           this.$validStep = function() {
             return steps[selectedIndex] && steps[selectedIndex].isStepValid();
           };
-          this.workFlowEnabled = function() {
-            return CRM.crmMailing.workflowEnabled;
-          };
-          this.check = function() {
-            if (this.$index() == 1 || this.$index() == 0) {
-              return !(CRM.crmMailing.workflowEnabled && !CRM.checkPerm('create mailings') && !CRM.checkPerm('access CiviMail'));
-            }
-            if (this.$index() == 2) {
-              return !(CRM.crmMailing.workflowEnabled && !CRM.checkPerm('schedule mailings') && !CRM.checkPerm('access CiviMail'));
-            }
-            else {
-              return true;
-            }
-          }
           this.iconFor = function(index) {
             if (index < this.$index()) return '√';
             if (index === this.$index()) return '»';
             return ' ';
           };
+          this.isSelectable = function(step) {
+            var stepIndex;
+            for (stepIndex = 0; steps[stepIndex] !== step; stepIndex++) {}
 
+            if (stepIndex <= selectedIndex) return true;
+            for (var i = 0; i < stepIndex; i++) {
+              if (!steps[i].isStepValid()) return false;
+            }
+            return true;
+          };
           /*** @param Object step the $scope of the step */
           this.isStepDone = function(step) {
             var stepIndex;
