@@ -65,7 +65,7 @@
     </td>
   </tr>
 
-  {if !empty($form.separation)}
+  {if $form.separation}
     <tr class="crm-activity-form-block-separation crm-is-multi-activity-wrapper">
       <td class="label">{$form.separation.label}</td>
       <td>{$form.separation.html} {help id="separation"}</td>
@@ -80,7 +80,7 @@
       <td>
         {$form.assignee_contact_id.html}
         {if $action neq 4}
-          {if !$form.target_contact_id.frozen}
+          {if empty($disable_swap_button)}
             <a href="#" class="crm-hover-button" id="swap_target_assignee" title="{ts}Swap Target and Assignee Contacts{/ts}" style="position:relative; bottom: 1em;">
               <i class="crm-i fa-random" aria-hidden="true"></i>
             </a>
@@ -93,8 +93,8 @@
       </td>
   </tr>
 
-  {if !empty($activityTypeFile)}
-  {include file="CRM/$crmDir/Form/Activity/$activityTypeFile.tpl"}
+  {if $activityTypeFile}
+    {include file="CRM/$crmDir/Form/Activity/$activityTypeFile.tpl"}
   {/if}
 
   <tr class="crm-activity-form-block-subject">
@@ -285,4 +285,4 @@
   {/if}
   </div>{* end of form block*}
 
-{include file="CRM/Event/Form/ManageEvent/ConfirmRepeatMode.tpl" entityID=$activityId entityTable="civicrm_activity"}
+{include file="CRM/Event/Form/ManageEvent/ConfirmRepeatMode.tpl" entityID=$activityId entityTable="civicrm_activity" isRepeatingEntity=false}

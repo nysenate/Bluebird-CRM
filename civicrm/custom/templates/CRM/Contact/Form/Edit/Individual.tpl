@@ -8,20 +8,11 @@
  +--------------------------------------------------------------------+
 *}
 {* tpl for building Individual related fields *}
-<script type="text/javascript">
-{literal}
-CRM.$(function($) {
-  if ($('#contact_sub_type *').length == 0) {//if they aren't any subtype we don't offer the option
-    $('#contact_sub_type').parent().hide();
-  }
-});
-</script>
-{/literal}
-
-{assign var=formtextbig value='crm-form-text big'}{*NYSS*}
+{*NYSS*}
+{assign var=formtextbig value='crm-form-text big'}
 <table class="form-layout-compressed individual-contact-details">
   <tr>
-    {if $form.prefix_id}
+    {if !empty($form.prefix_id)}
     <td>
       {$form.prefix_id.label}<br/>
       {$form.prefix_id.html}
@@ -33,25 +24,25 @@ CRM.$(function($) {
       {$form.formal_title.html}
     </td>
     {/if}
-    {if $form.first_name}
+    {if !empty($form.first_name)}
     <td>
       {$form.first_name.label}<br />
       {$form.first_name.html}
     </td>
     {/if}
-    {if $form.middle_name}
+    {if !empty($form.middle_name)}
     <td>
       {$form.middle_name.label}<br />
       {$form.middle_name.html}
     </td>
     {/if}
-    {if $form.last_name}
+    {if !empty($form.last_name)}
     <td>
       {$form.last_name.label}<br />
       {$form.last_name.html}
     </td>
     {/if}
-    {if $form.suffix_id}
+    {if !empty($form.suffix_id)}
     <td>
       {$form.suffix_id.label}<br/>
       {$form.suffix_id.html}
