@@ -26,7 +26,13 @@ class CRM_Logging_Schema {
   private $logs = [];
   private $tables = [];
 
+  /**
+   * Name of the database where the logging data is stored.
+   *
+   * @var string
+   */
   private $db;
+
   private $useDBPrefix = TRUE;
 
   private $reports = [
@@ -113,8 +119,7 @@ class CRM_Logging_Schema {
    * Populate $this->tables and $this->logs with current db state.
    */
   public function __construct() {
-    $dao = new CRM_Contact_DAO_Contact();
-    $civiDBName = $dao->_database;
+    $civiDBName = $this->getCiviCRMDatabaseName();
 
     $dao = CRM_Core_DAO::executeQuery("
 SELECT TABLE_NAME
@@ -125,6 +130,15 @@ AND    TABLE_NAME LIKE 'civicrm_%'
 ");
     while ($dao->fetch()) {
       $this->tables[] = $dao->TABLE_NAME;
+    }
+    // Get any non standard table names used for custom groups.
+    // include these BEFORE the hook is called.
+    $customFieldDAO = CRM_Core_DAO::executeQuery("
+      SELECT DISTINCT table_name as TABLE_NAME FROM civicrm_custom_group
+      where table_name NOT LIKE 'civicrm_%';
+    ");
+    while ($customFieldDAO->fetch()) {
+      $this->tables[] = $customFieldDAO->TABLE_NAME;
     }
 
     // do not log temp import, cache, menu and log tables
@@ -233,7 +247,7 @@ AND    (TABLE_NAME LIKE 'log_civicrm_%' $nonStandardTableNameString )
    *
    * @param string $tableName
    */
-  public function dropTriggers($tableName = NULL) {
+  public function dropTriggers($tableName = NULL): void {
     /** @var \Civi\Core\SqlTriggers $sqlTriggers */
     $sqlTriggers = Civi::service('sql_triggers');
     $dao = new CRM_Core_DAO();
@@ -427,16 +441,18 @@ AND    (TABLE_NAME LIKE 'log_civicrm_%' $nonStandardTableNameString )
    *   name of the relevant table.
    * @param array $cols
    *   Mixed array of columns to add or null (to check for the missing columns).
-   *
-   * @return bool
    */
-  public function fixSchemaDifferencesFor($table, $cols = []) {
-    if (empty($table)) {
-      return FALSE;
+  public function fixSchemaDifferencesFor(string $table, array $cols = []): void {
+    if (!in_array($table, $this->tables, TRUE)) {
+      // Create the table if the log table does not exist and
+      // the table is in 'this->tables'. This latter array
+      // could have been altered by a hook if the site does not
+      // want to log a specific table.
+      return;
     }
     if (empty($this->logs[$table])) {
       $this->createLogTableFor($table);
-      return TRUE;
+      return;
     }
 
     if (empty($cols)) {
@@ -478,8 +494,6 @@ AND    (TABLE_NAME LIKE 'log_civicrm_%' $nonStandardTableNameString )
     }
 
     $this->resetSchemaCacheForTable("log_$table");
-
-    return TRUE;
   }
 
   /**
@@ -1073,6 +1087,33 @@ COLS;
       return array_diff($this->tables, array_keys($this->logs));
     }
     return [];
+  }
+
+  /**
+   * Get the name of the database from the dsn string.
+   *
+   * @param string $dsnString
+   *
+   * @return string
+   */
+  protected function getDatabaseNameFromDSN($dsnString): string {
+    $dsn = CRM_Utils_SQL::autoSwitchDSN($dsnString);
+    $dsn = DB::parseDSN($dsn);
+    return $dsn['database'];
+  }
+
+  /**
+   * Get the database name for the CiviCRM connection.
+   *
+   * Note that we want to get it from the database connection,
+   * not the dsn, because there is at least one extension
+   * (https://github.com/totten/rpow) that 'meddles' with
+   * the DSN string.
+   *
+   * @return string
+   */
+  protected function getCiviCRMDatabaseName(): string {
+    return (new CRM_Contact_DAO_Contact())->_database;
   }
 
 }

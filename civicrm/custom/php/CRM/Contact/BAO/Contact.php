@@ -14,7 +14,7 @@
  * @package CRM
  * @copyright CiviCRM LLC https://civicrm.org/licensing
  */
-class CRM_Contact_BAO_Contact extends CRM_Contact_DAO_Contact {
+class CRM_Contact_BAO_Contact extends CRM_Contact_DAO_Contact implements Civi\Test\HookInterface {
 
   /**
    * SQL function used to format the phone_numeric field via trigger.
@@ -381,7 +381,7 @@ class CRM_Contact_BAO_Contact extends CRM_Contact_DAO_Contact {
     if (!empty($params['custom']) &&
       is_array($params['custom'])
     ) {
-      CRM_Core_BAO_CustomValueTable::store($params['custom'], 'civicrm_contact', $contact->id);
+      CRM_Core_BAO_CustomValueTable::store($params['custom'], 'civicrm_contact', $contact->id, $isEdit ? 'edit' : 'create');
     }
 
     $transaction->commit();
@@ -541,6 +541,10 @@ class CRM_Contact_BAO_Contact extends CRM_Contact_DAO_Contact {
         //  If we are setting it to null then null out the display field.
         $params[$greetingIndex . '_display'] = 'null';
       }
+      if ((int) $params[$greetingParam] != CRM_Core_PseudoConstant::getKey('CRM_Contact_BAO_Contact', $greetingParam, 'Customized')) {
+        $params[$greetingIndex . '_custom'] = 'null';
+      }
+
     }
   }
 
@@ -1071,7 +1075,7 @@ WHERE     civicrm_contact.id = " . CRM_Utils_Type::escape($id, 'Integer');
     }
 
     //delete the contact id from recently view
-    CRM_Utils_Recent::delContact($id);
+    CRM_Utils_Recent::del(['contact_id' => $id]);
     self::updateContactCache($id, empty($restore));
 
     // delete any prevnext/dupe cache entry
@@ -1622,7 +1626,7 @@ WHERE     civicrm_contact.id = " . CRM_Utils_Type::escape($id, 'Integer');
         else {
           foreach (CRM_Contact_BAO_ContactType::basicTypes() as $type) {
             $fields = array_merge($fields,
-              CRM_Core_BAO_CustomField::getFieldsForImport($type, FALSE, FALSE, $search, $checkPermissions, $withMultiRecord)
+              CRM_Core_BAO_CustomField::getFieldsForImport($type, FALSE, FALSE, $search, $checkPermissions ? CRM_Core_Permission::VIEW : FALSE, $withMultiRecord)
             );
           }
         }
@@ -1769,7 +1773,7 @@ WHERE     civicrm_contact.id = " . CRM_Utils_Type::escape($id, 'Integer');
     $returnProperties['household_name'] = 1;
     $returnProperties['contact_type'] = 1;
     $returnProperties['contact_sub_type'] = 1;
-    list($query) = CRM_Contact_BAO_Query::apiQuery($params, $returnProperties);
+    [$query] = CRM_Contact_BAO_Query::apiQuery($params, $returnProperties);
     return $query;
   }
 
@@ -1793,7 +1797,7 @@ WHERE     civicrm_contact.id = " . CRM_Utils_Type::escape($id, 'Integer');
     $multipleFields = ['website' => 'url'];
     foreach ($fields as $name => $dontCare) {
       if (strpos($name, '-') !== FALSE) {
-        list($fieldName, $id, $type) = CRM_Utils_System::explode('-', $name, 3);
+        [$fieldName, $id, $type] = CRM_Utils_System::explode('-', $name, 3);
 
         if (!in_array($fieldName, $multipleFields)) {
           if ($id == 'Primary') {
@@ -2015,7 +2019,7 @@ ORDER BY civicrm_email.is_primary DESC";
       CRM_Utils_Hook::pre('create', 'Profile', NULL, $params);
     }
 
-    list($data, $contactDetails) = self::formatProfileContactParams($params, $fields, $contactID, $ufGroupId, $ctype);
+    [$data, $contactDetails] = self::formatProfileContactParams($params, $fields, $contactID, $ufGroupId, $ctype);
 
     // manage is_opt_out
     if (array_key_exists('is_opt_out', $fields) && array_key_exists('is_opt_out', $params)) {
@@ -2197,7 +2201,7 @@ ORDER BY civicrm_email.is_primary DESC";
     $primaryPhoneLoc = NULL;
     $session = CRM_Core_Session::singleton();
     foreach ($params as $key => $value) {
-      list($fieldName, $locTypeId, $typeId) = CRM_Utils_System::explode('-', $key, 3);
+      [$fieldName, $locTypeId, $typeId] = CRM_Utils_System::explode('-', $key, 3);
 
       if ($locTypeId == 'Primary') {
         if ($contactID) {
@@ -2708,10 +2712,16 @@ LEFT JOIN civicrm_email    ON ( civicrm_contact.id = civicrm_email.contact_id )
         return CRM_Core_BAO_Note::getContactNoteCount($contactId);
 
       case 'contribution':
-        return CRM_Contribute_BAO_Contribution::contributionCount($contactId);
+        if (array_key_exists('CiviContribute', CRM_Core_Component::getEnabledComponents())) {
+          return CRM_Contribute_BAO_Contribution::contributionCount($contactId);
+        }
+        return FALSE;
 
       case 'membership':
-        return CRM_Member_BAO_Membership::getContactMembershipCount((int) $contactId, TRUE);
+        if (array_key_exists('CiviMember', CRM_Core_Component::getEnabledComponents())) {
+          return CRM_Member_BAO_Membership::getContactMembershipCount((int) $contactId, TRUE);
+        }
+        return FALSE;
 
       case 'participant':
         return CRM_Event_BAO_Participant::getContactParticipantCount($contactId);
@@ -2770,6 +2780,7 @@ LEFT JOIN civicrm_email    ON ( civicrm_contact.id = civicrm_email.contact_id )
         // @todo this is still reloading the whole contact -fix to be more selective & use pre-loaded.
         $contact = new CRM_Contact_BAO_Contact();
         $contact->id = $contactID;
+        $contact->find(TRUE);
         CRM_Contact_BAO_Contact::processGreetings($contact);
       }
     }
@@ -2778,11 +2789,14 @@ LEFT JOIN civicrm_email    ON ( civicrm_contact.id = civicrm_email.contact_id )
   /**
    * Process greetings and cache.
    *
-   * @param object $contact
+   * @param \CRM_Contact_DAO_Contact $contact
    *   Contact object after save.
    */
   public static function processGreetings(&$contact) {
 
+    $emailGreetingString = self::getTemplateForGreeting('email_greeting', $contact);
+    $postalGreetingString = self::getTemplateForGreeting('postal_greeting', $contact);
+    $addresseeString = self::getTemplateForGreeting('addressee', $contact);
     //@todo this function does a lot of unnecessary loading.
     // ensureGreetingParamsAreSet now makes sure that the contact is
     // loaded and using updateGreetingsOnTokenFieldChange
@@ -2800,29 +2814,7 @@ LEFT JOIN civicrm_email    ON ( civicrm_contact.id = civicrm_email.contact_id )
     CRM_Core_DAO::storeValues($contact, $contactDetails);
     $contactDetails = [[$contact->id => $contactDetails]];
 
-    $emailGreetingString = $postalGreetingString = $addresseeString = NULL;
     $updateQueryString = [];
-
-    //cache email and postal greeting to greeting display
-    if ($contact->email_greeting_custom != 'null' && $contact->email_greeting_custom) {
-      $emailGreetingString = $contact->email_greeting_custom;
-    }
-    elseif ($contact->email_greeting_id != 'null' && $contact->email_greeting_id) {
-      // the filter value for Individual contact type is set to 1
-      $filter = [
-        'contact_type' => $contact->contact_type,
-        'greeting_type' => 'email_greeting',
-      ];
-
-      $emailGreeting = CRM_Core_PseudoConstant::greeting($filter);
-      $emailGreetingString = $emailGreeting[$contact->email_greeting_id];
-      $updateQueryString[] = " email_greeting_custom = NULL ";
-    }
-    else {
-      if ($contact->email_greeting_custom) {
-        $updateQueryString[] = " email_greeting_display = NULL ";
-      }
-    }
 
     if ($emailGreetingString) {
       CRM_Contact_BAO_Contact_Utils::processGreetingTemplate($emailGreetingString,
@@ -2834,25 +2826,6 @@ LEFT JOIN civicrm_email    ON ( civicrm_contact.id = civicrm_email.contact_id )
       $updateQueryString[] = " email_greeting_display = '{$emailGreetingString}'";
     }
 
-    //postal greetings
-    if ($contact->postal_greeting_custom !== 'null' && $contact->postal_greeting_custom) {
-      $postalGreetingString = $contact->postal_greeting_custom;
-    }
-    elseif ($contact->postal_greeting_id !== 'null' && $contact->postal_greeting_id) {
-      $filter = [
-        'contact_type' => $contact->contact_type,
-        'greeting_type' => 'postal_greeting',
-      ];
-      $postalGreeting = CRM_Core_PseudoConstant::greeting($filter);
-      $postalGreetingString = $postalGreeting[$contact->postal_greeting_id];
-      $updateQueryString[] = " postal_greeting_custom = NULL ";
-    }
-    else {
-      if ($contact->postal_greeting_custom) {
-        $updateQueryString[] = " postal_greeting_display = NULL ";
-      }
-    }
-
     if ($postalGreetingString) {
       CRM_Contact_BAO_Contact_Utils::processGreetingTemplate($postalGreetingString,
         $contactDetails,
@@ -2861,26 +2834,6 @@ LEFT JOIN civicrm_email    ON ( civicrm_contact.id = civicrm_email.contact_id )
       );
       $postalGreetingString = CRM_Core_DAO::escapeString(CRM_Utils_String::stripSpaces($postalGreetingString));
       $updateQueryString[] = " postal_greeting_display = '{$postalGreetingString}'";
-    }
-
-    // addressee
-    if ($contact->addressee_custom !== 'null' && $contact->addressee_custom) {
-      $addresseeString = $contact->addressee_custom;
-    }
-    elseif ($contact->addressee_id !== 'null' && $contact->addressee_id) {
-      $filter = [
-        'contact_type' => $contact->contact_type,
-        'greeting_type' => 'addressee',
-      ];
-
-      $addressee = CRM_Core_PseudoConstant::greeting($filter);
-      $addresseeString = $addressee[$contact->addressee_id];
-      $updateQueryString[] = " addressee_custom = NULL ";
-    }
-    else {
-      if ($contact->addressee_custom) {
-        $updateQueryString[] = " addressee_display = NULL ";
-      }
     }
 
     if ($addresseeString) {
@@ -3519,53 +3472,55 @@ LEFT JOIN civicrm_address ON ( civicrm_address.contact_id = civicrm_contact.id )
   }
 
   /**
-   * Delete a contact-related object that has an 'is_primary' field.
-   *
-   * Ensures that is_primary gets assigned to another object if available
-   * Also calls pre/post hooks
-   *
-   * @param string $type
-   * @param int $id
-   *
-   * @return bool
+   * Event fired after modifying any entity.
+   * @param \Civi\Core\Event\PostEvent $event
    */
-  public static function deleteObjectWithPrimary($type, $id) {
-    if (!$id || !is_numeric($id)) {
-      return FALSE;
-    }
-    $daoName = "CRM_Core_DAO_$type";
-    $obj = new $daoName();
-    $obj->id = $id;
-    $obj->find();
-
-    if ($obj->fetch()) {
-      CRM_Utils_Hook::pre('delete', $type, $id);
-      $contactId = $obj->contact_id;
-      $obj->delete();
-    }
-    else {
-      return FALSE;
-    }
-    // is_primary is only relavent if this field belongs to a contact
-    if ($contactId) {
-      $dao = new $daoName();
-      $dao->contact_id = $contactId;
+  public static function on_hook_civicrm_post(\Civi\Core\Event\PostEvent $event) {
+    // Handle deleting a related entity with is_primary
+    $hasPrimary = ['Address', 'Email', 'IM', 'OpenID', 'Phone'];
+    if (
+      $event->action === 'delete' && $event->id &&
+      in_array($event->entity, $hasPrimary) &&
+      !empty($event->object->is_primary) &&
+      !empty($event->object->contact_id)
+    ) {
+      $daoClass = CRM_Core_DAO_AllCoreTables::getFullName($event->entity);
+      $dao = new $daoClass();
+      $dao->contact_id = $event->object->contact_id;
       $dao->is_primary = 1;
       // Pick another record to be primary (if one isn't already)
       if (!$dao->find(TRUE)) {
         $dao->is_primary = 0;
-        $dao->find();
-        if ($dao->fetch()) {
-          $dao->is_primary = 1;
-          $dao->save();
-          if ($type === 'Email') {
-            CRM_Core_BAO_UFMatch::updateUFName($dao->contact_id);
-          }
+        if ($dao->find(TRUE)) {
+          $baoClass = CRM_Core_DAO_AllCoreTables::getBAOClassName($daoClass);
+          $baoClass::writeRecord(['id' => $dao->id, 'is_primary' => 1]);
         }
       }
     }
-    CRM_Utils_Hook::post('delete', $type, $id, $obj);
-    return TRUE;
+  }
+
+  /**
+   * Get the template string for the given greeting.
+   *
+   * @param string $greetingType
+   * @param CRM_Contact_DAO_Contact $contact
+   *
+   * @return string
+   */
+  private static function getTemplateForGreeting(string $greetingType, CRM_Contact_DAO_Contact $contact): string {
+    $customFieldName = $greetingType . '_custom';
+    if (!CRM_Utils_System::isNull($contact->{$customFieldName})) {
+      return $contact->{$customFieldName};
+    }
+    $idField = $greetingType . '_id';
+    if (!is_numeric($contact->{$idField})) {
+      return '';
+    }
+    $filter = [
+      'contact_type' => $contact->contact_type,
+      'greeting_type' => $greetingType,
+    ];
+    return CRM_Core_PseudoConstant::greeting($filter)[$contact->{$idField}];
   }
 
   /**

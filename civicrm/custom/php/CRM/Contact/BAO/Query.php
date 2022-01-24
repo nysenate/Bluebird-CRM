@@ -1288,7 +1288,6 @@ class CRM_Contact_BAO_Query {
                   }
                   break;
 
-                //NYSS 13417
                 case 'civicrm_location_type':
                   $this->_tables[$tName] = "\nLEFT JOIN $tableName `$tName` ON `$tName`.id = $aName.location_type_id";
 
@@ -4067,7 +4066,7 @@ WHERE  $smartGroupClause
    */
   public function modifiedDates($values) {
     $this->_useDistinct = TRUE;
-
+    CRM_Core_Error::deprecatedWarning('function should not be reachable');
     // CRM-11281, default to added date if not set
     $fieldTitle = ts('Added Date');
     $fieldName = 'created_date';
@@ -5263,7 +5262,7 @@ civicrm_relationship.start_date > {$today}
 
     $this->appendFinancialTypeWhereAndFromToQueryStrings($where, $from);
 
-    $summary = ['total' => []];
+    $summary = ['total' => [], 'soft_credit' => ['count' => 0, 'avg' => 0, 'amount' => 0]];
     $this->addBasicStatsToSummary($summary, $where, $from);
 
     if (CRM_Contribute_BAO_Query::isSoftCreditOptionEnabled()) {
@@ -5827,7 +5826,10 @@ civicrm_relationship.start_date > {$today}
           }
           throw new CRM_Core_Exception(ts('Failed to interpret input for search'));
         }
-
+        $emojiWhere = CRM_Utils_SQL::handleEmojiInQuery($value);
+        if ($emojiWhere === '0 = 1') {
+          $value = $emojiWhere;
+        }
         $value = CRM_Utils_Type::escape($value, $dataType);
         // if we don't have a dataType we should assume
         if ($dataType == 'String' || $dataType == 'Text') {
@@ -5950,7 +5952,7 @@ INNER JOIN civicrm_relationship displayRelType ON ( displayRelType.contact_id_a 
 INNER JOIN $tableName transform_temp ON ( transform_temp.contact_id = displayRelType.contact_id_a OR transform_temp.contact_id = displayRelType.contact_id_b )
 ";
         $qcache['where'] = "
-AND displayRelType.relationship_type_id = {$this->_displayRelationshipType}
+WHERE displayRelType.relationship_type_id = {$this->_displayRelationshipType}
 AND   displayRelType.is_active = 1
 ";
       }
@@ -5971,7 +5973,7 @@ INNER JOIN $tableName transform_temp ON ( transform_temp.contact_id = displayRel
 ";
         }
         $qcache['where'] = "
-AND displayRelType.relationship_type_id = $relType
+WHERE displayRelType.relationship_type_id = $relType
 AND   displayRelType.is_active = 1
 ";
       }
@@ -5995,14 +5997,10 @@ AND   displayRelType.is_active = 1
       else {
         $from .= $qcache['from'];
       }
-      if (!strlen($where)) {
-        $where = " WHERE 1 ";
-      }
-      $where .= $qcache['where'];
+      $where = $qcache['where'];
       if (!empty($this->_tables['civicrm_case'])) {
         // Change the join on CiviCRM case so that it joins on the right contac from the relationship.
         $from = str_replace("ON civicrm_case_contact.contact_id = contact_a.id", "ON civicrm_case_contact.contact_id = transform_temp.contact_id", $from);
-        $where = str_replace("AND civicrm_case_contact.contact_id = contact_a.id", "AND civicrm_case_contact.contact_id = transform_temp.contact_id", $where);
         $where .= " AND displayRelType.case_id = civicrm_case_contact.case_id ";
       }
       if (!empty($this->_permissionFromClause) && !stripos($from, 'aclContactCache')) {
@@ -6861,7 +6859,7 @@ AND   displayRelType.is_active = 1
     GROUP BY currency";
 
     $dao = CRM_Core_DAO::executeQuery($query);
-
+    $summary['cancel'] = ['count' => 0, 'amount' => 0, 'avg' => 0];
     if ($dao->N <= 1) {
       if ($dao->fetch()) {
         $summary['cancel']['count'] = $dao->cancel_count;

@@ -289,7 +289,7 @@ inner join civicrm_contact $c2 on ${c2}.id=${ccc}.contact_id
 
   public function storeWhereHavingClauseArray() {
     if (!empty($this->_params['fields']['label_b_a']) && $this->_params['fields']['label_b_a'] == 1) {
-      $this->_whereClauses[] = '(contact_civireport.id != c2_civireport.id)';
+      $this->_whereClauses[] = '(contact_civireport.sort_name != c2_civireport.sort_name)';
     }
 
     //NYSS 14297
