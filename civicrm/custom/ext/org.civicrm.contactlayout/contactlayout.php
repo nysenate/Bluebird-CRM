@@ -131,10 +131,16 @@ function contactlayout_civicrm_pageRun(&$page) {
   if (get_class($page) === 'CRM_Contact_Page_View_Summary') {
     $contactID = $page->getVar('_contactId');
     if ($contactID) {
-      $defaultTabs = \Civi\Api4\Setting::get(FALSE)
-        ->addSelect('contactlayout_default_tabs')
-        ->execute()
-        ->first()['value'] ?? NULL;
+      try {
+        $defaultTabs = \Civi\Api4\Setting::get(FALSE)
+          ->addSelect('contactlayout_default_tabs')
+          ->execute()
+          ->first()['value'] ?? NULL;
+      }
+      catch (API_Exception $e) {
+        Civi::log()->warning(E::ts("Exception retrieving default tabs setting: %1", ['1' => $e->getMessage()]));
+        $defaultTabs = NULL;
+      }
       $layout = CRM_Contactlayout_BAO_ContactLayout::getLayout($contactID);
       if ($layout) {
         $profileBlocks = [];

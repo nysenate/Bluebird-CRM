@@ -7,9 +7,9 @@
  * extension.
  */
 class CRM_Tutorial_ExtensionUtil {
-  const SHORT_NAME = "tutorial";
-  const LONG_NAME = "org.civicrm.tutorial";
-  const CLASS_PREFIX = "CRM_Tutorial";
+  const SHORT_NAME = 'tutorial';
+  const LONG_NAME = 'org.civicrm.tutorial';
+  const CLASS_PREFIX = 'CRM_Tutorial';
 
   /**
    * Translate a string using the extension's domain.

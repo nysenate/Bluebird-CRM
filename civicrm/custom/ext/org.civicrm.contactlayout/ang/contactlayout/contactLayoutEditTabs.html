@@ -5,7 +5,7 @@
       {{:: ts('Customize Tabs') }}
     </button>
     <label ng-if="$ctrl.layout.tabs">{{:: ts('Overriding defaults') }}</label>
-    <label ng-if="!$ctrl.layout.tabs">{{:: ts('Using defaults') }}</label>
+    <label ng-if="!$ctrl.layout.tabs">{{:: $ctrl.isSystem ? ts('System defaults') : ts('Using defaults') }}</label>
   </div>
   <!--  Editable tabs -->
   <div ng-if="$ctrl.layout.tabs" ui-sortable="$ctrl.sortableOptions" ng-model="$ctrl.layout.tabs">
