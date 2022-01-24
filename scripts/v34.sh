@@ -39,6 +39,9 @@ $drush $instance cvapi extension.install key=org.civicrm.afform --quiet
 $drush $instance cvapi extension.uninstall key=nz.co.fuzion.innodbtriggers --quiet
 $drush $instance cvapi extension.uninstall key=org.civicrm.doctorwhen --quiet
 
+echo "remove previously disabled extension..."
+$execSql -i $instance -c "DELETE FROM civicrm_extension WHERE full_name = 'org.civicrm.api4';" -q
+
 echo "$prog: disable/uninstall old modules"
 $drush $instance pm-disable nyss_backup -y
 $drush $instance pm-uninstall nyss_backup -y
