@@ -31,13 +31,13 @@ if ! $readConfig --instance $instance --quiet; then
   exit 1
 fi
 
-echo "enable/disable/uninstall various extensions..."
+echo "enable/disable/install/uninstall various extensions..."
 $drush $instance cvapi extension.disable key=com.ginkgostreet.mosaicotoolbarconfig --quiet
-$drush $instance cvapi extension.enable key=mosaicoextras --quiet
+$drush $instance cvapi extension.install key=mosaicoextras --quiet
+$drush $instance cvapi extension.install key=org.civicrm.search_kit --quiet
+$drush $instance cvapi extension.install key=org.civicrm.afform --quiet
 $drush $instance cvapi extension.uninstall key=nz.co.fuzion.innodbtriggers --quiet
 $drush $instance cvapi extension.uninstall key=org.civicrm.doctorwhen --quiet
-$drush $instance cvapi extension.enable key=org.civicrm.search_kit --quiet
-$drush $instance cvapi extension.enable key=org.civicrm.afform --quiet
 
 echo "$prog: disable/uninstall old modules"
 $drush $instance pm-disable nyss_backup -y
