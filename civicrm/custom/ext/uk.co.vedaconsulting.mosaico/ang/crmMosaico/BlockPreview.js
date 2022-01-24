@@ -14,6 +14,19 @@
         scope.hs = crmUiHelp({file: 'CRM/Mailing/MailingUI'});
         scope.testContact = {email: CRM.crmMailing.defaultTestEmail};
         scope.testGroup = {gid: null};
+        //NYSS
+        scope.validateMultipleEmail = function(email) {
+          email = email.split(',');
+
+          // regex pattern for single email
+          var emailRegex = /\S+@\S+\.\S+/;
+
+          var validityArr = email.map(function(str){
+            return emailRegex.test(str.trim());
+          });
+
+          return ($.inArray(false, validityArr) == -1);
+        };
 
         scope.doPreview = function(mode) {
           scope.$eval(attr.onPreview, {
