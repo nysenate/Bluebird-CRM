@@ -60,5 +60,18 @@ $drush $instance civicrm-upgrade-db -y -q
 echo "upgrade extensions..."
 $drush $instance cvapi extension.upgrade --quiet
 
+echo "move note entity_table selections to option group..."
+sql="
+  SELECT @optgrp:=id FROM civicrm_option_group WHERE name = 'note_used_for';
+  DELETE FROM civicrm_option_value WHERE option_group_id = @optgrp AND (value = 'nyss_directmsg' OR value = 'nyss_contextmsg');
+  SELECT @maxval:=max(cast(weight as unsigned)) FROM civicrm_option_value WHERE option_group_id = @optgrp;
+  INSERT INTO civicrm_option_value
+    (option_group_id, label, value, name, grouping, filter, is_default, weight, is_optgroup, is_reserved, is_active, component_id, domain_id, visibility_id)
+  VALUES
+    (@optgrp, 'NYSS Direct Message', 'nyss_directmsg', 'NYSS Direct Message', NULL, 0, 0, @maxval + 1, 0, 1, 1, NULL, NULL, NULL),
+    (@optgrp, 'NYSS Contextual Message', 'nyss_contextmsg', 'NYSS Contextual Message', NULL, 0, 0, @maxval + 2, 0, 1, 1, NULL, NULL, NULL);
+"
+$execSql $instance -c "$sql" -q
+
 ## record completion
 echo "$prog: upgrade process is complete."
