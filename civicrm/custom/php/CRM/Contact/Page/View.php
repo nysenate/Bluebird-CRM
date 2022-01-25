@@ -377,8 +377,6 @@ class CRM_Contact_Page_View extends CRM_Core_Page {
     return CRM_Utils_System::url('civicrm/group', "reset=1&oid={$this->_contactId}");
   }
 
-}
-
   //NYSS 7337 restore https://github.com/civicrm/civicrm-core/pull/746/files
   function getSearchURL() {
     $qfKey = CRM_Utils_Request::retrieve('key', 'String', $this);
