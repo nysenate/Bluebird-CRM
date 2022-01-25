@@ -7,7 +7,7 @@
          on-item-reset="mosaicoCtrl.reset(mailing)"
          ng-show="!!mailing.template_options.mosaicoTemplate">
     </div>
-    <div ng-if="!mailing.template_options.mosaicoTemplate && mosaicoCtrl.templates.length">
+    <div class="crm-mosaico-template-category" ng-if="!mailing.template_options.mosaicoTemplate && mosaicoCtrl.templates.length">
       <div class="form-inline">
         <input class="form-control" ng-model="mosaicoCtrl.selectedCategory" ng-change="mosaicoCtrl.categoryFilter = mosaicoCtrl.categoryFilters[mosaicoCtrl.selectedCategory].filter" crm-ui-select="{data: mosaicoCtrl.categoryFilters, placeholder: ts('All Categories')}">
       </div>

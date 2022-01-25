@@ -50,3 +50,9 @@ ul#civicrm-menu {
 div.ui-dialog.crm-confirm {
   top: 200px !important;
 }
+
+/*14283*/
+.crm-mosaico-template-category {
+  line-height: 60px;
+  margin-top: -40px;
+}
