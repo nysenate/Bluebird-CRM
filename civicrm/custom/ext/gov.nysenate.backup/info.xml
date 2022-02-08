@@ -2,7 +2,7 @@
 <extension key="gov.nysenate.backup" type="module">
   <file>backup</file>
   <name>NYSS: Backup</name>
-  <description></description>
+  <description/>
   <license>AGPL-3.0</license>
   <maintainer>
     <author>FIXME</author>
@@ -17,7 +17,7 @@
   <compatibility>
     <ver>5.x</ver>
   </compatibility>
-  <comments></comments>
+  <comments/>
   <civix>
     <namespace>CRM/Backup</namespace>
   </civix>
