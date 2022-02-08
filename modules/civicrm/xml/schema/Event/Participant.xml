@@ -4,6 +4,7 @@
   <base>CRM/Event</base>
   <class>Participant</class>
   <name>civicrm_participant</name>
+  <description>Records of contacts' attendance and roles in events.</description>
   <add>1.7</add>
   <log>true</log>
   <icon>fa-ticket</icon>
@@ -101,13 +102,14 @@
   <field>
     <name>role_id</name>
     <uniqueName>participant_role_id</uniqueName>
-    <title>Participant Role</title>
+    <title>Participant Role ID</title>
     <pseudoconstant>
       <optionGroupName>participant_role</optionGroupName>
     </pseudoconstant>
     <html>
       <type>Select</type>
       <multiple>1</multiple>
+      <label>Participant Role</label>
     </html>
     <serialize>SEPARATOR_TRIMMED</serialize>
     <headerPattern>/(participant.)?(role)$/i</headerPattern>
@@ -271,6 +273,12 @@
       <label>Campaign</label>
     </html>
     <add>3.4</add>
+    <pseudoconstant>
+      <table>civicrm_campaign</table>
+      <keyColumn>id</keyColumn>
+      <labelColumn>title</labelColumn>
+      <prefetch>FALSE</prefetch>
+    </pseudoconstant>
   </field>
   <foreignKey>
     <name>campaign_id</name>

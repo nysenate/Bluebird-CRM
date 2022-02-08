@@ -24,15 +24,6 @@ function financialacls_civicrm_container($container) {
 }
 
 /**
- * Implements hook_civicrm_xmlMenu().
- *
- * @link https://docs.civicrm.org/dev/en/latest/hooks/hook_civicrm_xmlMenu
- */
-function financialacls_civicrm_xmlMenu(&$files) {
-  _financialacls_civix_civicrm_xmlMenu($files);
-}
-
-/**
  * Implements hook_civicrm_install().
  *
  * @link https://docs.civicrm.org/dev/en/latest/hooks/hook_civicrm_install
@@ -87,54 +78,6 @@ function financialacls_civicrm_upgrade($op, CRM_Queue_Queue $queue = NULL) {
 }
 
 /**
- * Implements hook_civicrm_managed().
- *
- * Generate a list of entities to create/deactivate/delete when this module
- * is installed, disabled, uninstalled.
- *
- * @link https://docs.civicrm.org/dev/en/latest/hooks/hook_civicrm_managed
- */
-function financialacls_civicrm_managed(&$entities) {
-  _financialacls_civix_civicrm_managed($entities);
-}
-
-/**
- * Implements hook_civicrm_caseTypes().
- *
- * Generate a list of case-types.
- *
- * Note: This hook only runs in CiviCRM 4.4+.
- *
- * @link https://docs.civicrm.org/dev/en/latest/hooks/hook_civicrm_caseTypes
- */
-function financialacls_civicrm_caseTypes(&$caseTypes) {
-  _financialacls_civix_civicrm_caseTypes($caseTypes);
-}
-
-/**
- * Implements hook_civicrm_angularModules().
- *
- * Generate a list of Angular modules.
- *
- * Note: This hook only runs in CiviCRM 4.5+. It may
- * use features only available in v4.6+.
- *
- * @link https://docs.civicrm.org/dev/en/latest/hooks/hook_civicrm_angularModules
- */
-function financialacls_civicrm_angularModules(&$angularModules) {
-  _financialacls_civix_civicrm_angularModules($angularModules);
-}
-
-/**
- * Implements hook_civicrm_alterSettingsFolders().
- *
- * @link https://docs.civicrm.org/dev/en/latest/hooks/hook_civicrm_alterSettingsFolders
- */
-function financialacls_civicrm_alterSettingsFolders(&$metaDataFolders = NULL) {
-  _financialacls_civix_civicrm_alterSettingsFolders($metaDataFolders);
-}
-
-/**
  * Implements hook_civicrm_entityTypes().
  *
  * Declare entity types provided by this module.
@@ -143,13 +86,6 @@ function financialacls_civicrm_alterSettingsFolders(&$metaDataFolders = NULL) {
  */
 function financialacls_civicrm_entityTypes(&$entityTypes) {
   _financialacls_civix_civicrm_entityTypes($entityTypes);
-}
-
-/**
- * Implements hook_civicrm_thems().
- */
-function financialacls_civicrm_themes(&$themes) {
-  _financialacls_civix_civicrm_themes($themes);
 }
 
 /**
@@ -305,17 +241,39 @@ function _financialacls_civi_api4_authorizeContribution(\Civi\Api4\Event\Authori
   if (!financialacls_is_acl_limiting_enabled()) {
     return;
   }
-  if ($e->getActionName() === 'delete' && $e->getEntityName() === 'Contribution') {
-    $contributionID = $e->getRecord()['id'];
-    // First check contribution financial type
-    $financialType = CRM_Core_PseudoConstant::getName('CRM_Contribute_DAO_Contribution', 'financial_type_id', CRM_Core_DAO::getFieldValue('CRM_Contribute_DAO_Contribution', $contributionID, 'financial_type_id'));
-    // Now check permissioned line items & permissioned contribution
-    if (!CRM_Core_Permission::check('delete contributions of type ' . $financialType, $e->getUserID()) ||
-      !CRM_Financial_BAO_FinancialType::checkPermissionedLineItems($contributionID, 'delete', FALSE, $e->getUserID())
-    ) {
+  if ($e->getEntityName() === 'Contribution') {
+    $contributionID = $e->getRecord()['id'] ?? NULL;
+    $financialTypeID = $e->getRecord()['financial_type_id'] ?? CRM_Core_DAO::getFieldValue('CRM_Contribute_DAO_Contribution', $contributionID, 'financial_type_id');
+    if (!CRM_Core_Permission::check(_financialacls_getRequiredPermission($financialTypeID, $e->getActionName()), $e->getUserID())) {
       $e->setAuthorized(FALSE);
     }
+    if ($e->getActionName() === 'delete') {
+      // First check contribution financial type
+      // Now check permissioned line items & permissioned contribution
+      if (!CRM_Financial_BAO_FinancialType::checkPermissionedLineItems($contributionID, 'delete', FALSE, $e->getUserID())
+      ) {
+        $e->setAuthorized(FALSE);
+      }
+    }
   }
+}
+
+/**
+ * Get the permission required to perform this action on this financial type.
+ *
+ * @param int $financialTypeID
+ * @param string $action
+ *
+ * @return string
+ */
+function _financialacls_getRequiredPermission(int $financialTypeID, string $action): string {
+  $financialType = CRM_Core_PseudoConstant::getName('CRM_Contribute_DAO_Contribution', 'financial_type_id', $financialTypeID);
+  $actionMap = [
+    'create' => 'add',
+    'update' => 'edit',
+    'delete' => 'delete',
+  ];
+  return $actionMap[$action] . ' contributions of type ' . $financialType;
 }
 
 /**
@@ -369,6 +327,16 @@ function financialacls_civicrm_fieldOptions($entity, $field, &$options, $params)
  */
 function financialacls_is_acl_limiting_enabled(): bool {
   return (bool) Civi::settings()->get('acl_financial_type');
+}
+
+/**
+ * Clear the statics cache when the setting is enabled or disabled.
+ *
+ * Note the setting will eventually disappear in favour of whether
+ * the extension is enabled or disabled.
+ */
+function financialacls_toggle() {
+  unset(\Civi::$statics['CRM_Financial_BAO_FinancialType']);
 }
 
 // --- Functions below this ship commented out. Uncomment as required. ---

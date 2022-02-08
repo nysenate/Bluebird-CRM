@@ -129,6 +129,34 @@ class CRM_Event_Form_Registration_Register extends CRM_Event_Form_Registration {
   }
 
   /**
+   * Get the active UFGroups (profiles) on this form
+   * Many forms load one or more UFGroups (profiles).
+   * This provides a standard function to retrieve the IDs of those profiles from the form
+   * so that you can implement things such as "is is_captcha field set on any of the active profiles on this form?"
+   *
+   * NOT SUPPORTED FOR USE OUTSIDE CORE EXTENSIONS - Added for reCAPTCHA core extension.
+   *
+   * @return array
+   */
+  public function getUFGroupIDs() {
+    $ufGroupIDs = [];
+    if (!empty($this->_values['custom_pre_id'])) {
+      $ufGroupIDs[] = $this->_values['custom_pre_id'];
+    }
+    if (!empty($this->_values['custom_post_id'])) {
+      // custom_post_id can be an array (because we can have multiple for events).
+      // It is handled as array for contribution page as well though they don't support multiple profiles.
+      if (!is_array($this->_values['custom_post_id'])) {
+        $ufGroupIDs[] = $this->_values['custom_post_id'];
+      }
+      else {
+        $ufGroupIDs = array_merge($ufGroupIDs, $this->_values['custom_post_id']);
+      }
+    }
+    return $ufGroupIDs;
+  }
+
+  /**
    * Set variables up before form is built.
    *
    * @throws \CRM_Core_Exception
@@ -812,7 +840,7 @@ class CRM_Event_Form_Registration_Register extends CRM_Event_Form_Registration {
       is_array($form->_additionalParticipantIds) &&
       $numberAdditionalParticipants > count($form->_additionalParticipantIds)
     ) {
-      $errors['additional_participants'] = ts("Oops. It looks like you are trying to increase the number of additional people you are registering for. You can confirm registration for a maximum of %1 additional people.", [1 => count($form->_additionalParticipantIds)]);
+      $errors['additional_participants'] = ts("It looks like you are trying to increase the number of additional people you are registering for. You can confirm registration for a maximum of %1 additional people.", [1 => count($form->_additionalParticipantIds)]);
     }
 
     //don't allow to register w/ waiting if enough spaces available.
@@ -820,7 +848,7 @@ class CRM_Event_Form_Registration_Register extends CRM_Event_Form_Registration {
       if (!is_numeric($form->_availableRegistrations) ||
         (empty($fields['priceSetId']) && CRM_Utils_Array::value('additional_participants', $fields) < $form->_availableRegistrations)
       ) {
-        $errors['bypass_payment'] = ts("Oops. There are enough available spaces in this event. You can not add yourself to the waiting list.");
+        $errors['bypass_payment'] = ts("You have not been added to the waiting list because there are spaces available for this event. We recommend registering yourself for an available space instead.");
       }
     }
 
@@ -1199,7 +1227,7 @@ class CRM_Event_Form_Registration_Register extends CRM_Event_Form_Registration {
               $status = ts("It looks like you are already registered for this event. If you want to change your registration, or you feel that you've received this message in error, please contact the site administrator.");
             }
             $status .= ' ' . ts('You can also <a href="%1">register another participant</a>.', [1 => $registerUrl]);
-            CRM_Core_Session::singleton()->setStatus($status, ts('Oops.'), 'alert');
+            CRM_Core_Session::singleton()->setStatus($status, '', 'alert');
             $url = CRM_Utils_System::url('civicrm/event/info',
               "reset=1&id={$form->_values['event']['id']}&noFullMsg=true"
             );
@@ -1216,7 +1244,7 @@ class CRM_Event_Form_Registration_Register extends CRM_Event_Form_Registration {
 
           if ($isAdditional) {
             $status = ts("It looks like this participant is already registered for this event. If you want to change your registration, or you feel that you've received this message in error, please contact the site administrator.");
-            CRM_Core_Session::singleton()->setStatus($status, ts('Oops.'), 'alert');
+            CRM_Core_Session::singleton()->setStatus($status, '', 'alert');
             return $participant->id;
           }
         }

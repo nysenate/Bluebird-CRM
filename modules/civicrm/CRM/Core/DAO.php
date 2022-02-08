@@ -33,6 +33,13 @@ require_once 'CRM/Core/I18n.php';
 class CRM_Core_DAO extends DB_DataObject {
 
   /**
+   * Primary key field(s).
+   *
+   * @var string[]
+   */
+  public static $_primaryKey = ['id'];
+
+  /**
    * How many times has this instance been cloned.
    *
    * @var int
@@ -107,8 +114,6 @@ class CRM_Core_DAO extends DB_DataObject {
    */
   public static $_factory = NULL;
 
-  public static $_checkedSqlFunctionsExist = FALSE;
-
   /**
    * https://issues.civicrm.org/jira/browse/CRM-17748
    * internal variable for DAO to hold per-query settings
@@ -135,6 +140,15 @@ class CRM_Core_DAO extends DB_DataObject {
     $className = static::class;
     CRM_Core_Error::deprecatedWarning("$className needs to be regenerated. Missing getEntityTitle method.");
     return CRM_Core_DAO_AllCoreTables::getBriefName($className);
+  }
+
+  /**
+   * Returns user-friendly description of this entity.
+   *
+   * @return string|null
+   */
+  public static function getEntityDescription() {
+    return NULL;
   }
 
   public function __clone() {
@@ -286,9 +300,9 @@ class CRM_Core_DAO extends DB_DataObject {
     $daoName = get_class($this);
     $handled = FALSE;
 
-    if (!$handled && $dbName == 'contact_sub_type') {
-      //coming up with a rule to set this is too complex let's not set it
-      $handled = TRUE;
+    if (in_array($dbName, ['contact_sub_type', 'email_greeting_id', 'postal_greeting_id', 'addressee_id'], TRUE)) {
+      //coming up with a rule to set these is too complex - skip
+      return;
     }
 
     // Pick an option value if needed
@@ -904,7 +918,9 @@ class CRM_Core_DAO extends DB_DataObject {
 
     \CRM_Utils_Hook::pre($hook, $entityName, $record['id'] ?? NULL, $record);
     $instance = new $className();
-    $instance->copyValues($record);
+    // Ensure fields exist before attempting to write to them
+    $values = array_intersect_key($record, self::getSupportedFields());
+    $instance->copyValues($values);
     $instance->save();
     \CRM_Utils_Hook::post($hook, $entityName, $instance->id, $instance);
 
@@ -918,7 +934,7 @@ class CRM_Core_DAO extends DB_DataObject {
    * @return static[]
    * @throws CRM_Core_Exception
    */
-  public static function writeRecords(array $records) {
+  public static function writeRecords(array $records): array {
     $results = [];
     foreach ($records as $record) {
       $results[] = static::writeRecord($record);
@@ -943,13 +959,19 @@ class CRM_Core_DAO extends DB_DataObject {
     if (empty($record['id'])) {
       throw new CRM_Core_Exception("Cannot delete {$entityName} with no id.");
     }
+    CRM_Utils_Type::validate($record['id'], 'Positive');
 
     CRM_Utils_Hook::pre('delete', $entityName, $record['id'], $record);
     $instance = new $className();
     $instance->id = $record['id'];
-    if (!$instance->delete()) {
+    // Load complete object for the sake of hook_civicrm_post, below
+    $instance->find(TRUE);
+    if (!$instance || !$instance->delete()) {
       throw new CRM_Core_Exception("Could not delete {$entityName} id {$record['id']}");
     }
+    // For other operations this hook is passed an incomplete object and hook listeners can load if needed.
+    // But that's not possible with delete because it's gone from the database by the time this hook is called.
+    // So in this case the object has been pre-loaded so hook listeners have access to the complete record.
     CRM_Utils_Hook::post('delete', $entityName, $record['id'], $instance);
 
     return $instance;
@@ -1957,11 +1979,12 @@ LIKE %1
    *
    * @param int $entityID
    * @param int $newEntityID
+   * @param string $parentOperation
    */
-  public function copyCustomFields($entityID, $newEntityID) {
+  public function copyCustomFields($entityID, $newEntityID, $parentOperation = NULL) {
     $entity = CRM_Core_DAO_AllCoreTables::getBriefName(get_class($this));
     $tableName = CRM_Core_DAO_AllCoreTables::getTableForClass(get_class($this));
-    // Obtain custom values for old event
+    // Obtain custom values for the old entity.
     $customParams = $htmlType = [];
     $customValues = CRM_Core_BAO_CustomValueTable::getEntityValues($entityID, $entity);
 
@@ -1995,8 +2018,8 @@ LIKE %1
         }
       }
 
-      // Save Custom Fields for new Event
-      CRM_Core_BAO_CustomValueTable::postProcess($customParams, $tableName, $newEntityID, $entity);
+      // Save Custom Fields for new Entity.
+      CRM_Core_BAO_CustomValueTable::postProcess($customParams, $tableName, $newEntityID, $entity, $parentOperation ?? 'create');
     }
 
     // copy activity attachments ( if any )
@@ -2452,23 +2475,6 @@ SELECT contact_id
   }
 
   /**
-   * Because sql functions are sometimes lost, esp during db migration, we check here to avoid numerous support requests
-   * @see http://issues.civicrm.org/jira/browse/CRM-13822
-   * TODO: Alternative solutions might be
-   *  * Stop using functions and find another way to strip numeric characters from phones
-   *  * Give better error messages (currently a missing fn fatals with "unknown error")
-   */
-  public static function checkSqlFunctionsExist() {
-    if (!self::$_checkedSqlFunctionsExist) {
-      self::$_checkedSqlFunctionsExist = TRUE;
-      $dao = CRM_Core_DAO::executeQuery("SHOW function status WHERE db = database() AND name = 'civicrm_strip_non_numeric'");
-      if (!$dao->fetch()) {
-        self::triggerRebuild();
-      }
-    }
-  }
-
-  /**
    * Wrapper function to drop triggers.
    *
    * @param string $tableName
@@ -2517,8 +2523,7 @@ SELECT contact_id
   /**
    * Find all records which refer to this entity.
    *
-   * @return array
-   *   Array of objects referencing this
+   * @return CRM_Core_DAO[]
    */
   public function findReferences() {
     $links = self::getReferencesToTable(static::getTableName());
@@ -2541,7 +2546,7 @@ SELECT contact_id
   }
 
   /**
-   * @return array
+   * @return array{name: string, type: string, count: int, table: string|null, key: string|null}[]
    *   each item has keys:
    *   - name: string
    *   - type: string
@@ -2556,7 +2561,7 @@ SELECT contact_id
     foreach ($links as $refSpec) {
       /** @var $refSpec CRM_Core_Reference_Interface */
       $count = $refSpec->getReferenceCount($this);
-      if ($count['count'] != 0) {
+      if (!empty($count['count'])) {
         $counts[] = $count;
       }
     }
@@ -2582,7 +2587,7 @@ SELECT contact_id
    * @param string $tableName
    *   Table referred to.
    *
-   * @return array
+   * @return CRM_Core_Reference_Interface[]
    *   structure of table and column, listing every table with a
    *   foreign key reference to $tableName, and the column where the key appears.
    */
@@ -2619,7 +2624,12 @@ SELECT contact_id
     $contactReferences = [];
     $coreReferences = CRM_Core_DAO::getReferencesToTable('civicrm_contact');
     foreach ($coreReferences as $coreReference) {
-      if (!is_a($coreReference, 'CRM_Core_Reference_Dynamic')) {
+      if (
+        // Exclude option values
+        !is_a($coreReference, 'CRM_Core_Reference_Dynamic') &&
+        // Exclude references to other columns
+        $coreReference->getTargetKey() === 'id'
+      ) {
         $contactReferences[$coreReference->getReferenceTable()][] = $coreReference->getReferenceKey();
       }
     }
@@ -2879,20 +2889,9 @@ SELECT contact_id
    */
   public static function createSQLFilter($fieldName, $filter, $type = NULL, $alias = NULL, $returnSanitisedArray = FALSE) {
     foreach ($filter as $operator => $criteria) {
-      if (!CRM_Core_BAO_SchemaHandler::databaseSupportsUTF8MB4()) {
-        foreach ((array) $criteria as $criterion) {
-          if (!empty($criterion) && !is_numeric($criterion)
-            // The first 2 criteria are redundant but are added as they
-            // seem like they would
-            // be quicker than this 3rd check.
-            && max(array_map('ord', str_split($criterion))) >= 240) {
-            // String contains unsupported emojis.
-            // We return a clause that resolves to false as an emoji string by definition cannot be saved.
-            // note that if we return just 0 for false if gets lost in empty checks.
-            // https://stackoverflow.com/questions/16496554/can-php-detect-4-byte-encoded-utf8-chars
-            return '0 = 1';
-          }
-        }
+      $emojiFilter = CRM_Utils_SQL::handleEmojiInQuery($criteria);
+      if ($emojiFilter === '0 = 1') {
+        return $emojiFilter;
       }
 
       if (in_array($operator, self::acceptedSQLOperators(), TRUE)) {
@@ -3080,7 +3079,7 @@ SELECT contact_id
         $relatedEntities = $this->buildOptions('entity_table', 'get');
         foreach ((array) $relatedEntities as $table => $ent) {
           if (!empty($ent)) {
-            $ent = CRM_Core_DAO_AllCoreTables::getBriefName(CRM_Core_DAO_AllCoreTables::getClassForTable($table));
+            $ent = CRM_Core_DAO_AllCoreTables::getEntityNameForTable($table);
             $subquery = CRM_Utils_SQL::mergeSubquery($ent);
             if ($subquery) {
               $relatedClauses[] = "(entity_table = '$table' AND entity_id " . implode(' AND entity_id ', $subquery) . ")";

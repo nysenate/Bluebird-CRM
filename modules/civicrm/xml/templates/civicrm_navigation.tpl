@@ -34,7 +34,7 @@ INSERT INTO `civicrm_dashboard`
 -- event badge
 INSERT INTO civicrm_print_label (title, name, description, label_format_name, label_type_id, is_default, is_reserved, is_active, data)
 VALUES
-('Annual Conference Hanging Badge (Avery 5395)', 'Annual_Conference_Hanging_Badge', 'For our annual conference', 'Avery 5395', 1, 1, 1, 1, '{literal}{"title":"Annual Conference Hanging Badge (Avery 5395)","label_format_name":"Avery 5395","description":"For our annual conference","token":{"1":"{event.title}","2":"{contact.display_name}","3":"{contact.current_employer}","4":"{event.start_date}"},"font_name":{"1":"dejavusans","2":"dejavusans","3":"dejavusans","4":"dejavusans"},"font_size":{"1":"9","2":"20","3":"15","4":"9"},"font_style":{"1":"","2":"","3":"","4":""},"text_alignment":{"1":"L","2":"C","3":"C","4":"R"},"barcode_type":"barcode","barcode_alignment":"R","image_1":"","image_2":"","is_default":"1","is_active":"1","is_reserved":"1","_qf_default":"Layout:next","_qf_Layout_refresh":"Save and Preview"}{/literal}');
+('Annual Conference Hanging Badge (Avery 5395)', 'Annual_Conference_Hanging_Badge', 'For our annual conference', 'Avery 5395', 1, 1, 1, 1, '{literal}{"title":"Annual Conference Hanging Badge (Avery 5395)","label_format_name":"Avery 5395","description":"For our annual conference","token":{"1":"{event.title}","2":"{contact.display_name}","3":"{contact.current_employer}","4":"{event.start_date|crmDate:\"%B %E%f\"}"},"font_name":{"1":"dejavusans","2":"dejavusans","3":"dejavusans","4":"dejavusans"},"font_size":{"1":"9","2":"20","3":"15","4":"9"},"font_style":{"1":"","2":"","3":"","4":""},"text_alignment":{"1":"L","2":"C","3":"C","4":"R"},"barcode_type":"barcode","barcode_alignment":"R","image_1":"","image_2":"","is_default":"1","is_active":"1","is_reserved":"1","_qf_default":"Layout:next","_qf_Layout_refresh":"Save and Preview"}{/literal}');
 
 -- navigation
 
@@ -94,8 +94,7 @@ VALUES
     ( @domainID, 'civicrm/import/activity?reset=1',                         '{ts escape="sql" skip="true"}Import Activities{/ts}',      'Import Activities',    'import contacts',  '',             @contactlastID, '1', '1',   8 ),
     ( @domainID, 'civicrm/group/add?reset=1',                               '{ts escape="sql" skip="true"}New Group{/ts}',              'New Group',            'edit groups',      '',             @contactlastID, '1', NULL,  9 ),
     ( @domainID, 'civicrm/group?reset=1',                                   '{ts escape="sql" skip="true"}Manage Groups{/ts}',          'Manage Groups',        'access CiviCRM',   '',             @contactlastID, '1', '1',   10 ),
-    ( @domainID, 'civicrm/tag?reset=1&action=add',                    '{ts escape="sql" skip="true"}New Tag{/ts}',                'New Tag',              'manage tags', '',           @contactlastID, '1', NULL, 11 ),
-    ( @domainID, 'civicrm/tag?reset=1',                               '{ts escape="sql" skip="true"}Manage Tags (Categories){/ts}', 'Manage Tags (Categories)', 'manage tags', '',     @contactlastID, '1','1', 12 ),
+    ( @domainID, 'civicrm/tag?reset=1',                               '{ts escape="sql" skip="true"}Manage Tags{/ts}', 'Manage Tags (Categories)', 'manage tags', '',     @contactlastID, '1','1', 12 ),
     ( @domainID, 'civicrm/contact/deduperules?reset=1',  '{ts escape="sql" skip="true"}Find and Merge Duplicate Contacts{/ts}', 'Find and Merge Duplicate Contacts', 'administer dedupe rules,merge duplicate contacts', 'OR', @contactlastID, '1', NULL, 13 );
 
 INSERT INTO civicrm_navigation
@@ -292,7 +291,7 @@ INSERT INTO civicrm_navigation
 VALUES
     ( @domainID, 'civicrm/admin/custom/group?reset=1',      '{ts escape="sql" skip="true"}Custom Fields{/ts}', 'Custom Fields',                             'administer CiviCRM', '',   @CustomizelastID, '1', NULL, 1 ),
     ( @domainID, 'civicrm/admin/uf/group?reset=1',          '{ts escape="sql" skip="true"}Profiles{/ts}', 'Profiles',                                       'administer CiviCRM', '',   @CustomizelastID, '1', NULL, 2 ),
-    ( @domainID, 'civicrm/tag?reset=1',               '{ts escape="sql" skip="true"}Tags (Categories){/ts}', 'Tags (Categories)',                     'administer CiviCRM', '',   @CustomizelastID, '1', NULL, 3 ),
+    ( @domainID, 'civicrm/tag?reset=1',               '{ts escape="sql" skip="true"}Tags{/ts}', 'Tags (Categories)',                     'administer CiviCRM', '',   @CustomizelastID, '1', NULL, 3 ),
     ( @domainID, 'civicrm/admin/options/activity_type?reset=1', '{ts escape="sql" skip="true"}Activity Types{/ts}', 'Activity Types',   'administer CiviCRM', '',   @CustomizelastID, '1', NULL, 4 ),
     ( @domainID, 'civicrm/admin/reltype?reset=1',           '{ts escape="sql" skip="true"}Relationship Types{/ts}', 'Relationship Types',                   'administer CiviCRM', '',   @CustomizelastID, '1', NULL, 5 ),
     ( @domainID, 'civicrm/admin/options/subtype?reset=1',   '{ts escape="sql" skip="true"}Contact Types{/ts}','Contact Types',                              'administer CiviCRM', '',   @CustomizelastID, '1', NULL, 6 ),
@@ -379,7 +378,6 @@ INSERT INTO civicrm_navigation
 VALUES
 
     ( @domainID, 'civicrm/admin/setting/component?reset=1',             '{ts escape="sql" skip="true"}Components{/ts}', 'Enable Components',                                    'administer CiviCRM', '', @systemSettingslastID, '1', NULL, 1 ),
-    ( @domainID, 'civicrm/a/#/cxn',                                     '{ts escape="sql" skip="true"}Connections{/ts}', 'Connections',                                         'administer CiviCRM', '', @systemSettingslastID, '1', NULL, 2 ),
     ( @domainID, 'civicrm/admin/extensions?reset=1',                    '{ts escape="sql" skip="true"}Extensions{/ts}', 'Manage Extensions',                                    'administer CiviCRM', '', @systemSettingslastID, '1', 1,    3 ),
 
     ( @domainID, 'civicrm/admin/setting/updateConfigBackend?reset=1',   '{ts escape="sql" skip="true"}Cleanup Caches and Update Paths{/ts}', 'Cleanup Caches and Update Paths', 'administer CiviCRM', '', @systemSettingslastID, '1', NULL, 4 ),

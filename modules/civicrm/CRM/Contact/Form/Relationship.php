@@ -139,19 +139,19 @@ class CRM_Contact_Form_Relationship extends CRM_Core_Form {
     // Set page title based on action
     switch ($this->_action) {
       case CRM_Core_Action::VIEW:
-        CRM_Utils_System::setTitle(ts('View Relationship for %1', [1 => $this->_display_name_a]));
+        $this->setTitle(ts('View Relationship for %1', [1 => $this->_display_name_a]));
         break;
 
       case CRM_Core_Action::ADD:
-        CRM_Utils_System::setTitle(ts('Add Relationship for %1', [1 => $this->_display_name_a]));
+        $this->setTitle(ts('Add Relationship for %1', [1 => $this->_display_name_a]));
         break;
 
       case CRM_Core_Action::UPDATE:
-        CRM_Utils_System::setTitle(ts('Edit Relationship for %1', [1 => $this->_display_name_a]));
+        $this->setTitle(ts('Edit Relationship for %1', [1 => $this->_display_name_a]));
         break;
 
       case CRM_Core_Action::DELETE:
-        CRM_Utils_System::setTitle(ts('Delete Relationship for %1', [1 => $this->_display_name_a]));
+        $this->setTitle(ts('Delete Relationship for %1', [1 => $this->_display_name_a]));
         break;
     }
 
@@ -297,7 +297,7 @@ class CRM_Contact_Form_Relationship extends CRM_Core_Form {
       [
         'options' => ['' => ts('- select -')] + $relationshipList,
         'class' => 'huge',
-        'placeholder' => '- select -',
+        'placeholder' => ts('- select -'),
         'option_url' => 'civicrm/admin/reltype',
         'option_context' => [
           'contact_id' => $this->_contactId,

@@ -30,66 +30,53 @@
         {ts}Contact Details{/ts}
       </div><!-- /.crm-accordion-header -->
       <div class="crm-accordion-body" id="contactDetails">
-    <table>
-      <tr>
-        <td>
-        {include file="CRM/Contact/Form/Edit/$contactType.tpl"}
-        <span class="crm-button crm-button_qf_Contact_refresh_dedupe">
-            {$form._qf_Contact_refresh_dedupe.html}
-        </span>
-        </td>
-      </tr>
-      <tr>
-        <td>
-        {foreach from = $editOptions item ="title" key="name"}
-        {if $name eq "Address"}
-                {include file="CRM/Contact/Form/Edit/$name.tpl"}
-        {/if}
-        {/foreach}
-        </td>
-      </tr>
-       
-      <tr>
-        <td>
-          <div class="subHeader">Communication Details</div>
-        </td>
-      </tr>
-      <tr>
-        <td>
+        <div id="contactDetails">
+          <div class="crm-section contact_basic_information-section">
+          {include file="CRM/Contact/Form/Edit/$contactType.tpl"}
+          </div>
           <table class="crm-section contact_information-section form-layout-compressed">
             {foreach from=$blocks item="label" key="block"}
               {include file="CRM/Contact/Form/Edit/$block.tpl"}
             {/foreach}
           </table>
-        </td>
-      </tr>
-        
-      {if $contactType eq "Individual"}
-      <tr>
-        <td>
-            <div class="subHeader">Employment</div>
-        </td>
-      </tr>
-      <tr>
-        <td>
-          <table class="form-layout-compressed individual-contact-details">
-          <tr>
-            <td>
-              {$form.employer_id.label}&nbsp;{help id="id-current-employer" file="CRM/Contact/Form/Contact.hlp"}<br />
-              {$form.employer_id.html}
-            </td>
-            <td>
-              {$form.job_title.label}<br />
-              {$form.job_title.html}
-            </td>
-          </tr>
+          <table class="crm-section contact_source-section form-layout-compressed">
+            <tr class="last-row">
+              <td>{$form.contact_source.label} {help id="id-source"}<br />
+                {$form.contact_source.html|crmAddClass:twenty}
+              </td>
+              <td>{$form.external_identifier.label}&nbsp;{help id="id-external-id"}<br />
+                {$form.external_identifier.html}
+              </td>
+              {if $contactId}
+                <td>
+                  <label for="internal_identifier_display">{ts}Contact ID{/ts} {help id="id-contact-id"}</label><br />
+                  <input id="internal_identifier_display" type="text" class="crm-form-text six" size="6" readonly="readonly" value="{$contactId}">
+                </td>
+              {/if}
+            </tr>
           </table>
-        </td>
-      </tr>
-    {/if}
-    </table>
- </div><!-- /.crm-accordion-body -->
-</div><!-- /.crm-accordion-wrapper -->
+          <table class="image_URL-section form-layout-compressed">
+            <tr>
+              <td>
+                {$form.image_URL.label}&nbsp;&nbsp;{help id="id-upload-image" file="CRM/Contact/Form/Contact.hlp"}<br />
+                {$form.image_URL.html|crmAddClass:twenty}
+                {if !empty($imageURL)}
+                {include file="CRM/Contact/Page/ContactImage.tpl"}
+                {/if}
+              </td>
+            </tr>
+          </table>
+
+          {*add dupe buttons *}
+          {$form._qf_Contact_refresh_dedupe.html}
+          {if !empty($isDuplicate)}
+            &nbsp;&nbsp;
+            {$form._qf_Contact_upload_duplicate.html}
+          {/if}
+          <div class="spacer"></div>
+        </div>
+      </div><!-- /.crm-accordion-body -->
+    </div><!-- /.crm-accordion-wrapper -->
 
 {*NYSS manually insert indiv custom fields so we can control layout/eliminate dups*}
 {if $contactType eq "Individual"}
@@ -154,7 +141,7 @@
     {foreach from = $editOptions item = "title" key="name"}
       {if $name eq 'CustomData' }
         <div id='customData'>{include file="CRM/Contact/Form/Edit/CustomData.tpl"}</div>
-      {elseif $name neq "Address"}
+      {else}
         {include file="CRM/Contact/Form/Edit/$name.tpl"}
       {/if}
     {/foreach}

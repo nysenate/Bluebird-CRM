@@ -9,6 +9,8 @@
  +--------------------------------------------------------------------+
  */
 
+use Civi\Token\TokenProcessor;
+
 /**
  * @package CRM
  * @copyright CiviCRM LLC https://civicrm.org/licensing
@@ -72,6 +74,18 @@ abstract class CRM_Core_Form_Task extends CRM_Core_Form {
    * @var string
    */
   public static $entityShortname = NULL;
+
+
+  /**
+   * Rows to act on.
+   *
+   * e.g
+   *  [
+   *    ['contact_id' => 4, 'participant_id' => 6, 'schema' => ['contactId' => 5, 'participantId' => 6],
+   *  ]
+   * @var array
+   */
+  protected $rows = [];
 
   /**
    * Set where the browser should be directed to next.
@@ -336,6 +350,47 @@ SELECT contact_id
   public function getEntityAliasField() {
     CRM_Core_Error::deprecatedFunctionWarning('function should be overridden');
     return $this::$entityShortname . '_id';
+  }
+
+  /**
+   * List available tokens for this form.
+   *
+   * @return array
+   */
+  public function listTokens() {
+    $tokenProcessor = new TokenProcessor(Civi::dispatcher(), ['schema' => $this->getTokenSchema()]);
+    return $tokenProcessor->listTokens();
+  }
+
+  /**
+   * Get the token processor schema required to list any tokens for this task.
+   *
+   * @return array
+   */
+  protected function getTokenSchema(): array {
+    return ['contactId'];
+  }
+
+  /**
+   * Get the rows from the results.
+   *
+   * @return array
+   */
+  protected function getRows(): array {
+    $rows = [];
+    foreach ($this->getContactIDs() as $contactID) {
+      $rows[] = ['contact_id' => $contactID, 'schema' => ['contactId' => $contactID]];
+    }
+    return $rows;
+  }
+
+  /**
+   * Get the relevant contact IDs.
+   *
+   * @return array
+   */
+  protected function getContactIDs(): array {
+    return $this->_contactIds ?? [];
   }
 
 }

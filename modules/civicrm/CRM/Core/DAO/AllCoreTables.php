@@ -56,17 +56,17 @@ class CRM_Core_DAO_AllCoreTables {
   /**
    * (Quasi-Private) Do not call externally (except for unit-testing)
    *
-   * @param string $daoName
+   * @param string $briefName
    * @param string $className
    * @param string $tableName
    * @param string $fields_callback
    * @param string $links_callback
    */
-  public static function registerEntityType($daoName, $className, $tableName, $fields_callback = NULL, $links_callback = NULL) {
-    self::$daoToClass[$daoName] = $className;
+  public static function registerEntityType($briefName, $className, $tableName, $fields_callback = NULL, $links_callback = NULL) {
+    self::$daoToClass[$briefName] = $className;
     self::$tables[$tableName] = $className;
-    self::$entityTypes[$className] = [
-      'name' => $daoName,
+    self::$entityTypes[$briefName] = [
+      'name' => $briefName,
       'class' => $className,
       'table' => $tableName,
       'fields_callback' => $fields_callback,
@@ -76,7 +76,7 @@ class CRM_Core_DAO_AllCoreTables {
 
   /**
    * @return array
-   *   Ex: $result['CRM_Contact_DAO_Contact']['table'] == 'civicrm_contact';
+   *   Ex: $result['Contact']['table'] == 'civicrm_contact';
    */
   public static function get() {
     self::init();
@@ -311,13 +311,14 @@ class CRM_Core_DAO_AllCoreTables {
   /**
    * Given a brief-name, determine the full class-name.
    *
-   * @param string $daoName
+   * @param string $briefName
    *   Ex: 'Contact'.
    * @return string|CRM_Core_DAO|NULL
    *   Ex: 'CRM_Contact_DAO_Contact'.
    */
-  public static function getFullName($daoName) {
-    return CRM_Utils_Array::value($daoName, self::daoToClass());
+  public static function getFullName($briefName) {
+    self::init();
+    return self::$entityTypes[$briefName]['class'] ?? NULL;
   }
 
   /**
@@ -345,12 +346,13 @@ class CRM_Core_DAO_AllCoreTables {
   /**
    * Convert the entity name into a table name.
    *
-   * @param string $entityBriefName
+   * @param string $briefName
    *
    * @return FALSE|string
    */
-  public static function getTableForEntityName($entityBriefName) {
-    return self::getTableForClass(self::getFullName($entityBriefName));
+  public static function getTableForEntityName($briefName) {
+    self::init();
+    return self::$entityTypes[$briefName]['table'];
   }
 
   /**
@@ -361,16 +363,21 @@ class CRM_Core_DAO_AllCoreTables {
    * @return FALSE|string
    */
   public static function getEntityNameForTable(string $tableName) {
-    return self::getBriefName(self::getClassForTable($tableName));
+    self::init();
+    // CRM-19677: on multilingual setup, trim locale from $tableName to fetch class name
+    if (CRM_Core_I18n::isMultilingual()) {
+      global $dbLocale;
+      $tableName = str_replace($dbLocale, '', $tableName);
+    }
+    $matches = CRM_Utils_Array::findAll(self::$entityTypes, ['table' => $tableName]);
+    return $matches ? $matches[0]['name'] : NULL;
   }
 
   /**
    * Reinitialise cache.
-   *
-   * @param bool $fresh
    */
-  public static function reinitializeCache($fresh = FALSE) {
-    self::init($fresh);
+  public static function reinitializeCache() {
+    self::init(TRUE);
   }
 
   /**
@@ -458,14 +465,18 @@ class CRM_Core_DAO_AllCoreTables {
    *
    * Apply any third-party alterations to the `fields()`.
    *
+   * TODO: This function should probably take briefName as the key instead of className
+   * because the latter is not always unique (e.g. virtual entities)
+   *
    * @param string $className
    * @param string $event
    * @param mixed $values
    */
   public static function invoke($className, $event, &$values) {
     self::init();
-    if (isset(self::$entityTypes[$className][$event])) {
-      foreach (self::$entityTypes[$className][$event] as $filter) {
+    $briefName = self::getBriefName($className);
+    if (isset(self::$entityTypes[$briefName][$event])) {
+      foreach (self::$entityTypes[$briefName][$event] as $filter) {
         $args = [$className, &$values];
         \Civi\Core\Resolver::singleton()->call($filter, $args);
       }

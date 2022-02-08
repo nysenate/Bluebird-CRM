@@ -22,10 +22,10 @@
   </tr>
 
   <tr>
-    {include file="CRM/Core/DatePickerRangeWrapper.tpl" fieldName="case_start_date"}
+    {include file="CRM/Core/DatePickerRangeWrapper.tpl" fieldName="case_start_date" hideRelativeLabel=0}
   </tr>
   <tr>
-    {include file="CRM/Core/DatePickerRangeWrapper.tpl" fieldName="case_end_date"}
+    {include file="CRM/Core/DatePickerRangeWrapper.tpl" fieldName="case_end_date" hideRelativeLabel=0}
   </tr>
 
   <tr id='case_search_form'>
@@ -41,7 +41,7 @@
         <br />
         {$form.case_owner.html}
       {/if}
-      {if $form.case_deleted}
+      {if !empty($form.case_deleted)}
         <br />
         {$form.case_deleted.html}
         {$form.case_deleted.label}
@@ -52,7 +52,7 @@
       <table>
         <tr class="nyss-search-issuecodes">
           <td>
-            {if $form.case_tags.html}
+            {if !empty($form.case_tags.html)}
               <label>Issue Codes</label><br />
               {$form.case_tags.html}
             {/if}
@@ -65,7 +65,7 @@
     </td>
   </tr>
 
-  {if $caseGroupTree}
+  {if !empty($caseGroupTree)}
     <tr>
       <td colspan="3">
         {include file="CRM/Custom/Form/Search.tpl" groupTree=$caseGroupTree showHideLinks=false}

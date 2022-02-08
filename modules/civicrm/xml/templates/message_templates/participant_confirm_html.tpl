@@ -10,7 +10,6 @@
 {capture assign=labelStyle }style="padding: 4px; border-bottom: 1px solid #999; background-color: #f7f7f7;"{/capture}
 {capture assign=valueStyle }style="padding: 4px; border-bottom: 1px solid #999;"{/capture}
 
-<center>
   <table id="crm-event_receipt" style="font-family: Arial, Verdana, sans-serif; text-align: left; width:100%; max-width:700px; padding:0; margin:0; border:0px;">
   <!-- BEGIN HEADER -->
   <!-- You can add table row(s) here with logo or other header elements -->
@@ -20,7 +19,7 @@
 
   <tr>
    <td>
-    {assign var="greeting" value="{contact.email_greeting}"}{if $greeting}<p>{$greeting},</p>{/if}
+    {assign var="greeting" value="{contact.email_greeting_display}"}{if $greeting}<p>{$greeting},</p>{/if}
     <p>{ts}This is an invitation to complete your registration that was initially waitlisted.{/ts}</p>
    </td>
   </tr>
@@ -135,7 +134,7 @@
       </tr>
      {/if}
 
-     {if $contact.email}
+     {if '{contact.email}'}
       <tr>
        <th {$headerStyle}>
         {ts}Registered Email{/ts}
@@ -143,7 +142,7 @@
       </tr>
       <tr>
        <td colspan="2" {$valueStyle}>
-        {$contact.email}
+        {contact.email}
        </td>
       </tr>
      {/if}
@@ -173,12 +172,11 @@
   {/if}
   <tr>
    <td colspan="2" {$valueStyle}>
-    <p>{ts 1=$domain.phone 2=$domain.email}Please contact us at %1 or send email to %2 if you have questions.{/ts}</p>
+    <p>{ts 1='{domain.phone}' 2='{domain.email}'}Please contact us at %1 or send email to %2 if you have questions.{/ts}</p>
    </td>
   </tr>
 
  </table>
-</center>
 
 </body>
 </html>

@@ -43,11 +43,7 @@ class CRM_Core_Payment_AuthorizeNetIPN extends CRM_Core_Payment_BaseIPN {
     try {
       //we only get invoice num as a key player from payment gateway response.
       //for ARB we get x_subscription_id and x_subscription_paynum
-      $x_subscription_id = $this->retrieve('x_subscription_id', 'String');
-      if (!$x_subscription_id) {
-        // Presence of the id means it is approved.
-        return TRUE;
-      }
+      $x_subscription_id = $this->getRecurProcessorID();
       $ids = $input = [];
 
       $input['component'] = 'contribute';
@@ -62,7 +58,7 @@ class CRM_Core_Payment_AuthorizeNetIPN extends CRM_Core_Payment_BaseIPN {
       // Check if the contribution exists
       // make sure contribution exists and is valid
       $contribution = new CRM_Contribute_BAO_Contribution();
-      $contribution->id = $contributionID = $ids['contribution'];
+      $contribution->id = $contributionID = $this->getContributionID();
       if (!$contribution->find(TRUE)) {
         throw new CRM_Core_Exception('Failure: Could not find contribution record for ' . (int) $contribution->id, NULL, ['context' => "Could not find contribution record: {$contribution->id} in IPN request: " . print_r($input, TRUE)]);
       }
@@ -73,6 +69,10 @@ class CRM_Core_Payment_AuthorizeNetIPN extends CRM_Core_Payment_BaseIPN {
       $contributionRecur->id = $ids['contributionRecur'];
       if (!$contributionRecur->find(TRUE)) {
         throw new CRM_Core_Exception("Could not find contribution recur record: {$ids['ContributionRecur']} in IPN request: " . print_r($input, TRUE));
+      }
+      // do a subscription check
+      if ($contributionRecur->processor_id != $this->getRecurProcessorID()) {
+        throw new CRM_Core_Exception('Unrecognized subscription.');
       }
 
       // check if first contribution is completed, else complete first contribution
@@ -113,18 +113,9 @@ class CRM_Core_Payment_AuthorizeNetIPN extends CRM_Core_Payment_BaseIPN {
    */
   public function recur($input, $recur, $contribution, $first) {
 
-    // do a subscription check
-    if ($recur->processor_id != $input['subscription_id']) {
-      throw new CRM_Core_Exception('Unrecognized subscription.');
-    }
-
     $contributionStatus = CRM_Contribute_PseudoConstant::contributionStatus(NULL, 'name');
 
     $now = date('YmdHis');
-
-    $contribution->invoice_id = md5(uniqid(rand(), TRUE));
-    $contribution->total_amount = $input['amount'];
-    $contribution->trxn_id = $input['trxn_id'];
 
     $isFirstOrLastRecurringPayment = FALSE;
     if ($input['response_code'] == 1) {
@@ -163,13 +154,6 @@ class CRM_Core_Payment_AuthorizeNetIPN extends CRM_Core_Payment_BaseIPN {
       return FALSE;
     }
 
-    // check if contribution is already completed, if so we ignore this ipn
-    if ($contribution->contribution_status_id == 1) {
-      CRM_Core_Error::debug_log_message("Returning since contribution has already been handled.");
-      echo 'Success: Contribution has already been handled<p>';
-      return FALSE;
-    }
-
     CRM_Contribute_BAO_Contribution::completeOrder($input, $recur->id, $contribution->id ?? NULL);
     return $isFirstOrLastRecurringPayment;
   }
@@ -183,9 +167,8 @@ class CRM_Core_Payment_AuthorizeNetIPN extends CRM_Core_Payment_BaseIPN {
    */
   public function getInput(&$input) {
     $input['amount'] = $this->retrieve('x_amount', 'String');
-    $input['subscription_id'] = $this->retrieve('x_subscription_id', 'Integer');
+    $input['subscription_id'] = $this->getRecurProcessorID();
     $input['response_code'] = $this->retrieve('x_response_code', 'Integer');
-    $input['MD5_Hash'] = $this->retrieve('x_MD5_Hash', 'String', FALSE, '');
     $input['response_reason_code'] = $this->retrieve('x_response_reason_code', 'String', FALSE);
     $input['response_reason_text'] = $this->retrieve('x_response_reason_text', 'String', FALSE);
     $input['subscription_paynum'] = $this->retrieve('x_subscription_paynum', 'Integer', FALSE, 0);
@@ -227,8 +210,8 @@ class CRM_Core_Payment_AuthorizeNetIPN extends CRM_Core_Payment_BaseIPN {
    * @throws \CRM_Core_Exception
    */
   public function getIDs(&$ids, $input) {
-    $ids['contribution'] = (int) $this->retrieve('x_invoice_num', 'Integer');
-    $contributionRecur = $this->getContributionRecurObject($input['subscription_id'], (int) $this->retrieve('x_cust_id', 'Integer', FALSE, 0), $ids['contribution']);
+    $ids['contribution'] = $this->getContributionID();
+    $contributionRecur = $this->getContributionRecurObject($this->getRecurProcessorID(), (int) $this->retrieve('x_cust_id', 'Integer', FALSE, 0), $this->getContributionID());
     $ids['contributionRecur'] = (int) $contributionRecur->id;
   }
 
@@ -300,7 +283,7 @@ INNER JOIN civicrm_contribution co ON co.contribution_recur_id = cr.id
       throw new CRM_Core_Exception('Could not find contributionRecur id');
     }
     if ($contactID != $contRecur->contact_id) {
-      $message = ts("Recurring contribution appears to have been re-assigned from id %1 to %2, continuing with %2.", [1 => $ids['contact'], 2 => $contRecur->contact_id]);
+      $message = ts("Recurring contribution appears to have been re-assigned from id %1 to %2, continuing with %2.", [1 => $contactID, 2 => $contRecur->contact_id]);
       CRM_Core_Error::debug_log_message($message);
     }
     return $contRecur;
@@ -340,6 +323,31 @@ INNER JOIN civicrm_contribution co ON co.contribution_recur_id = cr.id
       'payment_processor_type_id' => $paymentProcessorTypeID,
       'return' => 'id',
     ]);
+  }
+
+  /**
+   * Get the processor_id for the recurring.
+   *
+   * This is the value stored in civicrm_contribution_recur.processor_id,
+   * sometimes called subscription_id.
+   *
+   * @return string
+   *
+   * @throws \CRM_Core_Exception
+   */
+  protected function getRecurProcessorID(): string {
+    return $this->retrieve('x_subscription_id', 'String');
+  }
+
+  /**
+   * Get the contribution ID to be updated.
+   *
+   * @return int
+   *
+   * @throws \CRM_Core_Exception
+   */
+  protected function getContributionID(): int {
+    return (int) $this->retrieve('x_invoice_num', 'Integer');
   }
 
 }

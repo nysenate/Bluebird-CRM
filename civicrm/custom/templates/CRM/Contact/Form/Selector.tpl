@@ -15,7 +15,7 @@
 <table summary="{ts}Search results listings.{/ts}" class="selector row-highlight">
   <thead class="sticky">
     <tr>
-      <th scope="col" title="Select All Rows">{$form.toggleSelect.html}</th>
+      <th scope="col" title="{ts}Select rows{/ts}">{$form.toggleSelect.html}</th>
       {if $context eq 'smog'}
           <th scope="col">
             {ts}Status{/ts}
@@ -25,10 +25,10 @@
         {*NYSS*}
         {if $header.name neq 'Country'}
         <th scope="col">
-        {if $header.sort}
+        {if !empty($header.sort)}
           {assign var='key' value=$header.sort}
           {$sort->_response.$key.link}
-        {else}
+        {elseif !empty($header.name)}
           {$header.name}
         {/if}
         </th>
@@ -51,7 +51,8 @@
               {$row.status}</td>
             {/if}
             <td>{$row.contact_type}</td>
-            <td><a href="{crmURL p='civicrm/contact/view' q="reset=1&cid=`$row.contact_id`&key=`$qfKey`&context=`$context`"}">{$row.sort_name|truncate:26:"...":true}</a></td>{*NYSS*}
+            {*NYSS truncate*}
+            <td><a href="{crmURL p='civicrm/contact/view' q="reset=1&cid=`$row.contact_id`&key=`$qfKey`&context=`$context`"}">{$row.sort_name|truncate:26:"...":true}</a></td>
             {foreach from=$row item=value key=key}
                {if ($key neq "checkbox") and ($key neq "action") and ($key neq "contact_type") and ($key neq "contact_type_orig") and ($key neq "status") and ($key neq "sort_name") and ($key neq "contact_id")}
               <td>
@@ -87,7 +88,7 @@
                 {$row.status}</td>
             {/if}
             <td>{$row.contact_type}</td>
-            <td><a href="{crmURL p='civicrm/contact/view' q="reset=1&cid=`$row.contact_id`&key=`$qfKey`&context=`$context`"}">{if $row.is_deleted}<del>{/if}{$row.sort_name}{if $row.is_deleted}</del>{/if}</a></td>
+            <td><a href="{crmURL p='civicrm/contact/view' q="reset=1&cid=`$row.contact_id`&key=`$qfKey`&context=`$context`"}">{if !empty($row.is_deleted)}<del>{/if}{$row.sort_name}{if !empty($row.is_deleted)}</del>{/if}</a></td>
             {if $action eq 512 or $action eq 256}
               {if !empty($columnHeaders.street_address)}
           <td><span title="{$row.street_address|escape}">{$row.street_address|mb_truncate:22:"...":true}{privacyFlag field=do_not_mail condition=$row.do_not_mail}</span></td>

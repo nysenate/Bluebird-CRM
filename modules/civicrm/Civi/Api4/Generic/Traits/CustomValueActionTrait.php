@@ -10,13 +10,6 @@
  +--------------------------------------------------------------------+
  */
 
-/**
- *
- * @package CRM
- * @copyright CiviCRM LLC https://civicrm.org/licensing
- */
-
-
 namespace Civi\Api4\Generic\Traits;
 
 use Civi\Api4\Utils\FormattingUtil;
@@ -31,7 +24,7 @@ trait CustomValueActionTrait {
 
   public function __construct($customGroup, $actionName) {
     $this->customGroup = $customGroup;
-    parent::__construct('CustomValue', $actionName, ['id', 'entity_id']);
+    parent::__construct('CustomValue', $actionName);
   }
 
   /**
@@ -46,6 +39,25 @@ trait CustomValueActionTrait {
    */
   public function getEntityName() {
     return 'Custom_' . $this->getCustomGroup();
+  }
+
+  /**
+   * Is this api call permitted?
+   *
+   * This function is called if checkPermissions is set to true.
+   *
+   * @return bool
+   */
+  public function isAuthorized(): bool {
+    if ($this->getActionName() !== 'getFields') {
+      // Check access to custom group
+      $permissionToCheck = $this->getActionName() == 'get' ? \CRM_Core_Permission::VIEW : \CRM_Core_Permission::EDIT;
+      $groupId = \CRM_Core_DAO::getFieldValue('CRM_Core_DAO_CustomGroup', $this->getCustomGroup(), 'id', 'name');
+      if (!\CRM_Core_BAO_CustomGroup::checkGroupAccess($groupId, $permissionToCheck)) {
+        return FALSE;
+      }
+    }
+    return parent::isAuthorized();
   }
 
   /**
@@ -72,7 +84,7 @@ trait CustomValueActionTrait {
         $items[$idx]['id'] = (int) \CRM_Core_DAO::singleValueQuery('SELECT MAX(id) FROM ' . $tableName);
       }
     }
-    FormattingUtil::formatOutputValues($items, $this->entityFields(), $this->getEntityName(), 'create');
+    FormattingUtil::formatOutputValues($items, $this->entityFields(), 'create');
     return $items;
   }
 

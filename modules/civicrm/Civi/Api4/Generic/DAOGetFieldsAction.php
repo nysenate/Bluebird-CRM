@@ -10,13 +10,6 @@
  +--------------------------------------------------------------------+
  */
 
-/**
- *
- * @package CRM
- * @copyright CiviCRM LLC https://civicrm.org/licensing
- */
-
-
 namespace Civi\Api4\Generic;
 
 /**
@@ -122,6 +115,11 @@ class DAOGetFieldsAction extends BasicGetFieldsAction {
     ];
     $fields[] = [
       'name' => 'sql_filters',
+      'data_type' => 'Array',
+      '@internal' => TRUE,
+    ];
+    $fields[] = [
+      'name' => 'sql_renderer',
       'data_type' => 'Array',
       '@internal' => TRUE,
     ];

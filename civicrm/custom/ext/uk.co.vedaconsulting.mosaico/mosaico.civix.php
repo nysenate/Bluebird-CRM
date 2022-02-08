@@ -449,5 +449,11 @@ function _mosaico_civix_civicrm_alterSettingsFolders(&$metaDataFolders = NULL) {
  * @link https://docs.civicrm.org/dev/en/latest/hooks/hook_civicrm_entityTypes
  */
 function _mosaico_civix_civicrm_entityTypes(&$entityTypes) {
-  $entityTypes = array_merge($entityTypes, []);
+  $entityTypes = array_merge($entityTypes, [
+    'CRM_Mosaico_DAO_MosaicoTemplate' => [
+      'name' => 'MosaicoTemplate',
+      'class' => 'CRM_Mosaico_DAO_MosaicoTemplate',
+      'table' => 'civicrm_mosaico_template',
+    ],
+  ]);
 }

@@ -10,7 +10,7 @@
 
 {crmRegion name='form-buttons'}
 {* Loops through $linkButtons and assigns html "a" (link) buttons to the template. Used for additional entity functions such as "Move to Case" or "Renew Membership" *}
-{if !empty($linkButtons)}
+{if $linkButtons}
   {foreach from=$linkButtons item=linkButton}
     {if $linkButton.accessKey}
       {capture assign=accessKey}accesskey="{$linkButton.accessKey}"{/capture}
@@ -30,7 +30,7 @@
 
 {foreach from=$form.buttons item=button key=key name=btns}
   {if $key|substring:0:4 EQ '_qf_'}
-    {if $location}
+    {if !empty($location)}
       {$form.buttons.$key.html|crmReplace:id:"$key-$location"}
     {else}
       {$form.buttons.$key.html}

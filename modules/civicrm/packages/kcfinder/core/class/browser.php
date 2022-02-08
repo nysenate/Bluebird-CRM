@@ -526,7 +526,7 @@ class browser extends uploader {
             $this->errorMsg("Unknown error.");
         $filename = basename($dir) . ".zip";
         do {
-            $file = md5(time() . session_id());
+            $file = md5(time() . \CRM_Core_Config::singleton()->userSystem->getSessionId());
             $file = "{$this->config['uploadDir']}/$file.zip";
         } while (file_exists($file));
         new zipFolder($file, $dir);
@@ -559,7 +559,7 @@ class browser extends uploader {
         }
 
         do {
-            $file = md5(time() . session_id());
+            $file = md5(time() . \CRM_Core_Config::singleton()->userSystem->getSessionId());
             $file = "{$this->config['uploadDir']}/$file.zip";
         } while (file_exists($file));
 
@@ -601,7 +601,7 @@ class browser extends uploader {
         }
 
         do {
-            $file = md5(time() . session_id());
+            $file = md5(time() . \CRM_Core_Config::singleton()->userSystem->getSessionId());
             $file = "{$this->config['uploadDir']}/$file.zip";
         } while (file_exists($file));
 

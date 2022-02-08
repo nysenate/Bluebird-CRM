@@ -341,7 +341,7 @@ SELECT r.id, c.id as cid, c.display_name as name, c.job_title as comment,
       }
 
       // omitting contactImage from title for now since the summary overlay css doesn't work outside crm-container
-      CRM_Utils_System::setTitle(ts('View Membership for') . ' ' . $displayName);
+      $this->setTitle(ts('View Membership for') . ' ' . $displayName);
 
       // add viewed membership to recent items list
       $recentTitle = $displayName . ' - ' . ts('Membership Type:') . ' ' . $values['membership_type'];
@@ -373,7 +373,8 @@ SELECT r.id, c.id as cid, c.display_name as name, c.job_title as comment,
 
       $memType = CRM_Core_DAO::getFieldValue("CRM_Member_DAO_Membership", $this->membershipID, "membership_type_id");
 
-      $groupTree = CRM_Core_BAO_CustomGroup::getTree('Membership', NULL, $this->membershipID, 0, $memType);
+      $groupTree = CRM_Core_BAO_CustomGroup::getTree('Membership', NULL, $this->membershipID, 0, $memType, NULL,
+        TRUE, NULL, FALSE, CRM_Core_Permission::VIEW);
       CRM_Core_BAO_CustomGroup::buildCustomDataView($this, $groupTree, FALSE, NULL, NULL, NULL, $this->membershipID);
 
       $isRecur = CRM_Core_DAO::getFieldValue('CRM_Member_DAO_Membership', $this->membershipID, 'contribution_recur_id');

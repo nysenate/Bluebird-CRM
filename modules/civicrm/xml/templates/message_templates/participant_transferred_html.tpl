@@ -10,7 +10,6 @@
 {capture assign=labelStyle }style="padding: 4px; border-bottom: 1px solid #999; background-color: #f7f7f7;"{/capture}
 {capture assign=valueStyle }style="padding: 4px; border-bottom: 1px solid #999;"{/capture}
 
-<center>
   <table id="crm-event_receipt" style="font-family: Arial, Verdana, sans-serif; text-align: left; width:100%; max-width:700px; padding:0; margin:0; border:0px;">
 
   <!-- BEGIN HEADER -->
@@ -56,7 +55,7 @@
       </tr>
      {/if}
 
-     {if $event.location.phone.1.phone || $event.location.email.1.email}
+     {if !empty($event.location.phone.1.phone) || !empty($event.location.email.1.email)}
       <tr>
        <td colspan="2" {$labelStyle}>
         {ts}Event Contacts:{/ts}
@@ -88,7 +87,7 @@
       {/foreach}
      {/if}
 
-     {if $contact.email}
+     {if '{contact.email}'}
       <tr>
        <th {$headerStyle}>
         {ts}Registered Email{/ts}
@@ -96,7 +95,7 @@
       </tr>
       <tr>
        <td colspan="2" {$valueStyle}>
-        {$contact.email}
+        {contact.email}
        </td>
       </tr>
      {/if}
@@ -118,12 +117,11 @@
 
   <tr>
    <td>
-    <p>{ts 1=$domain.phone 2=$domain.email}Please contact us at %1 or send email to %2 if you have questions.{/ts}</p>
+    <p>{ts 1='{domain.phone}' 2='{domain.email}'}Please contact us at %1 or send email to %2 if you have questions.{/ts}</p>
    </td>
   </tr>
 
  </table>
-</center>
 
 </body>
 </html>

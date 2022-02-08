@@ -12,7 +12,7 @@ require_once __DIR__ . '/TestCase.php';
  */
 class CRM_Mosaico_MosaicoTemplateTest extends CRM_Mosaico_TestCase implements EndToEndInterface {
 
-  public static function setUpBeforeClass() {
+  public static function setUpBeforeClass(): void {
     // See: https://github.com/civicrm/org.civicrm.testapalooza/blob/master/civi-test.md
 
     // Example: Install this extension. Don't care about anything else.
@@ -25,16 +25,16 @@ class CRM_Mosaico_MosaicoTemplateTest extends CRM_Mosaico_TestCase implements En
     // \Civi\Test::e2e()->uninstall('*')->install('org.civicrm.*')->apply();
   }
 
-  public function setUp() {
+  public function setUp(): void {
     parent::setUp();
   }
 
-  public function tearDown() {
+  public function tearDown(): void {
     CRM_Core_DAO::executeQuery('DELETE FROM civicrm_mosaico_template WHERE title LIKE "MosaicoTemplateTest%"');
     parent::tearDown();
   }
 
-  public function testCreateGetDelete() {
+  public function testCreateGetDelete(): void {
     $r = rand();
     $createResult = $this->callAPISuccess('MosaicoTemplate', 'create', [
       'title' => 'MosaicoTemplateTest ' . $r,
@@ -61,7 +61,7 @@ class CRM_Mosaico_MosaicoTemplateTest extends CRM_Mosaico_TestCase implements En
     ]);
   }
 
-  public function testClone() {
+  public function testClone(): void {
     $createResult = $this->callAPISuccess('MosaicoTemplate', 'create', [
       'title' => 'MosaicoTemplateTest foo',
       'base' => 'versafix-1',

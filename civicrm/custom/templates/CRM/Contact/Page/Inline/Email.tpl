@@ -26,7 +26,7 @@
   {/if}
   {foreach from=$email key="blockId" item=item}
     {if $item.email}
-    <div class="crm-summary-row {if $item.is_primary eq 1}primary{/if}">
+    <div class="crm-summary-row {if !empty($item.is_primary)}{ts}primary{/ts}{/if}">
       {*NYSS 4717 4603 4601*}
       <div class="crm-label">
         {$item.location_type} {ts}Email{/ts}
@@ -46,8 +46,8 @@
         </span>
         {/if}
         <div id="Email_Block_{$blockId}_signature" class="hiddenElement">
-          <strong>{ts}Signature HTML{/ts}</strong><br />{$item.signature_html}<br /><br />
-        <strong>{ts}Signature Text{/ts}</strong><br />{$item.signature_text|nl2br}</div>
+          <strong>{ts}Signature HTML{/ts}</strong><br />{if !empty($item.signature_html)}{$item.signature_html}{/if}<br /><br />
+        <strong>{ts}Signature Text{/ts}</strong><br />{if !empty($item.signature_text)}{$item.signature_text|nl2br}{/if}</div>
       </div>
     </div>
     {/if}

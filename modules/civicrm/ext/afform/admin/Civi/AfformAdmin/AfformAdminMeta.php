@@ -2,6 +2,8 @@
 
 namespace Civi\AfformAdmin;
 
+use Civi\Api4\Entity;
+use Civi\Api4\Utils\CoreUtil;
 use CRM_AfformAdmin_ExtensionUtil as E;
 
 class AfformAdminMeta {
@@ -18,7 +20,7 @@ class AfformAdminMeta {
       ->execute();
     // Pluralize tabs (too bad option groups only store a single label)
     $plurals = [
-      'form' => E::ts('Custom Forms'),
+      'form' => E::ts('Submission Forms'),
       'search' => E::ts('Search Forms'),
       'block' => E::ts('Field Blocks'),
       'system' => E::ts('System Forms'),
@@ -66,17 +68,32 @@ class AfformAdminMeta {
     }
     $info = \Civi\Api4\Entity::get(FALSE)
       ->addWhere('name', '=', $entityName)
-      ->addSelect('title', 'icon')
       ->execute()->first();
     if (!$info) {
       // Disabled contact type or nonexistent api entity
       return NULL;
     }
-    return [
-      'entity' => $entityName,
+    return self::entityToAfformMeta($info);
+  }
+
+  /**
+   * Converts info from API.Entity.get to an array of afform entity metadata
+   * @param array $info
+   * @return array
+   */
+  private static function entityToAfformMeta(array $info): array {
+    $meta = [
+      'entity' => $info['name'],
       'label' => $info['title'],
-      'icon' => $info['icon'],
+      'icon' => $info['icon'] ?? NULL,
     ];
+    // Custom entities are always type 'join'
+    if (in_array('CustomValue', $info['type'], TRUE)) {
+      $meta['type'] = 'join';
+      $max = (int) \CRM_Core_DAO::getFieldValue('CRM_Core_DAO_CustomGroup', substr($info['name'], 7), 'max_multiple', 'name');
+      $meta['repeat_max'] = $max ?: NULL;
+    }
+    return $meta;
   }
 
   /**
@@ -104,7 +121,26 @@ class AfformAdminMeta {
       }
       $params['values']['state_province_id'] = \Civi::settings()->get('defaultContactStateProvince');
     }
-    return (array) civicrm_api4($entityName, 'getFields', $params, 'name');
+    $fields = (array) civicrm_api4($entityName, 'getFields', $params);
+
+    // Add implicit joins to search fields
+    if ($params['action'] === 'get') {
+      foreach (array_reverse($fields, TRUE) as $index => $field) {
+        if (!empty($field['fk_entity']) && !$field['options']) {
+          $fkLabelField = CoreUtil::getInfoItem($field['fk_entity'], 'label_field');
+          if ($fkLabelField) {
+            // Add the label field from the other entity to this entity's list of fields
+            $newField = civicrm_api4($field['fk_entity'], 'getFields', [
+              'where' => [['name', '=', $fkLabelField]],
+            ])->first();
+            $newField['name'] = $field['name'] . '.' . $newField['name'];
+            $newField['label'] = $field['label'] . ' ' . $newField['label'];
+            array_splice($fields, $index, 0, [$newField]);
+          }
+        }
+      }
+    }
+    return array_column($fields, NULL, 'name');
   }
 
   /**
@@ -120,9 +156,16 @@ class AfformAdminMeta {
           'icon' => 'fa-pencil-square-o',
           'fields' => [],
         ],
-        'Contact' => self::getApiEntity('Contact'),
       ],
     ];
+
+    // Explicitly load Contact and Custom entities because they do not have afformEntity files
+    $entities = Entity::get(TRUE)
+      ->addClause('OR', ['name', '=', 'Contact'], ['type', 'CONTAINS', 'CustomValue'])
+      ->execute()->indexBy('name');
+    foreach ($entities as $name => $entity) {
+      $data['entities'][$name] = self::entityToAfformMeta($entity);
+    }
 
     $contactTypes = \CRM_Contact_BAO_ContactType::basicTypeInfo();
 
@@ -193,7 +236,7 @@ class AfformAdminMeta {
         'title' => E::ts('Submit Button'),
         'element' => [
           '#tag' => 'button',
-          'class' => 'af-button btn-primary',
+          'class' => 'af-button btn btn-primary',
           'crm-icon' => 'fa-check',
           'ng-click' => 'afform.submit()',
           '#children' => [

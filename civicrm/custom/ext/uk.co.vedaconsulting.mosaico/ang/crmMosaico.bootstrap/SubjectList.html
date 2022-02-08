@@ -1,0 +1,47 @@
+<div class="form-inline" ng-if="!mailing.template_options.variants">
+
+  <div class="from-group">
+    <input
+      id="inputSubject"
+      crm-ui-insert-rx="insert:subject"
+      name="subject"
+      type="text"
+      class="form-control"
+      placeholder="{{ts('Subject')}}"
+      ng-model="mailing.subject"
+      required
+    />
+
+    <input crm-mailing-token on-select="$broadcast('insert:subject', token.name)" tabindex="-1" class="form-control"/>
+
+    <a ng-click="addSubj()" class="btn btn-default" title="{{ts('Add subject')}}">
+      <span><i class="crm-i fa-plus-circle"></i></span>
+    </a>
+
+  </div>
+
+</div>
+
+<div class="form-inline" ng-if="!!mailing.template_options.variants">
+  <div class="group" ng-repeat="(vid, variant) in mailing.template_options.variants">
+    ({{labels[vid]}})
+
+    <input
+      crm-ui-id="subform.subject"
+      crm-ui-insert-rx="insert:subject"
+      name="subjectA"
+      type="text"
+      class="form-control"
+      placeholder="{{ts('Subject')}} ({{labels[vid]}})"
+      ng-model="variant.subject"
+      required
+    />
+
+    <input crm-mailing-token on-select="$broadcast('insert:subject', token.name)" tabindex="-1" class="form-control"/>
+
+    <a ng-click="rmSubj(vid)" class="btn btn-default" title="{{ts('Remove subject')}}">
+      <span><i class="crm-i fa-trash"></i></span>
+    </a>
+
+  </div>
+</div>

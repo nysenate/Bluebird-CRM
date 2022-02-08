@@ -366,7 +366,14 @@ function mail_civicrm_pageRun(&$page) {
       }
       $page->assign('emails', $contactEmails);
     }
-  } // NYSS 5581
+  }
+
+  if (is_a($page, 'CRM_Afform_Page_AfformBase')) {
+    $urlPath = $page->getVar('urlPath');
+    if ($urlPath[1] == 'mosaico-template-list') {
+      CRM_Core_Resources::singleton()->addStyleFile(E::LONG_NAME, 'css/MosaicoTemplateList.css');
+    }
+  }
 }
 
 function mail_civicrm_entityTypes(&$entityTypes) {
@@ -636,6 +643,11 @@ function mail_civicrm_alterAPIPermissions($entity, $action, &$params, &$permissi
 
 
 function mail_civicrm_buildForm($formName, &$form) {
+  /*Civi::log()->debug(__FUNCTION__, [
+    'formName' => $formName,
+    'form' => $form,
+  ]);*/
+
   if ($formName == 'CRM_Mailing_Form_Group' && $form->_searchBasedMailing) {
     //get base mailing group, add to option list, set as default, freeze field
     $params = ['name' => BASE_SUBSCRIPTION_GROUP];

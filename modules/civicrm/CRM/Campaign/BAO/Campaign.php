@@ -77,24 +77,18 @@ class CRM_Campaign_BAO_Campaign extends CRM_Campaign_DAO_Campaign {
    * Delete the campaign.
    *
    * @param int $id
-   *   Id of the campaign.
    *
-   * @return bool|mixed
+   * @deprecated
+   * @return bool|int
    */
   public static function del($id) {
-    if (!$id) {
+    try {
+      self::deleteRecord(['id' => $id]);
+    }
+    catch (CRM_Core_Exception $e) {
       return FALSE;
     }
-
-    CRM_Utils_Hook::pre('delete', 'Campaign', $id);
-
-    $dao = new CRM_Campaign_DAO_Campaign();
-    $dao->id = $id;
-    $result = $dao->delete();
-
-    CRM_Utils_Hook::post('delete', 'Campaign', $id, $dao);
-
-    return $result;
+    return 1;
   }
 
   /**
@@ -301,20 +295,11 @@ Order By  camp.title";
 
   /**
    * Is CiviCampaign enabled.
+   *
    * @return bool
    */
-  public static function isCampaignEnable() {
-    static $isEnable = NULL;
-
-    if (!isset($isEnable)) {
-      $isEnable = FALSE;
-      $config = CRM_Core_Config::singleton();
-      if (in_array('CiviCampaign', $config->enableComponents)) {
-        $isEnable = TRUE;
-      }
-    }
-
-    return $isEnable;
+  public static function isCampaignEnable(): bool {
+    return in_array('CiviCampaign', CRM_Core_Config::singleton()->enableComponents, TRUE);
   }
 
   /**
@@ -614,16 +599,8 @@ INNER JOIN  civicrm_group grp ON ( grp.id = campgrp.entity_id )
         ['id' => 'campaigns', 'multiple' => 'multiple', 'class' => 'crm-select2']
       );
     }
-    $infoFields = [
-      'elementName',
-      'hasAccessCampaign',
-      'isCampaignEnabled',
-      'showCampaignInSearch',
-    ];
-    foreach ($infoFields as $fld) {
-      $campaignInfo[$fld] = $$fld;
-    }
-    $form->assign('campaignInfo', $campaignInfo);
+
+    $form->assign('campaignElementName', $showCampaignInSearch ? $elementName : '');
   }
 
   /**

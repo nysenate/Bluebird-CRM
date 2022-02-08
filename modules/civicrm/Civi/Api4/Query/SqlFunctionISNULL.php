@@ -18,18 +18,28 @@ class SqlFunctionISNULL extends SqlFunction {
 
   protected static $category = self::CATEGORY_COMPARISON;
 
-  protected static $params = [
-    [
-      'expr' => 1,
-      'optional' => FALSE,
-    ],
-  ];
+  protected static $dataType = 'Boolean';
+
+  protected static function params(): array {
+    return [
+      [
+        'optional' => FALSE,
+      ],
+    ];
+  }
 
   /**
    * @return string
    */
   public static function getTitle(): string {
     return ts('Is null');
+  }
+
+  /**
+   * @return string
+   */
+  public static function getDescription(): string {
+    return ts('TRUE if the value is NULL, otherwise FALSE.');
   }
 
 }

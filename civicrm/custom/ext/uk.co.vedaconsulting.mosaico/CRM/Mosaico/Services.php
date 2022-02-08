@@ -24,10 +24,14 @@ class CRM_Mosaico_Services {
     $container->setDefinition('mosaico_required_tokens', new Definition('CRM_Mosaico_MosaicoRequiredTokens'))->setPublic(TRUE);
     $container->setDefinition('mosaico_graphics', new Definition('CRM_Mosaico_Graphics_Interface'))
       ->setFactory([__CLASS__, 'createGraphics'])->setPublic(TRUE);
+    $container->setDefinition('mosaico_ab_demux', new Definition('CRM_Mosaico_AbDemux'))->setPublic(TRUE);
 
     foreach (self::getListenerSpecs() as $listenerSpec) {
       $container->findDefinition('dispatcher')->addMethodCall('addListenerService', $listenerSpec);
     }
+    // The api prepare event might be called before civicrm configuration is fully loaded. So we use the function mosaico_wrapMailingApi from
+    // mosaico.php as that file is definitely loaded.
+    $container->findDefinition('dispatcher')->addMethodCall('addListener', ['civi.api.prepare', 'mosaico_wrapMailingApi', Civi\API\Events::W_LATE]);
   }
 
   protected static function getListenerSpecs() {

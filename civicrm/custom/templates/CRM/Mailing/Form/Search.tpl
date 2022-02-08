@@ -48,7 +48,7 @@
     </tr>
 
     {* language *}
-    {if $form.language}
+    {if !empty($form.language)}
       <tr>
         <td>{$form.language.label} {help id="id-language"}<br />
           {$form.language.html|crmAddClass:big}
@@ -57,9 +57,9 @@
     {/if}
 
     {* campaign in mailing search *}
-{*NYSS*}
-{*    {include file="CRM/Campaign/Form/addCampaignToComponent.tpl"
-    campaignContext="componentSearch" campaignTrClass='' campaignTdClass=''}
+{*NYSS*}{*
+    {include file="CRM/Campaign/Form/addCampaignToSearch.tpl"
+      campaignTrClass='' campaignTdClass=''}
 *}
     <tr>
       <td>{$form.buttons.html}</td><td colspan="2"></td>

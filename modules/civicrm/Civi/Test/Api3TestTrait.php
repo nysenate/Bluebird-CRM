@@ -152,8 +152,6 @@ trait Api3TestTrait {
    *   better or worse )
    *
    * @return array|int
-   *
-   * @throws \CRM_Core_Exception
    */
   public function callAPISuccess($entity, $action, $params = [], $checkAgainst = NULL) {
     $params = array_merge([
@@ -186,8 +184,6 @@ trait Api3TestTrait {
    * @param array $params
    * @param int $count
    *
-   * @throws \CRM_Core_Exception
-   *
    * @return array|int
    */
   public function callAPISuccessGetCount($entity, $params, $count = NULL) {
@@ -197,7 +193,7 @@ trait Api3TestTrait {
     ];
     $result = $this->civicrm_api($entity, 'getcount', $params);
     if (!is_int($result) || !empty($result['is_error']) || isset($result['values'])) {
-      throw new \CRM_Core_Exception('Invalid getcount result : ' . print_r($result, TRUE) . " type :" . gettype($result));
+      $this->fail('Invalid getcount result : ' . print_r($result, TRUE) . ' type :' . gettype($result));
     }
     if (is_int($count)) {
       $this->assertEquals($count, $result, "incorrect count returned from $entity getcount");
@@ -220,8 +216,6 @@ trait Api3TestTrait {
    *   - array
    *   - object
    *
-   * @throws \CRM_Core_Exception
-   *
    * @return array|int
    */
   public function callAPISuccessGetSingle($entity, $params, $checkAgainst = NULL) {
@@ -234,7 +228,7 @@ trait Api3TestTrait {
     $result = $this->civicrm_api($entity, 'getsingle', $params);
     if (!is_array($result) || !empty($result['is_error']) || isset($result['values'])) {
       $unfilteredResult = $this->civicrm_api($entity, 'get', ['version' => $this->_apiversion]);
-      throw new \CRM_Core_Exception(
+      $this->fail(
         'Invalid getsingle result' . print_r($result, TRUE)
         . "\n entity: $entity . \n params \n " . print_r($params, TRUE)
         . "\n entities retrieved with blank params \n" . print_r($unfilteredResult, TRUE)
@@ -248,9 +242,7 @@ trait Api3TestTrait {
   }
 
   /**
-   * This function exists to wrap api getValue function & check the result
-   * so we can ensure they succeed & throw exceptions without litterering the test with checks
-   * There is a type check in this
+   * This function wraps the getValue api and checks the result.
    *
    * @param string $entity
    * @param array $params
@@ -264,7 +256,6 @@ trait Api3TestTrait {
    *   - object
    *
    * @return array|int
-   * @throws \CRM_Core_Exception
    */
   public function callAPISuccessGetValue($entity, $params, $type = NULL) {
     $params += [
@@ -272,7 +263,7 @@ trait Api3TestTrait {
     ];
     $result = $this->civicrm_api($entity, 'getvalue', $params);
     if (is_array($result) && (!empty($result['is_error']) || isset($result['values']))) {
-      throw new \CRM_Core_Exception('Invalid getvalue result' . print_r($result, TRUE));
+      $this->fail('Invalid getvalue result' . print_r($result, TRUE));
     }
     if ($type) {
       if ($type === 'integer') {
@@ -322,14 +313,15 @@ trait Api3TestTrait {
     $onlyId = !empty($v3Params['format.only_id']);
     $onlySuccess = !empty($v3Params['format.is_success']);
     if (!empty($v3Params['filters']['is_current']) || !empty($v3Params['isCurrent'])) {
-      $v4Params['current'] = TRUE;
+      $v3Params['is_current'] = 1;
+      unset($v3Params['filters']['is_current'], $v3Params['isCurrent']);
     }
     $language = $v3Params['options']['language'] ?? $v3Params['option.language'] ?? NULL;
     if ($language) {
       $v4Params['language'] = $language;
     }
     $toRemove = ['option.', 'return', 'api.', 'format.'];
-    $chains = $joins = $custom = [];
+    $chains = $custom = [];
     foreach ($v3Params as $key => $val) {
       foreach ($toRemove as $remove) {
         if (strpos($key, $remove) === 0) {
@@ -410,7 +402,7 @@ trait Api3TestTrait {
         // This is a per field hack (bad) but we can't solve everything at once
         // & a cleverer way turned out to be too much for this round.
         // Being in the test class it's tested....
-        $v3Params['option_group.name'] = $v3Params['option_group_id'];
+        $v3Params['option_group_id.name'] = $v3Params['option_group_id'];
         unset($v3Params['option_group_id']);
       }
       if (isset($field['pseudoconstant'], $v3Params[$name]) && $field['type'] === \CRM_Utils_Type::T_INT && !is_numeric($v3Params[$name]) && is_string($v3Params[$name])) {
@@ -432,12 +424,6 @@ trait Api3TestTrait {
           // Ensure id field is returned as v3 always expects it
           if ($v4Entity != 'Setting' && !in_array('id', $v4Params['select'])) {
             $v4Params['select'][] = 'id';
-          }
-          // Convert join syntax
-          foreach ($v4Params['select'] as $idx => $select) {
-            if (strstr($select, '_id.')) {
-              $joins[$select] = $v4Params['select'][$idx] = str_replace('_id.', '.', $select);
-            }
           }
         }
         if ($options['limit'] && $v4Entity != 'Setting') {
@@ -524,6 +510,10 @@ trait Api3TestTrait {
       }
     }
 
+    if (isset($actionInfo[0]['params']['useTrash'])) {
+      $v4Params['useTrash'] = empty($v3Params['skip_undelete']);
+    }
+
     // Build where clause for 'getcount', 'getsingle', 'getvalue', 'get' & 'replace'
     if ($v4Action == 'get' || $v3Action == 'replace') {
       foreach ($v3Params as $key => $val) {
@@ -604,10 +594,6 @@ trait Api3TestTrait {
       // Run chains
       foreach ($chains as $key => $params) {
         $result[$index][$key] = $this->runApi4LegacyChain($key, $params, $v4Entity, $row, $sequential);
-      }
-      // Convert join format
-      foreach ($joins as $api3Key => $api4Key) {
-        $result[$index][$api3Key] = $result[$index][$api4Key] ?? NULL;
       }
       // Resolve custom field names
       foreach ($custom as $group => $fields) {

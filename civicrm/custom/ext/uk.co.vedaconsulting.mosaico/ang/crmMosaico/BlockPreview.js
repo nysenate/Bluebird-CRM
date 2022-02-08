@@ -14,6 +14,7 @@
         scope.hs = crmUiHelp({file: 'CRM/Mailing/MailingUI'});
         scope.testContact = {email: CRM.crmMailing.defaultTestEmail};
         scope.testGroup = {gid: null};
+        //NYSS
         scope.validateMultipleEmail = function(email) {
           email = email.split(',');
 

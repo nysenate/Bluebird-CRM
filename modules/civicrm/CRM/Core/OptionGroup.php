@@ -21,12 +21,22 @@ class CRM_Core_OptionGroup {
   /**
    * $_domainIDGroups array maintains the list of option groups for whom
    * domainID is to be considered.
+   *
+   * FIXME: Hardcoded list = bad. It would be better to make this a column in the civicrm_option_group table
    * @var array
    */
   public static $_domainIDGroups = [
     'from_email_address',
     'grant_type',
   ];
+
+  /**
+   * @param $groupName
+   * @return bool
+   */
+  public static function isDomainOptionGroup($groupName) {
+    return in_array($groupName, self::$_domainIDGroups, TRUE);
+  }
 
   /**
    * @param CRM_Core_DAO $dao
@@ -106,11 +116,11 @@ class CRM_Core_OptionGroup {
     $orderBy = 'weight'
   ) {
     $cache = CRM_Utils_Cache::singleton();
-    if (in_array($name, self::$_domainIDGroups)) {
-      $cacheKey = self::createCacheKey($name, $flip, $grouping, $localize, $condition, $labelColumnName, $onlyActive, $keyColumnName, $orderBy, CRM_Core_Config::domainID());
+    if (self::isDomainOptionGroup($name)) {
+      $cacheKey = self::createCacheKey($name, CRM_Core_I18n::getLocale(), $flip, $grouping, $localize, $condition, $labelColumnName, $onlyActive, $keyColumnName, $orderBy, CRM_Core_Config::domainID());
     }
     else {
-      $cacheKey = self::createCacheKey($name, $flip, $grouping, $localize, $condition, $labelColumnName, $onlyActive, $keyColumnName, $orderBy);
+      $cacheKey = self::createCacheKey($name, CRM_Core_I18n::getLocale(), $flip, $grouping, $localize, $condition, $labelColumnName, $onlyActive, $keyColumnName, $orderBy);
     }
 
     if (!$fresh) {
@@ -144,7 +154,7 @@ WHERE  v.option_group_id = g.id
       }
       $query .= " AND ($componentClause) ";
     }
-    if (in_array($name, self::$_domainIDGroups)) {
+    if (self::isDomainOptionGroup($name)) {
       $query .= " AND v.domain_id = " . CRM_Core_Config::domainID();
     }
 
@@ -181,7 +191,7 @@ WHERE  v.option_group_id = g.id
    * @param string $keyColumnName
    */
   protected static function flushValues($name, $flip, $grouping, $localize, $condition, $labelColumnName, $onlyActive, $keyColumnName = 'value') {
-    $cacheKey = self::createCacheKey($name, $flip, $grouping, $localize, $condition, $labelColumnName, $onlyActive, $keyColumnName);
+    $cacheKey = self::createCacheKey($name, CRM_Core_I18n::getLocale(), $flip, $grouping, $localize, $condition, $labelColumnName, $onlyActive, $keyColumnName);
     $cache = CRM_Utils_Cache::singleton();
     $cache->delete($cacheKey);
     unset(self::$_cache[$cacheKey]);
@@ -219,7 +229,7 @@ WHERE  v.option_group_id = g.id
    * @void
    */
   public static function &valuesByID($id, $flip = FALSE, $grouping = FALSE, $localize = FALSE, $labelColumnName = 'label', $onlyActive = TRUE, $fresh = FALSE) {
-    $cacheKey = self::createCacheKey($id, $flip, $grouping, $localize, $labelColumnName, $onlyActive);
+    $cacheKey = self::createCacheKey($id, CRM_Core_I18n::getLocale(), $flip, $grouping, $localize, $labelColumnName, $onlyActive);
 
     $cache = CRM_Utils_Cache::singleton();
     if (!$fresh) {
@@ -433,7 +443,7 @@ WHERE  v.option_group_id = g.id
   AND  g.is_active       = 1
   AND  v.is_default      = 1
 ";
-    if (in_array($groupName, self::$_domainIDGroups)) {
+    if (self::isDomainOptionGroup($groupName)) {
       $query .= " AND v.domain_id = " . CRM_Core_Config::domainID();
     }
 
@@ -466,6 +476,12 @@ WHERE  v.option_group_id = g.id
    *   the option group ID
    */
   public static function createAssoc($groupName, &$values, &$defaultID, $groupTitle = NULL) {
+    // @TODO: This causes a problem in multilingual
+    // (https://github.com/civicrm/civicrm-core/pull/17228), but is needed in
+    // order to be able to remove currencies once added.
+    if (!CRM_Core_I18n::isMultiLingual()) {
+      self::deleteAssoc($groupName);
+    }
     if (!empty($values)) {
       $group = new CRM_Core_DAO_OptionGroup();
       $group->name = $groupName;
@@ -552,11 +568,8 @@ ORDER BY v.weight
   /**
    * @param string $groupName
    * @param string $operator
-   *
-   * @deprecated
    */
   public static function deleteAssoc($groupName, $operator = "=") {
-    CRM_Core_Error::deprecatedFunctionWarning('unused function');
     $query = "
 DELETE g, v
   FROM civicrm_option_group g,

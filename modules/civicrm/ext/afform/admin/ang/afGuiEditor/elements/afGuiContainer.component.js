@@ -76,7 +76,7 @@
         return ctrl.node['af-fieldset'] || (block.directive && afGui.meta.blocks[block.directive].repeat) || ctrl.join;
       };
 
-      $scope.toggleRepeat = function() {
+      this.toggleRepeat = function() {
         if ('af-repeat' in ctrl.node) {
           delete ctrl.node.max;
           delete ctrl.node.min;
@@ -85,9 +85,11 @@
         } else {
           ctrl.node.min = '1';
           ctrl.node['af-repeat'] = ts('Add');
+          delete ctrl.node.data;
         }
       };
 
+      // Sets min value for af-repeat as a string, returns it as an int
       $scope.getSetMin = function(val) {
         if (arguments.length) {
           if (ctrl.node.max && val > parseInt(ctrl.node.max, 10)) {
@@ -103,6 +105,7 @@
         return ctrl.node.min ? parseInt(ctrl.node.min, 10) : null;
       };
 
+      // Sets max value for af-repeat as a string, returns it as an int
       $scope.getSetMax = function(val) {
         if (arguments.length) {
           if (ctrl.node.min && val && val < parseInt(ctrl.node.min, 10)) {
@@ -116,6 +119,16 @@
           }
         }
         return ctrl.node.max ? parseInt(ctrl.node.max, 10) : null;
+      };
+
+      // Returns the maximum number of repeats allowed if this is a joined entity with a limit
+      // Value comes from civicrm_custom_group.max_multiple for custom entities,
+      // or from afformEntity php file for core entities.
+      $scope.getRepeatMax = function() {
+        if (ctrl.join) {
+          return ctrl.getJoinEntity().repeat_max || '';
+        }
+        return '';
       };
 
       $scope.pickAddIcon = function() {
@@ -195,7 +208,7 @@
         };
 
         _.each(afGui.meta.blocks, function(blockInfo, directive) {
-          if (directive === ctrl.node['#tag'] || (blockInfo.join && blockInfo.join === ctrl.getFieldEntityType())) {
+          if (directive === ctrl.node['#tag'] || (blockInfo.join_entity && blockInfo.join_entity === ctrl.getFieldEntityType())) {
             block.options.push({
               id: directive,
               text: blockInfo.title
@@ -278,8 +291,19 @@
         afGui.removeRecursive($scope.getSetChildren(), {$$hashKey: element.$$hashKey});
       };
 
+      this.removeField = function(fieldName) {
+        afGui.removeRecursive($scope.getSetChildren(), {'#tag': 'af-field', name: fieldName});
+      };
+
       this.getEntityName = function() {
         return ctrl.entityName ? ctrl.entityName.split('-join-')[0] : null;
+      };
+
+      this.getJoinEntity = function() {
+        if (!ctrl.join) {
+          return null;
+        }
+        return afGui.getEntity(ctrl.join);
       };
 
       // Returns the primary entity type for this container e.g. "Contact"
@@ -299,7 +323,7 @@
           prefix = _.includes(fieldName, '.') ? fieldName.split('.')[0] : null;
         _.each(afGui.meta.searchDisplays, function(searchDisplay) {
           if (prefix) {
-            _.each(searchDisplay['saved_search.api_params'].join, function(join) {
+            _.each(searchDisplay['saved_search_id.api_params'].join, function(join) {
               var joinInfo = join[0].split(' AS ');
               if (prefix === joinInfo[1]) {
                 entityType = joinInfo[0];
@@ -307,14 +331,14 @@
               }
             });
           }
-          if (!entityType && fieldName && afGui.getField(searchDisplay['saved_search.api_entity'], fieldName)) {
-            entityType = searchDisplay['saved_search.api_entity'];
+          if (!entityType && fieldName && afGui.getField(searchDisplay['saved_search_id.api_entity'], fieldName)) {
+            entityType = searchDisplay['saved_search_id.api_entity'];
           }
           if (entityType) {
             return false;
           }
         });
-        return entityType || _.map(afGui.meta.searchDisplays, 'saved_search.api_entity')[0];
+        return entityType || _.map(afGui.meta.searchDisplays, 'saved_search_id.api_entity')[0];
       };
 
     }

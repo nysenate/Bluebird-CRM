@@ -1,5 +1,4 @@
 <?php
-
 /*
  +--------------------------------------------------------------------+
  | Copyright CiviCRM LLC. All rights reserved.                        |
@@ -9,22 +8,15 @@
  | and copyright information, see https://civicrm.org/licensing       |
  +--------------------------------------------------------------------+
  */
-
-/**
- *
- * @package CRM
- * @copyright CiviCRM LLC https://civicrm.org/licensing
- */
-
 namespace Civi\Api4;
 
 /**
  * StateProvince entity.
  *
  * @searchable secondary
+ * @since 5.22
  * @package Civi\Api4
  */
 class StateProvince extends Generic\DAOEntity {
-  use Generic\Traits\OptionList;
 
 }

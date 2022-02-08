@@ -5,6 +5,7 @@
       defaults: '=',
       layout: '<',
       contactType: '<',
+      isSystem: '<'
     },
     templateUrl: '~/contactlayout/contactLayoutEditTabs.html',
     controller: function($scope) {

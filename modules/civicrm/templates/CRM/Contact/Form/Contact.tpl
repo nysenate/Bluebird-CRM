@@ -67,7 +67,7 @@
 
           {*add dupe buttons *}
           {$form._qf_Contact_refresh_dedupe.html}
-          {if $isDuplicate}
+          {if !empty($isDuplicate)}
             &nbsp;&nbsp;
             {$form._qf_Contact_upload_duplicate.html}
           {/if}

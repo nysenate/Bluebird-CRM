@@ -440,7 +440,7 @@ class CRM_Contribute_BAO_ContributionPage extends CRM_Contribute_DAO_Contributio
         $sendTemplateParams['cc'] = $values['cc_receipt'] ?? NULL;
         $sendTemplateParams['bcc'] = $values['bcc_receipt'] ?? NULL;
         //send email with pdf invoice
-        if (Civi::settings()->get('invoicing') && Civi::settings()->get('invoice_is_email_pdf')) {
+        if (Civi::settings()->get('invoice_is_email_pdf')) {
           $sendTemplateParams['isEmailPdf'] = TRUE;
           $sendTemplateParams['contributionId'] = $values['contribution_id'];
         }
@@ -522,13 +522,13 @@ class CRM_Contribute_BAO_ContributionPage extends CRM_Contribute_DAO_Contributio
         'contribution_page_id',
         'contact_id',
         'contribution_recur_id',
-        'contribution_recur.is_email_receipt',
-        'contribution_page.title',
-        'contribution_page.is_email_receipt',
-        'contribution_page.receipt_from_name',
-        'contribution_page.receipt_from_email',
-        'contribution_page.cc_receipt',
-        'contribution_page.bcc_receipt',
+        'contribution_recur_id.is_email_receipt',
+        'contribution_page_id.title',
+        'contribution_page_id.is_email_receipt',
+        'contribution_page_id.receipt_from_name',
+        'contribution_page_id.receipt_from_email',
+        'contribution_page_id.cc_receipt',
+        'contribution_page_id.bcc_receipt',
       ])
       ->execute()->first();
 
@@ -537,10 +537,10 @@ class CRM_Contribute_BAO_ContributionPage extends CRM_Contribute_DAO_Contributio
       ->addWhere('entity_table', '=', 'civicrm_membership')
       ->addSelect('id')->execute()->first());
 
-    if ($contribution['contribution_recur.is_email_receipt'] || $contribution['contribution_page.is_email_receipt']) {
-      if ($contribution['contribution_page.receipt_from_email']) {
-        $receiptFromName = $contribution['contribution_page.receipt_from_name'];
-        $receiptFromEmail = $contribution['contribution_page.receipt_from_email'];
+    if ($contribution['contribution_recur_id.is_email_receipt'] || $contribution['contribution_page_id.is_email_receipt']) {
+      if ($contribution['contribution_page_id.receipt_from_email']) {
+        $receiptFromName = $contribution['contribution_page_id.receipt_from_name'];
+        $receiptFromEmail = $contribution['contribution_page_id.receipt_from_email'];
       }
       else {
         [$receiptFromName, $receiptFromEmail] = CRM_Core_BAO_Domain::getNameAndEmail();
@@ -570,8 +570,8 @@ class CRM_Contribute_BAO_ContributionPage extends CRM_Contribute_DAO_Contributio
         'toEmail' => $email,
       ];
       //CRM-13811
-      $templatesParams['cc'] = $contribution['contribution_page.cc_receipt'];
-      $templatesParams['bcc'] = $contribution['contribution_page.cc_receipt'];
+      $templatesParams['cc'] = $contribution['contribution_page_id.cc_receipt'];
+      $templatesParams['bcc'] = $contribution['contribution_page_id.cc_receipt'];
       if ($recur->id) {
         // in some cases its just recurringNotify() thats called for the first time and these urls don't get set.
         // like in PaypalPro, & therefore we set it here additionally.
@@ -859,17 +859,17 @@ LEFT JOIN  civicrm_premiums            ON ( civicrm_premiums.entity_id = civicrm
     if ($setDefault) {
       $jsonDecode = json_decode($params);
       $jsonDecode = (array) $jsonDecode->$module;
-      if (!$multilingual && !empty($jsonDecode['default'])) {
-        //monolingual state
-        $jsonDecode += (array) $jsonDecode['default'];
-        unset($jsonDecode['default']);
-      }
-      elseif (!empty($jsonDecode[$tsLocale])) {
+      if ($multilingual && !empty($jsonDecode[$tsLocale])) {
         //multilingual state
         foreach ($jsonDecode[$tsLocale] as $column => $value) {
           $jsonDecode[$column] = $value;
         }
         unset($jsonDecode[$tsLocale]);
+      }
+      elseif (!empty($jsonDecode['default'])) {
+        //monolingual state, or an undefined value in multilingual
+        $jsonDecode += (array) $jsonDecode['default'];
+        unset($jsonDecode['default']);
       }
       return $jsonDecode;
     }

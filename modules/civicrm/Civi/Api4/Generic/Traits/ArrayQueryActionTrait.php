@@ -10,13 +10,6 @@
  +--------------------------------------------------------------------+
  */
 
-/**
- *
- * @package CRM
- * @copyright CiviCRM LLC https://civicrm.org/licensing
- */
-
-
 namespace Civi\Api4\Generic\Traits;
 
 use Civi\API\Exception\NotImplementedException;
@@ -94,7 +87,7 @@ trait ArrayQueryActionTrait {
         return $result;
 
       default:
-        return $this->filterCompare($row, $filters);
+        return self::filterCompare($row, $filters);
     }
   }
 
@@ -104,7 +97,7 @@ trait ArrayQueryActionTrait {
    * @return bool
    * @throws \Civi\API\Exception\NotImplementedException
    */
-  private function filterCompare($row, $condition) {
+  public static function filterCompare($row, $condition) {
     if (!is_array($condition)) {
       throw new NotImplementedException('Unexpected where syntax; expecting array.');
     }
@@ -155,6 +148,11 @@ trait ArrayQueryActionTrait {
       case 'NOT LIKE':
         $pattern = '/^' . str_replace('%', '.*', preg_quote($expected, '/')) . '$/i';
         return !preg_match($pattern, $value) == ($operator != 'LIKE');
+
+      case 'REGEXP':
+      case 'NOT REGEXP':
+        $pattern = '/' . str_replace('/', '\\/', $expected) . '/';
+        return !preg_match($pattern, $value) == ($operator != 'REGEXP');
 
       case 'IN':
         return in_array($value, $expected);

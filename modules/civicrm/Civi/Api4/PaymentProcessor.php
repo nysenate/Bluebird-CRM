@@ -8,13 +8,6 @@
  | and copyright information, see https://civicrm.org/licensing       |
  +--------------------------------------------------------------------+
  */
-
-/**
- *
- * @package CRM
- * @copyright CiviCRM LLC https://civicrm.org/licensing
- */
-
 namespace Civi\Api4;
 
 /**
@@ -23,9 +16,9 @@ namespace Civi\Api4;
  * @see https://docs.civicrm.org/sysadmin/en/latest/setup/payment-processors/
  *
  * @searchable none
+ * @since 5.23
  * @package Civi\Api4
  */
 class PaymentProcessor extends Generic\DAOEntity {
-  use Generic\Traits\OptionList;
 
 }

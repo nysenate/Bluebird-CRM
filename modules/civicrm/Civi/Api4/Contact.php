@@ -1,5 +1,4 @@
 <?php
-
 /*
  +--------------------------------------------------------------------+
  | Copyright CiviCRM LLC. All rights reserved.                        |
@@ -9,14 +8,6 @@
  | and copyright information, see https://civicrm.org/licensing       |
  +--------------------------------------------------------------------+
  */
-
-/**
- *
- * @package CRM
- * @copyright CiviCRM LLC https://civicrm.org/licensing
- */
-
-
 namespace Civi\Api4;
 
 /**
@@ -29,9 +20,20 @@ namespace Civi\Api4;
  *
  * @see https://docs.civicrm.org/user/en/latest/organising-your-data/contacts/
  * @searchable primary
+ * @orderBy sort_name
+ * @since 5.19
  * @package Civi\Api4
  */
 class Contact extends Generic\DAOEntity {
+
+  /**
+   * @param bool $checkPermissions
+   * @return Action\Contact\Delete
+   */
+  public static function delete($checkPermissions = TRUE) {
+    return (new Action\Contact\Delete(__CLASS__, __FUNCTION__))
+      ->setCheckPermissions($checkPermissions);
+  }
 
   /**
    * @param bool $checkPermissions

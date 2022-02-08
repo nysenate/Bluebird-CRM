@@ -226,6 +226,7 @@ class CRM_Core_CodeGen_Specification {
       'attributes_simple' => trim($database['tableAttributes_simple']),
       'attributes_modern' => trim($database['tableAttributes_modern']),
       'comment' => $this->value('comment', $tableXML),
+      'description' => $this->value('description', $tableXML),
       'localizable' => $localizable,
       'log' => $this->value('log', $tableXML, 'false'),
       'archive' => $this->value('archive', $tableXML, 'false'),
@@ -455,6 +456,9 @@ class CRM_Core_CodeGen_Specification {
         'callback',
         // Path to options edit form
         'optionEditPath',
+        // Should options for this field be prefetched (for presenting on forms).
+        // The default is TRUE, but adding FALSE helps when there could be many options
+        'prefetch',
       ];
       foreach ($validOptions as $pseudoOption) {
         if (!empty($fieldXML->pseudoconstant->$pseudoOption)) {
@@ -513,7 +517,7 @@ class CRM_Core_CodeGen_Specification {
     if (isset($fields[$name])) {
       $fields[$name]['autoincrement'] = $auto;
     }
-    $fields[$name]['autoincrement'] = $auto;
+
     $primaryKey = [
       'name' => $name,
       'autoincrement' => $auto,

@@ -127,6 +127,19 @@ class CRM_Contact_Form_Contact extends CRM_Core_Form {
   }
 
   /**
+   * Get any smarty elements that may not be present in the form.
+   *
+   * To make life simpler for smarty we ensure they are set to null
+   * rather than unset. This is done at the last minute when $this
+   * is converted to an array to be assigned to the form.
+   *
+   * @return array
+   */
+  public function getOptionalSmartyElements(): array {
+    return ['group'];
+  }
+
+  /**
    * Build all the data structures needed to build the form.
    */
   public function preProcess() {
@@ -181,7 +194,7 @@ class CRM_Contact_Form_Contact extends CRM_Core_Form {
       );
       $typeLabel = implode(' / ', $typeLabel);
 
-      CRM_Utils_System::setTitle(ts('New %1', [1 => $typeLabel]));
+      $this->setTitle(ts('New %1', [1 => $typeLabel]));
       $session->pushUserContext(CRM_Utils_System::url('civicrm/dashboard', 'reset=1'));
       $this->_contactId = NULL;
     }
@@ -222,7 +235,7 @@ class CRM_Contact_Form_Contact extends CRM_Core_Form {
         }
 
         // omitting contactImage from title for now since the summary overlay css doesn't work outside of our crm-container
-        CRM_Utils_System::setTitle($displayName);
+        $this->setTitle($displayName);
         $context = CRM_Utils_Request::retrieve('context', 'Alphanumeric', $this);
         $qfKey = CRM_Utils_Request::retrieve('key', 'String', $this);
 
@@ -335,7 +348,7 @@ class CRM_Contact_Form_Contact extends CRM_Core_Form {
         if ($groupCount > 1) {
           $this->set('groupID', $groupID);
           //loop the group
-          for ($i = 0; $i <= $groupCount; $i++) {
+          for ($i = 1; $i <= $groupCount; $i++) {
             CRM_Custom_Form_CustomData::preProcess($this, NULL, $contactSubType,
               $i, $this->_contactType, $this->_contactId
             );
@@ -359,8 +372,6 @@ class CRM_Contact_Form_Contact extends CRM_Core_Form {
       if ($this->_contactSubType || isset($paramSubType)) {
         $paramSubType = (isset($paramSubType)) ? $paramSubType :
           str_replace(CRM_Core_DAO::VALUE_SEPARATOR, ',', trim($this->_contactSubType, CRM_Core_DAO::VALUE_SEPARATOR));
-
-        $this->assign('paramSubType', $paramSubType);
       }
 
       if (CRM_Utils_Request::retrieve('type', 'String')) {
@@ -379,6 +390,7 @@ class CRM_Contact_Form_Contact extends CRM_Core_Form {
         $this->assign('customValueCount', $this->_customValueCount);
       }
     }
+    $this->assign('paramSubType', $paramSubType ?? '');
   }
 
   /**
@@ -428,9 +440,7 @@ class CRM_Contact_Form_Contact extends CRM_Core_Form {
     //set address block defaults
     CRM_Contact_Form_Edit_Address::setDefaultValues($defaults, $this);
 
-    if (!empty($defaults['image_URL'])) {
-      $this->assign("imageURL", CRM_Utils_File::getImageURL($defaults['image_URL']));
-    }
+    $this->assign('imageURL', !empty($defaults['image_URL']) ? CRM_Utils_File::getImageURL($defaults['image_URL']) : '');
 
     //set location type and country to default for each block
     $this->blockSetDefaults($defaults);

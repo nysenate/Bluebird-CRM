@@ -16,7 +16,7 @@
 <thead class="sticky">
     <tr>
     {if ! $single and $context eq 'Search' }
-      <th scope="col" title="Select Rows">{$form.toggleSelect.html}</th>
+      <th scope="col" title="{ts}Select rows{/ts}">{$form.toggleSelect.html}</th>
     {/if}
     {foreach from=$columnHeaders item=header}
         <th scope="col">
@@ -44,7 +44,7 @@
     {/if}
 
     <td class="crm-participant-event_title"><a href="{crmURL p='civicrm/event/info' q="id=`$row.event_id`&reset=1"}" title="{ts}View event info page{/ts}">{$row.event_title}</a>
-        {if $contactId}<br /><a href="{crmURL p='civicrm/event/search' q="reset=1&force=1&event=`$row.event_id`"}" title="{ts}List participants for this event (all statuses){/ts}">({ts}participants{/ts})</a>{/if}
+        {if !empty($contactId)}<br /><a href="{crmURL p='civicrm/event/search' q="reset=1&force=1&event=`$row.event_id`"}" title="{ts}List participants for this event (all statuses){/ts}">({ts}participants{/ts})</a>{/if}
     </td>
     {assign var="participant_id" value=$row.participant_id}
     {if $lineItems.$participant_id}

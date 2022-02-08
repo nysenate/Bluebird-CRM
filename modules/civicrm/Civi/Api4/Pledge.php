@@ -1,5 +1,4 @@
 <?php
-
 /*
  +--------------------------------------------------------------------+
  | Copyright CiviCRM LLC. All rights reserved.                        |
@@ -9,12 +8,14 @@
  | and copyright information, see https://civicrm.org/licensing       |
  +--------------------------------------------------------------------+
  */
-
 namespace Civi\Api4;
 
 /**
  * Pledge entity.
  *
+ * @see https://docs.civicrm.org/user/en/latest/pledges/what-is-civipledge/
+ * @searchable primary
+ * @since 5.35
  * @package Civi\Api4
  */
 class Pledge extends Generic\DAOEntity {

@@ -2783,8 +2783,8 @@ INSERT INTO civicrm_state_province (id, country_id, abbreviation, name) VALUES
 (4062, 1170, "CAT", "Catanduanes"),
 (4063, 1170, "CAV", "Cavite"),
 (4064, 1170, "CEB", "Cebu"),
-(4065, 1170, "COM", "Compostela Valley"),
-(4066, 1170, "DAV", "Davao"),
+(4065, 1170, "COM", "Davao de Oro"),
+(4066, 1170, "DAV", "Davao del Norte"),
 (4067, 1170, "DAS", "Davao del Sur"),
 (4068, 1170, "DAO", "Davao Oriental"),
 (4069, 1170, "EAS", "Eastern Samar"),
@@ -2794,7 +2794,7 @@ INSERT INTO civicrm_state_province (id, country_id, abbreviation, name) VALUES
 (4073, 1170, "ILS", "Ilocos Sur"),
 (4074, 1170, "ILI", "Iloilo"),
 (4075, 1170, "ISA", "Isabela"),
-(4076, 1170, "KAL", "Kalinga-Apayso"),
+(4076, 1170, "KAL", "Kalinga"),
 (4077, 1170, "LAG", "Laguna"),
 (4078, 1170, "LAN", "Lanao del Norte"),
 (4079, 1170, "LAS", "Lanao del Sur"),
@@ -2810,7 +2810,7 @@ INSERT INTO civicrm_state_province (id, country_id, abbreviation, name) VALUES
 (4089, 1170, "MOU", "Mountain Province"),
 (4090, 1170, "NEC", "Negroe Occidental"),
 (4091, 1170, "NER", "Negros Oriental"),
-(4092, 1170, "NCO", "North Cotabato"),
+(4092, 1170, "NCO", "Cotabato"),
 (4093, 1170, "NSA", "Northern Samar"),
 (4094, 1170, "NUE", "Nueva Ecija"),
 (4095, 1170, "NUV", "Nueva Vizcaya"),
@@ -4421,7 +4421,13 @@ INSERT INTO civicrm_state_province (id, country_id, abbreviation, name) VALUES
 (NULL, 1226, "WRX", "Wrexham"),
 
 -- Add missing state for South Korea
-(NULL, 1115, "50", "Sejong");
+(NULL, 1115, "50", "Sejong"),
+
+-- Add missing province for Philippines
+(NULL, 1170, "DIN", "Dinagat Islands"),
+
+-- Add missing state for Colombia
+(NULL, 1048, "HUI", "Huila");
 -- +--------------------------------------------------------------------+
 -- | Copyright CiviCRM LLC. All rights reserved.                        |
 -- |                                                                    |
@@ -4474,7 +4480,7 @@ INSERT INTO civicrm_currency (id, name, symbol, numeric_code, full_name) VALUES
 ( 37, "BSD",  "$", "044", "Bahamian Dollar"),
 ( 38, "BTN", NULL, "064", "Bhutan Ngultrum"),
 ( 39, "BWP",  "P", "072", "Botswana Pula"),
-( 40, "BYR", "p.", "974", "Belarussian Rouble"),
+( 40, "BYN", "p.", "974", "Belarussian Rouble"),
 ( 41, "BZD","BZ$", "084", "Belize Dollar"),
 ( 42, "CDF", NULL, "976", "Franc Congolais"),
 ( 43, "CHE", NULL, "947", "WIR Euro"),
@@ -4501,7 +4507,7 @@ INSERT INTO civicrm_currency (id, name, symbol, numeric_code, full_name) VALUES
 ( 65, "FJD",  "$", "242", "Fiji Dollar"),
 ( 66, "FKP",  "£", "238", "Falkland Islands Pound"),
 ( 67, "GEL", NULL, "981", "Georgian Lari"),
-( 68, "GHC",  "¢", "288", "Ghanaian Cedi"),
+( 68, "GHS",  "¢", "288", "Ghanaian Cedi"),
 ( 69, "GIP",  "£", "292", "Gibraltar Pound"),
 ( 70, "GMD", NULL, "270", "Gambian Dalasi"),
 ( 71, "GNF", NULL, "324", "Guinea Franc"),
@@ -4774,6 +4780,7 @@ VALUES
    ('contact_reference_options'     , 'Contact Reference Autocomplete Options', NULL, 1, 1, 1),
    ('website_type'                  , 'Website Type'                       , NULL, 1, 1, 0),
    ('tag_used_for'                  , 'Tag Used For'                       , NULL, 1, 1, 1),
+   ('note_used_for'                 , 'Note Used For'                      , NULL, 1, 1, 1),
    ('currencies_enabled'            , 'Currencies Enabled'                 , NULL, 1, 1, 0),
    ('event_badge'                   , 'Event Name Badge'                   , NULL, 1, 1, 0),
    ('note_privacy'                  , 'Privacy levels for notes'           , NULL, 1, 1, 0),
@@ -4808,7 +4815,8 @@ VALUES
    ('pledge_status'                 , 'Pledge Status'                      , NULL, 1, 1, 1),
    ('contribution_recur_status'     , 'Recurring Contribution Status'      , NULL, 1, 1, 1),
    ('environment'                   , 'Environment'                        , NULL, 1, 1, 0),
-   ('activity_default_assignee'     , 'Activity default assignee'          , NULL, 1, 1, 0);
+   ('activity_default_assignee'     , 'Activity default assignee'          , NULL, 1, 1, 0),
+   ('entity_batch_extends'          , 'Entity Batch Extends'               , NULL, 1, 1, 0);
 
 SELECT @option_group_id_pcm            := max(id) from civicrm_option_group where name = 'preferred_communication_method';
 SELECT @option_group_id_act            := max(id) from civicrm_option_group where name = 'activity_type';
@@ -4858,6 +4866,7 @@ SELECT @option_group_id_acsOpt         := max(id) from civicrm_option_group wher
 SELECT @option_group_id_acConRef       := max(id) from civicrm_option_group where name = 'contact_reference_options';
 SELECT @option_group_id_website        := max(id) from civicrm_option_group where name = 'website_type';
 SELECT @option_group_id_tuf            := max(id) from civicrm_option_group where name = 'tag_used_for';
+SELECT @option_group_id_nuf            := max(id) from civicrm_option_group where name = 'note_used_for';
 SELECT @option_group_id_currency       := max(id) from civicrm_option_group where name = 'currencies_enabled';
 SELECT @option_group_id_eventBadge     := max(id) from civicrm_option_group where name = 'event_badge';
 SELECT @option_group_id_notePrivacy    := max(id) from civicrm_option_group where name = 'note_privacy';
@@ -4892,6 +4901,7 @@ SELECT @option_group_id_ps    := max(id) from civicrm_option_group where name = 
 SELECT @option_group_id_crs    := max(id) from civicrm_option_group where name = 'contribution_recur_status';
 SELECT @option_group_id_env    := max(id) from civicrm_option_group where name = 'environment';
 SELECT @option_group_id_default_assignee := max(id) from civicrm_option_group where name = 'activity_default_assignee';
+SELECT @option_group_id_entity_batch_extends := max(id) from civicrm_option_group where name = 'entity_batch_extends';
 
 SELECT @contributeCompId := max(id) FROM civicrm_component where name = 'CiviContribute';
 SELECT @eventCompId      := max(id) FROM civicrm_component where name = 'CiviEvent';
@@ -5179,7 +5189,7 @@ VALUES
   (@option_group_id_csearch , 'CRM_Contact_Form_Search_Custom_PostalMailing'        , 5, 'CRM_Contact_Form_Search_Custom_PostalMailing', NULL, 0, NULL, 5, 'Postal Mailing', 0, 0, 1, NULL, NULL, NULL),
   (@option_group_id_csearch , 'CRM_Contact_Form_Search_Custom_Proximity'            , 6, 'CRM_Contact_Form_Search_Custom_Proximity', NULL, 0, NULL, 6, 'Proximity Search', 0, 0, 1, NULL, NULL, NULL),
   (@option_group_id_csearch , 'CRM_Contact_Form_Search_Custom_EventAggregate'       , 7, 'CRM_Contact_Form_Search_Custom_EventAggregate', NULL, 0, NULL, 7, 'Event Aggregate', 0, 0, 1, NULL, NULL, NULL),
-  (@option_group_id_csearch , 'CRM_Contact_Form_Search_Custom_ActivitySearch'       , 8, 'CRM_Contact_Form_Search_Custom_ActivitySearch', NULL, 0, NULL, 8, 'Activity Search', 0, 0, 1, NULL, NULL, NULL),
+  (@option_group_id_csearch , 'CRM_Contact_Form_Search_Custom_ActivitySearch'       , 8, 'CRM_Contact_Form_Search_Custom_ActivitySearch', NULL, 0, NULL, 8, 'Activity Search', 0, 0, 0, NULL, NULL, NULL),
   (@option_group_id_csearch , 'CRM_Contact_Form_Search_Custom_PriceSet'             , 9, 'CRM_Contact_Form_Search_Custom_PriceSet', NULL, 0, NULL, 9, 'Price Set Details for Event Participants', 0, 0, 1, NULL, NULL, NULL),
   (@option_group_id_csearch , 'CRM_Contact_Form_Search_Custom_ZipCodeRange'         ,10, 'CRM_Contact_Form_Search_Custom_ZipCodeRange', NULL, 0, NULL, 10, 'Zip Code Range', 0, 0, 1, NULL, NULL, NULL),
   (@option_group_id_csearch , 'CRM_Contact_Form_Search_Custom_DateAdded'            ,11, 'CRM_Contact_Form_Search_Custom_DateAdded', NULL, 0, NULL, 11, 'Date Added to CiviCRM', 0, 0, 1, NULL, NULL, NULL),
@@ -5274,7 +5284,7 @@ VALUES
   (@option_group_id_sfe, 'pptx',  16, 'pptx',   NULL, 0, 0, 16, NULL, 0, 0, 1, NULL, NULL, NULL),
 
   (@option_group_id_we, 'Textarea', 1, 'Textarea', NULL, 0, NULL, 1, NULL, 0, 1, 1, NULL, NULL, NULL),
-  (@option_group_id_we, 'CKEditor', 2, 'CKEditor', NULL, 0, NULL, 2, NULL, 0, 1, 1, NULL, NULL, NULL),
+  (@option_group_id_we, 'CKEditor 4', 2, 'CKEditor', NULL, 0, NULL, 2, NULL, 0, 1, 1, NULL, NULL, NULL),
 
   (@option_group_id_mt, 'Search Builder',      1, 'Search Builder',      NULL, 0, 0,    1, NULL, 0, 1, 1, NULL, NULL, NULL),
   (@option_group_id_mt, 'Import Contact',      2, 'Import Contact',      NULL, 0, 0,    2, NULL, 0, 1, 1, NULL, NULL, NULL),
@@ -5329,19 +5339,19 @@ VALUES
 
 -- email greeting.
   (@option_group_id_emailGreeting, 'Dear {contact.first_name}',                                                 1, 'Dear {contact.first_name}',                                                 NULL,    1, 1, 1, NULL, 0, 0, 1, NULL, NULL, NULL),
-  (@option_group_id_emailGreeting, 'Dear {contact.individual_prefix} {contact.first_name} {contact.last_name}', 2, 'Dear {contact.individual_prefix} {contact.first_name} {contact.last_name}', NULL,    1, 0, 2, NULL, 0, 0, 1, NULL, NULL, NULL),
-  (@option_group_id_emailGreeting, 'Dear {contact.individual_prefix} {contact.last_name}',                      3, 'Dear {contact.individual_prefix} {contact.last_name}',                      NULL,    1, 0, 3, NULL, 0, 0, 1, NULL, NULL, NULL),
+  (@option_group_id_emailGreeting, 'Dear {contact.prefix_id:label} {contact.first_name} {contact.last_name}', 2, 'Dear {contact.prefix_id:label} {contact.first_name} {contact.last_name}', NULL,    1, 0, 2, NULL, 0, 0, 1, NULL, NULL, NULL),
+  (@option_group_id_emailGreeting, 'Dear {contact.prefix_id:label} {contact.last_name}',                      3, 'Dear {contact.prefix_id:label} {contact.last_name}',                      NULL,    1, 0, 3, NULL, 0, 0, 1, NULL, NULL, NULL),
   (@option_group_id_emailGreeting, 'Customized',                                                                4, 'Customized',                                                                NULL, 0, 0, 4, NULL, 0, 1, 1, NULL, NULL, NULL),
   (@option_group_id_emailGreeting, 'Dear {contact.household_name}',                                             5, 'Dear {contact.household_name}',                                             NULL,    2, 1, 5, NULL, 0, 0, 1, NULL, NULL, NULL),
 -- postal greeting.
   (@option_group_id_postalGreeting, 'Dear {contact.first_name}',                                                 1, 'Dear {contact.first_name}',                                                 NULL,    1, 1, 1, NULL, 0, 0, 1, NULL, NULL, NULL),
-  (@option_group_id_postalGreeting, 'Dear {contact.individual_prefix} {contact.first_name} {contact.last_name}', 2, 'Dear {contact.individual_prefix} {contact.first_name} {contact.last_name}', NULL,    1, 0, 2, NULL, 0, 0, 1, NULL, NULL, NULL),
-  (@option_group_id_postalGreeting, 'Dear {contact.individual_prefix} {contact.last_name}',                      3, 'Dear {contact.individual_prefix} {contact.last_name}',                      NULL,    1, 0, 3, NULL, 0, 0, 1, NULL, NULL, NULL),
+  (@option_group_id_postalGreeting, 'Dear {contact.prefix_id:label} {contact.first_name} {contact.last_name}', 2, 'Dear {contact.prefix_id:label} {contact.first_name} {contact.last_name}', NULL,    1, 0, 2, NULL, 0, 0, 1, NULL, NULL, NULL),
+  (@option_group_id_postalGreeting, 'Dear {contact.prefix_id:label} {contact.last_name}',                      3, 'Dear {contact.prefix_id:label} {contact.last_name}',                      NULL,    1, 0, 3, NULL, 0, 0, 1, NULL, NULL, NULL),
   (@option_group_id_postalGreeting, 'Customized',                                                                4, 'Customized',                                                                NULL, 0, 0, 4, NULL, 0, 1, 1, NULL, NULL, NULL),
   (@option_group_id_postalGreeting, 'Dear {contact.household_name}',                                             5, 'Dear {contact.household_name}',                                             NULL,    2, 1, 5, NULL, 0, 0, 1, NULL, NULL, NULL),
 
 -- addressee
-  (@option_group_id_addressee, '{contact.individual_prefix}{ } {contact.first_name}{ }{contact.middle_name}{ }{contact.last_name}{ }{contact.individual_suffix}',          '1', '}{contact.individual_prefix}{ } {contact.first_name}{ }{contact.middle_name}{ }{contact.last_name}{ }{contact.individual_suffix}',         NULL ,   '1', '1', '1', NULL , '0', '0', '1', NULL , NULL, NULL),
+  (@option_group_id_addressee, '{contact.prefix_id:label}{ }{contact.first_name}{ }{contact.middle_name}{ }{contact.last_name}{ }{contact.suffix_id:label}',          '1', '{contact.prefix_id:label}{ }{contact.first_name}{ }{contact.middle_name}{ }{contact.last_name}{ }{contact.suffix_id:label}',         NULL ,   '1', '1', '1', NULL , '0', '0', '1', NULL , NULL, NULL),
   (@option_group_id_addressee, '{contact.household_name}',    '2', '{contact.household_name}',    NULL ,   '2', '1', '2', NULL , '0', '0', '1', NULL , NULL, NULL),
   (@option_group_id_addressee, '{contact.organization_name}', '3', '{contact.organization_name}', NULL ,   '3', '1', '3', NULL , '0', '0', '1', NULL , NULL, NULL),
   (@option_group_id_addressee, 'Customized',                  '4', 'Customized',                  NULL ,    0 , '0', '4', NULL , '0', '1', '1', NULL , NULL, NULL),
@@ -5360,10 +5370,16 @@ VALUES
    (@option_group_id_website, 'Vine',  12, 'Vine ',  NULL, 0, NULL, 12, NULL, 0, 0, 1, NULL, NULL, NULL),
 
 -- Tag used for
-   (@option_group_id_tuf, 'Contacts',   'civicrm_contact',  'Contacts',     NULL, 0, NULL, 1, NULL, 0, 0, 1, NULL, NULL, NULL),
-   (@option_group_id_tuf, 'Activities', 'civicrm_activity', 'Activities',   NULL, 0, NULL, 2, NULL, 0, 0, 1, NULL, NULL, NULL),
-   (@option_group_id_tuf, 'Cases',      'civicrm_case',     'Cases',        NULL, 0, NULL, 3, NULL, 0, 0, 1, NULL, NULL, NULL),
-   (@option_group_id_tuf, 'Attachments','civicrm_file',     'Attachements', NULL, 0, NULL, 4, NULL, 0, 0, 1, NULL, NULL, NULL),
+   (@option_group_id_tuf, 'Contacts',    'civicrm_contact',  'Contact',  NULL, 0, NULL, 1, NULL, 0, 0, 1, NULL, NULL, NULL),
+   (@option_group_id_tuf, 'Activities',  'civicrm_activity', 'Activity', NULL, 0, NULL, 2, NULL, 0, 0, 1, NULL, NULL, NULL),
+   (@option_group_id_tuf, 'Cases',       'civicrm_case',     'Case',     NULL, 0, NULL, 3, NULL, 0, 0, 1, NULL, NULL, NULL),
+   (@option_group_id_tuf, 'Attachments', 'civicrm_file',     'File',     NULL, 0, NULL, 4, NULL, 0, 0, 1, NULL, NULL, NULL),
+
+-- Note used for
+   (@option_group_id_nuf, 'Contacts',      'civicrm_contact',      'Contact',      NULL, 0, NULL, 1, NULL, 0, 0, 1, NULL, NULL, NULL),
+   (@option_group_id_nuf, 'Relationships', 'civicrm_relationship', 'Relationship', NULL, 0, NULL, 2, NULL, 0, 0, 1, NULL, NULL, NULL),
+   (@option_group_id_nuf, 'Participants',  'civicrm_participant',  'Participant',  NULL, 0, NULL, 3, NULL, 0, 0, 1, NULL, NULL, NULL),
+   (@option_group_id_nuf, 'Contributions', 'civicrm_contribution', 'Contribution', NULL, 0, NULL, 4, NULL, 0, 0, 1, NULL, NULL, NULL),
 
    (@option_group_id_currency, 'USD ($)',      'USD',     'USD',       NULL, 0, 1, 1, NULL, 0, 0, 1, NULL, NULL, NULL),
 
@@ -5656,7 +5672,12 @@ VALUES
 (@option_group_id_default_assignee, 'None',                           '1',     'NONE',                    NULL,       0,         1,           1,         NULL,          0,             0,             1,           NULL,            NULL,           NULL),
 (@option_group_id_default_assignee, 'By relationship to case client', '2',     'BY_RELATIONSHIP',         NULL,       0,         0,           1,         NULL,          0,             0,             1,           NULL,            NULL,           NULL),
 (@option_group_id_default_assignee, 'Specific contact',               '3',     'SPECIFIC_CONTACT',        NULL,       0,         0,           1,         NULL,          0,             0,             1,           NULL,            NULL,           NULL),
-(@option_group_id_default_assignee, 'User creating the case',          '4',     'USER_CREATING_THE_CASE',  NULL,       0,         0,           1,         NULL,          0,             0,             1,           NULL,            NULL,           NULL);
+(@option_group_id_default_assignee, 'User creating the case',          '4',     'USER_CREATING_THE_CASE',  NULL,       0,         0,           1,         NULL,          0,             0,             1,           NULL,            NULL,           NULL),
+
+-- Entity Batch options
+--  (`option_group_id`,             `label`,                                      `value`,                   `name`,                    `grouping`, `filter`, `is_default`, `weight`, `description`, `is_optgroup`, `is_reserved`, `is_active`, `component_id`, `visibility_id`, `icon`)
+(@option_group_id_entity_batch_extends, 'Financial Transactions',  'civicrm_financial_trxn',  'civicrm_financial_trxn',   NULL,       0,         1,           1,         NULL,          0,             0,             1,           @contributeCompId,            NULL,           NULL);
+
 
 -- financial accounts
 SELECT @opval := value FROM civicrm_option_value WHERE name = 'Revenue' and option_group_id = @option_group_id_fat;
@@ -5844,7 +5865,7 @@ VALUES
   (@option_group_id_languages, 0, 0, 'mn_MN', 'mn', 'Mongolian', @counter := @counter + 1),
   (@option_group_id_languages, 0, 0, 'na_NR', 'na', 'Nauru', @counter := @counter + 1),
   (@option_group_id_languages, 0, 0, 'nv_US', 'nv', 'Navajo, Navaho', @counter := @counter + 1),
-  (@option_group_id_languages, 0, 1, 'nb_NO', 'nb', 'Norwegian BokmÃ¥l', @counter := @counter + 1),
+  (@option_group_id_languages, 0, 1, 'nb_NO', 'nb', 'Norwegian Bokmål', @counter := @counter + 1),
   (@option_group_id_languages, 0, 0, 'nd_ZW', 'nd', 'North Ndebele', @counter := @counter + 1),
   (@option_group_id_languages, 0, 0, 'ne_NP', 'ne', 'Nepali', @counter := @counter + 1),
   (@option_group_id_languages, 0, 0, 'ng_NA', 'ng', 'Ndonga', @counter := @counter + 1),
@@ -6534,16 +6555,16 @@ INSERT INTO civicrm_msg_template
 {ts}Activity Summary{/ts} - {$activityTypeName}
 ===========================================================
 {if !empty($isCaseActivity)}
-{ts}Your Case Role(s){/ts} : {$contact.role}
-{if $manageCaseURL}
+{ts}Your Case Role(s){/ts} : {$contact.role|default:\'\'}
+{if !empty($manageCaseURL)}
 {ts}Manage Case{/ts} : {$manageCaseURL}
 {/if}
 {/if}
 
-{if $editActURL}
+{if !empty($editActURL)}
 {ts}Edit activity{/ts} : {$editActURL}
 {/if}
-{if $viewActURL}
+{if !empty($viewActURL)}
 {ts}View activity{/ts} : {$viewActURL}
 {/if}
 
@@ -6555,6 +6576,7 @@ INSERT INTO civicrm_msg_template
 {/if}
 {/foreach}
 
+{if !empty($activity.customGroups)}
 {foreach from=$activity.customGroups key=customGroupName item=customGroup}
 ==========================================================
 {$customGroupName}
@@ -6568,6 +6590,7 @@ INSERT INTO civicrm_msg_template
 {/foreach}
 
 {/foreach}
+{/if}
 ', '<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
@@ -6576,100 +6599,99 @@ INSERT INTO civicrm_msg_template
 </head>
 <body>
 
-{capture assign=headerStyle}colspan="2" style="text-align: left; padding: 4px; border-bottom: 1px solid #999; background-color: #eee;"{/capture}
-{capture assign=labelStyle }style="padding: 4px; border-bottom: 1px solid #999; background-color: #f7f7f7;"{/capture}
-{capture assign=valueStyle }style="padding: 4px; border-bottom: 1px solid #999;"{/capture}
+  {capture assign=headerStyle}colspan="2" style="text-align: left; padding: 4px; border-bottom: 1px solid #999; background-color: #eee;"{/capture}
+  {capture assign=labelStyle }style="padding: 4px; border-bottom: 1px solid #999; background-color: #f7f7f7;"{/capture}
+  {capture assign=valueStyle }style="padding: 4px; border-bottom: 1px solid #999;"{/capture}
 
-<center>
-  <table id="crm-event_receipt" style="font-family: Arial, Verdana, sans-serif; text-align: left; width:100%; max-width:700px; padding:0; margin:0; border:0px;">
+    <table id="crm-event_receipt" style="font-family: Arial, Verdana, sans-serif; text-align: left; width:100%; max-width:700px; padding:0; margin:0; border:0px;">
 
-  <!-- BEGIN HEADER -->
-  <!-- You can add table row(s) here with logo or other header elements -->
-  <!-- END HEADER -->
+    <!-- BEGIN HEADER -->
+    <!-- You can add table row(s) here with logo or other header elements -->
+    <!-- END HEADER -->
 
-  <!-- BEGIN CONTENT -->
+    <!-- BEGIN CONTENT -->
 
-  <tr>
-   <td>
-    <table style="border: 1px solid #999; margin: 1em 0em 1em; border-collapse: collapse; width:100%;">
-     <tr>
-      <th {$headerStyle}>
-       {ts}Activity Summary{/ts} - {$activityTypeName}
-      </th>
-     </tr>
-     {if !empty($isCaseActivity)}
       <tr>
-       <td {$labelStyle}>
-        {ts}Your Case Role(s){/ts}
-       </td>
-       <td {$valueStyle}>
-        {$contact.role}
-       </td>
-      </tr>
-      {if $manageCaseURL}
-       <tr>
-       <td colspan="2" {$valueStyle}>
-     <a href="{$manageCaseURL}" title="{ts}Manage Case{/ts}">{ts}Manage Case{/ts}</a>
-       </td>
-       </tr>
-      {/if}
-     {/if}
-     {if $editActURL}
-     <tr>
-       <td colspan="2" {$valueStyle}>
-   <a href="{$editActURL}" title="{ts}Edit activity{/ts}">{ts}Edit activity{/ts}</a>
-       </td>
-     </tr>
-     {/if}
-     {if $viewActURL}
-     <tr>
-       <td colspan="2" {$valueStyle}>
-   <a href="{$viewActURL}" title="{ts}View activity{/ts}">{ts}View activity{/ts}</a>
-       </td>
-     </tr>
-     {/if}
-     {foreach from=$activity.fields item=field}
-      <tr>
-       <td {$labelStyle}>
-        {$field.label}{if !empty($field.category)}({$field.category}){/if}
-       </td>
-       <td {$valueStyle}>
-        {if $field.type eq \'Date\'}
-         {$field.value|crmDate:$config->dateformatDatetime}
-        {else}
-         {$field.value}
-        {/if}
-       </td>
-      </tr>
-     {/foreach}
+        <td>
+          <table style="border: 1px solid #999; margin: 1em 0em 1em; border-collapse: collapse; width:100%;">
+            <tr>
+              <th {$headerStyle}>
+                {ts}Activity Summary{/ts} - {$activityTypeName}
+              </th>
+            </tr>
+            {if !empty($isCaseActivity)}
+              <tr>
+                <td {$labelStyle}>
+                  {ts}Your Case Role(s){/ts}
+                </td>
+                <td {$valueStyle}>
+                  {$contact.role|default:\'\'}
+                </td>
+              </tr>
+              {if !empty($manageCaseURL)}
+                <tr>
+                  <td colspan="2" {$valueStyle}>
+                    <a href="{$manageCaseURL}" title="{ts}Manage Case{/ts}">{ts}Manage Case{/ts}</a>
+                  </td>
+                </tr>
+              {/if}
+            {/if}
+            {if !empty($editActURL)}
+              <tr>
+                <td colspan="2" {$valueStyle}>
+                  <a href="{$editActURL}" title="{ts}Edit activity{/ts}">{ts}Edit activity{/ts}</a>
+                </td>
+              </tr>
+            {/if}
+            {if !empty($viewActURL)}
+              <tr>
+                <td colspan="2" {$valueStyle}>
+                  <a href="{$viewActURL}" title="{ts}View activity{/ts}">{ts}View activity{/ts}</a>
+                </td>
+              </tr>
+            {/if}
+            {foreach from=$activity.fields item=field}
+              <tr>
+                <td {$labelStyle}>
+                  {$field.label}{if !empty($field.category)}({$field.category}){/if}
+                </td>
+                <td {$valueStyle}>
+                  {if $field.type eq \'Date\'}
+                    {$field.value|crmDate:$config->dateformatDatetime}
+                  {else}
+                    {$field.value}
+                  {/if}
+                </td>
+              </tr>
+            {/foreach}
 
-     {foreach from=$activity.customGroups key=customGroupName item=customGroup}
-      <tr>
-       <th {$headerStyle}>
-        {$customGroupName}
-       </th>
-      </tr>
-      {foreach from=$customGroup item=field}
-       <tr>
-        <td {$labelStyle}>
-         {$field.label}
+            {if !empty($activity.customGroups)}
+              {foreach from=$activity.customGroups key=customGroupName item=customGroup}
+                <tr>
+                  <th {$headerStyle}>
+                    {$customGroupName}
+                  </th>
+                </tr>
+                {foreach from=$customGroup item=field}
+                  <tr>
+                    <td {$labelStyle}>
+                      {$field.label}
+                    </td>
+                    <td {$valueStyle}>
+                      {if $field.type eq \'Date\'}
+                        {$field.value|crmDate:$config->dateformatDatetime}
+                      {else}
+                        {$field.value}
+                      {/if}
+                    </td>
+                  </tr>
+                {/foreach}
+              {/foreach}
+            {/if}
+          </table>
         </td>
-        <td {$valueStyle}>
-         {if $field.type eq \'Date\'}
-          {$field.value|crmDate:$config->dateformatDatetime}
-         {else}
-          {$field.value}
-         {/if}
-        </td>
-       </tr>
-      {/foreach}
-     {/foreach}
+      </tr>
     </table>
-   </td>
-  </tr>
- </table>
-</center>
-
 </body>
 </html>
 ', 'case_activity', @tpl_ovid_case_activity, 1,          0),
@@ -6678,16 +6700,16 @@ INSERT INTO civicrm_msg_template
 {ts}Activity Summary{/ts} - {$activityTypeName}
 ===========================================================
 {if !empty($isCaseActivity)}
-{ts}Your Case Role(s){/ts} : {$contact.role}
-{if $manageCaseURL}
+{ts}Your Case Role(s){/ts} : {$contact.role|default:\'\'}
+{if !empty($manageCaseURL)}
 {ts}Manage Case{/ts} : {$manageCaseURL}
 {/if}
 {/if}
 
-{if $editActURL}
+{if !empty($editActURL)}
 {ts}Edit activity{/ts} : {$editActURL}
 {/if}
-{if $viewActURL}
+{if !empty($viewActURL)}
 {ts}View activity{/ts} : {$viewActURL}
 {/if}
 
@@ -6699,6 +6721,7 @@ INSERT INTO civicrm_msg_template
 {/if}
 {/foreach}
 
+{if !empty($activity.customGroups)}
 {foreach from=$activity.customGroups key=customGroupName item=customGroup}
 ==========================================================
 {$customGroupName}
@@ -6712,6 +6735,7 @@ INSERT INTO civicrm_msg_template
 {/foreach}
 
 {/foreach}
+{/if}
 ', '<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
@@ -6720,100 +6744,99 @@ INSERT INTO civicrm_msg_template
 </head>
 <body>
 
-{capture assign=headerStyle}colspan="2" style="text-align: left; padding: 4px; border-bottom: 1px solid #999; background-color: #eee;"{/capture}
-{capture assign=labelStyle }style="padding: 4px; border-bottom: 1px solid #999; background-color: #f7f7f7;"{/capture}
-{capture assign=valueStyle }style="padding: 4px; border-bottom: 1px solid #999;"{/capture}
+  {capture assign=headerStyle}colspan="2" style="text-align: left; padding: 4px; border-bottom: 1px solid #999; background-color: #eee;"{/capture}
+  {capture assign=labelStyle }style="padding: 4px; border-bottom: 1px solid #999; background-color: #f7f7f7;"{/capture}
+  {capture assign=valueStyle }style="padding: 4px; border-bottom: 1px solid #999;"{/capture}
 
-<center>
-  <table id="crm-event_receipt" style="font-family: Arial, Verdana, sans-serif; text-align: left; width:100%; max-width:700px; padding:0; margin:0; border:0px;">
+    <table id="crm-event_receipt" style="font-family: Arial, Verdana, sans-serif; text-align: left; width:100%; max-width:700px; padding:0; margin:0; border:0px;">
 
-  <!-- BEGIN HEADER -->
-  <!-- You can add table row(s) here with logo or other header elements -->
-  <!-- END HEADER -->
+    <!-- BEGIN HEADER -->
+    <!-- You can add table row(s) here with logo or other header elements -->
+    <!-- END HEADER -->
 
-  <!-- BEGIN CONTENT -->
+    <!-- BEGIN CONTENT -->
 
-  <tr>
-   <td>
-    <table style="border: 1px solid #999; margin: 1em 0em 1em; border-collapse: collapse; width:100%;">
-     <tr>
-      <th {$headerStyle}>
-       {ts}Activity Summary{/ts} - {$activityTypeName}
-      </th>
-     </tr>
-     {if !empty($isCaseActivity)}
       <tr>
-       <td {$labelStyle}>
-        {ts}Your Case Role(s){/ts}
-       </td>
-       <td {$valueStyle}>
-        {$contact.role}
-       </td>
-      </tr>
-      {if $manageCaseURL}
-       <tr>
-       <td colspan="2" {$valueStyle}>
-     <a href="{$manageCaseURL}" title="{ts}Manage Case{/ts}">{ts}Manage Case{/ts}</a>
-       </td>
-       </tr>
-      {/if}
-     {/if}
-     {if $editActURL}
-     <tr>
-       <td colspan="2" {$valueStyle}>
-   <a href="{$editActURL}" title="{ts}Edit activity{/ts}">{ts}Edit activity{/ts}</a>
-       </td>
-     </tr>
-     {/if}
-     {if $viewActURL}
-     <tr>
-       <td colspan="2" {$valueStyle}>
-   <a href="{$viewActURL}" title="{ts}View activity{/ts}">{ts}View activity{/ts}</a>
-       </td>
-     </tr>
-     {/if}
-     {foreach from=$activity.fields item=field}
-      <tr>
-       <td {$labelStyle}>
-        {$field.label}{if !empty($field.category)}({$field.category}){/if}
-       </td>
-       <td {$valueStyle}>
-        {if $field.type eq \'Date\'}
-         {$field.value|crmDate:$config->dateformatDatetime}
-        {else}
-         {$field.value}
-        {/if}
-       </td>
-      </tr>
-     {/foreach}
+        <td>
+          <table style="border: 1px solid #999; margin: 1em 0em 1em; border-collapse: collapse; width:100%;">
+            <tr>
+              <th {$headerStyle}>
+                {ts}Activity Summary{/ts} - {$activityTypeName}
+              </th>
+            </tr>
+            {if !empty($isCaseActivity)}
+              <tr>
+                <td {$labelStyle}>
+                  {ts}Your Case Role(s){/ts}
+                </td>
+                <td {$valueStyle}>
+                  {$contact.role|default:\'\'}
+                </td>
+              </tr>
+              {if !empty($manageCaseURL)}
+                <tr>
+                  <td colspan="2" {$valueStyle}>
+                    <a href="{$manageCaseURL}" title="{ts}Manage Case{/ts}">{ts}Manage Case{/ts}</a>
+                  </td>
+                </tr>
+              {/if}
+            {/if}
+            {if !empty($editActURL)}
+              <tr>
+                <td colspan="2" {$valueStyle}>
+                  <a href="{$editActURL}" title="{ts}Edit activity{/ts}">{ts}Edit activity{/ts}</a>
+                </td>
+              </tr>
+            {/if}
+            {if !empty($viewActURL)}
+              <tr>
+                <td colspan="2" {$valueStyle}>
+                  <a href="{$viewActURL}" title="{ts}View activity{/ts}">{ts}View activity{/ts}</a>
+                </td>
+              </tr>
+            {/if}
+            {foreach from=$activity.fields item=field}
+              <tr>
+                <td {$labelStyle}>
+                  {$field.label}{if !empty($field.category)}({$field.category}){/if}
+                </td>
+                <td {$valueStyle}>
+                  {if $field.type eq \'Date\'}
+                    {$field.value|crmDate:$config->dateformatDatetime}
+                  {else}
+                    {$field.value}
+                  {/if}
+                </td>
+              </tr>
+            {/foreach}
 
-     {foreach from=$activity.customGroups key=customGroupName item=customGroup}
-      <tr>
-       <th {$headerStyle}>
-        {$customGroupName}
-       </th>
-      </tr>
-      {foreach from=$customGroup item=field}
-       <tr>
-        <td {$labelStyle}>
-         {$field.label}
+            {if !empty($activity.customGroups)}
+              {foreach from=$activity.customGroups key=customGroupName item=customGroup}
+                <tr>
+                  <th {$headerStyle}>
+                    {$customGroupName}
+                  </th>
+                </tr>
+                {foreach from=$customGroup item=field}
+                  <tr>
+                    <td {$labelStyle}>
+                      {$field.label}
+                    </td>
+                    <td {$valueStyle}>
+                      {if $field.type eq \'Date\'}
+                        {$field.value|crmDate:$config->dateformatDatetime}
+                      {else}
+                        {$field.value}
+                      {/if}
+                    </td>
+                  </tr>
+                {/foreach}
+              {/foreach}
+            {/if}
+          </table>
         </td>
-        <td {$valueStyle}>
-         {if $field.type eq \'Date\'}
-          {$field.value|crmDate:$config->dateformatDatetime}
-         {else}
-          {$field.value}
-         {/if}
-        </td>
-       </tr>
-      {/foreach}
-     {/foreach}
+      </tr>
     </table>
-   </td>
-  </tr>
- </table>
-</center>
-
 </body>
 </html>
 ', 'case_activity', @tpl_ovid_case_activity, 0,          1) ,      
@@ -6849,7 +6872,6 @@ INSERT INTO civicrm_msg_template
 {capture assign=labelStyle }style="padding: 4px; border-bottom: 1px solid #999; background-color: #f7f7f7;"{/capture}
 {capture assign=valueStyle }style="padding: 4px; border-bottom: 1px solid #999;"{/capture}
 
-<center>
   <table id="crm-event_receipt" style="font-family: Arial, Verdana, sans-serif; text-align: left; width:100%; max-width:700px; padding:0; margin:0; border:0px;">
 
   <!-- BEGIN HEADER -->
@@ -6919,8 +6941,6 @@ INSERT INTO civicrm_msg_template
    </tr>
   {/if}
  </table>
-</center>
-
 </body>
 </html>
 ', 'contribution_dupalert', @tpl_ovid_contribution_dupalert, 1,          0),
@@ -6954,7 +6974,6 @@ INSERT INTO civicrm_msg_template
 {capture assign=labelStyle }style="padding: 4px; border-bottom: 1px solid #999; background-color: #f7f7f7;"{/capture}
 {capture assign=valueStyle }style="padding: 4px; border-bottom: 1px solid #999;"{/capture}
 
-<center>
   <table id="crm-event_receipt" style="font-family: Arial, Verdana, sans-serif; text-align: left; width:100%; max-width:700px; padding:0; margin:0; border:0px;">
 
   <!-- BEGIN HEADER -->
@@ -7024,8 +7043,6 @@ INSERT INTO civicrm_msg_template
    </tr>
   {/if}
  </table>
-</center>
-
 </body>
 </html>
 ', 'contribution_dupalert', @tpl_ovid_contribution_dupalert, 0,          1) ,      
@@ -7085,7 +7102,7 @@ INSERT INTO civicrm_msg_template
 {if !empty($receive_date)}
 {ts}Date Received{/ts}: {$receive_date|truncate:10:\'\'|crmDate}
 {/if}
-{if $receipt_date}
+{if !empty($receipt_date)}
 {ts}Receipt Date{/ts}: {$receipt_date|truncate:10:\'\'|crmDate}
 {/if}
 {if !empty($formValues.paidBy) and empty($formValues.hidden_CreditCard)}
@@ -7148,7 +7165,7 @@ INSERT INTO civicrm_msg_template
 {if $formValues.product_sku}
 {ts}SKU{/ts}: {$formValues.product_sku}
 {/if}
-{if $fulfilled_date}
+{if !empty($fulfilled_date)}
 {ts}Sent{/ts}: {$fulfilled_date|crmDate}
 {/if}
 {/if}
@@ -7164,7 +7181,6 @@ INSERT INTO civicrm_msg_template
 {capture assign=labelStyle }style="padding: 4px; border-bottom: 1px solid #999; background-color: #f7f7f7;"{/capture}
 {capture assign=valueStyle }style="padding: 4px; border-bottom: 1px solid #999;"{/capture}
 
-<center>
   <table id="crm-event_receipt" style="font-family: Arial, Verdana, sans-serif; text-align: left; width:100%; max-width:700px; padding:0; margin:0; border:0px;">
 
   <!-- BEGIN HEADER -->
@@ -7317,7 +7333,7 @@ INSERT INTO civicrm_msg_template
       </tr>
      {/if}
 
-      {if $receipt_date}
+      {if !empty($receipt_date)}
       <tr>
        <td {$labelStyle}>
         {ts}Receipt Date{/ts}
@@ -7457,7 +7473,7 @@ INSERT INTO civicrm_msg_template
         </td>
        </tr>
       {/if}
-      {if $fulfilled_date}
+      {if !empty($fulfilled_date)}
        <tr>
         <td {$labelStyle}>
          {ts}Sent{/ts}
@@ -7474,7 +7490,6 @@ INSERT INTO civicrm_msg_template
   </tr>
 
  </table>
-</center>
 
 </body>
 </html>
@@ -7533,7 +7548,7 @@ INSERT INTO civicrm_msg_template
 {if !empty($receive_date)}
 {ts}Date Received{/ts}: {$receive_date|truncate:10:\'\'|crmDate}
 {/if}
-{if $receipt_date}
+{if !empty($receipt_date)}
 {ts}Receipt Date{/ts}: {$receipt_date|truncate:10:\'\'|crmDate}
 {/if}
 {if !empty($formValues.paidBy) and empty($formValues.hidden_CreditCard)}
@@ -7596,7 +7611,7 @@ INSERT INTO civicrm_msg_template
 {if $formValues.product_sku}
 {ts}SKU{/ts}: {$formValues.product_sku}
 {/if}
-{if $fulfilled_date}
+{if !empty($fulfilled_date)}
 {ts}Sent{/ts}: {$fulfilled_date|crmDate}
 {/if}
 {/if}
@@ -7612,7 +7627,6 @@ INSERT INTO civicrm_msg_template
 {capture assign=labelStyle }style="padding: 4px; border-bottom: 1px solid #999; background-color: #f7f7f7;"{/capture}
 {capture assign=valueStyle }style="padding: 4px; border-bottom: 1px solid #999;"{/capture}
 
-<center>
   <table id="crm-event_receipt" style="font-family: Arial, Verdana, sans-serif; text-align: left; width:100%; max-width:700px; padding:0; margin:0; border:0px;">
 
   <!-- BEGIN HEADER -->
@@ -7765,7 +7779,7 @@ INSERT INTO civicrm_msg_template
       </tr>
      {/if}
 
-      {if $receipt_date}
+      {if !empty($receipt_date)}
       <tr>
        <td {$labelStyle}>
         {ts}Receipt Date{/ts}
@@ -7905,7 +7919,7 @@ INSERT INTO civicrm_msg_template
         </td>
        </tr>
       {/if}
-      {if $fulfilled_date}
+      {if !empty($fulfilled_date)}
        <tr>
         <td {$labelStyle}>
          {ts}Sent{/ts}
@@ -7922,7 +7936,6 @@ INSERT INTO civicrm_msg_template
   </tr>
 
  </table>
-</center>
 
 </body>
 </html>
@@ -8155,7 +8168,6 @@ INSERT INTO civicrm_msg_template
 {capture assign=labelStyle }style="padding: 4px; border-bottom: 1px solid #999; background-color: #f7f7f7;"{/capture}
 {capture assign=valueStyle }style="padding: 4px; border-bottom: 1px solid #999;"{/capture}
 
-<center>
   <table id="crm-event_receipt" style="font-family: Arial, Verdana, sans-serif; text-align: left; width:100%; max-width:700px; padding:0; margin:0; border:0px;">
 
   <!-- BEGIN HEADER -->
@@ -8611,7 +8623,6 @@ INSERT INTO civicrm_msg_template
      {/if}
 
   </table>
-</center>
 
 </body>
 </html>
@@ -8842,7 +8853,6 @@ INSERT INTO civicrm_msg_template
 {capture assign=labelStyle }style="padding: 4px; border-bottom: 1px solid #999; background-color: #f7f7f7;"{/capture}
 {capture assign=valueStyle }style="padding: 4px; border-bottom: 1px solid #999;"{/capture}
 
-<center>
   <table id="crm-event_receipt" style="font-family: Arial, Verdana, sans-serif; text-align: left; width:100%; max-width:700px; padding:0; margin:0; border:0px;">
 
   <!-- BEGIN HEADER -->
@@ -9298,7 +9308,6 @@ INSERT INTO civicrm_msg_template
      {/if}
 
   </table>
-</center>
 
 </body>
 </html>
@@ -9341,9 +9350,9 @@ INSERT INTO civicrm_msg_template
         </tr>
         <tr>
           {if $organization_name}
-            <td><font size="1" align="center">{$display_name}  ({$organization_name})</font></td>
+            <td><font size="1" align="center">{contact.display_name}  ({$organization_name})</font></td>
           {else}
-            <td><font size="1" align="center">{$display_name}</font></td>
+            <td><font size="1" align="center">{contact.display_name}</font></td>
           {/if}
           <td><font size="1" align="right">{$invoice_date}</font></td>
           <td style="white-space: nowrap">
@@ -9508,7 +9517,7 @@ INSERT INTO civicrm_msg_template
               <table cellpadding="5" cellspacing="0"  width="100%" border="0">
                 <tr>
                   <td width="100%"><font size="1" align="right" style="font-weight:bold;">{ts}Customer:{/ts}</font></td>
-                  <td style="white-space: nowrap"><font size="1" align="right">{$display_name}</font></td>
+                  <td style="white-space: nowrap"><font size="1" align="right">{contact.display_name}</font></td>
                 </tr>
                 <tr>
                   <td><font size="1" align="right" style="font-weight:bold;">{ts}Invoice Number:{/ts}</font></td>
@@ -9545,7 +9554,6 @@ INSERT INTO civicrm_msg_template
         </table>
       {/if}
 
-    <center>
       <table style="font-family: Arial, Verdana, sans-serif" width="100%" height="100" border="0" cellpadding="5" cellspacing="5">
         <tr>
           <td style="padding-left:15px;"><b><font size="4" align="center">{ts}CREDIT NOTE{/ts}</font></b></td>
@@ -9554,9 +9562,9 @@ INSERT INTO civicrm_msg_template
         </tr>
         <tr>
           {if $organization_name}
-            <td style="padding-left:17px;"><font size="1" align="center">{$display_name}  ({$organization_name})</font></td>
+            <td style="padding-left:17px;"><font size="1" align="center">{contact.display_name}  ({$organization_name})</font></td>
           {else}
-            <td style="padding-left:17px;"><font size="1" align="center">{$display_name}</font></td>
+            <td style="padding-left:17px;"><font size="1" align="center">{contact.display_name}</font></td>
           {/if}
           <td style="padding-left:30px;"><font size="1" align="right">{$invoice_date}</font></td>
           <td>
@@ -9728,7 +9736,7 @@ INSERT INTO civicrm_msg_template
               <tr>
                 <td colspan="2"></td>
                 <td><font size="1" align="right" style="font-weight:bold;">{ts}Customer:{/ts}</font></td>
-                <td><font size="1" align="right">{$display_name}</font></td>
+                <td><font size="1" align="right">{contact.display_name}</font></td>
               </tr>
               <tr>
                 <td colspan="2"></td>
@@ -9746,7 +9754,6 @@ INSERT INTO civicrm_msg_template
         </tr>
       </table>
     {/if}
-    </center>
 
   </div>
   </body>
@@ -9788,9 +9795,9 @@ INSERT INTO civicrm_msg_template
         </tr>
         <tr>
           {if $organization_name}
-            <td><font size="1" align="center">{$display_name}  ({$organization_name})</font></td>
+            <td><font size="1" align="center">{contact.display_name}  ({$organization_name})</font></td>
           {else}
-            <td><font size="1" align="center">{$display_name}</font></td>
+            <td><font size="1" align="center">{contact.display_name}</font></td>
           {/if}
           <td><font size="1" align="right">{$invoice_date}</font></td>
           <td style="white-space: nowrap">
@@ -9955,7 +9962,7 @@ INSERT INTO civicrm_msg_template
               <table cellpadding="5" cellspacing="0"  width="100%" border="0">
                 <tr>
                   <td width="100%"><font size="1" align="right" style="font-weight:bold;">{ts}Customer:{/ts}</font></td>
-                  <td style="white-space: nowrap"><font size="1" align="right">{$display_name}</font></td>
+                  <td style="white-space: nowrap"><font size="1" align="right">{contact.display_name}</font></td>
                 </tr>
                 <tr>
                   <td><font size="1" align="right" style="font-weight:bold;">{ts}Invoice Number:{/ts}</font></td>
@@ -9992,7 +9999,6 @@ INSERT INTO civicrm_msg_template
         </table>
       {/if}
 
-    <center>
       <table style="font-family: Arial, Verdana, sans-serif" width="100%" height="100" border="0" cellpadding="5" cellspacing="5">
         <tr>
           <td style="padding-left:15px;"><b><font size="4" align="center">{ts}CREDIT NOTE{/ts}</font></b></td>
@@ -10001,9 +10007,9 @@ INSERT INTO civicrm_msg_template
         </tr>
         <tr>
           {if $organization_name}
-            <td style="padding-left:17px;"><font size="1" align="center">{$display_name}  ({$organization_name})</font></td>
+            <td style="padding-left:17px;"><font size="1" align="center">{contact.display_name}  ({$organization_name})</font></td>
           {else}
-            <td style="padding-left:17px;"><font size="1" align="center">{$display_name}</font></td>
+            <td style="padding-left:17px;"><font size="1" align="center">{contact.display_name}</font></td>
           {/if}
           <td style="padding-left:30px;"><font size="1" align="right">{$invoice_date}</font></td>
           <td>
@@ -10175,7 +10181,7 @@ INSERT INTO civicrm_msg_template
               <tr>
                 <td colspan="2"></td>
                 <td><font size="1" align="right" style="font-weight:bold;">{ts}Customer:{/ts}</font></td>
-                <td><font size="1" align="right">{$display_name}</font></td>
+                <td><font size="1" align="right">{contact.display_name}</font></td>
               </tr>
               <tr>
                 <td colspan="2"></td>
@@ -10193,7 +10199,6 @@ INSERT INTO civicrm_msg_template
         </tr>
       </table>
     {/if}
-    </center>
 
   </div>
   </body>
@@ -10278,7 +10283,6 @@ INSERT INTO civicrm_msg_template
 {capture assign=labelStyle }style="padding: 4px; border-bottom: 1px solid #999; background-color: #f7f7f7;"{/capture}
 {capture assign=valueStyle }style="padding: 4px; border-bottom: 1px solid #999;"{/capture}
 
-<center>
   <table id="crm-event_receipt" style="font-family: Arial, Verdana, sans-serif; text-align: left; width:100%; max-width:700px; padding:0; margin:0; border:0px;">
 
   <!-- BEGIN HEADER -->
@@ -10397,7 +10401,6 @@ INSERT INTO civicrm_msg_template
     {/if}
 
  </table>
-</center>
 
 </body>
 </html>
@@ -10479,7 +10482,6 @@ INSERT INTO civicrm_msg_template
 {capture assign=labelStyle }style="padding: 4px; border-bottom: 1px solid #999; background-color: #f7f7f7;"{/capture}
 {capture assign=valueStyle }style="padding: 4px; border-bottom: 1px solid #999;"{/capture}
 
-<center>
   <table id="crm-event_receipt" style="font-family: Arial, Verdana, sans-serif; text-align: left; width:100%; max-width:700px; padding:0; margin:0; border:0px;">
 
   <!-- BEGIN HEADER -->
@@ -10598,7 +10600,6 @@ INSERT INTO civicrm_msg_template
     {/if}
 
  </table>
-</center>
 
 </body>
 </html>
@@ -10621,7 +10622,6 @@ INSERT INTO civicrm_msg_template
 {capture assign=labelStyle }style="padding: 4px; border-bottom: 1px solid #999; background-color: #f7f7f7;"{/capture}
 {capture assign=valueStyle }style="padding: 4px; border-bottom: 1px solid #999;"{/capture}
 
-<center>
   <table id="crm-event_receipt" style="font-family: Arial, Verdana, sans-serif; text-align: left; width:100%; max-width:700px; padding:0; margin:0; border:0px;">
 
   <!-- BEGIN HEADER -->
@@ -10638,7 +10638,6 @@ INSERT INTO civicrm_msg_template
   </tr>
   <tr>
  </table>
-</center>
 
 </body>
 </html>
@@ -10659,7 +10658,6 @@ INSERT INTO civicrm_msg_template
 {capture assign=labelStyle }style="padding: 4px; border-bottom: 1px solid #999; background-color: #f7f7f7;"{/capture}
 {capture assign=valueStyle }style="padding: 4px; border-bottom: 1px solid #999;"{/capture}
 
-<center>
   <table id="crm-event_receipt" style="font-family: Arial, Verdana, sans-serif; text-align: left; width:100%; max-width:700px; padding:0; margin:0; border:0px;">
 
   <!-- BEGIN HEADER -->
@@ -10676,7 +10674,6 @@ INSERT INTO civicrm_msg_template
   </tr>
   <tr>
  </table>
-</center>
 
 </body>
 </html>
@@ -10719,7 +10716,6 @@ INSERT INTO civicrm_msg_template
 {capture assign=labelStyle }style="padding: 4px; border-bottom: 1px solid #999; background-color: #f7f7f7;"{/capture}
 {capture assign=valueStyle }style="padding: 4px; border-bottom: 1px solid #999;"{/capture}
 
-<center>
   <table id="crm-event_receipt" style="font-family: Arial, Verdana, sans-serif; text-align: left; width:100%; max-width:700px; padding:0; margin:0; border:0px;">
 
   <!-- BEGIN HEADER -->
@@ -10768,7 +10764,6 @@ INSERT INTO civicrm_msg_template
         </td>
        </tr>
   </table>
-</center>
 
 </body>
 </html>
@@ -10809,7 +10804,6 @@ INSERT INTO civicrm_msg_template
 {capture assign=labelStyle }style="padding: 4px; border-bottom: 1px solid #999; background-color: #f7f7f7;"{/capture}
 {capture assign=valueStyle }style="padding: 4px; border-bottom: 1px solid #999;"{/capture}
 
-<center>
   <table id="crm-event_receipt" style="font-family: Arial, Verdana, sans-serif; text-align: left; width:100%; max-width:700px; padding:0; margin:0; border:0px;">
 
   <!-- BEGIN HEADER -->
@@ -10858,7 +10852,6 @@ INSERT INTO civicrm_msg_template
         </td>
        </tr>
   </table>
-</center>
 
 </body>
 </html>
@@ -10886,7 +10879,6 @@ INSERT INTO civicrm_msg_template
 {capture assign=labelStyle }style="padding: 4px; border-bottom: 1px solid #999; background-color: #f7f7f7;"{/capture}
 {capture assign=valueStyle }style="padding: 4px; border-bottom: 1px solid #999;"{/capture}
 
-<center>
   <table id="crm-event_receipt" style="font-family: Arial, Verdana, sans-serif; text-align: left; width:100%; max-width:700px; padding:0; margin:0; border:0px;">
 
   <!-- BEGIN HEADER -->
@@ -10906,7 +10898,6 @@ INSERT INTO civicrm_msg_template
   </tr>
   <tr>
  </table>
-</center>
 
 </body>
 </html>
@@ -10932,7 +10923,6 @@ INSERT INTO civicrm_msg_template
 {capture assign=labelStyle }style="padding: 4px; border-bottom: 1px solid #999; background-color: #f7f7f7;"{/capture}
 {capture assign=valueStyle }style="padding: 4px; border-bottom: 1px solid #999;"{/capture}
 
-<center>
   <table id="crm-event_receipt" style="font-family: Arial, Verdana, sans-serif; text-align: left; width:100%; max-width:700px; padding:0; margin:0; border:0px;">
 
   <!-- BEGIN HEADER -->
@@ -10952,7 +10942,6 @@ INSERT INTO civicrm_msg_template
   </tr>
   <tr>
  </table>
-</center>
 
 </body>
 </html>
@@ -10993,7 +10982,6 @@ INSERT INTO civicrm_msg_template
 {capture assign=valueStyle }style="padding: 4px; border-bottom: 1px solid #999;"{/capture}
 {capture assign=pcpURL     }{crmURL p="civicrm/pcp/info" q="reset=1&id=`$pcpId`" h=0 a=1 fe=1}{/capture}
 
-<center>
   <table id="crm-event_receipt" style="font-family: Arial, Verdana, sans-serif; text-align: left; width:100%; max-width:700px; padding:0; margin:0; border:0px;">
 
   <!-- BEGIN HEADER -->
@@ -11072,7 +11060,6 @@ INSERT INTO civicrm_msg_template
    </td>
   </tr>
  </table>
-</center>
 
 </body>
 </html>
@@ -11111,7 +11098,6 @@ INSERT INTO civicrm_msg_template
 {capture assign=valueStyle }style="padding: 4px; border-bottom: 1px solid #999;"{/capture}
 {capture assign=pcpURL     }{crmURL p="civicrm/pcp/info" q="reset=1&id=`$pcpId`" h=0 a=1 fe=1}{/capture}
 
-<center>
   <table id="crm-event_receipt" style="font-family: Arial, Verdana, sans-serif; text-align: left; width:100%; max-width:700px; padding:0; margin:0; border:0px;">
 
   <!-- BEGIN HEADER -->
@@ -11190,7 +11176,6 @@ INSERT INTO civicrm_msg_template
    </td>
   </tr>
  </table>
-</center>
 
 </body>
 </html>
@@ -11251,7 +11236,6 @@ INSERT INTO civicrm_msg_template
 </head>
 <body>
 
-<center>
   <table id="crm-event_receipt" style="font-family: Arial, Verdana, sans-serif; text-align: left; width:100%; max-width:700px; padding:0; margin:0; border:0px;">
 
   <!-- BEGIN HEADER -->
@@ -11296,7 +11280,6 @@ INSERT INTO civicrm_msg_template
   </tr>
 
  </table>
-</center>
 
 </body>
 </html>
@@ -11355,7 +11338,6 @@ INSERT INTO civicrm_msg_template
 </head>
 <body>
 
-<center>
   <table id="crm-event_receipt" style="font-family: Arial, Verdana, sans-serif; text-align: left; width:100%; max-width:700px; padding:0; margin:0; border:0px;">
 
   <!-- BEGIN HEADER -->
@@ -11400,7 +11382,6 @@ INSERT INTO civicrm_msg_template
   </tr>
 
  </table>
-</center>
 
 </body>
 </html>
@@ -11478,7 +11459,6 @@ INSERT INTO civicrm_msg_template
 {capture assign=labelStyle }style="padding: 4px; border-bottom: 1px solid #999; background-color: #f7f7f7;"{/capture}
 {capture assign=valueStyle }style="padding: 4px; border-bottom: 1px solid #999;"{/capture}
 
-<center>
   <table id="crm-event_receipt" style="font-family: Arial, Verdana, sans-serif; text-align: left; width:100%; max-width:700px; padding:0; margin:0; border:0px;">
 
   <!-- BEGIN HEADER -->
@@ -11561,7 +11541,6 @@ INSERT INTO civicrm_msg_template
    {/if}
 
  </table>
-</center>
 
 </body>
 </html>
@@ -11637,7 +11616,6 @@ INSERT INTO civicrm_msg_template
 {capture assign=labelStyle }style="padding: 4px; border-bottom: 1px solid #999; background-color: #f7f7f7;"{/capture}
 {capture assign=valueStyle }style="padding: 4px; border-bottom: 1px solid #999;"{/capture}
 
-<center>
   <table id="crm-event_receipt" style="font-family: Arial, Verdana, sans-serif; text-align: left; width:100%; max-width:700px; padding:0; margin:0; border:0px;">
 
   <!-- BEGIN HEADER -->
@@ -11720,7 +11698,6 @@ INSERT INTO civicrm_msg_template
    {/if}
 
  </table>
-</center>
 
 </body>
 </html>
@@ -11964,7 +11941,6 @@ INSERT INTO civicrm_msg_template
 {capture assign=emptyBlockStyle }style="padding: 10px; border-bottom: 1px solid #999;background-color: #f7f7f7;"{/capture}
 {capture assign=emptyBlockValueStyle }style="padding: 10px; border-bottom: 1px solid #999;"{/capture}
 
-<center>
  <table id="crm-event_receipt" style="font-family: Arial, Verdana, sans-serif; text-align: left; width:100%; max-width:700px; padding:0; margin:0; border:0px;">
 
   <!-- BEGIN HEADER -->
@@ -12194,7 +12170,6 @@ INSERT INTO civicrm_msg_template
     </tr>
 
     </table>
-  </center>
 
  </body>
 </html>
@@ -12330,7 +12305,6 @@ INSERT INTO civicrm_msg_template
 {capture assign=emptyBlockStyle }style="padding: 10px; border-bottom: 1px solid #999;background-color: #f7f7f7;"{/capture}
 {capture assign=emptyBlockValueStyle }style="padding: 10px; border-bottom: 1px solid #999;"{/capture}
 
-<center>
  <table id="crm-event_receipt" style="font-family: Arial, Verdana, sans-serif; text-align: left; width:100%; max-width:700px; padding:0; margin:0; border:0px;">
 
   <!-- BEGIN HEADER -->
@@ -12560,7 +12534,6 @@ INSERT INTO civicrm_msg_template
     </tr>
 
     </table>
-  </center>
 
  </body>
 </html>
@@ -12871,7 +12844,6 @@ INSERT INTO civicrm_msg_template
 {capture assign=labelStyle }style="padding: 4px; border-bottom: 1px solid #999; background-color: #f7f7f7;"{/capture}
 {capture assign=valueStyle }style="padding: 4px; border-bottom: 1px solid #999;"{/capture}
 
-<center>
   <table id="crm-event_receipt" style="font-family: Arial, Verdana, sans-serif; text-align: left; width:100%; max-width:700px; padding:0; margin:0; border:0px;">
 
   <!-- BEGIN HEADER -->
@@ -13368,7 +13340,6 @@ INSERT INTO civicrm_msg_template
   </tr>
 
  </table>
-</center>
 
 </body>
 </html>
@@ -13677,7 +13648,6 @@ INSERT INTO civicrm_msg_template
 {capture assign=labelStyle }style="padding: 4px; border-bottom: 1px solid #999; background-color: #f7f7f7;"{/capture}
 {capture assign=valueStyle }style="padding: 4px; border-bottom: 1px solid #999;"{/capture}
 
-<center>
   <table id="crm-event_receipt" style="font-family: Arial, Verdana, sans-serif; text-align: left; width:100%; max-width:700px; padding:0; margin:0; border:0px;">
 
   <!-- BEGIN HEADER -->
@@ -14174,7 +14144,6 @@ INSERT INTO civicrm_msg_template
   </tr>
 
  </table>
-</center>
 
 </body>
 </html>
@@ -14292,7 +14261,7 @@ You were registered by: {$payer.name}
 {if $value neq \'skip\'}
 {if !empty($isPrimary)}
 {if $lineItem|@count GT 1} {* Header for multi participant registration cases. *}
-{ts 1=$priceset+1}Participant %1{/ts} {$part.$priceset.info}
+{ts 1=$priceset+1}Participant %1{/ts} {if !empty($part.$priceset)}{$part.$priceset.info}{/if}
 
 {/if}
 {/if}
@@ -14485,7 +14454,6 @@ You were registered by: {$payer.name}
 {capture assign=participantTotal}style="margin: 0.5em 0 0.5em;padding: 0.5em;background-color: #999999;font-weight: bold;color: #FAFAFA;border-radius: 2px;"{/capture}
 
 
-<center>
   <table id="crm-event_receipt" style="font-family: Arial, Verdana, sans-serif; text-align: left; width:100%; max-width:700px; padding:0; margin:0; border:0px;">
 
   <!-- BEGIN HEADER -->
@@ -14958,7 +14926,6 @@ You were registered by: {$payer.name}
      </tr>
     {/if}
  </table>
-</center>
 
 </body>
 </html>
@@ -15074,7 +15041,7 @@ You were registered by: {$payer.name}
 {if $value neq \'skip\'}
 {if !empty($isPrimary)}
 {if $lineItem|@count GT 1} {* Header for multi participant registration cases. *}
-{ts 1=$priceset+1}Participant %1{/ts} {$part.$priceset.info}
+{ts 1=$priceset+1}Participant %1{/ts} {if !empty($part.$priceset)}{$part.$priceset.info}{/if}
 
 {/if}
 {/if}
@@ -15267,7 +15234,6 @@ You were registered by: {$payer.name}
 {capture assign=participantTotal}style="margin: 0.5em 0 0.5em;padding: 0.5em;background-color: #999999;font-weight: bold;color: #FAFAFA;border-radius: 2px;"{/capture}
 
 
-<center>
   <table id="crm-event_receipt" style="font-family: Arial, Verdana, sans-serif; text-align: left; width:100%; max-width:700px; padding:0; margin:0; border:0px;">
 
   <!-- BEGIN HEADER -->
@@ -15740,7 +15706,6 @@ You were registered by: {$payer.name}
      </tr>
     {/if}
  </table>
-</center>
 
 </body>
 </html>
@@ -16264,7 +16229,7 @@ Total: {$total|crmMoney:$currency|string_format:"%10s"}
       
       
       ('Events - Registration Cancellation Notice', '{ts 1=$event.event_title}Event Registration Cancelled for %1{/ts} - {contact.display_name}
-', '{assign var="greeting" value="{contact.email_greeting}"}{if $greeting}{$greeting},{/if}
+', '{assign var="greeting" value="{contact.email_greeting_display}"}{if $greeting}{$greeting},{/if}
 
 {ts}Your Event Registration has been cancelled.{/ts}
 
@@ -16274,15 +16239,15 @@ Total: {$total|crmMoney:$currency|string_format:"%10s"}
 
 ===========================================================
 {$event.event_title}
-{$event.event_start_date|crmDate}{if $event.event_end_date}-{if $event.event_end_date|date_format:"%Y%m%d" == $event.event_start_date|date_format:"%Y%m%d"}{$event.event_end_date|crmDate:0:1}{else}{$event.event_end_date|crmDate}{/if}{/if}
+{$event.event_start_date|crmDate}{if $event.event_end_date}-{if $event.event_end_date|crmDate:"shortdate" == $event.event_start_date|crmDate:"shortdate"}{$event.event_end_date|crmDate:"Time"}{else}{$event.event_end_date|crmDate}{/if}{/if}
 
-{ts}Participant Role{/ts}: {$participant.role}
+{ts}Participant Role{/ts}: {participant.role_id:label}
 
 {if $isShowLocation}
 {$event.location.address.1.display|strip_tags:false}
 {/if}{*End of isShowLocation condition*}
 
-{if $event.location.phone.1.phone || $event.location.email.1.email}
+{if !empty($event.location.phone.1.phone) || !empty($event.location.email.1.email)}
 
 {ts}Event Contacts:{/ts}
 {foreach from=$event.location.phone item=phone}
@@ -16296,20 +16261,20 @@ Total: {$total|crmMoney:$currency|string_format:"%10s"}
 {ts}Email{/ts}: {$eventEmail.email}{/if}{/foreach}
 {/if}
 
-{if $contact.email}
+{if \'{contact.email}\'}
 
 ===========================================================
 {ts}Registered Email{/ts}
 
 ===========================================================
-{$contact.email}
+{contact.email}
 {/if}
 
-{if $register_date}
-{ts}Registration Date{/ts}: {$participant.register_date|crmDate}
+{if !empty(\'{participant.register_date}\')}
+{ts}Registration Date{/ts}: {participant.register_date}
 {/if}
 
-{ts 1=$domain.phone 2=$domain.email}Please contact us at %1 or send email to %2 if you have questions.{/ts}
+{ts 1=\'{domain.phone}\' 2=\'{domain.email}\'}Please contact us at %1 or send email to %2 if you have questions.{/ts}
 
 ', '<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml">
@@ -16323,7 +16288,6 @@ Total: {$total|crmMoney:$currency|string_format:"%10s"}
 {capture assign=labelStyle }style="padding: 4px; border-bottom: 1px solid #999; background-color: #f7f7f7;"{/capture}
 {capture assign=valueStyle }style="padding: 4px; border-bottom: 1px solid #999;"{/capture}
 
-<center>
   <table id="crm-event_receipt" style="font-family: Arial, Verdana, sans-serif; text-align: left; width:100%; max-width:700px; padding:0; margin:0; border:0px;">
 
   <!-- BEGIN HEADER -->
@@ -16334,7 +16298,7 @@ Total: {$total|crmMoney:$currency|string_format:"%10s"}
 
   <tr>
    <td>
-    {assign var="greeting" value="{contact.email_greeting}"}{if $greeting}<p>{$greeting},</p>{/if}
+    {assign var="greeting" value="{contact.email_greeting_display}"}{if $greeting}<p>{$greeting},</p>{/if}
     <p>{ts}Your Event Registration has been cancelled.{/ts}</p>
    </td>
   </tr>
@@ -16349,7 +16313,7 @@ Total: {$total|crmMoney:$currency|string_format:"%10s"}
      <tr>
       <td colspan="2" {$valueStyle}>
        {$event.event_title}<br />
-       {$event.event_start_date|crmDate}{if $event.event_end_date}-{if $event.event_end_date|date_format:"%Y%m%d" == $event.event_start_date|date_format:"%Y%m%d"}{$event.event_end_date|crmDate:0:1}{else}{$event.event_end_date|crmDate}{/if}{/if}
+       {$event.event_start_date|crmDate}{if $event.event_end_date}-{if $event.event_end_date|crmDate:"shortdate" == $event.event_start_date|crmDate:"shortdate"}{$event.event_end_date|crmDate:"Time"}{else}{$event.event_end_date|crmDate}{/if}{/if}
       </td>
      </tr>
      <tr>
@@ -16357,7 +16321,7 @@ Total: {$total|crmMoney:$currency|string_format:"%10s"}
        {ts}Participant Role{/ts}:
       </td>
       <td {$valueStyle}>
-       {$participant.role}
+       {participant.role_id:label}
       </td>
      </tr>
 
@@ -16369,7 +16333,7 @@ Total: {$total|crmMoney:$currency|string_format:"%10s"}
       </tr>
      {/if}
 
-     {if $event.location.phone.1.phone || $event.location.email.1.email}
+     {if !empty($event.location.phone.1.phone) || !empty($event.location.email.1.email)}
       <tr>
        <td colspan="2" {$labelStyle}>
         {ts}Event Contacts:{/ts}
@@ -16401,7 +16365,7 @@ Total: {$total|crmMoney:$currency|string_format:"%10s"}
       {/foreach}
      {/if}
 
-     {if $contact.email}
+     {if \'{contact.email}\'}
       <tr>
        <th {$headerStyle}>
         {ts}Registered Email{/ts}
@@ -16409,18 +16373,18 @@ Total: {$total|crmMoney:$currency|string_format:"%10s"}
       </tr>
       <tr>
        <td colspan="2" {$valueStyle}>
-        {$contact.email}
+        {contact.email}
        </td>
       </tr>
      {/if}
 
-     {if $register_date}
+     {if !empty(\'{participant.register_date}\')}
       <tr>
        <td {$labelStyle}>
         {ts}Registration Date{/ts}
        </td>
        <td {$valueStyle}>
-        {$participant.register_date|crmDate}
+        {participant.register_date}
        </td>
       </tr>
      {/if}
@@ -16431,18 +16395,17 @@ Total: {$total|crmMoney:$currency|string_format:"%10s"}
 
   <tr>
    <td>
-    <p>{ts 1=$domain.phone 2=$domain.email}Please contact us at %1 or send email to %2 if you have questions.{/ts}</p>
+    <p>{ts 1=\'{domain.phone}\' 2=\'{domain.email}\'}Please contact us at %1 or send email to %2 if you have questions.{/ts}</p>
    </td>
   </tr>
 
  </table>
-</center>
 
 </body>
 </html>
 ', 'participant_cancelled', @tpl_ovid_participant_cancelled, 1,          0),
       ('Events - Registration Cancellation Notice', '{ts 1=$event.event_title}Event Registration Cancelled for %1{/ts} - {contact.display_name}
-', '{assign var="greeting" value="{contact.email_greeting}"}{if $greeting}{$greeting},{/if}
+', '{assign var="greeting" value="{contact.email_greeting_display}"}{if $greeting}{$greeting},{/if}
 
 {ts}Your Event Registration has been cancelled.{/ts}
 
@@ -16452,15 +16415,15 @@ Total: {$total|crmMoney:$currency|string_format:"%10s"}
 
 ===========================================================
 {$event.event_title}
-{$event.event_start_date|crmDate}{if $event.event_end_date}-{if $event.event_end_date|date_format:"%Y%m%d" == $event.event_start_date|date_format:"%Y%m%d"}{$event.event_end_date|crmDate:0:1}{else}{$event.event_end_date|crmDate}{/if}{/if}
+{$event.event_start_date|crmDate}{if $event.event_end_date}-{if $event.event_end_date|crmDate:"shortdate" == $event.event_start_date|crmDate:"shortdate"}{$event.event_end_date|crmDate:"Time"}{else}{$event.event_end_date|crmDate}{/if}{/if}
 
-{ts}Participant Role{/ts}: {$participant.role}
+{ts}Participant Role{/ts}: {participant.role_id:label}
 
 {if $isShowLocation}
 {$event.location.address.1.display|strip_tags:false}
 {/if}{*End of isShowLocation condition*}
 
-{if $event.location.phone.1.phone || $event.location.email.1.email}
+{if !empty($event.location.phone.1.phone) || !empty($event.location.email.1.email)}
 
 {ts}Event Contacts:{/ts}
 {foreach from=$event.location.phone item=phone}
@@ -16474,20 +16437,20 @@ Total: {$total|crmMoney:$currency|string_format:"%10s"}
 {ts}Email{/ts}: {$eventEmail.email}{/if}{/foreach}
 {/if}
 
-{if $contact.email}
+{if \'{contact.email}\'}
 
 ===========================================================
 {ts}Registered Email{/ts}
 
 ===========================================================
-{$contact.email}
+{contact.email}
 {/if}
 
-{if $register_date}
-{ts}Registration Date{/ts}: {$participant.register_date|crmDate}
+{if !empty(\'{participant.register_date}\')}
+{ts}Registration Date{/ts}: {participant.register_date}
 {/if}
 
-{ts 1=$domain.phone 2=$domain.email}Please contact us at %1 or send email to %2 if you have questions.{/ts}
+{ts 1=\'{domain.phone}\' 2=\'{domain.email}\'}Please contact us at %1 or send email to %2 if you have questions.{/ts}
 
 ', '<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml">
@@ -16501,7 +16464,6 @@ Total: {$total|crmMoney:$currency|string_format:"%10s"}
 {capture assign=labelStyle }style="padding: 4px; border-bottom: 1px solid #999; background-color: #f7f7f7;"{/capture}
 {capture assign=valueStyle }style="padding: 4px; border-bottom: 1px solid #999;"{/capture}
 
-<center>
   <table id="crm-event_receipt" style="font-family: Arial, Verdana, sans-serif; text-align: left; width:100%; max-width:700px; padding:0; margin:0; border:0px;">
 
   <!-- BEGIN HEADER -->
@@ -16512,7 +16474,7 @@ Total: {$total|crmMoney:$currency|string_format:"%10s"}
 
   <tr>
    <td>
-    {assign var="greeting" value="{contact.email_greeting}"}{if $greeting}<p>{$greeting},</p>{/if}
+    {assign var="greeting" value="{contact.email_greeting_display}"}{if $greeting}<p>{$greeting},</p>{/if}
     <p>{ts}Your Event Registration has been cancelled.{/ts}</p>
    </td>
   </tr>
@@ -16527,7 +16489,7 @@ Total: {$total|crmMoney:$currency|string_format:"%10s"}
      <tr>
       <td colspan="2" {$valueStyle}>
        {$event.event_title}<br />
-       {$event.event_start_date|crmDate}{if $event.event_end_date}-{if $event.event_end_date|date_format:"%Y%m%d" == $event.event_start_date|date_format:"%Y%m%d"}{$event.event_end_date|crmDate:0:1}{else}{$event.event_end_date|crmDate}{/if}{/if}
+       {$event.event_start_date|crmDate}{if $event.event_end_date}-{if $event.event_end_date|crmDate:"shortdate" == $event.event_start_date|crmDate:"shortdate"}{$event.event_end_date|crmDate:"Time"}{else}{$event.event_end_date|crmDate}{/if}{/if}
       </td>
      </tr>
      <tr>
@@ -16535,7 +16497,7 @@ Total: {$total|crmMoney:$currency|string_format:"%10s"}
        {ts}Participant Role{/ts}:
       </td>
       <td {$valueStyle}>
-       {$participant.role}
+       {participant.role_id:label}
       </td>
      </tr>
 
@@ -16547,7 +16509,7 @@ Total: {$total|crmMoney:$currency|string_format:"%10s"}
       </tr>
      {/if}
 
-     {if $event.location.phone.1.phone || $event.location.email.1.email}
+     {if !empty($event.location.phone.1.phone) || !empty($event.location.email.1.email)}
       <tr>
        <td colspan="2" {$labelStyle}>
         {ts}Event Contacts:{/ts}
@@ -16579,7 +16541,7 @@ Total: {$total|crmMoney:$currency|string_format:"%10s"}
       {/foreach}
      {/if}
 
-     {if $contact.email}
+     {if \'{contact.email}\'}
       <tr>
        <th {$headerStyle}>
         {ts}Registered Email{/ts}
@@ -16587,18 +16549,18 @@ Total: {$total|crmMoney:$currency|string_format:"%10s"}
       </tr>
       <tr>
        <td colspan="2" {$valueStyle}>
-        {$contact.email}
+        {contact.email}
        </td>
       </tr>
      {/if}
 
-     {if $register_date}
+     {if !empty(\'{participant.register_date}\')}
       <tr>
        <td {$labelStyle}>
         {ts}Registration Date{/ts}
        </td>
        <td {$valueStyle}>
-        {$participant.register_date|crmDate}
+        {participant.register_date}
        </td>
       </tr>
      {/if}
@@ -16609,12 +16571,11 @@ Total: {$total|crmMoney:$currency|string_format:"%10s"}
 
   <tr>
    <td>
-    <p>{ts 1=$domain.phone 2=$domain.email}Please contact us at %1 or send email to %2 if you have questions.{/ts}</p>
+    <p>{ts 1=\'{domain.phone}\' 2=\'{domain.email}\'}Please contact us at %1 or send email to %2 if you have questions.{/ts}</p>
    </td>
   </tr>
 
  </table>
-</center>
 
 </body>
 </html>
@@ -16622,7 +16583,7 @@ Total: {$total|crmMoney:$currency|string_format:"%10s"}
       
       
       ('Events - Registration Confirmation Invite', '{ts 1=$event.event_title}Confirm your registration for %1{/ts} - {contact.display_name}
-', '{assign var="greeting" value="{contact.email_greeting}"}{if $greeting}{$greeting},{/if}
+', '{assign var="greeting" value="{contact.email_greeting_display}"}{if $greeting}{$greeting},{/if}
 
 {ts}This is an invitation to complete your registration that was initially waitlisted.{/ts}
 
@@ -16691,20 +16652,20 @@ Click this link to go to a web page where you can confirm your registration onli
 {ts}Download iCalendar File:{/ts} {$icalFeed}
 {/if}
 
-{if $contact.email}
+{if \'{contact.email}\'}
 
 ===========================================================
 {ts}Registered Email{/ts}
 
 ===========================================================
-{$contact.email}
+{contact.email}
 {/if}
 
 {if $register_date}
 {ts}Registration Date{/ts}: {$participant.register_date|crmDate}
 {/if}
 
-{ts 1=$domain.phone 2=$domain.email}Please contact us at %1 or send email to %2 if you have questions.{/ts}
+{ts 1=\'{domain.phone}\' 2=\'{domain.email}\'}Please contact us at %1 or send email to %2 if you have questions.{/ts}
 
 ', '<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml">
@@ -16718,7 +16679,6 @@ Click this link to go to a web page where you can confirm your registration onli
 {capture assign=labelStyle }style="padding: 4px; border-bottom: 1px solid #999; background-color: #f7f7f7;"{/capture}
 {capture assign=valueStyle }style="padding: 4px; border-bottom: 1px solid #999;"{/capture}
 
-<center>
   <table id="crm-event_receipt" style="font-family: Arial, Verdana, sans-serif; text-align: left; width:100%; max-width:700px; padding:0; margin:0; border:0px;">
   <!-- BEGIN HEADER -->
   <!-- You can add table row(s) here with logo or other header elements -->
@@ -16728,7 +16688,7 @@ Click this link to go to a web page where you can confirm your registration onli
 
   <tr>
    <td>
-    {assign var="greeting" value="{contact.email_greeting}"}{if $greeting}<p>{$greeting},</p>{/if}
+    {assign var="greeting" value="{contact.email_greeting_display}"}{if $greeting}<p>{$greeting},</p>{/if}
     <p>{ts}This is an invitation to complete your registration that was initially waitlisted.{/ts}</p>
    </td>
   </tr>
@@ -16843,7 +16803,7 @@ Click this link to go to a web page where you can confirm your registration onli
       </tr>
      {/if}
 
-     {if $contact.email}
+     {if \'{contact.email}\'}
       <tr>
        <th {$headerStyle}>
         {ts}Registered Email{/ts}
@@ -16851,7 +16811,7 @@ Click this link to go to a web page where you can confirm your registration onli
       </tr>
       <tr>
        <td colspan="2" {$valueStyle}>
-        {$contact.email}
+        {contact.email}
        </td>
       </tr>
      {/if}
@@ -16881,18 +16841,17 @@ Click this link to go to a web page where you can confirm your registration onli
   {/if}
   <tr>
    <td colspan="2" {$valueStyle}>
-    <p>{ts 1=$domain.phone 2=$domain.email}Please contact us at %1 or send email to %2 if you have questions.{/ts}</p>
+    <p>{ts 1=\'{domain.phone}\' 2=\'{domain.email}\'}Please contact us at %1 or send email to %2 if you have questions.{/ts}</p>
    </td>
   </tr>
 
  </table>
-</center>
 
 </body>
 </html>
 ', 'participant_confirm', @tpl_ovid_participant_confirm, 1,          0),
       ('Events - Registration Confirmation Invite', '{ts 1=$event.event_title}Confirm your registration for %1{/ts} - {contact.display_name}
-', '{assign var="greeting" value="{contact.email_greeting}"}{if $greeting}{$greeting},{/if}
+', '{assign var="greeting" value="{contact.email_greeting_display}"}{if $greeting}{$greeting},{/if}
 
 {ts}This is an invitation to complete your registration that was initially waitlisted.{/ts}
 
@@ -16961,20 +16920,20 @@ Click this link to go to a web page where you can confirm your registration onli
 {ts}Download iCalendar File:{/ts} {$icalFeed}
 {/if}
 
-{if $contact.email}
+{if \'{contact.email}\'}
 
 ===========================================================
 {ts}Registered Email{/ts}
 
 ===========================================================
-{$contact.email}
+{contact.email}
 {/if}
 
 {if $register_date}
 {ts}Registration Date{/ts}: {$participant.register_date|crmDate}
 {/if}
 
-{ts 1=$domain.phone 2=$domain.email}Please contact us at %1 or send email to %2 if you have questions.{/ts}
+{ts 1=\'{domain.phone}\' 2=\'{domain.email}\'}Please contact us at %1 or send email to %2 if you have questions.{/ts}
 
 ', '<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml">
@@ -16988,7 +16947,6 @@ Click this link to go to a web page where you can confirm your registration onli
 {capture assign=labelStyle }style="padding: 4px; border-bottom: 1px solid #999; background-color: #f7f7f7;"{/capture}
 {capture assign=valueStyle }style="padding: 4px; border-bottom: 1px solid #999;"{/capture}
 
-<center>
   <table id="crm-event_receipt" style="font-family: Arial, Verdana, sans-serif; text-align: left; width:100%; max-width:700px; padding:0; margin:0; border:0px;">
   <!-- BEGIN HEADER -->
   <!-- You can add table row(s) here with logo or other header elements -->
@@ -16998,7 +16956,7 @@ Click this link to go to a web page where you can confirm your registration onli
 
   <tr>
    <td>
-    {assign var="greeting" value="{contact.email_greeting}"}{if $greeting}<p>{$greeting},</p>{/if}
+    {assign var="greeting" value="{contact.email_greeting_display}"}{if $greeting}<p>{$greeting},</p>{/if}
     <p>{ts}This is an invitation to complete your registration that was initially waitlisted.{/ts}</p>
    </td>
   </tr>
@@ -17113,7 +17071,7 @@ Click this link to go to a web page where you can confirm your registration onli
       </tr>
      {/if}
 
-     {if $contact.email}
+     {if \'{contact.email}\'}
       <tr>
        <th {$headerStyle}>
         {ts}Registered Email{/ts}
@@ -17121,7 +17079,7 @@ Click this link to go to a web page where you can confirm your registration onli
       </tr>
       <tr>
        <td colspan="2" {$valueStyle}>
-        {$contact.email}
+        {contact.email}
        </td>
       </tr>
      {/if}
@@ -17151,12 +17109,11 @@ Click this link to go to a web page where you can confirm your registration onli
   {/if}
   <tr>
    <td colspan="2" {$valueStyle}>
-    <p>{ts 1=$domain.phone 2=$domain.email}Please contact us at %1 or send email to %2 if you have questions.{/ts}</p>
+    <p>{ts 1=\'{domain.phone}\' 2=\'{domain.email}\'}Please contact us at %1 or send email to %2 if you have questions.{/ts}</p>
    </td>
   </tr>
 
  </table>
-</center>
 
 </body>
 </html>
@@ -17164,13 +17121,13 @@ Click this link to go to a web page where you can confirm your registration onli
       
       
       ('Events - Pending Registration Expiration Notice', '{ts 1=$event.event_title}Event registration has expired for %1{/ts} - {contact.display_name}
-', '{assign var="greeting" value="{contact.email_greeting}"}{if $greeting}{$greeting},{/if}
+', '{assign var="greeting" value="{contact.email_greeting_display}"}{if $greeting}{$greeting},{/if}
 
 {ts 1=$event.event_title}Your pending event registration for %1 has expired
 because you did not confirm your registration.{/ts}
 
 
-{ts 1=$domain.phone 2=$domain.email}Please contact us at %1 or send email to %2 if you have questions
+{ts 1=\'{domain.phone}\' 2=\'{domain.email}\'}Please contact us at %1 or send email to %2 if you have questions
 or want to inquire about reinstating your registration for this event.{/ts}
 
 ===========================================================
@@ -17186,7 +17143,7 @@ or want to inquire about reinstating your registration for this event.{/ts}
 {$event.location.address.1.display|strip_tags:false}
 {/if}{*End of isShowLocation condition*}
 
-{if $event.location.phone.1.phone || $event.location.email.1.email}
+{if !empty($event.location.phone.1.phone) || !empty($event.location.email.1.email)}
 
 {ts}Event Contacts:{/ts}
 {foreach from=$event.location.phone item=phone}
@@ -17200,20 +17157,20 @@ or want to inquire about reinstating your registration for this event.{/ts}
 {ts}Email{/ts}: {$eventEmail.email}{/if}{/foreach}
 {/if}
 
-{if $contact.email}
+{if \'{contact.email}\'}
 
 ===========================================================
 {ts}Registered Email{/ts}
 
 ===========================================================
-{$contact.email}
+{contact.email}
 {/if}
 
 {if $register_date}
 {ts}Registration Date{/ts}: {$participant.register_date|crmDate}
 {/if}
 
-{ts 1=$domain.phone 2=$domain.email}Please contact us at %1 or send email to %2 if you have questions.{/ts}
+{ts 1=\'{domain.phone}\' 2=\'{domain.email}\'}Please contact us at %1 or send email to %2 if you have questions.{/ts}
 
 ', '<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml">
@@ -17227,7 +17184,6 @@ or want to inquire about reinstating your registration for this event.{/ts}
 {capture assign=labelStyle }style="padding: 4px; border-bottom: 1px solid #999; background-color: #f7f7f7;"{/capture}
 {capture assign=valueStyle }style="padding: 4px; border-bottom: 1px solid #999;"{/capture}
 
-<center>
   <table id="crm-event_receipt" style="font-family: Arial, Verdana, sans-serif; text-align: left; width:100%; max-width:700px; padding:0; margin:0; border:0px;">
 
   <!-- BEGIN HEADER -->
@@ -17238,10 +17194,10 @@ or want to inquire about reinstating your registration for this event.{/ts}
 
   <tr>
    <td>
-    {assign var="greeting" value="{contact.email_greeting}"}{if $greeting}<p>{$greeting},</p>{/if}
+    {assign var="greeting" value="{contact.email_greeting_display}"}{if $greeting}<p>{$greeting},</p>{/if}
     <p>{ts 1=$event.event_title}Your pending event registration for %1 has expired
 because you did not confirm your registration.{/ts}</p>
-    <p>{ts 1=$domain.phone 2=$domain.email}Please contact us at %1 or send email to %2 if you have questions
+    <p>{ts 1=\'{domain.phone}\' 2=\'{domain.email}\'}Please contact us at %1 or send email to %2 if you have questions
 or want to inquire about reinstating your registration for this event.{/ts}</p>
    </td>
   </tr>
@@ -17276,7 +17232,7 @@ or want to inquire about reinstating your registration for this event.{/ts}</p>
       </tr>
      {/if}
 
-     {if $event.location.phone.1.phone || $event.location.email.1.email}
+     {if !empty($event.location.phone.1.phone) || !empty($event.location.email.1.email)}
       <tr>
        <td colspan="2" {$labelStyle}>
         {ts}Event Contacts:{/ts}
@@ -17308,7 +17264,7 @@ or want to inquire about reinstating your registration for this event.{/ts}</p>
       {/foreach}
      {/if}
 
-     {if $contact.email}
+     {if \'{contact.email}\'}
       <tr>
        <th {$headerStyle}>
         {ts}Registered Email{/ts}
@@ -17316,7 +17272,7 @@ or want to inquire about reinstating your registration for this event.{/ts}</p>
       </tr>
       <tr>
        <td colspan="2" {$valueStyle}>
-        {$contact.email}
+        {contact.email}
        </td>
       </tr>
      {/if}
@@ -17338,24 +17294,23 @@ or want to inquire about reinstating your registration for this event.{/ts}</p>
 
   <tr>
    <td>
-    <p>{ts 1=$domain.phone 2=$domain.email}Please contact us at %1 or send email to %2 if you have questions.{/ts}</p>
+    <p>{ts 1=\'{domain.phone}\' 2=\'{domain.email}\'}Please contact us at %1 or send email to %2 if you have questions.{/ts}</p>
    </td>
   </tr>
 
  </table>
-</center>
 
 </body>
 </html>
 ', 'participant_expired', @tpl_ovid_participant_expired, 1,          0),
       ('Events - Pending Registration Expiration Notice', '{ts 1=$event.event_title}Event registration has expired for %1{/ts} - {contact.display_name}
-', '{assign var="greeting" value="{contact.email_greeting}"}{if $greeting}{$greeting},{/if}
+', '{assign var="greeting" value="{contact.email_greeting_display}"}{if $greeting}{$greeting},{/if}
 
 {ts 1=$event.event_title}Your pending event registration for %1 has expired
 because you did not confirm your registration.{/ts}
 
 
-{ts 1=$domain.phone 2=$domain.email}Please contact us at %1 or send email to %2 if you have questions
+{ts 1=\'{domain.phone}\' 2=\'{domain.email}\'}Please contact us at %1 or send email to %2 if you have questions
 or want to inquire about reinstating your registration for this event.{/ts}
 
 ===========================================================
@@ -17371,7 +17326,7 @@ or want to inquire about reinstating your registration for this event.{/ts}
 {$event.location.address.1.display|strip_tags:false}
 {/if}{*End of isShowLocation condition*}
 
-{if $event.location.phone.1.phone || $event.location.email.1.email}
+{if !empty($event.location.phone.1.phone) || !empty($event.location.email.1.email)}
 
 {ts}Event Contacts:{/ts}
 {foreach from=$event.location.phone item=phone}
@@ -17385,20 +17340,20 @@ or want to inquire about reinstating your registration for this event.{/ts}
 {ts}Email{/ts}: {$eventEmail.email}{/if}{/foreach}
 {/if}
 
-{if $contact.email}
+{if \'{contact.email}\'}
 
 ===========================================================
 {ts}Registered Email{/ts}
 
 ===========================================================
-{$contact.email}
+{contact.email}
 {/if}
 
 {if $register_date}
 {ts}Registration Date{/ts}: {$participant.register_date|crmDate}
 {/if}
 
-{ts 1=$domain.phone 2=$domain.email}Please contact us at %1 or send email to %2 if you have questions.{/ts}
+{ts 1=\'{domain.phone}\' 2=\'{domain.email}\'}Please contact us at %1 or send email to %2 if you have questions.{/ts}
 
 ', '<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml">
@@ -17412,7 +17367,6 @@ or want to inquire about reinstating your registration for this event.{/ts}
 {capture assign=labelStyle }style="padding: 4px; border-bottom: 1px solid #999; background-color: #f7f7f7;"{/capture}
 {capture assign=valueStyle }style="padding: 4px; border-bottom: 1px solid #999;"{/capture}
 
-<center>
   <table id="crm-event_receipt" style="font-family: Arial, Verdana, sans-serif; text-align: left; width:100%; max-width:700px; padding:0; margin:0; border:0px;">
 
   <!-- BEGIN HEADER -->
@@ -17423,10 +17377,10 @@ or want to inquire about reinstating your registration for this event.{/ts}
 
   <tr>
    <td>
-    {assign var="greeting" value="{contact.email_greeting}"}{if $greeting}<p>{$greeting},</p>{/if}
+    {assign var="greeting" value="{contact.email_greeting_display}"}{if $greeting}<p>{$greeting},</p>{/if}
     <p>{ts 1=$event.event_title}Your pending event registration for %1 has expired
 because you did not confirm your registration.{/ts}</p>
-    <p>{ts 1=$domain.phone 2=$domain.email}Please contact us at %1 or send email to %2 if you have questions
+    <p>{ts 1=\'{domain.phone}\' 2=\'{domain.email}\'}Please contact us at %1 or send email to %2 if you have questions
 or want to inquire about reinstating your registration for this event.{/ts}</p>
    </td>
   </tr>
@@ -17461,7 +17415,7 @@ or want to inquire about reinstating your registration for this event.{/ts}</p>
       </tr>
      {/if}
 
-     {if $event.location.phone.1.phone || $event.location.email.1.email}
+     {if !empty($event.location.phone.1.phone) || !empty($event.location.email.1.email)}
       <tr>
        <td colspan="2" {$labelStyle}>
         {ts}Event Contacts:{/ts}
@@ -17493,7 +17447,7 @@ or want to inquire about reinstating your registration for this event.{/ts}</p>
       {/foreach}
      {/if}
 
-     {if $contact.email}
+     {if \'{contact.email}\'}
       <tr>
        <th {$headerStyle}>
         {ts}Registered Email{/ts}
@@ -17501,7 +17455,7 @@ or want to inquire about reinstating your registration for this event.{/ts}</p>
       </tr>
       <tr>
        <td colspan="2" {$valueStyle}>
-        {$contact.email}
+        {contact.email}
        </td>
       </tr>
      {/if}
@@ -17523,12 +17477,11 @@ or want to inquire about reinstating your registration for this event.{/ts}</p>
 
   <tr>
    <td>
-    <p>{ts 1=$domain.phone 2=$domain.email}Please contact us at %1 or send email to %2 if you have questions.{/ts}</p>
+    <p>{ts 1=\'{domain.phone}\' 2=\'{domain.email}\'}Please contact us at %1 or send email to %2 if you have questions.{/ts}</p>
    </td>
   </tr>
 
  </table>
-</center>
 
 </body>
 </html>
@@ -17553,7 +17506,7 @@ or want to inquire about reinstating your registration for this event.{/ts}</p>
 {$event.location.address.1.display|strip_tags:false}
 {/if}{*End of isShowLocation condition*}
 
-{if $event.location.phone.1.phone || $event.location.email.1.email}
+{if !empty($event.location.phone.1.phone) || !empty($event.location.email.1.email)}
 
 {ts}Event Contacts:{/ts}
 {foreach from=$event.location.phone item=phone}
@@ -17567,20 +17520,20 @@ or want to inquire about reinstating your registration for this event.{/ts}</p>
 {ts}Email{/ts}: {$eventEmail.email}{/if}{/foreach}
 {/if}
 
-{if $contact.email}
+{if \'{contact.email}\'}
 
 ===========================================================
 {ts}Registered Email{/ts}
 
 ===========================================================
-{$contact.email}
+{contact.email}
 {/if}
 
 {if $register_date}
 {ts}Registration Date{/ts}: {$participant.register_date|crmDate}
 {/if}
 
-{ts 1=$domain.phone 2=$domain.email}Please contact us at %1 or send email to %2 if you have questions.{/ts}
+{ts 1=\'{domain.phone}\' 2=\'{domain.email}\'}Please contact us at %1 or send email to %2 if you have questions.{/ts}
 ', '<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
@@ -17593,7 +17546,6 @@ or want to inquire about reinstating your registration for this event.{/ts}</p>
 {capture assign=labelStyle }style="padding: 4px; border-bottom: 1px solid #999; background-color: #f7f7f7;"{/capture}
 {capture assign=valueStyle }style="padding: 4px; border-bottom: 1px solid #999;"{/capture}
 
-<center>
   <table id="crm-event_receipt" style="font-family: Arial, Verdana, sans-serif; text-align: left; width:100%; max-width:700px; padding:0; margin:0; border:0px;">
 
   <!-- BEGIN HEADER -->
@@ -17639,7 +17591,7 @@ or want to inquire about reinstating your registration for this event.{/ts}</p>
       </tr>
      {/if}
 
-     {if $event.location.phone.1.phone || $event.location.email.1.email}
+     {if !empty($event.location.phone.1.phone) || !empty($event.location.email.1.email)}
       <tr>
        <td colspan="2" {$labelStyle}>
         {ts}Event Contacts:{/ts}
@@ -17671,7 +17623,7 @@ or want to inquire about reinstating your registration for this event.{/ts}</p>
       {/foreach}
      {/if}
 
-     {if $contact.email}
+     {if \'{contact.email}\'}
       <tr>
        <th {$headerStyle}>
         {ts}Registered Email{/ts}
@@ -17679,7 +17631,7 @@ or want to inquire about reinstating your registration for this event.{/ts}</p>
       </tr>
       <tr>
        <td colspan="2" {$valueStyle}>
-        {$contact.email}
+        {contact.email}
        </td>
       </tr>
      {/if}
@@ -17701,12 +17653,11 @@ or want to inquire about reinstating your registration for this event.{/ts}</p>
 
   <tr>
    <td>
-    <p>{ts 1=$domain.phone 2=$domain.email}Please contact us at %1 or send email to %2 if you have questions.{/ts}</p>
+    <p>{ts 1=\'{domain.phone}\' 2=\'{domain.email}\'}Please contact us at %1 or send email to %2 if you have questions.{/ts}</p>
    </td>
   </tr>
 
  </table>
-</center>
 
 </body>
 </html>
@@ -17729,7 +17680,7 @@ or want to inquire about reinstating your registration for this event.{/ts}</p>
 {$event.location.address.1.display|strip_tags:false}
 {/if}{*End of isShowLocation condition*}
 
-{if $event.location.phone.1.phone || $event.location.email.1.email}
+{if !empty($event.location.phone.1.phone) || !empty($event.location.email.1.email)}
 
 {ts}Event Contacts:{/ts}
 {foreach from=$event.location.phone item=phone}
@@ -17743,20 +17694,20 @@ or want to inquire about reinstating your registration for this event.{/ts}</p>
 {ts}Email{/ts}: {$eventEmail.email}{/if}{/foreach}
 {/if}
 
-{if $contact.email}
+{if \'{contact.email}\'}
 
 ===========================================================
 {ts}Registered Email{/ts}
 
 ===========================================================
-{$contact.email}
+{contact.email}
 {/if}
 
 {if $register_date}
 {ts}Registration Date{/ts}: {$participant.register_date|crmDate}
 {/if}
 
-{ts 1=$domain.phone 2=$domain.email}Please contact us at %1 or send email to %2 if you have questions.{/ts}
+{ts 1=\'{domain.phone}\' 2=\'{domain.email}\'}Please contact us at %1 or send email to %2 if you have questions.{/ts}
 ', '<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
@@ -17769,7 +17720,6 @@ or want to inquire about reinstating your registration for this event.{/ts}</p>
 {capture assign=labelStyle }style="padding: 4px; border-bottom: 1px solid #999; background-color: #f7f7f7;"{/capture}
 {capture assign=valueStyle }style="padding: 4px; border-bottom: 1px solid #999;"{/capture}
 
-<center>
   <table id="crm-event_receipt" style="font-family: Arial, Verdana, sans-serif; text-align: left; width:100%; max-width:700px; padding:0; margin:0; border:0px;">
 
   <!-- BEGIN HEADER -->
@@ -17815,7 +17765,7 @@ or want to inquire about reinstating your registration for this event.{/ts}</p>
       </tr>
      {/if}
 
-     {if $event.location.phone.1.phone || $event.location.email.1.email}
+     {if !empty($event.location.phone.1.phone) || !empty($event.location.email.1.email)}
       <tr>
        <td colspan="2" {$labelStyle}>
         {ts}Event Contacts:{/ts}
@@ -17847,7 +17797,7 @@ or want to inquire about reinstating your registration for this event.{/ts}</p>
       {/foreach}
      {/if}
 
-     {if $contact.email}
+     {if \'{contact.email}\'}
       <tr>
        <th {$headerStyle}>
         {ts}Registered Email{/ts}
@@ -17855,7 +17805,7 @@ or want to inquire about reinstating your registration for this event.{/ts}</p>
       </tr>
       <tr>
        <td colspan="2" {$valueStyle}>
-        {$contact.email}
+        {contact.email}
        </td>
       </tr>
      {/if}
@@ -17877,12 +17827,11 @@ or want to inquire about reinstating your registration for this event.{/ts}</p>
 
   <tr>
    <td>
-    <p>{ts 1=$domain.phone 2=$domain.email}Please contact us at %1 or send email to %2 if you have questions.{/ts}</p>
+    <p>{ts 1=\'{domain.phone}\' 2=\'{domain.email}\'}Please contact us at %1 or send email to %2 if you have questions.{/ts}</p>
    </td>
   </tr>
 
  </table>
-</center>
 
 </body>
 </html>
@@ -17917,7 +17866,6 @@ or want to inquire about reinstating your registration for this event.{/ts}</p>
 {capture assign=labelStyle }style="padding: 4px; border-bottom: 1px solid #999; background-color: #f7f7f7;"{/capture}
 {capture assign=valueStyle }style="padding: 4px; border-bottom: 1px solid #999;"{/capture}
 
-<center>
   <table id="crm-event_receipt" style="font-family: Arial, Verdana, sans-serif; text-align: left; width:100%; max-width:700px; padding:0; margin:0; border:0px;">
 
   <!-- BEGIN HEADER -->
@@ -17941,7 +17889,6 @@ or want to inquire about reinstating your registration for this event.{/ts}</p>
    </td>
   </tr>
  </table>
-</center>
 
 </body>
 </html>
@@ -17974,7 +17921,6 @@ or want to inquire about reinstating your registration for this event.{/ts}</p>
 {capture assign=labelStyle }style="padding: 4px; border-bottom: 1px solid #999; background-color: #f7f7f7;"{/capture}
 {capture assign=valueStyle }style="padding: 4px; border-bottom: 1px solid #999;"{/capture}
 
-<center>
   <table id="crm-event_receipt" style="font-family: Arial, Verdana, sans-serif; text-align: left; width:100%; max-width:700px; padding:0; margin:0; border:0px;">
 
   <!-- BEGIN HEADER -->
@@ -17998,7 +17944,6 @@ or want to inquire about reinstating your registration for this event.{/ts}</p>
    </td>
   </tr>
  </table>
-</center>
 
 </body>
 </html>
@@ -18134,7 +18079,6 @@ or want to inquire about reinstating your registration for this event.{/ts}</p>
 {capture assign=labelStyle }style="padding: 4px; border-bottom: 1px solid #999; background-color: #f7f7f7;"{/capture}
 {capture assign=valueStyle }style="padding: 4px; border-bottom: 1px solid #999;"{/capture}
 
-<center>
   <table id="crm-event_receipt"
          style="font-family: Arial, Verdana, sans-serif; text-align: left; width:100%; max-width:700px; padding:0; margin:0; border:0px;">
 
@@ -18416,7 +18360,6 @@ or want to inquire about reinstating your registration for this event.{/ts}</p>
     {/if}
 
   </table>
-</center>
 
 </body>
 </html>
@@ -18550,7 +18493,6 @@ or want to inquire about reinstating your registration for this event.{/ts}</p>
 {capture assign=labelStyle }style="padding: 4px; border-bottom: 1px solid #999; background-color: #f7f7f7;"{/capture}
 {capture assign=valueStyle }style="padding: 4px; border-bottom: 1px solid #999;"{/capture}
 
-<center>
   <table id="crm-event_receipt"
          style="font-family: Arial, Verdana, sans-serif; text-align: left; width:100%; max-width:700px; padding:0; margin:0; border:0px;">
 
@@ -18832,7 +18774,6 @@ or want to inquire about reinstating your registration for this event.{/ts}</p>
     {/if}
 
   </table>
-</center>
 
 </body>
 </html>
@@ -19093,7 +19034,6 @@ or want to inquire about reinstating your registration for this event.{/ts}</p>
 {capture assign=labelStyle }style="padding: 4px; border-bottom: 1px solid #999; background-color: #f7f7f7;"{/capture}
 {capture assign=valueStyle }style="padding: 4px; border-bottom: 1px solid #999;"{/capture}
 
-<center>
   <table id="crm-event_receipt" style="font-family: Arial, Verdana, sans-serif; text-align: left; width:100%; max-width:700px; padding:0; margin:0; border:0px;">
 
   <!-- BEGIN HEADER -->
@@ -19630,7 +19570,6 @@ or want to inquire about reinstating your registration for this event.{/ts}</p>
      {/if}
 
   </table>
-</center>
 
 </body>
 </html>
@@ -19889,7 +19828,6 @@ or want to inquire about reinstating your registration for this event.{/ts}</p>
 {capture assign=labelStyle }style="padding: 4px; border-bottom: 1px solid #999; background-color: #f7f7f7;"{/capture}
 {capture assign=valueStyle }style="padding: 4px; border-bottom: 1px solid #999;"{/capture}
 
-<center>
   <table id="crm-event_receipt" style="font-family: Arial, Verdana, sans-serif; text-align: left; width:100%; max-width:700px; padding:0; margin:0; border:0px;">
 
   <!-- BEGIN HEADER -->
@@ -20426,7 +20364,6 @@ or want to inquire about reinstating your registration for this event.{/ts}</p>
      {/if}
 
   </table>
-</center>
 
 </body>
 </html>
@@ -20460,7 +20397,6 @@ or want to inquire about reinstating your registration for this event.{/ts}</p>
 {capture assign=labelStyle }style="padding: 4px; border-bottom: 1px solid #999; background-color: #f7f7f7;"{/capture}
 {capture assign=valueStyle }style="padding: 4px; border-bottom: 1px solid #999;"{/capture}
 
-<center>
   <table id="crm-event_receipt" style="font-family: Arial, Verdana, sans-serif; text-align: left; width:100%; max-width:700px; padding:0; margin:0; border:0px;">
 
   <!-- BEGIN HEADER -->
@@ -20514,7 +20450,6 @@ or want to inquire about reinstating your registration for this event.{/ts}</p>
       {/if}
 
  </table>
-</center>
 
 </body>
 </html>
@@ -20546,7 +20481,6 @@ or want to inquire about reinstating your registration for this event.{/ts}</p>
 {capture assign=labelStyle }style="padding: 4px; border-bottom: 1px solid #999; background-color: #f7f7f7;"{/capture}
 {capture assign=valueStyle }style="padding: 4px; border-bottom: 1px solid #999;"{/capture}
 
-<center>
   <table id="crm-event_receipt" style="font-family: Arial, Verdana, sans-serif; text-align: left; width:100%; max-width:700px; padding:0; margin:0; border:0px;">
 
   <!-- BEGIN HEADER -->
@@ -20600,7 +20534,6 @@ or want to inquire about reinstating your registration for this event.{/ts}</p>
       {/if}
 
  </table>
-</center>
 
 </body>
 </html>
@@ -20643,7 +20576,6 @@ or want to inquire about reinstating your registration for this event.{/ts}</p>
 {capture assign=labelStyle }style="padding: 4px; border-bottom: 1px solid #999; background-color: #f7f7f7;"{/capture}
 {capture assign=valueStyle }style="padding: 4px; border-bottom: 1px solid #999;"{/capture}
 
-<center>
   <table id="crm-event_receipt" style="font-family: Arial, Verdana, sans-serif; text-align: left; width:100%; max-width:700px; padding:0; margin:0; border:0px;">
 
   <!-- BEGIN HEADER -->
@@ -20693,7 +20625,6 @@ or want to inquire about reinstating your registration for this event.{/ts}</p>
       </tr>
 
   </table>
-</center>
 
 </body>
 </html>
@@ -20734,7 +20665,6 @@ or want to inquire about reinstating your registration for this event.{/ts}</p>
 {capture assign=labelStyle }style="padding: 4px; border-bottom: 1px solid #999; background-color: #f7f7f7;"{/capture}
 {capture assign=valueStyle }style="padding: 4px; border-bottom: 1px solid #999;"{/capture}
 
-<center>
   <table id="crm-event_receipt" style="font-family: Arial, Verdana, sans-serif; text-align: left; width:100%; max-width:700px; padding:0; margin:0; border:0px;">
 
   <!-- BEGIN HEADER -->
@@ -20784,7 +20714,6 @@ or want to inquire about reinstating your registration for this event.{/ts}</p>
       </tr>
 
   </table>
-</center>
 
 </body>
 </html>
@@ -20799,8 +20728,7 @@ or want to inquire about reinstating your registration for this event.{/ts}</p>
 {ts}This is a test-drive email. No live financial transaction has occurred.{/ts}
 
 ***********************************************************
-', '<center>
- <table id="crm-event_receipt_test" style="font-family: Arial, Verdana, sans-serif; text-align: left; width:100%; max-width:700px; padding:0; margin:0; border:0px;">
+', ' <table id="crm-event_receipt_test" style="font-family: Arial, Verdana, sans-serif; text-align: left; width:100%; max-width:700px; padding:0; margin:0; border:0px;">
   <tr>
    <td>
     <p>{ts}Test-drive Email / Receipt{/ts}</p>
@@ -20808,7 +20736,6 @@ or want to inquire about reinstating your registration for this event.{/ts}</p>
    </td>
   </tr>
  </table>
-</center>
 ', 'test_preview', @tpl_ovid_test_preview, 1,          0),
       ('Test-drive - Receipt Header', '[TEST]
 ', '***********************************************************
@@ -20818,8 +20745,7 @@ or want to inquire about reinstating your registration for this event.{/ts}</p>
 {ts}This is a test-drive email. No live financial transaction has occurred.{/ts}
 
 ***********************************************************
-', '<center>
- <table id="crm-event_receipt_test" style="font-family: Arial, Verdana, sans-serif; text-align: left; width:100%; max-width:700px; padding:0; margin:0; border:0px;">
+', ' <table id="crm-event_receipt_test" style="font-family: Arial, Verdana, sans-serif; text-align: left; width:100%; max-width:700px; padding:0; margin:0; border:0px;">
   <tr>
    <td>
     <p>{ts}Test-drive Email / Receipt{/ts}</p>
@@ -20827,12 +20753,11 @@ or want to inquire about reinstating your registration for this event.{/ts}</p>
    </td>
   </tr>
  </table>
-</center>
 ', 'test_preview', @tpl_ovid_test_preview, 0,          1) ,      
       
       
       ('Pledges - Acknowledgement', '{ts}Thank you for your Pledge{/ts} - {contact.display_name}
-', '{assign var="greeting" value="{contact.email_greeting}"}{if $greeting}<p>{$greeting},</p>{/if}
+', '{assign var="greeting" value="{contact.email_greeting_display}"}{if $greeting}{$greeting},{/if}
 
 {ts}Thank you for your generous pledge.{/ts}
 
@@ -20864,7 +20789,7 @@ or want to inquire about reinstating your registration for this event.{/ts}</p>
 {/if}
 
 
-{ts 1=$domain.phone 2=$domain.email}Please contact us at %1 or send email to %2 if you have questions
+{ts 1=\'{domain.phone}\' 2=\'{domain.email}\'}Please contact us at %1 or send email to %2 if you have questions
 or need to modify your payment schedule.{/ts}
 
 {if $customGroup}
@@ -20889,7 +20814,6 @@ or need to modify your payment schedule.{/ts}
 {capture assign=labelStyle }style="padding: 4px; border-bottom: 1px solid #999; background-color: #f7f7f7;"{/capture}
 {capture assign=valueStyle }style="padding: 4px; border-bottom: 1px solid #999;"{/capture}
 
-<center>
   <table id="crm-event_receipt" style="font-family: Arial, Verdana, sans-serif; text-align: left; width:100%; max-width:700px; padding:0; margin:0; border:0px;">
 
   <!-- BEGIN HEADER -->
@@ -20900,7 +20824,7 @@ or need to modify your payment schedule.{/ts}
 
   <tr>
    <td>
-    {assign var="greeting" value="{contact.email_greeting}"}{if $greeting}<p>{$greeting},</p>{/if}
+    {assign var="greeting" value="{contact.email_greeting_display}"}{if $greeting}<p>{$greeting},</p>{/if}
     <p>{ts}Thank you for your generous pledge.{/ts}</p>
    </td>
   </tr>
@@ -20960,7 +20884,7 @@ or need to modify your payment schedule.{/ts}
 
      <tr>
       <td colspan="2" {$valueStyle}>
-       <p>{ts 1=$domain.phone 2=$domain.email}Please contact us at %1 or send email to %2 if you have questions
+       <p>{ts 1=\'{domain.phone}\' 2=\'{domain.email}\'}Please contact us at %1 or send email to %2 if you have questions
 or need to modify your payment schedule.{/ts}</p>
       </td>
      </tr>
@@ -20990,13 +20914,12 @@ or need to modify your payment schedule.{/ts}</p>
   </tr>
 
  </table>
-</center>
 
 </body>
 </html>
 ', 'pledge_acknowledge', @tpl_ovid_pledge_acknowledge, 1,          0),
       ('Pledges - Acknowledgement', '{ts}Thank you for your Pledge{/ts} - {contact.display_name}
-', '{assign var="greeting" value="{contact.email_greeting}"}{if $greeting}<p>{$greeting},</p>{/if}
+', '{assign var="greeting" value="{contact.email_greeting_display}"}{if $greeting}{$greeting},{/if}
 
 {ts}Thank you for your generous pledge.{/ts}
 
@@ -21028,7 +20951,7 @@ or need to modify your payment schedule.{/ts}</p>
 {/if}
 
 
-{ts 1=$domain.phone 2=$domain.email}Please contact us at %1 or send email to %2 if you have questions
+{ts 1=\'{domain.phone}\' 2=\'{domain.email}\'}Please contact us at %1 or send email to %2 if you have questions
 or need to modify your payment schedule.{/ts}
 
 {if $customGroup}
@@ -21053,7 +20976,6 @@ or need to modify your payment schedule.{/ts}
 {capture assign=labelStyle }style="padding: 4px; border-bottom: 1px solid #999; background-color: #f7f7f7;"{/capture}
 {capture assign=valueStyle }style="padding: 4px; border-bottom: 1px solid #999;"{/capture}
 
-<center>
   <table id="crm-event_receipt" style="font-family: Arial, Verdana, sans-serif; text-align: left; width:100%; max-width:700px; padding:0; margin:0; border:0px;">
 
   <!-- BEGIN HEADER -->
@@ -21064,7 +20986,7 @@ or need to modify your payment schedule.{/ts}
 
   <tr>
    <td>
-    {assign var="greeting" value="{contact.email_greeting}"}{if $greeting}<p>{$greeting},</p>{/if}
+    {assign var="greeting" value="{contact.email_greeting_display}"}{if $greeting}<p>{$greeting},</p>{/if}
     <p>{ts}Thank you for your generous pledge.{/ts}</p>
    </td>
   </tr>
@@ -21124,7 +21046,7 @@ or need to modify your payment schedule.{/ts}
 
      <tr>
       <td colspan="2" {$valueStyle}>
-       <p>{ts 1=$domain.phone 2=$domain.email}Please contact us at %1 or send email to %2 if you have questions
+       <p>{ts 1=\'{domain.phone}\' 2=\'{domain.email}\'}Please contact us at %1 or send email to %2 if you have questions
 or need to modify your payment schedule.{/ts}</p>
       </td>
      </tr>
@@ -21154,7 +21076,6 @@ or need to modify your payment schedule.{/ts}</p>
   </tr>
 
  </table>
-</center>
 
 </body>
 </html>
@@ -21162,7 +21083,7 @@ or need to modify your payment schedule.{/ts}</p>
       
       
       ('Pledges - Payment Reminder', '{ts}Pledge Payment Reminder{/ts} - {contact.display_name}
-', '{assign var="greeting" value="{contact.email_greeting}"}{if $greeting}{$greeting},{/if}
+', '{assign var="greeting" value="{contact.email_greeting_display}"}{if $greeting}{$greeting},{/if}
 
 {ts 1=$next_payment|truncate:10:\'\'|crmDate}This is a reminder that the next payment on your pledge is due on %1.{/ts}
 
@@ -21174,12 +21095,12 @@ or need to modify your payment schedule.{/ts}</p>
 {ts}Due Date{/ts}: {$scheduled_payment_date|truncate:10:\'\'|crmDate}
 
 {if $contribution_page_id}
-{capture assign=contributionUrl}{crmURL p=\'civicrm/contribute/transact\' q="reset=1&id=`$contribution_page_id`&cid=`$contact.contact_id`&pledgeId=`$pledge_id`&cs=`$checksumValue`" a=true h=0 fe=1}{/capture}
+{capture assign=contributionUrl}{crmURL p=\'civicrm/contribute/transact\' q="reset=1&id=`$contribution_page_id`&cid=`{contact.id}`&pledgeId=`$pledge_id`&cs=`$checksumValue`" a=true h=0 fe=1}{/capture}
 Click this link to go to a web page where you can make your payment online:
 {$contributionUrl}
 {else}
 {ts}Please mail your payment to{/ts}:
-{$domain.address}
+{domain.address}
 {/if}
 
 ===========================================================
@@ -21190,7 +21111,7 @@ Click this link to go to a web page where you can make your payment online:
 {ts}Total Pledge Amount{/ts}: {$amount|crmMoney:$currency}
 {ts}Total Paid{/ts}: {$amount_paid|crmMoney:$currency}
 
-{ts 1=$domain.phone 2=$domain.email}Please contact us at %1 or send email to %2 if you have questions
+{ts 1=\'{domain.phone}\' 2=\'{domain.email}\'} Please contact us at %1 or send email to %2 if you have questions
 or need to modify your payment schedule.{/ts}
 
 
@@ -21207,7 +21128,6 @@ or need to modify your payment schedule.{/ts}
 {capture assign=labelStyle }style="padding: 4px; border-bottom: 1px solid #999; background-color: #f7f7f7;"{/capture}
 {capture assign=valueStyle }style="padding: 4px; border-bottom: 1px solid #999;"{/capture}
 
-<center>
   <table id="crm-event_receipt" style="font-family: Arial, Verdana, sans-serif; text-align: left; width:100%; max-width:700px; padding:0; margin:0; border:0px;">
 
   <!-- BEGIN HEADER -->
@@ -21218,7 +21138,7 @@ or need to modify your payment schedule.{/ts}
 
   <tr>
    <td>
-    {assign var="greeting" value="{contact.email_greeting}"}{if $greeting}<p>{$greeting},</p>{/if}
+    {assign var="greeting" value="{contact.email_greeting_display}"}{if $greeting}<p>{$greeting},</p>{/if}
     <p>{ts 1=$next_payment|truncate:10:\'\'|crmDate}This is a reminder that the next payment on your pledge is due on %1.{/ts}</p>
    </td>
   </tr>
@@ -21245,10 +21165,10 @@ or need to modify your payment schedule.{/ts}
   <tr>
    <td>
     {if $contribution_page_id}
-     {capture assign=contributionUrl}{crmURL p=\'civicrm/contribute/transact\' q="reset=1&id=`$contribution_page_id`&cid=`$contact.contact_id`&pledgeId=`$pledge_id`&cs=`$checksumValue`" a=true h=0 fe=1}{/capture}
+     {capture assign=contributionUrl}{crmURL p=\'civicrm/contribute/transact\' q="reset=1&id=`$contribution_page_id`&cid=`{contact.id}`&pledgeId=`$pledge_id`&cs=`$checksumValue`" a=true h=0 fe=1}{/capture}
      <p><a href="{$contributionUrl}">{ts}Go to a web page where you can make your payment online{/ts}</a></p>
     {else}
-     <p>{ts}Please mail your payment to{/ts}: {$domain.address}</p>
+     <p>{ts}Please mail your payment to{/ts}: {domain.address}</p>
     {/if}
    </td>
   </tr>
@@ -21291,20 +21211,19 @@ or need to modify your payment schedule.{/ts}
 
   <tr>
    <td>
-    <p>{ts 1=$domain.phone 2=$domain.email}Please contact us at %1 or send email to %2 if you have questions
+    <p>{ts 1=\'{domain.phone}\' 2=\'{domain.email}\'}Please contact us at %1 or send email to %2 if you have questions
 or need to modify your payment schedule.{/ts}</p>
     <p>{ts}Thank your for your generous support.{/ts}</p>
    </td>
   </tr>
 
  </table>
-</center>
 
 </body>
 </html>
 ', 'pledge_reminder', @tpl_ovid_pledge_reminder, 1,          0),
       ('Pledges - Payment Reminder', '{ts}Pledge Payment Reminder{/ts} - {contact.display_name}
-', '{assign var="greeting" value="{contact.email_greeting}"}{if $greeting}{$greeting},{/if}
+', '{assign var="greeting" value="{contact.email_greeting_display}"}{if $greeting}{$greeting},{/if}
 
 {ts 1=$next_payment|truncate:10:\'\'|crmDate}This is a reminder that the next payment on your pledge is due on %1.{/ts}
 
@@ -21316,12 +21235,12 @@ or need to modify your payment schedule.{/ts}</p>
 {ts}Due Date{/ts}: {$scheduled_payment_date|truncate:10:\'\'|crmDate}
 
 {if $contribution_page_id}
-{capture assign=contributionUrl}{crmURL p=\'civicrm/contribute/transact\' q="reset=1&id=`$contribution_page_id`&cid=`$contact.contact_id`&pledgeId=`$pledge_id`&cs=`$checksumValue`" a=true h=0 fe=1}{/capture}
+{capture assign=contributionUrl}{crmURL p=\'civicrm/contribute/transact\' q="reset=1&id=`$contribution_page_id`&cid=`{contact.id}`&pledgeId=`$pledge_id`&cs=`$checksumValue`" a=true h=0 fe=1}{/capture}
 Click this link to go to a web page where you can make your payment online:
 {$contributionUrl}
 {else}
 {ts}Please mail your payment to{/ts}:
-{$domain.address}
+{domain.address}
 {/if}
 
 ===========================================================
@@ -21332,7 +21251,7 @@ Click this link to go to a web page where you can make your payment online:
 {ts}Total Pledge Amount{/ts}: {$amount|crmMoney:$currency}
 {ts}Total Paid{/ts}: {$amount_paid|crmMoney:$currency}
 
-{ts 1=$domain.phone 2=$domain.email}Please contact us at %1 or send email to %2 if you have questions
+{ts 1=\'{domain.phone}\' 2=\'{domain.email}\'} Please contact us at %1 or send email to %2 if you have questions
 or need to modify your payment schedule.{/ts}
 
 
@@ -21349,7 +21268,6 @@ or need to modify your payment schedule.{/ts}
 {capture assign=labelStyle }style="padding: 4px; border-bottom: 1px solid #999; background-color: #f7f7f7;"{/capture}
 {capture assign=valueStyle }style="padding: 4px; border-bottom: 1px solid #999;"{/capture}
 
-<center>
   <table id="crm-event_receipt" style="font-family: Arial, Verdana, sans-serif; text-align: left; width:100%; max-width:700px; padding:0; margin:0; border:0px;">
 
   <!-- BEGIN HEADER -->
@@ -21360,7 +21278,7 @@ or need to modify your payment schedule.{/ts}
 
   <tr>
    <td>
-    {assign var="greeting" value="{contact.email_greeting}"}{if $greeting}<p>{$greeting},</p>{/if}
+    {assign var="greeting" value="{contact.email_greeting_display}"}{if $greeting}<p>{$greeting},</p>{/if}
     <p>{ts 1=$next_payment|truncate:10:\'\'|crmDate}This is a reminder that the next payment on your pledge is due on %1.{/ts}</p>
    </td>
   </tr>
@@ -21387,10 +21305,10 @@ or need to modify your payment schedule.{/ts}
   <tr>
    <td>
     {if $contribution_page_id}
-     {capture assign=contributionUrl}{crmURL p=\'civicrm/contribute/transact\' q="reset=1&id=`$contribution_page_id`&cid=`$contact.contact_id`&pledgeId=`$pledge_id`&cs=`$checksumValue`" a=true h=0 fe=1}{/capture}
+     {capture assign=contributionUrl}{crmURL p=\'civicrm/contribute/transact\' q="reset=1&id=`$contribution_page_id`&cid=`{contact.id}`&pledgeId=`$pledge_id`&cs=`$checksumValue`" a=true h=0 fe=1}{/capture}
      <p><a href="{$contributionUrl}">{ts}Go to a web page where you can make your payment online{/ts}</a></p>
     {else}
-     <p>{ts}Please mail your payment to{/ts}: {$domain.address}</p>
+     <p>{ts}Please mail your payment to{/ts}: {domain.address}</p>
     {/if}
    </td>
   </tr>
@@ -21433,14 +21351,13 @@ or need to modify your payment schedule.{/ts}
 
   <tr>
    <td>
-    <p>{ts 1=$domain.phone 2=$domain.email}Please contact us at %1 or send email to %2 if you have questions
+    <p>{ts 1=\'{domain.phone}\' 2=\'{domain.email}\'}Please contact us at %1 or send email to %2 if you have questions
 or need to modify your payment schedule.{/ts}</p>
     <p>{ts}Thank your for your generous support.{/ts}</p>
    </td>
   </tr>
 
  </table>
-</center>
 
 </body>
 </html>
@@ -21471,7 +21388,6 @@ or need to modify your payment schedule.{/ts}</p>
 {capture assign=labelStyle }style="padding: 4px; border-bottom: 1px solid #999; background-color: #f7f7f7;"{/capture}
 {capture assign=valueStyle }style="padding: 4px; border-bottom: 1px solid #999;"{/capture}
 
-<center>
   <table id="crm-event_receipt" style="font-family: Arial, Verdana, sans-serif; text-align: left; width:100%; max-width:700px; padding:0; margin:0; border:0px;">
 
   <!-- BEGIN HEADER -->
@@ -21529,7 +21445,6 @@ or need to modify your payment schedule.{/ts}</p>
   </tr>
 
  </table>
-</center>
 
 </body>
 </html>
@@ -21558,7 +21473,6 @@ or need to modify your payment schedule.{/ts}</p>
 {capture assign=labelStyle }style="padding: 4px; border-bottom: 1px solid #999; background-color: #f7f7f7;"{/capture}
 {capture assign=valueStyle }style="padding: 4px; border-bottom: 1px solid #999;"{/capture}
 
-<center>
   <table id="crm-event_receipt" style="font-family: Arial, Verdana, sans-serif; text-align: left; width:100%; max-width:700px; padding:0; margin:0; border:0px;">
 
   <!-- BEGIN HEADER -->
@@ -21616,7 +21530,6 @@ or need to modify your payment schedule.{/ts}</p>
   </tr>
 
  </table>
-</center>
 
 </body>
 </html>
@@ -23018,7 +22931,7 @@ VALUES
     ( @domainID, 'Daily' ,  NULL, 'Geocode and Parse Addresses',  'Retrieves geocodes (lat and long) and / or parses street addresses (populates street number, street name, etc.)', 'job', 'geocode', 'geocoding=[1 or 0] required\nparse=[1 or 0] required\nstart=[contact ID] optional-begin with this contact ID\nend=[contact ID] optional-process contacts with IDs less than this\nthrottle=[1 or 0] optional-1 adds five second sleep', 0),
     ( @domainID, 'Daily' ,  NULL, 'Update Greetings and Addressees','Goes through contact records and updates email and postal greetings, or addressee value', 'job', 'update_greeting','ct=[Individual or Household or Organization] required\ngt=[email_greeting or postal_greeting or addressee] required\nforce=[0 or 1] optional-0 update contacts with null value, 1 update all\nlimit=Number optional-Limit the number of contacts to update', 0),
     ( @domainID, 'Daily' ,  NULL, 'Mail Reports', 'Generates and sends out reports via email', 'job', 'mail_report','instanceId=[ID of report instance] required\nformat=[csv or print] optional-output CSV or print-friendly HTML, else PDF', 0),
-    ( @domainID, 'Daily' ,  NULL, 'Send Scheduled Reminders', 'Sends out scheduled reminders via email', 'job', 'send_reminder', NULL, 0),
+    ( @domainID, 'Hourly' ,  NULL, 'Send Scheduled Reminders', 'Sends out scheduled reminders via email', 'job', 'send_reminder', NULL, 0),
     ( @domainID, 'Always' , NULL, 'Update Participant Statuses', 'Updates pending event participant statuses based on time', 'job', 'process_participant', NULL, 0),
     ( @domainID, 'Daily' , NULL, 'Update Membership Statuses', 'Updates membership statuses. WARNING: Membership renewal reminders have been migrated to the Schedule Reminders functionality, which supports multiple renewal reminders.', 'job', 'process_membership',   NULL, 0),
     ( @domainID, 'Always' , NULL, 'Process Survey Respondents',   'Releases reserved survey respondents when they have been reserved for longer than the Release Frequency days specified for that survey.', 'job', 'process_respondent',NULL, 0),
@@ -23091,10 +23004,9 @@ VALUES
 
 -- CRM-9714
 
-SELECT @financial_type_id := max(id) FROM `civicrm_financial_type` WHERE `name` = 'Member Dues';
 INSERT INTO `civicrm_price_set` ( `name`, `title`, `is_active`, `extends`, `is_quick_config`, `financial_type_id`, `is_reserved` )
 VALUES ( 'default_contribution_amount', 'Contribution Amount', '1', '2', '1', NULL,1),
-( 'default_membership_type_amount', 'Membership Amount', '1', '3', '1', @financial_type_id,1);
+( 'default_membership_type_amount', 'Membership Amount', '1', '3', '1', @financial_type_id_md,1);
 
 SELECT @setID := max(id) FROM civicrm_price_set WHERE name = 'default_contribution_amount' AND extends = 2 AND is_quick_config = 1 ;
 
@@ -23135,6 +23047,9 @@ INSERT IGNORE INTO civicrm_extension (type, full_name, name, label, file, is_act
 INSERT IGNORE INTO civicrm_extension (type, full_name, name, label, file, is_active) VALUES ('module', 'financialacls', 'Financial ACLs', 'Financial ACLs', 'financialacls', 1);
 INSERT IGNORE INTO civicrm_extension (type, full_name, name, label, file, is_active) VALUES ('module', 'contributioncancelactions', 'Contribution cancel actions', 'Contribution cancel actions', 'contributioncancelactions', 1);
 INSERT IGNORE INTO civicrm_extension (type, full_name, name, label, file, is_active) VALUES ('module', 'recaptcha', 'reCAPTCHA', 'reCAPTCHA', 'recaptcha', 1);
+INSERT IGNORE INTO civicrm_extension (type, full_name, name, label, file, is_active) VALUES ('module', 'ckeditor4', 'CKEditor4', 'CKEditor4', 'ckeditor4', 1);
+INSERT IGNORE INTO civicrm_extension (type, full_name, name, label, file, is_active) VALUES ('module', 'legacycustomsearches', 'Custom search framework', 'Custom search framework', 'legacycustomsearches', 1);
+INSERT IGNORE INTO civicrm_extension (type, full_name, name, label, file, is_active) VALUES ('module', 'org.civicrm.flexmailer', 'FlexMailer', 'FlexMailer', 'flexmailer', 1);
 
 -- +--------------------------------------------------------------------+
 -- | Copyright CiviCRM LLC. All rights reserved.                        |
@@ -23172,7 +23087,7 @@ INSERT INTO `civicrm_dashboard`
 -- event badge
 INSERT INTO civicrm_print_label (title, name, description, label_format_name, label_type_id, is_default, is_reserved, is_active, data)
 VALUES
-('Annual Conference Hanging Badge (Avery 5395)', 'Annual_Conference_Hanging_Badge', 'For our annual conference', 'Avery 5395', 1, 1, 1, 1, '{"title":"Annual Conference Hanging Badge (Avery 5395)","label_format_name":"Avery 5395","description":"For our annual conference","token":{"1":"{event.title}","2":"{contact.display_name}","3":"{contact.current_employer}","4":"{event.start_date}"},"font_name":{"1":"dejavusans","2":"dejavusans","3":"dejavusans","4":"dejavusans"},"font_size":{"1":"9","2":"20","3":"15","4":"9"},"font_style":{"1":"","2":"","3":"","4":""},"text_alignment":{"1":"L","2":"C","3":"C","4":"R"},"barcode_type":"barcode","barcode_alignment":"R","image_1":"","image_2":"","is_default":"1","is_active":"1","is_reserved":"1","_qf_default":"Layout:next","_qf_Layout_refresh":"Save and Preview"}');
+('Annual Conference Hanging Badge (Avery 5395)', 'Annual_Conference_Hanging_Badge', 'For our annual conference', 'Avery 5395', 1, 1, 1, 1, '{"title":"Annual Conference Hanging Badge (Avery 5395)","label_format_name":"Avery 5395","description":"For our annual conference","token":{"1":"{event.title}","2":"{contact.display_name}","3":"{contact.current_employer}","4":"{event.start_date|crmDate:\"%B %E%f\"}"},"font_name":{"1":"dejavusans","2":"dejavusans","3":"dejavusans","4":"dejavusans"},"font_size":{"1":"9","2":"20","3":"15","4":"9"},"font_style":{"1":"","2":"","3":"","4":""},"text_alignment":{"1":"L","2":"C","3":"C","4":"R"},"barcode_type":"barcode","barcode_alignment":"R","image_1":"","image_2":"","is_default":"1","is_active":"1","is_reserved":"1","_qf_default":"Layout:next","_qf_Layout_refresh":"Save and Preview"}');
 
 -- navigation
 
@@ -23232,8 +23147,7 @@ VALUES
     ( @domainID, 'civicrm/import/activity?reset=1',                         'Import Activities',      'Import Activities',    'import contacts',  '',             @contactlastID, '1', '1',   8 ),
     ( @domainID, 'civicrm/group/add?reset=1',                               'New Group',              'New Group',            'edit groups',      '',             @contactlastID, '1', NULL,  9 ),
     ( @domainID, 'civicrm/group?reset=1',                                   'Manage Groups',          'Manage Groups',        'access CiviCRM',   '',             @contactlastID, '1', '1',   10 ),
-    ( @domainID, 'civicrm/tag?reset=1&action=add',                    'New Tag',                'New Tag',              'manage tags', '',           @contactlastID, '1', NULL, 11 ),
-    ( @domainID, 'civicrm/tag?reset=1',                               'Manage Tags (Categories)', 'Manage Tags (Categories)', 'manage tags', '',     @contactlastID, '1','1', 12 ),
+    ( @domainID, 'civicrm/tag?reset=1',                               'Manage Tags', 'Manage Tags (Categories)', 'manage tags', '',     @contactlastID, '1','1', 12 ),
     ( @domainID, 'civicrm/contact/deduperules?reset=1',  'Find and Merge Duplicate Contacts', 'Find and Merge Duplicate Contacts', 'administer dedupe rules,merge duplicate contacts', 'OR', @contactlastID, '1', NULL, 13 );
 
 INSERT INTO civicrm_navigation
@@ -23430,7 +23344,7 @@ INSERT INTO civicrm_navigation
 VALUES
     ( @domainID, 'civicrm/admin/custom/group?reset=1',      'Custom Fields', 'Custom Fields',                             'administer CiviCRM', '',   @CustomizelastID, '1', NULL, 1 ),
     ( @domainID, 'civicrm/admin/uf/group?reset=1',          'Profiles', 'Profiles',                                       'administer CiviCRM', '',   @CustomizelastID, '1', NULL, 2 ),
-    ( @domainID, 'civicrm/tag?reset=1',               'Tags (Categories)', 'Tags (Categories)',                     'administer CiviCRM', '',   @CustomizelastID, '1', NULL, 3 ),
+    ( @domainID, 'civicrm/tag?reset=1',               'Tags', 'Tags (Categories)',                     'administer CiviCRM', '',   @CustomizelastID, '1', NULL, 3 ),
     ( @domainID, 'civicrm/admin/options/activity_type?reset=1', 'Activity Types', 'Activity Types',   'administer CiviCRM', '',   @CustomizelastID, '1', NULL, 4 ),
     ( @domainID, 'civicrm/admin/reltype?reset=1',           'Relationship Types', 'Relationship Types',                   'administer CiviCRM', '',   @CustomizelastID, '1', NULL, 5 ),
     ( @domainID, 'civicrm/admin/options/subtype?reset=1',   'Contact Types','Contact Types',                              'administer CiviCRM', '',   @CustomizelastID, '1', NULL, 6 ),
@@ -23517,7 +23431,6 @@ INSERT INTO civicrm_navigation
 VALUES
 
     ( @domainID, 'civicrm/admin/setting/component?reset=1',             'Components', 'Enable Components',                                    'administer CiviCRM', '', @systemSettingslastID, '1', NULL, 1 ),
-    ( @domainID, 'civicrm/a/#/cxn',                                     'Connections', 'Connections',                                         'administer CiviCRM', '', @systemSettingslastID, '1', NULL, 2 ),
     ( @domainID, 'civicrm/admin/extensions?reset=1',                    'Extensions', 'Manage Extensions',                                    'administer CiviCRM', '', @systemSettingslastID, '1', 1,    3 ),
 
     ( @domainID, 'civicrm/admin/setting/updateConfigBackend?reset=1',   'Cleanup Caches and Update Paths', 'Cleanup Caches and Update Paths', 'administer CiviCRM', '', @systemSettingslastID, '1', NULL, 4 ),
@@ -23940,4 +23853,4 @@ INSERT INTO `civicrm_report_instance`
     ( `domain_id`, `title`, `report_id`, `description`, `permission`, `form_values`)
 VALUES
     (  @domainID, 'Survey Details', 'survey/detail', 'Detailed report for canvassing, phone-banking, walk lists or other surveys.', 'access CiviReport', 'a:39:{s:6:"fields";a:2:{s:9:"sort_name";s:1:"1";s:6:"result";s:1:"1";}s:22:"assignee_contact_id_op";s:2:"eq";s:25:"assignee_contact_id_value";s:0:"";s:12:"sort_name_op";s:3:"has";s:15:"sort_name_value";s:0:"";s:17:"street_number_min";s:0:"";s:17:"street_number_max";s:0:"";s:16:"street_number_op";s:3:"lte";s:19:"street_number_value";s:0:"";s:14:"street_name_op";s:3:"has";s:17:"street_name_value";s:0:"";s:15:"postal_code_min";s:0:"";s:15:"postal_code_max";s:0:"";s:14:"postal_code_op";s:3:"lte";s:17:"postal_code_value";s:0:"";s:7:"city_op";s:3:"has";s:10:"city_value";s:0:"";s:20:"state_province_id_op";s:2:"in";s:23:"state_province_id_value";a:0:{}s:13:"country_id_op";s:2:"in";s:16:"country_id_value";a:0:{}s:12:"survey_id_op";s:2:"in";s:15:"survey_id_value";a:0:{}s:12:"status_id_op";s:2:"eq";s:15:"status_id_value";s:1:"1";s:11:"custom_1_op";s:2:"in";s:14:"custom_1_value";a:0:{}s:11:"custom_2_op";s:2:"in";s:14:"custom_2_value";a:0:{}s:17:"custom_3_relative";s:1:"0";s:13:"custom_3_from";s:0:"";s:11:"custom_3_to";s:0:"";s:11:"description";s:75:"Detailed report for canvassing, phone-banking, walk lists or other surveys.";s:13:"email_subject";s:0:"";s:8:"email_to";s:0:"";s:8:"email_cc";s:0:"";s:10:"permission";s:17:"access CiviReport";s:6:"groups";s:0:"";s:9:"domain_id";i:1;}');
-UPDATE civicrm_domain SET version = '5.39.0';
+UPDATE civicrm_domain SET version = '5.45.1';

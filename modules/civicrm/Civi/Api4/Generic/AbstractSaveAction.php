@@ -10,13 +10,6 @@
  +--------------------------------------------------------------------+
  */
 
-/**
- *
- * @package CRM
- * @copyright CiviCRM LLC https://civicrm.org/licensing
- */
-
-
 namespace Civi\Api4\Generic;
 
 use Civi\Api4\Event\ValidateValuesEvent;
@@ -39,6 +32,8 @@ use Civi\Api4\Utils\CoreUtil;
  * @method array getDefaults()
  * @method $this setReload(bool $reload) Specify whether complete objects will be returned after saving.
  * @method bool getReload()
+ * @method $this setMatch(array $match) Specify fields to match for update.
+ * @method bool getMatch()
  *
  * @package Civi\Api4\Generic
  */
@@ -77,31 +72,29 @@ abstract class AbstractSaveAction extends AbstractAction {
   protected $reload = FALSE;
 
   /**
-   * @var string
+   * Specify fields to match for update.
+   *
+   * Normally each record is either created or updated based on the presence of an `id`.
+   * Specifying `$match` fields will also perform an update if an existing $ENTITY matches all specified fields.
+   *
+   * Note: the fields named in this param should be without any options suffix (e.g. `my_field` not `my_field:name`).
+   * Any options suffixes in the $records will be resolved by the api prior to matching.
+   *
+   * @var array
+   * @optionsCallback getMatchFields
    */
-  private $idField;
-
-  /**
-   * BatchAction constructor.
-   * @param string $entityName
-   * @param string $actionName
-   * @param string $idField
-   */
-  public function __construct($entityName, $actionName, $idField = 'id') {
-    // $idField should be a string but some apis (e.g. CustomValue) give us an array
-    $this->idField = array_values((array) $idField)[0];
-    parent::__construct($entityName, $actionName);
-  }
+  protected $match = [];
 
   /**
    * @throws \API_Exception
    * @throws \Civi\API\Exception\UnauthorizedException
    */
   protected function validateValues() {
+    $idField = CoreUtil::getIdFieldName($this->getEntityName());
     // FIXME: There should be a protocol to report a full list of errors... Perhaps a subclass of API_Exception?
     $unmatched = [];
     foreach ($this->records as $record) {
-      if (empty($record[$this->idField])) {
+      if (empty($record[$idField])) {
         $unmatched = array_unique(array_merge($unmatched, $this->checkRequiredFields($record)));
       }
     }
@@ -111,23 +104,23 @@ abstract class AbstractSaveAction extends AbstractAction {
 
     if ($this->checkPermissions) {
       foreach ($this->records as $record) {
-        $action = empty($record[$this->idField]) ? 'create' : 'update';
+        $action = empty($record[$idField]) ? 'create' : 'update';
         if (!CoreUtil::checkAccessDelegated($this->getEntityName(), $action, $record, \CRM_Core_Session::getLoggedInContactID() ?: 0)) {
           throw new UnauthorizedException("ACL check failed");
         }
       }
     }
 
-    $e = new ValidateValuesEvent($this, $this->records, new \CRM_Utils_LazyArray(function() {
-      $existingIds = array_column($this->records, $this->idField);
+    $e = new ValidateValuesEvent($this, $this->records, new \CRM_Utils_LazyArray(function() use ($idField) {
+      $existingIds = array_column($this->records, $idField);
       $existing = civicrm_api4($this->getEntityName(), 'get', [
         'checkPermissions' => $this->checkPermissions,
-        'where' => [[$this->idField, 'IN', $existingIds]],
-      ], $this->idField);
+        'where' => [[$idField, 'IN', $existingIds]],
+      ], $idField);
 
       $result = [];
       foreach ($this->records as $k => $new) {
-        $old = isset($new[$this->idField]) ? $existing[$new[$this->idField]] : NULL;
+        $old = isset($new[$idField]) ? $existing[$new[$idField]] : NULL;
         $result[$k] = ['old' => $old, 'new' => $new];
       }
       return $result;
@@ -139,10 +132,39 @@ abstract class AbstractSaveAction extends AbstractAction {
   }
 
   /**
+   * Find existing record based on $this->match param
+   *
+   * @param $record
+   */
+  protected function matchExisting(&$record) {
+    $primaryKey = CoreUtil::getIdFieldName($this->getEntityName());
+    if (empty($record[$primaryKey]) && !empty($this->match)) {
+      $where = [];
+      foreach ($record as $key => $val) {
+        if (isset($val) && in_array($key, $this->match, TRUE)) {
+          $where[] = [$key, '=', $val];
+        }
+      }
+      if (count($where) === count($this->match)) {
+        $existing = civicrm_api4($this->getEntityName(), 'get', [
+          'select' => [$primaryKey],
+          'where' => $where,
+          'checkPermissions' => $this->checkPermissions,
+          'limit' => 2,
+        ]);
+        if ($existing->count() === 1) {
+          $record[$primaryKey] = $existing->first()[$primaryKey];
+        }
+      }
+    }
+  }
+
+  /**
    * @return string
+   * @deprecated
    */
   protected function getIdField() {
-    return $this->idField;
+    return CoreUtil::getInfoItem($this->getEntityName(), 'primary_key')[0];
   }
 
   /**
@@ -164,6 +186,21 @@ abstract class AbstractSaveAction extends AbstractAction {
   public function addDefault(string $fieldName, $defaultValue) {
     $this->defaults[$fieldName] = $defaultValue;
     return $this;
+  }
+
+  /**
+   * Options callback for $this->match
+   * @return array
+   */
+  protected function getMatchFields() {
+    return (array) civicrm_api4($this->getEntityName(), 'getFields', [
+      'checkPermissions' => FALSE,
+      'action' => 'get',
+      'where' => [
+        ['type', 'IN', ['Field', 'Custom']],
+        ['name', 'NOT IN', CoreUtil::getInfoItem($this->getEntityName(), 'primary_key')],
+      ],
+    ], ['name']);
   }
 
 }

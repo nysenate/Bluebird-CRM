@@ -1,5 +1,4 @@
 <?php
-
 /*
  +--------------------------------------------------------------------+
  | Copyright CiviCRM LLC. All rights reserved.                        |
@@ -9,14 +8,6 @@
  | and copyright information, see https://civicrm.org/licensing       |
  +--------------------------------------------------------------------+
  */
-
-/**
- *
- * @package CRM
- * @copyright CiviCRM LLC https://civicrm.org/licensing
- */
-
-
 namespace Civi\Api4;
 
 /**
@@ -25,6 +16,7 @@ namespace Civi\Api4;
  * @see \Civi\Api4\Generic\AbstractEntity
  *
  * @searchable none
+ * @since 5.19
  * @package Civi\Api4
  */
 class Entity extends Generic\AbstractEntity {
@@ -66,8 +58,9 @@ class Entity extends Generic\AbstractEntity {
             'DAOEntity' => 'DAOEntity',
             'CustomValue' => 'CustomValue',
             'BasicEntity' => 'BasicEntity',
+            'SortableEntity' => 'SortableEntity',
+            'ManagedEntity' => 'ManagedEntity',
             'EntityBridge' => 'EntityBridge',
-            'OptionList' => 'OptionList',
           ],
         ],
         [
@@ -87,12 +80,17 @@ class Entity extends Generic\AbstractEntity {
           'description' => 'Class name for dao-based entities',
         ],
         [
-          'name' => 'id_field',
-          'description' => 'Name of unique identifier field (e.g. "id")',
+          'name' => 'primary_key',
+          'type' => 'Array',
+          'description' => 'Name of unique identifier field(s) (e.g. [id])',
         ],
         [
           'name' => 'label_field',
           'description' => 'Field to show when displaying a record',
+        ],
+        [
+          'name' => 'order_by',
+          'description' => 'Default column to sort results',
         ],
         [
           'name' => 'searchable',
@@ -115,6 +113,16 @@ class Entity extends Generic\AbstractEntity {
           'description' => 'Any @see annotations from docblock',
         ],
         [
+          'name' => 'since',
+          'data_type' => 'String',
+          'description' => 'Version this API entity was added',
+        ],
+        [
+          'name' => 'class',
+          'data_type' => 'String',
+          'description' => 'PHP class name',
+        ],
+        [
           'name' => 'bridge',
           'data_type' => 'Array',
           'description' => 'Connecting fields for EntityBridge types',
@@ -130,6 +138,7 @@ class Entity extends Generic\AbstractEntity {
 
   /**
    * @param bool $checkPermissions
+   * @deprecated
    * @return Action\Entity\GetLinks
    */
   public static function getLinks($checkPermissions = TRUE) {

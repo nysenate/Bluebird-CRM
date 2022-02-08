@@ -456,11 +456,11 @@ WHERE     cpf.price_set_id = %1";
     $where = "
 WHERE price_set_id = %1
 AND is_active = 1
-AND ( active_on IS NULL OR active_on <= {$currentTime} )
 ";
     $dateSelect = '';
     if ($doNotIncludeExpiredFields) {
       $dateSelect = "
+AND ( active_on IS NULL OR active_on <= {$currentTime} )
 AND ( expire_on IS NULL OR expire_on >= {$currentTime} )
 ";
     }
@@ -884,32 +884,6 @@ WHERE  id = %1";
     CRM_Utils_Hook::buildAmount($component, $form, $feeBlock);
 
     self::addPriceFieldsToForm($form, $feeBlock, $validFieldsOnly, $className, $validPriceFieldIds);
-  }
-
-  /**
-   * Apply ACLs on Financial Type to the price options in a fee block.
-   *
-   * @param array $feeBlock
-   *   Fee block: array of price fields.
-   *
-   * @deprecated not used in civi universe as at Oct 2020.
-   *
-   * @return void
-   */
-  public static function applyACLFinancialTypeStatusToFeeBlock(&$feeBlock) {
-    CRM_Core_Error::deprecatedFunctionWarning('enacted in financialtypeacl extension');
-    if (CRM_Financial_BAO_FinancialType::isACLFinancialTypeStatus()) {
-      foreach ($feeBlock as $key => $value) {
-        foreach ($value['options'] as $k => $options) {
-          if (!CRM_Core_Permission::check('add contributions of type ' . CRM_Contribute_PseudoConstant::financialType($options['financial_type_id']))) {
-            unset($feeBlock[$key]['options'][$k]);
-          }
-        }
-        if (empty($feeBlock[$key]['options'])) {
-          unset($feeBlock[$key]);
-        }
-      }
-    }
   }
 
   /**

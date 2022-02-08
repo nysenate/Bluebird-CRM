@@ -71,7 +71,6 @@ class CRM_Event_Form_ParticipantView extends CRM_Core_Form {
 
     $statusId = CRM_Core_DAO::getFieldValue('CRM_Event_BAO_Participant', $participantID, 'status_id', 'id');
     $status = CRM_Core_DAO::getFieldValue('CRM_Event_BAO_ParticipantStatusType', $statusId, 'name', 'id');
-    $status = CRM_Core_DAO::getFieldValue('CRM_Event_BAO_ParticipantStatusType', $statusId, 'name', 'id');
     if ($status == 'Transferred') {
       $transferId = CRM_Core_DAO::getFieldValue('CRM_Event_BAO_Participant', $participantID, 'transferred_to_contact_id', 'id');
       $pid = CRM_Core_DAO::getFieldValue('CRM_Event_BAO_Participant', $transferId, 'id', 'contact_id');
@@ -80,7 +79,6 @@ class CRM_Event_Form_ParticipantView extends CRM_Core_Form {
       $this->assign('transferId', $transferId);
       $this->assign('transferName', $transferName);
     }
-    $participantStatuses = CRM_Event_PseudoConstant::participantStatus();
 
     // CRM-20879: Show 'Transfer or Cancel' option beside 'Change fee selection'
     //  only if logged in user have 'edit event participants' permission and
@@ -137,19 +135,23 @@ class CRM_Event_Form_ParticipantView extends CRM_Core_Form {
     $eventNameCustomDataTypeID = array_search('ParticipantEventName', $customDataType);
     $eventTypeCustomDataTypeID = array_search('ParticipantEventType', $customDataType);
     $allRoleIDs = explode(CRM_Core_DAO::VALUE_SEPARATOR, $values[$participantID]['role_id']);
-    $groupTree = [];
     $finalTree = [];
 
     foreach ($allRoleIDs as $k => $v) {
-      $roleGroupTree = CRM_Core_BAO_CustomGroup::getTree('Participant', NULL, $participantID, NULL, $v, $roleCustomDataTypeID);
+      $roleGroupTree = CRM_Core_BAO_CustomGroup::getTree('Participant', NULL, $participantID, NULL, $v, $roleCustomDataTypeID,
+         TRUE, NULL, FALSE, CRM_Core_Permission::VIEW);
       $eventGroupTree = CRM_Core_BAO_CustomGroup::getTree('Participant', NULL, $participantID, NULL,
-        $values[$participantID]['event_id'], $eventNameCustomDataTypeID
+        $values[$participantID]['event_id'], $eventNameCustomDataTypeID,
+        TRUE, NULL, FALSE, CRM_Core_Permission::VIEW
       );
       $eventTypeID = CRM_Core_DAO::getFieldValue("CRM_Event_DAO_Event", $values[$participantID]['event_id'], 'event_type_id', 'id');
-      $eventTypeGroupTree = CRM_Core_BAO_CustomGroup::getTree('Participant', NULL, $participantID, NULL, $eventTypeID, $eventTypeCustomDataTypeID);
+      $eventTypeGroupTree = CRM_Core_BAO_CustomGroup::getTree('Participant', NULL, $participantID, NULL, $eventTypeID, $eventTypeCustomDataTypeID,
+        TRUE, NULL, FALSE, CRM_Core_Permission::VIEW);
+      $participantGroupTree = CRM_Core_BAO_CustomGroup::getTree('Participant', NULL, $participantID, NULL, [], NULL,
+        TRUE, NULL, FALSE, CRM_Core_Permission::VIEW);
       $groupTree = CRM_Utils_Array::crmArrayMerge($roleGroupTree, $eventGroupTree);
       $groupTree = CRM_Utils_Array::crmArrayMerge($groupTree, $eventTypeGroupTree);
-      $groupTree = CRM_Utils_Array::crmArrayMerge($groupTree, CRM_Core_BAO_CustomGroup::getTree('Participant', NULL, $participantID));
+      $groupTree = CRM_Utils_Array::crmArrayMerge($groupTree, $participantGroupTree);
       foreach ($groupTree as $treeId => $trees) {
         $finalTree[$treeId] = $trees;
       }
@@ -190,8 +192,6 @@ class CRM_Event_Form_ParticipantView extends CRM_Core_Form {
     $displayName = CRM_Contact_BAO_Contact::displayName($values[$participantID]['contact_id']);
 
     $participantCount = [];
-    $invoiceSettings = Civi::settings()->get('contribution_invoice_settings');
-    $invoicing = $invoiceSettings['invoicing'] ?? NULL;
     $totalTaxAmount = 0;
     foreach ($lineItem as $k => $v) {
       if (CRM_Utils_Array::value('participant_count', $lineItem[$k]) > 0) {
@@ -199,7 +199,7 @@ class CRM_Event_Form_ParticipantView extends CRM_Core_Form {
       }
       $totalTaxAmount = $v['tax_amount'] + $totalTaxAmount;
     }
-    if ($invoicing) {
+    if (Civi::settings()->get('invoicing')) {
       $this->assign('totalTaxAmount', $totalTaxAmount);
     }
     if ($participantCount) {
@@ -207,7 +207,7 @@ class CRM_Event_Form_ParticipantView extends CRM_Core_Form {
     }
     $this->assign('displayName', $displayName);
     // omitting contactImage from title for now since the summary overlay css doesn't work outside of our crm-container
-    CRM_Utils_System::setTitle(ts('View Event Registration for') . ' ' . $displayName);
+    $this->setTitle(ts('View Event Registration for') . ' ' . $displayName);
 
     $roleId = $values[$participantID]['role_id'] ?? NULL;
     $title = $displayName . ' (' . CRM_Utils_Array::value($roleId, $participantRoles) . ' - ' . $eventTitle . ')';

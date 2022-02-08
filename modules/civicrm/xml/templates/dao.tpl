@@ -7,7 +7,7 @@
  * {$generated}
  * (GenCodeChecksum:{$genCodeChecksum})
  */
-{$useHelper}
+{if isset($useHelper)}{$useHelper}{/if}
 /**
  * Database access object for the {$table.entity} entity.
  */
@@ -23,6 +23,16 @@ class {$table.className} extends CRM_Core_DAO {ldelim}
       * @var string
       */
       public static $_tableName = '{$table.name}';
+
+   {* Only print this variable if it's different than the default in CRM_Core_DAO *}
+   {if count($table.primaryKey.field) !== 1 || $table.primaryKey.field.0 !== 'id'}
+     /**
+      * Primary key field(s).
+      *
+      * @var string[]
+      */
+      public static $_primaryKey = [{if $table.primaryKey.field}'{"', '"|implode:$table.primaryKey.field}'{/if}];
+   {/if}
 
    {if $table.icon}
      /**
@@ -87,6 +97,16 @@ class {$table.className} extends CRM_Core_DAO {ldelim}
         return $plural ? {$tsFunctionName}('{$table.titlePlural}') : {$tsFunctionName}('{$table.title}');
     {rdelim}
 
+{if !empty($table.description)}
+  /**
+  * Returns user-friendly description of this entity.
+  *
+  * @return string
+  */
+  public static function getEntityDescription() {ldelim}
+    return {$tsFunctionName}('{$table.description|replace:"'":"\'"}');
+  {rdelim}
+{/if}
 
 
 {if !empty($table.foreignKey) || !empty($table.dynamicForeignKey)}
@@ -178,7 +198,8 @@ class {$table.className} extends CRM_Core_DAO {ldelim}
                       'permission'      => {$field.permission|@print_array},
 {/if}
 {if $field.default || $field.default === '0'}
-                         'default'   => '{if ($field.default[0]=="'" or $field.default[0]=='"')}{$field.default|substring:1:-1}{else}{$field.default}{/if}',
+  {capture assign=unquotedDefault}{if ($field.default[0]=="'" or $field.default[0]=='"')}{$field.default|substring:1:-1}{else}{$field.default}{/if}{/capture}
+                         'default'   => {if ($unquotedDefault==='NULL')}NULL{else}'{$unquotedDefault}'{/if},
 {/if} {* field.default *}
   'table_name' => '{$table.name}',
   'entity' => '{$table.entity}',

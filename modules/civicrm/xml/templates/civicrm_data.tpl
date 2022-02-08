@@ -164,6 +164,7 @@ VALUES
    ('contact_reference_options'     , '{ts escape="sql"}Contact Reference Autocomplete Options{/ts}', NULL, 1, 1, 1),
    ('website_type'                  , '{ts escape="sql"}Website Type{/ts}'                       , NULL, 1, 1, 0),
    ('tag_used_for'                  , '{ts escape="sql"}Tag Used For{/ts}'                       , NULL, 1, 1, 1),
+   ('note_used_for'                 , '{ts escape="sql"}Note Used For{/ts}'                      , NULL, 1, 1, 1),
    ('currencies_enabled'            , '{ts escape="sql"}Currencies Enabled{/ts}'                 , NULL, 1, 1, 0),
    ('event_badge'                   , '{ts escape="sql"}Event Name Badge{/ts}'                   , NULL, 1, 1, 0),
    ('note_privacy'                  , '{ts escape="sql"}Privacy levels for notes{/ts}'           , NULL, 1, 1, 0),
@@ -198,7 +199,8 @@ VALUES
    ('pledge_status'                 , '{ts escape="sql"}Pledge Status{/ts}'                      , NULL, 1, 1, 1),
    ('contribution_recur_status'     , '{ts escape="sql"}Recurring Contribution Status{/ts}'      , NULL, 1, 1, 1),
    ('environment'                   , '{ts escape="sql"}Environment{/ts}'                        , NULL, 1, 1, 0),
-   ('activity_default_assignee'     , '{ts escape="sql"}Activity default assignee{/ts}'          , NULL, 1, 1, 0);
+   ('activity_default_assignee'     , '{ts escape="sql"}Activity default assignee{/ts}'          , NULL, 1, 1, 0),
+   ('entity_batch_extends'          , '{ts escape="sql"}Entity Batch Extends{/ts}'               , NULL, 1, 1, 0);
 
 SELECT @option_group_id_pcm            := max(id) from civicrm_option_group where name = 'preferred_communication_method';
 SELECT @option_group_id_act            := max(id) from civicrm_option_group where name = 'activity_type';
@@ -248,6 +250,7 @@ SELECT @option_group_id_acsOpt         := max(id) from civicrm_option_group wher
 SELECT @option_group_id_acConRef       := max(id) from civicrm_option_group where name = 'contact_reference_options';
 SELECT @option_group_id_website        := max(id) from civicrm_option_group where name = 'website_type';
 SELECT @option_group_id_tuf            := max(id) from civicrm_option_group where name = 'tag_used_for';
+SELECT @option_group_id_nuf            := max(id) from civicrm_option_group where name = 'note_used_for';
 SELECT @option_group_id_currency       := max(id) from civicrm_option_group where name = 'currencies_enabled';
 SELECT @option_group_id_eventBadge     := max(id) from civicrm_option_group where name = 'event_badge';
 SELECT @option_group_id_notePrivacy    := max(id) from civicrm_option_group where name = 'note_privacy';
@@ -282,6 +285,7 @@ SELECT @option_group_id_ps    := max(id) from civicrm_option_group where name = 
 SELECT @option_group_id_crs    := max(id) from civicrm_option_group where name = 'contribution_recur_status';
 SELECT @option_group_id_env    := max(id) from civicrm_option_group where name = 'environment';
 SELECT @option_group_id_default_assignee := max(id) from civicrm_option_group where name = 'activity_default_assignee';
+SELECT @option_group_id_entity_batch_extends := max(id) from civicrm_option_group where name = 'entity_batch_extends';
 
 SELECT @contributeCompId := max(id) FROM civicrm_component where name = 'CiviContribute';
 SELECT @eventCompId      := max(id) FROM civicrm_component where name = 'CiviEvent';
@@ -569,7 +573,7 @@ VALUES
   (@option_group_id_csearch , 'CRM_Contact_Form_Search_Custom_PostalMailing'        , 5, 'CRM_Contact_Form_Search_Custom_PostalMailing', NULL, 0, NULL, 5, '{ts escape="sql"}Postal Mailing{/ts}', 0, 0, 1, NULL, NULL, NULL),
   (@option_group_id_csearch , 'CRM_Contact_Form_Search_Custom_Proximity'            , 6, 'CRM_Contact_Form_Search_Custom_Proximity', NULL, 0, NULL, 6, '{ts escape="sql"}Proximity Search{/ts}', 0, 0, 1, NULL, NULL, NULL),
   (@option_group_id_csearch , 'CRM_Contact_Form_Search_Custom_EventAggregate'       , 7, 'CRM_Contact_Form_Search_Custom_EventAggregate', NULL, 0, NULL, 7, '{ts escape="sql"}Event Aggregate{/ts}', 0, 0, 1, NULL, NULL, NULL),
-  (@option_group_id_csearch , 'CRM_Contact_Form_Search_Custom_ActivitySearch'       , 8, 'CRM_Contact_Form_Search_Custom_ActivitySearch', NULL, 0, NULL, 8, '{ts escape="sql"}Activity Search{/ts}', 0, 0, 1, NULL, NULL, NULL),
+  (@option_group_id_csearch , 'CRM_Contact_Form_Search_Custom_ActivitySearch'       , 8, 'CRM_Contact_Form_Search_Custom_ActivitySearch', NULL, 0, NULL, 8, '{ts escape="sql"}Activity Search{/ts}', 0, 0, 0, NULL, NULL, NULL),
   (@option_group_id_csearch , 'CRM_Contact_Form_Search_Custom_PriceSet'             , 9, 'CRM_Contact_Form_Search_Custom_PriceSet', NULL, 0, NULL, 9, '{ts escape="sql"}Price Set Details for Event Participants{/ts}', 0, 0, 1, NULL, NULL, NULL),
   (@option_group_id_csearch , 'CRM_Contact_Form_Search_Custom_ZipCodeRange'         ,10, 'CRM_Contact_Form_Search_Custom_ZipCodeRange', NULL, 0, NULL, 10, '{ts escape="sql"}Zip Code Range{/ts}', 0, 0, 1, NULL, NULL, NULL),
   (@option_group_id_csearch , 'CRM_Contact_Form_Search_Custom_DateAdded'            ,11, 'CRM_Contact_Form_Search_Custom_DateAdded', NULL, 0, NULL, 11, '{ts escape="sql"}Date Added to CiviCRM{/ts}', 0, 0, 1, NULL, NULL, NULL),
@@ -664,7 +668,7 @@ VALUES
   (@option_group_id_sfe, 'pptx',  16, 'pptx',   NULL, 0, 0, 16, NULL, 0, 0, 1, NULL, NULL, NULL),
 
   (@option_group_id_we, '{ts escape="sql"}Textarea{/ts}', 1, 'Textarea', NULL, 0, NULL, 1, NULL, 0, 1, 1, NULL, NULL, NULL),
-  (@option_group_id_we, 'CKEditor', 2, 'CKEditor', NULL, 0, NULL, 2, NULL, 0, 1, 1, NULL, NULL, NULL),
+  (@option_group_id_we, '{ts escape="sql"}CKEditor 4{/ts}', 2, 'CKEditor', NULL, 0, NULL, 2, NULL, 0, 1, 1, NULL, NULL, NULL),
 
   (@option_group_id_mt, '{ts escape="sql"}Search Builder{/ts}',      1, 'Search Builder',      NULL, 0, 0,    1, NULL, 0, 1, 1, NULL, NULL, NULL),
   (@option_group_id_mt, '{ts escape="sql"}Import Contact{/ts}',      2, 'Import Contact',      NULL, 0, 0,    2, NULL, 0, 1, 1, NULL, NULL, NULL),
@@ -719,19 +723,19 @@ VALUES
 
 -- email greeting.
   (@option_group_id_emailGreeting, '{literal}Dear {contact.first_name}{/literal}',                                                 1, '{literal}Dear {contact.first_name}{/literal}',                                                 NULL,    1, 1, 1, NULL, 0, 0, 1, NULL, NULL, NULL),
-  (@option_group_id_emailGreeting, '{literal}Dear {contact.individual_prefix} {contact.first_name} {contact.last_name}{/literal}', 2, '{literal}Dear {contact.individual_prefix} {contact.first_name} {contact.last_name}{/literal}', NULL,    1, 0, 2, NULL, 0, 0, 1, NULL, NULL, NULL),
-  (@option_group_id_emailGreeting, '{literal}Dear {contact.individual_prefix} {contact.last_name}{/literal}',                      3, '{literal}Dear {contact.individual_prefix} {contact.last_name}{/literal}',                      NULL,    1, 0, 3, NULL, 0, 0, 1, NULL, NULL, NULL),
+  (@option_group_id_emailGreeting, '{literal}Dear {contact.prefix_id:label} {contact.first_name} {contact.last_name}{/literal}', 2, '{literal}Dear {contact.prefix_id:label} {contact.first_name} {contact.last_name}{/literal}', NULL,    1, 0, 2, NULL, 0, 0, 1, NULL, NULL, NULL),
+  (@option_group_id_emailGreeting, '{literal}Dear {contact.prefix_id:label} {contact.last_name}{/literal}',                      3, '{literal}Dear {contact.prefix_id:label} {contact.last_name}{/literal}',                      NULL,    1, 0, 3, NULL, 0, 0, 1, NULL, NULL, NULL),
   (@option_group_id_emailGreeting, '{literal}Customized{/literal}',                                                                4, '{literal}Customized{/literal}',                                                                NULL, 0, 0, 4, NULL, 0, 1, 1, NULL, NULL, NULL),
   (@option_group_id_emailGreeting, '{literal}Dear {contact.household_name}{/literal}',                                             5, '{literal}Dear {contact.household_name}{/literal}',                                             NULL,    2, 1, 5, NULL, 0, 0, 1, NULL, NULL, NULL),
 -- postal greeting.
   (@option_group_id_postalGreeting, '{literal}Dear {contact.first_name}{/literal}',                                                 1, '{literal}Dear {contact.first_name}{/literal}',                                                 NULL,    1, 1, 1, NULL, 0, 0, 1, NULL, NULL, NULL),
-  (@option_group_id_postalGreeting, '{literal}Dear {contact.individual_prefix} {contact.first_name} {contact.last_name}{/literal}', 2, '{literal}Dear {contact.individual_prefix} {contact.first_name} {contact.last_name}{/literal}', NULL,    1, 0, 2, NULL, 0, 0, 1, NULL, NULL, NULL),
-  (@option_group_id_postalGreeting, '{literal}Dear {contact.individual_prefix} {contact.last_name}{/literal}',                      3, '{literal}Dear {contact.individual_prefix} {contact.last_name}{/literal}',                      NULL,    1, 0, 3, NULL, 0, 0, 1, NULL, NULL, NULL),
+  (@option_group_id_postalGreeting, '{literal}Dear {contact.prefix_id:label} {contact.first_name} {contact.last_name}{/literal}', 2, '{literal}Dear {contact.prefix_id:label} {contact.first_name} {contact.last_name}{/literal}', NULL,    1, 0, 2, NULL, 0, 0, 1, NULL, NULL, NULL),
+  (@option_group_id_postalGreeting, '{literal}Dear {contact.prefix_id:label} {contact.last_name}{/literal}',                      3, '{literal}Dear {contact.prefix_id:label} {contact.last_name}{/literal}',                      NULL,    1, 0, 3, NULL, 0, 0, 1, NULL, NULL, NULL),
   (@option_group_id_postalGreeting, '{literal}Customized{/literal}',                                                                4, '{literal}Customized{/literal}',                                                                NULL, 0, 0, 4, NULL, 0, 1, 1, NULL, NULL, NULL),
   (@option_group_id_postalGreeting, '{literal}Dear {contact.household_name}{/literal}',                                             5, '{literal}Dear {contact.household_name}{/literal}',                                             NULL,    2, 1, 5, NULL, 0, 0, 1, NULL, NULL, NULL),
 
 -- addressee
-  (@option_group_id_addressee, '{literal}{contact.individual_prefix}{ } {contact.first_name}{ }{contact.middle_name}{ }{contact.last_name}{ }{contact.individual_suffix}{/literal}',          '1', '{literal}}{contact.individual_prefix}{ } {contact.first_name}{ }{contact.middle_name}{ }{contact.last_name}{ }{contact.individual_suffix}{/literal}',         NULL ,   '1', '1', '1', NULL , '0', '0', '1', NULL , NULL, NULL),
+  (@option_group_id_addressee, '{literal}{contact.prefix_id:label}{ }{contact.first_name}{ }{contact.middle_name}{ }{contact.last_name}{ }{contact.suffix_id:label}{/literal}',          '1', '{literal}{contact.prefix_id:label}{ }{contact.first_name}{ }{contact.middle_name}{ }{contact.last_name}{ }{contact.suffix_id:label}{/literal}',         NULL ,   '1', '1', '1', NULL , '0', '0', '1', NULL , NULL, NULL),
   (@option_group_id_addressee, '{literal}{contact.household_name}{/literal}',    '2', '{literal}{contact.household_name}{/literal}',    NULL ,   '2', '1', '2', NULL , '0', '0', '1', NULL , NULL, NULL),
   (@option_group_id_addressee, '{literal}{contact.organization_name}{/literal}', '3', '{literal}{contact.organization_name}{/literal}', NULL ,   '3', '1', '3', NULL , '0', '0', '1', NULL , NULL, NULL),
   (@option_group_id_addressee, '{literal}Customized{/literal}',                  '4', '{literal}Customized{/literal}',                  NULL ,    0 , '0', '4', NULL , '0', '1', '1', NULL , NULL, NULL),
@@ -750,10 +754,16 @@ VALUES
    (@option_group_id_website, 'Vine',  12, 'Vine ',  NULL, 0, NULL, 12, NULL, 0, 0, 1, NULL, NULL, NULL),
 
 -- Tag used for
-   (@option_group_id_tuf, 'Contacts',   'civicrm_contact',  'Contacts',     NULL, 0, NULL, 1, NULL, 0, 0, 1, NULL, NULL, NULL),
-   (@option_group_id_tuf, 'Activities', 'civicrm_activity', 'Activities',   NULL, 0, NULL, 2, NULL, 0, 0, 1, NULL, NULL, NULL),
-   (@option_group_id_tuf, 'Cases',      'civicrm_case',     'Cases',        NULL, 0, NULL, 3, NULL, 0, 0, 1, NULL, NULL, NULL),
-   (@option_group_id_tuf, 'Attachments','civicrm_file',     'Attachements', NULL, 0, NULL, 4, NULL, 0, 0, 1, NULL, NULL, NULL),
+   (@option_group_id_tuf, '{ts escape="sql"}Contacts{/ts}',    'civicrm_contact',  'Contact',  NULL, 0, NULL, 1, NULL, 0, 0, 1, NULL, NULL, NULL),
+   (@option_group_id_tuf, '{ts escape="sql"}Activities{/ts}',  'civicrm_activity', 'Activity', NULL, 0, NULL, 2, NULL, 0, 0, 1, NULL, NULL, NULL),
+   (@option_group_id_tuf, '{ts escape="sql"}Cases{/ts}',       'civicrm_case',     'Case',     NULL, 0, NULL, 3, NULL, 0, 0, 1, NULL, NULL, NULL),
+   (@option_group_id_tuf, '{ts escape="sql"}Attachments{/ts}', 'civicrm_file',     'File',     NULL, 0, NULL, 4, NULL, 0, 0, 1, NULL, NULL, NULL),
+
+-- Note used for
+   (@option_group_id_nuf, '{ts escape="sql"}Contacts{/ts}',      'civicrm_contact',      'Contact',      NULL, 0, NULL, 1, NULL, 0, 0, 1, NULL, NULL, NULL),
+   (@option_group_id_nuf, '{ts escape="sql"}Relationships{/ts}', 'civicrm_relationship', 'Relationship', NULL, 0, NULL, 2, NULL, 0, 0, 1, NULL, NULL, NULL),
+   (@option_group_id_nuf, '{ts escape="sql"}Participants{/ts}',  'civicrm_participant',  'Participant',  NULL, 0, NULL, 3, NULL, 0, 0, 1, NULL, NULL, NULL),
+   (@option_group_id_nuf, '{ts escape="sql"}Contributions{/ts}', 'civicrm_contribution', 'Contribution', NULL, 0, NULL, 4, NULL, 0, 0, 1, NULL, NULL, NULL),
 
    (@option_group_id_currency, 'USD ($)',      'USD',     'USD',       NULL, 0, 1, 1, NULL, 0, 0, 1, NULL, NULL, NULL),
 
@@ -1046,7 +1056,12 @@ VALUES
 (@option_group_id_default_assignee, '{ts escape="sql"}None{/ts}',                           '1',     'NONE',                    NULL,       0,         1,           1,         NULL,          0,             0,             1,           NULL,            NULL,           NULL),
 (@option_group_id_default_assignee, '{ts escape="sql"}By relationship to case client{/ts}', '2',     'BY_RELATIONSHIP',         NULL,       0,         0,           1,         NULL,          0,             0,             1,           NULL,            NULL,           NULL),
 (@option_group_id_default_assignee, '{ts escape="sql"}Specific contact{/ts}',               '3',     'SPECIFIC_CONTACT',        NULL,       0,         0,           1,         NULL,          0,             0,             1,           NULL,            NULL,           NULL),
-(@option_group_id_default_assignee, '{ts escape="sql"}User creating the case{/ts}',          '4',     'USER_CREATING_THE_CASE',  NULL,       0,         0,           1,         NULL,          0,             0,             1,           NULL,            NULL,           NULL);
+(@option_group_id_default_assignee, '{ts escape="sql"}User creating the case{/ts}',          '4',     'USER_CREATING_THE_CASE',  NULL,       0,         0,           1,         NULL,          0,             0,             1,           NULL,            NULL,           NULL),
+
+-- Entity Batch options
+--  (`option_group_id`,             `label`,                                      `value`,                   `name`,                    `grouping`, `filter`, `is_default`, `weight`, `description`, `is_optgroup`, `is_reserved`, `is_active`, `component_id`, `visibility_id`, `icon`)
+(@option_group_id_entity_batch_extends, '{ts escape="sql"}Financial Transactions{/ts}',  'civicrm_financial_trxn',  'civicrm_financial_trxn',   NULL,       0,         1,           1,         NULL,          0,             0,             1,           @contributeCompId,            NULL,           NULL);
+
 
 -- financial accounts
 SELECT @opval := value FROM civicrm_option_value WHERE name = 'Revenue' and option_group_id = @option_group_id_fat;
@@ -1665,7 +1680,7 @@ force=[0 or 1] optional-0 update contacts with null value, 1 update all
 limit=Number optional-Limit the number of contacts to update{/ts}', 0),
     ( @domainID, 'Daily' ,  NULL, '{ts escape="sql" skip="true"}Mail Reports{/ts}', '{ts escape="sql" skip="true"}Generates and sends out reports via email{/ts}', 'job', 'mail_report','{ts escape="sql" skip="true"}instanceId=[ID of report instance] required
 format=[csv or print] optional-output CSV or print-friendly HTML, else PDF{/ts}', 0),
-    ( @domainID, 'Daily' ,  NULL, '{ts escape="sql" skip="true"}Send Scheduled Reminders{/ts}', '{ts escape="sql" skip="true"}Sends out scheduled reminders via email{/ts}', 'job', 'send_reminder', NULL, 0),
+    ( @domainID, 'Hourly' ,  NULL, '{ts escape="sql" skip="true"}Send Scheduled Reminders{/ts}', '{ts escape="sql" skip="true"}Sends out scheduled reminders via email{/ts}', 'job', 'send_reminder', NULL, 0),
     ( @domainID, 'Always' , NULL, '{ts escape="sql" skip="true"}Update Participant Statuses{/ts}', '{ts escape="sql" skip="true"}Updates pending event participant statuses based on time{/ts}', 'job', 'process_participant', NULL, 0),
     ( @domainID, 'Daily' , NULL, '{ts escape="sql" skip="true"}Update Membership Statuses{/ts}', '{ts escape="sql" skip="true"}Updates membership statuses. WARNING: Membership renewal reminders have been migrated to the Schedule Reminders functionality, which supports multiple renewal reminders.{/ts}', 'job', 'process_membership',   NULL, 0),
     ( @domainID, 'Always' , NULL, '{ts escape="sql" skip="true"}Process Survey Respondents{/ts}',   '{ts escape="sql" skip="true"}Releases reserved survey respondents when they have been reserved for longer than the Release Frequency days specified for that survey.{/ts}', 'job', 'process_respondent',NULL, 0),
@@ -1738,10 +1753,9 @@ VALUES
 
 -- CRM-9714
 
-SELECT @financial_type_id := max(id) FROM `civicrm_financial_type` WHERE `name` = 'Member Dues';
 INSERT INTO `civicrm_price_set` ( `name`, `title`, `is_active`, `extends`, `is_quick_config`, `financial_type_id`, `is_reserved` )
 VALUES ( 'default_contribution_amount', 'Contribution Amount', '1', '2', '1', NULL,1),
-( 'default_membership_type_amount', 'Membership Amount', '1', '3', '1', @financial_type_id,1);
+( 'default_membership_type_amount', 'Membership Amount', '1', '3', '1', @financial_type_id_md,1);
 
 SELECT @setID := max(id) FROM civicrm_price_set WHERE name = 'default_contribution_amount' AND extends = 2 AND is_quick_config = 1 ;
 
@@ -1782,4 +1796,7 @@ INSERT IGNORE INTO civicrm_extension (type, full_name, name, label, file, is_act
 INSERT IGNORE INTO civicrm_extension (type, full_name, name, label, file, is_active) VALUES ('module', 'financialacls', 'Financial ACLs', 'Financial ACLs', 'financialacls', 1);
 INSERT IGNORE INTO civicrm_extension (type, full_name, name, label, file, is_active) VALUES ('module', 'contributioncancelactions', 'Contribution cancel actions', 'Contribution cancel actions', 'contributioncancelactions', 1);
 INSERT IGNORE INTO civicrm_extension (type, full_name, name, label, file, is_active) VALUES ('module', 'recaptcha', 'reCAPTCHA', 'reCAPTCHA', 'recaptcha', 1);
+INSERT IGNORE INTO civicrm_extension (type, full_name, name, label, file, is_active) VALUES ('module', 'ckeditor4', 'CKEditor4', 'CKEditor4', 'ckeditor4', 1);
+INSERT IGNORE INTO civicrm_extension (type, full_name, name, label, file, is_active) VALUES ('module', 'legacycustomsearches', 'Custom search framework', 'Custom search framework', 'legacycustomsearches', 1);
+INSERT IGNORE INTO civicrm_extension (type, full_name, name, label, file, is_active) VALUES ('module', 'org.civicrm.flexmailer', 'FlexMailer', 'FlexMailer', 'flexmailer', 1);
 

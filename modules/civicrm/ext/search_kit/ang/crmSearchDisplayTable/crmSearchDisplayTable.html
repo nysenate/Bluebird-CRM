@@ -1,29 +1,24 @@
 <div class="crm-search-display crm-search-display-table">
-  <div class="form-inline" ng-if="$ctrl.settings.actions">
-    <crm-search-tasks entity="$ctrl.apiEntity" ids="$ctrl.selectedRows" refresh="$ctrl.getResults()"></crm-search-tasks>
+  <div class="form-inline">
+    <div class="btn-group" ng-include="'~/crmSearchDisplay/SearchButton.html'" ng-if="$ctrl.settings.button"></div>
+    <crm-search-tasks ng-if="$ctrl.settings.actions" entity="$ctrl.apiEntity" ids="$ctrl.selectedRows" search="$ctrl.search" display="$ctrl.display" display-controller="$ctrl" refresh="$ctrl.refreshAfterTask()"></crm-search-tasks>
   </div>
-  <table>
+  <table class="{{:: $ctrl.settings.classes.join(' ') }}">
     <thead>
       <tr>
-        <th class="crm-search-result-select" ng-if=":: $ctrl.settings.actions">
-          <input type="checkbox" ng-checked="$ctrl.allRowsSelected" ng-click="selectAllRows()" >
+        <th class="crm-search-result-select" ng-if=":: $ctrl.settings.actions || $ctrl.settings.draggable">
+          <i ng-if=":: $ctrl.settings.draggable" class="crm-i fa-sort-amount-asc" title="{{:: ts('Drag columns to reposition') }}"></i>
+          <input type="checkbox" ng-if=":: $ctrl.settings.actions" ng-disabled="$ctrl.loading || !$ctrl.results.length" ng-checked="$ctrl.allRowsSelected" ng-click="$ctrl.selectAllRows()" >
         </th>
-        <th ng-repeat="col in $ctrl.settings.columns" ng-click="setSort(col, $event)" title="{{:: ts('Click to sort results (shift-click to sort by multiple).') }}">
-          <i ng-if="col.type === 'field'" class="crm-i {{ getSort(col) }}"></i>
-          <span>{{ col.label }}</span>
+        <th ng-repeat="col in $ctrl.settings.columns" ng-click="$ctrl.setSort(col, $event)" class="{{:: $ctrl.isSortable(col) ? 'crm-sortable-col' : ''}}" title="{{:: $ctrl.isSortable(col) ? ts('Click to sort results (shift-click to sort by multiple).') : '' }}">
+          <i ng-if=":: $ctrl.isSortable(col)" class="crm-i {{ $ctrl.getSort(col) }}"></i>
+          <span>{{:: col.label }}</span>
         </th>
       </tr>
     </thead>
-    <tbody>
-      <tr ng-repeat="(rowIndex, row) in $ctrl.results">
-        <td ng-if=":: $ctrl.settings.actions">
-          <input type="checkbox" ng-checked="isRowSelected(row)" ng-click="selectRow(row)" ng-disabled="!(!loadingAllRows && row.id)">
-        </td>
-        <td ng-repeat="col in $ctrl.settings.columns" ng-include="'~/crmSearchDisplay/colType/' + col.type + '.html'" title="{{:: displayUtils.replaceTokens(col.title, row, $ctrl.settings.columns) }}" class="{{:: col.alignment }}">
-        </td>
-        <td></td>
-      </tr>
-    </tbody>
+    <tbody ng-if="$ctrl.loading" ng-include="'~/crmSearchDisplayTable/crmSearchDisplayTableLoading.html'"></tbody>
+    <tbody ng-if="!$ctrl.loading && !$ctrl.settings.draggable" ng-include="'~/crmSearchDisplayTable/crmSearchDisplayTableBody.html'"></tbody>
+    <tbody ng-if="!$ctrl.loading && $ctrl.settings.draggable" ng-include="'~/crmSearchDisplayTable/crmSearchDisplayTableBody.html'" ui-sortable="$ctrl.draggableOptions" ng-model="$ctrl.results"></tbody>
   </table>
   <div ng-include="'~/crmSearchDisplay/Pager.html'"></div>
 </div>

@@ -243,6 +243,7 @@ CREATE TABLE `civicrm_managed` (
   `entity_type` varchar(64) NOT NULL COMMENT 'API entity type',
   `entity_id` int unsigned NOT NULL COMMENT 'Foreign key to the referenced item.',
   `cleanup` varchar(32) COMMENT 'Policy on when to cleanup entity (always, never, unused)',
+  `entity_modified_date` timestamp NULL DEFAULT NULL COMMENT 'When the managed entity was changed from its original settings.',
   PRIMARY KEY (`id`),
   INDEX `UI_managed_module_name`(module, name),
   INDEX `UI_managed_entity`(entity_type, entity_id)
@@ -283,7 +284,7 @@ CREATE TABLE `civicrm_msg_template` (
   `workflow_id` int unsigned COMMENT 'a pseudo-FK to civicrm_option_value',
   `workflow_name` varchar(255),
   `is_default` tinyint DEFAULT 1 COMMENT 'is this the default message template for the workflow referenced by workflow_id?',
-  `is_reserved` tinyint COMMENT 'is this the reserved message template which we ship for the workflow referenced by workflow_id?',
+  `is_reserved` tinyint DEFAULT 0 COMMENT 'is this the reserved message template which we ship for the workflow referenced by workflow_id?',
   `is_sms` tinyint DEFAULT 0 COMMENT 'Is this message template used for sms?',
   `pdf_format_id` int unsigned COMMENT 'a pseudo-FK to civicrm_option_value containing PDF Page Format.',
   PRIMARY KEY (`id`)
@@ -995,7 +996,7 @@ ENGINE=InnoDB DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci ROW_FORMA
 -- *******************************************************/
 CREATE TABLE `civicrm_membership_status` (
   `id` int unsigned NOT NULL AUTO_INCREMENT COMMENT 'Membership ID',
-  `name` varchar(128) COMMENT 'Name for Membership Status',
+  `name` varchar(128) NOT NULL COMMENT 'Name for Membership Status',
   `label` varchar(128) COMMENT 'Label for Membership Status',
   `start_event` varchar(12) COMMENT 'Event when this status starts.',
   `start_event_adjust_unit` varchar(8) COMMENT 'Unit used for adjusting from start_event.',
@@ -1699,7 +1700,7 @@ CREATE TABLE `civicrm_mapping_field` (
   `operator` varchar(16) COMMENT 'SQL WHERE operator for search-builder mapping fields (search criteria).',
   `value` varchar(255) COMMENT 'SQL WHERE value for search-builder mapping fields.',
   PRIMARY KEY (`id`),
-  CONSTRAINT FK_civicrm_mapping_field_mapping_id FOREIGN KEY (`mapping_id`) REFERENCES `civicrm_mapping`(`id`),
+  CONSTRAINT FK_civicrm_mapping_field_mapping_id FOREIGN KEY (`mapping_id`) REFERENCES `civicrm_mapping`(`id`) ON DELETE CASCADE,
   CONSTRAINT FK_civicrm_mapping_field_location_type_id FOREIGN KEY (`location_type_id`) REFERENCES `civicrm_location_type`(`id`),
   CONSTRAINT FK_civicrm_mapping_field_relationship_type_id FOREIGN KEY (`relationship_type_id`) REFERENCES `civicrm_relationship_type`(`id`)
 )
@@ -1756,8 +1757,8 @@ CREATE TABLE `civicrm_navigation` (
   `name` varchar(255) COMMENT 'Internal Name',
   `url` varchar(255) COMMENT 'url in case of custom navigation link',
   `icon` varchar(255) NULL DEFAULT NULL COMMENT 'CSS class name for an icon',
-  `permission` varchar(255) COMMENT 'Permission for menu item',
-  `permission_operator` varchar(3) COMMENT 'Permission Operator',
+  `permission` varchar(255) COMMENT 'Permission(s) needed to access menu item',
+  `permission_operator` varchar(3) COMMENT 'Operator to use if item has more than one permission',
   `parent_id` int unsigned COMMENT 'Parent navigation item, used for grouping',
   `is_active` tinyint COMMENT 'Is this navigation item active?',
   `has_separator` tinyint DEFAULT 0 COMMENT 'Place a separator either before or after this menu item.',
@@ -2463,7 +2464,7 @@ CREATE TABLE `civicrm_membership_type` (
   `member_of_contact_id` int unsigned NOT NULL COMMENT 'Owner organization for this membership type. FK to Contact ID',
   `financial_type_id` int unsigned NOT NULL COMMENT 'If membership is paid by a contribution - what financial type should be used. FK to civicrm_financial_type.id',
   `minimum_fee` decimal(18,9) DEFAULT 0 COMMENT 'Minimum fee for this membership (0 for free/complimentary memberships).',
-  `duration_unit` varchar(8) COMMENT 'Unit in which membership period is expressed.',
+  `duration_unit` varchar(8) NOT NULL COMMENT 'Unit in which membership period is expressed.',
   `duration_interval` int COMMENT 'Number of duration units in membership period (e.g. 1 year, 12 months).',
   `period_type` varchar(8) NOT NULL COMMENT 'Rolling membership period starts on signup date. Fixed membership periods start on fixed_period_start_day.',
   `fixed_period_start_day` int COMMENT 'For fixed period memberships, month and day (mmdd) on which subscription/membership will start. Period start is back-dated unless after rollover day.',
@@ -3020,6 +3021,7 @@ CREATE TABLE `civicrm_relationship_cache` (
   `is_active` tinyint DEFAULT 1 COMMENT 'is the relationship active ?',
   `start_date` date COMMENT 'date when the relationship started',
   `end_date` date COMMENT 'date when the relationship ended',
+  `case_id` int unsigned DEFAULT NULL COMMENT 'FK to civicrm_case',
   PRIMARY KEY (`id`),
   UNIQUE INDEX `UI_relationship`(relationship_id, orientation),
   INDEX `index_nearid_nearrelation`(near_contact_id, near_relation),
@@ -3028,7 +3030,8 @@ CREATE TABLE `civicrm_relationship_cache` (
   CONSTRAINT FK_civicrm_relationship_cache_relationship_id FOREIGN KEY (`relationship_id`) REFERENCES `civicrm_relationship`(`id`) ON DELETE CASCADE,
   CONSTRAINT FK_civicrm_relationship_cache_relationship_type_id FOREIGN KEY (`relationship_type_id`) REFERENCES `civicrm_relationship_type`(`id`) ON DELETE CASCADE,
   CONSTRAINT FK_civicrm_relationship_cache_near_contact_id FOREIGN KEY (`near_contact_id`) REFERENCES `civicrm_contact`(`id`) ON DELETE CASCADE,
-  CONSTRAINT FK_civicrm_relationship_cache_far_contact_id FOREIGN KEY (`far_contact_id`) REFERENCES `civicrm_contact`(`id`) ON DELETE CASCADE
+  CONSTRAINT FK_civicrm_relationship_cache_far_contact_id FOREIGN KEY (`far_contact_id`) REFERENCES `civicrm_contact`(`id`) ON DELETE CASCADE,
+  CONSTRAINT FK_civicrm_relationship_cache_case_id FOREIGN KEY (`case_id`) REFERENCES `civicrm_case`(`id`) ON DELETE CASCADE
 )
 ENGINE=InnoDB DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci ROW_FORMAT=DYNAMIC;
 
@@ -3066,7 +3069,7 @@ CREATE TABLE `civicrm_mailing` (
   `msg_template_id` int unsigned COMMENT 'FK to the message template.',
   `override_verp` tinyint DEFAULT 0 COMMENT 'Overwrite the VERP address in Reply-To',
   `created_id` int unsigned COMMENT 'FK to Contact ID who first created this mailing',
-  `created_date` timestamp NULL DEFAULT NULL COMMENT 'Date and time this mailing was created.',
+  `created_date` timestamp NULL DEFAULT CURRENT_TIMESTAMP COMMENT 'Date and time this mailing was created.',
   `modified_date` timestamp NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT 'When the mailing (or closely related entity) was created or modified or deleted.',
   `scheduled_id` int unsigned COMMENT 'FK to Contact ID who scheduled this mailing',
   `scheduled_date` timestamp NULL DEFAULT NULL COMMENT 'Date and time this mailing was scheduled.',
@@ -3360,7 +3363,7 @@ CREATE TABLE `civicrm_contribution_recur` (
   `installments` int unsigned COMMENT 'Total number of payments to be made. Set this to 0 if this is an open-ended commitment i.e. no set end date.',
   `start_date` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT 'The date the first scheduled recurring contribution occurs.',
   `create_date` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT 'When this recurring contribution record was created.',
-  `modified_date` datetime DEFAULT CURRENT_TIMESTAMP COMMENT 'Last updated date for this record. mostly the last time a payment was received',
+  `modified_date` timestamp DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT 'Last updated date for this record. mostly the last time a payment was received',
   `cancel_date` datetime COMMENT 'Date this recurring contribution was cancelled by contributor- if we can get access to it',
   `cancel_reason` text COMMENT 'Free text field for a reason for cancelling',
   `end_date` datetime COMMENT 'Date this recurring contribution finished successfully',
@@ -3838,6 +3841,7 @@ CREATE TABLE `civicrm_contribution_product` (
   `comment` text,
   `financial_type_id` int unsigned DEFAULT NULL COMMENT 'FK to Financial Type(for membership price sets only).',
   PRIMARY KEY (`id`),
+  CONSTRAINT FK_civicrm_contribution_product_product_id FOREIGN KEY (`product_id`) REFERENCES `civicrm_product`(`id`) ON DELETE CASCADE,
   CONSTRAINT FK_civicrm_contribution_product_contribution_id FOREIGN KEY (`contribution_id`) REFERENCES `civicrm_contribution`(`id`) ON DELETE CASCADE,
   CONSTRAINT FK_civicrm_contribution_product_financial_type_id FOREIGN KEY (`financial_type_id`) REFERENCES `civicrm_financial_type`(`id`) ON DELETE SET NULL
 )
@@ -4105,6 +4109,7 @@ CREATE TABLE `civicrm_line_item` (
   `financial_type_id` int unsigned DEFAULT NULL COMMENT 'FK to Financial Type.',
   `non_deductible_amount` decimal(20,2) NOT NULL DEFAULT 0.0 COMMENT 'Portion of total amount which is NOT tax deductible.',
   `tax_amount` decimal(20,2) COMMENT 'tax of each item',
+  `membership_num_terms` int unsigned DEFAULT NULL COMMENT 'Number of terms for this membership (only supported in Order->Payment flow). If the field is NULL it means unknown and it will be assumed to be 1 during payment.create if entity_table is civicrm_membership',
   PRIMARY KEY (`id`),
   UNIQUE INDEX `UI_line_item_value`(entity_id, entity_table, contribution_id, price_field_value_id, price_field_id),
   CONSTRAINT FK_civicrm_line_item_contribution_id FOREIGN KEY (`contribution_id`) REFERENCES `civicrm_contribution`(`id`) ON DELETE SET NULL,

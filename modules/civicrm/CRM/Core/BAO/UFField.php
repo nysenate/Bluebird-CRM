@@ -157,17 +157,11 @@ class CRM_Core_BAO_UFField extends CRM_Core_DAO_UFField {
    * Delete the profile Field.
    *
    * @param int $id
-   *   Field Id.
-   *
+   * @deprecated
    * @return bool
-   *
    */
   public static function del($id) {
-    //delete  field field
-    $field = new CRM_Core_DAO_UFField();
-    $field->id = $id;
-    $field->delete();
-    return TRUE;
+    return (bool) self::deleteRecord(['id' => $id]);
   }
 
   /**
@@ -778,11 +772,13 @@ SELECT  id
    * @param array $profileFilter
    *   Filter to apply to profile fields - expected usage is to only fill based on.
    *   the bottom profile per CRM-13726
+   * @param array $paymentProcessorBillingFields
+   *   Array of billing fields required by the payment processor.
    *
    * @return bool
    *   Can the address block be hidden safe in the knowledge all fields are elsewhere collected (see CRM-15118)
    */
-  public static function assignAddressField($key, &$profileAddressFields, $profileFilter) {
+  public static function assignAddressField($key, &$profileAddressFields, $profileFilter, $paymentProcessorBillingFields = NULL) {
     $billing_id = CRM_Core_BAO_LocationType::getBilling();
     list($prefixName, $index) = CRM_Utils_System::explode('-', $key, 2);
 
@@ -796,17 +792,22 @@ SELECT  id
       ]
     ));
     //check for valid fields ( fields that are present in billing block )
-    $validBillingFields = [
-      'first_name',
-      'middle_name',
-      'last_name',
-      'street_address',
-      'supplemental_address_1',
-      'city',
-      'state_province',
-      'postal_code',
-      'country',
-    ];
+    if (!empty($paymentProcessorBillingFields)) {
+      $validBillingFields = $paymentProcessorBillingFields;
+    }
+    else {
+      $validBillingFields = [
+        'first_name',
+        'middle_name',
+        'last_name',
+        'street_address',
+        'supplemental_address_1',
+        'city',
+        'state_province',
+        'postal_code',
+        'country',
+      ];
+    }
     $requiredBillingFields = array_diff($validBillingFields, ['middle_name', 'supplemental_address_1']);
     $validProfileFields = [];
     $requiredProfileFields = [];
@@ -841,8 +842,10 @@ SELECT  id
     }
 
     $potentiallyMissingRequiredFields = array_diff($requiredBillingFields, $requiredProfileFields);
+    $billingProfileIsHideable = empty($potentiallyMissingRequiredFields);
     CRM_Core_Resources::singleton()
-      ->addSetting(['billing' => ['billingProfileIsHideable' => empty($potentiallyMissingRequiredFields)]]);
+      ->addSetting(['billing' => ['billingProfileIsHideable' => $billingProfileIsHideable]]);
+    return $billingProfileIsHideable;
   }
 
   /**

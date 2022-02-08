@@ -5,6 +5,7 @@
   <class>Contact</class>
   <name>civicrm_contact</name>
   <comment>Contact objects are defined by a civicrm_contact record plus a related civicrm_contact_type record.</comment>
+  <description>Individuals, organizations, households, etc.</description>
   <add>1.1</add>
   <log>true</log>
   <icon>fa-address-book-o</icon>
@@ -849,7 +850,6 @@
     <html>
       <type>CheckBox</type>
     </html>
-    <permission>access deleted contacts</permission>
   </field>
   <index>
     <name>index_is_deleted_sort_name</name>

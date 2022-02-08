@@ -3,10 +3,10 @@
     {{:: ts('Customizing the system tabs will affect every layout which uses default tabs.') }}
   </p>
 </div>
-<contact-layout-edit-tabs layout="$ctrl.data" defaults="systemTabs"></contact-layout-edit-tabs>
+<contact-layout-edit-tabs layout="$ctrl.data" defaults="systemTabs" is-system="true"></contact-layout-edit-tabs>
 <div class="alert alert-warning">
   <p>
-    {{:: ts('The default layout cannot be rearranged. It will be shown if no other layouts exist, or if none of their criteria match the contact being viewed by the acting user.') }}
+    {{:: ts("The system default will be shown if no other layout's criteria matches the contact being viewed by the acting user. It displays all blocks enabled on the Contact Edit form; they cannot be rearranged.") }}
   </p>
 </div>
 <div class="panel-inner">

@@ -29,6 +29,19 @@ class CRM_Contact_Import_Form_DataSource extends CRM_Core_Form {
   private $_dataSourceClass;
 
   /**
+   * Get any smarty elements that may not be present in the form.
+   *
+   * To make life simpler for smarty we ensure they are set to null
+   * rather than unset. This is done at the last minute when $this
+   * is converted to an array to be assigned to the form.
+   *
+   * @return array
+   */
+  public function getOptionalQuickFormElements(): array {
+    return ['disableUSPS'];
+  }
+
+  /**
    * Set variables up before form is built.
    *
    * @throws \CRM_Core_Exception
@@ -89,12 +102,12 @@ class CRM_Contact_Import_Form_DataSource extends CRM_Core_Form {
       $this->_dataSourceIsValid = TRUE;
       $this->assign('showDataSourceFormPane', TRUE);
       $dataSourcePath = explode('_', $this->_dataSource);
-      $templateFile = "CRM/Contact/Import/Form/" . $dataSourcePath[3] . ".tpl";
-      $this->assign('dataSourceFormTemplateFile', $templateFile);
+      $templateFile = 'CRM/Contact/Import/Form/' . $dataSourcePath[3] . ".tpl";
     }
     elseif ($this->_dataSource) {
       $this->invalidConfig('Invalid data source');
     }
+    $this->assign('dataSourceFormTemplateFile', $templateFile ?? NULL);
   }
 
   /**
@@ -201,9 +214,9 @@ class CRM_Contact_Import_Form_DataSource extends CRM_Core_Form {
       'fieldSeparator' => $config->fieldSeparator,
     ];
 
-    if ($loadeMapping = $this->get('loadedMapping')) {
-      $this->assign('loadedMapping', $loadeMapping);
-      $defaults['savedMapping'] = $loadeMapping;
+    $this->assign('loadedMapping', $this->get('loadedMapping'));
+    if ($this->get('loadedMapping')) {
+      $defaults['savedMapping'] = $this->get('loadedMapping');
     }
 
     return $defaults;

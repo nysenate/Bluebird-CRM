@@ -28,7 +28,7 @@
 
     <tr class="crm-scheduleReminder-form-block-when">
         <td class="right">{$form.start_action_offset.label}</td>
-        <td colspan="3">{$form.absolute_date.html} <strong id='OR'>OR</strong><br /></td>
+        <td colspan="3">{$form.absolute_date.html} <strong id='OR'>{ts}OR{/ts}</strong><br /></td>
     </tr>
 
     <tr id="relativeDate" class="crm-scheduleReminder-form-block-description">
@@ -54,6 +54,14 @@
         </table>
      </td>
     </tr>
+    <tr class="crm-scheduleReminder-effective_start_date">
+      <td class="right">{$form.effective_start_date.label}</td>
+      <td colspan="3">{$form.effective_start_date.html} <div class="description"></div></td>
+    </tr>
+    <tr class="crm-scheduleReminder-effective_end_date">
+      <td class="right">{$form.effective_end_date.label}</td>
+      <td colspan="3">{$form.effective_end_date.html} <div class="description"></div></td>
+    </tr>
     <tr>
       <td class="label" width="20%">{$form.from_name.label}</td>
       <td>{$form.from_name.html}&nbsp;&nbsp;{help id="id-from_name_email"}</td>
@@ -77,11 +85,13 @@
         <td class="label">{$form.group_id.label}</td>
         <td>{$form.group_id.html}</td>
     </tr>
+    {if !empty($form.mode)}
     <tr id="msgMode" class="crm-scheduleReminder-form-block-mode">
       <td class="label">{$form.mode.label}</td>
       <td>{$form.mode.html}</td>
     </tr>
-    {if $multilingual}
+    {/if}
+    {if !empty($multilingual)}
     <tr class="crm-scheduleReminder-form-block-filter-contact-language">
       <td class="label">{$form.filter_contact_language.label}</td>
       <td>{$form.filter_contact_language.html} {help id="filter_contact_language"}</td>
@@ -116,7 +126,7 @@
        {include file="CRM/Contact/Form/Task/EmailCommon.tpl" upload=1 noAttach=1}
     </div>
     </fieldset>
-    {if $sms}
+    {if !empty($sms)}
       <fieldset id="sms" class="crm-collapsible"><legend class="collapsible-title">{ts}SMS Screen{/ts}</legend>
         <div>
         <table id="sms-field-table" class="form-layout-compressed">
@@ -167,6 +177,18 @@
       var $form = $('form.{/literal}{$form.formClass}{literal}'),
         recipientMapping = eval({/literal}{$recipientMapping}{literal});
 
+      updatedEffectiveDateDescription($('#entity_0 option:selected').text(), $('#start_action_date option:selected').text());
+      $('#entity_0, #start_action_date', $form).change(function() {
+       updatedEffectiveDateDescription($('#entity_0 option:selected').text(), $('#start_action_date option:selected').text());
+      });
+
+      $('#absolute_date', $form).change(function() {
+        $('.crm-scheduleReminder-effective_start_date, .crm-scheduleReminder-effective_end_date').toggle(($(this).val() === null));
+      });
+      $('#start_action_offset', $form).change(function() {
+        $('.crm-scheduleReminder-effective_start_date, .crm-scheduleReminder-effective_end_date').toggle(($(this).val() !== null));
+      });
+
       $('#absolute_date_display', $form).change(function() {
         if($(this).val()) {
           $('#relativeDate, #relativeDateRepeat, #repeatFields, #OR', $form).hide();
@@ -180,6 +202,11 @@
 
       loadMsgBox();
       $('#mode', $form).change(loadMsgBox);
+
+      function updatedEffectiveDateDescription(entityText, startActionDateText) {
+        $('.crm-scheduleReminder-effective_start_date .description').text(ts('Earliest %1 %2 to include.', {1: entityText, 2: startActionDateText}));
+        $('.crm-scheduleReminder-effective_end_date .description').text(ts('Earliest %1 %2 to exclude.', {1: entityText, 2: startActionDateText}));
+      }
 
       function populateRecipient() {
         var mappingID = $('#entity_0', $form).val() || $('[name^=mappingID]', $form).val();

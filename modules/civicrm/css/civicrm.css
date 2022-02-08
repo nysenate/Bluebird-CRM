@@ -722,6 +722,7 @@ input.crm-form-entityref {
 
 .crm-container div.empowered-by-logo {
   background: url('../i/civi99.png') no-repeat;
+  background-image: url('../i/civi99.svg'), none;
   display: block;
   line-height: 34px;
   position: absolute;
@@ -859,6 +860,10 @@ input.crm-form-entityref {
 
 .crm-container .bold {
   font-weight: bold;
+}
+
+.crm-container .font-bold {
+  font-weight: bold !important;
 }
 
 .crm-container .font-italic {
@@ -1853,6 +1858,7 @@ input.crm-form-entityref {
   width: 10px;
   padding-top: 4px;
   padding-right: 4px;
+  display: inline-block;
 }
 
 /* crm button style */
@@ -2085,6 +2091,11 @@ a.crm-i:hover {
 
 .crm-container a.helpicon {
   opacity: .8;
+}
+
+.crm-submit-buttons .helpicon {
+    float: left;
+    padding-right: 6px;
 }
 
 .crm-container  a.helpicon:hover,
@@ -2781,7 +2792,7 @@ tbody.scrollContent tr.alternateRow {
 }
 
 .crm-container .disabled,
-.crm-container .disabled td,
+.crm-container .disabled *,
 .crm-container .cancelled,
 .crm-container .cancelled td,
 .crm-container li.disabled a.ui-tabs-anchor,
@@ -3231,7 +3242,7 @@ span.crm-select-item-color {
   top: 4px;
 }
 .crm-container ul.crm-checkbox-list li label {
-  display: block;
+  display: block !important;
   padding: 2px 0 2px 22px;
   margin: 0;
   word-break: break-all;
@@ -3860,7 +3871,7 @@ span.crm-status-icon {
 }
 
 .crm-container .strikethrough {
-  text-decoration: line-through;
+  text-decoration: line-through !important;
 }
 
 .crm-container input.ng-invalid.ng-dirty,
@@ -3898,4 +3909,28 @@ span.crm-status-icon {
   padding: 1px 5px;
   border-radius: 3px;
   border: 1px solid grey;
+}
+
+/* search kit grid layout styling */
+.crm-search-display-grid-container {
+  display: grid;
+  grid-gap: 1em;
+  align-items: center;
+  justify-items: center;
+}
+
+.crm-search-display-grid-layout-2 {
+  grid-template-columns: repeat(2, 1fr);
+}
+
+.crm-search-display-grid-layout-3 {
+  grid-template-columns: repeat(3, 1fr);
+}
+
+.crm-search-display-grid-layout-4 {
+  grid-template-columns: repeat(4, 1fr);
+}
+
+.crm-search-display-grid-layout-5 {
+  grid-template-columns: repeat(5, 1fr);
 }
