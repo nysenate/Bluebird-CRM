@@ -31,6 +31,16 @@ if ! $readConfig --instance $instance --quiet; then
   exit 1
 fi
 
+## upgrade drupal db
+echo "running drupal db upgrade..."
+$drush $instance updb -y -q
+
+## upgrade civicrm db
+echo "running civicrm db upgrade..."
+$drush $instance civicrm-upgrade-db -y -q
+
+php $script_dir/../civicrm/scripts/logUpdateSchema.php -S $instance
+
 echo "enable/disable/install/uninstall various extensions..."
 $drush $instance cvapi extension.disable key=com.ginkgostreet.mosaicotoolbarconfig --quiet
 $drush $instance cvapi extension.install key=mosaicoextras --quiet
@@ -48,14 +58,6 @@ $drush $instance pm-uninstall nyss_backup -y
 
 echo "remove previously disabled modules..."
 $execSql -i $instance -c "DELETE FROM system WHERE type='module' AND name='nyss_sage';" --drupal -q
-
-## upgrade drupal db
-echo "running drupal db upgrade..."
-$drush $instance updb -y -q
-
-## upgrade civicrm db
-echo "running civicrm db upgrade..."
-$drush $instance civicrm-upgrade-db -y -q
 
 echo "upgrade extensions..."
 $drush $instance cvapi extension.upgrade --quiet
