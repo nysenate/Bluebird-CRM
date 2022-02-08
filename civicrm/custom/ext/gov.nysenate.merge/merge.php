@@ -307,7 +307,30 @@ function _merge_resolveConflicts(&$data, $mainId, $otherId) {
       unset($conflicts['move_location_address_0']);
     }
     else {
-      //TODO do more intelligent comparison of values; specifically postal +4
+      //14495 postal +4
+      //compare postal +4
+      $mainAddr = &$data['migration_info']['main_details']['location_blocks']['address'][0];
+      $otherAddr = $data['migration_info']['other_details']['location_blocks']['address'][0];
+      if ((!empty($mainAddr['postal_code_suffix']) || !empty($otherAddr['postal_code_suffix'])) &&
+        $mainAddr['postal_code_suffix'] != $otherAddr['postal_code_suffix']
+      ) {
+        //at this point we know that the postal code +4 is in conflict, but don't know if there are other
+        //points of conflict with the address blocks; so let's recreate the address string and compare them sans +4
+        $mainAddrStr = _merge_cleanVal($mainAddr['street_address'].$mainAddr['supplemental_address_1'].$mainAddr['city'].$mainAddr['state_province_id'].$mainAddr['postal_code']);
+        $otherAddrStr = _merge_cleanVal($otherAddr['street_address'].$otherAddr['supplemental_address_1'].$otherAddr['city'].$otherAddr['state_province_id'].$otherAddr['postal_code']);
+
+        //_merge_mD('move_location_address_0 $mainAddrStr', $mainAddrStr);
+        //_merge_mD('move_location_address_0 $otherAddrStr', $otherAddrStr);
+
+        if ($mainAddrStr == $otherAddrStr) {
+          //we now know the +4 was the only point of conflict
+          if (!empty($otherAddr['postal_code_suffix'])) {
+            $mainAddr['postal_code_suffix'] = $otherAddr['postal_code_suffix'];
+          }
+
+          unset($conflicts['move_location_address_0']);
+        }
+      }
     }
   }
 
@@ -337,6 +360,11 @@ function _merge_resolveConflicts(&$data, $mainId, $otherId) {
       $conflicts['move_custom_79'] = $rows['move_custom_79']['main'];
       $conflicts['move_custom_72'] = $rows['move_custom_72']['other'];
     }
+  }
+
+  //14495 deceased
+  if (array_key_exists('move_is_deceased', $conflicts)) {
+    $conflicts['move_is_deceased'] = 1;
   }
 
   //12878 combine privacy note values
