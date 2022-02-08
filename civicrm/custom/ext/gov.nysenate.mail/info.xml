@@ -2,7 +2,7 @@
 <extension key="gov.nysenate.mail" type="module">
   <file>mail</file>
   <name>NYSS: Mailing Customizations</name>
-  <description></description>
+  <description/>
   <license>AGPL-3.0</license>
   <maintainer>
     <author>NYSS Senate</author>
@@ -17,7 +17,7 @@
   <compatibility>
     <ver>4.7</ver>
   </compatibility>
-  <comments></comments>
+  <comments/>
   <civix>
     <namespace>CRM/NYSS/Mail</namespace>
   </civix>

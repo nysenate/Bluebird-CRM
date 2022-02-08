@@ -20,7 +20,7 @@
   <compatibility>
     <ver>5.x</ver>
   </compatibility>
-  <comments></comments>
+  <comments/>
   <civix>
     <namespace>CRM/Mosaicoimageeditor</namespace>
   </civix>
