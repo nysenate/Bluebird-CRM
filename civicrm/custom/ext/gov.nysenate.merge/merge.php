@@ -397,8 +397,11 @@ function _merge_resolveConflicts(&$data, $mainId, $otherId) {
 
 //helper to strip spaces and punctuation so we normalize comparison
 function _merge_cleanVal($string) {
+  //14495 - convert # to Apt
+  $string = str_replace('#', 'apt', $string);
+
   return strtolower(preg_replace('/[\W]+/', '', $string));
-} //_merge_cleanVal()
+}
 
 
 //helper to work out greeting field custom vs formula
