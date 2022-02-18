@@ -142,7 +142,7 @@ $prefsCore['syncCMSEmail'] = false;
 $prefsCore['wkhtmltopdfPath'] = get_config_value($bbcfg, 'wkhtmltopdf.path', '/usr/local/bin/wkhtmltopdf');
 $prefsCore['versionCheck'] = false;
 $prefsCore['checksumTimeout'] = 7;
-$prefsCore['menubar_color'] = 'white';
+$prefsCore['menubar_color'] = '#ffffff';
 $prefsCore['ajaxPopupsEnabled'] = 1;
 $prefsCore['mailing_format'] = "{contact.addressee}
 {contact.job_title}
