@@ -125,7 +125,7 @@ $prefsResources = &$civicrm_setting['resources'];
 // preserve_activity_tab_filter
 // do_not_notify_assignees_for
 $prefsCore['advanced_search_options'] = SEP.implode(SEP, [1,2,3,4,5,6,10,13,16,17,18,19]).SEP;
-$prefsCore['contact_view_options'] = SEP.implode(SEP, [1,2,3,4,5,6,10,15]).SEP;
+$prefsCore['contact_view_options'] = SEP.implode(SEP, [1,2,3,4,5,6,10,14,15]).SEP;
 $prefsCore['checksum_timeout'] = 7;
 $prefsCore['communityMessagesUrl'] = false;
 $prefsCore['contact_autocomplete_options'] = SEP.implode(SEP, [1,2,3,4,5,8,9]).SEP;
