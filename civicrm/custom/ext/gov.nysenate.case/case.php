@@ -181,6 +181,25 @@ function case_civicrm_buildForm($formName, &$form) {
   }
 }
 
+function case_civicrm_pre($op, $objectName, $id, &$params) {
+  /*Civi::log()->debug(__FUNCTION__, [
+    '$op' => $op,
+    '$objectName' => $objectName,
+    '$id' => $id,
+    '$params' => $params,
+  ]);*/
+
+  //14527 don't set relationship end date when creating a case with resolved status
+  if ($objectName == 'Relationship' &&
+    $op == 'create' &&
+    !empty($params['case_id']) &&
+    CRM_Core_DAO::getFieldValue('CRM_Contact_DAO_RelationshipType', 'Case Manager is', 'id', 'name_a_b') == $params['relationship_type_id'] &&
+    !empty($params['end_date'])
+  ) {
+    $params['end_date'] = 'null';
+  }
+}
+
 function case_civicrm_post($op, $objectName, $objectId, &$objectRef) {
   /*Civi::log()->debug('case_civicrm_post', array(
     '$op' => $op,
