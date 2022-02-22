@@ -270,6 +270,13 @@ class CRM_Mailing_BAO_MailingJob extends CRM_Mailing_DAO_MailingJob {
 
       $anyChildLeft = CRM_Core_DAO::singleValueQuery($child_job_sql, $params);
 
+      //NYSS 14490
+      if (!$anyChildLeft) {
+        //NYSS 14490 - check if we need to do a cleanup run
+        //Civi::log()->debug(__FUNCTION__, ['$job->mailing_id', $job->mailing_id]);
+        $anyChildLeft = CRM_NYSS_BAO_Mailing::validateEventQueue($job->mailing_id);
+      }
+
       // all of the child jobs are complete, update
       // the parent job as well as the mailing status
       if (!$anyChildLeft) {
