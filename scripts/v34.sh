@@ -49,6 +49,8 @@ $drush $instance cvapi extension.install key=org.civicrm.afform --quiet
 $drush $instance cvapi extension.uninstall key=nz.co.fuzion.innodbtriggers --quiet
 $drush $instance cvapi extension.uninstall key=org.civicrm.doctorwhen --quiet
 
+php $script_dir/../civicrm/scripts/logUpdateSchema.php -S $instance
+
 echo "remove previously disabled extension..."
 $execSql -i $instance -c "DELETE FROM civicrm_extension WHERE full_name = 'org.civicrm.api4';" -q
 
