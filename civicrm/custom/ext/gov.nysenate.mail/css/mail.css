@@ -56,3 +56,7 @@ div.ui-dialog.crm-confirm {
   line-height: 60px;
   margin-top: -40px;
 }
+
+div.crmb-wizard-step button.schedule-test-email {
+  display: block !important;
+}

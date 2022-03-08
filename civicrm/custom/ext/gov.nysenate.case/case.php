@@ -1,6 +1,7 @@
 <?php
 
 require_once 'case.civix.php';
+use CRM_NYSS_Case_ExtensionUtil as E;
 
 /**
  * Implements hook_civicrm_config().
@@ -129,6 +130,8 @@ function case_civicrm_buildForm($formName, &$form) {
   ));*/
 
   if ($formName=='CRM_Case_Form_CaseView') {
+    CRM_Core_Resources::singleton()->addScriptFile(E::LONG_NAME, 'js/CaseView.js');
+
     //11518 hide timeline/audit fields
     foreach (array('timeline_id', 'report_id') as $field) {
       if ($form->elementExists($field)) {
@@ -161,10 +164,10 @@ function case_civicrm_buildForm($formName, &$form) {
     if ($form->_formValues['contact_id']) {
       $form->assign('contact_id', $form->_formValues['contact_id']);
 
-      $dn = civicrm_api3('contact', 'getvalue', array(
+      $dn = civicrm_api3('contact', 'getvalue', [
         'id' => $form->_formValues['contact_id'],
         'return' => 'display_name'
-      ));
+      ]);
       $form->assign('display_name', $dn);
     }
   }

@@ -2977,7 +2977,8 @@ ORDER BY civicrm_mailing.name";
         CRM_Core_Action::VIEW => [
           'name' => ts('View'),
           'url' => 'civicrm/mailing/view',
-          'qs' => "reset=1&id=%%mkey%%",
+          //NYSS 14543
+          'qs' => "reset=1&id=%%mkey%%&cid=%%cid%%&cs=%%cs%%",
           'title' => ts('View Mailing'),
           'class' => 'crm-popup',
         ],
@@ -3001,6 +3002,8 @@ ORDER BY civicrm_mailing.name";
           'mid' => $values['mailing_id'],
           'cid' => $params['contact_id'],
           'mkey' => $mailingKey,
+          //NYSS 14543
+          'cs' => CRM_Contact_BAO_Contact_Utils::generateChecksum($params['contact_id'], NULL, 'inf'),
         ],
         ts('more'),
         FALSE,

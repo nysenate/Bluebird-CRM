@@ -56,7 +56,12 @@ return [
             'show_count' => TRUE,
             'expose_limit' => TRUE,
           ],
-          'sort' => [],
+          'sort' => [
+            [
+              'title',
+              'ASC',
+            ]
+          ],
           'columns' => [
             [
               'type' => 'field',
@@ -89,7 +94,7 @@ return [
           ],
           'cssRules' => [],
         ],
-        'acl_bypass' => FALSE,
+        'acl_bypass' => TRUE,
       ],
     ],
   ],

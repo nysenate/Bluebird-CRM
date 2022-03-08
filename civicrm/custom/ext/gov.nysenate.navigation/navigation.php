@@ -664,12 +664,12 @@ function _buildEmailMenu($emailID) {
       ],
       $emailID+7 => [
         'attributes' => [
-          'label' => 'Archived Emails',
-          'name' => 'Archived Emails',
-          'url' => 'civicrm/mailing/browse/archived?reset=1',
-          'permission' => 'access CiviMail,create mailings,schedule mailings',
+          'label' => 'Mailing Template Categories',
+          'name' => 'Mailing Template Categories',
+          'url' => 'civicrm/admin/options/mailing_template_category?reset=1',
+          'permission' => 'access CiviMail,create mailings',
           'operator' => 'OR',
-          'separator' => 1,
+          'separator' => 0,
           'parentID' => $emailID,
           'navID' => $emailID+7,
           'active' => 1,
@@ -677,12 +677,12 @@ function _buildEmailMenu($emailID) {
       ],
       $emailID+8 => [
         'attributes' => [
-          'label' => 'Mass Email Summary Report',
-          'name' => 'Mass Email Summary Report',
-          'url' => "civicrm/report/instance/{$rptIDs['summary']}?reset=1",
-          'permission' => 'access CiviReport',
-          'operator' => 'AND',
-          'separator' => 0,
+          'label' => 'Archived Emails',
+          'name' => 'Archived Emails',
+          'url' => 'civicrm/mailing/browse/archived?reset=1',
+          'permission' => 'access CiviMail,create mailings,schedule mailings',
+          'operator' => 'OR',
+          'separator' => 1,
           'parentID' => $emailID,
           'navID' => $emailID+8,
           'active' => 1,
@@ -690,9 +690,9 @@ function _buildEmailMenu($emailID) {
       ],
       $emailID+9 => [
         'attributes' => [
-          'label' => 'Mass Email Bounce Report',
-          'name' => 'Mass Email Bounce Report',
-          'url' => "civicrm/report/instance/{$rptIDs['bounce']}?reset=1",
+          'label' => 'Mass Email Summary Report',
+          'name' => 'Mass Email Summary Report',
+          'url' => "civicrm/report/instance/{$rptIDs['summary']}?reset=1",
           'permission' => 'access CiviReport',
           'operator' => 'AND',
           'separator' => 0,
@@ -703,11 +703,11 @@ function _buildEmailMenu($emailID) {
       ],
       $emailID+10 => [
         'attributes' => [
-          'label' => 'Mass Email Opened Report',
-          'name' => 'Mass Email Opened Report',
-          'url' => "civicrm/report/instance/{$rptIDs['opened']}?reset=1",
+          'label' => 'Mass Email Bounce Report',
+          'name' => 'Mass Email Bounce Report',
+          'url' => "civicrm/report/instance/{$rptIDs['bounce']}?reset=1",
           'permission' => 'access CiviReport',
-          'operator' => 'OR',
+          'operator' => 'AND',
           'separator' => 0,
           'parentID' => $emailID,
           'navID' => $emailID+10,
@@ -716,9 +716,9 @@ function _buildEmailMenu($emailID) {
       ],
       $emailID+11 => [
         'attributes' => [
-          'label' => 'Mass Email Clickthrough Report',
-          'name' => 'Mass Email Clickthrough Report',
-          'url' => "civicrm/report/instance/{$rptIDs['clicks']}?reset=1",
+          'label' => 'Mass Email Opened Report',
+          'name' => 'Mass Email Opened Report',
+          'url' => "civicrm/report/instance/{$rptIDs['opened']}?reset=1",
           'permission' => 'access CiviReport',
           'operator' => 'OR',
           'separator' => 0,
@@ -729,6 +729,19 @@ function _buildEmailMenu($emailID) {
       ],
       $emailID+12 => [
         'attributes' => [
+          'label' => 'Mass Email Clickthrough Report',
+          'name' => 'Mass Email Clickthrough Report',
+          'url' => "civicrm/report/instance/{$rptIDs['clicks']}?reset=1",
+          'permission' => 'access CiviReport',
+          'operator' => 'OR',
+          'separator' => 0,
+          'parentID' => $emailID,
+          'navID' => $emailID+12,
+          'active' => 1,
+        ],
+      ],
+      $emailID+13 => [
+        'attributes' => [
           'label' => 'Mass Email Detail Report',
           'name' => 'Mass Email Detail Report',
           'url' => "civicrm/report/instance/{$rptIDs['detail']}?reset=1",
@@ -736,7 +749,7 @@ function _buildEmailMenu($emailID) {
           'operator' => 'OR',
           'separator' => 0,
           'parentID' => $emailID,
-          'navID' => $emailID+12,
+          'navID' => $emailID+13,
           'active' => 1,
         ],
       ],
