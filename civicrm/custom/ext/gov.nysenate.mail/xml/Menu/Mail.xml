@@ -57,4 +57,10 @@
     <title>Preview Recipients</title>
     <access_arguments>view mass email;access CiviMail;create mailings;schedule mailings;</access_arguments>
   </item>
+  <item>
+    <path>civicrm/nyss/blockscheduletest</path>
+    <page_callback>CRM_NYSS_Mail_Page_BlockScheduleTest</page_callback>
+    <title>Send Email Test</title>
+    <access_arguments>view mass email;access CiviMail;create mailings;schedule mailings;</access_arguments>
+  </item>
 </menu>
