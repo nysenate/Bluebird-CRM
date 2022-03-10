@@ -53,7 +53,7 @@ echo "$prog: create Request Assistance activity type"
 sql="
   SELECT @optGroup := id FROM civicrm_option_group WHERE name = 'activity_type';
   DELETE FROM civicrm_option_value WHERE option_group_id = @optGroup AND name = 'Request Assistance';
-  SELECT @maxVal := max(value) FROM civicrm_option_value WHERE option_group_id = @optGroup;
+  SELECT @maxVal := max(value+0) FROM civicrm_option_value WHERE option_group_id = @optGroup;
   INSERT INTO civicrm_option_value (option_group_id, label, value, name, grouping, filter, is_default, weight, description, is_optgroup, is_reserved, is_active, component_id, domain_id, visibility_id)
   VALUES (@optGroup, 'Request Assistance', @maxVal + 1, 'Request Assistance', NULL, '0', NULL, @maxVal + 1, NULL, '0', '0', '1', NULL, NULL, NULL);
 "
