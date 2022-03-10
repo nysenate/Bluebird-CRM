@@ -586,19 +586,6 @@ function _buildEmailMenu($emailID) {
     'child' => [
       $emailID+1 => [
         'attributes' => [
-          'label' => 'New Mass Email (modern)',
-          'name' => 'New Mass Email (modern)',
-          'url' => 'civicrm/mailing/send?reset=1',
-          'permission' => 'access CiviMail,create mailings',
-          'operator' => 'OR',
-          'separator' => 0,
-          'parentID' => $emailID,
-          'navID' => $emailID+2,
-          'active' => 1,
-        ],
-      ],
-      $emailID+2 => [
-        'attributes' => [
           'label' => 'New Mass Email (classic)',
           'name' => 'New Mass Email (classic)',
           'url' => 'civicrm/a/#/mailing/new/traditional',
@@ -607,6 +594,19 @@ function _buildEmailMenu($emailID) {
           'separator' => 0,
           'parentID' => $emailID,
           'navID' => $emailID+1,
+          'active' => 1,
+        ],
+      ],
+      $emailID+2 => [
+        'attributes' => [
+          'label' => 'New Mass Email (modern)',
+          'name' => 'New Mass Email (modern)',
+          'url' => 'civicrm/mailing/send?reset=1',
+          'permission' => 'access CiviMail,create mailings',
+          'operator' => 'OR',
+          'separator' => 0,
+          'parentID' => $emailID,
+          'navID' => $emailID+2,
           'active' => 1,
         ],
       ],
