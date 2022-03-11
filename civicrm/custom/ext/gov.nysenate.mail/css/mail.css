@@ -60,3 +60,8 @@ div.ui-dialog.crm-confirm {
 div.crmb-wizard-step button.schedule-test-email {
   display: block !important;
 }
+
+/*14591*/
+div.crm-mosaico-template-category div.select2-container {
+  width: 370px !important;
+}
