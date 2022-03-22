@@ -154,27 +154,6 @@ class CRM_NYSS_BAO_NYSS {
   }
 
   /**
-   * @param $msg
-   *
-   * Simple mailing function that piggy-backs on the error reporting extension
-   */
-  static function notifyErrorReportRecipient($subject, $output) {
-    $to = Civi::settings()->get('reporterror_mailto');
-
-    if (!empty($to)) {
-      $destinations = explode(REPORTERROR_EMAIL_SEPARATOR, $to);
-
-      $bbconfig = get_bluebird_instance_config();
-      $subject = "Bluebird Error [{$bbconfig['shortname']}.{$bbconfig['envname']}] ".$subject;
-
-      foreach ($destinations as $dest) {
-        $dest = trim($dest);
-        reporterror_civicrm_send_mail($dest, $subject, $output, []);
-      }
-    }
-  }
-
-  /**
    * @param $params
    * @return array
    *
