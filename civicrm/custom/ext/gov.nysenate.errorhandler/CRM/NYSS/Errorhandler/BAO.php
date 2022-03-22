@@ -246,8 +246,8 @@ class CRM_NYSS_Errorhandler_BAO {
       curl_close($ch);
 
       if ($response != 'ok') {
-        self::log(__FUNCTION__.' Could not send mail', $response);
-        watchdog('bluebird', 'Slack call failed with response: %response', ['%response'=>$response], WATCHDOG_ERROR);
+        self::log(__FUNCTION__.' Could not notify slack', $response);
+        watchdog('bluebird', 'Slack call failed with response: %response', ['%response' => $response], WATCHDOG_ERROR);
       }
     }
     else {
