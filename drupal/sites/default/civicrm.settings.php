@@ -291,12 +291,12 @@ $prefsUrl['imageUploadURL'] = "data/$datadirname/pubfiles";
 $prefsUrl['extensionsURL'] = 'sites/all/ext';
 
 // Errorhandler extension settings
-$prefsErrorHandler['errorhandler_emailrecipients'] = get_config_value($bbcfg, 'reporterror.email.to', 'civicrm-error@nysenate.gov');
-$prefsErrorHandler['errorhandler_fromemail'] = get_config_value($bbcfg, 'reporterror.email.from', '"Bluebird Error" <civicrm-no-reply@nysenate.gov>');
-$prefsErrorHandler['errorhandler_endpoints'] = get_config_value($bbcfg, 'reporterror.endpoints', 'email');
-$prefsErrorHandler['errorhandler_slack_url'] = get_config_value($bbcfg, 'reporterror.slack.url', 'https://hooks.slack.com/');
-$prefsErrorHandler['errorhandler_slack_channel'] = get_config_value($bbcfg, 'reporterror.slack.channel', 'civicrm-notices');
-$prefsErrorHandler['errorhandler_slack_title'] = get_config_value($bbcfg, 'reporterror.slack.title', 'Notice from CRM');
+$prefsErrorHandler['errorhandler_emailrecipients'] = get_config_value($bbcfg, 'errorhandler.email.to', 'civicrm-error@nysenate.gov');
+$prefsErrorHandler['errorhandler_fromemail'] = get_config_value($bbcfg, 'errorhandler.email.from', '"Bluebird Error" <civicrm-no-reply@nysenate.gov>');
+$prefsErrorHandler['errorhandler_endpoints'] = get_config_value($bbcfg, 'errorhandler.endpoints', 'email');
+$prefsErrorHandler['errorhandler_slack_url'] = get_config_value($bbcfg, 'errorhandler.slack.url', 'https://hooks.slack.com/');
+$prefsErrorHandler['errorhandler_slack_channel'] = get_config_value($bbcfg, 'errorhandler.slack.channel', 'civicrm-notices');
+$prefsErrorHandler['errorhandler_slack_title'] = get_config_value($bbcfg, 'errorhandler.slack.title', 'Notice from CRM');
 
 // Mosaico extension settings
 $prefsMosaico['mosaico_custom_templates_dir'] = "$approot/civicrm/custom/mosaico";
