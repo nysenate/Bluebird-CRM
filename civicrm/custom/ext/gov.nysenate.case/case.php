@@ -219,21 +219,22 @@ function case_civicrm_post($op, $objectName, $objectId, &$objectRef) {
     //notify case worker with an email
     $caseID = $objectRef->case_id;
     $caseDetails = civicrm_api3('case', 'getsingle', ['id' => $caseID]);
-    //Civi::log()->debug('case_civicrm_post', array('caseDetails' => $caseDetails));
+    //Civi::log()->debug('case_civicrm_post', ['caseDetails' => $caseDetails]);
 
-    //get client ID
+    //get client IDs
+    $clientIDs = $clientNames = [];
     foreach ($caseDetails['contacts'] as $contact) {
       if ($contact['role'] == 'Constituent') {
-        $clientID = $contact['contact_id'];
-        $clientName = $contact['display_name'];
+        $clientIDs[] = $contact['contact_id'];
+        $clientNames[] = $contact['display_name'];
       }
     }
 
     //get role contact ID (whichever id is NOT the clientID)
-    if ($objectRef->contact_id_a != $clientID) {
+    if (!in_array($objectRef->contact_id_a, $clientIDs)) {
       $roleContactId = $objectRef->contact_id_a;
     }
-    elseif ($objectRef->contact_id_b != $clientID) {
+    elseif (!in_array($objectRef->contact_id_b, $clientIDs)) {
       $roleContactId = $objectRef->contact_id_b;
     }
     else {
@@ -248,22 +249,23 @@ function case_civicrm_post($op, $objectName, $objectId, &$objectRef) {
     ]);
     //Civi::log()->debug('case_civicrm_post', array('$roleEmail' => $roleEmail));
 
-    if (!empty($clientID) && $clientID != $roleContactId) {
+    if (!empty($clientIDs) && !in_array($roleContactId, $clientIDs)) {
       $url = CRM_Utils_System::url(
         'civicrm/contact/view/case',
-        "reset=1&action=view&cid={$clientID}&id={$caseID}",
+        "reset=1&action=view&cid={$clientIDs[0]}&id={$caseID}",
         true
       );
 
       //prepare mail params
       $fromEmailAddress = CRM_Core_OptionGroup::values('from_email_address', NULL, NULL, NULL, ' AND is_default = 1');
-      $mailParams = array(
+      $clientNamesList = implode(', ', $clientNames);
+      $mailParams = [
         'toEmail' => $roleEmail,
-        'subject' => "Case Role Created/Changed for: $clientName (Case ID: {$caseID})",
-        'html' => "<p>You have been assigned a case for $clientName (Case ID: {$caseID})</p>
+        'subject' => "Case Role Created/Changed for: {$clientNamesList} (Case ID: {$caseID})",
+        'html' => "<p>You have been assigned a case for {$clientNamesList} (Case ID: {$caseID})</p>
           <p><a href='$url' target=_blank>$url</a></p>",
         'from' => reset($fromEmailAddress),
-      );
+      ];
       //Civi::log()->debug('case_civicrm_post', array('$mailParams' => $mailParams));
 
       $mailingBackend = Civi::settings()->get('mailing_backend');
