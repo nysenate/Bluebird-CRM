@@ -309,8 +309,8 @@ $prefsMosaico['mosaico_scale_factor1'] = 3;
 $prefsMosaico['mosaico_scale_width_limit1'] = 285;
 $prefsMosaico['mosaico_scale_factor2'] = 2;
 $prefsMosaico['mosaico_scale_width_limit2'] = 9999;
-$prefsMosaico['mosaico_plugins'] = 'link hr paste lists textcolor code civicrmtoken charmap anchor';
-$prefsMosaico['mosaico_toolbar'] = 'bold italic forecolor backcolor hr bullist numlist charmap styleselect removeformat | civicrmtoken | link unlink anchor | pastetext code';
+$prefsMosaico['mosaico_plugins'] = 'link hr paste lists textcolor code civicrmtoken charmap anchor table';
+$prefsMosaico['mosaico_toolbar'] = 'bold italic forecolor backcolor hr bullist numlist charmap styleselect removeformat | civicrmtoken | link unlink anchor | pastetext code | table';
 
 $prefsResources['resources_slack_url'] = get_config_value($bbcfg, 'reporterror.slack.url', 'https://hooks.slack.com/');
 $prefsResources['resources_slack_channel'] = get_config_value($bbcfg, 'reporterror.slack.channel', 'civicrm-notices');
