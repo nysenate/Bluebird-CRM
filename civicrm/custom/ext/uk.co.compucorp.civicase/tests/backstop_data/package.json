@@ -16,7 +16,7 @@
     "gulp": "^4.0.2",
     "gulp-clean": "^0.4.0",
     "gulp-file": "^0.4.0",
-    "moment": "^2.24.0",
+    "moment": "^2.29.2",
     "path": "^0.12.7",
     "plugin-error": "^1.0.1",
     "yargs": "^14.2.0"
