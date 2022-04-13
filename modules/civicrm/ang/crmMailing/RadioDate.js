@@ -74,9 +74,9 @@
               if (day.length < 2) day = '0' + day;
               if (hours.length < 2) hours = '0' + hours;
               if (minutes.length < 2) minutes = '0' + minutes;
-              date = [year, month, day].join('-');
-              time = [hours, minutes, "00"].join(':');
-              currentDate = date + ' ' + time;
+              var date = [year, month, day].join('-');
+              var time = [hours, minutes, "00"].join(':');
+              var currentDate = date + ' ' + time;
               var isInPast = (submittedDate.length && submittedDate.match(/^[0-9\-]+ [0-9\:]+$/) && isDateBefore(submittedDate, currentDate, 4*60*60*1000));
               ngModel.$setValidity('dateTimeInThePast', !isInPast);
               if (lastAlert && lastAlert.isOpen) {
