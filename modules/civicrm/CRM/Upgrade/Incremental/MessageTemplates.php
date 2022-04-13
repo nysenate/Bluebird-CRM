@@ -249,6 +249,71 @@ class CRM_Upgrade_Incremental_MessageTemplates {
           ['name' => 'pledge_reminder', 'type' => 'text'],
         ],
       ],
+      [
+        'version' => '5.43.alpha1',
+        'upgrade_descriptor' => ts('Missed templates from earlier versions'),
+        'templates' => [
+          ['name' => 'contribution_online_receipt', 'type' => 'text'],
+          ['name' => 'case_activity', 'type' => 'html'],
+          ['name' => 'case_activity', 'type' => 'text'],
+          ['name' => 'case_activity', 'type' => 'subject'],
+        ],
+      ],
+      [
+        'version' => '5.44.alpha1',
+        'upgrade_descriptor' => ts('Use domain tokens instead of smarty values'),
+        'label' => ts('Pledge acknowledgement'),
+        'templates' => [
+          ['name' => 'pledge_acknowledge', 'type' => 'text'],
+          ['name' => 'pledge_acknowledge', 'type' => 'html'],
+        ],
+      ],
+      [
+        'version' => '5.44.alpha1',
+        'upgrade_descriptor' => ts('Use domain and contact tokens instead of smarty values'),
+        'label' => ts('Pledge reminder'),
+        'templates' => [
+          ['name' => 'pledge_reminder', 'type' => 'text'],
+          ['name' => 'pledge_reminder', 'type' => 'html'],
+        ],
+      ],
+      [
+        'version' => '5.44.alpha1',
+        'upgrade_descriptor' => ts('Use domain and contact tokens instead of smarty values'),
+        'label' => ts('Participant Transferred'),
+        'templates' => [
+          ['name' => 'participant_transferred', 'type' => 'text'],
+          ['name' => 'participant_transferred', 'type' => 'html'],
+        ],
+      ],
+      [
+        'version' => '5.44.alpha1',
+        'upgrade_descriptor' => ts('Use domain and contact tokens instead of smarty values'),
+        'label' => ts('Participant Cancelled'),
+        'templates' => [
+          ['name' => 'participant_cancelled', 'type' => 'text'],
+          ['name' => 'participant_cancelled', 'type' => 'html'],
+        ],
+      ],
+
+      [
+        'version' => '5.44.alpha1',
+        'upgrade_descriptor' => ts('Use domain and contact tokens instead of smarty values'),
+        'label' => ts('Participant Expired'),
+        'templates' => [
+          ['name' => 'participant_expired', 'type' => 'text'],
+          ['name' => 'participant_expired', 'type' => 'html'],
+        ],
+      ],
+      [
+        'version' => '5.44.alpha1',
+        'upgrade_descriptor' => ts('Use domain and contact tokens instead of smarty values'),
+        'label' => ts('Participant Confirmed'),
+        'templates' => [
+          ['name' => 'participant_confirm', 'type' => 'text'],
+          ['name' => 'participant_confirm', 'type' => 'html'],
+        ],
+      ],
     ];
   }
 
@@ -268,6 +333,97 @@ class CRM_Upgrade_Incremental_MessageTemplates {
       }
     }
     return $return;
+  }
+
+  /**
+   * Replace a token with the new preferred option.
+   *
+   * @param string $workflowName
+   * @param string $old
+   * @param string $new
+   */
+  public function replaceTokenInTemplate(string $workflowName, string $old, string $new): void {
+    $oldToken = '{' . $old . '}';
+    $newToken = '{' . $new . '}';
+    CRM_Core_DAO::executeQuery("UPDATE civicrm_msg_template
+      SET
+        msg_text = REPLACE(msg_text, '$oldToken', '$newToken'),
+        msg_subject = REPLACE(msg_subject, '$oldToken', '$newToken'),
+        msg_html = REPLACE(msg_html, '$oldToken', '$newToken')
+      WHERE workflow_name = '$workflowName'
+    ");
+  }
+
+  /**
+   * Replace a token with the new preferred option in non-workflow templates.
+   *
+   * @param string $old
+   * @param string $new
+   */
+  public function replaceTokenInMessageTemplates(string $old, string $new): void {
+    $oldToken = '{' . $old . '}';
+    $newToken = '{' . $new . '}';
+    CRM_Core_DAO::executeQuery("UPDATE civicrm_msg_template
+      SET
+        msg_text = REPLACE(msg_text, '$oldToken', '$newToken'),
+        msg_subject = REPLACE(msg_subject, '$oldToken', '$newToken'),
+        msg_html = REPLACE(msg_html, '$oldToken', '$newToken')
+      WHERE workflow_name IS NULL
+    ");
+  }
+
+  /**
+   * Replace a token with the new preferred option.
+   *
+   * @param string $old
+   * @param string $new
+   */
+  public function replaceTokenInActionSchedule(string $old, string $new): void {
+    $oldToken = '{' . $old . '}';
+    $newToken = '{' . $new . '}';
+    CRM_Core_DAO::executeQuery("UPDATE civicrm_action_schedule
+      SET
+        body_text = REPLACE(body_text, '$oldToken', '$newToken'),
+        subject = REPLACE(subject, '$oldToken', '$newToken'),
+        body_html = REPLACE(body_html, '$oldToken', '$newToken')
+    ");
+  }
+
+  /**
+   * Replace a token with the new preferred option in a print label.
+   *
+   * @param string $old
+   * @param string $new
+   */
+  public function replaceTokenInPrintLabel(string $old, string $new): void {
+    $oldToken = '{' . $old . '}';
+    $newToken = '{' . $new . '}';
+    CRM_Core_DAO::executeQuery("UPDATE civicrm_print_label
+      SET
+        data = REPLACE(data, '$oldToken', '$newToken')
+    ");
+  }
+
+  /**
+   * Replace a token with the new preferred option in a print label.
+   *
+   * @param string $old
+   * @param string $new
+   *
+   * @throws \API_Exception
+   */
+  public function replaceTokenInGreetingOptions(string $old, string $new): void {
+    $oldToken = '{' . $old . '}';
+    $newToken = '{' . $new . '}';
+    $options = (array) Civi\Api4\OptionValue::get(FALSE)
+      ->addWhere('option_group_id:name', 'IN', ['email_greeting', 'postal_greeting', 'addressee'])
+      ->setSelect(['id'])->execute()->indexBy('id');
+    CRM_Core_DAO::executeQuery("UPDATE civicrm_option_value
+      SET
+        label = REPLACE(label, '$oldToken', '$newToken'),
+        name = REPLACE(name, '$oldToken', '$newToken')
+      WHERE id IN (" . implode(',', array_keys($options)) . ')'
+    );
   }
 
   /**

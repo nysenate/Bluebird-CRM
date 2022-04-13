@@ -49,7 +49,7 @@ class CRM_Mosaico_MosaicoComposerTest extends CRM_Mosaico_TestCase implements En
    *
    * @dataProvider getComposerExamples
    */
-  public function testMailingPreview($field, $inputValue, $expectRegex) {
+  public function testMailingPreview($field, $inputValue, $expectRegex): void {
     $this->assertEquals('installed', CRM_Extension_System::singleton()->getManager()->getStatus('org.civicrm.flexmailer'));
 
     $contactId = $this->getContactId($GLOBALS['_CV']['ADMIN_USER']);

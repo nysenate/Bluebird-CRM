@@ -16,7 +16,7 @@
   <thead class="sticky">
   <tr>
   {if ! $single and $context eq 'Search' }
-     <th scope="col" title="Select Rows">{$form.toggleSelect.html}</th>
+     <th scope="col" title="{ts}Select rows{/ts}">{$form.toggleSelect.html}</th>
   {/if}
   {foreach from=$columnHeaders item=header}
     <th scope="col">
@@ -64,6 +64,6 @@
 
 
 
-{if $context EQ 'Search'}
+{if $context EQ 'Search' or $context EQ 'grant'}
     {include file="CRM/common/pager.tpl" location="bottom"}
 {/if}

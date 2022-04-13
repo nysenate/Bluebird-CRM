@@ -1,6 +1,0 @@
-name = NYSS Board of Election Lock
-description = "Do not allow user to edit the addresses of location type 'Board Of Election' through contact edit form"
-dependencies[] = civicrm
-package = CiviCRM
-core = 7.x
-version = 4.2

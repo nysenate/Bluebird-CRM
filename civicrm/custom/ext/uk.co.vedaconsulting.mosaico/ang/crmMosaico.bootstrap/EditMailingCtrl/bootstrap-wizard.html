@@ -6,10 +6,12 @@
         <div crm-mosaico-block-mailing crm-mailing="mailing"></div>
       </div>
 
+      <!-- NYSS -->
       <div crmb-wizard-step crm-title="ts('Design')" ng-if="checkPerm('create mailings') || checkPerm('access CiviMail')" ng-form="designForm">
         <div crm-mosaico-block-design crm-mailing="mailing" crm-mosaico-ctrl="mosaicoCtrl"></div>
       </div>
 
+      <!-- NYSS -->
       <div crmb-wizard-step crm-title="ts('Options')" ng-form="optionsForm" ng-if="checkPerm('schedule mailings') || checkPerm('access CiviMail')">
         <div style="float: right">
           <button class="btn btn-primary" ng-click="openAdvancedOptions(mailing)">
@@ -20,6 +22,7 @@
         <div crm-mosaico-block-schedule crm-mailing="mailing"></div>
       </div>
 
+      <!-- NYSS -->
       <div crmb-wizard-step crm-title="ts('Approve')" ng-if="checkPerm('approve mailings') || checkPerm('access CiviMail')" ng-form="approveForm">
         <div crm-mosaico-block-approve crm-mailing="mailing"></div>
       </div>

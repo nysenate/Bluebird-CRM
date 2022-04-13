@@ -922,7 +922,10 @@ class CRM_Utils_System_WordPress extends CRM_Utils_System_Base {
     if (!current_user_can('create_users')) {
       $creds = [];
       $creds['user_login'] = $params['cms_name'];
+      $creds['user_password'] = $user_data['user_pass'];
       $creds['remember'] = TRUE;
+
+      // @todo handle a wp_signon failure
       wp_signon($creds, FALSE);
     }
 
@@ -981,7 +984,7 @@ class CRM_Utils_System_WordPress extends CRM_Utils_System_Base {
 
     if (!empty($params['mail'])) {
       if (!is_email($params['mail'])) {
-        $errors[$emailName] = "Your email is invaid";
+        $errors[$emailName] = ts("Your email is invalid");
       }
       elseif (email_exists($params['mail'])) {
         $errors[$emailName] = ts('The email address %1 already has an account associated with it. <a href="%2">Have you forgotten your password?</a>',

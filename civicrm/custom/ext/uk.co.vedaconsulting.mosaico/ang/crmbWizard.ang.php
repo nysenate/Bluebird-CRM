@@ -12,6 +12,7 @@ return [
   ],
   // Hmm, shouldn't high-level components have separate CSS files?
   'css' => CRM_Mosaico_Utils::isBootstrap() ? ['css/mosaico-bootstrap.css'] : [],
+  'bundles' => CRM_Mosaico_Utils::isBootstrap() ? ['bootstrap3'] : [],
   'partials' =>
   [
     0 => 'ang/crmbWizard',

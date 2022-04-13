@@ -1,0 +1,28 @@
+<div id="bootstrap-theme" ng-controller="CrmMosaicoCreateFromBaseTemplate" crm-dialog="crmMosaicoCreatePopup">
+  <form name="crmMosaicoCreateForm">
+
+    <label for="new-tpl-title">{{:: ts('Title') }} <span class="crm-marker">*</span></label>
+    <input required class="form-control" id="new-tpl-title" ng-model="$ctrl.model.title">
+
+    <label for="new-tpl-category">{{:: ts('Category') }}</label>
+    <input class="form-control" id="new-tpl-category" ng-model="$ctrl.model.category_id" crm-entityref="{entity: 'OptionValue', api: {params: {option_group_id: 'mailing_template_category', is_active: 1}}, select: {allowClear:true, minimumInputLength: 0, placeholder: ts('Select')}}">
+
+    <label>{{:: ts('Base Template') }}</label>
+    <div class="form-inline">
+      <label style="width: 200px; margin-right: 10px;" class="text-center" ng-repeat="base in $ctrl.bases" ng-class="{'bg-info': base.type === $ctrl.model.base}">
+        <!-- Todo: move inline stye to css file -->
+        <img class="img-thumbnail" alt="{{ base.type }}" ng-src="{{:: base.thumbnail }}" style="
+            object-fit: cover;
+            width: 200px;
+            height: 200px;
+            object-position: top;
+            background-color: transparent;
+        ">
+        <input type="radio" name="base" required value="{{ base.type }}" ng-model="$ctrl.model.base">
+        {{:: base.type }}
+      </label>
+    </div>
+
+    <crm-dialog-button text="ts('Create Template')" icons="{primary: 'fa-check'}" on-click="$ctrl.create()" disabled="!crmMosaicoCreateForm.$valid" />
+  </form>
+</div>

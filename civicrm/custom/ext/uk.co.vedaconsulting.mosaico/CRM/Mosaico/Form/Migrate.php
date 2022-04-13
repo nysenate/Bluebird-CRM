@@ -18,7 +18,7 @@ class CRM_Mosaico_Form_Migrate extends CRM_Core_Form {
     $buttons = [];
     $buttons[] = [
       'type' => 'submit',
-      'name' => ts('Copy'),
+      'name' => E::ts('Copy'),
       'subName' => 'migrate',
       'isDefault' => TRUE,
       'icon' => 'fa-copy',
@@ -26,7 +26,7 @@ class CRM_Mosaico_Form_Migrate extends CRM_Core_Form {
     ];
     $buttons[] = [
       'type' => 'submit',
-      'name' => ts('Purge'),
+      'name' => E::ts('Purge'),
       'subName' => 'purge',
       'icon' => 'fa-trash',
       'isDefault' => FALSE,

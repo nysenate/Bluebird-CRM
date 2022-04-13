@@ -1,5 +1,4 @@
 <?php
-
 /*
  +--------------------------------------------------------------------+
  | Copyright CiviCRM LLC. All rights reserved.                        |
@@ -9,13 +8,6 @@
  | and copyright information, see https://civicrm.org/licensing       |
  +--------------------------------------------------------------------+
  */
-
-/**
- *
- * @package CRM
- * @copyright CiviCRM LLC https://civicrm.org/licensing
- */
-
 namespace Civi\Api4;
 
 /**
@@ -26,6 +18,7 @@ namespace Civi\Api4;
  * on top of permissions!) or during install/uninstall processes.
  *
  * @searchable none
+ * @since 5.34
  * @package Civi\Api4
  */
 class Permission extends Generic\AbstractEntity {

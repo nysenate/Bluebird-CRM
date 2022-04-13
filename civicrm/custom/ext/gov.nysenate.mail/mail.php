@@ -44,6 +44,15 @@ function mail_civicrm_alterMenu(&$items) {
       'or'
     ],
   ];
+
+  //14556
+  $items['civicrm/admin/options/mailing_template_category']['access_arguments'] = [
+    [
+      'access CiviMail',
+      'create mailings',
+    ],
+    'or'
+  ];
 }
 
 /**
@@ -366,7 +375,14 @@ function mail_civicrm_pageRun(&$page) {
       }
       $page->assign('emails', $contactEmails);
     }
-  } // NYSS 5581
+  }
+
+  if (is_a($page, 'CRM_Afform_Page_AfformBase')) {
+    $urlPath = $page->getVar('urlPath');
+    if ($urlPath[1] == 'mosaico-template-list') {
+      CRM_Core_Resources::singleton()->addStyleFile(E::LONG_NAME, 'css/MosaicoTemplateList.css');
+    }
+  }
 }
 
 function mail_civicrm_entityTypes(&$entityTypes) {
@@ -578,7 +594,7 @@ function mail_civicrm_links($op, $objectName, $objectId, &$links, &$mask, &$valu
       }
     }
   }
-} // mail_civicrm_links()
+}
 
 
 function mail_civicrm_mosaicoBaseTemplates(&$templates) {
@@ -586,7 +602,7 @@ function mail_civicrm_mosaicoBaseTemplates(&$templates) {
   unset($templates['tedc15']);
   unset($templates['tutorial']);
   unset($templates['versafix-1']);
-} // mail_civicrm_mosaicoBaseTemplates()
+}
 
 
 function mail_civicrm_apiWrappers(&$wrappers, $apiRequest) {
@@ -615,7 +631,7 @@ function mail_civicrm_apiWrappers(&$wrappers, $apiRequest) {
 
     $wrappers[] = new CRM_NYSS_Mail_APIWrapper();
   }
-} // mail_civicrm_apiWrappers()
+}
 
 
 function mail_civicrm_alterAPIPermissions($entity, $action, &$params, &$permissions) {
@@ -632,10 +648,15 @@ function mail_civicrm_alterAPIPermissions($entity, $action, &$params, &$permissi
   ) {
     $params['check_permissions'] = FALSE;
   }
-} // mail_civicrm_alterAPIPermissions()
+}
 
 
 function mail_civicrm_buildForm($formName, &$form) {
+  /*Civi::log()->debug(__FUNCTION__, [
+    'formName' => $formName,
+    'form' => $form,
+  ]);*/
+
   if ($formName == 'CRM_Mailing_Form_Group' && $form->_searchBasedMailing) {
     //get base mailing group, add to option list, set as default, freeze field
     $params = ['name' => BASE_SUBSCRIPTION_GROUP];
@@ -1168,8 +1189,7 @@ function mail_civicrm_alterTemplateFile($formName, &$form, $context, &$tplName) 
       $tplName = 'CRM/NYSS/SubscriptionView.tpl';
     }
   }
-} // nyss_mail_civicrm_alterTemplateFile()
-
+}
 
 function mail_civicrm_permission_check($permission, &$granted) {
   /*Civi::log()->debug('mail_civicrm_permission_check', [
@@ -1202,8 +1222,7 @@ function mail_civicrm_permission_check($permission, &$granted) {
       $granted = TRUE;
     }
   }
-} // mail_civicrm_permission_check()
-
+}
 
 //NYSS 4870
 function _mail_removeOnHold($mailingID) {

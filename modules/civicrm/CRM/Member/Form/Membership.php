@@ -134,11 +134,13 @@ class CRM_Member_Form_Membership extends CRM_Member_Form {
    */
   public function setDeleteMessage() {
     $this->deleteMessage = '<span class="font-red bold">'
-      . ts('WARNING: Deleting this membership will also delete any related payment (contribution) records.' . ts('This action cannot be undone.')
-        . '</span><p>'
-        . ts('Consider modifying the membership status instead if you want to maintain an audit trail and avoid losing payment data. You can set the status to Cancelled by editing the membership and clicking the Status Override checkbox.')
-          . '</p><p>'
-        . ts("Click 'Delete' if you want to continue.") . '</p>');
+      . ts('WARNING: Deleting this membership will also delete any related payment (contribution) records.')
+      . ' '
+      . ts('This action cannot be undone.')
+      . '</span><p>'
+      . ts('Consider modifying the membership status instead if you want to maintain an audit trail and avoid losing payment data. You can set the status to Cancelled by editing the membership and clicking the Status Override checkbox.')
+      . '</p><p>'
+      . ts("Click 'Delete' if you want to continue.") . '</p>';
   }
 
   /**
@@ -629,10 +631,9 @@ DESC limit 1");
     // Retrieve the name and email of the contact - this will be the TO for receipt email
     if ($this->_contactID) {
       [$this->_memberDisplayName, $this->_memberEmail] = CRM_Contact_BAO_Contact_Location::getEmailDetails($this->_contactID);
-
-      $this->assign('emailExists', $this->_memberEmail);
-      $this->assign('displayName', $this->_memberDisplayName);
     }
+    $this->assign('emailExists', $this->_memberEmail);
+    $this->assign('displayName', $this->_memberDisplayName);
 
     if ($isUpdateToExistingRecurringMembership && CRM_Member_BAO_Membership::isCancelSubscriptionSupported($this->_id)) {
       $this->assign('cancelAutoRenew',
@@ -993,7 +994,7 @@ DESC limit 1");
         'toName' => $form->_contributorDisplayName,
         'toEmail' => $form->_contributorEmail,
         'PDFFilename' => ts('receipt') . '.pdf',
-        'isEmailPdf' => Civi::settings()->get('invoicing') && Civi::settings()->get('invoice_is_email_pdf'),
+        'isEmailPdf' => Civi::settings()->get('invoice_is_email_pdf'),
         'contributionId' => $formValues['contribution_id'],
         'isTest' => (bool) ($form->_action & CRM_Core_Action::PREVIEW),
       ]
@@ -1103,10 +1104,6 @@ DESC limit 1");
 
     if ($this->_mode) {
       $params['total_amount'] = $this->order->getTotalAmount();
-
-      //CRM-20264 : Store CC type and number (last 4 digit) during backoffice or online payment
-      $params['card_type_id'] = $this->_params['card_type_id'] ?? NULL;
-      $params['pan_truncation'] = $this->_params['pan_truncation'] ?? NULL;
       $params['financial_type_id'] = $this->getFinancialTypeID();
 
       //get the payment processor id as per mode. Try removing in favour of beginPostProcess.
@@ -1146,46 +1143,46 @@ DESC limit 1");
       // CRM-7137 -for recurring membership,
       // we do need contribution and recurring records.
       $result = NULL;
-      if ($this->isCreateRecurringContribution()) {
-        $this->_params = $formValues;
-        $contribution = civicrm_api3('Order', 'create',
-          [
-            'contact_id' => $this->_contributorContactID,
-            'line_items' => $this->getLineItemForOrderApi(),
-            'is_test' => $this->isTest(),
-            'campaign_id' => $this->getSubmittedValue('campaign_id'),
-            'source' => CRM_Utils_Array::value('source', $paymentParams, CRM_Utils_Array::value('description', $paymentParams)),
-            'payment_instrument_id' => $this->getPaymentInstrumentID(),
-            'financial_type_id' => $this->getFinancialTypeID(),
-            'receive_date' => $this->getReceiveDate(),
-            'tax_amount' => $this->order->getTotalTaxAmount(),
-            'total_amount' => $this->order->getTotalAmount(),
-            'invoice_id' => $this->getInvoiceID(),
-            'currency' => $this->getCurrency(),
-            'receipt_date' => $this->getSubmittedValue('send_receipt') ? date('YmdHis') : NULL,
-            'contribution_recur_id' => $this->getContributionRecurID(),
-            'skipCleanMoney' => TRUE,
-          ]
-        );
-        $this->ids['Contribution'] = $contribution['id'];
-        $this->setMembershipIDsFromOrder($contribution);
 
-        //create new soft-credit record, CRM-13981
-        if ($softParams) {
-          $softParams['contribution_id'] = $contribution['id'];
-          $softParams['currency'] = $this->getCurrency();
-          $softParams['amount'] = $this->order->getTotalAmount();
-          CRM_Contribute_BAO_ContributionSoft::add($softParams);
-        }
+      $this->_params = $formValues;
+      $contribution = civicrm_api3('Order', 'create',
+        [
+          'contact_id' => $this->_contributorContactID,
+          'line_items' => $this->getLineItemForOrderApi(),
+          'is_test' => $this->isTest(),
+          'campaign_id' => $this->getSubmittedValue('campaign_id'),
+          'source' => CRM_Utils_Array::value('source', $paymentParams, CRM_Utils_Array::value('description', $paymentParams)),
+          'payment_instrument_id' => $this->getPaymentInstrumentID(),
+          'financial_type_id' => $this->getFinancialTypeID(),
+          'receive_date' => $this->getReceiveDate(),
+          'tax_amount' => $this->order->getTotalTaxAmount(),
+          'total_amount' => $this->order->getTotalAmount(),
+          'invoice_id' => $this->getInvoiceID(),
+          'currency' => $this->getCurrency(),
+          'receipt_date' => $this->getSubmittedValue('send_receipt') ? date('YmdHis') : NULL,
+          'contribution_recur_id' => $this->getContributionRecurID(),
+          'skipCleanMoney' => TRUE,
+        ]
+      );
+      $this->ids['Contribution'] = $contribution['id'];
+      $this->setMembershipIDsFromOrder($contribution);
 
-        $paymentParams['contactID'] = $this->_contactID;
-        $paymentParams['contributionID'] = $contribution['id'];
-
-        $paymentParams['contributionRecurID'] = $this->getContributionRecurID();
-        $paymentParams['is_recur'] = $this->isCreateRecurringContribution();
-        $params['contribution_id'] = $paymentParams['contributionID'];
-        $params['contribution_recur_id'] = $this->getContributionRecurID();
+      //create new soft-credit record, CRM-13981
+      if ($softParams) {
+        $softParams['contribution_id'] = $contribution['id'];
+        $softParams['currency'] = $this->getCurrency();
+        $softParams['amount'] = $this->order->getTotalAmount();
+        CRM_Contribute_BAO_ContributionSoft::add($softParams);
       }
+
+      $paymentParams['contactID'] = $this->_contactID;
+      $paymentParams['contributionID'] = $contribution['id'];
+
+      $paymentParams['contributionRecurID'] = $this->getContributionRecurID();
+      $paymentParams['is_recur'] = $this->isCreateRecurringContribution();
+      $params['contribution_id'] = $paymentParams['contributionID'];
+      $params['contribution_recur_id'] = $this->getContributionRecurID();
+
       $paymentStatus = NULL;
 
       if ($this->order->getTotalAmount() > 0.0) {
@@ -1202,6 +1199,8 @@ DESC limit 1");
               'trxn_id' => $result['trxn_id'],
               'contribution_id' => $params['contribution_id'],
               'is_send_contribution_notification' => FALSE,
+              'card_type_id' => $this->getCardTypeID(),
+              'pan_truncation' => $this->getPanTruncation(),
             ]);
           }
         }
@@ -1260,10 +1259,6 @@ DESC limit 1");
       $count = 0;
       foreach ($this->_memTypeSelected as $memType) {
         $membershipParams = array_merge($membershipTypeValues[$memType], $params);
-        //CRM-15366
-        if (!empty($softParams) && !$this->isCreateRecurringContribution()) {
-          $membershipParams['soft_credit'] = $softParams;
-        }
         if (isset($result['fee_amount'])) {
           $membershipParams['fee_amount'] = $result['fee_amount'];
         }
@@ -1274,19 +1269,11 @@ DESC limit 1");
         // process -
         // @see http://wiki.civicrm.org/confluence/pages/viewpage.action?pageId=261062657#Payments&AccountsRoadmap-Movetowardsalwaysusinga2-steppaymentprocess
         $membershipParams['contribution_status_id'] = $result['payment_status_id'] ?? NULL;
-        if ($this->isCreateRecurringContribution()) {
-          // The earlier process created the line items (although we want to get rid of the earlier one in favour
-          // of a single path!
-          unset($membershipParams['lineItems']);
-        }
+        // The earlier process created the line items (although we want to get rid of the earlier one in favour
+        // of a single path!
+        unset($membershipParams['lineItems']);
         $membershipParams['payment_instrument_id'] = $this->getPaymentInstrumentID();
         // @todo stop passing $ids (membership and userId only are set above)
-        if (!$this->isCreateRecurringContribution()) {
-          // For recurring we already created it 'the right way' (order api).
-          // In time we will do that for all paths through this code but for now
-          // we have not migrated the other paths.
-          $this->setMembership((array) CRM_Member_BAO_Membership::create($membershipParams, $ids));
-        }
         $params['contribution'] = $membershipParams['contribution'] ?? NULL;
         unset($params['lineItems']);
       }
@@ -1322,6 +1309,9 @@ DESC limit 1");
         CRM_Member_BAO_Membership::recordMembershipContribution($params);
       }
     }
+
+    $this->updateContributionOnMembershipTypeChange($params);
+
     if (($this->_action & CRM_Core_Action::UPDATE)) {
       $this->addStatusMessage($this->getStatusMessageForUpdate());
     }
@@ -1384,18 +1374,17 @@ DESC limit 1");
       $receiptSent = TRUE;
     }
 
-    // finally set membership id if already not set
-    if (!$this->_id) {
-      $this->_id = $this->getMembershipID();
-    }
-
-    $this->updateContributionOnMembershipTypeChange($params);
     if ($receiptSent && $mailSend) {
       $this->addStatusMessage(ts('A membership confirmation and receipt has been sent to %1.', [1 => $this->_contributorEmail]));
     }
 
     CRM_Core_Session::setStatus($this->getStatusMessage(), ts('Complete'), 'success');
     $this->setStatusMessage();
+
+    // finally set membership id if already not set
+    if (!$this->_id) {
+      $this->_id = $this->getMembershipID();
+    }
   }
 
   /**
@@ -1555,8 +1544,8 @@ DESC limit 1");
   protected function setStatusMessage() {
     //CRM-15187
     // display message when membership type is changed
-    if (($this->_action & CRM_Core_Action::UPDATE) && $this->_id && !in_array($this->_memType, $this->_memTypeSelected)) {
-      $lineItem = CRM_Price_BAO_LineItem::getLineItems($this->_id, 'membership');
+    if (($this->_action & CRM_Core_Action::UPDATE) && $this->getMembershipID() && !in_array($this->_memType, $this->_memTypeSelected)) {
+      $lineItem = CRM_Price_BAO_LineItem::getLineItems($this->getMembershipID(), 'membership');
       $maxID = max(array_keys($lineItem));
       $lineItem = $lineItem[$maxID];
       $membershipTypeDetails = $this->allMembershipTypeDetails[$this->getMembership()['membership_type_id']];

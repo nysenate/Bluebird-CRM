@@ -176,21 +176,4 @@ function dao_civicrm_entityTypes(&$entityTypes) {
   $entityTypes['CRM_Core_DAO_Tag']['fields_callback'][] = function($class, &$fields) {
     $fields['name']['maxlength'] = 128; //9656
   };
-
-  $entityTypes['CRM_Core_DAO_Note']['fields_callback'][] = function($class, &$fields) {
-    //set alternate callback for notes entity_table
-    $fields['entity_table']['pseudoconstant']['callback'] = '_CRM_Core_BAO_Note_entityTables';
-  };
-}
-
-/*
- * alternate callback for notes entity_table
- * so that we include our custom table options for website integration
- */
-function _CRM_Core_BAO_Note_entityTables() {
-  $tbls = CRM_Core_BAO_Note::entityTables() + array(
-    'nyss_directmsg' => 'NYSS Direct Message',
-    'nyss_contextmsg' => 'NYSS Contextual Message',
-  );
-  return $tbls;
 }

@@ -16,6 +16,8 @@
  * @package CiviCRM_APIv3
  */
 
+use Civi\Api4\Membership;
+
 /**
  * Retrieve a set of Order.
  *
@@ -73,68 +75,91 @@ function _civicrm_api3_order_get_spec(array &$params) {
  */
 function civicrm_api3_order_create(array $params): array {
   civicrm_api3_verify_one_mandatory($params, NULL, ['line_items', 'total_amount']);
-  $entity = NULL;
-  $entityIds = [];
+  if (empty($params['skipCleanMoney'])) {
+    // We have to do this for v3 api - sadly. For v4 it will be no more.
+    foreach (['total_amount', 'net_amount', 'fee_amount', 'non_deductible_amount'] as $field) {
+      if (isset($params[$field])) {
+        $params[$field] = CRM_Utils_Rule::cleanMoney($params[$field]);
+      }
+    }
+    $params['skipCleanMoney'] = TRUE;
+  }
   $params['contribution_status_id'] = 'Pending';
-  $priceSetID = NULL;
+  $order = new CRM_Financial_BAO_Order();
+  $order->setDefaultFinancialTypeID($params['financial_type_id'] ?? NULL);
 
   if (!empty($params['line_items']) && is_array($params['line_items'])) {
-    CRM_Contribute_BAO_Contribution::checkLineItems($params);
-    foreach ($params['line_items'] as $lineItems) {
-      $entityParams = $lineItems['params'] ?? [];
-      if (!empty($entityParams) && !empty($lineItems['line_item'])) {
-        $item = reset($lineItems['line_item']);
-        if (!empty($item['membership_type_id'])) {
-          $entity = 'membership';
-        }
-        else {
-          $entity = str_replace('civicrm_', '', $item['entity_table']);
-        }
+    foreach ($params['line_items'] as $index => $lineItems) {
+      if (!empty($lineItems['params'])) {
+        $order->setEntityParameters($lineItems['params'], $index);
       }
-
-      if ($entityParams) {
-        $supportedEntity = TRUE;
-        switch ($entity) {
-          case 'participant':
-            if (isset($entityParams['participant_status_id'])
-              && (!CRM_Event_BAO_ParticipantStatusType::getIsValidStatusForClass($entityParams['participant_status_id'], 'Pending'))) {
-              throw new CiviCRM_API3_Exception('Creating a participant via the Order API with a non "pending" status is not supported');
-            }
-            $entityParams['participant_status_id'] = $entityParams['participant_status_id'] ?? 'Pending from incomplete transaction';
-            $entityParams['status_id'] = $entityParams['participant_status_id'];
-            break;
-
-          case 'membership':
-            $entityParams['status_id'] = 'Pending';
-            break;
-
-          default:
-            // Don't create any related entities. We might want to support eg. Pledge one day?
-            $supportedEntity = FALSE;
-            break;
-        }
-        if ($supportedEntity) {
-          $entityParams['skipLineItem'] = TRUE;
-          $entityResult = civicrm_api3($entity, 'create', $entityParams);
-          $params['contribution_mode'] = $entity;
-          $entityIds[] = $params[$entity . '_id'] = $entityResult['id'];
-          foreach ($lineItems['line_item'] as &$items) {
-            $items['entity_id'] = $entityResult['id'];
-          }
-        }
+      foreach ($lineItems['line_item'] as $innerIndex => $lineItem) {
+        $lineIndex = $index . '+' . $innerIndex;
+        $order->setLineItem($lineItem, $lineIndex);
+        $order->addLineItemToEntityParameters($lineIndex, $index);
       }
-
-      if (empty($priceSetID)) {
-        $item = reset($lineItems['line_item']);
-        $priceSetID = (int) civicrm_api3('PriceField', 'getvalue', [
-          'return' => 'price_set_id',
-          'id' => $item['price_field_id'],
-        ]);
-        $params['line_item'][$priceSetID] = [];
-      }
-      $params['line_item'][$priceSetID] = array_merge($params['line_item'][$priceSetID], $lineItems['line_item']);
     }
   }
+  else {
+    $order->setPriceSetToDefault('contribution');
+    $order->setOverrideTotalAmount((float) $params['total_amount']);
+    $order->setLineItem([], 0);
+  }
+  // Only check the amount if line items are set because that is what we have historically
+  // done and total amount is historically only inclusive of tax_amount IF
+  // tax amount is also passed in it seems
+  if (isset($params['total_amount']) && !empty($params['line_items'])) {
+    $currency = $params['currency'] ?? CRM_Core_Config::singleton()->defaultCurrency;
+    if (!CRM_Utils_Money::equals($params['total_amount'], $order->getTotalAmount(), $currency)) {
+      throw new CRM_Contribute_Exception_CheckLineItemsException();
+    }
+  }
+  $params['total_amount'] = $order->getTotalAmount();
+  if (!isset($params['tax_amount'])) {
+    // @todo always calculate tax amount - left for now
+    // for webform
+    $params['tax_amount'] = $order->getTotalTaxAmount();
+  }
+
+  foreach ($order->getEntitiesToCreate() as $entityParams) {
+    if ($entityParams['entity'] === 'participant') {
+      if (isset($entityParams['participant_status_id'])
+        && (!CRM_Event_BAO_ParticipantStatusType::getIsValidStatusForClass($entityParams['participant_status_id'], 'Pending'))) {
+        throw new CiviCRM_API3_Exception('Creating a participant via the Order API with a non "pending" status is not supported');
+      }
+      $entityParams['participant_status_id'] = $entityParams['participant_status_id'] ?? 'Pending from incomplete transaction';
+      $entityParams['status_id'] = $entityParams['participant_status_id'];
+      $entityParams['skipLineItem'] = TRUE;
+      $entityResult = civicrm_api3('Participant', 'create', $entityParams);
+      // @todo - once membership is cleaned up & financial validation tests are extended
+      // we can look at removing this - some weird handling in removeFinancialAccounts
+      $params['contribution_mode'] = 'participant';
+      $params['participant_id'] = $entityResult['id'];
+      foreach ($entityParams['line_references'] as $lineIndex) {
+        $order->setLineItemValue('entity_id', $entityResult['id'], $lineIndex);
+      }
+    }
+
+    if ($entityParams['entity'] === 'membership') {
+      if (empty($entityParams['id'])) {
+        $entityParams['status_id:name'] = 'Pending';
+      }
+      if (!empty($params['contribution_recur_id'])) {
+        $entityParams['contribution_recur_id'] = $params['contribution_recur_id'];
+      }
+      // At this stage we need to get this passed through.
+      $entityParams['version'] = 4;
+      _order_create_wrangle_membership_params($entityParams);
+
+      $membershipID = Membership::save($params['check_permissions'] ?? FALSE)->setRecords([$entityParams])->execute()->first()['id'];
+      foreach ($entityParams['line_references'] as $lineIndex) {
+        $order->setLineItemValue('entity_id', $membershipID, $lineIndex);
+      }
+    }
+  }
+
+  $params['line_item'][$order->getPriceSetID()] = $order->getLineItems();
+
   $contributionParams = $params;
   // If this is nested we need to set sequential to 0 as sequential handling is done
   // in create_success & id will be miscalculated...
@@ -149,25 +174,8 @@ function civicrm_api3_order_create(array $params): array {
   }
 
   $contribution = civicrm_api3('Contribution', 'create', $contributionParams);
-  $contribution['values'][$contribution['id']]['line_item'] = $params['line_item'][$priceSetID] ?? [];
+  $contribution['values'][$contribution['id']]['line_item'] = array_values($order->getLineItems());
 
-  // add payments
-  if ($entity && !empty($contribution['id'])) {
-    foreach ($entityIds as $entityId) {
-      $paymentParams = [
-        'contribution_id' => $contribution['id'],
-        $entity . '_id' => $entityId,
-      ];
-      // if entity is pledge then build pledge param
-      if ($entity === 'pledge') {
-        $paymentParams += $entityParams;
-      }
-      elseif ($entity === 'membership') {
-        $paymentParams['isSkipLineItem'] = TRUE;
-      }
-      civicrm_api3($entity . '_payment', 'create', $paymentParams);
-    }
-  }
   return civicrm_api3_create_success($contribution['values'] ?? [], $params, 'Order', 'create');
 }
 
@@ -282,4 +290,32 @@ function _civicrm_api3_order_delete_spec(array &$params) {
     'type' => CRM_Utils_Type::T_INT,
   ];
   $params['id']['api.aliases'] = ['contribution_id'];
+}
+
+/**
+ * Handle possibility of v3 style params.
+ *
+ * We used to call v3 Membership.create. Now we call v4.
+ * This converts membership input parameters.
+ *
+ * @param array $membershipParams
+ *
+ * @throws \API_Exception
+ */
+function _order_create_wrangle_membership_params(array &$membershipParams) {
+  $fields = Membership::getFields(FALSE)->execute()->indexBy('name');
+  // Ensure this legacy parameter is not true.
+  $membershipParams['skipStatusCal'] = FALSE;
+  foreach ($fields as $fieldName => $field) {
+    $customFieldName = 'custom_' . ($field['custom_field_id'] ?? NULL);
+    if ($field['type'] === ['Custom'] && isset($membershipParams[$customFieldName])) {
+      $membershipParams[$field['custom_group'] . '.' . $field['custom_field']] = $membershipParams[$customFieldName];
+      unset($membershipParams[$customFieldName]);
+    }
+
+    if (!empty($membershipParams[$fieldName]) && $field['data_type'] === 'Integer' && !is_numeric($membershipParams[$fieldName])) {
+      $membershipParams[$field['name'] . ':name'] = $membershipParams[$fieldName];
+      unset($membershipParams[$field['name']]);
+    }
+  }
 }

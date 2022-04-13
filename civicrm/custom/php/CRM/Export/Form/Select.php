@@ -540,7 +540,7 @@ FROM   {$this->_componentTable}
   }
 
   //NYSS 7197 supports full export for custom searches
-  function getContactIds() {
+  function getContactIDs(): array {
     $cids = CRM_Contact_Form_Task::getContactIds();
     //CRM_Core_Error::debug_var('cids', $cids);
     //CRM_Core_Error::debug_var('cids count', count($cids));

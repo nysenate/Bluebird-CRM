@@ -106,12 +106,15 @@ delete_civicrm_cache_files() {
 drop_temp_tables() {
   inst="$1"
   echo "Dropping CiviCRM and NYSS temporary tables"
-  civitmptabs=`$execSql $inst -c "show tables like 'civicrm\_%temp\_%'"`
-  nysstmptabs=`$execSql $inst -c "show tables like 'nyss\_temp\_%'"`
-  if [ "$civitmptabs" -o "$nysstmptabs" ]; then
-    tmptabs=`echo $civitmptabs $nysstmptabs | tr " " ,`
-    echo "Temporary tables to drop: $tmptabs"
-    $execSql $inst -c "drop table $tmptabs"
+  tmptabs=`$execSql $inst -c "select table_name from information_schema.tables
+where table_schema='@CIVIDB@'
+  and (table_name like 'civicrm\_%temp\_%'
+       or table_name like 'civicrm\_tmp\_%'
+       or table_name like 'nyss\_temp\_%')"`
+  if [ "$tmptabs" ]; then
+    tmptabslist=`echo $tmptabs | tr " " ,`
+    echo "Temporary tables to drop: $tmptabslist"
+    $execSql $inst --replace-macros -c "drop table $tmptabslist"
   else
     echo "There are no temporary tables to be dropped."
   fi

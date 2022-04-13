@@ -4,6 +4,7 @@
   <base>CRM/Contribute</base>
   <class>Contribution</class>
   <name>civicrm_contribution</name>
+  <description>Financial records consisting of transactions, line-items, etc.</description>
   <add>1.3</add>
   <log>true</log>
   <icon>fa-credit-card</icon>
@@ -113,6 +114,7 @@
     </pseudoconstant>
     <html>
       <type>Select</type>
+      <label>Payment Method</label>
     </html>
     <add>1.3</add>
   </field>
@@ -469,6 +471,12 @@
     <import>true</import>
     <comment>The campaign for which this contribution has been triggered.</comment>
     <add>3.4</add>
+    <pseudoconstant>
+      <table>civicrm_campaign</table>
+      <keyColumn>id</keyColumn>
+      <labelColumn>title</labelColumn>
+      <prefetch>FALSE</prefetch>
+    </pseudoconstant>
     <html>
       <type>EntityRef</type>
       <label>Campaign</label>

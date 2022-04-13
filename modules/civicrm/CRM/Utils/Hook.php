@@ -1182,7 +1182,7 @@ abstract class CRM_Utils_Hook {
    * @param CRM_Core_Payment $paymentObj
    *   Instance of payment class of the payment processor invoked (e.g., 'CRM_Core_Payment_Dummy')
    *   See discussion in CRM-16224 as to whether $paymentObj should be passed by reference.
-   * @param array &$rawParams
+   * @param array|\Civi\Payment\PropertyBag &$rawParams
    *    array of params as passed to to the processor
    * @param array|\Civi\Payment\PropertyBag &$cookedParams
    *     params after the processor code has translated them into its own key/value pairs
@@ -2832,6 +2832,25 @@ abstract class CRM_Utils_Hook {
       ['permissions', 'entity', 'action'],
       $permissions, $entity, $action, self::$_nullObject, self::$_nullObject,
       self::$_nullObject, 'civicrm_alterApiRoutePermissions'
+    );
+  }
+
+  /**
+   * Allows an extension to override the checksum validation.
+   * For example you may want to invalidate checksums that were sent out/forwarded by mistake. You could also
+   * intercept and redirect to a different page in this case - eg. to say "sorry, you tried to use a compromised
+   * checksum".
+   *
+   * @param int $contactID
+   * @param string $checksum
+   * @param bool $invalid
+   *   Leave this at FALSE to allow the core code to perform validation. Set to TRUE to invalidate
+   */
+  public static function invalidateChecksum($contactID, $checksum, &$invalid) {
+    return self::singleton()->invoke(
+      ['contactID', 'checksum', 'invalid'],
+      $contactID, $checksum, $invalid, self::$_nullObject, self::$_nullObject,
+      self::$_nullObject, 'civicrm_invalidateChecksum'
     );
   }
 

@@ -1,5 +1,4 @@
 <?php
-
 /*
  +--------------------------------------------------------------------+
  | Copyright CiviCRM LLC. All rights reserved.                        |
@@ -9,13 +8,6 @@
  | and copyright information, see https://civicrm.org/licensing       |
  +--------------------------------------------------------------------+
  */
-
-/**
- *
- * @package CRM
- * @copyright CiviCRM LLC https://civicrm.org/licensing
- */
-
 namespace Civi\Api4;
 
 /**
@@ -28,6 +20,7 @@ namespace Civi\Api4;
  *
  * @searchable bridge
  * @see \Civi\Api4\Group
+ * @since 5.19
  * @package Civi\Api4
  */
 class GroupContact extends Generic\DAOEntity {
@@ -66,8 +59,14 @@ class GroupContact extends Generic\DAOEntity {
   public static function getInfo() {
     $info = parent::getInfo();
     $info['bridge'] = [
-      'group_id' => ['description' => ts('Static (non-smart) group contacts')],
-      'contact_id' => ['description' => ts('Static (non-smart) group contacts')],
+      'group_id' => [
+        'to' => 'contact_id',
+        'description' => ts('Static (non-smart) group contacts'),
+      ],
+      'contact_id' => [
+        'to' => 'group_id',
+        'description' => ts('Static (non-smart) group contacts'),
+      ],
     ];
     return $info;
   }

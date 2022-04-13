@@ -1,5 +1,4 @@
 <?php
-
 /*
  +--------------------------------------------------------------------+
  | Copyright CiviCRM LLC. All rights reserved.                        |
@@ -9,14 +8,6 @@
  | and copyright information, see https://civicrm.org/licensing       |
  +--------------------------------------------------------------------+
  */
-
-/**
- *
- * @package CRM
- * @copyright CiviCRM LLC https://civicrm.org/licensing
- */
-
-
 namespace Civi\Api4;
 
 /**
@@ -26,9 +17,9 @@ namespace Civi\Api4;
  *
  * @see \Civi\Api4\Case
  * @searchable none
+ * @since 5.37
  * @package Civi\Api4
  */
 class CaseType extends Generic\DAOEntity {
-  use Generic\Traits\OptionList;
 
 }

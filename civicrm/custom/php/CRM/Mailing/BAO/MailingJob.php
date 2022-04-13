@@ -270,6 +270,13 @@ class CRM_Mailing_BAO_MailingJob extends CRM_Mailing_DAO_MailingJob {
 
       $anyChildLeft = CRM_Core_DAO::singleValueQuery($child_job_sql, $params);
 
+      //NYSS 14490
+      if (!$anyChildLeft) {
+        //NYSS 14490 - check if we need to do a cleanup run
+        //Civi::log()->debug(__FUNCTION__, ['$job->mailing_id', $job->mailing_id]);
+        $anyChildLeft = CRM_NYSS_BAO_Mailing::validateEventQueue($job->mailing_id);
+      }
+
       // all of the child jobs are complete, update
       // the parent job as well as the mailing status
       if (!$anyChildLeft) {
@@ -1032,14 +1039,11 @@ AND    status IN ( 'Scheduled', 'Running', 'Paused' )
 
       $activity = [
         'source_contact_id' => $mailing->scheduled_id,
-        // CRM-9519
-        'target_contact_id' => array_unique($targetParams),
         'activity_type_id' => $activityTypeID,
         'source_record_id' => $this->mailing_id,
         'activity_date_time' => $job_date,
         'subject' => $mailing->subject,
         'status_id' => 'Completed',
-        'deleteActivityTarget' => FALSE,
         'campaign_id' => $mailing->campaign_id,
       ];
 
@@ -1167,20 +1171,11 @@ AND    record_type_id = $targetRecordID
    * Delete the mailing job.
    *
    * @param int $id
-   *   Mailing Job id.
-   *
-   * @return mixed
+   * @deprecated
+   * @return bool
    */
   public static function del($id) {
-    CRM_Utils_Hook::pre('delete', 'MailingJob', $id);
-
-    $jobDAO = new CRM_Mailing_BAO_MailingJob();
-    $jobDAO->id = $id;
-    $result = $jobDAO->delete();
-
-    CRM_Utils_Hook::post('delete', 'MailingJob', $jobDAO->id, $jobDAO);
-
-    return $result;
+    return (bool) self::deleteRecord(['id' => $id]);
   }
 
 }

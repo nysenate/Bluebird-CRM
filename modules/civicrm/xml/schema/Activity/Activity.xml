@@ -3,6 +3,7 @@
   <base>CRM/Activity</base>
   <class>Activity</class>
   <name>civicrm_activity</name>
+  <description>Past or future actions concerning one or more contacts.</description>
   <comment>Other Activity details stored here include contact, location, details.</comment>
   <add>1.1</add>
   <log>true</log>
@@ -360,6 +361,12 @@
       <type>EntityRef</type>
       <label>Campaign</label>
     </html>
+    <pseudoconstant>
+      <table>civicrm_campaign</table>
+      <keyColumn>id</keyColumn>
+      <labelColumn>title</labelColumn>
+      <prefetch>FALSE</prefetch>
+    </pseudoconstant>
   </field>
   <foreignKey>
     <name>campaign_id</name>

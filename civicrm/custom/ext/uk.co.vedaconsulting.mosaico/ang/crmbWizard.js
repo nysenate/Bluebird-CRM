@@ -21,6 +21,7 @@
           var crmbWizardCtrl = this;
           var maxVisited = 0;
           var selectedIndex = null;
+          //NYSS
           $scope.checkPerm = CRM.checkPerm;
 
           var findIndex = function() {
@@ -41,6 +42,7 @@
           this.$validStep = function() {
             return steps[selectedIndex] && steps[selectedIndex].isStepValid();
           };
+          //NYSS
           this.workFlowEnabled = function() {
             return CRM.crmMailing.workflowEnabled;
           };

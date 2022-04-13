@@ -115,7 +115,7 @@ class uploader {
         require "conf/config.php";
 
         // SETTING UP SESSION
-        if (!session_id()) {
+        if (!\CRM_Core_Config::singleton()->userSystem->getSessionId()) {
             if (isset($_CONFIG['_sessionLifetime']))
                 ini_set('session.gc_maxlifetime', $_CONFIG['_sessionLifetime'] * 60);
             if (isset($_CONFIG['_sessionDir']))

@@ -1,5 +1,4 @@
 <?php
-
 /*
  +--------------------------------------------------------------------+
  | Copyright CiviCRM LLC. All rights reserved.                        |
@@ -9,13 +8,13 @@
  | and copyright information, see https://civicrm.org/licensing       |
  +--------------------------------------------------------------------+
  */
-
 namespace Civi\Api4;
 
 /**
  * ContributionSoft entity.
  *
  * @searchable secondary
+ * @since 5.34
  * @package Civi\Api4
  */
 class ContributionSoft extends Generic\DAOEntity {

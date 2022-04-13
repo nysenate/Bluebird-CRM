@@ -191,7 +191,7 @@ class CRM_Custom_Form_Field extends CRM_Core_Form {
   public function buildQuickForm() {
     if ($this->_gid) {
       $this->_title = CRM_Core_DAO::getFieldValue('CRM_Core_DAO_CustomGroup', $this->_gid, 'title');
-      CRM_Utils_System::setTitle($this->_title . ' - ' . ($this->_id ? ts('Edit Field') : ts('New Field')));
+      $this->setTitle($this->_title . ' - ' . ($this->_id ? ts('Edit Field') : ts('New Field')));
       $this->assign('gid', $this->_gid);
     }
 
@@ -952,15 +952,15 @@ AND    option_group_id = %2";
   /**
    * Determine the serialize type based on form values.
    * @param array $params The submitted form values.
-   * @return int|string
-   *   The serialize type - CRM_Core_DAO::SERIALIZE_XXX or the string 'null'
+   * @return int
+   *   The serialize type - CRM_Core_DAO::SERIALIZE_XXX or 0
    */
   public function determineSerializeType($params) {
     if ($params['html_type'] === 'Select' || $params['html_type'] === 'Autocomplete-Select') {
-      return !empty($params['serialize']) ? CRM_Core_DAO::SERIALIZE_SEPARATOR_BOOKEND : 'null';
+      return !empty($params['serialize']) ? CRM_Core_DAO::SERIALIZE_SEPARATOR_BOOKEND : 0;
     }
     else {
-      return $params['html_type'] == 'CheckBox' ? CRM_Core_DAO::SERIALIZE_SEPARATOR_BOOKEND : 'null';
+      return $params['html_type'] == 'CheckBox' ? CRM_Core_DAO::SERIALIZE_SEPARATOR_BOOKEND : 0;
     }
   }
 

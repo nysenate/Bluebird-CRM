@@ -10,11 +10,15 @@
        ng-show="!!mailing.template_options.mosaicoTemplate">
   </div>
 
-  <div ng-repeat="template in mosaicoCtrl.templates"
-       ng-show="!mailing.template_options.mosaicoTemplate">
-    <div class="crm-mosaico-unselected"
-         crm-mosaico-template-item="{state:'select', title: template.title, subtitle: (template.isBase ? template.type : ''), img: template.thumbnail}"
-         on-item-click="mosaicoCtrl.select(mailing, template)">
+  <div ng-if="!mailing.template_options.mosaicoTemplate && mosaicoCtrl.templates.length">
+    <div>
+      <input ng-model="mosaicoCtrl.selectedCategory" ng-change="mosaicoCtrl.categoryFilter = mosaicoCtrl.categoryFilters[mosaicoCtrl.selectedCategory].filter" crm-ui-select="{data: mosaicoCtrl.categoryFilters, placeholder: ts('All Categories')}">
+    </div>
+    <div ng-repeat="template in mosaicoCtrl.templates | filter:mosaicoCtrl.categoryFilter">
+      <div class="crm-mosaico-unselected"
+           crm-mosaico-template-item="{state:'select', title: (template.base ? template.title : template.type), subtitle: template.category, img: template.thumbnail}"
+           on-item-click="mosaicoCtrl.select(mailing, template)">
+      </div>
     </div>
   </div>
 

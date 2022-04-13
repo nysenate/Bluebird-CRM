@@ -82,6 +82,49 @@ class CRM_Mosaico_Utils {
   }
 
   /**
+   * Get the list of templates directly from the disk.
+   */
+  public static function findBaseTemplatesFromDisk() {
+    $templates = CRM_Mosaico_BAO_MosaicoTemplate::findBaseTemplates(TRUE, FALSE);
+    return array_map(function($template) { return $template['name']; }, $templates);
+  }
+
+  /**
+   * Get a list of token options.
+   *
+   * @param boolean $hotlist
+   *   return only hotlist tokens if TRUE
+   *
+   * @return array
+   *   Array (string $machineName => string $label).
+   */
+  public static function getMailingTokens($hotlist = FALSE) {
+    $mailTokens = civicrm_api3('Mailing', 'gettokens', [
+      'entity' => ['contact', 'mailing'],
+      'sequential' => 1,
+    ])['values'];
+    $hotlistTokens = Civi::settings()->get('mosaico_hotlist_tokens');
+    $tokens = [];
+    foreach ($mailTokens as $token) {
+      if (!empty($token['children'])) {
+        foreach ($token['children'] as $child) {
+          if (!empty($child['id'])) {
+            if ($hotlist) {
+              if (in_array($child['id'], $hotlistTokens)) {
+                $tokens[$child['text']] = $child['id'];
+              }
+            }
+            else {
+              $tokens[$child['id']] = $child['text'];
+            }
+          }
+        }
+      }
+    }
+    return $tokens;
+  }
+
+  /**
    * Get the path to the Mosaico layout file.
    *
    * @return string
@@ -99,7 +142,8 @@ class CRM_Mosaico_Utils {
     ];
 
     if (empty($layout) || $layout === 'auto') {
-      return CRM_Extension_System::singleton()->getMapper()->isActiveModule('shoreditch')
+      $themes = Civi::service('themes');
+      return $themes->getActiveThemeKey() === 'shoreditch'
         ? $paths['bootstrap-wizard'] : $paths['crmstar-single'];
     }
     elseif (isset($paths[$layout])) {
@@ -208,7 +252,6 @@ class CRM_Mosaico_Utils {
     return $mConfig;
   }
 
-
   /**
    * handler for upload requests
    */
@@ -266,8 +309,6 @@ class CRM_Mosaico_Utils {
             $size = filesize($file_path);
 
             $thumbnail_path = $config['BASE_DIR'] . $config[ 'THUMBNAILS_DIR' ] . $file_name;
-
-            //NYSS 13813
             try {
               Civi::service('mosaico_graphics')->createResizedImage($file_path, $thumbnail_path, $config['THUMBNAIL_WIDTH'], $config['THUMBNAIL_HEIGHT']);
               $file = [
@@ -311,61 +352,65 @@ class CRM_Mosaico_Utils {
   public static function processImg() {
     $config = self::getConfig();
     $methods = ['placeholder', 'resize', 'cover'];
-    if ($_SERVER["REQUEST_METHOD"] == "GET") {
-      $method = CRM_Utils_Array::value('method', $_GET, 'cover');
-      if (!in_array($method, $methods)) {
-        $method = 'cover'; // Old behavior. Seems silly. Being cautious.
-      }
+    if ($_SERVER['REQUEST_METHOD'] !== 'GET') {
+      CRM_Utils_System::civiExit();
+    }
 
-      $params = explode(",", $_GET["params"]);
-      $width = (int) $params[0];
-      $height = (int) $params[1];
+    $method = CRM_Utils_Request::retrieveValue('method', 'String', 'cover', FALSE, 'GET');
+    if (!in_array($method, $methods)) {
+      \Civi::log()->error('Invalid method for processImg: ' . $method);
+      http_response_code(400);
+      CRM_Utils_System::civiExit();
+    }
 
-      // Apply a sensible maximum size for images in an email
-      if ($width * $height > self::MAX_IMAGE_PIXELS)  {
-        throw new \Exception("The requested image size is too large");
-      }
+    $params = CRM_Utils_Request::retrieveValue('params', 'String', NULL, FALSE, 'GET');
+    if (empty($params)) {
+      \Civi::log()->error('Invalid params for processImg: ' . $params);
+      http_response_code(400);
+      CRM_Utils_System::civiExit();
+    }
+    $params = explode(',', $params);
+    $width = (int) $params[0];
+    $height = (int) $params[1];
 
-      // Sometimes output buffer started by another module or plugin causes problem with
-      // image rendering. Let's clean any such buffers.
-      $levels = ob_get_level();
-      for ($i = 0; $i < $levels; $i++) {
-        ob_end_clean();
-      }
+    // Apply a sensible maximum size for images in an email
+    if ($width * $height > self::MAX_IMAGE_PIXELS)  {
+      throw new \CRM_Mosaico_Graphics_Exception('The requested image size is too large');
+    }
 
-      switch ($method) {
-        case 'placeholder':
+    // Sometimes output buffer started by another module or plugin causes problem with
+    // image rendering. Let's clean any such buffers.
+    $levels = ob_get_level();
+    for ($i = 0; $i < $levels; $i++) {
+      ob_end_clean();
+    }
 
-          // Only privileged users can request generation of placeholders
-          if (!CRM_Core_Permission::check([['access CiviMail', 'create mailings', 'edit message templates']])) {
-            CRM_Utils_System::permissionDenied();
-          }
+    switch ($method) {
+      case 'placeholder':
+        Civi::service('mosaico_graphics')->sendPlaceholder($width, $height);
+        break;
 
-          Civi::service('mosaico_graphics')->sendPlaceholder($width, $height);
-          break;
+      case 'resize':
+      case 'cover':
+        $func = ($method === 'resize') ? 'createResizedImage' : 'createCoveredImage';
 
-        case 'resize':
-        case 'cover':
-          $func = ($method === 'resize') ? 'createResizedImage' : 'createCoveredImage';
+        $path_parts = pathinfo(CRM_Utils_String::purifyHTML(CRM_Utils_Request::retrieveValue('src', 'String', NULL, TRUE, 'GET')));
+        $src_file = $config['BASE_DIR'] . $config['UPLOADS_DIR'] . $path_parts["basename"];
+        $cache_file = $config['BASE_DIR'] . $config['STATIC_DIR'] . $path_parts["basename"];
+        // $cache_file = $config['BASE_DIR'] . $config['STATIC_DIR'] . $method . '-' . $width . "x" . $height . '-' . $path_parts["basename"];
+        // The current naming convention for cache-files is buggy because it means that all variants
+        // of the basename *must* have the same size, which breaks scenarios for re-using images
+        // from the gallery. However, to fix it, one must also fix CRM_Mosaico_ImageFilter.
 
-          $path_parts = pathinfo($_GET["src"]);
-          $src_file = $config['BASE_DIR'] . $config['UPLOADS_DIR'] . $path_parts["basename"];
-          $cache_file = $config['BASE_DIR'] . $config['STATIC_DIR'] . $path_parts["basename"];
-          // $cache_file = $config['BASE_DIR'] . $config['STATIC_DIR'] . $method . '-' . $width . "x" . $height . '-' . $path_parts["basename"];
-          // The current naming convention for cache-files is buggy because it means that all variants
-          // of the basename *must* have the same size, which breaks scenarios for re-using images
-          // from the gallery. However, to fix it, one must also fix CRM_Mosaico_ImageFilter.
+        if (!file_exists($src_file)) {
+          throw new \CRM_Mosaico_Graphics_Exception("Failed to locate source file: {$path_parts['basename']}");
+        }
+        if (!file_exists($cache_file)) {
+          Civi::service('mosaico_graphics')->$func($src_file, $cache_file, $width, $height);
+        }
+        self::sendImage($cache_file);
+        break;
 
-          if (!file_exists($src_file)) {
-            throw new \Exception("Failed to locate source file: " . $path_parts["basename"]);
-          }
-          if (!file_exists($cache_file)) {
-            Civi::service('mosaico_graphics')->$func($src_file, $cache_file, $width, $height);
-          }
-          self::sendImage($cache_file);
-          break;
-
-      }
     }
     CRM_Utils_System::civiExit();
   }
@@ -398,76 +443,6 @@ class CRM_Mosaico_Utils {
       echo fread($fh, 2048);
     }
     fclose($fh);
-  }
-  
-  public static function getTemplateListing() {
-    $optionalParameters = [
-      'title' => 'String',
-      'category_id' => 'String',
-    ];
-    
-    $requiredParameters = [];
-    $params = CRM_Core_Page_AJAX::defaultSortAndPagerParams();
-    $params += CRM_Core_Page_AJAX::validateParams($requiredParameters, $optionalParameters);
-    
-    $params['offset'] = ($params['page'] - 1) * $params['rp'];
-    $params['rowCount'] = $params['rp'];
-    $params['sort'] = $params['sortBy'] ?? NULL;
-
-    $templateParams = [];
-    if (!empty($params['rowCount']) &&
-      $params['rowCount'] > 0
-    ) {
-      $templateParams['options']['limit'] = $params['rowCount'];
-    }
-    
-    if (!empty($params['sort'])) {
-      if (is_a($params['sort'], 'CRM_Utils_Sort')) {
-        $order = $params['sort']->orderBy();
-      }
-      elseif (trim($params['sort'])) {
-        $order = CRM_Utils_Type::escape($params['sort'], 'String');
-      }
-    }
-    $templateParams['options']['sort'] = empty($order) ? "id DESC" : $order;
-    $params['total'] = civicrm_api3('MosaicoTemplate', 'getcount', $templateParams);
-    $templateParams['return'] = [
-      'title',
-      'base',
-      'category_id',
-    ];
-    foreach (['title', 'category_id'] as $filter) {
-      if (!empty($params[$filter])) {
-        if ($filter == 'category_id') {
-          $templateParams[$filter] = ['IN' => explode(',', $params[$filter])];
-        }
-        else {
-          $templateParams[$filter] = ['LIKE' => '%' . $params[$filter] . '%'];
-        }
-      }
-    }
-    $result = civicrm_api3('MosaicoTemplate', 'Get', $templateParams)['values'];
-
-    $categories = CRM_Core_OptionGroup::values('mailing_template_category');
-    $templates = [];
-    foreach ($result as $templateID => $values) {
-      $template = ['DT_RowId' => $templateID];
-      $template['DT_RowClass'] = "crm-entity category-id-{$values['category_id']}";
-      $template['DT_RowAttr'] = [];
-      $template['DT_RowAttr']['data-entity'] = 'MosaicoTemplate';
-      $template['DT_RowAttr']['data-id'] = $templateID;
-      $template['title'] = $values['title'];
-      $template['base'] = $values['base'];
-      $template['category_id'] = $categories[$values['category_id']];
-      array_push($templates, $template);
-    }
-
-    $templatesDT = [];
-    $templatesDT['data'] = $templates;
-    $templatesDT['recordsTotal'] = $params['total'];
-    $templatesDT['recordsFiltered'] = $params['total'];
-    
-    CRM_Utils_JSON::output($templatesDT);
   }
 
 }

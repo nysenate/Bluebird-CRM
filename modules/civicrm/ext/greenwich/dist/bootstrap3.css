@@ -7291,6 +7291,11 @@
 	-webkit-appearance: searchfield-cancel-button;
 }
 
+#bootstrap-theme .select2-container .select2-choice > .select2-chosen {
+	font-size: inherit;
+	font-weight: normal;
+}
+
 #bootstrap-theme .form-control .select2-choice {
 	border: 0;
 	border-radius: 2px;

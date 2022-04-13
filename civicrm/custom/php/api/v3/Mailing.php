@@ -56,8 +56,14 @@ function civicrm_api3_mailing_create($params) {
     unset($safeParams['modified_date']);
   }
   if (!$timestampCheck) {
-    //NYSS 14454
-    throw new API_Exception("Mailing has not been saved. Content may be out of date as a result of other users working in the mailing. Please refresh the page and try again.");
+    //NYSS 14432
+    if (max(array_map('ord', str_split($params['body_html']))) >= 240) {
+      throw new API_Exception("Mailing has not been saved. The mailing content may have invalid characters, such as emojis. Please edit the content and remove any non-alphanumeric characters and then re-save.");
+    }
+    else {
+      //NYSS 14454
+      throw new API_Exception("Mailing has not been saved. Content may be out of date as a result of other users working in the mailing. Please refresh the page and try again.");
+    }
   }
 
   // FlexMailer is a refactoring of CiviMail which provides new hooks/APIs/docs. If the sysadmin has opted to enable it, then use that instead of CiviMail.
@@ -788,6 +794,18 @@ function civicrm_api3_mailing_stats($params) {
   return civicrm_api3_create_success($stats);
 }
 
+function _civicrm_api3_mailing_update_email_resetdate_spec(&$spec) {
+  $spec['minDays']['title'] = 'Number of days to wait without a bounce to assume successful delivery (default 3)';
+  $spec['minDays']['type'] = CRM_Utils_Type::T_INT;
+  $spec['minDays']['api.default'] = 3;
+  $spec['minDays']['api.required'] = 1;
+
+  $spec['maxDays']['title'] = 'Analyze mailings since this many days ago (default 7)';
+  $spec['maxDays']['type'] = CRM_Utils_Type::T_INT;
+  $spec['maxDays']['api.default'] = 7;
+  $spec['maxDays']['api.required'] = 1;
+}
+
 /**
  * Fix the reset dates on the email record based on when a mail was last delivered.
  *
@@ -799,9 +817,6 @@ function civicrm_api3_mailing_stats($params) {
  * @return array
  */
 function civicrm_api3_mailing_update_email_resetdate($params) {
-  CRM_Mailing_Event_BAO_Delivered::updateEmailResetDate(
-    CRM_Utils_Array::value('minDays', $params, 3),
-    CRM_Utils_Array::value('maxDays', $params, 3)
-  );
+  CRM_Mailing_Event_BAO_Delivered::updateEmailResetDate((int) $params['minDays'], (int) $params['maxDays']);
   return civicrm_api3_create_success();
 }

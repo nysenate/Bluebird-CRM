@@ -1,0 +1,1939 @@
+From 5f7849822d37ace46c59a7a1f3b51ff33df648e9 Mon Sep 17 00:00:00 2001
+From: Monish Deb <monish.deb@jmaconsulting.biz>
+Date: Tue, 11 Jan 2022 00:05:32 +0530
+Subject: [PATCH 01/11] Add MosacioTemplate APIv4 entity
+
+---
+ Civi/Api4/MosaicoTemplate.php                       | 13 +++++++++++++
+ mosaico.civix.php                                   |  8 +++++++-
+ .../CRM/Mosaico/MosaicoTemplate.entityType.php      | 10 ++++++++++
+ 3 files changed, 30 insertions(+), 1 deletion(-)
+ create mode 100644 Civi/Api4/MosaicoTemplate.php
+ create mode 100644 xml/schema/CRM/Mosaico/MosaicoTemplate.entityType.php
+
+diff --git a/Civi/Api4/MosaicoTemplate.php b/Civi/Api4/MosaicoTemplate.php
+new file mode 100644
+index 000000000..5a3cdaf7d
+--- /dev/null
++++ b/Civi/Api4/MosaicoTemplate.php
+@@ -0,0 +1,13 @@
++<?php
++namespace Civi\Api4;
++
++/**
++ * MosaicoTemplate entity.
++ *
++ * Provided by the Mosaico extension.
++ *
++ * @package Civi\Api4
++ */
++class MosaicoTemplate extends Generic\DAOEntity {
++
++}
+diff --git a/mosaico.civix.php b/mosaico.civix.php
+index c420b7fe6..f4b806482 100644
+--- a/mosaico.civix.php
++++ b/mosaico.civix.php
+@@ -449,5 +449,11 @@ function _mosaico_civix_civicrm_alterSettingsFolders(&$metaDataFolders = NULL) {
+  * @link https://docs.civicrm.org/dev/en/latest/hooks/hook_civicrm_entityTypes
+  */
+ function _mosaico_civix_civicrm_entityTypes(&$entityTypes) {
+-  $entityTypes = array_merge($entityTypes, []);
++  $entityTypes = array_merge($entityTypes, [
++    'CRM_Mosaico_DAO_MosaicoTemplate' => [
++      'name' => 'MosaicoTemplate',
++      'class' => 'CRM_Mosaico_DAO_MosaicoTemplate',
++      'table' => 'civicrm_mosaico_template',
++    ],
++  ]);
+ }
+diff --git a/xml/schema/CRM/Mosaico/MosaicoTemplate.entityType.php b/xml/schema/CRM/Mosaico/MosaicoTemplate.entityType.php
+new file mode 100644
+index 000000000..cf6130707
+--- /dev/null
++++ b/xml/schema/CRM/Mosaico/MosaicoTemplate.entityType.php
+@@ -0,0 +1,10 @@
++<?php
++// This file declares a new entity type. For more details, see "hook_civicrm_entityTypes" at:
++// https://docs.civicrm.org/dev/en/latest/hooks/hook_civicrm_entityTypes
++return [
++  [
++    'name' => 'MosaicoTemplate',
++    'class' => 'CRM_Mosaico_DAO_MosaicoTemplate',
++    'table' => 'civicrm_mosaico_template',
++  ],
++];
+
+From 32c37d3bbd9174f381f4dc08523596a07c474127 Mon Sep 17 00:00:00 2001
+From: Monish Deb <monish.deb@jmaconsulting.biz>
+Date: Tue, 11 Jan 2022 01:30:18 +0530
+Subject: [PATCH 02/11] Add mosaico template category
+
+---
+ CRM/Mosaico/DAO/MosaicoTemplate.php       | 21 ++++++++++
+ CRM/Mosaico/Upgrader.php                  | 15 +++++++
+ info.xml                                  |  4 ++
+ managed/Mailing_Template_Category.mgd.php | 49 +++++++++++++++++++++++
+ 4 files changed, 89 insertions(+)
+ create mode 100644 managed/Mailing_Template_Category.mgd.php
+
+diff --git a/CRM/Mosaico/DAO/MosaicoTemplate.php b/CRM/Mosaico/DAO/MosaicoTemplate.php
+index 78b1eb2dd..d9610e02a 100644
+--- a/CRM/Mosaico/DAO/MosaicoTemplate.php
++++ b/CRM/Mosaico/DAO/MosaicoTemplate.php
+@@ -219,6 +219,27 @@ public static function &fields() {
+           ],
+           'add' => NULL,
+         ],
++        'category_id' => [
++          'name' => 'category_id',
++          'type' => CRM_Utils_Type::T_INT,
++          'title' => E::ts('Category ID'),
++          'description' => E::ts('ID of the category this mailing template is currently belongs. Foreign key to civicrm_option_value.'),
++          'required' => FALSE,
++          'where' => 'civicrm_mosaico_template.category_id',
++          'table_name' => 'civicrm_mosaico_template',
++          'entity' => 'MosaicoTemplate',
++          'bao' => 'CRM_Mosaico_DAO_MosaicoTemplate',
++          'localizable' => 0,
++          'FKClassName' => 'CRM_Core_DAO_MessageTemplate',
++          'html' => [
++            'type' => 'Select',
++          ],
++          'pseudoconstant' => [
++            'optionGroupName' => 'mailing_template_category',
++            'optionEditPath' => 'civicrm/admin/options/mailing_template_category',
++          ],
++          'add' => NULL,
++        ],
+       ];
+       CRM_Core_DAO_AllCoreTables::invoke(__CLASS__, 'fields_callback', Civi::$statics[__CLASS__]['fields']);
+     }
+diff --git a/CRM/Mosaico/Upgrader.php b/CRM/Mosaico/Upgrader.php
+index 5325c216c..5e5895f04 100644
+--- a/CRM/Mosaico/Upgrader.php
++++ b/CRM/Mosaico/Upgrader.php
+@@ -123,6 +123,21 @@ public function upgrade_4704() {
+ 
+     return TRUE;
+   }
++  
++  /**
++   * Add menu for traditional mailing.
++   */
++  public function upgrade_4705() {
++    $this->ctx->log->info('Applying update 4705');
++
++    CRM_Core_DAO::executeQuery('
++      ALTER TABLE civicrm_mosaico_template
++      ADD COLUMN `category_id` int unsigned NULL COMMENT \'ID of the category this mailing template is currently belongs. Foreign key to civicrm_option_value.\'
++    ');
++
++    return TRUE;
++  }
++
+ 
+   /**
+    * Example: Run an external SQL script.
+diff --git a/info.xml b/info.xml
+index f87c0abca..b226822a1 100644
+--- a/info.xml
++++ b/info.xml
+@@ -28,4 +28,8 @@
+   <civix>
+     <namespace>CRM/Mosaico</namespace>
+   </civix>
++  <classloader>
++    <psr0 prefix="CRM_" path=""/>
++    <psr4 prefix="Civi\" path="Civi"/>
++  </classloader>
+ </extension>
+diff --git a/managed/Mailing_Template_Category.mgd.php b/managed/Mailing_Template_Category.mgd.php
+new file mode 100644
+index 000000000..e1d5c60ff
+--- /dev/null
++++ b/managed/Mailing_Template_Category.mgd.php
+@@ -0,0 +1,49 @@
++<?php
++return [
++  [
++    'name' => 'OptionGroup_mailing_template_category',
++    'entity' => 'OptionGroup',
++    'cleanup' => 'unused',
++    'update' => 'unmodified',
++    'params' => [
++      'version' => 4,
++      'values' => [
++        'name' => 'mailing_template_category',
++        'title' => 'Mailing Template Category',
++        'description' => NULL,
++        'data_type' => NULL,
++        'is_reserved' => TRUE,
++        'is_active' => TRUE,
++        'is_locked' => FALSE,
++      ],
++    ],
++  ],
++  [
++    'name' => 'OptionGroup_mailing_template_category_newsletter',
++    'entity' => 'OptionValue',
++    'cleanup' => 'unused',
++    'update' => 'unmodified',
++    'params' => [
++      'version' => 4,
++      'values' => [
++        'option_group_id.name' => 'mailing_template_category',
++        'label' => 'Newsletter',
++        'value' => '1',
++        'name' => 'newsletter',
++        'grouping' => NULL,
++        'filter' => 0,
++        'is_default' => TRUE,
++        'weight' => 1,
++        'description' => NULL,
++        'is_optgroup' => FALSE,
++        'is_reserved' => FALSE,
++        'is_active' => TRUE,
++        'icon' => NULL,
++        'color' => NULL,
++        'component_id' => NULL,
++        'visibility_id' => NULL,
++        'domain_id' => NULL,
++      ],
++    ],
++  ],
++];
+
+From eebff113f9243810d718eb549401c245dff8b8dc Mon Sep 17 00:00:00 2001
+From: Monish Deb <monish.deb@jmaconsulting.biz>
+Date: Tue, 11 Jan 2022 01:31:01 +0530
+Subject: [PATCH 03/11] Add Searchkit files
+
+---
+ CRM/Mosaico/DAO/MosaicoTemplate.php        |   6 ++
+ ang/afsearchMosaicoTemplateList.aff.html   |   4 +
+ ang/afsearchMosaicoTemplateList.aff.json   |  16 +++
+ managed/Mosaico_Template_Listing.mgd.php   | 116 +++++++++++++++++++++
+ xml/schema/CRM/Mosaico/MosaicoTemplate.xml |   6 ++
+ 5 files changed, 148 insertions(+)
+ create mode 100644 ang/afsearchMosaicoTemplateList.aff.html
+ create mode 100644 ang/afsearchMosaicoTemplateList.aff.json
+ create mode 100644 managed/Mosaico_Template_Listing.mgd.php
+
+diff --git a/CRM/Mosaico/DAO/MosaicoTemplate.php b/CRM/Mosaico/DAO/MosaicoTemplate.php
+index d9610e02a..c390ddbb3 100644
+--- a/CRM/Mosaico/DAO/MosaicoTemplate.php
++++ b/CRM/Mosaico/DAO/MosaicoTemplate.php
+@@ -145,6 +145,9 @@ public static function &fields() {
+           'entity' => 'MosaicoTemplate',
+           'bao' => 'CRM_Mosaico_DAO_MosaicoTemplate',
+           'localizable' => 0,
++          'html' => [
++            'type' => 'Text',
++          ],
+           'add' => NULL,
+         ],
+         'base' => [
+@@ -159,6 +162,9 @@ public static function &fields() {
+           'entity' => 'MosaicoTemplate',
+           'bao' => 'CRM_Mosaico_DAO_MosaicoTemplate',
+           'localizable' => 0,
++          'html' => [
++            'type' => 'Text',
++          ],
+           'add' => NULL,
+         ],
+         'html' => [
+diff --git a/ang/afsearchMosaicoTemplateList.aff.html b/ang/afsearchMosaicoTemplateList.aff.html
+new file mode 100644
+index 000000000..dcecb34c1
+--- /dev/null
++++ b/ang/afsearchMosaicoTemplateList.aff.html
+@@ -0,0 +1,4 @@
++<div af-fieldset="">
++  <af-field name="category_id" defn="{input_attrs: {multiple: true}, label: 'Category'}" />
++  <crm-search-display-table search-name="Mosaico_Template_List" display-name="Mosaico_Template_List"></crm-search-display-table>
++</div>
+diff --git a/ang/afsearchMosaicoTemplateList.aff.json b/ang/afsearchMosaicoTemplateList.aff.json
+new file mode 100644
+index 000000000..f64721c80
+--- /dev/null
++++ b/ang/afsearchMosaicoTemplateList.aff.json
+@@ -0,0 +1,16 @@
++{
++    "type": "search",
++    "requires": [],
++    "title": "Mosaico Template List",
++    "description": "",
++    "is_dashlet": false,
++    "is_public": false,
++    "is_token": false,
++    "server_route": "civicrm/mosaico-template-list",
++    "permission": "access CiviCRM",
++    "entity_type": null,
++    "join_entity": null,
++    "contact_summary": null,
++    "redirect": null,
++    "create_submission": null
++}
+\ No newline at end of file
+diff --git a/managed/Mosaico_Template_Listing.mgd.php b/managed/Mosaico_Template_Listing.mgd.php
+new file mode 100644
+index 000000000..a841bb4c4
+--- /dev/null
++++ b/managed/Mosaico_Template_Listing.mgd.php
+@@ -0,0 +1,116 @@
++<?php 
++
++return [
++  [
++    'name' => 'SavedSearch_Mosaico_Template_List', 
++    'entity' => 'SavedSearch', 
++    'cleanup' => 'unused', 
++    'update' => 'unmodified', 
++    'params' => [
++      'version' => 4, 
++      'values' => [
++        'name' => 'Mosaico_Template_List', 
++        'label' => 'Mosaico Template List', 
++        'form_values' => NULL, 
++        'search_custom_id' => NULL, 
++        'api_entity' => 'MosaicoTemplate', 
++        'api_params' => [
++          'version' => 4, 
++          'select' => [
++            'title', 
++            'base', 
++            'category_id:label',
++          ], 
++          'orderBy' => [], 
++          'where' => [], 
++          'groupBy' => [], 
++          'join' => [], 
++          'having' => [],
++        ], 
++        'expires_date' => NULL, 
++        'description' => NULL, 
++        'mapping_id' => NULL,
++      ],
++    ],
++  ], 
++  [
++    'name' => 'SavedSearch_Mosaico_Template_List_SearchDisplay_Mosaico_Template_List', 
++    'entity' => 'SearchDisplay', 
++    'cleanup' => 'unused', 
++    'update' => 'unmodified', 
++    'params' => [
++      'version' => 4, 
++      'values' => [
++        'name' => 'Mosaico_Template_List', 
++        'label' => 'Mosaico Template List', 
++        'saved_search_id.name' => 'Mosaico_Template_List', 
++        'type' => 'table', 
++        'settings' => [
++          'actions' => TRUE, 
++          'limit' => 50, 
++          'classes' => [
++            'table', 
++            'table-striped',
++          ], 
++          'pager' => [
++            'show_count' => TRUE, 
++            'expose_limit' => TRUE,
++          ], 
++          'sort' => [], 
++          'columns' => [
++            [
++              'type' => 'field', 
++              'key' => 'title', 
++              'dataType' => 'String', 
++              'label' => 'Title', 
++              'sortable' => TRUE,
++            ], 
++            [
++              'type' => 'field', 
++              'key' => 'base', 
++              'dataType' => 'String', 
++              'label' => 'Base Template', 
++              'sortable' => TRUE,
++            ], 
++            [
++              'type' => 'field', 
++              'key' => 'category_id:label', 
++              'dataType' => 'Integer', 
++              'label' => 'Category', 
++              'sortable' => TRUE,
++            ], 
++            [
++              'size' => 'btn-xs', 
++              'links' => [
++                [
++                  'path' => 'civicrm/', 
++                  'icon' => 'fa-eye', 
++                  'text' => 'View', 
++                  'style' => 'default', 
++                  'target' => 'crm-popup',
++                ],
++                [
++                  'path' => 'civicrm/', 
++                  'icon' => 'fa-pencil', 
++                  'text' => 'Edit', 
++                  'style' => 'default', 
++                  'target' => 'crm-popup',
++                ],
++                [
++                  'path' => 'civicrm/', 
++                  'icon' => 'fa-trash', 
++                  'text' => 'Delete', 
++                  'style' => 'default', 
++                  'target' => 'crm-popup',
++                ],
++              ], 
++              'type' => 'buttons', 
++              'alignment' => 'text-right',
++            ],
++          ],
++        ], 
++        'acl_bypass' => FALSE,
++      ],
++    ],
++  ],
++];
+\ No newline at end of file
+diff --git a/xml/schema/CRM/Mosaico/MosaicoTemplate.xml b/xml/schema/CRM/Mosaico/MosaicoTemplate.xml
+index 4439199b0..e51984051 100644
+--- a/xml/schema/CRM/Mosaico/MosaicoTemplate.xml
++++ b/xml/schema/CRM/Mosaico/MosaicoTemplate.xml
+@@ -24,6 +24,9 @@
+     <length>255</length>
+     <comment>Title</comment>
+     <title>Title</title>
++    <html>
++      <type>Text</type>
++    </html>
+   </field>
+ 
+   <field>
+@@ -32,6 +35,9 @@
+     <length>64</length>
+     <comment>Name of the Mosaico base template (e.g. versafix-1)</comment>
+     <title>Base Template</title>
++    <html>
++      <type>Text</type>
++    </html>
+   </field>
+ 
+   <field>
+
+From f51ea7dcfa7e866c009b46f611340af16212ee41 Mon Sep 17 00:00:00 2001
+From: Monish Deb <monish.deb@jmaconsulting.biz>
+Date: Tue, 11 Jan 2022 02:23:50 +0530
+Subject: [PATCH 04/11] Add missing text filters
+
+---
+ ang/afsearchMosaicoTemplateList.aff.html   |  6 +++++-
+ managed/Mosaico_Template_Listing.mgd.php   |  1 -
+ xml/schema/CRM/Mosaico/MosaicoTemplate.xml | 13 +++++++++++++
+ 3 files changed, 18 insertions(+), 2 deletions(-)
+
+diff --git a/ang/afsearchMosaicoTemplateList.aff.html b/ang/afsearchMosaicoTemplateList.aff.html
+index dcecb34c1..2cff769ea 100644
+--- a/ang/afsearchMosaicoTemplateList.aff.html
++++ b/ang/afsearchMosaicoTemplateList.aff.html
+@@ -1,4 +1,8 @@
+ <div af-fieldset="">
+-  <af-field name="category_id" defn="{input_attrs: {multiple: true}, label: 'Category'}" />
++  <div class="af-container af-layout-cols">
++    <af-field name="title" />
++    <af-field name="base" />
++    <af-field name="category_id" defn="{input_attrs: {multiple: true}}" />
++  </div>
+   <crm-search-display-table search-name="Mosaico_Template_List" display-name="Mosaico_Template_List"></crm-search-display-table>
+ </div>
+diff --git a/managed/Mosaico_Template_Listing.mgd.php b/managed/Mosaico_Template_Listing.mgd.php
+index a841bb4c4..49fa4d2be 100644
+--- a/managed/Mosaico_Template_Listing.mgd.php
++++ b/managed/Mosaico_Template_Listing.mgd.php
+@@ -1,5 +1,4 @@
+ <?php 
+-
+ return [
+   [
+     'name' => 'SavedSearch_Mosaico_Template_List', 
+diff --git a/xml/schema/CRM/Mosaico/MosaicoTemplate.xml b/xml/schema/CRM/Mosaico/MosaicoTemplate.xml
+index e51984051..83b5d7602 100644
+--- a/xml/schema/CRM/Mosaico/MosaicoTemplate.xml
++++ b/xml/schema/CRM/Mosaico/MosaicoTemplate.xml
+@@ -82,5 +82,18 @@
+     <key>id</key>
+     <onDelete>SET NULL</onDelete>
+   </foreignKey>
++  <field>
++    <name>category_id</name>
++    <type>int unsigned</type>
++    <title>Category ID</title>
++    <required>false</required>
++    <comment>ID of the category this mailing template is currently belongs. Foreign key to civicrm_option_value.</comment>
++    <pseudoconstant>
++      <optionGroupName>mailing_template_category</optionGroupName>
++    </pseudoconstant>
++    <html>
++      <type>Select</type>
++    </html>
++  </field>
+ 
+ </table>
+
+From f3232bee997e3ee9c5ee98b0ca3d819658187632 Mon Sep 17 00:00:00 2001
+From: Monish Deb <monish.deb@jmaconsulting.biz>
+Date: Tue, 11 Jan 2022 03:01:44 +0530
+Subject: [PATCH 05/11] Add required extension
+
+---
+ info.xml | 4 +++-
+ 1 file changed, 3 insertions(+), 1 deletion(-)
+
+diff --git a/info.xml b/info.xml
+index b226822a1..39ad73c69 100644
+--- a/info.xml
++++ b/info.xml
+@@ -19,10 +19,12 @@
+   <version>2.8</version>
+   <develStage>stable</develStage>
+   <compatibility>
+-    <ver>5.36</ver>
++    <ver>5.45</ver>
+   </compatibility>
+   <requires>
+     <ext>org.civicrm.flexmailer</ext>
++    <ext>org.civicrm.search_kit</ext>
++    <ext>org.civicrm.afform</ext>
+   </requires>
+   <comments>To help contribute please contact us on support@vedaconsulting.co.uk or initiate a conversation / issue on github.</comments>
+   <civix>
+
+From d07abef5bb3153da66281e7648bda4da40af976f Mon Sep 17 00:00:00 2001
+From: Monish Deb <monish.deb@jmaconsulting.biz>
+Date: Tue, 11 Jan 2022 14:51:23 +0530
+Subject: [PATCH 06/11] Add missing category_id in install script, ext required
+ check in system status
+
+---
+ ang/afsearchMosaicoTemplateList.aff.json |  2 +-
+ managed/Mosaico_Template_Listing.mgd.php | 26 ++++++++++++++++++------
+ sql/auto_install.sql                     |  3 ++-
+ 3 files changed, 23 insertions(+), 8 deletions(-)
+
+diff --git a/ang/afsearchMosaicoTemplateList.aff.json b/ang/afsearchMosaicoTemplateList.aff.json
+index f64721c80..60ac16ca0 100644
+--- a/ang/afsearchMosaicoTemplateList.aff.json
++++ b/ang/afsearchMosaicoTemplateList.aff.json
+@@ -1,7 +1,7 @@
+ {
+     "type": "search",
+     "requires": [],
+-    "title": "Mosaico Template List",
++    "title": "Mosaico Templates (new)",
+     "description": "",
+     "is_dashlet": false,
+     "is_public": false,
+diff --git a/managed/Mosaico_Template_Listing.mgd.php b/managed/Mosaico_Template_Listing.mgd.php
+index 49fa4d2be..d2ce7b111 100644
+--- a/managed/Mosaico_Template_Listing.mgd.php
++++ b/managed/Mosaico_Template_Listing.mgd.php
+@@ -9,7 +9,7 @@
+       'version' => 4, 
+       'values' => [
+         'name' => 'Mosaico_Template_List', 
+-        'label' => 'Mosaico Template List', 
++        'label' => 'Mosaico Templates (new)', 
+         'form_values' => NULL, 
+         'search_custom_id' => NULL, 
+         'api_entity' => 'MosaicoTemplate', 
+@@ -83,16 +83,30 @@
+               'links' => [
+                 [
+                   'path' => 'civicrm/', 
+-                  'icon' => 'fa-eye', 
+-                  'text' => 'View', 
++                  'icon' => 'fa-eye',
++                  'text' => 'Preview',
+                   'style' => 'default', 
+                   'target' => 'crm-popup',
+                 ],
++                [
++                  'path' => 'civicrm/',
++                  'icon' => 'fa-pencil',
++                  'text' => 'Edit',
++                  'style' => 'default',
++                  'target' => 'crm-popup',
++                ],
+                 [
+                   'path' => 'civicrm/', 
+-                  'icon' => 'fa-pencil', 
+-                  'text' => 'Edit', 
+-                  'style' => 'default', 
++                  'icon' => 'fa-wrench', 
++                  'text' => 'Settings', 
++                  'style' => 'default',
++                  'target' => 'crm-popup',
++                ],
++                [
++                  'path' => 'civicrm/', 
++                  'icon' => 'fa-clone', 
++                  'text' => 'Copy', 
++                  'style' => 'default',
+                   'target' => 'crm-popup',
+                 ],
+                 [
+diff --git a/sql/auto_install.sql b/sql/auto_install.sql
+index 8544e7a8d..0199a0dd0 100644
+--- a/sql/auto_install.sql
++++ b/sql/auto_install.sql
+@@ -79,7 +79,8 @@ CREATE TABLE `civicrm_mosaico_template` (
+      `html` longtext    COMMENT 'Fully renderd HTML',
+      `metadata` longtext    COMMENT 'Mosaico metadata (JSON)',
+      `content` longtext    COMMENT 'Mosaico content (JSON)',
+-     `msg_tpl_id` int unsigned NULL   COMMENT 'FK to civicrm_msg_template.' 
++     `msg_tpl_id` int unsigned NULL   COMMENT 'FK to civicrm_msg_template.',
++     `category_id` int(10) UNSIGNED DEFAULT NULL COMMENT 'ID of the category this mailing template is currently belongs. Foreign key to civicrm_option_value.'
+ ,
+         PRIMARY KEY (`id`)
+  
+
+From 75755f5b82657019bbb89264a395a3004c0f1ef2 Mon Sep 17 00:00:00 2001
+From: Coleman Watts <coleman@civicrm.org>
+Date: Tue, 11 Jan 2022 19:44:40 -0500
+Subject: [PATCH 07/11] Enable search display action buttons
+
+Implements a custom template in the search display which embeds a component
+which leverages the crmMosaicoTemplates service to perform the actions.
+---
+ ang/afsearchMosaicoTemplateList.aff.json      |   4 +-
+ ang/crmMosaico/ListCtrl.js                    |  14 +-
+ .../SearchTemplateListButtons.component.js    |  86 ++++++++++
+ ang/crmMosaico/SearchTemplateListButtons.html |  14 ++
+ .../SearchTemplateListButtonsColumn.html      |   1 +
+ ang/crmMosaico/Templates.js                   |  12 ++
+ managed/Mosaico_Template_Listing.mgd.php      | 157 +++++++-----------
+ 7 files changed, 179 insertions(+), 109 deletions(-)
+ create mode 100644 ang/crmMosaico/SearchTemplateListButtons.component.js
+ create mode 100644 ang/crmMosaico/SearchTemplateListButtons.html
+ create mode 100644 ang/crmMosaico/SearchTemplateListButtonsColumn.html
+
+diff --git a/ang/afsearchMosaicoTemplateList.aff.json b/ang/afsearchMosaicoTemplateList.aff.json
+index 60ac16ca0..d92d27651 100644
+--- a/ang/afsearchMosaicoTemplateList.aff.json
++++ b/ang/afsearchMosaicoTemplateList.aff.json
+@@ -1,6 +1,6 @@
+ {
+     "type": "search",
+-    "requires": [],
++    "requires": ["crmMosaico"],
+     "title": "Mosaico Templates (new)",
+     "description": "",
+     "is_dashlet": false,
+@@ -13,4 +13,4 @@
+     "contact_summary": null,
+     "redirect": null,
+     "create_submission": null
+-}
+\ No newline at end of file
++}
+diff --git a/ang/crmMosaico/ListCtrl.js b/ang/crmMosaico/ListCtrl.js
+index 375f58f43..47d9b3a0f 100644
+--- a/ang/crmMosaico/ListCtrl.js
++++ b/ang/crmMosaico/ListCtrl.js
+@@ -30,16 +30,6 @@
+       }
+     });
+ 
+-    function _saveTpl(tplId, viewModel) {
+-      viewModel.metadata.changed = Date.now();
+-      return crmApi('MosaicoTemplate', 'create', {
+-        id: tplId,
+-        html: viewModel.exportHTML(),
+-        metadata: viewModel.exportMetadata(),
+-        content: viewModel.exportJSON()
+-      });
+-    }
+-
+     $scope.createTpl = function createTpl(tpl) {
+       return crmMosaicoPrompt(ts('Create new template'), ts('New Template (%1)', {1: tpl.type}))
+         .then(function(newTitle) {
+@@ -100,11 +90,11 @@
+           },
+           actions: {
+             sync: function(ko, viewModel) {
+-              var savePromise = _saveTpl(tpl.id, viewModel);
++              var savePromise = crmMosaicoTemplates.save(tpl.id, viewModel);
+               crmStatus({start: ts('Saving'), success: ts('Saved')}, savePromise);
+             },
+             save: function(ko, viewModel) {
+-              var savePromise = _saveTpl(tpl.id, viewModel).then(function() {
++              var savePromise = crmMosaicoTemplates.save(tpl.id, viewModel).then(function() {
+                 crmMosaicoIframe.hide();
+               });
+               crmStatus({start: ts('Saving'), success: ts('Saved')}, savePromise);
+diff --git a/ang/crmMosaico/SearchTemplateListButtons.component.js b/ang/crmMosaico/SearchTemplateListButtons.component.js
+new file mode 100644
+index 000000000..b8a214e4f
+--- /dev/null
++++ b/ang/crmMosaico/SearchTemplateListButtons.component.js
+@@ -0,0 +1,86 @@
++(function(angular, $, _) {
++  angular.module('crmMosaico').component('crmMosaicoSearchTemplateListButtons', {
++    bindings: {
++      tpl: '<',
++      refresh: '&'
++    },
++    templateUrl: '~/crmMosaico/SearchTemplateListButtons.html',
++    controller: function($scope, crmApi4, crmStatus, crmMosaicoTemplates, CrmMosaicoIframe, crmBlocker) {
++      var ts = $scope.ts = CRM.ts('mosaico'),
++        ctrl = this;
++      var block = $scope.block = crmBlocker();
++
++      // FIXME: Lots of duplication between this and CrmMosaicoListCtrl.
++      // More code could be moved to the shared crmMosaicoTemplates service.
++
++      // Track zero or one instances of CrmMosaicoIframe.
++      var crmMosaicoIframe, warmTplId;
++      this.$onDestroy = function() {
++        if (crmMosaicoIframe) {
++          crmMosaicoIframe.destroy();
++          crmMosaicoIframe = null;
++          warmTplId = null;
++        }
++      };
++
++      this.copyTpl = function(tpl) {
++        crmStatus(
++          {start: ts('Copying...'), success: ts('Copied')},
++          crmMosaicoTemplates.clone({id: tpl.id, title: tpl.title + ' ' + ts('(copy)')})
++        )
++        .then(function(newTpl) {
++          return ctrl.editTpl(newTpl);
++        });
++      };
++
++      this.deleteTpl = function(tpl) {
++        return crmStatus(
++          {start: ts('Deleting...'), success: ts('Deleted')},
++          crmMosaicoTemplates.delete(tpl)
++        ).then(ctrl.refresh);
++      };
++
++      this.editTpl = function(tpl) {
++        if (block.check()) {
++          return;
++        }
++
++        if (warmTplId === tpl.id) {
++          crmMosaicoIframe.show();
++          return;
++        }
++
++        warmTplId = tpl.id;
++        var openPromise = crmMosaicoTemplates.getFull(tpl).then(function(fullTpl) {
++          if (crmMosaicoIframe) crmMosaicoIframe.destroy();
++          // FIXME: baseDetails seems like redundant data
++          var base = tpl.baseDetails || crmMosaicoTemplates.getBase(tpl.base);
++          crmMosaicoIframe = new CrmMosaicoIframe({
++            model: {
++              template: base.path,
++              metadata: fullTpl.metadata,
++              content: fullTpl.content
++            },
++            actions: {
++              sync: function(ko, viewModel) {
++                var savePromise = crmMosaicoTemplates.save(tpl.id, viewModel);
++                crmStatus({start: ts('Saving'), success: ts('Saved')}, savePromise);
++              },
++              save: function(ko, viewModel) {
++                var savePromise = crmMosaicoTemplates.save(tpl.id, viewModel).then(function() {
++                  crmMosaicoIframe.hide();
++                });
++                ctrl.refresh();
++                crmStatus({start: ts('Saving'), success: ts('Saved')}, savePromise);
++              }
++            }
++          });
++          return crmMosaicoIframe.open();
++        });
++
++        block(crmStatus({start: ts('Loading...'), success: null}, openPromise));
++      };
++
++    }
++  });
++})(angular, CRM.$, CRM._);
+diff --git a/ang/crmMosaico/SearchTemplateListButtons.html b/ang/crmMosaico/SearchTemplateListButtons.html
+new file mode 100644
+index 000000000..89bfef6d1
+--- /dev/null
++++ b/ang/crmMosaico/SearchTemplateListButtons.html
+@@ -0,0 +1,14 @@
++<div>
++  <button type="button" class="btn btn-xs btn-primary" ng-click="$ctrl.editTpl($ctrl.tpl)">
++    <i class="crm-i fa-pencil"></i>
++    {{:: ts('Edit') }}
++  </button>
++  <button type="button" class="btn btn-xs btn-primary" ng-click="$ctrl.copyTpl($ctrl.tpl)">
++    <i class="crm-i fa-copy"></i>
++    {{:: ts('Copy') }}
++  </button>
++  <button type="button" class="btn btn-xs btn-danger" crm-confirm="{type: 'delete', obj: $ctrl.tpl}" on-yes="$ctrl.deleteTpl($ctrl.tpl)">
++    <i class="crm-i fa-trash"></i>
++    {{:: ts('Delete') }}
++  </button>
++</div>
+diff --git a/ang/crmMosaico/SearchTemplateListButtonsColumn.html b/ang/crmMosaico/SearchTemplateListButtonsColumn.html
+new file mode 100644
+index 000000000..9dedcd3ab
+--- /dev/null
++++ b/ang/crmMosaico/SearchTemplateListButtonsColumn.html
+@@ -0,0 +1 @@
++<crm-mosaico-search-template-list-buttons tpl="row.data" refresh="$ctrl.getResults()"></crm-mosaico-search-template-list-buttons>
+diff --git a/ang/crmMosaico/Templates.js b/ang/crmMosaico/Templates.js
+index 88c7a9448..e11a3555a 100644
+--- a/ang/crmMosaico/Templates.js
++++ b/ang/crmMosaico/Templates.js
+@@ -96,6 +96,18 @@
+       getConfigured: function(){ return cache.configured; },
+       getAll: function() {
+         return cache.all.filter((template) => !template.isHidden);
++      },
++      getBase: function(baseName) {
++        return cache.basesByName[baseName];
++      },
++      save: function(tplId, viewModel) {
++        viewModel.metadata.changed = Date.now();
++        return crmApi('MosaicoTemplate', 'create', {
++          id: tplId,
++          html: viewModel.exportHTML(),
++          metadata: viewModel.exportMetadata(),
++          content: viewModel.exportJSON()
++        });
+       }
+     };
+   });
+diff --git a/managed/Mosaico_Template_Listing.mgd.php b/managed/Mosaico_Template_Listing.mgd.php
+index d2ce7b111..be9d2d69a 100644
+--- a/managed/Mosaico_Template_Listing.mgd.php
++++ b/managed/Mosaico_Template_Listing.mgd.php
+@@ -1,129 +1,96 @@
+-<?php 
++<?php
+ return [
+   [
+-    'name' => 'SavedSearch_Mosaico_Template_List', 
+-    'entity' => 'SavedSearch', 
+-    'cleanup' => 'unused', 
+-    'update' => 'unmodified', 
++    'name' => 'SavedSearch_Mosaico_Template_List',
++    'entity' => 'SavedSearch',
++    'cleanup' => 'unused',
++    'update' => 'unmodified',
+     'params' => [
+-      'version' => 4, 
++      'version' => 4,
+       'values' => [
+-        'name' => 'Mosaico_Template_List', 
+-        'label' => 'Mosaico Templates (new)', 
+-        'form_values' => NULL, 
+-        'search_custom_id' => NULL, 
+-        'api_entity' => 'MosaicoTemplate', 
++        'name' => 'Mosaico_Template_List',
++        'label' => 'Mosaico Templates',
++        'form_values' => NULL,
++        'search_custom_id' => NULL,
++        'api_entity' => 'MosaicoTemplate',
+         'api_params' => [
+-          'version' => 4, 
++          'version' => 4,
+           'select' => [
+-            'title', 
+-            'base', 
++            'id',
++            'title',
++            'base',
+             'category_id:label',
+-          ], 
+-          'orderBy' => [], 
+-          'where' => [], 
+-          'groupBy' => [], 
+-          'join' => [], 
++          ],
++          'orderBy' => [],
++          'where' => [],
++          'groupBy' => [],
++          'join' => [],
+           'having' => [],
+-        ], 
+-        'expires_date' => NULL, 
+-        'description' => NULL, 
++        ],
++        'expires_date' => NULL,
++        'description' => NULL,
+         'mapping_id' => NULL,
+       ],
+     ],
+-  ], 
++  ],
+   [
+-    'name' => 'SavedSearch_Mosaico_Template_List_SearchDisplay_Mosaico_Template_List', 
+-    'entity' => 'SearchDisplay', 
+-    'cleanup' => 'unused', 
+-    'update' => 'unmodified', 
++    'name' => 'SavedSearch_Mosaico_Template_List_SearchDisplay_Mosaico_Template_List',
++    'entity' => 'SearchDisplay',
++    'cleanup' => 'unused',
++    'update' => 'unmodified',
+     'params' => [
+-      'version' => 4, 
++      'version' => 4,
+       'values' => [
+-        'name' => 'Mosaico_Template_List', 
+-        'label' => 'Mosaico Template List', 
+-        'saved_search_id.name' => 'Mosaico_Template_List', 
+-        'type' => 'table', 
++        'name' => 'Mosaico_Template_List',
++        'label' => 'Mosaico Template List',
++        'saved_search_id.name' => 'Mosaico_Template_List',
++        'type' => 'table',
+         'settings' => [
+-          'actions' => TRUE, 
+-          'limit' => 50, 
++          'actions' => FALSE,
++          'limit' => 30,
+           'classes' => [
+-            'table', 
++            'table',
+             'table-striped',
+-          ], 
++          ],
+           'pager' => [
+-            'show_count' => TRUE, 
++            'show_count' => TRUE,
+             'expose_limit' => TRUE,
+-          ], 
+-          'sort' => [], 
++          ],
++          'sort' => [],
+           'columns' => [
+             [
+-              'type' => 'field', 
+-              'key' => 'title', 
+-              'dataType' => 'String', 
+-              'label' => 'Title', 
++              'type' => 'field',
++              'key' => 'title',
++              'dataType' => 'String',
++              'label' => 'Title',
+               'sortable' => TRUE,
+-            ], 
++              'editable' => TRUE,
++            ],
+             [
+-              'type' => 'field', 
+-              'key' => 'base', 
+-              'dataType' => 'String', 
+-              'label' => 'Base Template', 
++              'type' => 'field',
++              'key' => 'base',
++              'dataType' => 'String',
++              'label' => 'Base Template',
+               'sortable' => TRUE,
+-            ], 
++            ],
+             [
+-              'type' => 'field', 
+-              'key' => 'category_id:label', 
+-              'dataType' => 'Integer', 
+-              'label' => 'Category', 
++              'type' => 'field',
++              'key' => 'category_id:label',
++              'dataType' => 'Integer',
++              'label' => 'Category',
+               'sortable' => TRUE,
+-            ], 
++              'editable' => TRUE,
++            ],
+             [
+-              'size' => 'btn-xs', 
+-              'links' => [
+-                [
+-                  'path' => 'civicrm/', 
+-                  'icon' => 'fa-eye',
+-                  'text' => 'Preview',
+-                  'style' => 'default', 
+-                  'target' => 'crm-popup',
+-                ],
+-                [
+-                  'path' => 'civicrm/',
+-                  'icon' => 'fa-pencil',
+-                  'text' => 'Edit',
+-                  'style' => 'default',
+-                  'target' => 'crm-popup',
+-                ],
+-                [
+-                  'path' => 'civicrm/', 
+-                  'icon' => 'fa-wrench', 
+-                  'text' => 'Settings', 
+-                  'style' => 'default',
+-                  'target' => 'crm-popup',
+-                ],
+-                [
+-                  'path' => 'civicrm/', 
+-                  'icon' => 'fa-clone', 
+-                  'text' => 'Copy', 
+-                  'style' => 'default',
+-                  'target' => 'crm-popup',
+-                ],
+-                [
+-                  'path' => 'civicrm/', 
+-                  'icon' => 'fa-trash', 
+-                  'text' => 'Delete', 
+-                  'style' => 'default', 
+-                  'target' => 'crm-popup',
+-                ],
+-              ], 
+-              'type' => 'buttons', 
++              'path' => '~/crmMosaico/SearchTemplateListButtonsColumn.html',
++              'type' => 'include',
+               'alignment' => 'text-right',
+             ],
+           ],
+-        ], 
++          'cssRules' => [],
++        ],
+         'acl_bypass' => FALSE,
+       ],
+     ],
+   ],
+-];
+\ No newline at end of file
++];
+
+From ebf8a7c5d53fcb6ae28285a3b7e26e816654df75 Mon Sep 17 00:00:00 2001
+From: Coleman Watts <coleman@civicrm.org>
+Date: Tue, 11 Jan 2022 20:05:34 -0500
+Subject: [PATCH 08/11] Add MosaicoTemplate.Cagegory field label
+
+---
+ CRM/Mosaico/DAO/MessageTemplate.php        |  3 ++-
+ CRM/Mosaico/DAO/MosaicoTemplate.php        | 12 ++++++++++--
+ xml/schema/CRM/Mosaico/MosaicoTemplate.xml |  1 +
+ 3 files changed, 13 insertions(+), 3 deletions(-)
+
+diff --git a/CRM/Mosaico/DAO/MessageTemplate.php b/CRM/Mosaico/DAO/MessageTemplate.php
+index 29dee8dde..a226b6b88 100644
+--- a/CRM/Mosaico/DAO/MessageTemplate.php
++++ b/CRM/Mosaico/DAO/MessageTemplate.php
+@@ -6,7 +6,7 @@
+  *
+  * Generated from uk.co.vedaconsulting.mosaico/xml/schema/CRM/Mosaico/MessageTemplate.xml
+  * DO NOT EDIT.  Generated by CRM_Core_CodeGen
+- * (GenCodeChecksum:7f69ab7534a4e5b31cbd7063ca97d493)
++ * (GenCodeChecksum:295340b4f197a752729e0cbd22579979)
+  */
+ use CRM_Mosaico_ExtensionUtil as E;
+ 
+@@ -129,6 +129,7 @@ public static function &fields() {
+           'entity' => 'MessageTemplate',
+           'bao' => 'CRM_Mosaico_DAO_MessageTemplate',
+           'localizable' => 0,
++          'readonly' => TRUE,
+           'add' => NULL,
+         ],
+         'msg_tpl_id' => [
+diff --git a/CRM/Mosaico/DAO/MosaicoTemplate.php b/CRM/Mosaico/DAO/MosaicoTemplate.php
+index c390ddbb3..eba2fed72 100644
+--- a/CRM/Mosaico/DAO/MosaicoTemplate.php
++++ b/CRM/Mosaico/DAO/MosaicoTemplate.php
+@@ -6,7 +6,7 @@
+  *
+  * Generated from uk.co.vedaconsulting.mosaico/xml/schema/CRM/Mosaico/MosaicoTemplate.xml
+  * DO NOT EDIT.  Generated by CRM_Core_CodeGen
+- * (GenCodeChecksum:6578a5493d41dcf719d1e8cf4e9c6f7f)
++ * (GenCodeChecksum:0802c4ee4037ee1644860bb85baa890f)
+  */
+ use CRM_Mosaico_ExtensionUtil as E;
+ 
+@@ -80,6 +80,13 @@ class CRM_Mosaico_DAO_MosaicoTemplate extends CRM_Core_DAO {
+    */
+   public $msg_tpl_id;
+ 
++  /**
++   * ID of the category this mailing template is currently belongs. Foreign key to civicrm_option_value.
++   *
++   * @var int
++   */
++  public $category_id;
++
+   /**
+    * Class constructor.
+    */
+@@ -131,6 +138,7 @@ public static function &fields() {
+           'entity' => 'MosaicoTemplate',
+           'bao' => 'CRM_Mosaico_DAO_MosaicoTemplate',
+           'localizable' => 0,
++          'readonly' => TRUE,
+           'add' => NULL,
+         ],
+         'title' => [
+@@ -236,9 +244,9 @@ public static function &fields() {
+           'entity' => 'MosaicoTemplate',
+           'bao' => 'CRM_Mosaico_DAO_MosaicoTemplate',
+           'localizable' => 0,
+-          'FKClassName' => 'CRM_Core_DAO_MessageTemplate',
+           'html' => [
+             'type' => 'Select',
++            'label' => E::ts("Category"),
+           ],
+           'pseudoconstant' => [
+             'optionGroupName' => 'mailing_template_category',
+diff --git a/xml/schema/CRM/Mosaico/MosaicoTemplate.xml b/xml/schema/CRM/Mosaico/MosaicoTemplate.xml
+index 83b5d7602..751dfe1f1 100644
+--- a/xml/schema/CRM/Mosaico/MosaicoTemplate.xml
++++ b/xml/schema/CRM/Mosaico/MosaicoTemplate.xml
+@@ -92,6 +92,7 @@
+       <optionGroupName>mailing_template_category</optionGroupName>
+     </pseudoconstant>
+     <html>
++      <label>Category</label>
+       <type>Select</type>
+     </html>
+   </field>
+
+From fa1960cdb92b0edf04d302898460694c7abb84fd Mon Sep 17 00:00:00 2001
+From: Monish Deb <monish.deb@jmaconsulting.biz>
+Date: Wed, 12 Jan 2022 22:21:15 +0530
+Subject: [PATCH 09/11] Add configure icon for categories and update Mosaico
+ Templates url
+
+---
+ CRM/Mosaico/Upgrader.php                 | 2 ++
+ ang/afsearchMosaicoTemplateList.aff.html | 2 +-
+ ang/afsearchMosaicoTemplateList.aff.json | 2 +-
+ managed/Mosaico_Template_Listing.mgd.php | 2 +-
+ mosaico.php                              | 2 +-
+ 5 files changed, 6 insertions(+), 4 deletions(-)
+
+diff --git a/CRM/Mosaico/Upgrader.php b/CRM/Mosaico/Upgrader.php
+index 5e5895f04..9a00d03bc 100644
+--- a/CRM/Mosaico/Upgrader.php
++++ b/CRM/Mosaico/Upgrader.php
+@@ -120,6 +120,8 @@ public function upgrade_4704() {
+       FOREIGN KEY (`msg_tpl_id`) REFERENCES `civicrm_msg_template`(`id`)
+       ON DELETE SET NULL
+     ');
++    
++    CRM_Core_Invoke::rebuildMenuAndCaches(TRUE);
+ 
+     return TRUE;
+   }
+diff --git a/ang/afsearchMosaicoTemplateList.aff.html b/ang/afsearchMosaicoTemplateList.aff.html
+index 2cff769ea..07adb1cad 100644
+--- a/ang/afsearchMosaicoTemplateList.aff.html
++++ b/ang/afsearchMosaicoTemplateList.aff.html
+@@ -2,7 +2,7 @@
+   <div class="af-container af-layout-cols">
+     <af-field name="title" />
+     <af-field name="base" />
+-    <af-field name="category_id" defn="{input_attrs: {multiple: true}}" />
++    <af-field name="category_id" defn="{input_attrs: {multiple: true}}" /><a ng-href="{{crmUrl('civicrm/admin/options/mailing_template_category', 'reset=1')}}" title="{{:: ts('Click here to configure the categories') }}" target="crm-popup"><i class="crm-i fa-wrench" aria-hidden="true"></i></a>
+   </div>
+   <crm-search-display-table search-name="Mosaico_Template_List" display-name="Mosaico_Template_List"></crm-search-display-table>
+ </div>
+diff --git a/ang/afsearchMosaicoTemplateList.aff.json b/ang/afsearchMosaicoTemplateList.aff.json
+index d92d27651..21b1b8735 100644
+--- a/ang/afsearchMosaicoTemplateList.aff.json
++++ b/ang/afsearchMosaicoTemplateList.aff.json
+@@ -1,7 +1,7 @@
+ {
+     "type": "search",
+     "requires": ["crmMosaico"],
+-    "title": "Mosaico Templates (new)",
++    "title": "Mosaico Templates",
+     "description": "",
+     "is_dashlet": false,
+     "is_public": false,
+diff --git a/managed/Mosaico_Template_Listing.mgd.php b/managed/Mosaico_Template_Listing.mgd.php
+index be9d2d69a..ceaae76ea 100644
+--- a/managed/Mosaico_Template_Listing.mgd.php
++++ b/managed/Mosaico_Template_Listing.mgd.php
+@@ -42,7 +42,7 @@
+       'version' => 4,
+       'values' => [
+         'name' => 'Mosaico_Template_List',
+-        'label' => 'Mosaico Template List',
++        'label' => 'Mosaico Templates',
+         'saved_search_id.name' => 'Mosaico_Template_List',
+         'type' => 'table',
+         'settings' => [
+diff --git a/mosaico.php b/mosaico.php
+index 5a14fb793..297e1164c 100644
+--- a/mosaico.php
++++ b/mosaico.php
+@@ -139,7 +139,7 @@ function mosaico_civicrm_navigationMenu(&$params) {
+     'child' => [],
+     'operator' => 'AND',
+     'separator' => 0,
+-    'url' => CRM_Utils_System::url('civicrm/a/', NULL, TRUE, '/mosaico-template'),
++    'url' => CRM_Utils_System::url('civicrm/mosaico-template-list'),
+   ]);
+ 
+   _mosaico_civix_insert_navigation_menu($params, 'Mailings', [
+
+From c5cda284a84d53fff1d2580995c22fb1e62883c7 Mon Sep 17 00:00:00 2001
+From: Coleman Watts <coleman@civicrm.org>
+Date: Wed, 12 Jan 2022 16:44:36 -0500
+Subject: [PATCH 10/11] Add dialog for creating template from new list view;
+ delete old ListCtrl
+
+Bumping version requirement because this depends on https://github.com/civicrm/civicrm-core/pull/22490
+---
+ ang/afsearchMosaicoTemplateList.aff.html      |   9 +-
+ ang/afsearchMosaicoTemplateList.aff.json      |   2 +-
+ ang/crmMosaico.ang.php                        |   2 +-
+ ang/crmMosaico.bootstrap/ListCtrl.html        |  47 -------
+ ang/crmMosaico.crmstar/ListCtrl.html          |  36 -----
+ ang/crmMosaico/CreateFromBaseTemplate.ctrl.js |  25 ++++
+ ang/crmMosaico/CreateFromBaseTemplate.html    |  28 ++++
+ ang/crmMosaico/ListCtrl.js                    | 123 ------------------
+ .../SearchTemplateCreateButton.component.js   |  36 +++++
+ .../SearchTemplateListButtons.component.js    |  56 +-------
+ ang/crmMosaico/Templates.js                   |  79 +++++++++--
+ info.xml                                      |   2 +-
+ templates/CRM/crmMosaico/ListCtrl.hlp         |   3 -
+ 13 files changed, 170 insertions(+), 278 deletions(-)
+ delete mode 100644 ang/crmMosaico.bootstrap/ListCtrl.html
+ delete mode 100644 ang/crmMosaico.crmstar/ListCtrl.html
+ create mode 100644 ang/crmMosaico/CreateFromBaseTemplate.ctrl.js
+ create mode 100644 ang/crmMosaico/CreateFromBaseTemplate.html
+ delete mode 100644 ang/crmMosaico/ListCtrl.js
+ create mode 100644 ang/crmMosaico/SearchTemplateCreateButton.component.js
+ delete mode 100644 templates/CRM/crmMosaico/ListCtrl.hlp
+
+diff --git a/ang/afsearchMosaicoTemplateList.aff.html b/ang/afsearchMosaicoTemplateList.aff.html
+index 07adb1cad..2cb142bbf 100644
+--- a/ang/afsearchMosaicoTemplateList.aff.html
++++ b/ang/afsearchMosaicoTemplateList.aff.html
+@@ -1,8 +1,15 @@
++<div>
++  <button type="button" class="btn btn-primary" crm-dialog-popup="crmMosaicoCreatePopup" popup-tpl="~/crmMosaico/CreateFromBaseTemplate.html">
++    <i class="crm-i fa-plus-circle"></i>
++    {{:: ts('New Template') }}
++  </button>
++</div>
+ <div af-fieldset="">
+   <div class="af-container af-layout-cols">
+     <af-field name="title" />
+     <af-field name="base" />
+-    <af-field name="category_id" defn="{input_attrs: {multiple: true}}" /><a ng-href="{{crmUrl('civicrm/admin/options/mailing_template_category', 'reset=1')}}" title="{{:: ts('Click here to configure the categories') }}" target="crm-popup"><i class="crm-i fa-wrench" aria-hidden="true"></i></a>
++    <af-field name="category_id" defn="{input_attrs: {multiple: true}}" />
++    <a ng-href="{{ crmUrl('civicrm/admin/options/mailing_template_category', {reset: 1}) }}" title="{{:: ts('Configure template categories') }}" target="crm-popup"><i class="crm-i fa-wrench" aria-hidden="true"></i></a>
+   </div>
+   <crm-search-display-table search-name="Mosaico_Template_List" display-name="Mosaico_Template_List"></crm-search-display-table>
+ </div>
+diff --git a/ang/afsearchMosaicoTemplateList.aff.json b/ang/afsearchMosaicoTemplateList.aff.json
+index 21b1b8735..08b666e93 100644
+--- a/ang/afsearchMosaicoTemplateList.aff.json
++++ b/ang/afsearchMosaicoTemplateList.aff.json
+@@ -7,7 +7,7 @@
+     "is_public": false,
+     "is_token": false,
+     "server_route": "civicrm/mosaico-template-list",
+-    "permission": "access CiviCRM",
++    "permission": "edit message templates",
+     "entity_type": null,
+     "join_entity": null,
+     "contact_summary": null,
+diff --git a/ang/crmMosaico.ang.php b/ang/crmMosaico.ang.php
+index 5efe8e97b..e6c9555ee 100644
+--- a/ang/crmMosaico.ang.php
++++ b/ang/crmMosaico.ang.php
+@@ -4,7 +4,7 @@
+ // http://wiki.civicrm.org/confluence/display/CRMDOC/hook_civicrm_angularModules
+ 
+ $result = [
+-  'requires' => ['crmUi', 'crmUtil', 'ngRoute', 'crmMailing'],
++  'requires' => ['crmUi', 'crmUtil', 'ngRoute', 'crmMailing', 'crmDialog'],
+   'js' =>
+   [
+     0 => 'ang/crmMosaico.js',
+diff --git a/ang/crmMosaico.bootstrap/ListCtrl.html b/ang/crmMosaico.bootstrap/ListCtrl.html
+deleted file mode 100644
+index e42a14a95..000000000
+--- a/ang/crmMosaico.bootstrap/ListCtrl.html
++++ /dev/null
+@@ -1,47 +0,0 @@
+-<div id="bootstrap-theme">
+-  <div class="crm-mosaico-page">
+-
+-    <div crm-ui-debug="crmMosaicoTemplates.getBases()"></div>
+-    <div crm-ui-debug="crmMosaicoTemplates.getConfigured()"></div>
+-    <div class="mosaico-panels-group">
+-      <div class="panel panel-default" ng-show="crmMosaicoTemplates.getBases().length > 0">
+-        <div class="panel-heading">
+-          <h3 class="panel-title">{{ts('New from base template:')}}</h3>
+-        </div>
+-        <div class="panel-body">
+-          <div class="row mosaico-templates-wrapper">
+-            <div ng-repeat="template in crmMosaicoTemplates.getBases() | orderBy:'type'">
+-              <div
+-                class="col-xs-6 col-md-3 col-lg-3"
+-                crm-mosaico-template-item="{state:'new', title: template.type, img: template.thumbnail}"
+-                on-item-click="createTpl(template)">
+-              </div>
+-            </div>
+-          </div>
+-        </div>
+-      </div>
+-
+-      <div class="panel panel-default" ng-show="crmMosaicoTemplates.getConfigured().length > 0">
+-        <div class="panel-heading">
+-          <h3 class="panel-title">{{ts('Configured templates:')}}</h3>
+-        </div>
+-        <div class="panel-body">
+-          <div class="row mosaico-templates-wrapper">
+-            <div ng-repeat="template in crmMosaicoTemplates.getConfigured() | orderBy:'title'">
+-              <div
+-                class="col-xs-6 col-md-3 col-lg-3"
+-                crm-mosaico-template-item="{state:'configure', title: template.title, subtitle: template.type, img: template.thumbnail}"
+-                on-item-click="editTpl(template)"
+-                on-item-copy="copyTpl(template)"
+-                on-item-settings="renameTpl(template)"
+-                on-item-delete="deleteTpl(template)"
+-                check-item-delete="canDelete()">
+-              </div>
+-            </div>
+-          </div>
+-        </div>
+-      </div>
+-    </div>
+-
+-  </div>
+-</div>
+diff --git a/ang/crmMosaico.crmstar/ListCtrl.html b/ang/crmMosaico.crmstar/ListCtrl.html
+deleted file mode 100644
+index 05693e104..000000000
+--- a/ang/crmMosaico.crmstar/ListCtrl.html
++++ /dev/null
+@@ -1,36 +0,0 @@
+-<div  class="crm-mosaico-page">
+-  <div crm-ui-debug="crmMosaicoTemplates.getBases()"></div>
+-  <div crm-ui-debug="crmMosaicoTemplates.getConfigured()"></div>
+-
+-  <div ng-show="crmMosaicoTemplates.getBases().length > 0">
+-    <h3>{{ts('New from base template:')}}</h3>
+-    <div class="mosaico-templates-wrapper">
+-      <div ng-repeat="template in crmMosaicoTemplates.getBases() | orderBy:'type'">
+-        <div
+-          class="crm-mosaico-unselected"
+-          crm-mosaico-template-item="{state:'new', title: template.type, img: template.thumbnail}"
+-          on-item-click="createTpl(template)">
+-        </div>
+-      </div>
+-      <div style="clear: both"></div>
+-    </div>
+-  </div>
+-
+-  <div ng-show="crmMosaicoTemplates.getConfigured().length > 0">
+-    <h3>{{ts('Configured templates:')}}</h3>
+-    <div class="mosaico-templates-wrapper">
+-      <div ng-repeat="template in crmMosaicoTemplates.getConfigured() | orderBy:'title'">
+-        <div
+-          class="crm-mosaico-unselected"
+-          crm-mosaico-template-item="{state:'configure', title: template.title, subtitle: template.type, img: template.thumbnail}"
+-          on-item-click="editTpl(template)"
+-          on-item-copy="copyTpl(template)"
+-          on-item-settings="renameTpl(template)"
+-          on-item-delete="deleteTpl(template)"
+-          check-item-delete="canDelete()">
+-        </div>
+-      </div>
+-      <div style="clear: both"></div>
+-    </div>
+-  </div>
+-</div>
+\ No newline at end of file
+diff --git a/ang/crmMosaico/CreateFromBaseTemplate.ctrl.js b/ang/crmMosaico/CreateFromBaseTemplate.ctrl.js
+new file mode 100644
+index 000000000..ac9c1ecef
+--- /dev/null
++++ b/ang/crmMosaico/CreateFromBaseTemplate.ctrl.js
+@@ -0,0 +1,25 @@
++(function(angular, $, _) {
++
++  angular.module('crmMosaico').controller('CrmMosaicoCreateFromBaseTemplate', function($scope, crmStatus, dialogService, crmMosaicoTemplates) {
++    var ts = $scope.ts = CRM.ts('mosaico');
++    var ctrl = $scope.$ctrl = this;
++
++    this.model = {};
++
++    crmMosaicoTemplates.whenLoaded().then(function() {
++      ctrl.bases = _.sortBy(crmMosaicoTemplates.getBases(), 'type');
++      ctrl.model.base = ctrl.bases[0].type;
++    });
++
++    this.create = function() {
++      crmStatus({},
++        crmMosaicoTemplates.create(ctrl.model)
++      )
++      .then(function(tpl) {
++        crmMosaicoTemplates.edit(tpl);
++        dialogService.close('crmMosaicoCreatePopup');
++      });
++    };
++  });
++
++})(angular, CRM.$, CRM._);
+diff --git a/ang/crmMosaico/CreateFromBaseTemplate.html b/ang/crmMosaico/CreateFromBaseTemplate.html
+new file mode 100644
+index 000000000..9e599af09
+--- /dev/null
++++ b/ang/crmMosaico/CreateFromBaseTemplate.html
+@@ -0,0 +1,28 @@
++<div id="bootstrap-theme" ng-controller="CrmMosaicoCreateFromBaseTemplate" crm-dialog="crmMosaicoCreatePopup">
++  <form name="crmMosaicoCreateForm">
++
++    <label for="new-tpl-title">{{:: ts('Title') }} <span class="crm-marker">*</span></label>
++    <input required class="form-control" id="new-tpl-title" ng-model="$ctrl.model.title">
++
++    <label for="new-tpl-category">{{:: ts('Category') }}</label>
++    <input class="form-control" id="new-tpl-category" ng-model="$ctrl.model.category_id" crm-entityref="{entity: 'OptionValue', api: {params: {option_group_id: 'mailing_template_category', is_active: 1}}, select: {allowClear:true, minimumInputLength: 0, placeholder: ts('Select')}}">
++
++    <label>{{:: ts('Base Template') }}</label>
++    <div class="form-inline">
++      <label style="width: 200px; margin-right: 10px;" class="text-center" ng-repeat="base in $ctrl.bases" ng-class="{'bg-info': base.type === $ctrl.model.base}">
++        <!-- Todo: move inline stye to css file -->
++        <img class="img-thumbnail" alt="{{ base.type }}" ng-src="{{:: base.thumbnail }}" style="
++            object-fit: cover;
++            width: 200px;
++            height: 200px;
++            object-position: top;
++            background-color: transparent;
++        ">
++        <input type="radio" name="base" required value="{{ base.type }}" ng-model="$ctrl.model.base">
++        {{:: base.type }}
++      </label>
++    </div>
++
++    <crm-dialog-button text="ts('Create Template')" icons="{primary: 'fa-check'}" on-click="$ctrl.create()" disabled="!crmMosaicoCreateForm.$valid" />
++  </form>
++</div>
+diff --git a/ang/crmMosaico/ListCtrl.js b/ang/crmMosaico/ListCtrl.js
+deleted file mode 100644
+index 47d9b3a0f..000000000
+--- a/ang/crmMosaico/ListCtrl.js
++++ /dev/null
+@@ -1,123 +0,0 @@
+-(function(angular, $, _) {
+-
+-  angular.module('crmMosaico').config(function($routeProvider) {
+-      $routeProvider.when('/mosaico-template', {
+-        controller: 'CrmMosaicoListCtrl',
+-        templateUrl: '~/crmMosaico/ListCtrl.html',
+-        resolve: {
+-          tpls: function(crmMosaicoTemplates){
+-            return crmMosaicoTemplates.whenLoaded();
+-          }
+-        }
+-      });
+-    }
+-  );
+-
+-  angular.module('crmMosaico').controller('CrmMosaicoListCtrl', function($scope, crmApi, crmStatus, crmUiHelp, crmMosaicoTemplates, CrmMosaicoIframe, crmBlocker, crmMosaicoPrompt) {
+-    // The ts() and hs() functions help load strings for this module.
+-    var ts = $scope.ts = CRM.ts('mosaico');
+-    var hs = $scope.hs = crmUiHelp({file: 'CRM/crmMosaico/ListCtrl'}); // See: templates/CRM/crmMosaico/ListCtrl.hlp
+-    var block = $scope.block = crmBlocker();
+-    $scope.crmMosaicoTemplates = crmMosaicoTemplates;
+-
+-    // Track zero or one instances of CrmMosaicoIframe.
+-    var crmMosaicoIframe, warmTplId;
+-    $scope.$on("$destroy", function() {
+-      if (crmMosaicoIframe) {
+-        crmMosaicoIframe.destroy();
+-        crmMosaicoIframe = null;
+-        warmTplId = null;
+-      }
+-    });
+-
+-    $scope.createTpl = function createTpl(tpl) {
+-      return crmMosaicoPrompt(ts('Create new template'), ts('New Template (%1)', {1: tpl.type}))
+-        .then(function(newTitle) {
+-          return crmStatus(
+-            {start: ts('Creating...'), success: ts('Created')},
+-            crmMosaicoTemplates.create({base: tpl.baseDetails.name, title: newTitle})
+-          );
+-        })
+-        .then(function(newTpl) {
+-          return $scope.editTpl(newTpl);
+-        });
+-    };
+-
+-    $scope.copyTpl = function copyTpl(tpl) {
+-      return crmMosaicoPrompt(ts('Create new template'), ts('Copy of %1', {1: tpl.title}))
+-        .then(function(newTitle) {
+-          return crmStatus(
+-            {start: ts('Copying...'), success: ts('Copied')},
+-            crmMosaicoTemplates.clone({id: tpl.id, title: newTitle})
+-          );
+-        })
+-        .then(function(newTpl) {
+-          return $scope.editTpl(newTpl);
+-        });
+-    };
+-
+-    $scope.renameTpl = function renameTpl(tpl) {
+-      crmMosaicoPrompt(ts('Edit template name'), tpl.title)
+-        .then(function(newTitle) {
+-          return crmStatus(
+-            {start: ts('Saving...'), success: ts('Saved')},
+-            crmApi('MosaicoTemplate', 'create', {id: tpl.id, title: newTitle}));
+-        })
+-        .then(function(r){
+-          tpl.title = r.values[tpl.id].title;
+-        });
+-    };
+-
+-    $scope.editTpl = function editTpl(tpl) {
+-      if (block.check()) {
+-        return;
+-      }
+-
+-      if (warmTplId == tpl.id) {
+-        crmMosaicoIframe.show();
+-        return;
+-      }
+-
+-      warmTplId = tpl.id;
+-      var openPromise = crmMosaicoTemplates.getFull(tpl).then(function(fullTpl) {
+-        if (crmMosaicoIframe) crmMosaicoIframe.destroy();
+-
+-        crmMosaicoIframe = new CrmMosaicoIframe({
+-          model: {
+-            template: tpl.baseDetails.path,
+-            metadata: fullTpl.metadata,
+-            content: fullTpl.content
+-          },
+-          actions: {
+-            sync: function(ko, viewModel) {
+-              var savePromise = crmMosaicoTemplates.save(tpl.id, viewModel);
+-              crmStatus({start: ts('Saving'), success: ts('Saved')}, savePromise);
+-            },
+-            save: function(ko, viewModel) {
+-              var savePromise = crmMosaicoTemplates.save(tpl.id, viewModel).then(function() {
+-                crmMosaicoIframe.hide();
+-              });
+-              crmStatus({start: ts('Saving'), success: ts('Saved')}, savePromise);
+-            }
+-          }
+-        });
+-        return crmMosaicoIframe.open();
+-      });
+-
+-      block(crmStatus({start: ts('Loading...'), success: null}, openPromise));
+-    };
+-
+-    $scope.deleteTpl = function(tpl) {
+-      return crmStatus(
+-        {start: ts('Deleting...'), success: ts('Deleted')},
+-        crmMosaicoTemplates.delete(tpl)
+-      );
+-    };
+-
+-    $scope.canDelete = function() {
+-      return CRM.crmMosaico.canDelete;
+-    };
+-
+-  });
+-
+-})(angular, CRM.$, CRM._);
+diff --git a/ang/crmMosaico/SearchTemplateCreateButton.component.js b/ang/crmMosaico/SearchTemplateCreateButton.component.js
+new file mode 100644
+index 000000000..71b11746d
+--- /dev/null
++++ b/ang/crmMosaico/SearchTemplateCreateButton.component.js
+@@ -0,0 +1,36 @@
++(function(angular, $, _) {
++  angular.module('crmMosaico').component('crmMosaicoSearchTemplateCreateButton', {
++    bindings: {
++      tpl: '<',
++      refresh: '&'
++    },
++    templateUrl: '~/crmMosaico/SearchTemplateListButtons.html',
++    controller: function($scope, crmApi4, crmStatus, crmMosaicoTemplates) {
++      var ts = $scope.ts = CRM.ts('mosaico'),
++        ctrl = this;
++
++      this.copyTpl = function(tpl) {
++        crmStatus(
++          {start: ts('Copying...'), success: ts('Copied')},
++          crmMosaicoTemplates.clone({id: tpl.id, title: tpl.title + ' ' + ts('(copy)')})
++        )
++        .then(function(newTpl) {
++          return ctrl.editTpl(newTpl);
++        });
++      };
++
++      this.deleteTpl = function(tpl) {
++        return crmStatus(
++          {start: ts('Deleting...'), success: ts('Deleted')},
++          crmMosaicoTemplates.delete(tpl)
++        ).then(ctrl.refresh);
++      };
++
++      this.editTpl = function(tpl) {
++        crmMosaicoTemplates.edit(tpl)
++          .then(ctrl.refresh);
++      };
++
++    }
++  });
++})(angular, CRM.$, CRM._);
+diff --git a/ang/crmMosaico/SearchTemplateListButtons.component.js b/ang/crmMosaico/SearchTemplateListButtons.component.js
+index b8a214e4f..c5ea2bba0 100644
+--- a/ang/crmMosaico/SearchTemplateListButtons.component.js
++++ b/ang/crmMosaico/SearchTemplateListButtons.component.js
+@@ -5,23 +5,9 @@
+       refresh: '&'
+     },
+     templateUrl: '~/crmMosaico/SearchTemplateListButtons.html',
+-    controller: function($scope, crmApi4, crmStatus, crmMosaicoTemplates, CrmMosaicoIframe, crmBlocker) {
++    controller: function($scope, crmApi4, crmStatus, crmMosaicoTemplates) {
+       var ts = $scope.ts = CRM.ts('mosaico'),
+         ctrl = this;
+-      var block = $scope.block = crmBlocker();
+-
+-      // FIXME: Lots of duplication between this and CrmMosaicoListCtrl.
+-      // More code could be moved to the shared crmMosaicoTemplates service.
+-
+-      // Track zero or one instances of CrmMosaicoIframe.
+-      var crmMosaicoIframe, warmTplId;
+-      this.$onDestroy = function() {
+-        if (crmMosaicoIframe) {
+-          crmMosaicoIframe.destroy();
+-          crmMosaicoIframe = null;
+-          warmTplId = null;
+-        }
+-      };
+ 
+       this.copyTpl = function(tpl) {
+         crmStatus(
+@@ -41,44 +27,8 @@
+       };
+ 
+       this.editTpl = function(tpl) {
+-        if (block.check()) {
+-          return;
+-        }
+-
+-        if (warmTplId === tpl.id) {
+-          crmMosaicoIframe.show();
+-          return;
+-        }
+-
+-        warmTplId = tpl.id;
+-        var openPromise = crmMosaicoTemplates.getFull(tpl).then(function(fullTpl) {
+-          if (crmMosaicoIframe) crmMosaicoIframe.destroy();
+-          // FIXME: baseDetails seems like redundant data
+-          var base = tpl.baseDetails || crmMosaicoTemplates.getBase(tpl.base);
+-          crmMosaicoIframe = new CrmMosaicoIframe({
+-            model: {
+-              template: base.path,
+-              metadata: fullTpl.metadata,
+-              content: fullTpl.content
+-            },
+-            actions: {
+-              sync: function(ko, viewModel) {
+-                var savePromise = crmMosaicoTemplates.save(tpl.id, viewModel);
+-                crmStatus({start: ts('Saving'), success: ts('Saved')}, savePromise);
+-              },
+-              save: function(ko, viewModel) {
+-                var savePromise = crmMosaicoTemplates.save(tpl.id, viewModel).then(function() {
+-                  crmMosaicoIframe.hide();
+-                });
+-                ctrl.refresh();
+-                crmStatus({start: ts('Saving'), success: ts('Saved')}, savePromise);
+-              }
+-            }
+-          });
+-          return crmMosaicoIframe.open();
+-        });
+-
+-        block(crmStatus({start: ts('Loading...'), success: null}, openPromise));
++        crmMosaicoTemplates.edit(tpl)
++          .then(ctrl.refresh);
+       };
+ 
+     }
+diff --git a/ang/crmMosaico/Templates.js b/ang/crmMosaico/Templates.js
+index e11a3555a..6d2248f8c 100644
+--- a/ang/crmMosaico/Templates.js
++++ b/ang/crmMosaico/Templates.js
+@@ -1,8 +1,12 @@
+ (function (angular, $, _) {
+ 
+-  angular.module('crmMosaico').factory('crmMosaicoTemplates', function ($q, crmApi, $timeout) {
++  angular.module('crmMosaico').factory('crmMosaicoTemplates', function ($q, crmApi, $timeout, CrmMosaicoIframe, crmBlocker, crmStatus) {
+     var ts = CRM.ts(null);
+     var cache = {};
++    var block = crmBlocker();
++
++    // Track zero or one instances of CrmMosaicoIframe.
++    var currentIframe, warmTplId;
+ 
+     function filterBase(base) {
+       return {
+@@ -50,6 +54,15 @@
+       return tpl;
+     }
+ 
++    function getFull(template) {
++      if (!template.isBase) {
++        return crmApi('MosaicoTemplate', 'getsingle', {id: template.id});
++      }
++      return $q(function(resolve){
++        $timeout(function(){resolve({});}, 100);
++      });
++    }
++
+     return {
+       // Return Promise<void>
+       whenLoaded: function whenLoaded() {
+@@ -82,14 +95,7 @@
+         });
+       },
+       // Load the full content of a template (HTML, metadata, content -- as applicable).
+-      getFull: function getFull(template) {
+-        if (!template.isBase) {
+-          return crmApi('MosaicoTemplate', 'getsingle', {id: template.id});
+-        }
+-        return $q(function(resolve){
+-          $timeout(function(){resolve({});}, 100);
+-        });
+-      },
++      getFull: getFull,
+       getBases: function() {
+         return cache.bases.filter((template) => !template.isHidden);
+       },
+@@ -97,9 +103,6 @@
+       getAll: function() {
+         return cache.all.filter((template) => !template.isHidden);
+       },
+-      getBase: function(baseName) {
+-        return cache.basesByName[baseName];
+-      },
+       save: function(tplId, viewModel) {
+         viewModel.metadata.changed = Date.now();
+         return crmApi('MosaicoTemplate', 'create', {
+@@ -108,6 +111,58 @@
+           metadata: viewModel.exportMetadata(),
+           content: viewModel.exportJSON()
+         });
++      },
++      edit: function(tpl) {
++        function save(tplId, viewModel) {
++          viewModel.metadata.changed = Date.now();
++          return crmApi('MosaicoTemplate', 'create', {
++            id: tplId,
++            html: viewModel.exportHTML(),
++            metadata: viewModel.exportMetadata(),
++            content: viewModel.exportJSON()
++          });
++        }
++
++        return $q(function(resolve, reject) {
++          if (block.check()) {
++            return reject({});
++          }
++
++          if (warmTplId === tpl.id) {
++            currentIframe.show();
++            return reject({});
++          }
++
++          warmTplId = tpl.id;
++          var openPromise = getFull(tpl).then(function(fullTpl) {
++            if (currentIframe) currentIframe.destroy();
++            // FIXME: baseDetails seems like redundant data
++            var base = tpl.baseDetails || cache.basesByName[tpl.base];
++            currentIframe = new CrmMosaicoIframe({
++              model: {
++                template: base.path,
++                metadata: fullTpl.metadata,
++                content: fullTpl.content
++              },
++              actions: {
++                sync: function(ko, viewModel) {
++                  var savePromise = save(tpl.id, viewModel);
++                  crmStatus({start: ts('Saving'), success: ts('Saved')}, savePromise);
++                },
++                save: function(ko, viewModel) {
++                  var savePromise = save(tpl.id, viewModel).then(function(result) {
++                    currentIframe.hide();
++                    resolve(result);
++                  });
++                  crmStatus({start: ts('Saving'), success: ts('Saved')}, savePromise);
++                }
++              }
++            });
++            return currentIframe.open();
++          });
++
++          block(crmStatus({start: ts('Loading...'), success: null}, openPromise));
++        });
+       }
+     };
+   });
+diff --git a/info.xml b/info.xml
+index 39ad73c69..3475ed8c8 100644
+--- a/info.xml
++++ b/info.xml
+@@ -19,7 +19,7 @@
+   <version>2.8</version>
+   <develStage>stable</develStage>
+   <compatibility>
+-    <ver>5.45</ver>
++    <ver>5.46</ver>
+   </compatibility>
+   <requires>
+     <ext>org.civicrm.flexmailer</ext>
+diff --git a/templates/CRM/crmMosaico/ListCtrl.hlp b/templates/CRM/crmMosaico/ListCtrl.hlp
+deleted file mode 100644
+index ddea10c3e..000000000
+--- a/templates/CRM/crmMosaico/ListCtrl.hlp
++++ /dev/null
+@@ -1,3 +0,0 @@
+-{htxt id="full_name"}
+-{ts}The contact name  should be divided in two parts, the first name and last name.{/ts}
+-{/htxt}
+
+From e1f13fe9ed74ced89af3c486182aecb371467d9c Mon Sep 17 00:00:00 2001
+From: Coleman Watts <coleman@civicrm.org>
+Date: Thu, 13 Jan 2022 11:02:10 -0500
+Subject: [PATCH 11/11] Filter by category on New Mailing screen
+
+---
+ ang/crmMosaico.bootstrap/BlockDesign.html | 15 ++++++++++-----
+ ang/crmMosaico.crmstar/BlockDesign.html   | 14 +++++++++-----
+ ang/crmMosaico/MixinCtrl.js               |  3 +++
+ ang/crmMosaico/Templates.js               | 15 +++++++++++++--
+ 4 files changed, 35 insertions(+), 12 deletions(-)
+
+diff --git a/ang/crmMosaico.bootstrap/BlockDesign.html b/ang/crmMosaico.bootstrap/BlockDesign.html
+index 3ce3114eb..726da7f89 100644
+--- a/ang/crmMosaico.bootstrap/BlockDesign.html
++++ b/ang/crmMosaico.bootstrap/BlockDesign.html
+@@ -7,11 +7,16 @@
+          on-item-reset="mosaicoCtrl.reset(mailing)"
+          ng-show="!!mailing.template_options.mosaicoTemplate">
+     </div>
+-    <div ng-repeat="template in mosaicoCtrl.templates" ng-show="!mailing.template_options.mosaicoTemplate">
+-      <div class="col-xs-4 col-md-3"
+-           crm-mosaico-template-item="{state:'select', title: template.title, subtitle: (template.isBase ? template.type : ''), img: template.thumbnail}"
+-           on-item-click="mosaicoCtrl.select(mailing, template)">
++    <div ng-if="!mailing.template_options.mosaicoTemplate && mosaicoCtrl.templates.length">
++      <div class="form-inline">
++        <input class="form-control" ng-model="mosaicoCtrl.selectedCategory" ng-change="mosaicoCtrl.categoryFilter = mosaicoCtrl.categoryFilters[mosaicoCtrl.selectedCategory].filter" crm-ui-select="{data: mosaicoCtrl.categoryFilters, placeholder: ts('All Categories')}">
++      </div>
++      <div ng-repeat="template in mosaicoCtrl.templates | filter:mosaicoCtrl.categoryFilter">
++        <div class="col-xs-4 col-md-3"
++             crm-mosaico-template-item="{state:'select', title: (template.base ? template.title : template.type), subtitle: template.category, img: template.thumbnail}"
++             on-item-click="mosaicoCtrl.select(mailing, template)">
++        </div>
+       </div>
+     </div>
+   </div>
+-</div>
+\ No newline at end of file
++</div>
+diff --git a/ang/crmMosaico.crmstar/BlockDesign.html b/ang/crmMosaico.crmstar/BlockDesign.html
+index 4e5ef1a94..1bb217ccd 100644
+--- a/ang/crmMosaico.crmstar/BlockDesign.html
++++ b/ang/crmMosaico.crmstar/BlockDesign.html
+@@ -10,11 +10,15 @@
+        ng-show="!!mailing.template_options.mosaicoTemplate">
+   </div>
+ 
+-  <div ng-repeat="template in mosaicoCtrl.templates"
+-       ng-show="!mailing.template_options.mosaicoTemplate">
+-    <div class="crm-mosaico-unselected"
+-         crm-mosaico-template-item="{state:'select', title: template.title, subtitle: (template.isBase ? template.type : ''), img: template.thumbnail}"
+-         on-item-click="mosaicoCtrl.select(mailing, template)">
++  <div ng-if="!mailing.template_options.mosaicoTemplate && mosaicoCtrl.templates.length">
++    <div>
++      <input ng-model="mosaicoCtrl.selectedCategory" ng-change="mosaicoCtrl.categoryFilter = mosaicoCtrl.categoryFilters[mosaicoCtrl.selectedCategory].filter" crm-ui-select="{data: mosaicoCtrl.categoryFilters, placeholder: ts('All Categories')}">
++    </div>
++    <div ng-repeat="template in mosaicoCtrl.templates | filter:mosaicoCtrl.categoryFilter">
++      <div class="crm-mosaico-unselected"
++           crm-mosaico-template-item="{state:'select', title: (template.base ? template.title : template.type), subtitle: template.category, img: template.thumbnail}"
++           on-item-click="mosaicoCtrl.select(mailing, template)">
++      </div>
+     </div>
+   </div>
+ 
+diff --git a/ang/crmMosaico/MixinCtrl.js b/ang/crmMosaico/MixinCtrl.js
+index 8c3921521..4aea10def 100644
+--- a/ang/crmMosaico/MixinCtrl.js
++++ b/ang/crmMosaico/MixinCtrl.js
+@@ -115,6 +115,9 @@
+ 
+     crmMosaicoTemplates.whenLoaded().then(function(){
+       $scope.mosaicoCtrl.templates = crmMosaicoTemplates.getAll();
++      $scope.mosaicoCtrl.categoryFilters = _.transform(crmMosaicoTemplates.getCategories(), function(filters, category) {
++        filters.push({id: filters.length, text: category.label, filter: {category_id: category.value}});
++      }, [{id: 0, text: ts('Base Template'), filter: {isBase: true}}]);
+     });
+ 
+     $scope.$on("$destroy", function() {
+diff --git a/ang/crmMosaico/Templates.js b/ang/crmMosaico/Templates.js
+index 6d2248f8c..337637c35 100644
+--- a/ang/crmMosaico/Templates.js
++++ b/ang/crmMosaico/Templates.js
+@@ -17,6 +17,8 @@
+         thumbnail: base.thumbnail,
+         path: base.path,
+         isBase: true,
++        category_id: null,
++        category: ts('Base Template'),
+         isHidden: base.is_hidden
+       };
+     }
+@@ -29,14 +31,20 @@
+         type: base.title,
+         thumbnail: base.thumbnail,
+         path: base.path,
++        base: tpl.base,
++        category_id: tpl.category_id,
++        category: tpl.category_id && cache.categoriesByValue[tpl.category_id] ? cache.categoriesByValue[tpl.category_id].label : '',
+         isBase: false
+       };
+     }
+ 
+     crmApi({
+-      bases: ['MosaicoBaseTemplate', 'get', {sequential: 1, 'options': {'sort': 'title ASC', 'limit': 0}}],
+-      templates: ['MosaicoTemplate', 'get', {sequential: 1, 'options': {'sort': 'title ASC', 'limit': 0}, return:['title', 'base']}]
++      bases: ['MosaicoBaseTemplate', 'get', {sequential: 1, options: {sort: 'title ASC', limit: 0}}],
++      templates: ['MosaicoTemplate', 'get', {sequential: 1, options: {sort: 'title ASC', limit: 0}, return: ['title', 'base', 'category_id']}],
++      categories: ['OptionValue', 'get', {sequential: 1, is_active: 1, option_group_id: 'mailing_template_category', options: {sort: 'weight ASC', limit: 0}, return: ['value', 'label']}]
+     }).then(function(r){
++      cache.categories = r.categories.values;
++      cache.categoriesByValue = _.indexBy(r.categories.values, 'value');
+       cache.basesByName = _.indexBy(r.bases.values, 'name');
+       cache.bases = _.map(r.bases.values, filterBase);
+       cache.configured = _.map(r.templates.values, filterTemplate);
+@@ -103,6 +111,9 @@
+       getAll: function() {
+         return cache.all.filter((template) => !template.isHidden);
+       },
++      getCategories: function() {
++        return cache.categories;
++      },
+       save: function(tplId, viewModel) {
+         viewModel.metadata.changed = Date.now();
+         return crmApi('MosaicoTemplate', 'create', {

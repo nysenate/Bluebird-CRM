@@ -84,6 +84,7 @@ class CRM_Dedupe_BAO_DedupeRuleGroup extends CRM_Dedupe_DAO_DedupeRuleGroup {
         'civicrm_note',
         'civicrm_openid',
         'civicrm_phone',
+        'civicrm_website',
       ];
 
       foreach (['Individual', 'Organization', 'Household'] as $ctype) {
@@ -114,7 +115,7 @@ class CRM_Dedupe_BAO_DedupeRuleGroup extends CRM_Dedupe_DAO_DedupeRuleGroup {
             continue;
           }
           foreach ($cg['fields'] as $cf) {
-            $fields[$ctype][$cg['table_name']][$cf['column_name']] = $cf['label'];
+            $fields[$ctype][$cg['table_name']][$cf['column_name']] = $cg['title'] . ' : ' . $cf['label'];
           }
         }
       }

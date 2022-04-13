@@ -47,7 +47,8 @@ class CRM_Pledge_Form_PledgeView extends CRM_Core_Form {
     }
 
     // handle custom data.
-    $groupTree = CRM_Core_BAO_CustomGroup::getTree('Pledge', NULL, $params['id']);
+    $groupTree = CRM_Core_BAO_CustomGroup::getTree('Pledge', NULL, $params['id'], NULL, [], NULL,
+      TRUE, NULL, FALSE, CRM_Core_Permission::VIEW);
     CRM_Core_BAO_CustomGroup::buildCustomDataView($this, $groupTree, FALSE, NULL, NULL, NULL, $params['id']);
 
     if (!empty($values['contribution_page_id'])) {
@@ -98,7 +99,7 @@ class CRM_Pledge_Form_PledgeView extends CRM_Core_Form {
       $displayName .= ' (' . ts('default organization') . ')';
     }
     // omitting contactImage from title for now since the summary overlay css doesn't work outside of our crm-container
-    CRM_Utils_System::setTitle(ts('View Pledge by') . ' ' . $displayName);
+    $this->setTitle(ts('View Pledge by') . ' ' . $displayName);
 
     // do check for campaigns
     if ($campaignId = CRM_Utils_Array::value('campaign_id', $values)) {

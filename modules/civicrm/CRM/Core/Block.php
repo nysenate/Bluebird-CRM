@@ -440,6 +440,7 @@ class CRM_Core_Block {
     }
     $value['title'] = $short['title'];
     $value['ref'] = $short['ref'] ?? '';
+    $value['shortCuts'] = [];
     if (!empty($short['shortCuts'])) {
       foreach ($short['shortCuts'] as $shortCut) {
         $value['shortCuts'][] = self::setShortcutValues($shortCut);
@@ -551,6 +552,7 @@ class CRM_Core_Block {
     if ($config->isUpgradeMode()) {
       return NULL;
     }
+    CRM_Core_Smarty::singleton()->ensureVariablesAreAssigned(['langSwitch', 'breadcrumb', 'pageTitle']);
 
     if (!self::getProperty($id, 'active')) {
       return NULL;

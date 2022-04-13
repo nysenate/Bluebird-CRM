@@ -10,37 +10,42 @@
  +--------------------------------------------------------------------+
  */
 
-/**
- *
- * @package CRM
- * @copyright CiviCRM LLC https://civicrm.org/licensing
- */
-
-
 namespace Civi\Api4\Service\Spec;
 
+/**
+ * Contains APIv4 field metadata
+ */
 class FieldSpec {
+
+  // BasicSpecTrait: name, title, description
+  use \Civi\Schema\Traits\BasicSpecTrait;
+
+  // DataTypeSpecTrait: dataType, serialize, fkEntity
+  use \Civi\Schema\Traits\DataTypeSpecTrait;
+
+  // OptionsSpecTrait: options, optionsCallback
+  use \Civi\Schema\Traits\OptionsSpecTrait;
+
+  // GuiSpecTrait: label, inputType, inputAttrs, helpPre, helpPost
+  use \Civi\Schema\Traits\GuiSpecTrait;
+
+  // SqlSpecTrait tableName, columnName, operators, sqlFilters
+  use \Civi\Schema\Traits\SqlSpecTrait;
+
+  // ArrayFormatTrait: toArray():array, loadArray($array)
+  use \Civi\Schema\Traits\ArrayFormatTrait;
+
   /**
    * @var mixed
    */
   public $defaultValue;
 
   /**
-   * @var string
-   */
-  public $name;
-
-  /**
-   * @var string
-   */
-  public $label;
-
-  /**
-   * @var string
-   */
-  public $title;
-
-  /**
+   * Meta-type indicating how this field was defined/implemented.
+   *
+   * Ex: 'Field' (normal/standard DB field), 'Custom' (auxiliary DB field),
+   * 'Filter' (read-oriented filter option), 'Extra' (special/programmatic field).
+   *
    * @var string
    */
   public $type = 'Extra';
@@ -49,11 +54,6 @@ class FieldSpec {
    * @var string
    */
   public $entity;
-
-  /**
-   * @var string
-   */
-  public $description;
 
   /**
    * @var bool
@@ -66,69 +66,9 @@ class FieldSpec {
   public $requiredIf;
 
   /**
-   * @var array|bool
-   */
-  public $options;
-
-  /**
-   * @var string
-   */
-  public $tableName;
-
-  /**
-   * @var callable
-   */
-  private $optionsCallback;
-
-  /**
-   * @var string
-   */
-  public $dataType;
-
-  /**
-   * @var string
-   */
-  public $inputType;
-
-  /**
-   * @var array
-   */
-  public $inputAttrs = [];
-
-  /**
-   * @var string[]
-   */
-  public $operators;
-
-  /**
-   * @var string
-   */
-  public $fkEntity;
-
-  /**
-   * @var int
-   */
-  public $serialize;
-
-  /**
-   * @var string
-   */
-  public $helpPre;
-
-  /**
-   * @var string
-   */
-  public $helpPost;
-
-  /**
    * @var array
    */
   public $permission;
-
-  /**
-   * @var string
-   */
-  public $columnName;
 
   /**
    * @var bool
@@ -139,23 +79,6 @@ class FieldSpec {
    * @var callable[]
    */
   public $outputFormatters;
-
-
-  /**
-   * @var callable[]
-   */
-  public $sqlFilters;
-
-  /**
-   * Aliases for the valid data types
-   *
-   * @var array
-   */
-  public static $typeAliases = [
-    'Int' => 'Integer',
-    'Link' => 'Url',
-    'Memo' => 'Text',
-  ];
 
   /**
    * @param string $name
@@ -187,60 +110,6 @@ class FieldSpec {
   }
 
   /**
-   * @return string
-   */
-  public function getName() {
-    return $this->name;
-  }
-
-  /**
-   * @param string $name
-   *
-   * @return $this
-   */
-  public function setName($name) {
-    $this->name = $name;
-
-    return $this;
-  }
-
-  /**
-   * @return string
-   */
-  public function getLabel() {
-    return $this->label;
-  }
-
-  /**
-   * @param string $label
-   *
-   * @return $this
-   */
-  public function setLabel($label) {
-    $this->label = $label;
-
-    return $this;
-  }
-
-  /**
-   * @return string
-   */
-  public function getTitle() {
-    return $this->title;
-  }
-
-  /**
-   * @param string $title
-   *
-   * @return $this
-   */
-  public function setTitle($title) {
-    $this->title = $title;
-
-    return $this;
-  }
-
-  /**
    * @param string $entity
    *
    * @return $this
@@ -256,24 +125,6 @@ class FieldSpec {
    */
   public function getEntity() {
     return $this->entity;
-  }
-
-  /**
-   * @return string
-   */
-  public function getDescription() {
-    return $this->description;
-  }
-
-  /**
-   * @param string $description
-   *
-   * @return $this
-   */
-  public function setDescription($description) {
-    $this->description = $description;
-
-    return $this;
   }
 
   /**
@@ -313,50 +164,6 @@ class FieldSpec {
   }
 
   /**
-   * @return string
-   */
-  public function getDataType() {
-    return $this->dataType;
-  }
-
-  /**
-   * @param $dataType
-   *
-   * @return $this
-   * @throws \Exception
-   */
-  public function setDataType($dataType) {
-    if (array_key_exists($dataType, self::$typeAliases)) {
-      $dataType = self::$typeAliases[$dataType];
-    }
-
-    if (!in_array($dataType, $this->getValidDataTypes())) {
-      throw new \Exception(sprintf('Invalid data type "%s', $dataType));
-    }
-
-    $this->dataType = $dataType;
-
-    return $this;
-  }
-
-  /**
-   * @return int
-   */
-  public function getSerialize() {
-    return $this->serialize;
-  }
-
-  /**
-   * @param int|null $serialize
-   * @return $this
-   */
-  public function setSerialize($serialize) {
-    $this->serialize = $serialize;
-
-    return $this;
-  }
-
-  /**
    * @param array $permission
    * @return $this
    */
@@ -370,50 +177,6 @@ class FieldSpec {
    */
   public function getPermission() {
     return $this->permission;
-  }
-
-  /**
-   * @return string
-   */
-  public function getInputType() {
-    return $this->inputType;
-  }
-
-  /**
-   * @param string $inputType
-   * @return $this
-   */
-  public function setInputType($inputType) {
-    $this->inputType = $inputType;
-
-    return $this;
-  }
-
-  /**
-   * @return array
-   */
-  public function getInputAttrs() {
-    return $this->inputAttrs;
-  }
-
-  /**
-   * @param array $inputAttrs
-   * @return $this
-   */
-  public function setInputAttrs($inputAttrs) {
-    $this->inputAttrs = $inputAttrs;
-
-    return $this;
-  }
-
-  /**
-   * @param string[] $operators
-   * @return $this
-   */
-  public function setOperators($operators) {
-    $this->operators = $operators;
-
-    return $this;
   }
 
   /**
@@ -440,29 +203,6 @@ class FieldSpec {
   }
 
   /**
-   * @param callable[] $sqlFilters
-   * @return $this
-   */
-  public function setSqlFilters($sqlFilters) {
-    $this->sqlFilters = $sqlFilters;
-
-    return $this;
-  }
-
-  /**
-   * @param callable $sqlFilter
-   * @return $this
-   */
-  public function addSqlFilter($sqlFilter) {
-    if (!$this->sqlFilters) {
-      $this->sqlFilters = [];
-    }
-    $this->sqlFilters[] = $sqlFilter;
-
-    return $this;
-  }
-
-  /**
    * @param string $type
    * @return $this
    */
@@ -480,150 +220,6 @@ class FieldSpec {
     $this->readonly = (bool) $readonly;
 
     return $this;
-  }
-
-  /**
-   * @param string|NULL $helpPre
-   */
-  public function setHelpPre($helpPre) {
-    $this->helpPre = is_string($helpPre) && strlen($helpPre) ? $helpPre : NULL;
-  }
-
-  /**
-   * @param string|NULL $helpPost
-   */
-  public function setHelpPost($helpPost) {
-    $this->helpPost = is_string($helpPost) && strlen($helpPost) ? $helpPost : NULL;
-  }
-
-  /**
-   * @param string $tableName
-   * @return $this
-   */
-  public function setTableName($tableName) {
-    $this->tableName = $tableName;
-
-    return $this;
-  }
-
-  /**
-   * @return string
-   */
-  public function getTableName() {
-    return $this->tableName;
-  }
-
-  /**
-   * Add valid types that are not not part of \CRM_Utils_Type::dataTypes
-   *
-   * @return array
-   */
-  private function getValidDataTypes() {
-    $extraTypes = ['Boolean', 'Text', 'Float', 'Url', 'Array', 'Blob', 'Mediumblob'];
-    $extraTypes = array_combine($extraTypes, $extraTypes);
-
-    return array_merge(\CRM_Utils_Type::dataTypes(), $extraTypes);
-  }
-
-  /**
-   * @param array $values
-   * @param array|bool $return
-   * @param bool $checkPermissions
-   * @return array
-   */
-  public function getOptions($values = [], $return = TRUE, $checkPermissions = TRUE) {
-    if (!isset($this->options)) {
-      if ($this->optionsCallback) {
-        $this->options = ($this->optionsCallback)($this, $values, $return, $checkPermissions);
-      }
-      else {
-        $this->options = FALSE;
-      }
-    }
-    return $this->options;
-  }
-
-  /**
-   * @param array|bool $options
-   *
-   * @return $this
-   */
-  public function setOptions($options) {
-    $this->options = $options;
-    return $this;
-  }
-
-  /**
-   * @param callable $callback
-   *
-   * @return $this
-   */
-  public function setOptionsCallback($callback) {
-    $this->optionsCallback = $callback;
-    return $this;
-  }
-
-  /**
-   * @return string
-   */
-  public function getFkEntity() {
-    return $this->fkEntity;
-  }
-
-  /**
-   * @param string $fkEntity
-   *
-   * @return $this
-   */
-  public function setFkEntity($fkEntity) {
-    $this->fkEntity = $fkEntity;
-
-    return $this;
-  }
-
-  /**
-   * @return string|NULL
-   */
-  public function getColumnName(): ?string {
-    return $this->columnName;
-  }
-
-  /**
-   * @param string|null $columnName
-   *
-   * @return $this
-   */
-  public function setColumnName(?string $columnName) {
-    $this->columnName = $columnName;
-    return $this;
-  }
-
-  /**
-   * Gets all public variables, converted to snake_case
-   *
-   * @return array
-   */
-  public function toArray() {
-    // Anonymous class will only have access to public vars
-    $getter = new class {
-
-      function getPublicVars($object) {
-        return get_object_vars($object);
-      }
-
-    };
-
-    // If getOptions was never called, make options a boolean
-    if (!isset($this->options)) {
-      $this->options = isset($this->optionsCallback);
-    }
-
-    $ret = [];
-    foreach ($getter->getPublicVars($this) as $key => $val) {
-      $key = strtolower(preg_replace('/(?=[A-Z])/', '_$0', $key));
-      $ret[$key] = $val;
-    }
-    return $ret;
   }
 
 }

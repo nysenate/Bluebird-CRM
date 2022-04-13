@@ -1,0 +1,16 @@
+form#bootstrap-theme {
+  padding: 20px;
+}
+div.crm-search-display-pager {
+  padding-top: 10px;
+}
+af-field[name=base] {
+  display: none !important;
+}
+af-field {
+  margin-right: 6px !important;
+}
+div.crm-search-display-table th:nth-child(2),
+div.crm-search-display-table td:nth-child(2) {
+  display: none !important;
+}

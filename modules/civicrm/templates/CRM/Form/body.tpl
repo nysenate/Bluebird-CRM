@@ -7,11 +7,11 @@
  | and copyright information, see https://civicrm.org/licensing       |
  +--------------------------------------------------------------------+
 *}
-{if $form.javascript}
+{if !empty($form.javascript)}
   {$form.javascript}
 {/if}
 
-{if $form.hidden}
+{if !empty($form.hidden)}
   <div>{$form.hidden}</div>
 {/if}
 
@@ -31,7 +31,7 @@
    </div>
 {/if}
 
-{* Add all the form elements sent in by the hook  - formerly used by civiDiscount, now deprecated*}
+{* Add all the form elements sent in by the hook - used by civiDiscount and a few other extensions *}
 {if $beginHookFormElements}
   <table class="form-layout-compressed">
   {foreach from=$beginHookFormElements key=dontCare item=hookFormElement}

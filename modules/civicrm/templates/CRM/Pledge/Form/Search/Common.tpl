@@ -77,10 +77,10 @@
 </tr>
 
 {* campaign in pledge search *}
-{include file="CRM/Campaign/Form/addCampaignToComponent.tpl"
-campaignContext="componentSearch" campaignTrClass='' campaignTdClass=''}
+{include file="CRM/Campaign/Form/addCampaignToSearch.tpl"
+campaignTrClass='' campaignTdClass=''}
 
-{if $pledgeGroupTree}
+{if !empty($pledgeGroupTree)}
 <tr>
   <td colspan="2">
   {include file="CRM/Custom/Form/Search.tpl" groupTree=$pledgeGroupTree showHideLinks=false}

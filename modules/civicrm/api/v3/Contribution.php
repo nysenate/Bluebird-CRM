@@ -15,6 +15,8 @@
  * @package CiviCRM_APIv3
  */
 
+use Civi\Api4\Contribution;
+
 /**
  * Add or update a Contribution.
  *
@@ -40,18 +42,14 @@ function civicrm_api3_contribution_create($params) {
   }
   $params['skipCleanMoney'] = TRUE;
 
-  if (!empty($params['check_permissions']) && CRM_Financial_BAO_FinancialType::isACLFinancialTypeStatus()) {
-    if (empty($params['id'])) {
-      $op = CRM_Core_Action::ADD;
-    }
-    else {
-      if (empty($params['financial_type_id'])) {
-        $params['financial_type_id'] = CRM_Core_DAO::getFieldValue('CRM_Contribute_DAO_Contribution', $params['id'], 'financial_type_id');
-      }
-      $op = CRM_Core_Action::UPDATE;
-    }
-    CRM_Financial_BAO_FinancialType::getAvailableFinancialTypes($types, $op);
-    if (!array_key_exists($params['financial_type_id'], $types)) {
+  if (!empty($params['check_permissions'])) {
+    // Check acls on this entity. Note that we pass in financial type id, if we have it
+    // since we know this is checked by acls. In v4 we do something more generic.
+    if (!Contribution::checkAccess()
+      ->setAction(empty($params['id']) ? 'create' : 'update')
+      ->addValue('id', $params['id'] ?? NULL)
+      ->addValue('financial_type_id', $params['financial_type_id'] ?? NULL)
+      ->execute()->first()['access']) {
       throw new API_Exception('You do not have permission to create this contribution');
     }
   }
@@ -70,6 +68,18 @@ function civicrm_api3_contribution_create($params) {
     CRM_Contribute_BAO_Contribution::checkFinancialTypeChange($params['financial_type_id'], $params['id'], $error);
     if (array_key_exists('financial_type_id', $error)) {
       throw new API_Exception($error['financial_type_id']);
+    }
+  }
+  if (!isset($params['tax_amount']) && empty($params['line_item'])
+    && empty($params['skipLineItem'])
+    && empty($params['id'])
+  ) {
+    $taxRates = CRM_Core_PseudoConstant::getTaxRates();
+    $taxRate = $taxRates[$params['financial_type_id']] ?? 0;
+    if ($taxRate) {
+      // Be afraid - historically if a contribution was tax then the passed in amount is EXCLUSIVE
+      $params['tax_amount'] = $params['total_amount'] * ($taxRate / 100);
+      $params['total_amount'] += $params['tax_amount'];
     }
   }
   _civicrm_api3_contribution_create_legacy_support_45($params);

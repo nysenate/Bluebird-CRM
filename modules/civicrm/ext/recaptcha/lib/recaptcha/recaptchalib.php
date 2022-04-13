@@ -67,7 +67,7 @@ function _recaptcha_qsencode ($data) {
 function _recaptcha_http_post($host, $path, $data) {
   $client = new Client();
   try {
-    $response = $client->request('POST', $host . '/' . $path, ['query' => $data]);
+    $response = $client->request('POST', $host . '/' . $path, ['query' => $data, 'timeout' => \Civi::settings()->get('http_timeout')]);
   }
   catch (Exception $e) {
     return '';
@@ -155,8 +155,8 @@ function recaptcha_check_answer ($privkey, $remoteip, $response, $extra_params =
   $answers = json_decode($validationResponse, TRUE);
   $recaptcha_response = new ReCaptchaResponse();
 
-  $recaptcha_response->is_valid = $answers['success'];
-  $recaptcha_response->error = $answers['error-codes'];
+  $recaptcha_response->is_valid = $answers['success'] ?? NULL;
+  $recaptcha_response->error = $answers['error-codes'] ?? NULL;
   return $recaptcha_response;
 
 }

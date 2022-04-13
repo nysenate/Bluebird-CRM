@@ -1,0 +1,14 @@
+<div>
+  <button type="button" class="btn btn-xs btn-primary" ng-click="$ctrl.editTpl($ctrl.tpl)">
+    <i class="crm-i fa-pencil"></i>
+    {{:: ts('Edit') }}
+  </button>
+  <button type="button" class="btn btn-xs btn-primary" ng-click="$ctrl.copyTpl($ctrl.tpl)">
+    <i class="crm-i fa-copy"></i>
+    {{:: ts('Copy') }}
+  </button>
+  <button type="button" class="btn btn-xs btn-danger" crm-confirm="{type: 'delete', obj: $ctrl.tpl}" on-yes="$ctrl.deleteTpl($ctrl.tpl)">
+    <i class="crm-i fa-trash"></i>
+    {{:: ts('Delete') }}
+  </button>
+</div>

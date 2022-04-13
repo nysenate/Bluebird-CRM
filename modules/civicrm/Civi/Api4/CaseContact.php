@@ -1,5 +1,4 @@
 <?php
-
 /*
  +--------------------------------------------------------------------+
  | Copyright CiviCRM LLC. All rights reserved.                        |
@@ -9,14 +8,6 @@
  | and copyright information, see https://civicrm.org/licensing       |
  +--------------------------------------------------------------------+
  */
-
-/**
- *
- * @package CRM
- * @copyright CiviCRM LLC https://civicrm.org/licensing
- */
-
-
 namespace Civi\Api4;
 
 /**
@@ -26,6 +17,7 @@ namespace Civi\Api4;
  *
  * @searchable bridge
  * @see \Civi\Api4\Case
+ * @since 5.37
  * @package Civi\Api4
  */
 class CaseContact extends Generic\DAOEntity {
@@ -33,6 +25,26 @@ class CaseContact extends Generic\DAOEntity {
 
   protected static function getEntityTitle($plural = FALSE) {
     return $plural ? ts('Case Clients') : ts('Case Client');
+  }
+
+  /**
+   * @return array
+   */
+  public static function getInfo() {
+    $info = parent::getInfo();
+    $info['bridge_title'] = ts('Clients');
+    $info['bridge'] = [
+      'case_id' => [
+        'to' => 'contact_id',
+        'description' => ts('Cases with this contact as a client'),
+      ],
+      'contact_id' => [
+        'label' => ts('Clients'),
+        'to' => 'case_id',
+        'description' => ts('Clients for this case'),
+      ],
+    ];
+    return $info;
   }
 
 }

@@ -680,8 +680,9 @@ class CRM_NYSS_BAO_Integration_Website
   /*
    * process communication and contextual messages as notes
    */
-  static function processCommunication($contactId, $action, $params, $type)
-  {
+  static function processCommunication($contactId, $action, $params, $type, $timestamp) {
+    $activityDate = (!empty($timestamp)) ? date('Y-m-d H:i:s', $timestamp) : date('Y-m-d H:i:s');
+
     if ($type == 'DIRECTMSG') {
       $activityType = 'website_direct_message';
 
@@ -715,15 +716,15 @@ class CRM_NYSS_BAO_Integration_Website
       }
     }
 
-    $params = array(
+    $params = [
       'activity_type_id' => $activityType,
       'source_contact_id' => $contactId,
       'target_id' => $contactId,
       'subject' => $subject,
-      'activity_date_time' => date('Y-m-d H:i:s'),
+      'activity_date_time' => $activityDate,
       'details' => $note,
       'status_id' => 'Completed',
-    );
+    ];
 
     try {
       $result = civicrm_api3('activity', 'create', $params);

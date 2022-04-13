@@ -18,7 +18,7 @@
 /**
  *  Access Control List
  */
-class CRM_ACL_BAO_ACL extends CRM_ACL_DAO_ACL {
+class CRM_ACL_BAO_ACL extends CRM_ACL_DAO_ACL implements \Civi\Test\HookInterface {
 
   /**
    * Available operations for  pseudoconstant.
@@ -91,11 +91,12 @@ class CRM_ACL_BAO_ACL extends CRM_ACL_DAO_ACL {
    *
    * @throws \CRM_Core_Exception
    */
-  public static function getAllByContact(?int $contact_id): array {
+  public static function getAllByContact(int $contact_id): array {
     $result = [];
 
     /* First, the contact-specific ACLs, including ACL Roles */
-    if ($contact_id) {
+    // 0 would be the anonymous contact.
+    if ($contact_id > 0) {
       $query = " SELECT acl.*
       FROM civicrm_acl acl
       WHERE   acl.entity_table   = 'civicrm_contact'
@@ -188,6 +189,8 @@ SELECT acl.*
    * @param int $contactID
    *
    * @return bool
+   *
+   * @deprecated
    */
   public static function check($str, $contactID) {
     \CRM_Core_Error::deprecatedWarning(__CLASS__ . '::' . __FUNCTION__ . ' is deprecated.');
@@ -346,36 +349,7 @@ SELECT g.*
       $cache = CRM_Utils_Cache::singleton();
       $ids = $cache->get($cacheKey);
       if (!is_array($ids)) {
-        $ids = [];
-        $query = "
-SELECT   a.operation, a.object_id
-  FROM   civicrm_acl_cache c, civicrm_acl a
- WHERE   c.acl_id       =  a.id
-   AND   a.is_active    =  1
-   AND   a.object_table = %1
-   AND   a.id        IN ( $aclKeys )
-GROUP BY a.operation,a.object_id
-ORDER BY a.object_id
-";
-        $params = [1 => [$tableName, 'String']];
-        $dao = CRM_Core_DAO::executeQuery($query, $params);
-        while ($dao->fetch()) {
-          if ($dao->object_id) {
-            if (self::matchType($type, $dao->operation)) {
-              $ids[] = $dao->object_id;
-            }
-          }
-          else {
-            // this user has got the permission for all objects of this type
-            // check if the type matches
-            if (self::matchType($type, $dao->operation)) {
-              foreach ($allGroups as $id => $dontCare) {
-                $ids[] = $id;
-              }
-            }
-            break;
-          }
-        }
+        $ids = self::loadPermittedIDs((int) $contactID, $tableName, $type, $allGroups);
         $cache->set($cacheKey, $ids);
       }
     }
@@ -390,7 +364,7 @@ ORDER BY a.object_id
     if ($contactID) {
       $groupWhere = '';
       if (!empty($allGroups)) {
-        $groupWhere = " AND id IN (" . implode(',', array_keys($allGroups)) . ")";
+        $groupWhere = ' AND id IN (' . implode(',', array_keys($allGroups)) . ")";
       }
       // Contacts create hidden groups from search results. They should be able to retrieve their own.
       $ownHiddenGroupsList = CRM_Core_DAO::singleValueQuery("
@@ -459,16 +433,68 @@ ORDER BY a.object_id
    * Delete ACL records.
    *
    * @param int $aclId
-   *   ID of the ACL record to be deleted.
-   *
+   * @deprecated
    */
   public static function del($aclId) {
-    // delete all entries from the acl cache
-    CRM_ACL_BAO_Cache::resetCache();
+    self::deleteRecord(['id' => $aclId]);
+  }
 
-    $acl = new CRM_ACL_DAO_ACL();
-    $acl->id = $aclId;
-    $acl->delete();
+  /**
+   * Event fired before an action is taken on an ACL record.
+   * @param \Civi\Core\Event\PreEvent $event
+   */
+  public static function self_hook_civicrm_pre(\Civi\Core\Event\PreEvent $event) {
+    // Reset cache when deleting an ACL record
+    if ($event->action === 'delete') {
+      CRM_ACL_BAO_Cache::resetCache();
+    }
+  }
+
+  /**
+   * Load permitted acl IDs.
+   *
+   * @param int $contactID
+   * @param string $tableName
+   * @param int $type
+   * @param $allGroups
+   *
+   * @return array
+   */
+  protected static function loadPermittedIDs(int $contactID, string $tableName, int $type, $allGroups): array {
+    $ids = [];
+    $acls = CRM_ACL_BAO_Cache::build($contactID);
+    $aclKeys = array_keys($acls);
+    $aclKeys = implode(',', $aclKeys);
+    $query = "
+SELECT   a.operation, a.object_id
+  FROM   civicrm_acl_cache c, civicrm_acl a
+ WHERE   c.acl_id       =  a.id
+   AND   a.is_active    =  1
+   AND   a.object_table = %1
+   AND   a.id        IN ( $aclKeys )
+GROUP BY a.operation,a.object_id
+ORDER BY a.object_id
+";
+    $params = [1 => [$tableName, 'String']];
+    $dao = CRM_Core_DAO::executeQuery($query, $params);
+    while ($dao->fetch()) {
+      if ($dao->object_id) {
+        if (self::matchType($type, $dao->operation)) {
+          $ids[] = $dao->object_id;
+        }
+      }
+      else {
+        // this user has got the permission for all objects of this type
+        // check if the type matches
+        if (self::matchType($type, $dao->operation)) {
+          foreach ($allGroups as $id => $dontCare) {
+            $ids[] = $id;
+          }
+        }
+        break;
+      }
+    }
+    return $ids;
   }
 
 }

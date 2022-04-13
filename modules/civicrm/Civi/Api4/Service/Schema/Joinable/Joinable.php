@@ -10,17 +10,9 @@
  +--------------------------------------------------------------------+
  */
 
-/**
- *
- * @package CRM
- * @copyright CiviCRM LLC https://civicrm.org/licensing
- */
-
-
 namespace Civi\Api4\Service\Schema\Joinable;
 
 use Civi\Api4\Utils\CoreUtil;
-use CRM_Core_DAO_AllCoreTables as AllCoreTables;
 
 class Joinable {
 
@@ -79,6 +71,11 @@ class Joinable {
   protected $entity;
 
   /**
+   * @var int
+   */
+  protected $serialize;
+
+  /**
    * @var bool
    */
   protected $deprecated = FALSE;
@@ -100,17 +97,17 @@ class Joinable {
   /**
    * Gets conditions required when joining to a base table
    *
-   * @param string|null $baseTableAlias
-   *   Name of the base table, if aliased.
+   * @param string $baseTableAlias
+   * @param string $tableAlias
    *
    * @return array
    */
-  public function getConditionsForJoin($baseTableAlias = NULL) {
+  public function getConditionsForJoin(string $baseTableAlias, string $tableAlias) {
     $baseCondition = sprintf(
-      '%s.%s =  %s.%s',
-      $baseTableAlias ?: $this->baseTable,
+      '`%s`.`%s` =  `%s`.`%s`',
+      $baseTableAlias,
       $this->baseColumn,
-      $this->getAlias(),
+      $tableAlias,
       $this->targetColumn
     );
 
@@ -240,6 +237,24 @@ class Joinable {
   }
 
   /**
+   * @return int|NULL
+   */
+  public function getSerialize():? int {
+    return $this->serialize;
+  }
+
+  /**
+   * @param int|NULL $serialize
+   *
+   * @return $this
+   */
+  public function setSerialize(?int $serialize) {
+    $this->serialize = $serialize;
+
+    return $this;
+  }
+
+  /**
    * @return int
    */
   public function getJoinType() {
@@ -282,17 +297,21 @@ class Joinable {
   }
 
   /**
-   * @return \Civi\Api4\Service\Spec\FieldSpec[]
+   * @return \Civi\Api4\Service\Spec\RequestSpec
    */
   public function getEntityFields() {
-    $entityFields = [];
-    $bao = AllCoreTables::getClassForTable($this->getTargetTable());
-    if ($bao) {
-      foreach ($bao::getSupportedFields() as $field) {
-        $entityFields[] = \Civi\Api4\Service\Spec\SpecFormatter::arrayToField($field, $this->getEntity());
+    /** @var \Civi\Api4\Service\Spec\SpecGatherer $gatherer */
+    $gatherer = \Civi::container()->get('spec_gatherer');
+    $spec = $gatherer->getSpec($this->entity, 'get', FALSE);
+    // Serialized fields require a specialized join
+    if ($this->serialize) {
+      foreach ($spec as $field) {
+        // The callback function expects separated values as output
+        $field->setSerialize(\CRM_Core_DAO::SERIALIZE_SEPARATOR_TRIMMED);
+        $field->setSqlRenderer(['Civi\Api4\Query\Api4SelectQuery', 'renderSerializedJoin']);
       }
     }
-    return $entityFields;
+    return $spec;
   }
 
   /**
@@ -310,12 +329,7 @@ class Joinable {
    * @return \Civi\Api4\Service\Spec\FieldSpec|NULL
    */
   public function getField($fieldName) {
-    foreach ($this->getEntityFields() as $field) {
-      if ($field->getName() === $fieldName) {
-        return $field;
-      }
-    }
-    return NULL;
+    return $this->getEntityFields()->getFieldByName($fieldName);
   }
 
 }

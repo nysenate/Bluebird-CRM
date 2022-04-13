@@ -10,6 +10,7 @@
  */
 
 use Civi\Api4\ActivityContact;
+use Civi\Api4\Contribution;
 
 /**
  *
@@ -215,15 +216,6 @@ class CRM_Activity_BAO_Activity extends CRM_Activity_DAO_Activity {
       $logMsg .= implode(', ', $msgs);
 
       self::logActivityAction($activity, $logMsg);
-    }
-
-    // delete the recently created Activity
-    if ($result) {
-      $activityRecent = [
-        'id' => $activity->id,
-        'type' => 'Activity',
-      ];
-      CRM_Utils_Recent::del($activityRecent);
     }
 
     $transaction->commit();
@@ -940,6 +932,10 @@ class CRM_Activity_BAO_Activity extends CRM_Activity_DAO_Activity {
   }
 
   /**
+   * DO NOT USE.
+   *
+   * Deprecated from core - will be removed.
+   *
    * @param int $sourceContactID
    *   The contact ID of the email "from".
    * @param string $subject
@@ -950,6 +946,8 @@ class CRM_Activity_BAO_Activity extends CRM_Activity_DAO_Activity {
    * @param int $campaignID
    * @param array $attachments
    * @param int $caseID
+   *
+   * @deprecated
    *
    * @return int
    *   The created activity ID
@@ -995,7 +993,7 @@ class CRM_Activity_BAO_Activity extends CRM_Activity_DAO_Activity {
   }
 
   /**
-   * Send the message to all the contacts.
+   * DO NOT USE THIS FUNCTION - DEPRECATED.
    *
    * Also insert a contact activity in each contacts record.
    *
@@ -1007,29 +1005,31 @@ class CRM_Activity_BAO_Activity extends CRM_Activity_DAO_Activity {
    * @param $html
    * @param string $emailAddress
    *   Use this 'to' email address instead of the default Primary address.
-   * @param int $userID
+   * @param int|null $userID
    *   Use this userID if set.
-   * @param string $from
-   * @param array $attachments
+   * @param string|null $from
+   * @param array|null $attachments
    *   The array of attachments if any.
-   * @param string $cc
+   * @param string|null $cc
    *   Cc recipient.
-   * @param string $bcc
+   * @param string|null $bcc
    *   Bcc recipient.
-   * @param array $contactIds
-   *   Contact ids.
-   * @param string $additionalDetails
+   * @param array|null $contactIds
+   *   unused.
+   * @param string|null $additionalDetails
    *   The additional information of CC and BCC appended to the activity Details.
-   * @param array $contributionIds
-   * @param int $campaignId
-   * @param int $caseId
+   * @param array|null $contributionIds
+   * @param int|null $campaignId
+   * @param int|null $caseId
    *
    * @return array
    *   bool $sent FIXME: this only indicates the status of the last email sent.
    *   array $activityIds The activity ids created, one per "To" recipient.
    *
+   * @deprecated
+   *
+   * @throws \API_Exception
    * @throws \CRM_Core_Exception
-   * @throws \CiviCRM_API3_Exception
    */
   public static function sendEmail(
     $contactDetails,
@@ -1048,12 +1048,16 @@ class CRM_Activity_BAO_Activity extends CRM_Activity_DAO_Activity {
     $campaignId = NULL,
     $caseId = NULL
   ) {
+    // @todo add noisy deprecation.
+    // This function is no longer called from core.
+    // I just left off the noisy deprecation for now as there
+    // are already a lot of other noisy deprecation points in 5.43.
     // get the contact details of logged in contact, which we set as from email
     if ($userID == NULL) {
       $userID = CRM_Core_Session::getLoggedInContactID();
     }
 
-    list($fromDisplayName, $fromEmail, $fromDoNotEmail) = CRM_Contact_BAO_Contact::getContactDetails($userID);
+    [$fromDisplayName, $fromEmail, $fromDoNotEmail] = CRM_Contact_BAO_Contact::getContactDetails($userID);
     if (!$fromEmail) {
       return [count($contactDetails), 0, count($contactDetails)];
     }
@@ -1061,67 +1065,21 @@ class CRM_Activity_BAO_Activity extends CRM_Activity_DAO_Activity {
       $fromDisplayName = $fromEmail;
     }
 
-    // CRM-4575
-    // token replacement of addressee/email/postal greetings
-    // get the tokens added in subject and message
-    $subjectToken = CRM_Utils_Token::getTokens($subject);
-    $messageToken = CRM_Utils_Token::getTokens($text);
-    $messageToken = array_merge($messageToken, CRM_Utils_Token::getTokens($html));
-    $allTokens = array_merge($messageToken, $subjectToken);
-
     if (!$from) {
       $from = "$fromDisplayName <$fromEmail>";
     }
 
-    $returnProperties = [];
-    if (isset($messageToken['contact'])) {
-      foreach ($messageToken['contact'] as $key => $value) {
-        $returnProperties[$value] = 1;
-      }
-    }
-
-    if (isset($subjectToken['contact'])) {
-      foreach ($subjectToken['contact'] as $key => $value) {
-        if (!isset($returnProperties[$value])) {
-          $returnProperties[$value] = 1;
-        }
-      }
-    }
-
-    // get token details for contacts, call only if tokens are used
-    $details = [];
-    if (!empty($returnProperties) || !empty($tokens) || !empty($allTokens)) {
-      list($details) = CRM_Utils_Token::getTokenDetails(
-        $contactIds,
-        $returnProperties,
-        NULL, NULL, FALSE,
-        $allTokens,
-        'CRM_Activity_BAO_Activity'
-      );
-    }
-
-    // call token hook
-    $tokens = [];
-    CRM_Utils_Hook::tokens($tokens);
-    $categories = array_keys($tokens);
-
-    $escapeSmarty = FALSE;
-    if (defined('CIVICRM_MAIL_SMARTY') && CIVICRM_MAIL_SMARTY) {
-      $smarty = CRM_Core_Smarty::singleton();
-      $escapeSmarty = TRUE;
-    }
-
     $contributionDetails = [];
     if (!empty($contributionIds)) {
-      $contributionDetails = CRM_Contribute_BAO_Contribution::replaceContributionTokens(
-        $contributionIds,
-        $subject,
-        $subjectToken,
-        $text,
-        $html,
-        $messageToken,
-        $escapeSmarty
-      );
+      $contributionDetails = Contribution::get(FALSE)
+        ->setSelect(['contact_id'])
+        ->addWhere('id', 'IN', $contributionIds)
+        ->execute()
+        // Note that this indexing means that only the last
+        // contribution per contact is resolved to tokens.
+        // this is long-standing functionality, albeit possibly
+        // not thought through.
+        ->indexBy('contact_id');
     }
 
     $sent = $notSent = [];
@@ -1129,56 +1087,28 @@ class CRM_Activity_BAO_Activity extends CRM_Activity_DAO_Activity {
     $activityIds = [];
     $firstActivityCreated = FALSE;
     foreach ($contactDetails as $values) {
+      $tokenContext = $caseId ? ['caseId' => $caseId] : [];
       $contactId = $values['contact_id'];
       $emailAddress = $values['email'];
 
       if (!empty($contributionDetails)) {
-        $subject = $contributionDetails[$contactId]['subject'];
-        $text = $contributionDetails[$contactId]['text'];
-        $html = $contributionDetails[$contactId]['html'];
+        $tokenContext['contributionId'] = $contributionDetails[$contactId]['id'];
       }
 
-      if (!empty($details) && is_array($details["{$contactId}"])) {
-        // unset email from details since it always returns primary email address
-        unset($details["{$contactId}"]['email']);
-        unset($details["{$contactId}"]['email_id']);
-        $values = array_merge($values, $details["{$contactId}"]);
-      }
+      $tokenSubject = $subject;
+      $tokenText = in_array($values['preferred_mail_format'], ['Both', 'Text'], TRUE) ? $text : '';
+      $tokenHtml = in_array($values['preferred_mail_format'], ['Both', 'HTML'], TRUE) ? $html : '';
 
-      $tokenSubject = CRM_Utils_Token::replaceContactTokens($subject, $values, FALSE, $subjectToken, FALSE, $escapeSmarty);
-      $tokenSubject = CRM_Utils_Token::replaceHookTokens($tokenSubject, $values, $categories, FALSE, $escapeSmarty);
-
-      // CRM-4539
-      if ($values['preferred_mail_format'] == 'Text' || $values['preferred_mail_format'] == 'Both') {
-        $tokenText = CRM_Utils_Token::replaceContactTokens($text, $values, FALSE, $messageToken, FALSE, $escapeSmarty);
-        $tokenText = CRM_Utils_Token::replaceHookTokens($tokenText, $values, $categories, FALSE, $escapeSmarty);
-      }
-      else {
-        $tokenText = NULL;
-      }
-
-      if ($values['preferred_mail_format'] == 'HTML' || $values['preferred_mail_format'] == 'Both') {
-        $tokenHtml = CRM_Utils_Token::replaceContactTokens($html, $values, TRUE, $messageToken, FALSE, $escapeSmarty);
-        $tokenHtml = CRM_Utils_Token::replaceHookTokens($tokenHtml, $values, $categories, TRUE, $escapeSmarty);
-      }
-      else {
-        $tokenHtml = NULL;
-      }
-
-      if ($caseId) {
-        $tokenSubject = CRM_Utils_Token::replaceCaseTokens($caseId, $tokenSubject, $subjectToken, $escapeSmarty);
-        $tokenText = CRM_Utils_Token::replaceCaseTokens($caseId, $tokenText, $messageToken, $escapeSmarty);
-        $tokenHtml = CRM_Utils_Token::replaceCaseTokens($caseId, $tokenHtml, $messageToken, $escapeSmarty);
-      }
-
-      if (defined('CIVICRM_MAIL_SMARTY') && CIVICRM_MAIL_SMARTY) {
-        // also add the contact tokens to the template
-        $smarty->assign_by_ref('contact', $values);
-
-        $tokenSubject = $smarty->fetch("string:$tokenSubject");
-        $tokenText = $smarty->fetch("string:$tokenText");
-        $tokenHtml = $smarty->fetch("string:$tokenHtml");
-      }
+      $renderedTemplate = CRM_Core_BAO_MessageTemplate::renderTemplate([
+        'messageTemplate' => [
+          'msg_text' => $tokenText,
+          'msg_html' => $tokenHtml,
+          'msg_subject' => $tokenSubject,
+        ],
+        'tokenContext' => $tokenContext,
+        'contactId' => $contactId,
+        'disableSmarty' => !CRM_Utils_Constant::value('CIVICRM_MAIL_SMARTY'),
+      ]);
 
       $sent = FALSE;
       // To minimize storage requirements, only one copy of any file attachments uploaded to CiviCRM is kept,
@@ -1188,7 +1118,7 @@ class CRM_Activity_BAO_Activity extends CRM_Activity_DAO_Activity {
       }
 
       // Create email activity.
-      $activityID = self::createEmailActivity($userID, $tokenSubject, $tokenHtml, $tokenText, $additionalDetails, $campaignId, $attachments, $caseId);
+      $activityID = self::createEmailActivity($userID, $renderedTemplate['subject'], $renderedTemplate['html'], $renderedTemplate['text'], $additionalDetails, $campaignId, $attachments, $caseId);
       $activityIds[] = $activityID;
 
       if ($firstActivityCreated == FALSE && !empty($attachments)) {
@@ -1200,9 +1130,9 @@ class CRM_Activity_BAO_Activity extends CRM_Activity_DAO_Activity {
         $from,
         $userID,
         $contactId,
-        $tokenSubject,
-        $tokenText,
-        $tokenHtml,
+        $renderedTemplate['subject'],
+        $renderedTemplate['text'],
+        $renderedTemplate['html'],
         $emailAddress,
         $activityID,
         // get the set of attachments from where they are stored
@@ -1232,10 +1162,12 @@ class CRM_Activity_BAO_Activity extends CRM_Activity_DAO_Activity {
    * @param array $attachments
    *   Attachments.
    *
+   * @internal
+   *
    * @return array
    *   Array of attachment key versus file Id.
    */
-  private static function getAttachmentFileIds($activityID, $attachments) {
+  public static function getAttachmentFileIds($activityID, $attachments) {
     $queryParams = [1 => [$activityID, 'Positive'], 2 => [CRM_Activity_DAO_Activity::getTableName(), 'String']];
     $query = "SELECT file_id, uri FROM civicrm_entity_file INNER JOIN civicrm_file ON civicrm_entity_file.file_id = civicrm_file.id
 WHERE entity_id =%1 AND entity_table = %2";
@@ -1322,45 +1254,11 @@ WHERE entity_id =%1 AND entity_table = %2";
     $activity = self::create($activityParams);
     $activityID = $activity->id;
 
-    // Process Tokens
-    // token replacement of addressee/email/postal greetings
-    // get the tokens added in subject and message
-    $messageToken = CRM_Utils_Token::getTokens($text);
-    $returnProperties = [];
-    if (isset($messageToken['contact'])) {
-      foreach ($messageToken['contact'] as $key => $value) {
-        $returnProperties[$value] = 1;
-      }
-    }
-    // Call tokens hook
-    $tokens = [];
-    CRM_Utils_Hook::tokens($tokens);
-    $categories = array_keys($tokens);
-    // get token details for contacts, call only if tokens are used
-    $tokenDetails = [];
-    if (!empty($returnProperties) || !empty($tokens)) {
-      list($tokenDetails) = CRM_Utils_Token::getTokenDetails($contactIds,
-        $returnProperties,
-        NULL, NULL, FALSE,
-        $messageToken,
-        'CRM_Activity_BAO_Activity'
-      );
-    }
-
     $success = 0;
     $errMsgs = [];
     foreach ($contactDetails as $contact) {
       $contactId = $contact['contact_id'];
-
-      // Replace tokens
-      if (!empty($tokenDetails) && is_array($tokenDetails["{$contactId}"])) {
-        // unset phone from details since it always returns primary number
-        unset($tokenDetails["{$contactId}"]['phone']);
-        unset($tokenDetails["{$contactId}"]['phone_type_id']);
-        $contact = array_merge($contact, $tokenDetails["{$contactId}"]);
-      }
-      $tokenText = CRM_Utils_Token::replaceContactTokens($text, $contact, FALSE, $messageToken, FALSE, FALSE);
-      $tokenText = CRM_Utils_Token::replaceHookTokens($tokenText, $contact, $categories, FALSE, FALSE);
+      $tokenText = CRM_Core_BAO_MessageTemplate::renderTemplate(['messageTemplate' => ['msg_text' => $text], 'contactId' => $contactId, 'disableSmarty' => TRUE])['text'];
 
       // Only send if the phone is of type mobile
       if ($contact['phone_type_id'] == CRM_Core_PseudoConstant::getKey('CRM_Core_BAO_Phone', 'phone_type_id', 'Mobile')) {
@@ -1472,6 +1370,8 @@ WHERE entity_id =%1 AND entity_table = %2";
   }
 
   /**
+   * DO Not use this function. Under deprecation, no active core use.
+   *
    * Send the message to a specific contact.
    *
    * @param string $from
@@ -1493,6 +1393,8 @@ WHERE entity_id =%1 AND entity_table = %2";
    *
    * @return bool
    *   TRUE if successful else FALSE.
+   *
+   * @deprecated
    */
   public static function sendMessage(
     $from,
@@ -1507,7 +1409,7 @@ WHERE entity_id =%1 AND entity_table = %2";
     $cc = NULL,
     $bcc = NULL
   ) {
-    list($toDisplayName, $toEmail, $toDoNotEmail) = CRM_Contact_BAO_Contact::getContactDetails($toID);
+    [$toDisplayName, $toEmail, $toDoNotEmail] = CRM_Contact_BAO_Contact::getContactDetails($toID);
     if ($emailAddress) {
       $toEmail = trim($emailAddress);
     }
@@ -1788,7 +1690,7 @@ WHERE      activity.id IN ($activityIds)";
         }
 
         if ($entityObj->owner_membership_id) {
-          list($displayName) = CRM_Contact_BAO_Contact::getDisplayAndImage(CRM_Core_DAO::getFieldValue('CRM_Member_DAO_Membership', $entityObj->owner_membership_id, 'contact_id'));
+          [$displayName] = CRM_Contact_BAO_Contact::getDisplayAndImage(CRM_Core_DAO::getFieldValue('CRM_Member_DAO_Membership', $entityObj->owner_membership_id, 'contact_id'));
           $subject .= sprintf(' (by %s)', $displayName);
         }
 

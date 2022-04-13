@@ -1,6 +1,7 @@
 <?php
 
 require_once 'resources.civix.php';
+use CRM_NYSS_Resources_ExtensionUtil as E;
 
 /**
  * Implements hook_civicrm_config().
@@ -142,16 +143,20 @@ function resources_civicrm_coreResourceList(&$list, $region) {
   //implement coreResourceList to define location of custom ckeditor config file
   $extPath = Civi::resources()->getUrl('gov.nysenate.resources');
   $config = array_keys(array_filter($list, function($v){return !empty($v['config']) ? true : false;}));
-  $list[$config[0]]['config']['CKEditorCustomConfig'] =
-    "{$extPath}/js/ckeditor.config.js";
-  //set ckeditor location (seems to get messed up by our special directory handling)
-  $list[$config[0]]['config']['wysisygScriptLocation'] = '/sites/all/modules/civicrm/js/wysiwyg/crm.ckeditor.js';
+  //Civi::log()->debug(__FUNCTION__, ['list' => $list, 'config' => $config]);
+
+  if (!empty($config[0])) {
+    $list[$config[0]]['config']['CKEditorCustomConfig'] = "{$extPath}/js/ckeditor.config.js";
+
+    //set ckeditor location (seems to get messed up by our special directory handling)
+    $list[$config[0]]['config']['wysisygScriptLocation'] = '/sites/all/modules/civicrm/js/wysiwyg/crm.ckeditor.js';
+  }
 
   //set kcfinder maxImage settings
-  $_SESSION['KCFINDER'] = array(
+  $_SESSION['KCFINDER'] = [
     'maxImageWidth' => 600,
     'maxImageHeight' => 2048,
-  );
+  ];
 
   //add special non-Admin css file
   global $user;
@@ -159,8 +164,7 @@ function resources_civicrm_coreResourceList(&$list, $region) {
   $adminRoles = ['Administrator', 'Superuser'];
   $isAdmin = array_intersect($adminRoles, $roles);
   if (empty($isAdmin)) {
-    CRM_Core_Resources::singleton()
-      ->addStyleFile('gov.nysenate.resources', 'css/nonAdmin.css');
+    CRM_Core_Resources::singleton()->addStyleFile(E::LONG_NAME, 'css/nonAdmin.css');
   }
 }
 

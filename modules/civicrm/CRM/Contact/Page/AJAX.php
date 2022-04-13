@@ -293,6 +293,11 @@ class CRM_Contact_Page_AJAX {
     $customValueID = CRM_Utils_Type::escape($_REQUEST['valueID'], 'Positive');
     $customGroupID = CRM_Utils_Type::escape($_REQUEST['groupID'], 'Positive');
     $contactId = CRM_Utils_Request::retrieve('contactId', 'Positive');
+    if (!CRM_Core_BAO_CustomGroup::checkGroupAccess($customGroupID, CRM_Core_Permission::EDIT) ||
+      !CRM_Contact_BAO_Contact_Permission::allow($contactId, CRM_Core_Permission::EDIT)
+    ) {
+      CRM_Utils_System::permissionDenied();
+    }
     CRM_Core_BAO_CustomValue::deleteCustomValue($customValueID, $customGroupID);
     if ($contactId) {
       echo CRM_Contact_BAO_Contact::getCountComponent('custom_' . $customGroupID, $contactId);
@@ -573,8 +578,8 @@ LIMIT {$offset}, {$rowCount}
       'src_email' => 'ce2.email',
       'dst_postcode' => 'ca1.postal_code',
       'src_postcode' => 'ca2.postal_code',
-      'dst_street' => 'ca1.street',
-      'src_street' => 'ca2.street',
+      'dst_street' => 'ca1.street_address',
+      'src_street' => 'ca2.street_address',
     ];
 
     foreach ($mappings as $key => $dbName) {

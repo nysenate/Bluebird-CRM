@@ -263,7 +263,11 @@ class CRM_Mailing_Event_BAO_Delivered extends CRM_Mailing_Event_DAO_Delivered {
    * @param int $maxDays
    *   Consider mailings that were completed not more than $maxDays ago.
    */
-  public static function updateEmailResetDate($minDays = 3, $maxDays = 7) {
+  public static function updateEmailResetDate(int $minDays = 3, int $maxDays = 7) {
+
+    if ($minDays < 0 || $maxDays < 0 || $maxDays <= $minDays) {
+      throw new \InvalidArgumentException("minDays and maxDays must be >=0 and maxDays > minDays");
+    }
 
     $temporaryTable = CRM_Utils_SQL_TempTable::build()
       ->setCategory('mailingemail')
@@ -271,6 +275,7 @@ class CRM_Mailing_Event_BAO_Delivered extends CRM_Mailing_Event_DAO_Delivered {
       ->createWithColumns('id int primary key, reset_date datetime');
     $temporaryTableName = $temporaryTable->getName();
 
+    // also exclude on_hold = opt-out (2)
     $query = "
             INSERT INTO {$temporaryTableName} (id, reset_date)
             SELECT      civicrm_email.id as email_id,
@@ -284,6 +289,7 @@ class CRM_Mailing_Event_BAO_Delivered extends CRM_Mailing_Event_DAO_Delivered {
               AND       civicrm_mailing_job.status = 'Complete'
               AND       civicrm_mailing_job.end_date BETWEEN DATE_SUB(NOW(), INTERVAL $maxDays day) AND DATE_SUB(NOW(), INTERVAL $minDays day)
               AND       (civicrm_email.reset_date IS NULL OR civicrm_email.reset_date < civicrm_mailing_job.start_date)
+              AND       civicrm_email.on_hold != 2
             GROUP BY    civicrm_email.id
          ";
     CRM_Core_DAO::executeQuery($query);

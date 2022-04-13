@@ -7,9 +7,13 @@
   angular.module('crmMonaco').directive('crmMonaco', function($timeout, $parse) {
     return {
       restrict: 'AE',
-      require: 'ngModel',
+      require: ['ngModel', 'crmMonaco'],
       template: '<div class="crm-monaco-container"></div>',
-      link: function($scope, $el, $attr, ngModel) {
+      controller: function() {
+        this.editor = null; // Filled in by link().
+      },
+      link: function($scope, $el, $attr, controllers) {
+        var ngModel = controllers[0], crmMonaco = controllers[1];
         var heightPct = 0.70;
         var editor;
         require.config({paths: CRM.crmMonaco.paths});
@@ -41,6 +45,9 @@
             }
           });
 
+          heightPct = options.crmHeightPct || heightPct;
+          delete options.crmHeightPct;
+
           var editorEl = $el.find('.crm-monaco-container');
           editorEl.css({height: Math.round(heightPct * $(window).height())});
           editor = monaco.editor.create(editorEl[0], options);
@@ -57,6 +64,12 @@
             }
             // FIXME: else: retry?
           };
+
+          if ($attr.ngDisabled) {
+            $scope.$watch($parse($attr.ngDisabled), function(disabled){
+              editor.updateOptions({readOnly: disabled});
+            });
+          }
 
           // FIXME: This makes vertical scrolling much better, but horizontal is still weird.
           var origOverflow;
@@ -75,10 +88,28 @@
           editor.onDidFocusEditorWidget(bodyScrollSuspend);
           editor.onDidBlurEditorWidget(bodyScrollRestore);
 
+          crmMonaco.editor = editor;
+
           $scope.$on('$destroy', function () {
             bodyScrollRestore();
             if (editor) editor.dispose();
+            delete crmMonaco.editor;
           });
+        });
+      }
+    };
+  });
+
+  angular.module('crmMonaco').directive('crmMonacoInsertRx', function() {
+    return {
+      require: 'crmMonaco',
+      link: function(scope, element, attrs, crmMonaco) {
+        scope.$on(attrs.crmMonacoInsertRx, function(e, tokenName) {
+          var editor = crmMonaco.editor;
+          var id = { major: 1, minor: 1 };
+          var op = {identifier: id, range: editor.getSelection(), text: tokenName, forceMoveMarkers: true};
+          editor.executeEdits("tokens", [op]);
+          editor.focus();
         });
       }
     };

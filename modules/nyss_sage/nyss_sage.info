@@ -1,6 +1,0 @@
-name = NYSS Sage Module
-description = Provides integrated address the the SAGE validation, geocoding, and district assignment service.
-dependencies[] = civicrm
-package = CiviCRM
-core = 7.x
-version = 4.2

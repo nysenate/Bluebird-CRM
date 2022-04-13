@@ -50,7 +50,7 @@
       {if $pcp.is_thermometer}
       <div class="thermometer-wrapper">
           <div class="pcp-amount-goal">
-            {ts}Goal{/ts} <span class="goal-amount crmMoney">{$pcp.goal_amount|crmMoney}</span>
+            {ts}Goal{/ts} <span class="goal-amount crmMoney">{$pcp.goal_amount|crmMoney:$currency}</span>
         </div>
         <div class="thermometer-fill-wrapper">
             <div style="height: {$achieved}%;" class="thermometer-fill">
@@ -58,7 +58,7 @@
             </div><!-- /.thermometer-fill -->
         </div><!-- /.thermometer-fill-wrapper -->
         <div class="pcp-amount-raised">
-             <span class="raised-amount crmMoney">{$total|crmMoney}</span> {ts}raised{/ts}
+             <span class="raised-amount crmMoney">{$total|crmMoney:$currency}</span> {ts}raised{/ts}
         </div>
     </div>
       {/if}
@@ -77,7 +77,7 @@
               </marquee>
           </div>
           <div class="description">
-              [<a href="#" onclick="roll_start_stop(); return false;" id="roll" title="Stop scrolling">{ts}Stop{/ts}</a>]
+              [<a href="#" onclick="roll_start_stop(); return false;" id="roll" title="{ts}Stop scrolling{/ts}">{ts}Stop{/ts}</a>]
           </div>
         </div>
      {/if}

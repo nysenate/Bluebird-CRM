@@ -149,7 +149,7 @@ class CRM_Utils_PDF_Utils {
     fclose($fp);
     $pages = NULL; //force garbage collection on the original HTML? Try it.
 
-    if ($config->wkhtmltopdfPath) {
+    if (CRM_Core_Config::singleton()->wkhtmltopdfPath) {
       $rc = self::_html2pdf_wkhtmltopdf($paper_size, $orientation, $margins, $html_tmpfile, $output, $fileName, TRUE);
     }
     else {
@@ -230,10 +230,7 @@ class CRM_Utils_PDF_Utils {
    * @return string
    */
   public static function _html2pdf_dompdf($paper_size, $orientation, $html, $output, $fileName) {
-    // CRM-12165 - Remote file support required for image handling.
-    $options = new Options();
-    $options->set('isRemoteEnabled', TRUE);
-
+    $options = self::getDompdfOptions();
     $dompdf = new DOMPDF($options);
     $dompdf->set_paper($paper_size, $orientation);
     $dompdf->load_html($html);
@@ -358,6 +355,30 @@ class CRM_Utils_PDF_Utils {
       $value = round($value, $precision);
     }
     return $value;
+  }
+
+  /**
+   * Allow setting some dompdf options.
+   *
+   * We don't support all the available dompdf options.
+   *
+   * @return \Dompdf\Options
+   */
+  private static function getDompdfOptions(): Options {
+    $options = new Options();
+    $settings = [
+      // CRM-12165 - Remote file support required for image handling so default to TRUE
+      'enable_remote' => \Civi::settings()->get('dompdf_enable_remote') ?? TRUE,
+    ];
+    // only set these ones if a setting exists for them
+    foreach (['font_dir', 'chroot', 'log_output_file'] as $setting) {
+      $value = \Civi::settings()->get("dompdf_$setting");
+      if (isset($value)) {
+        $settings[$setting] = $value;
+      }
+    }
+    $options->set($settings);
+    return $options;
   }
 
 }

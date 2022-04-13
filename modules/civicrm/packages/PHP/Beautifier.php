@@ -1303,7 +1303,7 @@ class PHP_Beautifier implements PHP_Beautifier_Interface
     public function getPreviousTokenConstant($iPrev = 1)
     {
         $sToken = $this->getPreviousToken($iPrev);
-        return $sToken[0];
+        return $sToken[0] ?? NULL;
     }
     /**
      * Get the 'x' significant (non whitespace) previous token text

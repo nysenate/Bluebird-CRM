@@ -172,12 +172,10 @@ class CRM_Mailing_Event_BAO_Resubscribe {
    *   The queue event ID.
    * @param array $groups
    *   List of group IDs.
-   * @param bool $is_domain
-   *   Is this domain-level?.
    * @param int $job
    *   The job ID.
    */
-  public static function send_resub_response($queue_id, $groups, $is_domain = FALSE, $job) {
+  public static function send_resub_response($queue_id, $groups, $job) {
     // param is_domain is not supported as of now.
 
     $config = CRM_Core_Config::singleton();
@@ -249,7 +247,7 @@ class CRM_Mailing_Event_BAO_Resubscribe {
 
     $params = [
       'subject' => $component->subject,
-      'from' => "\"$domainEmailName\" <" . CRM_Core_BAO_Domain::getNoReplyEmailAddress() . '>',
+      'from' => "\"{$domainEmailName}\" <{$domainEmailAddress}>",
       'toEmail' => $eq->email,
       'replyTo' => CRM_Core_BAO_Domain::getNoReplyEmailAddress(),
       'returnPath' => CRM_Core_BAO_Domain::getNoReplyEmailAddress(),

@@ -634,6 +634,24 @@
       };
     })
 
+    // Use a select2 widget as a pick-list. Instead of updating ngModel, the select2 widget will fire an event.
+    // This similar to ngModel+ngChange, except that value is never stored in a model. It is only fired in the event.
+    // usage: <select crm-ui-select='{...}' on-crm-ui-select="alert("User picked this item: " + selection)"></select>
+    .directive('onCrmUiSelect', function () {
+      return {
+        priority: 10,
+        link: function (scope, element, attrs) {
+          element.on('select2-selecting', function(e) {
+            e.preventDefault();
+            element.select2('close').select2('val', '');
+            scope.$apply(function() {
+              scope.$eval(attrs.onCrmUiSelect, {selection: e.val});
+            });
+          });
+        }
+      };
+    })
+
     // Render a crmEntityRef widget
     // usage: <input crm-entityref="{entity: 'Contact', select: {allowClear:true}}" ng-model="myobj.field" />
     .directive('crmEntityref', function ($parse, $timeout) {
@@ -928,7 +946,8 @@
           else {
             $(element).prepend('<span class="icon ui-icon-' + attrs.crmIcon + '"></span> ');
           }
-          if ($(element).is('button')) {
+          // Add crm-* class to non-bootstrap buttons
+          if ($(element).is('button:not(.btn)')) {
             $(element).addClass('crm-button');
           }
         }

@@ -71,6 +71,16 @@ class CRM_Core_Form extends HTML_QuickForm_Page {
   public $_action;
 
   /**
+   * Monetary fields that may be submitted.
+   *
+   * Any fields in this list will be converted to non-localised format
+   * if retrieved by `getSubmittedValue`
+   *
+   * @var array
+   */
+  protected $submittableMoneyFields = [];
+
+  /**
    * Available payment processors.
    *
    * As part of trying to consolidate various payment pages we store processors here & have functions
@@ -131,9 +141,6 @@ class CRM_Core_Form extends HTML_QuickForm_Page {
    * e.g on a form declare $_dateFields = array(
    *  'receive_date' => array('default' => 'now'),
    *  );
-   *  then in postProcess call $this->convertDateFieldsToMySQL($formValues)
-   *  to have the time field re-incorporated into the field & 'now' set if
-   *  no value has been passed in
    */
   protected $_dateFields = [];
 
@@ -247,6 +254,36 @@ class CRM_Core_Form extends HTML_QuickForm_Page {
   ];
 
   /**
+   * Variables smarty expects to have set.
+   *
+   * We ensure these are assigned (value = NULL) when Smarty is instantiated in
+   * order to avoid e-notices / having to use empty or isset in the template layer.
+   *
+   * @var string[]
+   */
+  public $expectedSmartyVariables = [
+    // in CMSPrint.tpl
+    'breadcrumb',
+    'pageTitle',
+    'urlIsPublic',
+    'isDeleted',
+    // in 'body.tpl
+    'suppressForm',
+    'beginHookFormElements',
+    // required for footer.tpl
+    'contactId',
+    // required for info.tpl
+    'infoMessage',
+    'infoTitle',
+    'infoType',
+    'infoOptions',
+    // required for attachmentjs.tpl
+    'context',
+    // FormButtons.tpl (adds buttons to forms).
+    'linkButtons',
+  ];
+
+  /**
    * Constructor for the basic form page.
    *
    * We should not use QuickForm directly. This class provides a lot
@@ -291,6 +328,7 @@ class CRM_Core_Form extends HTML_QuickForm_Page {
     if (!isset(self::$_template)) {
       self::$_template = CRM_Core_Smarty::singleton();
     }
+
     // Workaround for CRM-15153 - give each form a reasonably unique css class
     $this->addClass(CRM_Utils_System::getClassName($this));
 
@@ -347,6 +385,7 @@ class CRM_Core_Form extends HTML_QuickForm_Page {
       'settingPath',
       'autocomplete',
       'validContact',
+      'email',
     ];
 
     foreach ($rules as $rule) {
@@ -667,6 +706,12 @@ class CRM_Core_Form extends HTML_QuickForm_Page {
     if ($this->submitOnce) {
       $this->setAttribute('data-submit-once', 'true');
     }
+    // Smarty $_template is a static var which persists between tests, so
+    // if something calls clearTemplateVars(), the static still exists but
+    // our ensured variables get blown away, so we need to set them even if
+    // it's already been initialized.
+    self::$_template->ensureVariablesAreAssigned($this->expectedSmartyVariables);
+
   }
 
   /**
@@ -848,9 +893,6 @@ class CRM_Core_Form extends HTML_QuickForm_Page {
       // It's not clear why we set this on the form.
       $this->set('paymentProcessors', $this->_paymentProcessors);
     }
-    else {
-      throw new CRM_Core_Exception(ts('A payment processor configured for this page might be disabled (contact the site administrator for assistance).'));
-    }
   }
 
   /**
@@ -903,7 +945,7 @@ class CRM_Core_Form extends HTML_QuickForm_Page {
       $params['country'] = $params["country-{$this->_bltID}"] = $params["billing_country-{$this->_bltID}"] = CRM_Core_PseudoConstant::countryIsoCode($params["billing_country_id-{$this->_bltID}"]);
     }
 
-    list($hasAddressField, $addressParams) = CRM_Contribute_BAO_Contribution::getPaymentProcessorReadyAddressParams($params, $this->_bltID);
+    [$hasAddressField, $addressParams] = CRM_Contribute_BAO_Contribution::getPaymentProcessorReadyAddressParams($params, $this->_bltID);
     if ($hasAddressField) {
       $params = array_merge($params, $addressParams);
     }
@@ -1018,6 +1060,52 @@ class CRM_Core_Form extends HTML_QuickForm_Page {
   }
 
   /**
+   * Quick form elements which are conditionally added to the form.
+   *
+   * Elements in this array will be added to the form at the end if not present
+   * so that smarty does not e-notice on things like '{if $form.group}' when
+   * 'group' is not added to the form (e.g when no groups exist).
+   *
+   * @var array
+   */
+  protected $optionalQuickFormElements = [];
+
+  /**
+   * Add an optional element to the optional elements array.
+   *
+   * These elements are assigned as empty (null) variables if
+   * there is no real field - allowing smarty to use them without
+   * notices.
+   *
+   * @param string $elementName
+   */
+  public function addOptionalQuickFormElement(string $elementName): void {
+    $this->optionalQuickFormElements[] = $elementName;
+  }
+
+  /**
+   * Get any quick-form elements that may not be present in the form.
+   *
+   * To make life simpler for smarty we ensure they are set to null
+   * rather than unset. This is done at the last minute when $this
+   * is converted to an array to be assigned to the form.
+   *
+   * @return array
+   */
+  public function getOptionalQuickFormElements(): array {
+    return $this->optionalQuickFormElements;
+  }
+
+  /**
+   * Add an expected smarty variable to the array.
+   *
+   * @param string $elementName
+   */
+  public function addExpectedSmartyVariable(string $elementName): void {
+    $this->expectedSmartyVariables[] = $elementName;
+  }
+
+  /**
    * Render form and return contents.
    *
    * @return string
@@ -1030,6 +1118,11 @@ class CRM_Core_Form extends HTML_QuickForm_Page {
     $content['formName'] = $this->getName();
     // CRM-15153
     $content['formClass'] = CRM_Utils_System::getClassName($this);
+    foreach (array_merge($this->getOptionalQuickFormElements(), $this->expectedSmartyVariables) as $string) {
+      if (!array_key_exists($string, $content)) {
+        $content[$string] = NULL;
+      }
+    }
     return $content;
   }
 
@@ -1515,7 +1608,7 @@ class CRM_Core_Form extends HTML_QuickForm_Page {
     }
     // Handle custom field
     if (strpos($name, 'custom_') === 0 && is_numeric($name[7])) {
-      list(, $id) = explode('_', $name);
+      [, $id] = explode('_', $name);
       $label = $props['label'] ?? CRM_Core_DAO::getFieldValue('CRM_Core_DAO_CustomField', 'label', $id);
       $gid = CRM_Core_DAO::getFieldValue('CRM_Core_DAO_CustomField', 'option_group_id', $id);
       if (CRM_Utils_Array::value('context', $props) != 'search') {
@@ -2142,35 +2235,6 @@ class CRM_Core_Form extends HTML_QuickForm_Page {
   }
 
   /**
-   * Convert all date fields within the params to mysql date ready for the
-   * BAO layer. In this case fields are checked against the $_datefields defined for the form
-   * and if time is defined it is incorporated
-   *
-   * @param array $params
-   *   Input params from the form.
-   *
-   * @todo it would probably be better to work on $this->_params than a passed array
-   * @todo standardise the format which dates are passed to the BAO layer in & remove date
-   * handling from BAO
-   */
-  public function convertDateFieldsToMySQL(&$params) {
-    foreach ($this->_dateFields as $fieldName => $specs) {
-      if (!empty($params[$fieldName])) {
-        $params[$fieldName] = CRM_Utils_Date::isoToMysql(
-          CRM_Utils_Date::processDate(
-            $params[$fieldName],
-            CRM_Utils_Array::value("{$fieldName}_time", $params), TRUE)
-        );
-      }
-      else {
-        if (isset($specs['default'])) {
-          $params[$fieldName] = date('YmdHis', strtotime($specs['default']));
-        }
-      }
-    }
-  }
-
-  /**
    * @param $elementName
    */
   public function removeFileRequiredRules($elementName) {
@@ -2243,7 +2307,7 @@ class CRM_Core_Form extends HTML_QuickForm_Page {
       return (int) $tempID;
     }
 
-    $userID = $this->getLoggedInUserContactID();
+    $userID = CRM_Core_Session::getLoggedInContactID();
 
     if (!is_null($tempID) && $tempID === $userID) {
       CRM_Core_Resources::singleton()->addVars('coreForm', ['contact_id' => (int) $tempID]);
@@ -2283,10 +2347,12 @@ class CRM_Core_Form extends HTML_QuickForm_Page {
 
   /**
    * Get the contact id of the logged in user.
+   * @deprecated
    *
    * @return int|false
    */
   public function getLoggedInUserContactID() {
+    CRM_Core_Error::deprecatedFunctionWarning('CRM_Core_Session::getLoggedInContactID()');
     // check if the user is logged in and has a contact ID
     $session = CRM_Core_Session::singleton();
     return $session->get('userID') ? (int) $session->get('userID') : FALSE;
@@ -2419,20 +2485,20 @@ class CRM_Core_Form extends HTML_QuickForm_Page {
   public function setPageTitle($entityLabel) {
     switch ($this->_action) {
       case CRM_Core_Action::ADD:
-        CRM_Utils_System::setTitle(ts('New %1', [1 => $entityLabel]));
+        $this->setTitle(ts('New %1', [1 => $entityLabel]));
         break;
 
       case CRM_Core_Action::UPDATE:
-        CRM_Utils_System::setTitle(ts('Edit %1', [1 => $entityLabel]));
+        $this->setTitle(ts('Edit %1', [1 => $entityLabel]));
         break;
 
       case CRM_Core_Action::VIEW:
       case CRM_Core_Action::PREVIEW:
-        CRM_Utils_System::setTitle(ts('View %1', [1 => $entityLabel]));
+        $this->setTitle(ts('View %1', [1 => $entityLabel]));
         break;
 
       case CRM_Core_Action::DELETE:
-        CRM_Utils_System::setTitle(ts('Delete %1', [1 => $entityLabel]));
+        $this->setTitle(ts('Delete %1', [1 => $entityLabel]));
         break;
     }
   }
@@ -2725,7 +2791,7 @@ class CRM_Core_Form extends HTML_QuickForm_Page {
     if (!$contactID) {
       return FALSE;
     }
-    if ($contactID === $this->getLoggedInUserContactID()) {
+    if ($contactID === CRM_Core_Session::getLoggedInContactID()) {
       return $contactID;
     }
     $userChecksum = CRM_Utils_Request::retrieve('cs', 'String', $this);
@@ -2742,11 +2808,29 @@ class CRM_Core_Form extends HTML_QuickForm_Page {
    *
    * @return mixed|null
    */
-  protected function getSubmittedValue(string $fieldName) {
+  public function getSubmittedValue(string $fieldName) {
     if (empty($this->exportedValues)) {
       $this->exportedValues = $this->controller->exportValues($this->_name);
     }
-    return $this->exportedValues[$fieldName] ?? NULL;
+    $value = $this->exportedValues[$fieldName] ?? NULL;
+    if (in_array($fieldName, $this->submittableMoneyFields, TRUE)) {
+      return CRM_Utils_Rule::cleanMoney($value);
+    }
+    return $value;
+  }
+
+  /**
+   * Get the active UFGroups (profiles) on this form
+   * Many forms load one or more UFGroups (profiles).
+   * This provides a standard function to retrieve the IDs of those profiles from the form
+   * so that you can implement things such as "is is_captcha field set on any of the active profiles on this form?"
+   *
+   * NOT SUPPORTED FOR USE OUTSIDE CORE EXTENSIONS - Added for reCAPTCHA core extension.
+   *
+   * @return array
+   */
+  public function getUFGroupIDs() {
+    return [];
   }
 
 }

@@ -305,25 +305,10 @@ class CRM_Mailing_BAO_Mailing extends CRM_Mailing_DAO_Mailing {
         ->execute();
     }
 
-    // Construct the filtered search queries.
-    $dao = CRM_Utils_SQL_Select::from('civicrm_mailing_group')
-      ->select('search_id, search_args, entity_id')
-      ->where('search_id IS NOT NULL AND mailing_id = #mailingID')
-      ->param('#mailingID', $mailingID)
-      ->execute();
-    while ($dao->fetch()) {
-      $customSQL = CRM_Contact_BAO_SearchCustom::civiMailSQL($dao->search_id,
-        $dao->search_args,
-        $dao->entity_id
-      );
-      $query = "REPLACE INTO {$includedTempTablename} ($entityColumn, contact_id) {$customSQL} ";
-      $mailingGroup->query($query);
-    }
-
     list($aclFrom, $aclWhere) = CRM_Contact_BAO_Contact_Permission::cacheClause();
 
     // clear all the mailing recipients before populating
-    CRM_Core_DAO::executeQuery(" DELETE FROM civicrm_mailing_recipients WHERE  mailing_id = %1 ", [
+    CRM_Core_DAO::executeQuery(' DELETE FROM civicrm_mailing_recipients WHERE  mailing_id = %1 ', [
       1 => [
         $mailingID,
         'Integer',
@@ -399,6 +384,9 @@ class CRM_Mailing_BAO_Mailing extends CRM_Mailing_DAO_Mailing {
    * @return array
    */
   public static function getLocationFilterAndOrderBy($email_selection_method, $location_type_id) {
+    if ($email_selection_method !== 'automatic' && !$location_type_id) {
+      throw new \CRM_Core_Exception(ts('You have selected an email Selection Method without specifying a Location Type. Please go back and change your recipient settings (using the wrench icon next to "Recipients").'));
+    }
     $email = CRM_Core_DAO_Email::getTableName();
     // Note: When determining the ORDER that results are returned, it's
     // the record that comes last that counts. That's because we are
@@ -445,39 +433,6 @@ class CRM_Mailing_BAO_Mailing extends CRM_Mailing_DAO_Mailing {
     }
 
     return [$location_filter, $orderBy];
-  }
-
-  /**
-   * @param string $type
-   *
-   * @return array
-   */
-  private function _getMailingGroupIds($type = 'Include') {
-    $mailingGroup = new CRM_Mailing_DAO_MailingGroup();
-    $group = CRM_Contact_DAO_Group::getTableName();
-    if (!isset($this->id)) {
-      // we're just testing tokens, so return any group
-      $query = "SELECT   id AS entity_id
-                      FROM     $group
-                      ORDER BY id
-                      LIMIT 1";
-    }
-    else {
-      $mg = CRM_Mailing_DAO_MailingGroup::getTableName();
-      $query = "SELECT entity_id
-                      FROM   $mg
-                      WHERE  mailing_id = {$this->id}
-                      AND    group_type = '$type'
-                      AND    entity_table = '$group'";
-    }
-    $mailingGroup->query($query);
-
-    $groupIds = [];
-    while ($mailingGroup->fetch()) {
-      $groupIds[] = $mailingGroup->entity_id;
-    }
-
-    return $groupIds;
   }
 
   /**
@@ -1521,7 +1476,6 @@ ORDER BY   civicrm_email.is_bulkmail DESC
    *   Form values.
    *
    * @param array $params
-   * @param array $ids
    *
    * @return object
    *   $mailing      The new mailing object
@@ -1529,12 +1483,7 @@ ORDER BY   civicrm_email.is_bulkmail DESC
    * @throws \CRM_Core_Exception
    * @throws \CiviCRM_API3_Exception
    */
-  public static function create(&$params, $ids = []) {
-
-    if (empty($params['id']) && (array_filter($ids) !== [])) {
-      $params['id'] = $ids['mailing_id'] ?? $ids['id'];
-      CRM_Core_Error::deprecatedWarning('Parameter $ids is no longer used by Mailing::create. Use the api or just pass $params');
-    }
+  public static function create(&$params) {
 
     // CRM-#1843
     // If it is a mass sms, set url_tracking to false
@@ -2132,7 +2081,7 @@ ORDER BY   civicrm_email.is_bulkmail DESC
         'clicks' => $mailing->clicks,
         'unique' => $mailing->unique_clicks,
         'rate' => !empty($report['event_totals']['delivered']) ? (100.0 * $mailing->unique_clicks) / $report['event_totals']['delivered'] : 0,
-        'report' => CRM_Report_Utils_Report::getNextUrl('mailing/clicks', "reset=1&mailing_id_value={$mailing_id}&url_value={$mailing->url}", FALSE, TRUE),
+        'report' => CRM_Report_Utils_Report::getNextUrl('mailing/clicks', "reset=1&mailing_id_value={$mailing_id}&url_value=" . rawurlencode($mailing->url), FALSE, TRUE),
       ];
     }
 
@@ -3028,7 +2977,8 @@ ORDER BY civicrm_mailing.name";
         CRM_Core_Action::VIEW => [
           'name' => ts('View'),
           'url' => 'civicrm/mailing/view',
-          'qs' => "reset=1&id=%%mkey%%",
+          //NYSS 14543
+          'qs' => "reset=1&id=%%mkey%%&cid=%%cid%%&cs=%%cs%%",
           'title' => ts('View Mailing'),
           'class' => 'crm-popup',
         ],
@@ -3052,6 +3002,8 @@ ORDER BY civicrm_mailing.name";
           'mid' => $values['mailing_id'],
           'cid' => $params['contact_id'],
           'mkey' => $mailingKey,
+          //NYSS 14543
+          'cs' => CRM_Contact_BAO_Contact_Utils::generateChecksum($params['contact_id'], NULL, 'inf'),
         ],
         ts('more'),
         FALSE,

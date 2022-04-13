@@ -180,14 +180,16 @@ class CRM_Integration_Process
           break;
 
         case 'DIRECTMSG':
-          $result = CRM_NYSS_BAO_Integration_Website::processCommunication($cid, $row->msg_action, $params, $row->msg_type);
+          $result = CRM_NYSS_BAO_Integration_Website::processCommunication($cid, $row->msg_action, $params,
+            $row->msg_type, $row->created_at);
           $activity_type = 'Direct Message';
           $activity_details = ($row->subject) ? $row->subject : '';
           $activity_data = json_encode(['note_id' => $result['id']]);
           break;
 
         case 'CONTEXTMSG':
-          $result = CRM_NYSS_BAO_Integration_Website::processCommunication($cid, $row->msg_action, $params, $row->msg_type);
+          $result = CRM_NYSS_BAO_Integration_Website::processCommunication($cid, $row->msg_action, $params,
+            $row->msg_type, $row->created_at);
           $activity_type = 'Context Message';
           $activity_details = ($row->subject) ? $row->subject : '';
           $activity_data = json_encode(['note_id' => $result['id']]);

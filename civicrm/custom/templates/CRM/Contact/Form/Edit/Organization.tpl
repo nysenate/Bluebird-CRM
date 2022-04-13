@@ -14,12 +14,14 @@
       $form.organization_name.label}<br/>
       {$form.organization_name.html}
     </td>
-
-       <td>{$form.legal_name.label}<br/>
-       {$form.legal_name.html}</td>
-
-       <td>{$form.nick_name.label}<br/>
-       {$form.nick_name.html}</td>
+    <td>
+      {$form.legal_name.label}<br/>
+      {$form.legal_name.html}
+    </td>
+    <td>
+      {$form.nick_name.label}<br/>
+      {$form.nick_name.html}
+    </td>
 
        {*NYSS*}{*
        <td>{$form.sic_code.label}<br/>
@@ -72,7 +74,7 @@
 
 {literal}
 <script type="text/javascript">
-  //7303
+  //NYSS 7303
   cj('label[for=organization_name]').append(' <span class="crm-marker" title="This field is required.">*</span>');
 </script>
 {/literal}

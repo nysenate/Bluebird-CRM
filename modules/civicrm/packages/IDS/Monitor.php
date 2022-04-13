@@ -9,16 +9,16 @@
  *
  * PHPIDS is free software; you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as published by
- * the Free Software Foundation, version 3 of the License, or 
+ * the Free Software Foundation, version 3 of the License, or
  * (at your option) any later version.
  *
  * PHPIDS is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU Lesser General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU Lesser General Public License
- * along with PHPIDS. If not, see <http://www.gnu.org/licenses/>. 
+ * along with PHPIDS. If not, see <http://www.gnu.org/licenses/>.
  *
  * PHP version 5.1.6+
  *
@@ -220,7 +220,7 @@ class IDS_Monitor
                 }
 
                 $this->pathToHTMLPurifier = $purifierPath;
-                
+
                 $this->HTMLPurifierCache  = $purifierCachePath;
             }
 
@@ -229,9 +229,9 @@ class IDS_Monitor
         if (!is_writeable($init->getBasePath()
             . $init->config['General']['tmp_path'])) {
             throw new Exception(
-                'Please make sure the ' . 
-                htmlspecialchars($init->getBasePath() . 
-                $init->config['General']['tmp_path'], ENT_QUOTES, 'UTF-8') . 
+                'Please make sure the ' .
+                htmlspecialchars($init->getBasePath() .
+                $init->config['General']['tmp_path'], ENT_QUOTES, 'UTF-8') .
                 ' folder is writable'
             );
         }
@@ -247,13 +247,13 @@ class IDS_Monitor
      */
     public function run()
     {
-        
+
         if (!empty($this->request)) {
             foreach ($this->request as $key => $value) {
                 $this->_iterate($key, $value);
             }
         }
-         
+
         return $this->getReport();
     }
 
@@ -302,21 +302,21 @@ class IDS_Monitor
     {
 
         // define the pre-filter
-        $prefilter = '/[^\w\s\/@!?\.]+|(?:\.\/)|(?:@@\w+)' 
+        $prefilter = '/[^\w\s\/@!?\.]+|(?:\.\/)|(?:@@\w+)'
             . '|(?:\+ADw)|(?:union\s+select)/i';
-        
+
         // to increase performance, only start detection if value
         // isn't alphanumeric
-        if (!$this->scanKeys 
+        if (!$this->scanKeys
             && (!$value || !preg_match($prefilter, $value))) {
             return false;
         } elseif($this->scanKeys) {
-            if((!$key || !preg_match($prefilter, $key)) 
+            if((!$key || !preg_match($prefilter, $key))
                 && (!$value || !preg_match($prefilter, $value))) {
                 return false;
             }
         }
-        
+
         // check if this field is part of the exceptions
         if (is_array($this->exceptions)) {
             foreach($this->exceptions as $exception) {
@@ -324,7 +324,7 @@ class IDS_Monitor
                 if(preg_match('/(\/.*\/[^eE]*)$/', $exception, $matches)) {
                     if(isset($matches[1]) && preg_match($matches[1], $key)) {
                         return false;
-                    } 
+                    }
                 } else {
                     if($exception === $key) {
                         return false;
@@ -397,7 +397,7 @@ class IDS_Monitor
      *
      * @return array
      */
-    private function _purifyValues($key, $value) 
+    private function _purifyValues($key, $value)
     {
         /*
          * Perform a pre-check if string is valid for purification
@@ -406,7 +406,8 @@ class IDS_Monitor
             return array($key, $value);
         }
 
-        include_once $this->pathToHTMLPurifier;
+        // Uses autoloader
+        // include_once $this->pathToHTMLPurifier;
 
         if (!is_writeable($this->HTMLPurifierCache)) {
             throw new Exception(
@@ -428,7 +429,7 @@ class IDS_Monitor
         }
 
         $value = preg_replace('/[\x0b-\x0c]/', ' ', $value);
-        $key = preg_replace('/[\x0b-\x0c]/', ' ', $key);   
+        $key = preg_replace('/[\x0b-\x0c]/', ' ', $key);
 
         $purified_value = $this->htmlpurifier->purify($value);
         $purified_key   = $this->htmlpurifier->purify($key);
@@ -449,37 +450,37 @@ class IDS_Monitor
 
         return array($key, $value);
     }
-    
+
     /**
-     * This method makes sure no dangerous markup can be smuggled in 
-     * attributes when HTML mode is switched on. 
-     * 
-     * If the precheck considers the string too dangerous for 
+     * This method makes sure no dangerous markup can be smuggled in
+     * attributes when HTML mode is switched on.
+     *
+     * If the precheck considers the string too dangerous for
      * purification false is being returned.
-     * 
+     *
      * @param  mixed $key
      * @param  mixed $value
      * @since  0.6
      *
      * @return boolean
      */
-    private function _purifierPreCheck($key = '', $value = '') 
+    private function _purifierPreCheck($key = '', $value = '')
     {
         /*
          * Remove control chars before pre-check
          */
         $tmp_value = preg_replace('/\p{C}/', null, $value);
         $tmp_key = preg_replace('/\p{C}/', null, $key);
-        
+
         $precheck = '/<(script|iframe|applet|object)\W/i';
-        if(preg_match($precheck, $tmp_key) 
+        if(preg_match($precheck, $tmp_key)
             || preg_match($precheck, $tmp_value)) {
-            
+
             return false;
         }
         return true;
     }
-    
+
 
     /**
      * This method calculates the difference between the original
@@ -503,14 +504,14 @@ class IDS_Monitor
         $original = preg_replace('/\s+alt="[^"]*"/m', null, $original);
         $original = preg_replace('/=?\s*"\s*"/m', null, $original);
         $original = preg_replace('/style\s*=\s*([^"])/m', 'style = "$1', $original);
-        
+
         # deal with oversensitive CSS normalization
         $original = preg_replace('/(?:([\w\-]+:)+\s*([^;]+;\s*))/m', '$1$2', $original);
-        
+
         # strip whitespace between tags
         $original = trim(preg_replace('/>\s*</m', '><', $original));
         $purified = trim(preg_replace('/>\s*</m', '><', $purified));
-        
+
         $original = preg_replace(
             '/(=\s*(["\'`])[^>"\'`]*>[^>"\'`]*["\'`])/m', 'alt$1', $original
         );
@@ -519,7 +520,7 @@ class IDS_Monitor
         if (!$purified) {
             return $original;
         }
-        
+
         // calculate the diff length
         $length = mb_strlen($original) - mb_strlen($purified);
 

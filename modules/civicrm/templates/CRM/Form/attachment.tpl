@@ -27,13 +27,13 @@
         </td>
     </tr>
 {elseif $action NEQ 4}
-    {if $context EQ 'pcpCampaign'}
+    {if !empty($context) && $context EQ 'pcpCampaign'}
       {capture assign=attachTitle}{ts}Include a Picture or an Image{/ts}{/capture}
     {else}
       {capture assign=attachTitle}{ts}Attachment(s){/ts}{/capture}
     {/if}
-    {if !$noexpand}
-    <div class="crm-accordion-wrapper {if $context NEQ 'pcpCampaign' AND !$currentAttachmentInfo}collapsed{/if}">
+    {if empty($noexpand)}
+    <div class="crm-accordion-wrapper {if (empty($context) || $context NEQ 'pcpCampaign') AND empty($currentAttachmentInfo)}collapsed{/if}">
        <div class="crm-accordion-header">
           {$attachTitle}
       </div><!-- /.crm-accordion-header -->
@@ -41,8 +41,8 @@
      {/if}
     <div id="attachments">
       <table class="form-layout-compressed">
-      {if $form.attachFile_1}
-        {if $context EQ 'pcpCampaign'}
+      {if !empty($form.attachFile_1)}
+        {if !empty($context) && $context EQ 'pcpCampaign'}
             <div class="description">{ts}You can upload a picture or image to include on your page. Your file should be in .jpg, .gif, or .png format. Recommended image size is 250 x 250 pixels. Images over 360 pixels wide will be automatically resized to fit.{/ts}</div>
         {/if}
         <tr>
@@ -51,13 +51,13 @@
             <div class="description">{ts}Browse to the <strong>file</strong> you want to upload.{/ts}{if $maxAttachments GT 1} {ts 1=$maxAttachments}You can have a maximum of %1 attachment(s).{/ts}{/if} {ts 1=$config->maxFileSize}Each file must be less than %1M in size. You can also add a short description.{/ts}</div>
           </td>
         </tr>
-        {if $form.tag_1.html}
+        {if !empty($form.tag_1.html)}
           <tr>
             <td class="label">{$form.tag_1.label}</td>
             <td><div class="crm-select-container crm-attachment-tags">{$form.tag_1.html}</div></td>
           </tr>
         {/if}
-        {if $tagsetInfo.file}
+        {if !empty($tagsetInfo.file)}
           <tr>{include file="CRM/common/Tagset.tpl" tagsetType='file' tableLayout=true tagsetElementName="file_taglist_1"}</tr>
         {/if}
         {section name=attachLoop start=2 loop=$numAttachments+1}
@@ -70,11 +70,13 @@
                 <td class="label">{$form.attachFile_1.label}</td>
                 <td>{$form.$attachName.html}&nbsp;{$form.$attachDesc.html}<a href="#" class="crm-hover-button crm-clear-attachment" style="visibility: hidden;" title="{ts}Clear{/ts}"><i class="crm-i fa-times" aria-hidden="true"></i></a></td>
             </tr>
+            {if !empty($form.$tagElement.html)}
             <tr>
               <td class="label">{$form.$tagElement.label}</td>
               <td><div class="crm-select-container crm-attachment-tags">{$form.$tagElement.html}</div></td>
             </tr>
-            {if $tagsetInfo.file}
+            {/if}
+            {if !empty($tagsetInfo.file)}
               <tr>{include file="CRM/common/Tagset.tpl" tagsetType='file' tableLayout=true tagsetElementName="file_taglist_$index"}</tr>
             {/if}
         {/section}

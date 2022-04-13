@@ -6,10 +6,18 @@
   <button type="button" class="btn btn-success-outline" ng-if="block.edit" ng-click="editBlock(block)" title="{{:: ts('Edit custom fields') }}">
     <i class="crm-i fa-pencil"></i>
   </button>
-  <button type="button" class="btn btn-danger-outline" ng-if="col && isSystemBlockTogglable(block)" crm-confirm="{type: 'disable', obj: block, message: ts('Block will be removed from the default layout and Contact Edit form.')}" on-yes="toggleSystemBlock(block)" title="{{:: ts('Disable %1', {1: block.title}) }}">
+  <button type="button" class="btn btn-danger-outline"
+          title="{{:: ts('Disable %1', {1: block.title}) }}"
+          ng-if="col && isSystemBlockTogglable(block)"
+          crm-confirm="{type: 'disable', obj: block, message: ts('Block will be removed from the system default layout and the Contact Edit form.')}"
+          on-yes="toggleSystemBlock(block)">
     <i class="crm-i fa-close"></i>
   </button>
-  <button type="button" class="btn btn-primary-outline" ng-if="!col && isSystemBlockTogglable(block)" crm-confirm="{message: ts('Block will be added to the default layout and Contact Edit form.')}" on-yes="toggleSystemBlock(block)" title="{{:: ts('Enable %1', {1: block.title}) }}">
+  <button type="button" class="btn btn-primary-outline"
+          title="{{:: ts('Enable %1', {1: block.title}) }}"
+          ng-if="!col && isSystemBlockTogglable(block)"
+          crm-confirm="{message: ts('Block will be added to the system default layout and the Contact Edit form.')}"
+          on-yes="toggleSystemBlock(block)">
     <i class="crm-i fa-undo"></i>
   </button>
 </div>

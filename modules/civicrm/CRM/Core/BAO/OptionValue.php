@@ -169,13 +169,16 @@ class CRM_Core_BAO_OptionValue extends CRM_Core_DAO_OptionValue {
     $optionValue = new CRM_Core_DAO_OptionValue();
     $optionValue->copyValues($params);
 
-    $isDomainOptionGroup = in_array($groupName, CRM_Core_OptionGroup::$_domainIDGroups);
-    if (empty($params['domain_id']) && $isDomainOptionGroup) {
+    $isDomainOptionGroup = CRM_Core_OptionGroup::isDomainOptionGroup($groupName);
+    // When creating a new option for a group that requires a domain, set default domain
+    if ($isDomainOptionGroup && empty($params['id']) && (empty($params['domain_id']) || CRM_Utils_System::isNull($params['domain_id']))) {
       $optionValue->domain_id = CRM_Core_Config::domainID();
     }
 
     // When setting a default option, unset other options in this group as default
-    if (!empty($params['is_default'])) {
+    // FIXME: The extra CRM_Utils_System::isNull is because the API will pass the string 'null'
+    // FIXME: It would help to make this column NOT NULL DEFAULT 0
+    if (!empty($params['is_default']) && !CRM_Utils_System::isNull($params['is_default'])) {
       $query = 'UPDATE civicrm_option_value SET is_default = 0 WHERE  option_group_id = %1';
 
       // tweak default reset, and allow multiple default within group.
@@ -190,7 +193,7 @@ class CRM_Core_BAO_OptionValue extends CRM_Core_DAO_OptionValue {
       $p = [1 => [$params['option_group_id'], 'Integer']];
 
       // Limit update by domain of option
-      $domain = $optionValue->domain_id ?? NULL;
+      $domain = CRM_Utils_System::isNull($optionValue->domain_id) ? NULL : $optionValue->domain_id;
       if (!$domain && $id && $isDomainOptionGroup) {
         $domain = CRM_Core_DAO::getFieldValue(__CLASS__, $id, 'domain_id');
       }
@@ -212,7 +215,7 @@ class CRM_Core_BAO_OptionValue extends CRM_Core_DAO_OptionValue {
         // CRM-21737 languages option group does not use unique values but unique names.
         $dao->name = $params['name'];
       }
-      if (in_array($groupName, CRM_Core_OptionGroup::$_domainIDGroups)) {
+      if (CRM_Core_OptionGroup::isDomainOptionGroup($groupName)) {
         $dao->domain_id = $optionValue->domain_id;
       }
       $dao->option_group_id = $params['option_group_id'];
@@ -264,9 +267,12 @@ class CRM_Core_BAO_OptionValue extends CRM_Core_DAO_OptionValue {
     if (!$optionValue->find()) {
       return FALSE;
     }
+    $hookParams = ['id' => $optionValueId];
+    CRM_Utils_Hook::pre('delete', 'OptionValue', $optionValueId, $hookParams);
     if (self::updateRecords($optionValueId, CRM_Core_Action::DELETE)) {
       CRM_Core_PseudoConstant::flush();
       $optionValue->delete();
+      CRM_Utils_Hook::post('delete', 'OptionValue', $optionValueId, $optionValue);
       return TRUE;
     }
     return FALSE;

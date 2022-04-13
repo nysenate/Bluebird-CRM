@@ -623,7 +623,7 @@ class CRM_NYSS_Inbox_BAO_Inbox {
       WHERE id = %3
     ", [
       1 => [self::STATUS_MATCHED, 'Integer'],
-      2 => [$forwarder, 'Integer'],
+      2 => [CRM_Core_Session::getLoggedInContactID(), 'Integer'],
       3 => [$rowId, 'Integer'],
     ]);
 

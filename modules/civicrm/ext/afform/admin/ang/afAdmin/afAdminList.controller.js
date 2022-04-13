@@ -36,6 +36,18 @@
       afforms[afform.type].push(afform);
     }, {});
 
+    // Load aggregated submission stats for each form
+    crmApi4('AfformSubmission', 'get', {
+      select: ['afform_name', 'MAX(submission_date) AS last_submission', 'COUNT(id) AS submission_count'],
+      groupBy: ['afform_name']
+    }).then(function(submissions) {
+      _.each(submissions, function(submission) {
+        var afform = _.findWhere(afforms, {name: submission.afform_name}) || {};
+        afform.last_submission = CRM.utils.formatDate(submission.last_submission);
+        afform.submission_count = submission.submission_count;
+      });
+    });
+
     // Change sort field/direction when clicking a column header
     this.sortBy = function(col) {
       ctrl.sortDir = ctrl.sortField === col ? !ctrl.sortDir : false;
@@ -45,9 +57,12 @@
     $scope.$bindToRoute({
       expr: '$ctrl.tab',
       param: 'tab',
-      format: 'raw',
-      default: ctrl.tabs[0].name
+      format: 'raw'
     });
+
+    if (!ctrl.tab) {
+      ctrl.tab = ctrl.tabs[0].name;
+    }
 
     this.createLinks = function() {
       ctrl.searchCreateLinks = '';
@@ -58,7 +73,7 @@
 
       if (ctrl.tab === 'form') {
         _.each(CRM.afGuiEditor.entities, function(entity, name) {
-          if (entity.defaults) {
+          if (entity.type === 'primary') {
             links.push({
               url: '#create/form/' + name,
               label: entity.label,
@@ -87,17 +102,34 @@
       }
 
       if (ctrl.tab === 'search') {
-        crmApi4('SearchDisplay', 'get', {
-          select: ['name', 'label', 'type:icon', 'saved_search.name', 'saved_search.label']
-        }).then(function(searchDisplays) {
-          _.each(searchDisplays, function(searchDisplay) {
-            links.push({
-              url: '#create/search/' + searchDisplay['saved_search.name'] + '.' + searchDisplay.name,
-              label: searchDisplay['saved_search.label'] + ': ' + searchDisplay.label,
-              icon: searchDisplay['type:icon']
-            });
+        var searchNames = [];
+        // Non-aggregated query will return the same search multiple times - once per display
+        crmApi4('SavedSearch', 'get', {
+          select: ['name', 'label', 'display.name', 'display.label', 'display.type:icon'],
+          where: [['api_entity', 'IS NOT NULL'], ['api_params', 'IS NOT NULL']],
+          join: [['SearchDisplay AS display', 'LEFT', ['id', '=', 'display.saved_search_id']]],
+          orderBy: {'label':'ASC'}
+        }).then(function(searches) {
+          _.each(searches, function(search) {
+            // Add default display for each search (track searchNames in a var to just add once per search)
+            if (!_.includes(searchNames, search.name)) {
+              searchNames.push(search.name);
+              links.push({
+                url: '#create/search/' + search.name,
+                label: search.label + ': ' + ts('Search results table'),
+                icon: 'fa-table'
+              });
+            }
+            // If the search has no displays (other than the default) this will be empty
+            if (search['display.name']) {
+              links.push({
+                url: '#create/search/' + search.name + '.' + search['display.name'],
+                label: search.label + ': ' + search['display.label'],
+                icon: search['display.type:icon']
+              });
+            }
           });
-          $scope.types.search.options = _.sortBy(links, 'Label');
+          $scope.types.search.options = links;
         });
       }
     };
@@ -109,7 +141,7 @@
         if (afform.has_base) {
           apiOps.push(['Afform', 'get', {
             where: [['name', '=', afform.name]],
-            select: ['name', 'title', 'type', 'is_public', 'server_route', 'has_local', 'has_base']
+            select: ['name', 'title', 'type', 'is_public', 'server_route', 'has_local', 'has_base', 'base_module', 'base_module:label']
           }, 0]);
         }
         var apiCall = crmStatus(

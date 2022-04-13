@@ -65,7 +65,7 @@ AND    {$this->_componentClause}";
     // we have all the contribution ids, so now we get the contact ids
     parent::setContactIDs();
     CRM_Utils_System::appendBreadCrumb($breadCrumb);
-    CRM_Utils_System::setTitle(ts('Print Contribution Receipts'));
+    $this->setTitle(ts('Print Contribution Receipts'));
     // Ajax submit would interfere with pdf file download
     $this->preventAjaxSubmit();
   }
@@ -180,10 +180,10 @@ AND    {$this->_componentClause}";
 
       $mail = CRM_Contribute_BAO_Contribution::sendMail($input, $ids, $contribID, $elements['createPdf']);
 
-      if ($mail['html']) {
+      if (!empty($mail['html'])) {
         $message[] = $mail['html'];
       }
-      else {
+      elseif (!empty($mail['body'])) {
         $message[] = nl2br($mail['body']);
       }
 
@@ -193,7 +193,7 @@ AND    {$this->_componentClause}";
 
     if ($elements['createPdf']) {
       CRM_Utils_PDF_Utils::html2pdf($message,
-        'civicrmContributionReceipt.pdf',
+        'receipt.pdf',
         FALSE,
         $elements['params']['pdf_format_id']
       );
@@ -228,6 +228,7 @@ AND    {$this->_componentClause}";
    * @return array
    *   array of common elements
    *
+   * @throws \CiviCRM_API3_Exception
    */
   public static function getElements($contribIds, $params, $contactIds) {
     $pdfElements = [];
@@ -242,21 +243,17 @@ AND    {$this->_componentClause}";
 
     $pdfElements['createPdf'] = FALSE;
     if (!empty($pdfElements['params']['output']) &&
-      ($pdfElements['params']['output'] == "pdf_invoice" || $pdfElements['params']['output'] == "pdf_receipt")
+      ($pdfElements['params']['output'] === 'pdf_invoice' || $pdfElements['params']['output'] === 'pdf_receipt')
     ) {
       $pdfElements['createPdf'] = TRUE;
     }
 
     $excludeContactIds = [];
     if (!$pdfElements['createPdf']) {
-      $returnProperties = [
-        'email' => 1,
-        'do_not_email' => 1,
-        'is_deceased' => 1,
-        'on_hold' => 1,
-      ];
-
-      list($contactDetails) = CRM_Utils_Token::getTokenDetails($contactIds, $returnProperties, FALSE, FALSE);
+      $contactDetails = civicrm_api3('Contact', 'get', [
+        'return' => ['email', 'do_not_email', 'is_deceased', 'on_hold'],
+        'id' => ['IN' => $contactIds],
+      ])['values'];
       $pdfElements['suppressedEmails'] = 0;
       $suppressedEmails = 0;
       foreach ($contactDetails as $id => $values) {

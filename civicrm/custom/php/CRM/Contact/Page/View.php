@@ -145,9 +145,8 @@ class CRM_Contact_Page_View extends CRM_Core_Page {
     //NYSS 7337
     CRM_Utils_System::appendBreadCrumb([['title' => ts('Search Results'), 'url' => self::getSearchURL()]]);
 
-    if ($image_URL = CRM_Core_DAO::getFieldValue('CRM_Contact_DAO_Contact', $this->_contactId, 'image_URL')) {
-      $this->assign("imageURL", CRM_Utils_File::getImageURL($image_URL));
-    }
+    $image_URL = CRM_Core_DAO::getFieldValue('CRM_Contact_DAO_Contact', $this->_contactId, 'image_URL');
+    $this->assign('imageURL', $image_URL ? CRM_Utils_File::getImageURL($image_URL) : '');
 
     // also store in session for future use
     $session = CRM_Core_Session::singleton();
@@ -159,7 +158,7 @@ class CRM_Contact_Page_View extends CRM_Core_Page {
     // check logged in user permission
     self::checkUserPermission($this);
 
-    list($displayName, $contactImage, $contactType, $contactSubtype, $contactImageUrl) = self::getContactDetails($this->_contactId);
+    [$displayName, $contactImage, $contactType, $contactSubtype, $contactImageUrl] = self::getContactDetails($this->_contactId);
     $this->assign('displayName', $displayName);
 
     $this->set('contactType', $contactType);
@@ -210,19 +209,7 @@ class CRM_Contact_Page_View extends CRM_Core_Page {
 
     // Add links for actions menu
     self::addUrls($this, $this->_contactId);
-
-    if ($contactType == 'Organization' &&
-      CRM_Core_Permission::check('administer Multiple Organizations') &&
-      Civi::settings()->get('is_enabled')) {
-      //check is any relationship between the organization and groups
-      $groupOrg = CRM_Contact_BAO_GroupOrganization::hasGroupAssociated($this->_contactId);
-      if ($groupOrg) {
-        $groupOrganizationUrl = CRM_Utils_System::url('civicrm/group',
-          "reset=1&oid={$this->_contactId}"
-        );
-        $this->assign('groupOrganizationUrl', $groupOrganizationUrl);
-      }
-    }
+    $this->assign('groupOrganizationUrl', $this->getGroupOrganizationUrl($contactType));
   }
 
   /**
@@ -294,7 +281,7 @@ class CRM_Contact_Page_View extends CRM_Core_Page {
     static $contactDetails;
     $contactImage = NULL;
     if (!isset($contactDetails[$contactId])) {
-      list($displayName, $contactImage) = self::getContactDetails($contactId);
+      [$displayName, $contactImage] = self::getContactDetails($contactId);
       $contactDetails[$contactId] = [
         'displayName' => $displayName,
         'contactImage' => $contactImage,
@@ -345,16 +332,16 @@ class CRM_Contact_Page_View extends CRM_Core_Page {
    */
   public static function addUrls(&$obj, $cid) {
     $uid = CRM_Core_BAO_UFMatch::getUFId($cid);
-
+    $obj->assign('userRecordId', $uid);
+    $userRecordUrl = '';
     if ($uid) {
       $userRecordUrl = CRM_Core_Config::singleton()->userSystem->getUserRecordUrl($cid);
-      $obj->assign('userRecordUrl', $userRecordUrl);
-      $obj->assign('userRecordId', $uid);
     }
     elseif (CRM_Core_Config::singleton()->userSystem->checkPermissionAddUser()) {
       $userAddUrl = CRM_Utils_System::url('civicrm/contact/view/useradd', 'reset=1&action=add&cid=' . $cid);
       $obj->assign('userAddUrl', $userAddUrl);
     }
+    $obj->assign('userRecordUrl', $userRecordUrl);
 
     if (CRM_Core_Permission::check('access Contact Dashboard')) {
       $dashboardURL = CRM_Utils_System::url('civicrm/user',
@@ -373,6 +360,21 @@ class CRM_Contact_Page_View extends CRM_Core_Page {
     if (is_array($hookLinks)) {
       $obj->assign('hookLinks', $hookLinks);
     }
+  }
+
+  /**
+   * @param string $contactType
+   *
+   * @return string
+   */
+  protected function getGroupOrganizationUrl(string $contactType): string {
+    if ($contactType !== 'Organization' || !CRM_Core_Permission::check('administer Multiple Organizations')
+      || !CRM_Contact_BAO_GroupOrganization::hasGroupAssociated($this->_contactId)
+      || !Civi::settings()->get('is_enabled')
+    ) {
+      return '';
+    }
+    return CRM_Utils_System::url('civicrm/group', "reset=1&oid={$this->_contactId}");
   }
 
   //NYSS 7337 restore https://github.com/civicrm/civicrm-core/pull/746/files
