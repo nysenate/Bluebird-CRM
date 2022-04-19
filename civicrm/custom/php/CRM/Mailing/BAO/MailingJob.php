@@ -120,6 +120,8 @@ class CRM_Mailing_BAO_MailingJob extends CRM_Mailing_DAO_MailingJob {
     }
 
     while ($job->fetch()) {
+      //CRM_Core_Error::debug_var(__METHOD__.': $job', $job, TRUE, TRUE, 'veq');
+
       // still use job level lock for each child job
       $lock = Civi::lockManager()->acquire("data.mailing.job.{$job->id}");
       if (!$lock->isAcquired()) {
@@ -448,6 +450,10 @@ VALUES (%1, %2, %3, %4, %5, %6, %7)
       // We are still getting all the recipients from the parent job
       // so we don't mess with the include/exclude logic.
       $recipients = CRM_Mailing_BAO_Recipients::mailingQuery($this->mailing_id, $this->job_offset, $this->job_limit);
+      //CRM_Core_Error::debug_var('$this->mailing_id', $this->mailing_id, TRUE, TRUE, 'veq');
+      //CRM_Core_Error::debug_var('$this->job_offset', $this->job_offset, TRUE, TRUE, 'veq');
+      //CRM_Core_Error::debug_var('$this->job_limit', $this->job_limit, TRUE, TRUE, 'veq');
+      //CRM_Core_Error::debug_var('$recipients', $recipients, TRUE, TRUE, 'veq');
 
       // FIXME: this is not very smart, we should move this to one DB call
       // INSERT INTO ... SELECT FROM ..
