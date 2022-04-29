@@ -21,18 +21,18 @@ function BluebirdSeven_breadcrumb($variables)
 
 
 //unset login failed message
-function BluebirdSeven_page_alter(&$page)
-{
+function BluebirdSeven_page_alter(&$page) {
   $msgs = drupal_get_messages('error');
   if (isset($msgs['error']) && is_array($msgs['error'])) {
     foreach ($msgs['error'] as $error) {
-      if (strpos($error, 'Sorry, unrecognized username or password') === false
-        && strpos($error, 'Sorry, there have been more than 5 failed login attempts') === false) {
-        drupal_set_message($error, 'error');
+      if (strpos($error,'Have you forgotten your password') !== FALSE) {
+        $error = 'Sorry, unrecognized username or password.';
       }
+
+      drupal_set_message($error, 'error');
     }
   }
-  //echo '<pre>';print_r($page);echo $title;echo '</pre>';
+  //echo '<pre>';print_r($page); echo $title; print_r($msgs);'</pre>';
 } // BluebirdSeven_page_alter()
 
 
