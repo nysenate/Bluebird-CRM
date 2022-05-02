@@ -105,6 +105,11 @@ class CRM_Export_Form_Select extends CRM_Core_Form_Task {
     // FIXME: Or better still, use CRM_Core_DAO_AllCoreTables::getBriefName($daoName) to get the $entityShortName
     $entityShortname = $this->getEntityShortName();
 
+    //NYSS 14703 - custom searches don't support contact export in core - we do; this entity naming override supports that;
+    if ($entityShortname == 'Legacycustomsearches') {
+      $entityShortname = 'Contact';
+    }
+
     if (!in_array($entityShortname, ['Contact', 'Contribute', 'Member', 'Event', 'Pledge', 'Case', 'Grant', 'Activity'], TRUE)) {
       // This is never reached - the exception here is just to clarify that entityShortName MUST be one of the above
       // to save future refactorers & reviewers from asking that question.
