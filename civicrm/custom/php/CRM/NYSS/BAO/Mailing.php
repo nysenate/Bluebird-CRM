@@ -23,7 +23,6 @@ class CRM_NYSS_BAO_Mailing {
 
     $rows = [];
     $dao = CRM_Core_DAO::executeQuery($sql, [1 => [$mailingId, 'Positive']]);
-    //Civi::log()->debug(__FUNCTION__, ['$dao' => $dao]);
 
     //exit early if we have no recipients to queue
     if (empty($dao->N)) {
@@ -61,17 +60,17 @@ class CRM_NYSS_BAO_Mailing {
         'job_offset' => $maxOffset + 1000,
         'job_limit' => $dao->N,
       ]);
-      //Civi::log()->debug(__FUNCTION__, ['$job' => $job]);
+      //CRM_Core_Error::debug_var('job', $job, TRUE, TRUE, 'veq');
 
       while ($dao->fetch()) {
         $rows[] = [
           $job['id'],
           $dao->email_id,
           $dao->contact_id,
-          empty($dao->phone_id) ? $dao->phone_id : 'null',
+          'null',
         ];
       }
-      //Civi::log()->debug(__FUNCTION__, ['rows' => $rows]);
+      //CRM_Core_Error::debug_var('rows', $rows, TRUE, TRUE, 'veq');
 
       if (!empty($rows)) {
         CRM_Mailing_Event_BAO_Queue::bulkCreate($rows, $now);

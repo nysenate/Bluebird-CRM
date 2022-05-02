@@ -414,11 +414,11 @@ function mail_civicrm_entityTypes(&$entityTypes) {
 }
 
 function mail_civicrm_alterMailingRecipients(&$mailing, &$params, $context) {
-  /*Civi::log()->debug('mail_civicrm_alterMailingRecipients', array(
+  /*Civi::log()->debug('mail_civicrm_alterMailingRecipients', [
     '$mailing' => $mailing,
     '$params' => $params,
     '$context' => $context,
-  ));*/
+  ]);*/
 
   if ($context == 'pre') {
     unset($params['filters']['on_hold']);
@@ -1501,6 +1501,9 @@ function _mail_addEmailSeeds($mailingID) {
 
 
 function _mail_dedupeEmail($mailingID) {
+  //CRM_Core_Error::debug_var(__FUNCTION__.': $mailingID', $mailingID, TRUE, TRUE, 'veq');
+  //CRM_Core_Error::backtrace(__FUNCTION__, TRUE);
+
   //if dedupeEmails, handle that now, as it was skipped earlier in the process
   $tempTbl = "nyss_temp_dedupe_emails_{$mailingID}";
   $sql = "CREATE TEMPORARY TABLE $tempTbl (email_id INT NOT NULL, PRIMARY KEY(email_id)) ENGINE=MyISAM;";
