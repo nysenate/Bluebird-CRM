@@ -1,0 +1,8 @@
+<?xml version="1.0"?>
+<menu>
+  <item>
+    <path>civicrm/admin/setting/logmail</path>
+    <title>Logmail Settings</title>
+    <page_callback>CRM_Admin_Form_Generic</page_callback>
+  </item>
+</menu>
