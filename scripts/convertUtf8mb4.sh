@@ -40,7 +40,7 @@ dblog=$dblogprefix$dbbasename
 
 echo "Converting CiviCRM and Logging tables to utf8mb4 format..."
 echo "processing $dbcivi..."
-$drush $instance cvapi system.utf8conversion patterns="civicrm_%,address_%,fn_%,nyss_%,shadow_%" databases=$dbcivi --quiet
+$drush $instance cvapi system.utf8conversion patterns="civicrm_%,address_%,fn_%,nyss_%,shadow_%,redist_%" databases=$dbcivi --quiet
 echo "processing $dblog..."
 $drush $instance cvapi system.utf8conversion patterns="log_civicrm_%" databases=$dblog --quiet
 
