@@ -25,6 +25,7 @@ function _civicrm_api3_nyss_purgeusers_spec(&$spec) {
     'title' => 'Dry run',
     'type' => CRM_Utils_Type::T_BOOLEAN,
     'options' => [1 => 'Yes', 0 => 'No'],
+    'api.default' => 1,
   ];
 }
 
