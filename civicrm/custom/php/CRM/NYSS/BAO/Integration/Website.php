@@ -680,9 +680,7 @@ class CRM_NYSS_BAO_Integration_Website
   /*
    * process communication and contextual messages as notes
    */
-  static function processCommunication($contactId, $action, $params, $type, $timestamp) {
-    $activityDate = (!empty($timestamp)) ? date('Y-m-d H:i:s', $timestamp) : date('Y-m-d H:i:s');
-
+  static function processCommunication($contactId, $action, $params, $type, $timestamp = null) {
     if ($type == 'DIRECTMSG') {
       $activityType = 'website_direct_message';
 
@@ -721,7 +719,7 @@ class CRM_NYSS_BAO_Integration_Website
       'source_contact_id' => $contactId,
       'target_id' => $contactId,
       'subject' => $subject,
-      'activity_date_time' => $activityDate,
+      'activity_date_time' => date('Y-m-d H:i:s', $timestamp),
       'details' => $note,
       'status_id' => 'Completed',
     ];
