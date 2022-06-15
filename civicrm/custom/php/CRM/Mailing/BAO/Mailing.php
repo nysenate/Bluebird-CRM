@@ -2474,9 +2474,6 @@ LEFT JOIN civicrm_mailing_group g ON g.mailing_id   = m.id
     CRM_Core_Error::deprecatedWarning('This function is deprecated, use CRM_Mailing_BAO_MailingJob::del instead');
 
     CRM_Mailing_BAO_MailingJob::del($id);
-
-    //NYSS 11888
-    CRM_Utils_Hook::post('delete', 'MailingJob', $id);
   }
 
   /**

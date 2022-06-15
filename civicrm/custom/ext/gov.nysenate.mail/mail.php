@@ -516,12 +516,12 @@ function mail_civicrm_pre($op, $objectName, $id, &$params) {
 
 
 function mail_civicrm_post($op, $objectName, $objectId, &$objectRef) {
-  /*Civi::log()->debug('mail_civicrm_post', array(
+  /*Civi::log()->debug('mail_civicrm_post', [
     '$op' => $op,
     '$objectName' => $objectName,
     '$objectId' => $objectId,
     '$objectRef' => $objectRef,
-  ));*/
+  ]);*/
 
   if ($objectName == 'MailingJob') {
     //check if existing non-test parent job exists for same mailing
