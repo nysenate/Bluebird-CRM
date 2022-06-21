@@ -6,7 +6,10 @@
 # Authors: Brian Shaughnessy and Ken Zalewski
 # Organization: New York State Senate
 # Date: 2022-05-31
-# scripts/iterateInstances.sh --all "scripts/convertUtf8mb4.sh {}"
+# Revised: 2022-06-20 - add logic to avoid running on a migrated database
+#
+# Sample command line:
+#   $ scripts/iterateInstances.sh --all "scripts/convertUtf8mb4.sh {}"
 #
 
 prog=`basename $0`
@@ -14,6 +17,7 @@ script_dir=`dirname $0`
 execSql=$script_dir/execSql.sh
 drush=$script_dir/drush.sh
 readConfig=$script_dir/readConfig.sh
+collation_name="utf8mb4"
 
 . $script_dir/defaults.sh
 
@@ -23,9 +27,6 @@ if [ $# -ne 1 ]; then
 fi
 
 instance="$1"
-
-data_rootdir=`$readConfig --ig $instance data.rootdir` || data_rootdir="$DEFAULT_DATA_ROOTDIR"
-pubfiles_dir="$data_rootdir/$instance/pubfiles"
 
 if ! $readConfig --instance $instance --quiet; then
   echo "$prog: $instance: Instance not found in config file" >&2
@@ -38,37 +39,45 @@ dbbasename=`$readConfig -i $instance db.basename` || dbbasename="$instance"
 dbcivi=$dbciviprefix$dbbasename
 dblog=$dblogprefix$dbbasename
 
-echo "Converting CiviCRM and Logging tables to utf8mb4 format..."
+echo "Converting CiviCRM and Logging databases to $collation_name format"
 
-## determine if any tables do not have the right collation
-sql="
-  SELECT COUNT(table_name)
-  FROM information_schema.tables
-  WHERE table_schema = '$dbcivi'
-    AND table_collation <> 'utf8mb4_unicode_ci';
-"
-tbls=`$execSql -q $instance -c "$sql"`
 
-## determine if any columns do not have the right collation
-sql="
-  SELECT COUNT(table_name)
-  FROM information_schema.columns
-  WHERE table_schema = '$dbcivi'
-    AND collation_name <> 'utf8mb4_unicode_ci'
-    AND collation_name IS NOT NULL
-    AND collation_name <> 'utf8mb4_bin';
-"
-cols=`$execSql -q $instance -c "$sql"`
+for dbname in $dbcivi $dblog; do
+  echo "Checking database [$dbname]"
 
-if [ $tbls -gt 0 ] || [ $cols -gt 0 ]
-then
-  echo "processing $dbcivi..."
-  $drush $instance cvapi system.utf8conversion patterns="civicrm_%,address_%,fn_%,nyss_%,shadow_%,redist_%" databases=$dbcivi --quiet
-  echo "processing $dblog..."
-  $drush $instance cvapi system.utf8conversion patterns="log_civicrm_%" databases=$dblog --quiet
-else
-  echo "this instance's tables and columns have already been converted."
-fi
+  ## determine if any tables do not have the correct collation
+  sql="
+    SELECT COUNT(table_name)
+    FROM information_schema.tables
+    WHERE table_schema = '$dbname'
+      AND engine = 'InnoDB'
+      AND table_collation <> '${collation_name}_unicode_ci';
+  "
+  tab_count=`$execSql -q $instance -c "$sql"`
 
-## record completion
-echo "$prog: UTF8 MB4 conversion complete."
+  ## determine if any columns do not have the correct collation
+  sql="
+    SELECT COUNT(table_name)
+    FROM information_schema.columns
+    WHERE table_schema = '$dbname'
+      AND collation_name IS NOT NULL
+      AND collation_name <> '${collation_name}_unicode_ci'
+      AND collation_name <> '${collation_name}_bin'
+      AND table_name IN (
+        SELECT table_name from information_schema.tables
+        WHERE table_schema = '$dbname'
+          AND engine = 'InnoDB'
+      );
+  "
+  col_count=`$execSql -q $instance -c "$sql"`
+
+  if [ $tab_count -gt 0 -o $col_count -gt 0 ]; then
+    echo "Converting collation for database [$dbname]"
+    $drush $instance cvapi system.utf8conversion patterns="civicrm_%,address_%,fn_%,migrate_%,nyss_%,redist_%,shadow_%,survey_%,log_civicrm_%,log_survey_%" databases=$dbname --quiet
+  else
+    echo "Tables/columns for database [$dbname] have already been converted"
+  fi
+done
+
+echo "Completed conversion of CiviCRM and Logging databases to $collation_name format"
+exit 0
