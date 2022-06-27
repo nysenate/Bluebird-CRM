@@ -1,6 +1,7 @@
 <?php
 
 require_once 'contact.civix.php';
+use CRM_NYSS_Contact_ExtensionUtil as E;
 
 /**
  * Implements hook_civicrm_config().
@@ -9,17 +10,6 @@ require_once 'contact.civix.php';
  */
 function contact_civicrm_config(&$config) {
   _contact_civix_civicrm_config($config);
-}
-
-/**
- * Implements hook_civicrm_xmlMenu().
- *
- * @param $files array(string)
- *
- * @link http://wiki.civicrm.org/confluence/display/CRMDOC/hook_civicrm_xmlMenu
- */
-function contact_civicrm_xmlMenu(&$files) {
-  _contact_civix_civicrm_xmlMenu($files);
 }
 
 /**
@@ -72,54 +62,6 @@ function contact_civicrm_disable() {
  */
 function contact_civicrm_upgrade($op, CRM_Queue_Queue $queue = NULL) {
   return _contact_civix_civicrm_upgrade($op, $queue);
-}
-
-/**
- * Implements hook_civicrm_managed().
- *
- * Generate a list of entities to create/deactivate/delete when this module
- * is installed, disabled, uninstalled.
- *
- * @link http://wiki.civicrm.org/confluence/display/CRMDOC/hook_civicrm_managed
- */
-function contact_civicrm_managed(&$entities) {
-  _contact_civix_civicrm_managed($entities);
-}
-
-/**
- * Implements hook_civicrm_caseTypes().
- *
- * Generate a list of case-types
- *
- * Note: This hook only runs in CiviCRM 4.4+.
- *
- * @link http://wiki.civicrm.org/confluence/display/CRMDOC/hook_civicrm_caseTypes
- */
-function contact_civicrm_caseTypes(&$caseTypes) {
-  _contact_civix_civicrm_caseTypes($caseTypes);
-}
-
-/**
- * Implements hook_civicrm_angularModules().
- *
- * Generate a list of Angular modules.
- *
- * Note: This hook only runs in CiviCRM 4.5+. It may
- * use features only available in v4.6+.
- *
- * @link http://wiki.civicrm.org/confluence/display/CRMDOC/hook_civicrm_caseTypes
- */
-function contact_civicrm_angularModules(&$angularModules) {
-_contact_civix_civicrm_angularModules($angularModules);
-}
-
-/**
- * Implements hook_civicrm_alterSettingsFolders().
- *
- * @link http://wiki.civicrm.org/confluence/display/CRMDOC/hook_civicrm_alterSettingsFolders
- */
-function contact_civicrm_alterSettingsFolders(&$metaDataFolders = NULL) {
-  _contact_civix_civicrm_alterSettingsFolders($metaDataFolders);
 }
 
 function contact_civicrm_pageRun(&$page) {
@@ -187,7 +129,8 @@ function contact_civicrm_buildForm($formName, &$form) {
       }
     }
 
-    CRM_Core_Resources::singleton()->addScriptFile('gov.nysenate.contact', 'js/InlineAddress.js');
+    CRM_Core_Resources::singleton()->addScriptFile(E::LONG_NAME, 'js/InlineAddress.js');
+    CRM_Core_Resources::singleton()->addScriptFile(E::LONG_NAME, 'js/DistrictInformation.js');
   }
 
   //14192
@@ -197,6 +140,34 @@ function contact_civicrm_buildForm($formName, &$form) {
     CRM_Core_Region::instance('form-body')->add([
       'template' => 'CRM/NYSS/TaskLabels.tpl',
     ]);
-    CRM_Core_Resources::singleton()->addScriptFile('gov.nysenate.contact', 'js/TaskLabels.js');
+    CRM_Core_Resources::singleton()->addScriptFile(E::LONG_NAME, 'js/TaskLabels.js');
   }
+
+  //13832
+  if ($formName == 'CRM_Contact_Form_Contact') {
+    if ($form->_action == CRM_Core_Action::ADD) {
+      Civi::resources()->addScript("CRM.$('.address-custom-cell').remove();");
+    }
+    else {
+      CRM_Core_Resources::singleton()->addScriptFile(E::LONG_NAME, 'js/DistrictInformation.js');
+    }
+  }
+}
+
+/**
+ * Implements hook_civicrm_postInstall().
+ *
+ * @link https://docs.civicrm.org/dev/en/latest/hooks/hook_civicrm_postInstall
+ */
+function contact_civicrm_postInstall() {
+  _contact_civix_civicrm_postInstall();
+}
+
+/**
+ * Implements hook_civicrm_entityTypes().
+ *
+ * @link https://docs.civicrm.org/dev/en/latest/hooks/hook_civicrm_entityTypes
+ */
+function contact_civicrm_entityTypes(&$entityTypes) {
+  _contact_civix_civicrm_entityTypes($entityTypes);
 }

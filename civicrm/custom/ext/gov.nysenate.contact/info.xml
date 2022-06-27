@@ -20,5 +20,6 @@
   <comments/>
   <civix>
     <namespace>CRM/NYSS/Contact</namespace>
+    <format>22.05.0</format>
   </civix>
 </extension>
