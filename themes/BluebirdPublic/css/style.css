@@ -306,6 +306,12 @@ div.notes span.label {
 div.nyss-buttons {
   margin: 20px 0;
 }
+div.nyss-buttons button {
+  padding: 10px 15px;
+  border: none;
+  background-color: #2B6A90;
+  color: white;
+}
 .crm-container div.nyss-buttons input.form-submit {
   font-size: 1.4em;
   padding: 4px 8px;

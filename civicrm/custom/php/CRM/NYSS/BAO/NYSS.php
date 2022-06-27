@@ -154,6 +154,17 @@ class CRM_NYSS_BAO_NYSS {
   }
 
   /**
+   * @return bool
+   *
+   * determine if the current page is a public page
+   */
+  static function isPublicUrl() {
+    global $theme;
+
+    return ($theme == 'BluebirdPublic');
+  }
+
+  /**
    * @param $msg
    *
    * Simple mailing function that piggy-backs on the error reporting extension
