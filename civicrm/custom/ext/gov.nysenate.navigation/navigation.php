@@ -10,8 +10,10 @@ require_once 'navigation.civix.php';
 function navigation_civicrm_config(&$config) {
   _navigation_civix_civicrm_config($config);
 
-  CRM_Core_Resources::singleton()->addScriptFile('gov.nysenate.navigation', 'js/navigation.js');
-  CRM_Core_Resources::singleton()->addStyleFile('gov.nysenate.navigation', 'css/navigation.css');
+  if (!CRM_NYSS_BAO_NYSS::isPublicUrl()) {
+    CRM_Core_Resources::singleton()->addScriptFile('gov.nysenate.navigation', 'js/navigation.js');
+    CRM_Core_Resources::singleton()->addStyleFile('gov.nysenate.navigation', 'css/navigation.css');
+  }
 }
 
 /**
