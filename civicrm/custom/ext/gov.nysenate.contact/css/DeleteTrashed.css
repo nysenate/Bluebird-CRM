@@ -1,0 +1,14 @@
+#output {
+  border: 1px solid orange;
+  border-radius: 4px 4px 4px 4px;
+  background-color: #fffacd;
+  padding: 10px;
+  max-height: 400px;
+  overflow: auto;
+}
+#output h3 {
+  padding-left: 0;
+}
+.crm-delete-trashed-wrapper {
+  padding: 20px !important;
+}
