@@ -35,5 +35,9 @@ fi
 echo "#14808 preferred pronouns"
 $drush $instance cvapi extension.upgrade --quiet
 
+## disable nyss_deletetrashed; moved to nyss.contact extension
+echo "#14497 disable nyss_deletetrashed"
+$drush $instance dis nyss_deletetrashed -y
+
 ## record completion
 echo "$prog: upgrade process is complete."
