@@ -33,18 +33,19 @@
         <table>
           <tr>
             <td>
-                {include file="CRM/Contact/Form/Edit/$contactType.tpl"}
               <span class="crm-button crm-button_qf_Contact_refresh_dedupe">
-            {$form._qf_Contact_refresh_dedupe.html}
-        </span>
+                {$form._qf_Contact_refresh_dedupe.html}
+              </span>
+              {help id="id-check-matching-contacts" file="CRM/Contact/Form/Contact.hlp"}
+              {include file="CRM/Contact/Form/Edit/$contactType.tpl"}
             </td>
           </tr>
           <tr>
             <td>
                 {foreach from = $editOptions item ="title" key="name"}
-                    {if $name eq "Address"}
-                        {include file="CRM/Contact/Form/Edit/$name.tpl"}
-                    {/if}
+                  {if $name eq "Address"}
+                    {include file="CRM/Contact/Form/Edit/$name.tpl"}
+                  {/if}
                 {/foreach}
             </td>
           </tr>

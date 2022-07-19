@@ -131,3 +131,7 @@ ul#civicrm-menu.sm li[data-name=search_results] a {
 div.crm-address-block div.crm-summary-row a {
   color: #0071bd !important;
 }
+.crm-container .crm-edit-address-custom_data:not(.crm-inline-edit-form) .collapsible-title {
+  background-color: #7EA5AF !important;
+  min-width: 350px !important;
+}

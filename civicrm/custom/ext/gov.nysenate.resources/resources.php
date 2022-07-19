@@ -137,8 +137,10 @@ function resources_civicrm_coreResourceList(&$list, $region) {
   Civi::resources()->addScriptFile('gov.nysenate.resources', 'js/jquery.tokeninput.js', 10, 'html-header');
   Civi::resources()->addScriptFile('gov.nysenate.resources', 'js/jquery-fieldselection.js', 10, 'html-header');
 
-  Civi::resources()->addScriptFile('gov.nysenate.resources', 'js/jobId.js');
-  Civi::resources()->addScriptFile('gov.nysenate.resources', 'js/menuBar.js');
+  if (!CRM_NYSS_BAO_NYSS::isPublicUrl()) {
+    Civi::resources()->addScriptFile('gov.nysenate.resources', 'js/jobId.js');
+    Civi::resources()->addScriptFile('gov.nysenate.resources', 'js/menuBar.js');
+  }
 
   //implement coreResourceList to define location of custom ckeditor config file
   $extPath = Civi::resources()->getUrl('gov.nysenate.resources');
@@ -163,7 +165,7 @@ function resources_civicrm_coreResourceList(&$list, $region) {
   $roles = $user->roles;
   $adminRoles = ['Administrator', 'Superuser'];
   $isAdmin = array_intersect($adminRoles, $roles);
-  if (empty($isAdmin)) {
+  if (empty($isAdmin) && !CRM_NYSS_BAO_NYSS::isPublicUrl()) {
     CRM_Core_Resources::singleton()->addStyleFile(E::LONG_NAME, 'css/nonAdmin.css');
   }
 }
