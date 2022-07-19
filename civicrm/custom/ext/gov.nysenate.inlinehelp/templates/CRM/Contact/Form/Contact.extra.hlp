@@ -27,3 +27,11 @@
 {htxt id="id-sharedAddress-title" override=1}
   {ts}Linked Address{/ts}
 {/htxt}
+
+{*14548*}
+{htxt id="id-check-matching-contacts-title" override=1}
+  {ts}Check for Matching Contact(s){/ts}
+{/htxt}
+{htxt id="id-check-matching-contacts" override=1}
+  <p>Triggers a duplicate check using name and either street address or email. Additional contact data is considered in the matching rule if present (birth date, gender, prefix, suffix, additional address fields).</p>
+{/htxt}

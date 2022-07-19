@@ -48,6 +48,11 @@
       {$form.suffix_id.html}
     </td>
     {/if}
+    <td>
+      {assign var='cf_preferred_pronoun' value=$groupTree.1.fields.$cf_preferred_pronoun_id.element_name}
+      {$form.$cf_preferred_pronoun.label}<br />
+      {$form.$cf_preferred_pronoun.html}
+    </td>
   </tr>
 
   <tr>
@@ -71,8 +76,12 @@
       {$form.contact_source.html|crmReplace:class:$formtextbig}
     </td>
     <td>
-      <label for="internal_identifier">{ts}Internal Id{/ts}</label>/{$form.external_identifier.label}<br />
-      {$contactId}{if $form.external_identifier.value}/{$form.external_identifier.value}{/if}
+      <label for="internal_identifier">{ts}Internal Id{/ts}</label><br />
+      {$contactId}
+    </td>
+    <td>
+      {$form.external_identifier.label}<br />
+      {if $form.external_identifier.value}{$form.external_identifier.value}{/if}
     </td>
   </tr>
 </table>
