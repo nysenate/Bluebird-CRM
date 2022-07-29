@@ -205,6 +205,14 @@ class CRM_Case_BAO_Query extends CRM_Core_BAO_Query {
       $query->_tables['civicrm_case_contact'] = 1;
       $query->_tables['civicrm_case'] = 1;
     }
+
+    //NYSS 14837
+    if (!empty($query->_returnProperties['case_manager'])) {
+      $query->_select['case_manager'] = "case_manager";
+      $query->_element['case_manager'] = 1;
+      $query->_tables['civicrm_case_manager'] = 1;
+      $query->_tables['civicrm_case'] = 1;
+    }
   }
 
   /**
@@ -549,6 +557,24 @@ case_relation_type.id = case_relationship.relationship_type_id )";
       case 'civicrm_case_tag':
         $from .= " $side JOIN civicrm_entity_tag as civicrm_case_tag ON ( civicrm_case_tag.entity_table = 'civicrm_case' AND civicrm_case_tag.entity_id = civicrm_case.id ) ";
         break;
+
+      //NYSS 14837
+      case 'civicrm_case_manager':
+        $from .= " $side JOIN (
+          SELECT rel.case_id, far_contact_id, c.sort_name case_manager
+          FROM civicrm_relationship_cache rel
+          JOIN civicrm_relationship_type reltype
+            ON rel.relationship_type_id = reltype.id
+          JOIN civicrm_contact c
+            ON rel.far_contact_id = c.id
+          WHERE rel.case_id IS NOT NULL
+            AND reltype.name_a_b = 'Case Manager is'
+            AND rel.is_active = 1
+        ) civicrm_case_manager
+          ON civicrm_case_manager.case_id = civicrm_case.id
+          AND civicrm_case_manager.far_contact_id != contact_a.id
+        ";
+        break;
     }
     return $from;
   }
@@ -592,6 +618,8 @@ case_relation_type.id = case_relationship.relationship_type_id )";
         'case_activity_date_time' => 1,
         'case_activity_type' => 1,
         'phone' => 1,
+        //NYSS
+        'case_manager' => 1,
       ];
 
       if ($includeCustomFields) {
