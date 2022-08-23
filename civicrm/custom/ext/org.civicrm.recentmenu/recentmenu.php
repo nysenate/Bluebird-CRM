@@ -13,6 +13,15 @@ function recentmenu_civicrm_config(&$config) {
 }
 
 /**
+ * Implements hook_civicrm_xmlMenu().
+ *
+ * @link http://wiki.civicrm.org/confluence/display/CRMDOC/hook_civicrm_xmlMenu
+ */
+function recentmenu_civicrm_xmlMenu(&$files) {
+  _recentmenu_civix_civicrm_xmlMenu($files);
+}
+
+/**
  * Implements hook_civicrm_install().
  *
  * @link http://wiki.civicrm.org/confluence/display/CRMDOC/hook_civicrm_install
@@ -67,6 +76,54 @@ function recentmenu_civicrm_upgrade($op, CRM_Queue_Queue $queue = NULL) {
 }
 
 /**
+ * Implements hook_civicrm_managed().
+ *
+ * Generate a list of entities to create/deactivate/delete when this module
+ * is installed, disabled, uninstalled.
+ *
+ * @link http://wiki.civicrm.org/confluence/display/CRMDOC/hook_civicrm_managed
+ */
+function recentmenu_civicrm_managed(&$entities) {
+  _recentmenu_civix_civicrm_managed($entities);
+}
+
+/**
+ * Implements hook_civicrm_caseTypes().
+ *
+ * Generate a list of case-types.
+ *
+ * Note: This hook only runs in CiviCRM 4.4+.
+ *
+ * @link http://wiki.civicrm.org/confluence/display/CRMDOC/hook_civicrm_caseTypes
+ */
+function recentmenu_civicrm_caseTypes(&$caseTypes) {
+  _recentmenu_civix_civicrm_caseTypes($caseTypes);
+}
+
+/**
+ * Implements hook_civicrm_angularModules().
+ *
+ * Generate a list of Angular modules.
+ *
+ * Note: This hook only runs in CiviCRM 4.5+. It may
+ * use features only available in v4.6+.
+ *
+ * @link http://wiki.civicrm.org/confluence/display/CRMDOC/hook_civicrm_angularModules
+ */
+function recentmenu_civicrm_angularModules(&$angularModules) {
+  _recentmenu_civix_civicrm_angularModules($angularModules);
+}
+
+/**
+ * Implements hook_civicrm_alterSettingsFolders().
+ *
+ * @link http://wiki.civicrm.org/confluence/display/CRMDOC/hook_civicrm_alterSettingsFolders
+ */
+function recentmenu_civicrm_alterSettingsFolders(&$metaDataFolders = NULL) {
+  _recentmenu_civix_civicrm_alterSettingsFolders($metaDataFolders);
+}
+
+/**
  * Implements hook_civicrm_entityTypes().
  *
  * Declare entity types provided by this module.
@@ -109,67 +166,63 @@ function recentmenu_civicrm_postProcess($formName, &$form) {
  */
 function recentmenu_civicrm_coreResourceList(&$list, $region) {
   if ($region == 'html-header' && CRM_Core_Permission::check('access CiviCRM')) {
-    $recentMenuItems = _get_recentmenu_items();
-    if ($recentMenuItems) {
-      Civi::resources()
-        ->addScriptFile('org.civicrm.recentmenu', 'js/recentmenu.js', 0, 'html-header')
-        ->addVars('recentmenu', $recentMenuItems);
-    }
+    Civi::resources()
+      ->addScriptFile('org.civicrm.recentmenu', 'js/recentmenu.js', 0, 'html-header')
+      ->addVars('recentmenu', _get_recentmenu_items());
   }
 }
 
-/**
- * @return array|NULL
- */
 function _get_recentmenu_items() {
-  // Lookup existing menu item to get the possibly user-defined label and icon
-  $navigation = \Civi\Api4\Navigation::get(FALSE)
-    ->addWhere('name', '=', 'recent_items')
-    ->addSelect('label', 'icon')
-    ->addWhere('domain_id', '=', 'current_domain')
-    ->execute()->first();
-  if (!$navigation) {
-    // Maybe the managed navigation entity hasn't been reconciled yet, e.g. mid-upgrade
-    return NULL;
-  }
-  try {
-    $recent = \Civi\Api4\RecentItem::get()->execute();
-  }
-  catch (API_Exception $e) {
-    // No logged-in user?
-    return NULL;
-  }
+  $icons = [
+    'Individual' => 'fa-user',
+    'Household' => 'fa-home',
+    'Organization' => 'fa-building',
+    'Activity' => 'fa-tasks',
+    'Case' => 'fa-folder-open',
+    'Contribution' => 'fa-credit-card',
+    'Grant' => 'fa-money',
+    'Group' => 'fa-users',
+    'Membership' => 'fa-id-badge',
+    'Note' => 'fa-sticky-note',
+    'Participant' => 'fa-ticket',
+    'Pledge' => 'fa-paper-plane',
+    'Relationship' => 'fa-handshake-o',
+  ];
+  $recent = CRM_Utils_Recent::get();
   $menu = [
-    'label' => $navigation['label'] . ' (' . $recent->count() . ')',
+    'label' => E::ts('Recent (%1)', [1 => count($recent)]),
     'name' => 'recent_items',
-    'icon' => $navigation['icon'],
+    'icon' => 'crm-i fa-history',
     'child' => [],
   ];
-  $entityTitles = \Civi\Api4\Entity::get(FALSE)
-    ->addSelect('name', 'title')
-    ->execute()
-    ->indexBy('name')->column('title');
   foreach ($recent as $i => $item) {
-    $entityTitle = $entityTitles[$item['entity_type']] ?? '';
     $node = [
       'label' => $item['title'],
-      'url' => $item['view_url'],
+      'url' => $item['url'],
       'name' => 'recent_items_' . $i,
-      'attr' => ['title' => E::ts('View %1', [1 => $entityTitle])],
-      'icon' => 'crm-i fa-fw ' . ($item['icon'] ?? 'fa-gear'),
-      'child' => [
-        [
-          'label' => E::ts('View %1', [1 => $entityTitle]),
-          'url' => $item['view_url'],
-          'name' => 'recent_items_' . $i . '_view',
-        ],
-      ],
+      'attr' => ['title' => $item['type']],
+      'icon' => 'crm-i fa-fw ' . CRM_Utils_Array::value($item['type'], $icons, 'fa-gear'),
+      'child' => [[
+        'label' => E::ts('View'),
+        'attr' => ['title' => E::ts('View %1', [1 => $item['type']])],
+        'url' => $item['url'],
+        'name' => 'recent_items_' . $i . '_view',
+      ]]
     ];
     if (!empty($item['edit_url'])) {
       $node['child'][] = [
-        'label' => E::ts('Edit %1', [1 => $entityTitle]),
+        'label' => E::ts('Edit'),
+        'attr' => ['title' => E::ts('Edit %1', [1 => $item['type']])],
         'url' => $item['edit_url'],
         'name' => 'recent_items_' . $i . '_edit',
+      ];
+    }
+    if (!empty($item['delete_url'])) {
+      $node['child'][] = [
+        'label' => E::ts('Delete'),
+        'attr' => ['title' => E::ts('Delete %1', [1 => $item['type']])],
+        'url' => $item['delete_url'],
+        'name' => 'recent_items_' . $i . '_delete',
       ];
     }
     $menu['child'][] = $node;
