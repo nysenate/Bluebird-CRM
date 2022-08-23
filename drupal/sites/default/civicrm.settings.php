@@ -90,9 +90,8 @@ $prefsMail = &$civicrm_setting['Mailing Preferences'];
 $prefsMap = &$civicrm_setting['Map Preferences'];
 $prefsSearch = &$civicrm_setting['Search Preferences'];
 $prefsUrl = &$civicrm_setting['URL Preferences'];
-$prefsReportError = &$civicrm_setting['reporterror'];
 $prefsMosaico = &$civicrm_setting['mosaico'];
-$prefsResources = &$civicrm_setting['resources'];
+$prefsErrorHandler = &$civicrm_setting['errorhandler'];
 
 // Core settings, from Core.setting.php
 // contact_view_options, contact_edit_options
@@ -291,14 +290,13 @@ $prefsUrl['imageUploadURL'] = "data/$datadirname/pubfiles";
 // customCSSURL
 $prefsUrl['extensionsURL'] = 'sites/all/ext';
 
-// Report Error extension settings
-$prefsReportError['reporterror_mailto'] = get_config_value($bbcfg, 'reporterror.email.to', 'civicrm-error@nysenate.gov');
-$prefsReportError['reporterror_fromemail'] = get_config_value($bbcfg, 'reporterror.email.from', '"CiviCRM Error" <civicrm-no-reply@nysenate.gov>');
-$prefsReportError['reporterror_show_full_backtrace'] = TRUE;
-$prefsReportError['reporterror_show_post_data'] = TRUE;
-$prefsReportError['reporterror_smartgroups_autodisable'] = TRUE;
-$prefsReportError['reporterror_sendreport_profile'] = TRUE;
-$prefsReportError['reporterror_handle_profile'] = TRUE;
+// Errorhandler extension settings
+$prefsErrorHandler['errorhandler_emailrecipients'] = get_config_value($bbcfg, 'errorhandler.email.to', 'civicrm-error@nysenate.gov');
+$prefsErrorHandler['errorhandler_fromemail'] = get_config_value($bbcfg, 'errorhandler.email.from', '"Bluebird Error" <civicrm-no-reply@nysenate.gov>');
+$prefsErrorHandler['errorhandler_endpoints'] = get_config_value($bbcfg, 'errorhandler.endpoints', 'email');
+$prefsErrorHandler['errorhandler_slack_url'] = get_config_value($bbcfg, 'errorhandler.slack.url', 'https://hooks.slack.com/');
+$prefsErrorHandler['errorhandler_slack_channel'] = get_config_value($bbcfg, 'errorhandler.slack.channel', 'civicrm-notices');
+$prefsErrorHandler['errorhandler_slack_title'] = get_config_value($bbcfg, 'errorhandler.slack.title', 'Notice from CRM');
 
 // Mosaico extension settings
 $prefsMosaico['mosaico_custom_templates_dir'] = "$approot/civicrm/custom/mosaico";
@@ -311,10 +309,6 @@ $prefsMosaico['mosaico_scale_factor2'] = 2;
 $prefsMosaico['mosaico_scale_width_limit2'] = 9999;
 $prefsMosaico['mosaico_plugins'] = 'link hr paste lists textcolor code civicrmtoken charmap anchor table';
 $prefsMosaico['mosaico_toolbar'] = 'bold italic forecolor backcolor hr bullist numlist charmap styleselect removeformat | civicrmtoken | link unlink anchor | pastetext code | table';
-
-$prefsResources['resources_slack_url'] = get_config_value($bbcfg, 'reporterror.slack.url', 'https://hooks.slack.com/');
-$prefsResources['resources_slack_channel'] = get_config_value($bbcfg, 'reporterror.slack.channel', 'civicrm-notices');
-$prefsResources['resources_slack_title'] = get_config_value($bbcfg, 'reporterror.slack.title', 'Notice from CRM');
 
 if (isset($bbcfg['xhprof.profile']) && $bbcfg['xhprof.profile']) {
   function xhprof_shutdown_func($source, $run_id = null) {
