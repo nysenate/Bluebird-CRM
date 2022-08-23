@@ -297,7 +297,8 @@ class CRM_Core_BAO_EntityTag extends CRM_Core_DAO_EntityTag {
    * @param int $contactID
    * @param bool $count
    *
-   * @return array
+   * @return array|int
+   *   Dependant on $count
    */
   public static function getContactTags($contactID, $count = FALSE) {
     $contactTags = [];
@@ -326,7 +327,7 @@ class CRM_Core_BAO_EntityTag extends CRM_Core_DAO_EntityTag {
 
     if ($count) {
       $dao->fetch();
-      return $dao->cnt;
+      return (int) $dao->cnt;
     }
 
     while ($dao->fetch()) {
@@ -401,7 +402,7 @@ class CRM_Core_BAO_EntityTag extends CRM_Core_DAO_EntityTag {
    *
    * @return array
    */
-  public function mergeTags($tagAId, $tagBId) {
+  public static function mergeTags($tagAId, $tagBId) {
     $queryParams = [
       1 => [$tagAId, 'Integer'],
       2 => [$tagBId, 'Integer'],
