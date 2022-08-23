@@ -14,10 +14,7 @@ declare(strict_types=1);
 namespace League\Csv;
 
 use CallbackFilterIterator;
-use Countable;
-use Generator;
 use Iterator;
-use IteratorAggregate;
 use JsonSerializable;
 use LimitIterator;
 use function array_flip;
@@ -30,7 +27,7 @@ use function sprintf;
 /**
  * Represents the result set of a {@link Reader} processed by a {@link Statement}.
  */
-class ResultSet implements Countable, IteratorAggregate, JsonSerializable
+class ResultSet implements TabularDataReader, JsonSerializable
 {
     /**
      * The CSV records collection.
@@ -48,14 +45,23 @@ class ResultSet implements Countable, IteratorAggregate, JsonSerializable
 
     /**
      * New instance.
-     *
-     * @param Iterator $records a CSV records collection iterator
-     * @param array    $header  the associated collection column names
      */
     public function __construct(Iterator $records, array $header)
     {
+        $this->validateHeader($header);
+
         $this->records = $records;
         $this->header = $header;
+    }
+
+    /**
+     * @throws SyntaxError if the header syntax is invalid
+     */
+    protected function validateHeader(array $header): void
+    {
+        if ($header !== array_unique(array_filter($header, 'is_string'))) {
+            throw new SyntaxError('The header record must be an empty or a flat array with unique string values.');
+        }
     }
 
     /**
@@ -64,6 +70,14 @@ class ResultSet implements Countable, IteratorAggregate, JsonSerializable
     public function __destruct()
     {
         unset($this->records);
+    }
+
+    /**
+     * Returns a new instance from a League\Csv\Reader object.
+     */
+    public static function createFromTabularDataReader(TabularDataReader $reader): self
+    {
+        return new self($reader->getRecords(), $reader->getHeader());
     }
 
     /**
@@ -79,19 +93,45 @@ class ResultSet implements Countable, IteratorAggregate, JsonSerializable
     /**
      * {@inheritdoc}
      */
-    public function getRecords(): Generator
+    public function getIterator(): Iterator
     {
-        foreach ($this->records as $offset => $value) {
-            yield $offset => $value;
-        }
+        return $this->getRecords();
     }
 
     /**
      * {@inheritdoc}
      */
-    public function getIterator(): Generator
+    public function getRecords(array $header = []): Iterator
     {
-        return $this->getRecords();
+        $this->validateHeader($header);
+        $records = $this->combineHeader($header);
+        foreach ($records as $offset => $value) {
+            yield $offset => $value;
+        }
+    }
+
+    /**
+     * Combine the header to each record if present.
+     */
+    protected function combineHeader(array $header): Iterator
+    {
+        if ($header === $this->header || [] === $header) {
+            return $this->records;
+        }
+
+        $field_count = count($header);
+        $mapper = static function (array $record) use ($header, $field_count): array {
+            if (count($record) != $field_count) {
+                $record = array_slice(array_pad($record, $field_count, null), 0, $field_count);
+            }
+
+            /** @var array<string|null> $assocRecord */
+            $assocRecord = array_combine($header, $record);
+
+            return $assocRecord;
+        };
+
+        return new MapIterator($this->records, $mapper);
     }
 
     /**
@@ -111,18 +151,12 @@ class ResultSet implements Countable, IteratorAggregate, JsonSerializable
     }
 
     /**
-     * Returns the nth record from the result set.
-     *
-     * By default if no index is provided the first record of the resultet is returned
-     *
-     * @param int $nth_record the CSV record offset
-     *
-     * @throws Exception if argument is lesser than 0
+     * {@inheritdoc}
      */
     public function fetchOne(int $nth_record = 0): array
     {
         if ($nth_record < 0) {
-            throw new Exception(sprintf('%s() expects the submitted offset to be a positive integer or 0, %s given', __METHOD__, $nth_record));
+            throw new InvalidArgument(sprintf('%s() expects the submitted offset to be a positive integer or 0, %s given', __METHOD__, $nth_record));
         }
 
         $iterator = new LimitIterator($this->records, $nth_record, 1);
@@ -132,13 +166,9 @@ class ResultSet implements Countable, IteratorAggregate, JsonSerializable
     }
 
     /**
-     * Returns a single column from the next record of the result set.
-     *
-     * By default if no value is supplied the first column is fetch
-     *
-     * @param string|int $index CSV column index
+     * {@inheritdoc}
      */
-    public function fetchColumn($index = 0): Generator
+    public function fetchColumn($index = 0): Iterator
     {
         $offset = $this->getColumnIndex($index, __METHOD__.'() expects the column index to be a valid string or integer, `%s` given');
         $filter = static function (array $record) use ($offset): bool {
@@ -150,8 +180,8 @@ class ResultSet implements Countable, IteratorAggregate, JsonSerializable
         };
 
         $iterator = new MapIterator(new CallbackFilterIterator($this->records, $filter), $select);
-        foreach ($iterator as $offset => $value) {
-            yield $offset => $value;
+        foreach ($iterator as $tKey => $tValue) {
+            yield $tKey => $tValue;
         }
     }
 
@@ -165,9 +195,11 @@ class ResultSet implements Countable, IteratorAggregate, JsonSerializable
      */
     protected function getColumnIndex($field, string $error_message)
     {
-        $method = is_string($field) ? 'getColumnIndexByValue' : 'getColumnIndexByKey';
+        if (is_string($field)) {
+            return $this->getColumnIndexByValue($field, $error_message);
+        }
 
-        return $this->$method($field, $error_message);
+        return $this->getColumnIndexByKey($field, $error_message);
     }
 
     /**
@@ -181,7 +213,7 @@ class ResultSet implements Countable, IteratorAggregate, JsonSerializable
             return $value;
         }
 
-        throw new Exception(sprintf($error_message, $value));
+        throw new InvalidArgument(sprintf($error_message, $value));
     }
 
     /**
@@ -194,7 +226,7 @@ class ResultSet implements Countable, IteratorAggregate, JsonSerializable
     protected function getColumnIndexByKey(int $index, string $error_message)
     {
         if ($index < 0) {
-            throw new Exception($error_message);
+            throw new InvalidArgument($error_message);
         }
 
         if ([] === $this->header) {
@@ -206,21 +238,13 @@ class ResultSet implements Countable, IteratorAggregate, JsonSerializable
             return $value;
         }
 
-        throw new Exception(sprintf($error_message, $index));
+        throw new InvalidArgument(sprintf($error_message, $index));
     }
 
     /**
-     * Returns the next key-value pairs from a result set (first
-     * column is the key, second column is the value).
-     *
-     * By default if no column index is provided:
-     * - the first column is used to provide the keys
-     * - the second column is used to provide the value
-     *
-     * @param string|int $offset_index The column index to serve as offset
-     * @param string|int $value_index  The column index to serve as value
+     * {@inheritdoc}
      */
-    public function fetchPairs($offset_index = 0, $value_index = 1): Generator
+    public function fetchPairs($offset_index = 0, $value_index = 1): Iterator
     {
         $offset = $this->getColumnIndex($offset_index, __METHOD__.'() expects the offset index value to be a valid string or integer, `%s` given');
         $value = $this->getColumnIndex($value_index, __METHOD__.'() expects the value index value to be a valid string or integer, `%s` given');

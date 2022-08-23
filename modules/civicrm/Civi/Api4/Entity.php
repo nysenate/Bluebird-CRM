@@ -35,7 +35,7 @@ class Entity extends Generic\AbstractEntity {
    * @return Generic\BasicGetFieldsAction
    */
   public static function getFields($checkPermissions = TRUE) {
-    return (new Generic\BasicGetFieldsAction('Entity', __FUNCTION__, function() {
+    return (new Generic\BasicGetFieldsAction('Entity', __FUNCTION__, function(Generic\BasicGetFieldsAction $getFields) {
       return [
         [
           'name' => 'name',
@@ -53,15 +53,7 @@ class Entity extends Generic\AbstractEntity {
           'name' => 'type',
           'data_type' => 'Array',
           'description' => 'Base class for this entity',
-          'options' => [
-            'AbstractEntity' => 'AbstractEntity',
-            'DAOEntity' => 'DAOEntity',
-            'CustomValue' => 'CustomValue',
-            'BasicEntity' => 'BasicEntity',
-            'SortableEntity' => 'SortableEntity',
-            'ManagedEntity' => 'ManagedEntity',
-            'EntityBridge' => 'EntityBridge',
-          ],
+          'options' => $getFields->getLoadOptions() ? self::getEntityTypes() : TRUE,
         ],
         [
           'name' => 'description',
@@ -80,8 +72,12 @@ class Entity extends Generic\AbstractEntity {
           'description' => 'Class name for dao-based entities',
         ],
         [
+          'name' => 'table_name',
+          'description' => 'Name of sql table, if applicable',
+        ],
+        [
           'name' => 'primary_key',
-          'type' => 'Array',
+          'data_type' => 'Array',
           'description' => 'Name of unique identifier field(s) (e.g. [id])',
         ],
         [
@@ -123,6 +119,11 @@ class Entity extends Generic\AbstractEntity {
           'description' => 'PHP class name',
         ],
         [
+          'name' => 'class_args',
+          'data_type' => 'Array',
+          'description' => 'Arguments needed by php action factory functions (used when multiple entities share a class, e.g. CustomValue).',
+        ],
+        [
           'name' => 'bridge',
           'data_type' => 'Array',
           'description' => 'Connecting fields for EntityBridge types',
@@ -131,6 +132,11 @@ class Entity extends Generic\AbstractEntity {
           'name' => 'ui_join_filters',
           'data_type' => 'Array',
           'description' => 'When joining entities in the UI, which fields should be presented by default in the ON clause',
+        ],
+        [
+          'name' => 'group_weights_by',
+          'data_type' => 'Array',
+          'description' => 'For sortable entities, what field groupings are used to order by weight',
         ],
       ];
     }))->setCheckPermissions($checkPermissions);
@@ -153,6 +159,22 @@ class Entity extends Generic\AbstractEntity {
     return [
       'default' => ['access CiviCRM'],
     ];
+  }
+
+  /**
+   * Collect the 'type' values from every entity.
+   *
+   * @return array
+   */
+  private static function getEntityTypes() {
+    $provider = \Civi::service('action_object_provider');
+    $entityTypes = [];
+    foreach ($provider->getEntities() as $entity) {
+      foreach ($entity['type'] ?? [] as $type) {
+        $entityTypes[$type] = $type;
+      }
+    }
+    return $entityTypes;
   }
 
 }

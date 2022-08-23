@@ -202,7 +202,7 @@ class TaskRunner
                 }
 
                 $isDryRun = false;
-                $e = new CompileTaskEvent(null, $this->composer, $passthruPolicyFilter, $package, $task, $isDryRun);
+                $e = new CompileTaskEvent('compile-task-' . $task->id, $this->composer, $passthruPolicyFilter, $package, $task, $isDryRun);
                 $this->handlers[$run['type']]->runTask($e, $run['type'], $run['code']);
             }
         } finally {

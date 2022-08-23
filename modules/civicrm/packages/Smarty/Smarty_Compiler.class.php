@@ -392,7 +392,7 @@ class Smarty_Compiler extends Smarty {
         }
 
         // put header at the top of the compiled template
-        $template_header = "<?php /* Smarty version ".$this->_version.", created on ".strftime("%Y-%m-%d %H:%M:%S")."\n";
+        $template_header = "<?php /* Smarty version ".$this->_version.", created on ". date("Y-m-d H:i:s")."\n";
         $template_header .= "         compiled from ".strtr(urlencode($resource_name), array('%2F'=>'/', '%3A'=>':'))." */ ?>\n";
 
         /* Emit code to load needed plugins. */
@@ -443,7 +443,7 @@ class Smarty_Compiler extends Smarty {
 
         $tag_command = $match[1];
         $tag_modifier = isset($match[2]) ? $match[2] : null;
-        $tag_args = isset($match[3]) ? $match[3] : null;
+        $tag_args = $match[3] ?? '';
 
         if (preg_match('~^' . $this->_num_const_regexp . '|' . $this->_obj_call_regexp . '|' . $this->_var_regexp . '$~', $tag_command)) {
             /* tag name is a variable or object */

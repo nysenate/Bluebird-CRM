@@ -18,7 +18,7 @@ class PhpMethodHandler
         }
 
         $cmd = '@php -r ' . escapeshellarg(sprintf(
-            'require_once %s; %s %s($GLOBALS["COMPOSER_COMPILE_TASK"]);',
+            'require_once %s; %s %s($GLOBALS[\Civi\CompilePlugin\TaskTransfer::GLOBAL_VAR]);',
             var_export($autoload, 1),
             TaskTransfer::createImportStatement(),
             $phpMethod

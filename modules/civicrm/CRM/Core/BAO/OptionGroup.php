@@ -14,33 +14,23 @@
  * @package CRM
  * @copyright CiviCRM LLC https://civicrm.org/licensing
  */
-class CRM_Core_BAO_OptionGroup extends CRM_Core_DAO_OptionGroup implements \Civi\Test\HookInterface {
+class CRM_Core_BAO_OptionGroup extends CRM_Core_DAO_OptionGroup implements \Civi\Core\HookInterface {
 
   /**
-   * Class constructor.
-   */
-  public function __construct() {
-    parent::__construct();
-  }
-
-  /**
-   * Fetch object based on array of properties.
+   * Retrieve DB object and copy to defaults array.
    *
    * @param array $params
-   *   (reference ) an assoc array of name/value pairs.
+   *   Array of criteria values.
    * @param array $defaults
-   *   (reference ) an assoc array to hold the flattened values.
+   *   Array to be populated with found values.
    *
-   * @return CRM_Core_BAO_OptionGroup
+   * @return self|null
+   *   The DAO object, if found.
+   *
+   * @deprecated
    */
-  public static function retrieve(&$params, &$defaults) {
-    $optionGroup = new CRM_Core_DAO_OptionGroup();
-    $optionGroup->copyValues($params);
-    if ($optionGroup->find(TRUE)) {
-      CRM_Core_DAO::storeValues($optionGroup, $defaults);
-      return $optionGroup;
-    }
-    return NULL;
+  public static function retrieve($params, &$defaults) {
+    return self::commonRetrieve(self::class, $params, $defaults);
   }
 
   /**
@@ -66,8 +56,8 @@ class CRM_Core_BAO_OptionGroup extends CRM_Core_DAO_OptionGroup implements \Civi
    * @param array $ids
    *   Reference array contains the id.
    *
-   *
-   * @return object
+   * @deprecated
+   * @return CRM_Core_DAO_OptionGroup
    */
   public static function add(&$params, $ids = []) {
     if (empty($params['id']) && !empty($ids['optionGroup'])) {

@@ -14,41 +14,33 @@
  * @package CRM
  * @copyright CiviCRM LLC https://civicrm.org/licensing
  */
-class CRM_Core_BAO_LocationType extends CRM_Core_DAO_LocationType implements \Civi\Test\HookInterface {
+class CRM_Core_BAO_LocationType extends CRM_Core_DAO_LocationType implements \Civi\Core\HookInterface {
 
   /**
-   * Static holder for the default LT.
-   * @var int
+   * @var CRM_Core_DAO_LocationType|null
    */
   public static $_defaultLocationType = NULL;
+
+  /**
+   * @var int|null
+   */
   public static $_billingLocationType = NULL;
 
   /**
-   * Class constructor.
-   */
-  public function __construct() {
-    parent::__construct();
-  }
-
-  /**
-   * Fetch object based on array of properties.
+   * Retrieve DB object and copy to defaults array.
    *
    * @param array $params
-   *   (reference ) an assoc array of name/value pairs.
+   *   Array of criteria values.
    * @param array $defaults
-   *   (reference ) an assoc array to hold the flattened values.
+   *   Array to be populated with found values.
    *
-   * @return CRM_Core_BAO_LocaationType|null
-   *   object on success, null otherwise
+   * @return self|null
+   *   The DAO object, if found.
+   *
+   * @deprecated
    */
-  public static function retrieve(&$params, &$defaults) {
-    $locationType = new CRM_Core_DAO_LocationType();
-    $locationType->copyValues($params);
-    if ($locationType->find(TRUE)) {
-      CRM_Core_DAO::storeValues($locationType, $defaults);
-      return $locationType;
-    }
-    return NULL;
+  public static function retrieve($params, &$defaults) {
+    return self::commonRetrieve(self::class, $params, $defaults);
   }
 
   /**
@@ -69,7 +61,7 @@ class CRM_Core_BAO_LocationType extends CRM_Core_DAO_LocationType implements \Ci
   /**
    * Retrieve the default location_type.
    *
-   * @return object
+   * @return CRM_Core_DAO_LocationType|null
    *   The default location type object on success,
    *                          null otherwise
    */

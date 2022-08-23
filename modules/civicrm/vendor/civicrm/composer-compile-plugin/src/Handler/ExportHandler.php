@@ -4,6 +4,7 @@ namespace Civi\CompilePlugin\Handler;
 
 use Civi\CompilePlugin\Event\CompileTaskEvent;
 use Civi\CompilePlugin\Util\ComposerIoTrait;
+use Civi\CompilePlugin\Util\EnvHelper;
 use Civi\CompilePlugin\Util\ShellRunner;
 use Composer\Composer;
 use Composer\IO\IOInterface;
@@ -51,7 +52,8 @@ class ExportHandler
                     return $this->findPkgPath($composer, $io, $packageName);
                 }
             }, trim($export));
-            putenv($envExpr);
+            [$name, $value] = explode('=', $envExpr, 2);
+            EnvHelper::set($name, $value);
         }
     }
 

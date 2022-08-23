@@ -2,7 +2,158 @@
 
 All Notable changes to `Csv` will be documented in this file
 
-## Next - TBD
+## 9.6.2 - 2020-12-10
+
+### Added 
+
+- Using Github actions as development tools.
+
+### Deprecated
+
+- None
+
+### Fixed
+
+- Adding official support for PHP8 [#405](https://github.com/thephpleague/csv/pull/405) and [#406](https://github.com/thephpleague/csv/pull/406) by [Ion Bazan](https://github.com/IonBazan)
+
+### Removed
+
+- Removing Travis and Scrutinizr as development tools
+
+## 9.6.1 - 2020-09-05
+
+### Added 
+
+- None
+
+### Deprecated
+
+- None
+
+### Fixed
+
+- BOM sequence processing fix [#394](https://github.com/thephpleague/csv/issues/394)
+
+### Removed
+
+- None
+
+## 9.6.0 - 2020-03-17
+
+### Added
+
+- More return types and type parameters as supported in PHP7.2+
+- `League\Csv\Statement::create` named constructor to ease constraint builder instantiation
+- `League\Csv\Statement` can now also process `League\Csv\ResultSet` instances.
+- `League\Csv\TabularDataReader` interface to represent how to read tabular data
+- `League\Csv\ResultSet::getRecords` has an optional `$header` second argument to make the method works like `League\Csv\Reader::getRecords` 
+- `League\Csv\ResultSet::createFromTabularDataReader` create a new instance from `League\Csv\TabularDataReader` implementing class.
+
+### Deprecated
+
+- Nothing
+
+### Fixed
+
+- `League\Csv\Reader` no longer uses `__call` to implement `fetchOne`, `fetchPairs` and `fetchColumn` methods.
+
+### Removed
+
+- Internal polyfill for `is_iterable`
+- Internal polyfill for `is_nullable_int`
+- Support for PHP7.0 and PHP7.1
+
+## 9.5.0 - 2019-12-15
+
+### Added
+
+- Improve package exception throwing by adding new exceptions classes that extends 
+the `League\Csv\Exception` exception marker class [#360](https://github.com/thephpleague/csv/issues/360), [#361](https://github.com/thephpleague/csv/issues/360)
+feature proposed and developed by [Darren Miller](https://github.com/dmlogic)
+    - `League\Csv\UnavailableFeature`
+    - `League\Csv\InvalidArgument`
+    - `League\Csv\SyntaxError`
+    
+### Deprecated
+
+- Nothing
+
+### Fixed
+
+- bug fix `bom_match` function see issue [#363](https://github.com/thephpleague/csv/issues/363) resolved based on PR from [Jerry Martinez](https://github.com/jmwebservices)
+- bug fix `delemiter_detect` function see issue [#366](https://github.com/thephpleague/csv/issues/366)
+
+### Removed
+
+- Nothing
+
+## 9.4.1 - 2019-10-17
+
+### Added
+
+- Nothing
+
+### Deprecated
+
+- Nothing
+
+### Fixed
+
+- bug fix the escape mechanism polyfill  [#358](https://github.com/thephpleague/csv/pull/358) fix provided by [on2](https://github.com/on2)
+
+### Removed
+
+- Nothing
+
+## 9.4.0 - 2019-10-02
+
+### Added
+
+- Adding support for controlling empty record presence in `Reader::getRecords` return value.
+    - `Reader::includeEmptyRecords`
+    - `Reader::skipEmptyRecords`
+    - `Reader::isEmptyRecordsIncluded`
+
+- Adding support for controlling Input BOM usage in the library:
+    - `AbstractCsv::skipInputBOM`
+    - `AbstractCsv::includeInputBOM`
+    - `AbstractCsv::isInputBOMIncluded`
+
+### Deprecated
+
+- Nothing
+
+### Fixed
+
+- `EmptyEscapeParser::parse` no longer auto skip empty records
+
+### Removed
+
+- Nothing
+
+## 9.3.0 - 2019-07-30
+
+### Added
+
+- `XMLConverter::import` see [#348](https://github.com/thephpleague/csv/pull/348) thanks [@kusabi](https://github.com/kusabi)
+- Support for `thead`, `tfoot` and `tbody` in `HTMLConverter::convert` via the addition of 
+protected methods `HTMLConverter::addHTMLAttributes` and `HTMLConverter::appendHeaderSection` [#348](https://github.com/thephpleague/csv/pull/348) thanks [@kusabi](https://github.com/kusabi)
+
+### Deprecated
+
+- Nothing
+
+### Fixed
+
+- Internal improvement in `Reader` dockblock thanks [@ghobaty](https://github.com/ghobaty).
+- Improve strict comparison when using `preg_match`.
+- Improve CSV control in `Stream`. 
+
+### Removed
+
+- Nothing
+
+## 9.2.1 - 2019-06-08
 
 ### Added
 

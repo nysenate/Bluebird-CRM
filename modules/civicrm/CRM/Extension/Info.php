@@ -23,12 +23,28 @@ class CRM_Extension_Info {
   const FILENAME = 'info.xml';
 
   /**
-   * @var string
+   * @var string|null
    */
   public $key = NULL;
+
+  /**
+   * @var string|null
+   */
   public $type = NULL;
+
+  /**
+   * @var string|null
+   */
   public $name = NULL;
+
+  /**
+   * @var string|null
+   */
   public $label = NULL;
+
+  /**
+   * @var string|null
+   */
   public $file = NULL;
 
   /**
@@ -82,7 +98,7 @@ class CRM_Extension_Info {
   /**
    * Load extension info an XML file.
    *
-   * @param $file
+   * @param string $file
    *
    * @throws CRM_Extension_Exception_ParseException
    * @return CRM_Extension_Info
@@ -140,11 +156,11 @@ class CRM_Extension_Info {
   }
 
   /**
-   * @param null $key
-   * @param null $type
-   * @param null $name
-   * @param null $label
-   * @param null $file
+   * @param string|null $key
+   * @param string|null $type
+   * @param string|null $name
+   * @param string|null $label
+   * @param string|null $file
    */
   public function __construct($key = NULL, $type = NULL, $name = NULL, $label = NULL, $file = NULL) {
     $this->key = $key;

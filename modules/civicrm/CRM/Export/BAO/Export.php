@@ -247,11 +247,11 @@ INSERT INTO {$componentTable} SELECT distinct gc.contact_id FROM civicrm_group_c
     if ($parserClass[0] == 'CRM' &&
       count($parserClass) >= 3
     ) {
-      require_once str_replace('_', DIRECTORY_SEPARATOR, $parserName) . ".php";
       // ensure the functions exists
       if (method_exists($parserName, 'errorFileName') &&
         method_exists($parserName, 'saveFileName')
       ) {
+        CRM_Core_Error::deprecatedWarning('unused code');
         $errorFileName = $parserName::errorFileName($type);
         $saveFileName = $parserName::saveFileName($type);
         if (!empty($errorFileName) && !empty($saveFileName)) {

@@ -50,7 +50,7 @@ function phar_inst() {
 case "$1" in
 
   before_script)
-    phar_inst phpunit https://phar.phpunit.de/phpunit-6.5.14.phar 7ff9eeb835864152d7e0d2c7ce50e55d
+    phar_inst phpunit https://phar.phpunit.de/phpunit-8.5.25.phar 6eacbbb16c3d3ba21223c4672b912e6a
     phar_inst composer https://getcomposer.org/download/1.10.13/composer.phar 56f13c034e5e0c58de35b77cbd0f1b0b
 
     echo "[[ Switch composer ]]"

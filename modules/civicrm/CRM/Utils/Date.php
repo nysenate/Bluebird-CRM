@@ -267,7 +267,7 @@ class CRM_Utils_Date {
   }
 
   /**
-   * @param $string
+   * @param string $string
    *
    * @return int
    */
@@ -369,6 +369,7 @@ class CRM_Utils_Date {
 
         $hour24 = (int) substr($dateString, 11, 2);
         $minute = (int) substr($dateString, 14, 2);
+        $second = (int) substr($dateString, 17, 2);
       }
       else {
         $year = (int) substr($dateString, 0, 4);
@@ -377,6 +378,7 @@ class CRM_Utils_Date {
 
         $hour24 = (int) substr($dateString, 8, 2);
         $minute = (int) substr($dateString, 10, 2);
+        $second = (int) substr($dateString, 12, 2);
       }
 
       if ($day % 10 == 1 and $day != 11) {
@@ -430,13 +432,13 @@ class CRM_Utils_Date {
         '%P' => $type,
         '%A' => $type,
         '%Y' => $year,
+        '%s' => str_pad($second, 2, 0, STR_PAD_LEFT),
+        '%S' => str_pad($second, 2, 0, STR_PAD_LEFT),
       ];
 
       return strtr($format, $date);
     }
-    else {
-      return '';
-    }
+    return '';
   }
 
   /**
@@ -540,8 +542,6 @@ class CRM_Utils_Date {
    */
   public static function convertToDefaultDate(&$params, $dateType, $dateParam) {
     $now = getdate();
-    $cen = substr($now['year'], 0, 2);
-    $prevCen = $cen - 1;
 
     $value = NULL;
     if (!empty($params[$dateParam])) {
@@ -693,15 +693,15 @@ class CRM_Utils_Date {
     $month = ($month < 10) ? "0" . "$month" : $month;
     $day = ($day < 10) ? "0" . "$day" : $day;
 
-    $year = (int ) $year;
-    // simple heuristic to determine what century to use
-    // 00 - 20 is always 2000 - 2020
-    // 21 - 99 is always 1921 - 1999
-    if ($year < 21) {
-      $year = (strlen($year) == 1) ? $cen . '0' . $year : $cen . $year;
-    }
-    elseif ($year < 100) {
-      $year = $prevCen . $year;
+    $year = (int) $year;
+    if ($year < 100) {
+      $year = substr($now['year'], 0, 2) * 100 + $year;
+      if ($year > ($now['year'] + 5)) {
+        $year = $year - 100;
+      }
+      elseif ($year <= ($now['year'] - 95)) {
+        $year = $year + 100;
+      }
     }
 
     if ($params[$dateParam]) {
@@ -715,21 +715,9 @@ class CRM_Utils_Date {
   }
 
   /**
-   * @param $date
-   *
-   * @return bool
-   */
-  public static function isDate(&$date) {
-    if (CRM_Utils_System::isNull($date)) {
-      return FALSE;
-    }
-    return TRUE;
-  }
-
-  /**
    * Translate a TTL to a concrete expiration time.
    *
-   * @param NULL|int|DateInterval $ttl
+   * @param null|int|DateInterval $ttl
    * @param int $default
    *   The value to use if $ttl is not specified (NULL).
    * @return int
@@ -755,7 +743,7 @@ class CRM_Utils_Date {
   /**
    * Normalize a TTL.
    *
-   * @param NULL|int|DateInterval $ttl
+   * @param null|int|DateInterval $ttl
    * @param int $default
    *   The value to use if $ttl is not specified (NULL).
    * @return int
@@ -778,7 +766,7 @@ class CRM_Utils_Date {
   }
 
   /**
-   * @param null $timeStamp
+   * @param int|false|null $timeStamp
    *
    * @return bool|string
    */
@@ -913,7 +901,7 @@ class CRM_Utils_Date {
    * @param date $targetDate
    *   Target Date. (show age on specific date)
    *
-   * @return int
+   * @return array
    *   array $results contains years or months
    */
   public static function calculateAge($birthDate, $targetDate = NULL) {
@@ -1948,7 +1936,7 @@ class CRM_Utils_Date {
       $mysqlDate = 'null';
     }
 
-    if (trim($date)) {
+    if (trim($date ?? '')) {
       $mysqlDate = date($format, strtotime($date . ' ' . $time));
     }
 
@@ -2115,15 +2103,23 @@ class CRM_Utils_Date {
   }
 
   /**
+   * Date formatting for imports where date format is specified.
+   *
+   * Note this is used for imports (only) because the importer can
+   * specify the format.
+   *
+   * Tests are in CRM_Utils_DateTest::testFormatDate
+   *
    * @param $date
+   *   Date string as entered.
    * @param $dateType
+   *   One of the constants like CRM_Core_Form_Date::DATE_yyyy_mm_dd.
    *
    * @return null|string
    */
   public static function formatDate($date, $dateType) {
-    $formattedDate = NULL;
     if (empty($date)) {
-      return $formattedDate;
+      return NULL;
     }
 
     // 1. first convert date to default format.
@@ -2136,32 +2132,28 @@ class CRM_Utils_Date {
 
     if (CRM_Utils_Date::convertToDefaultDate($dateParams, $dateType, $dateKey)) {
       $dateVal = $dateParams[$dateKey];
-      $ruleName = 'date';
       if ($dateType == 1) {
         $matches = [];
-        if (preg_match("/(\s(([01]\d)|[2][0-3]):([0-5]\d))$/", $date, $matches)) {
-          $ruleName = 'dateTime';
+        // The seconds part of this regex is not quite right - but it does succeed
+        // in clarifying whether there is a time component or not - which is all it is meant
+        // to do.
+        if (preg_match('/(\s(([01]\d)|[2][0-3]):([0-5]\d):?[0-5]?\d?)$/', $date, $matches)) {
           if (strpos($date, '-') !== FALSE) {
             $dateVal .= array_shift($matches);
           }
+          if (!CRM_Utils_Rule::dateTime($dateVal)) {
+            return NULL;
+          }
+          $dateVal = CRM_Utils_Date::customFormat(preg_replace("/(:|\s)?/", '', $dateVal), '%Y%m%d%H%i%s');
+          return $dateVal;
         }
       }
 
       // validate date.
-      $valid = CRM_Utils_Rule::$ruleName($dateVal);
-
-      if ($valid) {
-        // format date and time to default.
-        if ($ruleName == 'dateTime') {
-          $dateVal = CRM_Utils_Date::customFormat(preg_replace("/(:|\s)?/", "", $dateVal), '%Y%m%d%H%i');
-          // hack to add seconds
-          $dateVal .= '00';
-        }
-        $formattedDate = $dateVal;
-      }
+      return CRM_Utils_Rule::date($dateVal) ? $dateVal : NULL;
     }
 
-    return $formattedDate;
+    return NULL;
   }
 
   /**
@@ -2227,6 +2219,59 @@ class CRM_Utils_Date {
     $systemTimeZone = new DateTimeZone(CRM_Core_Config::singleton()->userSystem->getTimeZoneString());
     $dateObject->setTimezone($systemTimeZone);
     return $dateObject->format($format);
+  }
+
+  /**
+   * Check if the value returned by a date picker has a date section (ie: includes
+   * a '-' character) if it includes a time section (ie: includes a ':').
+   *
+   * @param string $value
+   *   A date/time string input from a datepicker value.
+   *
+   * @return bool
+   *   TRUE if valid, FALSE if there is a time without a date.
+   */
+  public static function datePickerValueWithTimeHasDate($value) {
+    // If there's no : (time) or a : and a - (date) then return true
+    return (
+      strpos($value, ':') === FALSE
+      || strpos($value, ':') !== FALSE && strpos($value, '-') !== FALSE
+    );
+  }
+
+  /**
+   * Validate start and end dates entered on a form to make sure they are
+   * logical. Expects the form keys to be start_date and end_date.
+   *
+   * @param string $startFormKey
+   *   The form element key of the 'start date'
+   * @param string $startValue
+   *   The value of the 'start date'
+   * @param string $endFormKey
+   *   The form element key of the 'end date'
+   * @param string $endValue
+   * The value of the 'end date'
+   *
+   * @return array|bool
+   *   TRUE if valid, an array of the erroneous form key, and error message to
+   *   use otherwise.
+   */
+  public static function validateStartEndDatepickerInputs($startFormKey, $startValue, $endFormKey, $endValue) {
+
+    // Check date as well as time is set
+    if (!empty($startValue) && !self::datePickerValueWithTimeHasDate($startValue)) {
+      return ['key' => $startFormKey, 'message' => ts('Please enter a date as well as a time.')];
+    }
+    if (!empty($endValue) && !self::datePickerValueWithTimeHasDate($endValue)) {
+      return ['key' => $endFormKey, 'message' => ts('Please enter a date as well as a time.')];
+    }
+
+    // Check end date is after start date
+    if (!empty($startValue) && !empty($endValue) && $endValue < $startValue) {
+      return ['key' => $endFormKey, 'message' => ts('The end date should be after the start date.')];
+    }
+
+    return TRUE;
   }
 
 }

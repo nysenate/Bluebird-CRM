@@ -4,12 +4,12 @@
   angular.module('crmSearchTasks').component('crmSearchInputVal', {
     bindings: {
       field: '<',
-      'multi': '<',
+      'op': '<',
       'optionKey': '<'
     },
     require: {ngModel: 'ngModel'},
     template: '<div class="form-group" ng-include="$ctrl.getTemplate()"></div>',
-    controller: function($scope, formatForSelect2) {
+    controller: function($scope, formatForSelect2, crmApi4) {
       var ts = $scope.ts = CRM.ts('org.civicrm.search_kit'),
         ctrl = this;
 
@@ -21,7 +21,7 @@
 
         this.ngModel.$render = function() {
           ctrl.value = ctrl.ngModel.$viewValue;
-          if (!rendered && field.input_type === 'Date') {
+          if (!rendered && isDateField(field)) {
             setDateType();
           }
           rendered = true;
@@ -44,6 +44,16 @@
             ctrl.dateType = 'fixed';
           }
         }
+      };
+
+      this.isMulti = function() {
+        // If there's a search operator, return `true` if the operator takes multiple values, else `false`
+        if (ctrl.op) {
+          return ctrl.op === 'IN' || ctrl.op === 'NOT IN';
+        }
+        // If no search operator this is an input for e.g. the bulk update action
+        // Return `true` if the field is multi-valued, else `null`
+        return ctrl.field && (ctrl.field.serialize || ctrl.field.data_type === 'Array') ? true : null;
       };
 
       this.changeDateType = function() {
@@ -85,10 +95,34 @@
         }
       };
 
+      this.lookupAddress = function() {
+        ctrl.value.geo_code_1 = null;
+        ctrl.value.geo_code_2 = null;
+        if (ctrl.value.address) {
+          crmApi4('Address', 'getCoordinates', {
+            address: ctrl.value.address
+          }).then(function(coordinates) {
+            if (coordinates[0]) {
+              ctrl.value.geo_code_1 = coordinates[0].geo_code_1;
+              ctrl.value.geo_code_2 = coordinates[0].geo_code_2;
+            }
+          });
+        }
+      };
+
       this.getTemplate = function() {
         var field = ctrl.field || {};
 
-        if (field.input_type === 'Date') {
+        if (_.includes(['LIKE', 'NOT LIKE', 'REGEXP', 'NOT REGEXP'], ctrl.op)) {
+          return '~/crmSearchTasks/crmSearchInput/text.html';
+        }
+
+        if (field.input_type === 'Location') {
+          ctrl.value = ctrl.value || {distance_unit: CRM.crmSearchAdmin.defaultDistanceUnit};
+          return '~/crmSearchTasks/crmSearchInput/location.html';
+        }
+
+        if (isDateField(field)) {
           return '~/crmSearchTasks/crmSearchInput/date.html';
         }
 
@@ -100,7 +134,7 @@
           return '~/crmSearchTasks/crmSearchInput/select.html';
         }
 
-        if (field.fk_entity || field.name === 'id') {
+        if ((field.fk_entity || field.name === 'id') && !_.includes(['>', '<', '>=', '<='], ctrl.op)) {
           return '~/crmSearchTasks/crmSearchInput/entityRef.html';
         }
 
@@ -119,6 +153,10 @@
         var field = ctrl.field || {};
         return {results: formatForSelect2(field.options || [], ctrl.optionKey || 'id', 'label', ['description', 'color', 'icon'])};
       };
+
+      function isDateField(field) {
+        return field.data_type === 'Date' || field.data_type === 'Timestamp';
+      }
 
     }
   });

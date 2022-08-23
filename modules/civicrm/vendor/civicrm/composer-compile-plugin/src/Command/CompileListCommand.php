@@ -42,5 +42,6 @@ class CompileListCommand extends \Composer\Command\BaseCommand
         } else {
             $output->write(TaskUIHelper::formatTaskTable($tasks, ['active', 'id', 'title', 'action']));
         }
+        return 0;
     }
 }

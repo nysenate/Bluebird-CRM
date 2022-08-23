@@ -11,12 +11,12 @@
     ],
     "config": {
         "platform": {
-            "php": "7.1"
+            "php": "7.2"
         }
     },
     "require": {
         "composer-plugin-api": "^1.1 || ^2.0",
-        "php": ">=7.1",
+        "php": ">=7.2",
         "totten/lurkerlite": "^1.3"
     },
     "require-dev": {

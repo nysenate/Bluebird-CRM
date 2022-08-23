@@ -113,7 +113,7 @@ class CRM_Admin_Form_Options extends CRM_Admin_Form {
     // Default weight & value
     $fieldValues = ['option_group_id' => $this->_gid];
     foreach (['weight', 'value'] as $field) {
-      if (empty($defaults[$field])) {
+      if (!isset($defaults[$field]) || $defaults[$field] === '') {
         $defaults[$field] = CRM_Utils_Weight::getDefaultWeight('CRM_Core_DAO_OptionValue', $fieldValues, $field);
       }
     }
@@ -147,6 +147,10 @@ class CRM_Admin_Form_Options extends CRM_Admin_Form {
       return;
     }
 
+    $optionGroup = \Civi\Api4\OptionGroup::get(FALSE)
+      ->addWhere('id', '=', $this->_gid)
+      ->execute()->first();
+
     $this->applyFilter('__ALL__', 'trim');
 
     $isReserved = FALSE;
@@ -174,11 +178,12 @@ class CRM_Admin_Form_Options extends CRM_Admin_Form {
         ['CRM_Core_DAO_OptionValue', $this->_id, $this->_gid, 'value', $this->_domainSpecific]
       );
     }
-    else {
+
+    // Add icon & color if this option group supports it.
+    if ($optionGroup['option_value_fields'] && in_array('icon', $optionGroup['option_value_fields'])) {
       $this->add('text', 'icon', ts('Icon'), ['class' => 'crm-icon-picker', 'title' => ts('Choose Icon'), 'allowClear' => TRUE]);
     }
-
-    if (in_array($this->_gName, ['activity_status', 'case_status'])) {
+    if ($optionGroup['option_value_fields'] && in_array('color', $optionGroup['option_value_fields'])) {
       $this->add('color', 'color', ts('Color'));
     }
 
@@ -269,8 +274,7 @@ class CRM_Admin_Form_Options extends CRM_Admin_Form {
 
     // If CiviCase enabled AND "Add" mode OR "edit" mode for non-reserved activities, only allow user to pick Core or CiviCase component.
     // FIXME: Each component should define whether adding new activity types is allowed.
-    $config = CRM_Core_Config::singleton();
-    if ($this->_gName == 'activity_type' && in_array("CiviCase", $config->enableComponents) &&
+    if ($this->_gName == 'activity_type' && CRM_Core_Component::isEnabled("CiviCase") &&
       (($this->_action & CRM_Core_Action::ADD) || !$isReserved)
     ) {
       $caseID = CRM_Core_Component::getComponentID('CiviCase');
@@ -342,7 +346,7 @@ class CRM_Admin_Form_Options extends CRM_Admin_Form {
    *   The input form values.
    * @param array $files
    *   The uploaded files if any.
-   * @param array $self
+   * @param self $self
    *   Current form object.
    *
    * @return array
