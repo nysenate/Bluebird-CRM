@@ -50,6 +50,10 @@ $drush $instance cvapi extension.uninstall key=ca.bidon.reporterror --quiet
 $drush $instance cvapi extension.uninstall key=civicrm-recalculate-recipients --quiet
 $drush $instance cvapi extension.uninstall key=com.ginkgostreet.mosaicotoolbarconfig --quiet
 
+$drush $instance pm-disable nyss_import -y
+$drush $instance pm-uninstall nyss_import -y
+##$drush $instance cvapi extension.enable key=gov.nysenate.importcontacts --quiet
+
 php $script_dir/../civicrm/scripts/logUpdateSchema.php -S $instance
 
 ## record completion
