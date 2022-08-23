@@ -26,4 +26,13 @@ $(document).ready(function() {
       clearInterval(testExists);
     }
   }, 100);
+
+  //
+  var buttonsExist = setInterval(function () {
+    var btns = $('div.rightButtons');
+    if (btns.length) {
+      btns.before('<a href="" class="ui-button ui-widget ui-state-default ui-corner-all ui-button-text-icon-primary"><span class="ui-button-icon-primary ui-icon fa fa-fw fa-print"></span><span class="ui-button-text">Print</span></a>');
+      clearInterval(buttonsExist);
+    }
+  }, 100);
 });
