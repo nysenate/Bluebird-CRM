@@ -46,6 +46,10 @@ echo "enable/disable/install/uninstall various extensions..."
 $drush $instance cvapi extension.enable key=gov.nysenate.errorhandler --quiet
 $drush $instance cvapi extension.disable key=ca.bidon.reporterror --quiet
 
+$drush $instance cvapi extension.uninstall key=ca.bidon.reporterror --quiet
+$drush $instance cvapi extension.uninstall key=civicrm-recalculate-recipients --quiet
+$drush $instance cvapi extension.uninstall key=com.ginkgostreet.mosaicotoolbarconfig --quiet
+
 php $script_dir/../civicrm/scripts/logUpdateSchema.php -S $instance
 
 ## record completion
