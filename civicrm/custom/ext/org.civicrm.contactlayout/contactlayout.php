@@ -14,15 +14,6 @@ function contactlayout_civicrm_config(&$config) {
 }
 
 /**
- * Implements hook_civicrm_xmlMenu().
- *
- * @link http://wiki.civicrm.org/confluence/display/CRMDOC/hook_civicrm_xmlMenu
- */
-function contactlayout_civicrm_xmlMenu(&$files) {
-  _contactlayout_civix_civicrm_xmlMenu($files);
-}
-
-/**
  * Implements hook_civicrm_install().
  *
  * @link http://wiki.civicrm.org/confluence/display/CRMDOC/hook_civicrm_install
@@ -74,41 +65,6 @@ function contactlayout_civicrm_disable() {
  */
 function contactlayout_civicrm_upgrade($op, CRM_Queue_Queue $queue = NULL) {
   return _contactlayout_civix_civicrm_upgrade($op, $queue);
-}
-
-/**
- * Implements hook_civicrm_managed().
- *
- * Generate a list of entities to create/deactivate/delete when this module
- * is installed, disabled, uninstalled.
- *
- * @link http://wiki.civicrm.org/confluence/display/CRMDOC/hook_civicrm_managed
- */
-function contactlayout_civicrm_managed(&$entities) {
-  _contactlayout_civix_civicrm_managed($entities);
-}
-
-/**
- * Implements hook_civicrm_angularModules().
- *
- * Generate a list of Angular modules.
- *
- * Note: This hook only runs in CiviCRM 4.5+. It may
- * use features only available in v4.6+.
- *
- * @link http://wiki.civicrm.org/confluence/display/CRMDOC/hook_civicrm_angularModules
- */
-function contactlayout_civicrm_angularModules(&$angularModules) {
-  _contactlayout_civix_civicrm_angularModules($angularModules);
-}
-
-/**
- * Implements hook_civicrm_alterSettingsFolders().
- *
- * @link http://wiki.civicrm.org/confluence/display/CRMDOC/hook_civicrm_alterSettingsFolders
- */
-function contactlayout_civicrm_alterSettingsFolders(&$metaDataFolders = NULL) {
-  _contactlayout_civix_civicrm_alterSettingsFolders($metaDataFolders);
 }
 
 /**
@@ -200,7 +156,7 @@ function contactlayout_civicrm_pageRun(&$page) {
       if (CRM_Core_Permission::check('administer CiviCRM')) {
         CRM_Core_Region::instance('contact-actions-ribbon')
           ->add([
-            'markup' => '<li style="float:right;">
+            'markup' => '<li class="crm-contact-summary-edit-layout">
               <a class="crm-hover-button" title="' . htmlspecialchars(E::ts('Edit Layout')) . '" href="' . CRM_Utils_System::url('civicrm/admin/contactlayout') . '">
                 <i class="crm-i fa-edit"></i> ' . htmlspecialchars(E::ts('Layout: %1', [1 => $layout['label'] ?? E::ts('System Default')])) .
             '</a>

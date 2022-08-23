@@ -36,7 +36,7 @@ class CRM_Contactlayout_BAO_ContactLayout extends CRM_Contactlayout_DAO_ContactL
     $get->addClause('OR', $subClauses);
 
     foreach ($get->execute() as $layout) {
-      if (self::userIsIn($uid, $layout['groups'])) {
+      if (self::checkGroupFilter($uid, $layout)) {
         self::loadBlocks($layout, $contact['contact_type']);
         return $layout;
       }
@@ -48,22 +48,34 @@ class CRM_Contactlayout_BAO_ContactLayout extends CRM_Contactlayout_DAO_ContactL
    * Check if the user matches the group filter for a layout
    *
    * @param int $uid
-   * @param array|null $groups
+   * @param array $layout
    *
    * @return bool
    */
-  private static function userIsIn($uid, $groups) {
+  private static function checkGroupFilter($uid, $layout) {
     // If no group filter, any user matches
-    if (!$groups) {
+    if (empty($layout['groups'])) {
       return TRUE;
     }
-    $groupIds = array_map(function($groupName) {
-      return CRM_Core_DAO::getFieldValue('CRM_Contact_DAO_Group', $groupName, 'id', 'name');
-    }, $groups);
+    // Convert group names to ids, and verify groups exist
+    $groupIds = (array) civicrm_api4('Group', 'get', [
+      'where' => [['name', 'IN', $layout['groups']]],
+    ], ['name' => 'id']);
+
+    // In case groups used by this layout have been deleted
+    if (count($groupIds) < count($layout['groups'])) {
+      Civi::log()->warning(sprintf('ContactLayout "%s" cannot filter on nonexistent group "%s".',
+        $layout['label'],
+        implode('" and "', array_diff($layout['groups'], array_keys($groupIds)))
+      ));
+    }
+    if (!$groupIds) {
+      // Can't filter if the groups don't exist.
+      return TRUE;
+    }
     return (bool) \Civi\Api4\Contact::get(FALSE)
       ->addSelect('id')
       ->addWhere('id', '=', $uid)
-      // TODO: Change this back to ('groups:name', 'IN', $groups) when fixed upstream
       ->addWhere('groups', 'IN', $groupIds)
       ->execute()->count();
   }

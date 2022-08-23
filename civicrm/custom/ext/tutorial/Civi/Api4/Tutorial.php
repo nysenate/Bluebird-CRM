@@ -5,7 +5,7 @@ namespace Civi\Api4;
 /**
  * Tutorial entity - onscreen walk-throughs to help new users learn CiviCRM.
  *
- * @searchable false
+ * @searchable none
  * @see https://lab.civicrm.org/extensions/tutorial
  */
 class Tutorial extends Generic\BasicEntity {
@@ -37,7 +37,7 @@ class Tutorial extends Generic\BasicEntity {
       ->setCheckPermissions($checkPermissions);
   }
 
-  public static function permissions() {
+  public static function permissions():array {
     return [
       'mark' => ['access CiviCRM'],
     ];
