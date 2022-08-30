@@ -15,7 +15,7 @@
       </td>
     </tr>
     <tr>
-      {include file="CRM/Core/DatePickerRangeWrapper.tpl" fieldName="mailing" colspan='2'}
+      {include file="CRM/Core/DatePickerRangeWrapper.tpl" fieldName="mailing" to='' from='' colspan='2' class='' hideRelativeLabel=0}
     </tr>
     <tr>
       <td colspan="1">{$form.sort_name.label} {help id="id-create_sort_name"}<br />
@@ -43,7 +43,7 @@
     </tr>
 
     {* language *}
-    {if !empty($form.language)}
+    {if array_key_exists('language', $form)}
       <tr>
         <td>{$form.language.label} {help id="id-language"}<br />
           {$form.language.html|crmAddClass:big}

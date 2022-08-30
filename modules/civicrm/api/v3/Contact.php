@@ -493,7 +493,7 @@ function civicrm_api3_contact_delete($params) {
  */
 function _civicrm_api3_contact_check_params(&$params) {
 
-  switch (strtolower(CRM_Utils_Array::value('contact_type', $params))) {
+  switch (strtolower($params['contact_type'] ?? '')) {
     case 'household':
       civicrm_api3_verify_mandatory($params, NULL, ['household_name']);
       break;
@@ -1602,10 +1602,16 @@ function _civicrm_api3_contact_getlist_output($result, $request) {
  * @throws \CiviCRM_API3_Exception
  */
 function civicrm_api3_contact_duplicatecheck($params) {
+  if (!isset($params['match']) || !is_array($params['match'])) {
+    throw new \CiviCRM_API3_Exception('Duplicate check must include criteria to check against (missing or invalid $params[\'match\']).');
+  }
+  if (!isset($params['match']['contact_type']) || !is_string($params['match']['contact_type'])) {
+    throw new \CiviCRM_API3_Exception('Duplicate check must include a contact type. (missing or invalid $params[\'match\'][\'contact_type\'])');
+  }
   $dupes = CRM_Contact_BAO_Contact::getDuplicateContacts(
     $params['match'],
     $params['match']['contact_type'],
-    $params['rule_type'],
+    $params['rule_type'] ?? '',
     CRM_Utils_Array::value('exclude', $params, []),
     CRM_Utils_Array::value('check_permissions', $params),
     CRM_Utils_Array::value('dedupe_rule_id', $params)

@@ -27,11 +27,11 @@ class EnvHelper
         $allKeys = array_unique(array_merge(array_keys($currentEnv), array_keys($newEnv)));
         foreach ($allKeys as $key) {
             if (!isset($currentEnv[$key])) {
-                putenv("$key=" . $newEnv[$key]);
+                static::set($key, $newEnv[$key]);
             } elseif (!isset($newEnv[$key])) {
-                putenv("$key");
+                static::remove($key);
             } elseif ($currentEnv[$key] !== $newEnv[$key]) {
-                putenv("$key=" . $newEnv[$key]);
+                static::set($key, $newEnv[$key]);
             }
         }
     }
@@ -45,7 +45,19 @@ class EnvHelper
     public static function add($vars)
     {
         foreach ($vars as $key => $value) {
-            putenv("$key=$value");
+            static::set($key, $value);
         }
     }
+
+    public static function set(string $key, string $value): void {
+        putenv("$key=" . $value);
+        $_SERVER[$key] = $_ENV[$key] = $value;
+    }
+
+    public static function remove(string $key) {
+        putenv($key);
+        unset($_SERVER[$key]);
+        unset($_ENV[$key]);
+    }
+
 }

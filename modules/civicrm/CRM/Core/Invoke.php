@@ -331,13 +331,17 @@ class CRM_Core_Invoke {
   /**
    * This function contains the default action.
    *
+   * Unused function.
+   *
    * @param $action
    *
    * @param $contact_type
    * @param $contact_sub_type
    *
+   * @Deprecated
    */
   public static function form($action, $contact_type, $contact_sub_type) {
+    CRM_Core_Error::deprecatedWarning('unused');
     CRM_Utils_System::setUserContext(['civicrm/contact/search/basic', 'civicrm/contact/view']);
     $wrapper = new CRM_Utils_Wrapper();
 
@@ -374,6 +378,10 @@ class CRM_Core_Invoke {
   public static function rebuildMenuAndCaches(bool $triggerRebuild = FALSE, bool $sessionReset = FALSE): void {
     $config = CRM_Core_Config::singleton();
     $config->clearModuleList();
+
+    // dev/core#3660 - Activate any new classloaders/mixins/etc before re-hydrating any data-structures.
+    CRM_Extension_System::singleton()->getClassLoader()->refresh();
+    CRM_Extension_System::singleton()->getMixinLoader()->run(TRUE);
 
     // also cleanup all caches
     $config->cleanupCaches($sessionReset || CRM_Utils_Request::retrieve('sessionReset', 'Boolean', CRM_Core_DAO::$_nullObject, FALSE, 0, 'GET'));

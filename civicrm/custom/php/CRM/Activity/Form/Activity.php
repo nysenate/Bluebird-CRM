@@ -182,7 +182,7 @@ class CRM_Activity_Form_Activity extends CRM_Contact_Form_Task {
       'source_contact_id' => [
         'type' => 'entityRef',
         'label' => ts('Added by'),
-        'required' => FALSE,
+        'required' => TRUE,
       ],
       'target_contact_id' => [
         'type' => 'entityRef',
@@ -366,12 +366,14 @@ class CRM_Activity_Form_Activity extends CRM_Contact_Form_Task {
       );
     }
 
+    $activityTypeDescription = NULL;
     if ($this->_activityTypeId) {
-      // Set activity type name and description to template.
       list($this->_activityTypeName, $activityTypeDescription) = CRM_Core_BAO_OptionValue::getActivityTypeDetails($this->_activityTypeId);
-      $this->assign('activityTypeName', $this->_activityTypeName);
-      $this->assign('activityTypeDescription', $activityTypeDescription);
     }
+
+    // Set activity type name and description to template.
+    $this->assign('activityTypeName', $this->_activityTypeName ?? FALSE);
+    $this->assign('activityTypeDescription', $activityTypeDescription ?? FALSE);
 
     // set user context
     $urlParams = $urlString = NULL;
@@ -528,7 +530,7 @@ class CRM_Activity_Form_Activity extends CRM_Contact_Form_Task {
    * @return array
    */
   public function getOptionalQuickFormElements(): array {
-    return ['separation', 'tag'];
+    return array_merge(['separation', 'tag'], $this->optionalQuickFormElements);
   }
 
   /**
@@ -847,7 +849,7 @@ class CRM_Activity_Form_Activity extends CRM_Contact_Form_Task {
    *   The input form values.
    * @param array $files
    *   The uploaded files if any.
-   * @param $self
+   * @param self $self
    *
    * @return bool|array
    *   true if no errors, else array of errors
@@ -1253,6 +1255,9 @@ class CRM_Activity_Form_Activity extends CRM_Contact_Form_Task {
    * For the moment this is just pulled from preProcess
    */
   public function assignActivityType() {
+    // Default array with required key for Smarty template
+    $activityTypeNameAndLabel = ['machineName' => FALSE];
+
     if ($this->_activityTypeId) {
       $activityTypeDisplayLabels = $this->getActivityTypeDisplayLabels();
       if ($activityTypeDisplayLabels[$this->_activityTypeId]) {
@@ -1260,7 +1265,7 @@ class CRM_Activity_Form_Activity extends CRM_Contact_Form_Task {
 
         // At the moment this is duplicating other code in this section, but refactoring in small steps.
         $activityTypeObj = new CRM_Activity_BAO_ActivityType($this->_activityTypeId);
-        $this->assign('activityTypeNameAndLabel', $activityTypeObj->getActivityType());
+        $activityTypeNameAndLabel = $activityTypeObj->getActivityType();
       }
       // Set title.
       if (isset($activityTypeDisplayLabels)) {
@@ -1280,6 +1285,8 @@ class CRM_Activity_Form_Activity extends CRM_Contact_Form_Task {
         }
       }
     }
+
+    $this->assign('activityTypeNameAndLabel', $activityTypeNameAndLabel);
   }
 
 }

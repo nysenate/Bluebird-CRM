@@ -17,13 +17,6 @@
 class CRM_Mailing_Event_BAO_Delivered extends CRM_Mailing_Event_DAO_Delivered {
 
   /**
-   * Class constructor.
-   */
-  public function __construct() {
-    parent::__construct();
-  }
-
-  /**
    * Create a new delivery event.
    *
    * @param array $params
@@ -68,14 +61,12 @@ class CRM_Mailing_Event_BAO_Delivered extends CRM_Mailing_Event_DAO_Delivered {
    *   ID of the mailing.
    * @param int $job_id
    *   Optional ID of a job to filter on.
-   * @param bool $is_distinct
-   *   Group by queue ID?.
    * @param string $toDate
    *
    * @return int
    *   Number of rows in result set
    */
-  public static function getTotalCount($mailing_id, $job_id = NULL, $is_distinct = FALSE, $toDate = NULL) {
+  public static function getTotalCount($mailing_id, $job_id = NULL, $toDate = NULL) {
     $dao = new CRM_Core_DAO();
 
     //$delivered  = self::getTableName();
@@ -106,10 +97,6 @@ class CRM_Mailing_Event_BAO_Delivered extends CRM_Mailing_Event_DAO_Delivered {
 
     if (!empty($job_id)) {
       $query .= " AND $job.id = " . CRM_Utils_Type::escape($job_id, 'Integer');
-    }
-
-    if ($is_distinct) {
-      $query .= " GROUP BY $queue.id ";
     }
 
     // query was missing
@@ -184,10 +171,6 @@ class CRM_Mailing_Event_BAO_Delivered extends CRM_Mailing_Event_DAO_Delivered {
 
     if (!empty($job_id)) {
       $query .= " AND $job.id = " . CRM_Utils_Type::escape($job_id, 'Integer');
-    }
-
-    if ($is_distinct) {
-      $query .= " GROUP BY $queue.id, $delivered.id";
     }
 
     $orderBy = "sort_name ASC, {$delivered}.time_stamp DESC";
@@ -280,7 +263,7 @@ class CRM_Mailing_Event_BAO_Delivered extends CRM_Mailing_Event_DAO_Delivered {
       ->createWithColumns('id int primary key, reset_date datetime');
     $temporaryTableName = $temporaryTable->getName();
 
-    //NYSS 14263 exclude emails on hold = opt out
+    // also exclude on_hold = opt-out (2)
     $query = "
             INSERT INTO {$temporaryTableName} (id, reset_date)
             SELECT      civicrm_email.id as email_id,

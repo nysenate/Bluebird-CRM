@@ -24,12 +24,6 @@ class CRM_Contact_Form_Task_EmailCommon {
 
   CONST MAX_EMAILS_KILL_SWITCH = 10;//NYSS 7761 reduce from 50
 
-  public $_contactDetails = [];
-
-  public $_allContactDetails = [];
-
-  public $_toContactEmails = [];
-
   /**
    * Pre Process Form Addresses to be used in Quickform
    *

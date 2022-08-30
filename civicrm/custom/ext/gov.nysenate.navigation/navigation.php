@@ -388,7 +388,7 @@ function _buildManageMenu($manageID) {
           'active' => 1,
         ],
       ],
-      $manageID+5 => [
+      /*$manageID+5 => [
         'attributes' => [
           'label' => 'Import Contacts',
           'name' => 'Import Contacts',
@@ -400,7 +400,7 @@ function _buildManageMenu($manageID) {
           'navID' => $manageID+5,
           'active' => 1,
         ],
-      ],
+      ],*/
       $manageID+6 => [
         'attributes' => [
           'label' => 'Import Activities',

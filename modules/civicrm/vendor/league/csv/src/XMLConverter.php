@@ -17,14 +17,9 @@ use DOMAttr;
 use DOMDocument;
 use DOMElement;
 use DOMException;
-use Traversable;
-use TypeError;
-use function gettype;
-use function is_iterable;
-use function sprintf;
 
 /**
- * Converts tabular data into a DOMDOcument object.
+ * Converts tabular data into a DOMDocument object.
  */
 class XMLConverter
 {
@@ -80,27 +75,33 @@ class XMLConverter
     ];
 
     /**
-     * Convert an Record collection into a DOMDocument.
-     *
-     * @param array|Traversable $records the CSV records collection
+     * Convert a Record collection into a DOMDocument.
      */
-    public function convert($records): DOMDocument
+    public function convert(iterable $records): DOMDocument
     {
-        if (!is_iterable($records)) {
-            throw new TypeError(sprintf('%s() expects argument passed to be iterable, %s given', __METHOD__, gettype($records)));
-        }
+        $doc = new DOMDocument('1.0');
+        $node = $this->import($records, $doc);
+        $doc->appendChild($node);
 
+        return $doc;
+    }
+
+    /**
+     * Create a new DOMElement related to the given DOMDocument.
+     *
+     * **DOES NOT** attach to the DOMDocument
+     */
+    public function import(iterable $records, DOMDocument $doc): DOMElement
+    {
         $field_encoder = $this->encoder['field']['' !== $this->column_attr];
         $record_encoder = $this->encoder['record']['' !== $this->offset_attr];
-        $doc = new DOMDocument('1.0');
         $root = $doc->createElement($this->root_name);
         foreach ($records as $offset => $record) {
             $node = $this->$record_encoder($doc, $record, $field_encoder, $offset);
             $root->appendChild($node);
         }
-        $doc->appendChild($root);
 
-        return $doc;
+        return $root;
     }
 
     /**

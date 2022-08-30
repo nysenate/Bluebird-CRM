@@ -109,9 +109,10 @@ class CRM_Contact_Form_Edit_Individual {
     $primaryID = CRM_Contact_Form_Contact::formRule($fields, $errors, $contactID, 'Individual');
 
     // make sure that firstName and lastName or a primary OpenID is set
+    //NYSS #1807
     if (!$primaryID &&
       !CRM_Utils_Array::value('first_name', $fields) &&
-      !CRM_Utils_Array::value('last_name', $fields)) {//NYSS #1807
+      !CRM_Utils_Array::value('last_name', $fields)) {
       $errors['_qf_default'] = ts('First Name, Last Name, or an email address must be set.');
     }
 

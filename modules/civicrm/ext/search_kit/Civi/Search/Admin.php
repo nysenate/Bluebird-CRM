@@ -12,6 +12,7 @@
 namespace Civi\Search;
 
 use Civi\Api4\Action\SearchDisplay\AbstractRunAction;
+use Civi\Api4\Extension;
 use Civi\Api4\Query\SqlEquation;
 use Civi\Api4\Query\SqlFunction;
 use Civi\Api4\SearchDisplay;
@@ -25,33 +26,53 @@ use CRM_Search_ExtensionUtil as E;
 class Admin {
 
   /**
+   * Returns clientside data needed for the `crmSearchAdmin` Angular module.
+   *
    * @return array
    */
   public static function getAdminSettings():array {
     $schema = self::getSchema();
-    $extensions = \CRM_Extension_System::singleton()->getMapper();
-    return [
+    $extensions = Extension::get(FALSE)->addWhere('status', '=', 'installed')
+      ->execute()->indexBy('key')->column('label');
+    $data = [
       'schema' => self::addImplicitFKFields($schema),
       'joins' => self::getJoins($schema),
       'pseudoFields' => AbstractRunAction::getPseudoFields(),
       'operators' => \CRM_Utils_Array::makeNonAssociative(self::getOperators()),
+      'permissions' => [],
       'functions' => self::getSqlFunctions(),
       'displayTypes' => Display::getDisplayTypes(['id', 'name', 'label', 'description', 'icon']),
       'styles' => \CRM_Utils_Array::makeNonAssociative(self::getStyles()),
       'defaultPagerSize' => \Civi::settings()->get('default_pager_size'),
       'defaultDisplay' => SearchDisplay::getDefault(FALSE)->setSavedSearch(['id' => NULL])->execute()->first(),
-      'afformEnabled' => $extensions->isActiveModule('afform'),
-      'afformAdminEnabled' => $extensions->isActiveModule('afform_admin'),
-      // TODO: Add v4 API for Extensions
-      'modules' => array_column(civicrm_api3('Extension', 'get', ['status' => "installed"])['values'], 'label', 'key'),
+      'modules' => $extensions,
+      'defaultContactType' => \CRM_Contact_BAO_ContactType::basicTypeInfo()['Individual']['name'] ?? NULL,
+      'defaultDistanceUnit' => \CRM_Utils_Address::getDefaultDistanceUnit(),
       'tags' => Tag::get()
         ->addSelect('id', 'name', 'color', 'is_selectable', 'description')
         ->addWhere('used_for', 'CONTAINS', 'civicrm_saved_search')
         ->execute(),
     ];
+    $perms = \Civi\Api4\Permission::get()
+      ->addWhere('group', 'IN', ['civicrm', 'cms'])
+      ->addWhere('is_active', '=', 1)
+      ->setOrderBy(['title' => 'ASC'])
+      ->execute();
+    foreach ($perms as $perm) {
+      $data['permissions'][] = [
+        'id' => $perm['name'],
+        'text' => $perm['title'],
+        'description' => $perm['description'] ?? NULL,
+      ];
+    }
+    return $data;
   }
 
   /**
+   * Returns operators supported by SearchKit with translated labels.
+   *
+   * This is a subset of APIv4 operators; some redundant ones are omitted for clarity.
+   *
    * @return string[]
    */
   public static function getOperators():array {
@@ -66,9 +87,9 @@ class Admin {
       'IN' => E::ts('Is One Of'),
       'NOT IN' => E::ts('Not One Of'),
       'LIKE' => E::ts('Is Like'),
-      'REGEXP' => E::ts('Matches Regexp'),
       'NOT LIKE' => E::ts('Not Like'),
-      'NOT REGEXP' => E::ts('Not Regexp'),
+      'REGEXP' => E::ts('Matches Pattern'),
+      'NOT REGEXP' => E::ts("Doesn't Match Pattern"),
       'BETWEEN' => E::ts('Is Between'),
       'NOT BETWEEN' => E::ts('Not Between'),
       'IS EMPTY' => E::ts('Is Empty'),
@@ -77,6 +98,8 @@ class Admin {
   }
 
   /**
+   * Returns list of css style names (based on Bootstrap3).
+   *
    * @return string[]
    */
   public static function getStyles():array {
@@ -92,10 +115,11 @@ class Admin {
   }
 
   /**
-   * Fetch all entities the current user has permission to `get`
-   * @return array
+   * Fetch all entities the current user has permission to `get`.
+   *
+   * @return array[]
    */
-  public static function getSchema() {
+  public static function getSchema(): array {
     $schema = [];
     $entities = \Civi\Api4\Entity::get()
       ->addSelect('name', 'title', 'title_plural', 'bridge_title', 'type', 'primary_key', 'description', 'label_field', 'icon', 'dao', 'bridge', 'ui_join_filters', 'searchable', 'order_by')
@@ -113,7 +137,7 @@ class Admin {
           $entity['links'] = array_values($links);
         }
         $getFields = civicrm_api4($entity['name'], 'getFields', [
-          'select' => ['name', 'title', 'label', 'description', 'type', 'options', 'input_type', 'input_attrs', 'data_type', 'serialize', 'entity', 'fk_entity', 'readonly', 'operators'],
+          'select' => ['name', 'title', 'label', 'description', 'type', 'options', 'input_type', 'input_attrs', 'data_type', 'serialize', 'entity', 'fk_entity', 'readonly', 'operators', 'suffixes', 'nullable'],
           'where' => [['name', 'NOT IN', ['api_key', 'hash']]],
           'orderBy' => ['label'],
         ]);
@@ -140,12 +164,14 @@ class Admin {
   }
 
   /**
-   * Add in FK fields for implicit joins
-   * For example, add a `campaign_id.title` field to the Contribution entity
-   * @param $schema
+   * Add in FK fields for implicit joins.
+   *
+   * For example, add a `campaign_id.title` field to the Contribution entity.
+   *
+   * @param array $schema
    * @return array
    */
-  private static function addImplicitFKFields($schema) {
+  private static function addImplicitFKFields(array $schema):array {
     foreach ($schema as &$entity) {
       if ($entity['searchable'] !== 'bridge') {
         foreach (array_reverse($entity['fields'], TRUE) as $index => $field) {
@@ -172,10 +198,12 @@ class Admin {
   }
 
   /**
+   * Find all the ways each entity can be joined.
+   *
    * @param array $allowedEntities
    * @return array
    */
-  public static function getJoins(array $allowedEntities) {
+  public static function getJoins(array $allowedEntities):array {
     $joins = [];
     foreach ($allowedEntities as $entity) {
       // Multi-record custom field groups (to-date only the contact entity supports these)
@@ -214,14 +242,14 @@ class Admin {
         $bridge = in_array('EntityBridge', $entity['type']) ? $entity['name'] : NULL;
 
         // Non-bridge joins directly between 2 entities
-        if (!$bridge) {
+        if ($entity['searchable'] !== 'bridge') {
           foreach ($references as $reference) {
             $keyField = $fields[$reference->getReferenceKey()] ?? NULL;
             if (
               // Sanity check - keyField must exist
               !$keyField ||
               // Exclude any joins that are better represented by pseudoconstants
-              is_a($reference, 'CRM_Core_Reference_OptionValue') || !empty($keyField['options']) ||
+              is_a($reference, 'CRM_Core_Reference_OptionValue') ||
               // Sanity check - table should match
               $daoClass::getTableName() !== $reference->getReferenceTable()
             ) {
@@ -262,7 +290,7 @@ class Admin {
           }
         }
         // Bridge joins go through an intermediary table
-        elseif (!empty($entity['bridge'])) {
+        if ($bridge && !empty($entity['bridge'])) {
           foreach ($entity['bridge'] as $targetKey => $bridgeInfo) {
             $baseKey = $bridgeInfo['to'];
             $reference = self::getReference($targetKey, $references);
@@ -316,6 +344,8 @@ class Admin {
   }
 
   /**
+   * Find the reference for a given fieldName.
+   *
    * @param string $fieldName
    * @param \CRM_Core_Reference_Basic[] $references
    * @return \CRM_Core_Reference_Basic
@@ -329,15 +359,15 @@ class Admin {
   }
 
   /**
-   * Boilerplate join clause
+   * Fill in boilerplate join clause with supplied values.
    *
    * @param string $nearCol
    * @param string $farCol
-   * @param string $targetTable
+   * @param string|null $targetTable
    * @param string|null $dynamicCol
    * @return array[]
    */
-  private static function getJoinConditions($nearCol, $farCol, $targetTable = NULL, $dynamicCol = NULL) {
+  private static function getJoinConditions(string $nearCol, string $farCol, string $targetTable = NULL, string $dynamicCol = NULL):array {
     $conditions = [
       [
         $nearCol,
@@ -356,11 +386,13 @@ class Admin {
   }
 
   /**
-   * @param $alias
+   * Calculate default conditions for a join.
+   *
+   * @param string $alias
    * @param array ...$entities
    * @return array
    */
-  private static function getJoinDefaults($alias, ...$entities):array {
+  private static function getJoinDefaults(string $alias, ...$entities):array {
     $conditions = [];
     foreach ($entities as $entity) {
       foreach ($entity['ui_join_filters'] ?? [] as $fieldName) {
@@ -387,7 +419,14 @@ class Admin {
     return $conditions;
   }
 
-  private static function getSqlFunctions() {
+  /**
+   * Get all sql functions that can be used in SearchKit.
+   *
+   * Includes the generic "Arithmetic" pseudo-function.
+   *
+   * @return array
+   */
+  private static function getSqlFunctions():array {
     $functions = \CRM_Api4_Page_Api4Explorer::getSqlFunctions();
     // Add faux function "e" for SqlEquations
     $functions[] = [
@@ -395,7 +434,7 @@ class Admin {
       'title' => ts('Arithmetic'),
       'description' => ts('Add, subtract, multiply, divide'),
       'category' => SqlFunction::CATEGORY_MATH,
-      'dataType' => 'Number',
+      'data_type' => 'Number',
       'params' => [
         [
           'label' => ts('Value'),
@@ -412,8 +451,14 @@ class Admin {
         ],
       ],
     ];
-    // Filter out empty param properties (simplifies the javascript which treats empty arrays/objects as != null)
     foreach ($functions as &$function) {
+      // Normalize this property name to match fields data_type
+      $function['data_type'] = $function['dataType'] ?? NULL;
+      unset($function['dataType']);
+      if ($function['data_type'] === 'Date') {
+        $function['input_type'] = 'Date';
+      }
+      // Filter out empty param properties (simplifies the javascript which treats empty arrays/objects as != null)
       foreach ($function['params'] as $i => $param) {
         $function['params'][$i] = array_filter($param);
       }
