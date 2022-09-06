@@ -15,7 +15,6 @@
  * @copyright CiviCRM LLC https://civicrm.org/licensing
  */
 
-use Civi\Api4\Email;
 use Civi\Api4\MessageTemplate;
 use Civi\WorkflowMessage\WorkflowMessage;
 
@@ -24,26 +23,23 @@ require_once 'Mail/mime.php';
 /**
  * Class CRM_Core_BAO_MessageTemplate.
  */
-class CRM_Core_BAO_MessageTemplate extends CRM_Core_DAO_MessageTemplate implements \Civi\Test\HookInterface {
+class CRM_Core_BAO_MessageTemplate extends CRM_Core_DAO_MessageTemplate implements \Civi\Core\HookInterface {
 
   /**
-   * Fetch object based on array of properties.
+   * Retrieve DB object and copy to defaults array.
    *
    * @param array $params
-   *   (reference ) an assoc array of name/value pairs.
+   *   Array of criteria values.
    * @param array $defaults
-   *   (reference ) an assoc array to hold the flattened values.
+   *   Array to be populated with found values.
    *
-   * @return CRM_Core_DAO_MessageTemplate
+   * @return self|null
+   *   The DAO object, if found.
+   *
+   * @deprecated
    */
-  public static function retrieve(&$params, &$defaults) {
-    $messageTemplates = new CRM_Core_DAO_MessageTemplate();
-    $messageTemplates->copyValues($params);
-    if ($messageTemplates->find(TRUE)) {
-      CRM_Core_DAO::storeValues($messageTemplates, $defaults);
-      return $messageTemplates;
-    }
-    return NULL;
+  public static function retrieve($params, &$defaults) {
+    return self::commonRetrieve(self::class, $params, $defaults);
   }
 
   /**
@@ -334,20 +330,7 @@ class CRM_Core_BAO_MessageTemplate extends CRM_Core_DAO_MessageTemplate implemen
       'PDFFilename' => NULL,
     ];
 
-    // Some params have been deprecated/renamed. Synchronize old<=>new params. We periodically resync after exchanging data with other parties.
-    $sync = function () use (&$params, $modelDefaults, $viewDefaults) {
-      CRM_Utils_Array::pathSync($params, ['workflow'], ['valueName']);
-      CRM_Utils_Array::pathSync($params, ['tokenContext', 'contactId'], ['contactId']);
-      CRM_Utils_Array::pathSync($params, ['tokenContext', 'smarty'], ['disableSmarty'], function ($v, bool $isCanon) {
-        return !$v;
-      });
-
-      // Core#644 - handle Email ID passed as "From".
-      if (isset($params['from'])) {
-        $params['from'] = \CRM_Utils_Mail::formatFromAddress($params['from']);
-      }
-    };
-    $sync();
+    self::synchronizeLegacyParameters($params);
 
     // Allow WorkflowMessage to run any filters/mappings/cleanups.
     $model = $params['model'] ?? WorkflowMessage::create($params['workflow'] ?? 'UNKNOWN');
@@ -356,13 +339,13 @@ class CRM_Core_BAO_MessageTemplate extends CRM_Core_DAO_MessageTemplate implemen
     // Subsequent hooks use $params. Retaining the $params['model'] might be nice - but don't do it unless you figure out how to ensure data-consistency (eg $params['tplParams'] <=> $params['model']).
     // If you want to expose the model via hook, consider interjecting a new Hook::alterWorkflowMessage($model) between `importAll()` and `exportAll()`.
 
-    $sync();
+    self::synchronizeLegacyParameters($params);
     $params = array_merge($modelDefaults, $viewDefaults, $envelopeDefaults, $params);
 
     CRM_Utils_Hook::alterMailParams($params, 'messageTemplate');
     $mailContent = self::loadTemplate((string) $params['valueName'], $params['isTest'], $params['messageTemplateID'] ?? NULL, $params['groupName'] ?? '', $params['messageTemplate'], $params['subject'] ?? NULL);
 
-    $sync();
+    self::synchronizeLegacyParameters($params);
     $rendered = CRM_Core_TokenSmarty::render(CRM_Utils_Array::subset($mailContent, ['text', 'html', 'subject']), $params['tokenContext'], $params['tplParams']);
     if (isset($rendered['subject'])) {
       $rendered['subject'] = trim(preg_replace('/[\r\n]+/', ' ', $rendered['subject']));
@@ -370,6 +353,26 @@ class CRM_Core_BAO_MessageTemplate extends CRM_Core_DAO_MessageTemplate implemen
     $nullSet = ['subject' => NULL, 'text' => NULL, 'html' => NULL];
     $mailContent = array_merge($nullSet, $mailContent, $rendered);
     return [$mailContent, $params];
+  }
+
+  /**
+   * Some params have been deprecated/renamed. Synchronize old<=>new params.
+   *
+   * We periodically resync after exchanging data with other parties.
+   *
+   * @param array $params
+   */
+  private static function synchronizeLegacyParameters(&$params) {
+    CRM_Utils_Array::pathSync($params, ['workflow'], ['valueName']);
+    CRM_Utils_Array::pathSync($params, ['tokenContext', 'contactId'], ['contactId']);
+    CRM_Utils_Array::pathSync($params, ['tokenContext', 'smarty'], ['disableSmarty'], function ($v, bool $isCanon) {
+      return !$v;
+    });
+
+    // Core#644 - handle Email ID passed as "From".
+    if (isset($params['from'])) {
+      $params['from'] = \CRM_Utils_Mail::formatFromAddress($params['from']);
+    }
   }
 
   /**
@@ -397,20 +400,6 @@ class CRM_Core_BAO_MessageTemplate extends CRM_Core_DAO_MessageTemplate implemen
     // send the template, honouring the target user’s preferences (if any)
     $sent = FALSE;
     if (!empty($params['toEmail'])) {
-      // @todo - consider whether we really should be loading
-      // this based on 'the first email in the db that matches'.
-      // when we likely have the contact id. OTOH people probably barely
-      // use preferredMailFormat these days - the good fight against html
-      // emails was lost a decade ago...
-      $preferredMailFormatArray = Email::get(FALSE)->addWhere('email', '=', $params['toEmail'])->addSelect('contact_id.preferred_mail_format')->execute()->first();
-      $preferredMailFormat = $preferredMailFormatArray['contact_id.preferred_mail_format'] ?? 'Both';
-
-      if ($preferredMailFormat === 'HTML') {
-        $params['text'] = NULL;
-      }
-      if ($preferredMailFormat === 'Text') {
-        $params['html'] = NULL;
-      }
 
       $config = CRM_Core_Config::singleton();
       if ($isAttachPDF) {

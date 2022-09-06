@@ -1,10 +1,9 @@
 Dompdf
 ======
 
-[![Build Status](https://travis-ci.org/dompdf/dompdf.png?branch=master)](https://travis-ci.org/dompdf/dompdf)
-[![Latest Stable Version](https://poser.pugx.org/dompdf/dompdf/v/stable.png)](https://packagist.org/packages/dompdf/dompdf)
+[![Build Status](https://github.com/dompdf/dompdf/actions/workflows/test.yml/badge.svg)](https://github.com/dompdf/dompdf/actions/workflows/test.yml)
+[![Latest Release](https://poser.pugx.org/dompdf/dompdf/v/stable.png)](https://packagist.org/packages/dompdf/dompdf)
 [![Total Downloads](https://poser.pugx.org/dompdf/dompdf/downloads.png)](https://packagist.org/packages/dompdf/dompdf)
-[![Latest Unstable Version](https://poser.pugx.org/dompdf/dompdf/v/unstable.png)](https://packagist.org/packages/dompdf/dompdf)
 [![License](https://poser.pugx.org/dompdf/dompdf/license.png)](https://packagist.org/packages/dompdf/dompdf)
  
 **Dompdf is an HTML to PDF converter**
@@ -21,9 +20,9 @@ release. For released code please
 
 ----
 
-**Check out the [demo](https://dompdf.net/examples.php) and ask any
-question on [StackOverflow](http://stackoverflow.com/questions/tagged/dompdf) or
-on the [Google Groups](http://groups.google.com/group/dompdf).**
+**Check out the [demo](http://eclecticgeek.com/dompdf/debug.php) and ask any
+question on [StackOverflow](https://stackoverflow.com/questions/tagged/dompdf) or
+in [Discussions](https://github.com/dompdf/dompdf/discussions).**
 
 Follow us on [![Twitter](http://twitter-badges.s3.amazonaws.com/twitter-a.png)](http://www.twitter.com/dompdf).
 
@@ -215,12 +214,6 @@ Files accessed through the local file system have the following requirement:
 
 ## Limitations (Known Issues)
 
- * Dompdf is not particularly tolerant to poorly-formed HTML input. To avoid
-   any unexpected rendering issues you should either enable the built-in HTML5
-   parser at runtime (`$options->setIsHtml5ParserEnabled(true);`) 
-   or run your HTML through a HTML validator/cleaner (such as
-   [Tidy](http://tidy.sourceforge.net) or the
-   [W3C Markup Validation Service](http://validator.w3.org)).
  * Table cells are not pageable, meaning a table row must fit on a single page.
  * Elements are rendered on the active page when they are parsed.
  * Embedding "raw" SVG's (`<svg><path...></svg>`) isn't working yet, you need to

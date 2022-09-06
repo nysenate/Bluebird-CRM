@@ -16,6 +16,7 @@ use Civi\Api4\CustomField;
 use Civi\Api4\Service\Schema\Joinable\CustomGroupJoinable;
 use Civi\Api4\Utils\FormattingUtil;
 use Civi\Api4\Utils\CoreUtil;
+use Civi\Api4\Utils\ReflectionUtils;
 
 /**
  * @method string getLanguage()
@@ -59,8 +60,8 @@ trait DAOActionTrait {
     else {
       $inputFields = array_keys($input);
       // Convert 'null' input to true null
-      foreach ($input as $key => $val) {
-        if ($val === 'null') {
+      foreach ($inputFields as $key) {
+        if (($bao->$key ?? NULL) === 'null') {
           $bao->$key = NULL;
         }
       }
@@ -95,7 +96,7 @@ trait DAOActionTrait {
   }
 
   /**
-   * Write bao objects as part of a create/update action.
+   * Write bao objects as part of a create/update/save action.
    *
    * @param array $items
    *   The records to write to the DB.
@@ -105,24 +106,8 @@ trait DAOActionTrait {
    * @throws \API_Exception
    * @throws \CRM_Core_Exception
    */
-  protected function writeObjects(&$items) {
-    $baoName = $this->getBaoName();
+  protected function writeObjects($items) {
     $updateWeights = FALSE;
-
-    // TODO: Opt-in more entities to use the new writeRecords BAO method.
-    $functionNames = [
-      'Address' => 'add',
-      'CustomField' => 'writeRecords',
-      'EntityTag' => 'add',
-      'GroupContact' => 'add',
-      'Navigation' => 'writeRecords',
-      'WordReplacement' => 'writeRecords',
-    ];
-    $method = $functionNames[$this->getEntityName()] ?? NULL;
-    if (!isset($method)) {
-      $method = method_exists($baoName, 'create') ? 'create' : (method_exists($baoName, 'add') ? 'add' : 'writeRecords');
-    }
-
     // Adjust weights for sortable entities
     if (in_array('SortableEntity', CoreUtil::getInfoItem($this->getEntityName(), 'type'))) {
       $weightField = CoreUtil::getInfoItem($this->getEntityName(), 'order_by');
@@ -145,44 +130,48 @@ trait DAOActionTrait {
         $this->updateWeight($item);
       }
 
-      // Skip individual processing if using writeRecords
-      if ($method === 'writeRecords') {
-        continue;
-      }
       $item['check_permissions'] = $this->getCheckPermissions();
+    }
 
-      // For some reason the contact bao requires this
-      if ($entityId && $this->getEntityName() === 'Contact') {
-        $item['contact_id'] = $entityId;
-      }
+    // Ensure array keys start at 0
+    $items = array_values($items);
 
-      if ($this->getEntityName() === 'Address') {
-        $createResult = $baoName::$method($item, $this->fixAddress);
-      }
-      else {
-        $createResult = $baoName::$method($item);
-      }
-
-      if (!$createResult) {
+    foreach ($this->write($items) as $index => $dao) {
+      if (!$dao) {
         $errMessage = sprintf('%s write operation failed', $this->getEntityName());
         throw new \API_Exception($errMessage);
       }
-
-      $result[] = $this->baoToArray($createResult, $item);
-      \CRM_Utils_API_HTMLInputCoder::singleton()->decodeRows($result);
+      $result[] = $this->baoToArray($dao, $items[$index]);
     }
 
-    // Use bulk `writeRecords` method if the BAO doesn't have a create or add method
-    // TODO: reverse this from opt-in to opt-out and default to using `writeRecords` for all BAOs
-    if ($method === 'writeRecords') {
-      $items = array_values($items);
-      foreach ($baoName::writeRecords($items) as $i => $createResult) {
-        $result[] = $this->baoToArray($createResult, $items[$i]);
-      }
-    }
-
+    \CRM_Utils_API_HTMLInputCoder::singleton()->decodeRows($result);
     FormattingUtil::formatOutputValues($result, $this->entityFields());
     return $result;
+  }
+
+  /**
+   * Overrideable function to save items using the appropriate BAO function
+   *
+   * @param array[] $items
+   *   Items already formatted by self::writeObjects
+   * @return \CRM_Core_DAO[]
+   *   Array of saved DAO records
+   */
+  protected function write(array $items) {
+    $saved = [];
+    $baoName = $this->getBaoName();
+
+    $method = method_exists($baoName, 'create') ? 'create' : (method_exists($baoName, 'add') ? 'add' : NULL);
+    // Use BAO create or add method if not deprecated
+    if ($method && !ReflectionUtils::isMethodDeprecated($baoName, $method)) {
+      foreach ($items as $item) {
+        $saved[] = $baoName::$method($item);
+      }
+    }
+    else {
+      $saved = $baoName::writeRecords($items);
+    }
+    return $saved;
   }
 
   /**
@@ -257,43 +246,44 @@ trait DAOActionTrait {
         continue;
       }
 
-      // todo are we sure we don't want to allow setting to NULL? need to test
-      if (NULL !== $value) {
-
-        if ($field['suffix']) {
-          $options = FormattingUtil::getPseudoconstantList($field, $name, $params, $this->getActionName());
-          $value = FormattingUtil::replacePseudoconstant($options, $value, TRUE);
-        }
-
-        if ($field['html_type'] === 'CheckBox') {
-          // this function should be part of a class
-          formatCheckBoxField($value, 'custom_' . $field['id'], $this->getEntityName());
-        }
-
-        // Match contact id to strings like "user_contact_id"
-        // FIXME handle arrays for multi-value contact reference fields, etc.
-        if ($field['data_type'] === 'ContactReference' && is_string($value) && !is_numeric($value)) {
-          // FIXME decouple from v3 API
-          require_once 'api/v3/utils.php';
-          $value = \_civicrm_api3_resolve_contactID($value);
-          if ('unknown-user' === $value) {
-            throw new \API_Exception("\"{$field['name']}\" \"{$value}\" cannot be resolved to a contact ID", 2002, ['error_field' => $field['name'], "type" => "integer"]);
-          }
-        }
-
-        \CRM_Core_BAO_CustomField::formatCustomField(
-          $field['id'],
-          $customParams,
-          $value,
-          $field['custom_group_id.extends'],
-          // todo check when this is needed
-          NULL,
-          $entityId,
-          FALSE,
-          $this->getCheckPermissions(),
-          TRUE
-        );
+      // Null and empty string are interchangeable as far as the custom bao understands
+      if (NULL === $value) {
+        $value = '';
       }
+
+      if ($field['suffix']) {
+        $options = FormattingUtil::getPseudoconstantList($field, $name, $params, $this->getActionName());
+        $value = FormattingUtil::replacePseudoconstant($options, $value, TRUE);
+      }
+
+      if ($field['html_type'] === 'CheckBox') {
+        // this function should be part of a class
+        formatCheckBoxField($value, 'custom_' . $field['id'], $this->getEntityName());
+      }
+
+      // Match contact id to strings like "user_contact_id"
+      // FIXME handle arrays for multi-value contact reference fields, etc.
+      if ($field['data_type'] === 'ContactReference' && is_string($value) && !is_numeric($value)) {
+        // FIXME decouple from v3 API
+        require_once 'api/v3/utils.php';
+        $value = \_civicrm_api3_resolve_contactID($value);
+        if ('unknown-user' === $value) {
+          throw new \API_Exception("\"{$field['name']}\" \"{$value}\" cannot be resolved to a contact ID", 2002, ['error_field' => $field['name'], "type" => "integer"]);
+        }
+      }
+
+      \CRM_Core_BAO_CustomField::formatCustomField(
+        $field['id'],
+        $customParams,
+        $value,
+        $field['custom_group_id.extends'],
+        // todo check when this is needed
+        NULL,
+        $entityId,
+        FALSE,
+        $this->getCheckPermissions(),
+        TRUE
+      );
     }
 
     $params['custom'] = $customParams ?: NULL;
@@ -340,6 +330,7 @@ trait DAOActionTrait {
     /** @var \CRM_Core_DAO|string $daoName */
     $daoName = CoreUtil::getInfoItem($this->getEntityName(), 'dao');
     $weightField = CoreUtil::getInfoItem($this->getEntityName(), 'order_by');
+    $grouping = CoreUtil::getInfoItem($this->getEntityName(), 'group_weights_by');
     $idField = CoreUtil::getIdFieldName($this->getEntityName());
     // If updating an existing record without changing weight, do nothing
     if (!isset($record[$weightField]) && !empty($record[$idField])) {
@@ -349,10 +340,8 @@ trait DAOActionTrait {
     $newWeight = $record[$weightField] ?? NULL;
     $oldWeight = empty($record[$idField]) ? NULL : \CRM_Core_DAO::getFieldValue($daoName, $record[$idField], $weightField);
 
-    // FIXME: Need a more metadata-ish approach. For now here's a hardcoded list of the fields sortable entities use for grouping.
-    $guesses = ['option_group_id', 'price_set_id', 'price_field_id', 'premiums_id', 'uf_group_id', 'custom_group_id', 'parent_id', 'domain_id'];
     $filters = [];
-    foreach (array_intersect($guesses, array_keys($daoFields)) as $filter) {
+    foreach ($grouping ?? [] as $filter) {
       $filters[$filter] = $record[$filter] ?? (empty($record[$idField]) ? NULL : \CRM_Core_DAO::getFieldValue($daoName, $record[$idField], $filter));
     }
     // Supply default weight for new record

@@ -133,13 +133,13 @@
               <td class="center crm-admin-options-filter">{icon condition=$row.filter}{ts}Counted{/ts}{/icon}</td>
             {/if}
             <td class="crm-admin-options-description crm-editable" data-field="description" data-type="textarea">{$row.description}</td>
-            <td class="nowrap crm-admin-options-order">{if $row.weight}{$row.weight}{/if}</td>
+            <td class="nowrap crm-admin-options-order">{if $row.weight}{$row.weight|smarty:nodefaults}{/if}</td>
             {if $showIsDefault}
               <td class="crm-admin-options-is_default" align="center">{if $row.is_default}{icon}{ts}Default{/ts}{/icon}{/if}&nbsp;</td>
             {/if}
             <td class="crm-admin-options-is_reserved">{if $row.is_reserved eq 1} {ts}Yes{/ts} {else} {ts}No{/ts} {/if}</td>
             <td class="crm-admin-options-is_active" id="row_{$row.id}_status">{if $row.is_active eq 1} {ts}Yes{/ts} {else} {ts}No{/ts} {/if}</td>
-            <td>{$row.action|replace:'xx':$row.id}</td>
+            <td>{$row.action|smarty:nodefaults|replace:'xx':$row.id}</td>
           </tr>
         {/foreach}
         </tbody>

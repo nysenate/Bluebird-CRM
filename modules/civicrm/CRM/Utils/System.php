@@ -22,21 +22,23 @@
  *
  * FIXME: This is a massive and random collection that could be split into smaller services
  *
+ * @method static void getCMSPermissionsUrlParams() Immediately stop script execution and display a 401 "Access Denied" page.
  * @method static mixed permissionDenied() Show access denied screen.
  * @method static mixed logout() Log out the current user.
  * @method static mixed updateCategories() Clear CMS caches related to the user registration/profile forms.
- * @method static appendBreadCrumb(array $breadCrumbs) Append an additional breadcrumb tag to the existing breadcrumbs.
- * @method static resetBreadCrumb() Reset an additional breadcrumb tag to the existing breadcrumb.
- * @method static addHTMLHead(string $bc) Append a string to the head of the HTML file.
+ * @method static void appendBreadCrumb(array $breadCrumbs) Append an additional breadcrumb tag to the existing breadcrumbs.
+ * @method static void resetBreadCrumb() Reset an additional breadcrumb tag to the existing breadcrumb.
+ * @method static void addHTMLHead(string $head) Append a string to the head of the HTML file.
  * @method static string postURL(int $action) Determine the post URL for a form.
  * @method static string|null getUFLocale() Get the locale of the CMS.
  * @method static bool setUFLocale(string $civicrm_language) Set the locale of the CMS.
  * @method static bool isUserLoggedIn() Check if user is logged in.
  * @method static int getLoggedInUfID() Get current logged in user id.
- * @method static setHttpHeader(string $name, string $value) Set http header.
+ * @method static void setHttpHeader(string $name, string $value) Set http header.
  * @method static array synchronizeUsers() Create CRM contacts for all existing CMS users.
- * @method static appendCoreResources(\Civi\Core\Event\GenericHookEvent $e) Callback for hook_civicrm_coreResourceList.
- * @method static alterAssetUrl(\Civi\Core\Event\GenericHookEvent $e) Callback for hook_civicrm_getAssetUrl.
+ * @method static void appendCoreResources(\Civi\Core\Event\GenericHookEvent $e) Callback for hook_civicrm_coreResourceList.
+ * @method static void alterAssetUrl(\Civi\Core\Event\GenericHookEvent $e) Callback for hook_civicrm_getAssetUrl.
+ * @method static exitAfterFatal() Should the current execution exit after a fatal error?
  */
 class CRM_Utils_System {
 
@@ -205,7 +207,7 @@ class CRM_Utils_System {
    *
    * @param array|string $query
    *
-   * @return string
+   * @return string|null
    */
   public static function makeQueryString($query) {
     if (is_array($query)) {
@@ -253,12 +255,12 @@ class CRM_Utils_System {
     $query = self::makeQueryString($query);
 
     // Legacy handling for when the system passes around html escaped strings
-    if (strstr($query, '&amp;')) {
+    if (strstr(($query ?? ''), '&amp;')) {
       $query = html_entity_decode($query);
     }
 
     // Extract fragment from path or query if munged together
-    if ($query && strstr($query, '#')) {
+    if ($query && strstr(($query ?? ''), '#')) {
       list($path, $fragment) = explode('#', $query);
     }
     if ($path && strstr($path, '#')) {
@@ -752,18 +754,6 @@ class CRM_Utils_System {
   public static function authenticate($name, $password, $loadCMSBootstrap = FALSE, $realPath = NULL) {
     $config = CRM_Core_Config::singleton();
 
-    /* Before we do any loading, let's start the session and write to it.
-     * We typically call authenticate only when we need to bootstrap the CMS
-     * directly via Civi and hence bypass the normal CMS auth and bootstrap
-     * process typically done in CLI and cron scripts. See: CRM-12648
-     *
-     * Q: Can we move this to the userSystem class so that it can be tuned
-     * per-CMS? For example, when dealing with UnitTests UF, does it need to
-     * do this session write since the original issue was for Drupal.
-     */
-    $session = CRM_Core_Session::singleton();
-    $session->set('civicrmInitSession', TRUE);
-
     return $config->userSystem->authenticate($name, $password, $loadCMSBootstrap, $realPath);
   }
 
@@ -949,7 +939,7 @@ class CRM_Utils_System {
    *   (optional) Whether to log the memory usage information.
    */
   public static function xMemory($title = NULL, $log = FALSE) {
-    $mem = (float ) xdebug_memory_usage() / (float ) (1024);
+    $mem = (float) xdebug_memory_usage() / (float) (1024);
     $mem = number_format($mem, 5) . ", " . time();
     if ($log) {
       echo "<p>$title: $mem<p>";
@@ -1246,7 +1236,7 @@ class CRM_Utils_System {
   /**
    * Redirect to SSL.
    *
-   * @param bool|FALSE $abort
+   * @param bool|false $abort
    *
    * @throws \CRM_Core_Exception
    */
@@ -1360,14 +1350,13 @@ class CRM_Utils_System {
    *   Title of documentation wiki page.
    * @param bool $URLonly
    *   (optional) Whether to return URL only or full HTML link (default).
-   * @param string $text
+   * @param string|null $text
    *   (optional) Text of HTML link (no effect if $URLonly = false).
-   * @param string $title
+   * @param string|null $title
    *   (optional) Tooltip text for HTML link (no effect if $URLonly = false)
-   * @param string $style
+   * @param string|null $style
    *   (optional) Style attribute value for HTML link (no effect if $URLonly = false)
-   *
-   * @param null $resource
+   * @param string|null $resource
    *
    * @return string
    *   URL or link to documentation page, based on provided parameters.
@@ -1498,13 +1487,7 @@ class CRM_Utils_System {
     // a bit aggressive, but livable for now
     CRM_Utils_Cache::singleton()->flush();
 
-    // Traditionally, systems running on memory-backed caches were quite
-    // zealous about destroying *all* memory-backed caches during a flush().
-    // These flushes simulate that legacy behavior. However, they should probably
-    // be removed at some point.
-    $localDrivers = ['CRM_Utils_Cache_ArrayCache', 'CRM_Utils_Cache_NoCache'];
-    if (Civi\Core\Container::isContainerBooted()
-      && !in_array(get_class(CRM_Utils_Cache::singleton()), $localDrivers)) {
+    if (Civi\Core\Container::isContainerBooted()) {
       Civi::cache('long')->flush();
       Civi::cache('settings')->flush();
       Civi::cache('js_strings')->flush();
@@ -1514,6 +1497,7 @@ class CRM_Utils_System {
       Civi::cache('customData')->flush();
       Civi::cache('contactTypes')->clear();
       Civi::cache('metadata')->clear();
+      \Civi\Core\ClassScanner::cache('index')->flush();
       CRM_Extension_System::singleton()->getCache()->flush();
       CRM_Cxn_CiviCxnHttp::singleton()->getCache()->flush();
     }
@@ -1756,7 +1740,12 @@ class CRM_Utils_System {
     $inc_dirs = explode(PATH_SEPARATOR, get_include_path());
     foreach ($inc_dirs as $inc_dir) {
       $target_dir = $inc_dir . DIRECTORY_SEPARATOR . $relpath;
-      if (is_dir($target_dir)) {
+      // While it seems pointless to have a folder that's outside open_basedir
+      // listed in include_path and that seems more like a configuration issue,
+      // not everyone has control over the hosting provider's include_path and
+      // this does happen out in the wild, so use our wrapper to avoid flooding
+      // logs.
+      if (CRM_Utils_File::isDir($target_dir)) {
         $cur_list = scandir($target_dir);
         foreach ($cur_list as $fname) {
           if ($fname != '.' && $fname != '..') {
@@ -1824,7 +1813,7 @@ class CRM_Utils_System {
   /**
    * Evaluate any tokens in a URL.
    *
-   * @param string|FALSE $url
+   * @param string|false $url
    *
    * @return string|FALSE
    */

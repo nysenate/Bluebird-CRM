@@ -4,6 +4,7 @@ namespace Civi\CompilePlugin\Command;
 
 use Civi\CompilePlugin\Task;
 use Civi\CompilePlugin\TaskList;
+use Civi\CompilePlugin\Util\EnvHelper;
 use Civi\CompilePlugin\Util\ShellRunner;
 use Composer\EventDispatcher\ScriptExecutionException;
 use Lurker\ResourceWatcher;
@@ -29,7 +30,7 @@ class CompileWatchCommand extends \Composer\Command\BaseCommand
     protected function execute(InputInterface $input, OutputInterface $output)
     {
         if ($output->isVerbose()) {
-            putenv('COMPOSER_COMPILE_PASSTHRU=always');
+            EnvHelper::set('COMPOSER_COMPILE_PASSTHRU', 'always');
         }
 
         $intervalMicroseconds = 1000 * $input->getOption('interval');
@@ -109,6 +110,7 @@ class CompileWatchCommand extends \Composer\Command\BaseCommand
             $output->writeln("Polling", OutputInterface::VERBOSITY_VERY_VERBOSE);
             $watcher->start($intervalMicroseconds, $intervalMicroseconds);
         }
+        return 0;
     }
 
     /**

@@ -104,6 +104,10 @@ function authenticate_drupal8($config) {
       }
     }
   }
+
+  // Start Drupal's own session now, so changes to $_SESSION won't get overwritten later
+  \Drupal::service('session')->start();
+
   // check if user has access permission...
   if (CRM_Core_Permission::check('access CiviCRM')) {
     return true;

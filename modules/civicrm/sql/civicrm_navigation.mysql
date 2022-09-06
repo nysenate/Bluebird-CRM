@@ -56,7 +56,6 @@ VALUES
     ( @domainID, 'civicrm/contact/search?reset=1',                          'Find Contacts',      'Find Contacts', NULL, '',                      @searchlastID, '1', NULL, 1 ),
     ( @domainID, 'civicrm/contact/search/advanced?reset=1',                 'Advanced Search',    'Advanced Search', NULL, '', @searchlastID, '1', NULL, 2 ),
     ( @domainID, 'civicrm/contact/search/custom?csid=15&reset=1',           'Full-text Search',   'Full-text Search', NULL, '',                   @searchlastID, '1', NULL, 3 ),
-    ( @domainID, 'civicrm/contact/search/builder?reset=1',                  'Search Builder',     'Search Builder', NULL, '',                     @searchlastID, '1', '1',  4 ),
     ( @domainID, 'civicrm/case/search?reset=1',                             'Find Cases',         'Find Cases', 'access my cases and activities,access all cases and activities', 'OR',            @searchlastID, '1', NULL, 5 ),
     ( @domainID, 'civicrm/contribute/search?reset=1',                       'Find Contributions', 'Find Contributions', 'access CiviContribute', '',  @searchlastID, '1', NULL, 6 ),
     ( @domainID, 'civicrm/mailing?reset=1',                                 'Find Mailings',      'Find Mailings', 'access CiviMail', '',         @searchlastID, '1', NULL, 7 ),
@@ -91,10 +90,11 @@ VALUES
     ( @domainID, 'civicrm/activity?reset=1&action=add&context=standalone',  'New Activity',           'New Activity',         NULL,               '',             @contactlastID, '1', NULL,  5 ),
     ( @domainID, 'civicrm/activity/email/add?atype=3&action=add&reset=1&context=standalone', 'New Email',   'New Email',      NULL,               '',             @contactlastID, '1', '1',   6 ),
     ( @domainID, 'civicrm/import/contact?reset=1',                          'Import Contacts',        'Import Contacts',      'import contacts',  '',             @contactlastID, '1', NULL,  7 ),
-    ( @domainID, 'civicrm/import/activity?reset=1',                         'Import Activities',      'Import Activities',    'import contacts',  '',             @contactlastID, '1', '1',   8 ),
-    ( @domainID, 'civicrm/group/add?reset=1',                               'New Group',              'New Group',            'edit groups',      '',             @contactlastID, '1', NULL,  9 ),
-    ( @domainID, 'civicrm/group?reset=1',                                   'Manage Groups',          'Manage Groups',        'access CiviCRM',   '',             @contactlastID, '1', '1',   10 ),
-    ( @domainID, 'civicrm/tag?reset=1',                               'Manage Tags', 'Manage Tags (Categories)', 'manage tags', '',     @contactlastID, '1','1', 12 ),
+    ( @domainID, 'civicrm/import/activity?reset=1',                         'Import Activities',      'Import Activities',    'import contacts',  '',             @contactlastID, '1', NULL,   8 ),
+    ( @domainID, 'civicrm/import/custom?reset=1',                         'Import Custom Data',  'Import MultiValued Custom', 'import contacts',  '',             @contactlastID, '1', '1',   9 ),
+    ( @domainID, 'civicrm/group/add?reset=1',                               'New Group',              'New Group',            'edit groups',      '',             @contactlastID, '0', NULL,  10 ),
+    ( @domainID, 'civicrm/group?reset=1',                                   'Manage Groups',          'Manage Groups',        'access CiviCRM',   '',             @contactlastID, '1', '1',   11 ),
+    ( @domainID, 'civicrm/tag?reset=1',                               'Manage Tags', 'Manage Tags (Categories)',              'manage tags',      '',             @contactlastID, '1', '1',   12 ),
     ( @domainID, 'civicrm/contact/deduperules?reset=1',  'Find and Merge Duplicate Contacts', 'Find and Merge Duplicate Contacts', 'administer dedupe rules,merge duplicate contacts', 'OR', @contactlastID, '1', NULL, 13 );
 
 INSERT INTO civicrm_navigation
@@ -134,11 +134,11 @@ VALUES
     ( @domainID, 'civicrm/pledge/add?reset=1&action=add&context=standalone', 'New Pledge',                'New Pledge',                'access CiviPledge,edit pledges',  'AND',  @pledgelastID,       '1', NULL, 2 ),
     ( @domainID, 'civicrm/pledge/search?reset=1',                           'Find Pledges',               'Find Pledges',              'access CiviPledge',  '',  @pledgelastID,       '1', NULL, 3 ),
     ( @domainID, 'civicrm/report/list?compid=6&reset=1', 'Pledge Reports', 'Pledge Reports', 'access CiviPledge', '', @pledgelastID, '1', 0,    4 ),
-    ( @domainID, 'civicrm/admin/contribute/add?reset=1&action=add',         'New Contribution Page',      'New Contribution Page',     'access CiviContribute,administer CiviCRM', 'AND',  @contributionlastID, '1', NULL, 9 ),
+    ( @domainID, 'civicrm/admin/contribute/add?reset=1&action=add',         'New Contribution Page',      'New Contribution Page',     'access CiviContribute,administer CiviCRM', 'AND',  @contributionlastID, '0', NULL, 9 ),
     ( @domainID, 'civicrm/admin/contribute?reset=1',                        'Manage Contribution Pages',  'Manage Contribution Pages', 'access CiviContribute,administer CiviCRM', 'AND',  @contributionlastID, '1', '1',  10 ),
     ( @domainID, 'civicrm/admin/pcp?reset=1&page_type=contribute',          'Personal Campaign Pages',    'Personal Campaign Pages',   'access CiviContribute,administer CiviCRM', 'AND',  @contributionlastID, '1', NULL, 11 ),
     ( @domainID, 'civicrm/admin/contribute/managePremiums?reset=1',         'Premiums (Thank-you Gifts)', 'Premiums',                  'access CiviContribute,administer CiviCRM', 'AND',  @contributionlastID, '1', 1,    12 ),
-    ( @domainID, 'civicrm/admin/price?reset=1&action=add',                  'New Price Set',              'New Price Set',             'access CiviContribute,administer CiviCRM', 'AND',  @contributionlastID, '1', NULL, 13 ),
+    ( @domainID, 'civicrm/admin/price?reset=1&action=add',                  'New Price Set',              'New Price Set',             'access CiviContribute,administer CiviCRM', 'AND',  @contributionlastID, '0', NULL, 13 ),
     ( @domainID, 'civicrm/admin/price?reset=1',                             'Manage Price Sets',          'Manage Price Sets',         'access CiviContribute,administer CiviCRM', 'AND',  @contributionlastID, '1', 1, 14 ),
 
     ( @domainID, 'civicrm/financial/batch?reset=1&action=add',                             'New Batch',          'New Batch',         'create manual batch', 'AND',  @financialTransactionID, '1', NULL, 1 ),
@@ -160,11 +160,11 @@ VALUES
     ( @domainID, 'civicrm/event/search?reset=1',                            'Find Participants',  'Find Participants',    'access CiviEvent', '',    @eventlastID, '1', NULL, 3 ),
     ( @domainID, 'civicrm/report/list?compid=1&reset=1', 'Event Reports', 'Event Reports', 'access CiviEvent', '', @eventlastID, '1', 1,    4 ),
     ( @domainID, 'civicrm/event/import?reset=1',                            'Import Participants','Import Participants',  'access CiviEvent,edit event participants', 'AND',    @eventlastID, '1', '1',  5 ),
-    ( @domainID, 'civicrm/event/add?reset=1&action=add',                    'New Event',          'New Event',            'access CiviEvent,edit all events', 'AND',    @eventlastID, '1', NULL, 6 ),
+    ( @domainID, 'civicrm/event/add?reset=1&action=add',                    'New Event',          'New Event',            'access CiviEvent,edit all events', 'AND',    @eventlastID, '0', NULL, 6 ),
     ( @domainID, 'civicrm/event/manage?reset=1',                            'Manage Events',      'Manage Events',        'access CiviEvent,edit all events', 'AND',    @eventlastID, '1', 1, 7 ),
     ( @domainID, 'civicrm/admin/pcp?reset=1&page_type=event',               'Personal Campaign Pages',    'Personal Campaign Pages',   'access CiviEvent,administer CiviCRM', 'AND', @eventlastID, '1', 1, 8 ),
     ( @domainID, 'civicrm/admin/eventTemplate?reset=1',                     'Event Templates',    'Event Templates',      'access CiviEvent,edit all events', 'AND',    @eventlastID, '1', 1, 9 ),
-    ( @domainID, 'civicrm/admin/price?reset=1&action=add',                  'New Price Set',      'New Price Set',        'access CiviEvent,edit all events', 'AND',    @eventlastID, '1', NULL, 10 ),
+    ( @domainID, 'civicrm/admin/price?reset=1&action=add',                  'New Price Set',      'New Price Set',        'access CiviEvent,edit all events', 'AND',    @eventlastID, '0', NULL, 10 ),
     ( @domainID, 'civicrm/admin/price?reset=1',                             'Manage Price Sets',  'Manage Price Sets',    'access CiviEvent,edit all events', 'AND',    @eventlastID, '1', NULL, 11 );
 
 INSERT INTO civicrm_navigation
@@ -199,12 +199,12 @@ INSERT INTO civicrm_navigation
     ( domain_id, url, label, name, permission, permission_operator, parent_id, is_active, has_separator, weight )
 VALUES
     ( @domainID, 'civicrm/member?reset=1',                              'Dashboard',           'Dashboard',       'access CiviMember', '', @memberlastID, '1', NULL, 1 ),
-    ( @domainID, 'civicrm/member/add?reset=1&action=add&context=standalone', 'New Membership', 'New Membership',  'access CiviMember,edit memberships', 'AND', @memberlastID, '1', NULL, 2 ),
+    ( @domainID, 'civicrm/member/add?reset=1&action=add&context=standalone', 'New Membership', 'New Membership',  'access CiviMember,edit memberships', 'AND', @memberlastID, '0', NULL, 2 ),
     ( @domainID, 'civicrm/member/search?reset=1',                       'Find Memberships',    'Find Memberships','access CiviMember', '', @memberlastID, '1', NULL, 3 ),
     ( @domainID, 'civicrm/report/list?compid=3&reset=1',                'Membership Reports',  'Membership Reports', 'access CiviMember', '', @memberlastID, '1', 1,    4 ),
     ( @domainID, 'civicrm/batch?reset=1',                               'Batch Data Entry',     'Batch Data Entry','access CiviContribute', '', @memberlastID, '1', NULL, 5 ),
     ( @domainID, 'civicrm/member/import?reset=1',                       'Import Memberships',  'Import Members',  'access CiviMember,edit memberships', 'AND', @memberlastID, '1', 1, 6 ),
-    ( @domainID, 'civicrm/admin/price?reset=1&action=add',              'New Price Set',       'New Price Set',   'access CiviMember,administer CiviCRM', 'AND',  @memberlastID, '1', NULL, 7 ),
+    ( @domainID, 'civicrm/admin/price?reset=1&action=add',              'New Price Set',       'New Price Set',   'access CiviMember,administer CiviCRM', 'AND',  @memberlastID, '0', NULL, 7 ),
     ( @domainID, 'civicrm/admin/price?reset=1',                         'Manage Price Sets',   'Manage Price Sets', 'access CiviMember,administer CiviCRM', 'AND',  @memberlastID, '1', NULL, 8 );
 
 INSERT INTO civicrm_navigation
@@ -247,20 +247,6 @@ VALUES
     ( @domainID, 'civicrm/case/add?reset=1&action=add&atype=13&context=standalone', 'New Case', 'New Case', 'add cases,access all cases and activities', 'OR', @caselastID, '1', NULL, 2 ),
     ( @domainID, 'civicrm/case/search?reset=1', 'Find Cases', 'Find Cases', 'access my cases and activities,access all cases and activities', 'OR',     @caselastID, '1', 1, 3 ),
     ( @domainID, 'civicrm/report/list?compid=7&reset=1', 'Case Reports', 'Case Reports', 'access my cases and activities,access all cases and activities,administer CiviCase', 'OR', @caselastID, '1', 0,    4 );
-
-INSERT INTO civicrm_navigation
-    ( domain_id, url, label, name, permission, permission_operator, parent_id, is_active, has_separator, weight, icon )
-VALUES
-    ( @domainID, NULL, 'Grants', 'Grants', 'access CiviGrant', '', NULL, '1', NULL, 90, 'crm-i fa-money' );
-
-SET @grantlastID:=LAST_INSERT_ID();
-INSERT INTO civicrm_navigation
-    ( domain_id, url, label, name, permission, permission_operator, parent_id, is_active, has_separator, weight )
-VALUES
-    ( @domainID, 'civicrm/grant?reset=1',           'Dashboard', 'Dashboard', 'access CiviGrant', '',       @grantlastID, '1', NULL, 1 ),
-    ( @domainID, 'civicrm/grant/add?reset=1&action=add&context=standalone', 'New Grant', 'New Grant', 'access CiviGrant,edit grants', 'AND', @grantlastID, '1', NULL, 2 ),
-    ( @domainID, 'civicrm/grant/search?reset=1',    'Find Grants', 'Find Grants', 'access CiviGrant', '',   @grantlastID, '1', 1, 3 ),
-    ( @domainID, 'civicrm/report/list?compid=5&reset=1', 'Grant Reports', 'Grant Reports', 'access CiviGrant', '', @grantlastID, '1', 0,    4 );
 
 INSERT INTO civicrm_navigation
     ( domain_id, url, label, name, permission, permission_operator, parent_id, is_active, has_separator, weight, icon )
@@ -446,7 +432,7 @@ VALUES
     ( @domainID, 'civicrm/admin/options/payment_instrument?reset=1',  'Payment Methods',    'Payment Instruments',   'access CiviContribute,administer CiviCRM', 'AND', @adminContributelastID, '1', NULL, 12 ),
     ( @domainID, 'civicrm/admin/options/accept_creditcard?reset=1',    'Accepted Credit Cards',  'Accepted Credit Cards', 'access CiviContribute,administer CiviCRM', 'AND', @adminContributelastID, '1', NULL, 13 ),
     ( @domainID, 'civicrm/admin/options/soft_credit_type?reset=1', 'Soft Credit Types', 'Soft Credit Types', 'access CiviContribute,administer CiviCRM', 'AND', @adminContributelastID, '1', 1, 14  ),
-    ( @domainID, 'civicrm/admin/price?reset=1&action=add',                  'New Price Set',              'New Price Set',             'access CiviContribute,administer CiviCRM', 'AND', @adminContributelastID, '1', NULL, 15 ),
+    ( @domainID, 'civicrm/admin/price?reset=1&action=add',                  'New Price Set',              'New Price Set',             'access CiviContribute,administer CiviCRM', 'AND', @adminContributelastID, '0', NULL, 15 ),
     ( @domainID, 'civicrm/admin/price?reset=1',                             'Manage Price Sets',          'Manage Price Sets',         'access CiviContribute,administer CiviCRM', 'AND', @adminContributelastID, '1', NULL, 16 ),
     ( @domainID, 'civicrm/admin/paymentProcessor?reset=1',                  'Payment Processors',         'Payment Processors',        'administer CiviCRM', '',                          @adminContributelastID, '1', NULL, 17  ),
     ( @domainID, 'civicrm/admin/setting/preferences/contribute?reset=1',                  'CiviContribute Component Settings',         'CiviContribute Component Settings',        'administer CiviCRM', '',                          @adminContributelastID, '1', NULL, 18  ) ;
@@ -464,7 +450,7 @@ VALUES
     ( @domainID, 'civicrm/event/manage?reset=1',                           'Manage Events',      'Manage Events',                    'access CiviEvent,administer CiviCRM', 'AND', @adminEventlastID, '1', 1,    2 ),
     ( @domainID, 'civicrm/admin/pcp?reset=1&page_type=event',                              'Personal Campaign Pages',    'Personal Campaign Pages',   'access CiviEvent,administer CiviCRM', 'AND', @adminEventlastID, '1', 1, 3 ),
     ( @domainID, 'civicrm/admin/eventTemplate?reset=1',                    'Event Templates',    'Event Templates',                  'access CiviEvent,administer CiviCRM', 'AND', @adminEventlastID, '1', 1,    4 ),
-    ( @domainID, 'civicrm/admin/price?reset=1&action=add',                 'New Price Set',      'New Price Set',                    'access CiviEvent,administer CiviCRM', 'AND', @adminEventlastID, '1', NULL, 5 ),
+    ( @domainID, 'civicrm/admin/price?reset=1&action=add',                 'New Price Set',      'New Price Set',                    'access CiviEvent,administer CiviCRM', 'AND', @adminEventlastID, '0', NULL, 5 ),
     ( @domainID, 'civicrm/admin/price?reset=1',                            'Manage Price Sets',  'Manage Price Sets',                'access CiviEvent,administer CiviCRM', 'AND', @adminEventlastID, '1', 1,    6 ),
     ( @domainID, 'civicrm/admin/options/event_type?reset=1',  'Event Types',    'Event Types',                      'access CiviEvent,administer CiviCRM', 'AND', @adminEventlastID, '1', NULL, 7 ),
     ( @domainID, 'civicrm/admin/participant_status?reset=1',                   'Participant Statuses', 'Participant Statuses',       'access CiviEvent,administer CiviCRM', 'AND', @adminEventlastID, '1', NULL, 8 ),
@@ -473,18 +459,6 @@ VALUES
     ( @domainID, 'civicrm/admin/badgelayout?reset=1',                       'Event Name Badge Layouts', 'Event Name Badge Layouts', 'access CiviEvent,administer CiviCRM', 'AND', @adminEventlastID, '1', NULL, 11 ),
     ( @domainID, 'civicrm/admin/paymentProcessor?reset=1',                  'Payment Processors', 'Payment Processors',              'administer CiviCRM', '',                     @adminEventlastID, '1', NULL, 12),
     ( @domainID, 'civicrm/admin/setting/preferences/event?reset=1',         'CiviEvent Component Settings', 'CiviEvent Component Settings','access CiviEvent,administer CiviCRM', 'AND', @adminEventlastID, '1', NULL, 13 );
-
-INSERT INTO civicrm_navigation
-    ( domain_id, url, label, name, permission, permission_operator, parent_id, is_active, has_separator, weight )
-VALUES
-    ( @domainID, NULL, 'CiviGrant', 'CiviGrant', 'access CiviGrant,administer CiviCRM', 'AND', @adminlastID, '1', NULL, 13 );
-
-SET @adminGrantlastID:=LAST_INSERT_ID();
-INSERT INTO civicrm_navigation
-    ( domain_id, url, label, name, permission, permission_operator, parent_id, is_active, has_separator, weight )
-VALUES
-    ( @domainID, 'civicrm/admin/options/grant_type?reset=1', 'Grant Types', 'Grant Types', 'access CiviGrant,administer CiviCRM', 'AND', @adminGrantlastID, '1', NULL, 1 ),
-    ( @domainID, 'civicrm/admin/options/grant_status?reset=1', 'Grant Status', 'Grant Status', 'access CiviGrant,administer CiviCRM', 'AND', @adminGrantlastID, '1', NULL, 2 );
 
 INSERT INTO civicrm_navigation
     ( domain_id, url, label, name, permission, permission_operator, parent_id, is_active, has_separator, weight )
@@ -598,10 +572,6 @@ INSERT INTO civicrm_navigation
     ( domain_id, url, label, name, permission, permission_operator, parent_id, is_active, has_separator, weight )
 VALUES
     ( @domainID, 'civicrm/report/list?compid=7&reset=1', 'Case Reports', 'Case Reports', 'access my cases and activities,access all cases and activities,administer CiviCase', 'OR', @reportlastID, '1', 0,    8 );
-INSERT INTO civicrm_navigation
-    ( domain_id, url, label, name, permission, permission_operator, parent_id, is_active, has_separator, weight )
-VALUES
-    ( @domainID, 'civicrm/report/list?compid=5&reset=1', 'Grant Reports', 'Grant Reports', 'access CiviGrant', '', @reportlastID, '1', 0,    9 );
 INSERT INTO civicrm_navigation
     ( domain_id, url, label, name, permission, permission_operator, parent_id, is_active, has_separator, weight )
 VALUES
@@ -757,17 +727,6 @@ INSERT INTO `civicrm_report_instance`
     ( `domain_id`, `title`, `report_id`, `description`, `permission`, `form_values`)
 VALUES
     ( @domainID, 'Attendee List', 'event/participantListing', 'Provides lists of event attendees.', 'access CiviEvent', 'a:27:{s:6:"fields";a:4:{s:9:"sort_name";s:1:"1";s:8:"event_id";s:1:"1";s:9:"status_id";s:1:"1";s:7:"role_id";s:1:"1";}s:12:"sort_name_op";s:3:"has";s:15:"sort_name_value";s:0:"";s:8:"email_op";s:3:"has";s:11:"email_value";s:0:"";s:11:"event_id_op";s:2:"in";s:14:"event_id_value";a:0:{}s:6:"sid_op";s:2:"in";s:9:"sid_value";a:0:{}s:6:"rid_op";s:2:"in";s:9:"rid_value";a:0:{}s:34:"participant_register_date_relative";s:1:"0";s:30:"participant_register_date_from";s:0:"";s:28:"participant_register_date_to";s:0:"";s:6:"eid_op";s:2:"in";s:9:"eid_value";a:0:{}s:11:"custom_4_op";s:2:"in";s:14:"custom_4_value";a:0:{}s:16:"blank_column_end";s:0:"";s:11:"description";s:44:"Provides lists of participants for an event.";s:13:"email_subject";s:0:"";s:8:"email_to";s:0:"";s:8:"email_cc";s:0:"";s:10:"permission";s:16:"access CiviEvent";s:6:"groups";s:0:"";s:7:"options";N;s:9:"domain_id";i:1;}');
-
--- Grant reports
-INSERT INTO `civicrm_report_instance`
-    ( `domain_id`, `title`, `report_id`, `description`, `permission`, `form_values`)
-VALUES
-    ( @domainID, 'Grant Details', 'grant/detail', 'Grant Report Detail', 'access CiviGrant', 'a:40:{s:6:"fields";a:2:{s:9:"sort_name";s:1:"1";s:25:"application_received_date";s:1:"1";}s:12:"sort_name_op";s:3:"has";s:15:"sort_name_value";s:0:"";s:12:"gender_id_op";s:2:"in";s:15:"gender_id_value";a:0:{}s:6:"id_min";s:0:"";s:6:"id_max";s:0:"";s:5:"id_op";s:3:"lte";s:8:"id_value";s:0:"";s:13:"country_id_op";s:2:"in";s:16:"country_id_value";a:0:{}s:20:"state_province_id_op";s:2:"in";s:23:"state_province_id_value";a:0:{}s:13:"grant_type_op";s:2:"in";s:16:"grant_type_value";a:0:{}s:12:"status_id_op";s:2:"in";s:15:"status_id_value";a:0:{}s:18:"amount_granted_min";s:0:"";s:18:"amount_granted_max";s:0:"";s:17:"amount_granted_op";s:3:"lte";s:20:"amount_granted_value";s:0:"";s:20:"amount_requested_min";s:0:"";s:20:"amount_requested_max";s:0:"";s:19:"amount_requested_op";s:3:"lte";s:22:"amount_requested_value";s:0:"";s:34:"application_received_date_relative";s:1:"0";s:30:"application_received_date_from";s:0:"";s:28:"application_received_date_to";s:0:"";s:28:"money_transfer_date_relative";s:1:"0";s:24:"money_transfer_date_from";s:0:"";s:22:"money_transfer_date_to";s:0:"";s:23:"grant_due_date_relative";s:1:"0";s:19:"grant_due_date_from";s:0:"";s:17:"grant_due_date_to";s:0:"";s:11:"description";s:19:"Grant Report Detail";s:13:"email_subject";s:0:"";s:8:"email_to";s:0:"";s:8:"email_cc";s:0:"";s:10:"permission";s:16:"access CiviGrant";s:9:"domain_id";i:1;}');
-
-INSERT INTO `civicrm_report_instance`
-    ( `domain_id`, `title`, `report_id`, `description`, `permission`, `form_values`)
-VALUES
-    ( @domainID, 'Grant Statistics', 'grant/statistics', 'Grant Report Statistics', 'access CiviGrant', 'a:42:{s:6:"fields";a:2:{s:18:"summary_statistics";s:1:"1";s:13:"grant_type_id";s:1:"1";}s:34:"application_received_date_relative";s:1:"0";s:30:"application_received_date_from";s:0:"";s:28:"application_received_date_to";s:0:"";s:22:"decision_date_relative";s:1:"0";s:18:"decision_date_from";s:0:"";s:16:"decision_date_to";s:0:"";s:28:"money_transfer_date_relative";s:1:"0";s:24:"money_transfer_date_from";s:0:"";s:22:"money_transfer_date_to";s:0:"";s:23:"grant_due_date_relative";s:1:"0";s:19:"grant_due_date_from";s:0:"";s:17:"grant_due_date_to";s:0:"";s:13:"grant_type_op";s:2:"in";s:16:"grant_type_value";a:0:{}s:12:"status_id_op";s:2:"in";s:15:"status_id_value";a:0:{}s:20:"amount_requested_min";s:0:"";s:20:"amount_requested_max";s:0:"";s:19:"amount_requested_op";s:3:"lte";s:22:"amount_requested_value";s:0:"";s:18:"amount_granted_min";s:0:"";s:18:"amount_granted_max";s:0:"";s:17:"amount_granted_op";s:3:"lte";s:20:"amount_granted_value";s:0:"";s:24:"grant_report_received_op";s:2:"eq";s:27:"grant_report_received_value";s:0:"";s:12:"gender_id_op";s:2:"in";s:15:"gender_id_value";a:0:{}s:15:"contact_type_op";s:2:"in";s:18:"contact_type_value";a:0:{}s:12:"region_id_op";s:2:"in";s:15:"region_id_value";a:0:{}s:13:"country_id_op";s:2:"in";s:16:"country_id_value";a:0:{}s:11:"description";s:23:"Grant Report Statistics";s:13:"email_subject";s:0:"";s:8:"email_to";s:0:"";s:8:"email_cc";s:0:"";s:10:"permission";s:16:"access CiviGrant";s:9:"parent_id";s:0:"";s:9:"domain_id";i:1;}');
 
 -- Mailing Reports
 INSERT INTO `civicrm_report_instance`

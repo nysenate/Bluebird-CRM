@@ -91,9 +91,9 @@ function _search_kit_civix_civicrm_config(&$config = NULL) {
   }
   $configured = TRUE;
 
-  $template =& CRM_Core_Smarty::singleton();
+  $template = CRM_Core_Smarty::singleton();
 
-  $extRoot = dirname(__FILE__) . DIRECTORY_SEPARATOR;
+  $extRoot = __DIR__ . DIRECTORY_SEPARATOR;
   $extDir = $extRoot . 'templates';
 
   if (is_array($template->template_dir)) {
@@ -299,6 +299,11 @@ function _search_kit_civix_civicrm_entityTypes(&$entityTypes) {
       'name' => 'SearchDisplay',
       'class' => 'CRM_Search_DAO_SearchDisplay',
       'table' => 'civicrm_search_display',
+    ],
+    'CRM_Search_DAO_SearchSegment' => [
+      'name' => 'SearchSegment',
+      'class' => 'CRM_Search_DAO_SearchSegment',
+      'table' => 'civicrm_search_segment',
     ],
   ]);
 }

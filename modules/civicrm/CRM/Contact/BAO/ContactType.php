@@ -14,27 +14,23 @@
  * @package CRM
  * @copyright CiviCRM LLC https://civicrm.org/licensing
  */
-class CRM_Contact_BAO_ContactType extends CRM_Contact_DAO_ContactType implements \Civi\Test\HookInterface {
+class CRM_Contact_BAO_ContactType extends CRM_Contact_DAO_ContactType implements \Civi\Core\HookInterface {
 
   /**
-   * Fetch object based on array of properties.
+   * Retrieve DB object and copy to defaults array.
    *
    * @param array $params
-   *   (reference ) an assoc array of name/value pairs.
+   *   Array of criteria values.
    * @param array $defaults
-   *   (reference ) an assoc array to hold the flattened values.
+   *   Array to be populated with found values.
    *
-   * @return CRM_Contact_DAO_ContactType|null
-   *   object on success, null otherwise
+   * @return self|null
+   *   The DAO object, if found.
+   *
+   * @deprecated
    */
-  public static function retrieve(&$params, &$defaults) {
-    $contactType = new CRM_Contact_DAO_ContactType();
-    $contactType->copyValues($params);
-    if ($contactType->find(TRUE)) {
-      CRM_Core_DAO::storeValues($contactType, $defaults);
-      return $contactType;
-    }
-    return NULL;
+  public static function retrieve($params, &$defaults) {
+    return self::commonRetrieve(self::class, $params, $defaults);
   }
 
   /**
@@ -105,7 +101,7 @@ class CRM_Contact_BAO_ContactType extends CRM_Contact_DAO_ContactType implements
   /**
    * Retrieve all subtypes Information.
    *
-   * @param array $contactType
+   * @param string|null $contactType
    * @param bool $all
    *
    * @return array
@@ -130,8 +126,7 @@ class CRM_Contact_BAO_ContactType extends CRM_Contact_DAO_ContactType implements
    *
    *   retrieve all subtypes
    *
-   * @param array $contactType
-   *   ..
+   * @param string|null $contactType
    * @param bool $all
    * @param string $columnName
    * @param bool $ignoreCache
@@ -143,7 +138,7 @@ class CRM_Contact_BAO_ContactType extends CRM_Contact_DAO_ContactType implements
    */
   public static function subTypes($contactType = NULL, $all = FALSE, $columnName = 'name', $ignoreCache = FALSE) {
     if ($columnName === 'name') {
-      return array_keys(self::subTypeInfo($contactType, $all, $ignoreCache));
+      return array_keys(self::subTypeInfo($contactType, $all));
     }
     else {
       return array_values(self::subTypePairs($contactType, FALSE, NULL, $ignoreCache));
@@ -156,14 +151,14 @@ class CRM_Contact_BAO_ContactType extends CRM_Contact_DAO_ContactType implements
    *
    * @param array $contactType
    * @param bool $all
-   * @param string $labelPrefix
+   * @param string|null $labelPrefix
    * @param bool $ignoreCache
    *
    * @return array
    *   list of subtypes with name as 'subtype-name' and 'label' as value
    */
   public static function subTypePairs($contactType = NULL, $all = FALSE, $labelPrefix = '- ', $ignoreCache = FALSE) {
-    $subtypes = self::subTypeInfo($contactType, $all, $ignoreCache);
+    $subtypes = self::subTypeInfo($contactType, $all);
 
     $pairs = [];
     foreach ($subtypes as $name => $info) {
@@ -212,8 +207,8 @@ class CRM_Contact_BAO_ContactType extends CRM_Contact_DAO_ContactType implements
    * Retrieve basic type pairs with name as 'built-in name' and 'label' as value.
    *
    * @param bool $all
-   * @param null $typeName
-   * @param null $delimiter
+   * @param array|string|null $typeName
+   * @param string|null $delimiter
    *
    * @return array|string
    *   Array of basictypes with name as 'built-in name' and 'label' as value
@@ -867,7 +862,7 @@ WHERE ($subtypeClause)";
    * @return array
    * @throws \API_Exception
    */
-  protected static function getAllContactTypes() {
+  public static function getAllContactTypes() {
     $cache = Civi::cache('contactTypes');
     $cacheKey = 'all_' . $GLOBALS['tsLocale'];
     $contactTypes = $cache->get($cacheKey);

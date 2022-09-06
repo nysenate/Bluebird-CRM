@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "8368a6e750dfc72262db6123cdfe965d",
+    "content-hash": "34ab055dbe722c2fe50b788b44d0cf59",
     "packages": [
         {
             "name": "totten/lurkerlite",
@@ -1198,11 +1198,11 @@
     "prefer-lowest": false,
     "platform": {
         "composer-plugin-api": "^1.1 || ^2.0",
-        "php": ">=7.1"
+        "php": ">=7.2"
     },
     "platform-dev": [],
     "platform-overrides": {
-        "php": "7.1"
+        "php": "7.2"
     },
-    "plugin-api-version": "1.1.0"
+    "plugin-api-version": "2.3.0"
 }

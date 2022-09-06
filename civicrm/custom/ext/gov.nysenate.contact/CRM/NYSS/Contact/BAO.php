@@ -13,16 +13,38 @@ class CRM_NYSS_Contact_BAO {
 
     $sTime = microtime(TRUE);
 
-    $modifiedDateSql = (!empty($params['modified_date'])) ?
-      "AND modified_date <= '".date('Y-m-d H:i:s', strtotime($params['modified_date']))."'" : '';
+    $modifiedDateFrom = $modifiedDateWhere = '';
+    if (!empty($params['modified_date'])) {
+      $dsn = defined('CIVICRM_LOGGING_DSN') ? DB::parseDSN(CIVICRM_LOGGING_DSN) : DB::parseDSN(CIVICRM_DSN);
+      $loggingDB = $dsn['database'];
+
+      $modifiedDateFrom = "
+        JOIN (
+          SELECT id, log_date
+          FROM {$loggingDB}.log_civicrm_contact
+          WHERE is_deleted = 1
+            AND log_action = 'Update'
+          ORDER BY log_date DESC
+          LIMIT 1
+        ) log
+          ON log.id = c.id
+      ";
+
+      $modifiedDate = date('Y-m-d', strtotime($params['modified_date'])).' 23:23:59';
+      $modifiedDateWhere = "AND log.log_date <= '{$modifiedDate}'";
+    }
 
     //get all trashed contact IDs
     $sql = "
-      SELECT id
-      FROM civicrm_contact
-      WHERE is_deleted = 1
-        {$modifiedDateSql}
+      SELECT c.id
+      FROM civicrm_contact c
+      {$modifiedDateFrom}
+      WHERE c.is_deleted = 1
+        {$modifiedDateWhere}
+      GROUP BY c.id
     ";
+    //Civi::log()->debug(__METHOD__, ['sql' => $sql]);
+
     $trashed = CRM_Core_DAO::executeQuery($sql);
 
     if ($params['dryrun'] ?? FALSE) {

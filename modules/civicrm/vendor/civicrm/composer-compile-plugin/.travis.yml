@@ -11,15 +11,19 @@ matrix:
   include:
     - os: linux
       dist: xenial
-      php: 7.1
+      php: 7.2
       env: COMPOSER_VERSION=--1
     - os: linux
       dist: xenial
-      php: 7.1
+      php: 7.2
       env: COMPOSER_VERSION=--snapshot
     - os: linux
       dist: xenial
       php: 7.4
+      env: COMPOSER_VERSION=--snapshot
+    - os: linux
+      dist: xenial
+      php: 8.0
       env: COMPOSER_VERSION=--snapshot
     - os: osx
       osx_image: xcode12

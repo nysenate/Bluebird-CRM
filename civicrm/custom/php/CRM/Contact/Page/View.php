@@ -171,8 +171,7 @@ class CRM_Contact_Page_View extends CRM_Core_Page {
 
     $recentOther = [
       'imageUrl' => $contactImageUrl,
-      'subtype' => $contactSubtype,
-      'isDeleted' => $isDeleted,
+      'is_deleted' => $isDeleted,
     ];
 
     if (CRM_Contact_BAO_Contact_Permission::allow($this->_contactId, CRM_Core_Permission::EDIT)) {
@@ -188,7 +187,7 @@ class CRM_Contact_Page_View extends CRM_Core_Page {
     CRM_Utils_Recent::add($displayName,
       CRM_Utils_System::url('civicrm/contact/view', "reset=1&cid={$this->_contactId}"),
       $this->_contactId,
-      $contactType,
+      'Contact',
       $this->_contactId,
       $displayName,
       $recentOther
@@ -210,6 +209,9 @@ class CRM_Contact_Page_View extends CRM_Core_Page {
     // Add links for actions menu
     self::addUrls($this, $this->_contactId);
     $this->assign('groupOrganizationUrl', $this->getGroupOrganizationUrl($contactType));
+
+    // Assign deleteURL variable, used as part of ContactImage.tpl
+    self::$_template->ensureVariablesAreAssigned(['deleteURL']);
   }
 
   /**
@@ -233,7 +235,7 @@ class CRM_Contact_Page_View extends CRM_Core_Page {
   }
 
   /**
-   * @param $page
+   * @param CRM_Core_Page $page
    * @param int $contactID
    */
   public static function checkUserPermission($page, $contactID = NULL) {
@@ -244,7 +246,7 @@ class CRM_Contact_Page_View extends CRM_Core_Page {
       $contactID = $page->_contactId;
     }
 
-    // automatically grant permissin for users on their own record. makes
+    // automatically grant permission for users on their own record. makes
     // things easier in dashboard
     $session = CRM_Core_Session::singleton();
 

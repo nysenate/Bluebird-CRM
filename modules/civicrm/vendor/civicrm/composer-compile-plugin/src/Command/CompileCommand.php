@@ -4,6 +4,7 @@ namespace Civi\CompilePlugin\Command;
 
 use Civi\CompilePlugin\TaskList;
 use Civi\CompilePlugin\TaskRunner;
+use Civi\CompilePlugin\Util\EnvHelper;
 use Composer\Script\ScriptEvents;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
@@ -53,7 +54,7 @@ class CompileCommand extends \Composer\Command\BaseCommand
     protected function execute(InputInterface $input, OutputInterface $output)
     {
         if ($output->isVerbose()) {
-            putenv('COMPOSER_COMPILE_PASSTHRU=always');
+            EnvHelper::set('COMPOSER_COMPILE_PASSTHRU', 'always');
         }
 
         $taskList = new TaskList($this->getComposer(), $this->getIO());
@@ -74,5 +75,6 @@ class CompileCommand extends \Composer\Command\BaseCommand
         } else {
             $taskRunner->runDefault($taskList, $input->getOption('dry-run'));
         }
+        return 0;
     }
 }

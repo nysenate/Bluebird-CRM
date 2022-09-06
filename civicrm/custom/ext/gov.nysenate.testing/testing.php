@@ -18,9 +18,8 @@ function testing_civicrm_config(&$config) {
  *
  * @link http://wiki.civicrm.org/confluence/display/CRMDOC/hook_civicrm_xmlMenu
  */
-function testing_civicrm_xmlMenu(&$files) {
-  _testing_civix_civicrm_xmlMenu($files);
-}
+
+
 
 /**
  * Implements hook_civicrm_install().
@@ -82,9 +81,8 @@ function testing_civicrm_upgrade($op, CRM_Queue_Queue $queue = NULL) {
  *
  * @link http://wiki.civicrm.org/confluence/display/CRMDOC/hook_civicrm_managed
  */
-function testing_civicrm_managed(&$entities) {
-  _testing_civix_civicrm_managed($entities);
-}
+
+
 
 /**
  * Implements hook_civicrm_caseTypes().
@@ -95,9 +93,8 @@ function testing_civicrm_managed(&$entities) {
  *
  * @link http://wiki.civicrm.org/confluence/display/CRMDOC/hook_civicrm_caseTypes
  */
-function testing_civicrm_caseTypes(&$caseTypes) {
-  _testing_civix_civicrm_caseTypes($caseTypes);
-}
+
+
 
 /**
  * Implements hook_civicrm_angularModules().
@@ -109,18 +106,16 @@ function testing_civicrm_caseTypes(&$caseTypes) {
  *
  * @link http://wiki.civicrm.org/confluence/display/CRMDOC/hook_civicrm_caseTypes
  */
-function testing_civicrm_angularModules(&$angularModules) {
-_testing_civix_civicrm_angularModules($angularModules);
-}
+
+
 
 /**
  * Implements hook_civicrm_alterSettingsFolders().
  *
  * @link http://wiki.civicrm.org/confluence/display/CRMDOC/hook_civicrm_alterSettingsFolders
  */
-function testing_civicrm_alterSettingsFolders(&$metaDataFolders = NULL) {
-  _testing_civix_civicrm_alterSettingsFolders($metaDataFolders);
-}
+
+
 
 /**
  * Functions below this ship commented out. Uncomment as required.
@@ -131,9 +126,8 @@ function testing_civicrm_alterSettingsFolders(&$metaDataFolders = NULL) {
  *
  * @link http://wiki.civicrm.org/confluence/display/CRMDOC/hook_civicrm_preProcess
  *
-function testing_civicrm_preProcess($formName, &$form) {
 
-} // */
+ // */
 
 /**
  * Implements hook_civicrm_navigationMenu().
@@ -151,3 +145,21 @@ function testing_civicrm_navigationMenu(&$menu) {
   ));
   _testing_civix_navigationMenu($menu);
 } // */
+
+/**
+ * Implements hook_civicrm_postInstall().
+ *
+ * @link https://docs.civicrm.org/dev/en/latest/hooks/hook_civicrm_postInstall
+ */
+function testing_civicrm_postInstall() {
+  _testing_civix_civicrm_postInstall();
+}
+
+/**
+ * Implements hook_civicrm_entityTypes().
+ *
+ * @link https://docs.civicrm.org/dev/en/latest/hooks/hook_civicrm_entityTypes
+ */
+function testing_civicrm_entityTypes(&$entityTypes) {
+  _testing_civix_civicrm_entityTypes($entityTypes);
+}

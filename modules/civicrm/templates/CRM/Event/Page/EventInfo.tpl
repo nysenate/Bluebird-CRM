@@ -106,7 +106,7 @@
             {if $event.event_end_date}
                 &nbsp;{ts}through{/ts}&nbsp;
                 {* Only show end time if end date = start date *}
-                {if $event.event_end_date|date_format:"%Y%m%d" == $event.event_start_date|date_format:"%Y%m%d"}
+                {if $event.event_end_date|crmDate:"%Y%m%d" == $event.event_start_date|crmDate:"%Y%m%d"}
                     {$event.event_end_date|crmDate:0:1}
                 {else}
                     {$event.event_end_date|crmDate}
@@ -185,16 +185,16 @@
                         {* Skip price field label for quick_config price sets since it duplicates $event.fee_label *}
                       {else}
                       <tr>
-                          <td class="{$lClass} crm-event-label">{$feeBlock.label.$idx}</td>
-                          {if $isPriceSet & $feeBlock.isDisplayAmount.$idx}
-            <td class="fee_amount-value right">
-                              {if isset($feeBlock.tax_amount.$idx)}
-          {$feeBlock.value.$idx}
-                              {else}
-                {$feeBlock.value.$idx|crmMoney}
-                              {/if}
-            </td>
-                          {/if}
+                        <td class="{$lClass} crm-event-label">{$feeBlock.label.$idx}</td>
+                        {if $isPriceSet & $feeBlock.isDisplayAmount.$idx}
+                          <td class="fee_amount-value right">
+                            {if $feeBlock.tax_amount && $feeBlock.tax_amount.$idx}
+                              {$feeBlock.value.$idx}
+                            {else}
+                              {$feeBlock.value.$idx|crmMoney:$eventCurrency}
+                            {/if}
+                          </td>
+                        {/if}
                       </tr>
                       {/if}
                   {/foreach}

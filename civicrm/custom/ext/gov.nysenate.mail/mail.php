@@ -19,17 +19,6 @@ function mail_civicrm_config(&$config) {
   _mail_civix_civicrm_config($config);
 }
 
-/**
- * Implements hook_civicrm_xmlMenu().
- *
- * @param $files array(string)
- *
- * @link http://wiki.civicrm.org/confluence/display/CRMDOC/hook_civicrm_xmlMenu
- */
-function mail_civicrm_xmlMenu(&$files) {
-  _mail_civix_civicrm_xmlMenu($files);
-}
-
 function mail_civicrm_alterMenu(&$items) {
   //https://github.com/veda-consulting/uk.co.vedaconsulting.mosaico/issues/347
   $items['civicrm/mosaico/iframe'] = [
@@ -108,31 +97,6 @@ function mail_civicrm_upgrade($op, CRM_Queue_Queue $queue = NULL) {
 }
 
 /**
- * Implements hook_civicrm_managed().
- *
- * Generate a list of entities to create/deactivate/delete when this module
- * is installed, disabled, uninstalled.
- *
- * @link http://wiki.civicrm.org/confluence/display/CRMDOC/hook_civicrm_managed
- */
-function mail_civicrm_managed(&$entities) {
-  _mail_civix_civicrm_managed($entities);
-}
-
-/**
- * Implements hook_civicrm_caseTypes().
- *
- * Generate a list of case-types
- *
- * Note: This hook only runs in CiviCRM 4.4+.
- *
- * @link http://wiki.civicrm.org/confluence/display/CRMDOC/hook_civicrm_caseTypes
- */
-function mail_civicrm_caseTypes(&$caseTypes) {
-  _mail_civix_civicrm_caseTypes($caseTypes);
-}
-
-/**
  * Implements hook_civicrm_angularModules().
  *
  * Generate a list of Angular modules.
@@ -143,8 +107,6 @@ function mail_civicrm_caseTypes(&$caseTypes) {
  * @link http://wiki.civicrm.org/confluence/display/CRMDOC/hook_civicrm_caseTypes
  */
 function mail_civicrm_angularModules(&$angularModules) {
-  _mail_civix_civicrm_angularModules($angularModules);
-
   //13780 office admins and managers can delete mailing templates
   if (!empty($angularModules['crmMosaico'])) {
     //Civi::log()->debug(__FUNCTION__, ['angularModules[crmMosaico]' => $angularModules['crmMosaico']]);
@@ -155,15 +117,6 @@ function mail_civicrm_angularModules(&$angularModules) {
       $angularModules['crmMosaico']['settings']['canDelete'] = 1;
     }
   }
-}
-
-/**
- * Implements hook_civicrm_alterSettingsFolders().
- *
- * @link http://wiki.civicrm.org/confluence/display/CRMDOC/hook_civicrm_alterSettingsFolders
- */
-function mail_civicrm_alterSettingsFolders(&$metaDataFolders = NULL) {
-  _mail_civix_civicrm_alterSettingsFolders($metaDataFolders);
 }
 
 function mail_civicrm_alterAngular(\Civi\Angular\Manager $angular) {
@@ -1151,13 +1104,6 @@ function mail_civicrm_alterMailParams(&$params, $context) {
 
     //CRM_Core_Error::debug_var('params[html]', $params['html']);
     $params['html'] = _mail_mailingViewCss($params['html']);
-  }
-
-  //modify subject line of error emails
-  if (strpos($params['subject'], 'Bluebird error at NY Senate Constituent Services') !== FALSE) {
-    $subject = str_replace('Bluebird error at NY Senate Constituent Services', '', $params['subject']);
-    $subject = str_replace('()', '', $subject);
-    $params['subject'] = "Bluebird Error [{$bbconfig['shortname']}.{$bbconfig['envname']}]".$subject;
   }
 
   //CRM_Core_Error::debug('session', $_SESSION);

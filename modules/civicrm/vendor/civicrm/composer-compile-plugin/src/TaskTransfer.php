@@ -1,6 +1,9 @@
 <?php
 namespace Civi\CompilePlugin;
 
+use Civi\CompilePlugin\Util\EnvHelper;
+use Composer\Util\Platform;
+
 /**
  * Class TaskTransfer
  * @package Civi\CompilePlugin
@@ -44,11 +47,11 @@ class TaskTransfer
     {
         $data = base64_encode(gzencode(json_encode($task->definition)));
         if (strlen($data) < self::MAX_ENV_SIZE) {
-            putenv(self::ENV_VAR . '=' . $data);
+            EnvHelper::set(self::ENV_VAR, $data);
         } else {
             $tempFile = tempnam(sys_get_temp_dir(), 'composer-compile-');
             file_put_contents($tempFile, json_encode($task->definition));
-            putenv(self::ENV_VAR . '=@' . $tempFile);
+            EnvHelper::set(self::ENV_VAR, '@' . $tempFile);
         }
     }
 
@@ -82,7 +85,7 @@ class TaskTransfer
             $file = substr($raw, 1);
             unlink($file);
         }
-        putenv(self::ENV_VAR);
+        EnvHelper::remove(self::ENV_VAR);
     }
 
     /**
