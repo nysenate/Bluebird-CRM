@@ -61,6 +61,10 @@ class AdminTest extends \PHPUnit\Framework\TestCase implements HeadlessInterface
       $relationshipJoins[0]['defaults']
     );
 
+    $relationshipCacheJoins = $joins['RelationshipCache'];
+    $this->assertCount(4, $relationshipCacheJoins);
+    $this->assertEquals(['RelationshipType', 'Contact', 'Contact', 'Case'], array_column($relationshipCacheJoins, 'entity'));
+
     $eventParticipantJoins = \CRM_Utils_Array::findAll($joins['Event'], [
       'entity' => 'Participant',
       'alias' => 'Event_Participant_event_id',
@@ -96,6 +100,30 @@ class AdminTest extends \PHPUnit\Framework\TestCase implements HeadlessInterface
       ['EntityTag', ['id', '=', 'Activity_EntityTag_Tag.entity_id'], ['Activity_EntityTag_Tag.entity_table', '=', "'civicrm_activity'"]],
       $activityTagJoins[0]['conditions']
     );
+
+    // Ensure joins exist btw custom group & custom fields
+    $customGroupToField = \CRM_Utils_Array::findAll($joins['CustomGroup'], [
+      'entity' => 'CustomField',
+      'multi' => TRUE,
+    ]);
+    $this->assertCount(1, $customGroupToField);
+    $customFieldToGroup = \CRM_Utils_Array::findAll($joins['CustomField'], [
+      'entity' => 'CustomGroup',
+      'multi' => FALSE,
+    ]);
+    $this->assertCount(1, $customFieldToGroup);
+
+    // Ensure joins btw option group and option value
+    $optionGroupToValue = \CRM_Utils_Array::findAll($joins['OptionGroup'], [
+      'entity' => 'OptionValue',
+      'multi' => TRUE,
+    ]);
+    $this->assertCount(1, $optionGroupToValue);
+    $optionValueToGroup = \CRM_Utils_Array::findAll($joins['OptionValue'], [
+      'entity' => 'OptionGroup',
+      'multi' => FALSE,
+    ]);
+    $this->assertCount(1, $optionValueToGroup);
   }
 
 }

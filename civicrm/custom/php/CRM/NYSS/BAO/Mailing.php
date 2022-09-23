@@ -76,7 +76,7 @@ class CRM_NYSS_BAO_Mailing {
         CRM_Mailing_Event_BAO_Queue::bulkCreate($rows, $now);
 
         //notify error report recipients
-        CRM_NYSS_BAO_NYSS::notifyErrorReportRecipient('Mailing Queue Cleanup Required', print_r($rows, TRUE));
+        CRM_NYSS_Errorhandler_BAO::notifyEmail(print_r($rows, TRUE), 'Mailing Queue Cleanup Required');
       }
 
       return $job['id'];

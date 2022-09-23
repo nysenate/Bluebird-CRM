@@ -18,7 +18,7 @@
 /**
  * This class contains payment processor related functions.
  */
-class CRM_Financial_BAO_PaymentProcessor extends CRM_Financial_DAO_PaymentProcessor implements \Civi\Test\HookInterface {
+class CRM_Financial_BAO_PaymentProcessor extends CRM_Financial_DAO_PaymentProcessor implements \Civi\Core\HookInterface {
   /**
    * Static holder for the default payment processor
    * @var object
@@ -92,7 +92,7 @@ class CRM_Financial_BAO_PaymentProcessor extends CRM_Financial_DAO_PaymentProces
 
   /**
    * Retrieve array of allowed credit cards for this payment processor.
-   * @param integer|null $paymentProcessorID id of processor.
+   * @param int|null $paymentProcessorID
    * @return array
    */
   public static function getCreditCards($paymentProcessorID = NULL) {
@@ -127,26 +127,20 @@ class CRM_Financial_BAO_PaymentProcessor extends CRM_Financial_DAO_PaymentProces
   }
 
   /**
-   * Retrieve DB object based on input parameters.
-   *
-   * It also stores all the retrieved values in the default array.
+   * Retrieve DB object and copy to defaults array.
    *
    * @param array $params
-   *   (reference ) an assoc array of name/value pairs.
+   *   Array of criteria values.
    * @param array $defaults
-   *   (reference ) an assoc array to hold the flattened values.
+   *   Array to be populated with found values.
    *
-   * @return CRM_Financial_DAO_PaymentProcessor|null
-   *   object on success, null otherwise
+   * @return self|null
+   *   The DAO object, if found.
+   *
+   * @deprecated
    */
-  public static function retrieve(&$params, &$defaults) {
-    $paymentProcessor = new CRM_Financial_DAO_PaymentProcessor();
-    $paymentProcessor->copyValues($params);
-    if ($paymentProcessor->find(TRUE)) {
-      CRM_Core_DAO::storeValues($paymentProcessor, $defaults);
-      return $paymentProcessor;
-    }
-    return NULL;
+  public static function retrieve($params, &$defaults) {
+    return self::commonRetrieve(self::class, $params, $defaults);
   }
 
   /**
@@ -270,12 +264,12 @@ class CRM_Financial_BAO_PaymentProcessor extends CRM_Financial_DAO_PaymentProces
   /**
    * Get all payment processors as an array of objects.
    *
-   * @param string|NULL $mode
+   * @param string|null $mode
    * only return this mode - test|live or NULL for all
    * @param bool $reset
    * @param bool $isCurrentDomainOnly
    *   Do we only want to load payment processors associated with the current domain.
-   * @param bool|NULL $isActive
+   * @param bool|null $isActive
    *   Do we only want active processors, only inactive (FALSE) or all processors (NULL)
    *
    * @throws CiviCRM_API3_Exception

@@ -130,7 +130,7 @@ class CRM_Extension_Manager {
    * Class constructor.
    *
    * @param CRM_Extension_Container_Interface $fullContainer
-   * @param CRM_Extension_Container_Basic|FALSE $defaultContainer
+   * @param CRM_Extension_Container_Basic|false $defaultContainer
    * @param CRM_Extension_Mapper $mapper
    * @param array $typeManagers
    */
@@ -566,7 +566,7 @@ class CRM_Extension_Manager {
   /**
    * Return current processes for given extension.
    *
-   * @param String $key extension key
+   * @param string $key extension key
    *
    * @return array
    */
@@ -578,7 +578,7 @@ class CRM_Extension_Manager {
    * Determine if the extension specified is currently involved in an install
    * or enable process. Just sugar code to make things more readable.
    *
-   * @param String $key extension key
+   * @param string $key extension key
    *
    * @return bool
    */
@@ -712,9 +712,12 @@ class CRM_Extension_Manager {
    * @return CRM_Extension_Info|NULL
    */
   public function createInfoFromDB($key) {
-    $dao = new CRM_Core_DAO_Extension();
-    $dao->full_name = $key;
-    if ($dao->find(TRUE)) {
+    // System hasn't booted - and extension is missing. Need low-tech/no-hook SELECT to learn more about what's missing.
+    $select = CRM_Utils_SQL_Select::from('civicrm_extension')
+      ->where('full_name = @key', ['key' => $key])
+      ->select('full_name, type, name, label, file');
+    $dao = $select->execute();
+    if ($dao->fetch()) {
       $info = new CRM_Extension_Info($dao->full_name, $dao->type, $dao->name, $dao->label, $dao->file);
       return $info;
     }

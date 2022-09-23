@@ -182,31 +182,23 @@ FROM civicrm_action_schedule cas
   }
 
   /**
-   * Retrieve DB object based on input parameters.
-   *
-   * It also stores all the retrieved values in the default array.
+   * Retrieve DB object and copy to defaults array.
    *
    * @param array $params
-   *   (reference ) an assoc array of name/value pairs.
-   * @param array $values
-   *   (reference ) an assoc array to hold the flattened values.
+   *   Array of criteria values.
+   * @param array $defaults
+   *   Array to be populated with found values.
    *
-   * @return CRM_Core_DAO_ActionSchedule|null
-   *   object on success, null otherwise
+   * @return self|null
+   *   The DAO object, if found.
+   *
+   * @deprecated
    */
-  public static function retrieve(&$params, &$values) {
+  public static function retrieve($params, &$defaults) {
     if (empty($params)) {
       return NULL;
     }
-    $actionSchedule = new CRM_Core_DAO_ActionSchedule();
-
-    $actionSchedule->copyValues($params);
-
-    if ($actionSchedule->find(TRUE)) {
-      CRM_Core_DAO::storeValues($actionSchedule, $values);
-      return $actionSchedule;
-    }
-    return NULL;
+    return self::commonRetrieve(self::class, $params, $defaults);
   }
 
   /**
@@ -593,22 +585,20 @@ FROM civicrm_action_schedule cas
   }
 
   /**
+   * Send the reminder email.
+   *
    * @param \Civi\Token\TokenRow $tokenRow
    * @param CRM_Core_DAO_ActionSchedule $schedule
    * @param int $toContactID
+   *
    * @return array
    *   List of error messages.
+   * @throws \CRM_Core_Exception
    */
   protected static function sendReminderEmail($tokenRow, $schedule, $toContactID): array {
     $toEmail = CRM_Contact_BAO_Contact::getPrimaryEmail($toContactID, TRUE);
     if (!$toEmail) {
-      return ["email_missing" => "Couldn't find recipient's email address."];
-    }
-
-    $body_text = $tokenRow->render('body_text');
-    $body_html = $tokenRow->render('body_html');
-    if (!$schedule->body_text) {
-      $body_text = CRM_Utils_String::htmlToText($body_html);
+      return ['email_missing' => "Couldn't find recipient's email address."];
     }
 
     // set up the parameters for CRM_Utils_Mail::send
@@ -621,19 +611,16 @@ FROM civicrm_action_schedule cas
       'entity' => 'action_schedule',
       'entity_id' => $schedule->id,
     ];
+    $body_text = $tokenRow->render('body_text');
+    $mailParams['html'] = $tokenRow->render('body_html');
+    // todo - remove these lines for body_text as there is similar handling in
+    // CRM_Utils_Mail::send()
+    if (!$schedule->body_text) {
+      $body_text = CRM_Utils_String::htmlToText($mailParams['html']);
+    }
+    // render the &amp; entities in text mode, so that the links work
+    $mailParams['text'] = str_replace('&amp;', '&', $body_text);
 
-    $preferredMailFormat = $tokenRow->render('preferred_mail_format');
-    if (!$body_html ||  $preferredMailFormat === 'Text' || $preferredMailFormat === 'Both'
-    ) {
-      // render the &amp; entities in text mode, so that the links work
-      $mailParams['text'] = str_replace('&amp;', '&', $body_text);
-    }
-    if ($body_html && ($tokenRow->context['contact']['preferred_mail_format'] === 'HTML' ||
-        $tokenRow->context['contact']['preferred_mail_format'] === 'Both'
-      )
-    ) {
-      $mailParams['html'] = $body_html;
-    }
     $result = CRM_Utils_Mail::send($mailParams);
     if (!$result) {
       return ['email_fail' => 'Failed to send message'];
@@ -653,6 +640,7 @@ FROM civicrm_action_schedule cas
       'actionSchedule' => $schedule,
       'actionMapping' => $mapping,
       'smarty' => TRUE,
+      'schema' => ['contactId'],
     ]);
     $tp->addMessage('body_text', $schedule->body_text, 'text/plain');
     $tp->addMessage('body_html', $schedule->body_html, 'text/html');

@@ -16,7 +16,6 @@ namespace League\Csv;
 use DOMDocument;
 use DOMElement;
 use DOMException;
-use Traversable;
 use function preg_match;
 
 /**
@@ -56,21 +55,71 @@ class HTMLConverter
     }
 
     /**
-     * Convert an Record collection into a DOMDocument.
+     * Converts a tabular data collection into a HTML table string.
      *
-     * @param array|Traversable $records the tabular data collection
+     * @param string[] $header_record An optional array of headers outputted using the`<thead>` section
+     * @param string[] $footer_record An optional array of footers to output to the table using `<tfoot>` and `<th>` elements
      */
-    public function convert($records): string
+    public function convert(iterable $records, array $header_record = [], array $footer_record = []): string
     {
-        /** @var DOMDocument $doc */
-        $doc = $this->xml_converter->convert($records);
+        $doc = new DOMDocument('1.0');
+        if ([] === $header_record && [] === $footer_record) {
+            $table = $this->xml_converter->import($records, $doc);
+            $this->addHTMLAttributes($table);
+            $doc->appendChild($table);
 
-        /** @var DOMElement $table */
-        $table = $doc->getElementsByTagName('table')->item(0);
-        $table->setAttribute('class', $this->class_name);
-        $table->setAttribute('id', $this->id_value);
+            /** @var string $content */
+            $content = $doc->saveHTML();
 
-        return $doc->saveHTML($table);
+            return $content;
+        }
+
+        $table = $doc->createElement('table');
+        $this->addHTMLAttributes($table);
+        $this->appendHeaderSection('thead', $header_record, $table);
+        $this->appendHeaderSection('tfoot', $footer_record, $table);
+        $table->appendChild($this->xml_converter->rootElement('tbody')->import($records, $doc));
+        $doc->appendChild($table);
+
+        /** @var string $content */
+        $content = $doc->saveHTML();
+
+        return $content;
+    }
+
+    /**
+     * Creates a DOMElement representing a HTML table heading section.
+     */
+    protected function appendHeaderSection(string $node_name, array $record, DOMElement $table): void
+    {
+        if ([] === $record) {
+            return;
+        }
+
+        /** @var DOMDocument $ownerDocument */
+        $ownerDocument = $table->ownerDocument;
+        $node = $this->xml_converter
+            ->rootElement($node_name)
+            ->recordElement('tr')
+            ->fieldElement('th')
+            ->import([$record], $ownerDocument)
+        ;
+
+        /** @var DOMElement $element */
+        foreach ($node->getElementsByTagName('th') as $element) {
+            $element->setAttribute('scope', 'col');
+        }
+
+        $table->appendChild($node);
+    }
+
+    /**
+     * Adds class and id attributes to an HTML tag.
+     */
+    protected function addHTMLAttributes(DOMElement $node): void
+    {
+        $node->setAttribute('class', $this->class_name);
+        $node->setAttribute('id', $this->id_value);
     }
 
     /**
@@ -80,7 +129,7 @@ class HTMLConverter
      */
     public function table(string $class_name, string $id_value = ''): self
     {
-        if (preg_match(",\s,", $id_value)) {
+        if (1 === preg_match(",\s,", $id_value)) {
             throw new DOMException("the id attribute's value must not contain whitespace (spaces, tabs etc.)");
         }
         $clone = clone $this;

@@ -28,7 +28,7 @@
       context = $(parts[0]).contents();
       target = parts.slice(1).join(' ');
     }
-    var result = jQuery(target, context);
+    var result = $(target, context);
     return result.length ? result[0] : null;
   }
 

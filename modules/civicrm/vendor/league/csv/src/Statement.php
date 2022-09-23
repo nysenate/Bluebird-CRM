@@ -18,7 +18,6 @@ use CallbackFilterIterator;
 use Iterator;
 use LimitIterator;
 use function array_reduce;
-use function iterator_to_array;
 
 /**
  * Criteria to filter a {@link Reader} object.
@@ -54,12 +53,27 @@ class Statement
     protected $limit = -1;
 
     /**
+     * Named Constructor to ease Statement instantiation.
+     *
+     * @throws Exception
+     */
+    public static function create(callable $where = null, int $offset = 0, int $limit = -1): self
+    {
+        $stmt = new self();
+        if (null !== $where) {
+            $stmt = $stmt->where($where);
+        }
+
+        return $stmt->offset($offset)->limit($limit);
+    }
+
+    /**
      * Set the Iterator filter method.
      */
-    public function where(callable $callable): self
+    public function where(callable $where): self
     {
         $clone = clone $this;
-        $clone->where[] = $callable;
+        $clone->where[] = $where;
 
         return $clone;
     }
@@ -67,10 +81,10 @@ class Statement
     /**
      * Set an Iterator sorting callable function.
      */
-    public function orderBy(callable $callable): self
+    public function orderBy(callable $order_by): self
     {
         $clone = clone $this;
-        $clone->order_by[] = $callable;
+        $clone->order_by[] = $order_by;
 
         return $clone;
     }
@@ -83,7 +97,7 @@ class Statement
     public function offset(int $offset): self
     {
         if (0 > $offset) {
-            throw new Exception(sprintf('%s() expects the offset to be a positive integer or 0, %s given', __METHOD__, $offset));
+            throw new InvalidArgument(sprintf('%s() expects the offset to be a positive integer or 0, %s given', __METHOD__, $offset));
         }
 
         if ($offset === $this->offset) {
@@ -104,7 +118,7 @@ class Statement
     public function limit(int $limit): self
     {
         if (-1 > $limit) {
-            throw new Exception(sprintf('%s() expects the limit to be greater or equal to -1, %s given', __METHOD__, $limit));
+            throw new InvalidArgument(sprintf('%s() expects the limit to be greater or equal to -1, %s given', __METHOD__, $limit));
         }
 
         if ($limit === $this->limit) {
@@ -122,13 +136,14 @@ class Statement
      *
      * @param string[] $header an optional header to use instead of the CSV document header
      */
-    public function process(Reader $csv, array $header = []): ResultSet
+    public function process(TabularDataReader $tabular_data, array $header = []): TabularDataReader
     {
         if ([] === $header) {
-            $header = $csv->getHeader();
+            $header = $tabular_data->getHeader();
         }
 
-        $iterator = array_reduce($this->where, [$this, 'filter'], $csv->getRecords($header));
+        $iterator = $tabular_data->getRecords($header);
+        $iterator = array_reduce($this->where, [$this, 'filter'], $iterator);
         $iterator = $this->buildOrderBy($iterator);
 
         return new ResultSet(new LimitIterator($iterator, $this->offset, $this->limit), $header);
@@ -161,9 +176,12 @@ class Statement
             return $cmp ?? 0;
         };
 
-        $iterator = new ArrayIterator(iterator_to_array($iterator));
-        $iterator->uasort($compare);
+        $it = new ArrayIterator();
+        foreach ($iterator as $offset => $value) {
+            $it[$offset] = $value;
+        }
+        $it->uasort($compare);
 
-        return $iterator;
+        return $it;
     }
 }

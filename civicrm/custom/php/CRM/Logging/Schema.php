@@ -524,7 +524,7 @@ AND    (TABLE_NAME LIKE 'log_civicrm_%' $nonStandardTableNameString )
    * Get column query.
    *
    * @param string $col
-   * @param bool $createQuery
+   * @param array $createQuery
    *
    * @return array|mixed|string
    */
@@ -932,14 +932,16 @@ COLS;
   private function triggersExist() {
     // FIXME: probably should be a bit more thorough…
     // note that the LIKE parameter is TABLE NAME
-    return (bool) CRM_Core_DAO::singleValueQuery("SHOW TRIGGERS LIKE 'civicrm_domain'"); //NYSS
+
+    //NYSS
+    return (bool) CRM_Core_DAO::singleValueQuery("SHOW TRIGGERS LIKE 'civicrm_domain'");
   }
 
   /**
    * Get trigger info.
    *
    * @param array $info
-   * @param null $tableName
+   * @param string|null $tableName
    * @param bool $force
    */
   public function triggerInfo(&$info, $tableName = NULL, $force = FALSE) {

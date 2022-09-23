@@ -416,11 +416,7 @@ class CRM_Report_Form_Contact_Relationship extends CRM_Report_Form {
 
     // Include Email Field.
     if ($this->_emailField_a) {
-      $this->_from .= "
-             LEFT JOIN civicrm_email {$this->_aliases['civicrm_email']}
-                       ON ( {$this->_aliases['civicrm_contact']}.id =
-                            {$this->_aliases['civicrm_email']}.contact_id AND
-                            {$this->_aliases['civicrm_email']}.is_primary = 1 )";
+      $this->joinEmailFromContact();
     }
     if ($this->_emailField_b) {
       $this->_from .= "
@@ -431,11 +427,7 @@ class CRM_Report_Form_Contact_Relationship extends CRM_Report_Form {
     }
     // Include Phone Field.
     if ($this->_phoneField_a) {
-      $this->_from .= "
-             LEFT JOIN civicrm_phone {$this->_aliases['civicrm_phone']}
-                       ON ( {$this->_aliases['civicrm_contact']}.id =
-                            {$this->_aliases['civicrm_phone']}.contact_id AND
-                            {$this->_aliases['civicrm_phone']}.is_primary = 1 )";
+      $this->joinPhoneFromContact();
     }
     if ($this->_phoneField_b) {
       $this->_from .= "
@@ -563,7 +555,7 @@ class CRM_Report_Form_Contact_Relationship extends CRM_Report_Form {
   }
 
   /**
-   * @param $rows
+   * @param array $rows
    *
    * @return array
    */

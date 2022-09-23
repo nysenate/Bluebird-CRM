@@ -222,7 +222,7 @@ class CRM_Core_Form extends HTML_QuickForm_Page {
    * attempt to standardize on the number of variations that we
    * use of the below form elements
    *
-   * @var const string
+   * @var string
    */
   const ATTR_SPACING = '&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;';
 
@@ -281,6 +281,15 @@ class CRM_Core_Form extends HTML_QuickForm_Page {
     'context',
     // FormButtons.tpl (adds buttons to forms).
     'linkButtons',
+    // Required for contactFooter.tpl.
+    // See CRM_Activity_Form_ActivityTest:testInboundEmailDisplaysWithLineBreaks.
+    'external_identifier',
+    'lastModified',
+    'created_date',
+    'changeLog',
+    // Required for footer.tpl,
+    // See CRM_Activity_Form_ActivityTest:testInboundEmailDisplaysWithLineBreaks.
+    'footer_status_severity',
   ];
 
   /**
@@ -291,7 +300,7 @@ class CRM_Core_Form extends HTML_QuickForm_Page {
    *
    * @param object $state
    *   State associated with this form.
-   * @param \const|\enum|int $action The mode the form is operating in (None/Create/View/Update/Delete)
+   * @param int $action The mode the form is operating in (None/Create/View/Update/Delete)
    * @param string $method
    *   The type of http method used (GET/POST).
    * @param string $name
@@ -374,7 +383,6 @@ class CRM_Core_Form extends HTML_QuickForm_Page {
       'date',
       'currentDate',
       'asciiFile',
-      'htmlFile',
       'utf8File',
       'objectExists',
       'optionExists',
@@ -603,11 +611,11 @@ class CRM_Core_Form extends HTML_QuickForm_Page {
   /**
    * This virtual function is used to set the default values of various form elements.
    *
-   * @return array|NULL
+   * @return array
    *   reference to the array of default values
    */
   public function setDefaultValues() {
-    return NULL;
+    return [];
   }
 
   /**
@@ -711,7 +719,7 @@ class CRM_Core_Form extends HTML_QuickForm_Page {
     // our ensured variables get blown away, so we need to set them even if
     // it's already been initialized.
     self::$_template->ensureVariablesAreAssigned($this->expectedSmartyVariables);
-
+    self::$_template->addExpectedTabHeaderKeys();
   }
 
   /**
@@ -1106,6 +1114,18 @@ class CRM_Core_Form extends HTML_QuickForm_Page {
   }
 
   /**
+   * Add an expected smarty variable to the array.
+   *
+   * @param array $elementNames
+   */
+  public function addExpectedSmartyVariables(array $elementNames): void {
+    foreach ($elementNames as $elementName) {
+      // Duplicates don't actually matter....
+      $this->addExpectedSmartyVariable($elementName);
+    }
+  }
+
+  /**
    * Render form and return contents.
    *
    * @return string
@@ -1297,10 +1317,10 @@ class CRM_Core_Form extends HTML_QuickForm_Page {
 
   /**
    * @param string $name
-   * @param $title
-   * @param $values
+   * @param string $title
+   * @param array $values
    * @param array $attributes
-   * @param null $separator
+   * @param string $separator
    * @param bool $required
    * @param array $optionAttributes - Option specific attributes
    *
@@ -1344,10 +1364,10 @@ class CRM_Core_Form extends HTML_QuickForm_Page {
   }
 
   /**
-   * @param int $id
-   * @param $title
+   * @param string $id
+   * @param string $title
    * @param bool $allowClear
-   * @param null $required
+   * @param bool $required
    * @param array $attributes
    */
   public function addYesNo($id, $title, $allowClear = FALSE, $required = NULL, $attributes = []) {
@@ -1367,8 +1387,8 @@ class CRM_Core_Form extends HTML_QuickForm_Page {
 
   /**
    * @param int $id
-   * @param $title
-   * @param $values
+   * @param string $title
+   * @param array $values
    * @param null $other
    * @param null $attributes
    * @param null $required
@@ -1566,7 +1586,7 @@ class CRM_Core_Form extends HTML_QuickForm_Page {
    * Adds a select based on field metadata.
    * TODO: This could be even more generic and widget type (select in this case) could also be read from metadata
    * Perhaps a method like $form->bind($name) which would look up all metadata for named field
-   * @param $name
+   * @param string $name
    *   Field name to go on the form.
    * @param array $props
    *   Mix of html attributes and special properties, namely.
@@ -1939,7 +1959,7 @@ class CRM_Core_Form extends HTML_QuickForm_Page {
   }
 
   /**
-   * @param $elementName
+   * @param string[]|string $elementName
    */
   public function addUploadElement($elementName) {
     $uploadNames = $this->get('uploadNames');
@@ -1967,17 +1987,17 @@ class CRM_Core_Form extends HTML_QuickForm_Page {
   }
 
   /**
-   * @param $name
+   * @param string $name
    *
-   * @return null
+   * @return mixed
    */
   public function getVar($name) {
     return $this->$name ?? NULL;
   }
 
   /**
-   * @param $name
-   * @param $value
+   * @param string $name
+   * @param mixed $value
    */
   public function setVar($name, $value) {
     $this->$name = $value;
@@ -2085,7 +2105,7 @@ class CRM_Core_Form extends HTML_QuickForm_Page {
    * @param string $name
    * @param string $label
    * @param bool $required
-   * @param null $attributes
+   * @param array $attributes
    */
   public function addDateTime($name, $label, $required = FALSE, $attributes = NULL) {
     $addTime = ['addTime' => TRUE];
@@ -2105,10 +2125,10 @@ class CRM_Core_Form extends HTML_QuickForm_Page {
    * @param string $name
    * @param string $label
    * @param bool $required
-   * @param null $attributes
+   * @param array $attributes
    * @param bool $addCurrency
    * @param string $currencyName
-   * @param null $defaultCurrency
+   * @param string $defaultCurrency
    * @param bool $freezeCurrency
    *
    * @return \HTML_QuickForm_Element
@@ -2137,7 +2157,7 @@ class CRM_Core_Form extends HTML_QuickForm_Page {
    * Add currency element to the form.
    *
    * @param string $name
-   * @param null $label
+   * @param string $label
    * @param bool $required
    * @param string $defaultCurrency
    * @param bool $freezeCurrency
@@ -2406,6 +2426,7 @@ class CRM_Core_Form extends HTML_QuickForm_Page {
   }
 
   /**
+   * @return bool
    */
   public function canUseAjaxContactLookups() {
     if (0 < (civicrm_api3('contact', 'getcount', ['check_permissions' => 1])) &&
@@ -2413,6 +2434,7 @@ class CRM_Core_Form extends HTML_QuickForm_Page {
     ) {
       return TRUE;
     }
+    return FALSE;
   }
 
   /**

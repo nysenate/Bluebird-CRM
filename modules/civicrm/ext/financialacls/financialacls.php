@@ -2,6 +2,8 @@
 
 require_once 'financialacls.civix.php';
 // phpcs:disable
+use Civi\Api4\EntityFinancialAccount;
+use Civi\Api4\MembershipType;
 use CRM_Financialacls_ExtensionUtil as E;
 // phpcs:enable
 
@@ -138,18 +140,97 @@ function financialacls_civicrm_selectWhereClause($entity, &$clauses) {
     case 'LineItem':
     case 'MembershipType':
     case 'ContributionRecur':
-      $types = [];
-      CRM_Financial_BAO_FinancialType::getAvailableFinancialTypes($types);
-      if ($types) {
-        $clauses['financial_type_id'] = 'IN (' . implode(',', array_keys($types)) . ')';
-      }
-      else {
-        $clauses['financial_type_id'] = '= 0';
-      }
+    case 'Contribution':
+      $clauses['financial_type_id'] = _financialacls_civicrm_get_type_clause();
+      break;
+
+    case 'Membership':
+      $clauses['membership_type_id'] = _financialacls_civicrm_get_membership_type_clause();
+      break;
+
+    case 'FinancialType':
+      $clauses['id'] = _financialacls_civicrm_get_type_clause();
+      break;
+
+    case 'FinancialAccount':
+      $clauses['id'] = _financialacls_civicrm_get_accounts_clause();
       break;
 
   }
 
+}
+
+/**
+ * Get the clause to limit available types.
+ *
+ * @return string
+ */
+function _financialacls_civicrm_get_accounts_clause(): string {
+  if (!isset(Civi::$statics['financial_acls'][__FUNCTION__][CRM_Core_Session::getLoggedInContactID()])) {
+    try {
+      $clause = '= 0';
+      Civi::$statics['financial_acls'][__FUNCTION__][CRM_Core_Session::getLoggedInContactID()] = &$clause;
+      $accounts = (array) EntityFinancialAccount::get()
+        ->addWhere('account_relationship:name', '=', 'Income Account is')
+        ->addWhere('entity_table', '=', 'civicrm_financial_type')
+        ->addSelect('entity_id', 'financial_account_id')
+        ->addJoin('FinancialType AS financial_type', 'LEFT', [
+          'entity_id',
+          '=',
+          'financial_type.id',
+        ])
+        ->execute()->indexBy('financial_account_id');
+      if (!empty($accounts)) {
+        $clause = 'IN (' . implode(',', array_keys($accounts)) . ')';
+      }
+    }
+    catch (\API_Exception $e) {
+      // We've already set it to 0 so we can quietly handle this.
+    }
+  }
+  return Civi::$statics['financial_acls'][__FUNCTION__][CRM_Core_Session::getLoggedInContactID()];
+}
+
+/**
+ * Get the clause to limit available types.
+ *
+ * @return string
+ */
+function _financialacls_civicrm_get_type_clause(): string {
+  return 'IN (' . implode(',', _financialacls_civicrm_get_accessible_financial_types()) . ')';
+}
+
+/**
+ * Get an array of the ids of accessible financial types.
+ *
+ * If none then it will be [0]
+ *
+ * @return int[]
+ */
+function _financialacls_civicrm_get_accessible_financial_types(): array {
+  $types = [];
+  CRM_Financial_BAO_FinancialType::getAvailableFinancialTypes($types);
+  if (empty($types)) {
+    $types = [0];
+  }
+  return array_keys($types);
+}
+
+/**
+ * Get the clause to limit available membership types.
+ *
+ * @return string
+ *
+ * @throws \API_Exception
+ */
+function _financialacls_civicrm_get_membership_type_clause(): string {
+  $financialTypes = _financialacls_civicrm_get_accessible_financial_types();
+  if ($financialTypes === [0] || !CRM_Core_Component::isEnabled('CiviMember')) {
+    return '= 0';
+  }
+  $membershipTypes = (array) MembershipType::get(FALSE)
+    ->addWhere('financial_type_id', 'IN', $financialTypes)->execute()->indexBy('id');
+  return empty($membershipTypes) ? '= 0' : ('IN (' . implode(',', array_keys($membershipTypes)) . ')');
 }
 
 /**
@@ -349,6 +430,18 @@ function financialacls_toggle() {
 //function financialacls_civicrm_preProcess($formName, &$form) {
 //
 //}
+
+/**
+ * Require financial acl permissions for financial screens.
+ *
+ * @param array $menu
+ */
+function financialacls_civicrm_alterMenu(array &$menu): void {
+  if (!financialacls_is_acl_limiting_enabled()) {
+    return;
+  }
+  $menu['civicrm/admin/financial/financialType']['access_arguments'] = [['administer CiviCRM Financial Types']];
+}
 
 /**
  * Implements hook_civicrm_navigationMenu().

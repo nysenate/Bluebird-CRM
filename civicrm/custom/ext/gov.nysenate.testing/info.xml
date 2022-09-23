@@ -2,7 +2,7 @@
 <extension key="gov.nysenate.testing" type="module">
   <file>testing</file>
   <name>NYSS: Testing Extension</name>
-  <description></description>
+  <description/>
   <license>AGPL-3.0</license>
   <maintainer>
     <author>NYS Senate</author>
@@ -17,8 +17,12 @@
   <compatibility>
     <ver>4.7</ver>
   </compatibility>
-  <comments></comments>
+  <comments/>
   <civix>
     <namespace>CRM/NYSS/Testing</namespace>
+    <format>22.05.0</format>
   </civix>
+  <mixins>
+    <mixin>menu-xml@1.0.0</mixin>
+  </mixins>
 </extension>

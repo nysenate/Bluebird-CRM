@@ -80,7 +80,7 @@
 
 
 <tr>
-  {include file="CRM/Core/DatePickerRangeWrapper.tpl" fieldName="activity_date_time" colspan="2"}
+  {include file="CRM/Core/DatePickerRangeWrapper.tpl" fieldName="activity_date_time" to='' from='' colspan="2" hideRelativeLabel=0 class =''}
   <td>&nbsp;</td>
 </tr>
 <tr>

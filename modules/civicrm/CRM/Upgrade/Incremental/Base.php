@@ -69,26 +69,26 @@ class CRM_Upgrade_Incremental_Base {
   }
 
   /**
-   * Verify DB state.
-   *
-   * @param $errors
-   *
-   * @return bool
-   */
-  public function verifyPreDBstate(&$errors) {
-    return TRUE;
-  }
-
-  /**
    * Compute any messages which should be displayed before upgrade.
    *
-   * Note: This function is called iteratively for each upcoming
-   * revision to the database.
+   * Downstream classes should implement this method to generate their messages.
    *
-   * @param $preUpgradeMessage
+   * This method will be invoked multiple times. Implementations MUST consult the `$rev`
+   * before deciding what messages to add. See the examples linked below.
+   *
+   * @see \CRM_Upgrade_Incremental_php_FourSeven::setPreUpgradeMessage()
+   * @see \CRM_Upgrade_Incremental_php_FiveTwenty::setPreUpgradeMessage()
+   *
+   * @param string $preUpgradeMessage
+   *   Accumulated list of messages. Alterable.
    * @param string $rev
-   *   a version number, e.g. '4.8.alpha1', '4.8.beta3', '4.8.0'.
+   *   The incremental version number. (Called repeatedly, once for each increment.)
+   *
+   *   Ex: Suppose the system upgrades from 5.7.3 to 5.10.0. The method FiveEight::setPreUpgradeMessage()
+   *   will be called for each increment of '5.8.*' ('5.8.alpha1' => '5.8.beta1' =>  '5.8.0').
    * @param null $currentVer
+   *   This is the penultimate version targeted by the upgrader.
+   *   Equivalent to CRM_Utils_System::version().
    */
   public function setPreUpgradeMessage(&$preUpgradeMessage, $rev, $currentVer = NULL) {
   }
@@ -96,10 +96,21 @@ class CRM_Upgrade_Incremental_Base {
   /**
    * Compute any messages which should be displayed after upgrade.
    *
+   * Downstream classes should implement this method to generate their messages.
+   *
+   * This method will be invoked multiple times. Implementations MUST consult the `$rev`
+   * before deciding what messages to add. See the examples linked below.
+   *
+   * @see \CRM_Upgrade_Incremental_php_FourSeven::setPostUpgradeMessage()
+   * @see \CRM_Upgrade_Incremental_php_FiveTwentyOne::setPostUpgradeMessage()
+   *
    * @param string $postUpgradeMessage
-   *   alterable.
+   *   Accumulated list of messages. Alterable.
    * @param string $rev
-   *   an intermediate version; note that setPostUpgradeMessage is called repeatedly with different $revs.
+   *   The incremental version number. (Called repeatedly, once for each increment.)
+   *
+   *   Ex: Suppose the system upgrades from 5.7.3 to 5.10.0. The method FiveEight::setPreUpgradeMessage()
+   *   will be called for each increment of '5.8.*' ('5.8.alpha1' => '5.8.beta1' =>  '5.8.0').
    */
   public function setPostUpgradeMessage(&$postUpgradeMessage, $rev) {
   }
@@ -145,6 +156,80 @@ class CRM_Upgrade_Incremental_Base {
       $title
     );
     $queue->createItem($task, ['weight' => -1]);
+  }
+
+  /**
+   * Add a task to store a snapshot of some data (if upgrade-snapshots are supported).
+   *
+   * If there is a large amount of data, this may actually add multiple tasks.
+   *
+   * Ex :$this->addSnapshotTask('event_dates', CRM_Utils_SQL_Select::from('civicrm_event')
+   *      ->select('id, start_date, end_date'));
+   *
+   * @param string $name
+   *   Logical name for the snapshot. This will become part of the table.
+   * @param \CRM_Utils_SQL_Select $select
+   * @throws \CRM_Core_Exception
+   */
+  protected function addSnapshotTask(string $name, CRM_Utils_SQL_Select $select): void {
+    CRM_Upgrade_Snapshot::createTableName('civicrm', $this->getMajorMinor(), $name);
+    // ^^ To simplify QA -- we should always throw an exception for bad snapshot names, even if the local policy doesn't use snapshots.
+
+    if (!empty(CRM_Upgrade_Snapshot::getActivationIssues())) {
+      return;
+    }
+
+    $queue = CRM_Queue_Service::singleton()->load([
+      'type' => 'Sql',
+      'name' => CRM_Upgrade_Form::QUEUE_NAME,
+    ]);
+    foreach (CRM_Upgrade_Snapshot::createTasks('civicrm', $this->getMajorMinor(), $name, $select) as $task) {
+      $queue->createItem($task, ['weight' => -1]);
+    }
+  }
+
+  /**
+   * Add a task to activate an extension. This task will run post-upgrade (after all
+   * changes to core DB are settled).
+   *
+   * @param string $title
+   * @param string[] $keys
+   *   List of extensions to enable.
+   */
+  protected function addExtensionTask(string $title, array $keys): void {
+    Civi::queue(CRM_Upgrade_Form::QUEUE_NAME)->createItem(
+      new CRM_Queue_Task([static::CLASS, 'enableExtension'], [$keys], $title),
+      ['weight' => 2000]
+    );
+  }
+
+  /**
+   * @param \CRM_Queue_TaskContext $ctx
+   * @param string[] $keys
+   *   List of extensions to enable.
+   * @return bool
+   */
+  public static function enableExtension(CRM_Queue_TaskContext $ctx, array $keys): bool {
+    // The `enableExtension` has a very high value of `weight`, so this runs after all
+    // core DB schema updates have been resolved. We can use high-level services.
+
+    Civi::dispatcher()->setDispatchPolicy(\CRM_Upgrade_DispatchPolicy::get('upgrade.finish'));
+    $restore = \CRM_Utils_AutoClean::with(function() {
+      Civi::dispatcher()->setDispatchPolicy(\CRM_Upgrade_DispatchPolicy::get('upgrade.main'));
+    });
+
+    $manager = CRM_Extension_System::singleton()->getManager();
+    $manager->enable($manager->findInstallRequirements($keys));
+
+    // Hrm, `enable()` normally does these things... but not during upgrade...
+    // Note: A good test-scenario is to install 5.45; enable logging and CiviGrant; disable searchkit+afform; then upgrade to 5.47.
+    $schema = new CRM_Logging_Schema();
+    $schema->fixSchemaDifferences();
+
+    CRM_Core_Invoke::rebuildMenuAndCaches(FALSE, FALSE);
+    // sessionReset is FALSE because upgrade status/postUpgradeMessages are needed by the page. We reset later in doFinish().
+
+    return TRUE;
   }
 
   /**

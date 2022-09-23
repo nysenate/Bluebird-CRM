@@ -63,15 +63,6 @@ class CRM_Core_Smarty extends Smarty {
    */
   private $backupFrames = [];
 
-  /**
-   * Class constructor.
-   *
-   * @return CRM_Core_Smarty
-   */
-  public function __construct() {
-    parent::__construct();
-  }
-
   private function initialize() {
     $config = CRM_Core_Config::singleton();
 
@@ -139,6 +130,11 @@ class CRM_Core_Smarty extends Smarty {
 
     $this->register_function('crmURL', ['CRM_Utils_System', 'crmURL']);
     if (CRM_Utils_Constant::value('CIVICRM_SMARTY_DEFAULT_ESCAPE')) {
+      // When default escape is enabled if the core escape is called before
+      // any custom escaping is done the modifier_escape function is not
+      // found, so require_once straight away. Note this was hit on the basic
+      // contribution dashboard from RecentlyViewed.tpl
+      require_once 'Smarty/plugins/modifier.escape.php';
       if (!isset($this->_plugins['modifier']['escape'])) {
         $this->register_modifier('escape', ['CRM_Core_Smarty', 'escape']);
       }
@@ -180,15 +176,22 @@ class CRM_Core_Smarty extends Smarty {
    * @param bool $display
    *
    * @return bool|mixed|string
+   *
+   * @noinspection PhpDocMissingThrowsInspection
+   * @noinspection PhpUnhandledExceptionInspection
    */
   public function fetch($resource_name, $cache_id = NULL, $compile_id = NULL, $display = FALSE) {
     if (preg_match('/^(\s+)?string:/', $resource_name)) {
       $old_security = $this->security;
       $this->security = TRUE;
     }
-    $output = parent::fetch($resource_name, $cache_id, $compile_id, $display);
-    if (isset($old_security)) {
-      $this->security = $old_security;
+    try {
+      $output = parent::fetch($resource_name, $cache_id, $compile_id, $display);
+    }
+    finally {
+      if (isset($old_security)) {
+        $this->security = $old_security;
+      }
     }
     return $output;
   }
@@ -204,6 +207,26 @@ class CRM_Core_Smarty extends Smarty {
         $this->assign($variable);
       }
     }
+  }
+
+  /**
+   * Avoid e-notices on pages with tabs,
+   * by ensuring tabHeader items contain the necessary keys
+   */
+  public function addExpectedTabHeaderKeys(): void {
+    $defaults = [
+      'class' => '',
+      'extra' => '',
+      'icon' => FALSE,
+      'count' => FALSE,
+      'template' => FALSE,
+    ];
+
+    $tabs = $this->get_template_vars('tabHeader');
+    foreach ((array) $tabs as $i => $tab) {
+      $tabs[$i] = array_merge($defaults, $tab);
+    }
+    $this->assign('tabHeader', $tabs);
   }
 
   /**
@@ -390,7 +413,7 @@ class CRM_Core_Smarty extends Smarty {
    *
    * @return string
    */
-  public static function escape($string, $esc_type = 'html', $char_set = 'ISO-8859-1') {
+  public static function escape($string, $esc_type = 'html', $char_set = 'UTF-8') {
     // CiviCRM variables are often arrays - just handle them.
     // The early return on booleans & numbers is mostly to prevent them being
     // logged as 'changed' when they are cast to a string.
@@ -429,7 +452,7 @@ class CRM_Core_Smarty extends Smarty {
         return $string;
       }
     }
-    require_once 'Smarty/plugins/modifier.escape.php';
+
     $value = smarty_modifier_escape($string, $esc_type, $char_set);
     if ($value !== $string) {
       Civi::log()->debug('smarty escaping original {original}, escaped {escaped} type {type} charset {charset}', [

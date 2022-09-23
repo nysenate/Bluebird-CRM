@@ -14,7 +14,7 @@
  * @package CRM
  * @copyright CiviCRM LLC https://civicrm.org/licensing
  */
-class CRM_Member_BAO_MembershipType extends CRM_Member_DAO_MembershipType implements \Civi\Test\HookInterface {
+class CRM_Member_BAO_MembershipType extends CRM_Member_DAO_MembershipType implements \Civi\Core\HookInterface {
 
   /**
    * Static holder for the default Membership Type.
@@ -25,30 +25,20 @@ class CRM_Member_BAO_MembershipType extends CRM_Member_DAO_MembershipType implem
   public static $_membershipTypeInfo = [];
 
   /**
-   * Class constructor.
-   */
-  public function __construct() {
-    parent::__construct();
-  }
-
-  /**
-   * Fetch object based on array of properties.
+   * Retrieve DB object and copy to defaults array.
    *
    * @param array $params
-   *   (reference ) an assoc array of name/value pairs.
+   *   Array of criteria values.
    * @param array $defaults
-   *   (reference ) an assoc array to hold the flattened values.
+   *   Array to be populated with found values.
    *
-   * @return CRM_Member_BAO_MembershipType
+   * @return self|null
+   *   The DAO object, if found.
+   *
+   * @deprecated
    */
-  public static function retrieve(&$params, &$defaults) {
-    $membershipType = new CRM_Member_DAO_MembershipType();
-    $membershipType->copyValues($params);
-    if ($membershipType->find(TRUE)) {
-      CRM_Core_DAO::storeValues($membershipType, $defaults);
-      return $membershipType;
-    }
-    return NULL;
+  public static function retrieve($params, &$defaults) {
+    return self::commonRetrieve(self::class, $params, $defaults);
   }
 
   /**
@@ -91,14 +81,8 @@ class CRM_Member_BAO_MembershipType extends CRM_Member_DAO_MembershipType implem
 
     $membershipTypeId = $params['id'] ?? NULL;
 
-    if (!$membershipTypeId) {
-      if (!isset($params['is_active'])) {
-        // do we need this?
-        $params['is_active'] = FALSE;
-      }
-      if (!isset($params['domain_id'])) {
-        $params['domain_id'] = CRM_Core_Config::domainID();
-      }
+    if (!$membershipTypeId && !isset($params['domain_id'])) {
+      $params['domain_id'] = CRM_Core_Config::domainID();
     }
 
     // $previousID is the old organization id for membership type i.e 'member_of_contact_id'. This is used when an organization is changed.
