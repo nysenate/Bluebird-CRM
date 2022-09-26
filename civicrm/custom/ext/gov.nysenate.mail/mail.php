@@ -465,6 +465,13 @@ function mail_civicrm_pre($op, $objectName, $id, &$params) {
   if ($op == 'create' && $objectName == 'Mailing') {
     $params['open_tracking'] = $params['url_tracking'] = FALSE;
   }
+
+  if ($objectName === 'Mailing' && in_array($op, ['create', 'edit'])) {
+    if (!empty($params['template_type']) && $params['template_type'] === 'mosaico') {
+      $params['header_id'] = 'null';
+      $params['footer_id'] = 'null';
+    }
+  }
 } // mail_civicrm_pre()
 
 
