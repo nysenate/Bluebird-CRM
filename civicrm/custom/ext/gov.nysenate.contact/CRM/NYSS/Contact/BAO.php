@@ -25,7 +25,6 @@ class CRM_NYSS_Contact_BAO {
           WHERE is_deleted = 1
             AND log_action = 'Update'
           ORDER BY log_date DESC
-          LIMIT 1
         ) log
           ON log.id = c.id
       ";
@@ -46,6 +45,7 @@ class CRM_NYSS_Contact_BAO {
     //Civi::log()->debug(__METHOD__, ['sql' => $sql]);
 
     $trashed = CRM_Core_DAO::executeQuery($sql);
+    //Civi::log()->debug(__METHOD__, ['$trashed' => $trashed]);
 
     if ($params['dryrun'] ?? FALSE) {
       return $trashed->N;
