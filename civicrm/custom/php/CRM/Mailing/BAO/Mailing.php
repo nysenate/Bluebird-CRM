@@ -2971,8 +2971,7 @@ ORDER BY civicrm_mailing.name";
 
       $mailing[$mailingId]['name'] = $values['name'];//NYSS 6895
       //NYSS 6698/6900
-      if ( CRM_Core_Permission::check('view mass email') ||
-        CRM_Core_Permission::check('create mailings') ||
+      if (CRM_Core_Permission::check('create mailings') ||
         CRM_Core_Permission::check('schedule mailings') ||
         CRM_Core_Permission::check('approve mailings') ||
         CRM_Core_Permission::check('access CiviMail')

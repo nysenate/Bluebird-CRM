@@ -43,25 +43,25 @@
     <path>civicrm/nyss/previewmailing</path>
     <page_callback>CRM_NYSS_Mail_Page_PreviewMailing</page_callback>
     <title>Preview Mailing</title>
-    <access_arguments>view mass email;access CiviMail;create mailings;schedule mailings;approve mailings;</access_arguments>
+    <access_arguments>access CiviMail;create mailings;schedule mailings;approve mailings;</access_arguments>
   </item>
   <item>
     <path>civicrm/nyss/previewmailingiframe</path>
     <page_callback>CRM_NYSS_Mail_Page_PreviewMailingIframe</page_callback>
     <title>Preview Mailing</title>
-    <access_arguments>view mass email;access CiviMail;create mailings;schedule mailings;approve mailings;</access_arguments>
+    <access_arguments>access CiviMail;create mailings;schedule mailings;approve mailings;</access_arguments>
   </item>
   <item>
     <path>civicrm/nyss/previewrecipients</path>
     <page_callback>CRM_NYSS_Mail_Page_PreviewRecipients</page_callback>
     <title>Preview Recipients</title>
-    <access_arguments>view mass email;access CiviMail;create mailings;schedule mailings;</access_arguments>
+    <access_arguments>access CiviMail;create mailings;schedule mailings;</access_arguments>
   </item>
   <item>
     <path>civicrm/nyss/blockscheduletest</path>
     <page_callback>CRM_NYSS_Mail_Page_BlockScheduleTest</page_callback>
     <title>Send Email Test</title>
-    <access_arguments>view mass email;access CiviMail;create mailings;schedule mailings;</access_arguments>
+    <access_arguments>access CiviMail;create mailings;schedule mailings;</access_arguments>
   </item>
 
   <!--14824-->
