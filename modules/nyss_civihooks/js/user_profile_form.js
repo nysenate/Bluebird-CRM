@@ -28,7 +28,6 @@
       $('div.form-item-roles-change-16')[0].outerHTML +
       $('div.form-item-roles-change-14')[0].outerHTML +
       $('div.form-item-roles-change-15')[0].outerHTML +
-      $('div.form-item-roles-change-17')[0].outerHTML +
       '<div class="nyss-roles-subsection-header">Bluebird Inbound Email</div>' +
       $('div.form-item-roles-change-19')[0].outerHTML +
       '</div>'
