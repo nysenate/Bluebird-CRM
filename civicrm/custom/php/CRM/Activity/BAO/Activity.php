@@ -91,9 +91,9 @@ class CRM_Activity_BAO_Activity extends CRM_Activity_DAO_Activity {
       }
       elseif (CRM_Core_Permission::check('access CiviMail') ||
         (CRM_Mailing_Info::workflowEnabled() &&
-         CRM_Core_Permission::check('create mailings')) ||
-        CRM_Core_Permission::check('view mass email')
-      ) {//NYSS 4933
+          CRM_Core_Permission::check('create mailings')
+        )
+      ) {
         $defaults['mailingId'] = CRM_Utils_System::url('civicrm/mailing/report',
           "mid={$activity->source_record_id}&reset=1&atype={$activity->activity_type_id}&aid={$activity->id}&cid={$sourceContactId}&context=activity"
         );

@@ -118,20 +118,18 @@
                       {/if}
 
                       {*NYSS 4933*}
-                      {if call_user_func(array('CRM_Core_Permission','check'), 'view mass email')}
-                          <tr>
-                              <td class="label nowrap">{ts}Message Content{/ts}</td>
-                              <td>
-                                  {if $mailingReport.mailing.body_html}
-                                      {$mailingReport.mailing.body_html|mb_truncate:30|escape|nl2br}
-                                  {else if $mailingReport.mailing.body_text}
-                                      {$mailingReport.mailing.body_text|mb_truncate:30|escape|nl2br}
-                                  {/if}
-                                  <br/>
-                                  <strong><a href="javascript:popUp('{crmURL p='civicrm/mailing/view' q="id=`$mailingReport.mailing.id`&reset=1"}')">&raquo; {ts}View complete message{/ts}</a></strong>
-                              </td>
-                          </tr>
-                      {/if}
+                      <tr>
+                        <td class="label nowrap">{ts}Message Content{/ts}</td>
+                        <td>
+                            {if $mailingReport.mailing.body_html}
+                                {$mailingReport.mailing.body_html|mb_truncate:30|escape|nl2br}
+                            {else if $mailingReport.mailing.body_text}
+                                {$mailingReport.mailing.body_text|mb_truncate:30|escape|nl2br}
+                            {/if}
+                          <br/>
+                          <strong><a href="javascript:popUp('{crmURL p='civicrm/mailing/view' q="id=`$mailingReport.mailing.id`&reset=1"}')">&raquo; {ts}View complete message{/ts}</a></strong>
+                        </td>
+                      </tr>
 
                       {if $mailingReport.mailing.attachment}
                           <tr>

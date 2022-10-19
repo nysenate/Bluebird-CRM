@@ -49,7 +49,6 @@ $execSql -q $instance -c "$sql" --drupal
 ## 14: Mailing Creator
 ## 15: Mailing Scheduler
 ## 16: Mailing Approver
-## 17: Mailing Viewer
 ## 18: Print Production Staff
 ## 19: Manage Inbox Polling
 
@@ -474,9 +473,6 @@ sql="
     (16, 'approve mailings', 'civicrm'),
     (16, 'delete in CiviMail', 'civicrm'),
     (16, 'use text format 1', 'filter'),
-
-    (17, 'use text format 1', 'filter'),
-    (17, 'view mass email', 'nyss_civihooks'),
 
     (18, 'access all custom data', 'civicrm'),
     (18, 'access CiviCRM', 'civicrm'),

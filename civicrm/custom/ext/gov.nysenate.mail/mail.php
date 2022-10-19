@@ -532,7 +532,6 @@ function mail_civicrm_links($op, $objectName, $objectId, &$links, &$mask, &$valu
   if ($op == 'mailing.contact.action' && $objectName == 'Mailing') {
     $viewPerm = FALSE;
     $allowedPerms = [
-      'view mass email',
       'access CiviMail',
       'create mailings',
       'approve mailings',

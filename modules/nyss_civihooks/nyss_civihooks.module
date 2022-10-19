@@ -121,29 +121,25 @@ function nyss_civihooks_page_alter(&$page)
 } // nyss_civihooks_page_alter()
 
 
-function nyss_civihooks_permission()
-{
-  return array(
-    'export print production files' => array(
+function nyss_civihooks_permission() {
+  return [
+    'export print production files' => [
       'title' => t('Bluebird: Export Print Production Files'),
-    ),
-    'delete contacts permanently' => array(
+    ],
+    'delete contacts permanently' => [
       'title' => t('Bluebird: Permanently Delete Contacts'),
-    ),
-    'administer district' => array(
+    ],
+    'administer district' => [
       'title' => t('Bluebird: Access District Admin Tasks'),
-    ),
-    'view mass email' => array(
-      'title' => t('Bluebird: View Mass Email'),
-    ),
-    'import print production' => array(
+    ],
+    'import print production' => [
       'title' => t('Bluebird: Access Print Production Import Tool'),
-    ),
-    'administer inbox polling' => array(
+    ],
+    'administer inbox polling' => [
       'title' => t('Bluebird: Access Inbox Polling'),
-    ),
-  );
-} // nyss_civihooks_permission()
+    ],
+  ];
+}
 
 
 function nyss_civihooks_getfile()
