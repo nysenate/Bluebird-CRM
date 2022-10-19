@@ -3082,6 +3082,8 @@ ORDER BY civicrm_mailing.name";
         $fieldPerms[$fieldName] = [
           // OR
           [
+            //NYSS 14974
+            'create mailings',
             'access CiviMail',
             'schedule mailings',
             'approve mailings',
