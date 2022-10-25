@@ -109,6 +109,28 @@ class CRM_NYSS_Contact_Upgrader extends CRM_NYSS_Contact_Upgrader_Base {
     return TRUE;
   }
 
+  public function upgrade_1200(): bool {
+    $this->ctx->log->info('Applying contact extension update 1200');
+
+    try {
+      $cfDistrict = CRM_Core_BAO_CustomField::getCustomFieldID('New_York_City_Council', 'District_Information');
+      civicrm_api3('CustomField', 'create', [
+        'id' => $cfDistrict,
+        'label' => 'City Council District',
+      ]);
+
+      $cfNeighborhood = CRM_Core_BAO_CustomField::getCustomFieldID('Neighborhood', 'District_Information');
+      civicrm_api3('CustomField', 'create', [
+        'id' => $cfNeighborhood,
+        'is_active' => 0,
+      ]);
+    }
+    catch (CiviCRM_API3_Exception $e) {
+      Civi::log()->debug(__METHOD__, ['e' => $e]);
+    }
+
+    return TRUE;
+  }
 
   /**
    * Example: Run an external SQL script.

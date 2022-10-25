@@ -142,7 +142,6 @@ class CRM_Contact_Form_Task_ExportPrintProduction extends CRM_Contact_Form_Task
     $this->addElement('text', 'di_ward_53', ts('Restrict by Ward') );
     $this->addElement('text', 'di_school_district_54', ts('Restrict by School District') );
     $this->addElement('text', 'di_new_york_city_council_55', ts('Restrict by NYC Council') );
-    $this->addElement('text', 'di_neighborhood_56', ts('Restrict by Neighborhood') );
 
     //6397
     $orderBy = [
@@ -1050,10 +1049,6 @@ function getColumns( $output = 'select' ) {
     ],
     'LPAD(new_york_city_council_55,2,\'0\')' => [
       'alias' => 'new_york_city_council_55',
-      'def'   => 'varchar(64)'
-    ],
-    'neighborhood_56' => [
-      'alias' => 'neighborhood_56',
       'def'   => 'varchar(64)'
     ],
     'street_address' => [

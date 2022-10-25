@@ -1481,7 +1481,6 @@ AND cce.external_identifier IS NOT NULL, cce.external_identifier, '' )) external
         'ward_53',
         'school_district_54',
         'new_york_city_council_55',
-        'neighborhood_56',
         'last_import_57',
       ),
       'Additional_Constituent_Information' => array(
