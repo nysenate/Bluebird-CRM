@@ -625,11 +625,11 @@ class CRM_Utils_SAGE
   * @param boolean   $overwrite  If true, district data is written by default.
   */
   protected static function storeDistricts(&$values, $xml, $overwrite) {
-    Civi::log()->debug(__METHOD__, [
+    /*Civi::log()->debug(__METHOD__, [
       'values' => $values,
       'xml' => $xml,
       'overwrite' => $overwrite,
-    ]);
+    ]);*/
 
     // The form includes the address primary key in the field name so we
     // must detect the address pk to store addresses in the right slots.
