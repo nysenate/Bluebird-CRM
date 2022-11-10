@@ -24,7 +24,8 @@
         <td colspan="5" class="label">
           {ts}Clients:{/ts}
           {foreach from=$caseRoles.client item=client name=clients}
-            <a href="{crmURL p='civicrm/contact/view' q="action=view&reset=1&cid=`$client.contact_id`"}" title="{ts}View contact record{/ts}">{$client.display_name}</a>{if not $smarty.foreach.clients.last}, &nbsp; {/if}
+            {*NYSS 14983*}
+            <a href="{crmURL p='civicrm/contact/view' q="action=view&reset=1&cid=`$client.contact_id`"}" title="{ts}View contact record{/ts}">{$client.display_name}</a>{if $primaryCaseContactID neq $client.contact_id && call_user_func(array('CRM_Core_Permission','giveMeAllACLs'))}<a href="{crmURL p='civicrm/contact/view/case/deleteClient' q="action=delete&reset=1&cid=`$client.contact_id`&id=`$caseId`"}" title="{ts}Remove Client{/ts}"><i class="crm-i fa-times" aria-hidden="true"></i></a>{/if}{if not $smarty.foreach.clients.last}, &nbsp; {/if}
           {/foreach}
           <a href="#addClientDialog" class="crm-hover-button case-miniform" title="{ts}Add Client{/ts}" data-key="{crmKey name='civicrm/case/ajax/addclient'}">
             <i class="crm-i fa-user-plus" aria-hidden="true"></i>

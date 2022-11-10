@@ -139,11 +139,6 @@
   </div>
 
   <div class="crm-section">
-    <div class="label">{$form.di_neighborhood_56.label}</div>
-    <div class="content">{$form.di_neighborhood_56.html}</div>
-  </div>
-
-  <div class="crm-section">
     <div class="label">{$form.orderBy.label}</div>
     <div class="content">{$form.orderBy.html}</div>
   </div>
