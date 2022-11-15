@@ -8,6 +8,7 @@
  | and copyright information, see https://civicrm.org/licensing       |
  +--------------------------------------------------------------------+
  */
+use Civi\Api4\CaseContact;
 
 /**
  *
@@ -33,11 +34,18 @@ class CRM_Case_Form_DeleteClient extends CRM_Core_Form {
   protected $cid;
 
   /**
+   * Return ContactId
+   * @var int
+   */
+  protected $returnContactId;
+
+  /**
    * Build all the data structures needed to build the form.
    */
   public function preProcess() {
     $this->cid = CRM_Utils_Request::retrieve('cid', 'Positive', $this, TRUE);
     $this->id = CRM_Utils_Request::retrieve('id', 'Positive', $this, TRUE);
+    $this->returnContactId  = CRM_Utils_Request::retrieve('rcid', 'Positive', $this, TRUE);
     $context = CRM_Utils_Request::retrieve('context', 'Alphanumeric', $this);
 
     //get current client name.
@@ -66,6 +74,10 @@ class CRM_Case_Form_DeleteClient extends CRM_Core_Form {
     }
     $session = CRM_Core_Session::singleton();
     $session->pushUserContext($url);
+    $caseContacts = CaseContact::get()->addWhere('case_id', '=', $this->id)->execute();
+    if (count($caseContacts) === 1) {
+      CRM_Core_Error::statusBounce(ts('Cannot Remove Client from case as is the only client on the case'), $url);
+    }
   }
 
   /**
@@ -99,16 +111,17 @@ class CRM_Case_Form_DeleteClient extends CRM_Core_Form {
       'contact_id' => $params['contact_id'],
       'api.case_contact.delete' => ['id' => "\$value.id"],
     ]);
+    civicrm_api3('Activity', 'create', [
+      'activity_type_id' => 'Case Client Removed',
+      'subject' => ts('Case Client Removed'),
+      'source_contact_id' => CRM_Core_Session::getLoggedInContactID(),
+      'case_id' => $params['id'],
+      'target_contact_id' => $params['contact_id'],
+    ]);
 
-    $pirmaryCaseContact = civicrm_api3('Activity', 'get', [
-      'case_id' => $this->id,
-      'activity_type_id' => 'Open Case',
-      'return' => ['assignee_contact_id', 'source_contact_id', 'target_contact_id'],
-      'sequential' => 1,
-    ])['values'][0]['target_contact_id'][0];
     // user context
     $url = CRM_Utils_System::url('civicrm/contact/view/case',
-      "reset=1&action=view&cid={$pirmaryCaseContact}&id={$params['id']}&show=1"
+      "reset=1&action=view&cid={$this->returnContactId}&id={$params['id']}&show=1"
     );
     CRM_Utils_System::redirect($url);
 
