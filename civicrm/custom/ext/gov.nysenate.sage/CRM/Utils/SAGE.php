@@ -676,10 +676,10 @@ class CRM_Utils_SAGE
     if ($overwrite || empty($values["custom_54_$id"]) || !$values["custom_54_$id"]) {
       $values["custom_54_$id"] = (string)$xml->districts->school->district;
     }
-    //TODO City Council District
-    /*if ($overwrite || empty($values["custom_55_$id"]) || !$values["custom_55_$id"]) {
-      $values["custom_55_$id"] = (string)$xml->districts->city_council->district;
-    }*/
+    //City Council District
+    if ($overwrite || empty($values["custom_55_$id"]) || !$values["custom_55_$id"]) {
+      $values["custom_55_$id"] = (string)$xml->districts->cityCouncil->district;
+    }
   }
 
 
