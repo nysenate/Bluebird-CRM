@@ -24,7 +24,23 @@ define('OUTOFSTATE_NOTE', 'OUT-OF-STATE');
 // Parse the following user options
 require_once 'script_utils.php';
 $shortopts = "b:l:m:f:naoig:sct:pGN";
-$longopts = array("batch=", "log=", "max=", "startfrom=", "dryrun", "addressmap", "outofstate", "instate", "usegeocoder=", "useshapefiles", "usecoordinates", "threads=", "purgenotes", "geocodeonly", "nonotes");
+$longopts = [
+  "batch=",
+  "log=",
+  "max=",
+  "startfrom=",
+  "dryrun",
+  "addressmap",
+  "outofstate",
+  "instate",
+  "usegeocoder=",
+  "useshapefiles",
+  "usecoordinates",
+  "threads=",
+  "purgenotes",
+  "geocodeonly",
+  "nonotes"
+];
 $optlist = civicrm_script_init($shortopts, $longopts);
 
 if ($optlist === null) {
@@ -81,25 +97,24 @@ bbscript_log(LL::DEBUG, "Option: THREADS=$opt_threads");
 bbscript_log(LL::DEBUG, "Option: USE_GEOCODER=".($opt_usegeocoder ? $opt_usegeocoder : "FALSE"));
 
 // District mappings for Notes, Distinfo, and SAGE
-$FIELD_MAP = array(
-    'CD' => array('db'=>'congressional_district_46', 'sage'=>'congressional_code'),
-    'SD' => array('db'=>'ny_senate_district_47', 'sage'=>'senate_code'),
-    'AD' => array('db'=>'ny_assembly_district_48', 'sage'=>'assembly_code'),
-    'ED' => array('db'=>'election_district_49', 'sage'=>'election_code'),
-    'CO' => array('db'=>'county_50', 'sage'=>'county_code'),
-    'CLEG' => array('db'=>'county_legislative_district_51', 'sage'=>'cleg_code'),
-    'TOWN' => array('db'=>'town_52', 'sage'=>'town_code'),
-    'WARD' => array('db'=>'ward_53', 'sage'=>'ward_code'),
-    'SCHL' => array('db'=>'school_district_54', 'sage'=>'school_code'),
-    'CC' => array('db'=>'new_york_city_council_55', 'sage'=>'council_code'),
-    'LAT' => array('db'=>'geo_code_1', 'sage'=>'latitude'),
-    'LON' => array('db'=>'geo_code_2', 'sage'=>'longitude'),
-);
+$FIELD_MAP = [
+    'CD' => ['db'=>'congressional_district_46', 'sage'=>'congressional_code'],
+    'SD' => ['db'=>'ny_senate_district_47', 'sage'=>'senate_code'],
+    'AD' => ['db'=>'ny_assembly_district_48', 'sage'=>'assembly_code'],
+    'ED' => ['db'=>'election_district_49', 'sage'=>'election_code'],
+    'CO' => ['db'=>'county_50', 'sage'=>'county_code'],
+    'CLEG' => ['db'=>'county_legislative_district_51', 'sage'=>'cleg_code'],
+    'TOWN' => ['db'=>'town_52', 'sage'=>'town_code'],
+    'WARD' => ['db'=>'ward_53', 'sage'=>'ward_code'],
+    'SCHL' => ['db'=>'school_district_54', 'sage'=>'school_code'],
+    'CC' => ['db'=>'new_york_city_council_55', 'sage'=>'council_code'],
+    'LAT' => ['db'=>'geo_code_1', 'sage'=>'latitude'],
+    'LON' => ['db'=>'geo_code_2', 'sage'=>'longitude'],
+];
 
-$DIST_FIELDS = array('CD', 'SD', 'AD', 'ED', 'CO',
-                     'CLEG', 'TOWN', 'WARD', 'SCHL', 'CC');
-$ADDR_FIELDS = array('LAT', 'LON');
-$NULLIFY_INSTATE = array('CD', 'SD', 'AD', 'ED');
+$DIST_FIELDS = ['CD', 'SD', 'AD', 'ED', 'CO', 'CLEG', 'TOWN', 'WARD', 'SCHL', 'CC'];
+$ADDR_FIELDS = ['LAT', 'LON'];
+$NULLIFY_INSTATE = ['CD', 'SD', 'AD', 'ED'];
 $NULLIFY_OUTOFSTATE = $DIST_FIELDS;
 
 // Construct the url with all our options...
@@ -111,14 +126,14 @@ $script_start_time = microtime(true);
 // Get CiviCRM database connection
 require_once 'CRM/Core/Config.php';
 require_once 'CRM/Core/DAO.php';
-$config =& CRM_Core_Config::singleton();
+$config = CRM_Core_Config::singleton();
 $dao = new CRM_Core_DAO();
 $db = $dao->getDatabaseConnection()->connection;
 
 if ($opt_dry_run) {
   $BB_UPDATE_FLAGS = 0;
 }
-else if ($opt_geocode_only) {
+elseif ($opt_geocode_only) {
   $BB_UPDATE_FLAGS = UPDATE_GEOCODES;
 }
 
@@ -127,27 +142,25 @@ if ($opt_no_notes) {
 }
 
 if ($opt_purgenotes) {
-    purge_notes($db);
+  purge_notes($db);
 }
 
 // Map old district numbers to new district numbers if addressMap option is set
 if ($opt_addressmap) {
-    address_map($db);
+  address_map($db);
 }
 
 if ($opt_outofstate) {
-    handle_out_of_state($db);
+  handle_out_of_state($db);
 }
 
 if ($opt_instate) {
-    handle_in_state($db, $opt_startfrom, $opt_batch_size, $opt_max,
-                    $bulkdistrict_url, $opt_usecoordinates);
+  handle_in_state($db, $opt_startfrom, $opt_batch_size, $opt_max, $bulkdistrict_url, $opt_usecoordinates);
 }
 
 $elapsed_time = round(get_elapsed_time($script_start_time), 3);
 bbscript_log(LL::INFO, "Completed all tasks in $elapsed_time seconds.");
 exit(0);
-
 
 
 function purge_notes($db)
@@ -172,7 +185,6 @@ function purge_notes($db)
 } // purge_notes()
 
 
-
 function address_map($db)
 {
   global $BB_UPDATE_FLAGS;
@@ -181,20 +193,19 @@ function address_map($db)
 
   $address_map_changes = 0;
   bbscript_log(LL::INFO, "Mapping old district numbers to new district numbers");
-  $district_cycle = array(
+  $district_cycle = [
     '17'=>18, '18'=>25, '25'=>26, '26'=>28, '27'=>17, '28'=>29, '29'=>27,
     '44'=>49, '46'=>44, '49'=>53, '53'=>58, '58'=>63
-  );
+  ];
 
   if ($BB_UPDATE_FLAGS & UPDATE_DISTRICTS) {
     bb_mysql_query('BEGIN', $db, true);
   }
 
-  $q = "SELECT id, ny_senate_district_47
-        FROM civicrm_value_district_information_7";
+  $q = "SELECT id, ny_senate_district_47 FROM civicrm_value_district_information_7";
   $result = bb_mysql_query($q, $db, true);
   $num_rows = mysqli_num_rows($result);
-  $actions = array();
+  $actions = [];
   while (($row = mysqli_fetch_assoc($result)) != null) {
     $district = $row['ny_senate_district_47'];
     if (isset($district_cycle[$district])) {
@@ -232,13 +243,11 @@ function address_map($db)
 } // address_map()
 
 
-
 function handle_out_of_state($db)
 {
   global $BB_UPDATE_FLAGS;
 
   bbscript_log(LL::TRACE, "==> handle_out_of_state()");
-
 
   if ($BB_UPDATE_FLAGS & UPDATE_NOTES) {
     // Delete any out-of-state notes that already exist
@@ -261,8 +270,7 @@ function handle_out_of_state($db)
     if ($BB_UPDATE_FLAGS & UPDATE_DISTRICTS) {
       $note_updates = nullify_district_info($db, $row, false);
       if ($BB_UPDATE_FLAGS & UPDATE_NOTES) {
-        insert_redist_note($db, OUTOFSTATE_NOTE, 'NOLOOKUP', $row,
-                           null, $note_updates);
+        insert_redist_note($db, OUTOFSTATE_NOTE, 'NOLOOKUP', $row, null, $note_updates);
       }
     }
   }
@@ -277,24 +285,24 @@ function handle_out_of_state($db)
 } // handle_out_of_state()
 
 
-
-function handle_in_state($db, $startfrom = 0, $batch_size, $max_addrs = 0,
-                         $url, $use_coords)
+function handle_in_state($db, $startfrom = 0, $batch_size, $max_addrs = 0, $url, $use_coords)
 {
   bbscript_log(LL::TRACE, "==> handle_in_state()");
   // Start a timer and a counter for results
   $time_start = microtime(true);
-  $counters = array("TOTAL" => 0,
-                    "MATCH" => 0,
-                    "NOMATCH" => 0,
-                    "INVALID" => 0,
-                    "ERROR" => 0,
-                    "HOUSE" => 0,
-                    "STREET" => 0,
-                    "ZIP5" => 0,
-                    "SHAPEFILE" => 0,
-                    "CURL" => 0,
-                    "MYSQL" => 0);
+  $counters = [
+    "TOTAL" => 0,
+    "MATCH" => 0,
+    "NOMATCH" => 0,
+    "INVALID" => 0,
+    "ERROR" => 0,
+    "HOUSE" => 0,
+    "STREET" => 0,
+    "ZIP5" => 0,
+    "SHAPEFILE" => 0,
+    "CURL" => 0,
+    "MYSQL" => 0,
+  ];
 
   $start_id = $startfrom;
   $total_rec_cnt = 0;
@@ -314,8 +322,8 @@ function handle_in_state($db, $startfrom = 0, $batch_size, $max_addrs = 0,
 
     // Retrieve a batch of in-state addresses with distinfo
     $res = retrieve_addresses($db, $start_id, $batch_size, true);
-    $formatted_batch = array();
-    $orig_batch = array();
+    $formatted_batch = [];
+    $orig_batch = [];
     $batch_rec_cnt = mysqli_num_rows($res);
 
     if ($batch_rec_cnt == 0) {
@@ -351,7 +359,7 @@ function handle_in_state($db, $startfrom = 0, $batch_size, $max_addrs = 0,
       }
 
       // Format the address for sage
-      $formatted_batch[$addr_id] = array(
+      $formatted_batch[$addr_id] = [
         'street' => $street,
         'town' => $row['city'],
         'state' => $row['state'],
@@ -359,7 +367,7 @@ function handle_in_state($db, $startfrom = 0, $batch_size, $max_addrs = 0,
         'apt' => null,
         'building' => $row['street_number'],
         'building_chr' => $row['street_number_suffix'],
-      );
+      ];
 
       // If requested, use the coordinates already in the system
       if ($use_coords) {
@@ -401,28 +409,30 @@ function retrieve_addresses($db, $start_id = 0, $max_res = 0, $in_state = true)
 
   $limit_clause = ($max_res > 0 ? "LIMIT $max_res" : "");
   $state_compare_op = $in_state ? '=' : '!=';
-  $dist_colnames = array();
+  $dist_colnames = [];
 
   foreach ($DIST_FIELDS as $abbrev) {
     $dist_colnames[] = "di.".$FIELD_MAP[$abbrev]['db'];
   }
 
-  $q = "SELECT a.id, a.contact_id,
-               a.street_address, a.street_number, a.street_number_suffix,
-               a.street_name, a.street_type, a.city, a.postal_code,
-               a.supplemental_address_1, a.supplemental_address_2,
-               a.geo_code_1, a.geo_code_2,
-               sp.abbreviation AS state,
-               di.id as district_id,
-              ".implode(",\n", $dist_colnames)."
-     FROM civicrm_address a
-     JOIN civicrm_state_province sp
-     LEFT JOIN civicrm_value_district_information_7 di ON (di.entity_id = a.id)
-     WHERE a.state_province_id=sp.id
-       AND sp.abbreviation $state_compare_op 'NY'
-       AND a.id >= $start_id
-     ORDER BY a.id ASC
-     $limit_clause";
+  $q = "
+    SELECT a.id, a.contact_id,
+      a.street_address, a.street_number, a.street_number_suffix,
+      a.street_name, a.street_type, a.city, a.postal_code,
+      a.supplemental_address_1, a.supplemental_address_2,
+      a.geo_code_1, a.geo_code_2,
+      sp.abbreviation AS state,
+      di.id as district_id,
+      ".implode(",\n", $dist_colnames)."
+    FROM civicrm_address a
+    JOIN civicrm_state_province sp
+    LEFT JOIN civicrm_value_district_information_7 di ON (di.entity_id = a.id)
+    WHERE a.state_province_id=sp.id
+      AND sp.abbreviation $state_compare_op 'NY'
+      AND a.id >= $start_id
+    ORDER BY a.id ASC
+    $limit_clause
+  ";
 
   // Run query to obtain a batch of addresses
   bbscript_log(LL::DEBUG, "Retrieving addresses starting at id $start_id with limit $max_res");
@@ -432,7 +442,6 @@ function retrieve_addresses($db, $start_id = 0, $max_res = 0, $in_state = true)
   bbscript_log(LL::TRACE, "<== retrieve_addresses()");
   return $res;
 } // retrieve_addresses()
-
 
 
 function distassign(&$fmt_batch, $url, &$cnts)
@@ -449,7 +458,7 @@ function distassign(&$fmt_batch, $url, &$cnts)
   curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
   curl_setopt($ch, CURLOPT_POST, true);
   curl_setopt($ch, CURLOPT_POSTFIELDS, $json_batch);
-  curl_setopt($ch, CURLOPT_HTTPHEADER, array("Content-Type: application/json", "Content-length: ".strlen($json_batch)));
+  curl_setopt($ch, CURLOPT_HTTPHEADER, ["Content-Type: application/json", "Content-length: ".strlen($json_batch)]);
   bbscript_log(LL::TRACE, "About to send API request to SAGE using cURL [url=$url]");
   $response = curl_exec($ch);
 
@@ -489,17 +498,17 @@ function distassign(&$fmt_batch, $url, &$cnts)
 } // distassign()
 
 
-
 function process_batch_results($db, &$orig_batch, &$batch_results, &$cnts)
 {
   global $BB_UPDATE_FLAGS, $DIST_FIELDS, $ADDR_FIELDS;
 
   bbscript_log(LL::TRACE, '==> process_batch_results()');
 
-  $batch_cntrs = array(
-     'TOTAL'=>count($batch_results), 'MATCH'=>0,
-     'HOUSE'=>0, 'STREET'=>0, 'ZIP5'=>0, 'SHAPEFILE'=>0,
-     'NOMATCH'=>0, 'INVALID'=>0, 'ERROR'=>0, 'MYSQL'=>0);
+  $batch_cntrs = [
+    'TOTAL'=>count($batch_results), 'MATCH'=>0,
+    'HOUSE'=>0, 'STREET'=>0, 'ZIP5'=>0, 'SHAPEFILE'=>0,
+    'NOMATCH'=>0, 'INVALID'=>0, 'ERROR'=>0, 'MYSQL'=>0
+  ];
 
   $batch_start_time = microtime(true);
 
@@ -558,8 +567,10 @@ function process_batch_results($db, &$orig_batch, &$batch_results, &$cnts)
       // Shape file lookups can result in new/changed coordinates.
       if ($status_code == 'SHAPEFILE') {
         $changes = calculate_changes($ADDR_FIELDS, $orig_rec, $batch_res);
-        $geonote = array("GEO_ACCURACY: {$batch_res['geo_accuracy']}",
-                         "GEO_METHOD: {$batch_res['geo_method']}");
+        $geonote = [
+          "GEO_ACCURACY: {$batch_res['geo_accuracy']}",
+          "GEO_METHOD: {$batch_res['geo_method']}"
+        ];
         $note_updates = array_merge($note_updates, $changes['notes'], $geonote);
         $sql_updates = $changes['sqldata'];
 
@@ -574,8 +585,7 @@ function process_batch_results($db, &$orig_batch, &$batch_results, &$cnts)
       }
 
       if ($BB_UPDATE_FLAGS & UPDATE_NOTES) {
-        insert_redist_note($db, INSTATE_NOTE, $status_code, $orig_rec,
-                           $subj_abbrevs, $note_updates);
+        insert_redist_note($db, INSTATE_NOTE, $status_code, $orig_rec, $subj_abbrevs, $note_updates);
       }
       break;
 
@@ -616,24 +626,23 @@ function process_batch_results($db, &$orig_batch, &$batch_results, &$cnts)
 } // process_batch_results()
 
 
-
 function delete_batch_notes($db, $lo_id, $hi_id)
 {
   bbscript_log(LL::TRACE, "==> delete_batch_notes()");
 
   // Delete only notes in the current batch
-  $q = "DELETE FROM n USING civicrm_note n
-        JOIN civicrm_address a ON n.entity_id = a.contact_id
-        WHERE a.id BETWEEN $lo_id AND $hi_id
-        AND n.subject LIKE '".REDIST_NOTE." ".INSTATE_NOTE."%'
-        AND preg_capture('/[[]id=([0-9]+)[]]/', n.subject, 1)
-            BETWEEN $lo_id AND $hi_id";
+  $q = "
+    DELETE FROM n USING civicrm_note n
+    JOIN civicrm_address a ON n.entity_id = a.contact_id
+    WHERE a.id BETWEEN $lo_id AND $hi_id
+      AND n.subject LIKE '".REDIST_NOTE." ".INSTATE_NOTE."%'
+      AND preg_capture('/[[]id=([0-9]+)[]]/', n.subject, 1) BETWEEN $lo_id AND $hi_id
+  ";
   bb_mysql_query($q, $db, true);
   $row_cnt = mysqli_affected_rows($db);
   bbscript_log(LL::INFO, "Removed $row_cnt notes for address IDs from $lo_id to $hi_id");
   bbscript_log(LL::TRACE, "<== delete_batch_notes()");
 } // delete_batch_notes()
-
 
 
 // Determine the differences, value-by-value, between an augmented
@@ -643,7 +652,7 @@ function calculate_changes(&$fields, &$db_rec, &$sage_rec)
 {
   global $FIELD_MAP, $NULLIFY_INSTATE;
 
-  $changes = array('notes'=>array(), 'abbrevs'=>array(), 'sqldata'=>array());
+  $changes = ['notes'=> [], 'abbrevs'=> [], 'sqldata'=> []];
   $address_id = $sage_rec['address_id'];
 
   foreach ($fields as $abbr) {
@@ -677,10 +686,9 @@ function calculate_changes(&$fields, &$db_rec, &$sage_rec)
 } // calculate_changes()
 
 
-
 function update_district_info($db, $address_id, $sqldata)
 {
-  $sql_updates = array();
+  $sql_updates = [];
   foreach ($sqldata as $colname => $value) {
     if ($colname == 'town_52') {
       $sql_updates[] = "$colname = '$value'";
@@ -690,12 +698,13 @@ function update_district_info($db, $address_id, $sqldata)
     }
   }
 
-  $q = "UPDATE civicrm_value_district_information_7 di
-        SET ".implode(', ', $sql_updates)."
-        WHERE di.entity_id = $address_id";
+  $q = "
+    UPDATE civicrm_value_district_information_7 di
+    SET ".implode(', ', $sql_updates)."
+    WHERE di.entity_id = $address_id
+  ";
   bb_mysql_query($q, $db, true);
 } // update_district_info()
-
 
 
 function insert_district_info($db, $address_id, $sqldata)
@@ -713,19 +722,20 @@ function insert_district_info($db, $address_id, $sqldata)
     }
   }
 
-  $q = "INSERT INTO civicrm_value_district_information_7 ( $cols )
-        VALUES ( $vals )";
+  $q = "
+    INSERT INTO civicrm_value_district_information_7 ( $cols )
+    VALUES ( $vals )
+  ";
   bb_mysql_query($q, $db, true);
 } // insert_district_info()
-
 
 
 function nullify_district_info($db, $row, $instate = true)
 {
   global $FIELD_MAP, $NULLIFY_INSTATE, $NULLIFY_OUTOFSTATE;
 
-  $sql_updates = array();
-  $note_updates = array();
+  $sql_updates = [];
+  $note_updates = [];
   $dist_abbrevs = ($instate ? $NULLIFY_INSTATE : $NULLIFY_OUTOFSTATE);
 
   foreach ($dist_abbrevs as $abbrev) {
@@ -744,26 +754,25 @@ function nullify_district_info($db, $row, $instate = true)
 } // nullify_district_info()
 
 
-
 function update_geocodes($db, $address_id, $sqldata)
 {
-  $sql_updates = array();
+  $sql_updates = [];
   foreach ($sqldata as $colname => $value) {
     $sql_updates[] = "$colname = $value";
   }
 
   $update_str = implode(', ', $sql_updates);
   bbscript_log(LL::TRACE, "Saving new geocoordinates: $update_str");
-  $q = "UPDATE civicrm_address
-        SET $update_str
-        WHERE id=$address_id";
+  $q = "
+    UPDATE civicrm_address
+    SET $update_str
+    WHERE id=$address_id
+  ";
   bb_mysql_query($q, $db, true);
 } // update_geocodes()
 
 
-
-function insert_redist_note($db, $note_type, $match_type, &$row,
-                            $abbrevs, &$update_notes)
+function insert_redist_note($db, $note_type, $match_type, &$row, $abbrevs, &$update_notes)
 {
   // Create a new contact note describing the state before
   // and after redistricting.
@@ -802,13 +811,12 @@ function insert_redist_note($db, $note_type, $match_type, &$row,
 
   $note = mysqli_real_escape_string($note, $db);
   $subject = mysqli_real_escape_string($subject, $db);
-  $q = "INSERT INTO civicrm_note (entity_table, entity_id, note, contact_id,
-                                  modified_date, subject, privacy)
-        VALUES ('civicrm_contact', $contact_id, '$note', 1,
-                '".date("Y-m-d")."', '$subject', 0)";
+  $q = "
+    INSERT INTO civicrm_note (entity_table, entity_id, note, contact_id, modified_date, subject, privacy)
+    VALUES ('civicrm_contact', $contact_id, '$note', 1, '".date("Y-m-d")."', '$subject', 0)
+  ";
   bb_mysql_query($q, $db, true);
 } // insert_redist_note()
-
 
 
 function report_stats($total_found, $cnts, $time_start)
@@ -816,7 +824,7 @@ function report_stats($total_found, $cnts, $time_start)
   bbscript_log(LL::TRACE, "==> report_stats()");
 
   // Compute percentages for certain counts
-  $percent = array(
+  $percent = [
     "MATCH" => 0,
     "NOMATCH" => 0,
     "INVALID" => 0,
@@ -825,7 +833,7 @@ function report_stats($total_found, $cnts, $time_start)
     "STREET" => 0,
     "ZIP5" => 0,
     "SHAPEFILE" => 0
-  );
+  ];
 
   // Timer for debug
   $time = get_elapsed_time($time_start);
@@ -863,29 +871,33 @@ function report_stats($total_found, $cnts, $time_start)
 
 function clean_row($row)
 {
-  $match = array('/ AVENUE( EXT)?$/',
-                 '/ STREET( EXT)?$/',
-                 '/ PLACE/',
-                 '/ EAST$/',
-                 '/ WEST$/',
-                 '/ SOUTH$/',
-                 '/ NORTH$/',
-                 '/^EAST (?!ST|AVE|RD|DR)/',
-                 '/^WEST (?!ST|AVE|RD|DR)/',
-                 '/^SOUTH (?!ST|AVE|RD|DR)/',
-                 '/^NORTH (?!ST|AVE|RD|DR)/');
+  $match = [
+    '/ AVENUE( EXT)?$/',
+    '/ STREET( EXT)?$/',
+    '/ PLACE/',
+    '/ EAST$/',
+    '/ WEST$/',
+    '/ SOUTH$/',
+    '/ NORTH$/',
+    '/^EAST (?!ST|AVE|RD|DR)/',
+    '/^WEST (?!ST|AVE|RD|DR)/',
+    '/^SOUTH (?!ST|AVE|RD|DR)/',
+    '/^NORTH (?!ST|AVE|RD|DR)/'
+  ];
 
-  $replace = array(' AVE$1',
-                   ' ST$1',
-                   ' PL',
-                   ' E',
-                   ' W',
-                   ' S',
-                   ' N',
-                   'E ',
-                   'W ',
-                   'S ',
-                   'N ');
+  $replace = [
+    ' AVE$1',
+    ' ST$1',
+    ' PL',
+    ' E',
+    ' W',
+    ' S',
+    ' N',
+    'E ',
+    'W ',
+    'S ',
+    'N '
+  ];
 
   $s = preg_replace("/[.,']/", "", strtoupper(trim($row['street_name'])));
   $row['street_name'] = preg_replace($match, $replace, $s);
@@ -896,17 +908,16 @@ function clean_row($row)
 } // clean_row()
 
 
-
 function get($array, $key, $default)
 {
   // blank, null, and 0 values are bad.
   if (isset($array[$key]) && $array[$key] != null && $array[$key] !== ''
-      && $array[$key] !== 0 && $array[$key] !== '0'
-      && $array[$key] !== '00' && $array[$key] !== '000') {
+    && $array[$key] !== 0 && $array[$key] !== '0'
+    && $array[$key] !== '00' && $array[$key] !== '000'
+  ) {
     return $array[$key];
   }
   else {
     return $default;
   }
 } // get()
-
