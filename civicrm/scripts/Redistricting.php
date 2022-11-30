@@ -51,7 +51,7 @@ if ($optlist === null) {
 }
 
 // Use user options to configure the script
-$BB_LOG_LEVEL = $LOG_LEVELS[strtoupper(get($optlist, 'log', 'TRACE'))][0];
+set_bbscript_log_level(get($optlist, 'log', 'TRACE'));
 $BB_UPDATE_FLAGS = UPDATE_ALL;
 $opt_batch_size = get($optlist, 'batch', DEFAULT_BATCH_SIZE);
 $opt_dry_run = get($optlist, 'dryrun', false);
@@ -80,7 +80,7 @@ if (!($sage_base && $sage_key)) {
 // Dump the active options when in debug mode
 bbscript_log(LL::DEBUG, "Option: INSTANCE={$optlist['site']}");
 bbscript_log(LL::DEBUG, "Option: BATCH_SIZE=$opt_batch_size");
-bbscript_log(LL::DEBUG, "Option: LOG_LEVEL=$BB_LOG_LEVEL");
+bbscript_log(LL::DEBUG, "Option: LOG_LEVEL={$optlist['log']}");
 bbscript_log(LL::DEBUG, "Option: DRY_RUN=".($opt_dry_run ? "TRUE" : "FALSE"));
 bbscript_log(LL::DEBUG, "Option: GEOCODE_ONLY=".($opt_geocode_only ? "TRUE" : "FALSE"));
 bbscript_log(LL::DEBUG, "Option: NO_NOTES=".($opt_no_notes ? $opt_no_notes : "FALSE"));
@@ -98,18 +98,18 @@ bbscript_log(LL::DEBUG, "Option: USE_GEOCODER=".($opt_usegeocoder ? $opt_usegeoc
 
 // District mappings for Notes, Distinfo, and SAGE
 $FIELD_MAP = [
-    'CD' => ['db'=>'congressional_district_46', 'sage'=>'congressional_code'],
-    'SD' => ['db'=>'ny_senate_district_47', 'sage'=>'senate_code'],
-    'AD' => ['db'=>'ny_assembly_district_48', 'sage'=>'assembly_code'],
-    'ED' => ['db'=>'election_district_49', 'sage'=>'election_code'],
-    'CO' => ['db'=>'county_50', 'sage'=>'county_code'],
-    'CLEG' => ['db'=>'county_legislative_district_51', 'sage'=>'cleg_code'],
-    'TOWN' => ['db'=>'town_52', 'sage'=>'town_code'],
-    'WARD' => ['db'=>'ward_53', 'sage'=>'ward_code'],
-    'SCHL' => ['db'=>'school_district_54', 'sage'=>'school_code'],
-    'CC' => ['db'=>'new_york_city_council_55', 'sage'=>'council_code'],
-    'LAT' => ['db'=>'geo_code_1', 'sage'=>'latitude'],
-    'LON' => ['db'=>'geo_code_2', 'sage'=>'longitude'],
+  'CD' => ['db'=>'congressional_district_46', 'sage'=>'congressional_code'],
+  'SD' => ['db'=>'ny_senate_district_47', 'sage'=>'senate_code'],
+  'AD' => ['db'=>'ny_assembly_district_48', 'sage'=>'assembly_code'],
+  'ED' => ['db'=>'election_district_49', 'sage'=>'election_code'],
+  'CO' => ['db'=>'county_50', 'sage'=>'county_code'],
+  'CLEG' => ['db'=>'county_legislative_district_51', 'sage'=>'cleg_code'],
+  'TOWN' => ['db'=>'town_52', 'sage'=>'town_code'],
+  'WARD' => ['db'=>'ward_53', 'sage'=>'ward_code'],
+  'SCHL' => ['db'=>'school_district_54', 'sage'=>'school_code'],
+  'CC' => ['db'=>'new_york_city_council_55', 'sage'=>'council_code'],
+  'LAT' => ['db'=>'geo_code_1', 'sage'=>'latitude'],
+  'LON' => ['db'=>'geo_code_2', 'sage'=>'longitude'],
 ];
 
 $DIST_FIELDS = ['CD', 'SD', 'AD', 'ED', 'CO', 'CLEG', 'TOWN', 'WARD', 'SCHL', 'CC'];
@@ -119,6 +119,7 @@ $NULLIFY_OUTOFSTATE = $DIST_FIELDS;
 
 // Construct the url with all our options...
 $bulkdistrict_url = "$sage_base/json/bulkdistrict/body?threadCount=$opt_threads&key=$sage_key&useGeocoder=".($opt_usegeocoder ? "1&geocoder=$opt_usegeocoder" : "0")."&useShapefiles=".($opt_useshapefiles ? 1 : 0);
+bbscript_log(LL::DEBUG, "bulkdistrict_url={$bulkdistrict_url}");
 
 // Track the full time it takes to run the redistricting process.
 $script_start_time = microtime(true);
@@ -503,6 +504,7 @@ function process_batch_results($db, &$orig_batch, &$batch_results, &$cnts)
   global $BB_UPDATE_FLAGS, $DIST_FIELDS, $ADDR_FIELDS;
 
   bbscript_log(LL::TRACE, '==> process_batch_results()');
+  bbscript_log(LL::TRACE, $batch_results);
 
   $batch_cntrs = [
     'TOTAL'=>count($batch_results), 'MATCH'=>0,
@@ -530,84 +532,84 @@ function process_batch_results($db, &$orig_batch, &$batch_results, &$cnts)
   bb_mysql_query('BEGIN', $db, true);
 
   foreach ($batch_results as $batch_res) {
-    $address_id = $batch_res['address_id'];
-    $status_code = $batch_res['status_code'];
-    $message = $batch_res['message'];
+    $address_id = $batch_res['address_id'] ?? NULL;
+    $status_code = $batch_res['status_code'] ?? NULL;
+    $message = $batch_res['message'] ?? NULL;
     $orig_rec = $orig_batch[$address_id];
 
     switch ($status_code) {
-    case 'HOUSE':
-    case 'STREET':
-    case 'ZIP5':
-    case 'SHAPEFILE':
-      $batch_cntrs['MATCH']++;
-      $batch_cntrs[$status_code]++;
-      bbscript_log(LL::TRACE, "[MATCH - $status_code][$message] on record #$address_id");
+      case 'HOUSE':
+      case 'STREET':
+      case 'ZIP5':
+      case 'SHAPEFILE':
+        $batch_cntrs['MATCH']++;
+        $batch_cntrs[$status_code]++;
+        bbscript_log(LL::TRACE, "[MATCH - $status_code][$message] on record #$address_id");
 
-      // Determine differences between original record and SAGE results.
-      $changes = calculate_changes($DIST_FIELDS, $orig_rec, $batch_res);
-      $subj_abbrevs = $changes['abbrevs'];
-      $note_updates = $changes['notes'];
-      $sql_updates = $changes['sqldata'];
-
-      if (count($sql_updates) > 0) {
-        if ($BB_UPDATE_FLAGS & UPDATE_DISTRICTS) {
-          if ($orig_rec['district_id']) {
-            update_district_info($db, $address_id, $sql_updates);
-          }
-          else {
-            insert_district_info($db, $address_id, $sql_updates);
-          }
-        }
-        else {
-          bbscript_log(LL::TRACE, "UPDATE_DISTRICTS disabled - district information for id=$address_id not updated");
-        }
-      }
-
-      // Shape file lookups can result in new/changed coordinates.
-      if ($status_code == 'SHAPEFILE') {
-        $changes = calculate_changes($ADDR_FIELDS, $orig_rec, $batch_res);
-        $geonote = [
-          "GEO_ACCURACY: {$batch_res['geo_accuracy']}",
-          "GEO_METHOD: {$batch_res['geo_method']}"
-        ];
-        $note_updates = array_merge($note_updates, $changes['notes'], $geonote);
+        // Determine differences between original record and SAGE results.
+        $changes = calculate_changes($DIST_FIELDS, $orig_rec, $batch_res);
+        $subj_abbrevs = $changes['abbrevs'];
+        $note_updates = $changes['notes'];
         $sql_updates = $changes['sqldata'];
 
         if (count($sql_updates) > 0) {
-          if ($BB_UPDATE_FLAGS & UPDATE_GEOCODES) {
-            update_geocodes($db, $address_id, $sql_updates);
+          if ($BB_UPDATE_FLAGS & UPDATE_DISTRICTS) {
+            if ($orig_rec['district_id']) {
+              update_district_info($db, $address_id, $sql_updates);
+            }
+            else {
+              insert_district_info($db, $address_id, $sql_updates);
+            }
           }
           else {
-            bbscript_log(LL::TRACE, "UPDATE_GEOCODES disabled - Geocoordinates for id=$address_id not updated");
+            bbscript_log(LL::TRACE, "UPDATE_DISTRICTS disabled - district information for id=$address_id not updated");
           }
         }
-      }
 
-      if ($BB_UPDATE_FLAGS & UPDATE_NOTES) {
-        insert_redist_note($db, INSTATE_NOTE, $status_code, $orig_rec, $subj_abbrevs, $note_updates);
-      }
-      break;
+        // Shape file lookups can result in new/changed coordinates.
+        if ($status_code == 'SHAPEFILE') {
+          $changes = calculate_changes($ADDR_FIELDS, $orig_rec, $batch_res);
+          $geonote = [
+            "GEO_ACCURACY: {$batch_res['geo_accuracy']}",
+            "GEO_METHOD: {$batch_res['geo_method']}"
+          ];
+          $note_updates = array_merge($note_updates, $changes['notes'], $geonote);
+          $sql_updates = $changes['sqldata'];
 
-    case 'NOMATCH':
-    case 'INVALID':
-      $batch_cntrs[$status_code]++;
-      bbscript_log(LL::WARN, "[NOMATCH][$message] on record #$address_id");
-      if ($BB_UPDATE_FLAGS & UPDATE_DISTRICTS) {
-        $note_updates = nullify_district_info($db, $orig_rec, true);
-        if ($BB_UPDATE_FLAGS & UPDATE_NOTES) {
-          insert_redist_note($db, INSTATE_NOTE, $status_code, $orig_rec,
-                             null, $note_updates);
+          if (count($sql_updates) > 0) {
+            if ($BB_UPDATE_FLAGS & UPDATE_GEOCODES) {
+              update_geocodes($db, $address_id, $sql_updates);
+            }
+            else {
+              bbscript_log(LL::TRACE, "UPDATE_GEOCODES disabled - Geocoordinates for id=$address_id not updated");
+            }
+          }
         }
-      }
-      else {
-        bbscript_log(LL::TRACE, "UPDATE_DISTRICTS disabled - Cannot nullify district info for id=$address_id");
-      }
-      break;
 
-    default:
-      $batch_cntrs['ERROR']++;
-      bbscript_log(LL::ERROR, "Unknown status [$status_code] on record #$address_id with message [$message]");
+        if ($BB_UPDATE_FLAGS & UPDATE_NOTES) {
+          insert_redist_note($db, INSTATE_NOTE, $status_code, $orig_rec, $subj_abbrevs, $note_updates);
+        }
+        break;
+
+      case 'NOMATCH':
+      case 'INVALID':
+        $batch_cntrs[$status_code]++;
+        bbscript_log(LL::WARN, "[NOMATCH][$message] on record #$address_id");
+        if ($BB_UPDATE_FLAGS & UPDATE_DISTRICTS) {
+          $note_updates = nullify_district_info($db, $orig_rec, true);
+          if ($BB_UPDATE_FLAGS & UPDATE_NOTES) {
+            insert_redist_note($db, INSTATE_NOTE, $status_code, $orig_rec,
+                               null, $note_updates);
+          }
+        }
+        else {
+          bbscript_log(LL::TRACE, "UPDATE_DISTRICTS disabled - Cannot nullify district info for id=$address_id");
+        }
+        break;
+
+      default:
+        $batch_cntrs['ERROR']++;
+        bbscript_log(LL::ERROR, "Unknown status [$status_code] on record #$address_id with message [$message]");
     }
   }
 
