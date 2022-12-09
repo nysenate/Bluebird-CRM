@@ -702,7 +702,8 @@ case_relation_type.id = case_relationship.relationship_type_id )";
         'html' => ['type' => 'Radio'],
       ];
     }
-    if (!CRM_Core_Permission::check('administer CiviCase')) {
+    //NYSS 15095
+    if (!CRM_Core_Permission::check('delete in CiviCase')) {
       unset($metadata['case_deleted']);
     }
     return $metadata;
