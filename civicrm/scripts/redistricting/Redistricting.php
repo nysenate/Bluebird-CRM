@@ -22,7 +22,7 @@ define('INSTATE_NOTE', 'IN-STATE');
 define('OUTOFSTATE_NOTE', 'OUT-OF-STATE');
 
 // Parse the following user options
-require_once 'script_utils.php';
+require_once realpath(dirname(__FILE__)).'/../script_utils.php';
 $shortopts = "b:l:m:f:naoig:sct:pGN";
 $longopts = [
   "batch=",

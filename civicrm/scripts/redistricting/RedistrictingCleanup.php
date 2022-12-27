@@ -10,7 +10,7 @@ error_reporting(E_ERROR | E_PARSE | E_WARNING);
 set_time_limit(0);
 
 // Parse the following user options
-require_once 'script_utils.php';
+require_once realpath(dirname(__FILE__)).'/../script_utils.php';
 $shortopts = "i:el:d";
 $longopts = array("import=","export","log=","dryrun");
 $stdusage = civicrm_script_usage();

@@ -11,7 +11,7 @@
 // RedistrictingReports.php                                                    |
 //------------------------------------------------------------------------------
 
-define('RESOURCES_DIR', 'redistricting_report');
+define('RESOURCES_DIR', realpath(dirname(__FILE__)).'/report');
 
 if ($format == 'text') {
 

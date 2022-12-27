@@ -26,7 +26,7 @@ define('RD_NOTE_CACHE_TABLE', 'redist_report_note_cache');
 define('RD_ACTS_CACHE_TABLE', 'redist_report_acts_cache');
 
 // Parse the options
-require_once 'script_utils.php';
+require_once realpath(dirname(__FILE__)).'/../script_utils.php';
 $shortopts = "l:f:m:tdc";
 $longopts = array("log=", "format=", "mode=", "threshold=", "disableCache", "clearCache");
 $optlist = civicrm_script_init($shortopts, $longopts);

@@ -17,7 +17,7 @@ class CRM_migrateContactsTrash {
 
     global $_SERVER;
 
-    require_once 'script_utils.php';
+    require_once realpath(dirname(__FILE__)).'/../script_utils.php';
 
     // Parse the options
     $shortopts = "d:t:en:y";

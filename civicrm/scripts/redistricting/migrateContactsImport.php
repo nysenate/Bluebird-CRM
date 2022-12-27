@@ -21,7 +21,7 @@ class CRM_migrateContactsImport {
     //set memory limit so we don't max out
     ini_set('memory_limit', '3000M');
 
-    require_once 'script_utils.php';
+    require_once realpath(dirname(__FILE__)).'/../script_utils.php';
 
     // Parse the options
     $shortopts = "f:n";
