@@ -55,11 +55,19 @@ function _nyss_getUsers($params) {
   $time = strtotime(CRM_Utils_Array::value('time', $params, '-1 year'));
   //Civi::log()->debug(__FUNCTION__, ['users' => $users]);
 
+  $modLdapAuthorization = drupal_get_path('module', 'ldap_authentication');
+  require_once($modLdapAuthorization.'/LdapAuthenticationConf.class.php');
+
+  $auth_conf = ldap_authentication_get_valid_conf();
+  //Civi::log()->debug(__FUNCTION__, ['$auth_conf' => $auth_conf]);
+
+  $ldap_server = $auth_conf->enabledAuthenticationServers['nyss_ldap'];
+
   $usersPurge = [];
   foreach ($users as $user) {
     //skip anonymous and root user
     if ($user->uid != 0 && $user->uid != 1 && (empty($params['username']) || $user->name == $params['username'])) {
-      $isAuthorized = _nyss_checkUserAuth($user);
+      $isAuthorized = _nyss_checkUserAuth($user, $auth_conf, $ldap_server);
 
       if (!$isAuthorized || $user->access < $time) {
         $usersPurge[$user->uid] = $user->name;
@@ -71,21 +79,35 @@ function _nyss_getUsers($params) {
   return $usersPurge;
 }
 
-function _nyss_checkUserAuth($user) {
-  $modLdapAuthorization = drupal_get_path('module', 'ldap_authorization');
-  require_once($modLdapAuthorization.'/ldap_authorization.inc');
+function _nyss_checkUserAuth($user, $auth_conf, $ldap_server) {
+  //Civi::log()->debug(__FUNCTION__, ['$user' => $user]);
 
-  $consumers = ldap_authorization_get_consumers();
-  $new_authorizations = [];
-  foreach ($consumers as $consumer_type => $consumer) {
-    list($new_authorizations_i, $notifications_i) = _ldap_authorizations_user_authorizations($user, 'query', $consumer_type, NULL);
-    $new_authorizations = $new_authorizations + $new_authorizations_i;
-  }
+  $ldap_user = $ldap_server->userUserNameToExistingLdapEntry($user->name);
+  $bbcfg = get_bluebird_instance_config();
 
-  /*Civi::log()->debug(__FUNCTION__, [
-    '$user' => $user,
-    '$new_authorizations' => $new_authorizations,
-  ]);*/
+  global $_name, $_ldap_user_entry;
+  $_name = $user->name;
+  $_ldap_user_entry = $ldap_user;
 
-  return !empty($new_authorizations['drupal_role']);
+  $include = file_get_contents($bbcfg['base_dir'].'/civicrm/scripts/ldap_group_check.inc');
+  $include = str_replace('<?php', '', $include);
+  $include = str_replace('?>', '', $include);
+
+  $code = "
+    global \$_name;
+    global \$_ldap_user_entry;
+    $include
+  ";
+  //Civi::log()->debug(__FUNCTION__, ['$code' => $code]);
+
+  ob_start();
+  print eval($code);
+  $result = ob_get_contents();
+  ob_end_clean();
+
+  $_name = NULL;
+  $_ldap_user_entry = NULL;
+
+  //Civi::log()->debug(__FUNCTION__, ['$result' => $result]);
+  return (boolean) $result;
 }

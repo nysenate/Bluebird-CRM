@@ -41,7 +41,7 @@ define('UPDATE_ALL', 3);
 define('REDIST_NOTE', 'REDIST2012');
 
 // Parse the following user options
-require_once 'script_utils.php';
+require_once realpath(dirname(__FILE__)).'/../script_utils.php';
 $shortopts = "b:l:m:f:d";
 $longopts = array("batch=", "log=", "max=", "startfrom=", "dryrun");
 $optlist = civicrm_script_init($shortopts, $longopts);

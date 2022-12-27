@@ -1415,7 +1415,6 @@ function create_district_info($addrID, $omis_flds)
     'ward_53' => cleanData($omis_flds['WD']),
     'school_district_54' => cleanData($omis_flds['SCD']),
     'new_york_city_council_55' => DBNULL,
-    'neighborhood_56' => DBNULL,
     'last_import_57' => date("Y-m-d H:i:s")
   );
   return $distinfo;

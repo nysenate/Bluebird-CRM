@@ -21,7 +21,7 @@ class CRM_migrateContactsImport {
     //set memory limit so we don't max out
     ini_set('memory_limit', '3000M');
 
-    require_once 'script_utils.php';
+    require_once realpath(dirname(__FILE__)).'/../script_utils.php';
 
     // Parse the options
     $shortopts = "f:n";
@@ -115,7 +115,8 @@ class CRM_migrateContactsImport {
     //parse the import file source/dest, compare with params and return a warning message if values do not match
     if ( $exportData['dest']['name'] != $dest['name'] ) {
       bbscript_log(LL::FATAL, 'The destination defined in the import file does not match the parameters passed to the script. Exiting the script as a mismatched destination could create significant data problems. Please investigate and then rerun the script.');
-      exit();
+      //exit();
+      $exportData['dest']['db'] = $dest['db'];
     }
 
     //add app.dir so we can use it later
@@ -136,14 +137,17 @@ class CRM_migrateContactsImport {
     $statsTemp = $selfMerged = array();
 
     //process the import
-    self::importAttachments($exportData);
+    //self::importAttachments($exportData);
     self::importContacts($exportData, $statsTemp, $bbAdmin);
-    self::importActivities($exportData, $bbAdmin);
-    self::importCases($exportData, $bbAdmin);
+
+    //squadron-hoylman
+    self::sdActivitiesCreate();
+    //self::importActivities($exportData, $bbAdmin);
+    //self::importCases($exportData, $bbAdmin);
     self::importTags($exportData);
     self::importEmployment($exportData);
     self::importHouseholdRels($exportData);
-    self::importDistrictInfo($exportData);
+    //self::importDistrictInfo($exportData);
 
     //create group and add migrated contacts
     self::addToGroup($exportData);
@@ -256,10 +260,12 @@ class CRM_migrateContactsImport {
     }
   }//importAttachments
 
-  function importContacts($exportData, &$stats, $bbAdmin) {
+  function importContacts(&$exportData, &$stats, $bbAdmin) {
     global $optDry;
     global $extInt;
     global $mergedContacts;
+
+    $sdRerun = self::sdContacts();
 
     //make sure the $extInt IDs array is reset during importContacts
     //array( 'external_identifier' => 'target contact id' )
@@ -292,6 +298,12 @@ class CRM_migrateContactsImport {
     }
 
     foreach ( $exportData['import'] as $extID => $details ) {
+      //squadron-hoylman
+      if ( !in_array($extID, $sdRerun) ) {
+        unset($exportData['import'][$extID]);
+        continue;
+      }
+
       //bbscript_log(LL::TRACE, 'importContacts importContacts $details', $details);
       $stats[$details['contact']['contact_type']] ++;
 
@@ -439,17 +451,31 @@ class CRM_migrateContactsImport {
         }
       }
     }
+
+    //squadron-hoylman
+    $extInt = self::sdExtInt();
+    //bbscript_log(LL::INFO, 'extInt', $extInt);exit();
   }//importContacts
 
   function importActivities($exportData, $bbAdmin) {
     global $optDry;
     global $extInt;
 
+    $actCount = 0;
+
     if ( !isset($exportData['activities']) ) {
       return;
     }
 
     foreach ( $exportData['activities'] as $actID => $details ) {
+      //squadron-hoylman
+      if ( empty($params['parent_id']) ) {
+        continue;
+      }
+      else {
+        $actCount++;
+      }
+
       $params = $details['activity'];
       $params['source_contact_id'] = $bbAdmin;
       unset($params['activity_id']);
@@ -492,6 +518,8 @@ class CRM_migrateContactsImport {
         }
       }
     }
+
+    bbscript_log(LL::INFO, 'importData $actCount', $actCount);
   }//importActivities
 
   function importCases($exportData, $bbAdmin) {
@@ -557,6 +585,15 @@ class CRM_migrateContactsImport {
         }
 
         foreach ( $activities as $oldID => $activity ) {
+          //squadron-hoylman
+          if ( empty($activity['parent_id']) ) {
+            //bbscript_log(LL::TRACE, 'importCases $activity[parent_id]', $activity['parent_id']);
+            continue;
+          }
+          else {
+            $actCount++;
+          }
+
           $activity['source_contact_id'] = $bbAdmin;
           $activity['target_contact_id'] = $contactID;
           $activity['case_id'] = $caseID;
@@ -611,6 +648,8 @@ class CRM_migrateContactsImport {
       ";
       CRM_Core_DAO::executeQuery($sql);
     }
+
+    bbscript_log(LL::INFO, 'importCases $actCount', $actCount);
   }//importCases
 
   function importTags($exportData) {
@@ -743,6 +782,7 @@ class CRM_migrateContactsImport {
     //bbscript_log(LL::TRACE, '_importTags $tagExtInt', $tagExtInt);
 
     //construct tag entity records
+    //bbscript_log(LL::TRACE, '_importTags $extInt', $extInt);
     foreach ( $exportData['tags']['entities'] as $extID => $extTags ) {
       $params = array(
         'contact_id' => $extInt[$extID],
@@ -750,8 +790,13 @@ class CRM_migrateContactsImport {
       foreach ( $extTags as $tIndex => $tID ) {
         $params['tag_id.'.$tIndex] = $tagExtInt[$tID];
       }
-      //bbscript_log(LL::TRACE, '_importTags entityTag $params', $params);
-      self::_importAPI('entity_tag', 'create', $params);
+      if ( empty($params['contact_id']) ) {
+        bbscript_log(LL::TRACE, "_importTags extID (no contact_id): $extID");
+      }
+      else {
+        //bbscript_log(LL::TRACE, '_importTags entityTag $params', $params);
+        self::_importAPI('entity_tag', 'create', $params);
+      }
     }
   }//importTags
 
@@ -774,13 +819,17 @@ class CRM_migrateContactsImport {
       else {
         $employeeIntID = self::_getIntID($employeeID);
         $employerIntID = self::_getIntID($employerID);
-        CRM_Contact_BAO_Contact_Utils::createCurrentEmployerRelationship($employeeIntID, $employerIntID);
+        if ( !empty($employeeIntID) && !empty($employerIntID) ) {
+          CRM_Contact_BAO_Contact_Utils::createCurrentEmployerRelationship($employeeIntID, $employerIntID);
+        }
       }
     }
   }//importEmployment
 
   function importHouseholdRels(&$exportData) {
     global $optDry;
+
+    bbscript_log(LL::INFO, "importing household relationships...");
 
     if ( !isset($exportData['houserels']) ) {
       $exportData['houserels'] = array();
@@ -791,7 +840,9 @@ class CRM_migrateContactsImport {
       $rel['contact_id_a'] = self::_getIntID($rel['contact_id_a']);
       $rel['contact_id_b'] = self::_getIntID($rel['contact_id_b']);
 
-      self::_importAPI('relationship', 'create', $rel);
+      if ( !empty($rel['contact_id_a']) && !empty($rel['contact_id_b']) ) {
+        self::_importAPI('relationship', 'create', $rel);
+      }
     }
   }//importHouseholdRels
 
@@ -1357,13 +1408,14 @@ class CRM_migrateContactsImport {
    */
   function addToGroup($exportData) {
     global $optDry;
+    global $extInt;
 
     $source = $exportData['source'];
     $dest = $exportData['dest'];
     $g = $exportData['group'];
 
     //contacts
-    $contactsList = implode("','", array_keys($exportData['import']));
+    $contactsList = implode("','", array_keys($extInt));
 
     if ( $optDry ) {
       bbscript_log(LL::DEBUG, "Imported contacts to be added to group:", $g);
@@ -1444,6 +1496,1048 @@ class CRM_migrateContactsImport {
     }
   }//getValue
 
+  function sdContacts() {
+    $rerun = array(
+      'SD26_BB218025_EXTomis104615+104616',
+      'SD26_BB218029_EXTomis114019+114020',
+      'SD26_BB218030_EXTomis115993+115994',
+      'SD26_BB218031_EXTomis120203+120204',
+      'SD26_BB218051_EXTomis152471+152472',
+      'SD26_BB218052_EXTomis167902+167904',
+      'SD26_BB218053_EXTomis175953+175954',
+      'SD26_BB218054_EXTomis176990+176991',
+      'SD26_BB218056_EXTomis179555+179556',
+      'SD26_BB218057_EXTomis187431+187432',
+    );
+    return $rerun;
+  }
+
+  function sdActivities() {
+    $rerun = array(
+      Array
+      (
+        'activity_type_id' => '14',
+        'subject' => 'Call Migna NYCHA re: priority code',
+        'activity_date_time' => '2011-01-31 14:45:00',
+        'status_id' => '1',
+        'priority_id' => '2',
+        'parent_id' => '12201',
+        'source_contact_id' => '1',
+        'target_contact_id' => '293700',
+        'case_id' => '6',
+        'is_test' => '0',
+        'is_auto' => '0',
+        'is_current_revision' => '0',
+        'is_deleted' => '0',
+        'version' => '3'
+      ),
+      Array
+      (
+        'activity_type_id' => '14',
+        'subject' => 'Call Migna NYCHA re: priority code',
+        'activity_date_time' => '2011-01-31 14:45:00',
+        'details' => '<p>
+	2/311 Spoke to Migna who requested the priority need be changed for Mrs. Martinez using their new tracking system</p>
+',
+        'status_id' => '2',
+        'priority_id' => '2',
+        'parent_id' => '12201',
+        'medium_id' => '2',
+        'is_current_revision' => '1',
+        'source_contact_id' => '1',
+        'target_contact_id' => '293700',
+        'case_id' => '6',
+        'is_test' => '0',
+        'is_auto' => '0',
+        'is_deleted' => '0',
+        'custom_43' => '',
+        'custom_44' => '',
+        'version' => '3',
+      ),
+      Array
+      (
+        'activity_type_id' => '2',
+        'subject' => 'Ask Migna for outcome of inquiry for priority change',
+        'activity_date_time' => '2011-02-14 11:31:00',
+        'status_id' => '1',
+        'priority_id' => '2',
+        'parent_id' => '12332',
+        'source_contact_id' => '1',
+        'target_contact_id' => '293700',
+        'case_id' => '6',
+        'is_test' => '0',
+        'is_auto' => '0',
+        'is_current_revision' => '0',
+        'is_deleted' => '0',
+        'version' => '3',
+      ),
+      Array
+      (
+        'activity_type_id' => '2',
+        'subject' => 'Call Migna again for responce',
+        'activity_date_time' => '2011-03-31 13:36:00',
+        'status_id' => '1',
+        'priority_id' => '2',
+        'parent_id' => '12874',
+        'source_contact_id' => '1',
+        'target_contact_id' => '293700',
+        'case_id' => '6',
+        'is_test' => '0',
+        'is_auto' => '0',
+        'is_current_revision' => '0',
+        'is_deleted' => '0',
+        'version' => '3',
+      ),
+      Array
+      (
+        'activity_type_id' => '2',
+        'subject' => 'Ask Migna for outcome of inquiry for priority change',
+        'activity_date_time' => '2011-02-14 11:31:00',
+        'status_id' => '2',
+        'priority_id' => '2',
+        'parent_id' => '12332',
+        'medium_id' => '2',
+        'is_current_revision' => '1',
+        'source_contact_id' => '1',
+        'target_contact_id' => '293700',
+        'case_id' => '6',
+        'is_test' => '0',
+        'is_auto' => '0',
+        'is_deleted' => '0',
+        'custom_43' => '',
+        'custom_44' => '',
+        'version' => '3',
+      ),
+      Array
+      (
+        'activity_type_id' => '2',
+        'subject' => 'Call Migna again for responce',
+        'activity_date_time' => '2011-03-31 13:36:00',
+        'details' => '<div>
+	<p>
+		Ok. Let&rsquo;s see if the social security addressed document works</p>
+</div>
+<table cellpadding="0" cellspacing="0" width="300px">
+	<tbody>
+		<tr>
+			<td nowrap="1">
+				Migna Taveras</td>
+		</tr>
+		<tr>
+			<td nowrap="1">
+				Senior Policy Analyst</td>
+		</tr>
+		<tr>
+			<td nowrap="1">
+				State and City Legislative Affairs</td>
+		</tr>
+		<tr>
+			<td nowrap="1">
+				250 Broadway, New York, NY 10007</td>
+		</tr>
+		<tr>
+			<td nowrap="1">
+				ofc.(212)306-8119</td>
+		</tr>
+		<tr>
+			<td nowrap="1">
+				fax.(212)306-6485</td>
+		</tr>
+		<tr>
+			<td nowrap="1">
+				New York City Housing Authority | <a href="http://www.nyc.gov/nycha" target="" title="">www.nyc.gov/nycha</a></td>
+		</tr>
+	</tbody>
+</table>
+<p>
+	&nbsp;</p>
+<div>
+	<p>
+		<strong>From:</strong>rdiaz@nysenate.gov [mailto:rdiaz@nysenate.gov]<br />
+		<strong>Sent:</strong> Tuesday, March 29, 2011 1:02 PM<br />
+		<strong>To:</strong> Taveras, Migna<br />
+		<strong>Subject:</strong> RE: test</p>
+</div>
+<p>
+	&nbsp;</p>
+<p>
+	No, I don&#39;t have a lease or phone bill. The granddaughter took mother and son in last April after they lost their home. This is not their apt.<br />
+	<br />
+	Rosemarie Diaz<br />
+	Community Liaison<br />
+	NYS Senator Daniel Squadron<br />
+	Tel: 212-298-5565<br />
+	Fax: 212-431-7836<br />
+	<br />
+	-----&quot;Taveras, Migna&quot; <a href="mailto:Migna.Taveras@nycha.nyc.gov"><Migna.Taveras@nycha.nyc.gov></a> wrote: -----</p>
+<p>
+	To: <a href="mailto:%27rdiaz@nysenate.gov%27">&quot;&#39;rdiaz@nysenate.gov&#39;&quot;</a> <a href="mailto:rdiaz@nysenate.gov"><rdiaz@nysenate.gov></a><br />
+	From: &quot;Taveras, Migna&quot; <a href="mailto:Migna.Taveras@nycha.nyc.gov"><Migna.Taveras@nycha.nyc.gov></a><br />
+	Date: 03/29/2011 12:57PM<br />
+	Subject: RE: test</p>
+<div>
+	<p>
+		I will send this over and let you know what response I get. Thanks, Migna</p>
+	<p>
+		Do they have a phone bill or lease?</p>
+</div>
+<table border="0" cellpadding="0" cellspacing="0">
+	<tbody>
+		<tr>
+			<td>
+				<p>
+					<strong>Migna Taveras</strong></p>
+			</td>
+		</tr>
+		<tr>
+			<td>
+				<p>
+					Senior Policy Analyst</p>
+			</td>
+		</tr>
+		<tr>
+			<td>
+				<p>
+					State and City Legislative Affairs</p>
+			</td>
+		</tr>
+		<tr>
+			<td>
+				<p>
+					250 Broadway, New York, NY 10007</p>
+			</td>
+		</tr>
+		<tr>
+			<td>
+				<p>
+					ofc.(212)306-8119</p>
+			</td>
+		</tr>
+		<tr>
+			<td>
+				<p>
+					fax.(212)306-6485</p>
+			</td>
+		</tr>
+		<tr>
+			<td>
+				<p>
+					New York City Housing Authority | <a href="http://www.nyc.gov/nycha" title="">www.nyc.gov/nycha</a></p>
+			</td>
+		</tr>
+	</tbody>
+</table>
+<p>
+	&nbsp;</p>
+<div>
+	<p>
+		<strong>From:</strong><a href="mailto:rdiaz@nysenate.gov">rdiaz@nysenate.gov</a> [<a href="mailto:rdiaz@nysenate.gov">mailto:rdiaz@nysenate.gov</a>]<br />
+		<strong>Sent:</strong> Tuesday, March 29, 2011 12:41 PM<br />
+		<strong>To:</strong> Taveras, Migna<br />
+		<strong>Subject:</strong> RE: test</p>
+</div>
+<p>
+	&nbsp;</p>
+<p>
+	Hi Migna,<br />
+	<br />
+	the constituent&#39;s name is Rosa Martinez and her son is Edwin Morales. I am confused, I don&#39;t have a notarized letter in her file. I have the SSI letter and a bank statement. Both of them have 465 East 10th St. Apt. 9-A NY NY 10009.<br />
+	<br />
+	call me if you have any questions.<br />
+	<br />
+	Best,<br />
+	<br />
+	Rosemarie Diaz<br />
+	Community Liaison<br />
+	NYS Senator Daniel Squadron<br />
+	Tel: 212-298-5565<br />
+	Fax: 212-431-7836<br />
+	<br />
+	-----&quot;Taveras, Migna&quot; <a href="mailto:Migna.Taveras@nycha.nyc.gov"><Migna.Taveras@nycha.nyc.gov></a> wrote: -----</p>
+<p>
+	To: <a href="mailto:%27rdiaz@nysenate.gov%27">&quot;&#39;rdiaz@nysenate.gov&#39;&quot;</a> <a href="mailto:rdiaz@nysenate.gov"><rdiaz@nysenate.gov></a><br />
+	From: &quot;Taveras, Migna&quot; <a href="mailto:Migna.Taveras@nycha.nyc.gov"><Migna.Taveras@nycha.nyc.gov></a><br />
+	Date: 03/29/2011 11:07AM<br />
+	Subject: RE: test</p>
+<div>
+	<p>
+		&nbsp;</p>
+	<p>
+		Please email me again the updated information that you sent for Rosa Muniz.</p>
+	<p>
+		&nbsp;</p>
+	<p>
+		For Rosa Muniz This is the response I received. &ldquo;Unless she can verify that she actually resides in NYC the N8 remains. She needs to submit documentation that she is a resident. Notarized letters are not documentation especially if her social security is being received in another state or country.&rdquo;</p>
+</div>
+<table border="0" cellpadding="0" cellspacing="0">
+	<tbody>
+		<tr>
+			<td>
+				<p>
+					<strong>Migna Taveras</strong></p>
+			</td>
+		</tr>
+		<tr>
+			<td>
+				<p>
+					Senior Policy Analyst</p>
+			</td>
+		</tr>
+		<tr>
+			<td>
+				<p>
+					State and City Legislative Affairs</p>
+			</td>
+		</tr>
+		<tr>
+			<td>
+				<p>
+					250 Broadway, New York, NY 10007</p>
+			</td>
+		</tr>
+		<tr>
+			<td>
+				<p>
+					ofc.(212)306-8119</p>
+			</td>
+		</tr>
+		<tr>
+			<td>
+				<p>
+					fax.(212)306-6485</p>
+			</td>
+		</tr>
+		<tr>
+			<td>
+				<p>
+					New York City Housing Authority | <a href="http://www.nyc.gov/nycha" title="">www.nyc.gov/nycha</a></p>
+			</td>
+		</tr>
+	</tbody>
+</table>
+<p>
+	&nbsp;</p>',
+        'status_id' => '2',
+        'priority_id' => '2',
+        'parent_id' => '12874',
+        'medium_id' => '2',
+        'is_current_revision' => '1',
+        'source_contact_id' => '1',
+        'target_contact_id' => '293700',
+        'case_id' => '6',
+        'is_test' => '0',
+        'is_auto' => '0',
+        'is_deleted' => '0',
+        'custom_43' => '',
+        'custom_44' => '',
+        'version' => '3',
+      ),
+      Array
+      (
+        'activity_type_id' => '38',
+        'subject' => 'Find Homeless services for son',
+        'activity_date_time' => '2011-04-03 13:36:00',
+        'status_id' => '1',
+        'priority_id' => '2',
+        'parent_id' => '12896',
+        'source_contact_id' => '1',
+        'target_contact_id' => '293700',
+        'case_id' => '6',
+        'is_test' => '0',
+        'is_auto' => '0',
+        'is_current_revision' => '0',
+        'is_deleted' => '0',
+        'version' => '3',
+      ),
+      Array
+      (
+        'activity_type_id' => '38',
+        'subject' => 'Find Homeless services for son',
+        'activity_date_time' => '2011-04-03 13:36:00',
+        'details' => '<p>
+	Two possible choices, Oliviary Center 212-947-3211 Nadia, 257 West 30th between 7th and 8th. Or Main chance 120 East 32nd St. 212-833-0680 Ext 321 contact Caitlyn Smith.</p>
+<p>
+	&nbsp;</p>
+<p>
+	Spoke to Nadia and she will be looking out for Edwin if he arrives understanding his issue with crowds and resistance to shelter she will suggest a bed at a church.</p>
+',
+        'status_id' => '1',
+        'priority_id' => '2',
+        'parent_id' => '12896',
+        'medium_id' => '2',
+        'source_contact_id' => '1',
+        'target_contact_id' => '293700',
+        'case_id' => '6',
+        'is_test' => '0',
+        'is_auto' => '0',
+        'is_current_revision' => '0',
+        'is_deleted' => '0',
+        'custom_43' => '',
+        'custom_44' => '',
+        'version' => '3',
+      ),
+      Array
+      (
+        'activity_type_id' => '38',
+        'subject' => 'Find Homeless services for son',
+        'activity_date_time' => '2011-04-03 13:36:00',
+        'details' => '<p>
+	Two possible choices, Oliviary Center 212-947-3211 Nadia, 257 West 30th between 7th and 8th. Or Main chance 120 East 32nd St. 212-833-0680 Ext 321 contact Caitlyn Smith.</p>
+<p>
+	&nbsp;</p>
+<p>
+	Spoke to Nadia and she will be looking out for Edwin if he arrives understanding his issue with crowds and resistance to shelter she will suggest a bed at a church.</p>
+',
+        'status_id' => '2',
+        'priority_id' => '2',
+        'parent_id' => '12896',
+        'medium_id' => '2',
+        'is_current_revision' => '1',
+        'source_contact_id' => '1',
+        'target_contact_id' => '293700',
+        'case_id' => '6',
+        'is_test' => '0',
+        'is_auto' => '0',
+        'is_deleted' => '0',
+        'custom_43' => '',
+        'custom_44' => '',
+        'version' => '3',
+      ),
+      Array
+      (
+        'activity_type_id' => '2',
+        'subject' => 'Call when lease is faxed',
+        'activity_date_time' => '2011-02-21 13:50:00',
+        'status_id' => '1',
+        'priority_id' => '2',
+        'parent_id' => '12903',
+        'source_contact_id' => '1',
+        'target_contact_id' => '266061',
+        'case_id' => '14',
+        'is_test' => '0',
+        'is_auto' => '0',
+        'is_current_revision' => '0',
+        'is_deleted' => '0',
+        'version' => '3',
+      ),
+      Array
+      (
+        'activity_type_id' => '2',
+        'subject' => 'Call when lease is faxed',
+        'activity_date_time' => '2011-03-31 13:50:00',
+        'details' => '<p>
+	Waiting for landlord to fax lease. If he does not need to call hiom again before calling Ms. Sherman. Morris Platt 917-299-4932 Owner.</p>
+',
+        'status_id' => '1',
+        'priority_id' => '2',
+        'parent_id' => '12903',
+        'medium_id' => '2',
+        'source_contact_id' => '1',
+        'target_contact_id' => '266061',
+        'case_id' => '14',
+        'is_test' => '0',
+        'is_auto' => '0',
+        'is_current_revision' => '0',
+        'is_deleted' => '0',
+        'custom_43' => '',
+        'custom_44' => '',
+        'version' => '3',
+      ),
+      Array
+      (
+        'activity_type_id' => '2',
+        'subject' => 'Call when lease is faxed',
+        'activity_date_time' => '2011-03-31 09:50:00',
+        'details' => '<p>
+	Waiting for landlord to fax lease. If he does not need to call hiom again before calling Ms. Sherman. Morris Platt 917-299-4932 Owner. Lease was faxed by oener. Called Ms. Sherman but was not able to reach her.</p>
+',
+        'status_id' => '1',
+        'priority_id' => '2',
+        'parent_id' => '12903',
+        'medium_id' => '2',
+        'source_contact_id' => '1',
+        'target_contact_id' => '266061',
+        'case_id' => '14',
+        'is_test' => '0',
+        'is_auto' => '0',
+        'is_current_revision' => '0',
+        'is_deleted' => '0',
+        'custom_43' => '',
+        'custom_44' => '',
+        'version' => '3',
+      ),
+      Array
+      (
+        'activity_type_id' => '2',
+        'subject' => 'Call Ms. Sherman let her know we received lease',
+        'activity_date_time' => '2011-04-01 09:50:00',
+        'status_id' => '1',
+        'priority_id' => '2',
+        'parent_id' => '12979',
+        'source_contact_id' => '1',
+        'target_contact_id' => '266061',
+        'case_id' => '14',
+        'is_test' => '0',
+        'is_auto' => '0',
+        'is_current_revision' => '0',
+        'is_deleted' => '0',
+        'version' => '3',
+      ),
+      Array
+      (
+        'activity_type_id' => '2',
+        'subject' => 'Call when lease is faxed',
+        'activity_date_time' => '2011-03-31 09:50:00',
+        'details' => '<p>
+	Waiting for landlord to fax lease. If he does not need to call hiom again before calling Ms. Sherman. Morris Platt 917-299-4932 Owner. Lease was faxed by oener. Called Ms. Sherman but was not able to reach her.</p>
+',
+        'status_id' => '2',
+        'priority_id' => '2',
+        'parent_id' => '12903',
+        'medium_id' => '2',
+        'is_current_revision' => '1',
+        'source_contact_id' => '1',
+        'target_contact_id' => '266061',
+        'case_id' => '14',
+        'is_test' => '0',
+        'is_auto' => '0',
+        'is_deleted' => '0',
+        'custom_43' => '',
+        'custom_44' => '',
+        'version' => '3',
+      ),
+      Array
+      (
+        'activity_type_id' => '2',
+        'subject' => 'Call Ms. Sherman let her know we received lease',
+        'activity_date_time' => '2011-04-01 12:50:00',
+        'details' => '<p>
+	3/31/11called Ms. Sherman, but she was unreachable, she does not have an answering machine.</p>
+',
+        'status_id' => '5',
+        'priority_id' => '2',
+        'parent_id' => '12979',
+        'medium_id' => '2',
+        'source_contact_id' => '1',
+        'target_contact_id' => '266061',
+        'case_id' => '14',
+        'is_test' => '0',
+        'is_auto' => '0',
+        'is_current_revision' => '0',
+        'is_deleted' => '0',
+        'custom_43' => '',
+        'custom_44' => '',
+        'version' => '3',
+      ),
+      Array
+      (
+        'activity_type_id' => '2',
+        'subject' => 'Call Ms. Sherman let her know we received lease',
+        'activity_date_time' => '2011-04-01 12:50:00',
+        'details' => '<p>
+	3/31/11called Ms. Sherman, but she was unreachable, she does not have an answering machine.</p>
+',
+        'status_id' => '2',
+        'priority_id' => '2',
+        'parent_id' => '12979',
+        'medium_id' => '2',
+        'is_current_revision' => '1',
+        'source_contact_id' => '1',
+        'target_contact_id' => '266061',
+        'case_id' => '14',
+        'is_test' => '0',
+        'is_auto' => '0',
+        'is_deleted' => '0',
+        'custom_43' => '',
+        'custom_44' => '',
+        'version' => '3',
+      ),
+      Array
+      (
+        'activity_type_id' => '38',
+        'subject' => 'New meeting date',
+        'activity_date_time' => '2011-03-04 18:49:00',
+        'status_id' => '1',
+        'priority_id' => '2',
+        'parent_id' => '13022',
+        'source_contact_id' => '1',
+        'target_contact_id' => '304528',
+        'case_id' => '17',
+        'is_test' => '0',
+        'is_auto' => '0',
+        'is_current_revision' => '0',
+        'is_deleted' => '0',
+        'version' => '3',
+      ),
+      Array
+      (
+        'activity_type_id' => '38',
+        'subject' => 'New meeting date',
+        'activity_date_time' => '2011-03-04 18:49:00',
+        'details' => '<p>
+	email attached</p>
+',
+        'status_id' => '2',
+        'priority_id' => '2',
+        'parent_id' => '13022',
+        'medium_id' => '2',
+        'custom_43' => 'district_office',
+        'attachments' => Array
+        (
+          '0' => '36'
+        ),
+        'source_contact_id' => '1',
+        'target_contact_id' => '304528',
+        'case_id' => '17',
+        'is_test' => '0',
+        'is_auto' => '0',
+        'is_current_revision' => '0',
+        'is_deleted' => '0',
+        'custom_44' => '',
+        'version' => '3',
+      ),
+      Array
+      (
+        'activity_type_id' => '38',
+        'subject' => 'New meeting date',
+        'activity_date_time' => '2011-03-31 18:49:00',
+        'details' => '<p>
+	email attached</p>
+',
+        'status_id' => '2',
+        'priority_id' => '2',
+        'parent_id' => '13022',
+        'medium_id' => '2',
+        'custom_43' => 'district_office',
+        'attachments' => Array
+        (
+          '0' => '36'
+        )
+      ,
+        'source_contact_id' => '1',
+        'target_contact_id' => '304528',
+        'case_id' => '17',
+        'is_test' => '0',
+        'is_auto' => '0',
+        'is_current_revision' => '0',
+        'is_deleted' => '0',
+        'custom_44' => '',
+        'version' => '3',
+      ),
+      Array
+      (
+        'activity_type_id' => '38',
+        'subject' => 'New meeting date',
+        'activity_date_time' => '2011-03-31 18:49:00',
+        'details' => '<p>
+	3/31/11 1:15pm: email attached</p>
+<p>
+	3/31/11 2:30PM Violetta called and stated that Mr. Martinez called her to set up a new meeting time (1PM 4/1/11) Ms Hernandez said she is unable to attend and is even more upset because Mr. Martinez said the principal will not be attending the meeting.</p>
+<p>
+	I have called and left a voice mail for Mr. Martinez to request an earlier meeting time for Ms. Hernandez</p>
+',
+        'status_id' => '2',
+        'priority_id' => '2',
+        'parent_id' => '13022',
+        'medium_id' => '2',
+        'is_current_revision' => '1',
+        'custom_43' => 'district_office',
+        'attachments' => Array
+        (
+          '0' => '36'
+        )
+      ,
+        'source_contact_id' => '1',
+        'target_contact_id' => '304528',
+        'case_id' => '17',
+        'is_test' => '0',
+        'is_auto' => '0',
+        'is_deleted' => '0',
+        'custom_44' => '',
+        'version' => '3',
+      ),
+      Array
+      (
+        'activity_type_id' => '14',
+        'subject' => 'Follow up',
+        'activity_date_time' => '2011-03-31 16:51:00',
+        'status_id' => '1',
+        'priority_id' => '2',
+        'parent_id' => '12995',
+        'source_contact_id' => '1',
+        'target_contact_id' => '266553',
+        'case_id' => '20',
+        'is_test' => '0',
+        'is_auto' => '0',
+        'is_current_revision' => '0',
+        'is_deleted' => '0',
+        'version' => '3',
+      ),
+      Array
+      (
+        'activity_type_id' => '14',
+        'subject' => 'Follow up',
+        'activity_date_time' => '2011-03-31 10:00:00',
+        'status_id' => '1',
+        'priority_id' => '2',
+        'parent_id' => '12995',
+        'medium_id' => '2',
+        'source_contact_id' => '1',
+        'target_contact_id' => '266553',
+        'case_id' => '20',
+        'is_test' => '0',
+        'is_auto' => '0',
+        'is_current_revision' => '0',
+        'is_deleted' => '0',
+        'custom_43' => '',
+        'custom_44' => '',
+        'version' => '3',
+      ),
+      Array
+      (
+        'activity_type_id' => '14',
+        'subject' => 'Follow up',
+        'activity_date_time' => '2011-03-31 10:00:00',
+        'details' => '<p>
+	Unreachable.</p>
+',
+        'status_id' => '1',
+        'priority_id' => '2',
+        'parent_id' => '12995',
+        'medium_id' => '2',
+        'source_contact_id' => '1',
+        'target_contact_id' => '266553',
+        'case_id' => '20',
+        'is_test' => '0',
+        'is_auto' => '0',
+        'is_current_revision' => '0',
+        'is_deleted' => '0',
+        'custom_43' => '',
+        'custom_44' => '',
+        'version' => '3',
+      ),
+      Array
+      (
+        'activity_type_id' => '14',
+        'subject' => 'Follow up',
+        'activity_date_time' => '2011-03-31 10:00:00',
+        'details' => '<p>
+	Unreachable.</p>
+',
+        'status_id' => '5',
+        'priority_id' => '2',
+        'parent_id' => '12995',
+        'medium_id' => '2',
+        'is_current_revision' => '1',
+        'source_contact_id' => '1',
+        'target_contact_id' => '266553',
+        'case_id' => '20',
+        'is_test' => '0',
+        'is_auto' => '0',
+        'is_deleted' => '0',
+        'custom_43' => '',
+        'custom_44' => '',
+        'version' => '3',
+      ),
+      Array
+      (
+        'activity_type_id' => '14',
+        'subject' => 'Call CDC if no call back',
+        'activity_date_time' => '2011-03-31 15:11:00',
+        'status_id' => '1',
+        'priority_id' => '2',
+        'parent_id' => '12884',
+        'source_contact_id' => '1',
+        'target_contact_id' => '306862',
+        'case_id' => '23',
+        'is_test' => '0',
+        'is_auto' => '0',
+        'is_current_revision' => '0',
+        'is_deleted' => '0',
+        'version' => '3',
+      ),
+      Array
+      (
+        'activity_type_id' => '14',
+        'subject' => 'Call CDC if no call back',
+        'activity_date_time' => '2011-03-31 15:11:00',
+        'details' => '<p>
+	Spoke to constituent, Lucretia from CDC management called constituent back and was upset constituent had done outreach to our office. Lucretia stated she would submit the transfer request to HUD and it was up to them to approve it.</p>
+',
+        'status_id' => '2',
+        'priority_id' => '2',
+        'parent_id' => '12884',
+        'medium_id' => '2',
+        'is_current_revision' => '1',
+        'source_contact_id' => '1',
+        'target_contact_id' => '306862',
+        'case_id' => '23',
+        'is_test' => '0',
+        'is_auto' => '0',
+        'is_deleted' => '0',
+        'custom_43' => '',
+        'custom_44' => '',
+        'version' => '3',
+      ),
+      Array
+      (
+        'activity_type_id' => '2',
+        'subject' => 'Check transfer status',
+        'activity_date_time' => '2011-04-07 15:11:00',
+        'status_id' => '1',
+        'priority_id' => '2',
+        'parent_id' => '12907',
+        'source_contact_id' => '1',
+        'target_contact_id' => '306862',
+        'case_id' => '23',
+        'is_test' => '0',
+        'is_auto' => '0',
+        'is_current_revision' => '0',
+        'is_deleted' => '0',
+        'version' => '3',
+      ),
+      Array
+      (
+        'activity_type_id' => '2',
+        'subject' => 'Check transfer status',
+        'activity_date_time' => '2011-04-07 15:11:00',
+        'details' => '<p>
+	Lucrecia Perez CDC Property Management returned our call. Constituent had informed Ms. Perez of the assult against her daughter last summer but at the time refused to move. The transfer request has been processed and under Violence Against Women&#39;s Act VAWA the manager submitted the paperwork to HUD for aproval of the transfer. Based on Ms. Perez experience HUD takes over a moth to process. Ms. Perez send a copy of the letter to constituent acknowledging transfer request.</p>
+',
+        'status_id' => '2',
+        'priority_id' => '2',
+        'parent_id' => '12907',
+        'medium_id' => '2',
+        'is_current_revision' => '1',
+        'source_contact_id' => '1',
+        'target_contact_id' => '306862',
+        'case_id' => '23',
+        'is_test' => '0',
+        'is_auto' => '0',
+        'is_deleted' => '0',
+        'custom_43' => '',
+        'custom_44' => '',
+        'version' => '3',
+      ),
+      Array
+      (
+        'activity_type_id' => '2',
+        'subject' => 'Call Lucratia Perez to follow up on emergency transfer and apt availability',
+        'activity_date_time' => '2011-06-27 11:25:00',
+        'status_id' => '1',
+        'priority_id' => '2',
+        'parent_id' => '14283',
+        'is_current_revision' => '1',
+        'source_contact_id' => '1',
+        'target_contact_id' => '306862',
+        'case_id' => '23',
+        'is_test' => '0',
+        'is_auto' => '0',
+        'is_deleted' => '0',
+        'version' => '3',
+      ),
+      Array
+      (
+        'activity_type_id' => '14',
+        'subject' => 'Call DOT and find out about speed reducer survey',
+        'activity_date_time' => '2011-06-07 14:26:00',
+        'status_id' => '1',
+        'priority_id' => '2',
+        'parent_id' => '13809',
+        'source_contact_id' => '1',
+        'target_contact_id' => '267824',
+        'case_id' => '24',
+        'is_test' => '0',
+        'is_auto' => '0',
+        'is_current_revision' => '0',
+        'is_deleted' => '0',
+        'version' => '3',
+      ),
+      Array
+      (
+        'activity_type_id' => '14',
+        'subject' => 'Call DOT and find out about speed reducer survey',
+        'activity_date_time' => '2011-06-07 14:26:00',
+        'details' => '<p>
+	<font face="Default Sans Serif,Verdana,Arial,Helvetica,sans-serif" size="2"><span>Hi Colleen,<br />
+	<br />
+	Hope all is well. I wanted to follow up on the request made by Senator Squadron on April 11th for a speed reducer on 7th St. We wanted to know if the survey had taken place and what the findings were. Also there is a pot hole on the north side of the street closer to Ave C that is holding stagnant water and it smells. A complaint was made to 311 but I don&#39;t have the exact date. If you have any information please let us know.<br />
+	<br />
+	Best,<br />
+	<br />
+	Rosemarie Diaz<br />
+	Community Liaison<br />
+	NYS Senator Daniel Squadron<br />
+	Tel: 212-298-5565<br />
+	Fax: 212-431-7836</span></font></p>
+',
+        'status_id' => '2',
+        'priority_id' => '2',
+        'parent_id' => '13809',
+        'medium_id' => '2',
+        'is_current_revision' => '1',
+        'source_contact_id' => '1',
+        'target_contact_id' => '267824',
+        'case_id' => '24',
+        'is_test' => '0',
+        'is_auto' => '0',
+        'is_deleted' => '0',
+        'custom_43' => '',
+        'custom_44' => '',
+        'version' => '3',
+      ),
+      Array
+      (
+        'activity_type_id' => '14',
+        'subject' => 'Call DOT for update',
+        'activity_date_time' => '2011-06-14 13:46:00',
+        'status_id' => '1',
+        'priority_id' => '2',
+        'parent_id' => '13821',
+        'source_contact_id' => '1',
+        'target_contact_id' => '267824',
+        'case_id' => '24',
+        'is_test' => '0',
+        'is_auto' => '0',
+        'is_current_revision' => '0',
+        'is_deleted' => '0',
+        'version' => '3',
+      ),
+      Array
+      (
+        'activity_type_id' => '14',
+        'subject' => 'Call DOT for update',
+        'activity_date_time' => '2011-06-14 13:46:00',
+        'status_id' => '2',
+        'priority_id' => '2',
+        'parent_id' => '13821',
+        'medium_id' => '2',
+        'is_current_revision' => '1',
+        'source_contact_id' => '1',
+        'target_contact_id' => '267824',
+        'case_id' => '24',
+        'is_test' => '0',
+        'is_auto' => '0',
+        'is_deleted' => '0',
+        'custom_43' => '',
+        'custom_44' => '',
+        'version' => '3',
+      ),
+      Array
+      (
+        'activity_type_id' => '16',
+        'subject' => "f/u Wendy: left mssg for lawyer, is there anything we can help you with? close case if not or if can't contact.",
+        'activity_date_time' => '2011-12-21 10:19:00',
+        'status_id' => '1',
+        'priority_id' => '2',
+        'parent_id' => '17042',
+        'source_contact_id' => '1',
+        'target_contact_id' => '307036',
+        'case_id' => '32',
+        'is_test' => '0',
+        'is_auto' => '0',
+        'is_current_revision' => '0',
+        'is_deleted' => '0',
+        'version' => '3',
+      ),
+      Array
+      (
+        'activity_type_id' => '16',
+        'subject' => "f/u Wendy: left mssg for lawyer, is there anything we can help you with? close case if not or if can't contact.",
+        'activity_date_time' => '2011-12-21 10:19:00',
+        'status_id' => '2',
+        'priority_id' => '2',
+        'parent_id' => '17042',
+        'medium_id' => '2',
+        'is_current_revision' => '1',
+        'source_contact_id' => '1',
+        'target_contact_id' => '307036',
+        'case_id' => '32',
+        'is_test' => '0',
+        'is_auto' => '0',
+        'is_deleted' => '0',
+        'custom_43' => '',
+        'custom_44' => '',
+        'version' => '3',
+      ),
+      Array
+      (
+        'activity_type_id' => '2',
+        'subject' => 'try calling, close case',
+        'activity_date_time' => '2011-12-30 12:11:00',
+        'status_id' => '1',
+        'priority_id' => '2',
+        'parent_id' => '17021',
+        'is_current_revision' => '1',
+        'is_deleted' => '1',
+        'source_contact_id' => '1',
+        'target_contact_id' => '307054',
+        'case_id' => '37',
+        'is_test' => '0',
+        'is_auto' => '0',
+        'version' => '3',
+      ),
+      Array
+      (
+        'activity_type_id' => '2',
+        'subject' => 'find more information',
+        'activity_date_time' => '2012-01-05 12:15:00',
+        'status_id' => '1',
+        'priority_id' => '2',
+        'parent_id' => '17078',
+        'is_current_revision' => '1',
+        'is_deleted' => '1',
+        'source_contact_id' => '1',
+        'target_contact_id' => '307062',
+        'case_id' => '40',
+        'is_test' => '0',
+        'is_auto' => '0',
+        'version' => '3',
+      ),
+    );
+    return $rerun;
+  }//sdActivities
+
+  function sdActivitiesCreate() {
+    $activities = self::sdActivities();
+
+    foreach ( $activities as $params ) {
+      $attachments = (!empty($params['attachments'])) ? $params['attachments'] : '';
+      unset($params['parent_id']);
+      unset($params['attachments']);
+
+      //clean params array
+      $params = self::_cleanArray($params);
+
+      $newActivity = self::_importAPI('activity', 'create', $params);
+      //bbscript_log(LL::TRACE, 'importActivities newActivity', $newActivity);
+
+      //handle attachments
+      if ( $attachments ) {
+        foreach ( $attachments as $attID ) {
+          //self::_importEntityAttachments($newActivity['id'], $attID, 'civicrm_activity');
+
+        }
+      }
+    }
+  }//sdActivitiesCreate
+
+  function sdExtInt() {
+    $sql = "
+      SELECT external_identifier, id
+      FROM civicrm_contact
+      WHERE external_identifier LIKE 'SD26_BB%'
+        AND is_deleted != 1
+    ";
+    $r = CRM_Core_DAO::executeQuery($sql);
+
+    $extInt = array();
+    while ( $r->fetch() ) {
+      $extInt[$r->external_identifier] = $r->id;
+    }
+
+    return $extInt;
+  }//sdExtInt
 }
 
 //run the script

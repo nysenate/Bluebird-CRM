@@ -27,9 +27,68 @@
 **                             all CRM instances
 */
 
-define('LDAP_TYPE_AD', 1);
-define('LDAP_TYPE_DOMINO', 2);
-define('LDAP_TYPE_OPENLDAP', 3);
+if (!defined('LDAP_TYPE_AD')) {
+  define('LDAP_TYPE_AD', 1);
+}
+if (!defined('LDAP_TYPE_DOMINO')) {
+  define('LDAP_TYPE_DOMINO', 2);
+}
+if (!defined('LDAP_TYPE_OPENLDAP')) {
+  define('LDAP_TYPE_OPENLDAP', 3);
+}
+if (!defined('DEBUG_LOGIN')) {
+  define('DEBUG_LOGIN', 0);
+}
+
+if (!function_exists('log_auth')) {
+  function log_auth($msg, $debug = false) {
+    if ($debug == false || (defined('DEBUG_LOGIN') && DEBUG_LOGIN == true)) {
+      error_log("LOGIN: $msg");
+    }
+  } // log_auth()
+}
+
+// Given an array of LDAP groups, convert those groups into group IDs
+// by performing LDAP lookups on them.
+// This function is specific to Domino LDAP, where group IDs are stored
+// with each user record, rather than group names.
+if (!function_exists('convert_groups_to_ids')) {
+  function convert_groups_to_ids($groups) {
+    $auth_conf = ldap_authentication_get_valid_conf();
+
+    $ldap_server = $auth_conf->enabledAuthenticationServers['nyss_ldap'];
+
+    $res = $ldap_server->connect();
+    if ($res != LdapServer::LDAP_SUCCESS) {
+      log_auth("Unable to connect to LDAP server");
+      return null;
+    }
+
+    $res = $ldap_server->bind();
+    if ($res != LdapServer::LDAP_SUCCESS) {
+      log_auth("Unable to bind to LDAP server anonymously");
+      return null;
+    }
+
+    $groupFilter = '';
+    foreach ($groups as $groupName) {
+      $groupFilter .= "(cn=$groupName)";
+    }
+    $res = $ldap_server->search(null, "(&(objectclass=groupOfNames)(|$groupFilter))");
+
+    // DO NOT call $ldap_server->disconnect() here.  Doing so would end up
+    // closing the LDAP module's connection to this server, which causes all
+    // logins to fail.
+
+    $groupIds = array();
+    for ($i = 0; $i < $res['count']; $i++) {
+      $gid = $res[$i]['gidnumber'][0];
+      $groupIds[] = $gid;
+    }
+
+    return $groupIds;
+  } // convert_groups_to_ids()
+}
 
 log_auth("Beginning NYSS login checks for user [$_name]", true);
 
@@ -115,57 +174,3 @@ else {
   log_auth("User [$_name] is not allowed to log in to this instance; CRM allows groups: [".implode(',', $allowedGroups)."]; user is in groups [".implode(',', $userGroups)."]");
   echo '0';
 }
-
-
-// Given an array of LDAP groups, convert those groups into group IDs
-// by performing LDAP lookups on them.
-// This function is specific to Domino LDAP, where group IDs are stored
-// with each user record, rather than group names.
-function convert_groups_to_ids($groups)
-{
-  if (!$auth_conf) {
-    $auth_conf = ldap_authentication_get_valid_conf();
-  }
-
-  $ldap_server = $auth_conf->enabledAuthenticationServers['nyss_ldap'];
-
-  $res = $ldap_server->connect();
-  if ($res != LdapServer::LDAP_SUCCESS) {
-    log_auth("Unable to connect to LDAP server");
-    return null;
-  }
-
-  $res = $ldap_server->bind();
-  if ($res != LdapServer::LDAP_SUCCESS) {
-    log_auth("Unable to bind to LDAP server anonymously");
-    return null;
-  }
-
-  $groupFilter = '';
-  foreach ($groups as $groupName) {
-    $groupFilter .= "(cn=$groupName)";
-  }
-  $res = $ldap_server->search(null, "(&(objectclass=groupOfNames)(|$groupFilter))");
-
-  // DO NOT call $ldap_server->disconnect() here.  Doing so would end up
-  // closing the LDAP module's connection to this server, which causes all
-  // logins to fail.
-
-  $groupIds = array();
-  for ($i = 0; $i < $res['count']; $i++) {
-    $gid = $res[$i]['gidnumber'][0];
-    $groupIds[] = $gid;
-  }
-
-  return $groupIds;
-} // convert_groups_to_ids()
-
-
-function log_auth($msg, $debug = false)
-{
-  if ($debug == false || (defined('DEBUG_LOGIN') && DEBUG_LOGIN == true)) {
-    error_log("LOGIN: $msg");
-  }
-} // log_auth()
-
-?>

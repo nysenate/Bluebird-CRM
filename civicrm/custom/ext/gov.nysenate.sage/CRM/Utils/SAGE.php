@@ -253,10 +253,7 @@ class CRM_Utils_SAGE
    *
    * @return bool
    */
-  public static function distAssign(array &$values,
-                                    $overwrite_districts=true,
-                                    $overwrite_point=true,
-                                    $streetfile_only=false): bool {
+  public static function distAssign(array &$values, $overwrite_districts = TRUE, $overwrite_point = TRUE, $streetfile_only = FALSE): bool {
     [$addr_field, $addr] = self::getAddress($values);
     if (!$addr) {
       self::warn("Not enough address info.");
@@ -628,6 +625,12 @@ class CRM_Utils_SAGE
   * @param boolean   $overwrite  If true, district data is written by default.
   */
   protected static function storeDistricts(&$values, $xml, $overwrite) {
+    /*Civi::log()->debug(__METHOD__, [
+      'values' => $values,
+      'xml' => $xml,
+      'overwrite' => $overwrite,
+    ]);*/
+
     // The form includes the address primary key in the field name so we
     // must detect the address pk to store addresses in the right slots.
     // Get the pk from the form input names using the following method,
@@ -659,11 +662,23 @@ class CRM_Utils_SAGE
     if ($overwrite || empty($values["custom_50_$id"]) || !$values["custom_50_$id"]) {
       $values["custom_50_$id"] = (string)$xml->districts->county->district;
     }
+    //County Legislative District
+    if ($overwrite || empty($values["custom_51_$id"]) || !$values["custom_51_$id"]) {
+      $values["custom_51_$id"] = (string)$xml->districts->cleg->district;
+    }
     if ($overwrite || empty($values["custom_52_$id"]) || !$values["custom_52_$id"]) {
       $values["custom_52_$id"] = (string)$xml->districts->town->district;
     }
+    //Ward
+    if ($overwrite || empty($values["custom_53_$id"]) || !$values["custom_53_$id"]) {
+      $values["custom_53_$id"] = (string)$xml->districts->ward->district;
+    }
     if ($overwrite || empty($values["custom_54_$id"]) || !$values["custom_54_$id"]) {
       $values["custom_54_$id"] = (string)$xml->districts->school->district;
+    }
+    //City Council District
+    if ($overwrite || empty($values["custom_55_$id"]) || !$values["custom_55_$id"]) {
+      $values["custom_55_$id"] = (string)$xml->districts->cityCouncil->district;
     }
   }
 

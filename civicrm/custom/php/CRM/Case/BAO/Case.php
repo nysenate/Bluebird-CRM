@@ -2987,7 +2987,8 @@ WHERE id IN (' . implode(',', $copiedActivityIds) . ')';
     $clauses = [
       'id' => [],
       // Only case admins can view deleted cases
-      'is_deleted' => CRM_Core_Permission::check('administer CiviCase') ? [] : ["= 0"],
+      //NYSS 15095
+      'is_deleted' => CRM_Core_Permission::check('delete in CiviCase') ? [] : ["= 0"],
     ];
     // Ensure the user has permission to view the case client
     $contactClause = CRM_Utils_SQL::mergeSubquery('Contact');

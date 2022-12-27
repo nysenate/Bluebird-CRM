@@ -499,10 +499,6 @@ function _reports_DistrictInfo_col(&$var, &$object) {
         'name' => 'new_york_city_council_55',
         'title' => 'New York City Council',
       ],
-      'custom_56' => [
-        'name' => 'neighborhood_56',
-        'title' => 'Neighborhood',
-      ],
     ],
     'filters' => [
       'custom_46' => [
@@ -564,12 +560,6 @@ function _reports_DistrictInfo_col(&$var, &$object) {
         'title' => 'New York City Council',
         'operator' => 'like',
         'type' => CRM_Report_Form::OP_INT,
-      ],
-      'custom_56' => [
-        'name' => 'neighborhood_56',
-        'title' => 'Neighborhood',
-        'operator' => 'like',
-        'type' => CRM_Report_Form::OP_STRING,
       ],
     ],
   ];

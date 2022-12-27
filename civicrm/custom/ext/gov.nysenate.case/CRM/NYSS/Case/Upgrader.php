@@ -1,10 +1,12 @@
 <?php
-use CRM_NYSS_Contact_ExtensionUtil as E;
+// phpcs:disable
+use CRM_NYSS_Case_ExtensionUtil as E;
+// phpcs:enable
 
 /**
  * Collection of upgrade steps.
  */
-class CRM_NYSS_Contact_Upgrader extends CRM_NYSS_Contact_Upgrader_Base {
+class CRM_NYSS_Case_Upgrader extends CRM_NYSS_Case_Upgrader_Base {
 
   // By convention, functions that look like "function upgrade_NNNN()" are
   // upgrade tasks. They are executed in order (like Drupal's hook_update_N).
@@ -12,9 +14,11 @@ class CRM_NYSS_Contact_Upgrader extends CRM_NYSS_Contact_Upgrader_Base {
   /**
    * Example: Run an external SQL script when the module is installed.
    *
-  public function install() {
-    $this->executeSqlFile('sql/myinstall.sql');
-  }
+   * Note that if a file is present sql\auto_install that will run regardless of this hook.
+   */
+  // public function install(): void {
+  //   $this->executeSqlFile('sql/my_install.sql');
+  // }
 
   /**
    * Example: Work with entities usually not available during the install step.
@@ -24,7 +28,7 @@ class CRM_NYSS_Contact_Upgrader extends CRM_NYSS_Contact_Upgrader_Base {
    * created during the installation (e.g., a setting or a managed entity), do
    * so here to avoid order of operation problems.
    */
-  // public function postInstall() {
+  // public function postInstall(): void {
   //  $customFieldId = civicrm_api3('CustomField', 'getvalue', array(
   //    'return' => array("id"),
   //    'name' => "customFieldCreatedViaManagedHook",
@@ -36,22 +40,24 @@ class CRM_NYSS_Contact_Upgrader extends CRM_NYSS_Contact_Upgrader_Base {
 
   /**
    * Example: Run an external SQL script when the module is uninstalled.
+   *
+   * Note that if a file is present sql\auto_uninstall that will run regardless of this hook.
    */
-  // public function uninstall() {
-  //  $this->executeSqlFile('sql/myuninstall.sql');
+  // public function uninstall(): void {
+  //   $this->executeSqlFile('sql/my_uninstall.sql');
   // }
 
   /**
    * Example: Run a simple query when a module is enabled.
    */
-  // public function enable() {
+  // public function enable(): void {
   //  CRM_Core_DAO::executeQuery('UPDATE foo SET is_active = 1 WHERE bar = "whiz"');
   // }
 
   /**
    * Example: Run a simple query when a module is disabled.
    */
-  // public function disable() {
+  // public function disable(): void {
   //   CRM_Core_DAO::executeQuery('UPDATE foo SET is_active = 0 WHERE bar = "whiz"');
   // }
 
@@ -59,75 +65,22 @@ class CRM_NYSS_Contact_Upgrader extends CRM_NYSS_Contact_Upgrader_Base {
    * Example: Run a couple simple queries.
    *
    * @return TRUE on success
-   * @throws Exception
+   * @throws CRM_Core_Exception
    */
   public function upgrade_1100(): bool {
-    $this->ctx->log->info('Applying contact extension update 1100');
+    $this->ctx->log->info('Applying update 1100');
 
-    try {
-      civicrm_api3('CustomField', 'create', [
-        'sequential' => 1,
-        'custom_group_id' => "Additional_Constituent_Information",
-        'name' => "preferred_pronouns",
-        'label' => "Preferred Pronouns",
-        'data_type' => "String",
-        'html_type' => "Text",
-        'is_required' => 0,
-        'is_searchable' => 1,
-        'is_active' => 1,
-        'text_length' => 64,
-        'column_name' => "preferred_pronouns",
-      ]);
-    }
-    catch (CiviCRM_API3_Exception $e) {
-      Civi::log()->debug(__METHOD__, ['e' => $e]);
-    }
-
-    //get custom field ID
-    $cfId = CRM_Core_BAO_CustomField::getCustomFieldID('preferred_pronouns', 'Additional_Constituent_Information', TRUE);
-
-    //store to profile
-    try {
-      civicrm_api3('UFField', 'create', [
-        'debug' => 1,
-        'uf_group_id' => "Contact_Summary_Individual",
-        'field_name' => $cfId,
-        'is_active' => 1,
-        'is_view' => 0,
-        'is_required' => 0,
-        'weight' => 7,
-        'visibility' => "User and User Admin Only",
-        'is_searchable' => 0,
-        'label' => "Preferred Pronoun",
-        'field_type' => "Individual",
-      ]);
-    }
-    catch (CiviCRM_API3_Exception $e) {
-      Civi::log()->debug(__METHOD__, ['e' => $e]);
-    }
-
-    return TRUE;
-  }
-
-  public function upgrade_1200(): bool {
-    $this->ctx->log->info('Applying contact extension update 1200');
-
-    try {
-      $cfDistrict = CRM_Core_BAO_CustomField::getCustomFieldID('New_York_City_Council', 'District_Information');
-      civicrm_api3('CustomField', 'create', [
-        'id' => $cfDistrict,
-        'label' => 'City Council District',
-      ]);
-
-      $cfNeighborhood = CRM_Core_BAO_CustomField::getCustomFieldID('Neighborhood', 'District_Information');
-      civicrm_api3('CustomField', 'create', [
-        'id' => $cfNeighborhood,
-        'is_active' => 0,
-      ]);
-    }
-    catch (CiviCRM_API3_Exception $e) {
-      Civi::log()->debug(__METHOD__, ['e' => $e]);
-    }
+    //14983
+    CRM_Core_BAO_OptionValue::ensureOptionValueExists([
+      'option_group_id' => 'activity_type',
+      'name' => 'Case Client Removed',
+      'label' => ts('Case Client was removed from Case'),
+      'description' => ts('Case client was removed from a case'),
+      'is_active' => TRUE,
+      'filter' => 1,
+      'component_id' => CRM_Core_Component::getComponentID('CiviCase'),
+      'icon' => 'fa-trash',
+    ]);
 
     return TRUE;
   }
@@ -136,7 +89,7 @@ class CRM_NYSS_Contact_Upgrader extends CRM_NYSS_Contact_Upgrader_Base {
    * Example: Run an external SQL script.
    *
    * @return TRUE on success
-   * @throws Exception
+   * @throws CRM_Core_Exception
    */
   // public function upgrade_4201(): bool {
   //   $this->ctx->log->info('Applying update 4201');
@@ -145,12 +98,11 @@ class CRM_NYSS_Contact_Upgrader extends CRM_NYSS_Contact_Upgrader_Base {
   //   return TRUE;
   // }
 
-
   /**
    * Example: Run a slow upgrade process by breaking it up into smaller chunk.
    *
    * @return TRUE on success
-   * @throws Exception
+   * @throws CRM_Core_Exception
    */
   // public function upgrade_4202(): bool {
   //   $this->ctx->log->info('Planning update 4202'); // PEAR Log interface
@@ -169,7 +121,7 @@ class CRM_NYSS_Contact_Upgrader extends CRM_NYSS_Contact_Upgrader_Base {
    * millions) of records by breaking it up into smaller chunks.
    *
    * @return TRUE on success
-   * @throws Exception
+   * @throws CRM_Core_Exception
    */
   // public function upgrade_4203(): bool {
   //   $this->ctx->log->info('Planning update 4203'); // PEAR Log interface
@@ -183,7 +135,7 @@ class CRM_NYSS_Contact_Upgrader extends CRM_NYSS_Contact_Upgrader_Base {
   //       2 => $endId,
   //     ));
   //     $sql = '
-  //       UPDATE civicrm_contribution SET foobar = whiz(wonky()+wanker)
+  //       UPDATE civicrm_contribution SET foobar = apple(banana()+durian)
   //       WHERE id BETWEEN %1 and %2
   //     ';
   //     $params = array(
