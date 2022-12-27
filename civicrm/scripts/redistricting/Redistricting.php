@@ -4,9 +4,9 @@
 // Authors: Stefan Crain, Graylin Kim, Ken Zalewski
 // Organization: New York State Senate
 // Date: 2012-10-26
-// Revised: 2012-12-20
+// Revised: 2022-12-27 - Updated for new SAGE API calls
 
-// ./Redistricting.php -S skelos --batch 2000 --log 5 --max 10000
+// ./Redistricting.php -S breslin --batch 2000 --log 5 --max 10000
 error_reporting(E_ERROR | E_PARSE | E_WARNING);
 set_time_limit(0);
 
@@ -17,7 +17,7 @@ define('UPDATE_DISTRICTS', 2);
 define('UPDATE_ADDRESSES', 4);
 define('UPDATE_GEOCODES', 8);
 define('UPDATE_ALL', UPDATE_NOTES|UPDATE_DISTRICTS|UPDATE_ADDRESSES|UPDATE_GEOCODES);
-define('REDIST_NOTE', 'REDIST2012');
+define('REDIST_NOTE', 'REDIST2022');
 define('INSTATE_NOTE', 'IN-STATE');
 define('OUTOFSTATE_NOTE', 'OUT-OF-STATE');
 
@@ -108,8 +108,8 @@ $FIELD_MAP = [
   'WARD' => ['db'=>'ward_53', 'sage'=>'ward'],
   'SCHL' => ['db'=>'school_district_54', 'sage'=>'school'],
   'CC' => ['db'=>'new_york_city_council_55', 'sage'=>'cityCouncil'],
-  'LAT' => ['db'=>'geo_code_1', 'sage'=>'latitude'],
-  'LON' => ['db'=>'geo_code_2', 'sage'=>'longitude'],
+  'LAT' => ['db'=>'geo_code_1', 'sage'=>'lat'],
+  'LON' => ['db'=>'geo_code_2', 'sage'=>'lon'],
 ];
 
 $DIST_FIELDS = ['CD', 'SD', 'AD', 'ED', 'CO', 'CLEG', 'TOWN', 'WARD', 'SCHL', 'CC'];
@@ -457,7 +457,8 @@ function distassign(&$fmt_batch, $url, &$cnts)
   // Attach the json data
   bbscript_log(LL::TRACE, "About to encode address batch in JSON");
   $json_batch = json_encode($fmt_batch);
-//echo "kz: JSON is $json_batch\n";
+//  $first_id = $fmt_batch[0]['id'];
+//  file_put_contents("/tmp/addr_batch_{$first_id}.json", $json_batch);
 
   // Initialize the cURL request
   $ch = curl_init();
@@ -515,7 +516,8 @@ function process_batch_results($db, &$orig_batch, &$batch_results, &$cnts)
   $batch_cntrs = [
     'TOTAL'=>count($batch_results), 'MATCH'=>0,
     'HOUSE'=>0, 'STREET'=>0, 'ZIP5'=>0, 'SHAPEFILE'=>0,
-    'NOMATCH'=>0, 'INVALID'=>0, 'ERROR'=>0, 'MYSQL'=>0
+    'NOMATCH'=>0, 'INVALID'=>0, 'ERROR'=>0, 'MYSQL'=>0,
+    'STATUSOK'=>0, 'STATUSBAD'=>0
   ];
 
   $batch_start_time = microtime(true);
@@ -539,9 +541,21 @@ function process_batch_results($db, &$orig_batch, &$batch_results, &$cnts)
 
   foreach ($batch_results as $batch_res) {
     $address_id = $batch_res['address']['id'] ?? NULL;
+    $match_source = $batch_res['source'] ?? NULL;
     $match_level = $batch_res['matchLevel'] ?? NULL;
+    $status_code = $batch_res['statusCode'] ?? NULL;
     $message = $batch_res['description'] ?? NULL;
     $orig_rec = $orig_batch[$address_id];
+
+    if ($status_code == 0) {
+      $batch_cntrs['STATUSOK']++;
+      if ($match_source == 'DistrictShapefile') {
+        $match_level = 'SHAPEFILE';
+      }
+    }
+    else {
+      $batch_cntrs['STATUSBAD']++;
+    }
 
     switch ($match_level) {
       case 'HOUSE':
@@ -574,10 +588,10 @@ function process_batch_results($db, &$orig_batch, &$batch_results, &$cnts)
 
         // Shape file lookups can result in new/changed coordinates.
         if ($match_level == 'SHAPEFILE') {
-          $changes = calculate_changes($ADDR_FIELDS, $orig_rec, $batch_res);
+          $changes = calculate_changes($ADDR_FIELDS, $orig_rec, $batch_res['geocode']);
           $geonote = [
-            "GEO_ACCURACY: {$batch_res['geo_accuracy']}",
-            "GEO_METHOD: {$batch_res['geo_method']}"
+            "GEO_QUALITY: {$batch_res['geocode']['quality']}",
+            "GEO_METHOD: {$batch_res['geocode']['method']}"
           ];
           $note_updates = array_merge($note_updates, $changes['notes'], $geonote);
           $sql_updates = $changes['sqldata'];
@@ -591,6 +605,8 @@ function process_batch_results($db, &$orig_batch, &$batch_results, &$cnts)
             }
           }
         }
+
+        bbscript_log(LL::TRACE, "Change Notes: ", $note_updates);
 
         if ($BB_UPDATE_FLAGS & UPDATE_NOTES) {
           insert_redist_note($db, INSTATE_NOTE, $match_level, $orig_rec, $subj_abbrevs, $note_updates);
@@ -667,8 +683,10 @@ function calculate_changes(&$fields, &$db_rec, &$sage_rec)
     $sagefld = $FIELD_MAP[$abbr]['sage'];
     $db_val = get($db_rec, $dbfld, 'NULL');
     $sage_val = get($sage_rec, $sagefld, 'NULL');
-    if ($sage_val != 'NULL') {
-      $sage_val = $sage_val['district'];
+    if (is_array($sage_val)) {
+      if (isset($sage_val['district'])) {
+        $sage_val = get($sage_val, 'district', 'NULL');
+      }
     }
 
     if ($db_val != $sage_val) {
@@ -842,7 +860,8 @@ function report_stats($total_found, $cnts, $time_start)
     "HOUSE" => 0,
     "STREET" => 0,
     "ZIP5" => 0,
-    "SHAPEFILE" => 0
+    "SHAPEFILE" => 0,
+    "STATUSOK" => 0
   ];
 
   // Timer for debug
@@ -864,13 +883,14 @@ function report_stats($total_found, $cnts, $time_start)
   bbscript_log(LL::INFO, "[COUNT]      {$cnts['TOTAL']}");
   bbscript_log(LL::INFO, "[TIME]       ".round($time, 4));
   bbscript_log(LL::INFO, "[SPEED]  [TOTAL] $Records_per_sec per second (".$cnts['TOTAL']." in ".round($time, 3).")");
-  bbscript_log(LL::TRACE,"[SPEED]  [MYSQL] $Mysql_per_sec per second (".$cnts['TOTAL']." in ".round($cnts['MYSQL'], 3).")");
-  bbscript_log(LL::TRACE,"[SPEED]  [CURL] $Curl_per_sec per second (".$cnts['TOTAL']." in ".round($cnts['CURL'], 3).")");
+  bbscript_log(LL::TRACE, "[SPEED]  [MYSQL] $Mysql_per_sec per second (".$cnts['TOTAL']." in ".round($cnts['MYSQL'], 3).")");
+  bbscript_log(LL::TRACE, "[SPEED]  [CURL] $Curl_per_sec per second (".$cnts['TOTAL']." in ".round($cnts['CURL'], 3).")");
   bbscript_log(LL::INFO, "[MATCH]  [TOTAL] {$cnts['MATCH']} ({$percent['MATCH']} %)");
-  bbscript_log(LL::INFO,"[MATCH]  [HOUSE] {$cnts['HOUSE']} ({$percent['HOUSE']} %)");
-  bbscript_log(LL::INFO,"[MATCH]  [STREET] {$cnts['STREET']} ({$percent['STREET']} %)");
-  bbscript_log(LL::INFO,"[MATCH]  [ZIP5]  {$cnts['ZIP5']} ({$percent['ZIP5']} %)");
-  bbscript_log(LL::INFO,"[MATCH]  [SHAPE] {$cnts['SHAPEFILE']} ({$percent['SHAPEFILE']} %)");
+  bbscript_log(LL::INFO, "[MATCH]  [HOUSE] {$cnts['HOUSE']} ({$percent['HOUSE']} %)");
+  bbscript_log(LL::INFO, "[MATCH]  [STREET] {$cnts['STREET']} ({$percent['STREET']} %)");
+  bbscript_log(LL::INFO, "[MATCH]  [ZIP5]  {$cnts['ZIP5']} ({$percent['ZIP5']} %)");
+  bbscript_log(LL::INFO, "[MATCH]  [SHAPE] {$cnts['SHAPEFILE']} ({$percent['SHAPEFILE']} %)");
+  bbscript_log(LL::INFO, "[MATCH]  [STATUS] {$cnts['STATUSOK']} ({$percent['STATUSOK']} %)");
   bbscript_log(LL::INFO, "[NOMATCH] [TOTAL] {$cnts['NOMATCH']} ({$percent['NOMATCH']} %)");
   bbscript_log(LL::INFO, "[INVALID] [TOTAL] {$cnts['INVALID']} ({$percent['INVALID']} %)");
   bbscript_log(LL::INFO, "[ERROR]  [TOTAL] {$cnts['ERROR']} ({$percent['ERROR']} %)");
