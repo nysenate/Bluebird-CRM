@@ -11,41 +11,41 @@ error_reporting(E_ERROR | E_PARSE | E_WARNING);
 set_time_limit(0);
 
 define('DEFAULT_BATCH_SIZE', 1000);
-define('DEFAULT_THREADS', 3);
 define('UPDATE_NOTES', 1);
 define('UPDATE_DISTRICTS', 2);
 define('UPDATE_ADDRESSES', 4);
 define('UPDATE_GEOCODES', 8);
 define('UPDATE_ALL', UPDATE_NOTES|UPDATE_DISTRICTS|UPDATE_ADDRESSES|UPDATE_GEOCODES);
-define('REDIST_NOTE', 'REDIST2022');
+define('REDIST_NOTE_TAG', 'REDIST2022');
+define('REDIST_NOTE_PATTERN', 'REDIST____ ');
 define('INSTATE_NOTE', 'IN-STATE');
 define('OUTOFSTATE_NOTE', 'OUT-OF-STATE');
+define('DISTRICT_TABLE', 'civicrm_value_district_information_7');
+define('UPDATE_DATE_FIELD', 'last_import_57');
 
 // Parse the following user options
 require_once realpath(dirname(__FILE__)).'/../script_utils.php';
-$shortopts = "b:l:m:f:naoig:sct:pGN";
+$shortopts = "ab:nGil:m:Nopf:g:s";
 $longopts = [
+  "addressmap",
   "batch=",
+  "dryrun",
+  "geocodeonly",
+  "instate",
   "log=",
   "max=",
-  "startfrom=",
-  "dryrun",
-  "addressmap",
+  "nonotes",
   "outofstate",
-  "instate",
-  "usegeocoder=",
-  "useshapefiles",
-  "usecoordinates",
-  "threads=",
   "purgenotes",
-  "geocodeonly",
-  "nonotes"
+  "startfrom=",
+  "usegeocoder=",
+  "useshapefiles"
 ];
 $optlist = civicrm_script_init($shortopts, $longopts);
 
 if ($optlist === null) {
     $stdusage = civicrm_script_usage();
-    $usage = '[--batch SIZE] [--log "TRACE|DEBUG|INFO|WARN|ERROR|FATAL"] [--max COUNT] [--startfrom ADDRESS_ID] [--dryrun] [--purgenotes] [--addressmap] [--outofstate] [--instate] [--threads COUNT] [--usegeocoder {geocoder|yahoo|google}] [--useshapefiles] [--usecoordinates] [--geocodeonly] [--nonotes]';
+    $usage = '[--addressmap] [--batch SIZE] [--dryrun] [--geocodeonly] [--instate] [--log "TRACE|DEBUG|INFO|WARN|ERROR|FATAL"] [--max COUNT] [--nonotes] [--outofstate] [--purgenotes] [--startfrom ADDRESS_ID] [--usegeocoder {nysgeo|google|tiger}] [--useshapefiles]';
     error_log("Usage: ".basename(__FILE__)."  $stdusage  $usage\n");
     exit(1);
 }
@@ -53,20 +53,18 @@ if ($optlist === null) {
 // Use user options to configure the script
 set_bbscript_log_level(get($optlist, 'log', 'INFO'));
 $BB_UPDATE_FLAGS = UPDATE_ALL;
+$opt_addressmap = get($optlist, 'addressmap', false);
 $opt_batch_size = get($optlist, 'batch', DEFAULT_BATCH_SIZE);
 $opt_dry_run = get($optlist, 'dryrun', false);
 $opt_geocode_only = get($optlist, 'geocodeonly', false);
-$opt_no_notes = get($optlist, 'nonotes', false);
-$opt_max = get($optlist, 'max', 0);
-$opt_startfrom = get($optlist, 'startfrom', 0);
-$opt_outofstate = get($optlist, 'outofstate', false);
-$opt_addressmap = get($optlist, 'addressmap', false);
 $opt_instate = get($optlist, 'instate', false);
+$opt_max = get($optlist, 'max', 0);
+$opt_no_notes = get($optlist, 'nonotes', false);
+$opt_outofstate = get($optlist, 'outofstate', false);
+$opt_purgenotes = get($optlist, 'purgenotes', false);
+$opt_startfrom = get($optlist, 'startfrom', 0);
 $opt_usegeocoder = get($optlist, 'usegeocoder', '');
 $opt_useshapefiles = get($optlist, 'useshapefiles', false);
-$opt_usecoordinates = get($optlist, 'usecoordinates', false);
-$opt_threads = get($optlist, 'threads', DEFAULT_THREADS);
-$opt_purgenotes = get($optlist, 'purgenotes', false);
 
 // Use instance settings to configure for SAGE
 $bbcfg = get_bluebird_instance_config($optlist['site']);
@@ -79,22 +77,21 @@ if (!($sage_base && $sage_key)) {
 
 // Dump the active options when in debug mode
 bbscript_log(LL::DEBUG, "Option: INSTANCE={$optlist['site']}");
-bbscript_log(LL::DEBUG, "Option: BATCH_SIZE=$opt_batch_size");
-bbscript_log(LL::DEBUG, "Option: LOG_LEVEL={$optlist['log']}");
-bbscript_log(LL::DEBUG, "Option: DRY_RUN=".($opt_dry_run ? "TRUE" : "FALSE"));
-bbscript_log(LL::DEBUG, "Option: GEOCODE_ONLY=".($opt_geocode_only ? "TRUE" : "FALSE"));
-bbscript_log(LL::DEBUG, "Option: NO_NOTES=".($opt_no_notes ? $opt_no_notes : "FALSE"));
 bbscript_log(LL::DEBUG, "Option: SAGE_API=$sage_base");
 bbscript_log(LL::DEBUG, "Option: SAGE_KEY=$sage_key");
-bbscript_log(LL::DEBUG, "Option: INSTATE=".($opt_instate ? "TRUE" : "FALSE"));
-bbscript_log(LL::DEBUG, "Option: OUTOFSTATE=".($opt_outofstate ? "TRUE" : "FALSE"));
 bbscript_log(LL::DEBUG, "Option: ADDRESSMAP=".($opt_addressmap ? "TRUE" : "FALSE"));
-bbscript_log(LL::DEBUG, "Option: STARTFROM=".($opt_startfrom ? $opt_startfrom : "NONE"));
+bbscript_log(LL::DEBUG, "Option: BATCH_SIZE=$opt_batch_size");
+bbscript_log(LL::DEBUG, "Option: DRY_RUN=".($opt_dry_run ? "TRUE" : "FALSE"));
+bbscript_log(LL::DEBUG, "Option: GEOCODE_ONLY=".($opt_geocode_only ? "TRUE" : "FALSE"));
+bbscript_log(LL::DEBUG, "Option: INSTATE=".($opt_instate ? "TRUE" : "FALSE"));
+bbscript_log(LL::DEBUG, "Option: LOG_LEVEL={$optlist['log']}");
 bbscript_log(LL::DEBUG, "Option: MAX=".($opt_max ? $opt_max : "NONE"));
-bbscript_log(LL::DEBUG, "Option: USE_SHAPEFILES=".($opt_useshapefiles ? "TRUE" : "FALSE"));
-bbscript_log(LL::DEBUG, "Option: USE_COORDINATES=".($opt_usecoordinates ? "TRUE" : "FALSE"));
-bbscript_log(LL::DEBUG, "Option: THREADS=$opt_threads");
+bbscript_log(LL::DEBUG, "Option: NO_NOTES=".($opt_no_notes ? "TRUE" : "FALSE"));
+bbscript_log(LL::DEBUG, "Option: OUTOFSTATE=".($opt_outofstate ? "TRUE" : "FALSE"));
+bbscript_log(LL::DEBUG, "Option: PURGE_NOTES=".($opt_purgenotes ? "TRUE" : "FALSE"));
+bbscript_log(LL::DEBUG, "Option: STARTFROM=".($opt_startfrom ? $opt_startfrom : "NONE"));
 bbscript_log(LL::DEBUG, "Option: USE_GEOCODER=".($opt_usegeocoder ? $opt_usegeocoder : "FALSE"));
+bbscript_log(LL::DEBUG, "Option: USE_SHAPEFILES=".($opt_useshapefiles ? "TRUE" : "FALSE"));
 
 // District mappings for Notes, Distinfo, and SAGE
 $FIELD_MAP = [
@@ -118,8 +115,8 @@ $NULLIFY_INSTATE = ['CD', 'SD', 'AD', 'ED'];
 $NULLIFY_OUTOFSTATE = $DIST_FIELDS;
 
 // Construct the url with all our options...
-//$batch_url = "$sage_base/district/bluebird/batch?threadCount=$opt_threads&key=$sage_key&useGeocoder=".($opt_usegeocoder ? "1&geocoder=$opt_usegeocoder" : "0")."&useShapefiles=".($opt_useshapefiles ? 1 : 0);
-$batch_url = "$sage_base/district/bluebird/batch?uspsValidate=true";
+//$batch_url = "$sage_base/district/bluebird/batch?key=$sage_key&useGeocoder=".($opt_usegeocoder ? "1&geocoder=$opt_usegeocoder" : "0")."&useShapefiles=".($opt_useshapefiles ? 1 : 0);
+$batch_url = "$sage_base/district/bluebird/batch";
 bbscript_log(LL::DEBUG, "batch_url={$batch_url}");
 
 // Track the full time it takes to run the redistricting process.
@@ -157,7 +154,7 @@ if ($opt_outofstate) {
 }
 
 if ($opt_instate) {
-  handle_in_state($db, $opt_startfrom, $opt_batch_size, $opt_max, $batch_url, $opt_usecoordinates);
+  handle_in_state($db, $batch_url, $opt_startfrom, $opt_batch_size, $opt_max);
 }
 
 $elapsed_time = round(get_elapsed_time($script_start_time), 3);
@@ -175,7 +172,7 @@ function purge_notes($db)
     // Remove any redistricting notes that already exist
     $q = "DELETE FROM civicrm_note
           WHERE entity_table='civicrm_contact'
-          AND subject LIKE '".REDIST_NOTE."%'";
+          AND subject LIKE '".REDIST_NOTE_PATTERN."%'";
     bb_mysql_query($q, $db, true);
     $row_cnt = mysqli_affected_rows($db);
     bbscript_log(LL::INFO, "Removed all $row_cnt redistricting notes from the database.");
@@ -205,7 +202,7 @@ function address_map($db)
     bb_mysql_query('BEGIN', $db, true);
   }
 
-  $q = "SELECT id, ny_senate_district_47 FROM civicrm_value_district_information_7";
+  $q = "SELECT id, ny_senate_district_47 FROM ".DISTRICT_TABLE;
   $result = bb_mysql_query($q, $db, true);
   $num_rows = mysqli_num_rows($result);
   $actions = [];
@@ -213,7 +210,7 @@ function address_map($db)
     $district = $row['ny_senate_district_47'];
     if (isset($district_cycle[$district])) {
       if ($BB_UPDATE_FLAGS & UPDATE_DISTRICTS) {
-        $q = "UPDATE civicrm_value_district_information_7
+        $q = "UPDATE ".DISTRICT_TABLE."
               SET ny_senate_district_47 = {$district_cycle[$district]}
               WHERE id = {$row['id']};";
         bb_mysql_query($q, $db, true);
@@ -225,7 +222,8 @@ function address_map($db)
 
       if (isset($actions[$district])) {
         $actions[$district]++;
-      } else {
+      }
+      else {
         $actions[$district] = 1;
       }
     }
@@ -256,7 +254,7 @@ function handle_out_of_state($db)
     // Delete any out-of-state notes that already exist
     $q = "DELETE FROM civicrm_note
           WHERE entity_table='civicrm_contact'
-          AND subject like '".REDIST_NOTE." ".OUTOFSTATE_NOTE."%'";
+          AND subject like '".REDIST_NOTE_PATTERN.OUTOFSTATE_NOTE."%'";
     bb_mysql_query($q, $db, true);
     $row_cnt = mysqli_affected_rows($db);
     bbscript_log(LL::TRACE, "Removed $row_cnt ".OUTOFSTATE_NOTE." notes");
@@ -288,7 +286,7 @@ function handle_out_of_state($db)
 } // handle_out_of_state()
 
 
-function handle_in_state($db, $startfrom = 0, $batch_size, $max_addrs = 0, $url, $use_coords)
+function handle_in_state($db, $url, $startfrom = 0, $batch_size, $max_addrs = 0)
 {
   bbscript_log(LL::TRACE, "==> handle_in_state()");
   // Start a timer and a counter for results
@@ -346,6 +344,7 @@ function handle_in_state($db, $startfrom = 0, $batch_size, $max_addrs = 0, $url,
       // Format for the batch district assignment API
       $row = clean_row($row);
 
+      /***********  Old street logic that is not being used ********
       // Attempt to fill in missing addresses with supplemental info
       $street = trim($row['street_name'].' '.$row['street_type']);
       if ($street == '') {
@@ -361,25 +360,16 @@ function handle_in_state($db, $startfrom = 0, $batch_size, $max_addrs = 0, $url,
       if (preg_match('/^p\.?o\.?\s+(box\s+)?[0-9]+$/i', $street)) {
         $street = '';
       }
+      ************ End of old street logic **********************/
 
       // Format the address for sage
-      $formatted_address = [
+      $formatted_batch[] = [
+        'id' => $addr_id,
         'addr1' => $row['street_address'],
         'city' => $row['city'],
         'state' => $row['state'],
         'zip5' => $row['postal_code'],
-        'id' => $addr_id,
       ];
-
-      // If requested, use the coordinates already in the system
-      if ($use_coords) {
-        // The "latitude" and "longitude" fields are no longer supported
-        // in the /district/bluebird/batch API call
-        //$formatted_address['latitude'] = $row['geo_code_1'];
-        //$formatted_address['longitude'] = $row['geo_code_2'];
-      }
-
-      $formatted_batch[] = $formatted_address;
     }
 
     bbscript_log(LL::DEBUG, "Done fetching record batch; sending to SAGE");
@@ -432,7 +422,7 @@ function retrieve_addresses($db, $start_id = 0, $max_res = 0, $in_state = true)
       ".implode(",\n", $dist_colnames)."
     FROM civicrm_address a
     JOIN civicrm_state_province sp
-    LEFT JOIN civicrm_value_district_information_7 di ON (di.entity_id = a.id)
+    LEFT JOIN ".DISTRICT_TABLE." di ON (di.entity_id = a.id)
     WHERE a.state_province_id=sp.id
       AND sp.abbreviation $state_compare_op 'NY'
       AND a.id >= $start_id
@@ -659,7 +649,7 @@ function delete_batch_notes($db, $lo_id, $hi_id)
     DELETE FROM n USING civicrm_note n
     JOIN civicrm_address a ON n.entity_id = a.contact_id
     WHERE a.id BETWEEN $lo_id AND $hi_id
-      AND n.subject LIKE '".REDIST_NOTE." ".INSTATE_NOTE."%'
+      AND n.subject LIKE '".REDIST_NOTE_PATTERN.INSTATE_NOTE."%'
       AND preg_capture('/[[]id=([0-9]+)[]]/', n.subject, 1) BETWEEN $lo_id AND $hi_id
   ";
   bb_mysql_query($q, $db, true);
@@ -684,9 +674,7 @@ function calculate_changes(&$fields, &$db_rec, &$sage_rec)
     $db_val = get($db_rec, $dbfld, 'NULL');
     $sage_val = get($sage_rec, $sagefld, 'NULL');
     if (is_array($sage_val)) {
-      if (isset($sage_val['district'])) {
-        $sage_val = get($sage_val, 'district', 'NULL');
-      }
+      $sage_val = get($sage_val, 'district', 'NULL');
     }
 
     if ($db_val != $sage_val) {
@@ -716,18 +704,24 @@ function calculate_changes(&$fields, &$db_rec, &$sage_rec)
 
 function update_district_info($db, $address_id, $sqldata)
 {
+  // If the last_import_57 field is not included, then set it to be
+  // the current date at midnight.
+  if (!array_key_exists(UPDATE_DATE_FIELD, $sqldata)) {
+    $sqldata[UPDATE_DATE_FIELD] = "CURDATE()";
+  }
+
   $sql_updates = [];
   foreach ($sqldata as $colname => $value) {
-    if ($colname == 'town_52') {
-      $sql_updates[] = "$colname = '$value'";
+    if (is_numeric($value)) {
+      $sql_updates[] = "$colname = $value";
     }
     else {
-      $sql_updates[] = "$colname = $value";
+      $sql_updates[] = "$colname = '$value'";
     }
   }
 
   $q = "
-    UPDATE civicrm_value_district_information_7 di
+    UPDATE ".DISTRICT_TABLE." di
     SET ".implode(', ', $sql_updates)."
     WHERE di.entity_id = $address_id
   ";
@@ -737,21 +731,27 @@ function update_district_info($db, $address_id, $sqldata)
 
 function insert_district_info($db, $address_id, $sqldata)
 {
+  // If the last_import_57 field is not included, then set it to be
+  // the current date at midnight.
+  if (!array_key_exists(UPDATE_DATE_FIELD, $sqldata)) {
+    $sqldata[UPDATE_DATE_FIELD] = "CURDATE()";
+  }
+
   $cols = 'entity_id';
   $vals = "$address_id";
 
   foreach ($sqldata as $colname => $value) {
     $cols .= ", $colname";
-    if ($colname == 'town_52') {
-      $vals .= ", '$value'";
+    if (is_numeric($value)) {
+      $vals .= ", $value";
     }
     else {
-      $vals .= ", $value";
+      $vals .= ", '$value'";
     }
   }
 
   $q = "
-    INSERT INTO civicrm_value_district_information_7 ( $cols )
+    INSERT INTO ".DISTRICT_TABLE." ( $cols )
     VALUES ( $vals )
   ";
   bb_mysql_query($q, $db, true);
@@ -812,11 +812,11 @@ function insert_redist_note($db, $note_type, $match_type, &$row, $abbrevs, &$upd
     return;
   }
 
-  $note = "== ".REDIST_NOTE." ==\n".
+  $note = "== ".REDIST_NOTE_TAG." ==\n".
           "ADDRESS_ID: $addr_id\n".
           "NOTE_TYPE: $note_type\n".
           "MATCH_TYPE: $match_type\n".
-          "ADDRESS: ".$row['street_number'].' '.$row['street_number_suffix'].' '.$row['street_name'].' '.$row['street_type'].', '.$row['city'].', '.$row['state'].' '.$row['postal_code']."\n";
+          "ADDRESS: ".$row['street_address']."\n";
 
   if ($update_notes && is_array($update_notes)) {
     $note .= "UPDATES:\n".implode("\n", $update_notes);
@@ -835,10 +835,10 @@ function insert_redist_note($db, $note_type, $match_type, &$row, $abbrevs, &$upd
     $action = 'VERIFIED';
   }
   
-  $subject = REDIST_NOTE." $note_type $action [id=$addr_id]$subj_ext";
+  $subject = REDIST_NOTE_TAG." $note_type $action [id=$addr_id]$subj_ext";
 
-  $note = mysqli_real_escape_string($note, $db);
-  $subject = mysqli_real_escape_string($subject, $db);
+  $note = mysqli_real_escape_string($db, $note);
+  $subject = mysqli_real_escape_string($db, $subject);
   $q = "
     INSERT INTO civicrm_note (entity_table, entity_id, note, contact_id, modified_date, subject, privacy)
     VALUES ('civicrm_contact', $contact_id, '$note', 1, '".date("Y-m-d")."', '$subject', 0)
@@ -866,25 +866,25 @@ function report_stats($total_found, $cnts, $time_start)
 
   // Timer for debug
   $time = get_elapsed_time($time_start);
-  $Records_per_sec = round($cnts['TOTAL'] / $time, 1);
-  $Mysql_per_sec = ($cnts['MYSQL'] == 0 ) ? 0 : round($cnts['TOTAL'] / $cnts['MYSQL'], 1);
-  $Curl_per_sec = ($cnts['CURL'] == 0 ) ? 0 : round($cnts['TOTAL'] / $cnts['CURL'], 1);
+  $records_per_sec = round($cnts['TOTAL'] / $time, 1);
+  $mysql_per_sec = ($cnts['MYSQL'] == 0 ) ? 0 : round($cnts['TOTAL'] / $cnts['MYSQL'], 1);
+  $curl_per_sec = ($cnts['CURL'] == 0 ) ? 0 : round($cnts['TOTAL'] / $cnts['CURL'], 1);
 
   // Update the percentages using the counts
   foreach ($percent as $key => $value) {
     $percent[$key] = round($cnts[$key] / $cnts['TOTAL'] * 100, 2);
   }
 
-  $seconds_left = round(($total_found - $cnts['TOTAL']) / $Records_per_sec, 0);
+  $seconds_left = round(($total_found - $cnts['TOTAL']) / $records_per_sec, 0);
   $finish_at = date('Y-m-d H:i:s', (time() + $seconds_left));
 
   bbscript_log(LL::INFO, "-------  ------- ---- ---- ---- ---- ");
   bbscript_log(LL::INFO, "[DONE @]      $finish_at (in ".intval($seconds_left/60).":".($seconds_left%60).")");
   bbscript_log(LL::INFO, "[COUNT]      {$cnts['TOTAL']}");
   bbscript_log(LL::INFO, "[TIME]       ".round($time, 4));
-  bbscript_log(LL::INFO, "[SPEED]  [TOTAL] $Records_per_sec per second (".$cnts['TOTAL']." in ".round($time, 3).")");
-  bbscript_log(LL::TRACE, "[SPEED]  [MYSQL] $Mysql_per_sec per second (".$cnts['TOTAL']." in ".round($cnts['MYSQL'], 3).")");
-  bbscript_log(LL::TRACE, "[SPEED]  [CURL] $Curl_per_sec per second (".$cnts['TOTAL']." in ".round($cnts['CURL'], 3).")");
+  bbscript_log(LL::INFO, "[SPEED]  [TOTAL] $records_per_sec per second (".$cnts['TOTAL']." in ".round($time, 3).")");
+  bbscript_log(LL::TRACE, "[SPEED]  [MYSQL] $mysql_per_sec per second (".$cnts['TOTAL']." in ".round($cnts['MYSQL'], 3).")");
+  bbscript_log(LL::TRACE, "[SPEED]  [CURL] $curl_per_sec per second (".$cnts['TOTAL']." in ".round($cnts['CURL'], 3).")");
   bbscript_log(LL::INFO, "[MATCH]  [TOTAL] {$cnts['MATCH']} ({$percent['MATCH']} %)");
   bbscript_log(LL::INFO, "[MATCH]  [HOUSE] {$cnts['HOUSE']} ({$percent['HOUSE']} %)");
   bbscript_log(LL::INFO, "[MATCH]  [STREET] {$cnts['STREET']} ({$percent['STREET']} %)");
