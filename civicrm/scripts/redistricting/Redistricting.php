@@ -816,7 +816,7 @@ function insert_redist_note($db, $note_type, $match_type, &$row, $abbrevs, &$upd
           "ADDRESS_ID: $addr_id\n".
           "NOTE_TYPE: $note_type\n".
           "MATCH_TYPE: $match_type\n".
-          "ADDRESS: ".$row['street_address']."\n";
+          "ADDRESS: ".$row['street_address'].", ".$row['postal_code']."\n";
 
   if ($update_notes && is_array($update_notes)) {
     $note .= "UPDATES:\n".implode("\n", $update_notes);
