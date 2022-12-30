@@ -674,9 +674,7 @@ function calculate_changes(&$fields, &$db_rec, &$sage_rec)
     $db_val = get($db_rec, $dbfld, 'NULL');
     $sage_val = get($sage_rec, $sagefld, 'NULL');
     if (is_array($sage_val)) {
-      if (isset($sage_val['district'])) {
-        $sage_val = get($sage_val, 'district', 'NULL');
-      }
+      $sage_val = get($sage_val, 'district', 'NULL');
     }
 
     if ($db_val != $sage_val) {
@@ -714,11 +712,11 @@ function update_district_info($db, $address_id, $sqldata)
 
   $sql_updates = [];
   foreach ($sqldata as $colname => $value) {
-    if ($colname == 'town_52') {
-      $sql_updates[] = "$colname = '$value'";
+    if (is_numeric($value)) {
+      $sql_updates[] = "$colname = $value";
     }
     else {
-      $sql_updates[] = "$colname = $value";
+      $sql_updates[] = "$colname = '$value'";
     }
   }
 
@@ -744,11 +742,11 @@ function insert_district_info($db, $address_id, $sqldata)
 
   foreach ($sqldata as $colname => $value) {
     $cols .= ", $colname";
-    if ($colname == 'town_52') {
-      $vals .= ", '$value'";
+    if (is_numeric($value)) {
+      $vals .= ", $value";
     }
     else {
-      $vals .= ", $value";
+      $vals .= ", '$value'";
     }
   }
 
@@ -839,8 +837,8 @@ function insert_redist_note($db, $note_type, $match_type, &$row, $abbrevs, &$upd
   
   $subject = REDIST_NOTE_TAG." $note_type $action [id=$addr_id]$subj_ext";
 
-  $note = mysqli_real_escape_string($note, $db);
-  $subject = mysqli_real_escape_string($subject, $db);
+  $note = mysqli_real_escape_string($db, $note);
+  $subject = mysqli_real_escape_string($db, $subject);
   $q = "
     INSERT INTO civicrm_note (entity_table, entity_id, note, contact_id, modified_date, subject, privacy)
     VALUES ('civicrm_contact', $contact_id, '$note', 1, '".date("Y-m-d")."', '$subject', 0)
