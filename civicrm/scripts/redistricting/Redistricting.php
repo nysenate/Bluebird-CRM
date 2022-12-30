@@ -344,15 +344,14 @@ function handle_in_state($db, $url, $startfrom = 0, $batch_size, $max_addrs = 0)
       // Format for the batch district assignment API
       $row = clean_row($row);
 
-      /***********  Old street logic that is not being used ********
       // Attempt to fill in missing addresses with supplemental info
-      $street = trim($row['street_name'].' '.$row['street_type']);
+      $street = trim($row['street_address']);
       if ($street == '') {
         if ($row['supplemental_address_1']) {
-          $street = $row['supplemental_address_1'];
+          $street = trim($row['supplemental_address_1']);
         }
         else if ($row['supplemental_address_2']) {
-          $street = $row['supplemental_address_2'];
+          $street = trim($row['supplemental_address_2']);
         }
       }
 
@@ -360,12 +359,11 @@ function handle_in_state($db, $url, $startfrom = 0, $batch_size, $max_addrs = 0)
       if (preg_match('/^p\.?o\.?\s+(box\s+)?[0-9]+$/i', $street)) {
         $street = '';
       }
-      ************ End of old street logic **********************/
 
       // Format the address for sage
       $formatted_batch[] = [
         'id' => $addr_id,
-        'addr1' => $row['street_address'],
+        'addr1' => $street,
         'city' => $row['city'],
         'state' => $row['state'],
         'zip5' => $row['postal_code'],
@@ -812,11 +810,21 @@ function insert_redist_note($db, $note_type, $match_type, &$row, $abbrevs, &$upd
     return;
   }
 
+  $addr = $row['street_address'];
+  if ($addr == '') {
+    if ($row['supplemental_address_1']) {
+      $addr = "[SUP1] ".$row['supplemental_address_1'];
+    }
+    else if ($row['supplemental_address_2']) {
+      $addr = "[SUP2] ".$row['supplemental_address_2'];
+    }
+  }
+
   $note = "== ".REDIST_NOTE_TAG." ==\n".
           "ADDRESS_ID: $addr_id\n".
           "NOTE_TYPE: $note_type\n".
           "MATCH_TYPE: $match_type\n".
-          "ADDRESS: ".$row['street_address'].", ".$row['postal_code']."\n";
+          "ADDRESS: $addr, ".$row['postal_code']."\n";
 
   if ($update_notes && is_array($update_notes)) {
     $note .= "UPDATES:\n".implode("\n", $update_notes);
