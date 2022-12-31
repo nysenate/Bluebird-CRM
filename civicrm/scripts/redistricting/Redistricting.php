@@ -702,12 +702,6 @@ function calculate_changes(&$fields, &$db_rec, &$sage_rec)
 
 function update_district_info($db, $address_id, $sqldata)
 {
-  // If the last_import_57 field is not included, then set it to be
-  // the current date at midnight.
-  if (!array_key_exists(UPDATE_DATE_FIELD, $sqldata)) {
-    $sqldata[UPDATE_DATE_FIELD] = "CURDATE()";
-  }
-
   $sql_updates = [];
   foreach ($sqldata as $colname => $value) {
     if (is_numeric($value)) {
@@ -716,6 +710,12 @@ function update_district_info($db, $address_id, $sqldata)
     else {
       $sql_updates[] = "$colname = '$value'";
     }
+  }
+
+  // If the last_import_57 field is not included, then set it to be
+  // the current date at midnight.
+  if (!array_key_exists(UPDATE_DATE_FIELD, $sqldata)) {
+    $sql_updates[] = UPDATE_DATE_FIELD.' = CURDATE()';
   }
 
   $q = "
@@ -729,12 +729,6 @@ function update_district_info($db, $address_id, $sqldata)
 
 function insert_district_info($db, $address_id, $sqldata)
 {
-  // If the last_import_57 field is not included, then set it to be
-  // the current date at midnight.
-  if (!array_key_exists(UPDATE_DATE_FIELD, $sqldata)) {
-    $sqldata[UPDATE_DATE_FIELD] = "CURDATE()";
-  }
-
   $cols = 'entity_id';
   $vals = "$address_id";
 
@@ -746,6 +740,13 @@ function insert_district_info($db, $address_id, $sqldata)
     else {
       $vals .= ", '$value'";
     }
+  }
+
+  // If the last_import_57 field is not included, then set it to be
+  // the current date at midnight.
+  if (!array_key_exists(UPDATE_DATE_FIELD, $sqldata)) {
+    $cols .= ', '.UPDATE_DATE_FIELD;
+    $vals .= ', CURDATE()';
   }
 
   $q = "
