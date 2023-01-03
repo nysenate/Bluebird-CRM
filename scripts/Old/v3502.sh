@@ -31,7 +31,7 @@ if ! $readConfig --instance $instance --quiet; then
   exit 1
 fi
 
-echo "#14948 remove mailing viewer role..."
+echo "#14958 remove mailing viewer role..."
 sql="
   SELECT @viewer:= rid FROM role WHERE name = 'Mailing Viewer';
   DELETE FROM users_roles WHERE rid = @viewer;
