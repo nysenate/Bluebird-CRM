@@ -22,8 +22,8 @@ class CRM_NYSS_Mail_Utils {
         $file_path = $config['BASE_DIR'] . $config['UPLOADS_DIR'] . $file_name;
 
         if (is_file($file_path)) {
-          if ($all || !file_exists($config['BASE_DIR'] . $config['THUMBNAILS_DIR'] . $file_name)) {
-            $thumbnail_path = $config['BASE_DIR'] . $config['THUMBNAILS_DIR'] . $file_name;
+          $thumbnail_path = $config['BASE_DIR'] . $config['THUMBNAILS_DIR'] . $file_name;
+          if ($all || !file_exists($thumbnail_path)) {
             Civi::service('mosaico_graphics')->createResizedImage($file_path, $thumbnail_path, $config['THUMBNAIL_WIDTH'], $config['THUMBNAIL_HEIGHT']);
           }
         }
