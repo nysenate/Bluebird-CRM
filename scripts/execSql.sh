@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 #
 # execSql.sh - Execute SQL statement using Bluebird config file for credentials
 #
@@ -25,6 +25,7 @@
 # Revised: 2014-08-07 - Allow no database to be specified using --no-db
 # Revised: 2015-11-11 - Added --get-db-name command line switch
 # Revised: 2015-11-12 - Don't dump routines when dumping specific tables
+# Revised: 2023-01-03 - Enhance processing of options with parameters
 #
 
 prog=`basename $0`
@@ -40,6 +41,17 @@ fi
 
 usage() {
   echo "Usage: $prog [--help] [-f {sqlFile|-} | -c sqlCommand] [--dump|-d] [--dump-table|-t table] [--skip-table|-e table] [--schemas-only|-s] [-l login-path] [-h host] [-u user] [-p password] [--insecure-login|-i] [--replace-macros|-r] [--column-names] [--force] [--quiet|-q] [--create] [[--civicrm|-C] | [--drupal|-D] | [--log|-L]] [--no-db] [--get-db-name|-g] [--db-name|-n dbName] [instance]" >&2
+}
+
+get_next_arg() {
+  opt="$1"
+  if [ $# -lt 2 -o "${2:0:1}" = "-" ]; then
+    echo "$prog: Option $opt requires a non-option parameter" >&2
+    return 1
+  else
+    echo "$2"
+    return 0
+  fi
 }
 
 filter_replace_macros() {
@@ -79,17 +91,19 @@ no_db=0
 while [ $# -gt 0 ]; do
   case "$1" in
     --help) usage; exit 0 ;;
-    -f|--sqlfile) shift; sqlfile="$1" ;;
-    -c|--cmd) shift; sqlcmd="$1" ;;
+    -f|--sqlfile) sqlfile=`get_next_arg "$@"` && shift || exit 1 ;;
+    -c|--cmd) sqlcmd=`get_next_arg "$@"` && shift || exit 1;;
     -d|--dump) dump_db=1 ;;
-    -e|--skip-table) shift; skip_tabs="$skip_tabs $1" ;;
-    -t|--dump-table) shift; dump_tabs="$dump_tabs $1"; dump_db=1 ;;
+    -e|--skip-table) arg=`get_next_arg "$@"` || exit 1
+                     skip_tabs="$skip_tabs $arg"; shift ;;
+    -t|--dump-table) arg=`get_next_arg "$@"` || exit 1
+                     dump_tabs="$dump_tabs $arg"; dump_db=1; shift ;;
     -s|--schema*) nodata_arg="--no-data" ;;
-    -l|--login-path) shift; dbloginpath="$1" ;;
-    -h|--host) shift; dbhost="$1" ;;
-    -n|--db*) shift; dbname="$1" ;;
-    -u|--user) shift; dbuser="$1" ;;
-    -p|--pass*) shift; dbpass="$1" ;;
+    -l|--login-path) dbloginpath=`get_next_arg "$@"` && shift || exit 1 ;;
+    -h|--host) dbhost=`get_next_arg "$@"` && shift || exit 1 ;;
+    -n|--db*) dbname=`get_next_arg "$@"` && shift || exit 1 ;;
+    -u|--user) dbuser=`get_next_arg "$@"` && shift || exit 1 ;;
+    -p|--pass*) dbpass=`get_next_arg "$@"` && shift || exit 1 ;;
     -g|--get-db*) get_dbname=1 ;;
     -i|--insec*) insecure_login=1 ;;
     -r|--replace*) replace_macros=1 ;;
