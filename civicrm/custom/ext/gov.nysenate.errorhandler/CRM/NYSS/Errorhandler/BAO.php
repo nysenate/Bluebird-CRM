@@ -80,7 +80,6 @@ class CRM_NYSS_Errorhandler_BAO {
       $msg = 'There was a session error accessing this page. This is likely because you left the page open and inactive and the security token expired. Please revisit the page you were using and try again.';
       self::generateReport($vars, $msg);
     }
-    //NYSS 14116
     elseif (strpos($vars['message'], 'There is a validation error with your HTML input.') !== FALSE) {
       $redirectUrl = CRM_Utils_Request::retrieve('entryURL', 'String').'?qfKey='.CRM_Utils_Request::retrieve('qfKey', 'String');
       $msg = 'The content you entered into this form contains potentially harmful code. Please try pasting as plain text using [Ctrl+Shift+V].';
@@ -94,6 +93,7 @@ class CRM_NYSS_Errorhandler_BAO {
 
     //let standard CiviCRM behavior proceed; also log
     self::log(__FUNCTION__, $vars);
+    self::generateReport($vars);
 
     return FALSE;
   }

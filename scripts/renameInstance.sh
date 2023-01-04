@@ -109,8 +109,7 @@ tmpfile=/tmp/${prog}_$$.sql
 
 if [ $skip_views -ne 1 ]; then
   echo "Saving database views from [$srcinst]"
-  srcdbname=`$execSql --civicrm $srcinst --get-db-name`
-  $execSql -q --civicrm $srcinst -c "show full tables where table_type = 'VIEW'" | cut -f1 | xargs -n 1 $execSql $srcinst --dump-table >$tmpfile
+  $execSql -q --civicrm $srcinst -c "show full tables where table_type = 'VIEW'" | cut -f1 | xargs -n 1 --no-run-if-empty $execSql $srcinst --dump-table >$tmpfile
 fi
 
 echo "Moving tables from [$srcinst] to [$destinst]"
