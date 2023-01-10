@@ -2319,9 +2319,7 @@ class CRM_Contact_BAO_Query {
         '$value' => $value,
       ]);*/
 
-      if (isset($locType[1]) &&
-        is_numeric($locType[1])
-      ) {
+      if (isset($locType[1]) && is_numeric($locType[1])) {
         $setTables = FALSE;
 
         //NYSS 5494/8104/15166 support multiple values
@@ -2332,9 +2330,7 @@ class CRM_Contact_BAO_Query {
           elseif ($op == '!=') {
             $op = 'NOT IN';
           }
-          $value = str_replace(' ', '', $value);
-          $value = str_replace(['(',')'], '', $value);
-          $value = '('.trim($value).')';
+          $value = '(' . str_replace([' ', '(', ')'], '', $value) . ')';
         }
 
         //get the location name
@@ -3414,7 +3410,7 @@ WHERE  $smartGroupClause
       elseif ($op == '!=') {
         $this->_where[$grouping][] = "{$etTable}.entity_id NOT IN (SELECT entity_id FROM civicrm_entity_tag cet WHERE cet.entity_table = 'civicrm_contact' AND " . self::buildClause("cet.tag_id", '=', $value, 'Int') . ")";
       }
-      elseif ($op == '=' || strstr($op, 'IN')) {
+      elseif ($op == '=' || strpos($op, 'IN') !== FALSE) {
         $op = ($op == '=') ? 'IN' : $op;
         $this->_where[$grouping][] = "{$etTable}.tag_id $op ( $value )";
       }
@@ -3813,7 +3809,7 @@ WHERE  $smartGroupClause
       if ($op == '=') {
         $op = 'IN';
       }
-      elseif ( $op == '!=' ) {
+      elseif ($op == '!=') {
         $op = 'NOT IN';
       }
       //11410 convert to array; will be handled downstream
@@ -3827,7 +3823,7 @@ WHERE  $smartGroupClause
     }
     else {
       $field = 'civicrm_address.postal_code';
-      // Per CRM-17060 we might be looking at an 'IN' syntax so don't case arrays to string.
+      // Per CRM-17060 we might be looking at an 'IN' syntax so don't cast arrays to string.
       if (!is_array($value)) {
         $val = CRM_Utils_Type::escape($value, 'String');
       }
@@ -4222,7 +4218,7 @@ WHERE  $smartGroupClause
 
     if (self::caseImportant($op)) {
       $value = implode("[[:cntrl:]]|[[:cntrl:]]", (array) $value);
-      $op = (strstr($op, '!') || strstr($op, 'NOT')) ? 'NOT RLIKE' : 'RLIKE';
+      $op = (strpos($op, '!') !== FALSE || strpos($op, 'NOT') !== FALSE) ? 'NOT RLIKE' : 'RLIKE';
       $value = "[[:cntrl:]]" . $value . "[[:cntrl:]]";
     }
 
@@ -4977,7 +4973,7 @@ civicrm_relationship.start_date > {$today}
         // remove sort syntax from ORDER BY clauses if present
         $orderBy = str_ireplace([' DESC', ' ASC', '`'], '', $orderBy);
         // if ORDER BY column is not present in GROUP BY then append it to end
-        if (preg_match('/(MAX|MIN)\(/i', trim($orderBy)) !== 1 && !strstr($groupBy, $orderBy)) {
+        if (preg_match('/(MAX|MIN)\(/i', trim($orderBy)) !== 1 && strpos($groupBy, $orderBy) === FALSE) {
           $groupBy .= ", {$orderBy}";
         }
       }
@@ -5513,7 +5509,7 @@ civicrm_relationship.start_date > {$today}
       }
 
       $date = $format = NULL;
-      if (strstr($op, 'IN')) {
+      if (strpos($op, 'IN') !== FALSE) {
         $format = [];
         foreach ($value as &$date) {
           $date = CRM_Utils_Date::processDate($date, NULL, FALSE, $dateFormat);
@@ -5525,7 +5521,7 @@ civicrm_relationship.start_date > {$today}
         $date = "('" . implode("','", $value) . "')";
         $format = implode(', ', $format);
       }
-      elseif ($value && (!strstr($op, 'NULL') && !strstr($op, 'EMPTY'))) {
+      elseif ($value && strpos($op, 'NULL') === FALSE && strpos($op, 'EMPTY') === FALSE) {
         $date = CRM_Utils_Date::processDate($value, NULL, FALSE, $dateFormat);
         if (!$appendTimeStamp) {
           $date = substr($date, 0, 8);
@@ -5792,11 +5788,11 @@ civicrm_relationship.start_date > {$today}
         //Civi::log()->debug('buildClause', array('dataType' => $dataType, 'value' => $value));
         if (isset($dataType)) {
           if (!is_array($value)) {
-            $value = CRM_Utils_Type::escape($value, "String");
+            $value = CRM_Utils_Type::escape($value, 'String');
             $values = explode('[:comma:]', $value);
             //NYSS - type is passed as nyss_String or nyss_Integer
             if (strpos($dataType, 'nyss_') !== FALSE ) {
-              $value = str_replace(array('(',')'), '', $value); //4969 make sure no parens were added (search bldr)
+              $value = str_replace(['(', ')'], '', $value); //4969 make sure no parens were added (search bldr)
               $values = array_map('trim', explode(',', $value));
               $dataType = str_replace('nyss_', '', $dataType); //return to expected format
             }
@@ -5997,11 +5993,11 @@ AND   displayRelType.is_active = 1
     if (strpos($from, $qcache['from']) === FALSE) {
       if (strpos($from, "INNER JOIN") !== FALSE) {
         // lets replace all the INNER JOIN's in the $from so we dont exclude other data
-        // this happens when we have an event_type in the quert (CRM-7969)
-        $from = str_replace("INNER JOIN", "LEFT JOIN", $from);
+        // this happens when we have an event_type in the query (CRM-7969)
+        $from = str_replace('INNER JOIN', 'LEFT JOIN', $from);
         // Make sure the relationship join right after the FROM and other joins afterwards.
         // This gives us the possibility to change the join on civicrm case.
-        $from = preg_replace("/LEFT JOIN/", $qcache['from'] . " LEFT JOIN", $from, 1);
+        $from = preg_replace('/LEFT JOIN/', $qcache['from'] . ' LEFT JOIN', $from, 1);
       }
       else {
         $from .= $qcache['from'];
@@ -6505,8 +6501,8 @@ AND   displayRelType.is_active = 1
         }
         elseif (!in_array($element, $nullableFields)) {
           // if wildcard is already present return searchString as it is OR append and/or prepend with wildcard
-          $isWilcard = strstr($value, '%') ? FALSE : CRM_Core_Config::singleton()->includeWildCardInName;
-          $formValues[$element] = ['LIKE' => self::getWildCardedValue($isWilcard, 'LIKE', $value)];
+          $isWildcard = strpos($value, '%') !== FALSE ? FALSE : CRM_Core_Config::singleton()->includeWildCardInName;
+          $formValues[$element] = ['LIKE' => self::getWildCardedValue($isWildcard, 'LIKE', $value)];
         }
       }
     }
