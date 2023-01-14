@@ -12,11 +12,11 @@ class CRM_Tags_APIWrapper {
   /**
    * Callback to wrap completetransaction API calls.
    */
-  public static function PREPARE ($event) {
+  public static function PREPARE($event) {
     $request = $event->getApiRequestSig();
     //Civi::log()->debug(__FUNCTION__, ['request' => $request]);
 
-    switch($request) {
+    switch ($request) {
       // Wrap completetransaction in the v3 API.
       // Doesn't exist yet in the v4 API.
       case '3.tag.get':
@@ -33,12 +33,11 @@ class CRM_Tags_APIWrapper {
    *
    * #14336
    */
-  public function completeTransaction($apiRequest, $callsame) {
+  public static function completeTransaction($apiRequest, $callsame) {
     //Civi::log()->debug(__FUNCTION__, ['$apiRequest' => $apiRequest]);
 
-    if (!empty($term = $apiRequest['params']['name']['LIKE']) &&
-      strpos($term, '%') !== 0
-    ) {
+    if (!empty($term = $apiRequest['params']['name']['LIKE'])
+        && strpos($term, '%') !== 0) {
       $apiRequest['params']['name']['LIKE'] = '%'.$term;
     }
 
