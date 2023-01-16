@@ -143,7 +143,7 @@ function nyss_ioimport_form()
     '#type' => 'radios',
     '#title' => t('Add to Group Handling'),
     '#options' => ['all' => t('Add All'), 'new' => t('Add New'), 'none' => t('None')],
-    '#attributes' => ['class' => 'addtogroup_handling-wrapper'],
+    '#attributes' => ['class' => ['addtogroup_handling-wrapper']],
     '#default_value' => 'none',
     '#description' => t('If "Add All" is selected, all imported contacts will be added to the group. If "Add New" is selected, only new contacts created through the import will be added to the group.'),
   ];
