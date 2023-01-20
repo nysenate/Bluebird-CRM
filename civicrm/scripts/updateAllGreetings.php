@@ -13,7 +13,6 @@
 ** ct=Individual or ct=Household or ct=Organization (ct = contact type)
 */
 
-  
 require_once 'script_utils.php';
 
 define('BATCHSIZE', 250);
@@ -24,14 +23,14 @@ function run()
 {
   $prog = basename(__FILE__);
   $shortopts = 'c:nfq:t';
-  $longopts = array('ct=', 'dry-run', 'force', 'quiet', 'idtbl=');
+  $longopts = ['ct=', 'dry-run', 'force', 'quiet', 'idtbl='];
   $stdusage = civicrm_script_usage();
   $usage = "[--ct|-c {Individual|Household|Organization}] [--dry-run|-n] [--force|-f] [--quiet|-q] [--idtbl TABLENAME|-t]";
-  $contactOpts = array(
+  $contactOpts = [
     'i' => 'Individual',
     'h' => 'Household',
     'o' => 'Organization'
-  );
+  ];
 
   $optlist = civicrm_script_init($shortopts, $longopts);
   if ($optlist === null) {
@@ -44,7 +43,6 @@ function run()
   }
 
   //log the execution of script
-  require_once 'CRM/Core/Error.php';
   CRM_Core_Error::debug_log_message('updateAllGreetings.php');
 
   require_once 'CRM/Core/Config.php';
@@ -67,32 +65,32 @@ function run()
   $dao = new CRM_Contact_BAO_Contact();
 
   //get greeting defaults
-  $greetings = array(
-    'Individual' => array(
+  $greetings = [
+    'Individual' => [
       'addressee' => CRM_Core_OptionGroup::values('addressee',
         NULL, NULL, NULL, 'AND v.filter = 1 AND is_default = 1'),
       'email' => CRM_Core_OptionGroup::values('email_greeting',
         NULL, NULL, NULL, 'AND v.filter = 1 AND is_default = 1'),
       'postal' => CRM_Core_OptionGroup::values('postal_greeting',
         NULL, NULL, NULL, 'AND v.filter = 1 AND is_default = 1'),
-    ),
-    'Household' => array(
+    ],
+    'Household' => [
       'addressee' => CRM_Core_OptionGroup::values('addressee',
         NULL, NULL, NULL, 'AND v.filter = 2 AND is_default = 1'),
       'email' => CRM_Core_OptionGroup::values('email_greeting',
         NULL, NULL, NULL, 'AND v.filter = 2 AND is_default = 1'),
       'postal' => CRM_Core_OptionGroup::values('postal_greeting',
         NULL, NULL, NULL, 'AND v.filter = 2 AND is_default = 1'),
-    ),
-    'Organization' => array(
+    ],
+    'Organization' => [
       'addressee' => CRM_Core_OptionGroup::values('addressee',
         NULL, NULL, NULL, 'AND v.filter = 3 AND is_default = 1'),
       'email' => CRM_Core_OptionGroup::values('email_greeting',
         NULL, NULL, NULL, 'AND v.filter = 3 AND is_default = 1'),
       'postal' => CRM_Core_OptionGroup::values('postal_greeting',
         NULL, NULL, NULL, 'AND v.filter = 3 AND is_default = 1'),
-    ),
-  );
+    ],
+  ];
   //CRM_Core_Error::debug_var('$greetings', $greetings);
 
   if ($contactType) {
@@ -172,7 +170,7 @@ function run()
   }
 
   //7247 remove temp table
-  if ( !empty($idTbl) ) {
+  if (!empty($idTbl)) {
     $sql = "DROP TABLE IF EXISTS {$idTbl};";
     CRM_Core_DAO::executeQuery($sql);
   }

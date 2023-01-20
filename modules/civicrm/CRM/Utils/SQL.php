@@ -57,6 +57,9 @@ class CRM_Utils_SQL {
    * @return array
    */
   public static function mergeSubquery($entity, $joinColumn = 'id') {
+    //NYSS 15227
+    if (empty($entity)) { return NULL; }
+
     require_once 'api/v3/utils.php';
     $baoName = _civicrm_api3_get_BAO($entity);
     $bao = new $baoName();
