@@ -25,7 +25,7 @@ class CRM_Contactlayout_Form_Inline_ProfileBlock extends CRM_Profile_Form_Edit {
     CRM_Core_Session::singleton()->getStatus(TRUE);
   }
 
-  public function buildQuickForm() {
+  public function buildQuickForm(): void {
     parent::buildQuickForm();
     $buttons = array(
       array(

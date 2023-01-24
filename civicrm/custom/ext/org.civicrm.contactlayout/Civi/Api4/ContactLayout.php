@@ -36,7 +36,7 @@ class ContactLayout extends Generic\DAOEntity {
       ->setCheckPermissions($checkPermissions);
   }
 
-  public static function permissions() {
+  public static function permissions():array {
     return [
       'get' => ['access CiviCRM'],
     ];
