@@ -353,7 +353,7 @@ class CRM_Contribute_Form_ContributionBase extends CRM_Core_Form {
 
       $this->_paymentProcessorIDs = array_filter(explode(
         CRM_Core_DAO::VALUE_SEPARATOR,
-        CRM_Utils_Array::value('payment_processor', $this->_values)
+        ($this->_values['payment_processor'] ?? '')
       ));
 
       $this->assignPaymentProcessor($isPayLater);
@@ -577,6 +577,7 @@ class CRM_Contribute_Form_ContributionBase extends CRM_Core_Form {
     }
     $this->assignPaymentFields();
     $this->assignEmailField();
+    $this->assign('emailExists', $this->_emailExists);
 
     // also assign the receipt_text
     if (isset($this->_values['receipt_text'])) {
@@ -662,7 +663,6 @@ class CRM_Contribute_Form_ContributionBase extends CRM_Core_Form {
         }
 
         CRM_Core_BAO_Address::checkContactSharedAddressFields($fields, $contactID);
-        $addCaptcha = FALSE;
         // fetch file preview when not submitted yet, like in online contribution Confirm and ThankYou page
         $viewOnlyFileValues = empty($profileContactType) ? [] : [$profileContactType => []];
         foreach ($fields as $key => $field) {
@@ -735,10 +735,6 @@ class CRM_Contribute_Form_ContributionBase extends CRM_Core_Form {
             );
             $this->_fields[$key] = $field;
           }
-          // CRM-11316 Is ReCAPTCHA enabled for this profile AND is this an anonymous visitor
-          if ($field['add_captcha'] && !$this->_userID) {
-            $addCaptcha = TRUE;
-          }
         }
 
         $this->assign($name, $fields);
@@ -749,10 +745,6 @@ class CRM_Contribute_Form_ContributionBase extends CRM_Core_Form {
         elseif (count($viewOnlyFileValues)) {
           $this->assign('viewOnlyFileValues', $viewOnlyFileValues);
         }
-
-        if ($addCaptcha && !$viewOnly) {
-          CRM_Utils_ReCAPTCHA::enableCaptchaOnForm($this);
-        }
       }
     }
   }
@@ -761,7 +753,6 @@ class CRM_Contribute_Form_ContributionBase extends CRM_Core_Form {
    * Assign payment field information to the template.
    *
    * @throws \CRM_Core_Exception
-   * @throws \CiviCRM_API3_Exception
    */
   public function assignPaymentFields() {
     //fix for CRM-3767
@@ -821,9 +812,7 @@ class CRM_Contribute_Form_ContributionBase extends CRM_Core_Form {
    * @param int $id
    * @param CRM_Core_Form $form
    *
-   * @throws \API_Exception
    * @throws \CRM_Core_Exception
-   * @throws \CiviCRM_API3_Exception
    */
   public function buildComponentForm($id, $form): void {
     if (empty($id)) {
@@ -1202,7 +1191,7 @@ class CRM_Contribute_Form_ContributionBase extends CRM_Core_Form {
    *
    * @return float
    *
-   * @throws \CiviCRM_API3_Exception
+   * @throws \CRM_Core_Exception
    */
   protected function getMainContributionAmount($params) {
     if (!empty($params['selectMembership'])) {

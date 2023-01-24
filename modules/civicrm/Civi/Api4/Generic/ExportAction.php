@@ -29,6 +29,7 @@ use Civi\Api4\Utils\CoreUtil;
  * @method string getUpdate()
  */
 class ExportAction extends AbstractAction {
+  use Traits\MatchParamTrait;
 
   /**
    * Id of $ENTITY to export
@@ -73,7 +74,7 @@ class ExportAction extends AbstractAction {
    */
   private function exportRecord(string $entityType, int $entityId, Result $result, $parentName = NULL, $excludeFields = []) {
     if (isset($this->exportedEntities[$entityType][$entityId])) {
-      throw new \API_Exception("Circular reference detected: attempted to export $entityType id $entityId multiple times.");
+      throw new \CRM_Core_Exception("Circular reference detected: attempted to export $entityType id $entityId multiple times.");
     }
     $this->exportedEntities[$entityType][$entityId] = TRUE;
     $select = $pseudofields = [];
@@ -145,7 +146,7 @@ class ExportAction extends AbstractAction {
         unset($record[$fieldName]);
       }
     }
-    $result[] = [
+    $export = [
       'name' => $name,
       'entity' => $entityType,
       'cleanup' => $this->cleanup,
@@ -155,12 +156,15 @@ class ExportAction extends AbstractAction {
         'values' => $record,
       ],
     ];
+    foreach (array_intersect($this->match, array_keys($allFields)) as $match) {
+      $export['params']['match'][] = $match;
+    }
+    $result[] = $export;
     // Export entities that reference this one
     $daoName = CoreUtil::getInfoItem($entityType, 'dao');
     if ($daoName) {
       /** @var \CRM_Core_DAO $dao */
-      $dao = new $daoName();
-      $dao->id = $entityId;
+      $dao = $daoName::findById($entityId);
       // Collect references into arrays keyed by entity type
       $references = [];
       foreach ($dao->findReferences() as $reference) {

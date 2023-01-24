@@ -1,4 +1,5 @@
 <?php
+
 namespace Civi\CompilePlugin;
 
 use Composer\Package\PackageInterface;

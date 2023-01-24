@@ -311,7 +311,7 @@ abstract class CRM_Utils_Hook {
   public function requireCiviModules(&$moduleList) {
     $civiModules = CRM_Core_PseudoConstant::getModuleExtensions();
     foreach ($civiModules as $civiModule) {
-      if (!file_exists($civiModule['filePath'])) {
+      if (!file_exists($civiModule['filePath'] ?? '')) {
         CRM_Core_Session::setStatus(
           ts('Error loading module file (%1). Please restore the file or disable the module.',
             [1 => $civiModule['filePath']]),
@@ -499,7 +499,7 @@ abstract class CRM_Utils_Hook {
    *   The name of the form.
    * @param array &$fields the POST parameters as filtered by QF
    * @param array &$files the FILES parameters as sent in by POST
-   * @param array &$form the form object
+   * @param CRM_Core_Form &$form the form object
    * @param array &$errors the array of errors.
    *
    * @return mixed

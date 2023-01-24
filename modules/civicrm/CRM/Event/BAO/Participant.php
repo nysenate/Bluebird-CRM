@@ -14,7 +14,7 @@
  * @package CRM
  * @copyright CiviCRM LLC https://civicrm.org/licensing
  */
-class CRM_Event_BAO_Participant extends CRM_Event_DAO_Participant {
+class CRM_Event_BAO_Participant extends CRM_Event_DAO_Participant implements \Civi\Core\HookInterface {
 
   /**
    * Static field for all the participant information that we can potentially import.
@@ -959,7 +959,7 @@ WHERE  civicrm_participant.id = {$participantId}
    * Get the ID of the default (first) participant role
    *
    * @return int
-   * @throws \CiviCRM_API3_Exception
+   * @throws \CRM_Core_Exception
    */
   public static function getDefaultRoleID() {
     return (int) civicrm_api3('OptionValue', 'getvalue', [
@@ -1110,7 +1110,7 @@ WHERE cpf.price_set_id = %1 AND cpfv.label LIKE %2";
         }
         return TRUE;
       }
-      catch (CiviCRM_API3_Exception $e) {
+      catch (CRM_Core_Exception $e) {
         throw new CRM_Core_Exception('Failed to update additional participant status in database');
       }
     }
@@ -1422,7 +1422,7 @@ UPDATE  civicrm_participant
         $receiptFrom = $eventDetails['confirm_from_name'] . ' <' . $eventDetails['confirm_from_email'] . '>';
       }
 
-      list($mailSent, $subject) = CRM_Core_BAO_MessageTemplate::sendTemplate(
+      [$mailSent, $subject] = CRM_Core_BAO_MessageTemplate::sendTemplate(
         [
           'workflow' => 'participant_' . strtolower($mailType),
           'contactId' => $contactId,
@@ -1859,7 +1859,7 @@ WHERE    civicrm_participant.contact_id = {$contactID} AND
       $details['eligible'] = TRUE;
       $details['status']  = $dao->status;
       $details['role'] = $dao->role;
-      $details['fee_level'] = trim($dao->fee_level, CRM_Core_DAO::VALUE_SEPARATOR);
+      $details['fee_level'] = trim(($dao->fee_level ?? ''), CRM_Core_DAO::VALUE_SEPARATOR);
       $details['fee_amount'] = $dao->fee_amount;
       $details['register_date'] = $dao->register_date;
       $details['event_start_date'] = $dao->start_date;
@@ -1888,7 +1888,7 @@ WHERE    civicrm_participant.contact_id = {$contactID} AND
     $timenow = new Datetime();
     if (!$isBackOffice && isset($time_limit)) {
       $cancelHours = abs($time_limit);
-      $cancelInterval = new DateInterval("PT${cancelHours}H");
+      $cancelInterval = new DateInterval("PT{$cancelHours}H");
       $cancelInterval->invert = $time_limit < 0 ? 1 : 0;
       $cancelDeadline = (new Datetime($start_date))->sub($cancelInterval);
       if ($timenow > $cancelDeadline) {
@@ -1902,6 +1902,38 @@ WHERE    civicrm_participant.contact_id = {$contactID} AND
       }
     }
     return $details;
+  }
+
+  /**
+   * Callback for hook_civicrm_pre().
+   * @param \Civi\Core\Event\PreEvent $event
+   * @throws CRM_Core_Exception
+   */
+  public static function self_hook_civicrm_pre(\Civi\Core\Event\PreEvent $event) {
+    if ($event->entity === 'Participant' && $event->action === 'create' && empty($event->params['created_id'])) {
+      // Set the "created_id" field if not already set.
+      // The created_id should always be the person that actually did the registration.
+      // That might be the first participant, but it might be someone registering someone without registering themselves.
+      // 1. Prefer logged in contact id
+      // 2. Fall back to 'registered_by_id' param.
+      // 3. Fall back to participant contact_id (for anonymous person registering themselves)
+      $event->params['created_id'] = CRM_Core_Session::getLoggedInContactID();
+      if (empty($event->params['created_id'])) {
+        if (!empty($event->params['registered_by_id'])) {
+          // No logged in contact but participant was registered by someone else.
+          // Look up the contact ID of that participant and record
+          $participant = \Civi\Api4\Participant::get(FALSE)
+            ->addSelect('contact_id')
+            ->addWhere('id', '=', $event->params['registered_by_id'])
+            ->execute()
+            ->first();
+          $event->params['created_id'] = $participant['contact_id'];
+        }
+        else {
+          $event->params['created_id'] = $event->params['contact_id'];
+        }
+      }
+    }
   }
 
 }

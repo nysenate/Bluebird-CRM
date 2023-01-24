@@ -67,7 +67,7 @@
     // Simple wrapper around $.crmDatepicker.
     // example with no time input: <input crm-ui-datepicker="{time: false}" ng-model="myobj.datefield"/>
     // example with custom date format: <input crm-ui-datepicker="{date: 'm/d/y'}" ng-model="myobj.datefield"/>
-    .directive('crmUiDatepicker', function () {
+    .directive('crmUiDatepicker', function ($timeout) {
       return {
         restrict: 'AE',
         require: 'ngModel',
@@ -82,14 +82,17 @@
           element
             .crmDatepicker(scope.crmUiDatepicker)
             .on('change', function() {
-              var requiredLength = 19;
-              if (scope.crmUiDatepicker && scope.crmUiDatepicker.time === false) {
-                requiredLength = 10;
-              }
-              if (scope.crmUiDatepicker && scope.crmUiDatepicker.date === false) {
-                requiredLength = 8;
-              }
-              ngModel.$setValidity('incompleteDateTime', !($(this).val().length && $(this).val().length !== requiredLength));
+              // Because change gets triggered from the $render function we could be either inside or outside the $digest cycle
+              $timeout(function() {
+                var requiredLength = 19;
+                if (scope.crmUiDatepicker && scope.crmUiDatepicker.time === false) {
+                  requiredLength = 10;
+                }
+                if (scope.crmUiDatepicker && scope.crmUiDatepicker.date === false) {
+                  requiredLength = 8;
+                }
+                ngModel.$setValidity('incompleteDateTime', !(element.val().length && element.val().length !== requiredLength));
+              });
             });
         }
       };
@@ -343,8 +346,7 @@
               iframe.setAttribute('src', scope.$parent.$eval(attrs.crmUiIframeSrc));
             }
             else {
-              //NYSS 12135
-              var iframeHtml = scope.$parent.$eval(attrs.crmUiIframe).replace(/<a /g, "<a target='_blank' ");
+              var iframeHtml = scope.$parent.$eval(attrs.crmUiIframe);
 
               var doc = iframe.document;
               if (iframe.contentDocument) {
@@ -709,6 +711,82 @@
       };
     })
 
+    // Render a crmAutocomplete APIv4 widget
+    // usage: <input crm-autocomplete="'Contact'" crm-autocomplete-params={savedSearch: 'mySearch', filters: {is_deceased: false}}" ng-model="myobj.field" />
+    .directive('crmAutocomplete', function () {
+      return {
+        require: {
+          crmAutocomplete: 'crmAutocomplete',
+          ngModel: '?ngModel'
+        },
+        priority: 100,
+        bindToController: {
+          entity: '<crmAutocomplete',
+          crmAutocompleteParams: '<',
+          multi: '<',
+          autoOpen: '<',
+          staticOptions: '<'
+        },
+        link: function(scope, element, attr, ctrl) {
+          // Copied from ng-list but applied conditionally if field is multi-valued
+          var parseList = function(viewValue) {
+            // If the viewValue is invalid (say required but empty) it will be `undefined`
+            if (_.isUndefined(viewValue)) return;
+
+            if (!ctrl.crmAutocomplete.multi) {
+              return viewValue;
+            }
+
+            var list = [];
+
+            if (viewValue) {
+              _.each(viewValue.split(','), function(value) {
+                if (value) {
+                  list.push(_.trim(value));
+                }
+              });
+            }
+
+            return list;
+          };
+
+          if (ctrl.ngModel) {
+            // Ensure widget is updated when model changes
+            ctrl.ngModel.$render = function() {
+              element.val(ctrl.ngModel.$viewValue || '').change();
+            };
+
+            // Copied from ng-list
+            ctrl.ngModel.$parsers.push(parseList);
+            ctrl.ngModel.$formatters.push(function(value) {
+              return _.isArray(value) ? value.join(',') : value;
+            });
+
+            // Copied from ng-list
+            ctrl.ngModel.$isEmpty = function(value) {
+              return !value || !value.length;
+            };
+          }
+        },
+        controller: function($element, $timeout) {
+          var ctrl = this;
+
+          // Intitialize widget, and re-render it every time params change
+          this.$onChanges = function() {
+            // Timeout is to wait for `placeholder="{{ ts(...) }}"` to be resolved
+            $timeout(function() {
+              $element.crmAutocomplete(ctrl.entity, ctrl.crmAutocompleteParams, {
+                multiple: ctrl.multi,
+                // Only auto-open if there are no static options
+                minimumInputLength: ctrl.autoOpen && _.isEmpty(ctrl.staticOptions) ? 0 : 1,
+                static: ctrl.staticOptions || [],
+              });
+            });
+          };
+        }
+      };
+    })
+
     // validate multiple email text
     // usage: <input crm-multiple-email type="text" ng-model="myobj.field" />
     .directive('crmMultipleEmail', function ($parse, $timeout) {
@@ -960,12 +1038,15 @@
             // handled in crmUiTab ctrl
             return;
           }
-          if (attrs.crmIcon.substring(0,3) == 'fa-') {
-            $(element).prepend('<i class="crm-i ' + attrs.crmIcon + '" aria-hidden="true"></i> ');
+          if (attrs.crmIcon) {
+            if (attrs.crmIcon.substring(0,3) == 'fa-') {
+              $(element).prepend('<i class="crm-i ' + attrs.crmIcon + '" aria-hidden="true"></i> ');
+            }
+            else {
+              $(element).prepend('<span class="icon ui-icon-' + attrs.crmIcon + '"></span> ');
+            }
           }
-          else {
-            $(element).prepend('<span class="icon ui-icon-' + attrs.crmIcon + '"></span> ');
-          }
+
           // Add crm-* class to non-bootstrap buttons
           if ($(element).is('button:not(.btn)')) {
             $(element).addClass('crm-button');
@@ -1196,6 +1277,19 @@
             });
           });
         }
+      };
+    })
+
+    // Reformat an array of objects for compatibility with select2
+    .factory('formatForSelect2', function() {
+      return function(input, key, label, extra) {
+        return _.transform(input, function(result, item) {
+          var formatted = {id: item[key], text: item[label]};
+          if (extra) {
+            _.merge(formatted, _.pick(item, extra));
+          }
+          result.push(formatted);
+        }, []);
       };
     })
 

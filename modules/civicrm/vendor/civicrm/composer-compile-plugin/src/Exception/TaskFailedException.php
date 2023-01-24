@@ -1,4 +1,5 @@
 <?php
+
 namespace Civi\CompilePlugin\Exception;
 
 use Civi\CompilePlugin\Task;

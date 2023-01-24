@@ -166,6 +166,11 @@ class Pager_Common
     var $_urlVar      = 'pageID';
 
     /**
+     * @var string
+     */
+    public $_url;
+
+    /**
      * @var array data to pass through the link
      * @access private
      */
@@ -449,6 +454,8 @@ class Pager_Common
      * @access public
      */
     var $range = array();
+
+    public $_pageData = [];
 
     /**
      * @var array list of available options (safety check)

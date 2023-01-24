@@ -161,20 +161,26 @@ class CRM_Utils_Date {
    */
   public static function getAbbrWeekdayNames() {
     $key = 'abbrDays_' . \CRM_Core_I18n::getLocale();
-    $days = &\Civi::$statics[__CLASS__][$key];
-    if (!$days) {
-      $days = [];
+    if (empty(\Civi::$statics[__CLASS__][$key])) {
+      $intl_formatter = IntlDateFormatter::create(CRM_Core_I18n::getLocale(), IntlDateFormatter::MEDIUM, IntlDateFormatter::MEDIUM, NULL, IntlDateFormatter::GREGORIAN, 'E');
+      $days = [
+        0 => $intl_formatter->format(strtotime('Sunday')),
+        1 => $intl_formatter->format(strtotime('Monday')),
+        2 => $intl_formatter->format(strtotime('Tuesday')),
+        3 => $intl_formatter->format(strtotime('Wednesday')),
+        4 => $intl_formatter->format(strtotime('Thursday')),
+        5 => $intl_formatter->format(strtotime('Friday')),
+        6 => $intl_formatter->format(strtotime('Saturday')),
+      ];
       // First day of the week
       $firstDay = Civi::settings()->get('weekBegins');
 
-      // set LC_TIME and build the arrays from locale-provided names
-      // June 1st, 1970 was a Monday
-      CRM_Core_I18n::setLcTime();
-      for ($i = $firstDay; count($days) < 7; $i = $i > 5 ? 0 : $i + 1) {
-        $days[$i] = strftime('%a', mktime(0, 0, 0, 6, $i, 1970));
+      \Civi::$statics[__CLASS__][$key] = [];
+      for ($i = $firstDay; count(\Civi::$statics[__CLASS__][$key]) < 7; $i = $i > 5 ? 0 : $i + 1) {
+        \Civi::$statics[__CLASS__][$key][$i] = $days[$i];
       }
     }
-    return $days;
+    return \Civi::$statics[__CLASS__][$key];
   }
 
   /**
@@ -192,20 +198,26 @@ class CRM_Utils_Date {
    */
   public static function getFullWeekdayNames() {
     $key = 'fullDays_' . \CRM_Core_I18n::getLocale();
-    $days = &\Civi::$statics[__CLASS__][$key];
-    if (!$days) {
-      $days = [];
+    if (empty(\Civi::$statics[__CLASS__][$key])) {
+      $intl_formatter = IntlDateFormatter::create(CRM_Core_I18n::getLocale(), IntlDateFormatter::MEDIUM, IntlDateFormatter::MEDIUM, NULL, IntlDateFormatter::GREGORIAN, 'EEEE');
+      $days = [
+        0 => $intl_formatter->format(strtotime('Sunday')),
+        1 => $intl_formatter->format(strtotime('Monday')),
+        2 => $intl_formatter->format(strtotime('Tuesday')),
+        3 => $intl_formatter->format(strtotime('Wednesday')),
+        4 => $intl_formatter->format(strtotime('Thursday')),
+        5 => $intl_formatter->format(strtotime('Friday')),
+        6 => $intl_formatter->format(strtotime('Saturday')),
+      ];
       // First day of the week
       $firstDay = Civi::settings()->get('weekBegins');
 
-      // set LC_TIME and build the arrays from locale-provided names
-      // June 1st, 1970 was a Monday
-      CRM_Core_I18n::setLcTime();
-      for ($i = $firstDay; count($days) < 7; $i = $i > 5 ? 0 : $i + 1) {
-        $days[$i] = strftime('%A', mktime(0, 0, 0, 6, $i, 1970));
+      \Civi::$statics[__CLASS__][$key] = [];
+      for ($i = $firstDay; count(\Civi::$statics[__CLASS__][$key]) < 7; $i = $i > 5 ? 0 : $i + 1) {
+        \Civi::$statics[__CLASS__][$key][$i] = $days[$i];
       }
     }
-    return $days;
+    return \Civi::$statics[__CLASS__][$key];
   }
 
   /**
@@ -219,19 +231,27 @@ class CRM_Utils_Date {
    */
   public static function &getAbbrMonthNames($month = FALSE) {
     $key = 'abbrMonthNames_' . \CRM_Core_I18n::getLocale();
-    $abbrMonthNames = &\Civi::$statics[__CLASS__][$key];
-    if (!isset($abbrMonthNames)) {
-
-      // set LC_TIME and build the arrays from locale-provided names
-      CRM_Core_I18n::setLcTime();
-      for ($i = 1; $i <= 12; $i++) {
-        $abbrMonthNames[$i] = strftime('%b', mktime(0, 0, 0, $i, 10, 1970));
-      }
+    if (empty(\Civi::$statics[__CLASS__][$key])) {
+      $intl_formatter = IntlDateFormatter::create(CRM_Core_I18n::getLocale(), IntlDateFormatter::MEDIUM, IntlDateFormatter::MEDIUM, NULL, IntlDateFormatter::GREGORIAN, 'MMM');
+      \Civi::$statics[__CLASS__][$key] = [
+        1 => $intl_formatter->format(strtotime('1 January')),
+        2 => $intl_formatter->format(strtotime('1 February')),
+        3 => $intl_formatter->format(strtotime('1 March')),
+        4 => $intl_formatter->format(strtotime('1 April')),
+        5 => $intl_formatter->format(strtotime('1 May')),
+        6 => $intl_formatter->format(strtotime('1 June')),
+        7 => $intl_formatter->format(strtotime('1 July')),
+        8 => $intl_formatter->format(strtotime('1 August')),
+        9 => $intl_formatter->format(strtotime('1 September')),
+        10 => $intl_formatter->format(strtotime('1 October')),
+        11 => $intl_formatter->format(strtotime('1 November')),
+        12 => $intl_formatter->format(strtotime('1 December')),
+      ];
     }
     if ($month) {
-      return $abbrMonthNames[$month];
+      return \Civi::$statics[__CLASS__][$key][$month];
     }
-    return $abbrMonthNames;
+    return \Civi::$statics[__CLASS__][$key];
   }
 
   /**
@@ -287,7 +307,8 @@ class CRM_Utils_Date {
 
   /**
    * Create a date and time string in a provided format.
-   *
+   * %A - Full day name ('Saturday'..'Sunday')
+   * %a - abbreviated day name ('Sat'..'Sun')
    * %b - abbreviated month name ('Jan'..'Dec')
    * %B - full month name ('January'..'December')
    * %d - day of the month as a decimal number, 0-padded ('01'..'31')
@@ -318,6 +339,11 @@ class CRM_Utils_Date {
     // 1-based (January) month names arrays
     $abbrMonths = self::getAbbrMonthNames();
     $fullMonths = self::getFullMonthNames();
+    $fullWeekdayNames = self::getFullWeekdayNames();
+    $abbrWeekdayNames = self::getAbbrWeekdayNames();
+
+    // backwards compatibility with %D being the equivalent of %m/%d/%y
+    $format = str_replace('%D', '%m/%d/%y', ($format ?? ''));
 
     if (!$format) {
       $config = CRM_Core_Config::singleton();
@@ -337,16 +363,16 @@ class CRM_Utils_Date {
         }
       }
       else {
-        if (strpos($dateString, '-')) {
+        if (strpos(($dateString ?? ''), '-')) {
           $month = (int) substr($dateString, 5, 2);
           $day = (int) substr($dateString, 8, 2);
         }
         else {
-          $month = (int) substr($dateString, 4, 2);
-          $day = (int) substr($dateString, 6, 2);
+          $month = (int) substr(($dateString ?? ''), 4, 2);
+          $day = (int) substr(($dateString ?? ''), 6, 2);
         }
 
-        if (strlen($dateString) > 10) {
+        if (strlen(($dateString ?? '')) > 10) {
           $format = $config->dateformatDatetime;
         }
         elseif ($day > 0) {
@@ -381,6 +407,8 @@ class CRM_Utils_Date {
         $second = (int) substr($dateString, 12, 2);
       }
 
+      $dayInt = date('w', strtotime($dateString));
+
       if ($day % 10 == 1 and $day != 11) {
         $suffix = 'st';
       }
@@ -414,6 +442,8 @@ class CRM_Utils_Date {
       }
 
       $date = [
+        '%A' => $fullWeekdayNames[$dayInt] ?? NULL,
+        '%a' => $abbrWeekdayNames[$dayInt] ?? NULL,
         '%b' => $abbrMonths[$month] ?? NULL,
         '%B' => $fullMonths[$month] ?? NULL,
         '%d' => $day > 9 ? $day : '0' . $day,
@@ -430,10 +460,11 @@ class CRM_Utils_Date {
         '%i' => $minute > 9 ? $minute : '0' . $minute,
         '%p' => strtolower($type),
         '%P' => $type,
-        '%A' => $type,
         '%Y' => $year,
+        '%y' => substr($year, 2),
         '%s' => str_pad($second, 2, 0, STR_PAD_LEFT),
         '%S' => str_pad($second, 2, 0, STR_PAD_LEFT),
+        '%Z' => date('T', strtotime($dateString)),
       ];
 
       return strtr($format, $date);
@@ -481,12 +512,12 @@ class CRM_Utils_Date {
    *   date/datetime in ISO format
    */
   public static function mysqlToIso($mysql) {
-    $year = substr($mysql, 0, 4);
-    $month = substr($mysql, 4, 2);
-    $day = substr($mysql, 6, 2);
-    $hour = substr($mysql, 8, 2);
-    $minute = substr($mysql, 10, 2);
-    $second = substr($mysql, 12, 2);
+    $year = substr(($mysql ?? ''), 0, 4);
+    $month = substr(($mysql ?? ''), 4, 2);
+    $day = substr(($mysql ?? ''), 6, 2);
+    $hour = substr(($mysql ?? ''), 8, 2);
+    $minute = substr(($mysql ?? ''), 10, 2);
+    $second = substr(($mysql ?? ''), 12, 2);
 
     $iso = '';
     if ($year) {
@@ -525,7 +556,7 @@ class CRM_Utils_Date {
    */
   public static function isoToMysql($iso) {
     $dropArray = ['-' => '', ':' => '', ' ' => ''];
-    return strtr($iso, $dropArray);
+    return strtr(($iso ?? ''), $dropArray);
   }
 
   /**
@@ -543,7 +574,7 @@ class CRM_Utils_Date {
   public static function convertToDefaultDate(&$params, $dateType, $dateParam) {
     $now = getdate();
 
-    $value = NULL;
+    $value = '';
     if (!empty($params[$dateParam])) {
       // suppress hh:mm or hh:mm:ss if it exists CRM-7957
       $value = preg_replace("/(\s(([01]\d)|[2][0-3])(:([0-5]\d)){1,2})$/", "", $params[$dateParam]);
@@ -876,8 +907,8 @@ class CRM_Utils_Date {
     if ($relative) {
       list($term, $unit) = explode('.', $relative, 2);
       $dateRange = self::relativeToAbsolute($term, $unit);
-      $from = substr($dateRange['from'], 0, 8);
-      $to = substr($dateRange['to'], 0, 8);
+      $from = substr(($dateRange['from'] ?? ''), 0, 8);
+      $to = substr(($dateRange['to'] ?? ''), 0, 8);
       // @todo fix relativeToAbsolute & add tests
       // relativeToAbsolute returns 8 char date strings
       // or 14 char date + time strings.
@@ -1109,7 +1140,7 @@ class CRM_Utils_Date {
    *   start date and end date for the relative time frame
    */
   public static function relativeToAbsolute($relativeTerm, $unit) {
-    $now = getdate();
+    $now = getdate(CRM_Utils_Time::time());
     $from = $to = $dateRange = [];
     $from['H'] = $from['i'] = $from['s'] = 0;
     $relativeTermParts = explode('_', $relativeTerm);
@@ -1285,11 +1316,12 @@ class CRM_Utils_Date {
             }
             else {
               $from['Y'] = $fYear - $relativeTermSuffix;
-              $fiscalYear = mktime(0, 0, 0, $from['M'], $from['d'] - 1, $from['Y'] + 1);
+              $fiscalYear = mktime(0, 0, 0, $from['M'], $from['d'] - 1, $from['Y'] + $relativeTermSuffix);
               $fiscalEnd = explode('-', date("Y-m-d", $fiscalYear));
               $to['d'] = $fiscalEnd['2'];
               $to['M'] = $fiscalEnd['1'];
-              $to['Y'] = $fYear;
+              // We need the year from FiscalEnd, instead of just fYear, because these differ if the FY starts on Jan 1
+              $to['Y'] = $fiscalEnd['0'];
               $to['H'] = 23;
               $to['i'] = $to['s'] = 59;
             }
@@ -1896,8 +1928,8 @@ class CRM_Utils_Date {
    *   $fy       Current Fiscal Year
    */
   public static function calculateFiscalYear($fyDate, $fyMonth) {
-    $date = date("Y-m-d");
-    $currentYear = date("Y");
+    $date = date("Y-m-d", CRM_Utils_Time::time());
+    $currentYear = date("Y", CRM_Utils_Time::time());
 
     // recalculate the date because month 4::04 make the difference
     $fiscalYear = explode('-', date("Y-m-d", mktime(0, 0, 0, $fyMonth, $fyDate, $currentYear)));

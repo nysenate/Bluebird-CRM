@@ -47,22 +47,34 @@ trait CRM_Queue_Queue_SqlTrait {
    * @return bool
    */
   public function existsQueue() {
-    return ($this->numberOfItems() > 0);
+    return ($this->getStatistic('total') > 0);
   }
 
   /**
-   * Determine number of items remaining in the queue.
-   *
-   * @return int
+   * @param string $name
+   * @return int|float|null
+   * @see \CRM_Queue_Queue::getStatistic()
    */
-  public function numberOfItems() {
-    return CRM_Core_DAO::singleValueQuery("
-      SELECT count(*)
-      FROM civicrm_queue_item
-      WHERE queue_name = %1
-    ", [
-      1 => [$this->getName(), 'String'],
-    ]);
+  public function getStatistic(string $name) {
+    switch ($name) {
+      case 'ready':
+        return (int) CRM_Core_DAO::singleValueQuery(
+          'SELECT count(*) FROM civicrm_queue_item WHERE queue_name = %1 AND (release_time is null OR release_time <= FROM_UNIXTIME(%2))',
+          [1 => [$this->getName(), 'String'], 2 => [CRM_Utils_Time::time(), 'Int']]);
+
+      case 'blocked':
+        return (int) CRM_Core_DAO::singleValueQuery(
+          'SELECT count(*) FROM civicrm_queue_item WHERE queue_name = %1 AND release_time > FROM_UNIXTIME(%2)',
+          [1 => [$this->getName(), 'String'], 2 => [CRM_Utils_Time::time(), 'Int']]);
+
+      case 'total':
+        return (int) CRM_Core_DAO::singleValueQuery(
+          'SELECT count(*) FROM civicrm_queue_item WHERE queue_name = %1',
+          [1 => [$this->getName(), 'String']]);
+
+      default:
+        return NULL;
+    }
   }
 
   /**
@@ -73,6 +85,7 @@ trait CRM_Queue_Queue_SqlTrait {
    * @param array $options
    *   Queue-dependent options; for example, if this is a
    *   priority-queue, then $options might specify the item's priority.
+   *   Ex: ['release_time' => strtotime('+3 hours')]
    */
   public function createItem($data, $options = []) {
     $dao = new CRM_Queue_DAO_QueueItem();
@@ -80,6 +93,9 @@ trait CRM_Queue_Queue_SqlTrait {
     $dao->submit_time = CRM_Utils_Time::getTime('YmdHis');
     $dao->data = serialize($data);
     $dao->weight = CRM_Utils_Array::value('weight', $options, 0);
+    if (isset($options['release_time'])) {
+      $dao->release_time = date('Y-m-d H:i:s', $options['release_time']);
+    }
     $dao->save();
   }
 

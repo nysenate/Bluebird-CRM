@@ -174,6 +174,7 @@ FROM civicrm_action_schedule cas
    * @param array $params
    *   An assoc array of name/value pairs.
    *
+   * @deprecated
    * @return CRM_Core_DAO_ActionSchedule
    * @throws \CRM_Core_Exception
    */
@@ -318,7 +319,6 @@ FROM civicrm_action_schedule cas
    * @param string $now
    * @param array $params
    *
-   * @throws API_Exception
    * @throws \CRM_Core_Exception
    */
   public static function buildRecipientContacts(string $mappingID, $now, $params = []) {
@@ -347,7 +347,6 @@ FROM civicrm_action_schedule cas
    * @param string $now
    * @param array $params
    *
-   * @throws \API_Exception
    * @throws \CRM_Core_Exception
    */
   public static function processQueue($now = NULL, $params = []): void {
@@ -463,17 +462,10 @@ FROM civicrm_action_schedule cas
       'status_id' => CRM_Core_PseudoConstant::getKey('CRM_Activity_BAO_Activity', 'status_id', 'Completed'),
       'activity_type_id' => $activityTypeID,
       'source_record_id' => $entityID,
+      'case_id' => $caseID,
     ];
     // @todo use api, remove all the above wrangling
     $activity = CRM_Activity_BAO_Activity::create($activityParams);
-
-    //file reminder on case if source activity is a case activity
-    if (!empty($caseID)) {
-      $caseActivityParams = [];
-      $caseActivityParams['case_id'] = $caseID;
-      $caseActivityParams['activity_id'] = $activity->id;
-      CRM_Case_BAO_Case::processCaseActivity($caseActivityParams);
-    }
   }
 
   /**

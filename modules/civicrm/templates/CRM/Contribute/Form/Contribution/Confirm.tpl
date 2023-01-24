@@ -70,7 +70,7 @@
             {/if}
             {if $amount}
               {if $installments}{ts}Installment Amount{/ts}{else}{ts}Total Amount{/ts}{/if}:
-              <strong>{$amount|crmMoney}{if $amount_level }<span class='crm-price-amount-label'>
+              <strong>{$amount|crmMoney:$currency}{if $amount_level }<span class='crm-price-amount-label'>
                   &ndash; {$amount_level}</span>{/if}</strong>
             {else}
               {$membership_name} {ts}Membership{/ts}:
@@ -225,7 +225,7 @@
         </div>
       {/if}
     {/if}
-    {if $email}
+    {if !$emailExists}
       <div class="crm-group contributor_email-group">
         <div class="header-dark">
           {ts}Your Email{/ts}

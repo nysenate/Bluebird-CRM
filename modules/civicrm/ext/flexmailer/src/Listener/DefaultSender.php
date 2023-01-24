@@ -70,11 +70,6 @@ class DefaultSender extends BaseListener {
           $code = $result->getCode();
           \CRM_Core_Error::debug_log_message("SMTP Socket Error or failed to set sender error. Message: $message, Code: $code");
 
-          //NYSS
-          \CRM_Mailing_BAO_MailingJob::pause($mailing->id);
-          $msg = "A bulk mailing was paused (ID: {$mailing->id}) due to SMTP socket errors, suggesting a problem connecting with the SMTP provider.";
-          \CRM_NYSS_Errorhandler_BAO::notifySlack($msg, "Mailing {$mailing->id} Paused");
-
           // these are socket write errors which most likely means smtp connection errors
           // lets skip them and reconnect.
           $smtpConnectionErrors++;
@@ -201,7 +196,7 @@ class DefaultSender extends BaseListener {
     $params = array_merge($params,
       \CRM_Mailing_BAO_BouncePattern::match($errorMessage)
     );
-    \CRM_Mailing_Event_BAO_Bounce::create($params);
+    \CRM_Mailing_Event_BAO_MailingEventBounce::recordBounce($params);
   }
 
 }

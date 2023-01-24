@@ -18,13 +18,16 @@
     },
     "config": {
         "platform": {
-            "php": "7.1"
+            "php": "7.2"
+        },
+        "allow-plugins": {
+            "civicrm/composer-compile-plugin": true
         }
     },
     "require": {
-        "civicrm/composer-compile-plugin": "~0.9 || ~1.0",
+        "civicrm/composer-compile-plugin": "~0.19 || ~1.0",
         "symfony/filesystem": "~2.8 || ~3.4 || ~4.0 || ~5.0",
-        "scssphp/scssphp": "~1.2",
+        "scssphp/scssphp": "^1.8.1",
         "padaliyajay/php-autoprefixer": "~1.2",
         "tubalmartin/cssmin": "^4.1"
     },

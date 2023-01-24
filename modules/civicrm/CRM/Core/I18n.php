@@ -179,6 +179,7 @@ class CRM_Core_I18n {
     static $enabled = NULL;
 
     if (!$all) {
+      $optionValues = [];
       // Use `getValues`, not `buildOptions` to bypass hook_civicrm_fieldOptions.  See core#1132.
       CRM_Core_OptionValue::getValues(['name' => 'languages'], $optionValues, 'weight', TRUE);
       $all = array_column($optionValues, 'label', 'name');
@@ -654,27 +655,41 @@ class CRM_Core_I18n {
   /**
    * Change the processing language without changing the current user language
    *
-   * @param string $locale
+   * @param string|\Civi\Core\Locale $locale
    *   Locale (for example 'en_US', or 'fr_CA').
    *   True if the domain was changed for an extension.
    */
   public function setLocale($locale) {
+    global $civicrmLocale;
+    if ($locale === NULL) {
+      $civicrmLocale = \Civi\Core\Locale::null();
+    }
+    elseif (is_object($locale)) {
+      $civicrmLocale = $locale;
+    }
+    else {
+      $civicrmLocale = \Civi\Core\Locale::negotiate($locale);
+    }
 
     // Change the language of the CMS as well, for URLs.
-    CRM_Utils_System::setUFLocale($locale);
+    CRM_Utils_System::setUFLocale($civicrmLocale->uf);
 
     // For sql queries, if running in DB multi-lingual mode.
     global $dbLocale;
 
     if ($dbLocale) {
-      $dbLocale = "_{$locale}";
+      $dbLocale = '_' . $civicrmLocale->db;
     }
 
     // For self::getLocale()
     global $tsLocale;
-    $tsLocale = $locale;
+    $tsLocale = $civicrmLocale->ts;
 
     CRM_Core_I18n::singleton()->reactivate();
+  }
+
+  public static function clearLocale(): void {
+    unset($GLOBALS['tsLocale'], $GLOBALS['dbLocale'], $GLOBALS['civicrmLocale']);
   }
 
   /**
@@ -801,16 +816,16 @@ function ts($text, $params = []) {
     if ($bootstrapReady) {
       // just got ready: determine whether there is a working custom translation function
       $config = CRM_Core_Config::singleton();
-      if (isset($config->customTranslateFunction) and function_exists($config->customTranslateFunction)) {
+      if (!empty($config->customTranslateFunction) && function_exists($config->customTranslateFunction)) {
         $function = $config->customTranslateFunction;
       }
     }
   }
 
-  $activeLocale = CRM_Core_I18n::getLocale();
-  if (!$i18n or $lastLocale != $activeLocale) {
+  $civicrmLocale = CRM_Core_I18n::getLocale();
+  if (!$i18n or $lastLocale != $civicrmLocale) {
     $i18n = CRM_Core_I18n::singleton();
-    $lastLocale = $activeLocale;
+    $lastLocale = $civicrmLocale;
   }
 
   if ($function) {

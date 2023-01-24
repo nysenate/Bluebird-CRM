@@ -97,21 +97,48 @@ class CRM_Queue_Queue_Memory extends CRM_Queue_Queue {
    * @param array $options
    *   Queue-dependent options; for example, if this is a
    *   priority-queue, then $options might specify the item's priority.
+   *   Ex: ['release_time' => strtotime('+3 hours')]
    */
   public function createItem($data, $options = []) {
     $id = $this->nextQueueItemId++;
     // force copy, no unintendedsharing effects from pointers
     $this->items[$id] = serialize($data);
     $this->runCounts[$id] = 0;
+    if (isset($options['release_time'])) {
+      $this->releaseTimes[$id] = $options['release_time'];
+    }
   }
 
   /**
-   * Determine number of items remaining in the queue.
-   *
-   * @return int
+   * @param string $name
+   * @return int|float|null
+   * @see \CRM_Queue_Queue::getStatistic()
    */
-  public function numberOfItems() {
-    return count($this->items);
+  public function getStatistic(string $name) {
+    $ready = function(): int {
+      $now = CRM_Utils_Time::time();
+      $ready = 0;
+      foreach ($this->items as $id => $item) {
+        if (empty($this->releaseTimes[$id]) || $this->releaseTimes[$id] <= $now) {
+          $ready++;
+        }
+      }
+      return $ready;
+    };
+
+    switch ($name) {
+      case 'ready':
+        return $ready();
+
+      case 'blocked':
+        return count($this->items) - $ready();
+
+      case 'total':
+        return count($this->items);
+
+      default:
+        return NULL;
+    }
   }
 
   /**

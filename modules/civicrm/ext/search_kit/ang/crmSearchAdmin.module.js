@@ -45,7 +45,7 @@
     })
 
     // Controller for tabbed view of SavedSearches
-    .controller('searchList', function($scope, $timeout, searchMeta, formatForSelect2, dialogService) {
+    .controller('searchList', function($scope, $timeout, searchMeta, formatForSelect2) {
       var ts = $scope.ts = CRM.ts('org.civicrm.search_kit'),
         ctrl = $scope.$ctrl = this;
       searchEntity = 'SavedSearch';
@@ -57,6 +57,10 @@
       }, []), 'text');
       this.getTags = function() {
         return {results: formatForSelect2(CRM.crmSearchAdmin.tags, 'id', 'name', ['color', 'description'])};
+      };
+
+      this.getPrimaryEntities = function() {
+        this.primaryEntities = _.filter(CRM.crmSearchAdmin.schema, {searchable: 'primary'});
       };
 
       // Tabs include a rowCount which will be updated by the search controller
@@ -184,8 +188,8 @@
 
         function getKeyword(whitelist) {
           var keyword;
-          _.each(whitelist, function(flag) {
-            if (argString.indexOf(flag) === 0) {
+          _.each(_.filter(whitelist), function(flag) {
+            if (argString.indexOf(flag + ' ') === 0) {
               keyword = flag;
               argString = _.trim(argString.substr(flag.length));
               return false;
@@ -216,16 +220,18 @@
           var exprCount = 0,
             expr, flagBefore;
           argString = _.trim(argString);
-          if (!argString.length || (param.name && !getKeyword(param.name))) {
+          if (!argString.length || (param.name && !_.startsWith(argString, param.name + ' '))) {
             return false;
           }
           if (param.max_expr) {
             while (++exprCount <= param.max_expr && argString.length) {
               flagBefore = getKeyword(_.keys(param.flag_before || {}));
+              var name = getKeyword(param.name ? [param.name] : []);
               expr = getExpr();
               if (expr) {
                 expr.param = param.name || index;
                 expr.flag_before = flagBefore;
+                expr.name = name;
                 info.args.push(expr);
               }
               // Only continue if an expression was found and followed by a comma
@@ -237,6 +243,12 @@
             if (expr && !_.isEmpty(expr.flag_after)) {
               _.last(info.args).flag_after = getKeyword(_.keys(param.flag_after));
             }
+          } else if (param.flag_before && !param.optional) {
+            flagBefore = getKeyword(_.keys(param.flag_before));
+            info.args.push({
+              value: '',
+              flag_before: flagBefore
+            });
           }
         });
         if (!info.data_type && info.args.length) {
@@ -317,7 +329,7 @@
         var info = parseExpr(fieldExpr),
           field = (_.findWhere(info.args, {type: 'field'}) || {}).field || {},
           values = _.merge({
-            type: 'field',
+            type: field.input_type === 'RichTextEditor' ? 'html' : 'field',
             key: info.alias,
             dataType: (info.fn && info.fn.data_type) || field.data_type
           }, defaults);
@@ -331,6 +343,9 @@
       }
       return {
         getEntity: getEntity,
+        getBaseEntity: function() {
+          return getEntity(searchEntity);
+        },
         getField: function(fieldName, entityName) {
           return getFieldAndJoin(fieldName, entityName || searchEntity).field;
         },
@@ -383,7 +398,10 @@
               entity.optionsLoaded = false;
               entitiesToLoad[entityName] = [entityName, 'getFields', {
                 loadOptions: ['id', 'name', 'label', 'description', 'color', 'icon'],
-                where: [['options', '!=', false]],
+                // For fields with both an FK and an option list, prefer the FK
+                // because it's more efficient to render an autocomplete than to
+                // pre-load potentially thousands of options into a select dropdown.
+                where: [['options', '!=', false], ['suffixes', 'CONTAINS', 'name']],
                 select: ['options']
               }, {name: 'options'}];
             }
@@ -393,7 +411,10 @@
               _.each(results, function(fields, entityName) {
                 var entity = getEntity(entityName);
                 _.each(fields, function(options, fieldName) {
-                  _.find(entity.fields, {name: fieldName}).options = options;
+                  var field = _.find(entity.fields, {name: fieldName});
+                  if (field) {
+                    field.options = options;
+                  }
                 });
                 entity.optionsLoaded = true;
               });

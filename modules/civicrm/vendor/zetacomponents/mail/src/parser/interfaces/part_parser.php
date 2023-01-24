@@ -171,8 +171,8 @@ abstract class ezcMailPartParser
                 // dev/core#940 Ensure that emails are not processed as .unknown attachments by checking
                 // for Filename or name in the content-disposition and content-type headers.
                 if ( (ezcMailPartParser::$parseTextAttachmentsAsFiles === true)                   &&
-                     (preg_match('/\s*filename="?([^;"]*);?/i', $headers['Content-Disposition']) ||
-                      preg_match( '/\s*name="?([^;"]*);?/i'   , $headers['Content-Type'])        )  )
+                     (preg_match('/\s*filename="?([^;"]*);?/i', $headers['Content-Disposition'] ?? '') ||
+                      preg_match( '/\s*name="?([^;"]*);?/i'   , $headers['Content-Type'] ?? '')        )  )
                 {
                     $bodyParser = new ezcMailFileParser( $mainType, $subType, $headers );
                 }

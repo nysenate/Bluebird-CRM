@@ -9,6 +9,7 @@
  +--------------------------------------------------------------------+
  */
 
+use Civi\Api4\UserJob;
 use Civi\Core\Event\GenericHookEvent;
 
 /**
@@ -75,6 +76,11 @@ class CRM_Queue_Runner {
    * @var CRM_Queue_TaskContext
    */
   public $taskCtx;
+
+  /**
+   * @var string
+   */
+  public $lastTaskTitle;
 
   /**
    * Locate a previously-created instance of the queue-runner.
@@ -147,10 +153,12 @@ class CRM_Queue_Runner {
    * environments which support multiprocessing (background queue-workers) can use those;
    * otherwise, they can use the traditional AJAX runner.
    *
-   * To ensure portability, requesters must satisfy the requirements of *both/all*
-   * execution mechanisms.
+   * To ensure portability, requesters must satisfy the requirements of
+   * *both/all* execution mechanisms.
+   *
+   * @throws \CRM_Core_Exception
    */
-  public function runAllInteractive() {
+  public function runAllInteractive(): void {
     $this->assertRequirementsWeb();
     $this->assertRequirementsBackground();
 
@@ -160,14 +168,13 @@ class CRM_Queue_Runner {
       'onEndUrl' => $this->onEndUrl,
       // 'onEnd' ==> No, see comments in assertRequirementsBackground()
     ];
-    \Civi\Api4\UserJob::save(FALSE)->setRecords([$userJob])->execute();
+    UserJob::save(FALSE)->setRecords([$userJob])->execute();
 
     if (Civi::settings()->get('enableBackgroundQueue')) {
-      return $this->runAllViaBackground();
+      $this->runAllViaBackground();
+      return;
     }
-    else {
-      return $this->runAllViaWeb();
-    }
+    $this->runAllViaWeb();
   }
 
   protected function runAllViaBackground() {
@@ -194,7 +201,7 @@ class CRM_Queue_Runner {
    *
    * If the runner has an onEndUrl, then this function will not return
    *
-   * @return mixed
+   * @return array|true
    *   TRUE if all tasks complete normally; otherwise, an array describing the
    *   failed task
    */
@@ -202,26 +209,17 @@ class CRM_Queue_Runner {
     $this->disableBackgroundExecution();
     $taskResult = $this->formatTaskResult(TRUE);
     while ($taskResult['is_continue']) {
-      // setRaiseException should't be necessary here, but there's a bug
-      // somewhere which causes this setting to be lost.  Observed while
-      // upgrading 4.0=>4.2.  This preference really shouldn't be a global
-      // setting -- it should be more of a contextual/stack-based setting.
-      // This should be appropriate because queue-runners are not used with
-      // basic web pages -- they're used with CLI/REST/AJAX.
       $taskResult = $this->runNext();
-      $errorScope = NULL;
     }
 
-    if ($taskResult['numberOfItems'] == 0) {
+    if ($taskResult['numberOfItems'] === 0) {
       $result = $this->handleEnd();
       if (!empty($result['redirect_url'])) {
         CRM_Utils_System::redirect($result['redirect_url']);
       }
       return TRUE;
     }
-    else {
-      return $taskResult;
-    }
+    return $taskResult;
   }
 
   /**
@@ -375,7 +373,7 @@ class CRM_Queue_Runner {
     $result['is_error'] = $isOK ? 0 : 1;
     $result['exception'] = $exception;
     $result['last_task_title'] = $this->lastTaskTitle ?? '';
-    $result['numberOfItems'] = $this->queue->numberOfItems();
+    $result['numberOfItems'] = (int) $this->queue->numberOfItems();
     if ($result['numberOfItems'] <= 0) {
       // nothing to do
       $result['is_continue'] = 0;
@@ -441,11 +439,15 @@ class CRM_Queue_Runner {
    *
    * @return array|null
    *   The record, per APIv4.
-   *   This may return NULL. UserJobs are required for `runAllInteractively()` and
-   *   `runAllViaBackground()`, but (for backward compatibility) they are not required for `runAllViaWeb()`.
+   *   This may return NULL. UserJobs are required for `runAllInteractively()`
+   *   and
+   *   `runAllViaBackground()`, but (for backward compatibility) they are not
+   *   required for `runAllViaWeb()`.
+   *
+   * @throws \CRM_Core_Exception
    */
   protected function findUserJob(): ?array {
-    return \Civi\Api4\UserJob::get(FALSE)
+    return UserJob::get(FALSE)
       ->addWhere('queue_id.name', '=', $this->queue->getName())
       ->execute()
       ->first();
