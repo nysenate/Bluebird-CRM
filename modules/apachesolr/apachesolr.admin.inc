@@ -1165,7 +1165,12 @@ function apachesolr_index_batch_index_remaining($env_id, $total_limit = null) {
  * @throws Exception
  *   When solr gives an error, throw an exception that solr is not available
  */
-function apachesolr_index_batch_index_entities($env_id, $total_limit = NULL, &$context) {
+function apachesolr_index_batch_index_entities($env_id, $total_limit = NULL, &$context = []) {
+  // If no context was defined for the batch return false.
+  if (empty($context)) {
+    return FALSE;
+  }
+
   module_load_include('inc', 'apachesolr', 'apachesolr.index');
   if (empty($context['sandbox'])) {
     try {
