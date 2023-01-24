@@ -104,9 +104,7 @@ class CRM_Contact_Page_View_Summary extends CRM_Contact_Page_View {
   /**
    * View summary details of a contact.
    *
-   * @throws \API_Exception
    * @throws \CRM_Core_Exception
-   * @throws \CiviCRM_API3_Exception
    */
   public function view() {
     // Add js for tabs, in-place editing, and jstree for tags
@@ -269,7 +267,7 @@ class CRM_Contact_Page_View_Summary extends CRM_Contact_Page_View {
     $changeLog = $this->_viewOptions['log'];
     $this->assign_by_ref('changeLog', $changeLog);
 
-    $this->assign('allTabs', $this->getTabs());
+    $this->assign('allTabs', $this->getTabs($defaults));
 
     // hook for contact summary
     // ignored but needed to prevent warnings
@@ -361,7 +359,7 @@ class CRM_Contact_Page_View_Summary extends CRM_Contact_Page_View {
    * @return array
    * @throws \CRM_Core_Exception
    */
-  public function getTabs() {
+  public function getTabs(array $contact) {
     $allTabs = [];
     $getCountParams = [];
     $weight = 10;
@@ -453,8 +451,20 @@ class CRM_Contact_Page_View_Summary extends CRM_Contact_Page_View {
     }
 
     // Allow other modules to add or remove tabs
-    $context = ['contact_id' => $this->_contactId];
+    $context = [
+      'contact_id' => $contact['id'],
+      'contact_type' => $contact['contact_type'],
+      'contact_sub_type' => CRM_Utils_Array::explodePadded($contact['contact_sub_type'] ?? NULL),
+    ];
     CRM_Utils_Hook::tabset('civicrm/contact/view', $allTabs, $context);
+
+    // Remove any tabs that don't apply to this contact type
+    foreach (array_keys($allTabs) as $key) {
+      $tabContactType = (array) ($allTabs[$key]['contact_type'] ?? []);
+      if ($tabContactType && !in_array($contact['contact_type'], $tabContactType, TRUE)) {
+        unset($allTabs[$key]);
+      }
+    }
 
     $expectedKeys = ['count', 'class', 'template', 'hideCount', 'icon'];
 
@@ -486,7 +496,7 @@ class CRM_Contact_Page_View_Summary extends CRM_Contact_Page_View {
    * @param string $entity
    *
    * @return array
-   * @throws \API_Exception
+   * @throws \CRM_Core_Exception
    */
   protected function getLocationValues(int $contact_id, string $entity): array {
     $fieldMap = [

@@ -14,7 +14,7 @@
  * @package CRM
  * @copyright CiviCRM LLC https://civicrm.org/licensing
  */
-class CRM_Mailing_Event_BAO_Delivered extends CRM_Mailing_Event_DAO_Delivered {
+class CRM_Mailing_Event_BAO_MailingEventDelivered extends CRM_Mailing_Event_DAO_MailingEventDelivered {
 
   /**
    * Create a new delivery event.
@@ -22,10 +22,10 @@ class CRM_Mailing_Event_BAO_Delivered extends CRM_Mailing_Event_DAO_Delivered {
    * @param array $params
    *   Associative array of delivery event values.
    *
-   * @return \CRM_Mailing_Event_BAO_Delivered
+   * @return \CRM_Mailing_Event_BAO_MailingEventDelivered
    */
   public static function &create(&$params) {
-    $q = &CRM_Mailing_Event_BAO_Queue::verify($params['job_id'],
+    $q = &CRM_Mailing_Event_BAO_MailingEventQueue::verify($params['job_id'],
       $params['event_queue_id'],
       $params['hash']
     );
@@ -34,12 +34,12 @@ class CRM_Mailing_Event_BAO_Delivered extends CRM_Mailing_Event_DAO_Delivered {
       return NULL;
     }
 
-    $delivered = new CRM_Mailing_Event_BAO_Delivered();
+    $delivered = new CRM_Mailing_Event_BAO_MailingEventDelivered();
     $delivered->time_stamp = date('YmdHis');
     $delivered->copyValues($params);
     $delivered->save();
 
-    $queue = new CRM_Mailing_Event_BAO_Queue();
+    $queue = new CRM_Mailing_Event_BAO_MailingEventQueue();
     $queue->id = $params['event_queue_id'];
     $queue->find(TRUE);
 
@@ -69,10 +69,10 @@ class CRM_Mailing_Event_BAO_Delivered extends CRM_Mailing_Event_DAO_Delivered {
   public static function getTotalCount($mailing_id, $job_id = NULL, $toDate = NULL) {
     $dao = new CRM_Core_DAO();
 
-    //$delivered  = self::getTableName();
-	$delivered  = 'civicrm_mailing_event_sendgrid_delivered'; //NYSS 4765
-    $bounce = CRM_Mailing_Event_BAO_Bounce::getTableName();
-    $queue = CRM_Mailing_Event_BAO_Queue::getTableName();
+    //NYSS 4765
+	$delivered = 'civicrm_mailing_event_sendgrid_delivered';
+    $bounce = CRM_Mailing_Event_BAO_MailingEventBounce::getTableName();
+    $queue = CRM_Mailing_Event_BAO_MailingEventQueue::getTableName();
     $mailing = CRM_Mailing_BAO_Mailing::getTableName();
     $job = CRM_Mailing_BAO_MailingJob::getTableName();
 
@@ -137,10 +137,10 @@ class CRM_Mailing_Event_BAO_Delivered extends CRM_Mailing_Event_DAO_Delivered {
 
     $dao = new CRM_Core_DAO();
 
-    //$delivered  = self::getTableName();
-	  $delivered  = 'civicrm_mailing_event_sendgrid_delivered'; //NYSS 4765
-    $bounce = CRM_Mailing_Event_BAO_Bounce::getTableName();
-    $queue = CRM_Mailing_Event_BAO_Queue::getTableName();
+    //NYSS 4765
+    $delivered = 'civicrm_mailing_event_sendgrid_delivered';
+    $bounce = CRM_Mailing_Event_BAO_MailingEventBounce::getTableName();
+    $queue = CRM_Mailing_Event_BAO_MailingEventQueue::getTableName();
     $mailing = CRM_Mailing_BAO_Mailing::getTableName();
     $job = CRM_Mailing_BAO_MailingJob::getTableName();
     $contact = CRM_Contact_BAO_Contact::getTableName();

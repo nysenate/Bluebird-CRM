@@ -216,4 +216,26 @@ class CRM_NYSS_BAO_NYSS {
     //Civi::log()->debug(__FUNCTION__, ['$result' => $result]);
     return $result;
   }
+
+  //NYSS 5848
+  static function removeBuilderFields($key, &$value) {
+    //CRM_Core_Error::debug_var('key', $key);
+    //CRM_Core_Error::debug_var('value', $value);
+
+    $flds = [
+      'Activity' => [
+        'activity_campaign_id',
+        'activity_is_test',
+        'activity_engagement_level',
+        'activity_campaign',
+        'is_current_revision',
+      ],
+    ];
+
+    if (array_key_exists($key, $flds)) {
+      foreach ($flds[$key] as $fld) {
+        unset($value[$fld]);
+      }
+    }
+  }
 }

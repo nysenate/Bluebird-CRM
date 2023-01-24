@@ -120,7 +120,6 @@ class CRM_Core_Form_Search extends CRM_Core_Form {
    * Prepare for search by loading options from the url, handling force searches, retrieving form values.
    *
    * @throws \CRM_Core_Exception
-   * @throws \CiviCRM_API3_Exception
    */
   public function preProcess() {
     $this->loadStandardSearchOptionsFromUrl();
@@ -191,7 +190,7 @@ class CRM_Core_Form_Search extends CRM_Core_Form {
    * The goal is to describe all fields in metadata and handle from metadata rather
    * than existing ad hoc handling.
    *
-   * @throws \CiviCRM_API3_Exception
+   * @throws \CRM_Core_Exception
    */
   public function addFormFieldsFromMetadata() {
     $this->addFormRule(['CRM_Core_Form_Search', 'formRule'], $this);
@@ -389,7 +388,7 @@ class CRM_Core_Form_Search extends CRM_Core_Form {
    * Note that for translation purposes the full string works better than using 'prefix' hence we use override-able functions
    * to define the string.
    *
-   * @throws \CiviCRM_API3_Exception
+   * @throws \CRM_Core_Exception
    */
   protected function addSortNameField() {
     $title = civicrm_api3('setting', 'getvalue', ['name' => 'includeEmailInName', 'group' => 'Search Preferences']) ? $this->getSortNameLabelWithEmail() : $this->getSortNameLabelWithOutEmail();
@@ -434,7 +433,7 @@ class CRM_Core_Form_Search extends CRM_Core_Form {
   /**
    * Add generic fields that specify the contact.
    *
-   * @throws \CiviCRM_API3_Exception
+   * @throws \CRM_Core_Exception
    */
   protected function addContactSearchFields() {
     if (!$this->isFormInViewOrEditMode()) {
@@ -602,7 +601,7 @@ class CRM_Core_Form_Search extends CRM_Core_Form {
   /**
    * Set the metadata for the form.
    *
-   * @throws \CiviCRM_API3_Exception
+   * @throws \CRM_Core_Exception
    */
   protected function setSearchMetadata() {}
 
@@ -612,7 +611,7 @@ class CRM_Core_Form_Search extends CRM_Core_Form {
    * Search field metadata is normally added in buildForm but we are bypassing that in this flow
    * (I've always found the flow kinda confusing & perhaps that is the problem but this mitigates)
    *
-   * @throws \CiviCRM_API3_Exception
+   * @throws \CRM_Core_Exception
    */
   protected function handleForcedSearch() {
     $this->setSearchMetadata();
