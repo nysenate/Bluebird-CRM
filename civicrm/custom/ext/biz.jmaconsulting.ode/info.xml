@@ -15,16 +15,22 @@
     <author>JMA Consulting</author>
     <email>joe.murray@jmaconsulting.biz</email>
   </maintainer>
-  <releaseDate>2019-01-18</releaseDate>
-  <version>1.8</version>
+  <releaseDate>2020-12-15</releaseDate>
+  <version>1.9</version>
   <develStage>stable</develStage>
   <compatibility>
-    <ver>4.6</ver>
-    <ver>4.7</ver>
     <ver>5.9</ver>
   </compatibility>
   <comments>Thanks to Brescia University College for sponsoring the development of this module.</comments>
   <civix>
     <namespace>CRM/Ode</namespace>
+    <format>22.10.0</format>
   </civix>
+  <mixins>
+    <mixin>menu-xml@1.0.0</mixin>
+    <mixin>setting-php@1.0.0</mixin>
+  </mixins>
+  <classloader>
+    <psr0 prefix="CRM_" path="."/>
+  </classloader>
 </extension>

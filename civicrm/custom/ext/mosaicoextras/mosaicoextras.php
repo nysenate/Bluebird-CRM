@@ -11,15 +11,7 @@ use CRM_Mosaicoextras_ExtensionUtil as E;
  */
 function mosaicoextras_civicrm_config(&$config) {
   _mosaicoextras_civix_civicrm_config($config);
-}
-
-/**
- * Implements hook_civicrm_xmlMenu().
- *
- * @link https://docs.civicrm.org/dev/en/latest/hooks/hook_civicrm_xmlMenu
- */
-function mosaicoextras_civicrm_xmlMenu(&$files) {
-  _mosaicoextras_civix_civicrm_xmlMenu($files);
+  Civi::dispatcher()->addListener('civi.api.authorize', ['CRM_Mosaicoextras_APIWrapper', 'authorize'], -100);
 }
 
 /**
@@ -77,54 +69,6 @@ function mosaicoextras_civicrm_upgrade($op, CRM_Queue_Queue $queue = NULL) {
 }
 
 /**
- * Implements hook_civicrm_managed().
- *
- * Generate a list of entities to create/deactivate/delete when this module
- * is installed, disabled, uninstalled.
- *
- * @link https://docs.civicrm.org/dev/en/latest/hooks/hook_civicrm_managed
- */
-function mosaicoextras_civicrm_managed(&$entities) {
-  _mosaicoextras_civix_civicrm_managed($entities);
-}
-
-/**
- * Implements hook_civicrm_caseTypes().
- *
- * Generate a list of case-types.
- *
- * Note: This hook only runs in CiviCRM 4.4+.
- *
- * @link https://docs.civicrm.org/dev/en/latest/hooks/hook_civicrm_caseTypes
- */
-function mosaicoextras_civicrm_caseTypes(&$caseTypes) {
-  _mosaicoextras_civix_civicrm_caseTypes($caseTypes);
-}
-
-/**
- * Implements hook_civicrm_angularModules().
- *
- * Generate a list of Angular modules.
- *
- * Note: This hook only runs in CiviCRM 4.5+. It may
- * use features only available in v4.6+.
- *
- * @link https://docs.civicrm.org/dev/en/latest/hooks/hook_civicrm_angularModules
- */
-function mosaicoextras_civicrm_angularModules(&$angularModules) {
-  _mosaicoextras_civix_civicrm_angularModules($angularModules);
-}
-
-/**
- * Implements hook_civicrm_alterSettingsFolders().
- *
- * @link https://docs.civicrm.org/dev/en/latest/hooks/hook_civicrm_alterSettingsFolders
- */
-function mosaicoextras_civicrm_alterSettingsFolders(&$metaDataFolders = NULL) {
-  _mosaicoextras_civix_civicrm_alterSettingsFolders($metaDataFolders);
-}
-
-/**
  * Implements hook_civicrm_entityTypes().
  *
  * Declare entity types provided by this module.
@@ -133,13 +77,6 @@ function mosaicoextras_civicrm_alterSettingsFolders(&$metaDataFolders = NULL) {
  */
 function mosaicoextras_civicrm_entityTypes(&$entityTypes) {
   _mosaicoextras_civix_civicrm_entityTypes($entityTypes);
-}
-
-/**
- * Implements hook_civicrm_thems().
- */
-function mosaicoextras_civicrm_themes(&$themes) {
-  _mosaicoextras_civix_civicrm_themes($themes);
 }
 
 // --- Functions below this ship commented out. Uncomment as required. ---
@@ -193,7 +130,7 @@ function mosaicoextras_civicrm_mosaicoConfig(&$config) {
 function mosaicoextras_civicrm_permission(&$permissions) {
   $permissions['delete Mosaico templates'] = [
     E::ts('MosaicoExtras: delete Mosaico templates'),
-    E::ts('Grants the necessary API permissions to delete mosaico templates without Administer CiviCRM'),
+    E::ts('Grants the necessary API permissions to access mosaico templates and delete without Administer CiviCRM permission'),
   ];
 }
 
