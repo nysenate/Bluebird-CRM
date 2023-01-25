@@ -1713,9 +1713,9 @@ function _mail_add_extra_content($msg, $extra, $ctype, $context) {
   $sep = ($ctype == 'text') ? "\n" : "\n<br/>\n";
 
   // Each of the three "extra" variables is an array of items.
-  $extraHead = implode($sep, $extra['head']);
-  $extraPreBody = implode($sep, $extra['pre_body']);
-  $extraPostBody = implode($sep, $extra['post_body']);
+  $extraHead = (is_array($extra['head'])) ? implode($sep, $extra['head']) : '';
+  $extraPreBody = (is_array($extra['pre_body'])) ? implode($sep, $extra['pre_body']) : '';
+  $extraPostBody = (is_array($extra['post_body'])) ? implode($sep, $extra['post_body']) : '';
 
   if ($ctype == 'text') {
     $msg = "$extraHead\n$extraPreBody\n$msg\n$extraPostBody";
