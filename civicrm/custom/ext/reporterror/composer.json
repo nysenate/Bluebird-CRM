@@ -1,6 +1,0 @@
-{
-    "require": {
-        "monolog/monolog": "^1.23",
-        "graylog2/gelf-php": "^1.5"
-    }
-}
