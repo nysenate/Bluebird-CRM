@@ -185,7 +185,22 @@ function navigation_civicrm_navigationMenu(&$params) {
   //create Help menu 11965
   $params[6000] = _buildHelpMenu(6000);
 
+  //recent items placeholder
   $params[7000] = [
+    'attributes' => [
+      'label' => 'Recent Items',
+      'name' => 'recent_items',
+      'url' => null,
+      'permission' => 'access CiviCRM',
+      'operator' => 'AND',
+      'separator' => 0,
+      'parentID' => null,
+      'navID' => 7000,
+      'active' => 1
+    ],
+  ];
+
+  $params[8000] = [
     'attributes' => [
       'label' => 'Log Out',
       'name' => 'log_out',
@@ -194,7 +209,7 @@ function navigation_civicrm_navigationMenu(&$params) {
       'operator' => 'AND',
       'separator' => 0,
       'parentID' => null,
-      'navID' => 7000,
+      'navID' => 8000,
       'active' => 1,
     ],
   ];
