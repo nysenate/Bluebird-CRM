@@ -121,7 +121,7 @@
       socialBlock youUrl { label: YouTube Link}
       socialBlock {
         label: Social Block;
-        properties: socialIconType=colors fbVisible=true fbUrl twVisible=true twUrl ggVisible=true ggUrl webVisible=false webUrl inVisible=false inUrl flVisible=false flUrl viVisible=false viUrl instVisible=false instUrl youVisible=false youUrl longTextStyle longText backgroundColor;
+        properties: socialIconType=colors fbVisible=true fbUrl twVisible=true twUrl ggVisible=true ggUrl webVisible=false webUrl inVisible=false inUrl flVisible=false flUrl viVisible=false viUrl instVisible=false instUrl youVisible=false youUrl longTextStyle longText backgroundColor externalBackgroundColor;
         variant:socialIconType;
         theme: frameTheme
       }
@@ -185,7 +185,7 @@
       socialBlock:preview,
       buttonBlock:preview,
       titleBlock:preview,
-      socialshareBlock:preview { -ko-background-color: @[backgroundColor] }
+      socialshareBlock:preview { -ko-background-color: @[externalBackgroundColor] }
     }
   </style>
   <style type="text/css" data-inline="true">
@@ -1366,13 +1366,14 @@
 
   <!-- socialBlock -->
   <table width="100%" cellpadding="0" border="0" cellspacing="0" bgcolor="#3f3f3f"
-    style="background-color: #3f3f3f; -ko-background-color: @backgroundColor; -ko-attr-bgcolor: @backgroundColor"  data-ko-block="socialBlock">
+    style="background-color: #3f3f3f; -ko-background-color: @externalBackgroundColor; -ko-attr-bgcolor: @externalBackgroundColor"  data-ko-block="socialBlock">
     <tr>
       <td align="center" valign="top" bgcolor="#3f3f3f" style="background-color: #3f3f3f;
-        -ko-attr-bgcolor: @backgroundColor; -ko-background-color: @backgroundColor;">
+        -ko-attr-bgcolor: @externalBackgroundColor; -ko-background-color: @externalBackgroundColor;">
 <!--[if (gte mso 9)|(lte ie 8)]><table align="center" border="0" cellspacing="0" cellpadding="0" width="570"><tr><td align="center" valign="top"><![endif]-->
         <div class="oldwebkit">
-        <table width="570" style="width: 100%; max-width: 570px" border="0" cellpadding="0" cellspacing="9" class="vb-row fullpad" align="center">
+        <table width="570" bgcolor="#3f3f3f" style="width: 100%; max-width: 570px; background-color: #3f3f3f;
+        -ko-attr-bgcolor: @backgroundColor; -ko-background-color: @backgroundColor;" border="0" cellpadding="0" cellspacing="9" class="vb-row fullpad" align="center" >
           <tr>
             <td valign="top"  align="center" style="font-size: 0;">
 

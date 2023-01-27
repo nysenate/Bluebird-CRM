@@ -2,22 +2,21 @@
 
 define('BATCHSIZE', 250);
 define('BATCHSIZETAG', 5000);
-define("NYSSIODEBUG", true);
-define("VARSTATS", false);
+define('VARSTATS', false);
 
 require_once(dirname(__FILE__) . '/nyss_lib.php');
 
 //define menu path
 function nyss_io_menu()
 {
-  $items = array();
+  $items = [];
 
-  $items['importdata'] = array (
+  $items['importdata'] = [
     'title' => t('Import Data'),
     'page callback' => 'nyss_ioimportdata_page',
-    'access arguments' => array('import print production'),
+    'access arguments' => ['import print production'],
     'type' => MENU_SUGGESTED_ITEM,
-  );
+  ];
 
   return $items;
 } // nyss_io_menu()
@@ -39,66 +38,72 @@ function nyss_ioimport_form()
 
   $config = CRM_Core_Config::singleton();
 
-  $form = array();
+  $form = [];
 
   //$form['#attributes'] = array('enctype' => "multipart/form-data");
 
   //Import and Main Processing
-  $form['processing'] = array (
+  $form['processing'] = [
     '#type' => 'fieldset',
     '#title' => t('Import Source and Processing Options'),
-  );
+  ];
 
-  $form['processing']['csv'] = array(
+  $form['processing']['csv'] = [
     '#type' => 'file',
     '#title' => t('Upload a file'),
     '#size' => 40,
-  );
+  ];
 
-  $form['processing']['servercsv'] = array(
+  $form['processing']['servercsv'] = [
     '#type' => 'textfield',
     '#title' => t('OR specify a filename on the server in the \'/data/importData\' dir'),
     '#size' => 40,
-  );
+  ];
 
-  $form['processing']['runnum'] = array(
+  $form['processing']['runnum'] = [
     '#type' => 'select',
     '#title' => t('How many records to process in dry run mode (should be set to ALL for data import)'),
     '#options' =>
-    array(
+    [
       '10'   => t('10'),
       '100'  => t('100'),
       '500'  => t('500'),
       '1000' => t('1000'),
       'All'  => t('All'),
-    ),
+    ],
     '#default_value' => '10',
-  );
+  ];
 
-  $form['processing']['dryrun'] = array(
+  $form['processing']['dryrun'] = [
     '#type' => 'checkbox',
     '#title' => t('Dry Run (parses data but does not alter the instance)'),
     '#default_value' => 1,
-  );
+  ];
    
-  $form['processing']['sendemail'] = array(
+  $form['processing']['sendemail'] = [
     '#type' => 'checkbox',
     '#title' => t('Send summary email'),
     '#default_value' => 0,
-  );
+  ];
+
+  $form['processing']['debug'] = [
+    '#type' => 'checkbox',
+    '#title' => t('Enable debug logging to file'),
+    '#default_value' => 0,
+  ];
 
   //Dedupe Processing Options
-  $form['dedupeset'] = array (
+  $form['dedupeset'] = [
     '#type' => 'fieldset',
     '#title' => t('Dedupe Processing'),
-  );
+  ];
 
-  $form['dedupeset']['dedupe'] = array(
+  $form['dedupeset']['dedupe'] = [
     '#type' => 'checkbox',
     '#title' => t('Dedupe on import.'),
     '#default_value' => 0,
     '#description' => t('When enabled, imported records will be compared and matched with existing contact records using the selected rule. Records should have first name, last name, suffix, street address, and postal code or email in order to effectively match.'),
-  );
+  ];
 
   $rules = CRM_Core_DAO::executeQuery("
     SELECT title, id
@@ -106,85 +111,85 @@ function nyss_ioimport_form()
     WHERE contact_type = 'Individual'
     ORDER BY title;");
 
-  $dedupeoptions = array();
+  $dedupeoptions = [];
   while ($rules->fetch()) {
     $dedupeoptions[$rules->id] = $rules->title;
   }
    
-  $form['dedupeset']['deduperule'] = array(
+  $form['dedupeset']['deduperule'] = [
     '#type' => 'select',
     '#options' => $dedupeoptions,
     '#title' => t('Dedupe Rule'),
     '#default_value' => 1,
     '#description' => t('If dedupe is enabled (above), select which rule to use when determining a match. In most cases you will use the Individual Strict rule.'),
-  );
+  ];
    
   //Data Handling Options
-  $form['datahandling'] = array (
+  $form['datahandling'] = [
     '#type' => 'fieldset',
     '#title' => t('Data Handling'),
-  );
+  ];
    
-  $form['datahandling']['boeimport'] = array(
+  $form['datahandling']['boeimport'] = [
     '#type' => 'checkbox',
     '#title' => t('Process as a BOE import.'),
     '#default_value' => 0,
     '#description' => t(''),
-  );
+  ];
    
-  $form['datahandling']['emailimport'] = array(
+  $form['datahandling']['emailimport'] = [
     '#type' => 'checkbox',
     '#title' => t('Process as an email import.'),
     '#default_value' => 0,
     '#description' => t('Enabling will automatically engage dedupe on import using the email import rule. New contacts created during import (which do not match any existing contacts) will be added to an "Email Only" group and excluded from postal mailings.'),
-  );
+  ];
    
-  $form['datahandling']['addtogroup_handling'] = array(
+  $form['datahandling']['addtogroup_handling'] = [
     '#type' => 'radios',
     '#title' => t('Add to Group Handling'),
-    '#options' => array('all' => t('Add All'), 'new' => t('Add New'), 'none' => t('None')),
-    '#attributes' => array('class' => 'addtogroup_handling-wrapper'),
+    '#options' => ['all' => t('Add All'), 'new' => t('Add New'), 'none' => t('None')],
+    '#attributes' => ['class' => ['addtogroup_handling-wrapper']],
     '#default_value' => 'none',
     '#description' => t('If "Add All" is selected, all imported contacts will be added to the group. If "Add New" is selected, only new contacts created through the import will be added to the group.'),
-  );
+  ];
    
-  $form['datahandling']['addtogroup'] = array(
+  $form['datahandling']['addtogroup'] = [
     '#type' => 'textfield',
     '#title' => t('Group Name (if the group name does not exist, it will be created)'),
     '#size' => 40,
     '#field_prefix' => '<br />',
-  );
+  ];
    
-  $form['datahandling']['parsename'] = array(
+  $form['datahandling']['parsename'] = [
     '#type' => 'checkbox',
     '#title' => t('Parse full name'),
     '#default_value' => 0,
     '#description' => t('Enable this option if your import file contains a full_name field that you want to parse into first/middle/last name. Note, if you enable this option, parsed field names will be ignored.'),
-  );
+  ];
    
-  $form['datahandling']['fieldoverride'] = array(
+  $form['datahandling']['fieldoverride'] = [
     '#type' => 'checkbox',
     '#title' => t('Null/empty override'),
     '#default_value' => 0,
     '#description' => t('Enabling this option will allow you to override existing fields with empty values. Standard behavior ignores empty values in your import file, thus retaining existing values in Bluebird. Use with caution.'),
-  );
+  ];
 
-  $form['datahandling']['greetinggeneration'] = array(
+  $form['datahandling']['greetinggeneration'] = [
     '#type' => 'radios',
     '#title' => t('Greeting Generation'),
-    '#options' => array(
+    '#options' => [
       'imported' => t('Process Imported Contacts Only'),
       'all' => t('Process All Contacts'),
       'none' => t('Disable Greeting Generation'),
-    ),
+    ],
     '#default_value' => 'imported',
     '#description' => t('By default, only imported contacts will have greetings generated. If you choose, you may run the greeting generation script across the entire database, or disable it altogether.'),
-  );
+  ];
 
-  $form['import']['submit'] = array(
+  $form['import']['submit'] = [
     '#type' => 'submit',
     '#value' => t('Submit'),
-  );
+  ];
 
   return $form;
 } // nyss_ioimport_form()
@@ -202,7 +207,7 @@ function nyss_iovalidateuploadform($form, &$form_state) {
   //watchdog('io', '<pre>'.print_r($form_state, TRUE).'</pre>');
 
   if (empty($form_state['values']['csv'])) {
-    $form_state['values']['csv'] = array();
+    $form_state['values']['csv'] = [];
   }
 
   //require either a file be uploaded or referenced on the server
@@ -214,7 +219,7 @@ function nyss_iovalidateuploadform($form, &$form_state) {
     }
   }
   else {
-    $validators = array('file_validate_extensions' => array('csv tab txt'));
+    $validators = ['file_validate_extensions' => ['csv tab txt']];
     $file = file_save_upload('csv', $validators);
 
     if (!$file) {
@@ -237,7 +242,7 @@ function nyss_ioimport_form_submit($form, &$form_state) {
   //nyss_out("debug", $form_state, true);
 
   //temporarily bump memory limit
-  ini_set('memory_limit', '8000M');
+  ini_set('memory_limit', '10000M');
 
   //track processing time
   $timeStart = time();
@@ -251,6 +256,7 @@ function nyss_ioimport_form_submit($form, &$form_state) {
   global $nyss_iototallines;
   global $nyss_conn;
   global $dryrun;
+  global $logFile;
 
   civicrm_initialize();
   require_once 'CRM/Core/Config.php';
@@ -266,41 +272,48 @@ function nyss_ioimport_form_submit($form, &$form_state) {
     mkdir($logpath, 0775, true);
   }
 
-  $logFilename = "import." . mt_rand(1,9999999999999999).".log";
+  $logFilename = 'import.' . mt_rand(1,9999999999999999).".log";
   $logFilePath = $logpath.$logFilename;
   $logFile = fopen($logFilePath, 'w');
+  nyss_out('status', 'log file path: '.$logFilePath, true);
 
   require_once(dirname(__FILE__) . '/nyss_io_definitions.inc');
 
   $filename = $form_state['values']['csv']['file']->uri;
   if (empty($filename)) {
-    nyss_out('status',"unable to find filename.",true);
+    nyss_out('status','unable to find filename.',true);
   }
 
   $fo = new NYSS_IOFileObject($filename, "\t");
   $nyss_iototallines = $fo->countLines();
 
   //initialize some values
-  $bImportData = array();
+  $bImportData = [];
   $nyss_ioline = 0;
   $runnum = $form_state['values']['runnum'];
-  $dryrun = $form_state['values']['dryrun'];
+  $dryrun = $form_state['values']['dryrun'] ?? FALSE;
+
+  $dryrunTxt = 'TRUE';
   if (!$dryrun) {
-    $dryrun = false;
     $dryrunTxt = 'FALSE';
   }
-  else {
-    $dryrunTxt = 'TRUE';
+
+  //set debug constant
+  if (!empty($form_state['values']['debug']) && !defined('NYSSIODEBUG')) {
+    define('NYSSIODEBUG', TRUE);
+  }
+  elseif (!defined('NYSSIODEBUG')) {
+    define('NYSSIODEBUG', FALSE);
   }
 
-  $ioOptions = array();
+  $ioOptions = [];
   fillIoGetOptions($ioOptions);
 
   //get some civicrm values and flip so we can easily lookup values
   $aStates = array_flip(ioGetStates());
-  $aGender = array_flip(ioGetOptions("gender", $ioOptions));
-  $aPrefix = array_flip(ioGetOptions("individual_prefix", $ioOptions));
-  $aSuffix = array_flip(ioGetOptions("individual_suffix", $ioOptions));
+  $aGender = array_flip(ioGetOptions('gender', $ioOptions));
+  $aPrefix = array_flip(ioGetOptions('individual_prefix', $ioOptions));
+  $aSuffix = array_flip(ioGetOptions('individual_suffix', $ioOptions));
   $aLocType = array_flip(ioGetLocType());
 
   nyss_out('status',
@@ -327,14 +340,9 @@ function nyss_ioimport_form_submit($form, &$form_state) {
   }
 
   //initialize arrays to be populated with contact id's during import
-  $imported_contacts = array();
-  $updated_contacts  = array();
-  $new_contacts = array();
-  $addressDel = array();
-  $tagContacts = array();
+  $imported_contacts = $updated_contacts = $new_contacts = $delete_contacts = $addressDel = $tagContacts = [];
 
   while ($l = $fo->getLine()) {
-
     if ($nyss_ioline%BATCHSIZE == 0) {
       mysqli_query($nyss_conn, "START TRANSACTION");
     }
@@ -354,7 +362,7 @@ function nyss_ioimport_form_submit($form, &$form_state) {
       }
     }
 
-    if ($nyss_ioline%500==0) {
+    if ($nyss_ioline % 500 == 0) {
       nyss_out('status', "processed {$nyss_ioline} lines", true);
       nyss_flush();
     }
@@ -368,6 +376,7 @@ function nyss_ioimport_form_submit($form, &$form_state) {
           FROM civicrm_contact
           WHERE id = {$l['id']}
         ";
+
         if (CRM_Core_DAO::singleValueQuery($sql)) {
           $delete_contacts[] = $l['id'];
           CRM_Contact_BAO_Contact::deleteContact($l['id'], false, true);
@@ -428,19 +437,17 @@ function nyss_ioimport_form_submit($form, &$form_state) {
       _findRelatedCustom($l, $nyss_conn);
     }
 
-    //process several fields for BOE imports
+    //BOE imports
     if ($form_state['values']['boeimport']) {
       //set all addresses as BOE type
-      //TODO in future years should handle more intelligently
       $l['location_type_id'] = 6;
 
       //set contact source to BOE
-      //TODO in future years we will preserve source on update if exists
       $l['contact_source_60'] = 'boe';
 
       //set voter registration status to registered
       $l['voter_registration_status_23'] = 'registered';
-    } //end BOE processing
+    }
 
     //set state id
     _fixState($l, $aStates);
@@ -529,7 +536,7 @@ function nyss_ioimport_form_submit($form, &$form_state) {
 
     //process pipe separated list of keywords
     if (!empty($l['keywords'])) {
-      $keywords = explode('|', str_replace(array('| ','"'), array('|',''), $l['keywords']));
+      $keywords = explode('|', str_replace(['| ','"'], ['|',''], $l['keywords']));
       foreach ($keywords as $keyword) {
         $tagContacts['Keywords'][$keyword][] = $l['id'];
       }
@@ -537,7 +544,7 @@ function nyss_ioimport_form_submit($form, &$form_state) {
 
     //process pipe separated list of website petitions
     if (!empty($l['petitions'])) {
-      $petitions = explode('|', str_replace(array('| ','"'), array('|',''), $l['petitions']));
+      $petitions = explode('|', str_replace(['| ','"'], ['|',''], $l['petitions']));
       foreach ($petitions as $petition) {
         $tagContacts['Website Petitions'][$petition][] = $l['id'];
       }
@@ -552,7 +559,7 @@ function nyss_ioimport_form_submit($form, &$form_state) {
     unset($l);
   }//end $l record processing
 
-  // Commit any straglers!
+  // Commit any stragglers!
   if ($nyss_ioline%BATCHSIZE!=0) {
     mysqli_query($nyss_conn, "COMMIT" );
   }
@@ -564,7 +571,7 @@ function nyss_ioimport_form_submit($form, &$form_state) {
   if (VARSTATS) {
     nyss_out('debug', 'generating details about variables', true);
 
-    $varDetails = array();
+    $varDetails = [];
     $vars = get_defined_vars();
     //nyss_out('debug', $vars, true);
 
@@ -602,12 +609,12 @@ function nyss_ioimport_form_submit($form, &$form_state) {
     nyss_out('debug', "processing log email...", true);
 
     //now send a confirmation email
-    $message = array(
-      'to'      => $user->mail,
+    $message = [
+      'to' => $user->mail,
       'subject' => 'import Data Summary'.Date("Y-m-d H:i:s"). " filename: {$filename}",
-      'body'    => 'download the import report here: '.urlencode("http://".$_SERVER['HTTP_HOST'].'/nyss_getfile?file='.urlencode($filename)),
-      'headers' => array('From' => 'import@cms.nysenate.gov'),
-    );
+      'body' => 'download the import report here: '.urlencode("http://".$_SERVER['HTTP_HOST'].'/nyss_getfile?file='.urlencode($filename)),
+      'headers' => ['From' => 'import@cms.nysenate.gov'],
+    ];
     drupal_mail_send($message);
   }
 
@@ -640,7 +647,7 @@ function nyss_ioimport_form_submit($form, &$form_state) {
         $rnd = date('Ymdhis');
         $tmpTbl = "nyss_temp_greetings_$rnd";
         $sql = "CREATE TABLE $tmpTbl (id INT NOT NULL PRIMARY KEY) ENGINE = myisam;";
-        CRM_Core_DAO::executeQuery($sql, CRM_Core_DAO::$_nullArray);
+        CRM_Core_DAO::executeQuery($sql);
 
         //insert ids from stored arrays
         $allIDs = array_merge($updated_contacts, $new_contacts);
@@ -683,9 +690,9 @@ function nyss_ioimportData($tbl, &$l, $dryrun, $logFile, $form_state)
 
   //build the select array once and store global for efficiency
   if (empty($nyss_select)) {
-    $nyss_select = array();
+    $nyss_select = [];
     foreach ($nyss_iofields as $table=>$tableDetails) {
-      $tmp = array();
+      $tmp = [];
       foreach ($tableDetails as $key => $importField) {
         $tmp[] = "`{$importField['fld']}` as '{$key}'";
 
@@ -764,7 +771,7 @@ function nyss_ioimportData($tbl, &$l, $dryrun, $logFile, $form_state)
     $dao = mysqli_fetch_object($result);
     mysqli_free_result($result);
 
-    $up = array();
+    $up = [];
     
     //compare the fields
     foreach ($l as $key=>$data) {
@@ -805,27 +812,28 @@ function nyss_ioimportData($tbl, &$l, $dryrun, $logFile, $form_state)
 
       if (!$dryrun) {
         $result = mysqli_query($nyss_conn, $sqlUP);
-        mysqli_free_result($result);
       }
       else {
         //if ($tbl=='civicrm_value_constituent_information_1' || $tbl=='civicrm_value_district_information_7') {
         print_r($sqlUP."<br>"); //debug
         //}
       }
-      fwrite($logFile, "line {$nyss_ioline}: updated record. " . $sqlUP. "\n");
+      //fwrite($logFile, "line {$nyss_ioline}: updated record. " . $sqlUP. "\n");
+      nyss_out('debug', "line {$nyss_ioline}: updated record. " . $sqlUP, FALSE);
     }
     else {
-      fwrite($logFile, "line {$nyss_ioline}: nothing to update for $tbl record: " . implode(',',$l). "\n");
+      //fwrite($logFile, "line {$nyss_ioline}: nothing to update for $tbl record: " . implode(',',$l). "\n");
+      nyss_out('debug', "line {$nyss_ioline}: nothing to update for $tbl record: " . implode(',',$l), FALSE);
     }
   }
   //otherwise just insert
   else {
     $skip = false;
     $sqlINSERT  = "";
-    $insertKeys = array();
+    $insertKeys = [];
 
     //nyss_out('debug', $l, true);
-    $up = array();
+    $up = [];
 
     //first set a few additional values required for insert action
     //TODO we should have a large switch statement to condition ton $tbl so we don't process multiple times
@@ -911,7 +919,10 @@ function nyss_ioimportData($tbl, &$l, $dryrun, $logFile, $form_state)
     //nyss_out('status', 'set up the insert', true);
     foreach($l as $key => $data) {
       //unset if no data
-      if (empty($data) && $data !== 0 && array_key_exists($key, $nyss_iofields[$tbl])) {
+      if (empty($data) && $data !== 0 &&
+        isset($nyss_iofields[$tbl]) &&
+        array_key_exists($key, $nyss_iofields[$tbl])
+      ) {
         unset($l[$key]);
         continue;
       }
@@ -926,7 +937,7 @@ function nyss_ioimportData($tbl, &$l, $dryrun, $logFile, $form_state)
 
       //echo 'field to be processed: ';
       //nyss_out('debug', $key.'::'.$data, true);
-      $up = array();
+      $up = [];
 
       //skip if required values not found
       if (empty($data) && $nyss_iofields[$tbl][$key]['required']) {
@@ -956,13 +967,13 @@ function nyss_ioimportData($tbl, &$l, $dryrun, $logFile, $form_state)
     if (!$dryrun && $sqlINSERT) {
       $result = mysqli_query($nyss_conn, $sqlINSERT) or die(mysqli_error($nyss_conn));
       $l[$pkImport] = mysqli_insert_id($nyss_conn);
-      mysqli_free_result($result);
     }
     elseif ($sqlINSERT) {
       print_r($sqlINSERT."<br>"); //debug
     }
 
-    fwrite($logFile, "line {$nyss_ioline}: inserted record. " . $sqlINSERT . "\n");
+    //fwrite($logFile, "line {$nyss_ioline}: inserted record. " . $sqlINSERT . "\n");
+    nyss_out('debug', "line {$nyss_ioline}: inserted record. " . $sqlINSERT, FALSE);
   }
 } // nyss_ioimportData()
 
@@ -972,14 +983,14 @@ function fillIoGetOptions(&$ioOptions)
   $session = & CRM_Core_Session::singleton();
   $dao = &CRM_Core_DAO::executeQuery("SELECT id, name FROM civicrm_option_group;");
 
-  $optionGroups = array();
+  $optionGroups = [];
   while($dao->fetch())
   {
     $optionGroups[$dao->id] = $dao->name;
   }
 
   $dao = &CRM_Core_DAO::executeQuery("SELECT id, option_group_id, name, label, value FROM civicrm_option_value");
-  $options = array();
+  $options = [];
   while($dao->fetch())
   {
     $name = (strlen($dao->label) > 0) ? $dao->label : $dao->name;
@@ -994,22 +1005,19 @@ function ioGetOptions($strGroup, &$ioOptions)
   if (isset($ioOptions[$strGroup]) && !is_null($ioOptions[$strGroup]) && is_array($ioOptions[$strGroup])) {
     return $ioOptions[$strGroup];
   }
-  return array();
+  return [];
 } // ioGetOptions()
 
 
-function ioGetStates()
-{
-  $session =& CRM_Core_Session::singleton();
-
+function ioGetStates() {
+  //lookup US states only
   $dao = CRM_Core_DAO::executeQuery("
-      SELECT id, abbreviation
-      FROM civicrm_state_province
-      WHERE country_id = 1228",
-    CRM_Core_DAO::$_nullArray); //lookup US states only
+    SELECT id, abbreviation
+    FROM civicrm_state_province
+    WHERE country_id = 1228
+  ");
 
-  $options = array();
-
+  $options = [];
   while ($dao->fetch()) {
     $options[$dao->id] = $dao->abbreviation;
   }
@@ -1018,14 +1026,14 @@ function ioGetStates()
 } // ioGetStates()
 
 
-function ioGetLocType()
-{
+function ioGetLocType() {
   $session =& CRM_Core_Session::singleton();
-  $dao = &CRM_Core_DAO::executeQuery("SELECT id, name FROM civicrm_location_type;", CRM_Core_DAO::$_nullArray);
-  $options = array();
+  $dao = &CRM_Core_DAO::executeQuery("SELECT id, name FROM civicrm_location_type;");
+  $options = [];
   while ($dao->fetch()) {
     $options[$dao->id] = $dao->name;
   }
+
   return $options;
 } // ioGetLocType()
 
@@ -1041,23 +1049,23 @@ function convertProperCase($string, $skipMixed = false, $skipSpecial = false)
   if ($skipSpecial) return $string;
 
   // list of words we want to force
-  $forceWords = array(
+  $forceWords = [
     'of', 'the', 'and', 'an', 'or', 'nor', 'but', 'is', 'if', 'then',
     'else', 'when', 'at', 'from', 'by', 'on', 'off', 'for', 'in', 'out', 'over', 'to',
     'into', 'with', 'II', 'IV', 'UK', 'VI', 'III', 'VII', 'PO', 'McDonald', 'McClelland', 'RR'
-  );
+  ];
 
   // punctuation used to determine that the following letter
   // should be capitalised
-  $punctuation = array(
+  $punctuation = [
     '.', '-', ':', '!', '\'', '-', '?'
-  );
+  ];
 
   $words = explode(' ', $string);
 
   foreach ($words as $word) {
 
-    $replace = array();
+    $replace = [];
 
     //trim any non-word chars and replace with nothing for easier matching
     $cleanWord = preg_replace("/[^\w]/", '', $word);
@@ -1135,7 +1143,7 @@ function nyss_vars()
 {
   nyss_out('debug', 'generating details about variables', true);
 
-  $varDetails = array();
+  $varDetails = [];
   $vars = get_defined_vars();
   nyss_out('debug', $vars, true);
   foreach ($vars as $type => $set) {
@@ -1152,7 +1160,7 @@ function nyss_vars()
 
 function convertSize($size)
 {
-  $unit = array('b','kb','mb','gb','tb','pb');
+  $unit = ['b','kb','mb','gb','tb','pb'];
   return @round($size/pow(1024,($i=floor(log($size,1024)))),2).' '.$unit[$i];
 } // convertSize()
 
@@ -1303,7 +1311,7 @@ function _fixStreetUnit(&$l)
 {
   if (isset($l['street_unit']) && $l['street_unit']) {
     $needle_found = 0;
-    $unit_needles = array(
+    $unit_needles = [
       'apt',
       'unit',
       'super',
@@ -1315,7 +1323,7 @@ function _fixStreetUnit(&$l)
       'fl',
       'bsmt',
       'lot',
-    );
+    ];
 
     foreach ($unit_needles as $unit_needle) {
       $needle_search = stripos($l['street_unit'], $unit_needle);
@@ -1361,12 +1369,12 @@ function _fixStreetNumber(&$l)
   //borrowed from CRM_Core_BAO_Address::parseStreetAddress()
   if (isset($l['street_number']) && !empty($l['street_number'])) {
     $streetNumAndSuffix = $l['street_number'];
-    $matches = array();
+    $matches = [];
     if (preg_match('/^(\d+)/', $streetNumAndSuffix, $matches)) {
       $l['street_number'] = $matches[0];
       $suffix = preg_replace('/^(\d+)/', '', $streetNumAndSuffix);
       $l['street_number_suffix'] = trim($suffix);
-      $matches = array();
+      $matches = [];
     }
   }
 } //_fixStreetNumber()
@@ -1377,15 +1385,15 @@ function _findContact(&$l, $nyss_conn, $ruleID = 1)
   require_once 'CRM/Dedupe/Finder.php';
 
   //format params to pass to dedupe tool
-  $params = array(
-    'civicrm_contact' => array(
+  $params = [
+    'civicrm_contact' => [
       'first_name' => $l['first_name'],
       'middle_name' => $l['middle_name'],
       'last_name' => $l['last_name'],
       'suffix_id' => $l['suffix_id'],
       'postal_code' => $l['postal_code'],
-    ),
-  );
+    ],
+  ];
 
   if ($l['street_address'] && !empty($l['street_address'])) {
     $params['civicrm_address']['street_address'] = $l['street_address'];
@@ -1411,7 +1419,7 @@ function _findContact(&$l, $nyss_conn, $ruleID = 1)
   $o->title = $ruleTitle;
   $o->params = $params;
   $o->noRules = false;
-  $tableQueries = array();
+  $tableQueries = [];
   nyss_dedupe_civicrm_dupeQuery($o, 'table', $tableQueries);
   $sql = $tableQueries['civicrm.custom.5'];
   $sql = "
@@ -1425,7 +1433,7 @@ function _findContact(&$l, $nyss_conn, $ruleID = 1)
     var_dump(mysqli_error($nyss_conn)); exit();
   }
 
-  $dupeIDs = array();
+  $dupeIDs = [];
   while($row = mysqli_fetch_assoc($result)) {
     $dupeIDs[] = $row['id'];
   }
@@ -1605,7 +1613,7 @@ function _processCurrentEmployer(&$l, $nyss_conn, $dryrun)
           mysqli_query($nyss_conn, $sql) or die(mysqli_error($nyss_conn));
         }
         catch (CiviCRM_API3_Exception $e) {
-          Civi::log()->debug('_processCurrentEmployer', array('e' => $e));
+          Civi::log()->debug('_processCurrentEmployer', ['e' => $e]);
         }
       }
     }
@@ -1625,7 +1633,7 @@ function _processNote(&$l, $nyss_conn)
   global $dryrun;
 
   if (array_key_exists('note', $l) && !empty($l['note'])) {
-    $params = array(
+    $params = [
       'entity_table' => 'civicrm_contact',
       'entity_id' => $l['id'],
       'note' => $l['note'],
@@ -1633,7 +1641,7 @@ function _processNote(&$l, $nyss_conn)
       'modified_date' => date('Ymd'),
       'subject' => 'Import Note',
       'privacy' => 0,
-    );
+    ];
 
     if ($dryrun) {
       nyss_out('debug', $params, true);
@@ -1658,7 +1666,7 @@ function _processTags($tagContacts, $type = 'Keywords')
 {
   global $dryrun;
 
-  $tag_lookup = array();
+  $tag_lookup = [];
 
   //get parent_id based on tag type
   $parentId = CRM_Core_DAO::singleValueQuery("
@@ -1726,7 +1734,7 @@ function _processTags($tagContacts, $type = 'Keywords')
         //CRM_Core_Error::debug_var('tagid',$tagid);
 
         //create sql insert; process in batches
-        $eTList = array();
+        $eTList = [];
         $eTSqlList = '';
         $b = 0; //batch count
         $tagCount = count($tContacts);
@@ -1746,7 +1754,7 @@ function _processTags($tagContacts, $type = 'Keywords')
 
             //free memory
             unset($eTList);
-            $eTList = array();
+            $eTList = [];
 
             $entityTagEnd  = time();
             $entityTagDiff = $entityTagEnd - $entityTagStart;
@@ -1773,27 +1781,24 @@ function _processTags($tagContacts, $type = 'Keywords')
 function _processGroup($form_state, $imported_contacts, $new_contacts, $dryrun)
 {
   if (!empty($form_state['values']['addtogroup']) &&
-      $form_state['values']['addtogroup_handling'] != 'none') {
+    $form_state['values']['addtogroup_handling'] != 'none'
+  ) {
     nyss_out('debug', "processing group...", true);
 
     //retrieve group if exists
-    $groupID   = '';
+    $groupID = '';
     $groupName = $form_state['values']['addtogroup'];
-    $params    = array(
-      'version' => 3,
-      'title' => $groupName
-    );
-    $group = civicrm_api('group', 'getsingle', $params);
+    $params = ['title' => $groupName, 'sequential' => 1, 'options' => ['limit' => 1]];
+    $group = civicrm_api3('group', 'get', $params);
     //CRM_Core_Error::debug_var('get group',$group);
 
-    if ($group['is_error']) {
+    if (empty($group['id'])) {
       if (!$dryrun) {
-        $params = array(
-          'version'   => 3,
-          'title'     => $groupName,
+        $params = [
+          'title' => $groupName,
           'is_active' => 1,
-        );
-        $groupNew = civicrm_api('group', 'create', $params);
+        ];
+        $groupNew = civicrm_api3('group', 'create', $params);
         $groupID  = $groupNew['id'];
         nyss_out('status', "The {$groupName} group did not exist; it was created during import.", true);
       }
@@ -1806,10 +1811,7 @@ function _processGroup($form_state, $imported_contacts, $new_contacts, $dryrun)
     }
 
     //now prepare array for adding contacts to group
-    $params = array(
-      'version'  => 3,
-      'group_id' => $groupID,
-    );
+    $params = ['group_id' => $groupID];
 
     //construct the list of contacts to add
     switch ($form_state['values']['addtogroup_handling']) {
@@ -1833,7 +1835,7 @@ function _processGroup($form_state, $imported_contacts, $new_contacts, $dryrun)
     //CRM_Core_Error::debug_var('create group_contact params',$params);
 
     if (!$dryrun) {
-      $gc = civicrm_api('group_contact', 'create', $params);
+      $gc = civicrm_api3('group_contact', 'create', $params);
     }
 
     $groupContactsCount = count($groupContacts);
@@ -1850,21 +1852,17 @@ function _processEmailImport($new_contacts, $nyss_conn)
 
   //Create the group if it doesn't already exist
   $emailGroupID = '';
-  $params = array(
-    'version' => 3,
-    'name'    => 'Email_Only',
-  );
-  $emailGroup = civicrm_api('group', 'getsingle', $params);
+  $params = ['name' => 'Email_Only'];
+  $emailGroup = civicrm_api3('group', 'getsingle', $params);
 
   if ($emailGroup['is_error']) {
     if (!$dryrun) {
-      $params = array(
-        'version' => 3,
+      $params = [
         'title' => 'Email Only',
         'is_active' => 1,
         'description' => 'Contacts in this group will be excluded from postal mailings processed through Corporate Woods, and may be exclude from internal exports using the print processing option.'
-     );
-      $emailGroup = civicrm_api('group', 'create', $params);
+      ];
+      $emailGroup = civicrm_api3('group', 'create', $params);
       nyss_out('status', "The 'Email Only' group did not exist; it was created during import.", true);
     }
     else {
@@ -1874,10 +1872,7 @@ function _processEmailImport($new_contacts, $nyss_conn)
   $emailGroupID = $emailGroup['id'];
 
   //add all the contacts to the email only group
-  $params = array(
-    'version'  => 3,
-    'group_id' => $emailGroupID,
-  );
+  $params = ['group_id' => $emailGroupID];
 
   //construct the list of contacts to add to groups
   foreach ($new_contacts as $i => $contact_id) {
@@ -1895,7 +1890,7 @@ function _processEmailImport($new_contacts, $nyss_conn)
 
   if (!$dryrun) {
     //create the GroupContact joins for each of these contacts
-    civicrm_api('group_contact', 'create', $params);
+    civicrm_api3('group_contact', 'create', $params);
 
     //set do not mail
     $result = mysqli_query($nyss_conn, $setDNM);
@@ -1904,8 +1899,6 @@ function _processEmailImport($new_contacts, $nyss_conn)
   $newContactsCount = count($new_contacts);
 
   nyss_out('status', "Adding {$newContactsCount} to the Email Only group", true);
-
-  mysqli_free_result($result);
 
   unset($params);
   unset($new_contacts_list);
@@ -1924,8 +1917,6 @@ function _processAddressDelete($addressDel, $nyss_conn, $dryrun)
       WHERE id IN ( $addressDelList );
     ";
     $result = mysqli_query($nyss_conn, $sqlAD);
-
-    mysqli_free_result($result);
 
     unset($result);
     unset($sqlAD);

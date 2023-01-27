@@ -110,19 +110,19 @@ class CRM_NYSS_BAO_Integration_Website
     //CRM_Core_Error::debug_var('matchContact $params', $params);
 
     //format params to pass to dedupe tool
-    $dedupeParams = array(
-      'civicrm_contact' => array(
+    $dedupeParams = [
+      'civicrm_contact' => [
         'first_name' => $params['first_name'],
         'last_name' => $params['last_name'],
         'birth_date' => $params['birth_date'],
         'gender_id' => $params['gender_id'],
-      ),
-      'civicrm_address' => array(
+      ],
+      'civicrm_address' => [
         'street_address' => $params['street_address'],
         'city' => $params['city'],
         'postal_code' => $params['postal_code'],
-      ),
-    );
+      ],
+    ];
 
     if (!empty($params['email'])) {
       $dedupeParams['civicrm_email']['email'] = $params['email'];
@@ -142,7 +142,7 @@ class CRM_NYSS_BAO_Integration_Website
     $o->title = $ruleTitle;
     $o->params = $dedupeParams;
     $o->noRules = FALSE;
-    $tableQueries = array();
+    $tableQueries = [];
     nyss_dedupe_civicrm_dupeQuery($o, 'table', $tableQueries);
     $sql = $tableQueries['civicrm.custom.5'];
     $sql = "
@@ -193,14 +193,14 @@ class CRM_NYSS_BAO_Integration_Website
   {
     $params['custom_60'] = 'Website Account';
     $params['contact_type'] = 'Individual';
-    $params['api.address.create'] = array(
+    $params['api.address.create'] = [
       'street_address' => $params['street_address'],
       'supplemental_addresss_1' => $params['supplemental_addresss_1'],
       'city' => $params['city'],
       'state_province' => $params['state'],
       'postal_code' => $params['postal_code'],
       'location_type_id' => 1,
-    );
+    ];
     self::cleanContactParams($params);
     //CRM_Core_Error::debug_var('createContact params', $params);
 
@@ -216,8 +216,8 @@ class CRM_NYSS_BAO_Integration_Website
    * this can be a common function used for cleaning data
    */
   static function cleanContactParams(&$params) {
-    $contactFields = civicrm_api3('contact', 'getfields', array('sequential' => 1, 'api_action' => 'create'));
-    $addressFields = civicrm_api3('address', 'getfields', array('sequential' => 1, 'api_action' => 'create'));
+    $contactFields = civicrm_api3('contact', 'getfields', ['sequential' => 1, 'api_action' => 'create']);
+    $addressFields = civicrm_api3('address', 'getfields', ['sequential' => 1, 'api_action' => 'create']);
 
     //cycle through contact fields and truncate if necessary
     foreach ($contactFields['values'] as $field) {

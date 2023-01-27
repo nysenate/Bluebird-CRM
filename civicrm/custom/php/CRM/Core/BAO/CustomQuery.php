@@ -200,10 +200,10 @@ class CRM_Core_BAO_CustomQuery {
         }
         elseif (count($value) && in_array(key($value), CRM_Core_DAO::acceptedSQLOperators(), TRUE)) {
           $op = key($value);
-          $qillValue = strstr($op, 'NULL') ? NULL : CRM_Core_BAO_CustomField::displayValue($value[$op], $id);
+          $qillValue = strpos($op, 'NULL') !== FALSE ? NULL : CRM_Core_BAO_CustomField::displayValue($value[$op], $id);
         }
         else {
-          $op = strstr($op, 'IN') ? $op : 'IN';
+          $op = strpos($op, 'IN') !== FALSE ? $op : 'IN';
           $qillValue = CRM_Core_BAO_CustomField::displayValue($value, $id);
         }
 
@@ -229,8 +229,7 @@ class CRM_Core_BAO_CustomQuery {
                 elseif ($value) {
                   $value = CRM_Utils_Type::escape($value, 'Integer');
                 }
-                $value = str_replace(['[', ']', ','], ['\[', '\]', '[:comma:]'], $value);
-                $value = str_replace('|', '[:separator:]', $value);
+                $value = str_replace(['[', ']', ',', '|'], ['\[', '\]', '[:comma:]', '[:separator:]'], $value);
               }
               elseif ($isSerialized) {
                 if (in_array(key($value), CRM_Core_DAO::acceptedSQLOperators(), TRUE)) {
@@ -240,21 +239,21 @@ class CRM_Core_BAO_CustomQuery {
                 // CRM-19006: escape characters like comma, | before building regex pattern
                 $value = (array) $value;
                 foreach ($value as $key => $val) {
-                  $value[$key] = str_replace(['[', ']', ','], ['\[', '\]', '[:comma:]'], $val);
-                  $value[$key] = str_replace('|', '[:separator:]', $value[$key]);
+                  $val = str_replace(['[', ']', ',', '|'], ['\[', '\]', '[:comma:]', '[:separator:]'], $val);
                   if ($field['data_type'] == 'String') {
-                    $value[$key] = CRM_Utils_Type::escape($value[$key], 'String');
+                    $val = CRM_Utils_Type::escape($val, 'String');
                   }
                   elseif ($value) {
-                    $value[$key] = CRM_Utils_Type::escape($value[$key], 'Integer');
+                    $val = CRM_Utils_Type::escape($val, 'Integer');
                   }
+                  $value[$key] = $val;
                 }
                 $value = implode(',', $value);
               }
 
               //NYSS build district id fields using IN to allow multiple values
               if ($op == '=') {
-                $distinfo = array(52, 56);
+                $distinfo = [52, 56];
                 if (in_array($id, $distinfo)) {
                   $op = 'IN';
                   $field['data_type'] = 'nyss_String'; //flag for processing
@@ -262,12 +261,12 @@ class CRM_Core_BAO_CustomQuery {
               }
 
               // CRM-14563,CRM-16575 : Special handling of multi-select custom fields
-              if ($isSerialized && !CRM_Utils_System::isNull($value) && !strstr($op, 'NULL') && !strstr($op, 'LIKE')) {
+              if ($isSerialized && !CRM_Utils_System::isNull($value) && strpos($op, 'NULL') === FALSE && strpos($op, 'LIKE') === FALSE) {
                 $sp = CRM_Core_DAO::VALUE_SEPARATOR;
-                $value = str_replace(",", "$sp|$sp", $value);
+                $value = str_replace(',', "$sp|$sp", $value);
                 $value = str_replace(['[:comma:]', '(', ')'], [',', '[(]', '[)]'], $value);
 
-                $op = (strstr($op, '!') || strstr($op, 'NOT')) ? 'NOT RLIKE' : 'RLIKE';
+                $op = (strpos($op, '!') !== FALSE || strpos($op, 'NOT') !== FALSE) ? 'NOT RLIKE' : 'RLIKE';
                 $value = $sp . $value . $sp;
                 if (!$wildcard) {
                   foreach (explode("|", $value) as $val) {
