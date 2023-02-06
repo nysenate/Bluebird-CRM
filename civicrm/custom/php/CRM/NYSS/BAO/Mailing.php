@@ -76,7 +76,8 @@ class CRM_NYSS_BAO_Mailing {
         CRM_Mailing_Event_BAO_Queue::bulkCreate($rows, $now);
 
         //notify error report recipients
-        CRM_NYSS_Errorhandler_BAO::notifyEmail(print_r($rows, TRUE), 'Mailing Queue Cleanup Required');
+        $bbcfg = get_bluebird_instance_config();
+        CRM_NYSS_Errorhandler_BAO::notifyEmail(print_r($rows, TRUE), "Mailing Queue Cleanup Required [{$bbcfg['shortname']}.{$bbcfg['envname']}]");
       }
 
       return $job['id'];
