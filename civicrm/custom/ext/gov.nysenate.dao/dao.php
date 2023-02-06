@@ -141,7 +141,7 @@ function dao_civicrm_entityTypes(&$entityTypes) {
     $fields['street_unit']['import'] = TRUE;
     $fields['supplemental_address_1']['title'] = 'Mailing Address';
     $fields['supplemental_address_2']['title'] = 'Building';
-    unset($fields['country_id']);//2771
+    //unset($fields['country_id']);//2771 //removed with C5.57 upgrade (caused errors)
 
     //set fields that should not be exportable
     $fields['geo_code_1']['export'] = FALSE;
