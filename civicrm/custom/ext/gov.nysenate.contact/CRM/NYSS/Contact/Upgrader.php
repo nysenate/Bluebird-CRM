@@ -132,6 +132,39 @@ class CRM_NYSS_Contact_Upgrader extends CRM_NYSS_Contact_Upgrader_Base {
     return TRUE;
   }
 
+  public function upgrade_1300(): bool {
+    $this->ctx->log->info('Contact extension update 1300: Guardianship relationship type');
+
+    try {
+      $existing = \Civi\Api4\RelationshipType::get(FALSE)
+        ->selectRowCount()
+        ->addWhere('name_a_b', '=', 'guardian_of')
+        ->execute()
+        ->countMatched();
+
+      if ($existing) {
+        Civi::log()->debug(__METHOD__, ['Contact 1300: Guardian relationship type already exists.']);
+        return TRUE;
+      }
+
+      \Civi\Api4\RelationshipType::create(FALSE)
+        ->addValue('name_a_b', 'guardian_of')
+        ->addValue('label_a_b', 'Guardian of')
+        ->addValue('name_b_a', 'guardian_is')
+        ->addValue('label_b_a', 'Guardian is')
+        ->addValue('contact_type_a', 'Individual')
+        ->addValue('contact_type_b', 'Individual')
+        ->addValue('is_reserved', FALSE)
+        ->addValue('is_active', TRUE)
+        ->execute();
+    }
+    catch (CiviCRM_API3_Exception $e) {
+      Civi::log()->debug(__METHOD__, ['e' => $e]);
+    }
+
+    return TRUE;
+  }
+
   /**
    * Example: Run an external SQL script.
    *
