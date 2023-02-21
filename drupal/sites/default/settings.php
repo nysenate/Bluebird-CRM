@@ -22,7 +22,7 @@ $conf['maintenance_theme'] = 'BluebirdMaintenance';
 $bbconfig = get_bluebird_instance_config();
 
 if ($bbconfig == null) {
-  $GLOBALS['maintenance_message'] = "<br/>There is no such CRM instance:<br/><br/>".$_SERVER['HTTP_HOST'];
+  $GLOBALS['maintenance_message'] = "<br/>There is no such CRM instance:<br/><br/>".($_SERVER['HTTP_HOST'] ?? 'HTTP_HOST not set');
   require_once DRUPAL_ROOT.'/includes/cache.inc';
   require_once DRUPAL_ROOT.'/includes/common.inc';
   require_once DRUPAL_ROOT.'/includes/lock.inc';
@@ -89,7 +89,7 @@ $cookie_domain = $bbconfig['servername'];
 # );
 
 $GLOBALS['simpletest_installed'] = TRUE;
-if (preg_match("/^simpletest\d+$/", $_SERVER['HTTP_USER_AGENT'])) {
+if (preg_match("/^simpletest\d+$/", ($_SERVER['HTTP_USER_AGENT'] ?? ''))) {
   $db_prefix = $_SERVER['HTTP_USER_AGENT'];
 }
 
