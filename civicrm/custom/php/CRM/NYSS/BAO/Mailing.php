@@ -19,6 +19,10 @@ class CRM_NYSS_BAO_Mailing {
         ON mr.email_id = queue.email_id
       WHERE mr.mailing_id = %1
         AND queue.id IS NULL
+        AND mr.email_id IS NOT NULL
+        AND mr.email_id != ''
+        AND mr.contact_id IS NOT NULL
+        AND mr.contact_id != ''
     ";
 
     $rows = [];
