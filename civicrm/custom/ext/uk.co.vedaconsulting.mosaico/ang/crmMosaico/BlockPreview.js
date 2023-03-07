@@ -9,16 +9,14 @@
         scope.$watch(attr.crmMailing, function(newValue) {
           scope.mailing = newValue;
         });
-        scope.groupNames = CRM.crmMailing.testGroupNames || CRM.crmMailing.groupNames;
         scope.ts = CRM.ts(null);
         scope.hs = crmUiHelp({file: 'CRM/Mailing/MailingUI'});
         scope.testContact = {email: CRM.crmMailing.defaultTestEmail};
         scope.testGroup = {gid: null};
-        //NYSS
         scope.validateMultipleEmail = function(email) {
           email = email.split(',');
 
-          // regex pattern for single email
+          // a regex pattern for single email
           var emailRegex = /\S+@\S+\.\S+/;
 
           var validityArr = email.map(function(str){

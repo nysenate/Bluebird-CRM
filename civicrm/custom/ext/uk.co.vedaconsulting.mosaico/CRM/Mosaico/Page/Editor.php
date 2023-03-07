@@ -14,6 +14,7 @@ class CRM_Mosaico_Page_Editor extends CRM_Core_Page {
       $this->createMosaicoConfig(),
       defined('JSON_PRETTY_PRINT') ? JSON_PRETTY_PRINT : 0
     ));
+    $smarty->assign('mosaicoPlugins', $this->getMosaicoPlugins());
     echo $smarty->fetch(self::getTemplateFileName());
     CRM_Utils_System::civiExit();
   }
@@ -49,7 +50,6 @@ class CRM_Mosaico_Page_Editor extends CRM_Core_Page {
       "{$mosaicoDistUrl}/vendor/notoregular/stylesheet.css?r={$cacheCode}",
     ];
   }
-
 
   /**
    * Generate the configuration options for `Mosaico.init()`.
@@ -145,6 +145,28 @@ class CRM_Mosaico_Page_Editor extends CRM_Core_Page {
     $iniVal = ini_get('upload_max_filesize') ? CRM_Utils_Number::formatUnitSize(ini_get('upload_max_filesize'), TRUE) : $fakeUnlimited;
     $settingVal = Civi::settings()->get('maxFileSize') ? (1024 * 1024 * Civi::settings()->get('maxFileSize')) : $fakeUnlimited;
     return (int) min($iniVal, $settingVal);
+  }
+
+  /**
+   * Gets the plugins for `Mosaico.init()`.
+   *
+   * @return array
+   */
+  public function getMosaicoPlugins() {
+    $plugins = [];
+
+    // Allow plugins to be added by a hook.
+    if (class_exists('\Civi\Core\Event\GenericHookEvent')) {
+      \Civi::dispatcher()->dispatch('hook_civicrm_mosaicoPlugin',
+        \Civi\Core\Event\GenericHookEvent::create([
+          'plugins' => &$plugins,
+        ])
+      );
+    }
+
+    $plugins = '[ ' . implode(',', $plugins) . ' ]';
+
+    return $plugins;
   }
 
 }

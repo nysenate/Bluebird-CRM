@@ -2,8 +2,6 @@
 
 use CRM_Mosaico_ExtensionUtil as E;
 use Intervention\Image\ImageManagerStatic as Image;
-//NYSS 13567
-use Intervention\Image\Exception\NotSupportedException as ImageException;
 
 /**
  * Class CRM_Mosaico_Graphics_Intervention
@@ -76,8 +74,9 @@ class CRM_Mosaico_Graphics_Intervention extends CRM_Mosaico_Graphics_Interface {
 
     // $img->response returns a \Symfony\Component\HttpFoundation\Response object which will call __toString unless we pass in the send() method in Drupal8.
     $response = $img->response('png');
+    header("Content-type: image/png");
     if (is_object($response)) {
-      echo $response->send();
+      echo $response->sendContent();
     }
     else {
       echo $response;
@@ -119,15 +118,7 @@ class CRM_Mosaico_Graphics_Intervention extends CRM_Mosaico_Graphics_Interface {
       $img->heighten(max($height, $mobileMinHeight));
     }
 
-    //NYSS 13567
-    try {
-      $img->save($destFile);
-    }
-    catch (ImageException $e)  {
-      //NYSS log an error instead of throwing a fatal exception
-      CRM_Core_Error::debug_var('createResizedImage $e->msg', $e->getMessage(), TRUE, TRUE, 'mosaico');
-      //throw new \Exception($e->getMessage());
-    }
+    $img->save($destFile);
   }
 
   public function createCoveredImage($srcFile, $destFile, $width, $height) {

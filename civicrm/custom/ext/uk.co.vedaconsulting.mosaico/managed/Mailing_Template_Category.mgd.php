@@ -3,7 +3,7 @@ return [
   [
     'name' => 'OptionGroup_mailing_template_category',
     'entity' => 'OptionGroup',
-    'cleanup' => 'unused',
+    'cleanup' => 'always',
     'update' => 'unmodified',
     'params' => [
       'version' => 4,
@@ -16,6 +16,7 @@ return [
         'is_active' => TRUE,
         'is_locked' => FALSE,
       ],
+      'match' => ['name'],
     ],
   ],
 ];

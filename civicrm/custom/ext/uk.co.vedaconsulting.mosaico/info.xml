@@ -15,11 +15,11 @@
     <url desc="Support">https://vedaconsulting.co.uk</url>
     <url desc="Licensing">http://www.gnu.org/licenses/agpl-3.0.html</url>
   </urls>
-  <releaseDate>2021-11-17</releaseDate>
-  <version>2.8.1637146864</version>
+  <releaseDate>2023-02-14</releaseDate>
+  <version>2.11.1676403645</version>
   <develStage>stable</develStage>
   <compatibility>
-    <ver>5.46</ver>
+    <ver>5.57</ver>
   </compatibility>
   <requires>
     <ext>org.civicrm.flexmailer</ext>
@@ -29,9 +29,16 @@
   <comments>To help contribute please contact us on support@vedaconsulting.co.uk or initiate a conversation / issue on github.</comments>
   <civix>
     <namespace>CRM/Mosaico</namespace>
+    <format>22.10.0</format>
   </civix>
   <classloader>
     <psr0 prefix="CRM_" path=""/>
     <psr4 prefix="Civi\" path="Civi"/>
   </classloader>
+  <mixins>
+    <mixin>ang-php@1.0.0</mixin>
+    <mixin>menu-xml@1.0.0</mixin>
+    <mixin>mgd-php@1.0.0</mixin>
+    <mixin>setting-php@1.0.0</mixin>
+  </mixins>
 </extension>

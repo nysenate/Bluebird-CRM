@@ -13,7 +13,7 @@ class MosaicoTemplate extends Generic\DAOEntity {
   /**
    * @return array
    */
-  public static function permissions() {
+  public static function permissions():array {
     //NYSS 14657 alter perms
     return [
       'get' => ['access CiviCRM'],
@@ -22,4 +22,5 @@ class MosaicoTemplate extends Generic\DAOEntity {
       'delete' => ['edit message templates'],
     ];
   }
+
 }
