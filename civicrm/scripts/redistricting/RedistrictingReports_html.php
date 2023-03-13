@@ -12,8 +12,6 @@
 // RedistrictingReports.php
 //-----------------------------------------------------------------------------
 
-define('RESOURCES_DIR', realpath(dirname(__FILE__)).'/report');
-
 //-----------------------------------------------------------------------------
 // HTML FORMAT
 //-----------------------------------------------------------------------------
@@ -29,16 +27,14 @@ function generate_html_start($dist)
       <?= $title ?>
     </title>
     <!-- Get datatables css from cdn so that images can be downloaded -->
-    <link rel="stylesheet" type="text/css" href="https://ajax.aspnetcdn.com/ajax/jquery.dataTables/1.9.4/css/jquery.dataTables.css">
-    <script>
-      <?php include RESOURCES_DIR . '/resources.js'; ?>
-    </script>
+    <link rel="stylesheet" type="text/css" href="resources/css/jquery.dataTables.css">
+    <link rel="stylesheet" type="text/css" href="resources/css/report.css">
+    <script type="text/javascript" src="resources/js/jquery.min.js"></script>
+    <script type="text/javascript" src="resources/js/jquery.ui.min.js"></script>
+    <script type="text/javascript" src="resources/js/jquery.dataTables.min.js"></script>
+    <script type="text/javascript" src="resources/js/highcharts.min.js"></script>
   </head>
   <body>
-  <style>
-      <?php include RESOURCES_DIR . '/main.css' ?>
-  </style>
-
   <div class="header">
     <h1>Bluebird CRM - Redistricting Report for District <?= $dist ?></h1>
   </div>
@@ -51,13 +47,7 @@ function generate_html_end($mode = 'summary')
 ?>
   <br/>
   </body>
-
-  <script>
-    <?php
-    // Include the js that initializes the charts and tables
-    include RESOURCES_DIR . "/{$mode}_report.js";
-    ?>
-  </script>
+  <script type="text/javascript" src="resources/js/<?= $mode?>_report.js"></script>
 </html>
 <?php
 } // generate_html_end()
@@ -85,10 +75,10 @@ function get_summary_output($district_counts, $crm_dist, $name)
     <div id="summary_activities_chart" class="inactive pie-chart"></div>
 
     <div id="piechart_data"
-         data-contacts="<?= redist_summary_pie_data($district_counts, 'contacts', 5) ?>"
-         data-emails="<?= redist_summary_pie_data($district_counts, 'active_emails', 5) ?>"
-         data-activities="<?= redist_summary_pie_data($district_counts, 'all_activities', 5) ?>"
-         data-cases="<?= redist_summary_pie_data($district_counts, 'all_cases', 5) ?>"></div>
+         data-contacts='<?= redist_summary_pie_data($district_counts, 'contacts', 5) ?>'
+         data-emails='<?= redist_summary_pie_data($district_counts, 'active_emails', 5) ?>'
+         data-activities='<?= redist_summary_pie_data($district_counts, 'all_activities', 5) ?>'
+         data-cases='<?= redist_summary_pie_data($district_counts, 'all_cases', 5) ?>'></div>
 
     <div id="tabs">
       <ul>
