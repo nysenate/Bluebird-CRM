@@ -81,6 +81,7 @@ $site = $optlist['site'];
 $bb_cfg = get_bluebird_instance_config($site);
 $cfg_name = $bb_cfg['senator.name.formal'];
 $cfg_dist = $bb_cfg['district'];
+$cfg_host = $bb_cfg['servername'];  // only used for HTML output
 
 // ----------------------------------------------------------------------
 // Data Arrays
@@ -182,7 +183,7 @@ if ($opt['mode'] == 'summary') {
 else {
   // Process out of district detail report
   $contacts_per_dist = process_detail_data($district_contact_data, $opt['threshold']);
-  $output = get_detail_output($contacts_per_dist, $cfg_dist, $cfg_name, $site);
+  $output = get_detail_output($contacts_per_dist, $cfg_dist, $cfg_name, $cfg_host);
 }
 
 $rc = 0;
