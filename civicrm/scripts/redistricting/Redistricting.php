@@ -6,7 +6,7 @@
 // Date: 2012-10-26
 // Revised: 2022-12-27 - Updated for new SAGE API calls
 
-// ./Redistricting.php -S breslin --batch 2000 --log 5 --max 10000
+// ./Redistricting.php -S breslin --batch 2000 --log DEBUG --max 10000
 error_reporting(E_ERROR | E_PARSE | E_WARNING);
 set_time_limit(0);
 
