@@ -247,7 +247,7 @@ function get_summary_output($district_counts, $crm_dist, $name)
 } // get_summary_output()
 
 
-function get_detail_output($contacts_per_dist, $dist, $name, $site)
+function get_detail_output($contacts_per_dist, $dist, $name, $host)
 {
   // Table columns for contact details
   $html_columns = [
@@ -308,7 +308,7 @@ function get_detail_output($contacts_per_dist, $dist, $name, $site)
             <?php
             if ($type == 'individual'):
             ?>
-              <td><a target="_blank" href="<?= 'http://' . $site . '.crm.nysenate.gov/civicrm/contact/view?cid=' . $contact['contact_id'] ?>">
+              <td><a target="_blank" href="<?= "http://$host/civicrm/contact/view?cid=" . $contact['contact_id'] ?>">
               <?= $contact['last_name'].', '.$contact['first_name']?></a></td>
               <td><?= get_gender($contact['gender_id']) ?></td>
               <td><?= get_age($contact['birth_date']) ?></td>
@@ -317,13 +317,13 @@ function get_detail_output($contacts_per_dist, $dist, $name, $site)
             <?php
             elseif ($type == 'household'):
             ?>
-              <td><a target="_blank" href="<?= 'http://' . $site . '.crm.nysenate.gov/civicrm/contact/view?cid=' . $contact['contact_id'] ?>">
+              <td><a target="_blank" href="<?= "http://$host/civicrm/contact/view?cid=" . $contact['contact_id'] ?>">
               <?= get($contact, 'household_name', 'Unknown') ?></a></td>
               <td><?= $contact['street_address'] ?></td>
             <?php
             elseif ($type == 'organization'):
             ?>
-              <td><a target="_blank" href="<?= 'http://' . $site . '.crm.nysenate.gov/civicrm/contact/view?cid=' . $contact['contact_id'] ?>">
+              <td><a target="_blank" href="<?= "http://$host/civicrm/contact/view?cid=" . $contact['contact_id'] ?>">
               <?= get($contact, 'organization_name', 'Unknown') ?></a></td>
               <td><?= $contact['street_address'] ?></td>
 
@@ -333,7 +333,7 @@ function get_detail_output($contacts_per_dist, $dist, $name, $site)
               <td><?= $contact['city'] ?></td>
               <td><?= $contact['postal_code'] ?></td>
               <td><?= $contact['email'] ?></td>
-              <td><?= ($contact['const_source'] ?? 'None').'/'.($contact['source'] ?? 'None') ?></td>
+              <td><?= ($contact['const_source'] ?? '-').'/'.($contact['source'] ?? '-') ?></td>
               <td><?= $contact['case_count'] ?></td>
               <td><?= $contact['activity_count'] ?></td>
               <td><?= $contact['group_count'] ?></td>
