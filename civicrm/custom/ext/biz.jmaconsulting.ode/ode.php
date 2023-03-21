@@ -335,7 +335,8 @@ function ode_suppressEmails(&$fromEmailAddress, $showNotice) {
           }
         }
         else {
-          if ((!in_array($email, $domainEmails)) && (substr($email, -$hostLength) == $host)) {
+          //NYSS this had faulty logic
+          if ((in_array($email, $domainEmails)) && (substr($email, -$hostLength) == $host)) {
             $emailNotValidated = FALSE;
           }
         }
