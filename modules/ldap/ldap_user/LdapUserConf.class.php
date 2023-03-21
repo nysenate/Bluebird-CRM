@@ -1043,7 +1043,7 @@ class LdapUserConf {
    *
    *   $user_edit data returned by reference
    */
-  public function provisionDrupalAccount($account = FALSE, &$user_edit, $ldap_user = NULL, $save = TRUE) {
+  public function provisionDrupalAccount($account = FALSE, &$user_edit = [], $ldap_user = NULL, $save = TRUE) {
 
     $watchdog_tokens = [];
     /**

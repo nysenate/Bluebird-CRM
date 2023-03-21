@@ -3426,7 +3426,8 @@ LEFT JOIN civicrm_address ON ( civicrm_address.contact_id = civicrm_contact.id )
    *
    * @return string
    */
-  private static function getTemplateForGreeting(string $greetingType, CRM_Contact_DAO_Contact $contact): string {
+  //NYSS make publicly available
+  public static function getTemplateForGreeting(string $greetingType, CRM_Contact_DAO_Contact $contact): string {
     $customFieldName = $greetingType . '_custom';
     if (!CRM_Utils_System::isNull($contact->$customFieldName)) {
       return $contact->$customFieldName;

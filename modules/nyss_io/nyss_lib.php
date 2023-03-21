@@ -17,9 +17,10 @@ function nyss_getConnection($bbcfg) {
   }
 }
 
-function nyss_out($type, $v, $toscreen = false)
-{
-  global $nyss_ioline, $nyss_iototallines, $logFile;
+function nyss_out($type, $v, $toscreen = false) {
+  global $nyss_ioline;
+  global $nyss_iototallines;
+  global $logFile;
 
   if (!empty($v) && (($type == 'debug' && NYSSIODEBUG) || $type !='debug')) {
     $v = print_r($v, true);
