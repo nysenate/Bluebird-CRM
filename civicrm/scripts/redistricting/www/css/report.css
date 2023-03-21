@@ -1,72 +1,72 @@
 /* Main CSS for Report Template */
 
 html, body {
-	font-family:'Helvetica Neue', Arial, Helvetica, sans-serif;
-	margin:0px;
-	padding:0px;
+  font-family:'Helvetica Neue', Arial, Helvetica, sans-serif;
+  margin:0px;
+  padding:0px;
 }
 
 .header {
-	color:white;
-	background-color:#457AA4;
+  color:white;
+  background-color:#457AA4;
 }
 
 .header h1 {
-	padding:5px 5px;
-	margin:0px;
+  padding:5px 5px;
+  margin:0px;
 }
 
 .sub-header h3 {
-	margin: 0px;
-	padding: 10px;
-	background-color: #DDD;
+  margin: 0px;
+  padding: 10px;
+  background-color: #DDD;
 }
 
 .content {
-	margin: 10px;
+  margin: 10px;
 }
 
 h3, h4, h5 {
-	color:#435263;
+  color:#435263;
 }
 
 h4.contrast {
-	margin-bottom: 0px;
-	background: #0495CC;
-	padding: 5px;
-	color: white;
+  margin-bottom: 0px;
+  background: #0495CC;
+  padding: 5px;
+  color: white;
 }
 
 p, label, a {
-	font-size:14px;
+  font-size:14px;
 }
 
 a {
-	color:#1C5F8A;
+  color:#1C5F8A;
 }
 
 .border-right{
-	border-right:1px solid #777;
+  border-right:1px solid #777;
 }
 
 hr {
-	border:1px solid #999;
-	border-style: solid none none none;
+  border:1px solid #999;
+  border-style: solid none none none;
 }
 
 table {
-	border-spacing:0px;	
-	font-size:14px;
+  border-spacing:0px;  
+  font-size:14px;
 }
 
 .district-view {
-	display:none;
+  display:none;
 }
 
 #detail_load_text{
-	font-size:18px;
-	font-weight:bold;
-	color:#333;
+  font-size:18px;
+  font-weight:bold;
+  color:#333;
 }
 
 /* ---------------------- 
@@ -74,63 +74,63 @@ table {
    ----------------------
 */
 table.datatable {
-	border: 1px solid #777;
+  border: 1px solid #777;
 }
 
 table.datatable th {
-	color:#444;
+  color:#444;
 }
 
 table.datatable td {
-	padding: 5px 10px;
-	border-bottom:1px solid #CCC;
+  padding: 5px 10px;
+  border-bottom:1px solid #CCC;
 }
 
 table.datatable tr.odd{
-	background-color:#EEE !important;
+  background-color:#EEE !important;
 }
 table.datatable tr.even {
-	background-color:#FFF !important;
+  background-color:#FFF !important;
 }
 
 table.datatable tr.odd:hover {
-	background-color: #B3DFFF !important;
+  background-color: #B3DFFF !important;
 }
 
 table.datatable tr.even:hover {
-	background-color: #B3DFFF !important;
+  background-color: #B3DFFF !important;
 }
 
 table.datatable tr.odd:hover td.sorting_1{
-	background-color:#8FC9F2 !important;
+  background-color:#8FC9F2 !important;
 }
 table.datatable tr.even:hover td.sorting_1 {
-	background-color:#8FC9F2 !important;
+  background-color:#8FC9F2 !important;
 }
 
 table.datatable tr.odd td.sorting_1{
-	background-color:#EEE !important;
+  background-color:#EEE !important;
 }
 table.datatable tr.even td.sorting_1 {
-	background-color:#FFF !important;
+  background-color:#FFF !important;
 }
 
 .dataTables_info {
-	font-size:14px;
+  font-size:14px;
 }
 
 .datatables_filter, .dataTables_paginate, .dataTables_info {
-	margin-bottom:5px;
-	margin-top:5px;
+  margin-bottom:5px;
+  margin-top:5px;
 }
 
 .quick-stats {
-	border:1px solid #777;	
+  border:1px solid #777;  
 }
 
 .quick-stats p {
-	margin:8px;
-	color:#333;
+  margin:8px;
+  color:#333;
 }
 
 /* ---------------------- 
@@ -138,18 +138,18 @@ table.datatable tr.even td.sorting_1 {
    ----------------------
 */
 .pie-chart {
-	min-width: 350px; 
-	height: 350px; 
-	margin: 0 auto;
-	width:700px;
+  min-width: 350px; 
+  height: 350px; 
+  margin: 0 auto;
+  width:700px;
 }
 
 .pie-chart.active {
-	display:block;
+  display:block;
 }
 
 .pie-chart.inactive {
-	display:none;
+  display:none;
 }
 
 /*! jQuery UI - v1.9.2 - 2013-01-17
@@ -161,29 +161,29 @@ table.datatable tr.even td.sorting_1 {
 
 /* JQuery Tabs Overrides */
 .ui-tabs .ui-tabs-nav li.ui-tabs-active {
-	background: #0495CC !important;	
+  background: #0495CC !important;  
 }
 
 .ui-tabs .ui-tabs-nav li.ui-tabs-active a span{
-	color: white !important;	
+  color: white !important;  
 }
 
 .ui-tabs .ui-tabs-nav {
-	border-bottom: 5px solid #0495CC;
-	padding:0px !important;	
+  border-bottom: 5px solid #0495CC;
+  padding:0px !important;  
 }
 
 .ui-tabs .ui-tabs-panel {
-	padding: 0px !important;
+  padding: 0px !important;
 }
 
 .ui-tabs .ui-tabs-nav li {
-	font-size:16px !important;
-	font-weight:bold !important;
-	color:#1C5F8A;
-	background:#DDD;	
+  font-size:16px !important;
+  font-weight:bold !important;
+  color:#1C5F8A;
+  background:#DDD;  
 }
 
 .ui-tabs .ui-tabs-nav li a {
-	outline:none !important;
+  outline:none !important;
 }
