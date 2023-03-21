@@ -48,6 +48,8 @@ function run()
   require_once 'CRM/Core/Config.php';
   CRM_Core_Config::singleton();
 
+  //Civi::log()->debug(__FUNCTION__, ['optlist' => $optlist]);
+
   $contactType = null;
   if (!empty($optlist['ct'])) {
     $contactOptIdx = strtolower($optlist['ct'][0]);
@@ -93,6 +95,35 @@ function run()
   ];
   //CRM_Core_Error::debug_var('$greetings', $greetings);
 
+  //get prefixes/suffixes
+  $prefixes = \Civi\Api4\Contact::getFields()
+    ->setLoadOptions(TRUE)
+    ->addWhere('name', '=', 'prefix_id')
+    ->addSelect('options')
+    ->execute()
+    ->single();
+
+  $suffixes = \Civi\Api4\Contact::getFields()
+    ->setLoadOptions(TRUE)
+    ->addWhere('name', '=', 'suffix_id')
+    ->addSelect('options')
+    ->execute()
+    ->single();
+
+  $replacementStrings = [
+    //'{contact.prefix_id:label}' => 'prefix_id',
+    '{contact.first_name}' => 'first_name',
+    '{contact.middle_name}' => 'middle_name',
+    '{contact.last_name}' => 'last_name',
+    //'{contact.suffix_id:label}' => 'suffix_id',
+    '{contact.organization_name}' => 'organization_name',
+    '{contact.household_name}' => 'household_name',
+    '{' => '',
+    '}' => '',
+  ];
+
+  //Civi::log()->debug(__FUNCTION__, ['$prefixes' => $prefixes, '$suffixes' => $suffixes]);
+
   if ($contactType) {
     $dao->contact_type = $contactType;
   }
@@ -129,7 +160,7 @@ function run()
     require_once 'CRM/Core/Transaction.php';
 
     while ($dao->fetch()) {
-      //CRM_Core_Error::debug_var('dao', $dao);
+      //Civi::log()->debug(__FUNCTION__, ['$dao' => $dao]);
 
       if ($cnt % BATCHSIZE == 0) {
         if (isset($transaction)) {
@@ -155,11 +186,60 @@ function run()
         ob_start();
       }
 
+      //set defaults
       $dao->addressee_id = (!empty($dao->addressee_id)) ? $dao->addressee_id : key($greetings[$dao->contact_type]['addressee']);
       $dao->email_greeting_id = (!empty($dao->email_greeting_id)) ? $dao->email_greeting_id : key($greetings[$dao->contact_type]['email']);
       $dao->postal_greeting_id = (!empty($dao->postal_greeting_id)) ? $dao->postal_greeting_id : key($greetings[$dao->contact_type]['postal']);
 
-      CRM_Contact_BAO_Contact::processGreetings($dao);
+      $greetingTemplates = array_filter([
+        'email_greeting_display' => CRM_Contact_BAO_Contact::getTemplateForGreeting('email_greeting', $dao),
+        'postal_greeting_display' => CRM_Contact_BAO_Contact::getTemplateForGreeting('postal_greeting', $dao),
+        'addressee_display' => CRM_Contact_BAO_Contact::getTemplateForGreeting('addressee', $dao),
+      ]);
+      //Civi::log()->debug(__FUNCTION__, ['greetingTemplate' => $greetingTemplates]);
+
+      //handle replacements
+      $sqlUpdates = [
+        "addressee_id = {$dao->addressee_id}",
+        "email_greeting_id = {$dao->email_greeting_id}",
+        "postal_greeting_id = {$dao->postal_greeting_id}",
+      ];
+      $sqlParams = [
+        1 => [$dao->id, 'Positive'],
+      ];
+      $paramsCounter = 2;
+
+      foreach ($greetingTemplates as $field => $greetingDisplay) {
+        $greetingDisplay = str_replace('{contact.prefix_id:label}', $prefixes[$dao->prefix_id], $greetingDisplay);
+        $greetingDisplay = str_replace('{contact.suffix_id:label}', $prefixes[$dao->suffix_id], $greetingDisplay);
+
+        foreach ($replacementStrings as $string => $replace) {
+          $greetingDisplay = str_replace($string, $dao->$replace, $greetingDisplay);
+          /*Civi::log()->debug(__FUNCTION__, [
+            '$greetingDisplay' => $greetingDisplay,
+          ]);*/
+        }
+
+        $sqlUpdates[] = "{$field} = %{$paramsCounter}";
+        $sqlParams[$paramsCounter] = [trim(str_replace('  ', ' ', $greetingDisplay)), 'String'];
+        $paramsCounter++;
+      }
+
+      $sqlUpdateString = implode(', ', $sqlUpdates);
+      /*Civi::log()->debug(__FUNCTION__, [
+        '$sqlUpdates' => $sqlUpdates,
+        '$sqlUpdateString' => $sqlUpdateString,
+        '$sqlParams' => $sqlParams,
+      ]);*/
+
+      CRM_Core_DAO::executeQuery("
+        UPDATE civicrm_contact
+        SET {$sqlUpdateString}
+        WHERE id = %1
+      ", $sqlParams);
+
+      //don't use the core function as it's too slow
+      //CRM_Contact_BAO_Contact::processGreetings($dao);
       $cnt++;
     }
 
