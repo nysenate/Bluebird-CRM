@@ -196,8 +196,7 @@ function nyss_ioimport_form()
 
 
 //define form validation
-function nyss_ioimport_form_validate($form, &$form_state)
-{
+function nyss_ioimport_form_validate($form, &$form_state) {
   nyss_iovalidateuploadform($form, $form_state);
 } // nyss_ioimport_form_validate()
 
@@ -487,7 +486,7 @@ function nyss_ioimport_form_submit($form, &$form_state) {
 
     //import contact details
     $new_contact = (!array_key_exists('id',$l) || empty($l['id']));
-    nyss_ioimportData('civicrm_contact', $l, $dryrun, $logFile, $form_state);
+    nyss_ioimportData('civicrm_contact', $l, $dryrun, $form_state);
 
     //sort the contacts into groups for later use
     if (!$dryrun) {
@@ -512,24 +511,24 @@ function nyss_ioimport_form_submit($form, &$form_state) {
     //import address details; set key correctly for ref
     $l['contact_id'] = $l['id'];
     if ($addressExists) {
-      nyss_ioimportData('civicrm_address', $l, $dryrun, $logFile, $form_state);
+      nyss_ioimportData('civicrm_address', $l, $dryrun,$form_state);
     }
 
     //import phone details; set key correctly for ref
     $l['phone_contact_id'] = $l['contact_id'];
-    nyss_ioimportData('civicrm_phone', $l, $dryrun, $logFile, $form_state);
+    nyss_ioimportData('civicrm_phone', $l, $dryrun, $form_state);
 
     //import email details; set key correctly for ref
     $l['email_contact_id'] = $l['contact_id'];
-    nyss_ioimportData('civicrm_email', $l, $dryrun, $logFile, $form_state);
+    nyss_ioimportData('civicrm_email', $l, $dryrun, $form_state);
 
     //import contact source details; set key correctly for ref
     $l['constinfo_entity_id'] = $l['id'];
-    nyss_ioimportData('civicrm_value_constituent_information_1', $l, $dryrun, $logFile, $form_state);
+    nyss_ioimportData('civicrm_value_constituent_information_1', $l, $dryrun, $form_state);
 
     //import district details; set key correctly for ref (ID is for addresses)
     $l['entity_id'] = $l['address_id'];
-    nyss_ioimportData('civicrm_value_district_information_7', $l, $dryrun, $logFile, $form_state);
+    nyss_ioimportData('civicrm_value_district_information_7', $l, $dryrun, $form_state);
 
     //process special fields using API/BAO
     _processCurrentEmployer($l, $nyss_conn, $dryrun);
@@ -564,6 +563,11 @@ function nyss_ioimport_form_submit($form, &$form_state) {
     mysqli_query($nyss_conn, "COMMIT" );
   }
 
+  //track processing time
+  $timeEnd  = time();
+  $timeDiff = $timeEnd - $timeStart;
+  nyss_out('status',"Processing time: $timeDiff sec.",true);
+
   //Begin post process
   nyss_out('debug', "file rows import complete. beginning post process steps.", true);
 
@@ -592,8 +596,18 @@ function nyss_ioimport_form_submit($form, &$form_state) {
     }
   }
 
+  //track processing time
+  $timeEnd  = time();
+  $timeDiff = $timeEnd - $timeStart;
+  nyss_out('status',"Processing time: $timeDiff sec.",true);
+
   //add contacts to group if set
   _processGroup($form_state, $imported_contacts, $new_contacts, $dryrun);
+
+  //track processing time
+  $timeEnd  = time();
+  $timeDiff = $timeEnd - $timeStart;
+  nyss_out('status',"Processing time: $timeDiff sec.",true);
 
   //add all new contacts to the email only group
   if ($form_state['values']['emailimport'] == 1) {
@@ -603,6 +617,11 @@ function nyss_ioimport_form_submit($form, &$form_state) {
   //delete addresses flagged for deletion
   $addressDelCount = count($addressDel);
   _processAddressDelete($addressDel, $nyss_conn, $dryrun);
+
+  //track processing time
+  $timeEnd  = time();
+  $timeDiff = $timeEnd - $timeStart;
+  nyss_out('status',"Processing time: $timeDiff sec.",true);
 
   //send email if requested
   if ($form_state['values']['sendmail'] == 1) {
@@ -638,6 +657,11 @@ function nyss_ioimport_form_submit($form, &$form_state) {
     $dupePriCleanup = shell_exec($dupePriScript);
     nyss_out('status', $dupePriCleanup, true);
 
+    //track processing time
+    $timeEnd  = time();
+    $timeDiff = $timeEnd - $timeStart;
+    nyss_out('status',"Processing time: $timeDiff sec.",true);
+
     //run greetings update on all null values unless disable greeting option is selected
     nyss_out('debug', "greeting generation using option: {$form_state['values']['greetinggeneration']}...", true);
     if ($form_state['values']['greetinggeneration'] != 'none') {
@@ -646,6 +670,7 @@ function nyss_ioimport_form_submit($form, &$form_state) {
         //if only processing imported, we store in a temp table and pass the table name to the greeting script
         $rnd = date('Ymdhis');
         $tmpTbl = "nyss_temp_greetings_$rnd";
+        nyss_out('debug', "tmpTbl: {$tmpTbl}", true);
         $sql = "CREATE TABLE $tmpTbl (id INT NOT NULL PRIMARY KEY) ENGINE = myisam;";
         CRM_Core_DAO::executeQuery($sql);
 
@@ -660,6 +685,11 @@ function nyss_ioimport_form_submit($form, &$form_state) {
       $greetingScript = 'php '.$bbconfig['app.rootdir'].'/civicrm/scripts/updateAllGreetings.php -S '.$bbconfig['shortname'].' --quiet'.$tblOpt;
       $greetingCreate = shell_exec($greetingScript);
       nyss_out('status', $greetingCreate, true);
+
+      //track processing time
+      $timeEnd  = time();
+      $timeDiff = $timeEnd - $timeStart;
+      nyss_out('status',"Processing time: $timeDiff sec.",true);
     }
 
     //check for malformed emails and place on hold
@@ -678,7 +708,7 @@ function nyss_ioimport_form_submit($form, &$form_state) {
 } // nyss_ioimport_form_submit()
 
 
-function nyss_ioimportData($tbl, &$l, $dryrun, $logFile, $form_state)
+function nyss_ioimportData($tbl, &$l, $dryrun, $form_state)
 {
   //nyss_out('debug', "tbl top: $tbl", true);
   //nyss_out('debug', $l, true);
@@ -818,11 +848,9 @@ function nyss_ioimportData($tbl, &$l, $dryrun, $logFile, $form_state)
         print_r($sqlUP."<br>"); //debug
         //}
       }
-      //fwrite($logFile, "line {$nyss_ioline}: updated record. " . $sqlUP. "\n");
       nyss_out('debug', "line {$nyss_ioline}: updated record. " . $sqlUP, FALSE);
     }
     else {
-      //fwrite($logFile, "line {$nyss_ioline}: nothing to update for $tbl record: " . implode(',',$l). "\n");
       nyss_out('debug', "line {$nyss_ioline}: nothing to update for $tbl record: " . implode(',',$l), FALSE);
     }
   }
@@ -972,7 +1000,6 @@ function nyss_ioimportData($tbl, &$l, $dryrun, $logFile, $form_state)
       print_r($sqlINSERT."<br>"); //debug
     }
 
-    //fwrite($logFile, "line {$nyss_ioline}: inserted record. " . $sqlINSERT . "\n");
     nyss_out('debug', "line {$nyss_ioline}: inserted record. " . $sqlINSERT, FALSE);
   }
 } // nyss_ioimportData()
