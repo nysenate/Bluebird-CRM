@@ -88,7 +88,7 @@ class CRM_Utils_String {
   }
 
   /**
-   * Convert possibly underscore separated words to camel case.
+   * Convert possibly underscore, space or dash separated words to CamelCase.
    *
    * @param string $str
    * @param bool $ucFirst
@@ -96,7 +96,7 @@ class CRM_Utils_String {
    * @return string
    */
   public static function convertStringToCamel($str, $ucFirst = TRUE) {
-    $fragments = explode('_', $str);
+    $fragments = preg_split('/[-_ ]/', $str, -1, PREG_SPLIT_NO_EMPTY);
     $camel = implode('', array_map('ucfirst', $fragments));
     return $ucFirst ? $camel : lcfirst($camel);
   }
@@ -109,6 +109,16 @@ class CRM_Utils_String {
    */
   public static function convertStringToSnakeCase(string $str): string {
     return strtolower(ltrim(preg_replace('/(?=[A-Z])/', '_$0', $str), '_'));
+  }
+
+  /**
+   * Converts `CamelCase` or `snake_case` to `dash-format`
+   *
+   * @param string $str
+   * @return string
+   */
+  public static function convertStringToDash(string $str): string {
+    return strtolower(implode('-', preg_split('/[-_ ]|(?=[A-Z])/', $str, -1, PREG_SPLIT_NO_EMPTY | PREG_SPLIT_DELIM_CAPTURE)));
   }
 
   /**
@@ -529,7 +539,7 @@ class CRM_Utils_String {
    */
   public static function stripAlternatives($full) {
     $matches = [];
-    preg_match('/-ALTERNATIVE ITEM 0-(.*?)-ALTERNATIVE ITEM 1-.*-ALTERNATIVE END-/s', $full, $matches);
+    preg_match('/-ALTERNATIVE ITEM 0-(.*?)-ALTERNATIVE ITEM 1-.*-ALTERNATIVE END-/s', ($full ?? ''), $matches);
 
     if (isset($matches[1]) &&
       trim(strip_tags($matches[1])) != ''
@@ -639,7 +649,7 @@ class CRM_Utils_String {
       $_filter = new HTMLPurifier($config);
     }
 
-    return $_filter->purify($string);
+    return $_filter->purify($string ?? '');
   }
 
   /**
@@ -878,7 +888,7 @@ class CRM_Utils_String {
       return TRUE;
     }
     $len = strlen($fragment ?? '');
-    return substr($string, 0, $len) === $fragment;
+    return substr(($string ?? ''), 0, $len) === $fragment;
   }
 
   /**
@@ -895,7 +905,7 @@ class CRM_Utils_String {
       return TRUE;
     }
     $len = strlen($fragment ?? '');
-    return substr($string, -1 * $len) === $fragment;
+    return substr(($string ?? ''), -1 * $len) === $fragment;
   }
 
   /**

@@ -88,8 +88,8 @@ class AfformAdminMeta {
       'checkPermissions' => FALSE,
       'loadOptions' => ['id', 'label'],
       'action' => 'create',
-      'select' => ['name', 'label', 'input_type', 'input_attrs', 'required', 'options', 'help_pre', 'help_post', 'serialize', 'data_type', 'fk_entity', 'readonly'],
-      'where' => [['input_type', 'IS NOT NULL']],
+      'select' => ['name', 'label', 'input_type', 'input_attrs', 'required', 'options', 'help_pre', 'help_post', 'serialize', 'data_type', 'entity', 'fk_entity', 'readonly'],
+      'where' => [['deprecated', '=', FALSE], ['input_type', 'IS NOT NULL']],
     ];
     if (in_array($entityName, \CRM_Contact_BAO_ContactType::basicTypes(TRUE), TRUE)) {
       $params['values']['contact_type'] = $entityName;
@@ -123,8 +123,15 @@ class AfformAdminMeta {
     }
     // Index by name
     $fields = array_column($fields, NULL, 'name');
-    // Mix in alterations declared by afform entities
     if ($params['action'] === 'create') {
+      // Add existing entity field
+      $idField = CoreUtil::getIdFieldName($entityName);
+      $fields[$idField]['readonly'] = FALSE;
+      $fields[$idField]['input_type'] = 'EntityRef';
+      $fields[$idField]['is_id'] = TRUE;
+      $fields[$idField]['fk_entity'] = $entityName;
+      $fields[$idField]['label'] = E::ts('Existing %1', [1 => CoreUtil::getInfoItem($entityName, 'title')]);
+      // Mix in alterations declared by afform entities
       $afEntity = self::getMetadata()['entities'][$entityName] ?? [];
       if (!empty($afEntity['alterFields'])) {
         foreach ($afEntity['alterFields'] as $fieldName => $changes) {
@@ -136,6 +143,11 @@ class AfformAdminMeta {
             $fields[$fieldName] = \CRM_Utils_Array::crmArrayMerge($changes, ($fields[$fieldName] ?? []));
           }
         }
+      }
+    }
+    foreach ($fields as $name => $field) {
+      if ($field['input_type'] === 'EntityRef') {
+        $fields[$name]['security'] = 'RBAC';
       }
     }
     return $fields;

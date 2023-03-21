@@ -105,14 +105,6 @@ ORDER BY title";
       $this->addFormRule(['CRM_Mailing_Form_Subscribe', 'formRule']);
     }
 
-    // CRM-11316 Enable ReCAPTCHA for anonymous visitors
-    $session = CRM_Core_Session::singleton();
-    $contactID = $session->get('userID');
-
-    if (!$contactID) {
-      CRM_Utils_ReCAPTCHA::enableCaptchaOnForm($this);
-    }
-
     $this->addButtons([
       [
         'type' => 'next',
@@ -151,7 +143,7 @@ ORDER BY title";
       }
     }
 
-    CRM_Mailing_Event_BAO_Subscribe::commonSubscribe($groups, $params);
+    CRM_Mailing_Event_BAO_MailingEventSubscribe::commonSubscribe($groups, $params);
   }
 
 }

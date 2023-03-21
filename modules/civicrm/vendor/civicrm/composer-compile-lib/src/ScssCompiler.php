@@ -14,7 +14,7 @@ class ScssCompiler extends \ScssPhp\ScssPhp\Compiler {
    *
    * @return string|null
    */
-  public function findImport($url) {
+  public function findImport($url, $currentDir = NULL) {
     $hasExtension = preg_match('/[.]s?css$/', $url);
     $pickFile = function($path) use ($hasExtension) {
       $dir = dirname($path);
@@ -42,7 +42,7 @@ class ScssCompiler extends \ScssPhp\ScssPhp\Compiler {
       }
     }
 
-    return parent::findImport($url);
+    return parent::findImport($url, $currentDir);
   }
 
   public function addImportPrefix(string $prefix, string $path) {

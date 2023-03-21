@@ -21,11 +21,11 @@
   "homepage": "https://github.com/compucorp/uk.co.vedaconsulting.mosaico#readme",
   "devDependencies": {
     "ansi-colors": "^2.0.2",
-    "backstopjs": "^5.0.1",
+    "backstopjs": "^6.1.4",
     "civicrm-scssroot": "git://github.com/totten/civicrm-scssroot.git#v0.1.1",
     "clean": "^4.0.2",
     "fs": "0.0.1-security",
-    "gulp": "^3.9.1",
+    "gulp": "^4.0.2",
     "gulp-autoprefixer": "^3.1.1",
     "gulp-clean": "^0.4.0",
     "gulp-cssnano": "^2.1.2",
@@ -37,7 +37,7 @@
     "lodash": "^4.17.21",
     "path": "^0.12.7",
     "plugin-error": "^1.0.1",
-    "postcss": "^5.2.16",
+    "postcss": "^7.0.36",
     "postcss-discard-duplicates": "^2.1.0",
     "postcss-prefix-selector": "^1.7.2",
     "yargs": "^15.3.1"

@@ -1,4 +1,5 @@
 <?php
+
 namespace Civi\CompilePlugin;
 
 use Civi\CompilePlugin\Util\EnvHelper;
@@ -27,8 +28,8 @@ use Composer\Util\Platform;
 class TaskTransfer
 {
 
-    const ENV_VAR = 'COMPOSER_COMPILE_TASK';
-    const GLOBAL_VAR = 'COMPOSER_COMPILE_TASK';
+    public const ENV_VAR = 'COMPOSER_COMPILE_TASK';
+    public const GLOBAL_VAR = 'COMPOSER_COMPILE_TASK';
 
     /**
      * If the env-var would exceed this size, then divert to a file.
@@ -36,7 +37,7 @@ class TaskTransfer
      * Completely arbitrary number. In Windows, there's a cumulative limit
      * of 32k for all env-vars.
      */
-    const MAX_ENV_SIZE = 1500;
+    public const MAX_ENV_SIZE = 1500;
 
     /**
      * Put the $task definition into an environment variable.

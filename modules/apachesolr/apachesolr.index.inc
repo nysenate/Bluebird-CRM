@@ -60,8 +60,7 @@ function apachesolr_index_entities($env_id, $limit) {
     $documents = array();
     foreach ($rows as $row) {
       $row_documents = apachesolr_index_entities_document($row, $entity_type, $env_id);
-      // TODO argument #1 is not an array
-      $documents = array_merge($documents, $row_documents);
+      $documents = array_merge((array) $documents, $row_documents);
     }
 
     $indexed = apachesolr_index_send_to_solr($env_id, $documents);
@@ -237,12 +236,9 @@ function apachesolr_index_entity_to_documents($item, $env_id) {
   $entity = entity_load($entity_type, array($item->entity_id));
   $entity = $entity ? reset($entity) : FALSE;
 
-  if (empty($entity)) {
-    // If the object failed to load, just stop.
-    return FALSE;
-  }
-
-  $documents = apachesolr_convert_entity_to_documents($entity, $entity_type, $env_id);
+  // Return an empty array if the entity failed to load, but not immediately,
+  // since we first need to restore the user.
+  $documents = empty($entity) ? array() : apachesolr_convert_entity_to_documents($entity, $entity_type, $env_id);
 
   // Restore the user.
   $user = $saved_user;
@@ -510,7 +506,7 @@ function apachesolr_index_get_entities_to_index($env_id, $entity_type, $limit) {
 
   // Get next batch of entities to index
   $query = _apachesolr_index_get_next_set_query($env_id, $entity_type);
-  
+
   $query->range(0, $limit);
   $records = $query->execute();
 

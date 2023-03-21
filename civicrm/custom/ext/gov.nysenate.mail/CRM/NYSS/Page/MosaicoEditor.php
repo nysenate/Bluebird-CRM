@@ -53,7 +53,7 @@ class CRM_NYSS_Page_MosaicoEditor extends CRM_Mosaico_Page_Editor {
     return $styles;
   }
 
-  protected function getMosaicoPlugins() {
+  public function getMosaicoPlugins() {
     $plugins = [];
 
     // Allow plugins to be added by a hook

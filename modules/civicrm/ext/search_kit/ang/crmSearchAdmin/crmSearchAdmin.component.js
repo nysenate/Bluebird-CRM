@@ -187,6 +187,15 @@
         }
       };
 
+      this.cloneDisplay = function(display) {
+        var newDisplay = angular.copy(display);
+        delete newDisplay.name;
+        delete newDisplay.id;
+        newDisplay.label += ts(' (copy)');
+        ctrl.savedSearch.displays.push(newDisplay);
+        $scope.selectTab('display_' + (ctrl.savedSearch.displays.length - 1));
+      };
+
       this.addGroup = function() {
         ctrl.savedSearch.groups.push({
           title: '',
@@ -263,7 +272,7 @@
               disabled: alias in existingJoins
             };
           if (alias in existingJoins) {
-            opt.children = addEntityJoins(join.entity, (stack ? stack + '_' : '') + alias, baseEntity);
+            opt.children = addEntityJoins(join.entity, alias, baseEntity);
           }
           collection.push(opt);
         }
@@ -471,7 +480,7 @@
       };
 
       function getFieldsForJoin(joinEntity) {
-        return {results: ctrl.getAllFields(':name', ['Field'], null, joinEntity)};
+        return {results: ctrl.getAllFields(':name', ['Field', 'Extra'], null, joinEntity)};
       }
 
       // @return {function}
@@ -511,7 +520,7 @@
           // Add extra searchable fields from bridge entity
           if (join && join.bridge) {
             formatFields(_.filter(searchMeta.getEntity(join.bridge).fields, function(field) {
-              return (field.name !== 'id' && field.name !== 'entity_id' && field.name !== 'entity_table' && !field.fk_entity);
+              return (field.name !== 'id' && field.name !== 'entity_id' && field.name !== 'entity_table' && field.fk_entity !== entityName);
             }), result, prefix);
           }
 
@@ -523,7 +532,8 @@
           prefix = typeof prefix === 'undefined' ? '' : prefix;
           _.each(fields, function(field) {
             var item = {
-              id: prefix + field.name + (field.suffixes && _.includes(field.suffixes, suffix.replace(':', '')) ? suffix : ''),
+              // Use options suffix if available.
+              id: prefix + field.name + (field.options && _.includes(field.suffixes || [], suffix.replace(':', '')) ? suffix : ''),
               text: field.label,
               description: field.description
             };

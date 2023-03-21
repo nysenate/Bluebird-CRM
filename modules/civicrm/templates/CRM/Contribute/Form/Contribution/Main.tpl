@@ -296,9 +296,6 @@
       </div>
     {/if}
 
-    {if $isCaptcha}
-      {include file='CRM/common/ReCAPTCHA.tpl'}
-    {/if}
     <div id="crm-submit-buttons" class="crm-submit-buttons">
       {include file="CRM/common/formButtons.tpl" location="bottom"}
     </div>
@@ -351,7 +348,7 @@
         frequencyUnit.prop('disabled', false).addClass('required');
         frequencyInerval.prop('disabled', false).addClass('required');
         installments.prop('disabled', false);
-        cj('#amount_sum_label').text('{/literal}{ts escape='js'}Regular amount{/ts}{literal}');
+        cj('#amount_sum_label').text('{/literal}{ts escape='js'}Regular Amount{/ts}{literal}');
       }
       else {
         cj('#recurHelp').hide();

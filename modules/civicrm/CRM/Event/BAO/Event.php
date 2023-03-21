@@ -14,7 +14,7 @@
  * @package CRM
  * @copyright CiviCRM LLC https://civicrm.org/licensing
  */
-class CRM_Event_BAO_Event extends CRM_Event_DAO_Event {
+class CRM_Event_BAO_Event extends CRM_Event_DAO_Event implements \Civi\Core\HookInterface {
 
   /**
    * Retrieve DB object and copy to defaults array.
@@ -171,57 +171,58 @@ class CRM_Event_BAO_Event extends CRM_Event_DAO_Event {
    *   Event id.
    *
    * @return mixed|null
+   *
+   * @deprecated
    */
   public static function del($id) {
-    if (!$id) {
-      return NULL;
-    }
+    return (bool) static::deleteRecord(['id' => $id]);
+  }
 
-    CRM_Utils_Hook::pre('delete', 'Event', $id);
+  /**
+   * Callback for hook_civicrm_pre().
+   * @param \Civi\Core\Event\PreEvent $event
+   * @throws CRM_Core_Exception
+   */
+  public static function self_hook_civicrm_pre(\Civi\Core\Event\PreEvent $event) {
+    if ($event->action === 'delete' && $event->id) {
 
-    $extends = ['event'];
-    $groupTree = CRM_Core_BAO_CustomGroup::getGroupDetail(NULL, NULL, $extends);
-    foreach ($groupTree as $values) {
-      $query = "DELETE FROM %1 WHERE entity_id = %2";
-      CRM_Core_DAO::executeQuery($query, [
-        1 => [$values['table_name'], 'String', CRM_Core_DAO::QUERY_FORMAT_NO_QUOTES],
-        2 => [$id, 'Integer'],
-      ]);
-    }
-
-    // Clean up references to profiles used by the event (CRM-20935)
-    $ufJoinParams = [
-      'module' => 'CiviEvent',
-      'entity_table' => 'civicrm_event',
-      'entity_id' => $id,
-    ];
-    CRM_Core_BAO_UFJoin::deleteAll($ufJoinParams);
-    $ufJoinParams = [
-      'module' => 'CiviEvent_Additional',
-      'entity_table' => 'civicrm_event',
-      'entity_id' => $id,
-    ];
-    CRM_Core_BAO_UFJoin::deleteAll($ufJoinParams);
-
-    // price set cleanup, CRM-5527
-    CRM_Price_BAO_PriceSet::removeFrom('civicrm_event', $id);
-
-    $event = new CRM_Event_DAO_Event();
-    $event->id = $id;
-
-    if ($event->find(TRUE)) {
-      $locBlockId = $event->loc_block_id;
-      $result = $event->delete();
-
-      if (!is_null($locBlockId)) {
-        self::deleteEventLocBlock($locBlockId, $id);
+      $extends = ['event'];
+      $groupTree = CRM_Core_BAO_CustomGroup::getGroupDetail(NULL, NULL, $extends);
+      foreach ($groupTree as $values) {
+        $query = "DELETE FROM %1 WHERE entity_id = %2";
+        CRM_Core_DAO::executeQuery($query, [
+          1 => [$values['table_name'], 'String', CRM_Core_DAO::QUERY_FORMAT_NO_QUOTES],
+          2 => [$event->id, 'Integer'],
+        ]);
       }
 
-      CRM_Utils_Hook::post('delete', 'Event', $id, $event);
-      return $result;
-    }
+      // Clean up references to profiles used by the event (CRM-20935)
+      $ufJoinParams = [
+        'module' => 'CiviEvent',
+        'entity_table' => 'civicrm_event',
+        'entity_id' => $event->id,
+      ];
+      CRM_Core_BAO_UFJoin::deleteAll($ufJoinParams);
+      $ufJoinParams = [
+        'module' => 'CiviEvent_Additional',
+        'entity_table' => 'civicrm_event',
+        'entity_id' => $event->id,
+      ];
+      CRM_Core_BAO_UFJoin::deleteAll($ufJoinParams);
 
-    return NULL;
+      // price set cleanup, CRM-5527
+      CRM_Price_BAO_PriceSet::removeFrom('civicrm_event', $event->id);
+
+      $eventDAO = new CRM_Event_DAO_Event();
+      $eventDAO->id = $event->id;
+
+      if ($eventDAO->find(TRUE)) {
+        $locBlockId = $eventDAO->loc_block_id;
+        if (!is_null($locBlockId)) {
+          self::deleteEventLocBlock($locBlockId, $event->id);
+        }
+      }
+    }
   }
 
   /**
@@ -327,7 +328,7 @@ WHERE  ( civicrm_event.is_template IS NULL OR civicrm_event.is_template = 0 )";
    * @return array
    *   Array of event summary values
    *
-   * @throws \CiviCRM_API3_Exception
+   * @throws \CRM_Core_Exception
    */
   public static function getEventSummary() {
     $eventSummary = $eventIds = [];
@@ -1064,7 +1065,7 @@ WHERE civicrm_event.is_active = 1
    * @param bool $returnMessageText
    *
    * @return array|null
-   * @throws \CiviCRM_API3_Exception
+   * @throws \CRM_Core_Exception
    */
   public static function sendMail($contactID, $values, $participantId, $isTest = FALSE, $returnMessageText = FALSE) {
 
@@ -1112,7 +1113,7 @@ WHERE civicrm_event.is_active = 1
     }
 
     if ($values['event']['is_email_confirm'] || $returnMessageText) {
-      list($displayName, $email) = CRM_Contact_BAO_Contact_Location::getEmailDetails($contactID);
+      [$displayName, $email] = CRM_Contact_BAO_Contact_Location::getEmailDetails($contactID);
       $notifyEmail = CRM_Utils_Array::valueByRegexKey('/^email-/', $participantParams) ?? $email;
       //send email only when email is present
       if (isset($notifyEmail) || $returnMessageText) {
@@ -1189,12 +1190,15 @@ WHERE civicrm_event.is_active = 1
         }
 
         $sendTemplateParams = [
-          'groupName' => 'msg_tpl_workflow_event',
-          'valueName' => 'event_online_receipt',
+          'workflow' => 'event_online_receipt',
           'contactId' => $contactID,
           'isTest' => $isTest,
           'tplParams' => $tplParams,
           'PDFFilename' => ts('confirmation') . '.pdf',
+          'modelProps' => [
+            'participantID' => (int) $participantId,
+            'eventID' => (int) $values['event']['id'],
+          ],
         ];
 
         // address required during receipt processing (pdf and email receipt)
@@ -1227,7 +1231,7 @@ WHERE civicrm_event.is_active = 1
         }
 
         if ($returnMessageText) {
-          list($sent, $subject, $message, $html) = CRM_Core_BAO_MessageTemplate::sendTemplate($sendTemplateParams);
+          [$sent, $subject, $message, $html] = CRM_Core_BAO_MessageTemplate::sendTemplate($sendTemplateParams);
           return [
             'subject' => $subject,
             'body' => $message,
@@ -1467,8 +1471,6 @@ WHERE civicrm_event.is_active = 1
    * @param array $profileFields
    *
    * @throws \CRM_Core_Exception
-   * @throws \API_Exception
-   * @throws \CiviCRM_API3_Exception
    */
   public static function displayProfile(&$params, $gid, &$groupTitle, &$values, &$profileFields = []) {
     if ($gid) {
@@ -1597,7 +1599,7 @@ WHERE civicrm_event.is_active = 1
           $values[$index] = $campaigns[$params[$name]] ?? NULL;
         }
         elseif (strpos($name, '-') !== FALSE) {
-          list($fieldName, $id) = CRM_Utils_System::explode('-', $name, 2);
+          [$fieldName, $id] = CRM_Utils_System::explode('-', $name, 2);
           $detailName = str_replace(' ', '_', $name);
           if (in_array($fieldName, [
             'state_province',
@@ -1810,7 +1812,7 @@ WHERE  id = $cfID
             $participantParams = CRM_Utils_Array::value($pId, $values['params'], []);
           }
 
-          list($profilePre, $groupTitles) = self::buildCustomDisplay($preProfileID,
+          [$profilePre, $groupTitles] = self::buildCustomDisplay($preProfileID,
             'additionalCustomPre',
             $cId,
             $template,
@@ -1828,7 +1830,7 @@ WHERE  id = $cfID
             }
           }
 
-          list($profilePost, $groupTitles) = self::buildCustomDisplay($postProfileID,
+          [$profilePost, $groupTitles] = self::buildCustomDisplay($postProfileID,
             'additionalCustomPost',
             $cId,
             $template,
@@ -2048,7 +2050,7 @@ WHERE  ce.loc_block_id = $locBlockId";
    *
    * @return bool|array
    *   Whether the user has permission for this event (or if eventId=NULL an array of permissions)
-   * @throws \CiviCRM_API3_Exception
+   * @throws \CRM_Core_Exception
    */
   public static function checkPermission(int $eventId, $permissionType = CRM_Core_Permission::VIEW) {
     switch ($permissionType) {
@@ -2059,7 +2061,7 @@ WHERE  ce.loc_block_id = $locBlockId";
         }
         Civi::$statics[__CLASS__]['permission']['edit'][$eventId] = FALSE;
 
-        list($allEvents, $createdEvents) = self::checkPermissionGetInfo($eventId);
+        [$allEvents, $createdEvents] = self::checkPermissionGetInfo($eventId);
         // Note: for a multisite setup, a user with edit all events, can edit all events
         // including those from other sites
         if (($permissionType == CRM_Core_Permission::EDIT) && CRM_Core_Permission::check('edit all events')) {
@@ -2078,7 +2080,7 @@ WHERE  ce.loc_block_id = $locBlockId";
         }
         Civi::$statics[__CLASS__]['permission']['view'][$eventId] = FALSE;
 
-        list($allEvents, $createdEvents) = self::checkPermissionGetInfo($eventId);
+        [$allEvents, $createdEvents] = self::checkPermissionGetInfo($eventId);
         if (CRM_Core_Permission::check('access CiviEvent')) {
           if (in_array($eventId, CRM_ACL_API::group(CRM_Core_Permission::VIEW, NULL, 'civicrm_event', $allEvents, array_keys($createdEvents)))) {
             // User created this event so has permission to view it
@@ -2118,7 +2120,7 @@ WHERE  ce.loc_block_id = $locBlockId";
    * @param int $eventId
    *
    * @return array $allEvents, $createdEvents
-   * @throws \CiviCRM_API3_Exception
+   * @throws \CRM_Core_Exception
    */
   private static function checkPermissionGetInfo($eventId = NULL) {
     $params = [
@@ -2151,11 +2153,11 @@ WHERE  ce.loc_block_id = $locBlockId";
    *
    * @return array
    *   Array of events with permissions (array_keys=permissions)
-   * @throws \CiviCRM_API3_Exception
+   * @throws \CRM_Core_Exception
    */
   public static function getAllPermissions() {
     if (!isset(Civi::$statics[__CLASS__]['permissions'])) {
-      list($allEvents, $createdEvents) = self::checkPermissionGetInfo();
+      [$allEvents, $createdEvents] = self::checkPermissionGetInfo();
 
       // Note: for a multisite setup, a user with edit all events, can edit all events
       // including those from other sites
@@ -2420,20 +2422,23 @@ WHERE  ce.loc_block_id = $locBlockId";
     $query = [
       'reset' => 1,
     ];
+
     if ($eventId) {
       $query['id'] = $eventId;
-    }
-    $return[] = [
-      'url' => CRM_Utils_System::url('civicrm/event/ical', $query, TRUE, NULL, TRUE),
-      'text' => $eventId ? ts('Download iCalendar entry for this event.') : ts('Download iCalendar entry for current and future public events.'),
-      'icon' => 'fa-download',
-    ];
-    if ($eventId) {
-      $return[] = [
-        'url' => CRM_Utils_System::url('civicrm/event/ical', ['gCalendar' => 1] + $query, TRUE, NULL, TRUE),
-        'text' => ts('Add event to Google Calendar'),
-        'icon' => 'fa-share',
-      ];
+      $endDate = CRM_Core_DAO::getFieldValue('CRM_Event_DAO_Event', $eventId, 'end_date');
+      if (empty($endDate) || strtotime($endDate) >= time()) {
+        $return[] = [
+          'url' => CRM_Utils_System::url('civicrm/event/ical', $query, TRUE, NULL, TRUE),
+          'text' => ts('Download iCalendar entry for this event.'),
+          'icon' => 'fa-download',
+        ];
+
+        $return[] = [
+          'url' => CRM_Utils_System::url('civicrm/event/ical', ['gCalendar' => 1] + $query, TRUE, NULL, TRUE),
+          'text' => ts('Add event to Google Calendar'),
+          'icon' => 'fa-share',
+        ];
+      }
     }
     else {
       $return[] = [
@@ -2442,6 +2447,7 @@ WHERE  ce.loc_block_id = $locBlockId";
         'icon' => 'fa-link',
       ];
     }
+
     return $return;
   }
 

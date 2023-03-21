@@ -13,6 +13,7 @@ declare(strict_types=1);
 
 namespace League\Csv;
 
+use ReturnTypeWillChange;
 use SeekableIterator;
 use SplFileObject;
 use TypeError;
@@ -304,9 +305,12 @@ class Stream implements SeekableIterator
      *
      * @return int|false
      */
-    public function fputcsv(array $fields, string $delimiter = ',', string $enclosure = '"', string $escape = '\\')
+    public function fputcsv(array $fields, string $delimiter = ',', string $enclosure = '"', string $escape = '\\', string $eol = "\n")
     {
         $controls = $this->filterControl($delimiter, $enclosure, $escape, __METHOD__);
+        if (80100 <= PHP_VERSION_ID) {
+            $controls[] = $eol;
+        }
 
         return fputcsv($this->stream, $fields, ...$controls);
     }
@@ -315,10 +319,8 @@ class Stream implements SeekableIterator
      * Get line number.
      *
      * @see http://php.net/manual/en/SplFileObject.key.php
-     *
-     * @return int
      */
-    public function key()
+    public function key(): int
     {
         return $this->offset;
     }
@@ -359,10 +361,8 @@ class Stream implements SeekableIterator
      * Not at EOF.
      *
      * @see http://php.net/manual/en/SplFileObject.valid.php
-     *
-     * @return bool
      */
-    public function valid()
+    public function valid(): bool
     {
         if (0 !== ($this->flags & SplFileObject::READ_AHEAD)) {
             return $this->current() !== false;
@@ -378,6 +378,7 @@ class Stream implements SeekableIterator
      *
      * @return mixed The value of the current element.
      */
+    #[ReturnTypeWillChange]
     public function current()
     {
         if (false !== $this->value) {

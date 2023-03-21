@@ -106,16 +106,16 @@ class CRM_Contact_Import_Form_DataSource extends CRM_Import_Form_DataSource {
     // contact types option
     $contactTypeOptions = $contactTypeAttributes = [];
     if (CRM_Contact_BAO_ContactType::isActive('Individual')) {
-      $contactTypeOptions[CRM_Import_Parser::CONTACT_INDIVIDUAL] = ts('Individual');
-      $contactTypeAttributes[CRM_Import_Parser::CONTACT_INDIVIDUAL] = $js;
+      $contactTypeOptions['Individual'] = ts('Individual');
+      $contactTypeAttributes['Individual'] = $js;
     }
     if (CRM_Contact_BAO_ContactType::isActive('Household')) {
-      $contactTypeOptions[CRM_Import_Parser::CONTACT_HOUSEHOLD] = ts('Household');
-      $contactTypeAttributes[CRM_Import_Parser::CONTACT_HOUSEHOLD] = $js;
+      $contactTypeOptions['Household'] = ts('Household');
+      $contactTypeAttributes['Household'] = $js;
     }
     if (CRM_Contact_BAO_ContactType::isActive('Organization')) {
-      $contactTypeOptions[CRM_Import_Parser::CONTACT_ORGANIZATION] = ts('Organization');
-      $contactTypeAttributes[CRM_Import_Parser::CONTACT_ORGANIZATION] = $js;
+      $contactTypeOptions['Organization'] = ts('Organization');
+      $contactTypeAttributes['Organization'] = $js;
     }
     $this->addRadio('contactType', ts('Contact Type'), $contactTypeOptions, [], NULL, FALSE, $contactTypeAttributes);
 
@@ -162,7 +162,7 @@ class CRM_Contact_Import_Form_DataSource extends CRM_Import_Form_DataSource {
     $defaults = [
       'dataSource' => $this->getDefaultDataSource(),
       'onDuplicate' => CRM_Import_Parser::DUPLICATE_SKIP,
-      'contactType' => CRM_Import_Parser::CONTACT_INDIVIDUAL,
+      'contactType' => 'Individual',
       'fieldSeparator' => CRM_Core_Config::singleton()->fieldSeparator,
       'disableUSPS' => TRUE,
     ];
@@ -178,7 +178,6 @@ class CRM_Contact_Import_Form_DataSource extends CRM_Import_Form_DataSource {
    * Call the DataSource's postProcess method.
    *
    * @throws \CRM_Core_Exception
-   * @throws \API_Exception
    */
   public function postProcess() {
     $this->controller->resetPage('MapField');
@@ -186,7 +185,6 @@ class CRM_Contact_Import_Form_DataSource extends CRM_Import_Form_DataSource {
     // @todo - this params are being set here because they were / possibly still
     // are in some places being accessed by forms later in the flow
     // ie CRM_Contact_Import_Form_MapField, CRM_Contact_Import_Form_Preview
-    // or CRM_Contact_Import_Form_Summary using `$this->get()
     // which was the old way of saving values submitted on this form such that
     // the other forms could access them. Now they should use
     // `getSubmittedValue` or simply not get them if the only

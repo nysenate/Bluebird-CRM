@@ -346,7 +346,7 @@ class CRM_Core_BAO_Block {
    * @param array $params
    * @param $class
    *
-   * @throws API_Exception
+   * @throws CRM_Core_Exception
    */
   public static function handlePrimary(&$params, $class) {
     if (isset($params['id']) && CRM_Utils_System::isNull($params['is_primary'] ?? NULL)) {
@@ -355,7 +355,7 @@ class CRM_Core_BAO_Block {
     }
     $table = CRM_Core_DAO_AllCoreTables::getTableForClass($class);
     if (!$table) {
-      throw new API_Exception("Failed to locate table for class [$class]");
+      throw new CRM_Core_Exception("Failed to locate table for class [$class]");
     }
 
     // contact_id in params might be empty or the string 'null' so cast to integer
@@ -428,7 +428,7 @@ class CRM_Core_BAO_Block {
    * @param array $params
    * @param $class
    *
-   * @throws API_Exception
+   * @throws CRM_Core_Exception
    */
   public static function handleBilling(&$params, $class) {
     if (isset($params['id']) && CRM_Utils_System::isNull($params['is_billing'] ?? NULL)) {
@@ -437,7 +437,7 @@ class CRM_Core_BAO_Block {
     }
     $table = CRM_Core_DAO_AllCoreTables::getTableForClass($class);
     if (!$table) {
-      throw new API_Exception("Failed to locate table for class [$class]");
+      throw new CRM_Core_Exception("Failed to locate table for class [$class]");
     }
 
     // contact_id in params might be empty or the string 'null' so cast to integer

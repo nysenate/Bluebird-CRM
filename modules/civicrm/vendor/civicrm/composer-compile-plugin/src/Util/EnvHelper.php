@@ -1,4 +1,5 @@
 <?php
+
 namespace Civi\CompilePlugin\Util;
 
 class EnvHelper
@@ -49,15 +50,16 @@ class EnvHelper
         }
     }
 
-    public static function set(string $key, string $value): void {
+    public static function set(string $key, string $value): void
+    {
         putenv("$key=" . $value);
         $_SERVER[$key] = $_ENV[$key] = $value;
     }
 
-    public static function remove(string $key) {
+    public static function remove(string $key)
+    {
         putenv($key);
         unset($_SERVER[$key]);
         unset($_ENV[$key]);
     }
-
 }

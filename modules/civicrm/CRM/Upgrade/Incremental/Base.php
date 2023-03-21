@@ -52,7 +52,7 @@ class CRM_Upgrade_Incremental_Base {
     $sqlGlob = implode(DIRECTORY_SEPARATOR, [dirname(__FILE__), 'sql', $this->getMajorMinor() . '.*.mysql.tpl']);
     $sqlFiles = glob($sqlGlob);;
     foreach ($sqlFiles as $file) {
-      $revList[] = str_replace('.mysql.tpl', '', basename($file));
+      $revList[] = basename($file, '.mysql.tpl');
     }
 
     $c = new ReflectionClass(static::class);
@@ -195,11 +195,15 @@ class CRM_Upgrade_Incremental_Base {
    * @param string $title
    * @param string[] $keys
    *   List of extensions to enable.
+   * @param int $weight
+   *   A weight > 1500 will install after extension upgrades run. Do this for brand-new extensions.
+   *   A weight < 1500 will install before extension upgrades. Do this if the extension may
+   *   have previously been enabled.
    */
-  protected function addExtensionTask(string $title, array $keys): void {
+  protected function addExtensionTask(string $title, array $keys, int $weight = 2000): void {
     Civi::queue(CRM_Upgrade_Form::QUEUE_NAME)->createItem(
       new CRM_Queue_Task([static::CLASS, 'enableExtension'], [$keys], $title),
-      ['weight' => 2000]
+      ['weight' => $weight]
     );
   }
 
@@ -213,10 +217,7 @@ class CRM_Upgrade_Incremental_Base {
     // The `enableExtension` has a very high value of `weight`, so this runs after all
     // core DB schema updates have been resolved. We can use high-level services.
 
-    Civi::dispatcher()->setDispatchPolicy(\CRM_Upgrade_DispatchPolicy::get('upgrade.finish'));
-    $restore = \CRM_Utils_AutoClean::with(function() {
-      Civi::dispatcher()->setDispatchPolicy(\CRM_Upgrade_DispatchPolicy::get('upgrade.main'));
-    });
+    CRM_Upgrade_DispatchPolicy::assertActive('upgrade.finish');
 
     $manager = CRM_Extension_System::singleton()->getManager();
     $manager->enable($manager->findInstallRequirements($keys));
@@ -238,7 +239,7 @@ class CRM_Upgrade_Incremental_Base {
    * @param CRM_Queue_TaskContext $ctx
    * @param string $name
    * @return bool
-   * @throws \CiviCRM_API3_Exception
+   * @throws \CRM_Core_Exception
    */
   public static function removePaymentProcessorType(CRM_Queue_TaskContext $ctx, $name) {
     $processors = civicrm_api3('PaymentProcessor', 'getcount', ['payment_processor_type_id' => $name]);

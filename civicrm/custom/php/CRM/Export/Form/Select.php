@@ -325,9 +325,9 @@ FROM   {$this->_componentTable}
     }
 
     //NYSS 7228
-    $queryParams = $this->get('queryParams');
+    $queryParams = (array) $this->get('queryParams');
     if ($this->_isCustomSearch) {
-      $queryParams = NULL;
+      $queryParams = [];
     }
 
     if ($exportOption == self::EXPORT_ALL) {

@@ -2,7 +2,10 @@
 
 namespace Civi\Api4\Action\Afform;
 
+use CRM_Afform_ExtensionUtil as E;
 use Civi\Afform\Event\AfformSubmitEvent;
+use Civi\Afform\Event\AfformValidateEvent;
+use Civi\Afform\FormDataModel;
 use Civi\Api4\AfformSubmission;
 use Civi\Api4\RelationshipType;
 use Civi\Api4\Utils\CoreUtil;
@@ -26,6 +29,7 @@ class Submit extends AbstractProcessor {
   protected $values;
 
   protected function processForm() {
+    // Preprocess submitted values
     $entityValues = [];
     foreach ($this->_formDataModel->getEntities() as $entityName => $entity) {
       $entityValues[$entityName] = [];
@@ -58,6 +62,25 @@ class Submit extends AbstractProcessor {
         }
       }
     }
+
+    // Call validation handlers
+    $event = new AfformValidateEvent($this->_afform, $this->_formDataModel, $this, $entityValues);
+    \Civi::dispatcher()->dispatch('civi.afform.validate', $event);
+    $errors = $event->getErrors();
+    if ($errors) {
+      throw new \CRM_Core_Exception(ts('Validation Error', ['plural' => '%1 Validation Errors', 'count' => count($errors)]), 0, ['validation' => $errors]);
+    }
+
+    // Save submission record
+    if (!empty($this->_afform['create_submission'])) {
+      $submission = AfformSubmission::create(FALSE)
+        ->addValue('contact_id', \CRM_Core_Session::getLoggedInContactID())
+        ->addValue('afform_name', $this->name)
+        ->addValue('data', $this->getValues())
+        ->execute()->first();
+    }
+
+    // Call submit handlers
     $entityWeights = \Civi\Afform\Utils::getEntityWeights($this->_formDataModel->getEntities(), $entityValues);
     foreach ($entityWeights as $entityName) {
       $entityType = $this->_formDataModel->getEntity($entityName)['type'];
@@ -67,21 +90,158 @@ class Submit extends AbstractProcessor {
       \Civi::dispatcher()->dispatch('civi.afform.submit', $event);
     }
 
-    // Save submission record
+    $submissionData = $this->combineValuesAndIds($this->getValues(), $this->_entityIds);
+    // Update submission record with entity IDs.
     if (!empty($this->_afform['create_submission'])) {
-      $submission = AfformSubmission::create(FALSE)
-        ->addValue('contact_id', \CRM_Core_Session::getLoggedInContactID())
-        ->addValue('afform_name', $this->name)
-        ->addValue('data', $this->_entityIds)
-        ->execute()->first();
+      AfformSubmission::update(FALSE)
+        ->addWhere('id', '=', $submission['id'])
+        ->addValue('data', $submissionData)
+        ->execute();
     }
 
     // Return ids and a token for uploading files
     return [
-      [
-        'token' => $this->generatePostSubmitToken(),
-      ],
+      ['token' => $this->generatePostSubmitToken()] + $this->_entityIds,
     ];
+  }
+
+  /**
+   * Recursively add entity IDs to the values.
+   */
+  protected function combineValuesAndIds($values, $ids, $isJoin = FALSE) {
+    $combined = [];
+    $values += array_fill_keys(array_keys($ids), []);
+    foreach ($values as $name => $value) {
+      foreach ($value as $idx => $val) {
+        $idData = $ids[$name][$idx] ?? [];
+        if (!$isJoin) {
+          $idData['_joins'] = $this->combineValuesAndIds($val['joins'] ?? [], $idData['_joins'] ?? [], TRUE);
+        }
+        $item = array_merge($isJoin ? $val : ($val['fields'] ?? []), $idData);
+        $combined[$name][$idx] = $item;
+      }
+    }
+    return $combined;
+  }
+
+  /**
+   * Validate required field values
+   *
+   * @param \Civi\Afform\Event\AfformValidateEvent $event
+   */
+  public static function validateRequiredFields(AfformValidateEvent $event): void {
+    foreach ($event->getFormDataModel()->getEntities() as $entityName => $entity) {
+      $entityValues = $event->getEntityValues()[$entityName] ?? [];
+      foreach ($entityValues as $values) {
+        foreach ($entity['fields'] as $fieldName => $attributes) {
+          $error = self::getRequiredFieldError($entity['type'], $fieldName, $attributes, $values['fields'][$fieldName] ?? NULL);
+          if ($error) {
+            $event->setError($error);
+          }
+        }
+        foreach ($entity['joins'] as $joinEntity => $join) {
+          foreach ($values['joins'][$joinEntity] ?? [] as $joinIndex => $joinValues) {
+            foreach ($join['fields'] ?? [] as $fieldName => $attributes) {
+              $error = self::getRequiredFieldError($joinEntity, $fieldName, $attributes, $joinValues[$fieldName] ?? NULL);
+              if ($error) {
+                $event->setError($error);
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+
+  /**
+   * Validate all fields of type "EntityRef" contain values that are allowed by filters
+   *
+   * @param \Civi\Afform\Event\AfformValidateEvent $event
+   */
+  public static function validateEntityRefFields(AfformValidateEvent $event): void {
+    $formName = $event->getAfform()['name'];
+    foreach ($event->getFormDataModel()->getEntities() as $entityName => $entity) {
+      $entityValues = $event->getEntityValues()[$entityName] ?? [];
+      foreach ($entityValues as $values) {
+        foreach ($entity['fields'] as $fieldName => $attributes) {
+          $error = self::getEntityRefError($formName, $entityName, $entity['type'], $fieldName, $attributes, $values['fields'][$fieldName] ?? NULL);
+          if ($error) {
+            $event->setError($error);
+          }
+        }
+        foreach ($entity['joins'] as $joinEntity => $join) {
+          foreach ($values['joins'][$joinEntity] ?? [] as $joinIndex => $joinValues) {
+            foreach ($join['fields'] ?? [] as $fieldName => $attributes) {
+              $error = self::getEntityRefError($formName, $entityName . '+' . $joinEntity, $joinEntity, $fieldName, $attributes, $joinValues[$fieldName] ?? NULL);
+              if ($error) {
+                $event->setError($error);
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+
+  /**
+   * If a required field is missing a value, return an error message
+   *
+   * @param string $apiEntity
+   * @param string $fieldName
+   * @param array $attributes
+   * @param mixed $value
+   * @return string|null
+   */
+  private static function getRequiredFieldError(string $apiEntity, string $fieldName, $attributes, $value) {
+    // If we have a value, no need to check if required
+    if ($value || is_numeric($value) || is_bool($value)) {
+      return NULL;
+    }
+    // Required set to false, no need to validate
+    if (isset($attributes['defn']['required']) && !$attributes['defn']['required']) {
+      return NULL;
+    }
+    $fullDefn = FormDataModel::getField($apiEntity, $fieldName, 'create');
+    $isRequired = $attributes['defn']['required'] ?? $fullDefn['required'] ?? FALSE;
+    if ($isRequired) {
+      $label = $attributes['defn']['label'] ?? $fullDefn['label'];
+      return E::ts('%1 is a required field.', [1 => $label]);
+    }
+    return NULL;
+  }
+
+  /**
+   * Return an error if an EntityRef field is submitted with a value outside the range of its savedSearch filters
+   *
+   * @param string $formName
+   * @param string $entityName
+   * @param string $apiEntity
+   * @param string $fieldName
+   * @param array $attributes
+   * @param mixed $value
+   * @return string|null
+   */
+  private static function getEntityRefError(string $formName, string $entityName, string $apiEntity, string $fieldName, $attributes, $value) {
+    $values = array_filter((array) $value);
+    // If we have no values, continue
+    if (!$values) {
+      return NULL;
+    }
+    $fullDefn = FormDataModel::getField($apiEntity, $fieldName, 'create');
+    $fieldType = $attributes['defn']['input_type'] ?? $fullDefn['input_type'];
+    $fkEntity = $attributes['defn']['fk_entity'] ?? $fullDefn['fk_entity'] ?? $apiEntity;
+    if ($fieldType === 'EntityRef') {
+      $result = (array) civicrm_api4($fkEntity, 'autocomplete', [
+        'ids' => $values,
+        'formName' => "afform:$formName",
+        'fieldName' => "$entityName:$fieldName",
+      ]);
+      if (count($result) < count($values) || array_diff($values, array_column($result, 'id'))) {
+        $label = $attributes['defn']['label'] ?? FormDataModel::getField($apiEntity, $fieldName, 'create')['label'];
+        return E::ts('Illegal value for %1.', [1 => $label]);
+      }
+    }
+    return NULL;
   }
 
   /**
@@ -113,13 +273,13 @@ class Submit extends AbstractProcessor {
   }
 
   /**
-   * Validate contact(s) meet the minimum requirements to be created (name and/or email).
+   * Check if contact(s) meet the minimum requirements to be created (name and/or email).
    *
    * This requires a function because simple required fields validation won't work
    * across multiple entities (contact + n email addresses).
    *
    * @param \Civi\Afform\Event\AfformSubmitEvent $event
-   * @throws \API_Exception
+   * @throws \CRM_Core_Exception
    * @see afform_civicrm_config
    */
   public static function preprocessContact(AfformSubmitEvent $event): void {
@@ -146,7 +306,7 @@ class Submit extends AbstractProcessor {
 
   /**
    * @param \Civi\Afform\Event\AfformSubmitEvent $event
-   * @throws \API_Exception
+   * @throws \CRM_Core_Exception
    * @see afform_civicrm_config
    */
   public static function processGenericEntity(AfformSubmitEvent $event) {
@@ -156,11 +316,12 @@ class Submit extends AbstractProcessor {
         continue;
       }
       try {
+        $idField = CoreUtil::getIdFieldName($event->getEntityType());
         $saved = $api4($event->getEntityType(), 'save', ['records' => [$record['fields']]])->first();
-        $event->setEntityId($index, $saved['id']);
-        self::saveJoins($event, $index, $saved['id'], $record['joins'] ?? []);
+        $event->setEntityId($index, $saved[$idField]);
+        self::saveJoins($event, $index, $saved[$idField], $record['joins'] ?? []);
       }
-      catch (\API_Exception $e) {
+      catch (\CRM_Core_Exception $e) {
         // What to do here? Sometimes we should silently ignore errors, e.g. an optional entity
         // intentionally left blank. Other times it's a real error the user should know about.
       }
@@ -232,7 +393,7 @@ class Submit extends AbstractProcessor {
    * @param int $index
    * @param int|string $entityId
    * @param array $joins
-   * @throws \API_Exception
+   * @throws \CRM_Core_Exception
    */
   protected static function saveJoins(AfformSubmitEvent $event, $index, $entityId, $joins) {
     foreach ($joins as $joinEntityName => $join) {
@@ -246,7 +407,7 @@ class Submit extends AbstractProcessor {
           'checkPermissions' => FALSE,
           'where' => self::getJoinWhereClause($event->getFormDataModel(), $event->getEntityName(), $joinEntityName, $entityId),
           'records' => $values,
-        ], ['id']);
+        ]);
         $indexedResult = array_combine(array_keys($values), (array) $result);
         $event->setJoinIds($index, $joinEntityName, $indexedResult);
       }
@@ -259,7 +420,7 @@ class Submit extends AbstractProcessor {
             'where' => self::getJoinWhereClause($event->getFormDataModel(), $event->getEntityName(), $joinEntityName, $entityId),
           ]);
         }
-        catch (\API_Exception $e) {
+        catch (\CRM_Core_Exception $e) {
           // No records to delete
         }
         $event->setJoinIds($index, $joinEntityName, []);

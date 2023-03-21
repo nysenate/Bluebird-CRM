@@ -222,7 +222,7 @@ class CRM_Utils_Rule {
       $url = 'http://' . $_SERVER['HTTP_HOST'] . $url;
     }
     // Convert URLs with Unicode to ASCII
-    if (strlen($url) != strlen(utf8_decode($url))) {
+    if (strlen($url) != mb_strlen($url)) {
       $url = self::idnToAsci($url);
     }
     return (bool) filter_var($url, FILTER_VALIDATE_URL);
@@ -549,7 +549,7 @@ class CRM_Utils_Rule {
    */
   public static function cleanMoney($value) {
     // first remove all white space
-    $value = str_replace([' ', "\t", "\n"], '', $value);
+    $value = str_replace([' ', "\t", "\n"], '', ($value ?? ''));
 
     $config = CRM_Core_Config::singleton();
 

@@ -1,8 +1,6 @@
 #!/usr/bin/env bash
 set -e
 
-DEFAULT_MOSAICO_BRANCH="v0.15-civicrm-2"
-DEFAULT_MOSAICO_REPO="https://github.com/civicrm/mosaico"
 EXTROOT=$(cd `dirname $0`/..; pwd)
 EXTKEY="uk.co.vedaconsulting.mosaico"
 XMLBUILD="$EXTROOT/build/xml/schema"
@@ -83,24 +81,6 @@ function do_gencode() {
 
 ##############################
 function do_download() {
-  if [ ! -d "$EXTROOT/packages" ]; then
-    mkdir "$EXTROOT/packages"
-  fi
-  if [ ! -d "$EXTROOT/packages/mosaico" ]; then
-    git clone -b "$DEFAULT_MOSAICO_BRANCH" "$DEFAULT_MOSAICO_REPO" "$EXTROOT/packages/mosaico"
-  fi
-  pushd "$EXTROOT/packages/mosaico" >> /dev/null
-    local currentBranch=$(basename /$(git symbolic-ref HEAD 2>/dev/null))
-    if [ "$currentBranch" != "$DEFAULT_MOSAICO_BRANCH" ]; then
-      echo "Error: packages/mosaico is not on expected branch ($DEFAULT_MOSAICO_BRANCH). You may either:"
-      echo " (1) Checkout the branch '$DEFAULT_MOSAICO_BRANCH'. Then run 'setup.sh -D' again."
-      echo " (2) Manage the branch manualy. Be sure to call 'npm install' and 'grunt' as needed."
-      exit 1
-    fi
-    npm install
-    find node_modules -name '*.info' -delete
-    grunt build
-  popd >> /dev/null
   pushd "$EXTROOT" >> /dev/null
     composer install
   popd >> /dev/null
@@ -125,7 +105,7 @@ function do_zipfile() {
        ## Get any files in the project root, except for dotfiles.
        find . -mindepth 1 -maxdepth 1 -type f -o -type d | grep -v '^\./\.'
        ## Get any files in the main subfolders.
-       find CRM/ ang/ api/ bin/ css/ js/ sql/ sass/ settings/ templates/ tests/ vendor/ xml/ -type f -o -type d
+       find CRM/ Civi/ ang/ api/ bin/ css/ js/ managed/ sql/ sass/ settings/ templates/ tests/ vendor/ xml/ -type f -o -type d
        ## Get the distributable files for Mosaico.
        find packages/mosaico/{NOTICE,README,LICENSE,dist,templates}* -type f -o -type d
     } \

@@ -566,7 +566,7 @@ class CRM_Core_Payment_PayPalImpl extends CRM_Core_Payment {
     $args['state'] = $params['state_province'];
     $args['countryCode'] = $params['country'];
     $args['zip'] = $params['postal_code'];
-    $args['desc'] = substr(CRM_Utils_Array::value('description', $params), 0, 127);
+    $args['desc'] = substr(($params['description'] ?? ''), 0, 127);
     $args['custom'] = $params['accountingCode'] ?? NULL;
 
     // add CiviCRM BN code
@@ -773,7 +773,6 @@ class CRM_Core_Payment_PayPalImpl extends CRM_Core_Payment {
    * Process incoming notification.
    *
    * @throws \CRM_Core_Exception
-   * @throws \CiviCRM_API3_Exception
    */
   public function handlePaymentNotification() {
     $params = array_merge($_GET, $_REQUEST);
@@ -1018,10 +1017,11 @@ class CRM_Core_Payment_PayPalImpl extends CRM_Core_Payment {
         throw new CRM_Core_Exception(ts('Recurring contribution, but no database id'));
       }
 
+      // See https://developer.paypal.com/api/nvp-soap/paypal-payments-standard/integration-guide/Appx-websitestandard-htmlvariables/#link-recurringpaymentvariables
       $paypalParams += [
         'cmd' => '_xclick-subscriptions',
         'a3' => $this->getAmount($params),
-        'p3' => $params['frequency_interval'],
+        'p3' => $params['frequency_interval'] ?? 1,
         't3' => ucfirst(substr($params['frequency_unit'], 0, 1)),
         'src' => 1,
         'sra' => 1,
@@ -1096,7 +1096,7 @@ class CRM_Core_Payment_PayPalImpl extends CRM_Core_Payment {
 
     $p = [];
     foreach ($args as $n => $v) {
-      $p[] = "$n=" . urlencode($v);
+      $p[] = "$n=" . urlencode($v ?? '');
     }
 
     //NVPRequest for submitting to server

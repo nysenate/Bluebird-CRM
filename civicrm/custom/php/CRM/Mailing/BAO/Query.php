@@ -116,7 +116,7 @@ class CRM_Mailing_BAO_Query {
   /**
    * Get the metadata for fields to be included on the mailing search form.
    *
-   * @throws \CiviCRM_API3_Exception
+   * @throws \CRM_Core_Exception
    *
    * @todo ideally this would be a trait included on the mailing search & advanced search
    * rather than a static function.
@@ -149,8 +149,8 @@ class CRM_Mailing_BAO_Query {
 
   /**
    * @param string $name
-   * @param $mode
-   * @param $side
+   * @param int $mode
+   * @param string $side
    *
    * @return null|string
    */
@@ -236,7 +236,7 @@ class CRM_Mailing_BAO_Query {
    * @param $query
    */
   public static function whereClauseSingle(&$values, &$query) {
-    list($name, $op, $value, $grouping, $wildcard) = $values;
+    [$name, $op, $value, $grouping, $wildcard] = $values;
 
     switch ($name) {
       case 'mailing_id':
@@ -295,7 +295,7 @@ class CRM_Mailing_BAO_Query {
       case 'mailing_delivery_status':
         $options = CRM_Mailing_PseudoConstant::yesNoOptions('delivered');
 
-        list($name, $op, $value, $grouping, $wildcard) = $values;
+        [$name, $op, $value, $grouping, $wildcard] = $values;
         if ($value == 'Y') {
           self::mailingEventQueryBuilder($query, $values,
             'civicrm_mailing_event_sendgrid_delivered', //NYSS
@@ -323,7 +323,7 @@ class CRM_Mailing_BAO_Query {
           'civicrm_mailing_event_bounce',
           'bounce_type_id',
           ts('Bounce type(s)'),
-          CRM_Core_PseudoConstant::get('CRM_Mailing_Event_DAO_Bounce', 'bounce_type_id', [
+          CRM_Core_PseudoConstant::get('CRM_Mailing_Event_DAO_MailingEventBounce', 'bounce_type_id', [
             'keyColumn' => 'id',
             'labelColumn' => 'name',
           ])
@@ -392,7 +392,7 @@ class CRM_Mailing_BAO_Query {
       case 'mailing_campaign_id':
         $name = 'campaign_id';
         $query->_where[$grouping][] = CRM_Contact_BAO_Query::buildClause("civicrm_mailing.$name", $op, $value, 'Integer');
-        list($op, $value) = CRM_Contact_BAO_Query::buildQillForFieldValue('CRM_Mailing_DAO_Mailing', $name, $value, $op);
+        [$op, $value] = CRM_Contact_BAO_Query::buildQillForFieldValue('CRM_Mailing_DAO_Mailing', $name, $value, $op);
         $query->_qill[$grouping][] = ts('Campaign %1 %2', [1 => $op, 2 => $value]);
         $query->_tables['civicrm_mailing'] = $query->_whereTables['civicrm_mailing'] = 1;
         $query->_tables['civicrm_mailing_recipients'] = $query->_whereTables['civicrm_mailing_recipients'] = 1;
@@ -405,7 +405,7 @@ class CRM_Mailing_BAO_Query {
    *
    * @param \CRM_Mailing_Form_Search $form
    *
-   * @throws \CiviCRM_API3_Exception
+   * @throws \CRM_Core_Exception
    */
   public static function buildSearchForm(&$form) {
     $form->addSearchFieldMetadata(['Mailing' => self::getSearchFieldMetadata()]);
@@ -430,7 +430,7 @@ class CRM_Mailing_BAO_Query {
     $form->addElement('select', 'mailing_job_status', ts('Mailing Job Status'), $mailingJobStatuses, FALSE);
 
     $mailingBounceTypes = CRM_Core_PseudoConstant::get(
-      'CRM_Mailing_Event_DAO_Bounce', 'bounce_type_id',
+      'CRM_Mailing_Event_DAO_MailingEventBounce', 'bounce_type_id',
       ['keyColumn' => 'id', 'labelColumn' => 'name']
     );
     $form->add('select', 'mailing_bounce_types', ts('Bounce Types'), $mailingBounceTypes, FALSE,
@@ -484,7 +484,7 @@ class CRM_Mailing_BAO_Query {
    * @param $valueTitles
    */
   public static function mailingEventQueryBuilder(&$query, &$values, $tableName, $fieldName, $fieldTitle, &$valueTitles) {
-    list($name, $op, $value, $grouping, $wildcard) = $values;
+    [$name, $op, $value, $grouping, $wildcard] = $values;
 
     if (empty($value) || $value == 'A') {
       // don't do any filtering

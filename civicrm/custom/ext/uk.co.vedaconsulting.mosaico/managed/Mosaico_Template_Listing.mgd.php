@@ -60,7 +60,7 @@ return [
             [
               'title',
               'ASC',
-            ]
+            ],
           ],
           'columns' => [
             [
@@ -94,7 +94,7 @@ return [
           ],
           'cssRules' => [],
         ],
-        'acl_bypass' => TRUE,
+        'acl_bypass' => FALSE,
       ],
     ],
   ],

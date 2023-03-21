@@ -539,7 +539,7 @@ CREATE TABLE `civicrm_contact` (
   `image_URL` text COMMENT 'optional URL for preferred image (photo, logo, etc.) to display for this contact.',
   `preferred_communication_method` varchar(255) COMMENT 'What is the preferred mode of communication.',
   `preferred_language` varchar(5) COMMENT 'Which language is preferred for communication. FK to languages in civicrm_option_value.',
-  `preferred_mail_format` varchar(8) DEFAULT "Both" COMMENT 'What is the preferred mode of sending an email.',
+  `preferred_mail_format` varchar(8) DEFAULT "Both" COMMENT 'Deprecated setting for text vs html mailings',
   `hash` varchar(32) COMMENT 'Key for validating requests related to this contact.',
   `api_key` varchar(32) COMMENT 'API Key for validating requests related to this contact.',
   `source` varchar(255) COMMENT 'where contact come from, e.g. import, donate module insert...',
@@ -802,8 +802,8 @@ ENGINE=InnoDB DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci ROW_FORMA
 -- *******************************************************/
 CREATE TABLE `civicrm_mailing_bounce_type` (
   `id` int unsigned NOT NULL AUTO_INCREMENT,
-  `name` varchar(24) NOT NULL COMMENT 'Type of bounce',
-  `description` varchar(255) COMMENT 'A description of this bounce type',
+  `name` varchar(255) NOT NULL COMMENT 'Type of bounce',
+  `description` varchar(2048) COMMENT 'A description of this bounce type',
   `hold_threshold` int unsigned NOT NULL COMMENT 'Number of bounces of this type required before the email address is put on bounce hold',
   PRIMARY KEY (`id`)
 )
@@ -1154,10 +1154,11 @@ CREATE TABLE `civicrm_dedupe_rule_group` (
   `contact_type` varchar(12) COMMENT 'The type of contacts this group applies to',
   `threshold` int NOT NULL COMMENT 'The weight threshold the sum of the rule weights has to cross to consider two contacts the same',
   `used` varchar(12) NOT NULL COMMENT 'Whether the rule should be used for cases where usage is Unsupervised, Supervised OR General(programatically)',
-  `name` varchar(64) COMMENT 'Name of the rule group',
+  `name` varchar(255) COMMENT 'Unique name of rule group',
   `title` varchar(255) COMMENT 'Label of the rule group',
   `is_reserved` tinyint NOT NULL DEFAULT 0 COMMENT 'Is this a reserved rule - a rule group that has been optimized and cannot be changed by the admin',
-  PRIMARY KEY (`id`)
+  PRIMARY KEY (`id`),
+  UNIQUE INDEX `UI_name`(name)
 )
 ENGINE=InnoDB DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci ROW_FORMAT=DYNAMIC;
 
@@ -1296,8 +1297,8 @@ CREATE TABLE `civicrm_queue_item` (
   `id` int unsigned NOT NULL AUTO_INCREMENT,
   `queue_name` varchar(64) NOT NULL COMMENT 'Name of the queue which includes this item',
   `weight` int NOT NULL,
-  `submit_time` datetime NOT NULL COMMENT 'date on which this item was submitted to the queue',
-  `release_time` datetime COMMENT 'date on which this job becomes available; null if ASAP',
+  `submit_time` timestamp NOT NULL COMMENT 'date on which this item was submitted to the queue',
+  `release_time` timestamp NULL DEFAULT NULL COMMENT 'date on which this job becomes available; null if ASAP',
   `run_count` int NOT NULL DEFAULT 0 COMMENT 'Number of times execution has been attempted.',
   `data` longtext COMMENT 'Serialized queue data',
   PRIMARY KEY (`id`),
@@ -1618,7 +1619,7 @@ CREATE TABLE `civicrm_job_log` (
   `name` varchar(255) COMMENT 'Title of the job',
   `command` varchar(255) COMMENT 'Full path to file containing job script',
   `description` varchar(255) COMMENT 'Title line of log entry',
-  `data` text COMMENT 'Potential extended data for specific job run (e.g. tracebacks).',
+  `data` longtext COMMENT 'Potential extended data for specific job run (e.g. tracebacks).',
   PRIMARY KEY (`id`),
   CONSTRAINT FK_civicrm_job_log_domain_id FOREIGN KEY (`domain_id`) REFERENCES `civicrm_domain`(`id`)
 )
@@ -1992,7 +1993,7 @@ ENGINE=InnoDB DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci ROW_FORMA
 CREATE TABLE `civicrm_website` (
   `id` int unsigned NOT NULL AUTO_INCREMENT COMMENT 'Unique Website ID',
   `contact_id` int unsigned COMMENT 'FK to Contact ID',
-  `url` varchar(128) COMMENT 'Website',
+  `url` varchar(255) COMMENT 'Website',
   `website_type_id` int unsigned COMMENT 'Which Website type does this website belong to.',
   PRIMARY KEY (`id`),
   INDEX `UI_website_type_id`(website_type_id),
@@ -2106,7 +2107,7 @@ CREATE TABLE `civicrm_group` (
   `description` text COMMENT 'Optional verbose description of the group.',
   `source` varchar(64) COMMENT 'Module or process which created this group.',
   `saved_search_id` int unsigned COMMENT 'FK to saved search table.',
-  `is_active` tinyint NOT NULL DEFAULT 1 COMMENT 'Is this entry active?',
+  `is_active` tinyint NOT NULL DEFAULT 1 COMMENT 'Is this group active?',
   `visibility` varchar(24) DEFAULT 'User and User Admin Only' COMMENT 'In what context(s) is this field visible.',
   `where_clause` text COMMENT 'the sql where clause if a saved search acl',
   `select_tables` text COMMENT 'the tables to be included in a select data',
@@ -2284,7 +2285,7 @@ CREATE TABLE `civicrm_contribution_page` (
   `cc_receipt` varchar(255) COMMENT 'comma-separated list of email addresses to cc each time a receipt is sent',
   `bcc_receipt` varchar(255) COMMENT 'comma-separated list of email addresses to bcc each time a receipt is sent',
   `receipt_text` text COMMENT 'text to include above standard receipt info on receipt email. emails are text-only, so do not allow html for now',
-  `is_active` tinyint NOT NULL DEFAULT 1 COMMENT 'Is this property active?',
+  `is_active` tinyint NOT NULL DEFAULT 1 COMMENT 'Is this page active?',
   `footer_text` text COMMENT 'Text and html allowed. Displayed at the bottom of the first page of the contribution wizard.',
   `amount_block_is_active` tinyint NOT NULL DEFAULT 1 COMMENT 'Is this property active?',
   `start_date` datetime COMMENT 'Date and time that this page starts.',
@@ -2323,7 +2324,7 @@ CREATE TABLE `civicrm_product` (
   `financial_type_id` int unsigned DEFAULT NULL COMMENT 'FK to Financial Type.',
   `min_contribution` decimal(20,2) COMMENT 'Minimum contribution required to be eligible to select this premium.',
   `cost` decimal(20,2) COMMENT 'Actual cost of this product. Useful to determine net return from sale or using this as an incentive.',
-  `is_active` tinyint NOT NULL COMMENT 'Disabling premium removes it from the premiums_premium join table below.',
+  `is_active` tinyint NOT NULL DEFAULT 1 COMMENT 'Disabling premium removes it from the premiums_premium join table below.',
   `period_type` varchar(8) DEFAULT 'rolling' COMMENT 'Rolling means we set start/end based on current day, fixed means we set start/end for current year or month\n      (e.g. 1 year + fixed -> we would set start/end for 1/1/06 thru 12/31/06 for any premium chosen in 2006) ',
   `fixed_period_start_day` int DEFAULT 0101 COMMENT 'Month and day (MMDD) that fixed period type subscription or membership starts.',
   `duration_unit` varchar(8) DEFAULT 'year',
@@ -2806,7 +2807,7 @@ ENGINE=InnoDB DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci ROW_FORMA
 -- *******************************************************/
 CREATE TABLE `civicrm_uf_group` (
   `id` int unsigned NOT NULL AUTO_INCREMENT COMMENT 'Unique table ID',
-  `is_active` tinyint NOT NULL DEFAULT 1 COMMENT 'Is this form currently active? If false, hide all related fields for all sharing contexts.',
+  `is_active` tinyint NOT NULL DEFAULT 1 COMMENT 'Is this profile currently active? If false, hide all related fields for all sharing contexts.',
   `group_type` varchar(255) COMMENT 'Comma separated list of the type(s) of profile fields.',
   `title` varchar(64) NOT NULL COMMENT 'Form title.',
   `frontend_title` varchar(64) COMMENT 'Profile Form Public title',
@@ -3241,7 +3242,7 @@ ENGINE=InnoDB DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci ROW_FORMA
 -- *******************************************************/
 CREATE TABLE `civicrm_mailing_event_queue` (
   `id` int unsigned NOT NULL AUTO_INCREMENT,
-  `job_id` int unsigned NOT NULL COMMENT 'FK to Job',
+  `job_id` int unsigned NOT NULL COMMENT 'Mailing Job',
   `email_id` int unsigned DEFAULT NULL COMMENT 'FK to Email',
   `contact_id` int unsigned NOT NULL COMMENT 'FK to Contact',
   `hash` varchar(255) NOT NULL COMMENT 'Security hash',
@@ -3541,8 +3542,8 @@ CREATE TABLE `civicrm_activity` (
   `medium_id` int unsigned DEFAULT NULL COMMENT 'Activity Medium, Implicit FK to civicrm_option_value where option_group = encounter_medium.',
   `is_auto` tinyint NOT NULL DEFAULT 0,
   `relationship_id` int unsigned DEFAULT NULL COMMENT 'FK to Relationship ID',
-  `is_current_revision` tinyint NOT NULL DEFAULT 1,
-  `original_id` int unsigned COMMENT 'Activity ID of the first activity record in versioning chain.',
+  `is_current_revision` tinyint NOT NULL DEFAULT 1 COMMENT 'Unused deprecated column.',
+  `original_id` int unsigned COMMENT 'Unused deprecated column.',
   `result` varchar(255) COMMENT 'Currently being used to store result id for survey activity, FK to option value.',
   `is_deleted` tinyint NOT NULL DEFAULT 0,
   `campaign_id` int unsigned COMMENT 'The campaign for which this activity has been triggered.',
@@ -3561,7 +3562,7 @@ CREATE TABLE `civicrm_activity` (
   CONSTRAINT FK_civicrm_activity_phone_id FOREIGN KEY (`phone_id`) REFERENCES `civicrm_phone`(`id`) ON DELETE SET NULL,
   CONSTRAINT FK_civicrm_activity_parent_id FOREIGN KEY (`parent_id`) REFERENCES `civicrm_activity`(`id`) ON DELETE CASCADE,
   CONSTRAINT FK_civicrm_activity_relationship_id FOREIGN KEY (`relationship_id`) REFERENCES `civicrm_relationship`(`id`) ON DELETE SET NULL,
-  CONSTRAINT FK_civicrm_activity_original_id FOREIGN KEY (`original_id`) REFERENCES `civicrm_activity`(`id`) ON DELETE CASCADE,
+  CONSTRAINT FK_civicrm_activity_original_id FOREIGN KEY (`original_id`) REFERENCES `civicrm_activity`(`id`) ON DELETE SET NULL,
   CONSTRAINT FK_civicrm_activity_campaign_id FOREIGN KEY (`campaign_id`) REFERENCES `civicrm_campaign`(`id`) ON DELETE SET NULL
 )
 ENGINE=InnoDB DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci ROW_FORMAT=DYNAMIC;
@@ -4044,6 +4045,7 @@ CREATE TABLE `civicrm_participant` (
   `cart_id` int unsigned COMMENT 'FK to civicrm_event_carts',
   `must_wait` int COMMENT 'On Waiting List',
   `transferred_to_contact_id` int unsigned DEFAULT NULL COMMENT 'FK to Contact ID',
+  `created_id` int unsigned COMMENT 'Contact responsible for registering this participant',
   PRIMARY KEY (`id`),
   INDEX `index_status_id`(status_id),
   INDEX `index_role_id`(role_id),
@@ -4054,7 +4056,8 @@ CREATE TABLE `civicrm_participant` (
   CONSTRAINT FK_civicrm_participant_discount_id FOREIGN KEY (`discount_id`) REFERENCES `civicrm_discount`(`id`) ON DELETE SET NULL,
   CONSTRAINT FK_civicrm_participant_campaign_id FOREIGN KEY (`campaign_id`) REFERENCES `civicrm_campaign`(`id`) ON DELETE SET NULL,
   CONSTRAINT FK_civicrm_participant_cart_id FOREIGN KEY (`cart_id`) REFERENCES `civicrm_event_carts`(`id`) ON DELETE SET NULL,
-  CONSTRAINT FK_civicrm_participant_transferred_to_contact_id FOREIGN KEY (`transferred_to_contact_id`) REFERENCES `civicrm_contact`(`id`) ON DELETE SET NULL
+  CONSTRAINT FK_civicrm_participant_transferred_to_contact_id FOREIGN KEY (`transferred_to_contact_id`) REFERENCES `civicrm_contact`(`id`) ON DELETE SET NULL,
+  CONSTRAINT FK_civicrm_participant_created_id FOREIGN KEY (`created_id`) REFERENCES `civicrm_contact`(`id`) ON DELETE SET NULL
 )
 ENGINE=InnoDB DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci ROW_FORMAT=DYNAMIC;
 

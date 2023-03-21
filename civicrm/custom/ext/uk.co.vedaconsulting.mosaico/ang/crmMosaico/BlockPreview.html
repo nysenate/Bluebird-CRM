@@ -1,0 +1,46 @@
+<!--
+Vars: mailing:obj, testContact:obj, testGroup:obj, crmMailing:FormController
+-->
+<div class="form-group">
+  <label>{{:: ts('Preview:') }}</label>
+  <div ng-show="!mailing.body_html && !mailing.body_text">
+    <em>({{:: ts('No content to preview') }})</em>
+  </div>
+  <div ng-hide="!mailing.body_html" class="btn-group btn-group-justified">
+    <div class="btn-group">
+      <button type="button" class="btn btn-primary" ng-disabled="crmMailing.$invalid" ng-click="doPreview('html')">{{:: ts('Preview as HTML') }}</button>
+    </div>
+  </div>
+  <div ng-hide="!mailing.body_html && !mailing.body_text" style="margin-top: 1em;" class="btn-group btn-group-justified">
+    <div class="btn-group">
+      <button type="button" class="btn btn-primary" ng-disabled="crmMailing.$invalid" ng-click="doPreview('text')">{{:: ts('Preview as Plain Text') }}</button>
+    </div>
+  </div>
+</div>
+
+<div class="form-group">
+  <label for="preview_test_email">{{:: ts('Send test email:') }} <a crm-ui-help="hs({id: 'test', title: ts('Test Email')})"></a> </label>
+  <input
+    id="preview_test_email"
+    type="text"
+    class="form-control margin-bottom-10"
+    ng-model="testContact.email"
+    placeholder="example@example.org" />
+  <!--fa-paper-plane-->
+  <button class="btn btn-sm btn-primary" title="{{crmMailing.$invalid || !testContact.email ? ts('Complete all required-mark fields first') : !validateMultipleEmail(testContact.email) ? ts('Not a valid email address') : ts('Send test message to %1', {1: testContact.email})}}" ng-disabled="crmMailing.$invalid || !testContact.email || !validateMultipleEmail(testContact.email)" ng-click="doSend({email: testContact.email})">
+    {{ts('Send test')}}
+  </button>
+</div>
+
+<div class="form-group">
+  <label for="preview_test_group">{{:: ts('Send test email to group:') }} <a crm-ui-help="hs({id: 'test', title: ts('Test Email')})"></a> </label>
+  <input
+    id="preview_test_group"
+    crm-entityref="{entity: 'Group', api: {params: {is_hidden: 0, is_active: 1}}, select: {allowClear:true, minimumInputLength: 0}}"
+    ng-model="testGroup.gid"
+    class="form-control margin-bottom-10 full-width-force"
+  />
+  <!--fa-paper-plane-->
+  <button type="button" class="btn btn-sm btn-primary" title="{{ crmMailing.$invalid || !testGroup.gid ? ts('Complete all required-mark fields first') : ts('Send test message to group') }}" ng-disabled="crmMailing.$invalid || !testGroup.gid" crm-confirm="{resizable: true, width: '40%', height: '40%', open: previewTestGroup}"
+      on-yes="doSend({gid: testGroup.gid})">{{:: ts('Send test') }}</button>
+</div>

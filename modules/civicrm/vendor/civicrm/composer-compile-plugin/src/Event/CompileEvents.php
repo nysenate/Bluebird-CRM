@@ -1,4 +1,5 @@
 <?php
+
 namespace Civi\CompilePlugin\Event;
 
 class CompileEvents
@@ -10,7 +11,7 @@ class CompileEvents
      *
      * @see CompileListEvent
      */
-    const PRE_COMPILE_LIST = 'pre-compile-list';
+    public const PRE_COMPILE_LIST = 'pre-compile-list';
 
     /**
      * The POST_COMPILE_LIST event occurs after parsing the task-list. This allows
@@ -18,15 +19,15 @@ class CompileEvents
      *
      * @see CompileListEvent
      */
-    const POST_COMPILE_LIST = 'post-compile-list';
+    public const POST_COMPILE_LIST = 'post-compile-list';
 
     /**
      * The PRE_COMPILE_TASK event occurs before executing a specific task.
      */
-    const PRE_COMPILE_TASK = 'pre-compile-task';
+    public const PRE_COMPILE_TASK = 'pre-compile-task';
 
     /**
      * The POST_COMPILE_TASK event occurs before executing a specific task.
      */
-    const POST_COMPILE_TASK = 'post-compile-task';
+    public const POST_COMPILE_TASK = 'post-compile-task';
 }

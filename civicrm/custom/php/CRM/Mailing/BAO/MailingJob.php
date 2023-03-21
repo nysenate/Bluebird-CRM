@@ -390,7 +390,7 @@ class CRM_Mailing_BAO_MailingJob extends CRM_Mailing_DAO_MailingJob {
    * @param int $offset
    */
   public function split_job($offset = 200) {
-    $recipient_count = CRM_Mailing_BAO_Recipients::mailingSize($this->mailing_id);
+    $recipient_count = CRM_Mailing_BAO_MailingRecipients::mailingSize($this->mailing_id);
 
     $jobTable = CRM_Mailing_DAO_MailingJob::getTableName();
 
@@ -443,7 +443,7 @@ VALUES (%1, %2, %3, %4, %5, %6, %7)
     else {
       // We are still getting all the recipients from the parent job
       // so we don't mess with the include/exclude logic.
-      $recipients = CRM_Mailing_BAO_Recipients::mailingQuery($this->mailing_id, $this->job_offset, $this->job_limit);
+      $recipients = CRM_Mailing_BAO_MailingRecipients::mailingQuery($this->mailing_id, $this->job_offset, $this->job_limit);
       //CRM_Core_Error::debug_var('$this->mailing_id', $this->mailing_id, TRUE, TRUE, 'veq');
       //CRM_Core_Error::debug_var('$this->job_offset', $this->job_offset, TRUE, TRUE, 'veq');
       //CRM_Core_Error::debug_var('$this->job_limit', $this->job_limit, TRUE, TRUE, 'veq');
@@ -480,14 +480,14 @@ VALUES (%1, %2, %3, %4, %5, %6, %7)
         $count++;
         // dev/core#1768 Mail sync interval is now configurable.
         if ($count % $mail_sync_interval == 0) {
-          CRM_Mailing_Event_BAO_Queue::bulkCreate($params, $now);
+          CRM_Mailing_Event_BAO_MailingEventQueue::bulkCreate($params, $now);
           $count = 0;
           $params = [];
         }
       }
 
       if (!empty($params)) {
-        CRM_Mailing_Event_BAO_Queue::bulkCreate($params, $now);
+        CRM_Mailing_Event_BAO_MailingEventQueue::bulkCreate($params, $now);
       }
     }
   }
@@ -733,13 +733,13 @@ VALUES (%1, %2, %3, %4, %5, %6, %7)
         $params = array_merge($params,
           CRM_Mailing_BAO_BouncePattern::match($result->getMessage())
         );
-        CRM_Mailing_Event_BAO_Bounce::create($params);
+        CRM_Mailing_Event_BAO_MailingEventBounce::recordBounce($params);
       }
       elseif (is_a($result, 'PEAR_Error') && $mailing->sms_provider_id) {
         // Handle SMS errors: CRM-15426
         $job_id = intval($this->id);
         $mailing_id = intval($mailing->id);
-        CRM_Core_Error::debug_log_message("Failed to send SMS message. Vars: mailing_id: ${mailing_id}, job_id: ${job_id}. Error message follows.");
+        CRM_Core_Error::debug_log_message("Failed to send SMS message. Vars: mailing_id: {$mailing_id}, job_id: {$job_id}. Error message follows.");
         CRM_Core_Error::debug_log_message($result->getMessage());
       }
       else {
@@ -994,7 +994,7 @@ AND    status IN ( 'Scheduled', 'Running', 'Paused' )
     static $writeActivity = NULL;
 
     if (!empty($deliveredParams)) {
-      CRM_Mailing_Event_BAO_Delivered::bulkCreate($deliveredParams);
+      CRM_Mailing_Event_BAO_MailingEventDelivered::bulkCreate($deliveredParams);
       $deliveredParams = [];
     }
 
@@ -1095,17 +1095,17 @@ AND    record_type_id = $targetRecordID
    * @param string $medium
    *   Ex: 'email' or 'sms'.
    *
-   * @return \CRM_Mailing_Event_BAO_Queue
+   * @return \CRM_Mailing_Event_BAO_MailingEventQueue
    *   A query object whose rows provide ('id', 'contact_id', 'hash') and ('email' or 'phone').
    */
   public static function findPendingTasks($jobId, $medium) {
-    $eq = new CRM_Mailing_Event_BAO_Queue();
-    $queueTable = CRM_Mailing_Event_BAO_Queue::getTableName();
+    $eq = new CRM_Mailing_Event_BAO_MailingEventQueue();
+    $queueTable = CRM_Mailing_Event_BAO_MailingEventQueue::getTableName();
     $emailTable = CRM_Core_BAO_Email::getTableName();
     $phoneTable = CRM_Core_BAO_Phone::getTableName();
     $contactTable = CRM_Contact_BAO_Contact::getTableName();
-    $deliveredTable = CRM_Mailing_Event_BAO_Delivered::getTableName();
-    $bounceTable = CRM_Mailing_Event_BAO_Bounce::getTableName();
+    $deliveredTable = CRM_Mailing_Event_BAO_MailingEventDelivered::getTableName();
+    $bounceTable = CRM_Mailing_Event_BAO_MailingEventBounce::getTableName();
 
     $query = "  SELECT      $queueTable.id,
                                 $emailTable.email as email,

@@ -26,7 +26,6 @@ class CRM_Contribute_Form_ContributionView extends CRM_Core_Form {
    * Set variables up before form is built.
    *
    * @throws \CRM_Core_Exception
-   * @throws \API_Exception
    */
   public function preProcess() {
     $id = $this->getID();
@@ -119,21 +118,22 @@ class CRM_Contribute_Form_ContributionView extends CRM_Core_Form {
         ->addJoin('Contact AS contact', 'LEFT', ['contact.id', '=', 'participant.contact_id'])
         ->addWhere('entity_table', '=', 'civicrm_participant')
         ->addWhere('contribution_id', '=', $id)
+        ->addGroupBy('entity_id')
         ->execute();
     }
-    catch (API_Exception $e) {
+    catch (CRM_Core_Exception $e) {
       // likely don't have permission for events/participants
       $participantLineItems = [];
     }
 
-    $associatedParticipants = FALSE;
+    $associatedParticipants = empty($participantLineItems) ? FALSE : [];
     foreach ($participantLineItems as $participant) {
       $associatedParticipants[] = [
         'participantLink' => CRM_Utils_System::url('civicrm/contact/view/participant',
           "action=view&reset=1&id={$participant['entity_id']}&cid={$participant['participant.contact_id']}&context=home"
         ),
         'participantName' => $participant['contact.display_name'],
-        'fee' => implode(', ', $participant['participant.fee_level']),
+        'fee' => implode(', ', $participant['participant.fee_level'] ?? []),
         'role' => implode(', ', $participant['participant.role_id:label']),
       ];
     }
@@ -380,7 +380,7 @@ class CRM_Contribute_Form_ContributionView extends CRM_Core_Form {
         ->addValue('id', $this->getID())
         ->execute()->first()['access'];
     }
-    catch (API_Exception $e) {
+    catch (CRM_Core_Exception $e) {
       return FALSE;
     }
   }

@@ -1,4 +1,5 @@
 <?php
+
 namespace Civi\CompilePlugin;
 
 use Civi\CompilePlugin\Event\CompileEvents;
@@ -19,7 +20,6 @@ use Composer\Package\PackageInterface;
 
 class TaskRunner
 {
-
     use ComposerIoTrait {
         __construct as constructComposerIo;
     }

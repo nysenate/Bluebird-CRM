@@ -82,7 +82,6 @@
     <key>id</key>
     <onDelete>SET NULL</onDelete>
   </foreignKey>
-
   <field>
     <name>category_id</name>
     <type>int unsigned</type>
@@ -97,4 +96,27 @@
       <type>Select</type>
     </html>
   </field>
+
+  <field>
+    <name>domain_id</name>
+    <type>int unsigned</type>
+    <title>Domain ID</title>
+    <required>false</required>
+    <comment>Domain ID this message template belongs to.</comment>
+    <pseudoconstant>
+      <table>civicrm_domain</table>
+      <keyColumn>id</keyColumn>
+      <labelColumn>name</labelColumn>
+    </pseudoconstant>
+    <html>
+      <type>Select</type>
+    </html>
+  </field>
+  <foreignKey>
+    <name>domain_id</name>
+    <table>civicrm_domain</table>
+    <key>id</key>
+    <onDelete>SET NULL</onDelete>
+  </foreignKey>
+
 </table>

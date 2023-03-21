@@ -158,7 +158,7 @@ class IDS_Converter
                 if (preg_match_all('/\d*[+-\/\* ]\d+/', $char, $matches)) {
                     $match = preg_split('/(\W?\d+)/',
                                         (implode('', $matches[0])),
-                                        null,
+                                        -1,
                                         PREG_SPLIT_DELIM_CAPTURE);
 
                     if (array_sum($match) >= 20 && array_sum($match) <= 127) {
@@ -235,7 +235,7 @@ class IDS_Converter
      */
     public static function convertEntities($value)
     {
-        $converted = null;
+        $converted = '';
         
         //deal with double encoded payload 
         $value = preg_replace('/&amp;/', '&', $value);     
@@ -331,7 +331,7 @@ class IDS_Converter
         $value   = preg_replace($pattern, '!', $value);
         $value   = preg_replace('/"\s+\d/', '"', $value);
         $value   = preg_replace('/(\W)div(\W)/ims', '$1 OR $2', $value);
-        $value   = preg_replace('/\/(?:\d+|null)/', null, $value);
+        $value   = preg_replace('/\/(?:\d+|null)/', '', $value);
 
         return $value;
     }
@@ -358,7 +358,7 @@ class IDS_Converter
 
         //take care for malicious unicode characters
         $value = urldecode(preg_replace('/(?:%E(?:2|3)%8(?:0|1)%(?:A|8|9)' .
-            '\w|%EF%BB%BF|%EF%BF%BD)|(?:&#(?:65|8)\d{3};?)/i', null,
+            '\w|%EF%BB%BF|%EF%BF%BD)|(?:&#(?:65|8)\d{3};?)/i', '',
                 urlencode($value)));
         $value = urldecode(
             preg_replace('/(?:%F0%80%BE)/i', '>', urlencode($value)));
@@ -371,12 +371,12 @@ class IDS_Converter
 
         $value = preg_replace('/(?:%ff1c)/', '<', $value);
         $value = preg_replace(
-            '/(?:&[#x]*(200|820|200|820|zwn?j|lrm|rlm)\w?;?)/i', null,$value
+            '/(?:&[#x]*(200|820|200|820|zwn?j|lrm|rlm)\w?;?)/i', '',$value
         );
         $value = preg_replace('/(?:&#(?:65|8)\d{3};?)|' .
                 '(?:&#(?:56|7)3\d{2};?)|' .
                 '(?:&#x(?:fe|20)\w{2};?)|' .
-                '(?:&#x(?:d[c-f])\w{2};?)/i', null,
+                '(?:&#x(?:d[c-f])\w{2};?)/i', '',
                 $value);
                 
         $value = str_replace(
@@ -573,7 +573,7 @@ class IDS_Converter
             '/(?:in\s+)/');
 
         // strip out concatenations
-        $converted = preg_replace($pattern, null, $compare);
+        $converted = preg_replace($pattern, '', $compare);
 
         //strip object traversal
         $converted = preg_replace('/\w(\.\w\()/', "$1", $converted);
@@ -612,15 +612,15 @@ class IDS_Converter
         $value = preg_replace('/^"([^"=\\!><~]+)"$/', '$1', $value);
 
         //OpenID login tokens
-        $value = preg_replace('/{[\w-]{8,9}\}(?:\{[\w=]{8}\}){2}/', null, $value);
+        $value = preg_replace('/{[\w-]{8,9}\}(?:\{[\w=]{8}\}){2}/', '', $value);
 
         //convert Content and \sdo\s to null
-        $value = preg_replace('/Content|\Wdo\s/', null, $value);
+        $value = preg_replace('/Content|\Wdo\s/', '', $value);
 
         //strip emoticons
         $value = preg_replace(
             '/(?:\s[:;]-[)\/PD]+)|(?:\s;[)PD]+)|(?:\s:[)PD]+)|-\.-|\^\^/m',
-            null,
+            '',
             $value
         );
         
@@ -660,7 +660,7 @@ class IDS_Converter
         if (strlen($value) > 25) {
             
             //strip padding
-            $tmp_value = preg_replace('/\s{4}|==$/m', null, $value);
+            $tmp_value = preg_replace('/\s{4}|==$/m', '', $value);
             $tmp_value = preg_replace(
                 '/\s{4}|[\p{L}\d\+\-=,.%()]{8,}/m', 
                 'aaa', 
@@ -669,13 +669,13 @@ class IDS_Converter
             
             // Check for the attack char ratio
             $tmp_value = preg_replace('/([*.!?+-])\1{1,}/m', '$1', $tmp_value);
-            $tmp_value = preg_replace('/"[\p{L}\d\s]+"/m', null, $tmp_value);
+            $tmp_value = preg_replace('/"[\p{L}\d\s]+"/m', '', $tmp_value);
 
             $stripped_length = strlen(preg_replace('/[\d\s\p{L}\.:,%&\/><\-)!|]+/m',
-                null, $tmp_value));
+                '', $tmp_value));
             $overall_length  = strlen(
                 preg_replace('/([\d\s\p{L}:,\.]{3,})+/m', 'aaa',
-                preg_replace('/\s{2,}/m', null, $tmp_value))
+                preg_replace('/\s{2,}/m', '', $tmp_value))
             );
 
             if ($stripped_length != 0
@@ -692,7 +692,7 @@ class IDS_Converter
 
         if (strlen($value) > 40) {
             // Replace all non-special chars
-            $converted =  preg_replace('/[\w\s\p{L},.:!]/', null, $value);
+            $converted =  preg_replace('/[\w\s\p{L},.:!]/', '', $value);
 
             // Split string into an array, unify and sort
             $array = str_split($converted);
@@ -720,7 +720,7 @@ class IDS_Converter
             $converted = preg_replace('/[+-]\s*\d+/', '+', $converted);
             $converted = preg_replace('/[()[\]{}]/', '(', $converted);
             $converted = preg_replace('/[!?:=]/', ':', $converted);
-            $converted = preg_replace('/[^:(+]/', null, stripslashes($converted));
+            $converted = preg_replace('/[^:(+]/', '', stripslashes($converted));
 
             // Sort again and implode
             $array = str_split($converted);

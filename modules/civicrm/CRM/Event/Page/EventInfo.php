@@ -61,7 +61,7 @@ class CRM_Event_Page_EventInfo extends CRM_Core_Page {
     $values = ['event' => NULL];
     CRM_Event_BAO_Event::retrieve($params, $values['event']);
 
-    if (!$values['event']['is_active']) {
+    if (!$values['event'] || !$values['event']['is_active']) {
       CRM_Utils_System::setUFMessage(ts('The event you requested is currently unavailable (contact the site administrator for assistance).'));
       return CRM_Utils_System::permissionDenied();
     }
@@ -178,8 +178,8 @@ class CRM_Event_Page_EventInfo extends CRM_Core_Page {
     $this->assign('action', CRM_Core_Action::VIEW);
     //To show the event location on maps directly on event info page
     $locations = CRM_Event_BAO_Event::getMapInfo($this->_id);
+    $this->assign('locations', $locations);
     if (!empty($locations) && !empty($values['event']['is_map'])) {
-      $this->assign('locations', $locations);
       $this->assign('mapProvider', $config->mapProvider);
       $this->assign('mapKey', $config->mapAPIKey);
       $sumLat = $sumLng = 0;

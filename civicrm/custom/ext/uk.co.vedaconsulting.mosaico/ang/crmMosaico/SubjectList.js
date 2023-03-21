@@ -12,6 +12,7 @@
         });
         scope.ts = CRM.ts(null);
         scope.hs = crmUiHelp({file: 'CRM/Mailing/MailingUI'});
+        scope.checkPerm = CRM.checkPerm;
 
         scope.addSubj = function addSubj() {
           scope.mailing.template_options.variants = [

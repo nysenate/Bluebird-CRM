@@ -299,7 +299,10 @@ class DB_mysqli extends DB_common
         $ini = ini_get('track_errors');
         @ini_set('track_errors', 1);
         $php_errormsg = '';
-
+        if (version_compare(PHP_VERSION, '8.1', '>='))
+        {
+            mysqli_report(MYSQLI_REPORT_OFF);
+        }
         if (((int) $this->getOption('ssl')) === 1) {
             $init = mysqli_init();
             mysqli_ssl_set(
@@ -366,6 +369,10 @@ class DB_mysqli extends DB_common
     {
         $ret = @mysqli_close($this->connection);
         $this->connection = null;
+        if (version_compare(PHP_VERSION, '8.1', '>='))
+        {
+            mysqli_report(MYSQLI_REPORT_ERROR | MYSQLI_REPORT_STRICT);
+        }
         return $ret;
     }
 
