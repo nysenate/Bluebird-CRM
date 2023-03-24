@@ -536,7 +536,7 @@ function ldap_servers_module_load_include($type, $module, $name = NULL) {
  */
 function ldap_servers_get_servers($sid = NULL, $type = NULL, $flatten = FALSE, $reset = FALSE) {
   if (variable_get('ldap_simpletest', FALSE)) {
-    return _ldap_servers_get_simpletest_servers($sid, $type, $flatten, $reset);
+    return _ldap_servers_get_simpletest_servers($sid, $type, $flatten);
   }
   else {
     return _ldap_servers_get_servers($sid, $type, $flatten, $reset);
@@ -581,7 +581,7 @@ function _ldap_servers_get_servers($sid, $type, $flatten, $reset) {
 /**
  * See ldap_servers_get_servers()
  */
-function _ldap_servers_get_simpletest_servers($sid, $type = NULL, $flatten, $reset = TRUE) {
+function _ldap_servers_get_simpletest_servers($sid, $type, $flatten) {
 
   if (!$type) {
     $type = 'all';
