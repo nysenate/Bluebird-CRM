@@ -5802,7 +5802,7 @@ civicrm_relationship.start_date > {$today}
             foreach ($values as &$v) {
               $v = "'{$v}'";
             }
-            $value = "(" . implode($values, ",") . ")";
+            $value = '(' . implode(',', $values) . ')';
             //$value = array($op => (array) $values);
 
             return "$clause $value";
