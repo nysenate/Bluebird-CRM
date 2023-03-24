@@ -1,39 +1,5 @@
 <?php
 
-/*
- +--------------------------------------------------------------------+
- | CiviCRM version 4.4                                                |
- +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2010                                |
- +--------------------------------------------------------------------+
- | This file is a part of CiviCRM.                                    |
- |                                                                    |
- | CiviCRM is free software; you can copy, modify, and distribute it  |
- | under the terms of the GNU Affero General Public License           |
- | Version 3, 19 November 2007 and the CiviCRM Licensing Exception.   |
- |                                                                    |
- | CiviCRM is distributed in the hope that it will be useful, but     |
- | WITHOUT ANY WARRANTY; without even the implied warranty of         |
- | MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.               |
- | See the GNU Affero General Public License for more details.        |
- |                                                                    |
- | You should have received a copy of the GNU Affero General Public   |
- | License and the CiviCRM Licensing Exception along                  |
- | with this program; if not, contact CiviCRM LLC                     |
- | at info[AT]civicrm[DOT]org. If you have questions about the        |
- | GNU Affero General Public License or the licensing of CiviCRM,     |
- | see the CiviCRM license FAQ at http://civicrm.org/licensing        |
- +--------------------------------------------------------------------+
-*/
-
-/**
- *
- * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2010
- * $Id$
- *
- */
-
 class CRM_Contact_Form_Search_Custom_TagGroupLog
   extends CRM_Contact_Form_Search_Custom_Base
   implements CRM_Contact_Form_Search_Interface {
@@ -45,7 +11,7 @@ class CRM_Contact_Form_Search_Custom_TagGroupLog
   function __construct(&$formValues) {
     parent::__construct($formValues);
 
-    $this->_columns = array(
+    $this->_columns = [
       ts(' ') => 'contact_type',
       ts('Name') => 'sort_name' ,
       //ts('Street Address') => 'street_address',
@@ -57,24 +23,24 @@ class CRM_Contact_Form_Search_Custom_TagGroupLog
       ts('Log Date') => 'log_date',
       ts('Log Details') => 'log_details',
       ts('Altered By') => 'altered_by',
-    );
+    ];
   }
 
 
   function buildForm(&$form) {
     $this->setTitle('Tag/Group Changelog Search');
 
-    $searchType = array(
+    $searchType = [
       '1' => ts('Tags'),
       '2' => ts('Groups'),
-    );
+    ];
     $form->addRadio('search_type', ts('Search Type'), $searchType, NULL, '&nbsp;', TRUE);
 
     //construct tags/groups
     $groups = CRM_Core_PseudoConstant::nestedGroup();
 
     $tags = CRM_Core_BAO_Tag::getTags();
-    $keywords = CRM_Core_BAO_Tag::getTagsUsedFor($usedFor = array('civicrm_contact'),
+    $keywords = CRM_Core_BAO_Tag::getTagsUsedFor($usedFor = ['civicrm_contact'],
       $buildSelect = true,
       $all = false,
       $parentId = 296
@@ -85,29 +51,25 @@ class CRM_Contact_Form_Search_Custom_TagGroupLog
       foreach ($keywords as $key => $keyword) {
         $keywords[$key] = '&nbsp;&nbsp;'.$keyword;
       }
-      $tags = $tags + array ('296' => 'Keywords') + $keywords;
+      $tags = $tags + ['296' => 'Keywords'] + $keywords;
     }
 
-    $legpos = CRM_Core_BAO_Tag::getTagsUsedFor($usedFor = array('civicrm_contact'),
-      $buildSelect = true,
-      $all = false,
-      $parentId = 292
-    );
+    $legpos = CRM_Core_BAO_Tag::getTagsUsedFor(['civicrm_contact'], TRUE, FALSE, 292);
     asort($legpos);
     if ($legpos) {
       //lets indent leg positions
       foreach ($legpos as $key => $pos) {
         $legpos[$key] = '&nbsp;&nbsp;'.$pos;
       }
-      $tags = $tags + array ('292' => 'Legislative Positions') + $legpos;
+      $tags = $tags + ['292' => 'Legislative Positions'] + $legpos;
     }
 
-    $select2style = array(
+    $select2style = [
       'multiple' => TRUE,
       'style' => 'width: 100%; max-width: 60em;',
       'class' => 'crm-select2',
       'placeholder' => ts('- select -'),
-    );
+    ];
 
     $form->add('select', 'tag',
       ts('Tag(s)'),
@@ -123,19 +85,19 @@ class CRM_Contact_Form_Search_Custom_TagGroupLog
       $select2style
     );
     
-    $form->addDate('start_date', ts('Date from'), false, array('formatType' => 'birth'));
-    $form->addDate('end_date', ts('Date to'), false, array('formatType' => 'birth'));
+    $form->addDate('start_date', ts('Date from'), false, ['formatType' => 'birth']);
+    $form->addDate('end_date', ts('Date to'), false, ['formatType' => 'birth']);
 
-    $actionType = array(
+    $actionType = [
       '1' => ts('Added'),
       '2' => ts('Removed/Deleted'),
       '3' => ts('Both'),
-    );
+    ];
     $form->addRadio('action_type', ts('Action Type'), $actionType, NULL, '&nbsp;', TRUE);
 
-    $form->add('text', 'altered_by', ts('Altered By'), array());
+    $form->add('text', 'altered_by', ts('Altered By'), []);
     
-    $formfields = array(
+    $formfields = [
       'start_date',
       'end_date',
       'search_type',
@@ -143,13 +105,12 @@ class CRM_Contact_Form_Search_Custom_TagGroupLog
       'group',
       'action_type',
       'altered_by',
-    );
+    ];
     $form->assign('elements', $formfields);
     
     $form->add('hidden', 'form_message');
 
     $form->setDefaults($this->setDefaultValues());
-    $form->addFormRule(array('CRM_Contact_Form_Search_Custom_TagGroupLog', 'formRule'), $this);
 
     //9990
     $formValues = $form->get('formValues');
@@ -162,9 +123,9 @@ class CRM_Contact_Form_Search_Custom_TagGroupLog
       $form->assign('quickExportUrl', $quickExportUrl);
     }
   }//buildForm
-  
 
-  function formRule($fields) {
+
+  public function formRule($fields, $files, $self): bool|array {
     $errors = [];
 
     if ($fields['search_type'] == 1 && empty($fields['tag'])) {
@@ -372,7 +333,7 @@ class CRM_Contact_Form_Search_Custom_TagGroupLog
 
   function count() {
     $sql = $this->all();
-    $dao = CRM_Core_DAO::executeQuery($sql, CRM_Core_DAO::$_nullArray);
+    $dao = CRM_Core_DAO::executeQuery($sql);
     return $dao->N;
   }
 
@@ -383,9 +344,9 @@ class CRM_Contact_Form_Search_Custom_TagGroupLog
 
 
   function setDefaultValues() {
-    $defaults = array(
+    $defaults = [
       'action_type' => 3,
-    );
+    ];
     return $defaults;
   }
 
