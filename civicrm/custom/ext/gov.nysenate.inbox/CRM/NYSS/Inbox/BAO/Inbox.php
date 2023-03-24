@@ -170,7 +170,7 @@ class CRM_NYSS_Inbox_BAO_Inbox {
     while ($dao->fetch()) {
       $attachment = (!empty($dao->attachments)) ?
         "<div class='icon attachment-icon attachment' title='{$dao->attachments} Attachment(s)'></div>" : '';
-      $matched = self::getMatched($dao->matched_id);
+      $matched = self::getMatched($dao->matched_id) ?? [];
       $body = CRM_NYSS_Inbox_BAO_Inbox::cleanText($dao->body);
       $parsed = self::parseMessage($body);
       $details = [
@@ -649,7 +649,8 @@ class CRM_NYSS_Inbox_BAO_Inbox {
 
       $matchedContacts[] = $contactName;
     }
-    $matchedContactsList = implode(', ', $matchedContacts);
+
+    $matchedContactsList = isset($matchedContacts) ? implode(', ', $matchedContacts) : NULL;
 
     return [
       'is_error' => FALSE,
