@@ -1,49 +1,11 @@
 <?php
 
-/*
- +--------------------------------------------------------------------+
- | CiviCRM version 4.4                                                |
- +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2010                                |
- +--------------------------------------------------------------------+
- | This file is a part of CiviCRM.                                    |
- |                                                                    |
- | CiviCRM is free software; you can copy, modify, and distribute it  |
- | under the terms of the GNU Affero General Public License           |
- | Version 3, 19 November 2007 and the CiviCRM Licensing Exception.   |
- |                                                                    |
- | CiviCRM is distributed in the hope that it will be useful, but     |
- | WITHOUT ANY WARRANTY; without even the implied warranty of         |
- | MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.               |
- | See the GNU Affero General Public License for more details.        |
- |                                                                    |
- | You should have received a copy of the GNU Affero General Public   |
- | License and the CiviCRM Licensing Exception along                  |
- | with this program; if not, contact CiviCRM LLC                     |
- | at info[AT]civicrm[DOT]org. If you have questions about the        |
- | GNU Affero General Public License or the licensing of CiviCRM,     |
- | see the CiviCRM license FAQ at http://civicrm.org/licensing        |
- +--------------------------------------------------------------------+
-*/
-
-/**
- *
- * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2010
- * $Id$
- *
- */
-
-require_once 'CRM/Contact/Form/Search/Custom/Base.php';
-
-
 class CRM_Contact_Form_Search_Custom_BirthdayByMonth
   extends CRM_Contact_Form_Search_Custom_Base
   implements CRM_Contact_Form_Search_Interface {
 
   protected $_formValues;
   protected $_columns;
-
 
   function __construct(&$formValues) {
     parent::__construct($formValues);
@@ -57,7 +19,6 @@ class CRM_Contact_Form_Search_Custom_BirthdayByMonth
       ts('City') => 'city'
     ];
   }
-
 
   function buildForm(&$form) {
     $this->setTitle('Birthday Search');
@@ -79,21 +40,19 @@ class CRM_Contact_Form_Search_Custom_BirthdayByMonth
 
     $form->add('select', 'birth_month', ts('Individual\'s Birth Month (1-12)'), $month, false);
     
-    $form->add('text', 'year_start', ts('Birthday: year after'), array('size' => 4, 'maxlength' => 4));
-    $form->add('text', 'year_end', ts('Birthday: year before'), array('size' => 4, 'maxlength' => 4));
+    $form->add('text', 'year_start', ts('Birthday: year after'), ['size' => 4, 'maxlength' => 4]);
+    $form->add('text', 'year_end', ts('Birthday: year before'), ['size' => 4, 'maxlength' => 4]);
     
-    $form->add('text', 'day_start', ts('Birthday: day after'), array('size' => 2, 'maxlength' => 2));
-    $form->add('text', 'day_end', ts('Birthday: day before'), array('size' => 2, 'maxlength' => 2));
+    $form->add('text', 'day_start', ts('Birthday: day after'), ['size' => 2, 'maxlength' => 2]);
+    $form->add('text', 'day_end', ts('Birthday: day before'), ['size' => 2, 'maxlength' => 2]);
     
-    $form->add('text', 'age_start', ts('Age greater than'), array('size' => 3, 'maxlength' => 3));
-    $form->add('text', 'age_end', ts('Age less than'), array('size' => 3, 'maxlength' => 3));
-    
-    //$form->addDate('start_date', ts('Birthday after (date)'), false, array('formatType' => 'birth'));
-    //$form->addDate('end_date', ts('Birthday before (date)'), false, array('formatType' => 'birth'));
+    $form->add('text', 'age_start', ts('Age greater than'), ['size' => 3, 'maxlength' => 3]);
+    $form->add('text', 'age_end', ts('Age less than'), ['size' => 3, 'maxlength' => 3]);
+
     $form->add('datepicker', 'start_date', ts('Birthday after (date)'), [], FALSE, ['time' => FALSE]);
     $form->add('datepicker', 'end_date', ts('Birthday before (date)'), [], FALSE, ['time' => FALSE]);
     
-    $formfields = array(
+    $formfields = [
       'start_date',
       'end_date',
       'age_start',
@@ -103,17 +62,15 @@ class CRM_Contact_Form_Search_Custom_BirthdayByMonth
       'year_end',
       'day_start',
       'day_end'
-    );
+    ];
     $form->assign('elements', $formfields);
     
     $form->add('hidden', 'form_message');
 
     $form->setDefaults($this->setDefaultValues());
-    $form->addFormRule(array('CRM_Contact_Form_Search_Custom_BirthdayByMonth', 'formRule'), $this);
   }
-  
 
-  function formRule($fields, $files, $self) {
+  public function formRule($fields, $files, $self): bool|array {
     $errors = [];
     
     //days cannot be > 31
@@ -144,17 +101,14 @@ class CRM_Contact_Form_Search_Custom_BirthdayByMonth
     return empty($errors) ? true : $errors;
   }//formRule()
 
-
   function summary() {
     return null;
   }//summary()
-
 
   //NYSS 4536
   function contactIDs($offset = 0, $rowcount = 0, $sort = NULL, $returnSQL = FALSE) {
     return $this->all($offset, $rowcount, $sort, FALSE, TRUE);
   }
-
 
   function all($offset = 0, $rowcount = 0, $sort = NULL,
                $includeContactIDs = FALSE, $justIDs = FALSE) {
@@ -165,13 +119,14 @@ class CRM_Contact_Form_Search_Custom_BirthdayByMonth
     }
     else {
       $selectClause = "
-      DISTINCT(contact_a.id) as contact_id,
-        contact_a.sort_name as sort_name,
-        contact_a.contact_type as contact_type,
-        contact_a.birth_date as birth_date,
-        (YEAR(CURDATE())-YEAR(birth_date)) - (RIGHT(CURDATE(),5)<RIGHT(birth_date,5)) AS age,
-        addr.street_address,
-        addr.city";
+        DISTINCT(contact_a.id) as contact_id,
+          contact_a.sort_name as sort_name,
+          contact_a.contact_type as contact_type,
+          contact_a.birth_date as birth_date,
+          (YEAR(CURDATE())-YEAR(birth_date)) - (RIGHT(CURDATE(),5)<RIGHT(birth_date,5)) AS age,
+          addr.street_address,
+          addr.city
+      ";
     }
              
     if (empty($sort)) {
@@ -181,7 +136,6 @@ class CRM_Contact_Form_Search_Custom_BirthdayByMonth
     //CRM_Core_Error::debug('select',$selectClause); exit();
     return $this->sql($selectClause, $offset, $rowcount, $sort, $includeContactIDs, null);
   }
-
     
   function from() {
     //NYSS
@@ -193,7 +147,6 @@ class CRM_Contact_Form_Search_Custom_BirthdayByMonth
     ";
     return $from;
   }
-
 
   function where($includeContactIDs = false) {
     $params = [];
@@ -260,17 +213,12 @@ class CRM_Contact_Form_Search_Custom_BirthdayByMonth
     return $this->whereClause($whereClause, $params);
   }
 
-
   function templateFile() {
     return 'CRM/Contact/Form/Search/Custom/BirthdayByMonth.tpl';
   }
 
-
   function setDefaultValues() {
-    /*return array('birth_month' => 1,
-    'start_date' => '1900-01-01');*/
   }
-
 
   //NYSS 4899
   function alterRow(&$row) {
@@ -280,7 +228,6 @@ class CRM_Contact_Form_Search_Custom_BirthdayByMonth
         false,
         $row['contact_id']);
   }
-
 
   function setTitle($title) {
     if ($title) {
