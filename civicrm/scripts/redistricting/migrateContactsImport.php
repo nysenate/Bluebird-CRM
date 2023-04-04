@@ -25,17 +25,17 @@ class CRM_migrateContactsImport {
 
     // Parse the options
     $shortopts = "f:n";
-    $longopts = array("filename=", "dryrun");
+    $longopts = ["filename=", "dryrun"];
     $optlist = civicrm_script_init($shortopts, $longopts, TRUE);
 
-    if ($optlist === null) {
+    if ($optlist === NULL) {
         $stdusage = civicrm_script_usage();
         $usage = '[--filename FILENAME] [--dryrun]';
         error_log("Usage: ".basename(__FILE__)."  $stdusage  $usage\n");
         exit(1);
     }
 
-    if ( empty($optlist['filename']) ) {
+    if (empty($optlist['filename'])) {
       bbscript_log(LL::FATAL, "No filename provided. You must provide a filename to import.");
       exit();
     }
@@ -87,7 +87,7 @@ class CRM_migrateContactsImport {
 
     //check for existence of file to import
     $importFile = $fileDir.'/'.$optlist['filename'];
-    if ( !file_exists($importFile) ) {
+    if (!file_exists($importFile) && !$optDry) {
       bbscript_log(LL::FATAL, "The import file you have specified does not exist. It must reside in {$fileDir}.");
       exit();
     }
@@ -109,11 +109,13 @@ class CRM_migrateContactsImport {
     bbscript_log(LL::INFO, "importing data using... $importFile");
 
     //retrieve data from file and set to variable as array
-    $exportData = json_decode(file_get_contents($importFile), TRUE);
-    //bbscript_log(LL::TRACE, 'importData $exportData', $exportData);
+    if (!$optDry) {
+      $exportData = json_decode(file_get_contents($importFile), TRUE);
+      //bbscript_log(LL::TRACE, 'importData $exportData', $exportData);
+    }
 
     //parse the import file source/dest, compare with params and return a warning message if values do not match
-    if ( $exportData['dest']['name'] != $dest['name'] ) {
+    if (!$optDry && $exportData['dest']['name'] != $dest['name']) {
       bbscript_log(LL::FATAL, 'The destination defined in the import file does not match the parameters passed to the script. Exiting the script as a mismatched destination could create significant data problems. Please investigate and then rerun the script.');
       exit();
     }
@@ -133,7 +135,7 @@ class CRM_migrateContactsImport {
     $bbAdmin = CRM_Core_DAO::singleValueQuery($sql);
     $bbAdmin = ( $bbAdmin ) ? $bbAdmin : 1;
 
-    $statsTemp = $selfMerged = array();
+    $statsTemp = $selfMerged = [];
 
     //process the import
     self::importAttachments($exportData);
@@ -155,15 +157,15 @@ class CRM_migrateContactsImport {
     //bbscript_log(LL::TRACE, 'importData $mergedContacts', $mergedContacts);
 
     //generate report stats
-    $caseList = array();
-    if ( isset($exportData['cases']) ) {
-      foreach ( $exportData['cases'] as $extID => $cases ) {
-        foreach ( $cases as $case ) {
+    $caseList = [];
+    if (isset($exportData['cases'])) {
+      foreach ($exportData['cases'] as $extID => $cases) {
+        foreach ($cases as $case) {
           $caseList[] = $case;
         }
       }
     }
-    $stats = array(
+    $stats = [
       'total contacts' => count($exportData['import']),
       'individuals' => $statsTemp['Individual'],
       'organizations' => $statsTemp['Organization'],
@@ -182,29 +184,29 @@ class CRM_migrateContactsImport {
       'first level issue codes' => count($exportData['tags']['issuecodes']),
       'positions' => count($exportData['tags']['positions']),
       'attachments' => count($exportData['attachments']),
-      'expanded details for various stats' => array(
+      'expanded details for various stats' => [
         'contacts self-merged with other imported records (current contact -> existing contact)' => $selfMerged,
         'addresses with location conflicts (skipped)' => $statsTemp['address_location_conflicts']['skip'],
         'addresses with location conflicts (new location assigned)' => $statsTemp['address_location_conflicts']['newloc'],
-      ),
-    );
+      ],
+    ];
     bbscript_log(LL::INFO, "Migration statistics:", $stats);
 
     //log to file
-    if ( !$optDry ) {
+    if (!$optDry) {
       //set import folder based on environment
       $fileDir = '/data/redistricting/bluebird_'.$bbconfig['install_class'].'/MigrationReports';
-      if ( !file_exists($fileDir) ) {
+      if (!file_exists($fileDir)) {
         mkdir( $fileDir, 0775, TRUE );
       }
 
       $reportFile = $fileDir.'/'.$source['name'].'_'.$dest['name'].'.txt';
       $fileResource = fopen($reportFile, 'w');
 
-      $content = array(
+      $content = [
         'options' => $exportData['options'],
         'stats' => $stats,
-      );
+      ];
 
       $content = print_r($content, TRUE);
       fwrite($fileResource, $content);
@@ -222,7 +224,6 @@ class CRM_migrateContactsImport {
 
     //cleanup log records
     self::_cleanLogRecords();
-
   }//importData
 
   /*
@@ -238,7 +239,7 @@ class CRM_migrateContactsImport {
       return;
     }
 
-    $attachmentIDs = array();
+    $attachmentIDs = [];
     $filePath = $exportData['dest']['files'].'/'.$exportData['dest']['domain'].'/civicrm/custom/';
 
     foreach ( $exportData['attachments'] as $attachExtID => $details ) {
@@ -263,27 +264,27 @@ class CRM_migrateContactsImport {
 
     //make sure the $extInt IDs array is reset during importContacts
     //array( 'external_identifier' => 'target contact id' )
-    $extInt = array();
-    $relatedTypes = array(
+    $extInt = [];
+    $relatedTypes = [
       'email', 'phone', 'website', 'im', 'address', 'note',
       'Additional_Constituent_Information', 'Attachments', 'Contact_Details', 'Organization_Constituent_Information'
-    );
+    ];
     //records which use entity_id rather than contact_id as foreign key
-    $fkEId = array(
+    $fkEId = [
       'note', 'Additional_Constituent_Information', 'Attachments',
       'Contact_Details', 'Organization_Constituent_Information'
-    );
+    ];
 
     //initialize stats arrays
-    $mergedContacts = $stats = array(
+    $mergedContacts = $stats = [
       'Individual' => 0,
       'Organization' => 0,
       'Household' => 0,
       'All' => 0,
-    );
+    ];
 
     //increase external_identifier field length to varchar(64)
-    if ( !$optDry ) {
+    if (!$optDry) {
       $sql = "
         ALTER TABLE civicrm_contact
         MODIFY external_identifier varchar(64);
@@ -291,7 +292,7 @@ class CRM_migrateContactsImport {
       CRM_Core_DAO::executeQuery($sql);
     }
 
-    foreach ( $exportData['import'] as $extID => $details ) {
+    foreach ($exportData['import'] as $extID => $details) {
       //bbscript_log(LL::TRACE, 'importContacts importContacts $details', $details);
       $stats[$details['contact']['contact_type']] ++;
 
@@ -300,7 +301,7 @@ class CRM_migrateContactsImport {
 
       //look for existing contact record in target db and add to params array
       $matchedContact = self::_contactLookup($details, $exportData['dest']);
-      if ( $matchedContact ) {
+      if ($matchedContact) {
         //count merged
         $mergedContacts[$details['contact']['contact_type']] ++;
         $mergedContacts['All'] ++;
@@ -351,7 +352,7 @@ class CRM_migrateContactsImport {
       $extInt[$extID] = $contactID;
 
       //cycle through each set of related records
-      foreach ( $relatedTypes as $type ) {
+      foreach ($relatedTypes as $type) {
         //bbscript_log(LL::TRACE, "importContacts related type: {$type}");
         $fk = ( in_array($type, $fkEId) ) ? 'entity_id' : 'contact_id';
         if ( isset($details[$type]) ) {
@@ -401,15 +402,15 @@ class CRM_migrateContactsImport {
                     //we have a location conflict -- either skip importing this address, or assign new loc type
                     $action = self::_compareAddresses($record['location_type_id'], $existingAddresses, $record);
 
-                    if ( $action == 'skip' ) {
+                    if ($action == 'skip') {
                       $stats['address_location_conflicts']['skip'][] = "CID{$contactID}_LOC{$record['location_type_id']}";
-                      continue;
+                      break;
                     }
-                    elseif ( $action == 'newloc' ) {
+                    elseif ($action == 'newloc') {
                       $stats['address_location_conflicts']['newloc'][] = "CID{$contactID}_LOC{$record['location_type_id']}";
                       //attempt to assign to other, other2, main, main2
-                      foreach ( array(4,11,3,12) as $newLocType ) {
-                        if ( !array_key_exists($newLocType, $existingAddresses) ) {
+                      foreach ([4,11,3,12] as $newLocType) {
+                        if (!array_key_exists($newLocType, $existingAddresses)) {
                           $record['location_type_id'] = $newLocType;
                           break;
                         }
