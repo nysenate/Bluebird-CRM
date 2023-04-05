@@ -87,46 +87,46 @@ function nyss_dedupe_civicrm_dupeQuery ($o, $table, &$tableQueries){
   if($o->noRules || $table != 'table')
     return;
 
-  $ruleMap = array(
-    'Individual Strict (first + last + (street + zip | email))' => array(
+  $ruleMap = [
+    'Individual Strict (first + last + (street + zip | email))' => [
       'internal' => 'nyss_dedupe_individual_default_strict_internal',
       'record' => 'nyss_dedupe_individual_default_strict_record',
-    ),
-    'Individual Fuzzy (nick + last + (street | mail | email))' => array(
+    ],
+    'Individual Fuzzy (nick + last + (street | mail | email))' => [
       'internal' => 'nyss_dedupe_individual_default_fuzzy_internal',
       'record' => 'nyss_dedupe_individual_default_fuzzy_record'
-    ),
-    'Organization 1 (name + street + city + email)' => array(
+    ],
+    'Organization 1 (name + street + city + email)' => [
       'internal' => 'nyss_dedupe_org1_internal',
       'record' => 'nyss_dedupe_org1_record'
-    ),
-    'Organization 2 (name + street + city + zip)' => array(
+    ],
+    'Organization 2 (name + street + city + zip)' => [
       'internal' => 'nyss_dedupe_org2_internal',
       'record' => ''
-    ),
-    'Organization 3 (name + street + city)' => array(
+    ],
+    'Organization 3 (name + street + city)' => [
       'internal' => 'nyss_dedupe_org3_internal',
       'record' => ''
-    ),
-    'Household 1 (name + street + city + email)' => array(
+    ],
+    'Household 1 (name + street + city + email)' => [
       'internal' => 'nyss_dedupe_house1_internal',
       'record' => 'nyss_dedupe_house1_record'
-    ),
-    'Household 2 (name + street + city + zip)' => array(
+    ],
+    'Household 2 (name + street + city + zip)' => [
       'internal' => 'nyss_dedupe_house2_internal',
       'record' => ''
-    ),
-    'Household 3 (name + street + city)' => array(
+    ],
+    'Household 3 (name + street + city)' => [
       'internal' => 'nyss_dedupe_house3_internal',
       'record' => ''
-    )
-  );
+    ]
+  ];
 
-  $ruleName = $o->title;
+  $ruleName = $o->name;
   $ruleType = empty($o->params) ? 'internal' : 'record';
 
   // If its a rule that we've overridden
-  if(array_key_exists($ruleName, $ruleMap) && $rule=$ruleMap[$ruleName][$ruleType]) {
+  if (array_key_exists($ruleName, $ruleMap) && $rule=$ruleMap[$ruleName][$ruleType]) {
     //Set some default override values, individual rule functions can override these
     $o->threshold = 5;
     // Build our customized query, allow override of $o values.
