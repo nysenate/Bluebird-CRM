@@ -38,29 +38,33 @@ class CRM_migrateContacts {
     require_once realpath(dirname(__FILE__)).'/../script_utils.php';
 
     // Parse the options
-    $shortopts = "d:fn:i:t:e:a:y:x";
-    $longopts = ["dest=", "file", "dryrun", "import=", "trash=", "employers", "array", "types=", "exclude="];
+    $shortopts = "d:fn:i:t:e:a:y:x:l";
+    $longopts = ["dest=", "file", "dryrun", "import=", "trash=", "employers", "array", "types=", "exclude=", "log="];
     $optlist = civicrm_script_init($shortopts, $longopts, TRUE);
 
     if ($optlist === null) {
         $stdusage = civicrm_script_usage();
-        $usage = '[--dest ID|DISTNAME] [--file] [--dryrun] [--import FILENAME] [--trash OPTION] [--employers] [--array] [--types IHO] [--exclude NACT]';
+        $usage = '[--dest ID|DISTNAME] [--file] [--dryrun] [--import FILENAME] [--trash OPTION] [--employers] [--array] [--types IHO] [--exclude NACT] [--log "TRACE|DEBUG|INFO|WARN|ERROR|FATAL"]';
         error_log("Usage: ".basename(__FILE__)."  $stdusage  $usage\n");
         exit(1);
     }
 
+    if ($optlist['dryrun']) {
+      bbscript_log(LL::NOTICE, 'NOTE: dryrun is enabled. Import and trashing scripts will be skipped.');
+    }
+
+    if (!empty($optlist['log'])) {
+      set_bbscript_log_level($optlist['log']);
+    }
+
     //get instance settings for source and destination
     $bbcfg_source = get_bluebird_instance_config($optlist['site']);
-    //bbscript_log(LL::TRACE, "bbcfg_source", $bbcfg_source);
+    bbscript_log(LL::TRACE, '$bbcfg_source', $bbcfg_source);
 
     require_once 'CRM/Utils/System.php';
 
     $civicrm_root = $bbcfg_source['drupal.rootdir'].'/sites/all/modules/civicrm';
     $_SERVER['REMOTE_ADDR'] = '127.0.0.1';
-    /*if (!CRM_Utils_System::loadBootstrap(array(), FALSE, FALSE, $civicrm_root)) {
-      CRM_Core_Error::debug_log_message('Failed to bootstrap CMS from migrateContacts.');
-      return FALSE;
-    }*/
 
     $source = [
       'name' => $optlist['site'],
@@ -100,8 +104,8 @@ class CRM_migrateContacts {
         'domain' => $optlist['dest'].'.'.$bbcfg_dest['base.domain'],
       ];
     }
-    bbscript_log(LL::TRACE, "$source", $source);
-    bbscript_log(LL::TRACE, "$dest", $dest);
+    bbscript_log(LL::TRACE, '$source', $source);
+    bbscript_log(LL::TRACE, '$dest', $dest);
 
     //if either dest or source unset, exit
     if (empty($dest['db']) || empty($source['db'])) {
@@ -162,10 +166,10 @@ class CRM_migrateContacts {
     $optFile = $optlist['file'];
     $optDry = $optlist['dryrun'];
     $dryParam = ($optDry) ? "--dryrun" : '';
-    $scriptPath = $bbcfg_source['app.rootdir'].'/civicrm/scripts';
+    $scriptPath = $bbcfg_source['app.rootdir'].'/civicrm/scripts/redistricting';
 
     //save options to the export array
-    self::prepareData(['options' => $optlist], $optDry, 'options passed to the script');
+    self::prepareData(['optlist' => $optlist], $optDry, 'options passed to the script');
 
     //set import folder based on environment
     $fileDir = '/data/redistricting/bluebird_'.$bbcfg_source['install_class'].'/migrate';
@@ -298,14 +302,14 @@ class CRM_migrateContacts {
     self::writeData($exportData, $fileResource, $optDry, $optlist['array']);
 
     //import data if not --file
-    if (!$optFile) {
+    if (!$optDry && !$optFile) {
       $importScript = "php {$scriptPath}/migrateContactsImport.php -S {$dest['name']} --filename={$fileName} {$dryParam}";
       //bbscript_log(LL::TRACE, "importScript: $importScript");
       system($importScript);
     }
 
     //trash contacts in source db after migration IF specifically requested
-    if (isset($optlist['trash']) && $optlist['trash'] != 'none') {
+    if (!$optDry && isset($optlist['trash']) && $optlist['trash'] != 'none') {
       $emplParam = ($optlist['employers']) ? "--employers" : '';
       $typesParam = ($optlist['types']) ? "--types={$optlist['types']}" : '';
 
@@ -776,6 +780,8 @@ AND cce.external_identifier IS NOT NULL, cce.external_identifier, '' )) external
     //bbscript_log(LL::TRACE, 'exportDistrictInfo $sql', $sql);
 
     $di = CRM_Core_DAO::executeQuery($sql);
+    $recordCount = 0;
+
     while ($di->fetch()) {
       //bbscript_log(LL::TRACE, 'exportDistrictInfo di', $di);
 
@@ -787,7 +793,8 @@ AND cce.external_identifier IS NOT NULL, cce.external_identifier, '' )) external
 
       $data = [];
       foreach ($flds as $fid => $f) {
-        $data[$f['column_name']] = addslashes($di->$f['column_name']);
+        $colName = $f['column_name'];
+        $data[$colName] = addslashes($di->$colName);
       }
       $addressData['districtinfo'][$addressDistInfo[$di->entity_id]] = $data;
       $recordCount++;
@@ -988,11 +995,19 @@ AND cce.external_identifier IS NOT NULL, cce.external_identifier, '' )) external
 
     bbscript_log(LL::INFO, "exporting tags...");
 
-    $keywords = $issuecodes = $positions = $tempother = [];
+    $keywords = $issuecodes = $positions = $webBills = $webCommittees = $webIssues = $webPetitions = $tempother = [];
 
     $kParent = 296;
     $iParent = 291;
     $pParent = 292;
+    $webBillsParent = CRM_Core_DAO::singleValueQuery(
+      "SELECT id FROM civicrm_tag WHERE name = 'Website Bills' LIMIT 1");
+    $webCommitteesParent = CRM_Core_DAO::singleValueQuery(
+      "SELECT id FROM civicrm_tag WHERE name = 'Website Committees' LIMIT 1");
+    $webIssuesParent = CRM_Core_DAO::singleValueQuery(
+      "SELECT id FROM civicrm_tag WHERE name = 'Website Issues' LIMIT 1");
+    $webPetitionsParent = CRM_Core_DAO::singleValueQuery(
+      "SELECT id FROM civicrm_tag WHERE name = 'Website Petitions' LIMIT 1");
 
     $kPrefix = 'RD '.substr($source['name'], 0, 5).': ';
     $kPrefixDest = 'RD '.substr($dest['name'], 0, 5).': ';
@@ -1012,6 +1027,7 @@ AND cce.external_identifier IS NOT NULL, cce.external_identifier, '' )) external
     $allTags = CRM_Core_DAO::executeQuery($sql);
 
     while ($allTags->fetch()) {
+      bbscript_log(LL::TRACE, '$allTags', $allTags);
       switch ($allTags->parent_id) {
         case $kParent:
           $keywords[$allTags->id] = [
@@ -1031,6 +1047,30 @@ AND cce.external_identifier IS NOT NULL, cce.external_identifier, '' )) external
             'desc' => $allTags->description,
           ];
           break;
+        case $webBillsParent:
+          $webBills[$allTags->id] = [
+            'name' => $allTags->name,
+            'desc' => $allTags->description,
+          ];
+          break;
+        case $webCommitteesParent:
+          $webCommittees[$allTags->id] = [
+            'name' => $allTags->name,
+            'desc' => $allTags->description,
+          ];
+          break;
+        case $webIssuesParent:
+          $webIssues[$allTags->id] = [
+            'name' => $allTags->name,
+            'desc' => $allTags->description,
+          ];
+          break;
+        case $webPetitionsParent:
+          $webPetitions[$allTags->id] = [
+            'name' => $allTags->name,
+            'desc' => $allTags->description,
+          ];
+          break;
         default:
           $tempother[$allTags->id] = [
             'parent_id' => $allTags->parent_id,
@@ -1041,6 +1081,11 @@ AND cce.external_identifier IS NOT NULL, cce.external_identifier, '' )) external
     }
     $allTags->free();
 
+    bbscript_log(LL::TRACE, '$keywords', $keywords);
+    bbscript_log(LL::TRACE, '$positions', $positions);
+    bbscript_log(LL::TRACE, '$issuecodes', $issuecodes);
+    bbscript_log(LL::TRACE, '$tempother', $tempother);
+
     //get issue code tree
     self::_getIssueCodeTree($issuecodes, $tempother);
 
@@ -1048,6 +1093,10 @@ AND cce.external_identifier IS NOT NULL, cce.external_identifier, '' )) external
       'keywords' => $keywords,
       'issuecodes' => $issuecodes,
       'positions' => $positions,
+      'webBills' => $webBills,
+      'webCommittees' => $webCommittees,
+      'webIssues' => $webIssues,
+      'webPetitions' => $webPetitions,
     ];
 
     //now retrieve contacts/tag mapping
@@ -1185,8 +1234,8 @@ AND cce.external_identifier IS NOT NULL, cce.external_identifier, '' )) external
     //keep track of all issue codes as we go
     $allIssueCodes = array_keys($issuecodes);
 
-    //level 2: when called recursively, we have to account for parent being the main issue code root
     foreach ($tempother as $tID => $tag) {
+      //level 2: when called recursively, we have to account for parent being the main issue code root
       if ($tag['parent_id'] == 291) {
         $issuecodes[$tID]['name'] = $tag['name'];
         $issuecodes[$tID]['desc'] = $tag['desc'];
@@ -1194,11 +1243,8 @@ AND cce.external_identifier IS NOT NULL, cce.external_identifier, '' )) external
 
         $allIssueCodes[] = $tID;
       }
-    }
-
-    //level 3
-    foreach ($tempother as $tID => $tag) {
-      if (array_key_exists($tag['parent_id'], $issuecodes)) {
+      //level 3
+      elseif (array_key_exists($tag['parent_id'], $issuecodes)) {
         $issuecodes[$tag['parent_id']]['children'][$tID]['name'] = $tag['name'];
         $issuecodes[$tag['parent_id']]['children'][$tID]['desc'] = $tag['desc'];
         unset($tempother[$tID]);
@@ -1207,11 +1253,8 @@ AND cce.external_identifier IS NOT NULL, cce.external_identifier, '' )) external
         $level3[$tID] = $tag['parent_id'];
         $allIssueCodes[] = $tID;
       }
-    }
-
-    //level 4
-    foreach ($tempother as $tID => $tag) {
-      if (array_key_exists($tag['parent_id'], $level3)) {
+      //level 4
+      elseif (array_key_exists($tag['parent_id'], $level3)) {
         //parent exists in level 3
         $level3id = $tag['parent_id'];
         $level2id = $level3[$level3id];
@@ -1223,11 +1266,8 @@ AND cce.external_identifier IS NOT NULL, cce.external_identifier, '' )) external
         $level4[$tID] = $tag['parent_id'];
         $allIssueCodes[] = $tID;
       }
-    }
-
-    //level 5
-    foreach ($tempother as $tID => $tag) {
-      if (array_key_exists($tag['parent_id'], $level4)) {
+      //level 5
+      elseif (array_key_exists($tag['parent_id'], $level4)) {
         //parent exists in level 4
         $level4id = $tag['parent_id'];
         $level3id = $level4[$level4id];
@@ -1240,6 +1280,10 @@ AND cce.external_identifier IS NOT NULL, cce.external_identifier, '' )) external
       }
     }
 
+    bbscript_log(LL::TRACE, '$issuecodes', $issuecodes);
+    bbscript_log(LL::TRACE, '$allIssueCodes', $allIssueCodes);
+    bbscript_log(LL::TRACE, 'REMAINING $tempother', $tempother);
+
     //if we have tags left over, it's because the tag assignment skipped a level and we need to reconstruct
     //this isn't easily done. what we will do is find the immediate parent and store it, then search for those parents,
     //see if they exist in our current list, and construct if needed
@@ -1249,7 +1293,7 @@ AND cce.external_identifier IS NOT NULL, cce.external_identifier, '' )) external
       //bbscript_log(LL::TRACE, '_getIssueCodeTree $leftOver', $leftOver);
 
       $sql = "
-        SELECT p.*
+        SELECT p.*, t.id child_id
         FROM civicrm_tag p
         JOIN civicrm_tag t
           ON p.id = t.parent_id
@@ -1262,11 +1306,17 @@ AND cce.external_identifier IS NOT NULL, cce.external_identifier, '' )) external
       //an orphaned child in the tree (a parent_id is set but that parent does not exist)
       if ($leftTags->N) {
         while ($leftTags->fetch()) {
-          $tempother[$leftTags->id] = [
-            'parent_id' => $leftTags->parent_id,
-            'name' => $leftTags->name,
-            'desc' => $leftTags->description,
-          ];
+          //if parent_id is empty, this is a top level tag[set] other than issue code and should be ignored
+          if (empty($leftTags->parent_id)) {
+            unset($tempother[$leftTags->child_id]);
+          }
+          else {
+            $tempother[$leftTags->id] = [
+              'parent_id' => $leftTags->parent_id,
+              'name' => $leftTags->name,
+              'desc' => $leftTags->description,
+            ];
+          }
         }
         $leftTags->free();
 
@@ -1278,8 +1328,8 @@ AND cce.external_identifier IS NOT NULL, cce.external_identifier, '' )) external
       }
     }
 
-    //bbscript_log(LL::TRACE, '_getIssueCodeTree $issuecodes', $issuecodes);
-    //bbscript_log(LL::TRACE, '_getIssueCodeTree $tempother', $tempother);
+    bbscript_log(LL::TRACE, '_getIssueCodeTree $issuecodes', $issuecodes);
+    bbscript_log(LL::TRACE, '_getIssueCodeTree $tempother', $tempother);
   }//_getIssueCodeTree
 
   /*

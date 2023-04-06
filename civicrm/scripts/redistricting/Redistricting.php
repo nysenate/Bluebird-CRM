@@ -849,7 +849,7 @@ function insert_redist_note($db, $note_type, $match_type, &$row, $abbrevs, &$upd
   $note = mysqli_real_escape_string($db, $note);
   $subject = mysqli_real_escape_string($db, $subject);
   $q = "
-    INSERT INTO civicrm_note (entity_table, entity_id, note, contact_id, modified_date, subject, privacy)
+    INSERT IGNORE INTO civicrm_note (entity_table, entity_id, note, contact_id, modified_date, subject, privacy)
     VALUES ('civicrm_contact', $contact_id, '$note', 1, '".date("Y-m-d")."', '$subject', 0)
   ";
   bb_mysql_query($q, $db, true);

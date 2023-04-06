@@ -36,9 +36,10 @@ class CRM_Tags_APIWrapper {
   public static function completeTransaction($apiRequest, $callsame) {
     //Civi::log()->debug(__FUNCTION__, ['$apiRequest' => $apiRequest]);
 
-    if (!empty($term = $apiRequest['params']['name']['LIKE'])
-        && strpos($term, '%') !== 0) {
-      $apiRequest['params']['name']['LIKE'] = '%'.$term;
+    if (!empty($apiRequest['params']['name']['LIKE'])
+      && !str_starts_with($apiRequest['params']['name']['LIKE'], '%')
+    ) {
+      $apiRequest['params']['name']['LIKE'] = '%'.$apiRequest['params']['name']['LIKE'];
     }
 
     return $callsame($apiRequest);
