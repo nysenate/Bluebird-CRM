@@ -21,13 +21,16 @@ class GetSearchTasks extends \Civi\Api4\Generic\AbstractAction {
 
   /**
    * @param \Civi\Api4\Generic\Result $result
-   * @throws \API_Exception
+   * @throws \CRM_Core_Exception
    */
   public function _run(\Civi\Api4\Generic\Result $result) {
     // Adding checkPermissions filters out actions the user is not allowed to perform
     $entity = Entity::get($this->checkPermissions)->addWhere('name', '=', $this->entity)
       ->addSelect('name', 'title_plural')
-      ->setChain(['actions' => ['$name', 'getActions', ['where' => [['name', 'IN', ['update', 'delete']]]], 'name']])
+      ->setChain([
+        'actions' => ['$name', 'getActions', ['where' => [['name', 'IN', ['update', 'delete']]]], 'name'],
+        'fields' => ['$name', 'getFields', ['where' => [['deprecated', '=', FALSE], ['type', '=', 'Field']]], 'name'],
+      ])
       ->execute()->first();
 
     if (!$entity) {
@@ -65,6 +68,33 @@ class GetSearchTasks extends \Civi\Api4\Generic\AbstractAction {
         'uiDialog' => ['templateUrl' => '~/crmSearchTasks/crmSearchTaskUpdate.html'],
       ];
 
+      // Enable/disable are basically shortcut update actions
+      if (isset($entity['fields']['is_active'])) {
+        $tasks[$entity['name']]['enable'] = [
+          'title' => E::ts('Enable %1', [1 => $entity['title_plural']]),
+          'icon' => 'fa-toggle-on',
+          'apiBatch' => [
+            'action' => 'update',
+            'params' => ['values' => ['is_active' => TRUE]],
+            'runMsg' => E::ts('Enabling %1 %2...'),
+            'successMsg' => E::ts('Successfully enabled %1 %2.'),
+            'errorMsg' => E::ts('An error occurred while attempting to enable %1 %2.'),
+          ],
+        ];
+        $tasks[$entity['name']]['disable'] = [
+          'title' => E::ts('Disable %1', [1 => $entity['title_plural']]),
+          'icon' => 'fa-toggle-off',
+          'apiBatch' => [
+            'action' => 'update',
+            'params' => ['values' => ['is_active' => FALSE]],
+            'confirmMsg' => E::ts('Are you sure you want to disable %1 %2?'),
+            'runMsg' => E::ts('Disabling %1 %2...'),
+            'successMsg' => E::ts('Successfully disabled %1 %2.'),
+            'errorMsg' => E::ts('An error occurred while attempting to disable %1 %2.'),
+          ],
+        ];
+      }
+
       $taggable = \CRM_Core_OptionGroup::values('tag_used_for', FALSE, FALSE, FALSE, NULL, 'name');
       if (in_array($entity['name'], $taggable, TRUE)) {
         $tasks[$entity['name']]['tag'] = [
@@ -79,10 +109,16 @@ class GetSearchTasks extends \Civi\Api4\Generic\AbstractAction {
 
     if (array_key_exists('delete', $entity['actions'])) {
       $tasks[$entity['name']]['delete'] = [
-        'module' => 'crmSearchTasks',
         'title' => E::ts('Delete %1', [1 => $entity['title_plural']]),
         'icon' => 'fa-trash',
-        'uiDialog' => ['templateUrl' => '~/crmSearchTasks/crmSearchTaskDelete.html'],
+        'apiBatch' => [
+          'action' => 'delete',
+          'params' => NULL,
+          'confirmMsg' => E::ts('Are you sure you want to delete %1 %2?'),
+          'runMsg' => E::ts('Deleting %1 %2...'),
+          'successMsg' => E::ts('Successfully deleted %1 %2.'),
+          'errorMsg' => E::ts('An error occurred while attempting to delete %1 %2.'),
+        ],
       ];
     }
 
@@ -140,7 +176,7 @@ class GetSearchTasks extends \Civi\Api4\Generic\AbstractAction {
       // FIXME: tasks() function always checks permissions, should respect `$this->checkPermissions`
       foreach (\CRM_Contribute_Task::tasks() as $id => $task) {
         if (!empty($task['url'])) {
-          $key = \CRM_Core_Key::get(\CRM_Utils_Array::first((array) $task['class']), TRUE);
+          $key = \CRM_Core_Key::get('CRM_Contribute_Controller_Task', TRUE);
           $tasks[$entity['name']]['contribution.' . $id] = [
             'title' => $task['title'],
             'icon' => $task['icon'] ?? 'fa-gear',
@@ -168,17 +204,49 @@ class GetSearchTasks extends \Civi\Api4\Generic\AbstractAction {
       $null, $null, $null, 'civicrm_searchKitTasks'
     );
 
-    usort($tasks[$entity['name']], function($a, $b) {
-      return strnatcasecmp($a['title'], $b['title']);
-    });
-
     foreach ($tasks[$entity['name']] as $name => &$task) {
       $task['name'] = $name;
       // Add default for number of rows action requires
       $task += ['number' => '> 0'];
     }
 
-    $result->exchangeArray(array_values($tasks[$entity['name']]));
+    usort($tasks[$entity['name']], function($a, $b) {
+      return strnatcasecmp($a['title'], $b['title']);
+    });
+
+    $result->exchangeArray($tasks[$entity['name']]);
+  }
+
+  public static function fields() {
+    return [
+      [
+        'name' => 'name',
+      ],
+      [
+        'name' => 'module',
+      ],
+      [
+        'name' => 'title',
+      ],
+      [
+        'name' => 'icon',
+      ],
+      [
+        'number' => 'icon',
+      ],
+      [
+        'name' => 'apiBatch',
+        'data_type' => 'Array',
+      ],
+      [
+        'name' => 'uiDialog',
+        'data_type' => 'Array',
+      ],
+      [
+        'name' => 'crmPopup',
+        'data_type' => 'Array',
+      ],
+    ];
   }
 
 }

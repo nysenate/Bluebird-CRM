@@ -135,7 +135,7 @@ class HTML_QuickForm_checkbox extends HTML_QuickForm_input
     {
         $attributes = $this->getAttributes();
 
-        if (0 == strlen($this->_text)) {
+        if (0 == strlen($this->_text ?? '')) {
             $label = '';
         } elseif ($this->_flagFrozen || isset( $attributes['skiplabel']) ) {
             $label = $this->_text;

@@ -2,7 +2,9 @@
 
 namespace Civi\Test\ExampleData\Contact;
 
-class Alex extends \Civi\Test\EntityExample {
+use Civi\Test\EntityExample;
+
+class Alex extends EntityExample {
 
   public function getExamples(): iterable {
     yield [
@@ -12,11 +14,17 @@ class Alex extends \Civi\Test\EntityExample {
 
   public function build(array &$example): void {
     $example['data'] = [
-      'contact_id' => '100',
+      'id' => 0,
+      'first_name' => 'Alex',
+      'middle_name' => '',
+      'last_name' => 'D\u00edaz',
       'contact_type' => 'Individual',
       'contact_sub_type' => NULL,
       'sort_name' => 'D\u00edaz, Alex',
       'display_name' => 'Dr. Alex D\u00edaz',
+      'prefix_id:label' => 'Dr.',
+      'gender_id:label' => 'Female',
+      'email_greeting_display' => 'Dear Alex',
       'do_not_email' => '1',
       'do_not_phone' => '1',
       'do_not_mail' => '0',
@@ -30,16 +38,9 @@ class Alex extends \Civi\Test\EntityExample {
       'image_URL' => NULL,
       'preferred_communication_method' => NULL,
       'preferred_language' => NULL,
-      'preferred_mail_format' => 'Both',
-      'first_name' => 'Alex',
-      'middle_name' => '',
-      'last_name' => 'D\u00edaz',
-      'prefix_id' => '4',
-      'suffix_id' => NULL,
       'formal_title' => NULL,
       'communication_style_id' => NULL,
       'job_title' => NULL,
-      'gender_id' => '1',
       'birth_date' => '1994-04-21',
       'is_deceased' => '0',
       'deceased_date' => NULL,
@@ -56,8 +57,6 @@ class Alex extends \Civi\Test\EntityExample {
       'city' => NULL,
       'postal_code_suffix' => NULL,
       'postal_code' => NULL,
-      'geo_code_1' => NULL,
-      'geo_code_2' => NULL,
       'state_province_id' => NULL,
       'country_id' => NULL,
       'phone_id' => '7',
@@ -65,17 +64,11 @@ class Alex extends \Civi\Test\EntityExample {
       'phone' => '293-6934',
       'email_id' => '7',
       'email' => 'daz.alex67@testing.net',
-      'on_hold' => '0',
       'im_id' => NULL,
       'provider_id' => NULL,
       'im' => NULL,
       'worldregion_id' => NULL,
       'world_region' => NULL,
-      'languages' => NULL,
-      'individual_prefix' => 'Dr.',
-      'individual_suffix' => NULL,
-      'communication_style' => NULL,
-      'gender' => 'Female',
       'state_province_name' => NULL,
       'state_province' => NULL,
       'country' => NULL,

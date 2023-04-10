@@ -15,19 +15,17 @@
     <url desc="Licensing">http://www.gnu.org/licenses/agpl-3.0.html</url>
   </urls>
   <releaseDate>2021-06-12</releaseDate>
-  <version>5.52.2</version>
-  <tags>
-    <tag>mgmt:hidden</tag>
-  </tags>
+  <version>5.57.1</version>
   <develStage>alpha</develStage>
   <compatibility>
-    <ver>5.52</ver>
+    <ver>5.57</ver>
   </compatibility>
   <requires>
     <ext>org.civicrm.afform</ext>
   </requires>
   <comments/>
   <classloader>
+    <psr0 prefix="CRM_" path="."/>
     <psr4 prefix="Civi\" path="Civi"/>
   </classloader>
   <mixins>
@@ -36,5 +34,6 @@
   </mixins>
   <civix>
     <namespace>CRM/MessageAdmin</namespace>
+    <format>22.10.0</format>
   </civix>
 </extension>

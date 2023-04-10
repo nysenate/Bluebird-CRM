@@ -15,6 +15,7 @@
  * @copyright CiviCRM LLC https://civicrm.org/licensing
  */
 
+use Civi\Api4\UserJob;
 use Civi\Core\ClassScanner;
 use Civi\UserJob\UserJobInterface;
 
@@ -38,7 +39,7 @@ class CRM_Core_BAO_UserJob extends CRM_Core_DAO_UserJob implements \Civi\Core\Ho
     /** @var \CRM_Queue_Queue $queue */
     $queue = $e->queue;
     $userJobId = static::findUserJobId($queue->getName());
-    if ($userJobId && $queue->numberOfItems() < 1) {
+    if ($userJobId && $queue->getStatistic('total') < 1) {
       $queue->setStatus('completed');
     }
   }
@@ -48,14 +49,14 @@ class CRM_Core_BAO_UserJob extends CRM_Core_DAO_UserJob implements \Civi\Core\Ho
    *
    * @param \CRM_Queue_Queue $queue
    * @param string $status
-   * @throws \API_Exception
-   * @throws \Civi\API\Exception\UnauthorizedException
+   * @throws \CRM_Core_Exception
+   *
    * @see \CRM_Utils_Hook::queueStatus()
    */
-  public static function hook_civicrm_queueStatus(CRM_Queue_Queue $queue, string $status) {
+  public static function hook_civicrm_queueStatus(CRM_Queue_Queue $queue, string $status): void {
     $userJobId = static::findUserJobId($queue->getName());
     if ($userJobId && $status === 'completed') {
-      \Civi\Api4\UserJob::update()
+      UserJob::update(FALSE)
         ->addWhere('id', '=', $userJobId)
         ->setValues(['status_id' => 1])
         ->execute();
@@ -135,10 +136,12 @@ class CRM_Core_BAO_UserJob extends CRM_Core_DAO_UserJob implements \Civi\Core\Ho
   /**
    * Get the types Import Jobs.
    *
-   * This is largely a placeholder at this stage. It will likely wind
-   * up as an option value so extensions can add different types.
-   *
-   * However, for now it just holds the one type being worked on.
+   * Each type is keyed by it's id and has
+   *   -id
+   *   -name
+   *   -label
+   *   -class
+   *   -entity
    *
    * @return array
    */
@@ -147,6 +150,7 @@ class CRM_Core_BAO_UserJob extends CRM_Core_DAO_UserJob implements \Civi\Core\Ho
     if ($types === NULL) {
       $types = [];
       $classes = ClassScanner::get(['interface' => UserJobInterface::class]);
+      /** @var \Civi\UserJob\UserJobInterface $class */
       foreach ($classes as $class) {
         $declaredTypes = $class::getUserJobInfo();
         foreach ($declaredTypes as $index => $declaredType) {

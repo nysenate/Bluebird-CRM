@@ -184,7 +184,7 @@ class CRM_Core_BAO_CustomQuery {
       }
 
       foreach ($values as $tuple) {
-        list($name, $op, $value, $grouping, $wildcard) = $tuple;
+        [$name, $op, $value, $grouping, $wildcard] = $tuple;
 
         $field = $this->_fields[$id];
 
@@ -200,10 +200,10 @@ class CRM_Core_BAO_CustomQuery {
         }
         elseif (count($value) && in_array(key($value), CRM_Core_DAO::acceptedSQLOperators(), TRUE)) {
           $op = key($value);
-          $qillValue = strpos($op, 'NULL') !== FALSE ? NULL : CRM_Core_BAO_CustomField::displayValue($value[$op], $id);
+          $qillValue = strstr($op, 'NULL') ? NULL : CRM_Core_BAO_CustomField::displayValue($value[$op], $id);
         }
         else {
-          $op = strpos($op, 'IN') !== FALSE ? $op : 'IN';
+          $op = strstr($op, 'IN') ? $op : 'IN';
           $qillValue = CRM_Core_BAO_CustomField::displayValue($value, $id);
         }
 
@@ -229,7 +229,8 @@ class CRM_Core_BAO_CustomQuery {
                 elseif ($value) {
                   $value = CRM_Utils_Type::escape($value, 'Integer');
                 }
-                $value = str_replace(['[', ']', ',', '|'], ['\[', '\]', '[:comma:]', '[:separator:]'], $value);
+                $value = str_replace(['[', ']', ','], ['\[', '\]', '[:comma:]'], $value);
+                $value = str_replace('|', '[:separator:]', $value);
               }
               elseif ($isSerialized) {
                 if (in_array(key($value), CRM_Core_DAO::acceptedSQLOperators(), TRUE)) {
@@ -239,12 +240,13 @@ class CRM_Core_BAO_CustomQuery {
                 // CRM-19006: escape characters like comma, | before building regex pattern
                 $value = (array) $value;
                 foreach ($value as $key => $val) {
-                  $val = str_replace(['[', ']', ',', '|'], ['\[', '\]', '[:comma:]', '[:separator:]'], $val);
+                  $value[$key] = str_replace(['[', ']', ','], ['\[', '\]', '[:comma:]'], $val);
+                  $value[$key] = str_replace('|', '[:separator:]', $value[$key]);
                   if ($field['data_type'] == 'String') {
-                    $val = CRM_Utils_Type::escape($val, 'String');
+                    $value[$key] = CRM_Utils_Type::escape($value[$key], 'String');
                   }
                   elseif ($value) {
-                    $val = CRM_Utils_Type::escape($val, 'Integer');
+                    $value[$key] = CRM_Utils_Type::escape($value[$key], 'Integer');
                   }
                   $value[$key] = $val;
                 }
@@ -261,12 +263,12 @@ class CRM_Core_BAO_CustomQuery {
               }
 
               // CRM-14563,CRM-16575 : Special handling of multi-select custom fields
-              if ($isSerialized && !CRM_Utils_System::isNull($value) && strpos($op, 'NULL') === FALSE && strpos($op, 'LIKE') === FALSE) {
+              if ($isSerialized && !CRM_Utils_System::isNull($value) && !strstr($op, 'NULL') && !strstr($op, 'LIKE')) {
                 $sp = CRM_Core_DAO::VALUE_SEPARATOR;
-                $value = str_replace(',', "$sp|$sp", $value);
+                $value = str_replace(",", "$sp|$sp", $value);
                 $value = str_replace(['[:comma:]', '(', ')'], [',', '[(]', '[)]'], $value);
 
-                $op = (strpos($op, '!') !== FALSE || strpos($op, 'NOT') !== FALSE) ? 'NOT RLIKE' : 'RLIKE';
+                $op = (strstr($op, '!') || strstr($op, 'NOT')) ? 'NOT RLIKE' : 'RLIKE';
                 $value = $sp . $value . $sp;
                 if (!$wildcard) {
                   foreach (explode("|", $value) as $val) {
@@ -373,7 +375,7 @@ class CRM_Core_BAO_CustomQuery {
               && substr($name, -5, 5) !== '_high') {
               // Relative dates are handled in the buildRelativeDateQuery function.
               $this->_where[$grouping][] = CRM_Contact_BAO_Query::buildClause($fieldName, $op, $value, 'Date');
-              list($qillOp, $qillVal) = CRM_Contact_BAO_Query::buildQillForFieldValue(NULL, $field['label'], $value, $op, [], CRM_Utils_Type::T_DATE);
+              [$qillOp, $qillVal] = CRM_Contact_BAO_Query::buildQillForFieldValue(NULL, $field['label'], $value, $op, [], CRM_Utils_Type::T_DATE);
               $this->_qill[$grouping][] = "{$field['label']} $qillOp '$qillVal'";
             }
             break;
@@ -447,7 +449,7 @@ class CRM_Core_BAO_CustomQuery {
       $joinTableAlias = $joinTable;
       // Set location-specific query
       if (isset($this->_locationSpecificCustomFields[$field['id']])) {
-        list($locationType, $locationTypeId) = $this->_locationSpecificCustomFields[$field['id']];
+        [$locationType, $locationTypeId] = $this->_locationSpecificCustomFields[$field['id']];
         $joinTableAlias = "$locationType-address";
         $joinClause = "\nLEFT JOIN $joinTable `$locationType-address` ON (`$locationType-address`.contact_id = contact_a.id AND `$locationType-address`.location_type_id = $locationTypeId)";
       }

@@ -58,6 +58,7 @@ class CRM_Core_DomainTokens extends AbstractTokenSubscriber {
       'now' => ts('Current time/date'),
       'base_url' => ts('Domain absolute base url'),
       'tax_term' => ts('Sales tax term (e.g VAT)'),
+      'empowered_by_civicrm_image_url' => ts('Empowered By CiviCRM Image'),
     ];
   }
 
@@ -87,6 +88,7 @@ class CRM_Core_DomainTokens extends AbstractTokenSubscriber {
    * @throws \CRM_Core_Exception
    * @internal
    *
+   * @todo - make this non-static & protected. Remove last deprecated fn that calls it.
    */
   public static function getDomainTokenValues(?int $domainID = NULL, bool $html = TRUE): array {
     if (!$domainID) {
@@ -127,6 +129,7 @@ class CRM_Core_DomainTokens extends AbstractTokenSubscriber {
       $tokens['phone'] = $phone['phone'] ?? '';
       $tokens['email'] = $email['email'] ?? '';
       $tokens['base_url'] = Civi::paths()->getVariable('cms.root', 'url');
+      $tokens['empowered_by_civicrm_image_url'] = CRM_Core_Config::singleton()->userFrameworkResourceURL . 'i/civi99.png';
       $tokens['tax_term'] = (string) Civi::settings()->get('tax_term');
       Civi::cache('metadata')->set($cacheKey, $tokens);
     }

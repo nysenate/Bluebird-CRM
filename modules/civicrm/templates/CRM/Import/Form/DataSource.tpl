@@ -13,6 +13,11 @@
 
   {* WizardHeader.tpl provides visual display of steps thru the wizard as well as title for current step *}
   {include file="CRM/common/WizardHeader.tpl"}
+  {if $errorMessage}
+    <div class="messages warning no-popup">
+      {$errorMessage}
+    </div>
+  {/if}
   <div class="help">
     {ts 1=$importEntity 2= $importEntities}The %1 Import Wizard allows you to easily upload %2 from other applications into CiviCRM.{/ts}
     {ts}Files to be imported must be in the 'comma-separated-values' format (CSV) and must contain data needed to match an existing contact in your CiviCRM database.{/ts} {help id='upload'}
@@ -49,6 +54,12 @@
         <tr class="crm-import-uploadfile-from-block-onDuplicate">
           <td class="label">{$form.onDuplicate.label}</td>
           <td>{$form.onDuplicate.html} {help id="id-onDuplicate"}</td>
+        </tr>
+      {/if}
+      {if array_key_exists('multipleCustomData', $form)}
+        <tr class="crm-import-uploadfile-form-block-multipleCustomData">
+          <td class="label">{$form.multipleCustomData.label}</td>
+          <td><span>{$form.multipleCustomData.html}</span> </td>
         </tr>
       {/if}
         <tr class="crm-import-datasource-form-block-fieldSeparator">

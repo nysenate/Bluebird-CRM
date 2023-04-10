@@ -31,7 +31,7 @@
         <legend>{ts}Comments{/ts}</legend>
             <table class="display">
                 <thead>
-                    <tr><th>{ts}Comment{/ts}</th><th>{ts}Created By{/ts}</th><th>{ts}Date{/ts}</th></tr>
+                    <tr><th>{ts}Comment{/ts}</th><th>{ts}Created By{/ts}</th><th>{ts}Date{/ts}</th><th>{ts}Modified Date{/ts}</th></tr>
                 </thead>
                 {foreach from=$comments item=comment}
                   <tr class="{cycle values='odd-row,even-row'}"><td>{$comment.note}</td><td>{$comment.createdBy}</td><td>{$comment.note_date}</td><td>{$comment.modified_date}</td></tr>
@@ -199,9 +199,10 @@
           {*NYSS 6016 shuffle column order*}
           <th data-orderable="false"></th>
           <th>{ts}Subject{/ts}</th>
-	      <th>{ts}Note{/ts}</th>
-	      <th>{ts}Date{/ts}</th>
-	      <th>{ts}Created By{/ts}</th>
+          <th>{ts}Note{/ts}</th>
+          <th>{ts}Date{/ts}</th>
+          <th>{ts}Modified Date{/ts}</th>
+          <th>{ts}Created By{/ts}</th>
           <th data-orderable="false">{ts}Attachment(s){/ts}</th>
           <th data-orderable="false"></th>
         </tr>
@@ -221,16 +222,17 @@
                     <span class="crm-i fa-caret-right" id="{$note.id}_hide" style="display:none" aria-hidden="true"></span>
                 {/if}
             </td>
-          {*NYSS 6016 shuffle column order; implement inline editable - future core*}
+            {*NYSS 6016 shuffle column order; implement inline editable - future core*}
             <td class="crm-note-subject crmf-subject crm-editable">{$note.subject}</td>
             <td class="crm-note-note">
                 {$note.note|mb_truncate:80:"...":false|nl2br}
                 {* Include '(more)' link to view entire note if it has been truncated *}
-                {assign var="noteSize" value=$note.note|count_characters:true}
+                {assign var="noteSize" value=$note.note|crmCountCharacters:true}
                 {if $noteSize GT 80}
                   <a class="crm-popup" href="{crmURL p='civicrm/contact/view/note' q="action=view&selectedChild=note&reset=1&cid=`$contactId`&id=`$note.id`"}">{ts}(more){/ts}</a>
                 {/if}
             </td>
+            <td class="crm-note-note_date" data-order="{$note.note_date}">{$note.note_date|crmDate}</td>
             <td class="crm-note-modified_date" data-order="{$note.modified_date}">{$note.modified_date|crmDate}</td>
             <td class="crm-note-createdBy">
                 <a href="{crmURL p='civicrm/contact/view' q="reset=1&cid=`$note.contact_id`"}">{$note.createdBy}</a>

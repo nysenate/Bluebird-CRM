@@ -208,7 +208,7 @@ class IDS_Event implements Countable, IteratorAggregate
      *
      * @return integer
      */
-    public function count() 
+    public function count(): int
     {
         return count($this->getFilters());
     }
@@ -220,7 +220,7 @@ class IDS_Event implements Countable, IteratorAggregate
      *
      * @return ArrayObject the filter collection
      */
-    public function getIterator() 
+    public function getIterator(): Iterator 
     {
         return new ArrayObject($this->getFilters());
     }

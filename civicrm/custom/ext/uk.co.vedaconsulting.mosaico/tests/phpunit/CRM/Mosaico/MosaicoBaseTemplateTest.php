@@ -16,7 +16,7 @@ class CRM_Mosaico_MosaicoBaseTemplateTest extends CRM_Mosaico_TestCase implement
     // See: https://github.com/civicrm/org.civicrm.testapalooza/blob/master/civi-test.md
 
     // Example: Install this extension. Don't care about anything else.
-    \Civi\Test::e2e()->installMe(__DIR__)->apply();
+    \Civi\Test::e2e()->install(['org.civicrm.search_kit'])->installMe(__DIR__)->apply();
 
     // Example: Uninstall all extensions except this one.
     // \Civi\Test::e2e()->uninstall('*')->installMe(__DIR__)->apply();

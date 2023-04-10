@@ -270,13 +270,6 @@ class CRM_Utils_REST {
       $params['version'] = 3;
     }
 
-    if ($params['version'] == 2) {
-      $result['is_error'] = 1;
-      $result['error_message'] = "FATAL: API v2 not accessible from ajax/REST";
-      $result['deprecated'] = "Please upgrade to API v3";
-      return $result;
-    }
-
     if ($_SERVER['REQUEST_METHOD'] == 'GET' &&
       strtolower(substr($args[2], 0, 3)) != 'get' &&
       strtolower($args[2] != 'check')) {
@@ -284,7 +277,7 @@ class CRM_Utils_REST {
       require_once 'api/v3/utils.php';
       return civicrm_api3_create_error("SECURITY: All requests that modify the database must be http POST, not GET.",
         [
-          'IP' => $_SERVER['REMOTE_ADDR'],
+          'IP' => CRM_Utils_System::ipAddress(),
           'level' => 'security',
           'referer' => $_SERVER['HTTP_REFERER'],
           'reason' => 'Destructive HTTP GET',
@@ -293,12 +286,12 @@ class CRM_Utils_REST {
     }
 
     // trap all fatal errors
-    $errorScope = CRM_Core_TemporaryErrorScope::create([
-      'CRM_Utils_REST',
-      'fatal',
-    ]);
-    $result = civicrm_api($args[1], $args[2], $params);
-    unset($errorScope);
+    try {
+      $result = civicrm_api($args[1], $args[2], $params);
+    }
+    catch (Exception $e) {
+      return self::error($e->getMessage());
+    }
 
     if ($result === FALSE) {
       return self::error('Unknown error.');
@@ -346,7 +339,9 @@ class CRM_Utils_REST {
   }
 
   /**
-   * @param $pearError
+   * Unused function from the dark ages before PHP Exceptions
+   * @deprecated
+   * @param PEAR_Error $pearError
    */
   public static function fatal($pearError) {
     CRM_Utils_System::setHttpHeader('Content-Type', 'text/xml');
@@ -435,7 +430,7 @@ class CRM_Utils_REST {
     if (!$config->debug && !self::isWebServiceRequest()) {
       $error = civicrm_api3_create_error("SECURITY ALERT: Ajax requests can only be issued by javascript clients, eg. CRM.api3().",
         [
-          'IP' => $_SERVER['REMOTE_ADDR'],
+          'IP' => CRM_Utils_System::ipAddress(),
           'level' => 'security',
           'referer' => $_SERVER['HTTP_REFERER'],
           'reason' => 'CSRF suspected',
@@ -462,7 +457,6 @@ class CRM_Utils_REST {
     }
 
     $params['check_permissions'] = TRUE;
-    $params['version'] = 3;
     // $requestParams is local-only; this line seems pointless unless there's a side-effect influencing other functions
     $_GET['json'] = $requestParams['json'] = 1;
     if (!$params['sequential']) {
@@ -470,12 +464,12 @@ class CRM_Utils_REST {
     }
 
     // trap all fatal errors
-    $errorScope = CRM_Core_TemporaryErrorScope::create([
-      'CRM_Utils_REST',
-      'fatal',
-    ]);
-    $result = civicrm_api($entity, $action, $params);
-    unset($errorScope);
+    try {
+      $result = civicrm_api3($entity, $action, $params);
+    }
+    catch (Exception $e) {
+      $result = self::error($e->getMessage());
+    }
 
     echo self::output($result);
 
@@ -498,7 +492,7 @@ class CRM_Utils_REST {
       require_once 'api/v3/utils.php';
       $error = civicrm_api3_create_error("SECURITY ALERT: Ajax requests can only be issued by javascript clients, eg. CRM.api3().",
         [
-          'IP' => $_SERVER['REMOTE_ADDR'],
+          'IP' => CRM_Utils_System::ipAddress(),
           'level' => 'security',
           'referer' => $_SERVER['HTTP_REFERER'],
           'reason' => 'CSRF suspected',
@@ -569,7 +563,7 @@ class CRM_Utils_REST {
    */
   public function loadCMSBootstrap() {
     $requestParams = CRM_Utils_Request::exportValues();
-    $q = $requestParams['q'] ?? NULL;
+    $q = $requestParams['q'] ?? '';
     $args = explode('/', $q);
 
     // Proceed with bootstrap for "?entity=X&action=Y"
@@ -590,9 +584,6 @@ class CRM_Utils_REST {
     }
 
     if (!CRM_Utils_System::authenticateKey(FALSE)) {
-      // FIXME: At time of writing, this doesn't actually do anything because
-      // authenticateKey abends, but that's a bad behavior which sends a
-      // malformed response.
       CRM_Utils_System::loadBootStrap([], FALSE, FALSE);
       return self::error('Failed to authenticate key');
     }

@@ -151,11 +151,17 @@ class ApacheSolrFacetapiDate extends FacetapiQueryTypeDate implements FacetapiQu
     // Check older versions first, then newer ones.
     if (isset($response->facet_counts->facet_dates) && isset($response->facet_counts->facet_dates->{$this->facet['field']})) {
       $raw_data = (array) $response->facet_counts->facet_dates->{$this->facet['field']};
-      $raw_data['gap'] = (isset($response->facet_counts->facet_dates->{$this->facet['field']}->gap)) ?? FACETAPI_DATE_MINUTE;
+      $raw_data['gap'] = FACETAPI_DATE_MINUTE;
+      if (isset($response->facet_counts->facet_dates->{$this->facet['field']}->gap)) {
+        $raw_data['gap'] = $response->facet_counts->facet_dates->{$this->facet['field']}->gap;
+      }
     }
     elseif (isset($response->facet_counts->facet_ranges) && isset($response->facet_counts->facet_ranges->{$this->facet['field']}->counts)) {
       $raw_data = (array) $response->facet_counts->facet_ranges->{$this->facet['field']}->counts;
-      $raw_data['gap'] = (isset($response->facet_counts->facet_ranges->{$this->facet['field']}->gap)) ?? FACETAPI_DATE_MINUTE;
+      $raw_data['gap'] = FACETAPI_DATE_MINUTE;
+      if (isset($response->facet_counts->facet_ranges->{$this->facet['field']}->gap)) {
+        $raw_data['gap'] = $response->facet_counts->facet_ranges->{$this->facet['field']}->gap;
+      }
     }
     else {
       $raw_data = array();

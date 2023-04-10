@@ -153,7 +153,7 @@ class Mail
         foreach ($headers as $key => $value) {
             $headers[$key] =
                 preg_replace('=((<CR>|<LF>|0x0A/%0A|0x0D/%0D|\\n|\\r)\S).*=i',
-                             null, $value);
+                             '', $value);
         }
         // fix for CRM-1367
         if (!array_key_exists('Date', $headers)) {

@@ -7,7 +7,6 @@ use Composer\EventDispatcher\EventDispatcher;
 
 class ShellRunner
 {
-
     use ComposerIoTrait;
 
     /**

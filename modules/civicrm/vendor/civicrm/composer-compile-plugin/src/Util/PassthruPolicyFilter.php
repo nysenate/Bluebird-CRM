@@ -1,4 +1,5 @@
 <?php
+
 namespace Civi\CompilePlugin\Util;
 
 use Composer\IO\IOInterface;

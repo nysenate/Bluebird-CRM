@@ -21,54 +21,6 @@
 class CRM_Contribute_Import_Form_MapField extends CRM_Import_Form_MapField {
 
   /**
-   * Check if required fields are present.
-   *
-   * @param CRM_Contribute_Import_Form_MapField $self
-   * @param string $contactORContributionId
-   * @param array $importKeys
-   * @param array $errors
-   * @param int $weightSum
-   * @param int $threshold
-   * @param string $fieldMessage
-   *
-   * @return array
-   */
-  protected static function checkRequiredFields($self, string $contactORContributionId, array $importKeys, array $errors, int $weightSum, $threshold, string $fieldMessage): array {
-    // FIXME: should use the schema titles, not redeclare them
-    $requiredFields = [
-      $contactORContributionId == 'contribution_id' ? 'contribution_id' : 'contribution_contact_id' => $contactORContributionId == 'contribution_id' ? ts('Contribution ID') : ts('Contact ID'),
-      'total_amount' => ts('Total Amount'),
-      'financial_type_id' => ts('Financial Type'),
-    ];
-
-    foreach ($requiredFields as $field => $title) {
-      if (!in_array($field, $importKeys)) {
-        if (empty($errors['_qf_default'])) {
-          $errors['_qf_default'] = '';
-        }
-        if ($field == $contactORContributionId) {
-          if (!($weightSum >= $threshold || in_array('external_identifier', $importKeys)) &&
-            !$self->isUpdateExisting()
-          ) {
-            $errors['_qf_default'] .= ts('Missing required contact matching fields.') . " $fieldMessage " . ts('(Sum of all weights should be greater than or equal to threshold: %1).', [1 => $threshold]) . '<br />';
-          }
-          elseif ($self->isUpdateExisting() &&
-            !(in_array('invoice_id', $importKeys) || in_array('trxn_id', $importKeys) ||
-              in_array('contribution_id', $importKeys)
-            )
-          ) {
-            $errors['_qf_default'] .= ts('Invoice ID or Transaction ID or Contribution ID are required to match to the existing contribution records in Update mode.') . '<br />';
-          }
-        }
-        else {
-          $errors['_qf_default'] .= ts('Missing required field: %1', [1 => $title]) . '<br />';
-        }
-      }
-    }
-    return $errors;
-  }
-
-  /**
    * Set variables up before form is built.
    */
   public function preProcess() {
@@ -78,29 +30,16 @@ class CRM_Contribute_Import_Form_MapField extends CRM_Import_Form_MapField {
     //CRM-2219 removing other required fields since for updation only
     //invoice id or trxn id or contribution id is required.
     if ($this->isUpdateExisting()) {
-      $remove = [
-        'contribution_contact_id',
-        'email',
-        'first_name',
-        'last_name',
-        'external_identifier',
-      ];
-      foreach ($remove as $value) {
-        unset($this->_mapperFields[$value]);
-      }
-
       //modify field title only for update mode. CRM-3245
       foreach ([
         'contribution_id',
         'invoice_id',
         'trxn_id',
       ] as $key) {
-        $this->_mapperFields[$key] .= ' (match to contribution record)';
         $highlightedFields[] = $key;
       }
     }
     elseif ($this->isSkipExisting()) {
-      unset($this->_mapperFields['contribution_id']);
       $highlightedFieldsArray = [
         'contribution_contact_id',
         'email',
@@ -113,151 +52,93 @@ class CRM_Contribute_Import_Form_MapField extends CRM_Import_Form_MapField {
       }
     }
 
-    // modify field title for contribution status
-    $this->_mapperFields['contribution_status_id'] = ts('Contribution Status');
-
     $this->assign('highlightedFields', $highlightedFields);
+  }
+
+  /**
+   * Should contact fields be filtered which determining fields to show.
+   *
+   * This applies to Contribution import as we put all contact fields in the metadata
+   * but only present those used for a match - but will permit create via LeXIM.
+   *
+   * @return bool
+   */
+  protected function isFilterContactFields() : bool {
+    return TRUE;
   }
 
   /**
    * Build the form object.
    *
-   * @throws \CiviCRM_API3_Exception
+   * @throws \CRM_Core_Exception
    */
-  public function buildQuickForm() {
-    $savedMappingID = $this->getSubmittedValue('savedMapping');
-
-    $this->buildSavedMappingFields($savedMappingID);
+  public function buildQuickForm(): void {
+    $this->addSavedMappingFields();
 
     $this->addFormRule([
       'CRM_Contribute_Import_Form_MapField',
       'formRule',
     ], $this);
 
-    //-------- end of saved mapping stuff ---------
+    $selectColumn1 = $this->getAvailableFields();
 
-    $defaults = [];
-    $mapperKeys = array_keys($this->_mapperFields);
-    $hasHeaders = $this->getSubmittedValue('skipColumnHeader');
-    $headerPatterns = $this->getHeaderPatterns();
-    $dataPatterns = $this->getDataPatterns();
-    $mapperKeysValues = $this->getSubmittedValue('mapper');
-    $columnHeaders = $this->getColumnHeaders();
-    $fieldMappings = $this->getFieldMappings();
-
-    /* Initialize all field usages to false */
-    foreach ($mapperKeys as $key) {
-      $this->_fieldUsed[$key] = FALSE;
-    }
-    $sel1 = $this->_mapperFields;
-
-    if (!$this->isUpdateExisting()) {
-      unset($sel1['id']);
-      unset($sel1['contribution_id']);
+    $selectColumn2 = [];
+    $softCreditTypes = CRM_Core_OptionGroup::values('soft_credit_type');
+    foreach (array_keys($selectColumn1) as $fieldName) {
+      if (strpos($fieldName, 'soft_credit__contact__') === 0) {
+        $selectColumn2[$fieldName] = $softCreditTypes;
+      }
     }
 
-    $softCreditFields['contact_id'] = ts('Contact ID');
-    $softCreditFields['external_identifier'] = ts('External ID');
-    $softCreditFields['email'] = ts('Email');
-
-    $sel2['soft_credit'] = $softCreditFields;
-    $sel3['soft_credit']['contact_id'] = $sel3['soft_credit']['external_identifier'] = $sel3['soft_credit']['email'] = CRM_Core_OptionGroup::values('soft_credit_type');
-    $sel4 = NULL;
-
-    // end of soft credit section
-    $js = "<script type='text/javascript'>\n";
-    $formName = 'document.forms.' . $this->_name;
-
-    //used to warn for mismatch column count or mismatch mapping
-    $warning = 0;
-
-    foreach ($columnHeaders as $i => $columnHeader) {
+    foreach ($this->getColumnHeaders() as $i => $columnHeader) {
       $sel = &$this->addElement('hierselect', "mapper[$i]", ts('Mapper for Field %1', [1 => $i]), NULL);
-      $jsSet = FALSE;
-      if ($this->getSubmittedValue('savedMapping')) {
-        // $mappingContactType is not really a contact type - the data has been mangled
-        // into that field - see https://lab.civicrm.org/dev/core/-/issues/654
-        [$mappingName, $mappingContactType] = CRM_Core_BAO_Mapping::getMappingFields($savedMappingID);
-        $fieldMapping = $fieldMappings[$i] ?? NULL;
-        $mappingContactType = $mappingContactType[1];
-        if (isset($fieldMappings[$i])) {
-          if ($fieldMapping['name'] !== ts('do_not_import')) {
-            $softField = $mappingContactType[$i] ?? '';
+      $sel->setOptions([$selectColumn1, $selectColumn2]);
+    }
+    $defaults = $this->getDefaults();
+    $this->setDefaults($defaults);
 
-            if (!$softField) {
-              $js .= "{$formName}['mapper[$i][1]'].style.display = 'none';\n";
-            }
-
-            $js .= "{$formName}['mapper[$i][2]'].style.display = 'none';\n";
-            $js .= "{$formName}['mapper[$i][3]'].style.display = 'none';\n";
-            $defaults["mapper[$i]"] = [
-              $fieldMapping['name'],
-              $softField,
-              // Since the soft credit type id is not stored we can't load it here.
-              '',
-            ];
-            $jsSet = TRUE;
-          }
-          else {
-            $defaults["mapper[$i]"] = [];
-          }
-          if (!$jsSet) {
-            for ($k = 1; $k < 4; $k++) {
-              $js .= "{$formName}['mapper[$i][$k]'].style.display = 'none';\n";
-            }
-          }
-        }
-        else {
-          // this load section to help mapping if we ran out of saved columns when doing Load Mapping
-          $js .= "swapOptions($formName, 'mapper[$i]', 0, 3, 'hs_mapper_0_');\n";
-
-          if ($hasHeaders) {
-            $defaults["mapper[$i]"] = [$this->defaultFromHeader($columnHeader, $headerPatterns)];
-          }
-          else {
-            $defaults["mapper[$i]"] = [$this->defaultFromData($dataPatterns, $i)];
-          }
-        }
-        //end of load mapping
-      }
-      else {
-        $js .= "swapOptions($formName, 'mapper[$i]', 0, 3, 'hs_mapper_0_');\n";
-        if ($hasHeaders) {
-          // do array search first to see if has mapped key
-          $columnKey = array_search($columnHeader, $this->_mapperFields);
-          if (isset($this->_fieldUsed[$columnKey])) {
-            $defaults["mapper[$i]"] = $columnKey;
-            $this->_fieldUsed[$key] = TRUE;
-          }
-          else {
-            // Infer the default from the column names if we have them
-            $defaults["mapper[$i]"] = [
-              $this->defaultFromHeader($columnHeader, $headerPatterns),
-              0,
-            ];
-          }
-        }
-        else {
-          // Otherwise guess the default from the form of the data
-          $defaults["mapper[$i]"] = [
-            $this->defaultFromData($dataPatterns, $i),
-            0,
-          ];
-        }
-        if (!empty($mapperKeysValues) && ($mapperKeysValues[$i][0] ?? NULL) === 'soft_credit') {
-          $softCreditField = $mapperKeysValues[$i][1];
-          $softCreditTypeID = $mapperKeysValues[$i][2];
-          $js .= "cj('#mapper_" . $i . "_1').val($softCreditField);\n";
-          $js .= "cj('#mapper_" . $i . "_2').val($softCreditTypeID);\n";
-        }
-      }
-      $sel->setOptions([$sel1, $sel2, $sel3, $sel4]);
+    $js = "<script type='text/javascript'>\n";
+    foreach ($defaults as $index => $default) {
+      //  e.g swapOptions(document.forms.MapField, 'mapper[0]', 0, 3, 'hs_mapper_0_');
+      // where 0 is the highest populated field number in the array and 3 is the maximum.
+      $js .= "swapOptions(document.forms.MapField, '$index', " . (array_key_last(array_filter($default)) ?: 0) . ", 2, 'hs_mapper_0_');\n";
     }
     $js .= "</script>\n";
     $this->assign('initHideBoxes', $js);
-    $this->setDefaults($defaults);
 
     $this->addFormButtons();
+  }
+
+  /**
+   * Get the fields available for import selection.
+   *
+   * @return array
+   *   e.g ['first_name' => 'First Name', 'last_name' => 'Last Name'....
+   */
+  protected function getAvailableFields(): array {
+    $return = [];
+    foreach ($this->getFields() as $name => $field) {
+      if ($name === 'id' && $this->isSkipExisting()) {
+        // Duplicates are being skipped so id matching is not available.
+        continue;
+      }
+      if ($this->isUpdateExisting() && in_array($name, ['contribution_contact_id', 'email', 'first_name', 'last_name', 'external_identifier', 'email_primary.email'], TRUE)) {
+        continue;
+      }
+      if ($this->isUpdateExisting() && in_array($name, ['contribution_id', 'invoice_id', 'trxn_id'], TRUE)) {
+        $field['title'] .= (' ' . ts('(match to contribution record)'));
+      }
+      // Swap out dots for double underscores so as not to break the quick form js.
+      // We swap this back on postProcess.
+      $name = str_replace('.', '__', $name);
+      if (($field['entity'] ?? '') === 'Contact' && $this->isFilterContactFields() && empty($field['match_rule'])) {
+        // Filter out metadata that is intended for create & update - this is not available in the quick-form
+        // but is now loaded in the Parser for the LexIM variant.
+        continue;
+      }
+      $return[$name] = $field['html']['label'] ?? $field['title'];
+    }
+    return $return;
   }
 
   /**
@@ -269,90 +150,28 @@ class CRM_Contribute_Import_Form_MapField extends CRM_Import_Form_MapField {
    * @param $files
    * @param self $self
    *
-   * @return array
+   * @return array|true
    *   list of errors to be posted back to the form
    */
   public static function formRule($fields, $files, $self) {
-    $errors = [];
-    $fieldMessage = NULL;
-    $contactORContributionId = $self->isUpdateExisting() ? 'contribution_id' : 'contribution_contact_id';
-    if (!array_key_exists('savedMapping', $fields)) {
-      $importKeys = [];
-      foreach ($fields['mapper'] as $mapperPart) {
-        $importKeys[] = $mapperPart[0];
-      }
-
-      $params = [
-        'used' => 'Unsupervised',
-        'contact_type' => $self->getContactType(),
-      ];
-      [$ruleFields, $threshold] = CRM_Dedupe_BAO_DedupeRuleGroup::dedupeRuleFieldsWeight($params);
-      $weightSum = 0;
-      foreach ($importKeys as $key => $val) {
-        if (array_key_exists($val, $ruleFields)) {
-          $weightSum += $ruleFields[$val];
-        }
-        if ($val == "soft_credit") {
-          $mapperKey = CRM_Utils_Array::key('soft_credit', $importKeys);
-          if (empty($fields['mapper'][$mapperKey][1])) {
-            if (empty($errors['_qf_default'])) {
-              $errors['_qf_default'] = '';
-            }
-            $errors['_qf_default'] .= ts('Missing required fields: Soft Credit') . '<br />';
-          }
+    $mapperError = [];
+    try {
+      $parser = $self->getParser();
+      $rule = $parser->getDedupeRule($self->getContactType(), $self->getUserJob()['metadata']['entity_configuration']['Contact']['dedupe_rule'] ?? NULL);
+      if (!$self->isUpdateExisting()) {
+        $missingDedupeFields = $self->validateDedupeFieldsSufficientInMapping($rule, $fields['mapper']);
+        if ($missingDedupeFields) {
+          $mapperError[] = $missingDedupeFields;
         }
       }
-      foreach ($ruleFields as $field => $weight) {
-        $fieldMessage .= ' ' . $field . '(weight ' . $weight . ')';
-      }
-      $errors = self::checkRequiredFields($self, $contactORContributionId, $importKeys, $errors, $weightSum, $threshold, $fieldMessage);
-
-      //at least one field should be mapped during update.
-      if ($self->isUpdateExisting()) {
-        $atleastOne = FALSE;
-        foreach ($self->_mapperFields as $key => $field) {
-          if (in_array($key, $importKeys) &&
-            !in_array($key, [
-              'doNotImport',
-              'contribution_id',
-              'invoice_id',
-              'trxn_id',
-            ])
-          ) {
-            $atleastOne = TRUE;
-            break;
-          }
-        }
-        if (!$atleastOne) {
-          $errors['_qf_default'] .= ts('At least one contribution field needs to be mapped for update during update mode.') . '<br />';
-        }
-      }
+      $parser->validateMapping($fields['mapper']);
     }
-
-    if (!empty($fields['saveMapping'])) {
-      $nameField = $fields['saveMappingName'] ?? NULL;
-      if (empty($nameField)) {
-        $errors['saveMappingName'] = ts('Name is required to save Import Mapping');
-      }
-      else {
-        if (CRM_Core_BAO_Mapping::checkMapping($nameField, CRM_Core_PseudoConstant::getKey('CRM_Core_BAO_Mapping', 'mapping_type_id', 'Import Contribution'))) {
-          $errors['saveMappingName'] = ts('Duplicate Import Contribution Mapping Name');
-        }
-      }
+    catch (CRM_Core_Exception $e) {
+      $mapperError[] = $e->getMessage();
     }
-
-    if (!empty($errors)) {
-      if (!empty($errors['saveMappingName'])) {
-        $_flag = 1;
-        $assignError = new CRM_Core_Page();
-        $assignError->assign('mappingDetailsError', $_flag);
-      }
-      if (!empty($errors['_qf_default'])) {
-        CRM_Core_Session::setStatus($errors['_qf_default'], ts("Error"), "error");
-        return $errors;
-      }
+    if (!empty($mapperError)) {
+      return ['_qf_default' => implode('<br/>', $mapperError)];
     }
-
     return TRUE;
   }
 
@@ -375,6 +194,77 @@ class CRM_Contribute_Import_Form_MapField extends CRM_Import_Form_MapField {
       $this->parser->init();
     }
     return $this->parser;
+  }
+
+  /**
+   * Get default values for the mapping.
+   *
+   * This looks up any saved mapping or derives them from the headers if possible.
+   *
+   * @return array
+   *
+   * @throws \CRM_Core_Exception
+   */
+  protected function getDefaults(): array {
+    $defaults = [];
+    $fieldMappings = $this->getFieldMappings();
+    foreach ($this->getColumnHeaders() as $i => $columnHeader) {
+      $defaults["mapper[$i]"] = [];
+      if ($this->getSubmittedValue('savedMapping')) {
+        $fieldMapping = $fieldMappings[$i] ?? NULL;
+        if ($fieldMapping) {
+          if ($fieldMapping['name'] !== ts('do_not_import')) {
+            // $mapping contact_type is not really a contact type - the 'about this entity' data has been mangled
+            // into that field - see https://lab.civicrm.org/dev/core/-/issues/654
+            $softCreditTypeID = '';
+            $entityData = json_decode($fieldMapping['contact_type'] ?? '', TRUE);
+            if (!empty($entityData)) {
+              $softCreditTypeID = (int) $entityData['soft_credit']['soft_credit_type_id'];
+            }
+            $fieldName = $this->isQuickFormMode ? str_replace('.', '__', $fieldMapping['name']) : $fieldMapping['name'];
+            $defaults["mapper[$i]"] = [$fieldName, $softCreditTypeID];
+          }
+        }
+      }
+      elseif ($this->getSubmittedValue('skipColumnHeader')) {
+        $defaults["mapper[$i]"][0] = $this->guessMappingBasedOnColumns($columnHeader);
+      }
+    }
+
+    return $defaults;
+  }
+
+  /**
+   * Validate the the mapped fields contain enough to meet the dedupe rule lookup requirements.
+   *
+   * @param array $rule
+   * @param array $mapper
+   *
+   * @return string|false
+   *   Error string if insufficient.
+   */
+  protected function validateDedupeFieldsSufficientInMapping(array $rule, array $mapper): ?string {
+    $threshold = $rule['threshold'];
+    $ruleFields = $rule['fields'];
+    $weightSum = 0;
+    foreach ($mapper as $mapping) {
+      // Because api v4 style fields have a . and QuickForm multiselect js does
+      // not cope with a . the quick form layer will use a double underscore
+      // as a stand in (the angular layer will not)
+      $fieldName = str_replace('__', '.', $mapping[0]);
+      if ($fieldName === 'external_identifier' || $fieldName === 'contribution_contact_id' || $fieldName === 'contact__id') {
+        // It is enough to have external identifier mapped.
+        $weightSum = $threshold;
+        break;
+      }
+      if (array_key_exists($fieldName, $ruleFields)) {
+        $weightSum += $ruleFields[$fieldName];
+      }
+    }
+    if ($weightSum < $threshold) {
+      return $rule['rule_message'];
+    }
+    return NULL;
   }
 
 }

@@ -22,7 +22,7 @@ require_once 'Mail/mime.php';
 /**
  * Class CRM_Mailing_BAO_Mailing
  */
-class CRM_Mailing_BAO_Mailing extends CRM_Mailing_DAO_Mailing {
+class CRM_Mailing_BAO_Mailing extends CRM_Mailing_DAO_Mailing implements \Civi\Core\HookInterface {
 
   /**
    * An array that holds the complete templates
@@ -670,7 +670,7 @@ class CRM_Mailing_BAO_Mailing extends CRM_Mailing_DAO_Mailing {
       }
 
       // To check for an html part strip tags
-      if (trim(strip_tags($this->body_html, '<img>'))) {
+      if (trim(strip_tags(($this->body_html ?? ''), '<img>'))) {
 
         $template = [];
         if ($this->header) {
@@ -838,7 +838,7 @@ ORDER BY   civicrm_email.is_bulkmail DESC
             'email_id' => $dao->email_id,
             'contact_id' => $groupContact,
           ];
-          CRM_Mailing_Event_BAO_Queue::create($params);
+          CRM_Mailing_Event_BAO_MailingEventQueue::create($params);
         }
       }
     }
@@ -1451,52 +1451,32 @@ ORDER BY   civicrm_email.is_bulkmail DESC
    * Add the mailings.
    *
    * @param array $params
-   *   Reference array contains the values submitted by the form.
-   * @param array $ids
-   *   Reference array contains the id.
-   *
    *
    * @return CRM_Mailing_DAO_Mailing
    * @throws \Civi\API\Exception\UnauthorizedException
    */
-  public static function add(&$params, $ids = []) {
-    $id = $params['id'] ?? $ids['mailing_id'] ?? NULL;
+  public static function add($params) {
+    $id = $params['id'] ?? NULL;
 
-    if (empty($params['id']) && !empty($ids)) {
-      CRM_Core_Error::deprecatedWarning('Parameter $ids is no longer used by Mailing::add. Use the api or just pass $params');
-    }
     if (!empty($params['check_permissions']) && CRM_Mailing_Info::workflowEnabled()) {
       $params = self::processWorkflowPermissions($params);
     }
-    $action = $id ? 'create' : 'edit';
-    CRM_Utils_Hook::pre($action, 'Mailing', $id, $params);
-
-    $mailing = new static();
-    if ($id) {
-      $mailing->id = $id;
-      $mailing->find(TRUE);
+    if (!$id) {
+      $params['domain_id'] = $params['domain_id'] ?? CRM_Core_Config::domainID();
     }
-    $mailing->domain_id = CRM_Utils_Array::value('domain_id', $params, CRM_Core_Config::domainID());
-
-    if (((!$id && empty($params['replyto_email'])) || !isset($params['replyto_email'])) &&
+    if (
+      ((!$id && empty($params['replyto_email'])) || !isset($params['replyto_email'])) &&
       isset($params['from_email'])
     ) {
       $params['replyto_email'] = $params['from_email'];
     }
-    $mailing->copyValues($params);
-
     // CRM-20892 Unset Modifed Date here so that MySQL can correctly set an updated modfied date.
-    unset($mailing->modified_date);
-    $result = $mailing->save();
+    unset($params['modified_date']);
+
+    $result = static::writeRecord($params);
 
     // CRM-20892 Re find record after saing so we can set the updated modified date in the result.
-    $mailing->find(TRUE);
-
-    if (isset($mailing->modified_date)) {
-      $result->modified_date = $mailing->modified_date;
-    }
-
-    CRM_Utils_Hook::post($action, 'Mailing', $mailing->id, $mailing);
+    $result->find(TRUE);
 
     return $result;
   }
@@ -1527,7 +1507,6 @@ ORDER BY   civicrm_email.is_bulkmail DESC
    *   $mailing      The new mailing object
    *
    * @throws \CRM_Core_Exception
-   * @throws \CiviCRM_API3_Exception
    */
   public static function create(array $params) {
 
@@ -1589,7 +1568,7 @@ ORDER BY   civicrm_email.is_bulkmail DESC
       if (empty($defaults['from_email'])) {
         $defaultAddress = CRM_Core_BAO_Domain::getNameAndEmail(TRUE, TRUE);
         foreach ($defaultAddress as $id => $value) {
-          if (preg_match('/"(.*)" <(.*)>/', $value, $match)) {
+          if (preg_match('/"(.*)" <(.*)>/', ($value ?? ''), $match)) {
             $defaults['from_email'] = $match[2];
             $defaults['from_name'] = $match[1];
           }
@@ -1734,7 +1713,7 @@ ORDER BY   civicrm_email.is_bulkmail DESC
    * @param string $entity
    *   'groups' or 'mailings'.
    * @param array $entityIds
-   * @throws CiviCRM_API3_Exception
+   * @throws CRM_Core_Exception
    */
   public static function replaceGroups($mailingId, $type, $entity, $entityIds) {
     $values = [];
@@ -1788,15 +1767,15 @@ ORDER BY   civicrm_email.is_bulkmail DESC
       'mailing_group' => CRM_Mailing_DAO_MailingGroup::getTableName(),
       'group' => CRM_Contact_BAO_Group::getTableName(),
       'job' => CRM_Mailing_BAO_MailingJob::getTableName(),
-      'queue' => CRM_Mailing_Event_BAO_Queue::getTableName(),
+      'queue' => CRM_Mailing_Event_BAO_MailingEventQueue::getTableName(),
       'delivered' => 'civicrm_mailing_event_sendgrid_delivered', //NYSS 4765
-      'opened' => CRM_Mailing_Event_BAO_Opened::getTableName(),
-      'reply' => CRM_Mailing_Event_BAO_Reply::getTableName(),
-      'unsubscribe' => CRM_Mailing_Event_BAO_Unsubscribe::getTableName(),
-      'bounce' => CRM_Mailing_Event_BAO_Bounce::getTableName(),
-      'forward' => CRM_Mailing_Event_BAO_Forward::getTableName(),
+      'opened' => CRM_Mailing_Event_BAO_MailingEventOpened::getTableName(),
+      'reply' => CRM_Mailing_Event_BAO_MailingEventReply::getTableName(),
+      'unsubscribe' => CRM_Mailing_Event_BAO_MailingEventUnsubscribe::getTableName(),
+      'bounce' => CRM_Mailing_Event_BAO_MailingEventBounce::getTableName(),
+      'forward' => CRM_Mailing_Event_BAO_MailingEventForward::getTableName(),
       'url' => CRM_Mailing_BAO_TrackableURL::getTableName(),
-      'urlopen' => CRM_Mailing_Event_BAO_TrackableURLOpen::getTableName(),
+      'urlopen' => CRM_Mailing_Event_BAO_MailingEventClickThrough::getTableName(),
       'component' => CRM_Mailing_BAO_MailingComponent::getTableName(),
       'spool' => CRM_Mailing_BAO_Spool::getTableName(),
     ];
@@ -1994,17 +1973,17 @@ ORDER BY   civicrm_email.is_bulkmail DESC
 
       // compute open total separately to discount duplicates
       // CRM-1258
-      $row['opened'] = CRM_Mailing_Event_BAO_Opened::getTotalCount($mailing_id, $mailing->id, TRUE);
+      $row['opened'] = CRM_Mailing_Event_BAO_MailingEventOpened::getTotalCount($mailing_id, $mailing->id, TRUE);
       $report['event_totals']['opened'] += $row['opened'];
-      $row['total_opened'] = CRM_Mailing_Event_BAO_Opened::getTotalCount($mailing_id, $mailing->id);
+      $row['total_opened'] = CRM_Mailing_Event_BAO_MailingEventOpened::getTotalCount($mailing_id, $mailing->id);
       $report['event_totals']['total_opened'] += $row['total_opened'];
 
       // compute unsub total separately to discount duplicates
       // CRM-1783
-      $row['unsubscribe'] = CRM_Mailing_Event_BAO_Unsubscribe::getTotalCount($mailing_id, $mailing->id, TRUE, TRUE);
+      $row['unsubscribe'] = CRM_Mailing_Event_BAO_MailingEventUnsubscribe::getTotalCount($mailing_id, $mailing->id, TRUE, TRUE);
       $report['event_totals']['unsubscribe'] += $row['unsubscribe'];
 
-      $row['optout'] = CRM_Mailing_Event_BAO_Unsubscribe::getTotalCount($mailing_id, $mailing->id, TRUE, FALSE);
+      $row['optout'] = CRM_Mailing_Event_BAO_MailingEventUnsubscribe::getTotalCount($mailing_id, $mailing->id, TRUE, FALSE);
       $report['event_totals']['optout'] += $row['optout'];
 
       foreach (array_keys(CRM_Mailing_BAO_MailingJob::fields()) as $field) {
@@ -2049,7 +2028,7 @@ ORDER BY   civicrm_email.is_bulkmail DESC
       $report['jobs'][] = $row;
     }
 
-    $report['event_totals']['queue'] = CRM_Mailing_BAO_Recipients::mailingSize($mailing_id);
+    $report['event_totals']['queue'] = CRM_Mailing_BAO_MailingRecipients::mailingSize($mailing_id);
 
     if (!empty($report['event_totals']['queue'])) {
       $report['event_totals']['delivered_rate'] = (100.0 * $report['event_totals']['delivered']) / $report['event_totals']['queue'];
@@ -2451,26 +2430,23 @@ LEFT JOIN civicrm_mailing_group g ON g.mailing_id   = m.id
    *   Id of the mail to delete.
    *
    * @return void
+   *
+   * @deprecated
    */
   public static function del($id) {
-    if (empty($id)) {
-      throw new CRM_Core_Exception(ts('No id passed to mailing del function'));
+    static::deleteRecord(['id' => $id]);
+  }
+
+  /**
+   * Callback for hook_civicrm_pre().
+   * @param \Civi\Core\Event\PreEvent $event
+   * @throws CRM_Core_Exception
+   */
+  public static function self_hook_civicrm_pre(\Civi\Core\Event\PreEvent $event) {
+    if ($event->action === 'delete' && $event->id) {
+      // Delete all file attachments
+      CRM_Core_BAO_File::deleteEntityFile('civicrm_mailing', $event->id);
     }
-
-    CRM_Utils_Hook::pre('delete', 'Mailing', $id);
-
-    // delete all file attachments
-    CRM_Core_BAO_File::deleteEntityFile('civicrm_mailing',
-      $id
-    );
-
-    $dao = new CRM_Mailing_DAO_Mailing();
-    $dao->id = $id;
-    $dao->delete();
-
-    CRM_Core_Session::setStatus(ts('Selected mailing has been deleted.'), ts('Deleted'), 'success');
-
-    CRM_Utils_Hook::post('delete', 'Mailing', $id, $dao);
   }
 
   /**
@@ -2952,8 +2928,8 @@ ORDER BY civicrm_mailing.name";
 
     //CRM-12814
     if (!empty($mailings)) {
-      $openCounts = CRM_Mailing_Event_BAO_Opened::getMailingContactCount(array_keys($mailings), $params['contact_id']);
-      $clickCounts = CRM_Mailing_Event_BAO_TrackableURLOpen::getMailingContactCount(array_keys($mailings), $params['contact_id']);
+      $openCounts = CRM_Mailing_Event_BAO_MailingEventOpened::getMailingContactCount(array_keys($mailings), $params['contact_id']);
+      $clickCounts = CRM_Mailing_Event_BAO_MailingEventClickThrough::getMailingContactCount(array_keys($mailings), $params['contact_id']);
     }
 
     // format params and add links

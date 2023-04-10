@@ -32,7 +32,7 @@ require_once realpath(dirname(__FILE__)).'/../script_utils.php';
 $shortopts = "l:f:m:t:odc";
 $longopts = ["log=", "format=", "mode=", "threshold=", "outfile", "disableCache", "clearCache"];
 $optlist = civicrm_script_init($shortopts, $longopts);
-$usage = '[--log {TRACE|DEBUG|INFO|WARN|ERROR|FATAL}] [--format {html|txt|csv}] [--mode {summary|detail}] [--threshold THRESH] [--outfile] [--disableCache] [--clearCache]';
+$usage = '[--log {TRACE|DEBUG|INFO|WARN|ERROR|FATAL}] [--format {html|text|csv}] [--mode {summary|detail}] [--threshold THRESH] [--outfile] [--disableCache] [--clearCache]';
 
 if ($optlist === null) {
   $stdusage = civicrm_script_usage();
@@ -508,8 +508,14 @@ function get_contacts($db, $district = -1, $use_filter = true, $use_cache = true
   if ($use_cache) {
     if (!table_exists($db, RD_CONTACT_CACHE_TABLE)) {
       bbscript_log(LL::INFO, "Creating and populating redist contact cache table");
+
       $contact_query = "CREATE TABLE " . RD_CONTACT_CACHE_TABLE . " AS ( $contact_query ); ";
       bb_mysql_query($contact_query, $db, true);
+
+      //add primary key
+      $pk_query = 'ALTER TABLE '.RD_CONTACT_CACHE_TABLE.' ADD PRIMARY KEY (`contact_id`);';
+      bb_mysql_query($pk_query, $db, true);
+
       bbscript_log(LL::INFO, "Finished creating redist contact cache table");
     }
 

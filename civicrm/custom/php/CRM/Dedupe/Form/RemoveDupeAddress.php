@@ -36,7 +36,7 @@
 
 /**
  * This class generates form components for DedupeRules
- * 
+ *
  */
 class CRM_Dedupe_Form_RemoveDupeAddress extends CRM_Core_Form
 {
@@ -100,6 +100,10 @@ class CRM_Dedupe_Form_RemoveDupeAddress extends CRM_Core_Form
    * @return None
    */
   public function postProcess($output_status = true) {
+    self::removeDuplicateAddresses($output_status);
+  }
+
+  static function removeDuplicateAddresses($output_status) {
     $sTime = microtime(true);
     $tmpTbl = 'nyss_temp_dedupe_address';
 
@@ -177,5 +181,5 @@ class CRM_Dedupe_Form_RemoveDupeAddress extends CRM_Core_Form
       CRM_Core_Session::setStatus($msg, 'Duplicate Addresses Removed', 'success');
       CRM_Utils_System::redirect($url);
     }
-  } // postProcess()
+  }
 }

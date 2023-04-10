@@ -67,7 +67,6 @@ class CRM_Contact_Import_Form_MapField extends CRM_Import_Form_MapField {
   /**
    * Set variables up before form is built.
    *
-   * @throws \API_Exception
    * @throws \CRM_Core_Exception
    * @throws \Civi\API\Exception\UnauthorizedException
    */
@@ -108,12 +107,10 @@ class CRM_Contact_Import_Form_MapField extends CRM_Import_Form_MapField {
   /**
    * Build the form object.
    *
-   * @throws \CiviCRM_API3_Exception
    * @throws \CRM_Core_Exception
    */
   public function buildQuickForm() {
-    $savedMappingID = (int) $this->getSubmittedValue('savedMapping');
-    $this->buildSavedMappingFields($savedMappingID);
+    $this->addSavedMappingFields();
 
     $this->addFormRule(['CRM_Contact_Import_Form_MapField', 'formRule']);
 
@@ -273,10 +270,10 @@ class CRM_Contact_Import_Form_MapField extends CRM_Import_Form_MapField {
     //used to warn for mismatch column count or mismatch mapping
     CRM_Core_Session::singleton()->setStatus(NULL);
     $processor = new CRM_Import_ImportProcessor();
-    $processor->setMappingID($savedMappingID);
+    $processor->setMappingID((int) $this->getSubmittedValue('savedMapping'));
     $processor->setFormName($formName);
     $processor->setMetadata($this->getContactImportMetadata());
-    $processor->setContactTypeByConstant($this->getSubmittedValue('contactType'));
+    $processor->setContactType($this->getSubmittedValue('contactType'));
     $processor->setContactSubType($this->getSubmittedValue('contactSubType'));
     $mapper = $this->getSubmittedValue('mapper');
 
@@ -309,12 +306,6 @@ class CRM_Contact_Import_Form_MapField extends CRM_Import_Form_MapField {
             ];
           }
         }
-        else {
-          // Otherwise guess the default from the form of the data
-          $defaults["mapper[$i]"] = [
-            $this->defaultFromData($this->getDataPatterns(), $i),
-          ];
-        }
         $last_key = array_key_last($defaults["mapper[$i]"]) ?? 0;
       }
       // Call swapOptions on the deepest select element to hide the empty select lists above it.
@@ -339,28 +330,16 @@ class CRM_Contact_Import_Form_MapField extends CRM_Import_Form_MapField {
    * @param array $fields
    *   Posted values of the form.
    *
-   * @return array|true
+   * @return array|bool
    *   list of errors to be posted back to the form
    */
-  public static function formRule($fields) {
-    $errors = [];
+  public static function formRule(array $fields) {
     if (!empty($fields['saveMapping'])) {
-      $nameField = $fields['saveMappingName'] ?? NULL;
-      if (empty($nameField)) {
-        $errors['saveMappingName'] = ts('Name is required to save Import Mapping');
-      }
-      else {
-        $mappingTypeId = CRM_Core_PseudoConstant::getKey('CRM_Core_BAO_Mapping', 'mapping_type_id', 'Import Contact');
-        if (CRM_Core_BAO_Mapping::checkMapping($nameField, $mappingTypeId)) {
-          $errors['saveMappingName'] = ts('Duplicate Import Mapping Name');
-        }
-      }
+      // todo - this is non-sensical - sane js is better. PR to fix got stale but
+      // is here https://github.com/civicrm/civicrm-core/pull/23950
+      CRM_Core_Smarty::singleton()->assign('isCheked', TRUE);
     }
-    $template = CRM_Core_Smarty::singleton();
-    if (!empty($fields['saveMapping'])) {
-      $template->assign('isCheked', TRUE);
-    }
-    return empty($errors) ? TRUE : $errors;
+    return TRUE;
   }
 
   /**
@@ -413,7 +392,6 @@ class CRM_Contact_Import_Form_MapField extends CRM_Import_Form_MapField {
    * @param $params
    * @param $mapperKeys
    *
-   * @throws \CiviCRM_API3_Exception
    * @throws \CRM_Core_Exception
    */
   public function submit($params) {
@@ -461,17 +439,6 @@ class CRM_Contact_Import_Form_MapField extends CRM_Import_Form_MapField {
   }
 
   /**
-   * Did the user specify duplicates should be skipped and not imported.
-   *
-   * @return bool
-   *
-   * @throws \CRM_Core_Exception
-   */
-  private function isSkipDuplicates(): bool {
-    return ((int) $this->getSubmittedValue('onDuplicate')) === CRM_Import_Parser::DUPLICATE_SKIP;
-  }
-
-  /**
    * Get the fields to be highlighted in the UI.
    *
    * The highlighted fields are those used to match
@@ -511,7 +478,7 @@ class CRM_Contact_Import_Form_MapField extends CRM_Import_Form_MapField {
    */
   private function isLocationTypeRequired($name): bool {
     if (!isset(Civi::$statics[__CLASS__]['location_fields'])) {
-      Civi::$statics[__CLASS__]['location_fields'] = (new CRM_Contact_Import_Parser_Contact())->setUserJobID($this->getUserJobID())->getSelectTypes();
+      Civi::$statics[__CLASS__]['location_fields'] = (new CRM_Contact_Import_Parser_Contact())->setUserJobID($this->getUserJobID())->getFieldsWhichSupportLocationTypes();
     }
     return (bool) (Civi::$statics[__CLASS__]['location_fields'][$name] ?? FALSE);
   }

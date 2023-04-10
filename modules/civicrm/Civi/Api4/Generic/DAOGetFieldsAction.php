@@ -76,7 +76,7 @@ class DAOGetFieldsAction extends BasicGetFieldsAction {
    * @param string $fieldName
    * @param array $fields
    * @return array|null
-   * @throws \API_Exception
+   * @throws \CRM_Core_Exception
    */
   private function getFkFieldSpec($fieldName, $fields) {
     $fieldPath = explode('.', $fieldName);
@@ -100,19 +100,21 @@ class DAOGetFieldsAction extends BasicGetFieldsAction {
    *
    * Normally this would involve calling getFields... but this IS getFields.
    *
-   * @throws \API_Exception
+   * @throws \CRM_Core_Exception
    */
   private function formatValues() {
     foreach (array_keys($this->values) as $key) {
       if (strpos($key, ':')) {
-        [$fieldName, $suffix] = explode(':', $key);
-        $context = FormattingUtil::$pseudoConstantContexts[$suffix] ?? NULL;
-        if (!$context) {
-          throw new \API_Exception('Illegal expression');
+        if (isset($this->values[$key]) && $this->values[$key] !== '') {
+          [$fieldName, $suffix] = explode(':', $key);
+          $context = FormattingUtil::$pseudoConstantContexts[$suffix] ?? NULL;
+          // This only works for basic pseudoconstants like :name :label and :abbr. Skip others.
+          if ($context) {
+            $baoName = CoreUtil::getBAOFromApiName($this->getEntityName());
+            $options = $baoName::buildOptions($fieldName, $context) ?: [];
+            $this->values[$fieldName] = FormattingUtil::replacePseudoconstant($options, $this->values[$key], TRUE);
+          }
         }
-        $baoName = CoreUtil::getBAOFromApiName($this->getEntityName());
-        $options = $baoName::buildOptions($fieldName, $context) ?: [];
-        $this->values[$fieldName] = FormattingUtil::replacePseudoconstant($options, $this->values[$key], TRUE);
         unset($this->values[$key]);
       }
     }

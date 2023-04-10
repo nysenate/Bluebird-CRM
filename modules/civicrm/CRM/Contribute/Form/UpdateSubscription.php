@@ -207,7 +207,6 @@ class CRM_Contribute_Form_UpdateSubscription extends CRM_Contribute_Form_Contrib
   /**
    * Called after the user submits the form.
    *
-   * @throws \API_Exception
    * @throws \CRM_Core_Exception
    */
   public function postProcess() {
@@ -303,7 +302,7 @@ class CRM_Contribute_Form_UpdateSubscription extends CRM_Contribute_Form_Contrib
 
         $sendTemplateParams = [
           'groupName' => 'msg_tpl_workflow_contribution',
-          'valueName' => 'contribution_recurring_edit',
+          'workflow' => 'contribution_recurring_edit',
           'contactId' => $contactID,
           'tplParams' => ['receipt_from_email' => $receiptFrom],
           'isTest' => $this->_subscriptionDetails->is_test,

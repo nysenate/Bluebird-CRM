@@ -134,7 +134,7 @@ class CRM_Export_Form_Map extends CRM_Core_Form {
     $attr = $this->_attributes;
     $queryParams = (array) $this->get('queryParams');
     if ($attr['action'] == '/civicrm/contact/search/custom') {
-      $queryParams = NULL;
+      $queryParams = [];
     }
 
     //get the csv file

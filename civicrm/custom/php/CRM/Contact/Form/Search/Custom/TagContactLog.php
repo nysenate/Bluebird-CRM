@@ -1,39 +1,5 @@
 <?php
 
-/*
- +--------------------------------------------------------------------+
- | CiviCRM version 4.4                                                |
- +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2010                                |
- +--------------------------------------------------------------------+
- | This file is a part of CiviCRM.                                    |
- |                                                                    |
- | CiviCRM is free software; you can copy, modify, and distribute it  |
- | under the terms of the GNU Affero General Public License           |
- | Version 3, 19 November 2007 and the CiviCRM Licensing Exception.   |
- |                                                                    |
- | CiviCRM is distributed in the hope that it will be useful, but     |
- | WITHOUT ANY WARRANTY; without even the implied warranty of         |
- | MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.               |
- | See the GNU Affero General Public License for more details.        |
- |                                                                    |
- | You should have received a copy of the GNU Affero General Public   |
- | License and the CiviCRM Licensing Exception along                  |
- | with this program; if not, contact CiviCRM LLC                     |
- | at info[AT]civicrm[DOT]org. If you have questions about the        |
- | GNU Affero General Public License or the licensing of CiviCRM,     |
- | see the CiviCRM license FAQ at http://civicrm.org/licensing        |
- +--------------------------------------------------------------------+
-*/
-
-/**
- *
- * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2010
- * $Id$
- *
- */
-
 class CRM_Contact_Form_Search_Custom_TagContactLog
   extends CRM_Contact_Form_Search_Custom_Base
   implements CRM_Contact_Form_Search_Interface {
@@ -41,21 +7,20 @@ class CRM_Contact_Form_Search_Custom_TagContactLog
   protected $_formValues;
   protected $_columns;
 
-
   function __construct(&$formValues) {
     parent::__construct($formValues);
 
-    $this->_columns = array(
+    $this->_columns = [
       ts('Tag Name') => 'tag_name',
       ts('Tag Count') => 'tag_count',
-    );
+    ];
   }
 
 
   function buildForm(&$form) {
     $this->setTitle('Tag Count Search');
 
-    $tagType = array(
+    $tagType = [
       '1' => ts('Keywords'),
       '2' => ts('Issue Codes'),
       '3' => ts('Legislative Positions'),
@@ -63,7 +28,7 @@ class CRM_Contact_Form_Search_Custom_TagContactLog
       '5' => ts('Website Committees'),
       '6' => ts('Website Issues'),
       '7' => ts('Website Petitions'),
-    );
+    ];
     $form->add('select',
       'tag_type',
       ts('Tag Type'),
@@ -71,39 +36,38 @@ class CRM_Contact_Form_Search_Custom_TagContactLog
       true
     );
     
-    $form->addDate('start_date', ts('Date from'), false, array('formatType' => 'birth'));
-    $form->addDate('end_date', ts('Date to'), false, array('formatType' => 'birth'));
+    $form->addDate('start_date', ts('Date from'), false, ['formatType' => 'birth']);
+    $form->addDate('end_date', ts('Date to'), false, ['formatType' => 'birth']);
 
-    $actionType = array(
+    $actionType = [
       '1' => ts('Added'),
       '2' => ts('Removed/Deleted'),
-    );
+    ];
     $form->addRadio('action_type', ts('Action Type'), $actionType, NULL, '&nbsp;', TRUE);
     
-    $formfields = array(
+    $formfields = [
       'start_date',
       'end_date',
       'tag_type',
       'action_type',
-    );
+    ];
     $form->assign('elements', $formfields);
     
     $form->add('hidden', 'form_message');
 
     $form->setDefaults($this->setDefaultValues());
-    $form->addFormRule(array('CRM_Contact_Form_Search_Custom_TagContactLog', 'formRule'), $this);
 
     //9990
     $formValues = $form->get('formValues');
     if (!empty($formValues)) {
       $quickExportUrl = CRM_Utils_System::url('civicrm/search/custom/tagcontact/quickexport',
-        http_build_query(array('formValues' => $formValues)));
+        http_build_query(['formValues' => $formValues]));
       $form->assign('quickExportUrl', $quickExportUrl);
     }
   }//buildForm
-  
 
-  function formRule($fields) {
+
+  public function formRule($fields, $files, $self): bool|array {
     $errors = [];
     return empty($errors) ? true : $errors;
   }//formRule
@@ -198,15 +162,15 @@ class CRM_Contact_Form_Search_Custom_TagContactLog
     }
 
     $from = "
-          FROM civicrm_contact contact_a
-          JOIN {$logDB}.log_civicrm_entity_tag log_et
-            ON contact_a.id = log_et.entity_id
-            AND log_et.entity_table = 'civicrm_contact'
-            AND log_et.log_action != 'Initialization'
-          JOIN civicrm_tag tag
-            ON log_et.tag_id = tag.id
-            AND {$tagTypeSql}
-        ";
+      FROM civicrm_contact contact_a
+      JOIN {$logDB}.log_civicrm_entity_tag log_et
+        ON contact_a.id = log_et.entity_id
+        AND log_et.entity_table = 'civicrm_contact'
+        AND log_et.log_action != 'Initialization'
+      JOIN civicrm_tag tag
+        ON log_et.tag_id = tag.id
+        AND {$tagTypeSql}
+    ";
 
     return $from;
   }//from
@@ -254,7 +218,7 @@ class CRM_Contact_Form_Search_Custom_TagContactLog
 
   function count() {
     $sql = $this->all();
-    $dao = CRM_Core_DAO::executeQuery($sql, CRM_Core_DAO::$_nullArray);
+    $dao = CRM_Core_DAO::executeQuery($sql);
     return $dao->N;
   }
 
@@ -265,9 +229,9 @@ class CRM_Contact_Form_Search_Custom_TagContactLog
 
 
   function setDefaultValues() {
-    $defaults = array(
+    $defaults = [
       'action_type' => 1,
-    );
+    ];
     return $defaults;
   }
 

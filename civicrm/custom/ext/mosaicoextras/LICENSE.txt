@@ -1,5 +1,5 @@
 Package: mosaicoextras
-Copyright (C) 2021, iXiam <info@ixiam.com>
+Copyright (C) 2023, iXiam <info@ixiam.com>
 Licensed under the GNU Affero Public License 3.0 (below).
 
 -------------------------------------------------------------------------------

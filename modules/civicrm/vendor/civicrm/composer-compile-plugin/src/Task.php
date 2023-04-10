@@ -10,7 +10,7 @@ class Task
      *
      * This is a quick-and-dirty hack.
      */
-    const HANDLERS = 'composer|export|php|php-eval|php-method|php-script|putenv|sh';
+    public const HANDLERS = 'composer|export|php|php-eval|php-method|php-script|putenv|sh';
 
     /**
      * (Required) A unique ID for this task

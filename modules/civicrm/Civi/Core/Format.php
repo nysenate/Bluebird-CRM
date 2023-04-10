@@ -9,16 +9,18 @@ use Civi;
 use CRM_Core_Config;
 use CRM_Core_I18n;
 use CRM_Utils_Constant;
+use CRM_Utils_Money;
 use NumberFormatter;
 use Brick\Money\Context\AutoContext;
 
 /**
  * Class Paths
  * @package Civi\Core
+ * @service format
  *
  * This class provides standardised formatting
  */
-class Format {
+class Format extends \Civi\Core\Service\AutoService {
 
   /**
    * Get formatted money
@@ -43,9 +45,11 @@ class Format {
       $currency = Civi::settings()->get('defaultCurrency');
     }
     if (!isset($locale)) {
-      $locale = Civi::settings()->get('format_locale') ?? CRM_Core_I18n::getLocale();
+      global $civicrmLocale;
+      $locale = $civicrmLocale->moneyFormat ?? (Civi::settings()->get('format_locale') ?? CRM_Core_I18n::getLocale());
     }
-    $money = Money::of($amount, $currency, NULL, RoundingMode::HALF_UP);
+    $currencyObject = CRM_Utils_Money::getCurrencyObject($currency);
+    $money = Money::of($amount, $currencyObject, NULL, RoundingMode::HALF_UP);
     $formatter = $this->getMoneyFormatter($currency, $locale);
     return $money->formatWith($formatter);
   }
@@ -93,7 +97,8 @@ class Format {
       return '';
     }
     $formatter = $this->getMoneyFormatter($currency, $locale, NumberFormatter::DECIMAL);
-    return Money::of($amount, $currency, NULL, RoundingMode::HALF_UP)->formatWith($formatter);
+    $currencyObject = CRM_Utils_Money::getCurrencyObject($currency);
+    return Money::of($amount, $currencyObject, NULL, RoundingMode::HALF_UP)->formatWith($formatter);
   }
 
   /**
@@ -120,7 +125,8 @@ class Format {
    */
   public function machineMoney($amount, string $currency = 'USD'): string {
     $formatter = $this->getMoneyFormatter($currency, 'en_US', NumberFormatter::DECIMAL, [NumberFormatter::GROUPING_USED => FALSE]);
-    return Money::of($amount, $currency, NULL, RoundingMode::HALF_UP)->formatWith($formatter);
+    $currencyObject = CRM_Utils_Money::getCurrencyObject($currency);
+    return Money::of($amount, $currencyObject, NULL, RoundingMode::HALF_UP)->formatWith($formatter);
   }
 
   /**
@@ -142,7 +148,8 @@ class Format {
     $formatter = $this->getMoneyFormatter($currency, $locale, NumberFormatter::CURRENCY, [
       NumberFormatter::MAX_FRACTION_DIGITS => 9,
     ]);
-    $money = Money::of($amount, $currency, new AutoContext());
+    $currencyObject = CRM_Utils_Money::getCurrencyObject($currency);
+    $money = Money::of($amount, $currencyObject, new AutoContext());
     return $money->formatWith($formatter);
   }
 
@@ -165,18 +172,26 @@ class Format {
     $formatter = $this->getMoneyFormatter($currency, $locale, NumberFormatter::DECIMAL, [
       NumberFormatter::MAX_FRACTION_DIGITS => 9,
     ]);
-    $money = Money::of($amount, $currency, new AutoContext());
+    $currencyObject = CRM_Utils_Money::getCurrencyObject($currency);
+    $money = Money::of($amount, $currencyObject, new AutoContext());
     return $money->formatWith($formatter);
   }
 
   /**
    * Should we use the configured thousand & decimal separators.
    *
-   * The goal is to phase this into being FALSE - but for now
-   * we are looking at how to manage an 'opt in'
+   * Historically, separators were configured with system-settings, but this is problematic
+   * when you have multiple locales with divergent separator rules (eg en_GB / fr_FR).
+   * The goal is to transition to locale-based-separators instead of setting-based-separators;
+   * but for now, we only switch if there's an opt-in flag.
    */
   protected function isUseSeparatorSettings(): bool {
-    return !Civi::settings()->get('format_locale') && !CRM_Utils_Constant::value('IGNORE_SEPARATOR_CONFIG');
+    // If system enables `format_locale`, then abide the specified locale (regardless of old separator settings).
+    // If system enables IGNORE_SEPARATOR_CONFIG, then abide the active locale's spec (regardless of old separator settings).
+    // If system enables `partial_locales`, then abide active locale's spec (regardless of old separator settings).
+    return !Civi::settings()->get('format_locale')
+      && !CRM_Utils_Constant::value('IGNORE_SEPARATOR_CONFIG')
+      && !Civi::settings()->get('partial_locales');
   }
 
   /**
@@ -200,17 +215,18 @@ class Format {
     if (!$currency) {
       $currency = Civi::settings()->get('defaultCurrency');
     }
+    $locale = $locale ?: \Civi\Core\Locale::detect()->moneyFormat;
+
     $cacheKey = __CLASS__ . $currency . '_' . $locale . '_' . $style . (!empty($attributes) ? md5(json_encode($attributes)) : '');
     if (!isset(\Civi::$statics[$cacheKey])) {
       $formatter = new NumberFormatter($locale, $style);
 
+      $currencyObject = CRM_Utils_Money::getCurrencyObject($currency);
       if (!isset($attributes[NumberFormatter::MIN_FRACTION_DIGITS])) {
-        $attributes[NumberFormatter::MIN_FRACTION_DIGITS] = Currency::of($currency)
-          ->getDefaultFractionDigits();
+        $attributes[NumberFormatter::MIN_FRACTION_DIGITS] = $currencyObject->getDefaultFractionDigits();
       }
       if (!isset($attributes[NumberFormatter::MAX_FRACTION_DIGITS])) {
-        $attributes[NumberFormatter::MAX_FRACTION_DIGITS] = Currency::of($currency)
-          ->getDefaultFractionDigits();
+        $attributes[NumberFormatter::MAX_FRACTION_DIGITS] = $currencyObject->getDefaultFractionDigits();
       }
 
       foreach ($attributes as $attribute => $value) {

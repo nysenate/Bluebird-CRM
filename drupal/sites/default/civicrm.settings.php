@@ -245,6 +245,7 @@ $prefs['write_activity_record'] = false;
 // simple_mail_limit
 $prefs['auto_recipient_rebuild'] = false;
 // allow_mail_from_logged_in_contact
+$prefs['ode_from_allowed'] = true;
 
 // Map settings, from Map.setting.php
 $prefs['geoProvider'] = get_config_value($bbcfg, 'geo.provider', 'SAGE');

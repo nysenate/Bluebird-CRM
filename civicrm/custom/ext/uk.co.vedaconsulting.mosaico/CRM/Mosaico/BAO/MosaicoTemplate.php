@@ -64,8 +64,8 @@ class CRM_Mosaico_BAO_MosaicoTemplate extends CRM_Mosaico_DAO_MosaicoTemplate {
 
       $templatesLocation[] = ['dir' => $templatesDir, 'url' => $templatesUrl];
 
-      $customTemplatesDir = \Civi::paths()->getPath(CRM_Core_BAO_Setting::getItem('Mosaico Preferences', 'mosaico_custom_templates_dir'));
-      $customTemplatesUrl = \Civi::paths()->getUrl(CRM_Core_BAO_Setting::getItem('Mosaico Preferences', 'mosaico_custom_templates_url'));
+      $customTemplatesDir = \Civi::paths()->getPath(\Civi::settings()->get('mosaico_custom_templates_dir'));
+      $customTemplatesUrl = \Civi::paths()->getUrl(\Civi::settings()->get('mosaico_custom_templates_url'),'absolute');
       if (!is_null($customTemplatesDir) && !is_null($customTemplatesUrl)) {
         if (is_dir($customTemplatesDir)) {
           $templatesLocation[] = ['dir' => $customTemplatesDir, 'url' => $customTemplatesUrl];
@@ -84,10 +84,7 @@ class CRM_Mosaico_BAO_MosaicoTemplate extends CRM_Mosaico_DAO_MosaicoTemplate {
           $templateThumbnail = "{$templateLocation['url']}/{$template}/edres/_full.png";
 
           // let's add hidden flag to templates that needs to be excluded from the display
-          $isHidden = false;
-          if (!empty($templatesToHide) && in_array($template, $templatesToHide)) {
-            $isHidden = true;
-          }
+          $isHidden = !empty($templatesToHide) && in_array($template, $templatesToHide);
 
           $records[$template] = [
             'name' => $template,

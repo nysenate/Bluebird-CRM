@@ -1,6 +1,6 @@
 {
     "name": "civicrm/civicrm-core:jquery-ui",
-    "url": "https://github.com/civicrm/jqueryui/archive/1.13.1-civicrm.zip",
-    "checksum": "cb12909a6642b8b7872dbeb7fa5f048de6c6276bef9720d0516e99b479cc3d1d",
+    "url": "https://github.com/civicrm/jqueryui/archive/1.13.2-civicrm.zip",
+    "checksum": "90c0a0954548ffbc1b734553d686302e532d054a820b03dd96720f9828cdb4df",
     "ignore": null
 }

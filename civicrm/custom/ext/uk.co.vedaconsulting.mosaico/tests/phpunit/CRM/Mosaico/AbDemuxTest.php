@@ -18,12 +18,18 @@ class CRM_Mosaico_AbDemuxTest extends CRM_Mosaico_TestCase implements \Civi\Test
   use \Civi\Test\MailingTestTrait;
 
   /**
+   * Generated Entity IDs keyed by the entity name
+   * @var array
+   */
+  protected $ids;
+
+  /**
    * Civi\Test has many helpers, like install(), uninstall(), sql(), and sqlFile().
    * See: https://github.com/civicrm/org.civicrm.testapalooza/blob/master/civi-test.md
    */
   public function setUpHeadless() {
     return \Civi\Test::headless()
-      ->install(['org.civicrm.flexmailer', 'uk.co.vedaconsulting.mosaico'])
+      ->install(['org.civicrm.search_kit', 'org.civicrm.flexmailer', 'uk.co.vedaconsulting.mosaico'])
       ->apply();
   }
 
@@ -34,7 +40,7 @@ class CRM_Mosaico_AbDemuxTest extends CRM_Mosaico_TestCase implements \Civi\Test
     $this->createLoggedInUser();
   }
 
-  public function getVariantExamples() {
+  public function getVariantExamples(): array {
     $cases = array();
 
     // array($field, $inputValue, $expectRegex).

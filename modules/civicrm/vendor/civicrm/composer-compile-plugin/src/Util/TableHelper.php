@@ -1,4 +1,5 @@
 <?php
+
 namespace Civi\CompilePlugin\Util;
 
 use Symfony\Component\Console\Output\OutputInterface;

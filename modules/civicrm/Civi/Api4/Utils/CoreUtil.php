@@ -161,7 +161,6 @@ class CoreUtil {
    * @param int|string $userID
    *   Contact ID of the user we are testing,. 0 for the anonymous user.
    * @return bool
-   * @throws \API_Exception
    * @throws \CRM_Core_Exception
    * @throws \Civi\API\Exception\NotImplementedException
    * @throws \Civi\API\Exception\UnauthorizedException
@@ -208,7 +207,6 @@ class CoreUtil {
    *   Contact ID of the user we are testing, or 0 for the anonymous user.
    *
    * @return bool
-   * @throws \API_Exception
    * @throws \CRM_Core_Exception
    */
   public static function checkAccessDelegated(string $entityName, string $actionName, array $record, int $userID) {
@@ -257,6 +255,54 @@ class CoreUtil {
     $dao = new $daoName();
     $dao->id = $entityId;
     return $dao->getReferenceCounts();
+  }
+
+  /**
+   * @return array
+   */
+  public static function getSearchableOptions(): array {
+    return [
+      'primary' => ts('Primary'),
+      'secondary' => ts('Secondary'),
+      'bridge' => ts('Bridge'),
+      'none' => ts('None'),
+    ];
+  }
+
+  /**
+   * Collect the 'type' values from every entity.
+   *
+   * @return array
+   */
+  public static function getEntityTypes(): array {
+    $provider = \Civi::service('action_object_provider');
+    $entityTypes = [];
+    foreach ($provider->getEntities() as $entity) {
+      foreach ($entity['type'] ?? [] as $type) {
+        $entityTypes[$type] = $type;
+      }
+    }
+    return $entityTypes;
+  }
+
+  /**
+   * Get the suffixes supported by a given option group
+   *
+   * @param string|int $optionGroup
+   *   OptionGroup id or name
+   * @param string $key
+   *   Is $optionGroup being passed as "id" or "name"
+   * @return array
+   */
+  public static function getOptionValueFields($optionGroup, $key = 'name'): array {
+    // Prevent crash during upgrade
+    if (array_key_exists('option_value_fields', \CRM_Core_DAO_OptionGroup::getSupportedFields())) {
+      $fields = \CRM_Core_DAO::getFieldValue('CRM_Core_DAO_OptionGroup', $optionGroup, 'option_value_fields', $key);
+    }
+    if (!isset($fields)) {
+      return ['name', 'label', 'description'];
+    }
+    return explode(',', $fields);
   }
 
 }

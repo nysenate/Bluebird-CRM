@@ -17,10 +17,6 @@ class CRM_Mosaico_Utils {
    */
   const MAX_IMAGE_PIXELS = 36000000;
 
-  public static function isBootstrap() {
-    return strpos(CRM_Mosaico_Utils::getLayoutPath(), '/crmstar-') === FALSE;
-  }
-
   /**
    * Get a list of layout options.
    *
@@ -30,7 +26,6 @@ class CRM_Mosaico_Utils {
   public static function getLayoutOptions() {
     return [
       'auto' => E::ts('Automatically select a layout'),
-      'crmstar-single' => E::ts('Single Page (crm-*)'),
       'bootstrap-single' => E::ts('Single Page (Bootstrap CSS)'),
       'bootstrap-wizard' => E::ts('Wizard (Bootstrap CSS)'),
     ];
@@ -86,7 +81,7 @@ class CRM_Mosaico_Utils {
    */
   public static function findBaseTemplatesFromDisk() {
     $templates = CRM_Mosaico_BAO_MosaicoTemplate::findBaseTemplates(TRUE, FALSE);
-    return array_map(function($template) { return $template['name']; }, $templates);
+    return array_column($templates, 'name', 'name');
   }
 
   /**
@@ -136,15 +131,13 @@ class CRM_Mosaico_Utils {
     $prefix = '~/crmMosaico/EditMailingCtrl';
 
     $paths = [
-      'crmstar-single' => "$prefix/crmstar-single.html",
       'bootstrap-single' => "$prefix/bootstrap-single.html",
       'bootstrap-wizard' => "$prefix/bootstrap-wizard.html",
     ];
 
-    if (empty($layout) || $layout === 'auto') {
-      $themes = Civi::service('themes');
-      return $themes->getActiveThemeKey() === 'shoreditch'
-        ? $paths['bootstrap-wizard'] : $paths['crmstar-single'];
+    // Legacy handling for 'crmstar-single' - treat as 'auto'
+    if (empty($layout) || $layout === 'auto' || $layout === 'crmstar-single') {
+      return $paths['bootstrap-wizard'];
     }
     elseif (isset($paths[$layout])) {
       return $paths[$layout];
@@ -308,7 +301,7 @@ class CRM_Mosaico_Utils {
           if (move_uploaded_file($tmp_name, $file_path) === TRUE) {
             $size = filesize($file_path);
 
-            $thumbnail_path = $config['BASE_DIR'] . $config[ 'THUMBNAILS_DIR' ] . $file_name;
+            $thumbnail_path = $config['BASE_DIR'] . $config['THUMBNAILS_DIR'] . $file_name;
             try {
               Civi::service('mosaico_graphics')->createResizedImage($file_path, $thumbnail_path, $config['THUMBNAIL_WIDTH'], $config['THUMBNAIL_HEIGHT']);
               $file = [
@@ -358,24 +351,20 @@ class CRM_Mosaico_Utils {
 
     $method = CRM_Utils_Request::retrieveValue('method', 'String', 'cover', FALSE, 'GET');
     if (!in_array($method, $methods)) {
-      \Civi::log()->error('Invalid method for processImg: ' . $method);
-      http_response_code(400);
-      CRM_Utils_System::civiExit();
+      self::returnBadRequest('Invalid method for processImg: ' . $method);
     }
 
-    $params = CRM_Utils_Request::retrieveValue('params', 'String', NULL, FALSE, 'GET');
-    if (empty($params)) {
-      \Civi::log()->error('Invalid params for processImg: ' . $params);
-      http_response_code(400);
-      CRM_Utils_System::civiExit();
+    $rawParams = CRM_Utils_Request::retrieveValue('params', 'String', NULL, FALSE, 'GET');
+    if (empty($rawParams)) {
+      self::returnBadRequest('Invalid params for processImg: ' . $rawParams);
     }
-    $params = explode(',', $params);
+    $params = explode(',', $rawParams);
     $width = (int) $params[0];
     $height = (int) $params[1];
 
     // Apply a sensible maximum size for images in an email
-    if ($width * $height > self::MAX_IMAGE_PIXELS)  {
-      throw new \CRM_Mosaico_Graphics_Exception('The requested image size is too large');
+    if ($width * $height > self::MAX_IMAGE_PIXELS) {
+      self::returnBadRequest('The requested image size is too large');
     }
 
     // Sometimes output buffer started by another module or plugin causes problem with
@@ -394,7 +383,7 @@ class CRM_Mosaico_Utils {
       case 'cover':
         $func = ($method === 'resize') ? 'createResizedImage' : 'createCoveredImage';
 
-        $path_parts = pathinfo(CRM_Utils_String::purifyHTML(CRM_Utils_Request::retrieveValue('src', 'String', NULL, TRUE, 'GET')));
+        $path_parts = pathinfo(CRM_Utils_String::purifyHTML(urldecode(str_replace('%25', '%', CRM_Utils_Request::retrieveValue('src', 'String', NULL, TRUE, 'GET')))));
         $src_file = $config['BASE_DIR'] . $config['UPLOADS_DIR'] . $path_parts["basename"];
         $cache_file = $config['BASE_DIR'] . $config['STATIC_DIR'] . $path_parts["basename"];
         // $cache_file = $config['BASE_DIR'] . $config['STATIC_DIR'] . $method . '-' . $width . "x" . $height . '-' . $path_parts["basename"];
@@ -403,7 +392,7 @@ class CRM_Mosaico_Utils {
         // from the gallery. However, to fix it, one must also fix CRM_Mosaico_ImageFilter.
 
         if (!file_exists($src_file)) {
-          throw new \CRM_Mosaico_Graphics_Exception("Failed to locate source file: {$path_parts['basename']}");
+          self::returnBadRequest("Failed to locate source file: {$path_parts['basename']}");
         }
         if (!file_exists($cache_file)) {
           Civi::service('mosaico_graphics')->$func($src_file, $cache_file, $width, $height);
@@ -415,34 +404,35 @@ class CRM_Mosaico_Utils {
     CRM_Utils_System::civiExit();
   }
 
+  private static function returnBadRequest($message) {
+    \Civi::log('mosaico')->error($message);
+    http_response_code(400);
+    CRM_Utils_System::civiExit();
+  }
+
   /**
    * @param string $file
    *   Full path to the image file.
    */
-  public static function sendImage($file) {
+  public static function sendImage(string $file) {
     $mimeMap = [
       'gif' => 'image/gif',
       'jpg' => 'image/jpeg',
       'jpeg' => 'image/jpeg',
       'png' => 'image/png',
     ];
-    $mime_type = CRM_Utils_Array::value(
-      pathinfo($file, PATHINFO_EXTENSION), $mimeMap, 'image/jpeg');
+    $mime_type = $mimeMap[pathinfo($file, PATHINFO_EXTENSION)] ?? 'image/jpeg';
 
-    $expiry_time = 2592000;  //30days (60sec * 60min * 24hours * 30days)
-    header("Pragma: cache");
+    // 30days (60sec * 60min * 24hours * 30days)
+    $expiry_time = 2592000;
+    header("Pragma: public");
     header("Cache-Control: max-age=" . $expiry_time . ", public");
     header('Expires: ' . gmdate('D, d M Y H:i:s', time() + $expiry_time) . ' GMT');
     header("Content-type:" . $mime_type);
 
-    $fh = fopen($file, 'r');
-    if ($fh === FALSE) {
-      throw new \Exception("Failed to read image file: $file");
-    }
-    while (!feof($fh)) {
-      echo fread($fh, 2048);
-    }
-    fclose($fh);
+    readfile($file);
+    ob_flush();
+    flush();
   }
 
 }

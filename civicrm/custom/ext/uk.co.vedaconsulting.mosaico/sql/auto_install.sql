@@ -80,12 +80,14 @@ CREATE TABLE `civicrm_mosaico_template` (
      `metadata` longtext    COMMENT 'Mosaico metadata (JSON)',
      `content` longtext    COMMENT 'Mosaico content (JSON)',
      `msg_tpl_id` int unsigned NULL   COMMENT 'FK to civicrm_msg_template.',
-     `category_id` int(10) UNSIGNED DEFAULT NULL COMMENT 'ID of the category this mailing template is currently belongs. Foreign key to civicrm_option_value.'
+     `category_id` int(10) UNSIGNED DEFAULT NULL COMMENT 'ID of the category this mailing template is currently belongs. Foreign key to civicrm_option_value.',
+     `domain_id` int unsigned NULL   COMMENT 'FK to civicrm_domain.'
 ,
         PRIMARY KEY (`id`)
  
  
 ,          CONSTRAINT FK_civicrm_mosaico_template_msg_tpl_id FOREIGN KEY (`msg_tpl_id`) REFERENCES `civicrm_msg_template`(`id`) ON DELETE SET NULL  
+,          CONSTRAINT FK_civicrm_mosaico_template_domain_id FOREIGN KEY (`domain_id`) REFERENCES `civicrm_domain`(`id`) ON DELETE SET NULL
 ) ENGINE=InnoDB    ;
 
  

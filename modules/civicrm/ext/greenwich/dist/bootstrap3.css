@@ -1,4 +1,6 @@
 
+@charset "UTF-8";
+
 #bootstrap-theme {}
 
 #bootstrap-theme html {
@@ -1740,7 +1742,7 @@
 }
 
 #bootstrap-theme blockquote footer:before, #bootstrap-theme blockquote small:before, #bootstrap-theme blockquote .small:before {
-	content: "—  ";
+	content: "— ";
 }
 
 #bootstrap-theme .blockquote-reverse, #bootstrap-theme blockquote.pull-right {
@@ -1756,7 +1758,7 @@
 }
 
 #bootstrap-theme .blockquote-reverse footer:after, #bootstrap-theme .blockquote-reverse small:after, #bootstrap-theme .blockquote-reverse .small:after, #bootstrap-theme blockquote.pull-right footer:after, #bootstrap-theme blockquote.pull-right small:after, #bootstrap-theme blockquote.pull-right .small:after {
-	content: "  —";
+	content: " —";
 }
 
 #bootstrap-theme address {

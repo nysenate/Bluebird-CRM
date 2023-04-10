@@ -770,6 +770,22 @@ class CRM_Core_SelectValues {
   }
 
   /**
+   * Get measurement units recognized by the TCPDF package used to create PDF labels.
+   *
+   * @return array
+   *   array of measurement units
+   */
+  public static function getLayoutUnits(): array {
+    return [
+      'in' => ts('Inches'),
+      'cm' => ts('Centimeters'),
+      'mm' => ts('Millimeters'),
+      'pt' => ts('Points'),
+      'px' => ts('Pixels'),
+    ];
+  }
+
+  /**
    * Extension types.
    *
    * @return array
@@ -1078,7 +1094,7 @@ class CRM_Core_SelectValues {
    * Dropdown options for quicksearch in the menu
    *
    * @return array
-   * @throws \CiviCRM_API3_Exception
+   * @throws \CRM_Core_Exception
    */
   public static function quicksearchOptions() {
     $includeEmail = civicrm_api3('setting', 'getvalue', ['name' => 'includeEmailInName', 'group' => 'Search Preferences']);
