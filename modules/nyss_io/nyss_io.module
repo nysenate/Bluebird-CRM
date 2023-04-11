@@ -79,7 +79,7 @@ function nyss_ioimport_form()
     '#title' => t('Dry Run (parses data but does not alter the instance)'),
     '#default_value' => 1,
   ];
-   
+
   $form['processing']['sendemail'] = [
     '#type' => 'checkbox',
     '#title' => t('Send summary email'),
@@ -115,7 +115,7 @@ function nyss_ioimport_form()
   while ($rules->fetch()) {
     $dedupeoptions[$rules->id] = $rules->title;
   }
-   
+
   $form['dedupeset']['deduperule'] = [
     '#type' => 'select',
     '#options' => $dedupeoptions,
@@ -123,27 +123,27 @@ function nyss_ioimport_form()
     '#default_value' => 1,
     '#description' => t('If dedupe is enabled (above), select which rule to use when determining a match. In most cases you will use the Individual Strict rule.'),
   ];
-   
+
   //Data Handling Options
   $form['datahandling'] = [
     '#type' => 'fieldset',
     '#title' => t('Data Handling'),
   ];
-   
+
   $form['datahandling']['boeimport'] = [
     '#type' => 'checkbox',
     '#title' => t('Process as a BOE import.'),
     '#default_value' => 0,
     '#description' => t(''),
   ];
-   
+
   $form['datahandling']['emailimport'] = [
     '#type' => 'checkbox',
     '#title' => t('Process as an email import.'),
     '#default_value' => 0,
     '#description' => t('Enabling will automatically engage dedupe on import using the email import rule. New contacts created during import (which do not match any existing contacts) will be added to an "Email Only" group and excluded from postal mailings.'),
   ];
-   
+
   $form['datahandling']['addtogroup_handling'] = [
     '#type' => 'radios',
     '#title' => t('Add to Group Handling'),
@@ -152,21 +152,21 @@ function nyss_ioimport_form()
     '#default_value' => 'none',
     '#description' => t('If "Add All" is selected, all imported contacts will be added to the group. If "Add New" is selected, only new contacts created through the import will be added to the group.'),
   ];
-   
+
   $form['datahandling']['addtogroup'] = [
     '#type' => 'textfield',
     '#title' => t('Group Name (if the group name does not exist, it will be created)'),
     '#size' => 40,
     '#field_prefix' => '<br />',
   ];
-   
+
   $form['datahandling']['parsename'] = [
     '#type' => 'checkbox',
     '#title' => t('Parse full name'),
     '#default_value' => 0,
     '#description' => t('Enable this option if your import file contains a full_name field that you want to parse into first/middle/last name. Note, if you enable this option, parsed field names will be ignored.'),
   ];
-   
+
   $form['datahandling']['fieldoverride'] = [
     '#type' => 'checkbox',
     '#title' => t('Null/empty override'),
@@ -740,7 +740,7 @@ function nyss_ioimportData($tbl, &$l, $dryrun, $form_state)
       $nyss_select[$table]['fields'] = implode(",",$tmp);
     }
   }
-    
+
   $pkCivi = $nyss_select[$tbl]['PK']['civiField'];
   $pkImport = $nyss_select[$tbl]['PK']['importField'];
 
@@ -802,7 +802,7 @@ function nyss_ioimportData($tbl, &$l, $dryrun, $form_state)
     mysqli_free_result($result);
 
     $up = [];
-    
+
     //compare the fields
     foreach ($l as $key=>$data) {
 
@@ -891,7 +891,7 @@ function nyss_ioimportData($tbl, &$l, $dryrun, $form_state)
         $l['current_employer'] = '';
       }
     }
-        
+
     //only set these if the corresponding data columns exist in the import file
     //nyss_out('debug', $l, true);exit();
     if (!empty($l['street_address']) ||
@@ -942,7 +942,7 @@ function nyss_ioimportData($tbl, &$l, $dryrun, $form_state)
 
     //nyss_out('debug', $tbl, true);
     //nyss_out('debug', $l, true); //exit();
-        
+
     //set up the insert
     //nyss_out('status', 'set up the insert', true);
     foreach($l as $key => $data) {
@@ -981,7 +981,7 @@ function nyss_ioimportData($tbl, &$l, $dryrun, $form_state)
       $insertKeys[] = "`{$nyss_iofields[$tbl][$key]['fld']}`";
       $insertData[] = "'{$data}'";
     }
-        
+
     //nyss_out('debug', $l, true); //exit();
 
     if ($skip) return;
@@ -1407,8 +1407,7 @@ function _fixStreetNumber(&$l)
 } //_fixStreetNumber()
 
 
-function _findContact(&$l, $nyss_conn, $ruleID = 1)
-{
+function _findContact(&$l, $nyss_conn, $ruleID = 1) {
   require_once 'CRM/Dedupe/Finder.php';
 
   //format params to pass to dedupe tool
@@ -1442,12 +1441,14 @@ function _findContact(&$l, $nyss_conn, $ruleID = 1)
     WHERE id = {$ruleID}
   ");
 
+
   $o = new stdClass();
   $o->title = $ruleTitle;
   $o->params = $params;
   $o->noRules = false;
   $tableQueries = [];
   nyss_dedupe_civicrm_dupeQuery($o, 'table', $tableQueries);
+
   $sql = $tableQueries['civicrm.custom.5'];
   $sql = "
     SELECT contact.id
