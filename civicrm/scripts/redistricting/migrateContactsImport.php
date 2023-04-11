@@ -955,7 +955,7 @@ class CRM_migrateContactsImport {
 
     //format params to pass to dedupe tool based on contact type
     $params = [];
-    $ruleName = '';
+    $ruleTitle = '';
     switch($cType) {
       case 'Individual':
         $params['civicrm_contact']['first_name'] = CRM_Utils_Array::value('first_name', $contact['contact']);
@@ -964,17 +964,17 @@ class CRM_migrateContactsImport {
         $params['civicrm_contact']['suffix_id'] = CRM_Utils_Array::value('suffix_id', $contact['contact']);
         $params['civicrm_contact']['birth_date'] = CRM_Utils_Array::value('birth_date', $contact['contact']);
         $params['civicrm_contact']['gender_id'] = CRM_Utils_Array::value('gender_id', $contact['contact']);
-        $ruleName = 'Individual Strict (first + last + (street + zip | email))';
+        $ruleTitle = 'Individual Strict (first + last + (street + zip | email))';
         break;
 
       case 'Organization':
         $params['civicrm_contact']['organization_name'] = CRM_Utils_Array::value('organization_name', $contact['contact']);
-        $ruleName = 'Organization 1 (name + street + city + email)';
+        $ruleTitle = 'Organization 1 (name + street + city + email)';
         break;
 
       case 'Household':
         $params['civicrm_contact']['household_name'] = CRM_Utils_Array::value('household_name', $contact['contact']);
-        $ruleName = 'Household 1 (name + street + city + email)';
+        $ruleTitle = 'Household 1 (name + street + city + email)';
         break;
 
       default:
@@ -990,9 +990,9 @@ class CRM_migrateContactsImport {
       }
     }
 
-    if ( isset($contact['email']) ) {
-      foreach ( $contact['email'] as $email ) {
-        if ( !empty($email['email']) && $email['is_primary'] ) {
+    if (isset($contact['email'])) {
+      foreach ($contact['email'] as $email) {
+        if (!empty($email['email']) && $email['is_primary']) {
           $params['civicrm_email']['email'] = CRM_Utils_Array::value('email', $email);
         }
       }
@@ -1003,7 +1003,7 @@ class CRM_migrateContactsImport {
 
     //use dupeQuery hook implementation to build sql
     $o = new stdClass();
-    $o->name = $ruleName;
+    $o->title = $ruleTitle;
     $o->params = $params;
     $o->noRules = false;
     $tableQueries = [];

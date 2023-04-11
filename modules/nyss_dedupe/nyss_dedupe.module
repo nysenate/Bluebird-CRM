@@ -122,11 +122,11 @@ function nyss_dedupe_civicrm_dupeQuery ($o, $table, &$tableQueries){
     ]
   ];
 
-  $ruleName = $o->name;
+  $ruleTitle = $o->title;
   $ruleType = empty($o->params) ? 'internal' : 'record';
 
   // If its a rule that we've overridden
-  if (array_key_exists($ruleName, $ruleMap) && $rule=$ruleMap[$ruleName][$ruleType]) {
+  if (array_key_exists($ruleTitle, $ruleMap) && $rule = $ruleMap[$ruleTitle][$ruleType]) {
     //Set some default override values, individual rule functions can override these
     $o->threshold = 5;
     // Build our customized query, allow override of $o values.
@@ -136,8 +136,8 @@ function nyss_dedupe_civicrm_dupeQuery ($o, $table, &$tableQueries){
     // For internal queries, make sure to respect the contactIds constraints
     // Also avoid mirror results, i.e. (1,2) and (2,1)
     // Verify that conact1._contact_id and contact2.contact_id are not the same as well.
-    if($ruleType == 'internal') {
-      if( !empty($o->contactIds) ) {
+    if ($ruleType == 'internal') {
+      if (!empty($o->contactIds)) {
         $cids = implode(',',$o->contactIds);
         $query .= " AND contact1.contact_id IN($cids) AND ( contact2.contact_id NOT IN($cids) OR (contact2.contact_id IN($cids) AND contact1.contact_id < contact2.contact_id) )";
       }
