@@ -255,28 +255,15 @@ function nyss_ioimport_form_submit($form, &$form_state) {
   global $nyss_iototallines;
   global $nyss_conn;
   global $dryrun;
-  global $logFile;
 
   civicrm_initialize();
+
   require_once 'CRM/Core/Config.php';
-  $config = CRM_Core_Config::singleton();
-
   require_once 'api/api.php';
-
-  $nyss_conn = nyss_getConnection($bbconfig);
-
-  $logpath = isset($bbconfig['nyss_io.log_path']) ? $bbconfig['nyss_io.log_path'] : '/data/importData/logs/';
-
-  if (!file_exists($logpath)) {
-    mkdir($logpath, 0775, true);
-  }
-
-  $logFilename = 'import.' . mt_rand(1,9999999999999999).".log";
-  $logFilePath = $logpath.$logFilename;
-  $logFile = fopen($logFilePath, 'w');
-  nyss_out('status', 'log file path: '.$logFilePath, true);
-
   require_once(dirname(__FILE__) . '/nyss_io_definitions.inc');
+
+  $config = CRM_Core_Config::singleton();
+  $nyss_conn = nyss_getConnection($bbconfig);
 
   $filename = $form_state['values']['csv']['file']->uri;
   if (empty($filename)) {
@@ -316,7 +303,7 @@ function nyss_ioimport_form_submit($form, &$form_state) {
   $aLocType = array_flip(ioGetLocType());
 
   nyss_out('status',
-    "importing file with [dryrun = {$dryrunTxt}] AND [count = {$runnum}].<br>import file: {$filename}.<br>log file: {$logFilename}",
+    "importing file with [dryrun = {$dryrunTxt}] AND [count = {$runnum}].<br>import file: {$filename}",
     true );
   nyss_flush();
 
@@ -644,7 +631,7 @@ function nyss_ioimport_form_submit($form, &$form_state) {
   nyss_out('status', "$num_updated updated, $num_created created.", true);
   nyss_out('status', "$num_deleted deleted.", true);
   nyss_out('status', "$addressDelCount addresses deleted.", true);
-  nyss_out('status', "Imported $nyss_ioline lines. access the log file <a href=\"http://".$_SERVER['HTTP_HOST'].'/nyss_getfile?file='.urlencode($logFilename)."\">click here.</a>",true);
+  nyss_out('status', "Imported $nyss_ioline lines.",true);
 
   //various postProcessing cleanup steps
   if (!$dryrun) {
