@@ -7,7 +7,7 @@ class CRM_Utils_SAGE
 {
   /**
   * Produces a SAGE warning.
-  * @param string $message  Error message. 
+  * @param string $message  Error message.
   */
   private static function warn(string $message) {
     $session = CRM_Core_Session::singleton();
@@ -404,7 +404,7 @@ class CRM_Utils_SAGE
   * @param array   &$values              An array representing address, geocode, and district values.
   * @param boolean $overwrite_districts  If true, districts will be written by default to {$values}.
   * @param boolean $overwrite_point      If true, geocode will be written by default to {$values}
-  * @return true if response validated successfully, false otherwise.
+  * @return boolean true if response validated successfully, false otherwise.
   */
   public static function lookup(&$values, $overwrite_districts=true, $overwrite_point=true) {
     [$addr_field, $addr] = self::getAddress($values);
@@ -459,11 +459,11 @@ class CRM_Utils_SAGE
 
 
   /**
-  * Performs a batch bluebird lookup by address and assigns district and geocode information to 
+  * Performs a batch bluebird lookup by address and assigns district and geocode information to
   * each entry in {$rows}.
   *
-  * @param array &$rows  An array of rows that each contain an array with address, geocode, 
-  *                      and district columms. Basically an array of {$values} used in the 
+  * @param array &$rows  An array of rows that each contain an array with address, geocode,
+  *                      and district columms. Basically an array of {$values} used in the
   *                      non-batch form of this function.
   * @param boolean $overwrite_districts  If true, districts written to each row by default.
   * @param boolean $overwrite_point      If true, geocodes written to each row by default.
@@ -511,7 +511,7 @@ class CRM_Utils_SAGE
       if (isset($row['state_province_id'])) {
         $row['state_province'] = CRM_Core_PseudoConstant::stateProvinceAbbreviation($row['state_province_id']);
       }
- 
+
       $address = array(
         'addr1' => str_replace(',', '', $addr),
         'city'  => CRM_Utils_Array::value('city', $row, ""),
@@ -536,7 +536,7 @@ class CRM_Utils_SAGE
     foreach($rows as $row) {
       $points[] = array(
         'lat' => CRM_Utils_Array::value('geo_code_1', $row, ""),
-        'lon' => CRM_Utils_Array::value('geo_code_2', $row, "") 
+        'lon' => CRM_Utils_Array::value('geo_code_2', $row, "")
       );
     }
     return $points;
@@ -546,7 +546,7 @@ class CRM_Utils_SAGE
   * Fail silently if the XML response from SAGE was invalid and could not
   * be parsed into a simplexml object, or if it was parsed but returned
   * a non-zero statusCode.
-  * 
+  *
   * @param $xml
   * @return boolean true if validated, false otherwise.
   */
@@ -554,7 +554,7 @@ class CRM_Utils_SAGE
     return ($xml instanceof SimpleXMLElement) && ($xml->statusCode == 0);
   }
 
-  /** 
+  /**
   * Historically there have been several fields to store the address.
   * We need to return the address and the source field to store the
   * corrected address back into the correct form field.
@@ -597,7 +597,7 @@ class CRM_Utils_SAGE
 
 
   /**
-  * Sets geocode column entries within the supplied {$values} array using the 
+  * Sets geocode column entries within the supplied {$values} array using the
   * SAGE xml response {$xml}.
   *
    * @param array &$values An array representing address, geocode, and district values
@@ -617,9 +617,9 @@ class CRM_Utils_SAGE
 
 
   /**
-  * Sets district column entries within the supplied {$values} array using the 
+  * Sets district column entries within the supplied {$values} array using the
   * SAGE xml response {$xml}.
-  * 
+  *
   * @param array     &$values    An array representing address, geocode, and district values
   * @param \SimpleXMLElement $xml        SimpleXml object containing SAGE xml response.
   * @param boolean   $overwrite  If true, district data is written by default.
@@ -687,7 +687,7 @@ class CRM_Utils_SAGE
   * Applies normalizations to address line 1.
   *
   * @param string $addr       String containing the validated address line 1 value.
-  * @param string $orig_addr  String containing the original address line 1 value. 
+  * @param string $orig_addr  String containing the original address line 1 value.
   */
   private static function normalizeAddr($addr, $orig_addr) {
     //Fix the PO Box which doesn't follow ucwords() rules
