@@ -91,6 +91,7 @@ class CRM_Contact_Form_Search_Custom_TagContactLog
 
 
   function all($offset = 0, $rowcount = 0, $sort = NULL, $includeContactIDs = FALSE, $justIDs = FALSE) {
+    //Civi::log()->debug(__METHOD__, ['sort' => $sort]);
     //NOTE: tag.id is being aliased as the contact_id to fake out the custom search model
 
     if ($justIDs) {
@@ -99,8 +100,6 @@ class CRM_Contact_Form_Search_Custom_TagContactLog
       $group = 'GROUP BY contact_id';
     }
     else {
-      $sort = NULL;
-
       switch ($this->_formValues['entity']) {
         case 1:
           $selectClause = "
@@ -132,6 +131,14 @@ class CRM_Contact_Form_Search_Custom_TagContactLog
       $group = 'GROUP BY tag.id, tag_name, entity_id';
     }
 
+    //store the sort so we can add it later
+    $orderBy = ($sort && is_object($sort)) ? $sort->orderBy() : $sort;
+    $orderBySql = ($orderBy) ? "ORDER BY {$orderBy}" : NULL;
+    //Civi::log()->debug(__METHOD__, ['orderBy' => $orderBy, 'orderBySql' => $orderBySql]);
+
+    //reset $sort so it isn't applied to the inner query
+    $sort = NULL;
+
     //build inner query
     $sql = $this->sql($selectClause,
       $offset, $rowcount, $sort,
@@ -147,7 +154,7 @@ class CRM_Contact_Form_Search_Custom_TagContactLog
         {$sql}
       ) base
       GROUP BY contact_id, tag_name
-      ORDER BY tag_name
+      {$orderBySql}
       LIMIT {$offset}, {$rowcount}
     ";
 
