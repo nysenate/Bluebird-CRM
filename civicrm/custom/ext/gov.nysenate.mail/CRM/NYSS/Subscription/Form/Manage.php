@@ -11,8 +11,11 @@
  * This class generates form components
  *
  */
-class CRM_NYSS_Subscription_Form_Manage extends CRM_Core_Form
-{
+class CRM_NYSS_Subscription_Form_Manage extends CRM_Core_Form {
+
+  public int $_eq;
+  public string $_cs;
+
   /**
    * pre-form data checks
    *
@@ -25,19 +28,19 @@ class CRM_NYSS_Subscription_Form_Manage extends CRM_Core_Form
     //CRM_Core_Error::debug_log_message('CRM_NYSS_Subscription_Form_Manage::preProcess');
 
     //get form params
-    $eq = CRM_Utils_Request::retrieve('eq', 'Positive', CRM_Core_DAO::$_nullObject, FALSE, NULL, $_REQUEST);
-    $cs = CRM_Utils_Request::retrieve('cs', 'String', CRM_Core_DAO::$_nullObject, FALSE, NULL, $_REQUEST);
+    $eq = CRM_Utils_Request::retrieve('eq', 'Positive');
+    $cs = CRM_Utils_Request::retrieve('cs', 'String');
 
-    if ( !$eq || !$cs ) {
+    if (!$eq || !$cs) {
       //check to see if set to submitValues
-      if ( !empty($this->_submitValues['eq']) ) {
+      if (!empty($this->_submitValues['eq'])) {
         $eq = $this->_submitValues['eq'];
       }
-      if ( !empty($this->_submitValues['cs']) ) {
+      if (!empty($this->_submitValues['cs'])) {
         $cs = $this->_submitValues['cs'];
       }
 
-      if ( !$eq || !$cs ) {
+      if (!$eq || !$cs) {
         CRM_Core_Error::debug_log_message("No event queue ID or checksum set.");
         CRM_Utils_System::redirect('http://www.nysenate.gov');
       }
@@ -58,8 +61,8 @@ class CRM_NYSS_Subscription_Form_Manage extends CRM_Core_Form
         ON eq.email_id = e.id
       WHERE eq.id = {$eq}
     ");
-    if ( $dao->N ) {
-      while ( $dao->fetch() ) {
+    if ($dao->N) {
+      while ($dao->fetch()) {
         $contact = [
           'email_id' => $dao->email_id,
           'contact_id' => $dao->contact_id,
@@ -72,7 +75,7 @@ class CRM_NYSS_Subscription_Form_Manage extends CRM_Core_Form
     }
 
     //if contact could not be retrieved from queue ID, exit
-    if ( empty($contact) ) {
+    if (empty($contact)) {
       CRM_Core_Error::debug_log_message("Unable to locate contact for subscription management tool using event queue: {$eq}");
       CRM_Utils_System::redirect('http://www.nysenate.gov');
     }
@@ -83,7 +86,7 @@ class CRM_NYSS_Subscription_Form_Manage extends CRM_Core_Form
     $bbconfig = get_bluebird_instance_config();
 
     //verify checksum
-    if ( !CRM_Contact_BAO_Contact_Utils::validChecksum($contact['contact_id'], $cs) ) {
+    if (!CRM_Contact_BAO_Contact_Utils::validChecksum($contact['contact_id'], $cs)) {
       CRM_Core_Error::debug_var('Failed attempt to validate checksum in email subscription tool.', $contact);
       $url = "{$bbconfig['public.url.base']}/{$bbconfig['envname']}/{$bbconfig['shortname']}/subscription/expired";
       CRM_Utils_System::redirect($url);
@@ -138,7 +141,7 @@ class CRM_NYSS_Subscription_Form_Manage extends CRM_Core_Form
         AND og.name = 'mailing_categories'
       ORDER BY ov.weight
     ");
-    while ( $opts->fetch() ) {
+    while ($opts->fetch()) {
       $mCats[$opts->value] = $opts->label;
       $mailingCats[] = $this->createElement('checkbox', $opts->value, NULL, $opts->label);
       $this->addGroup($mailingCats, 'mailing_categories', ts('Mailing Categories'), '<br />');
@@ -161,8 +164,8 @@ class CRM_NYSS_Subscription_Form_Manage extends CRM_Core_Form
     //set defaults; translate opt-outs to present as opt-ins
     $defaults = [];
     $existingOptOuts = explode(',', $this->_contact['mailing_categories']);
-    foreach ( $mCats as $mCatID => $mCatLabel ) {
-      if ( !in_array($mCatID, $existingOptOuts) ) {
+    foreach ($mCats as $mCatID => $mCatLabel) {
+      if (!in_array($mCatID, $existingOptOuts)) {
         $defaults['mailing_categories['.$mCatID.']'] = 1;
       }
     }
@@ -199,7 +202,7 @@ class CRM_NYSS_Subscription_Form_Manage extends CRM_Core_Form
         AND og.name = 'mailing_categories'
       ORDER BY ov.weight
     ");
-    while ( $opts->fetch() ) {
+    while ($opts->fetch()) {
       $mCats[$opts->value] = $opts->label;
     }
 
@@ -211,7 +214,7 @@ class CRM_NYSS_Subscription_Form_Manage extends CRM_Core_Form
       }
     }
     if (!empty($unselectedOpts)) {
-      $mc = "'".implode(',', $unselectedOpts)."'";
+      $mc = implode(',', $unselectedOpts);
     }
 
     //opt out
