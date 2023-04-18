@@ -209,7 +209,7 @@ class CRM_NYSS_Subscription_Form_Manage extends CRM_Core_Form {
     //translate opt-outs to present as opt-ins
     $unselectedOpts = [];
     foreach ($mCats as $mCatID => $mCatLabel) {
-      if (!array_key_exists($mCatID, $formParams['mailing_categories'])) {
+      if (!array_key_exists($mCatID, $formParams['mailing_categories'] ?? [])) {
         $unselectedOpts[] = $mCatID;
       }
     }
