@@ -18,6 +18,11 @@ use Dompdf\Options;
  * @package CRM
  * @copyright CiviCRM LLC https://civicrm.org/licensing
  */
+
+// NYSS renamed this file to remove it from override handling
+// its purpose was to split the HTML into chunks for PDF processing
+// I don't believe that's necessary anymore and the code was creating duplicate output (#15479)
+
 class CRM_Utils_PDF_Utils {
 
   //NYSS use a 4MiB chunk size
@@ -94,7 +99,7 @@ class CRM_Utils_PDF_Utils {
 
     // Strip <html>, <header>, and <body> tags from each page
     //NYSS split into head/tail to account for chunk processing; add script tag
-    $headerElems = array(
+    $headerElems = [
       '@<head[^>]*?>.*?</head>@siu',
       '@<script[^>]*?>.*?</script>@siu',
       '@<body>@siu',
@@ -102,12 +107,12 @@ class CRM_Utils_PDF_Utils {
       '@<html[^>]*?>@siu',
       '@</html>@siu',
       '@<!DOCTYPE[^>]*?>@siu',
-    );
+    ];
 
-    $tailElems = array(
+    $tailElems = [
       '@</body>@siu',
       '@</html>@siu',
-    );
+    ];
 
     for ($i = 0; $i < count($pages); $i++) {
       if ($i > 0) {
@@ -261,9 +266,9 @@ class CRM_Utils_PDF_Utils {
    * @param bool $output
    * @param string $fileName
    */
-  //NYSS support passing filename
+  //NYSS support passing fileinput
   public static function _html2pdf_wkhtmltopdf($paper_size, $orientation, $margins, $html, $output, $fileName, $fileInput = FALSE) {
-    require_once 'packages/snappy/src/autoload.php';
+    require_once 'snappy/src/autoload.php';
     $config = CRM_Core_Config::singleton();
     $snappy = new Knp\Snappy\Pdf($config->wkhtmltopdfPath);
     $snappy->setOption("page-width", $paper_size[2] . "pt");

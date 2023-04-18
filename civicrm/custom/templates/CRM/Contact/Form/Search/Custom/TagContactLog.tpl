@@ -34,11 +34,12 @@
     <div class="crm-accordion-header crm-master-accordion-header">
       {ts}Edit Search Criteria{/ts}
     </div><!-- /.crm-accordion-header -->
-    <div class="crm-accordion-body" id="BirthdayByMonth">
-      <div class="crm-submit-buttons">
-        {include file="CRM/common/formButtons.tpl" location="top"}
-      </div>
-      <table class="form-layout-compressed">
+    <div class="crm-accordion-body" id="TagCount">
+      <table class="form-layout-compressed" style="margin-top: 20px;">
+        <tr class="crm-contact-custom-search-form-row-entity">
+          <td class="label"><label for="entity">{$form.entity.label}</label></td>
+          <td>{$form.entity.html}</td>
+        </tr>
         <tr class="crm-contact-custom-search-form-row-tag-type">
           <td class="label"><label for="tag_type">{$form.tag_type.label}</label></td>
           <td>{$form.tag_type.html}</td>
@@ -56,9 +57,9 @@
           <td>{$form.action_type.html}</td>
         </tr>
       </table>
-        <div class="crm-submit-buttons">
-          {include file="CRM/common/formButtons.tpl" location="bottom"}
-        </div>
+      <div class="crm-submit-buttons">
+        {include file="CRM/common/formButtons.tpl" location="bottom"}
+      </div>
     </div><!-- /.crm-accordion-body -->
 </div><!-- /.crm-accordion-wrapper -->
 </div><!-- /.crm-form-block -->

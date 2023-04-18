@@ -20,6 +20,13 @@ class CRM_Contact_Form_Search_Custom_TagContactLog
   function buildForm(&$form) {
     $this->setTitle('Tag Count Search');
 
+    $entity = [
+      1 => ts('Contacts'),
+      2 => ts('Activities'),
+      3 => ts('Cases'),
+    ];
+    $form->addRadio('entity', ts('Tag Entity'), $entity, NULL, '&nbsp;', TRUE);
+
     $tagType = [
       '1' => ts('Keywords'),
       '2' => ts('Issue Codes'),
@@ -35,7 +42,7 @@ class CRM_Contact_Form_Search_Custom_TagContactLog
       $tagType,
       true
     );
-    
+
     $form->addDate('start_date', ts('Date from'), false, ['formatType' => 'birth']);
     $form->addDate('end_date', ts('Date to'), false, ['formatType' => 'birth']);
 
@@ -44,7 +51,7 @@ class CRM_Contact_Form_Search_Custom_TagContactLog
       '2' => ts('Removed/Deleted'),
     ];
     $form->addRadio('action_type', ts('Action Type'), $actionType, NULL, '&nbsp;', TRUE);
-    
+
     $formfields = [
       'start_date',
       'end_date',
@@ -52,7 +59,7 @@ class CRM_Contact_Form_Search_Custom_TagContactLog
       'action_type',
     ];
     $form->assign('elements', $formfields);
-    
+
     $form->add('hidden', 'form_message');
 
     $form->setDefaults($this->setDefaultValues());
@@ -83,33 +90,79 @@ class CRM_Contact_Form_Search_Custom_TagContactLog
   }
 
 
-  function all($offset = 0, $rowcount = 0, $sort = NULL,
-               $includeContactIDs = FALSE, $justIDs = FALSE) {
+  function all($offset = 0, $rowcount = 0, $sort = NULL, $includeContactIDs = FALSE, $justIDs = FALSE) {
+    //Civi::log()->debug(__METHOD__, ['sort' => $sort]);
+    //NOTE: tag.id is being aliased as the contact_id to fake out the custom search model
+
     if ($justIDs) {
       $selectClause = "tag.id as contact_id";
       $sort = 'tag.id';
       $group = 'GROUP BY contact_id';
     }
     else {
-      $selectClause = "
-        tag.id as contact_id,
-        tag.name as tag_name,
-        COUNT(contact_a.id) as tag_count
-      ";
-      $sort = 'tag_name';
-      $group = 'GROUP BY contact_id, tag_name';
+      switch ($this->_formValues['entity']) {
+        case 1:
+          $selectClause = "
+            contact_a.id as entity_id,
+            tag.id as contact_id,
+            tag.name as tag_name
+          ";
+          break;
+
+        case 2:
+          $selectClause = "
+            a.id entity_id,
+            tag.id as contact_id,
+            tag.name as tag_name
+          ";
+          break;
+
+        case 3:
+          $selectClause = "
+            c.id entity_id,
+            tag.id as contact_id,
+            tag.name as tag_name
+          ";
+          break;
+
+        default:
+      }
+
+      $group = 'GROUP BY tag.id, tag_name, entity_id';
     }
-    
-    //CRM_Core_Error::debug('select',$selectClause); exit();
+
+    //store the sort so we can add it later
+    $orderBy = ($sort && is_object($sort)) ? $sort->orderBy() : $sort;
+    $orderBySql = ($orderBy) ? "ORDER BY {$orderBy}" : NULL;
+    //Civi::log()->debug(__METHOD__, ['orderBy' => $orderBy, 'orderBySql' => $orderBySql]);
+
+    //reset $sort so it isn't applied to the inner query
+    $sort = NULL;
+
+    //build inner query
     $sql = $this->sql($selectClause,
       $offset, $rowcount, $sort,
       $includeContactIDs, $group
     );
+
+    //remove LIMIT clause
+    $sql = str_replace('LIMIT 0, 50', '', $sql);
+
+    $sql = "
+      SELECT contact_id, tag_name, COUNT(contact_id) tag_count
+      FROM (
+        {$sql}
+      ) base
+      GROUP BY contact_id, tag_name
+      {$orderBySql}
+      LIMIT {$offset}, {$rowcount}
+    ";
+
     //CRM_Core_Error::debug_var('$sql',$sql);
     return $sql;
   }
 
-    
+
   function from() {
     //CRM_Core_Error::debug_var('$this->_formValues', $this->_formValues);
 
@@ -161,16 +214,56 @@ class CRM_Contact_Form_Search_Custom_TagContactLog
         break;
     }
 
-    $from = "
-      FROM civicrm_contact contact_a
-      JOIN {$logDB}.log_civicrm_entity_tag log_et
-        ON contact_a.id = log_et.entity_id
-        AND log_et.entity_table = 'civicrm_contact'
-        AND log_et.log_action != 'Initialization'
-      JOIN civicrm_tag tag
-        ON log_et.tag_id = tag.id
-        AND {$tagTypeSql}
-    ";
+    switch ($this->_formValues['entity']) {
+      case 1:
+        $from = "
+          FROM civicrm_contact contact_a
+          JOIN {$logDB}.log_civicrm_entity_tag log_et
+            ON contact_a.id = log_et.entity_id
+            AND log_et.entity_table = 'civicrm_contact'
+            AND log_et.log_action != 'Initialization'
+          JOIN civicrm_tag tag
+            ON log_et.tag_id = tag.id
+            AND tag.{$tagTypeSql}
+        ";
+        break;
+      case 2:
+        $from = "
+          FROM civicrm_contact contact_a
+          JOIN civicrm_activity_contact ac
+            ON contact_a.id = ac.contact_id
+            AND record_type_id = 3
+          JOIN civicrm_activity a
+            ON ac.activity_id = a.id
+          JOIN {$logDB}.log_civicrm_entity_tag log_et
+            ON a.id = log_et.entity_id
+            AND log_et.entity_table = 'civicrm_activity'
+            AND log_et.log_action != 'Initialization'
+          JOIN civicrm_tag tag
+            ON log_et.tag_id = tag.id
+            AND tag.{$tagTypeSql}
+        ";
+        break;
+
+      case 3:
+        $from = "
+          FROM civicrm_contact contact_a
+          JOIN civicrm_case_contact cc
+            ON contact_a.id = cc.contact_id
+          JOIN civicrm_case c
+            ON cc.case_id = c.id
+          JOIN {$logDB}.log_civicrm_entity_tag log_et
+            ON c.id = log_et.entity_id
+            AND log_et.entity_table = 'civicrm_case'
+            AND log_et.log_action != 'Initialization'
+          JOIN civicrm_tag tag
+            ON log_et.tag_id = tag.id
+            AND tag.{$tagTypeSql}
+        ";
+        break;
+
+      default:
+    }
 
     return $from;
   }//from
@@ -182,7 +275,7 @@ class CRM_Contact_Form_Search_Custom_TagContactLog
 
     $start_date = CRM_Utils_Date::mysqlToIso(CRM_Utils_Date::processDate($this->_formValues['start_date']));
     $end_date = CRM_Utils_Date::mysqlToIso(CRM_Utils_Date::processDate($this->_formValues['end_date'], null, false, 'Ymd'));
-    
+
     //add filters by start/end date
     if ($start_date) {
       $where[] = "log_et.log_date >= '$start_date' ";
@@ -199,11 +292,21 @@ class CRM_Contact_Form_Search_Custom_TagContactLog
         $where[] = "(log_et.log_action = 'Delete') ";
         break;
     }
-    
+
+    switch ($this->_formValues['entity']) {
+      case 2:
+        $where[] = "a.is_deleted = 0 ";
+        break;
+      case 3:
+        $where[] = "c.is_deleted = 0 ";
+        break;
+      default:
+    }
+
     //standard clauses
     $where[] = "contact_a.is_deleted = 0 ";
     $where[] = "contact_a.is_deceased = 0 ";
-    
+
     if (!empty($where)) {
       $whereClause = implode(' AND ', $where);
     }
@@ -211,7 +314,7 @@ class CRM_Contact_Form_Search_Custom_TagContactLog
       $whereClause = '';
     }
     //CRM_Core_Error::debug_var('whereClause', $whereClause);
-    
+
     return $this->whereClause($whereClause, $params);
   }
 
@@ -231,6 +334,7 @@ class CRM_Contact_Form_Search_Custom_TagContactLog
   function setDefaultValues() {
     $defaults = [
       'action_type' => 1,
+      'entity' => 1,
     ];
     return $defaults;
   }
