@@ -56,11 +56,11 @@ class CRM_NYSS_Subscription_Page_View extends CRM_Core_Page {
     $bbconfig = get_bluebird_instance_config();
     $this->assign('senatorFormal', $bbconfig['senator.name.formal']);
 
-    $queueID = CRM_Utils_Request::retrieve('eq', 'Positive', CRM_Core_DAO::$_nullObject, FALSE, NULL, $_REQUEST);
-    $cs = CRM_Utils_Request::retrieve('cs', 'String', CRM_Core_DAO::$_nullObject, FALSE, NULL, $_REQUEST);
+    $queueID = CRM_Utils_Request::retrieve('eq', 'Positive');
+    $cs = CRM_Utils_Request::retrieve('cs', 'String');
 
     //get contact details from event queue and store in object
-    $contact = array();
+    $contact = [];
     $dao = CRM_Core_DAO::executeQuery("
       SELECT eq.email_id, eq.contact_id, c.display_name, e.email, e.on_hold, e.mailing_categories
       FROM civicrm_mailing_event_queue eq
@@ -70,21 +70,21 @@ class CRM_NYSS_Subscription_Page_View extends CRM_Core_Page {
         ON eq.email_id = e.id
       WHERE eq.id = {$queueID}
     ");
-    if ( $dao->N ) {
-      while ( $dao->fetch() ) {
-        $contact = array(
+    if ($dao->N) {
+      while ($dao->fetch()) {
+        $contact = [
           'email_id' => $dao->email_id,
           'contact_id' => $dao->contact_id,
           'display_name' => $dao->display_name,
           'email' => $dao->email,
           'on_hold' => $dao->on_hold,
           'mailing_categories' => $dao->mailing_categories,
-        );
+        ];
       }
     }
 
     //convert mailing categories; display categories IN and OUT
-    $mCats = array();
+    $mCats = [];
     $opts = CRM_Core_DAO::executeQuery("
       SELECT ov.label, ov.value
       FROM civicrm_option_value ov
@@ -93,14 +93,14 @@ class CRM_NYSS_Subscription_Page_View extends CRM_Core_Page {
         AND og.name = 'mailing_categories'
       ORDER BY ov.weight
     ");
-    while ( $opts->fetch() ) {
+    while ($opts->fetch()) {
       $mCats[$opts->value] = $opts->label;
     }
 
     $unselectedOpts = explode(',', $contact['mailing_categories']);
 
-    foreach ( $mCats as $mCatID => $mCatLabel ) {
-      if ( in_array($mCatID, $unselectedOpts) ) {
+    foreach ($mCats as $mCatID => $mCatLabel) {
+      if (in_array($mCatID, $unselectedOpts)) {
         $contact['opt_unselected'][] = $mCatLabel;
       }
       else {
@@ -108,14 +108,14 @@ class CRM_NYSS_Subscription_Page_View extends CRM_Core_Page {
       }
     }
 
-    $contact['opt_unselected_list'] = implode(', ', $contact['opt_unselected']);
-    $contact['opt_selected_list'] = implode(', ', $contact['opt_selected']);
+    $contact['opt_unselected_list'] = implode(', ', $contact['opt_unselected'] ?? []);
+    $contact['opt_selected_list'] = implode(', ', $contact['opt_selected'] ?? []);
 
     //convert on_hold
     $contact['opt_out'] = (!empty($contact['on_hold'])) ? 'Yes' : 'No';
 
     //verify checksum
-    if ( !CRM_Contact_BAO_Contact_Utils::validChecksum($contact['contact_id'], $cs) ) {
+    if (!CRM_Contact_BAO_Contact_Utils::validChecksum($contact['contact_id'], $cs)) {
       CRM_Core_Error::debug_var('Failed attempt to validate checksum in email subscription page.', $contact);
       CRM_Utils_System::redirect('http://www.nysenate.gov');
     }
@@ -123,6 +123,6 @@ class CRM_NYSS_Subscription_Page_View extends CRM_Core_Page {
     //CRM_Core_Error::debug_var('subscription view contact', $contact);
     $this->assign('contact', $contact);
 
-    return parent::run();
+    parent::run();
   }
 }
