@@ -160,6 +160,20 @@ function contact_civicrm_buildForm($formName, &$form) {
     $form->assign('cf_preferred_pronoun_id', $cfId);
   }
 
+  //15495
+  if ($formName == 'CRM_Contactlayout_Form_Inline_ProfileBlock') {
+    if ($form->elementExists('current_employer')) {
+      $ele =& $form->getElement('current_employer');
+      //Civi::log()->debug(__FUNCTION__, ['ele' => $ele]);
+
+      if (!empty($ele->_attributes['value'])) {
+        $ele->_attributes['value'] = $ele->_attributes['value'][0] ?? NULL;
+      }
+      elseif (is_array($ele->_attributes['value'])) {
+        $ele->_attributes['value'] = NULL;
+      }
+    }
+  }
 }
 
 /**
@@ -178,4 +192,16 @@ function contact_civicrm_postInstall() {
  */
 function contact_civicrm_entityTypes(&$entityTypes) {
   _contact_civix_civicrm_entityTypes($entityTypes);
+}
+
+function contact_civicrm_alterEntityRefParams(&$params, $formName) {
+  /*Civi::log()->debug(__FUNCTION__, [
+    'params' => $params,
+    'formName' => $formName,
+  ]);*/
+
+  if ($formName == 'CRM_Contactlayout_Form_Inline_ProfileBlock' && $params['entity'] == 'Contact') {
+    $params['multiple'] = FALSE;
+    $params['select']['multiple'] = FALSE;
+  }
 }

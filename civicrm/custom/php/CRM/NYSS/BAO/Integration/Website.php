@@ -219,6 +219,11 @@ class CRM_NYSS_BAO_Integration_Website
     $contactFields = civicrm_api3('contact', 'getfields', ['sequential' => 1, 'api_action' => 'create']);
     $addressFields = civicrm_api3('address', 'getfields', ['sequential' => 1, 'api_action' => 'create']);
 
+    //strip HTML from name fields
+    $params['first_name'] = strip_tags($params['first_name']);
+    $params['middle_name'] = strip_tags($params['middle_name']);
+    $params['last_name'] = strip_tags($params['last_name']);
+
     //cycle through contact fields and truncate if necessary
     foreach ($contactFields['values'] as $field) {
       if (array_key_exists($field['name'], $params) && !empty($field['maxlength'])) {
@@ -239,6 +244,20 @@ class CRM_NYSS_BAO_Integration_Website
           $params['api.address.create'][$field['name']] =
             truncate_utf8($params['api.address.create'][$field['name']], $field['maxlength']);
         }
+      }
+    }
+
+    //remove contact elements with empty values
+    foreach ($params as $f => $v) {
+      if (empty($v) && $v !== 0) {
+        unset($params[$f]);
+      }
+    }
+
+    //remove address elements with empty values
+    foreach ($params['api.address.create'] as $f => $v) {
+      if (empty($v) && $v !== 0) {
+        unset($params['api.address.create'][$f]);
       }
     }
 

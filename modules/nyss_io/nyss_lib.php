@@ -20,7 +20,6 @@ function nyss_getConnection($bbcfg) {
 function nyss_out($type, $v, $toscreen = false) {
   global $nyss_ioline;
   global $nyss_iototallines;
-  global $logFile;
 
   if (!empty($v) && (($type == 'debug' && NYSSIODEBUG) || $type !='debug')) {
     $v = print_r($v, true);
@@ -35,7 +34,7 @@ function nyss_out($type, $v, $toscreen = false) {
       ob_flush();
     }
     elseif ($type == 'debug' && defined('NYSSIODEBUG') && NYSSIODEBUG) {
-      fwrite($logFile, $v."\n\n");
+      CRM_Core_Error::debug_var('$type', $v, TRUE, TRUE, 'nyssio');
     }
 
     unset($v);
