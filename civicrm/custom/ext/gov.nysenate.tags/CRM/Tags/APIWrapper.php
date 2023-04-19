@@ -42,6 +42,13 @@ class CRM_Tags_APIWrapper {
       $apiRequest['params']['name']['LIKE'] = '%'.$apiRequest['params']['name']['LIKE'];
     }
 
+    //fix for tag search for numerical values
+    if (!empty($apiRequest['params']['options']['offset']) &&
+      $apiRequest['params']['options']['offset'] < 0
+    ) {
+      $apiRequest['params']['options']['offset'] = 0;
+    }
+
     return $callsame($apiRequest);
   }
 }

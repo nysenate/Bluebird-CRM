@@ -6,6 +6,9 @@ class CRM_Contact_Form_Search_Custom_TagContactLog
 
   protected $_formValues;
   protected $_columns;
+  public array $_entityTypes;
+  public array $_tagTypes;
+  public string $_currentEntityType;
 
   function __construct(&$formValues) {
     parent::__construct($formValues);
@@ -14,41 +17,48 @@ class CRM_Contact_Form_Search_Custom_TagContactLog
       ts('Tag Name') => 'tag_name',
       ts('Tag Count') => 'tag_count',
     ];
-  }
 
+    $this->_entityTypes = [
+      'contacts' => ts('Contacts'),
+      'activities' => ts('Activities'),
+      'cases' => ts('Cases'),
+    ];
+
+    $this->_tagTypes = [
+      1 => ts('Keywords'),
+      2 => ts('Issue Codes'),
+      3 => ts('Legislative Positions'),
+      4 => ts('Website Bills'),
+      5 => ts('Website Committees'),
+      6 => ts('Website Issues'),
+      7 => ts('Website Petitions'),
+    ];
+  }
 
   function buildForm(&$form) {
     $this->setTitle('Tag Count Search');
 
-    $entity = [
-      1 => ts('Contacts'),
-      2 => ts('Activities'),
-      3 => ts('Cases'),
-    ];
-    $form->addRadio('entity', ts('Tag Entity'), $entity, NULL, '&nbsp;', TRUE);
+    $form->add('select', 'entity', ts('Tag Entity'),
+      $this->_entityTypes, TRUE, [
+        'class' => 'crm-select2 huge',
+        'multiple' => TRUE,
+        'placeholder' => ts('- select -'),
+      ]);
 
-    $tagType = [
-      '1' => ts('Keywords'),
-      '2' => ts('Issue Codes'),
-      '3' => ts('Legislative Positions'),
-      '4' => ts('Website Bills'),
-      '5' => ts('Website Committees'),
-      '6' => ts('Website Issues'),
-      '7' => ts('Website Petitions'),
-    ];
+
     $form->add('select',
       'tag_type',
       ts('Tag Type'),
-      $tagType,
+      $this->_tagTypes,
       true
     );
 
-    $form->addDate('start_date', ts('Date from'), false, ['formatType' => 'birth']);
-    $form->addDate('end_date', ts('Date to'), false, ['formatType' => 'birth']);
+    $form->add('datepicker', 'start_date', ts('Date from'), [], FALSE, ['time' => FALSE]);
+    $form->add('datepicker', 'end_date', ts('Date to'), [], FALSE, ['time' => FALSE]);
 
     $actionType = [
-      '1' => ts('Added'),
-      '2' => ts('Removed/Deleted'),
+      1 => ts('Added'),
+      2 => ts('Removed/Deleted'),
     ];
     $form->addRadio('action_type', ts('Action Type'), $actionType, NULL, '&nbsp;', TRUE);
 
@@ -71,65 +81,27 @@ class CRM_Contact_Form_Search_Custom_TagContactLog
         http_build_query(['formValues' => $formValues]));
       $form->assign('quickExportUrl', $quickExportUrl);
     }
-  }//buildForm
-
+  }
 
   public function formRule($fields, $files, $self): bool|array {
     $errors = [];
     return empty($errors) ? true : $errors;
-  }//formRule
-
+  }
 
   function summary() {
     return null;
   }
 
-
   function contactIDs($offset = 0, $rowcount = 0, $sort = NULL, $returnSQL = FALSE) {
     return $this->all($offset, $rowcount, $sort, FALSE, TRUE);
   }
 
-
   function all($offset = 0, $rowcount = 0, $sort = NULL, $includeContactIDs = FALSE, $justIDs = FALSE) {
-    //Civi::log()->debug(__METHOD__, ['sort' => $sort]);
+    //Civi::log()->debug(__METHOD__, ['$this->_formValues' => $this->_formValues, 'sort' => $sort]);
     //NOTE: tag.id is being aliased as the contact_id to fake out the custom search model
 
-    if ($justIDs) {
-      $selectClause = "tag.id as contact_id";
-      $sort = 'tag.id';
-      $group = 'GROUP BY contact_id';
-    }
-    else {
-      switch ($this->_formValues['entity']) {
-        case 1:
-          $selectClause = "
-            contact_a.id as entity_id,
-            tag.id as contact_id,
-            tag.name as tag_name
-          ";
-          break;
-
-        case 2:
-          $selectClause = "
-            a.id entity_id,
-            tag.id as contact_id,
-            tag.name as tag_name
-          ";
-          break;
-
-        case 3:
-          $selectClause = "
-            c.id entity_id,
-            tag.id as contact_id,
-            tag.name as tag_name
-          ";
-          break;
-
-        default:
-      }
-
-      $group = 'GROUP BY tag.id, tag_name, entity_id';
-    }
+    //we need to query each entity types separately and the join with a union query
+    $unionQueryParts = [];
 
     //store the sort so we can add it later
     $orderBy = ($sort && is_object($sort)) ? $sort->orderBy() : $sort;
@@ -139,19 +111,63 @@ class CRM_Contact_Form_Search_Custom_TagContactLog
     //reset $sort so it isn't applied to the inner query
     $sort = NULL;
 
-    //build inner query
-    $sql = $this->sql($selectClause,
-      $offset, $rowcount, $sort,
-      $includeContactIDs, $group
-    );
+    foreach ($this->_formValues['entity'] as $entity) {
+      //we set this here so we can use it in from() to condition appropriately
+      $this->_currentEntityType = $entity;
 
-    //remove LIMIT clause
-    $sql = str_replace('LIMIT 0, 50', '', $sql);
+      if ($justIDs) {
+        $selectClause = "tag.id as contact_id";
+        $sort = 'tag.id';
+        $group = 'GROUP BY contact_id';
+      }
+      else {
+        switch ($entity) {
+          case 'contacts':
+            $selectClause = "
+            contact_a.id as entity_id,
+            tag.id as contact_id,
+            tag.name as tag_name
+          ";
+            break;
+
+          case 'activities':
+            $selectClause = "
+            a.id entity_id,
+            tag.id as contact_id,
+            tag.name as tag_name
+          ";
+            break;
+
+          case 'cases':
+            $selectClause = "
+            c.id entity_id,
+            tag.id as contact_id,
+            tag.name as tag_name
+          ";
+            break;
+
+          default:
+        }
+
+        $group = 'GROUP BY tag.id, tag_name, entity_id';
+      }
+
+      //build inner query
+      $sql = $this->sql($selectClause,
+        $offset, $rowcount, $sort,
+        $includeContactIDs, $group
+      );
+
+      //remove LIMIT clause
+      $unionQueryParts[] = str_replace('LIMIT 0, 50', '', $sql);
+    }
+
+    $unionQuery = implode("\n UNION ALL \n", $unionQueryParts);
 
     $sql = "
       SELECT contact_id, tag_name, COUNT(contact_id) tag_count
       FROM (
-        {$sql}
+        {$unionQuery}
       ) base
       GROUP BY contact_id, tag_name
       {$orderBySql}
@@ -214,8 +230,8 @@ class CRM_Contact_Form_Search_Custom_TagContactLog
         break;
     }
 
-    switch ($this->_formValues['entity']) {
-      case 1:
+    switch ($this->_currentEntityType) {
+      case 'contacts':
         $from = "
           FROM civicrm_contact contact_a
           JOIN {$logDB}.log_civicrm_entity_tag log_et
@@ -227,7 +243,7 @@ class CRM_Contact_Form_Search_Custom_TagContactLog
             AND tag.{$tagTypeSql}
         ";
         break;
-      case 2:
+      case 'activities':
         $from = "
           FROM civicrm_contact contact_a
           JOIN civicrm_activity_contact ac
@@ -245,7 +261,7 @@ class CRM_Contact_Form_Search_Custom_TagContactLog
         ";
         break;
 
-      case 3:
+      case 'cases':
         $from = "
           FROM civicrm_contact contact_a
           JOIN civicrm_case_contact cc
@@ -293,11 +309,11 @@ class CRM_Contact_Form_Search_Custom_TagContactLog
         break;
     }
 
-    switch ($this->_formValues['entity']) {
-      case 2:
+    switch ($this->_currentEntityType) {
+      case 'activities':
         $where[] = "a.is_deleted = 0 ";
         break;
-      case 3:
+      case 'cases':
         $where[] = "c.is_deleted = 0 ";
         break;
       default:

@@ -169,6 +169,9 @@ function contact_civicrm_buildForm($formName, &$form) {
       if (!empty($ele->_attributes['value'])) {
         $ele->_attributes['value'] = $ele->_attributes['value'][0] ?? NULL;
       }
+      elseif (is_array($ele->_attributes['value'])) {
+        $ele->_attributes['value'] = NULL;
+      }
     }
   }
 }
