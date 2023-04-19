@@ -46,11 +46,11 @@
         </tr>
         <tr class="crm-contact-custom-search-form-row-start_date">
           <td class="label"><label for="start_date">{$form.start_date.label}</label></td>
-          <td>{include file="CRM/common/jcalendar.tpl" elementName=start_date}</td>
+          <td>{$form.start_date.html}</td>
         </tr>
         <tr class="crm-contact-custom-search-form-row-end_date">
           <td class="label"><label for="end_date">{$form.end_date.label}</label></td>
-          <td>{include file="CRM/common/jcalendar.tpl" elementName=end_date}</td>
+          <td>{$form.end_date.html}</td>
         </tr>
         <tr class="crm-contact-custom-search-form-row-action-type">
           <td class="label"><label for="action_type">{$form.action_type.label}</label></td>
