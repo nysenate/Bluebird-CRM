@@ -33,8 +33,9 @@ class CRM_NYSS_Mail_Utils {
             //CRM_Core_Error::debug_var(__FUNCTION__.' $fileSize', $fileSize, TRUE, TRUE, 'mosaico');
 
             //if the file is not one of the allowed extension types, skip it
-            if (!in_array($ext, $allowedExts)) {
+            if (!in_array(strtolower($ext), $allowedExts)) {
               //skip and leave in place
+              continue;
             }
             //check size of file; we are limited in the size that can be processed
             elseif ($fileSize > 8) {
