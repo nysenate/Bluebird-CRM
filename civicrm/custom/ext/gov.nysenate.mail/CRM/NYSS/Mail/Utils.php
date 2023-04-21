@@ -27,10 +27,18 @@ class CRM_NYSS_Mail_Utils {
             //CRM_Core_Error::debug_var(__FUNCTION__.' $thumbnail_path', $thumbnail_path, TRUE, TRUE, 'mosaico');
             //CRM_Core_Error::debug_var(__FUNCTION__.' $file_path', $file_path, TRUE, TRUE, 'mosaico');
 
-            //check size of file; we are limited in the size that can be processed
             $fileSize = number_format(filesize($file_path) / 1048576, 2);
+            $ext = pathinfo($file_name, PATHINFO_EXTENSION);
+            $allowedExts = ['gif','png','jpg','jpeg','jfif','tif','tiff','bmp','ico','webp','avif','heic'];
             //CRM_Core_Error::debug_var(__FUNCTION__.' $fileSize', $fileSize, TRUE, TRUE, 'mosaico');
-            if ($fileSize > 8) {
+
+            //if the file is not one of the allowed extension types, skip it
+            if (!in_array(strtolower($ext), $allowedExts)) {
+              //skip and leave in place
+              continue;
+            }
+            //check size of file; we are limited in the size that can be processed
+            elseif ($fileSize > 8) {
               //delete the filef
               unlink($file_path);
             }
