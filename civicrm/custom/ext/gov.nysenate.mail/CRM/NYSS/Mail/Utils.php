@@ -30,7 +30,7 @@ class CRM_NYSS_Mail_Utils {
             $fileSize = number_format(filesize($file_path) / 1048576, 2);
             $ext = pathinfo($file_name, PATHINFO_EXTENSION);
             $allowedExts = ['gif','png','jpg','jpeg','jfif','bmp','webp'];
-            $disallowedMimeTypes = ['image/heic'];
+            $disallowedMimeTypes = ['image/heic', 'application/pdf'];
             //CRM_Core_Error::debug_var(__FUNCTION__.' $fileSize', $fileSize, TRUE, TRUE, 'mosaico');
 
             //if the file is not one of the allowed extension types, skip it
