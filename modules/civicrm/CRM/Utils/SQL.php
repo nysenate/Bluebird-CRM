@@ -59,6 +59,13 @@ class CRM_Utils_SQL {
   public static function mergeSubquery($entity, $joinColumn = 'id') {
     require_once 'api/v3/utils.php';
     $baoName = _civicrm_api3_get_BAO($entity);
+
+    //NYSS - in Civi v5.57.1 we see errors when viewing notes because an empty baoName is retrieved; this is fixed in future versions
+    if (!is_string($baoName) && !is_object($baoName)) {
+      //Civi::log()->debug(__METHOD__, ['entity' => $entity, 'baoName' => $baoName]);
+      //CRM_Core_Error::backtrace(__METHOD__, TRUE);
+      return [];
+    }
     $bao = new $baoName();
     $clauses = $subclauses = [];
     foreach ((array) $bao->addSelectWhereClause() as $field => $vals) {
