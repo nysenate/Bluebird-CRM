@@ -29,7 +29,8 @@ class CRM_NYSS_Mail_Utils {
 
             $fileSize = number_format(filesize($file_path) / 1048576, 2);
             $ext = pathinfo($file_name, PATHINFO_EXTENSION);
-            $allowedExts = ['gif','png','jpg','jpeg','jfif','tif','tiff','bmp','ico','webp','avif','heic'];
+            $allowedExts = ['gif','png','jpg','jpeg','jfif','bmp','webp'];
+            $disallowedMimeTypes = ['image/heic', 'application/pdf'];
             //CRM_Core_Error::debug_var(__FUNCTION__.' $fileSize', $fileSize, TRUE, TRUE, 'mosaico');
 
             //if the file is not one of the allowed extension types, skip it
@@ -37,13 +38,14 @@ class CRM_NYSS_Mail_Utils {
               //skip and leave in place
               continue;
             }
-            //check size of file; we are limited in the size that can be processed
-            elseif ($fileSize > 8) {
-              //delete the filef
+            //check size of file and mime type
+            elseif ($fileSize > 8 || in_array(finfo_file(finfo_open(FILEINFO_MIME_TYPE), $file_path), $disallowedMimeTypes)) {
+              //delete the file
               unlink($file_path);
             }
             else {
               Civi::service('mosaico_graphics')->createResizedImage($file_path, $thumbnail_path, $config['THUMBNAIL_WIDTH'], $config['THUMBNAIL_HEIGHT']);
+
             }
           }
         }

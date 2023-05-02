@@ -304,8 +304,8 @@ function ode_suppressEmails(&$fromEmailAddress, $showNotice) {
   $domainEmails = $invalidEmails = [];
   $domains = getWhiteListedDomains();
 
-  //NYSS force this host as we don't set a value in the system org record
-  $domains[] = 'nysenate.gov';
+  //NYSS force this as the only host as we don't set a value in the system org record
+  $domains = ['nysenate.gov'];
 
   if (ode_get_settings_value()) {
     // Allow domains configured in 'From' admin settings.
@@ -335,8 +335,8 @@ function ode_suppressEmails(&$fromEmailAddress, $showNotice) {
           }
         }
         else {
-          //NYSS this had faulty logic
-          if ((in_array($email, $domainEmails)) && (substr($email, -$hostLength) == $host)) {
+          //NYSS 15529 this had faulty logic
+          if (in_array($email, $domainEmails) || (substr($email, -$hostLength) == $host)) {
             $emailNotValidated = FALSE;
           }
         }
