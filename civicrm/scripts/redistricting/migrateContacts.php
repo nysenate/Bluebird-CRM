@@ -83,7 +83,7 @@ class CRM_migrateContacts {
       //bbscript_log(LL::TRACE, "bbFullConfig", $bbFullConfig);
       foreach ($bbFullConfig as $group => $details) {
         if (strpos($group, 'instance:') !== false) {
-          if ($details['district'] == $optlist['dest']) {
+          if (!empty($details['district']) && $details['district'] == $optlist['dest']) {
             $dest['name'] = substr($group, 9);
             $bbcfg_dest = get_bluebird_instance_config($dest['name']);
             $dest['db'] = $bbcfg_dest['db.civicrm.prefix'].$bbcfg_dest['db.basename'];
