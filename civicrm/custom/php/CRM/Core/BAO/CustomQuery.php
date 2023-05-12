@@ -287,7 +287,7 @@ class CRM_Core_BAO_CustomQuery {
               }
 
               //NYSS reset data type
-              if (in_array($id, $distinfo)) {
+              if (!empty($distinfo) && in_array($id, $distinfo)) {
                 $field['data_type'] = 'String';
               }
 
@@ -306,7 +306,7 @@ class CRM_Core_BAO_CustomQuery {
                 if (empty($value)) {
                   break;
                 }
-                
+
                 $op = 'IN';
                 $field['data_type'] = 'nyss_Integer'; //flag for processing
               }
