@@ -232,6 +232,7 @@ class CRM_migrateContacts {
       'Organization_Constituent_Information',
       'Attachments',
       'Contact_Details',
+      'Website_Profile',
     ];
 
     //customGroups that we may work with;
@@ -242,6 +243,7 @@ class CRM_migrateContacts {
       'Activity_Details',
       'District_Information',
       'Contact_Details',
+      'Website_Profile',
     ];
 
     //cycle through contacts, get related records, and construct data
@@ -432,7 +434,7 @@ AND cce.external_identifier IS NOT NULL, cce.external_identifier, '' )) external
     $fields = $c->fields();
     //bbscript_log(LL::TRACE, "exportContacts fields", $fields);
 
-    foreach ( $fields as $field ) {
+    foreach ($fields as $field) {
       $fieldNames[] = $field['name'];
     }
 
@@ -463,7 +465,7 @@ AND cce.external_identifier IS NOT NULL, cce.external_identifier, '' )) external
         ON mt.contact_id = civicrm_contact.id
     ";
     $contacts = CRM_Core_DAO::executeQuery($sql);
-    //bbscript_log(LL::TRACE, 'exportContacts sql', $sql);
+    bbscript_log(LL::TRACE, 'exportContacts sql', $sql);
 
     $contactsAttr = get_object_vars($contacts);
     //bbscript_log(LL::TRACE, 'exportContacts contactsAttr', $contactsAttr);
@@ -480,7 +482,6 @@ AND cce.external_identifier IS NOT NULL, cce.external_identifier, '' )) external
       }
       $data['import'][$contacts->external_identifier]['contact']['source'] = 'Redist'.REDIST_YEAR;
     }
-    $contacts->free();
 
     //add to master global export
     self::prepareData($data, $optDry, 'exportContacts data');
@@ -912,32 +913,42 @@ AND cce.external_identifier IS NOT NULL, cce.external_identifier, '' )) external
     $contactCases = CRM_Core_DAO::executeQuery($sql);
 
     while ($contactCases->fetch()) {
+      bbscript_log(LL::TRACE, 'exportCases $contactCases', $contactCases);
+
       //cases for contact
       $params = [
-        'version' => 3,
         'case_id' => $contactCases->case_id,
-        'return' => 'activities',
       ];
-      $case = civicrm_api('case', 'get', $params);
-      //bbscript_log(LL::TRACE, 'exportCases $case', $case);
+
+      try {
+        $case = civicrm_api3('case', 'getsingle', $params);
+        bbscript_log(LL::TRACE, 'exportCases $case', $case);
+      }
+      catch (CRM_Core_Exception $e) {
+        bbscript_log(LL::ERROR, 'exportCases $e', $e);
+        continue;
+      }
 
       //unset some values to make it easier to later import
-      unset($case['values'][$contactCases->case_id]['id']);
-      unset($case['values'][$contactCases->case_id]['client_id']);
-      unset($case['values'][$contactCases->case_id]['contacts']);
+      unset($case['id']);
+      unset($case['client_id']);
+      unset($case['contacts']);
 
-      $caseActivityIDs = $case['values'][$contactCases->case_id]['activities'];
-      unset($case['values'][$contactCases->case_id]['activities']);
+      $caseActivityIDs = $case['activities'];
+      unset($case['activities']);
 
       //cycle through and retrieve case activity data
       $caseActivities = [];
       foreach ($caseActivityIDs as $actID) {
-        $params = [
-          'version' => 3,
-          'id' => $actID,
-        ];
-        $activity = civicrm_api('activity', 'getsingle', $params);
-        //bbscript_log(LL::TRACE, 'exportCases $activity', $activity);
+        try {
+          $activity = civicrm_api3('activity', 'getsingle', ['id' => $actID]);
+          //bbscript_log(LL::TRACE, 'exportCases $activity', $activity);
+        }
+        catch (CRM_Core_Exception $e) {
+          bbscript_log(LL::ERROR, 'exportCases $e', $e);
+          continue;
+        }
+
         unset($activity['id']);
         unset($activity['source_contact_id']);
 
@@ -950,7 +961,8 @@ AND cce.external_identifier IS NOT NULL, cce.external_identifier, '' )) external
         $actCustom = CRM_Core_DAO::executeQuery($sql);
         while ($actCustom->fetch()) {
           foreach ($actCustFld as $fldID => $fld) {
-            $activity["custom_{$fldID}"] = $actCustom->$fld['column_name'];
+            $column_name = $fld['column_name'];
+            $activity["custom_{$fldID}"] = $actCustom->$column_name;
           }
         }
         $actCustom->free();
@@ -973,15 +985,15 @@ AND cce.external_identifier IS NOT NULL, cce.external_identifier, '' )) external
       }
 
       //assign activities
-      $case['values'][$contactCases->case_id]['activities'] = $caseActivities;
+      $case['activities'] = $caseActivities;
 
       //assign to data array
-      $data[$contactCases->external_id][] = $case['values'][$contactCases->case_id];
+      $data[$contactCases->external_id][] = $case;
     }
     $contactCases->free();
 
     $casesData = ['cases' => $data];
-    //bbscript_log(LL::TRACE, 'exportCases $casesData', $casesData);
+    bbscript_log(LL::TRACE, 'exportCases $casesData', $casesData);
 
     self::prepareData($casesData, $optDry, 'case records');
   }//exportCases
