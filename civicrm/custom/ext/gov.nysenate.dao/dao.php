@@ -133,6 +133,26 @@ function dao_civicrm_entityTypes(&$entityTypes) {
     //$fields['current_employer_id']['export'] = FALSE; //13123 this breaks things downstream with API calls
     $fields['hash']['export'] = FALSE;
     $fields['image_URL']['export'] = FALSE;
+
+    $fields['web_user_id'] = [
+      'name' => 'web_user_id',
+      'type' => CRM_Utils_Type::T_INT,
+      'title' => ts('Website User ID'),
+      'description' => ts('Public site User ID'),
+      'where' => 'civicrm_contact.web_user_id',
+      'table_name' => 'civicrm_contact',
+      'entity' => 'Contact',
+      'bao' => 'CRM_Contact_BAO_Contact',
+      'localizable' => 0,
+      'FKClassName' => 'CRM_Contact_DAO_Contact',
+      'html' => [
+        'label' => ts("Website User ID"),
+      ],
+      'readonly' => TRUE,
+      'import' => TRUE,
+      'headerPattern' => '/^web_user_id$/i',
+      'export' => TRUE,
+    ];
   };
 
   $entityTypes['CRM_Core_DAO_Address']['fields_callback'][] = function($class, &$fields) {
