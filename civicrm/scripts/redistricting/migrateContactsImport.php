@@ -254,12 +254,12 @@ class CRM_migrateContactsImport {
     $attachmentIDs = [];
     $filePath = $exportData['dest']['files'].'/'.$exportData['dest']['domain'].'/civicrm/custom/';
 
-    foreach ( $exportData['attachments'] as $attachExtID => $details ) {
+    foreach ($exportData['attachments'] as $attachExtID => $details) {
       $sourceFilePath = $details['source_file_path'];
 
       $details['source_file_path'] = $filePath.$details['uri'];
       $file = self::_importAPI('file', 'create', $details);
-      //bbscript_log(LL::TRACE, 'importAttachments $file', $file);
+      bbscript_log(LL::TRACE, 'importAttachments $file', $file);
 
       //construct source->dest IDs array
       $attachmentIDs[$attachExtID] = $file['id'];
@@ -279,12 +279,14 @@ class CRM_migrateContactsImport {
     $extInt = [];
     $relatedTypes = [
       'email', 'phone', 'website', 'im', 'address', 'note',
-      'Additional_Constituent_Information', 'Attachments', 'Contact_Details', 'Organization_Constituent_Information'
+      'Additional_Constituent_Information', 'Attachments', 'Contact_Details', 'Organization_Constituent_Information',
+      'Website_Profile',
     ];
     //records which use entity_id rather than contact_id as foreign key
     $fkEId = [
       'note', 'Additional_Constituent_Information', 'Attachments',
-      'Contact_Details', 'Organization_Constituent_Information'
+      'Contact_Details', 'Organization_Constituent_Information',
+      'Website_Profile',
     ];
 
     //initialize stats arrays
@@ -331,18 +333,18 @@ class CRM_migrateContactsImport {
       //make sure required fields exist
       switch ($details['contact']['contact_type']) {
         case 'Individual':
-          if ( empty($details['contact']['first_name']) && empty($details['contact']['last_name']) ) {
+          if (empty($details['contact']['first_name']) && empty($details['contact']['last_name'])) {
             $details['contact']['first_name'] = 'Contact';
             $details['contact']['last_name'] = $details['contact']['external_identifier'];
           }
           break;
         case 'Organization':
-          if ( empty($details['contact']['organization_name']) ) {
+          if (empty($details['contact']['organization_name'])) {
             $details['contact']['organization_name'] = 'Organization '.$details['contact']['external_identifier'];
           }
           break;
         case 'Household':
-          if ( empty($details['contact']['household_name']) ) {
+          if (empty($details['contact']['household_name'])) {
             $details['contact']['household_name'] = 'Household '.$details['contact']['external_identifier'];
           }
           break;
@@ -351,7 +353,7 @@ class CRM_migrateContactsImport {
       }
 
       //import the contact via api
-      $contact = self::_importAPI('contact', 'create', $details['contact']);
+      $contact = self::_importAPI('contact', 'create', $details['contact'], TRUE);
       bbscript_log(LL::TRACE, "importContacts _importAPI contact", $contact);
 
       //set the contact ID for use in related records; also build mapping array
@@ -511,7 +513,7 @@ class CRM_migrateContactsImport {
     global $optDry;
     global $extInt;
 
-    if ( !isset($exportData['cases']) ) {
+    if (!isset($exportData['cases'])) {
       return;
     }
 
@@ -522,11 +524,11 @@ class CRM_migrateContactsImport {
     $nonCurrentActivity = [];
 
     //cycle through contacts
-    foreach ( $exportData['cases'] as $extID => $cases ) {
+    foreach ($exportData['cases'] as $extID => $cases) {
       $contactID = $extInt[$extID];
 
       //cycle through cases
-      foreach ( $cases as $case ) {
+      foreach ($cases as $case) {
         $activities = $case['activities'];
         unset($case['activities']);
 
@@ -535,7 +537,7 @@ class CRM_migrateContactsImport {
         //$case['debug'] = 1;
 
         //prevent error if case subject is missing
-        if ( empty($case['subject']) ) {
+        if (empty($case['subject'])) {
           $case['subject'] = '(none)';
         }
 
@@ -553,7 +555,7 @@ class CRM_migrateContactsImport {
             AND a.activity_type_id = 13
           WHERE ca.case_id = {$caseID}
         ";
-        if ( !$optDry ) {
+        if (!$optDry) {
           $openCase = CRM_Core_DAO::executeQuery($sql);
           while ( $openCase->fetch() ) {
             $sql = "
@@ -642,14 +644,21 @@ class CRM_migrateContactsImport {
         'name' => $keyDetail['name'],
         'description' => $keyDetail['desc'],
         'parent_id' => 296, //keywords constant
+        'sequential' => 1,
       ];
-      $newKeyword = self::_importAPI('tag', 'create', $params);
-      //bbscript_log(LL::TRACE, 'importTags newKeyword', $newKeyword);
-      $tagExtInt[$keyID] = $newKeyword['id'];
+
+      //attempt a lookup first
+      $keyword = self::_importAPI('tag', 'get', $params);
+      if (empty($keyword['id'])) {
+        $keyword = self::_importAPI('tag', 'create', $params);
+      }
+      //bbscript_log(LL::TRACE, 'importTags $keyword', $keyword);
+
+      $tagExtInt[$keyID] = $keyword['id'];
     }
 
     //process positions
-    foreach ( $exportData['tags']['positions'] as $posID => $posDetail ) {
+    foreach ($exportData['tags']['positions'] as $posID => $posDetail) {
       $sql = "
         SELECT id
         FROM civicrm_tag
@@ -659,7 +668,7 @@ class CRM_migrateContactsImport {
       $intPosID = CRM_Core_DAO::singleValueQuery($sql, [
         1 => [$posDetail['name'], 'String'],
       ]);
-      if ( !$intPosID ) {
+      if (!$intPosID) {
         $params = [
           'name' => $posDetail['name'],
           'description' => $posDetail['desc'],
@@ -678,8 +687,12 @@ class CRM_migrateContactsImport {
       'name' => "Migrated from: {$exportData['source']['name']} (SD{$exportData['source']['num']})",
       'description' => 'Tags migrated from other district',
       'parent_id' => 291,
+      'sequential' => 1,
     ];
-    $icParent = self::_importAPI('tag', 'create', $params, TRUE);
+    $icParent = self::_importAPI('tag', 'get', $params, TRUE);
+    if (!empty($icParent['id'])) {
+      $icParent = self::_importAPI('tag', 'create', $params, TRUE);
+    }
 
     //level 1
     foreach ($exportData['tags']['issuecodes']  as $icID1 => $icD1) {
@@ -687,52 +700,77 @@ class CRM_migrateContactsImport {
         'name' => $icD1['name'],
         'description' => $icD1['desc'],
         'parent_id' => $icParent['id'] ?? NULL,
+        'sequential' => 1,
       ];
-      $icP1 = self::_importAPI('tag', 'create', $params);
+
+      $icP1 = self::_importAPI('tag', 'get', $params, TRUE);
+      if (!empty($icP1['id'])) {
+        $icP1 = self::_importAPI('tag', 'create', $params, TRUE);
+      }
       $tagExtInt[$icID1] = $icP1['id'] ?? NULL;
 
       //level 2
-      if ( isset($icD1['children']) ) {
+      if (isset($icD1['children'])) {
         foreach ( $icD1['children'] as $icID2 => $icD2 ) {
           $params = [
             'name' => $icD2['name'],
             'description' => $icD2['desc'],
             'parent_id' => $icP1['id'] ?? NULL,
+            'sequential' => 1,
           ];
-          $icP2 = self::_importAPI('tag', 'create', $params);
+
+          $icP2 = self::_importAPI('tag', 'get', $params, TRUE);
+          if (!empty($icP2['id'])) {
+            $icP2 = self::_importAPI('tag', 'create', $params, TRUE);
+          }
           $tagExtInt[$icID2] = $icP2['id'] ?? NULL;
 
           //level 3
-          if ( isset($icD2['children']) ) {
+          if (isset($icD2['children'])) {
             foreach ( $icD2['children'] as $icID3 => $icD3 ) {
               $params = [
                 'name' => $icD3['name'],
                 'description' => $icD3['desc'],
                 'parent_id' => $icP2['id'],
+                'sequential' => 1,
               ];
-              $icP3 = self::_importAPI('tag', 'create', $params);
+
+              $icP3 = self::_importAPI('tag', 'get', $params, TRUE);
+              if (!empty($icP3['id'])) {
+                $icP3 = self::_importAPI('tag', 'create', $params, TRUE);
+              }
               $tagExtInt[$icID3] = $icP3['id'];
 
               //level 4
-              if ( isset($icD3['children']) ) {
+              if (isset($icD3['children'])) {
                 foreach ( $icD3['children'] as $icID4 => $icD4 ) {
                   $params = [
                     'name' => $icD4['name'],
                     'description' => $icD4['desc'],
                     'parent_id' => $icP3['id'],
+                    'sequential' => 1,
                   ];
-                  $icP4 = self::_importAPI('tag', 'create', $params);
+
+                  $icP4 = self::_importAPI('tag', 'get', $params, TRUE);
+                  if (!empty($icP4['id'])) {
+                    $icP4 = self::_importAPI('tag', 'create', $params, TRUE);
+                  }
                   $tagExtInt[$icID4] = $icP4['id'];
 
                   //level 5
-                  if ( isset($icD4['children']) ) {
+                  if (isset($icD4['children'])) {
                     foreach ( $icD4['children'] as $icID5 => $icD5 ) {
                       $params = [
                         'name' => $icD5['name'],
                         'description' => $icD5['desc'],
                         'parent_id' => $icP4['id'],
+                        'sequential' => 1,
                       ];
-                      $icP5 = self::_importAPI('tag', 'create', $params);
+
+                      $icP5 = self::_importAPI('tag', 'get', $params, TRUE);
+                      if (!empty($icP5['id'])) {
+                        $icP5 = self::_importAPI('tag', 'create', $params, TRUE);
+                      }
                       $tagExtInt[$icID5] = $icP5['id'];
                     }
                   }//end level 5
@@ -747,16 +785,28 @@ class CRM_migrateContactsImport {
 
     //construct tag entity records
     foreach ($exportData['tags']['entities'] as $extID => $extTags) {
+      if (empty($extTags)) {
+        continue;
+      }
+
       $params = [
         'contact_id' => $extInt[$extID],
       ];
-      foreach ( $extTags as $tIndex => $tID ) {
-        $params['tag_id.'.$tIndex] = $tagExtInt[$tID] ?? NULL;
+      foreach ($extTags as $tID) {
+        if (!empty($tagExtInt[$tID])) {
+          $params['tag_id'][] = $tagExtInt[$tID];
+        }
       }
-      //bbscript_log(LL::TRACE, '_importTags entityTag $params', $params);
+      bbscript_log(LL::TRACE, 'importTags entityTag $params', $params);
+
+      //avoid error if no tag_id values present
+      if (empty($params['tag_id'])) {
+        continue;
+      }
+
       self::_importAPI('entity_tag', 'create', $params);
     }
-  }//importTags
+  }
 
   function importEmployment(&$exportData) {
     global $optDry;
@@ -860,29 +910,35 @@ class CRM_migrateContactsImport {
 
     //record types which are custom groups
     $customGroups = [
-      'Additional_Constituent_Information', 'Attachments',
-      'Contact_Details', 'Organization_Constituent_Information',
-      'District_Information'
+      'Additional_Constituent_Information',
+      'Attachments',
+      'Contact_Details',
+      'Organization_Constituent_Information',
+      'District_Information',
+      'Website_Profile',
     ];
     $dateFields = [
-      'last_import_57', 'boe_date_of_registration_24'
+      'last_import_57',
+      'boe_date_of_registration_24',
+      'last_modified_79',
+      'birth_date_73',
     ];
 
     //prepare custom fields
     if (in_array($entity, $customGroups)) {
       //get fields and construct array if not already constructed
-      if ( !isset($customMap[$entity]) || empty($customMap[$entity]) ) {
+      if (!isset($customMap[$entity]) || empty($customMap[$entity])) {
         $customDetails = self::getCustomFields($entity);
-        foreach ( $customDetails as $field ) {
+        foreach ($customDetails as $field) {
           $customMap[$entity][$field['column_name']] = 'custom_'.$field['id'];
         }
       }
       //bbscript_log(LL::TRACE, '_importAPI $customMap', $customMap);
 
       //cycle through custom fields and convert column name to custom_## format
-      foreach ( $params as $col => $v ) {
+      foreach ($params as $col => $v) {
         //if a date type column, strip punctuation
-        if ( in_array($col, $dateFields) ) {
+        if (in_array($col, $dateFields)) {
           $v = str_replace(['-', ':', ' '], '', $v);
         }
         if ( array_key_exists($col, $customMap[$entity]) ) {
@@ -913,6 +969,15 @@ class CRM_migrateContactsImport {
         unset($getParams['description']);
         $exists = civicrm_api3($entity, 'get', $getParams);
         bbscript_log(LL::TRACE, '_importAPI $exists', $exists);
+        bbscript_log(LL::TRACE, '_importAPI $getParams', $getParams);
+
+        if (empty($exists['count']) && !empty($params['external_identifier'])) {
+          $exists = civicrm_api3('Contact', 'get', [
+            'external_identifier' => $params['external_identifier'],
+            'sequential' => 1,
+          ]);
+          bbscript_log(LL::TRACE, '_importAPI $exists', $exists);
+        }
       }
 
       if (empty($exists['count'])) {
@@ -920,15 +985,28 @@ class CRM_migrateContactsImport {
           $api = civicrm_api3($entity, $action, $params);
         }
         catch (CRM_Core_Exception $e) {
-          if ($e->getMessage() != 'DB Error: already exists') {
+          //
+          if (
+            $e->getMessage() != 'DB Error: already exists' &&
+            //triggered when entity_tag already exists for contact/tag_id
+            $e->getMessage() != 'Unable to add tags' &&
+            //need to know if contact fails for any reason
+            !in_array($entity, ['contact', 'Contact'])
+          ) {
+            if ($checkExists) {
+              bbscript_log(LL::DEBUG, '_importAPI $exists', $exists);
+            }
+
             bbscript_log(LL::DEBUG, '_importAPI $e', $e);
           }
         }
       }
 
-      if (!empty($api['is_error'])) {
-        bbscript_log(LL::DEBUG, "_importAPI error", $api);
-        bbscript_log(LL::DEBUG, "_importAPI entity: {$entity} // action: {$action}", $params);
+      if (!empty($api['is_error']) || (empty($api) && empty($exists['values']))) {
+        bbscript_log(LL::ERROR, "_importAPI error", $api ?? NULL);
+        bbscript_log(LL::ERROR, "_importAPI entity: {$entity} // action: {$action}", $params);
+
+        return FALSE;
       }
 
       return $api ?? $exists['values'][0];
@@ -1160,12 +1238,14 @@ class CRM_migrateContactsImport {
     ];
     $contact = civicrm_api('contact', 'getsingle', $params);
 
-    foreach ( $contact as $f => $v ) {
+    $leaveField = ['source', 'external_identifier', 'contact_type'];
+
+    foreach ($contact as $f => $v) {
       //if existing record field has a value, remove from imported record array
-      if ( (!empty($v) || $v == '0') &&
+      if ((!empty($v) || $v == '0') &&
         isset($details['contact'][$f]) &&
-        $f != 'source' &&
-        $f != 'external_identifier' ) {
+        !in_array($f, $leaveField)
+      ) {
         //unset from imported contact array
         unset($details['contact'][$f]);
       }
@@ -1177,53 +1257,62 @@ class CRM_migrateContactsImport {
       'Attachments',
       'Contact_Details',
       'Organization_Constituent_Information',
+      'Website_Profile',
     ];
-    foreach ( $customSets as $set ) {
+
+    foreach ($customSets as $set) {
       //get/set custom group ID
-      if ( !isset($customGroupID[$set]) || empty($customGroupID[$set]) ) {
+      if (empty($customGroupID[$set])) {
         $customGroupID[$set] = self::getCustomFields($set, 'groupid');
       }
+      bbscript_log(LL::TRACE, '_fillContact $customGroupID', $customGroupID);
 
       //get/set custom fields
-      if ( !isset($customMapID[$set]) || empty($customMapID[$set]) ) {
+      if (empty($customMapID[$set])) {
         $customDetails = self::getCustomFields($set);
-        foreach ( $customDetails as $field ) {
+        foreach ($customDetails as $field) {
           $customMapID[$set][$field['id']] = $field['column_name'];
         }
       }
+      bbscript_log(LL::TRACE, '_fillContact $customMapID', $customMapID);
 
-      if ( isset($details[$set]) ) {
+      if (isset($details[$set])) {
         $params = [
           'version' => 3,
           'entity_id' => $matchedID,
           'custom_group_id' => $customGroupID[$set],
         ];
         $data = self::_importAPI($set, 'get', $params);
-        //bbscript_log(LL::TRACE, "_fillContact data: $set", $data);
+        bbscript_log(LL::TRACE, "_fillContact data: $set", $data);
 
         //trap the error: if get failed, we need to insert a record in the custom data table
-        if ( $data['is_error'] && !$optDry ) {
+        if ($data['is_error'] && !$optDry) {
           bbscript_log(LL::DEBUG, "unable to retrieve {$set} custom data for ID {$matchedID}. inserting record and proceeding.");
           $tbl = self::getCustomFields($set, 'table');
           $sql = "
             INSERT IGNORE INTO {$tbl} (entity_id)
             VALUES ({$matchedID});
           ";
+          //TODO should we be running this SQL?
         }
 
         //cycle through existing custom data and unset from $details if value exists
-        if ( !empty($data['values']) ) {
-          foreach ( $data['values'] as $custFID => $existingData ) {
+        if (!empty($data['values'])) {
+          foreach ($data['values'] as $existingData) {
             //should probably handle attachments more intelligently
-            if ( !empty($existingData['latest']) || $existingData['latest'] == '0' ) {
-              $colName = $customMapID[$set][$custFID];
+            if ((!empty($existingData['latest']) || $existingData['latest'] == '0') &&
+              isset($customMapID[$set][$existingData['id']])
+            ) {
+              $colName = $customMapID[$set][$existingData['id']];
               unset($details[$set][$colName]);
             }
           }
         }
+
+        bbscript_log(LL::TRACE, '_fillContact $details', $details);
       }
     }
-  }//_fillContact
+  }
 
   /*
    * compare imported conflicting address with existing and decide if they match
@@ -1244,13 +1333,13 @@ class CRM_migrateContactsImport {
     $dupe = TRUE;
     $afs = ['street_address', 'supplemental_address_1', 'city', 'postal_code'];
     foreach ($afs as $af) {
-      if ($address[$af] != $record[$af]) {
+      if ($address[$af] ?? NULL != $record[$af] ?? NULL) {
         $dupe = FALSE;
         break;
       }
     }
 
-    if ( $dupe ) {
+    if ($dupe) {
       unset($exportData['districtinfo'][$record['name']]);
       return 'skip';
     }
@@ -1360,22 +1449,28 @@ class CRM_migrateContactsImport {
     ";
     CRM_Core_DAO::executeQuery($sql);
     bbscript_log(LL::INFO, "cleaning up log table records...");
-  }//_cleanLogRecords
+  }
 
   /*
    * given an array, cycle through and unset any elements with no value
    */
   function _cleanArray($data) {
-    foreach ( $data as $f => $v ) {
-      if ( empty($v) && $v !== 0 ) {
+    foreach ($data as $f => $v) {
+      if (empty($v) && $v !== 0) {
         unset($data[$f]);
       }
-      if ( is_string($v) ) {
+
+      if (is_string($v)) {
         $data[$f] = stripslashes($v);
+      }
+
+      //these should never be 0; throws error on import if they are
+      if (in_array($f, ['email_greeting_id', 'postal_greeting_id', 'addressee_id']) && $v == 0) {
+        unset($data[$f]);
       }
     }
     return $data;
-  }//_cleanArray
+  }
 
   /*
    * create group in destination database and add all contacts
@@ -1456,19 +1551,19 @@ class CRM_migrateContactsImport {
    * given a custom data group name, return array of fields
    */
   function getCustomFields($name, $return = 'fields') {
-    $group = civicrm_api('custom_group', 'getsingle', ['version' => 3, 'name' => $name]);
-    if ( $return == 'fields' ) {
-      $fields = civicrm_api('custom_field', 'get', ['version' => 3, 'custom_group_id' => $group['id']]);
+    $group = civicrm_api3('custom_group', 'getsingle', ['name' => $name]);
+    if ($return == 'fields') {
+      $fields = civicrm_api3('custom_field', 'get', ['custom_group_id' => $group['id']]);
       //bbscript_log(LL::TRACE, 'getCustomFields fields', $fields);
       return $fields['values'];
     }
-    elseif ( $return == 'table' ) {
+    elseif ($return == 'table') {
       return $group['table_name'];
     }
-    elseif ( $return == 'groupid' ) {
+    elseif ($return == 'groupid') {
       return $group['id'];
     }
-  }//getCustomFields
+  }
 
   function getValue($string) {
     if (!$string) {
@@ -1477,8 +1572,7 @@ class CRM_migrateContactsImport {
     else {
       return $string;
     }
-  }//getValue
-
+  }
 }
 
 //run the script
