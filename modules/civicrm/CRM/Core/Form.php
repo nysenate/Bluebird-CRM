@@ -689,7 +689,10 @@ class CRM_Core_Form extends HTML_QuickForm_Page {
     $this->buildQuickForm();
 
     $defaults = $this->setDefaultValues();
-    unset($defaults['qfKey']);
+    //NYSS see https://github.com/civicrm/civicrm-core/pull/25853/
+    if (isset($defaults['qfKey'])) {
+      unset($defaults['qfKey']);
+    }
 
     if (!empty($defaults)) {
       $this->setDefaults($defaults);
