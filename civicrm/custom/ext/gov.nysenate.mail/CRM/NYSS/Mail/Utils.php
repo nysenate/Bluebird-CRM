@@ -39,7 +39,7 @@ class CRM_NYSS_Mail_Utils {
               continue;
             }
             //check size of file and mime type
-            elseif ($fileSize > 8 || in_array(finfo_file(finfo_open(FILEINFO_MIME_TYPE), $file_path), $disallowedMimeTypes)) {
+            elseif ($fileSize > 5 || in_array(finfo_file(finfo_open(FILEINFO_MIME_TYPE), $file_path), $disallowedMimeTypes)) {
               //delete the file
               unlink($file_path);
             }

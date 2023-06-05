@@ -94,6 +94,9 @@
       leadTextVisible { label: Show Leading Text Block; extend: visible; }
       endTextVisible { label: Show Ending Text Block; extend: visible; }
 
+      /*NYSS block padding*/
+      blockPaddingVisible { label: Display Block Padding; extend: visible; }
+
       contentTheme { label: Main Style; }
       contentTheme:preview { -ko-background-color: @[backgroundColor] }
       frameTheme { label: Frame Style; }
@@ -156,22 +159,22 @@
 
       sideArticleBlock imagePos {label:Image position;widget:select; options: left=Left|right=Right; }
       sideArticleBlock imageWidth { label: Image Size; widget: select; options: 120=Small|166=Medium|258=Big; }
-      sideArticleBlock { label: Image+Text Block; properties: backgroundColor titleVisible=true buttonVisible=true imageWidth=166 imagePos=left titleTextStyle longTextStyle buttonStyle  image  longText buttonLink; variant:imagePos; theme: contentTheme }
+      sideArticleBlock { label: Image+Text Block; properties: backgroundColor titleVisible=true blockPaddingVisible=true buttonVisible=true imageWidth=166 imagePos=left titleTextStyle longTextStyle buttonStyle  image  longText buttonLink; variant:imagePos; theme: contentTheme }
 
-      textBlock { label: Text Block; properties: backgroundColor longTextStyle longText; theme: contentTheme}
+      textBlock { label: Text Block; properties: backgroundColor longTextStyle longText blockPaddingVisible=true; theme: contentTheme}
 
-      singleArticleBlock { label: Image/Text Block; properties: backgroundColor titleVisible=true buttonVisible=true imageVisible=true titleTextStyle longTextStyle buttonStyle  image  longText buttonLink;theme: contentTheme}
+      singleArticleBlock { label: Image/Text Block; properties: backgroundColor titleVisible=true blockPaddingVisible=true buttonVisible=true imageVisible=true titleTextStyle longTextStyle buttonStyle image longText buttonLink;theme: contentTheme}
 
-      doubleArticleBlock { label: 2 Columns Block; properties: backgroundColor titleVisible=true buttonVisible=true imageVisible=true titleTextStyle longTextStyle buttonStyle  leftImage  leftLongText leftButtonLink rightImage  rightLongText rightButtonLink; theme: contentTheme}
+      doubleArticleBlock { label: 2 Columns Block; properties: backgroundColor titleVisible=true blockPaddingVisible=true buttonVisible=true imageVisible=true titleTextStyle longTextStyle buttonStyle  leftImage  leftLongText leftButtonLink rightImage  rightLongText rightButtonLink; theme: contentTheme}
 
-      tripleArticleBlock { label: 3 Columns Block; properties: backgroundColor titleVisible=true buttonVisible=true imageVisible=true titleTextStyle longTextStyle buttonStyle  leftImage  leftLongText leftButtonLink middleImage  middleLongText middleButtonLink rightImage  rightLongText rightButtonLink; theme: contentTheme}
+      tripleArticleBlock { label: 3 Columns Block; properties: backgroundColor titleVisible=true blockPaddingVisible=true buttonVisible=true imageVisible=true titleTextStyle longTextStyle buttonStyle  leftImage  leftLongText leftButtonLink middleImage  middleLongText middleButtonLink rightImage  rightLongText rightButtonLink; theme: contentTheme}
 
-      articleImageBlock { label: Text/Image Block; properties: backgroundColor titleVisible=true imageVisible=true leadTextVisible=true endTextVisible=true titleTextStyle longTextStyle buttonStyle image longText;theme: contentTheme}
+      articleImageBlock { label: Text/Image Block; properties: backgroundColor titleVisible=true blockPaddingVisible=true imageVisible=true leadTextVisible=true endTextVisible=true titleTextStyle longTextStyle buttonStyle image longText;theme: contentTheme}
 
-      articleImageRightWrapBlock { label: Right Text Wrap Image Block; properties: backgroundColor titleVisible=true titleTextStyle longTextStyle buttonStyle image longText;theme: contentTheme}
+      articleImageRightWrapBlock { label: Right Text Wrap Image Block; properties: backgroundColor titleVisible=true blockPaddingVisible=true titleTextStyle longTextStyle buttonStyle image longText;theme: contentTheme}
 
       logoBlock imageWidth { label: Image Size; widget: select; options: 166=Small|258=Medium|350=Big; variant:imageWidth;}
-      logoBlock { label: Logo Block; properties: image imageWidth=258; variant: imageWidth; theme: contentTheme}
+      logoBlock { label: Logo Block; properties: image imageWidth=258 blockPaddingVisible=true; variant: imageWidth; theme: contentTheme}
 
       titleBlock { label: Title; theme: contentTheme}
 
@@ -179,19 +182,19 @@
         label: Alternative Text;
         help: Some Email Clients will show this text if automatical download of images is disabled;
       }
-      imageBlock { label: Image; properties: gutterVisible=false; variant: gutterVisible; theme: contentTheme }
+      imageBlock { label: Image; properties: gutterVisible=false blockPaddingVisible=true; variant: gutterVisible; theme: contentTheme }
 
       doubleImageBlock longTextStyle {
         label: Alternative Text;
         help: Some Email Clients will show this text if automatical download of images is disabled;
       }
-      doubleImageBlock { label: Two Image Gallery Block; properties: gutterVisible=false; variant: gutterVisible; theme: contentTheme }
+      doubleImageBlock { label: Two Image Gallery Block; properties: gutterVisible=false blockPaddingVisible=true; variant: gutterVisible; theme: contentTheme }
 
       tripleImageBlock longTextStyle {
         label: Alternative Text;
         help: Some Email Clients will show this text if automatical download of images is disabled;
       }
-      tripleImageBlock { label: Three Image Gallery Block;properties:gutterVisible=false;variant:gutterVisible; theme: contentTheme}
+      tripleImageBlock { label: Three Image Gallery Block;properties:gutterVisible=false blockPaddingVisible=true;variant:gutterVisible; theme: contentTheme}
 
       buttonBlock { label: Button Block; theme: contentTheme}
       hrBlock { label: Separator Block;  theme: contentTheme}
@@ -464,7 +467,7 @@
 
 <!--[if (gte mso 9)|(lte ie 8)]><table align="center" border="0" cellspacing="0" cellpadding="0" width="570"><tr><td align="center" valign="top"><![endif]-->
         <div class="oldwebkit">
-        <table width="570" style="width: 100%; max-width: 570px" border="0" cellpadding="0" cellspacing="18" class="vb-container fullpad">
+        <table width="570" style="width: 100%; max-width: 570px; border-spacing: 18px 18px; -ko-border-spacing: 18px @[blockPaddingVisible ? 18 : 9]px;" border="0" cellpadding="0" cellspacing="18" class="vb-container fullpad">
           <tr>
             <td valign="top" align="center">
 
@@ -500,7 +503,7 @@
 <!--[if (gte mso 9)|(lte ie 8)]><table align="center" border="0" cellspacing="0" cellpadding="0" width="570"><tr><td align="center" valign="top"><![endif]-->
         <div class="oldwebkit">
         <table width="570" border="0" cellpadding="0" cellspacing="9" class="vb-row fullpad" bgcolor="#ffffff"
-          style="width: 100%; max-width: 570px; background-color: #ffffff; -ko-attr-bgcolor: @backgroundColor; -ko-background-color: @backgroundColor;">
+          style="width: 100%; max-width: 570px; background-color: #ffffff; -ko-attr-bgcolor: @backgroundColor; -ko-background-color: @backgroundColor; border-spacing: 9px 9px; -ko-border-spacing: @[blockPaddingVisible > 0 ? 9 : 0]px;">
           <tr>
             <td align="center" class="mobile-row" valign="top" style="font-size: 0;">
 
@@ -603,7 +606,7 @@
 <!--[if (gte mso 9)|(lte ie 8)]><table align="center" border="0" cellspacing="0" cellpadding="0" width="570"><tr><td align="center" valign="top"><![endif]-->
         <div class="oldwebkit">
         <table width="570" border="0" cellpadding="0" cellspacing="18" class="vb-container fullpad" bgcolor="#ffffff"
-          style="width: 100%; max-width: 570px; background-color: #ffffff; -ko-attr-bgcolor: @backgroundColor; -ko-background-color: @backgroundColor;">
+          style="width: 100%; max-width: 570px; background-color: #ffffff; -ko-attr-bgcolor: @backgroundColor; -ko-background-color: @backgroundColor; border-spacing: 18px 18px; -ko-border-spacing: 18px @[blockPaddingVisible ? 18 : 9]px;">
           <tr data-ko-display="imageVisible">
             <td width="100%" valign="top" align="left" class="links-color">
               <a data-ko-link="image.url" href="">
@@ -672,7 +675,7 @@
         <!--[if (gte mso 9)|(lte ie 8)]><table align="center" border="0" cellspacing="0" cellpadding="0" width="570"><tr><td align="center" valign="top"><![endif]-->
         <div class="oldwebkit">
           <table width="570" border="0" cellpadding="0" cellspacing="18" class="vb-container fullpad" bgcolor="#ffffff"
-                 style="width: 100%; max-width: 570px; background-color: #ffffff; -ko-attr-bgcolor: @backgroundColor; -ko-background-color: @backgroundColor;">
+                 style="width: 100%; max-width: 570px; background-color: #ffffff; -ko-attr-bgcolor: @backgroundColor; -ko-background-color: @backgroundColor; border-spacing: 18px 18px; -ko-border-spacing: 18px @[blockPaddingVisible ? 18 : 9]px;">
             <tr>
               <td>
                 <table align="left" border="0" cellpadding="0" cellspacing="0" width="100%">
@@ -738,7 +741,7 @@
         <!--[if (gte mso 9)|(lte ie 8)]><table align="center" border="0" cellspacing="0" cellpadding="0" width="570"><tr><td align="center" valign="top"><![endif]-->
         <div class="oldwebkit">
           <table width="570" border="0" cellpadding="0" cellspacing="18" class="vb-container fullpad" bgcolor="#ffffff"
-                 style="width: 100%; max-width: 570px; background-color: #ffffff; -ko-attr-bgcolor: @backgroundColor; -ko-background-color: @backgroundColor;">
+                 style="width: 100%; max-width: 570px; background-color: #ffffff; -ko-attr-bgcolor: @backgroundColor; -ko-background-color: @backgroundColor; border-spacing: 18px 18px; -ko-border-spacing: 18px @[blockPaddingVisible ? 18 : 9]px;">
             <tr>
               <td>
                 <table align="left" border="0" cellpadding="0" cellspacing="0" width="100%">
@@ -838,7 +841,7 @@
 <!--[if (gte mso 9)|(lte ie 8)]><table align="center" border="0" cellspacing="0" cellpadding="0" width="570"><tr><td align="center" valign="top"><![endif]-->
         <div class="oldwebkit">
         <table width="570" border="0" cellpadding="0" cellspacing="18" class="vb-container fullpad" bgcolor="#ffffff"
-          style="width: 100%; max-width: 570px; background-color: #ffffff; -ko-attr-bgcolor: @backgroundColor; -ko-background-color: @backgroundColor;">
+          style="width: 100%; max-width: 570px; background-color: #ffffff; -ko-attr-bgcolor: @backgroundColor; -ko-background-color: @backgroundColor; border-spacing: 18px 18px; -ko-border-spacing: 18px @[blockPaddingVisible ? 18 : 9]px;">
           <tr>
             <td align="left" style="text-align: left; font-size: 13px; font-family: Arial, Helvetica, sans-serif; color: #3f3f3f;
               -ko-font-size: @[longTextStyle.size]px; -ko-font-family: @longTextStyle.face; -ko-color: @longTextStyle.color"
@@ -865,7 +868,7 @@
 <!--[if (gte mso 9)|(lte ie 8)]><table align="center" border="0" cellspacing="0" cellpadding="0" width="570"><tr><td align="center" valign="top"><![endif]-->
         <div class="oldwebkit">
         <table width="570" border="0" cellpadding="0" cellspacing="9" class="vb-row fullpad" bgcolor="#ffffff"
-          style="width: 100%; max-width: 570px; background-color: #ffffff; -ko-attr-bgcolor: @backgroundColor; -ko-background-color: @backgroundColor;">
+          style="width: 100%; max-width: 570px; background-color: #ffffff; -ko-attr-bgcolor: @backgroundColor; -ko-background-color: @backgroundColor; border-spacing: 9px 9px; -ko-border-spacing: @[blockPaddingVisible ? 9 : 0]px;">
           <tr>
             <td align="center" valign="top" class="mobile-row" style="font-size: 0">
 
@@ -1039,7 +1042,7 @@
 <!--[if (gte mso 9)|(lte ie 8)]><table align="center" border="0" cellspacing="0" cellpadding="0" width="570"><tr><td align="center" valign="top"><![endif]-->
         <div class="oldwebkit">
         <table width="570" border="0" cellpadding="0" cellspacing="9" class="vb-row fullpad" bgcolor="#ffffff"
-          style="width: 100%; max-width: 570px; background-color: #ffffff; -ko-attr-bgcolor: @backgroundColor; -ko-background-color: @backgroundColor;">
+          style="width: 100%; max-width: 570px; background-color: #ffffff; -ko-attr-bgcolor: @backgroundColor; -ko-background-color: @backgroundColor; border-spacing: 9px 9px; -ko-border-spacing: @[blockPaddingVisible ? 9 : 0]px;">
           <tr>
             <td align="center" valign="top" style="font-size: 0">
 
@@ -1234,7 +1237,7 @@
 <!--[if (gte mso 9)|(lte ie 8)]><table align="center" border="0" cellspacing="0" cellpadding="0" width="570"><tr><td align="center" valign="top"><![endif]-->
         <div class="oldwebkit">
         <table data-ko-display="gutterVisible eq false" width="570" class="vb-container fullwidth" cellpadding="0" border="0" bgcolor="#ffffff" align="center"
-          cellspacing="0" style="width: 100%; max-width: 570px; background-color: #ffffff; -ko-background-color: @backgroundColor; -ko-attr-bgcolor: @backgroundColor;">
+          cellspacing="0" style="width: 100%; max-width: 570px; background-color: #ffffff; -ko-background-color: @backgroundColor; -ko-attr-bgcolor: @backgroundColor; border-spacing: 18px 18px; -ko-border-spacing: 18px @[blockPaddingVisible ? 18 : 9]px;">
           <tr>
             <td valign="top" align="center">
               <a data-ko-link="image.url" href="" style="text-decoration: none;"><img data-ko-editable="image.src"
@@ -1275,7 +1278,7 @@
 <!--[if (gte mso 9)|(lte ie 8)]><table align="center" border="0" cellspacing="0" cellpadding="0" width="570"><tr><td align="center" valign="top"><![endif]-->
         <div class="oldwebkit">
         <table data-ko-display="gutterVisible eq false" width="570" class="vb-container fullwidth" cellpadding="0" border="0" bgcolor="#ffffff" align="center"
-          cellspacing="0" style="width: 100%; max-width: 570px; background-color: #ffffff; -ko-background-color: @backgroundColor; -ko-attr-bgcolor: @backgroundColor;">
+          cellspacing="0" style="width: 100%; max-width: 570px; background-color: #ffffff; -ko-background-color: @backgroundColor; -ko-attr-bgcolor: @backgroundColor; border-spacing: 18px 18px; -ko-border-spacing: 18px @[blockPaddingVisible ? 18 : 9]px;">
           <tr>
             <td valign="top" align="center" class="mobile-row" style="font-size: 0">
 
@@ -1365,7 +1368,7 @@
 <!--[if (gte mso 9)|(lte ie 8)]><table align="center" border="0" cellspacing="0" cellpadding="0" width="570"><tr><td align="center" valign="top"><![endif]-->
         <div class="oldwebkit">
         <table data-ko-display="gutterVisible eq false" width="570" class="vb-container fullwidth" cellpadding="0" border="0" bgcolor="#ffffff" align="center"
-          cellspacing="0" style="width: 100%; max-width: 570px; background-color: #ffffff; -ko-background-color: @backgroundColor; -ko-attr-bgcolor: @backgroundColor;">
+          cellspacing="0" style="width: 100%; max-width: 570px; background-color: #ffffff; -ko-background-color: @backgroundColor; -ko-attr-bgcolor: @backgroundColor; border-spacing: 18px 18px; -ko-border-spacing: 18px @[blockPaddingVisible ? 18 : 9]px;">
           <tr>
             <td valign="top" align="center" class="mobile-row" style="font-size: 0">
 
