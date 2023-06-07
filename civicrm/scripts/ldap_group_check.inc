@@ -138,8 +138,8 @@ log_auth("Found ".count($userGroups)." group(s) for user [$_name]; groups: ".imp
 // First, combine the global and instance-specific login groups from
 // the Bluebird config file.
 $bbconfig = get_bluebird_instance_config();
-$gl_groups = preg_split('/[\s,]+/', $bbconfig['ldap.logingroups.global'], null, PREG_SPLIT_NO_EMPTY);
-$in_groups = preg_split('/[\s,]+/', $bbconfig['ldap.logingroups'], null, PREG_SPLIT_NO_EMPTY);
+$gl_groups = preg_split('/[\s,]+/', $bbconfig['ldap.logingroups.global'], 0, PREG_SPLIT_NO_EMPTY);
+$in_groups = preg_split('/[\s,]+/', $bbconfig['ldap.logingroups'], 0, PREG_SPLIT_NO_EMPTY);
 $allowedGroups = array_merge($gl_groups, $in_groups);
 
 if (count($allowedGroups) < 1) {
