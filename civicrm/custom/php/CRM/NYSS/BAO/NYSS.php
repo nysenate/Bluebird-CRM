@@ -238,4 +238,66 @@ class CRM_NYSS_BAO_NYSS {
       }
     }
   }
+
+  /**
+   * @param $fh
+   * @param array $fields
+   * @param string $delimiter
+   * @param string $enclosure
+   * @param bool $mysql_null
+   * @param bool $blank_as_null
+   * @param bool $batch
+   * @param bool $batchCleanup
+   * @return void
+   *
+   * roughly patterned after php fputcsv
+   * provides null handling and batch options
+   */
+  static function fputcsv2 (
+    $fh,
+    array $fields,
+    string $delimiter = ',',
+    string $enclosure = '"',
+    bool $mysql_null = FALSE,
+    bool $blank_as_null = FALSE,
+    bool $batch = FALSE,
+    bool $batchCleanup = FALSE
+  ) {
+    static $batchOutput = '';
+    static $batchCount = 0;
+
+    $delimiter_esc = preg_quote($delimiter, '/');
+    $enclosure_esc = preg_quote($enclosure, '/');
+
+    $output = [];
+    foreach ($fields as $field) {
+      if ($mysql_null &&
+        ($field === NULL || ($blank_as_null && strlen($field) == 0))
+      ) {
+        $output[] = 'NULL';
+        continue;
+      }
+
+      $output[] = (!empty($field)) ? (
+      preg_match("/(?:${delimiter_esc}|${enclosure_esc}|\s)/", $field) ?
+        ($enclosure . str_replace($enclosure, $enclosure . $enclosure, $field) . $enclosure) :
+        $field
+      ) : (($mysql_null) ? 'NULL' : NULL);
+    }
+
+    if ($batch) {
+      if (!$batchCleanup) {
+        $batchOutput .= implode($delimiter, $output) . "\n";
+      }
+
+      if ($batchCount == BATCH || $batchCleanup) {
+        fwrite($fh, $batchOutput);
+        $batchOutput = '';
+        $batchCount = 0;
+      }
+    }
+    else {
+      fwrite($fh, implode($delimiter, $output) . "\n");
+    }
+  }
 }

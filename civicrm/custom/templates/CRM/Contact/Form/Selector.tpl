@@ -62,7 +62,7 @@
                     {$value|crmDate}
                 {else}
                   {*NYSS 5518 - make exception for values that are links*}
-                  {if strpos( $value, '<a href' ) !== false}
+                  {if "" != $value AND strpos($value, '<a href') !== false}
                     {$value}
                   {else}
                     {*NYSS 4019*}
