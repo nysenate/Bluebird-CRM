@@ -63,41 +63,42 @@ class CRM_Contact_Form_Task_ExportDistrict extends CRM_Contact_Form_Task
    * @access public
    * @return void
    */
-  function buildQuickForm( )
+  function buildQuickForm()
   {
-    CRM_Utils_System::setTitle( ts('Export District for Merge/Purge') );
+    CRM_Utils_System::setTitle(ts('Export District for Merge/Purge'));
 
-    require_once 'CRM/Core/Permission.php';
-    if ( CRM_Core_Permission::check( 'export print production files' ) ) {
+    if (CRM_Core_Permission::check('export print production files')) {
       $this->addElement('text', 'avanti_job_id', ts('Avanti Job ID') );
     }
 
-    require_once 'CRM/Core/PseudoConstant.php';
     $locTypes = CRM_Core_PseudoConstant::get('CRM_Core_DAO_Address', 'location_type_id');
-    $locTypes = array( 0 => 'Primary' ) + $locTypes;
-    $this->add( 'select',
+    $locTypes = [0 => 'Primary'] + $locTypes;
+    $this->add('select',
       'locType',
       ts( 'Address Location Type' ),
       $locTypes,
       false,
-      array( 'id' => 'locType' )
+      ['id' => 'locType']
     );
 
     $this->addElement('checkbox', 'includeLog', ts('Include most recent log date'));
 
     $this->addElement('checkbox', 'checkTouched', ts('Include additional touched status values'));
 
+    $select2style = [
+      'multiple' => TRUE,
+      'style' => 'width: 300px',
+      'class' => 'crm-select2',
+      'placeholder' => ts('- select -'),
+    ];
+
     $groups = CRM_Core_PseudoConstant::group( );
     $this->add( 'select',
       'excludeGroups',
-      ts( 'Exclude Groups' ),
+      ts('Exclude Groups'),
       $groups,
       false,
-      array(
-        'id'       => 'excludeGroups',
-        'multiple' => 'multiple',
-        'title'    => ts('- select -')
-      )
+      $select2style
     );
 
     $this->addDefaultButtons( 'Export District' );
@@ -113,15 +114,14 @@ class CRM_Contact_Form_Task_ExportDistrict extends CRM_Contact_Form_Task
    * @access public
    * @return None
    */
-  public function postProcess()
-  {
+  public function postProcess() {
     //get form values
-    $params = $this->controller->exportValues( $this->_name );
-    $avanti_job_id = ( $params['avanti_job_id'] ) ? 'avanti-'.$params['avanti_job_id'].'_' : '';
-    $loc_type      = $params['locType'];
-    $include_log   = $params['includeLog'];
-    $checkTouched  = $params['checkTouched'];
-    $excludeGroups = $params['excludeGroups'];
+    $params = $this->controller->exportValues($this->_name);
+    $avanti_job_id = ($params['avanti_job_id']) ? 'avanti-'.$params['avanti_job_id'].'_' : '';
+    $loc_type = $params['locType'] ?? NULL;
+    $include_log = $params['includeLog'] ?? FALSE;
+    $checkTouched = $params['checkTouched'] ?? FALSE;
+    $excludeGroups = $params['excludeGroups'] ?? [];
 
     //get instance name (strip first element from url)
     $instance = substr( $_SERVER['HTTP_HOST'], 0, strpos( $_SERVER['HTTP_HOST'], '.' ) );
@@ -244,7 +244,7 @@ class CRM_Contact_Form_Task_ExportDistrict extends CRM_Contact_Form_Task
 
     $fhout = fopen($fname, 'w');
 
-    $aHeader=array();
+    $aHeader = [];
     $firstLine = true;
     while ($dao->fetch()) {
       //write out the header rowv2($fhout, $aOut,"\t",'',false,false);
@@ -255,30 +255,29 @@ class CRM_Contact_Form_Task_ExportDistrict extends CRM_Contact_Form_Task
           }
         }
 
-        fputcsv2($fhout, $aHeader,"\t",'',false,false);
+        CRM_NYSS_BAO_NYSS::fputcsv2($fhout, $aHeader,"\t",'',false,false);
         $firstLine=false;
       }
 
-      $aOut = array();
-      foreach($dao as $name=>$val) {
+      $aOut = [];
+      foreach($dao as $name => $val) {
         if (!isset($skipVars[$name])) {
+          if ($name == 'gender_id' && !empty($val)) $val = $aGender[$val];
+          if ($name == 'suffix_id' && !empty($val)) $val = $aSuffix[$val];
+          if ($name == 'prefix_id' && !empty($val)) $val = $aPrefix[$val];
+          if ($name == 'state_province_id' && !empty($val)) $val = $aStates[$val];
 
-          if ($name=="gender_id") $val = $aGender[$val];
-          if ($name=="suffix_id") $val = $aSuffix[$val];
-          if ($name=="prefix_id") $val = $aPrefix[$val];
-          if ($name=="state_province_id") $val = $aStates[$val];
-
-          if ($name=="birth_date") {
-            if (strtotime($val)) $val = date("Y-m-d",strtotime($val));
+          if ($name == 'birth_date' && !empty($val)) {
+            if (strtotime($val)) $val = date("Y-m-d", strtotime($val));
           }
 
-          $val = str_replace("'","",$val);
-          $val = str_replace("\"","",$val);
+          $val = str_replace("'","", $val ?? '');
+          $val = str_replace("\"","", $val ?? '');
           $aOut[] =  $val;
         }
       }
 
-      fputcsv2($fhout, $aOut,"\t",'',false,false);
+      CRM_NYSS_BAO_NYSS::fputcsv2($fhout, $aOut,"\t",'',false,false);
     }
     //exit;
 
@@ -319,29 +318,6 @@ class CRM_Contact_Form_Task_ExportDistrict extends CRM_Contact_Form_Task
     CRM_Core_Session::setStatus( $statusOutput, 'District Export Results', 'success' );
   } // postProcess()
 } //end class
-
-
-
-function fputcsv2 ($fh, array $fields, $delimiter = ',', $enclosure = '"',
-                   $mysql_null = false, $blank_as_null = false)
-{
-  $delimiter_esc = preg_quote($delimiter, '/');
-  $enclosure_esc = preg_quote($enclosure, '/');
-
-  $output = array();
-  foreach ($fields as $field) {
-    if ($mysql_null && ($field === null || ($blank_as_null && strlen($field)==0))) {
-      $output[] = 'NULL';
-      continue;
-    }
-
-    $output[] = preg_match("/(?:${delimiter_esc}|${enclosure_esc}|\s)/", $field) ? (
-      $enclosure . str_replace($enclosure, $enclosure . $enclosure, $field) . $enclosure
-    ) : $field;
-  }
-  fwrite($fh, join($delimiter, $output) . "\n");
-} // fputcsv2()
-
 
 /*
  * retrieve option values for a given group

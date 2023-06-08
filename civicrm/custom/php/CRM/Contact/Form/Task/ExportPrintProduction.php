@@ -189,24 +189,24 @@ class CRM_Contact_Form_Task_ExportPrintProduction extends CRM_Contact_Form_Task
     idebug($params, 'exportPrintProd postProcess params', 2);
 
     $avanti_job_id = ( $params['avanti_job_id'] ) ? 'avanti-'.$params['avanti_job_id'].'_' : '';
-    $merge_households = $params['merge_households'];
-    $primaryAddress = $params['primaryAddress'];
-    $exclude_rt = implode( ',', $params['exclude_rt'] );
-    $excludeGroups = $params['excludeGroups'];
-    $districtExclude = $params['district_excludes'];
-    $excludeSeeds = $params['excludeSeeds'];
-    $restrictDistrict = $params['restrict_district'];
-    $restrictState = $params['restrict_state'];
-    $restrictZip = $params['restrict_zip'];
+    $merge_households = $params['merge_households'] ?? FALSE;
+    $primaryAddress = $params['primaryAddress'] ?? FALSE;
+    $exclude_rt = implode(',', $params['exclude_rt'] ?? []);
+    $excludeGroups = $params['excludeGroups'] ?? [];
+    $districtExclude = $params['district_excludes'] ?? NULL;
+    $excludeSeeds = $params['excludeSeeds'] ?? FALSE;
+    $restrictDistrict = $params['restrict_district'] ?? NULL;
+    $restrictState = $params['restrict_state'] ?? NULL;
+    $restrictZip = $params['restrict_zip'] ?? NULL;
     $orderByOpt = $params['orderBy'];
 
     //get instance name (strip first element from url)
-    $instance = substr( $_SERVER['HTTP_HOST'], 0, strpos( $_SERVER['HTTP_HOST'], '.' ) );
+    $instance = substr($_SERVER['HTTP_HOST'], 0, strpos($_SERVER['HTTP_HOST'], '.'));
 
     //get option
-    $aGender = getOptions("gender");
-    $aSuffix = getOptions("individual_suffix");
-    $aPrefix = getOptions("individual_prefix");
+    $aGender = getOptions('gender');
+    $aSuffix = getOptions('individual_suffix');
+    $aPrefix = getOptions('individual_prefix');
     $aStates = getStates();
 
     //generate random number for export and tables
@@ -216,11 +216,11 @@ class CRM_Contact_Form_Task_ExportPrintProduction extends CRM_Contact_Form_Task
 
     //retrieve Mailing Exclusions group id
     $eogid = CRM_Core_DAO::singleValueQuery( "SELECT id FROM civicrm_group WHERE name LIKE 'Mailing_Exclusions';" );
-    if ( !$eogid ) $eogid = 0; //prevent errors if group is not found
+    if (!$eogid) $eogid = 0; //prevent errors if group is not found
 
     //5150 add any members of the seed group unless intentionally excluding
     $localSeedsList = 0;
-    if ( !$excludeSeeds ) {
+    if (!$excludeSeeds) {
       $localSeeds = [];
       $sql = "
         SELECT contact_id
@@ -266,7 +266,7 @@ class CRM_Contact_Form_Task_ExportPrintProduction extends CRM_Contact_Form_Task
     $sql = "
       CREATE TABLE $tmpTbl
       ( $cFlds,
-        INDEX match1 (first_name ( 50 ), middle_name ( 50 ), last_name ( 50 ), suffix_id (4), birth_date, gender_id)
+        INDEX match1 (first_name (50), middle_name (50), last_name (50), suffix_id (4), birth_date, gender_id)
       )
       ENGINE = myisam;";
     $dao = CRM_Core_DAO::executeQuery($sql);
@@ -313,7 +313,7 @@ class CRM_Contact_Form_Task_ExportPrintProduction extends CRM_Contact_Form_Task
         AND group_id = $eogid ";
 
     //exclude RTs
-    if ( $exclude_rt != null ) {
+    if ($exclude_rt != null) {
       $sql .= "
         LEFT JOIN civicrm_value_constituent_information_1 cvci
           ON t.id = cvci.entity_id ";
@@ -388,12 +388,12 @@ class CRM_Contact_Form_Task_ExportPrintProduction extends CRM_Contact_Form_Task
 
     //7777 cycle through and look for any district info fields
     foreach ($params as $f => $v) {
-      if ( strpos($f, 'di_') === 0 && !empty($v) ) {
+      if (!empty($f) && strpos($f, 'di_') === 0 && !empty($v)) {
         $dbFld = substr($f, 3);
-        if ( strpos($v, ',') !== FALSE ) {
+        if (strpos($v, ',') !== FALSE) {
           $allVals = explode(',', $v);
           foreach ( $allVals as &$v ) {
-            if ( !is_numeric($v) ) {
+            if (!is_numeric($v)) {
               $v = trim($v);
               $v = "'{$v}'";
             }
@@ -406,7 +406,7 @@ class CRM_Contact_Form_Task_ExportPrintProduction extends CRM_Contact_Form_Task
           )";
         }
         else {
-          if ( !is_numeric($v) ) {
+          if (!is_numeric($v)) {
             $v = "'{$v}'";
           }
           $sql .= " AND (
@@ -475,7 +475,7 @@ class CRM_Contact_Form_Task_ExportPrintProduction extends CRM_Contact_Form_Task
     $config = CRM_Core_Config::singleton();
     $path = $config->uploadDir.'printProduction/';
 
-    if ( !file_exists($path) ) {
+    if (!file_exists($path)) {
       mkdir( $path, 0775 );
     }
 
@@ -483,7 +483,7 @@ class CRM_Contact_Form_Task_ExportPrintProduction extends CRM_Contact_Form_Task
     $filename = 'printExport_'.$instance.'_'.$avanti_job_id.$rnd.'.tsv';
 
     //strip /data/ and everything after environment value
-    $env = substr( $config->uploadDir, 6, strpos( $config->uploadDir, '/', 6 )-6 );
+    $env = substr( $config->uploadDir, 6, strpos($config->uploadDir, '/', 6 )-6);
     $fname = $path.'/'.$filename;
 
     $fhout = fopen($fname, 'w');
@@ -491,7 +491,7 @@ class CRM_Contact_Form_Task_ExportPrintProduction extends CRM_Contact_Form_Task
     //passed by ref to build
     $issueCodes = NULL;
     getIssueCodesRecursive($issueCodes);
-    $issueCodeIDs = ( !empty($issueCodes) ) ? implode(', ', array_keys($issueCodes)) : 0;
+    $issueCodeIDs = (!empty($issueCodes)) ? implode(', ', array_keys($issueCodes)) : 0;
     itime('after getIssueCodesRecursive');
 
     $sql = "
@@ -559,7 +559,7 @@ class CRM_Contact_Form_Task_ExportPrintProduction extends CRM_Contact_Form_Task
           $aHeader[] = "issueCodes";
         }
 
-        fputcsv2($fhout, $aHeader, "\t", '', FALSE, FALSE);
+        CRM_NYSS_BAO_NYSS::fputcsv2($fhout, $aHeader, "\t", '', FALSE, FALSE);
         $firstLine = false;
       }
 
@@ -642,14 +642,14 @@ class CRM_Contact_Form_Task_ExportPrintProduction extends CRM_Contact_Form_Task
         }
       }
 
-      fputcsv2($fhout, $aOut, "\t", '', FALSE, FALSE, TRUE);
+      CRM_NYSS_BAO_NYSS::fputcsv2($fhout, $aOut, "\t", '', FALSE, FALSE, TRUE);
       $adjusted_count++;
     } //dao fetch end
 
     $dao->free();
 
     //batch cleanup
-    fputcsv2($fhout, $aOut, "\t", '', FALSE, FALSE, TRUE, TRUE);
+    CRM_NYSS_BAO_NYSS::fputcsv2($fhout, $aOut, "\t", '', FALSE, FALSE, TRUE, TRUE);
     itime('after fetching records and writing to file');
 
     //generate issue code and keyword stats
@@ -711,54 +711,6 @@ class CRM_Contact_Form_Task_ExportPrintProduction extends CRM_Contact_Form_Task
     iexit(4);
   } // postProcess()
 }//end class
-
-//helper functions
-function fputcsv2 (
-  $fh,
-  array $fields,
-  $delimiter = ',',
-  $enclosure = '"',
-  $mysql_null = FALSE,
-  $blank_as_null = FALSE,
-  $batch = FALSE,
-  $batchCleanup = FALSE
-) {
-  static $batchOutput = '';
-  static $batchCount = 0;
-
-  $delimiter_esc = preg_quote($delimiter, '/');
-  $enclosure_esc = preg_quote($enclosure, '/');
-
-  $output = [];
-  foreach ($fields as $field) {
-    if ( $mysql_null &&
-      ($field === NULL || ($blank_as_null && strlen($field)==0))
-    ) {
-      $output[] = 'NULL';
-      continue;
-    }
-
-    $output[] = preg_match("/(?:${delimiter_esc}|${enclosure_esc}|\s)/", $field) ? (
-      $enclosure . str_replace($enclosure, $enclosure . $enclosure, $field) . $enclosure
-    ) : $field;
-  }
-
-  if ( $batch ) {
-    if ( !$batchCleanup ) {
-      $batchOutput .= implode($delimiter, $output) . "\n";
-    }
-
-    if ( $batchCount == BATCH || $batchCleanup ) {
-      fwrite($fh, $batchOutput);
-      $batchOutput = '';
-      $batchCount = 0;
-    }
-  }
-  else {
-    fwrite($fh, implode($delimiter, $output) . "\n");
-  }
-} // fputcsv2()
-
 
 function getIssueCodesRecursive(&$issueCodes, $parent_id = NULL) {
   if ($parent_id == NULL) {
@@ -1156,9 +1108,9 @@ function processDistrictExclude( $districtID, $tbl, $localSeedsList ) {
   //retrieve the instance name using the district ID
   $instance = $dbBase = '';
   $bbFullConfig = get_bluebird_config();
-  foreach ( $bbFullConfig as $group => $details ) {
-    if ( strpos($group, 'instance:') !== false ) {
-      if ( $details['district'] == $districtID ) {
+  foreach ($bbFullConfig as $group => $details) {
+    if (!empty($group) && strpos($group, 'instance:') !== false) {
+      if ($details['district'] == $districtID) {
         $instance = substr($group, 9);
         $dbBase = $details['db.basename'];
         break;
