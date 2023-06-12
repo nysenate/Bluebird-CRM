@@ -222,7 +222,7 @@ class CRM_NYSS_Subscription_Form_Manage extends CRM_Core_Form {
     $hold_date = 'null';
     if (!empty($formParams['opt_out'])) {
       $opt = 2;
-      $hold_date = "'".date('Y-m-d h:i:s')."'";
+      $hold_date = date('Y-m-d h:i:s');
 
       //13861 if opting out, don't modify categories
       $mc = 'null';
@@ -231,18 +231,15 @@ class CRM_NYSS_Subscription_Form_Manage extends CRM_Core_Form {
     }
 
     //set values
-    $sql = "
-      UPDATE civicrm_email
-      SET mailing_categories = %1, on_hold = %2, hold_date = %3
-      WHERE id = %4
-    ";
-
-    CRM_Core_DAO::executeQuery($sql, [
-      1 => [$mc, 'String'],
-      2 => [$opt, 'Integer'],
-      3 => [$hold_date, 'String'],
-      4 => [$formParams['emailID'], 'Positive'],
-    ]);
+    try {
+      civicrm_api3('Email', 'create', [
+        'id' => $formParams['emailID'],
+        'mailing_categories' => $mc,
+        'on_hold' => $opt,
+        'hold_date' => $hold_date,
+      ]);
+    }
+    catch (CRM_Core_Exception $e) {}
 
     //now redirect
     $bbconfig = get_bluebird_instance_config();
