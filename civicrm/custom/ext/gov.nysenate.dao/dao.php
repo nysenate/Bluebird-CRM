@@ -190,6 +190,25 @@ function dao_civicrm_entityTypes(&$entityTypes) {
     $fields['is_primary']['title'] = 'Is Email Primary?';
     $fields['signature_text']['export'] = FALSE;
     $fields['signature_html']['export'] = FALSE;
+
+    $fields['mailing_categories'] = [
+      'name' => 'mailing_categories',
+      'type' => CRM_Utils_Type::T_STRING,
+      'title' => ts('Mailing Categories'),
+      'description' => ts('Comma-separated list of mailing categories to EXCLUDE'),
+      'where' => 'civicrm_email.mailing_categories',
+      'table_name' => 'civicrm_email',
+      'entity' => 'Email',
+      'bao' => 'CRM_Core_BAO_Email',
+      'localizable' => 0,
+      'html' => [
+        'label' => ts('Mailing Categories'),
+      ],
+      'import' => FALSE,
+      'export' => FALSE,
+      'maxlength' => 254,
+      'size' => 30,
+    ];
   };
 
   //2719
