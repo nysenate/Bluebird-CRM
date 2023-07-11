@@ -243,7 +243,7 @@ $prefs['mailerJobsMax'] = get_config_value($bbcfg, 'mailer.jobs_max', 10);
 // verpSeparator
 $prefs['write_activity_record'] = false;
 // simple_mail_limit
-$prefs['auto_recipient_rebuild'] = false;
+$prefs['auto_recipient_rebuild'] = TRUE;
 // allow_mail_from_logged_in_contact
 $prefs['ode_from_allowed'] = true;
 
