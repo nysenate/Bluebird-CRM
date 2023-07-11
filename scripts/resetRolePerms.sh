@@ -367,6 +367,7 @@ sql="
     (9, 'view all contacts', 'civicrm'),
     (9, 'view my contact', 'civicrm'),
     (9, 'view the administration theme', 'system'),
+    (9, 'edit message templates', 'civicrm'),
 
     (10, 'access all cases and activities', 'civicrm'),
     (10, 'access all custom data', 'civicrm'),
@@ -399,6 +400,7 @@ sql="
     (10, 'view all activities', 'civicrm'),
     (10, 'view all contacts', 'civicrm'),
     (10, 'view my contact', 'civicrm'),
+    (10, 'edit message templates', 'civicrm'),
 
     (11, 'access all cases and activities', 'civicrm'),
     (11, 'access all custom data', 'civicrm'),
