@@ -1154,6 +1154,20 @@ function _buildHelpMenu($nyssBaseID) {
       ],
       $nyssBaseID+5 => [
         'attributes' => [
+          'label' => 'County Codes',
+          'name' => 'County Codes',
+          'url' => 'sites/all/docs/bluebird_county_codes.pdf',
+          'permission' => 'access CiviCRM',
+          'operator' => 'OR',
+          'separator' => 0,
+          'parentID' => $nyssBaseID,
+          'navID' => $nyssBaseID+5,
+          'active' => 1,
+          'target' => '_blank',
+        ],
+      ],
+      $nyssBaseID+6 => [
+        'attributes' => [
           'label' => 'Bluebird News',
           'name' => 'Bluebird News',
           'url' => 'https://senateonline.nysenate.gov/BluebirdNews.nsf',
@@ -1161,7 +1175,7 @@ function _buildHelpMenu($nyssBaseID) {
           'operator' => 'OR',
           'separator' => 0,
           'parentID' => $nyssBaseID,
-          'navID' => $nyssBaseID+5,
+          'navID' => $nyssBaseID+6,
           'active' => 1,
           'target' => '_blank',
         ],
