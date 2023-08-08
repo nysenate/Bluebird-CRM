@@ -33,7 +33,7 @@ class CRM_migrateContacts {
     $exportData = [];
 
     //set memory limit so we don't max out
-    ini_set('memory_limit', '2000M');
+    ini_set('memory_limit', '5G');
 
     require_once realpath(dirname(__FILE__)).'/../script_utils.php';
 
@@ -60,8 +60,6 @@ class CRM_migrateContacts {
     //get instance settings for source and destination
     $bbcfg_source = get_bluebird_instance_config($optlist['site']);
     bbscript_log(LL::TRACE, '$bbcfg_source', $bbcfg_source);
-
-    require_once 'CRM/Utils/System.php';
 
     $civicrm_root = $bbcfg_source['drupal.rootdir'].'/sites/all/modules/civicrm';
     $_SERVER['REMOTE_ADDR'] = '127.0.0.1';
@@ -158,9 +156,7 @@ class CRM_migrateContacts {
     $startTime = microtime(true);
 
     // Initialize CiviCRM
-    require_once 'CRM/Core/Config.php';
-    $config = CRM_Core_Config::singleton();
-    $session = CRM_Core_Session::singleton();
+    CRM_Core_Config::singleton();
 
     //retrieve/set other options
     $optFile = $optlist['file'];
@@ -356,7 +352,7 @@ class CRM_migrateContacts {
     $sql = "
       CREATE TABLE $tbl
       (contact_id int not null primary key, external_id varchar(40) not null)
-      ENGINE = myisam;
+      ENGINE = InnoDB;
     ";
     CRM_Core_DAO::executeQuery($sql);
 
@@ -373,6 +369,22 @@ class CRM_migrateContacts {
     $cTypeClause = '';
     if (!empty($cTypesInclude)) {
       $cTypeClause = " AND rrcc.contact_type IN ('".implode("', '", $cTypesInclude)."')";
+    }
+
+    //add indexes to redistricting table if they don't exist
+    $query = "SHOW INDEX FROM redist_report_contact_cache";
+    $dao = CRM_Core_DAO::executeQuery($query);
+    $expectedIndexes = ['contact_id', 'district'];
+
+    $existingIndexes = [];
+    while ($dao->fetch()) {
+      $existingIndexes[] = $dao->Column_name;
+    }
+
+    foreach ($expectedIndexes as $index) {
+      if (!in_array($index, $existingIndexes)) {
+        CRM_Core_DAO::executeQuery("ALTER TABLE redist_report_contact_cache ADD INDEX (`{$index}`);");
+      }
     }
 
     //retrieve contacts from redistricting table
@@ -422,11 +434,9 @@ AND cce.external_identifier IS NOT NULL, cce.external_identifier, '' )) external
     else {
       return FALSE;
     }
-  }//buildContactTable
+  }
 
   function exportContacts($migrateTbl, $optDry = FALSE) {
-    require_once 'CRM/Contact/DAO/Contact.php';
-
     bbscript_log(LL::INFO, "assembling and exporting contacts...");
 
     //get field list
@@ -494,13 +504,6 @@ AND cce.external_identifier IS NOT NULL, cce.external_identifier, '' )) external
    * it also triggers the data write to screen or file
    */
   function processData($rType, $IDs, $optDry, $exclusions) {
-    require_once 'CRM/Core/DAO/Email.php';
-    require_once 'CRM/Core/DAO/Phone.php';
-    require_once 'CRM/Core/DAO/Website.php';
-    require_once 'CRM/Core/DAO/Address.php';
-    require_once 'CRM/Core/DAO/IM.php';
-    require_once 'CRM/Core/DAO/Note.php';
-
     global $customGroups;
     $data = $contactData = [];
 
@@ -509,7 +512,7 @@ AND cce.external_identifier IS NOT NULL, cce.external_identifier, '' )) external
       case 'phone':
       case 'website':
       case 'address':
-        $data = self::exportStandard($rType, $IDs, 'contact_id', null);
+        $data = self::exportStandard($rType, $IDs);
         break;
       case 'im':
         $data = self::exportStandard($rType, $IDs, 'contact_id', 'CRM_Core_DAO_IM');
@@ -518,9 +521,7 @@ AND cce.external_identifier IS NOT NULL, cce.external_identifier, '' )) external
         $data = self::exportStandard($rType, $IDs, 'entity_id', null, $exclusions);
         break;
       case 'activity':
-        break;
       case 'case':
-        break;
       case 'relationship':
         break;
       default:
@@ -542,7 +543,7 @@ AND cce.external_identifier IS NOT NULL, cce.external_identifier, '' )) external
    * standard related record export function
    * we use the record type to retrieve the DAO and the foreign key to link to the contact record
    */
-  function exportStandard($rType, $IDs, $fk = 'contact_id', $dao = null, $exclusions = []) {
+  function exportStandard($rType, $IDs, $fk = 'contact_id', $dao = NULL, $exclusions = []) {
     global $daoFields;
     global $customGroups;
     global $source;
@@ -1099,7 +1100,7 @@ AND cce.external_identifier IS NOT NULL, cce.external_identifier, '' )) external
     bbscript_log(LL::TRACE, '$tempother', $tempother);
 
     //get issue code tree
-    self::_getIssueCodeTree($issuecodes, $tempother);
+    self::getIssueCodeTree($issuecodes, $tempother);
 
     $tags = [
       'keywords' => $keywords,
@@ -1234,26 +1235,27 @@ AND cce.external_identifier IS NOT NULL, cce.external_identifier, '' )) external
    *   ...except when the function is called recursively, in which case we need to account for it
    * level 3-5 must be built
    */
-  function _getIssueCodeTree(&$issuecodes, $tempother) {
+  function getIssueCodeTree(&$issuecodes, $tempother) {
     if (empty($tempother)) {
       return;
     }
 
     bbscript_log(LL::INFO, "recursively building issue code tree...");
 
-    $level3 = $level4 = [];
+    global $level3;
+    global $level4;
 
-    //keep track of all issue codes as we go
-    $allIssueCodes = array_keys($issuecodes);
+    $level3 = (!is_array($level3)) ? [] : $level3;
+    $level4 = (!is_array($level4)) ? [] : $level4;
 
     foreach ($tempother as $tID => $tag) {
+      //bbscript_log(LL::INFO, "tag: {$tID}", $tag);
+
       //level 2: when called recursively, we have to account for parent being the main issue code root
       if ($tag['parent_id'] == 291) {
         $issuecodes[$tID]['name'] = $tag['name'];
         $issuecodes[$tID]['desc'] = $tag['desc'];
         unset($tempother[$tID]);
-
-        $allIssueCodes[] = $tID;
       }
       //level 3
       elseif (array_key_exists($tag['parent_id'], $issuecodes)) {
@@ -1263,7 +1265,6 @@ AND cce.external_identifier IS NOT NULL, cce.external_identifier, '' )) external
 
         //tag => parent
         $level3[$tID] = $tag['parent_id'];
-        $allIssueCodes[] = $tID;
       }
       //level 4
       elseif (array_key_exists($tag['parent_id'], $level3)) {
@@ -1276,7 +1277,6 @@ AND cce.external_identifier IS NOT NULL, cce.external_identifier, '' )) external
 
         //tag => parent
         $level4[$tID] = $tag['parent_id'];
-        $allIssueCodes[] = $tID;
       }
       //level 5
       elseif (array_key_exists($tag['parent_id'], $level4)) {
@@ -1287,14 +1287,16 @@ AND cce.external_identifier IS NOT NULL, cce.external_identifier, '' )) external
         $issuecodes[$level2id]['children'][$level3id]['children'][$level4id]['children'][$tID]['name'] = $tag['name'];
         $issuecodes[$level2id]['children'][$level3id]['children'][$level4id]['children'][$tID]['desc'] = $tag['desc'];
         unset($tempother[$tID]);
-
-        $allIssueCodes[] = $tID;
+      }
+      else {
+        bbscript_log(LL::TRACE, "orphan tag: {$tID}", $tag);
       }
     }
 
     bbscript_log(LL::TRACE, '$issuecodes', $issuecodes);
-    bbscript_log(LL::TRACE, '$allIssueCodes', $allIssueCodes);
     bbscript_log(LL::TRACE, 'REMAINING $tempother', $tempother);
+    bbscript_log(LL::TRACE, '$level3', $level3);
+    bbscript_log(LL::TRACE, '$level4', $level4);
 
     //if we have tags left over, it's because the tag assignment skipped a level and we need to reconstruct
     //this isn't easily done. what we will do is find the immediate parent and store it, then search for those parents,
@@ -1302,7 +1304,7 @@ AND cce.external_identifier IS NOT NULL, cce.external_identifier, '' )) external
     if (!empty($tempother)) {
       $leftOver = array_keys($tempother);
       $leftOverList = implode(',', $leftOver);
-      //bbscript_log(LL::TRACE, '_getIssueCodeTree $leftOver', $leftOver);
+      //bbscript_log(LL::TRACE, 'getIssueCodeTree $leftOver', $leftOver);
 
       $sql = "
         SELECT p.*, t.id child_id
@@ -1311,7 +1313,7 @@ AND cce.external_identifier IS NOT NULL, cce.external_identifier, '' )) external
           ON p.id = t.parent_id
         WHERE t.id IN ({$leftOverList})
       ";
-      //bbscript_log(LL::TRACE, '_getIssueCodeTree $sql', $sql);
+      //bbscript_log(LL::TRACE, 'getIssueCodeTree $sql', $sql);
       $leftTags = CRM_Core_DAO::executeQuery($sql);
 
       //if $tempother is not empty, but $leftTags returns 0 records, it is an indication that we have
@@ -1323,6 +1325,7 @@ AND cce.external_identifier IS NOT NULL, cce.external_identifier, '' )) external
             unset($tempother[$leftTags->child_id]);
           }
           else {
+            //storing the parent
             $tempother[$leftTags->id] = [
               'parent_id' => $leftTags->parent_id,
               'name' => $leftTags->name,
@@ -1333,16 +1336,16 @@ AND cce.external_identifier IS NOT NULL, cce.external_identifier, '' )) external
         $leftTags->free();
 
         //call this function recursively
-        self::_getIssueCodeTree($issuecodes, $tempother);
+        self::getIssueCodeTree($issuecodes, $tempother);
       }
       else {
         bbscript_log(LL::INFO, "Unable to find a parent issue code tag -- it appears you have an orphaned issue code(s). We will cease constructing the recursive issue code tree at this point to avoid infinite recursion.", $tempother);
       }
     }
 
-    bbscript_log(LL::TRACE, '_getIssueCodeTree $issuecodes', $issuecodes);
-    bbscript_log(LL::TRACE, '_getIssueCodeTree $tempother', $tempother);
-  }//_getIssueCodeTree
+    bbscript_log(LL::TRACE, 'getIssueCodeTree $issuecodes', $issuecodes);
+    bbscript_log(LL::TRACE, 'getIssueCodeTree $tempother', $tempother);
+  }
 
   /*
    * although we collected the attachments data earlier, we still have to retrieve the filename
