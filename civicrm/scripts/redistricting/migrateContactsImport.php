@@ -19,7 +19,7 @@ class CRM_migrateContactsImport {
     global $_SERVER;
 
     //set memory limit so we don't max out
-    ini_set('memory_limit', '3000M');
+    ini_set('memory_limit', '5G');
 
     require_once realpath(dirname(__FILE__)).'/../script_utils.php';
 
