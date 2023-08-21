@@ -4,7 +4,7 @@ class CRM_NYSS_IMAP_Message
 {
   const MAX_SUBJ_LEN = 255;
 
-  private static $_body_type_labels = array(
+  private static $_body_type_labels = [
     TYPETEXT => 'text',
     TYPEMULTIPART => 'multipart',
     TYPEMESSAGE => 'message',
@@ -13,7 +13,7 @@ class CRM_NYSS_IMAP_Message
     TYPEIMAGE => 'image',
     TYPEVIDEO => 'video',
     TYPEMODEL => 'model',
-    TYPEOTHER => 'other');
+    TYPEOTHER => 'other'];
 
 
   /* Credit to http://www.regular-expressions.info/email.html
@@ -30,106 +30,44 @@ class CRM_NYSS_IMAP_Message
     /* host */
     '((?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?)/i';
 
-  private $_session = null;
+  private $_session = NULL;
   private $_msgnum = 0;
   private $_uid = 0;
-  private $_headers = null;
-  private $_metadata = null;
-  private $_structure = null;
-  private $_content = array('text' => null, 'attachment' => null);
-  private $_has_attachments = null;
+  private $_headers = NULL;
+  private $_metadata = NULL;
+  private $_structure = NULL;
+  private $_content = ['html' => NULL, 'text' => NULL, 'attachment' => NULL];
+  private $_has_attachments = NULL;
+  private $_attachments = NULL;
+  private $_bodyHtml = NULL;
+  private $_bodyHtmlDecoded = NULL;
 
 
-  public function __construct($imapSession, $msgnum = 0)
-  {
-    $this->_session = $imapSession;
-    $this->_msgnum = $msgnum;
-    $this->_uid = imap_uid($this->getConnection(), $msgnum);
-    // Pre-populate the _headers, _metadata, and _structure properties.
-    $this->_headers = imap_headerinfo($this->getConnection(), $msgnum, 0, self::MAX_SUBJ_LEN);
-    $this->_metadata = $this->_genMetaData($this->_headers);
-    $this->_structure = imap_fetchstructure($this->getConnection(), $this->_msgnum);
-    // Now that headers and structure are cached, continue loading.
-    if ($this->isMultipart()) {
-      $this->_structure->parts = $this->_flattenParts($this->_structure->parts);
-      $this->_has_attachments = $this->_hasAttachments();
-    }
-    else {
-      $this->_has_attachments = false;
-    }
-    // Finally, pre-load the text content, which is necessary for parsing.
-    $this->_loadTextContent();
+  public function __construct($message) {
+    $this->_msgnum = $message->getMsgn();
+    $this->_uid = $message->getUid();
+    $this->_headers = $message->getHeader();
+    $this->_metadata = $message->getAttributes();
+    $this->_has_attachments = $message->hasAttachments();
+    $this->_attachments = $message->getAttachments();
+    $this->_bodyHtml = $message->getHTMLBody();
+    $this->_content = $message->getBodies();
+
+    $bodyHtmlDecoded = $this->_block2nl($this->_bodyHtml);
+    $this->_bodyHtmlDecoded = trim(html_entity_decode(strip_tags($bodyHtmlDecoded), ENT_QUOTES));
+
+    bbscript_log(LL::TRACE, '$this: '.print_r($this, TRUE));
   } // __construct()
 
 
-  public function getConnection()
-  {
+  public function getConnection() {
     return $this->_session->getConnection();
   } // getConnection()
 
 
-  public function isMultipart()
-  {
-    return isset($this->_structure->parts);
-  } // isMultipart()
-
-
-  public function hasAttachments()
-  {
+  public function hasAttachments() {
     return $this->_has_attachments;
   } // hasAttachments()
-
-
-  // Cache the message attachments after retrieving them on the first call.
-  // The array key for each attachment is its part number.
-  // Each attachment has 'name', 'size', and 'data' attributes.
-  public function fetchAttachments()
-  {
-    if ($this->_content['attachment'] === null) {
-      $this->_content['attachment'] = array();
-      if ($this->hasAttachments()) {
-        foreach ($this->getParts() as $partnum => $part) {
-          if ($part->ifdisposition && $part->disposition == 'attachment') {
-            $content = $this->fetchPart($partnum);
-            $content = $this->_decodeContent($content, $part->encoding, $part->subtype);
-            // Extract filename from the "dparameters" field of the part.
-            $filename = $this->_getFilename($part->dparameters);
-            if (!$filename) {
-              // If that didn't work, try the "parameters" field.
-              $filename = $this->_getFilename($part->parameters);
-            }
-            if (!$filename) {
-              // Skip any attachment whose filename cannot be determined.
-              continue;
-            }
-            $tempfilename = imap_mime_header_decode($filename);
-            for ($i = 0; $i < count($tempfilename); $i++) {
-              $filename = $tempfilename[$i]->text;
-            }
-
-            $attachment = (object) [ 'name' => $filename,
-                                     'type' => $part->type,
-                                     'size' => $part->bytes,
-                                     'data' => $content ];
-            $this->_content['attachment'][$partnum] = $attachment;
-          }
-        }
-      }
-    }
-    return $this->_content['attachment'];
-  } // fetchAttachments()
-
-
-  public function fetchBody($section = '')
-  {
-    return imap_fetchbody($this->getConnection(), $this->_msgnum, $section, FT_PEEK);
-  } // fetchBody()
-
-
-  public function fetchPart($section = '1')
-  {
-    return $this->fetchBody($section);
-  } // fetchPart()
 
 
   public function getHeaders()
@@ -156,33 +94,27 @@ class CRM_NYSS_IMAP_Message
       return $this->_structure->parts;
     }
     else {
-      return null;
+      return NULL;
     }
   } // getParts()
 
 
   // Returns an array of content elements.  Each element corresponds to
   // a message part that matches the provided type.
-  public function getContent($type = null)
+  public function getContent($type = NULL)
   {
     if ($type) {
       if (isset($this->_content[$type])) {
         return $this->_content[$type];
       }
       else {
-        return null;
+        return NULL;
       }
     }
     else {
       return $this->_content;
     }
   } // getContent()
-
-
-  public function getTextContent()
-  {
-    return $this->getContent('text');
-  } // getTextContent()
 
 
   // Return the string representation of the given body type.
@@ -198,46 +130,45 @@ class CRM_NYSS_IMAP_Message
 
 
   /**
-  ** This function attempts to find various sender addresses in the email.
-  ** It returns an array with 3 levels of addresses: primary, secondary, other
-  ** The "primary" element contains an array of one element, and that element
-  ** is the official sender of the email, based on the headers.
-  ** The "secondary" element contains any email addresses in the body of the
-  ** message that were extracted from apparent "From:" headers.  This should
-  ** include the email address of the original sender if the message is a
-  ** forwarded message.
-  ** Finally, the "other" element contains an array of all email addresses
-  ** that could be found in the body, whether or not they were part of a
-  ** "From:" header.
+  * This function attempts to find various sender addresses in the email.
+  * It returns an array with 3 levels of addresses: primary, secondary, other
+  * The "primary" element contains an array of one element, and that element
+  * is the official sender of the email, based on the headers.
+  * The "secondary" element contains any email addresses in the body of the
+  * message that were extracted from apparent "From:" headers.  This should
+  * include the email address of the original sender if the message is a
+  * forwarded message.
+  * Finally, the "other" element contains an array of all email addresses
+  * that could be found in the body, whether or not they were part of a
+  * "From:" header.
   */
-  public function findFromAddresses()
-  {
-    $addr = array(
-      'primary' => array(
-        'address'=>$this->_headers->from[0]->mailbox.'@'.$this->_headers->from[0]->host,
-        'name'=>isset($this->_headers->from[0]->personal) ? $this->_headers->from[0]->personal : '',
-      ),
-      'secondary' => array(),
-      'other' => array(),
-    );
+  public function findFromAddresses($message) {
+    $addr = [
+      'primary' => [
+        'address'=> $message->getFrom()->first()->toArray()['mail'],
+        'name' => $message->getFrom()->first()->toArray()['personal'],
+      ],
+      'secondary' => [],
+      'other' => [],
+    ];
 
-    $parts = $this->getParts();
-
-    foreach ($this->getTextContent() as $content) {
-      $matches = array();
+    foreach ($this->getContent() as $content) {
+      $matches = [];
       if (preg_match_all('/(^|\n)([\ \t]*([>*][\ \t]*)?)?(From|Reply-To):[\*\s]*(("(\\\"|[^"])*")?[^@]{2,100}@(.*))/i', $content, $matches)) {
         foreach ($matches[5] as $k => $v) {
-          $v = str_replace(array("\n","\r"), array(' ',''), $v);
+          $v = str_replace(["\n","\r"], [' ',''], $v);
+
           if (preg_match('#CN=|OU?=|/senate#', $v)) {
-            //error_log("resolving -$v- with LDAP");
             $v = $this->_resolveLDAPAddress($v);
-            //error_log("resolved to -$v-");
           }
+
           $ta = imap_rfc822_parse_adrlist($v, '');
+
           if (count($ta) && $ta[0]->host && $ta[0]->mailbox && $ta[0]->host != '.SYNTAX-ERROR.') {
-            $newta = array(
-                  'address' => $ta[0]->mailbox.'@'.$ta[0]->host,
-                  'name' => isset($ta[0]->personal) ? $ta[0]->personal : null);
+            $newta = [
+              'address' => $ta[0]->mailbox.'@'.$ta[0]->host,
+              'name' => $ta[0]->personal ?? NULL,
+            ];
             switch (strtoupper($matches[2][$k])) {
               case 'REPLY TO':
                 array_unshift($addr['secondary'], $newta);
@@ -250,7 +181,7 @@ class CRM_NYSS_IMAP_Message
         }
       }
 
-      $matches = array();
+      $matches = [];
       if (preg_match_all(static::$_email_address_regex, $content, $matches)) {
         foreach ($matches[0] as $k => $v) {
           $tv = filter_var(filter_var($v, FILTER_SANITIZE_EMAIL), FILTER_VALIDATE_EMAIL);
@@ -260,6 +191,7 @@ class CRM_NYSS_IMAP_Message
         }
       }
     }
+
     return $addr;
   } // findFromAddresses()
 
@@ -589,19 +521,6 @@ class CRM_NYSS_IMAP_Message
   {
     return $this->_loadContent(TYPETEXT);
   } // _loadTextContent()
-
-
-  // Internal function for interating over the message parts looking for
-  // at least one attachment.
-  private function _hasAttachments()
-  {
-    foreach ($this->getParts() as $part) {
-      if ($part->ifdisposition && $part->disposition == 'attachment') {
-        return true;
-      }
-    }
-    return false;
-  } // _hasAttachments()
 
 
   // Get the filename attribute from an array of parameters.
