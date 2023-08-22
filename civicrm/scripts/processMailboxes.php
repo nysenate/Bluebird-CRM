@@ -19,7 +19,7 @@
 //                     - end support for multiple IMAP accounts per CRM
 //                     - add --deny-unauthorized to reject any emails from
 //                       a sender that is not in the forwarder whitelist
-//
+// Revised: 2023-08-21 - implemented https://www.php-imap.com/ and OAuth connection support
 
 // Version number, used for debugging
 define('VERSION_NUMBER', 3.0);
