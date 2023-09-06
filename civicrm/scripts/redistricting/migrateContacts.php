@@ -5,8 +5,9 @@
 // Organization: New York State Senate
 // Date: 2012-10-26
 // Revised: 2012-11-21
+// Revised: 2023-09-06
 
-// ./migrateContacts.php -S skelos --dest 45 --file --dryrun
+// ./migrateContacts.php -S breslin --dest 43 --file --dryrun --log INFO
 error_reporting(E_ERROR | E_PARSE | E_WARNING);
 set_time_limit(0);
 
@@ -159,6 +160,7 @@ class CRM_migrateContacts {
     $optFile = $optlist['file'];
     $optDry = $optlist['dryrun'];
     $dryParam = ($optDry) ? "--dryrun" : '';
+    $logParam = (!empty($optlist['log'])) ? "--log {$optlist['log']}" : '';
     $scriptPath = $bbcfg_source['app.rootdir'].'/civicrm/scripts/redistricting';
 
     //save options to the export array
@@ -179,7 +181,7 @@ class CRM_migrateContacts {
         exit();
       }
 
-      $importScript = "php {$scriptPath}/migrateContactsImport.php -S {$dest['name']} --filename={$optlist['import']} {$dryParam}";
+      $importScript = "php {$scriptPath}/migrateContactsImport.php -S {$dest['name']} --filename={$optlist['import']} {$dryParam} {$logParam}";
       //bbscript_log(LL::TRACE, "importScript: $importScript");
       system($importScript);
       exit();
@@ -298,7 +300,7 @@ class CRM_migrateContacts {
 
     //import data if not --file
     if (!$optDry && !$optFile) {
-      $importScript = "php {$scriptPath}/migrateContactsImport.php -S {$dest['name']} --filename={$fileName} {$dryParam}";
+      $importScript = "php {$scriptPath}/migrateContactsImport.php -S {$dest['name']} --filename={$fileName} {$dryParam} {$logParam}";
       //bbscript_log(LL::TRACE, "importScript: $importScript");
       system($importScript);
     }
@@ -308,7 +310,7 @@ class CRM_migrateContacts {
       $emplParam = ($optlist['employers']) ? "--employers" : '';
       $typesParam = ($optlist['types']) ? "--types={$optlist['types']}" : '';
 
-      $importScript = "php {$scriptPath}/migrateContactsTrash.php -S {$source['name']} --dest={$dest['name']} --trash={$optlist['trash']} {$emplParam} {$typesParam} {$dryParam}";
+      $importScript = "php {$scriptPath}/migrateContactsTrash.php -S {$source['name']} --dest={$dest['name']} --trash={$optlist['trash']} {$emplParam} {$typesParam} {$dryParam} {$logParam}";
       //bbscript_log(LL::TRACE, "importScript: $importScript");
       system($importScript);
 
