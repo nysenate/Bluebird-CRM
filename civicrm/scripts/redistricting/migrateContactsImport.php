@@ -1463,7 +1463,7 @@ class CRM_migrateContactsImport {
       }
 
       //these should never be 0; throws error on import if they are
-      if (in_array($f, ['email_greeting_id', 'postal_greeting_id', 'addressee_id']) && $v == 0) {
+      if (in_array($f, ['email_greeting_id', 'postal_greeting_id', 'addressee_id', 'prefix_id', 'suffix_id']) && $v == 0) {
         unset($data[$f]);
       }
     }
