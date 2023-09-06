@@ -10,9 +10,6 @@
 error_reporting(E_ERROR | E_PARSE | E_WARNING);
 set_time_limit(0);
 
-define('DEFAULT_LOG_LEVEL', 'TRACE');
-define('LOC_TYPE_BOE', 6);
-define('MIGRATE_SCRIPT', 1);
 define('REDIST_YEAR', 2022);
 
 class CRM_migrateContacts {
@@ -38,13 +35,13 @@ class CRM_migrateContacts {
     require_once realpath(dirname(__FILE__)).'/../script_utils.php';
 
     // Parse the options
-    $shortopts = "d:fn:i:t:e:a:y:x:l";
-    $longopts = ["dest=", "file", "dryrun", "import=", "trash=", "employers", "array", "types=", "exclude=", "log="];
+    $shortopts = "d:fi:t:eay:x:nl:";
+    $longopts = ["dest=", "file", "import=", "trash=", "employers", "array", "types=", "exclude=", "dryrun", "log="];
     $optlist = civicrm_script_init($shortopts, $longopts, TRUE);
 
     if ($optlist === null) {
         $stdusage = civicrm_script_usage();
-        $usage = '[--dest ID|DISTNAME] [--file] [--dryrun] [--import FILENAME] [--trash OPTION] [--employers] [--array] [--types IHO] [--exclude NACT] [--log "TRACE|DEBUG|INFO|WARN|ERROR|FATAL"]';
+        $usage = '--dest {distnum|instance}  [--file]  [--import FILENAME]  [--trash {none|migrated|boeredist}]  [--employers]  [--array]  [--types {I|H|O}]  [--exclude NACT]  [--dryrun]  [--log LEVEL]';
         error_log("Usage: ".basename(__FILE__)."  $stdusage  $usage\n");
         exit(1);
     }
@@ -342,7 +339,7 @@ class CRM_migrateContacts {
    * query criteria: exclude trashed contacts; only include those with a BOE address in destination district
    * if no contacts are found to migrate, return FALSE so we can exit immediately.
    */
-  function buildContactTable($source, $dest, $cTypesInclude) {
+  function buildContactTable($source, $dest, $ctypes) {
     bbscript_log(LL::INFO, "building contact table from redistricting report records...");
 
     //create table to store contact IDs with constructed external_id
@@ -367,8 +364,8 @@ class CRM_migrateContacts {
 
     //determine contact_type clause
     $cTypeClause = '';
-    if (!empty($cTypesInclude)) {
-      $cTypeClause = " AND rrcc.contact_type IN ('".implode("', '", $cTypesInclude)."')";
+    if (!empty($ctypes)) {
+      $cTypeClause = " AND rrcc.contact_type IN ('".implode("', '", $ctypes)."')";
     }
 
     //add indexes to redistricting table if they don't exist
@@ -594,7 +591,7 @@ AND cce.external_identifier IS NOT NULL, cce.external_identifier, '' )) external
       ];
       foreach ($skipFields as $fld) {
         $fldKey = array_search($fld, $daoFields[$dao]);
-        if ( $fldKey !== FALSE ) {
+        if ($fldKey !== FALSE) {
           unset($daoFields[$dao][$fldKey]);
         }
       }

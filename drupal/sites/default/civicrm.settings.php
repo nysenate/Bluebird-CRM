@@ -302,6 +302,9 @@ $prefs['mosaico_scale_width_limit2'] = 9999;
 $prefs['mosaico_plugins'] = 'link hr paste lists textcolor code civicrmtoken charmap anchor table';
 $prefs['mosaico_toolbar'] = 'bold italic forecolor backcolor hr bullist numlist charmap styleselect fontsizeselect removeformat | civicrmtoken | link unlink anchor | pastetext code | table';
 
+// OAuth
+$prefs['oauthClientRedirectUrl'] = "{$bbcfg['public.url.base']}/{$bbcfg['envname']}/{$bbcfg['shortname']}/oauth";
+
 if (isset($bbcfg['xhprof.profile']) && $bbcfg['xhprof.profile']) {
   function xhprof_shutdown_func($source, $run_id = null) {
     // Hopefully we don't throw an exception; there's no way to catch it now...
