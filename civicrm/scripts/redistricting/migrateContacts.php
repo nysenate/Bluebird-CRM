@@ -487,7 +487,7 @@ AND cce.external_identifier IS NOT NULL, cce.external_identifier, '' )) external
       foreach ($contacts as $f => $v) {
         if (!array_key_exists($f, $contactsAttr)) {
           //fix invalid data
-          if (in_array($f, ['prefix_id', 'suffix_id']) && $v == 0) {
+          if ($v == 0 && in_array($f, ['prefix_id', 'suffix_id', 'gender_id'])) {
             $v = '';
           }
 
