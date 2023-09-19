@@ -10,10 +10,11 @@
 error_reporting(E_ERROR | E_PARSE | E_WARNING);
 set_time_limit(0);
 
-class CRM_migrateContactsTrash {
 
-  function run() {
-
+class CRM_migrateContactsTrash
+{
+  function run()
+  {
     global $_SERVER;
 
     require_once realpath(dirname(__FILE__)).'/../script_utils.php';
@@ -125,12 +126,13 @@ class CRM_migrateContactsTrash {
     self::trashContacts($source, $dest, $optlist['trash'], $optlist['employers'], $optlist['dryrun'], $cTypesInclude);
   }//run
 
+
   /*
    * trash contacts in source database using options
    * we use the api to ensure all associated records are dealt with correctly
    */
-  function trashContacts($source, $dest, $trashopt, $employers = FALSE, $optDry, $trashContactTypes) {
-
+  function trashContacts($source, $dest, $trashopt, $employers = FALSE, $optDry, $trashContactTypes)
+  {
     if ($trashopt == 'none') {
       bbscript_log(LL::INFO, "No records trashed (trash action = none).");
       exit();
@@ -144,10 +146,10 @@ class CRM_migrateContactsTrash {
 
     switch ($trashopt) {
       case 'migrated':
-        self::_trashMigrated($trashedIDs, $dest, $employers);
+        self::_trashMigrated($trashedIDs, $dest['num'], $employers);
         break;
       case 'boeredist':
-        self::_trashBOE($trashedIDs, $dest, $employers);
+        self::_trashBOE($trashedIDs, $dest['num'], $employers);
         break;
       default:
     }
@@ -162,13 +164,13 @@ class CRM_migrateContactsTrash {
     }
 
     //process orgs and remove from trash list if various criteria met
-    self::_trashOrgs($trashedIDs, $source, $trashopt, $employers);
+    self::_trashOrgs($trashedIDs, $source['num']);
 
     //6649 remove any contacts with a userID
     self::_excludeUsers($trashedIDs);
 
     //bbscript_log(LL::TRACE, '$trashedIDs', $trashedIDs);
-    self::_tagContacts($trashedIDs, $dest, $optDry);
+    self::_tagContacts($trashedIDs, $dest['num'], $optDry);
 
     $totalCount = 0;
     foreach ($trashContactTypes as $type) {
@@ -177,7 +179,7 @@ class CRM_migrateContactsTrash {
       }
 
       if ($optDry) {
-        bbscript_log(LL::DEBUG, "The following {$type} contacts would be trashed:", $trashedIDs[$type]);
+        bbscript_log(LL::DEBUG, "The following $type contacts would be trashed:", $trashedIDs[$type]);
       }
       else {
         bbscript_log(LL::INFO, "Trashing {$type} contacts...");
@@ -201,20 +203,24 @@ class CRM_migrateContactsTrash {
       }
     }
 
-    $msg = "Removed contacts in district {$dest['num']} ({$dest['name']}) from the district {$source['num']} ({$source['name']}) database.";
-    bbscript_log(LL::INFO, "Completed contact migration trashing.");
+    $msg = "Removed contacts in district {$dest['num']} ({$dest['name']}) from the district {$source['num']} ({$source['name']}) database";
+    bbscript_log(LL::INFO, "Completed contact migration trashing");
     bbscript_log(LL::INFO, $msg);
 
     //generate stats
+    $indCount = count($trashedIDs['Individual'] ?? []);
+    $orgCount = count($trashedIDs['Organization'] ?? []);
+    $hhCount = count($trashedIDs['Household'] ?? []);
+
     $stats = [
       'trashing option' => $trashopt,
       'employers trashed?' => ($employers) ? 'yes' : 'no',
-      'total individuals trashed' => count($trashedIDs['Individual']),
-      'total organizations trashed' => count($trashedIDs['Organization']),
-      'total households trashed' => count($trashedIDs['Household']),
-      'total contacts trashed' => count($trashedIDs['Individual']) + count($trashedIDs['Organization']) + count($trashedIDs['Household']),
-      'organization records retained (count)' => count($trashedIDs['OrgsRetained']),
-      'organization records retained (list)' => $trashedIDs['OrgsRetained'],
+      'total individuals trashed' => $indCount,
+      'total organizations trashed' => $orgCount,
+      'total households trashed' => $hhCount,
+      'total contacts trashed' => $indCount + $orgCount + $hhCount,
+      'organization records retained (count)' => count($trashedIDs['OrgsRetained'] ?? []),
+      'organization records retained (list)' => $trashedIDs['OrgsRetained'] ?? [],
     ];
     bbscript_log(LL::INFO, "Trashing statistics:", $stats);
 
@@ -223,7 +229,7 @@ class CRM_migrateContactsTrash {
       //set import folder based on environment
       $fileDir = '/data/redistricting/bluebird_'.$source['install_class'].'/MigrationTrashReports';
       if (!file_exists($fileDir)) {
-        mkdir( $fileDir, 0775, TRUE );
+        mkdir($fileDir, 0775, TRUE);
       }
 
       $reportFile = $fileDir.'/'.$source['name'].'_'.$dest['name'].'.txt';
@@ -236,14 +242,18 @@ class CRM_migrateContactsTrash {
 
       $content = print_r($content, TRUE);
       fwrite($fileResource, $content);
+      fclose($fileResource);
     }
   }//trashContacts
 
+
   /*
-   * helper function to retrieve migrated contacts from redistricting report contact cache table
-   * we split into indivs and orgs (orgs will be processed according to employer param)
+   * helper function to retrieve migrated contacts from redistricting report
+   * contact cache table we split into indivs and orgs (orgs will be processed
+   * according to employer param)
    */
-  function _trashMigrated(&$trashedIDs, $dest, $employers) {
+  function _trashMigrated(&$trashedIDs, $distnum, $employers)
+  {
     //check for existence of redist contact cache table
     $redistTbl = "redist_report_contact_cache";
     $sql = "SHOW TABLES LIKE '{$redistTbl}'";
@@ -259,7 +269,7 @@ class CRM_migrateContactsTrash {
       JOIN civicrm_contact c
         ON r.contact_id = c.id
         AND c.is_deleted = 0
-      WHERE district = {$dest['num']}
+      WHERE district = $distnum
     ";
     $contacts = CRM_Core_DAO::executeQuery($sql);
 
@@ -271,21 +281,23 @@ class CRM_migrateContactsTrash {
         $trashedIDs['Organization'][] = $contacts->employer_id;
       }
     }
-    //bbscript_log(LL::TRACE, '_trashOrgs $trashedIDs after _trashMigratedIndiv', $trashedIDs);
+    //bbscript_log(LL::TRACE, '_trashMigratedIndiv $trashedIDs', $trashedIDs);
   }
+
 
   /*
    * helper function to retrieve boe indivs from db
    * we retrieve any contact with a BOE address in the destination district
    * we also retrieve employer IDs for future use
    */
-  function _trashBOE(&$trashedIDs, $dest, $employers) {
+  function _trashBOE(&$trashedIDs, $distnum, $employers)
+  {
     $sql = "
       SELECT c.id, c.contact_type, c.employer_id
       FROM civicrm_address a
       JOIN civicrm_value_district_information_7 di
         ON a.id = di.entity_id
-        AND di.ny_senate_district_47 = {$dest['num']}
+        AND di.ny_senate_district_47 = $distnum
         AND a.location_type_id = 6
       JOIN civicrm_contact c
         ON a.contact_id = c.id
@@ -304,6 +316,7 @@ class CRM_migrateContactsTrash {
     //bbscript_log(LL::TRACE, '_trashBOEIndiv $trashedIDs', $trashedIDs);
   }
 
+
   /*
    * process orgs list to determine what will be trashed
    * the action will depend on the combination of trashopt and employers opt
@@ -312,14 +325,16 @@ class CRM_migrateContactsTrash {
    * - the org is in the source district
    * - the org has email, activity, note, or case records
    */
-  function _trashOrgs(&$trashedIDs, $source, $trashopt, $employers) {
+  function _trashOrgs(&$trashedIDs, $distnum)
+  {
     //bbscript_log(LL::TRACE, '_trashOrgs $trashedIDs initial', $trashedIDs['Organization']);
 
     //return immediately if empty
-    if (empty($trashedIDs['Organization']))
+    if (empty($trashedIDs['Organization'])) {
       return;
+    }
 
-    //now lets remove from our org ID list any orgs that meet the three exclusion criteria
+    //remove from orgID list any orgs that meet the three exclusion criteria
     $orgList = implode(', ', $trashedIDs['Organization']);
 
     //query to retrieve orgs with an in-source-district address; then remove from orgs array
@@ -328,7 +343,7 @@ class CRM_migrateContactsTrash {
       FROM civicrm_address a
       JOIN civicrm_value_district_information_7 di
         ON a.id = di.entity_id
-        AND di.ny_senate_district_47 = {$source['num']}
+        AND di.ny_senate_district_47 = $distnum
       WHERE a.contact_id IN ({$orgList})
       GROUP BY a.contact_id
     ";
@@ -343,7 +358,8 @@ class CRM_migrateContactsTrash {
     //bbscript_log(LL::TRACE, '_trashOrgs $trashedIDs after in district', $trashedIDs['Organization']);
 
     //remove orgs with meaningful data
-    /*$valueAdded = [
+    /************************ THIS BLOCK HAS BEEN REMOVED ******************
+    $valueAdded = [
       'email' => 'contact_id',
       'activity_target' => 'target_contact_id',
       'note' => 'entity_id',
@@ -372,7 +388,8 @@ class CRM_migrateContactsTrash {
           unset($trashedIDs['Organization'][$key]);
         }
       }
-    }*/
+    }
+    ************************** END OF REMOVED BLOCK ************************/
     //bbscript_log(LL::TRACE, '_trashOrgs $trashedIDs after value records', $trashedIDs['Organization']);
 
     //remove orgs with relationships
@@ -415,10 +432,12 @@ class CRM_migrateContactsTrash {
     //bbscript_log(LL::TRACE, '_trashOrgs $trashedIDs after relationships', $trashedIDs['Organization']);
   }//_trashOrgs
 
+
   /*
    * cycle through and remove any contacts that have a user account
    */
-  function _excludeUsers(&$trashedIDs) {
+  function _excludeUsers(&$trashedIDs)
+  {
     //get contacts with user accounts from uf_match
     $cids = [];
     $sql = "
@@ -435,17 +454,19 @@ class CRM_migrateContactsTrash {
     }
   }//_excludeUsers
 
+
   //tag all contacts to be trashed
-  function _tagContacts($trashedIDs, $dest, $optDry) {
+  function _tagContacts($trashedIDs, $distnum, $optDry)
+  {
     //create tag
     $params = [
       'version' => 3,
-      'name' => 'Redist2013 Trashed SD'.$dest['num'],
-      'description' => "Out of district contacts trashed from redistricting ({$dest['name']}).",
+      'name' => 'Redist2023 Trashed SD'.$distnum,
+      'description' => "Out-of-district contact trashed from redistricting to SD$distnum",
       'parent_id' => 296, //keywords
     ];
     if ($optDry) {
-      bbscript_log(LL::DEBUG, "Tag to be created: Redist2013 Trashed SD{$dest['num']}");
+      bbscript_log(LL::DEBUG, "Tag to be created: {$params['name']}");
     }
     else {
       $tag = civicrm_api('tag', 'create', $params);
@@ -475,7 +496,7 @@ class CRM_migrateContactsTrash {
       //bbscript_log(LL::TRACE, '_tagContacts $params', $params);
 
       if ($optDry) {
-        bbscript_log(LL::DEBUG, "{$type} contacts would be tagged...");
+        bbscript_log(LL::DEBUG, "$type contacts would be tagged...");
       }
       else {
         $entityTags = civicrm_api('entity_tag', 'create', $params);
@@ -515,12 +536,14 @@ class CRM_migrateContactsTrash {
     }
     if ($reprocessTags && !$optDry) {
       bbscript_log(LL::INFO, "Reprocessing untagged contacts...");
-      self::_tagContacts($unTagged, $dest, $optDry);
+      self::_tagContacts($unTagged, $distnum, $optDry);
     }
   }//_tagContacts
 
 }//end class
 
+
 //run the script if called directly
 $trashData = new CRM_migrateContactsTrash();
 $trashData->run();
+
