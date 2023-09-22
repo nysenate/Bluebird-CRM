@@ -1245,12 +1245,15 @@ AND cce.external_identifier IS NOT NULL, cce.external_identifier, '' )) external
     }
 
     bbscript_log(LL::INFO, "recursively building issue code tree...");
+    bbscript_log(LL::TRACE, 'BEGINNING $tempother', $tempother);
 
     global $level3;
     global $level4;
+    global $level5;
 
     $level3 = (!is_array($level3)) ? [] : $level3;
     $level4 = (!is_array($level4)) ? [] : $level4;
+    $level5 = (!is_array($level5)) ? [] : $level5;
 
     foreach ($tempother as $tID => $tag) {
       //bbscript_log(LL::INFO, "tag: {$tID}", $tag);
@@ -1291,16 +1294,31 @@ AND cce.external_identifier IS NOT NULL, cce.external_identifier, '' )) external
         $issuecodes[$level2id]['children'][$level3id]['children'][$level4id]['children'][$tID]['name'] = $tag['name'];
         $issuecodes[$level2id]['children'][$level3id]['children'][$level4id]['children'][$tID]['desc'] = $tag['desc'];
         unset($tempother[$tID]);
+
+        //tag => parent
+        $level5[$tID] = $tag['parent_id'];
+      }
+      //level 6
+      elseif (array_key_exists($tag['parent_id'], $level5)) {
+        //parent exists in level 5
+        $level5id = $tag['parent_id'];
+        $level4id = $level5[$level5id];
+        $level3id = $level4[$level4id];
+        $level2id = $level3[$level3id];
+        $issuecodes[$level2id]['children'][$level3id]['children'][$level4id]['children'][$level5id]['children'][$tID]['name'] = $tag['name'];
+        $issuecodes[$level2id]['children'][$level3id]['children'][$level4id]['children'][$level5id]['children'][$tID]['desc'] = $tag['desc'];
+        unset($tempother[$tID]);
       }
       else {
         bbscript_log(LL::TRACE, "orphan tag: {$tID}", $tag);
       }
     }
 
-    bbscript_log(LL::TRACE, '$issuecodes', $issuecodes);
     bbscript_log(LL::TRACE, 'REMAINING $tempother', $tempother);
+    bbscript_log(LL::TRACE, '$issuecodes', $issuecodes);
     bbscript_log(LL::TRACE, '$level3', $level3);
     bbscript_log(LL::TRACE, '$level4', $level4);
+    bbscript_log(LL::TRACE, '$level5', $level5);
 
     //if we have tags left over, it's because the tag assignment skipped a level and we need to reconstruct
     //this isn't easily done. what we will do is find the immediate parent and store it, then search for those parents,
