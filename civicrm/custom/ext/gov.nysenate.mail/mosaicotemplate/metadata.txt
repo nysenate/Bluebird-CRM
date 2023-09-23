@@ -1,1 +1,1 @@
-{"template":"/sites/all/mosaico/nyssbase/template-nyssbase.html","name":"No name","created":CRM_TIMESTAMP,"editorversion":"0.15.0","templateversion":"1.0.5","changed":CRM_TIMESTAMP}
+{"template":"sites/all/mosaico/nyssbase/template-nyssbase.html","name":"No name","created":CRM_TIMESTAMP,"editorversion":"0.15.0","templateversion":"1.0.5","changed":CRM_TIMESTAMP}
