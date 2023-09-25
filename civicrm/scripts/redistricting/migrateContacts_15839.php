@@ -91,9 +91,9 @@ class CRM_migrateContacts_15839 {
 
     //check for existence of file to import
     $importFile = $fileDir.'/'.$optlist['filename'];
-    if (!file_exists($importFile) && !$optDry) {
+    if (!file_exists($importFile)) {
       bbscript_log(LL::FATAL, "The import file you have specified does not exist. It must reside in {$fileDir}.");
-      exit();
+      exit(1);
     }
 
     //call main import function
