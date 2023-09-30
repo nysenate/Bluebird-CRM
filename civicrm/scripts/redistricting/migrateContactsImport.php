@@ -5,10 +5,16 @@
 // Organization: New York State Senate
 // Date: 2012-10-26
 // Revised: 2012-11-21
+// Revised: 2023-09-29 - handle out-of-bounds prefix_id/suffix_id values
 
 // ./migrateContactsImport.php -S skelos --filename=migrate --dryrun
 error_reporting(E_ERROR | E_PARSE | E_WARNING);
 set_time_limit(0);
+
+define('KEYWORD_PARENT_ID', 296);
+define('MAX_PREFIX_ID', 82);
+define('MAX_SUFFIX_ID', 20);
+
 
 class CRM_migrateContactsImport {
 
@@ -661,7 +667,7 @@ class CRM_migrateContactsImport {
       $params = [
         'name' => $keyDetail['name'],
         'description' => $keyDetail['desc'],
-        'parent_id' => 296, //keywords constant
+        'parent_id' => KEYWORD_PARENT_ID, //keywords constant
         'sequential' => 1,
       ];
 
@@ -1497,6 +1503,11 @@ class CRM_migrateContactsImport {
 
       //these should never be 0; throws error on import if they are
       if ($v == 0 && in_array($f, ['email_greeting_id', 'postal_greeting_id', 'addressee_id', 'prefix_id', 'suffix_id', 'gender_id'])) {
+        unset($data[$f]);
+      }
+
+      //ignore custom prefix/suffix values
+      if (($f == 'prefix_id' && $v > MAX_PREFIX_ID) || ($f == 'suffix_id' && $v > MAX_SUFFIX_ID)) {
         unset($data[$f]);
       }
     }
