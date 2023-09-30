@@ -1499,6 +1499,11 @@ class CRM_migrateContactsImport {
       if ($v == 0 && in_array($f, ['email_greeting_id', 'postal_greeting_id', 'addressee_id', 'prefix_id', 'suffix_id', 'gender_id'])) {
         unset($data[$f]);
       }
+
+      //ignore custom prefis/suffix values
+      if (($f == 'prefix_id' && $v > 82) || ($f == 'suffix_id' && $v > 20)) {
+        unset($data[$f]);
+      }
     }
     return $data;
   }
