@@ -10,6 +10,8 @@
 error_reporting(E_ERROR | E_PARSE | E_WARNING);
 set_time_limit(0);
 
+define('KEYWORD_PARENT_ID', 296);
+
 
 class CRM_migrateContactsTrash
 {
@@ -463,7 +465,7 @@ class CRM_migrateContactsTrash
       'version' => 3,
       'name' => 'Redist2023 Trashed SD'.$distnum,
       'description' => "Out-of-district contact trashed from redistricting to SD$distnum",
-      'parent_id' => 296, //keywords
+      'parent_id' => KEYWORD_PARENT_ID, //keywords
     ];
     if ($optDry) {
       bbscript_log(LL::DEBUG, "Tag to be created: {$params['name']}");
