@@ -12,6 +12,10 @@ error_reporting(E_ERROR | E_PARSE | E_WARNING);
 set_time_limit(0);
 
 define('REDIST_YEAR', 2022);
+define('ISSUECODE_PARENT_ID', 291);
+define('POSITION_PARENT_ID', 292);
+define('KEYWORD_PARENT_ID', 296);
+
 
 class CRM_migrateContacts {
 
@@ -1014,9 +1018,6 @@ AND cce.external_identifier IS NOT NULL, cce.external_identifier, '' )) external
 
     $keywords = $issuecodes = $positions = $webBills = $webCommittees = $webIssues = $webPetitions = $tempother = [];
 
-    $kParent = 296;
-    $iParent = 291;
-    $pParent = 292;
     $webBillsParent = CRM_Core_DAO::singleValueQuery(
       "SELECT id FROM civicrm_tag WHERE name = 'Website Bills' LIMIT 1");
     $webCommitteesParent = CRM_Core_DAO::singleValueQuery(
@@ -1046,19 +1047,19 @@ AND cce.external_identifier IS NOT NULL, cce.external_identifier, '' )) external
     while ($allTags->fetch()) {
       bbscript_log(LL::TRACE, '$allTags', $allTags);
       switch ($allTags->parent_id) {
-        case $kParent:
+        case KEYWORD_PARENT_ID:
           $keywords[$allTags->id] = [
             'name' => $kPrefix.$allTags->name,
             'desc' => $allTags->description,
           ];
           break;
-        case $pParent:
+        case POSITION_PARENT_ID:
           $positions[$allTags->id] = [
             'name' => $allTags->name,
             'desc' => $allTags->description,
           ];
           break;
-        case $iParent:
+        case ISSUECODE_PARENT_ID:
           $issuecodes[$allTags->id] = [
             'name' => $allTags->name,
             'desc' => $allTags->description,
@@ -1259,7 +1260,7 @@ AND cce.external_identifier IS NOT NULL, cce.external_identifier, '' )) external
       //bbscript_log(LL::INFO, "tag: {$tID}", $tag);
 
       //level 2: when called recursively, we have to account for parent being the main issue code root
-      if ($tag['parent_id'] == 291) {
+      if ($tag['parent_id'] == ISSUECODE_PARENT_ID) {
         $issuecodes[$tID]['name'] = $tag['name'];
         $issuecodes[$tID]['desc'] = $tag['desc'];
         unset($tempother[$tID]);
