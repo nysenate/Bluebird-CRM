@@ -153,6 +153,10 @@ class CRM_Dedupe_Form_RemoveDupeAddress extends CRM_Core_Form
     $dao = CRM_Core_DAO::executeQuery($sql);
 
     while ($dao->fetch()) {
+      if (empty($dao->contact_id)) {
+        continue;
+      }
+
       $addressId = CRM_Core_DAO::singleValueQuery("
         SELECT id
         FROM civicrm_address
