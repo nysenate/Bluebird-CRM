@@ -20,12 +20,15 @@
   <comments/>
   <civix>
     <namespace>CRM/NYSS/Case</namespace>
-    <format>22.10.0</format>
+    <format>23.02.1</format>
   </civix>
   <mixins>
     <mixin>menu-xml@1.0.0</mixin>
+    <mixin>smarty-v2@1.0.1</mixin>
   </mixins>
   <classloader>
     <psr0 prefix="CRM_" path="."/>
+    <psr4 prefix="Civi\" path="Civi"/>
   </classloader>
+  <upgrader>CRM_NYSS_Case_Upgrader</upgrader>
 </extension>
