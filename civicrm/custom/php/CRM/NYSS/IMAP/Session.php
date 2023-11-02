@@ -74,7 +74,7 @@ class CRM_NYSS_IMAP_Session
         ->addWhere('secret', '=', $bbcfg['oauth.client_secret']);
       //throws errors if setScopes is chained to main API call, so breaking out
       $clientCreds->setScopes([
-        'https://outlook.office365.com/.default',
+        'https://outlook.office.com/.default',
       ]);
       $clientCreds->execute();
 
@@ -82,10 +82,10 @@ class CRM_NYSS_IMAP_Session
         ->execute()
         ->last();
     }
-    Civi::log()->debug(__METHOD__, ['$oAuthSysToken' => $oAuthSysToken]);
+    //Civi::log()->debug(__METHOD__, ['$oAuthSysToken' => $oAuthSysToken]);
 
     $cm = new ClientManager();
-    Civi::log()->debug(__METHOD__, ['$cm' => $cm]);
+    //Civi::log()->debug(__METHOD__, ['$cm' => $cm]);
 
     $username = (str_contains($this->_config['user'], '@nysenate.gov')) ?
       $this->_config['user'] :
@@ -102,13 +102,13 @@ class CRM_NYSS_IMAP_Session
       'authentication' => 'oauth',
       'flags' => $this->_config['flags']
     ]);
-    Civi::log()->debug(__METHOD__, ['$client' => $client]);
+    //Civi::log()->debug(__METHOD__, ['$client' => $client]);
 
     //Connect to the IMAP Server
     try {
       $client->connect();
       $this->_conn = $client;
-      Civi::log()->debug(__METHOD__, ['$client->connect' => $client]);
+      //Civi::log()->debug(__METHOD__, ['$client->connect' => $client]);
     }
     catch (Exception $e) {
       Civi::log()->debug(__METHOD__, ['$e' => $e]);
