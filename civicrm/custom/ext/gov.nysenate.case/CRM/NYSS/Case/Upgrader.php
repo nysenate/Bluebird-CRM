@@ -6,7 +6,7 @@ use CRM_NYSS_Case_ExtensionUtil as E;
 /**
  * Collection of upgrade steps.
  */
-class CRM_NYSS_Case_Upgrader extends CRM_NYSS_Case_Upgrader_Base {
+class CRM_NYSS_Case_Upgrader extends CRM_Extension_Upgrader_Base {
 
   // By convention, functions that look like "function upgrade_NNNN()" are
   // upgrade tasks. They are executed in order (like Drupal's hook_update_N).

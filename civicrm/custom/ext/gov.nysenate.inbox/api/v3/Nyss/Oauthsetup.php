@@ -35,30 +35,27 @@ function civicrm_api3_nyss_oauthsetup($params) {
   $bbcfg = get_bluebird_instance_config();
   //Civi::log()->debug(__FUNCTION__, ['bbcfg' => $bbcfg]);
 
-  if (empty($bbcfg['oauth.client_id']) || empty($bbcfg['oauth.client_secret'])) {
-    throw new CRM_Core_Exception('OAuth client_id and/or client_secret is not set in the Bluebird config file.');
+  if (empty($bbcfg['oauth.client_id']) ||
+    empty($bbcfg['oauth.client_secret']) ||
+    empty($bbcfg['oauth.tenant_id'])
+  ) {
+    throw new CRM_Core_Exception('OAuth client_id, tenant_id, and client_secret must be set in the Bluebird config file.');
   }
 
+  //delete existing client(s) if they exist
+  \Civi\Api4\OAuthClient::delete(FALSE)
+    ->addWhere('provider', '=', 'ms-exchange')
+    ->execute();
+
   //create client
-  $client = \Civi\Api4\OAuthClient::create(FALSE)
+  \Civi\Api4\OAuthClient::create(FALSE)
     ->addValue('provider', 'ms-exchange')
     ->addValue('guid', $bbcfg['oauth.client_id'])
     ->addValue('secret', $bbcfg['oauth.client_secret'])
+    ->addValue('tenant', $bbcfg['oauth.tenant_id'])
     ->addValue('is_active', 1)
-    ->execute();
-  $clientId = $client->column('id')[0];
-  //Civi::log()->debug(__FUNCTION__, ['$client' => $client, '$clientId' => $clientId]);
+    ->execute()
+    ->last();
 
-  //create sys token
-  if ($clientId) {
-    $result = \Civi\Api4\OAuthClient::authorizationCode()
-      ->addWhere('id', '=', $clientId)
-      ->execute();
-    Civi::log()->debug(__FUNCTION__, ['$result' => $result]);
-  }
-  else {
-    throw new CRM_Core_Exception('OAuth system token could not be created.');
-  }
-
-  return civicrm_api3_create_success('OAuth Setup Successfully', $params, 'Nyss', 'Oauthsetup');
+  return civicrm_api3_create_success('OAuth Setup Successfully', $params, 'nyss', 'oauthsetup');
 }

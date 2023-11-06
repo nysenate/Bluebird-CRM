@@ -643,8 +643,15 @@ class CRM_Core_Error extends PEAR_ErrorStack {
    * @return Log_file
    */
   public static function createDebugLogger($prefix = '') {
+    //NYSS 15947 - future core
     self::generateLogFileName($prefix);
-    return Log::singleton('file', \Civi::$statics[__CLASS__]['logger_file' . $prefix], '');
+    $log = Log::singleton('file', \Civi::$statics[__CLASS__]['logger_file' . $prefix], '', [
+      'timeFormat' => '%Y-%m-%d %H:%M:%S%z',
+    ]);
+    if (is_callable([$log, 'setLocale'])) {
+      $log->setLocale(CRM_Core_I18n::getLocale());
+    }
+    return $log;
   }
 
   /**
