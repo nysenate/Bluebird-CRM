@@ -328,7 +328,7 @@ function processMailboxCommand($cmd, $params) {
   }
 
   return $rc;
-} // processMailboxCommand()
+}
 
 /**
  * @param $imapSess
@@ -350,7 +350,7 @@ function checkImapAccount($imap, $params) {
   foreach ($folders as $folder) {
     $folderList[] = $folder->path;
   }
-  bbscript_log(LL::TRACE, print_r($folderList, TRUE));
+  bbscript_log(LL::TRACE, 'folderList: '.print_r($folderList, TRUE));
 
   //create archive folder if missing
   if (!$params['noarchive']) {
@@ -368,7 +368,11 @@ function checkImapAccount($imap, $params) {
 
   //get mailbox folder
   $mailbox = $imap_conn->getFolderByPath($params['mailbox']);
-  bbscript_log(LL::TRACE, print_r($mailbox, TRUE));
+  bbscript_log(LL::TRACE, 'mailbox: '.print_r($mailbox, TRUE));
+
+  if (empty($mailbox)) {
+    return FALSE;
+  }
 
   //get messages
   $messages = $mailbox->query()->all()->get();
@@ -456,8 +460,8 @@ function checkImapAccount($imap, $params) {
   bbscript_log(LL::NOTICE, "Searching for matches between message senders and contact records");
   searchForMatches($params);
 
-  return true;
-} // checkImapAccount()
+  return FALSE;
+}
 
 /*
  * Store the attachments for the given message in the database and local

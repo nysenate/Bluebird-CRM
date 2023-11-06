@@ -50,23 +50,57 @@ class CRM_NYSS_IMAP_Session
   private function _openConnection() {
     require_once 'php-imap/vendor/autoload.php';
 
-    //refresh and retrieve the access token
-    $oAuthSysToken = \Civi\Api4\OAuthSysToken::refresh()
-      ->addWhere('grant_type', '=', 'authorization_code')
+    //Civi::log()->debug(__METHOD__, ['$this->_config' => $this->_config]);
+
+    //retrieve most recent access token
+    $oAuthSysToken = \Civi\Api4\OAuthSysToken::get(FALSE)
       ->execute()
-      ->first();
+      ->last();
+
+    //if token expired or expires in next minute, delete and recreate
+    if (empty($oAuthSysToken) || $oAuthSysToken['expires'] + 60 < time()) {
+      if (!empty($oAuthSysToken['id'])) {
+        \Civi\Api4\OAuthSysToken::delete(FALSE)
+          ->addWhere('id', '=', $oAuthSysToken['id'])
+          ->execute();
+      }
+
+      //get an access token via client credential workflow
+      $bbcfg = get_bluebird_instance_config();
+      $clientCreds = \Civi\Api4\OAuthClient::clientCredential(FALSE)
+        ->addWhere('tenant', '=', $bbcfg['oauth.tenant_id'])
+        ->addWhere('provider', '=', 'ms-exchange')
+        ->addWhere('guid', '=', $bbcfg['oauth.client_id'])
+        ->addWhere('secret', '=', $bbcfg['oauth.client_secret']);
+      //throws errors if setScopes is chained to main API call, so breaking out
+      $clientCreds->setScopes([
+        'https://outlook.office.com/.default',
+      ]);
+      $clientCreds->execute();
+
+      $oAuthSysToken = \Civi\Api4\OAuthSysToken::get(FALSE)
+        ->execute()
+        ->last();
+    }
+    //Civi::log()->debug(__METHOD__, ['$oAuthSysToken' => $oAuthSysToken]);
 
     $cm = new ClientManager();
     //Civi::log()->debug(__METHOD__, ['$cm' => $cm]);
 
-    $client = $cm->make(['host' => $this->_config['host'],
+    $username = (str_contains($this->_config['user'], '@nysenate.gov')) ?
+      $this->_config['user'] :
+      $this->_config['user'].'@nysenate.gov';
+
+    $client = $cm->make([
+      'host' => $this->_config['host'],
       'port' => $this->_config['port'],
       'protocol' => 'imap',
       'encryption' => 'ssl',
       'validate_cert' => TRUE,
-      'username' => $this->_config['user'],
+      'username' => $username,
       'password' => $oAuthSysToken['access_token'],
       'authentication' => 'oauth',
+      'flags' => $this->_config['flags']
     ]);
     //Civi::log()->debug(__METHOD__, ['$client' => $client]);
 
