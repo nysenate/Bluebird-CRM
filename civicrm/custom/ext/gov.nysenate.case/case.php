@@ -245,7 +245,7 @@ function case_civicrm_post($op, $objectName, $objectId, &$objectRef) {
         ";
 
         $mailParams = [
-          'from' => "'{$bbcfg['senator.name.formal']}' <{$bbcfg['senator.email']}>",
+          'from' => "{$bbcfg['senator.name.formal']} <{$bbcfg['senator.email']}>",
           'toName' => $contact['display_name'],
           'toEmail' => $contact['email_primary.email'],
           'subject' => 'Case Manager: Case Updated',
