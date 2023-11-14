@@ -59,49 +59,49 @@ function inbox_civicrm_navigationMenu(&$menu) {
 } // */
 
 function inbox_civicrm_permission(&$permissions) {
-  $permissions['access inbox polling'] = array(
+  $permissions['access inbox polling'] = [
     'Bluebird: access inbox polling',
     'Access inbox polling tools.',
-  );
+  ];
 }
 
 function inbox_civicrm_entityRefFilters(&$filters) {
   //Civi::log()->debug('entityRefFilters', array('filters' => $filters));
 
-  $filters['contact'][] = array(
+  $filters['contact'][] = [
     'key' => 'street_address',
     'value' => 'Street Address',
     'entity' => 'address',
     'type' => 'text',
-  );
+  ];
 
-  $filters['contact'][] = array(
+  $filters['contact'][] = [
     'key' => 'city',
     'value' => 'City',
     'entity' => 'address',
     'type' => 'text',
-  );
+  ];
 
-  $filters['contact'][] = array(
+  $filters['contact'][] = [
     'key' => 'postal_code',
     'value' => 'Postal Code',
     'entity' => 'address',
     'type' => 'text',
-  );
+  ];
 
-  $filters['contact'][] = array(
+  $filters['contact'][] = [
     'key' => 'birth_date',
     'value' => 'Birth Date',
     'entity' => 'contact',
     'type' => 'date',
-  );
+  ];
 
-  $filters['contact'][] = array(
+  $filters['contact'][] = [
     'key' => 'phone',
     'value' => 'Phone',
     'entity' => 'phone',
     'type' => 'text',
-  );
+  ];
 }//entityRefFilters
 
 function inbox_civicrm_buildForm($formName, &$form) {
@@ -121,5 +121,27 @@ function inbox_civicrm_buildForm($formName, &$form) {
       CRM_Core_Resources::singleton()->addScriptFile('gov.nysenate.inbox', 'js/new_individual.js');
       CRM_Core_Resources::singleton()->addStyleFile('gov.nysenate.inbox', 'css/new_individual.css');
     }
+  }
+}
+
+function inbox_civicrm_entityTypes(&$entityTypes) {
+  if (empty($entityTypes['OAuthSysToken'])) {
+    $entityTypes['OAuthSysToken'] = [
+      'name' => 'OAuthSysToken',
+      'class' => 'CRM_OAuth_DAO_OAuthSysToken',
+      'table' => 'civicrm_oauth_systoken',
+    ];
+
+    $entityTypes['OAuthClient'] = [
+      'name' => 'OAuthClient',
+      'class' => 'CRM_OAuth_DAO_OAuthClient',
+      'table' => 'civicrm_oauth_client',
+    ];
+
+    $entityTypes['OAuthContactToken'] = [
+      'name' => 'OAuthContactToken',
+      'class' => 'CRM_OAuth_DAO_OAuthContactToken',
+      'table' => 'civicrm_oauth_contact_token',
+    ];
   }
 }
