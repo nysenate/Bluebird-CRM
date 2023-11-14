@@ -48,17 +48,16 @@ class CRM_NYSS_IMAP_Session
 
 
   private function _openConnection() {
-    $bbcfg = get_bluebird_instance_config();
-    //Civi::log()->debug(__METHOD__, ['$bbcfg' => $bbcfg]);
+    CRM_Core_DAO_AllCoreTables::flush();
+    CRM_Core_DAO_AllCoreTables::init(TRUE);
 
-    require_once $bbcfg['app.rootdir'].'/civicrm/custom/php/php-imap/vendor/autoload.php';
-
-    //Civi::log()->debug(__METHOD__, ['$this->_config' => $this->_config]);
+    require_once 'php-imap/vendor/autoload.php';
 
     //retrieve most recent access token
     $oAuthSysToken = \Civi\Api4\OAuthSysToken::get(FALSE)
       ->execute()
       ->last();
+    //Civi::log()->debug(__METHOD__, ['$oAuthSysToken' => $oAuthSysToken]);
 
     //if token expired or expires in next minute, delete and recreate
     if (empty($oAuthSysToken) || $oAuthSysToken['expires'] + 60 < time()) {
