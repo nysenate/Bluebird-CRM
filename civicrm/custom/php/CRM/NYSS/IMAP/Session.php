@@ -48,7 +48,10 @@ class CRM_NYSS_IMAP_Session
 
 
   private function _openConnection() {
-    require_once 'php-imap/vendor/autoload.php';
+    $bbcfg = get_bluebird_instance_config();
+    //Civi::log()->debug(__METHOD__, ['$bbcfg' => $bbcfg]);
+
+    require_once $bbcfg['app.rootdir'].'/civicrm/custom/php/php-imap/vendor/autoload.php';
 
     //Civi::log()->debug(__METHOD__, ['$this->_config' => $this->_config]);
 
