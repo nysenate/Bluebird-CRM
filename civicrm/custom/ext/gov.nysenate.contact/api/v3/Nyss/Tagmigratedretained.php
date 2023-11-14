@@ -22,6 +22,7 @@ function _civicrm_api3_nyss_tagmigratedretained_spec(&$spec) {
   $spec['dryrun'] = [
     'title' => 'Dry Run',
     'type' => CRM_Utils_Type::T_BOOLEAN,
+    'api.default' => 1,
   ];
 }
 
@@ -79,13 +80,13 @@ function civicrm_api3_nyss_tagmigratedretained($params) {
 
   foreach ($tables as $table) {
     list($ignore, $source, $dest) = explode('_', $table);
-    Civi::log()->debug(__FUNCTION__, [
+    /*Civi::log()->debug(__FUNCTION__, [
       'table' => $table,
       'source' => $source,
       'dest' => $dest,
-    ]);
+    ]);*/
 
-    $tagId = _nyss_tagmigratedretained_getTag($dest);
+    $tagId = _nyss_tagmigratedretained_getTag($dest, $params['dryrun']);
 
     $dao = CRM_Core_DAO::executeQuery("
       SELECT migration.*
@@ -98,7 +99,7 @@ function civicrm_api3_nyss_tagmigratedretained($params) {
 
     while ($dao->fetch()) {
       if (empty($params['dryrun'])) {
-        \Civi\Api4\EntityTag::create()
+        \Civi\Api4\EntityTag::create(FALSE)
           ->addValue('entity_table', 'civicrm_contact')
           ->addValue('entity_id', $dao->contact_id)
           ->addValue('tag_id', $tagId)
@@ -118,12 +119,16 @@ function civicrm_api3_nyss_tagmigratedretained($params) {
     }
   }
 
-  Civi::log()->debug(__FUNCTION__, ['results' => $results]);
+  //Civi::log()->debug(__FUNCTION__, ['results' => $results]);
   return civicrm_api3_create_success(['results' => $results], $params, 'Nyss', 'Tagmigratedretained');
 }
 
-function _nyss_tagmigratedretained_getTag($dest) {
+function _nyss_tagmigratedretained_getTag($dest, $dryrun = 1) {
   $tagName = "2022 Redistricting Migration to {$dest} (retained)";
+
+  if ($dryrun) {
+    return $tagName;
+  }
 
   $tag = \Civi\Api4\Tag::get(FALSE)
     ->addSelect('id')
@@ -132,7 +137,7 @@ function _nyss_tagmigratedretained_getTag($dest) {
     ->execute()
     ->first();
 
-  if (!$tag['id']) {
+  if (empty($tag['id'])) {
     $tag = \Civi\Api4\Tag::create(FALSE)
       ->addValue('name', $tagName)
       ->addValue('parent_id.name', 'Keywords')
@@ -140,6 +145,6 @@ function _nyss_tagmigratedretained_getTag($dest) {
       ->first();
   }
 
-  Civi::log()->debug(__FUNCTION__, ['$tag' => $tag]);
+  //Civi::log()->debug(__FUNCTION__, ['$tag' => $tag]);
   return $tag['id'];
 }
