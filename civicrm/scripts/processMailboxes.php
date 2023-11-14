@@ -371,7 +371,7 @@ function checkImapAccount($imap, $params) {
   bbscript_log(LL::TRACE, 'mailbox: '.print_r($mailbox, TRUE));
 
   if (empty($mailbox)) {
-    return FALSE;
+    return TRUE;
   }
 
   //get messages
@@ -460,7 +460,7 @@ function checkImapAccount($imap, $params) {
   bbscript_log(LL::NOTICE, "Searching for matches between message senders and contact records");
   searchForMatches($params);
 
-  return FALSE;
+  return TRUE;
 }
 
 /*

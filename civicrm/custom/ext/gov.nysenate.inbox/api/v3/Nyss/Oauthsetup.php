@@ -27,6 +27,8 @@ function civicrm_api3_nyss_oauthsetup($params) {
     if ($ext['status'] != 'installed') {
       civicrm_api3('Extension', 'enable', ['key' => 'oauth-client']);
     }
+
+    civicrm_api3('Extension', 'upgrade');
   }
   catch (CRM_Core_Exception $e) {
     throw new CRM_Core_Exception($e);
