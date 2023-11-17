@@ -374,14 +374,15 @@ function checkImapAccount($imap, $params) {
     return TRUE;
   }
 
-  //get messages
-  $messages = $mailbox->query()->all()->get();
+  //get messages in batches of 500
+  $messages = $mailbox->query()->all()->limit($limit = 500)->get();
   bbscript_log(LL::TRACE, print_r($messages, TRUE));
 
   $msg_count = count($messages);
   bbscript_log(LL::NOTICE, "Number of messages in IMAP inbox: $msg_count");
 
-  $invalid_fwders = [];
+  //see https://github.com/Webklex/php-imap/issues/131 for why we collect msgs separately for moving
+  $invalid_fwders = $moveMsgs = [];
 
   //cycle through messages
   foreach ($messages as $message) {
@@ -416,14 +417,9 @@ function checkImapAccount($imap, $params) {
         //mark as read
         $message->setFlag('Seen');
 
-        //move to folder
+        //queue to move to archive folder
         if (!$params['noarchive']) {
-          if ($message->move($params['archivebox'])) {
-            bbscript_log(LL::DEBUG, "Messsage {$message->getMsgn()} moved to {$params['archivebox']}");
-          }
-          else {
-            bbscript_log(LL::ERROR, "Failed to move message {$message->getMsgn()} to {$params['archivebox']}");
-          }
+          array_unshift($moveMsgs, $message);
         }
       }
     }
@@ -441,6 +437,16 @@ function checkImapAccount($imap, $params) {
     }
   }
 
+  //move messages if optioned and queued
+  if (!$params['noarchive'] && !empty($moveMsgs)) {
+    foreach ($moveMsgs as $moveMsg) {
+      if ($moveMsg->move($params['archivebox'])) {
+        bbscript_log(LL::DEBUG, "Messsage {$moveMsg->getMsgn()} moved to {$params['archivebox']}");
+      } else {
+        bbscript_log(LL::ERROR, "Failed to move message {$moveMsg->getMsgn()} to {$params['archivebox']}");
+      }
+    }
+  }
 
   $invalid_fwder_count = count($invalid_fwders);
   if ($invalid_fwder_count > 0) {
