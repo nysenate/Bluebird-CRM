@@ -440,11 +440,14 @@ function checkImapAccount($imap, $params) {
   //move messages if optioned and queued
   if (!$params['noarchive'] && !empty($moveMsgs)) {
     foreach ($moveMsgs as $moveMsg) {
-      if ($moveMsg->move($params['archivebox'])) {
-        bbscript_log(LL::DEBUG, "Messsage {$moveMsg->getMsgn()} moved to {$params['archivebox']}");
-      } else {
-        bbscript_log(LL::ERROR, "Failed to move message {$moveMsg->getMsgn()} to {$params['archivebox']}");
+      try {
+        if ($moveMsg->move($params['archivebox'])) {
+          bbscript_log(LL::DEBUG, "Messsage {$moveMsg->getMsgn()} moved to {$params['archivebox']}");
+        } else {
+          bbscript_log(LL::ERROR, "Failed to move message {$moveMsg->getMsgn()} to {$params['archivebox']}");
+        }
       }
+      catch (CRM_Core_Exception $e) {}
     }
   }
 
