@@ -279,7 +279,7 @@ function getAuthorizedForwarders()
 
 function isAuthForwarder($email, $fwders) {
   bbscript_log(LL::TRACE, '$email: '.$email);
-  bbscript_log(LL::TRACE, '$fwders: '.print_r($fwders, TRUE));
+  bbscript_log(LL::TRACE, '$fwders: ', $fwders);
 
   if (isset($fwders['emails'][$email])) {
     // Exact match on email address
@@ -305,7 +305,7 @@ function isAuthForwarder($email, $fwders) {
 function processMailboxCommand($cmd, $params) {
   try {
     $imap_session = new CRM_NYSS_IMAP_Session($params);
-    bbscript_log(LL::TRACE, print_r($imap_session, TRUE));
+    bbscript_log(LL::TRACE, '$imap_session', $imap_session);
   }
   catch (Exception $ex) {
     bbscript_log(LL::ERROR, "Failed to create IMAP session: ".$ex->getMessage());
@@ -323,7 +323,7 @@ function processMailboxCommand($cmd, $params) {
     $rc = deleteArchiveBox($imap_session, $params);
   }
   else {
-    bbscript_log(LL::ERROR, "Invalid command [$cmd], params=".print_r($params, true));
+    bbscript_log(LL::ERROR, "Invalid command [$cmd], params=", $params);
     $rc = false;
   }
 
@@ -344,13 +344,13 @@ function checkImapAccount($imap, $params) {
 
   //get folder listing to determine if we need to create any
   $folders = $imap_conn->getFolders(FALSE);
-  bbscript_log(LL::TRACE, print_r($folders, TRUE));
+  bbscript_log(LL::TRACE, '$folders', $folders);
 
   $folderList = [];
   foreach ($folders as $folder) {
     $folderList[] = $folder->path;
   }
-  bbscript_log(LL::TRACE, 'folderList: '.print_r($folderList, TRUE));
+  bbscript_log(LL::TRACE, '$folderList: ', $folderList);
 
   //create archive folder if missing
   if (!$params['noarchive']) {
@@ -368,7 +368,7 @@ function checkImapAccount($imap, $params) {
 
   //get mailbox folder
   $mailbox = $imap_conn->getFolderByPath($params['mailbox']);
-  bbscript_log(LL::TRACE, 'mailbox: '.print_r($mailbox, TRUE));
+  bbscript_log(LL::TRACE, '$mailbox: ', $mailbox);
 
   if (empty($mailbox)) {
     return TRUE;
@@ -376,7 +376,7 @@ function checkImapAccount($imap, $params) {
 
   //get messages in batches of 500
   $messages = $mailbox->query()->all()->limit($limit = 500)->get();
-  bbscript_log(LL::TRACE, print_r($messages, TRUE));
+  bbscript_log(LL::TRACE, '$messages: ', $messages);
 
   $msg_count = count($messages);
   bbscript_log(LL::NOTICE, "Number of messages in IMAP inbox: $msg_count");
@@ -387,13 +387,13 @@ function checkImapAccount($imap, $params) {
   //cycle through messages
   foreach ($messages as $message) {
     bbscript_log(LL::INFO, "Retrieving message {$message->getMsgn()} of $msg_count");
-    bbscript_log(LL::TRACE, 'message: '.print_r($message, TRUE));
+    bbscript_log(LL::TRACE, '$message: ', $message);
 
     $imap_message = new CRM_NYSS_IMAP_Message($message);
-    bbscript_log(LL::TRACE, '$imap_message: '.print_r($imap_message, TRUE));
+    bbscript_log(LL::TRACE, '$imap_message: ', $imap_message);
 
     $fwder = $message->getFrom()->first()->toArray();
-    bbscript_log(LL::TRACE, '$fwder: '.print_r($fwder, TRUE));
+    bbscript_log(LL::TRACE, '$fwder: ', $fwder);
 
     $isAuth = isAuthForwarder(strtolower($fwder['mail']), $params['authForwarders']);
 
@@ -859,14 +859,14 @@ function listMailboxes($imap) {
 
   //get folder listing to determine if we need to create any
   $folders = $imap_conn->getFolders(FALSE);
-  bbscript_log(LL::TRACE, print_r($folders, TRUE));
+  bbscript_log(LL::TRACE, '$folders: ', $folders);
 
   $folderList = [];
   foreach ($folders as $folder) {
     $folderList[] = $folder->path;
     echo "{$folder->path}\n";
   }
-  bbscript_log(LL::TRACE, print_r($folderList, TRUE));
+  bbscript_log(LL::TRACE, '$folderList', $folderList);
 
   return $folderList;
 }

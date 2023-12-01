@@ -56,7 +56,7 @@ class CRM_NYSS_IMAP_Message
     $bodyHtmlDecoded = $this->_block2nl($this->_bodyHtml);
     $this->_bodyHtmlDecoded = trim(html_entity_decode(strip_tags($bodyHtmlDecoded), ENT_QUOTES));
 
-    bbscript_log(LL::TRACE, '$this: '.print_r($this, TRUE));
+    bbscript_log(LL::TRACE, '$this: ', $this);
   } // __construct()
 
 
