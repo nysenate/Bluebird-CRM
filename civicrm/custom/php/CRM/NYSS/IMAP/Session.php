@@ -2,6 +2,7 @@
 
 //https://www.php-imap.com/
 use Webklex\PHPIMAP\ClientManager;
+use Webklex\PHPIMAP\IMAP;
 
 class CRM_NYSS_IMAP_Session
 {
@@ -117,5 +118,13 @@ class CRM_NYSS_IMAP_Session
     }
 
     return $this->_conn ?? NULL;
+  }
+
+  function setSequenceType($msg, $type) {
+    $conn = $this->getConnection();
+
+    //$type = "IMAP::{$type}"
+
+    $msg->setSequence("IMAP::{$type}");
   }
 }
