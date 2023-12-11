@@ -355,7 +355,7 @@ function checkImapAccount($imap, $params) {
 
   //check to make sure the main mailbox exists
   if (!in_array($params['mailbox'], $folderList)) {
-    bbscript_log(LL::DEBUG, "Inbound mailbox does not currently exist: {$params['mailbox']}. Note: the mailbox name is case sensitive and should be: INBOX/Bluebird Inbound");
+    bbscript_log(LL::WARN, "Inbound mailbox [{$params['mailbox']}] does not currently exist; it must be created first");
     return FALSE;
   }
 
