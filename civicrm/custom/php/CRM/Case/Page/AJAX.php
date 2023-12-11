@@ -174,6 +174,9 @@ class CRM_Case_Page_AJAX {
     //NYSS 13330 sorting by contact_id should actually be by sort_name
     $params['sortBy'] = str_replace('contact_id', 'sort_name', $params['sortBy']);
 
+    //NYSS 15985 fix subject sort
+    $params['sortBy'] = str_replace('subject', 'case_subject', $params['sortBy']);
+
     $allCases = (bool) $params['all'];
 
     $cases = CRM_Case_BAO_Case::getCases($allCases, $params);
