@@ -246,7 +246,7 @@ exit(0);
  */
 function getAuthorizedForwarders()
 {
-  $res = array();
+  $res = [];
   $q = "
     SELECT e.email, e.contact_id
     FROM civicrm_group_contact gc, civicrm_group g, civicrm_email e,
@@ -257,7 +257,8 @@ function getAuthorizedForwarders()
       AND gc.contact_id=e.contact_id
       AND e.contact_id = c.id
       AND c.is_deleted = 0
-    ORDER BY gc.contact_id ASC";
+    ORDER BY gc.contact_id ASC
+  ";
 
   $dao = CRM_Core_DAO::executeQuery($q);
 
@@ -677,17 +678,17 @@ function storeMessage($imapMsg, $message, $params) {
 // address in the message and a contact record with the same email address.
 // If there is a single match on a contact record, an inbound email activity
 // is created and associated with the contact.
-function searchForMatches($params)
-{
+function searchForMatches($params) {
   $authForwarders = $params['authForwarders'];
   $uploadDir = $params['uploadDir'];
   $recheck = $params['recheck'];
 
   // Check the unprocessed messages (status=99)
-  $q = 'SELECT id, message_id, sender_email,
-               subject, body, forwarder, updated_date
-        FROM nyss_inbox_messages
-        WHERE status='.STATUS_UNPROCESSED;
+  $q = '
+    SELECT id, message_id, sender_email, subject, body, forwarder, updated_date
+    FROM nyss_inbox_messages
+    WHERE status='.STATUS_UNPROCESSED.'
+  ';
   $status_str = 'Unprocessed';
 
   // If "recheck" was specified, then also check unmatched messages (status=0)
@@ -851,7 +852,7 @@ function searchForMatches($params)
   } // while rows in nyss_inbox_messages
 
   bbscript_log(LL::DEBUG, "Finished processing unprocessed/unmatched messages");
-} // searchForMatches()
+}
 
 
 function listMailboxes($imap) {
