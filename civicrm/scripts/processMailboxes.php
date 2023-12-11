@@ -353,6 +353,12 @@ function checkImapAccount($imap, $params) {
   }
   bbscript_log(LL::TRACE, '$folderList: ', $folderList);
 
+  //check to make sure the main mailbox exists
+  if (!in_array($params['mailbox'], $folderList)) {
+    bbscript_log(LL::DEBUG, "Inbound mailbox does not currently exist: {$params['mailbox']}. Note: the mailbox name is case sensitive and should be: INBOX/Bluebird Inbound");
+    return FALSE;
+  }
+
   //create archive folder if missing
   if (!$params['noarchive']) {
     if (!in_array($params['archivebox'], $folderList)) {
