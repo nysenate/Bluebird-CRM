@@ -1062,6 +1062,10 @@ function mail_civicrm_alterMailParams(&$params, $context) {
       $view_url = _mail_get_view_url($bbconfig, $view_id);
     }
 
+    //15998 append a UTF-8 specific character to force Sendgrid to set the correct content encoding
+    $extraContent['text']['post_body'][] = '…';
+    $extraContent['html']['post_body'][] = '<!-- … -->';
+
     $token_replacements = [
       '%SENATOR_EMAIL%' => $senator_email,
       '%SHAREON_FACEBOOK_URL%' => "https://www.facebook.com/sharer/sharer.php?u=$view_url",
