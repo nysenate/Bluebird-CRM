@@ -76,6 +76,20 @@ class CRM_NYSS_Inbox_BAO_Inbox {
     $string = $htmlFixer->getFixedHtml($string);
     $string = str_replace('&nbsp;', ' ', $string);
 
+    //prepare purifier config
+    $config = HTMLPurifier_Config::createDefault();
+    $config->set('Core.Encoding', 'UTF-8');
+    $config->set('Attr.AllowedFrameTargets', ['_blank', '_self', '_parent', '_top']);
+    $config->set('Cache.DefinitionImpl', NULL);
+    $config->set('HTML.TidyLevel', 'heavy');
+    $config->set('URI.AllowedSchemes', [
+      'http' => true,
+      'https' => true,
+    ]);
+    $purifier = new HTMLPurifier($config);
+    $string = $purifier->purify($string);
+    //Civi::log()->debug(__METHOD__, ['string' => $string]);
+
     //cludgy way to try to strip out text chunks with tons of line breaks...
     $string = str_replace('<br /><br /><br />', '<br /> <br />', $string);
     $string = str_replace('<br /><br /><br />', '<br /> <br />', $string);
@@ -1107,7 +1121,6 @@ class CRM_NYSS_Inbox_BAO_Inbox {
    * HTML to highlight those items.
    */
   private static function highlightItems($text, $items) {
-    //file_put_contents("/tmp/inbound_email/items", print_r($items, true));
     $itemMap = [
       'emails' => ['class' => 'email_address', 'text' => 'email'],
       'blacklist' => [
