@@ -33,26 +33,14 @@ use const STREAM_FILTER_WRITE;
  *
  * DEPRECATION WARNING! This class will be removed in the next major point release
  *
- * @deprecated deprecated since version 9.2.0
+ * @deprecated since version 9.2.0
  * @see AbstractCsv::setEscape
  *
  * @see https://tools.ietf.org/html/rfc4180#section-2
  */
 class RFC4180Field extends php_user_filter
 {
-    const FILTERNAME = 'convert.league.csv.rfc4180';
-
-    /**
-     * the filter name used to instantiate the class with.
-     *
-     * @var string
-     */
-    public $filtername;
-
-    /**
-     * @var mixed value passed to passed to stream_filter_append or stream_filter_prepend functions.
-     */
-    public $params;
+    public const FILTERNAME = 'convert.league.csv.rfc4180';
 
     /**
      * The value being search for.

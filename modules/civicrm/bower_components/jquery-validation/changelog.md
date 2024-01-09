@@ -1,3 +1,36 @@
+1.19.4 / 2022-05-19
+===================
+
+## Build
+  * Add License.md to zip tarball (#2386)
+
+## Chore
+  * Updated build status badges (#2424)
+  * Enabled stable bot (#2425)
+
+## Core
+  * Fixed validation for input type="date" (#2360)
+  * Wait for pendingRequests to finish before submitting form (#2369)
+  * Fixed bug for Html Editors (#2154) (#2422)
+  * Fixed ReDoS vulnerability in URL2 validation (#2428)
+
+## Test
+  * Switch from Travis to GitHub workflows (#2423)
+
+1.19.3 / 2021-01-09
+===================
+
+## Core
+  * CVE-2021-21252: fixed Regular Expression Denial of Service vulnerability (#2371)
+  * Replaced deprecated jQuery functions (#2335)
+
+## Chore
+  * Add Accessibility section to Readme (#2149)
+
+## Localization
+  * Add "pattern" translation for French (#2363) 
+  * add phone validate translate for Turkish translation (#2343)
+
 1.19.2 / 2020-05-23
 ===================
 

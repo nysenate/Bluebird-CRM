@@ -16,7 +16,13 @@ class CRM_Iats_Form_Settings extends CRM_Core_Form {
       'email_recurring_failure_report',
       ts('Email Recurring Contribution failure reports to this Email address')
     );
+    $this->add(
+      'email',
+      'bcc_email_recurring_failure_report',
+      ts('BCC Email Recurring Contribution failure reports to this Email address.')
+    );
     $this->addRule('email_recurring_failure_report', ts('Email address is not a valid format.'), 'email');
+    $this->addRule('bcc_email_recurring_failure_report', ts('Email address is not a valid format.'), 'email');
     $this->add(
       'text',
       'recurring_failure_threshhold',
@@ -29,6 +35,12 @@ class CRM_Iats_Form_Settings extends CRM_Core_Form {
       'receipt_recurring',
       ts('Email receipt for a Contribution in a Recurring Series'),
       $receipt_recurring_options
+    );
+    
+    $this->add(
+      'checkbox',
+      'email_failure_contribution_receipt',
+        ts('Email receipt for a Contribution if Recurring payment fails - with error message')
     );
 
     $this->add(

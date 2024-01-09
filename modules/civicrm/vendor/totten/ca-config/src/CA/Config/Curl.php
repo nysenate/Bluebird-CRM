@@ -10,6 +10,12 @@ class CA_Config_Curl
 {
     static private $_singleton;
 
+    public $enableSSL;
+
+    public $verifyPeer;
+
+    public $caFile;
+
     /**
      * Provide a singleton instance to simplify integration. If you prefer
      * to manage the lifecycle of the config object, then consider using

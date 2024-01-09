@@ -85,6 +85,7 @@ class FileReader {
   var $_pos;
   var $_fd;
   var $_length;
+  var $error;
 
   function __construct($filename) {
     if (file_exists($filename)) {

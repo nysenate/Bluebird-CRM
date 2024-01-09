@@ -51,6 +51,12 @@
  */
 class IDS_Filter
 {
+    /**
+     * Filter ID
+     *
+     * @var    integer
+     */
+    protected $id;
 
     /**
      * Filter rule

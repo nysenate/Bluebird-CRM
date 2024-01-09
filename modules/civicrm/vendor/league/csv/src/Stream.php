@@ -32,9 +32,9 @@ use function fseek;
 use function fwrite;
 use function get_resource_type;
 use function gettype;
+use function is_array;
 use function is_resource;
 use function rewind;
-use function sprintf;
 use function stream_filter_append;
 use function stream_filter_remove;
 use function stream_get_meta_data;
@@ -47,77 +47,77 @@ use const SEEK_SET;
  *
  * @internal used internally to iterate over a stream resource
  */
-class Stream implements SeekableIterator
+final class Stream implements SeekableIterator
 {
     /**
      * Attached filters.
      *
      * @var array<string, array<resource>>
      */
-    protected $filters = [];
+    private $filters = [];
 
     /**
      * stream resource.
      *
      * @var resource
      */
-    protected $stream;
+    private $stream;
 
     /**
      * Tell whether the stream should be closed on object destruction.
      *
      * @var bool
      */
-    protected $should_close_stream = false;
+    private $should_close_stream = false;
 
     /**
      * Current iterator value.
      *
      * @var mixed can be a null false or a scalar type value
      */
-    protected $value;
+    private $value;
 
     /**
      * Current iterator key.
      *
      * @var int
      */
-    protected $offset;
+    private $offset;
 
     /**
      * Flags for the Document.
      *
      * @var int
      */
-    protected $flags = 0;
+    private $flags = 0;
 
     /**
      * the field delimiter (one character only).
      *
      * @var string
      */
-    protected $delimiter = ',';
+    private $delimiter = ',';
 
     /**
      * the field enclosure character (one character only).
      *
      * @var string
      */
-    protected $enclosure = '"';
+    private $enclosure = '"';
 
     /**
      * the field escape character (one character only).
      *
      * @var string
      */
-    protected $escape = '\\';
+    private $escape = '\\';
 
     /**
      * Tell whether the current stream is seekable;.
      *
      * @var bool
      */
-    protected $is_seekable = false;
+    private $is_seekable = false;
 
     /**
      * New instance.
@@ -127,11 +127,11 @@ class Stream implements SeekableIterator
     public function __construct($stream)
     {
         if (!is_resource($stream)) {
-            throw new TypeError(sprintf('Argument passed must be a stream resource, %s given', gettype($stream)));
+            throw new TypeError('Argument passed must be a stream resource, '.gettype($stream).' given.');
         }
 
         if ('stream' !== ($type = get_resource_type($stream))) {
-            throw new TypeError(sprintf('Argument passed must be a stream resource, %s resource given', $type));
+            throw new TypeError('Argument passed must be a stream resource, '.$type.' resource given');
         }
 
         $this->is_seekable = stream_get_meta_data($stream)['seekable'];
@@ -161,7 +161,7 @@ class Stream implements SeekableIterator
      */
     public function __clone()
     {
-        throw new Exception(sprintf('An object of class %s cannot be cloned', static::class));
+        throw UnavailableStream::dueToForbiddenCloning(self::class);
     }
 
     /**
@@ -194,7 +194,7 @@ class Stream implements SeekableIterator
 
         $resource = @fopen(...$args);
         if (!is_resource($resource)) {
-            throw new Exception(sprintf('`%s`: failed to open stream: No such file or directory', $path));
+            throw UnavailableStream::dueToPathNotFound($path);
         }
 
         $instance = new self($resource);
@@ -231,14 +231,14 @@ class Stream implements SeekableIterator
      *
      * @see http://php.net/manual/en/function.stream-filter-append.php
      *
-     * @param  null|mixed $params
-     * @throws Exception  if the filter can not be appended
+     *
+     * @throws InvalidArgument if the filter can not be appended
      */
-    public function appendFilter(string $filtername, int $read_write, $params = null): void
+    public function appendFilter(string $filtername, int $read_write, array $params = null): void
     {
-        $res = @stream_filter_append($this->stream, $filtername, $read_write, $params);
+        $res = @stream_filter_append($this->stream, $filtername, $read_write, $params ?? []);
         if (!is_resource($res)) {
-            throw new InvalidArgument(sprintf('unable to locate filter `%s`', $filtername));
+            throw InvalidArgument::dueToStreamFilterNotFound($filtername);
         }
 
         $this->filters[$filtername][] = $res;
@@ -257,23 +257,23 @@ class Stream implements SeekableIterator
     /**
      * Filter Csv control characters.
      *
-     * @throws Exception If the Csv control character is not one character only.
+     * @throws InvalidArgument If the Csv control character is not one character only.
      */
-    protected function filterControl(string $delimiter, string $enclosure, string $escape, string $caller): array
+    private function filterControl(string $delimiter, string $enclosure, string $escape, string $caller): array
     {
         if (1 !== strlen($delimiter)) {
-            throw new InvalidArgument(sprintf('%s() expects delimiter to be a single character', $caller));
+            throw InvalidArgument::dueToInvalidDelimiterCharacter($delimiter, $caller);
         }
 
         if (1 !== strlen($enclosure)) {
-            throw new InvalidArgument(sprintf('%s() expects enclosure to be a single character', $caller));
+            throw InvalidArgument::dueToInvalidEnclosureCharacter($enclosure, $caller);
         }
 
         if (1 === strlen($escape) || ('' === $escape && 70400 <= PHP_VERSION_ID)) {
             return [$delimiter, $enclosure, $escape];
         }
 
-        throw new InvalidArgument(sprintf('%s() expects escape to be a single character', $caller));
+        throw InvalidArgument::dueToInvalidEscapeCharacter($escape, $caller);
     }
 
     /**
@@ -281,7 +281,7 @@ class Stream implements SeekableIterator
      *
      * @see http://php.net/manual/en/SplFileObject.getcsvcontrol.php
      *
-     * @return string[]
+     * @return array<string>
      */
     public function getCsvControl(): array
     {
@@ -346,7 +346,7 @@ class Stream implements SeekableIterator
     public function rewind(): void
     {
         if (!$this->is_seekable) {
-            throw new Exception('stream does not support seeking');
+            throw UnavailableFeature::dueToMissingStreamSeekability();
         }
 
         rewind($this->stream);
@@ -393,13 +393,14 @@ class Stream implements SeekableIterator
     /**
      * Retrieves the current line as a CSV Record.
      *
-     * @return array|false|null
+     * @return array|false
      */
-    protected function getCurrentRecord()
+    private function getCurrentRecord()
     {
+        $flag = 0 !== ($this->flags & SplFileObject::SKIP_EMPTY);
         do {
             $ret = fgetcsv($this->stream, 0, $this->delimiter, $this->enclosure, $this->escape);
-        } while ((0 !== ($this->flags & SplFileObject::SKIP_EMPTY)) && $ret !== null && $ret !== false && $ret[0] === null);
+        } while ($flag && is_array($ret) && null === $ret[0]);
 
         return $ret;
     }
@@ -415,7 +416,7 @@ class Stream implements SeekableIterator
     public function seek($position): void
     {
         if ($position < 0) {
-            throw new Exception(sprintf('%s() can\'t seek stream to negative line %d', __METHOD__, $position));
+            throw InvalidArgument::dueToInvalidSeekingPosition($position, __METHOD__);
         }
 
         $this->rewind();
@@ -448,7 +449,7 @@ class Stream implements SeekableIterator
      *
      * @see http://php.net/manual/en/SplFileObject.fread.php
      *
-     * @param int $length The number of bytes to read
+     * @param int<0, max> $length The number of bytes to read
      *
      * @return string|false
      */
@@ -479,7 +480,7 @@ class Stream implements SeekableIterator
     public function fseek(int $offset, int $whence = SEEK_SET): int
     {
         if (!$this->is_seekable) {
-            throw new Exception('stream does not support seeking');
+            throw UnavailableFeature::dueToMissingStreamSeekability();
         }
 
         return fseek($this->stream, $offset, $whence);

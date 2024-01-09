@@ -75,19 +75,19 @@ class CRM_Iats_iATSServiceRequest {
     $this->options = $options;
     $this->options['debug'] = _iats_civicrm_domain_info('debug_enabled');
     // Check for valid currencies with domain/method combinations.
-    if (isset($options['currencyID'])) {
+    if (isset($options['currency'])) {
       $valid = FALSE;
       switch ($iats_domain) {
         case 'www2.iatspayments.com':
         case 'www.iatspayments.com':
-          if (in_array($options['currencyID'], array('USD', 'CAD'))) {
+          if (in_array($options['currency'], array('USD', 'CAD'))) {
             $valid = TRUE;
           }
           break;
 
         case 'www.uk.iatspayments.com':
           if ('cc' == substr($method, 0, 2) || 'create_credit_card_customer' == $method) {
-            if (in_array($options['currencyID'], array('AUD', 'USD', 'EUR', 'GBP', 'IEE', 'CHF', 'HKD', 'JPY', 'SGD', 'MXN'))) {
+            if (in_array($options['currency'], array('AUD', 'USD', 'EUR', 'GBP', 'IEE', 'CHF', 'HKD', 'JPY', 'SGD', 'MXN'))) {
               $valid = TRUE;
             }
           }
@@ -98,7 +98,7 @@ class CRM_Iats_iATSServiceRequest {
           break;
       }
       if (!$valid) {
-        throw new PaymentProcessorException(ts('Invalid currency selection: %1 for domain %2', [1 => $options['currencyID'], 2=> $iats_domain]));
+        throw new PaymentProcessorException(ts('Invalid currency selection: %1 for domain %2', [1 => $options['currency'], 2=> $iats_domain]));
       }
     }
   }
@@ -272,8 +272,8 @@ class CRM_Iats_iATSServiceRequest {
       case 'process':
         if (!empty($response->PROCESSRESULT)) {
           $processresult = $response->PROCESSRESULT;
-          $result['auth_result'] = trim(current($processresult->AUTHORIZATIONRESULT));
-          $result['remote_id'] = current($processresult->TRANSACTIONID);
+          $result['auth_result'] = trim(((array) $processresult->AUTHORIZATIONRESULT)[0] ?? '');
+          $result['remote_id'] = ((array) $processresult->TRANSACTIONID)[0] ?? '';
           // If we didn't get an approval response code...
           // Note: do not use SUCCESS property, which just means iATS said "hello".
           $result['status'] = (substr($result['auth_result'], 0, 2) == self::iATS_TXN_OK) ? 1 : 0;
@@ -621,7 +621,7 @@ class CRM_Iats_iATSServiceRequest {
         return 'Invalid transaction. Verify and re-enter credit card information.';
 
       case 'REJECT: 6':
-        return 'Please have cardholder call the number on the back of the card.';
+        return 'US: Please have cardholder call the number on the back of the card. UK/EU: Transaction not supported by institution.';
 
       case 'REJECT: 7':
         return 'Lost or stolen card.';
@@ -680,10 +680,10 @@ class CRM_Iats_iATSServiceRequest {
         return 'Please have cardholder call the number on the back of the card.';
 
       case 'REJECT: 32':
-        return 'Invalid charge card number.';
+        return 'Invalid Credit Card Number.';
 
       case 'REJECT: 39':
-        return 'Contact iATS at 1-888-955-5455.';
+        return 'US: Contact iATS at 1-888-955-5455. UK/EU: Contact IATS at 0808-234-0466';
 
       case 'REJECT: 40':
         return 'Invalid card number. Card not supported by iATS.';
@@ -695,7 +695,7 @@ class CRM_Iats_iATSServiceRequest {
         return 'CVV2 required.';
 
       case 'REJECT: 43':
-        return 'Incorrect AVS.';
+        return 'US: Contact iATS at 1-888-955-5455. UK/EU: Incorrect AVS.';
 
       case 'REJECT: 45':
         return 'Credit card name blocked. Call iATS at 1-888-955-5455.';
@@ -721,11 +721,65 @@ class CRM_Iats_iATSServiceRequest {
       case 'REJECT: 52':
         return 'Credit card BIN country blocked. Call iATS at 1-888-955-5455.';
 
+      case 'REJECT: 53':
+        return 'Wrong File Total';
+
+      case 'REJECT: 54':
+        return 'Wrong Currency';
+
+      case 'REJECT: 55':
+        return 'System Error';
+
+      case 'REJECT: 56':
+        return 'REJ Other';
+
+      case 'REJECT: 60':
+        return 'Set-up error. Please contact IATS Customer Service at 0808-234-0466.';
+
+      case 'REJECT: 61':
+        return 'Authentication failed.';
+
+      case 'REJECT: 62':
+        return 'Invalid timestamp. Please contact IATS Customer Service at 0808-234-0466.';
+
+      case 'REJECT: 63':
+        return 'Payment voided.';
+
+      case 'REJECT: 64':
+        return 'Pre-authorization expired / CC mismatch / Insufficient amount.';
+
+      case 'REJECT: 65':
+        return 'Unsupported card scheme. Please contact IATS Customer Service at 0808-234-0466.';
+
+      case 'REJECT: 66':
+        return 'Set-up error - Channel issue. Please contact IATS Customer Service at 0808-234-0466.';
+
+      case 'REJECT: 67':
+        return 'Set-up error - No submitter. Please contact IATS Customer Service at 0808-234-0466.';
+
+      case 'REJECT: 68':
+        return 'Void payment failure.';
+
+      case 'REJECT: 69':
+        return 'Unexpected response. Please contact IATS Customer Service at 0808-234-0466.';
+
+      case 'REJECT: 70':
+        return 'Result indeterminate. Please contact IATS Customer Service at 0808-234-0466.';
+
+      case 'REJECT: 71':
+        return 'Mandatory field missing.';
+
+      case 'REJECT: 91':
+        return 'Issuer unavailable.';
+
+      case 'REJECT: 98':
+        return 'Mod Check on RDFI-ID Failed.';
+
       case 'REJECT: 100':
         return 'DO NOT REPROCESS. Call iATS at 1-888-955-5455.';
 
-      case 'Timeout':
-        return 'The system has not responded in the time allotted. Call iATS at 1-888-955-5455.';
+      case 'TIMEOUT':
+        return 'The system has not responded in the time allotted. Call iATS at US: 1-888-955-5455, UK/EU: 0808-234-0466';
     }
 
     return $code;

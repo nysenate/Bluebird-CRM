@@ -117,24 +117,6 @@ function _civicrm_api3_mailing_gettokens_spec(&$params) {
  *   Array of parameters determined by getfields.
  */
 function _civicrm_api3_mailing_create_spec(&$params) {
-  $params['created_id']['api.default'] = 'user_contact_id';
-
-  $params['override_verp']['api.default'] = !CRM_Core_BAO_Setting::getItem(CRM_Core_BAO_Setting::MAILING_PREFERENCES_NAME, 'track_civimail_replies');
-  $params['visibility']['api.default'] = 'Public Pages';
-  $params['dedupe_email']['api.default'] = CRM_Core_BAO_Setting::getItem(CRM_Core_BAO_Setting::MAILING_PREFERENCES_NAME, 'dedupe_email_default');
-
-  $params['forward_replies']['api.default'] = FALSE;
-  $params['auto_responder']['api.default'] = FALSE;
-  $params['open_tracking']['api.default'] = Civi::settings()->get('open_tracking_default');
-  $params['url_tracking']['api.default'] = Civi::settings()->get('url_tracking_default');
-
-  $params['header_id']['api.default'] = CRM_Mailing_PseudoConstant::defaultComponent('Header', '');
-  $params['footer_id']['api.default'] = CRM_Mailing_PseudoConstant::defaultComponent('Footer', '');
-  $params['optout_id']['api.default'] = CRM_Mailing_PseudoConstant::defaultComponent('OptOut', '');
-  $params['reply_id']['api.default'] = CRM_Mailing_PseudoConstant::defaultComponent('Reply', '');
-  $params['resubscribe_id']['api.default'] = CRM_Mailing_PseudoConstant::defaultComponent('Resubscribe', '');
-  $params['unsubscribe_id']['api.default'] = CRM_Mailing_PseudoConstant::defaultComponent('Unsubscribe', '');
-  $params['mailing_type']['api.default'] = 'standalone';
   $defaultAddress = CRM_Core_BAO_Domain::getNameAndEmail(TRUE, TRUE);
   foreach ($defaultAddress as $value) {
     if (preg_match('/"(.*)" <(.*)>/', $value, $match)) {
@@ -294,7 +276,7 @@ function civicrm_api3_mailing_submit($params) {
   if (isset($params['approval_date'])) {
     $updateParams['approval_date'] = $params['approval_date'];
     $updateParams['approver_id'] = CRM_Core_Session::getLoggedInContactID();
-    $updateParams['approval_status_id'] = CRM_Utils_Array::value('approval_status_id', $updateParams, CRM_Core_OptionGroup::getDefaultValue('mail_approval_status'));
+    $updateParams['approval_status_id'] = $updateParams['approval_status_id'] ?? CRM_Core_OptionGroup::getDefaultValue('mail_approval_status');
   }
   if (isset($params['approval_note'])) {
     $updateParams['approval_note'] = $params['approval_note'];
@@ -471,7 +453,7 @@ function _civicrm_api3_mailing_event_forward_spec(&$params) {
  */
 function civicrm_api3_mailing_event_click($params) {
   civicrm_api3_verify_mandatory($params,
-    'CRM_Mailing_Event_DAO_MailingEventClickThrough',
+    'CRM_Mailing_Event_DAO_MailingEventTrackableURLOpen',
     ['event_queue_id', 'url_id'],
     FALSE
   );
@@ -479,7 +461,7 @@ function civicrm_api3_mailing_event_click($params) {
   $url_id = $params['url_id'];
   $queue = $params['event_queue_id'];
 
-  $url = CRM_Mailing_Event_BAO_MailingEventClickThrough::track($queue, $url_id);
+  $url = CRM_Mailing_Event_BAO_MailingEventTrackableURLOpen::track($queue, $url_id);
 
   $values             = [];
   $values['url']      = $url;
@@ -663,8 +645,10 @@ function civicrm_api3_mailing_send_test($params) {
         civicrm_api3('MailingEventQueue', 'create',
           [
             'job_id' => $job['id'],
+            'is_test' => TRUE,
             'email_id' => $emailId,
             'contact_id' => $contactId,
+            'mailing_id' => $params['mailing_id'],
           ]
         );
       }
@@ -756,7 +740,7 @@ function civicrm_api3_mailing_stats($params) {
 
       case 'Unique Clicks':
         $stats[$params['mailing_id']] += [
-          $detail => CRM_Mailing_Event_BAO_MailingEventClickThrough::getTotalCount($params['mailing_id'], $params['job_id'], (bool) $params['is_distinct'], NULL, $params['date']),
+          $detail => CRM_Mailing_Event_BAO_MailingEventTrackableURLOpen::getTotalCount($params['mailing_id'], $params['job_id'], (bool) $params['is_distinct'], NULL, $params['date']),
         ];
         break;
 

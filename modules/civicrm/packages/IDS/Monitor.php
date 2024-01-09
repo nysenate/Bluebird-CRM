@@ -162,6 +162,13 @@ class IDS_Monitor
      */
     private $tmpJsonString = '';
 
+    /**
+     * Centrifuge data
+     * 
+     * @var array
+     */
+    public $centrifuge = [];
+
 
     /**
      * Constructor

@@ -34,12 +34,12 @@ class CRM_Mailing_Event_BAO_MailingEventReply extends CRM_Mailing_Event_DAO_Mail
    *
    * @param null $replyto
    *
-   * @return object|null
+   * @return CRM_Mailing_BAO_Mailing|null
    *   The mailing object, or null on failure
    */
   public static function &reply($job_id, $queue_id, $hash, $replyto = NULL) {
     // First make sure there's a matching queue event.
-    $q = CRM_Mailing_Event_BAO_MailingEventQueue::verify($job_id, $queue_id, $hash);
+    $q = CRM_Mailing_Event_BAO_MailingEventQueue::verify(NULL, $queue_id, $hash);
 
     $success = NULL;
 
@@ -78,7 +78,7 @@ class CRM_Mailing_Event_BAO_MailingEventReply extends CRM_Mailing_Event_DAO_Mail
    *
    * @param int $queue_id
    *   Queue event ID of the sender.
-   * @param string $mailing
+   * @param CRM_Mailing_BAO_Mailing $mailing
    *   The mailing object.
    * @param string $bodyTxt
    *   Text part of the body (ignored if $fullEmail provided).

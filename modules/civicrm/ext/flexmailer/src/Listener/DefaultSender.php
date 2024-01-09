@@ -29,7 +29,7 @@ class DefaultSender extends BaseListener {
     $job_date = \CRM_Utils_Date::isoToMysql($job->scheduled_date);
     $mailer = \Civi::service('pear_mail');
 
-    $targetParams = $deliveredParams = array();
+    $targetParams = $deliveredParams = [];
     $count = 0;
     $retryBatch = FALSE;
 
@@ -69,11 +69,6 @@ class DefaultSender extends BaseListener {
           // lets log this message and code
           $code = $result->getCode();
           \CRM_Core_Error::debug_log_message("SMTP Socket Error or failed to set sender error. Message: $message, Code: $code");
-
-          //NYSS
-          \CRM_Mailing_BAO_MailingJob::pause($mailing->id);
-          $msg = "A bulk mailing was paused (ID: {$mailing->id}) due to SMTP socket errors, suggesting a problem connecting with the SMTP provider.";
-          \CRM_NYSS_Errorhandler_BAO::notifySlack($msg, "Mailing {$mailing->id} Paused");
 
           // these are socket write errors which most likely means smtp connection errors
           // lets skip them and reconnect.
@@ -172,15 +167,15 @@ class DefaultSender extends BaseListener {
       return FALSE;
     }
 
-    if (strpos($message, 'Failed to set sender') !== FALSE) {
+    if (str_contains($message, 'Failed to set sender')) {
       return TRUE;
     }
 
-    if (strpos($message, 'Failed to add recipient') !== FALSE) {
+    if (str_contains($message, 'Failed to add recipient')) {
       return TRUE;
     }
 
-    if (strpos($message, 'Failed to send data') !== FALSE) {
+    if (str_contains($message, 'Failed to send data')) {
       return TRUE;
     }
 
@@ -193,11 +188,11 @@ class DefaultSender extends BaseListener {
    * @param string $errorMessage
    */
   protected function recordBounce($job, $task, $errorMessage) {
-    $params = array(
+    $params = [
       'event_queue_id' => $task->getEventQueueId(),
       'job_id' => $job->id,
       'hash' => $task->getHash(),
-    );
+    ];
     $params = array_merge($params,
       \CRM_Mailing_BAO_BouncePattern::match($errorMessage)
     );

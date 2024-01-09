@@ -17,6 +17,26 @@ define('TBSZIP_STRING',32);    // output to string, or add from string
 
 class clsTbsZip {
 
+  private $Meth8Ok;
+  private $DisplayError;
+  private $Error;
+  private $ArchFile;
+  private $ArchIsNew;
+  private $CdEndPos;
+  private $CdPos;
+  private $CdInfo;
+  private $ArchHnd;
+  private $ArchIsStream;
+  private $AddInfo;
+  private $ReplInfo;
+  private $ReplByPos;
+  private $VisFileLst;
+  private $CdFileNbr;
+  private $CdFileByName;
+  private $CdFileLst;
+  private $LastReadIdx;
+  private $LastReadComp;
+
 	function __construct() {
 		$this->Meth8Ok = extension_loaded('zlib'); // check if Zlib extension is available. This is need for compress and uncompress with method 8.
 		$this->DisplayError = true;

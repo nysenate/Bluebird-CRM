@@ -69,7 +69,7 @@ function _civicrm_api3_job_iatsverify_spec(&$spec) {
 function civicrm_api3_job_iatsverify($params) {
 
   $settings = Civi::settings()->get('iats_settings');
-  $receipt_recurring = $settings['receipt_recurring'];
+  $receipt_recurring = $settings['receipt_recurring'] ?? null;
   define('IATS_VERIFY_DAYS', 30);
   // I've added an extra 2 days when getting candidates from CiviCRM to be sure i've got them all.
   $verify_days = IATS_VERIFY_DAYS + 2;
@@ -183,7 +183,7 @@ function civicrm_api3_job_iatsverify($params) {
             // Restore source field and trxn_id that completetransaction overwrites
             civicrm_api3('contribution', 'create', array(
               'id' => $contribution['id'],
-              'source' => $contribution['source'],
+              'source' => ($contribution['contribution_source'] ?? $contribution['source']),
               'trxn_id' => $trxn_id,
             ));
             break;

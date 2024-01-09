@@ -125,14 +125,16 @@ class CRM_Core_Payment_FapsACH extends CRM_Core_Payment_Faps {
    */
   public function doPayment(&$params, $component = 'contribute') {
     // CRM_Core_Error::debug_var('doPayment params', $params);
-
-    // Check for valid currency
-    $currency = $params['currencyID'];
-    if (('USD' != $currency) && ('CAD' != $currency)) {
-      return self::error('Invalid currency selection: ' . $currency);
+    if (empty($params['amount'])) {
+      return _iats_payment_status_complete();
     }
-    $isRecur = CRM_Utils_Array::value('is_recur', $params) && $params['contributionRecurID'];
-    $ipAddress = (function_exists('ip_address') ? ip_address() : $_SERVER['REMOTE_ADDR']);
+
+    $isRecur = CRM_Utils_Array::value('is_recur', $params);
+    if ($isRecur && empty($params['contributionRecurID'])) {
+      return self::error('Invalid call to doPayment with is_recur and no contributionRecurID');
+    }
+    // FAPS only allows ipv4 addresses
+    $ipAddress = CRM_Iats_Transaction::remote_ip_address($FILTER_FLAG_IPV4);
     $credentials = array(
       'merchantKey' => $this->_paymentProcessor['signature'],
       'processorId' => $this->_paymentProcessor['user_name']

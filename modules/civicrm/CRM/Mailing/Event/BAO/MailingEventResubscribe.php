@@ -20,9 +20,9 @@ use Civi\Token\TokenProcessor;
 require_once 'Mail/mime.php';
 
 /**
- * Class CRM_Mailing_Event_BAO_Resubscribe
+ * Class CRM_Mailing_Event_BAO_MailingEventResubscribe
  */
-class CRM_Mailing_Event_BAO_Resubscribe {
+class CRM_Mailing_Event_BAO_MailingEventResubscribe {
 
   /**
    * Resubscribe a contact to the groups, he/she was unsubscribed from.
@@ -40,7 +40,7 @@ class CRM_Mailing_Event_BAO_Resubscribe {
   public static function &resub_to_mailing($job_id, $queue_id, $hash) {
     // First make sure there's a matching queue event.
 
-    $q = CRM_Mailing_Event_BAO_MailingEventQueue::verify($job_id, $queue_id, $hash);
+    $q = CRM_Mailing_Event_BAO_MailingEventQueue::verify(NULL, $queue_id, $hash);
     $success = NULL;
     if (!$q) {
       return $success;

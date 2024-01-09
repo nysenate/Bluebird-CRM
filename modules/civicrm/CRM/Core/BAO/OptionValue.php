@@ -90,32 +90,20 @@ class CRM_Core_BAO_OptionValue extends CRM_Core_DAO_OptionValue implements \Civi
   }
 
   /**
-   * Retrieve DB object and copy to defaults array.
-   *
-   * @param array $params
-   *   Array of criteria values.
-   * @param array $defaults
-   *   Array to be populated with found values.
-   *
-   * @return self|null
-   *   The DAO object, if found.
-   *
    * @deprecated
+   * @param array $params
+   * @param array $defaults
+   * @return self|null
    */
   public static function retrieve($params, &$defaults) {
     return self::commonRetrieve(self::class, $params, $defaults);
   }
 
   /**
-   * Update the is_active flag in the db.
-   *
+   * @deprecated - this bypasses hooks.
    * @param int $id
-   *   Id of the database record.
    * @param bool $is_active
-   *   Value we want to set the is_active field.
-   *
    * @return bool
-   *   true if we found and updated the object, else false
    */
   public static function setIsActive($id, $is_active) {
     return CRM_Core_DAO::setFieldValue('CRM_Core_DAO_OptionValue', $id, 'is_active', $is_active);
@@ -126,18 +114,13 @@ class CRM_Core_BAO_OptionValue extends CRM_Core_DAO_OptionValue implements \Civi
    *
    * @param array $params
    *   Reference array contains the values submitted by the form.
-   * @param array $ids
-   *   deprecated Reference array contains the id.
    *
    * @return \CRM_Core_DAO_OptionValue
    *
    * @throws \CRM_Core_Exception
    */
-  public static function add(&$params, $ids = []) {
-    if (!empty($ids['optionValue']) && empty($params['id'])) {
-      CRM_Core_Error::deprecatedFunctionWarning('$params[\'id\'] should be set, $ids is deprecated');
-    }
-    $id = $params['id'] ?? $ids['optionValue'] ?? NULL;
+  public static function add(&$params) {
+    $id = $params['id'] ?? NULL;
 
     // Update custom field data to reflect the new value
     if ($id && isset($params['value'])) {
@@ -235,6 +218,7 @@ class CRM_Core_BAO_OptionValue extends CRM_Core_DAO_OptionValue implements \Civi
    * @deprecated
    */
   public static function del($optionValueId) {
+    CRM_Core_Error::deprecatedFunctionWarning('deleteRecord');
     return (bool) static::deleteRecord(['id' => $optionValueId]);
   }
 

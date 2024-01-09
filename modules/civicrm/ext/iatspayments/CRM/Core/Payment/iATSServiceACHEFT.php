@@ -73,6 +73,10 @@ class CRM_Core_Payment_iATSServiceACHEFT extends CRM_Core_Payment_iATSService {
 
   protected function getDirectDebitFormFields() {
     $fields = parent::getDirectDebitFormFields();
+    if ($fields[0] == 'account_holder') {
+      array_shift($fields);
+      $fields[] = 'account_holder';
+    }
     $fields[] = 'bank_account_type';
     // print_r($fields); die();
     return $fields;
@@ -95,6 +99,8 @@ class CRM_Core_Payment_iATSServiceACHEFT extends CRM_Core_Payment_iATSService {
       'is_required' => TRUE,
       'attributes' => ['CHECKING' => 'Chequing', 'SAVING' => 'Savings'],
     ];
+    // Modify the label of Account Number to match our CAD Cheque
+    $metadata['bank_account_number']['title'] = ts('Account No.');
     return $metadata;
   }
 
@@ -173,14 +179,14 @@ class CRM_Core_Payment_iATSServiceACHEFT extends CRM_Core_Payment_iATSService {
    * North American interbank system is consistent across US and Canada.
    */
   protected function buildForm_CAD(&$form) {
-    $form->addElement('text', 'cad_bank_number', ts('Bank Number (3 digits)'));
-    $form->addRule('cad_bank_number', ts('%1 is a required field.', array(1 => ts('Bank Number'))), 'required');
-    $form->addRule('cad_bank_number', ts('%1 must contain only digits.', array(1 => ts('Bank Number'))), 'numeric');
-    $form->addRule('cad_bank_number', ts('%1 must be of length 3.', array(1 => ts('Bank Number'))), 'rangelength', array(3, 3));
+    $form->addElement('text', 'cad_bank_number', ts('Bank No. (3 digits)'));
+    $form->addRule('cad_bank_number', ts('%1 is a required field.', array(1 => ts('Bank No.'))), 'required');
+    $form->addRule('cad_bank_number', ts('%1 must contain only digits.', array(1 => ts('Bank No.'))), 'numeric');
+    $form->addRule('cad_bank_number', ts('%1 must be of length 3.', array(1 => ts('Bank No.'))), 'rangelength', array(3, 3));
     $form->addElement('text', 'cad_transit_number', ts('Transit Number (5 digits)'));
-    $form->addRule('cad_transit_number', ts('%1 is a required field.', array(1 => ts('Transit Number'))), 'required');
-    $form->addRule('cad_transit_number', ts('%1 must contain only digits.', array(1 => ts('Transit Number'))), 'numeric');
-    $form->addRule('cad_transit_number', ts('%1 must be of length 5.', array(1 => ts('Transit Number'))), 'rangelength', array(5, 5));
+    $form->addRule('cad_transit_number', ts('%1 is a required field.', array(1 => ts('Transit No.'))), 'required');
+    $form->addRule('cad_transit_number', ts('%1 must contain only digits.', array(1 => ts('Transit No.'))), 'numeric');
+    $form->addRule('cad_transit_number', ts('%1 must be of length 5.', array(1 => ts('Transit No.'))), 'rangelength', array(5, 5));
     /* minor customization of labels + make them required  */
     /* $element = $form->getElement('account_holder');
     $element->setLabel(ts('Name of Account Holder'));
@@ -203,17 +209,23 @@ class CRM_Core_Payment_iATSServiceACHEFT extends CRM_Core_Payment_iATSService {
    */
   public function doPayment(&$params, $component = 'contribute') {
 
+    if (empty($params['amount'])) {
+      return _iats_payment_status_complete();
+    }
     if (!$this->_profile) {
       return self::error('Unexpected error, missing profile');
     }
     // Use the iATSService object for interacting with iATS, mostly the same for recurring contributions.
     // We handle both one-time and recurring ACH/EFT
-    $isRecur = CRM_Utils_Array::value('is_recur', $params) && $params['contributionRecurID'];
+    $isRecur = CRM_Utils_Array::value('is_recur', $params);
+    if ($isRecur && empty($params['contributionRecurID'])) {
+      return self::error('Invalid call to doPayment with is_recur and no contributionRecurID');
+    }
     $methodType = $isRecur ? 'customer' : 'process';
     $method = $isRecur ? 'create_acheft_customer_code' : 'acheft';
-    $iats = new CRM_Iats_iATSServiceRequest(array('type' => $methodType, 'method' => $method, 'iats_domain' => $this->_profile['iats_domain'], 'currencyID' => $params['currencyID']));
+    $iats = new CRM_Iats_iATSServiceRequest(array('type' => $methodType, 'method' => $method, 'iats_domain' => $this->_profile['iats_domain'], 'currency' => $params['currency']));
     $request = $this->convertParams($params, $method);
-    $request['customerIPAddress'] = (function_exists('ip_address') ? ip_address() : $_SERVER['REMOTE_ADDR']);
+    $request['customerIPAddress'] = CRM_Iats_Transaction::remote_ip_address();
     $credentials = array(
       'agentCode' => $this->_paymentProcessor['user_name'],
       'password'  => $this->_paymentProcessor['password'],
@@ -313,7 +325,7 @@ class CRM_Core_Payment_iATSServiceACHEFT extends CRM_Core_Payment_iATSService {
           return $params;
         }
         else {
-          $iats = new CRM_Iats_iATSServiceRequest(array('type' => 'process', 'method' => 'acheft_with_customer_code', 'iats_domain' => $this->_profile['iats_domain'], 'currencyID' => $params['currencyID']));
+          $iats = new CRM_Iats_iATSServiceRequest(array('type' => 'process', 'method' => 'acheft_with_customer_code', 'iats_domain' => $this->_profile['iats_domain'], 'currency' => $params['currency']));
           $request = array('invoiceNum' => $params['invoiceID']);
           $request['total'] = sprintf('%01.2f', CRM_Utils_Rule::cleanMoney($params['amount']));
           $request['customerCode'] = $customer_code;

@@ -1,7 +1,6 @@
 <?php
 
 ini_set('memory_limit', '2G');
-ini_set('safe_mode', 0);
 eval(cv('php:boot --level=classloader', 'phpcode'));
 
 require_once __DIR__ . '/CRM/Iats/BaseTestClass.php';
