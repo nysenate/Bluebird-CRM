@@ -16,7 +16,7 @@ html body.admin-menu-with-shortcuts {
   margin-top: 65px !important;
 }
 /* Displace the core Toolbar, if concurrently output. */
-body div#toolbar.toolbar {
+.shortcut-toolbar.active #toolbar {
   top: 30px;
 }
 
@@ -33,6 +33,7 @@ body div#toolbar.toolbar {
   box-shadow: 0 -10px 20px 13px #000;
   right: 0;
   width: auto;
+  height: 30px;
 }
 #admin-menu-wrapper {
   font-size: .846em;

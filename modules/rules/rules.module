@@ -607,12 +607,17 @@ function rules_unwrap_data(array $data, $info = array()) {
             $data[$key] = $value;
           }
           if (!$info[$key]['allow null'] && !isset($value)) {
-            throw new RulesEvaluationException('The variable or parameter %name is empty.', array('%name' => $key));
+            throw new RulesEvaluationException('The variable or parameter %name is empty.', array(
+              '%name' => $key,
+            ));
           }
         }
       }
       catch (EntityMetadataWrapperException $e) {
-        throw new RulesEvaluationException('Unable to get the data value for the variable or parameter %name. Error: !error', array('%name' => $key, '!error' => $e->getMessage()));
+        throw new RulesEvaluationException('Unable to get the data value for the variable or parameter %name. Error: !error', array(
+          '%name' => $key,
+          '!error' => $e->getMessage(),
+        ));
       }
     }
   }

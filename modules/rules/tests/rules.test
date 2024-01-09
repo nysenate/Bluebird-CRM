@@ -9,6 +9,7 @@
  * Rules test cases.
  */
 class RulesTestCase extends DrupalWebTestCase {
+  protected $normal_role;
 
   /**
    * Declares test metadata.

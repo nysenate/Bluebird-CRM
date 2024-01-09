@@ -12,6 +12,7 @@ function rules_test_rules_event_info() {
   return array(
     'rules_test_event' => array(
       'label' => t('Test event'),
+      'group' => t('Rules test'),
       'class' => 'RulesTestEventHandler',
     ),
   );
@@ -130,6 +131,7 @@ function rules_test_rules_action_info() {
       'callbacks' => array(
         'help' => 'rules_test_custom_help',
       ),
+      'group' => t('Rules test'),
       'base' => 'node_publish_action',
     ),
     'rules_node_publish_action_save' => array(
@@ -141,6 +143,7 @@ function rules_test_rules_action_info() {
           'save' => TRUE,
         ),
       ),
+      'group' => t('Rules test'),
       'base' => 'node_publish_action',
     ),
     'rules_node_make_sticky_action' => array(
@@ -152,6 +155,7 @@ function rules_test_rules_action_info() {
           'save' => TRUE,
         ),
       ),
+      'group' => t('Rules test'),
       'base' => 'node_make_sticky_action',
     ),
     // The same action again requiring a 'page' node.
@@ -165,6 +169,7 @@ function rules_test_rules_action_info() {
           'bundles' => array('page'),
         ),
       ),
+      'group' => t('Rules test'),
       'base' => 'node_make_sticky_action',
     ),
     'rules_action_test_reference' => array(
@@ -173,6 +178,7 @@ function rules_test_rules_action_info() {
          // For references working right, we need a data type with a wrapper.
         'arg' => array('type' => 'test'),
       ),
+      'group' => t('Rules test'),
     ),
     'rules_action_load_node' => array(
       'label' => t('Fetch content by id'),
