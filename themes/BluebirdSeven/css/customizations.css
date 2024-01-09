@@ -103,6 +103,11 @@ input[type=color] {
   max-width: calc(100% - 200px) !important;
 }
 
+/*16009 date picker*/
+.ui-datepicker {
+  z-index: 100000 !important;
+}
+
 /*********** BELOW SHOULD BE TEMPORARY! *************/
 
 /*remove old icons (should be unnecessary in future release of shoreditch...)*/
