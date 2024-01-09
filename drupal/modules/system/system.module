@@ -335,7 +335,7 @@ function system_element_info() {
     '#button_type' => 'submit',
     '#executes_submit_callback' => TRUE,
     '#limit_validation_errors' => FALSE,
-    '#process' => array('ajax_process_form'),
+    '#process' => array('ajax_process_form', 'form_process_button'),
     '#theme_wrappers' => array('button'),
   );
   $types['button'] = array(
@@ -344,7 +344,7 @@ function system_element_info() {
     '#button_type' => 'submit',
     '#executes_submit_callback' => FALSE,
     '#limit_validation_errors' => FALSE,
-    '#process' => array('ajax_process_form'),
+    '#process' => array('ajax_process_form', 'form_process_button'),
     '#theme_wrappers' => array('button'),
   );
   $types['image_button'] = array(
@@ -352,7 +352,7 @@ function system_element_info() {
     '#button_type' => 'submit',
     '#executes_submit_callback' => TRUE,
     '#limit_validation_errors' => FALSE,
-    '#process' => array('ajax_process_form'),
+    '#process' => array('ajax_process_form', 'form_process_button'),
     '#return_value' => TRUE,
     '#has_garbage_value' => TRUE,
     '#src' => NULL,
@@ -1136,6 +1136,15 @@ function system_library() {
     'version' => VERSION,
     'js' => array(
       'misc/form.js' => array('group' => JS_LIBRARY, 'weight' => 1),
+    ),
+  );
+
+  // Drupal's form single submit library.
+  $libraries['drupal.form-single-submit'] = array(
+    'title' => 'Drupal form single submit library',
+    'version' => VERSION,
+    'js' => array(
+      'misc/form-single-submit.js' => array('group' => JS_LIBRARY, 'weight' => 1),
     ),
   );
 
@@ -4093,6 +4102,25 @@ function system_admin_paths() {
  * Implements hook_file_download().
  */
 function system_file_download($uri) {
+  $scheme = file_uri_scheme($uri);
+  if (file_stream_wrapper_valid_scheme($scheme)) {
+    $target = file_uri_target($uri);
+    if ($target !== FALSE) {
+      if (!in_array($scheme, variable_get('file_sa_core_2023_005_schemes', array()))) {
+        if (DIRECTORY_SEPARATOR !== '/') {
+          $class = file_stream_wrapper_get_class($scheme);
+          if (is_subclass_of($class, 'DrupalLocalStreamWrapper')) {
+            $target = str_replace(DIRECTORY_SEPARATOR, '/', $target);
+          }
+        }
+        $parts = explode('/', $target);
+        if (array_intersect($parts, array('.', '..'))) {
+          return -1;
+        }
+      }
+    }
+  }
+
   $core_schemes = array('public', 'private', 'temporary');
   $additional_public_schemes = array_diff(variable_get('file_additional_public_schemes', array()), $core_schemes);
   if ($additional_public_schemes) {
