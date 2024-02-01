@@ -67,12 +67,15 @@ class CRM_NYSS_Inbox_Upgrader extends CRM_Extension_Upgrader_Base {
    * @return TRUE on success
    * @throws CRM_Core_Exception
    */
-  /*public function upgrade_2000(): bool {
-    $this->ctx->log->info('Applying update 2000 (v2.0)');
+  public function upgrade_2100(): bool {
+    $this->ctx->log->info('Applying update 2100 (v2.1)');
 
+    CRM_Core_DAO::executeQuery("
+      ALTER TABLE `nyss_inbox_messages` CHANGE `imap_id` `imap_id` INT(10) NULL DEFAULT NULL;
+    ");
 
     return TRUE;
-  }*/
+  }
 
   /**
    * Example: Run an external SQL script.
