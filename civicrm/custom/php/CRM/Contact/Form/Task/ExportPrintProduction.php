@@ -1258,7 +1258,7 @@ function addExternalSeeds($tbl, $db) {
   $sql .= " AND ( ( a.street_address IS NOT NULL AND a.street_address != '' ) OR ( a.supplemental_address_1 IS NOT NULL AND a.supplemental_address_1 != '' ) ) ";
 
   //exclude impossibly old contacts
-  $sql .= " AND ( c.birth_date IS NULL OR c.birth_date = '' OR c.birth_date > '1901-01-01' ) ";
+  $sql .= " AND ( c.birth_date IS NULL OR c.birth_date > '1901-01-01' ) ";
 
   //group by contact ID in case any joins with multiple records cause dupe primary in our temp table
   $sql .= " GROUP BY c.id ";
