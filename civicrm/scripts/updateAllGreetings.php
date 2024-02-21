@@ -102,6 +102,7 @@ function run()
     ->addSelect('options')
     ->execute()
     ->single();
+  $prefixes = $prefixes['options'];
 
   $suffixes = \Civi\Api4\Contact::getFields()
     ->setLoadOptions(TRUE)
@@ -109,6 +110,9 @@ function run()
     ->addSelect('options')
     ->execute()
     ->single();
+  $suffixes = $suffixes['options'];
+
+  //Civi::log()->debug(__FUNCTION__, ['$prefixes' => $prefixes, '$suffixes' => $suffixes]);
 
   $replacementStrings = [
     //'{contact.prefix_id:label}' => 'prefix_id',
@@ -121,8 +125,6 @@ function run()
     '{' => '',
     '}' => '',
   ];
-
-  //Civi::log()->debug(__FUNCTION__, ['$prefixes' => $prefixes, '$suffixes' => $suffixes]);
 
   if ($contactType) {
     $dao->contact_type = $contactType;
@@ -211,13 +213,11 @@ function run()
 
       foreach ($greetingTemplates as $field => $greetingDisplay) {
         $greetingDisplay = str_replace('{contact.prefix_id:label}', $prefixes[$dao->prefix_id], $greetingDisplay);
-        $greetingDisplay = str_replace('{contact.suffix_id:label}', $prefixes[$dao->suffix_id], $greetingDisplay);
+        $greetingDisplay = str_replace('{contact.suffix_id:label}', $suffixes[$dao->suffix_id], $greetingDisplay);
 
         foreach ($replacementStrings as $string => $replace) {
           $greetingDisplay = str_replace($string, $dao->$replace, $greetingDisplay);
-          /*Civi::log()->debug(__FUNCTION__, [
-            '$greetingDisplay' => $greetingDisplay,
-          ]);*/
+          //Civi::log()->debug(__FUNCTION__, ['$greetingDisplay' => $greetingDisplay]);
         }
 
         $sqlUpdates[] = "{$field} = %{$paramsCounter}";
