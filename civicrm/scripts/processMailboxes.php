@@ -19,7 +19,10 @@
 //                     - end support for multiple IMAP accounts per CRM
 //                     - add --deny-unauthorized to reject any emails from
 //                       a sender that is not in the forwarder whitelist
-// Revised: 2023-08-21 - implemented https://www.php-imap.com/ and OAuth connection support
+// Revised: 2023-08-21 - implement https://www.php-imap.com/ and OAuth
+//                       connection support
+// Revised: 2024-02-14 - add --no-auto-create option; auto-create by default
+//
 
 // Version number, used for debugging
 define('VERSION_NUMBER', 3.0);
@@ -34,6 +37,7 @@ define('DEFAULT_IMAP_VALID_SENDERS', false);
 define('DEFAULT_IMAP_DENY_UNAUTH', false);
 define('DEFAULT_IMAP_ACTIVITY_STATUS', 'Completed');
 define('DEFAULT_IMAP_NO_ARCHIVE', false);
+define('DEFAULT_IMAP_NO_CREATE', false);
 define('DEFAULT_IMAP_NO_EMAIL', false);
 define('DEFAULT_IMAP_RECHECK', false);
 
@@ -76,13 +80,14 @@ $prog = basename(__FILE__);
 
 require_once 'script_utils.php';
 $stdusage = civicrm_script_usage();
-$usage = "[--imap-user|-u username]  [--imap-pass|-s password]  [--cmd|-c <poll|list|delarchive>]  [--log-level|-l LEVEL]  [--host|-h imap_host]  [--port|-p imap_port]  [--imap-flags|-f imap_flags]  [--mailbox|-m name]  [--archivebox|-a name]  [--valid-senders|-v EMAILS]  [--deny-unauthorized|-x]  [--default-activity-status|-d <Completed|Scheduled|Cancelled>]  [--no-archive|-n]  [--no-email|-e]  [--recheck-unmatched|-r]";
-$shortopts = "u:s:c:l:h:p:f:m:a:v:xd:ner";
+$usage = "[--imap-user|-u username]  [--imap-pass|-s password]  [--cmd|-c <poll|list|delarchive>]  [--log-level|-l LEVEL]  [--host|-h imap_host]  [--port|-p imap_port]  [--imap-flags|-f imap_flags]  [--mailbox|-m name]  [--archivebox|-a name]  [--valid-senders|-v EMAILS]  [--deny-unauthorized|-x]  [--default-activity-status|-d <Completed|Scheduled|Cancelled>]  [--no-archive|-A]  [--no-auto-create|-C]  [--no-email|-E]  [--recheck-unmatched|-r]";
+$shortopts = "u:s:c:l:h:p:f:m:a:v:xd:ACEr";
 $longopts = array("imap-user=", "imap-pass=", "cmd=", "log-level=",
                   "host=", "port=", "imap-flags=", "mailbox=", "archivebox=",
                   "valid-senders=", "deny-unauthorized",
                   "default-activity-status=",
-                  "no-archive", "no-email", "recheck-unmatched");
+                  "no-archive", "no-auto-create", "no-email",
+                  "recheck-unmatched");
 
 $optlist = civicrm_script_init($shortopts, $longopts);
 
@@ -121,6 +126,7 @@ $all_params = [
   ['denyunauth', 'deny-unauthorized', 'imap.deny.unauth', DEFAULT_IMAP_DENY_UNAUTH],
   ['actstatus', 'default-activity-status', 'imap.activity.status.default', DEFAULT_IMAP_ACTIVITY_STATUS],
   ['noarchive', 'no-archive', null, DEFAULT_IMAP_NO_ARCHIVE],
+  ['nocreate', 'no-auto-create', null, DEFAULT_IMAP_NO_CREATE],
   ['noemail', 'no-email', null, DEFAULT_IMAP_NO_EMAIL],
   ['recheck', 'recheck-unmatched', null, DEFAULT_IMAP_RECHECK]
 ];
@@ -353,20 +359,38 @@ function checkImapAccount($imap, $params) {
   }
   bbscript_log(LL::TRACE, '$folderList: ', $folderList);
 
-  //check to make sure the main mailbox exists
+  // Check to make sure the main mailbox exists.  If it does not exist,
+  // then create it, unless --no-auto-create was specified.
   if (!in_array($params['mailbox'], $folderList)) {
-    bbscript_log(LL::WARN, "Inbound mailbox [{$params['mailbox']}] does not currently exist; it must be created first");
-    return FALSE;
+    if ($params['nocreate']) {
+      bbscript_log(LL::ERROR, "Inbound mailbox [{$params['mailbox']}] does not currently exist; it must be created first");
+      return FALSE;
+    }
+    else {
+      bbscript_log(LL::WARN, "Inbound mailbox [{$params['mailbox']}] does not currently exist; creating it automatically");
+      $imap_conn->createFolder($params['mailbox']);
+      bbscript_log(LL::DEBUG, "Created new inbound mailbox: {$params['mailbox']}");
+    }
+  }
+  else {
+    bbscript_log(LL::DEBUG, "Inbound mailbox [{$params['mailbox']}] already exists");
   }
 
   //create archive folder if missing
   if (!$params['noarchive']) {
     if (!in_array($params['archivebox'], $folderList)) {
-      $imap_conn->createFolder(imap_utf7_encode($params['archivebox']));
-      bbscript_log(LL::DEBUG, "Created new archive mailbox: {$params['archivebox']}");
+      if ($params['nocreate']) {
+        bbscript_log(LL::ERROR, "Archive mailbox [{$params['archivebox']}] does not currently exist; it must be created first");
+        return FALSE;
+      }
+      else {
+        bbscript_log(LL::WARN, "Archive mailbox [{$params['archivebox']}] does not currently exist; creating it automatically");
+        $imap_conn->createFolder($params['archivebox']);
+        bbscript_log(LL::DEBUG, "Created new archive mailbox: {$params['archivebox']}");
+      }
     }
     else {
-      bbscript_log(LL::DEBUG, "Archive mailbox {$params['archivebox']} already exists");
+      bbscript_log(LL::DEBUG, "Archive mailbox [{$params['archivebox']}] already exists");
     }
   }
   else {
