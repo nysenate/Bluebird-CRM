@@ -2,7 +2,7 @@
     "name": "sebastian/exporter",
     "description": "Provides the functionality to export PHP variables for visualization",
     "keywords": ["exporter","export"],
-    "homepage": "http://www.github.com/sebastianbergmann/exporter",
+    "homepage": "https://www.github.com/sebastianbergmann/exporter",
     "license": "BSD-3-Clause",
     "authors": [
         {
@@ -23,15 +23,23 @@
         },
         {
             "name": "Bernhard Schussek",
-            "email": "bschussek@2bepublished.at"
+            "email": "bschussek@gmail.com"
         }
     ],
+    "config": {
+        "platform": {
+            "php": "7.3.0"
+        },
+        "optimize-autoloader": true,
+        "sort-packages": true
+    },
+    "prefer-stable": true,
     "require": {
-        "php": ">=5.3.3",
-        "sebastian/recursion-context": "~1.0"
+        "php": ">=7.3",
+        "sebastian/recursion-context": "^4.0"
     },
     "require-dev": {
-        "phpunit/phpunit": "~4.4",
+        "phpunit/phpunit": "^9.3",
         "ext-mbstring": "*"
     },
     "autoload": {
@@ -41,7 +49,7 @@
     },
     "extra": {
         "branch-alias": {
-            "dev-master": "1.3.x-dev"
+            "dev-master": "4.0-dev"
         }
     }
 }
