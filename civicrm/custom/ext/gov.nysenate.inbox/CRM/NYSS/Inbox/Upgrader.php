@@ -138,6 +138,12 @@ class CRM_NYSS_Inbox_Upgrader extends CRM_Extension_Upgrader_Base {
     $this->ctx->log->info('Applying update 2300 (v2.3)');
 
     CRM_Core_DAO::executeQuery("
+      UPDATE `nyss_inbox_messages`
+      SET email_date = NULL
+      WHERE email_date LIKE '0000-00-00 00:00:00';
+    ");
+
+    CRM_Core_DAO::executeQuery("
       ALTER TABLE `nyss_inbox_attachments`
           CHANGE `mime_type` `mime_type` VARCHAR(128) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL;
     ");
