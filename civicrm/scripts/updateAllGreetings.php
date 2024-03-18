@@ -102,6 +102,7 @@ function run()
     ->addSelect('options')
     ->execute()
     ->single();
+  $prefixes = $prefixes['options'];
 
   $suffixes = \Civi\Api4\Contact::getFields()
     ->setLoadOptions(TRUE)
@@ -109,6 +110,9 @@ function run()
     ->addSelect('options')
     ->execute()
     ->single();
+  $suffixes = $suffixes['options'];
+
+  //Civi::log()->debug(__FUNCTION__, ['$prefixes' => $prefixes, '$suffixes' => $suffixes]);
 
   $replacementStrings = [
     //'{contact.prefix_id:label}' => 'prefix_id',
@@ -118,11 +122,7 @@ function run()
     //'{contact.suffix_id:label}' => 'suffix_id',
     '{contact.organization_name}' => 'organization_name',
     '{contact.household_name}' => 'household_name',
-    '{' => '',
-    '}' => '',
   ];
-
-  //Civi::log()->debug(__FUNCTION__, ['$prefixes' => $prefixes, '$suffixes' => $suffixes]);
 
   if ($contactType) {
     $dao->contact_type = $contactType;
@@ -210,15 +210,23 @@ function run()
       $paramsCounter = 2;
 
       foreach ($greetingTemplates as $field => $greetingDisplay) {
-        $greetingDisplay = str_replace('{contact.prefix_id:label}', $prefixes[$dao->prefix_id], $greetingDisplay);
-        $greetingDisplay = str_replace('{contact.suffix_id:label}', $prefixes[$dao->suffix_id], $greetingDisplay);
+        //replace prefix value
+        if (!empty($dao->prefix_id) && !empty($prefixes[$dao->prefix_id])) {
+          $greetingDisplay = str_replace('{contact.prefix_id:label}', $prefixes[$dao->prefix_id], $greetingDisplay);
+        }
+
+        //replace suffix value
+        if (!empty($dao->suffix_id) && !empty($prefixes[$dao->suffix_id])) {
+          $greetingDisplay = str_replace('{contact.suffix_id:label}', $suffixes[$dao->suffix_id], $greetingDisplay);
+        }
 
         foreach ($replacementStrings as $string => $replace) {
           $greetingDisplay = str_replace($string, $dao->$replace, $greetingDisplay);
-          /*Civi::log()->debug(__FUNCTION__, [
-            '$greetingDisplay' => $greetingDisplay,
-          ]);*/
         }
+
+        //strip out spacer tokens and any remaining tokens we did not have replacements for
+        $greetingDisplay = preg_replace('/\{ \}/', ' ', $greetingDisplay);
+        $greetingDisplay = preg_replace('/\{([^}]*)\}/', '', $greetingDisplay);
 
         $sqlUpdates[] = "{$field} = %{$paramsCounter}";
         $sqlParams[$paramsCounter] = [trim(str_replace('  ', ' ', $greetingDisplay)), 'String'];

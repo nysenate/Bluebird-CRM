@@ -67,12 +67,94 @@ class CRM_NYSS_Inbox_Upgrader extends CRM_Extension_Upgrader_Base {
    * @return TRUE on success
    * @throws CRM_Core_Exception
    */
-  /*public function upgrade_2000(): bool {
-    $this->ctx->log->info('Applying update 2000 (v2.0)');
+  public function upgrade_2100(): bool {
+    $this->ctx->log->info('Applying update 2100 (v2.1)');
 
+    CRM_Core_DAO::executeQuery("
+      ALTER TABLE `nyss_inbox_messages` CHANGE `email_date` `email_date` TIMESTAMP NULL DEFAULT NULL;
+    ");
+
+    CRM_Core_DAO::executeQuery("
+      ALTER TABLE `nyss_inbox_messages` CHANGE `imap_id` `imap_id` INT(10) NULL DEFAULT NULL;
+    ");
 
     return TRUE;
-  }*/
+  }
+
+  public function upgrade_2200(): bool {
+    $this->ctx->log->info('Applying update 2200 (v2.2)');
+
+    CRM_Core_DAO::executeQuery("
+      ALTER TABLE `nyss_inbox_messages` CHANGE `message_id` `message_id` INT(10) NULL DEFAULT NULL;
+    ");
+
+    CRM_Core_DAO::executeQuery("
+      ALTER TABLE `nyss_inbox_messages` CHANGE `matcher` `matcher` INT(10) NULL DEFAULT NULL;
+    ");
+
+    CRM_Core_DAO::executeQuery("
+      ALTER TABLE `nyss_inbox_messages` CHANGE `sender_name` `sender_name` VARCHAR(255)
+          CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NULL;
+    ");
+
+    CRM_Core_DAO::executeQuery("
+      ALTER TABLE `nyss_inbox_messages` CHANGE `sender_email` `sender_email` VARCHAR(255)
+          CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NULL;
+    ");
+
+    CRM_Core_DAO::executeQuery("
+      ALTER TABLE `nyss_inbox_messages` CHANGE `subject` `subject` VARCHAR(255)
+          CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NULL;
+    ");
+
+    CRM_Core_DAO::executeQuery("
+      ALTER TABLE `nyss_inbox_messages` CHANGE `forwarder` `forwarder` VARCHAR(255)
+          CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NULL;
+    ");
+
+    CRM_Core_DAO::executeQuery("
+      ALTER TABLE `nyss_inbox_messages` CHANGE `debug` `debug` VARCHAR(255)
+          CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NULL;
+    ");
+
+    CRM_Core_DAO::executeQuery("
+      ALTER TABLE `nyss_inbox_messages` CHANGE `format` `format` VARCHAR(10)
+          CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NULL;
+    ");
+
+    CRM_Core_DAO::executeQuery("
+      ALTER TABLE `nyss_inbox_messages` CHANGE `body` `body` TEXT
+          CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NULL;
+    ");
+
+    CRM_Core_DAO::executeQuery("
+      ALTER TABLE `nyss_inbox_messages` CHANGE `status` `status` INT(2) NULL;
+    ");
+
+    return TRUE;
+  }
+
+  public function upgrade_2300(): bool {
+    $this->ctx->log->info('Applying update 2300 (v2.3)');
+
+    CRM_Core_DAO::executeQuery("
+      UPDATE `nyss_inbox_messages`
+      SET email_date = NULL
+      WHERE email_date LIKE '0000-00-00 00:00:00';
+    ");
+
+    CRM_Core_DAO::executeQuery("
+      ALTER TABLE `nyss_inbox_attachments`
+          CHANGE `mime_type` `mime_type` VARCHAR(128) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL;
+    ");
+
+    CRM_Core_DAO::executeQuery("
+      ALTER TABLE `nyss_inbox_messages`
+          CHANGE `body` `body` LONGTEXT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NULL DEFAULT NULL;
+    ");
+
+    return TRUE;
+  }
 
   /**
    * Example: Run an external SQL script.

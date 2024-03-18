@@ -340,7 +340,6 @@ class CRM_Contact_Form_Task_ExportPrintProduction extends CRM_Contact_Form_Task
     //exclude impossibly old contacts
     $sql .= " AND (
       c.birth_date IS NULL OR
-      c.birth_date = '' OR
       c.birth_date > '1901-01-01'
     ) ";
 
@@ -443,7 +442,7 @@ class CRM_Contact_Form_Task_ExportPrintProduction extends CRM_Contact_Form_Task
     //order export by individuals, gender parameter, empty gender values and empty birth dates last
     $sql .= " ORDER BY CASE WHEN c.contact_type='Individual' THEN 1 WHEN c.contact_type='Household' THEN 2 ELSE 3 END, ";
     $sql .= $orderByGender;
-    $sql .= " IFNULL(c.birth_date, '9999-01-01');";
+    $sql .= " IFNULL(c.birth_date, (CURDATE() + INTERVAL 5 YEAR));";
 
     idebug($sql, 'sql');
 
@@ -1259,7 +1258,7 @@ function addExternalSeeds($tbl, $db) {
   $sql .= " AND ( ( a.street_address IS NOT NULL AND a.street_address != '' ) OR ( a.supplemental_address_1 IS NOT NULL AND a.supplemental_address_1 != '' ) ) ";
 
   //exclude impossibly old contacts
-  $sql .= " AND ( c.birth_date IS NULL OR c.birth_date = '' OR c.birth_date > '1901-01-01' ) ";
+  $sql .= " AND ( c.birth_date IS NULL OR c.birth_date > '1901-01-01' ) ";
 
   //group by contact ID in case any joins with multiple records cause dupe primary in our temp table
   $sql .= " GROUP BY c.id ";

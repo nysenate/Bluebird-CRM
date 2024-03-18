@@ -102,6 +102,10 @@ class CRM_migrateContactsImport {
 
     //call main import function
     self::importData($dest, $importFile, $optDry);
+
+    //process greetings
+    $greetingScript = 'php '.$bbcfg_dest['app.rootdir'].'/civicrm/scripts/updateAllGreetings.php -S '.$bbcfg_dest['shortname'].' --quiet';
+    shell_exec($greetingScript);
   }//run
 
   function importData($dest, $importFile, $optDryParam) {
