@@ -651,7 +651,7 @@ abstract class CRM_Utils_Hook {
   public static function selectWhereClause($entity, array &$clauses, int $userId = NULL, array $conditions = []): void {
     $entityName = is_object($entity) ? CRM_Core_DAO_AllCoreTables::getBriefName(get_class($entity)) : $entity;
     $null = NULL;
-    $userId = $userId ?? (int) CRM_Core_Session::getLoggedInContactID();
+    $userId ??= (int) CRM_Core_Session::getLoggedInContactID();
     self::singleton()->invoke(['entity', 'clauses', 'userId', 'conditions'],
       $entityName, $clauses, $userId, $conditions,
       $null, $null,
@@ -974,6 +974,8 @@ abstract class CRM_Utils_Hook {
    *   The list of tokens associated with the content.
    * @param string $className
    *   The top level className from where the hook is invoked.
+   *
+   * @deprecated since 5.71 will be removed sometime after all core uses are fully removed.
    *
    * @return null
    */
@@ -2310,6 +2312,7 @@ abstract class CRM_Utils_Hook {
    *
    * @return null
    *   The return value is ignored
+   * @throws RuntimeException
    */
   public static function permission(&$newPermissions) {
     $null = NULL;

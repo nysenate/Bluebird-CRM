@@ -188,6 +188,7 @@ class Container {
     foreach ($basicCaches as $cacheSvc => $cacheGrp) {
       $definitionParams = [
         'name' => $cacheGrp . (in_array($cacheGrp, $verSuffixCaches) ? $verSuffix : ''),
+        'service' => $cacheSvc,
         'type' => ['*memory*', 'SqlGroup', 'ArrayCache'],
       ];
       // For Caches that we don't really care about the ttl for and/or maybe accessed
@@ -403,7 +404,13 @@ class Container {
     ))->addTag('kernel.event_subscriber')->setPublic(TRUE);
 
     $dispatcherDefn = $container->getDefinition('dispatcher');
-    foreach (\CRM_Core_DAO_AllCoreTables::getBaoClasses() as $baoEntity => $baoClass) {
+    // Get all declared BAO classes
+    $baoClasses = \CRM_Core_DAO_AllCoreTables::getBaoClasses();
+    // "Extra" BAO classes that don't have a DAO but still need to listen to hooks
+    $baoClasses[] = \CRM_Core_BAO_CustomValue::class;
+    foreach ($baoClasses as $key => $baoClass) {
+      // Key will be a valid entity name for all but the "extra" classes which don't have a DAO entity.
+      $baoEntity = is_numeric($key) ? NULL : $key;
       $listenerMap = EventScanner::findListeners($baoClass, $baoEntity);
       if ($listenerMap) {
         $file = (new \ReflectionClass($baoClass))->getFileName();
@@ -435,6 +442,7 @@ class Container {
     $moduleEnvId = md5(\CRM_Core_Config_Runtime::getId());
     $angCache = \CRM_Utils_Cache::create([
       'name' => substr('angular_' . $moduleEnvId, 0, 32),
+      'service' => 'angular_manager',
       'type' => ['*memory*', 'SqlGroup', 'ArrayCache'],
       'withArray' => 'fast',
       'prefetch' => TRUE,

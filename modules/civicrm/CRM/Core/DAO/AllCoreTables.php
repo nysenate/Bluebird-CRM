@@ -395,81 +395,71 @@ class CRM_Core_DAO_AllCoreTables {
   /**
    * (Quasi-Private) Do not call externally. For use by DAOs.
    *
-   * @param string $dao
+   * @param string|CRM_Core_DAO $dao
    *   Ex: 'CRM_Core_DAO_Address'.
    * @param string $labelName
    *   Ex: 'address'.
    * @param bool $prefix
    * @param array $foreignDAOs
+   *   Historically used for... something? Currently never set by any core BAO.
    * @return array
+   * @internal
    */
-  public static function getExports($dao, $labelName, $prefix, $foreignDAOs) {
-    // Bug-level compatibility -- or sane behavior?
-    $cacheKey = $dao . ':export';
-    // $cacheKey = $dao . ':' . ($prefix ? 'export-prefix' : 'export');
+  public static function getExports($dao, $labelName, $prefix, $foreignDAOs = []) {
+    $exports = [];
 
-    if (!isset(Civi::$statics[__CLASS__][$cacheKey])) {
-      $exports = [];
-      $fields = $dao::fields();
-
-      foreach ($fields as $name => $field) {
-        if (!empty($field['export'])) {
-          if ($prefix) {
-            $exports[$labelName] = & $fields[$name];
-          }
-          else {
-            $exports[$name] = & $fields[$name];
-          }
+    foreach ($dao::fields() as $name => $field) {
+      if (!empty($field['export'])) {
+        if ($prefix) {
+          $exports[$labelName] = $field;
+        }
+        else {
+          $exports[$name] = $field;
         }
       }
-
-      foreach ($foreignDAOs as $foreignDAO) {
-        $exports = array_merge($exports, $foreignDAO::export(TRUE));
-      }
-
-      Civi::$statics[__CLASS__][$cacheKey] = $exports;
     }
-    return Civi::$statics[__CLASS__][$cacheKey];
+
+    // TODO: Remove this bit; no core DAO actually uses it
+    foreach ($foreignDAOs as $foreignDAO) {
+      $exports = array_merge($exports, $foreignDAO::export(TRUE));
+    }
+
+    return $exports;
   }
 
   /**
    * (Quasi-Private) Do not call externally. For use by DAOs.
    *
-   * @param string $dao
+   * @param string|CRM_Core_DAO $dao
    *   Ex: 'CRM_Core_DAO_Address'.
    * @param string $labelName
    *   Ex: 'address'.
    * @param bool $prefix
    * @param array $foreignDAOs
+   *   Historically used for... something? Currently never set by any core BAO.
    * @return array
+   * @internal
    */
-  public static function getImports($dao, $labelName, $prefix, $foreignDAOs) {
-    // Bug-level compatibility -- or sane behavior?
-    $cacheKey = $dao . ':import';
-    // $cacheKey = $dao . ':' . ($prefix ? 'import-prefix' : 'import');
+  public static function getImports($dao, $labelName, $prefix, $foreignDAOs = []): array {
+    $imports = [];
 
-    if (!isset(Civi::$statics[__CLASS__][$cacheKey])) {
-      $imports = [];
-      $fields = $dao::fields();
-
-      foreach ($fields as $name => $field) {
-        if (!empty($field['import'])) {
-          if ($prefix) {
-            $imports[$labelName] = & $fields[$name];
-          }
-          else {
-            $imports[$name] = & $fields[$name];
-          }
+    foreach ($dao::fields() as $name => $field) {
+      if (!empty($field['import'])) {
+        if ($prefix) {
+          $imports[$labelName] = $field;
+        }
+        else {
+          $imports[$name] = $field;
         }
       }
-
-      foreach ($foreignDAOs as $foreignDAO) {
-        $imports = array_merge($imports, $foreignDAO::import(TRUE));
-      }
-
-      Civi::$statics[__CLASS__][$cacheKey] = $imports;
     }
-    return Civi::$statics[__CLASS__][$cacheKey];
+
+    // TODO: Remove this bit; no core DAO actually uses it
+    foreach ($foreignDAOs as $foreignDAO) {
+      $imports = array_merge($imports, $foreignDAO::import(TRUE));
+    }
+
+    return $imports;
   }
 
   /**

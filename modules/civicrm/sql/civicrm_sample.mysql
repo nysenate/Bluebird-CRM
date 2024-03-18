@@ -234,6 +234,7 @@ VALUES
     (@priceFieldID,'bass','Bass','25',1,1,1,2),
     (@priceFieldID,'tenor','Tenor','40',2,1,0,2),
     (@priceFieldID,'soprano','Soprano','50',3,1,0,2);
+
 -- +--------------------------------------------------------------------+
 -- | Copyright CiviCRM LLC. All rights reserved.                        |
 -- |                                                                    |
@@ -261,3 +262,4 @@ INSERT INTO civicrm_acl_entity_role
     (`acl_role_id`, `entity_table`, `entity_id`, `is_active`)
 VALUES
     (1, 'civicrm_group', 1, 1);
+

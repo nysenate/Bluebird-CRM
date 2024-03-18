@@ -822,6 +822,27 @@ class CRM_Financial_BAO_Order {
   }
 
   /**
+   * Is participant count being used.
+   *
+   * This would be true if at least one price field value
+   * has a count value that is not 0 or NULL. In this case
+   * the row value will be used for the participant.
+   *
+   * @return bool
+   * @throws \CRM_Core_Exception
+   */
+  public function isUseParticipantCount(): bool {
+    foreach ($this->getPriceFieldsMetadata() as $fieldMetadata) {
+      foreach ($fieldMetadata['options'] as $option) {
+        if (($option['count'] ?? 0) > 0) {
+          return TRUE;
+        }
+      }
+    }
+    return FALSE;
+  }
+
+  /**
    * Recalculate the line items.
    *
    * @return void
@@ -964,7 +985,7 @@ class CRM_Financial_BAO_Order {
       elseif ($taxRate) {
         $lineItem['tax_amount'] = ($taxRate / 100) * $lineItem['line_total'];
       }
-      $lineItem['membership_type_id'] = $lineItem['membership_type_id'] ?? NULL;
+      $lineItem['membership_type_id'] ??= NULL;
       if ($lineItem['membership_type_id']) {
         $lineItem['entity_table'] = 'civicrm_membership';
         $lineItem['membership_num_terms'] = $lineItem['membership_num_terms'] ?:1;
@@ -1248,8 +1269,8 @@ class CRM_Financial_BAO_Order {
       }
     }
     $lineItem['unit_price'] = $lineItem['line_total'] ?? $option['amount'];
-    $lineItem['label'] = $lineItem['label'] ?? $option['label'];
-    $lineItem['field_title'] = $lineItem['field_title'] ?? $option['label'];
+    $lineItem['label'] ??= $option['label'];
+    $lineItem['field_title'] ??= $option['label'];
     $lineItem['financial_type_id'] = $lineItem['financial_type_id'] ?: ($this->getDefaultFinancialTypeID() ?? $option['financial_type_id']);
     return $lineItem;
   }

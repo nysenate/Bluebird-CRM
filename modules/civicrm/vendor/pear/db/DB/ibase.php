@@ -707,9 +707,9 @@ class DB_ibase extends DB_common
         $repeat = 0;
         do {
             $this->pushErrorHandling(PEAR_ERROR_RETURN);
-            $result = $this->query("SELECT GEN_ID(${sqn}, 1) "
+            $result = $this->query("SELECT GEN_ID({$sqn}, 1) "
                                    . 'FROM RDB$GENERATORS '
-                                   . "WHERE RDB\$GENERATOR_NAME='${sqn}'");
+                                   . "WHERE RDB\$GENERATOR_NAME='{$sqn}'");
             $this->popErrorHandling();
             if ($ondemand && DB::isError($result)) {
                 $repeat = 1;
@@ -746,7 +746,7 @@ class DB_ibase extends DB_common
     {
         $sqn = strtoupper($this->getSequenceName($seq_name));
         $this->pushErrorHandling(PEAR_ERROR_RETURN);
-        $result = $this->query("CREATE GENERATOR ${sqn}");
+        $result = $this->query("CREATE GENERATOR {$sqn}");
         $this->popErrorHandling();
 
         return $result;

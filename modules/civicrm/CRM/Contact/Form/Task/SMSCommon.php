@@ -30,9 +30,12 @@ class CRM_Contact_Form_Task_SMSCommon {
   /**
    * Pre process the provider.
    *
+   * @deprecated since 5.71 will be removed around 5.77.
+   *
    * @param CRM_Core_Form $form
    */
   public static function preProcessProvider(&$form) {
+    CRM_Core_Error::deprecatedFunctionWarning('no alternative');
     $form->_single = FALSE;
     $className = CRM_Utils_System::getClassName($form);
 
@@ -43,7 +46,7 @@ class CRM_Contact_Form_Task_SMSCommon {
       $form->_single = TRUE;
     }
 
-    $providersCount = CRM_SMS_BAO_Provider::activeProviderCount();
+    $providersCount = CRM_SMS_BAO_SmsProvider::activeProviderCount();
 
     if (!$providersCount) {
       CRM_Core_Error::statusBounce(ts('There are no SMS providers configured, or no SMS providers are set active'));
@@ -73,7 +76,7 @@ class CRM_Contact_Form_Task_SMSCommon {
 
     $toArray = [];
 
-    $providers = CRM_SMS_BAO_Provider::getProviders(NULL, NULL, TRUE, 'is_default desc');
+    $providers = CRM_SMS_BAO_SmsProvider::getProviders(NULL, NULL, TRUE, 'is_default desc');
 
     $providerSelect = [];
     foreach ($providers as $provider) {

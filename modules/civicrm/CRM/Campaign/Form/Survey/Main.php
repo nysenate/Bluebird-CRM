@@ -98,7 +98,7 @@ class CRM_Campaign_Form_Survey_Main extends CRM_Campaign_Form_Survey {
   /**
    * Build the form object.
    */
-  public function buildQuickForm() {
+  public function buildQuickForm(): void {
     $this->add('text', 'title', ts('Title'), CRM_Core_DAO::getAttribute('CRM_Campaign_DAO_Survey', 'title'), TRUE);
 
     // Activity Type id
@@ -155,8 +155,8 @@ class CRM_Campaign_Form_Survey_Main extends CRM_Campaign_Form_Survey {
       $params['created_date'] = date('YmdHis');
     }
 
-    $params['is_active'] = $params['is_active'] ?? 0;
-    $params['is_default'] = $params['is_default'] ?? 0;
+    $params['is_active'] ??= 0;
+    $params['is_default'] ??= 0;
 
     $params['custom'] = CRM_Core_BAO_CustomField::postProcess($params, $this->getEntityId(), $this->getDefaultEntity());
 

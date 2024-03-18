@@ -1,6 +1,0 @@
-{
-    "name": "civicrm/civicrm-core:phantomjs-polyfill",
-    "url": "https://github.com/conversocial/phantomjs-polyfill/archive/v0.0.2.zip",
-    "checksum": "faa401d8f3b21b18a709a506d709202ad5795753d593e7a0d269082d6a7444a0",
-    "ignore": null
-}

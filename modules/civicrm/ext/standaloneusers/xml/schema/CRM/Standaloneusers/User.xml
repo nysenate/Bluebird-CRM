@@ -82,6 +82,8 @@
     <comment>FK to Contact ID</comment>
     <html>
       <label>Contact</label>
+      <type>EntityRef</type>
+      <filter>contact_type=Individual</filter>
     </html>
     <add>1.1</add>
   </field>
@@ -117,25 +119,9 @@
     <length>128</length>
     <readonly>true</readonly>
     <comment>Hashed, not plaintext password</comment>
-  </field>
-
-  <field>
-    <name>roles</name>
-    <type>varchar</type>
-    <title>Roles</title>
-    <length>128</length>
-    <comment>FK to Role</comment>
-    <pseudoconstant>
-      <table>civicrm_role</table>
-      <keyColumn>id</keyColumn>
-      <labelColumn>label</labelColumn>
-      <nameColumn>name</nameColumn>
-      <condition>name != "everyone"</condition>
-    </pseudoconstant>
-    <html>
-      <type>Select</type>
-    </html>
-    <serialize>SEPARATOR_BOOKEND</serialize>
+    <permission>
+      <or>administer CiviCRM, cms:administer users</or>
+    </permission>
   </field>
 
   <field>
@@ -216,5 +202,8 @@
     <type>varchar</type>
     <length>40</length>
     <readonly>true</readonly>
+    <permission>
+      <or>administer CiviCRM, cms:administer users</or>
+    </permission>
   </field>
 </table>

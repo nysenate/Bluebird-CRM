@@ -21,6 +21,42 @@
 class CRM_Contact_Page_View_Summary extends CRM_Contact_Page_View {
 
   /**
+   * Contents of contact_view_options setting.
+   *
+   * @var array
+   * @internal
+   */
+  public $_viewOptions;
+
+  /**
+   * Provide support for extensions that are using the _show{Block} properties
+   * (e.g. `_showCustomData`, `_showAddress`, `_showPhone` etc)
+   *
+   * These properties were dynamically defined,
+   * based on the available `contact_edit_options`,
+   * and so have been deprecated for PHP 8.2 support.
+   *
+   * Extension authors can read contact_edit_options directly.
+   * The show{Block} values are also still assigned to the template layer.
+   *
+   * @param string $name
+   * @return bool|null
+   */
+  public function __get($name) {
+    if (str_starts_with($name, '_show')) {
+      $blockName = substr($name, strlen('_show'));
+      $editOptions = CRM_Core_BAO_Setting::valueOptions(
+        CRM_Core_BAO_Setting::SYSTEM_PREFERENCES_NAME,
+        'contact_edit_options'
+      );
+
+      CRM_Core_Error::deprecatedWarning('_show{Block} properties are deprecated in CRM_Contact_Page_View_Summary. Read contact_edit_options directly instead.');
+      return $editOptions[$blockName] ?? FALSE;
+    }
+    return NULL;
+  }
+
+  /**
    * Heart of the viewing process.
    *
    * The runner gets all the meta data for the contact and calls the appropriate type of page to view.
@@ -216,9 +252,8 @@ class CRM_Contact_Page_View_Summary extends CRM_Contact_Page_View {
     );
 
     foreach ($editOptions as $blockName => $value) {
-      $varName = '_show' . $blockName;
-      $this->$varName = $value;
-      $this->assign(substr($varName, 1), $this->$varName);
+      $varName = 'show' . $blockName;
+      $this->assign($varName, $value);
     }
 
     // get contact name of shared contact names
@@ -382,18 +417,18 @@ class CRM_Contact_Page_View_Summary extends CRM_Contact_Page_View {
     }
 
     // now add all the custom tabs
-    $entityType = $this->get('contactType');
-    $activeGroups = CRM_Core_BAO_CustomGroup::getActiveGroups(
-      $entityType,
-      'civicrm/contact/view/cd',
-      $this->_contactId
-    );
+    $filters = [
+      'is_active' => TRUE,
+      'extends' => $this->get('contactType'),
+      'style' => ['Tab', 'Tab with table'],
+    ];
+    $activeGroups = CRM_Core_BAO_CustomGroup::getAll($filters, CRM_Core_Permission::VIEW);
 
     foreach ($activeGroups as $group) {
       $id = "custom_{$group['id']}";
       $allTabs[] = [
         'id' => $id,
-        'url' => CRM_Utils_System::url($group['path'], $group['query'] . "&selectedChild=$id"),
+        'url' => CRM_Utils_System::url('civicrm/contact/view/cd', "reset=1&gid={$group['id']}&cid={$this->_contactId}&selectedChild=$id"),
         'title' => $group['title'],
         'weight' => $weight,
         'count' => NULL,

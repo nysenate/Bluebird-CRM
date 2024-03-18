@@ -254,8 +254,8 @@ class CRM_Utils_System {
     $forceBackend = FALSE
   ) {
     // handle legacy null params
-    $path = $path ?? '';
-    $query = $query ?? '';
+    $path ??= '';
+    $query ??= '';
 
     $query = self::makeQueryString($query);
 
@@ -1509,8 +1509,7 @@ class CRM_Utils_System {
       = CRM_Contribute_BAO_Contribution::$_importableFields
         = CRM_Contribute_BAO_Contribution::$_exportableFields
           = CRM_Pledge_BAO_Pledge::$_exportableFields
-            = CRM_Core_BAO_CustomField::$_importFields
-              = CRM_Core_DAO::$_dbColumnValueCache = NULL;
+            = CRM_Core_DAO::$_dbColumnValueCache = NULL;
 
     CRM_Core_OptionGroup::flushAll();
     CRM_Utils_PseudoConstant::flushAll();

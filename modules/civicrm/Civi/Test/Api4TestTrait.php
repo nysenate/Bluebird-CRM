@@ -246,7 +246,7 @@ trait Api4TestTrait {
       return $this->getFkID($field['fk_entity']);
     }
     if (!empty($field['dfk_entities'])) {
-      return $this->getFkID($field['dfk_entities'][0]);
+      return $this->getFkID(reset($field['dfk_entities']));
     }
     if (isset($field['default_value'])) {
       return $field['default_value'];
@@ -367,6 +367,7 @@ trait Api4TestTrait {
         return $this->randomLetters(100);
 
       case 'Money':
+      case 'Float':
         return sprintf('%d.%2d', random_int(0, 2000), random_int(10, 99));
 
       case 'Date':

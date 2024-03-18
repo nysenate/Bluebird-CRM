@@ -172,6 +172,7 @@ DROP TABLE IF EXISTS `civicrm_extension`;
 DROP TABLE IF EXISTS `civicrm_address_format`;
 
 SET FOREIGN_KEY_CHECKS=1;
+
 -- /*******************************************************
 -- *
 -- * Create new tables
@@ -186,8 +187,7 @@ SET FOREIGN_KEY_CHECKS=1;
 CREATE TABLE `civicrm_address_format` (
   `id` int unsigned NOT NULL AUTO_INCREMENT COMMENT 'Address Format ID',
   `format` text COMMENT 'The format of an address',
-  PRIMARY KEY (`id`)
-)
+  PRIMARY KEY (`id`))
 ENGINE=InnoDB DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci ROW_FORMAT=DYNAMIC;
 
 -- /*******************************************************
@@ -206,8 +206,7 @@ CREATE TABLE `civicrm_extension` (
   `is_active` tinyint DEFAULT 1 COMMENT 'Is this extension active?',
   PRIMARY KEY (`id`),
   UNIQUE INDEX `UI_extension_full_name`(full_name),
-  INDEX `UI_extension_name`(name)
-)
+  INDEX `UI_extension_name`(name))
 ENGINE=InnoDB DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci ROW_FORMAT=DYNAMIC;
 
 -- /*******************************************************
@@ -225,8 +224,7 @@ CREATE TABLE `civicrm_location_type` (
   `is_active` tinyint NOT NULL DEFAULT 1 COMMENT 'Is this property active?',
   `is_default` tinyint NOT NULL DEFAULT 0 COMMENT 'Is this location type the default?',
   PRIMARY KEY (`id`),
-  UNIQUE INDEX `UI_name`(name)
-)
+  UNIQUE INDEX `UI_name`(name))
 ENGINE=InnoDB DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci ROW_FORMAT=DYNAMIC;
 
 -- /*******************************************************
@@ -246,8 +244,7 @@ CREATE TABLE `civicrm_managed` (
   `entity_modified_date` timestamp NULL DEFAULT NULL COMMENT 'When the managed entity was changed from its original settings.',
   PRIMARY KEY (`id`),
   INDEX `UI_managed_module_name`(module, name),
-  INDEX `UI_managed_entity`(entity_type, entity_id)
-)
+  INDEX `UI_managed_entity`(entity_type, entity_id))
 ENGINE=InnoDB DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci ROW_FORMAT=DYNAMIC;
 
 -- /*******************************************************
@@ -263,8 +260,7 @@ CREATE TABLE `civicrm_mapping` (
   `description` varchar(255) COMMENT 'Description of Mapping.',
   `mapping_type_id` int unsigned COMMENT 'Mapping Type',
   PRIMARY KEY (`id`),
-  UNIQUE INDEX `UI_name`(name)
-)
+  UNIQUE INDEX `UI_name`(name))
 ENGINE=InnoDB DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci ROW_FORMAT=DYNAMIC;
 
 -- /*******************************************************
@@ -287,8 +283,7 @@ CREATE TABLE `civicrm_msg_template` (
   `is_reserved` tinyint NOT NULL DEFAULT 0 COMMENT 'is this the reserved message template which we ship for the workflow referenced by workflow_id?',
   `is_sms` tinyint NOT NULL DEFAULT 0 COMMENT 'Is this message template used for sms?',
   `pdf_format_id` int unsigned COMMENT 'a pseudo-FK to civicrm_option_value containing PDF Page Format.',
-  PRIMARY KEY (`id`)
-)
+  PRIMARY KEY (`id`))
 ENGINE=InnoDB DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci ROW_FORMAT=DYNAMIC;
 
 -- /*******************************************************
@@ -307,8 +302,7 @@ CREATE TABLE `civicrm_option_group` (
   `is_locked` tinyint NOT NULL DEFAULT 0 COMMENT 'A lock to remove the ability to add new options via the UI.',
   `option_value_fields` varchar(128) DEFAULT "name,label,description" COMMENT 'Which optional columns from the option_value table are in use by this group.',
   PRIMARY KEY (`id`),
-  UNIQUE INDEX `UI_name`(name)
-)
+  UNIQUE INDEX `UI_name`(name))
 ENGINE=InnoDB DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci ROW_FORMAT=DYNAMIC;
 
 -- /*******************************************************
@@ -327,8 +321,7 @@ CREATE TABLE `civicrm_preferences_date` (
   `date_format` varchar(64) COMMENT 'The date type',
   `time_format` varchar(64) COMMENT 'time format',
   PRIMARY KEY (`id`),
-  INDEX `index_name`(name)
-)
+  INDEX `index_name`(name))
 ENGINE=InnoDB DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci ROW_FORMAT=DYNAMIC;
 
 -- /*******************************************************
@@ -344,8 +337,7 @@ CREATE TABLE `civicrm_system_log` (
   `timestamp` timestamp DEFAULT CURRENT_TIMESTAMP COMMENT 'Timestamp of when event occurred.',
   `contact_id` int unsigned COMMENT 'Optional Contact ID that created the log. Not an FK as we keep this regardless',
   `hostname` varchar(128) COMMENT 'Optional Name of logging host',
-  PRIMARY KEY (`id`)
-)
+  PRIMARY KEY (`id`))
 ENGINE=InnoDB DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci ROW_FORMAT=DYNAMIC;
 
 -- /*******************************************************
@@ -364,8 +356,7 @@ CREATE TABLE `civicrm_translation` (
   `status_id` tinyint NOT NULL DEFAULT 1 COMMENT 'Specify whether the string is active, draft, etc',
   `string` longtext NOT NULL COMMENT 'Translated string',
   PRIMARY KEY (`id`),
-  INDEX `index_entity_lang`(entity_id, entity_table, language)
-)
+  INDEX `index_entity_lang`(entity_id, entity_table, language))
 ENGINE=InnoDB DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci ROW_FORMAT=DYNAMIC;
 
 -- /*******************************************************
@@ -376,8 +367,7 @@ ENGINE=InnoDB DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci ROW_FORMA
 CREATE TABLE `civicrm_worldregion` (
   `id` int unsigned NOT NULL AUTO_INCREMENT COMMENT 'Country ID',
   `name` varchar(128) COMMENT 'Region name to be associated with countries',
-  PRIMARY KEY (`id`)
-)
+  PRIMARY KEY (`id`))
 ENGINE=InnoDB DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci ROW_FORMAT=DYNAMIC;
 
 -- /*******************************************************
@@ -389,8 +379,7 @@ CREATE TABLE `civicrm_component` (
   `id` int unsigned NOT NULL AUTO_INCREMENT COMMENT 'Component ID',
   `name` varchar(64) NOT NULL COMMENT 'Name of the component.',
   `namespace` varchar(128) COMMENT 'Path to components main directory in a form of a class namespace.',
-  PRIMARY KEY (`id`)
-)
+  PRIMARY KEY (`id`))
 ENGINE=InnoDB DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci ROW_FORMAT=DYNAMIC;
 
 -- /*******************************************************
@@ -409,8 +398,7 @@ CREATE TABLE `civicrm_prevnext_cache` (
   `data` longtext COMMENT 'cached snapshot of the serialized data',
   `is_selected` tinyint NOT NULL DEFAULT 0,
   PRIMARY KEY (`id`),
-  INDEX `index_all`(cachekey, entity_id1, entity_id2, entity_table, is_selected)
-)
+  INDEX `index_all`(cachekey, entity_id1, entity_id2, entity_table, is_selected))
 ENGINE=InnoDB DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci ROW_FORMAT=DYNAMIC;
 
 -- /*******************************************************
@@ -424,8 +412,7 @@ CREATE TABLE `civicrm_recurring_entity` (
   `entity_id` int unsigned COMMENT 'Recurring Entity Child ID',
   `entity_table` varchar(64) NOT NULL COMMENT 'Physical tablename for entity, e.g. civicrm_event',
   `mode` tinyint NOT NULL DEFAULT 1 COMMENT '1-this entity, 2-this and the following entities, 3-all the entities',
-  PRIMARY KEY (`id`)
-)
+  PRIMARY KEY (`id`))
 ENGINE=InnoDB DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci ROW_FORMAT=DYNAMIC;
 
 -- /*******************************************************
@@ -449,8 +436,7 @@ CREATE TABLE `civicrm_acl` (
   `is_active` tinyint NOT NULL DEFAULT 1 COMMENT 'Is this property active?',
   `priority` int NOT NULL DEFAULT 0,
   PRIMARY KEY (`id`),
-  INDEX `index_acl_id`(acl_id)
-)
+  INDEX `index_acl_id`(acl_id))
 ENGINE=InnoDB DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci ROW_FORMAT=DYNAMIC;
 
 -- /*******************************************************
@@ -469,8 +455,7 @@ CREATE TABLE `civicrm_acl_cache` (
   INDEX `index_contact_id`(contact_id),
   INDEX `index_acl_id`(acl_id),
   INDEX `index_modified_date`(modified_date),
-  CONSTRAINT FK_civicrm_acl_cache_acl_id FOREIGN KEY (`acl_id`) REFERENCES `civicrm_acl`(`id`) ON DELETE CASCADE
-)
+  CONSTRAINT FK_civicrm_acl_cache_acl_id FOREIGN KEY (`acl_id`) REFERENCES `civicrm_acl`(`id`) ON DELETE CASCADE)
 ENGINE=InnoDB DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci ROW_FORMAT=DYNAMIC;
 
 -- /*******************************************************
@@ -488,8 +473,7 @@ CREATE TABLE `civicrm_acl_entity_role` (
   `is_active` tinyint NOT NULL DEFAULT 1 COMMENT 'Is this property active?',
   PRIMARY KEY (`id`),
   INDEX `index_role`(acl_role_id),
-  INDEX `index_entity`(entity_table, entity_id)
-)
+  INDEX `index_entity`(entity_table, entity_id))
 ENGINE=InnoDB DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci ROW_FORMAT=DYNAMIC;
 
 -- /*******************************************************
@@ -573,8 +557,7 @@ CREATE TABLE `civicrm_contact` (
   INDEX `index_created_date`(created_date),
   INDEX `index_modified_date`(modified_date),
   CONSTRAINT FK_civicrm_contact_primary_contact_id FOREIGN KEY (`primary_contact_id`) REFERENCES `civicrm_contact`(`id`) ON DELETE SET NULL,
-  CONSTRAINT FK_civicrm_contact_employer_id FOREIGN KEY (`employer_id`) REFERENCES `civicrm_contact`(`id`) ON DELETE SET NULL
-)
+  CONSTRAINT FK_civicrm_contact_employer_id FOREIGN KEY (`employer_id`) REFERENCES `civicrm_contact`(`id`) ON DELETE SET NULL)
 ENGINE=InnoDB DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci ROW_FORMAT=DYNAMIC;
 
 -- /*******************************************************
@@ -590,8 +573,7 @@ CREATE TABLE `civicrm_acl_contact_cache` (
   `contact_id` int unsigned NOT NULL COMMENT 'FK to civicrm_contact',
   `operation` varchar(8) NOT NULL COMMENT 'What operation does this user have permission on?',
   PRIMARY KEY (`id`),
-  UNIQUE INDEX `UI_user_contact_operation`(user_id, contact_id, operation)
-)
+  UNIQUE INDEX `UI_user_contact_operation`(user_id, contact_id, operation))
 ENGINE=InnoDB DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci ROW_FORMAT=DYNAMIC;
 
 -- /*******************************************************
@@ -616,8 +598,7 @@ CREATE TABLE `civicrm_relationship_type` (
   `is_active` tinyint NOT NULL DEFAULT 1 COMMENT 'Is this relationship type currently active (i.e. can be used when creating or editing relationships)?',
   PRIMARY KEY (`id`),
   UNIQUE INDEX `UI_name_a_b`(name_a_b),
-  UNIQUE INDEX `UI_name_b_a`(name_b_a)
-)
+  UNIQUE INDEX `UI_name_b_a`(name_b_a))
 ENGINE=InnoDB DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci ROW_FORMAT=DYNAMIC;
 
 -- /*******************************************************
@@ -646,8 +627,7 @@ CREATE TABLE `civicrm_saved_search` (
   UNIQUE INDEX `UI_name`(name),
   CONSTRAINT FK_civicrm_saved_search_mapping_id FOREIGN KEY (`mapping_id`) REFERENCES `civicrm_mapping`(`id`) ON DELETE SET NULL,
   CONSTRAINT FK_civicrm_saved_search_created_id FOREIGN KEY (`created_id`) REFERENCES `civicrm_contact`(`id`) ON DELETE SET NULL,
-  CONSTRAINT FK_civicrm_saved_search_modified_id FOREIGN KEY (`modified_id`) REFERENCES `civicrm_contact`(`id`) ON DELETE SET NULL
-)
+  CONSTRAINT FK_civicrm_saved_search_modified_id FOREIGN KEY (`modified_id`) REFERENCES `civicrm_contact`(`id`) ON DELETE SET NULL)
 ENGINE=InnoDB DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci ROW_FORMAT=DYNAMIC;
 
 -- /*******************************************************
@@ -669,8 +649,7 @@ CREATE TABLE `civicrm_contact_type` (
   `is_reserved` tinyint NOT NULL DEFAULT 0 COMMENT 'Is this contact type a predefined system type',
   PRIMARY KEY (`id`),
   UNIQUE INDEX `contact_type`(name),
-  CONSTRAINT FK_civicrm_contact_type_parent_id FOREIGN KEY (`parent_id`) REFERENCES `civicrm_contact_type`(`id`)
-)
+  CONSTRAINT FK_civicrm_contact_type_parent_id FOREIGN KEY (`parent_id`) REFERENCES `civicrm_contact_type`(`id`))
 ENGINE=InnoDB DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci ROW_FORMAT=DYNAMIC;
 
 -- /*******************************************************
@@ -702,8 +681,7 @@ CREATE TABLE `civicrm_batch` (
   UNIQUE INDEX `UI_name`(name),
   CONSTRAINT FK_civicrm_batch_created_id FOREIGN KEY (`created_id`) REFERENCES `civicrm_contact`(`id`) ON DELETE SET NULL,
   CONSTRAINT FK_civicrm_batch_modified_id FOREIGN KEY (`modified_id`) REFERENCES `civicrm_contact`(`id`) ON DELETE SET NULL,
-  CONSTRAINT FK_civicrm_batch_saved_search_id FOREIGN KEY (`saved_search_id`) REFERENCES `civicrm_saved_search`(`id`) ON DELETE SET NULL
-)
+  CONSTRAINT FK_civicrm_batch_saved_search_id FOREIGN KEY (`saved_search_id`) REFERENCES `civicrm_saved_search`(`id`) ON DELETE SET NULL)
 ENGINE=InnoDB DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci ROW_FORMAT=DYNAMIC;
 
 -- /*******************************************************
@@ -721,8 +699,7 @@ CREATE TABLE `civicrm_entity_batch` (
   PRIMARY KEY (`id`),
   INDEX `index_entity`(entity_table, entity_id),
   UNIQUE INDEX `UI_batch_entity`(batch_id, entity_id, entity_table),
-  CONSTRAINT FK_civicrm_entity_batch_batch_id FOREIGN KEY (`batch_id`) REFERENCES `civicrm_batch`(`id`) ON DELETE CASCADE
-)
+  CONSTRAINT FK_civicrm_entity_batch_batch_id FOREIGN KEY (`batch_id`) REFERENCES `civicrm_batch`(`id`) ON DELETE CASCADE)
 ENGINE=InnoDB DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci ROW_FORMAT=DYNAMIC;
 
 -- /*******************************************************
@@ -741,8 +718,7 @@ CREATE TABLE `civicrm_mailing_component` (
   `body_text` text COMMENT 'Body of the component in text format.',
   `is_default` tinyint NOT NULL DEFAULT 0 COMMENT 'Is this the default component for this component_type?',
   `is_active` tinyint NOT NULL DEFAULT 1 COMMENT 'Is this property active?',
-  PRIMARY KEY (`id`)
-)
+  PRIMARY KEY (`id`))
 ENGINE=InnoDB DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci ROW_FORMAT=DYNAMIC;
 
 -- /*******************************************************
@@ -768,8 +744,7 @@ CREATE TABLE `civicrm_mailing_abtest` (
   `created_id` int unsigned COMMENT 'FK to Contact ID',
   `created_date` timestamp NULL DEFAULT CURRENT_TIMESTAMP COMMENT 'When was this item created',
   PRIMARY KEY (`id`),
-  CONSTRAINT FK_civicrm_mailing_abtest_created_id FOREIGN KEY (`created_id`) REFERENCES `civicrm_contact`(`id`) ON DELETE SET NULL
-)
+  CONSTRAINT FK_civicrm_mailing_abtest_created_id FOREIGN KEY (`created_id`) REFERENCES `civicrm_contact`(`id`) ON DELETE SET NULL)
 ENGINE=InnoDB DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci ROW_FORMAT=DYNAMIC;
 
 -- /*******************************************************
@@ -784,8 +759,7 @@ CREATE TABLE `civicrm_mailing_bounce_type` (
   `name` varchar(255) NOT NULL COMMENT 'Type of bounce',
   `description` varchar(2048) COMMENT 'A description of this bounce type',
   `hold_threshold` int unsigned NOT NULL COMMENT 'Number of bounces of this type required before the email address is put on bounce hold',
-  PRIMARY KEY (`id`)
-)
+  PRIMARY KEY (`id`))
 ENGINE=InnoDB DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci ROW_FORMAT=DYNAMIC;
 
 -- /*******************************************************
@@ -800,8 +774,7 @@ CREATE TABLE `civicrm_mailing_bounce_pattern` (
   `bounce_type_id` int unsigned NOT NULL COMMENT 'Type of bounce',
   `pattern` varchar(255) COMMENT 'A regexp to match a message to a bounce type',
   PRIMARY KEY (`id`),
-  CONSTRAINT FK_civicrm_mailing_bounce_pattern_bounce_type_id FOREIGN KEY (`bounce_type_id`) REFERENCES `civicrm_mailing_bounce_type`(`id`) ON DELETE CASCADE
-)
+  CONSTRAINT FK_civicrm_mailing_bounce_pattern_bounce_type_id FOREIGN KEY (`bounce_type_id`) REFERENCES `civicrm_mailing_bounce_type`(`id`) ON DELETE CASCADE)
 ENGINE=InnoDB DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci ROW_FORMAT=DYNAMIC;
 
 -- /*******************************************************
@@ -823,8 +796,7 @@ CREATE TABLE `civicrm_premiums` (
   `premiums_display_min_contribution` tinyint NOT NULL DEFAULT 0 COMMENT 'Boolean. Should we automatically display minimum contribution amount text after the premium descriptions.',
   `premiums_nothankyou_label` varchar(255) COMMENT 'Label displayed for No Thank-you option in premiums block (e.g. No thank you)',
   `premiums_nothankyou_position` int unsigned DEFAULT 1,
-  PRIMARY KEY (`id`)
-)
+  PRIMARY KEY (`id`))
 ENGINE=InnoDB DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci ROW_FORMAT=DYNAMIC;
 
 -- /*******************************************************
@@ -838,8 +810,7 @@ CREATE TABLE `civicrm_currency` (
   `symbol` varchar(8) COMMENT 'Currency Symbol',
   `numeric_code` varchar(3) COMMENT 'Numeric currency code',
   `full_name` varchar(64) COMMENT 'Full currency name',
-  PRIMARY KEY (`id`)
-)
+  PRIMARY KEY (`id`))
 ENGINE=InnoDB DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci ROW_FORMAT=DYNAMIC;
 
 -- /*******************************************************
@@ -866,8 +837,7 @@ CREATE TABLE `civicrm_financial_account` (
   PRIMARY KEY (`id`),
   UNIQUE INDEX `UI_name`(name),
   CONSTRAINT FK_civicrm_financial_account_contact_id FOREIGN KEY (`contact_id`) REFERENCES `civicrm_contact`(`id`) ON DELETE SET NULL,
-  CONSTRAINT FK_civicrm_financial_account_parent_id FOREIGN KEY (`parent_id`) REFERENCES `civicrm_financial_account`(`id`)
-)
+  CONSTRAINT FK_civicrm_financial_account_parent_id FOREIGN KEY (`parent_id`) REFERENCES `civicrm_financial_account`(`id`))
 ENGINE=InnoDB DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci ROW_FORMAT=DYNAMIC;
 
 -- /*******************************************************
@@ -900,8 +870,7 @@ CREATE TABLE `civicrm_payment_processor_type` (
   `payment_type` int unsigned DEFAULT 1 COMMENT 'Payment Type: Credit or Debit (deprecated)',
   `payment_instrument_id` int unsigned DEFAULT 1 COMMENT 'Payment Instrument ID',
   PRIMARY KEY (`id`),
-  UNIQUE INDEX `UI_name`(name)
-)
+  UNIQUE INDEX `UI_name`(name))
 ENGINE=InnoDB DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci ROW_FORMAT=DYNAMIC;
 
 -- /*******************************************************
@@ -918,8 +887,7 @@ CREATE TABLE `civicrm_financial_type` (
   `is_deductible` tinyint NOT NULL DEFAULT 0 COMMENT 'Is this financial type tax-deductible? If true, contributions of this type may be fully OR partially deductible - non-deductible amount is stored in the Contribution record.',
   `is_reserved` tinyint NOT NULL DEFAULT 0 COMMENT 'Is this a predefined system object?',
   `is_active` tinyint NOT NULL DEFAULT 1 COMMENT 'Is this property active?',
-  PRIMARY KEY (`id`)
-)
+  PRIMARY KEY (`id`))
 ENGINE=InnoDB DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci ROW_FORMAT=DYNAMIC;
 
 -- /*******************************************************
@@ -937,8 +905,7 @@ CREATE TABLE `civicrm_entity_financial_account` (
   `financial_account_id` int unsigned NOT NULL COMMENT 'FK to the financial_account_id',
   PRIMARY KEY (`id`),
   UNIQUE INDEX `index_entity_id_entity_table_account_relationship`(entity_id, entity_table, account_relationship),
-  CONSTRAINT FK_civicrm_entity_financial_account_financial_account_id FOREIGN KEY (`financial_account_id`) REFERENCES `civicrm_financial_account`(`id`) ON DELETE RESTRICT
-)
+  CONSTRAINT FK_civicrm_entity_financial_account_financial_account_id FOREIGN KEY (`financial_account_id`) REFERENCES `civicrm_financial_account`(`id`) ON DELETE RESTRICT)
 ENGINE=InnoDB DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci ROW_FORMAT=DYNAMIC;
 
 -- /*******************************************************
@@ -965,8 +932,7 @@ CREATE TABLE `civicrm_financial_item` (
   INDEX `IX_transaction_date`(transaction_date),
   INDEX `index_entity_id_entity_table`(entity_id, entity_table),
   CONSTRAINT FK_civicrm_financial_item_contact_id FOREIGN KEY (`contact_id`) REFERENCES `civicrm_contact`(`id`) ON DELETE CASCADE,
-  CONSTRAINT FK_civicrm_financial_item_financial_account_id FOREIGN KEY (`financial_account_id`) REFERENCES `civicrm_financial_account`(`id`)
-)
+  CONSTRAINT FK_civicrm_financial_item_financial_account_id FOREIGN KEY (`financial_account_id`) REFERENCES `civicrm_financial_account`(`id`))
 ENGINE=InnoDB DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci ROW_FORMAT=DYNAMIC;
 
 -- /*******************************************************
@@ -992,8 +958,7 @@ CREATE TABLE `civicrm_membership_status` (
   `is_default` tinyint NOT NULL DEFAULT 0 COMMENT 'Assign this status to a membership record if no other status match is found.',
   `is_active` tinyint NOT NULL DEFAULT 1 COMMENT 'Is this membership_status enabled.',
   `is_reserved` tinyint NOT NULL DEFAULT 0 COMMENT 'Is this membership_status reserved.',
-  PRIMARY KEY (`id`)
-)
+  PRIMARY KEY (`id`))
 ENGINE=InnoDB DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci ROW_FORMAT=DYNAMIC;
 
 -- /*******************************************************
@@ -1028,8 +993,7 @@ CREATE TABLE `civicrm_campaign` (
   UNIQUE INDEX `UI_external_identifier`(external_identifier),
   CONSTRAINT FK_civicrm_campaign_parent_id FOREIGN KEY (`parent_id`) REFERENCES `civicrm_campaign`(`id`) ON DELETE SET NULL,
   CONSTRAINT FK_civicrm_campaign_created_id FOREIGN KEY (`created_id`) REFERENCES `civicrm_contact`(`id`) ON DELETE SET NULL,
-  CONSTRAINT FK_civicrm_campaign_last_modified_id FOREIGN KEY (`last_modified_id`) REFERENCES `civicrm_contact`(`id`) ON DELETE SET NULL
-)
+  CONSTRAINT FK_civicrm_campaign_last_modified_id FOREIGN KEY (`last_modified_id`) REFERENCES `civicrm_contact`(`id`) ON DELETE SET NULL)
 ENGINE=InnoDB DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci ROW_FORMAT=DYNAMIC;
 
 -- /*******************************************************
@@ -1046,8 +1010,7 @@ CREATE TABLE `civicrm_campaign_group` (
   `entity_table` varchar(64) DEFAULT NULL COMMENT 'Name of table where item being referenced is stored.',
   `entity_id` int unsigned DEFAULT NULL COMMENT 'Entity id of referenced table.',
   PRIMARY KEY (`id`),
-  CONSTRAINT FK_civicrm_campaign_group_campaign_id FOREIGN KEY (`campaign_id`) REFERENCES `civicrm_campaign`(`id`) ON DELETE CASCADE
-)
+  CONSTRAINT FK_civicrm_campaign_group_campaign_id FOREIGN KEY (`campaign_id`) REFERENCES `civicrm_campaign`(`id`) ON DELETE CASCADE)
 ENGINE=InnoDB DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci ROW_FORMAT=DYNAMIC;
 
 -- /*******************************************************
@@ -1081,8 +1044,7 @@ CREATE TABLE `civicrm_survey` (
   INDEX `UI_activity_type_id`(activity_type_id),
   CONSTRAINT FK_civicrm_survey_campaign_id FOREIGN KEY (`campaign_id`) REFERENCES `civicrm_campaign`(`id`) ON DELETE SET NULL,
   CONSTRAINT FK_civicrm_survey_created_id FOREIGN KEY (`created_id`) REFERENCES `civicrm_contact`(`id`) ON DELETE SET NULL,
-  CONSTRAINT FK_civicrm_survey_last_modified_id FOREIGN KEY (`last_modified_id`) REFERENCES `civicrm_contact`(`id`) ON DELETE SET NULL
-)
+  CONSTRAINT FK_civicrm_survey_last_modified_id FOREIGN KEY (`last_modified_id`) REFERENCES `civicrm_contact`(`id`) ON DELETE SET NULL)
 ENGINE=InnoDB DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci ROW_FORMAT=DYNAMIC;
 
 -- /*******************************************************
@@ -1102,8 +1064,7 @@ CREATE TABLE `civicrm_participant_status_type` (
   `is_counted` tinyint NOT NULL DEFAULT 0 COMMENT 'whether this status type is counted against event size limit',
   `weight` int unsigned NOT NULL COMMENT 'controls sort order',
   `visibility_id` int unsigned COMMENT 'whether the status type is visible to the public, an implicit foreign key to option_value.value related to the `visibility` option_group',
-  PRIMARY KEY (`id`)
-)
+  PRIMARY KEY (`id`))
 ENGINE=InnoDB DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci ROW_FORMAT=DYNAMIC;
 
 -- /*******************************************************
@@ -1116,8 +1077,7 @@ CREATE TABLE `civicrm_event_carts` (
   `user_id` int unsigned COMMENT 'FK to civicrm_contact who created this cart',
   `completed` tinyint NOT NULL DEFAULT 0,
   PRIMARY KEY (`id`),
-  CONSTRAINT FK_civicrm_event_carts_user_id FOREIGN KEY (`user_id`) REFERENCES `civicrm_contact`(`id`) ON DELETE SET NULL
-)
+  CONSTRAINT FK_civicrm_event_carts_user_id FOREIGN KEY (`user_id`) REFERENCES `civicrm_contact`(`id`) ON DELETE SET NULL)
 ENGINE=InnoDB DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci ROW_FORMAT=DYNAMIC;
 
 -- /*******************************************************
@@ -1136,8 +1096,7 @@ CREATE TABLE `civicrm_dedupe_rule_group` (
   `title` varchar(255) COMMENT 'Label of the rule group',
   `is_reserved` tinyint NOT NULL DEFAULT 0 COMMENT 'Is this a reserved rule - a rule group that has been optimized and cannot be changed by the admin',
   PRIMARY KEY (`id`),
-  UNIQUE INDEX `UI_name`(name)
-)
+  UNIQUE INDEX `UI_name`(name))
 ENGINE=InnoDB DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci ROW_FORMAT=DYNAMIC;
 
 -- /*******************************************************
@@ -1155,8 +1114,7 @@ CREATE TABLE `civicrm_dedupe_rule` (
   `rule_length` int unsigned COMMENT 'The length of the matching substring',
   `rule_weight` int NOT NULL COMMENT 'The weight of the rule',
   PRIMARY KEY (`id`),
-  CONSTRAINT FK_civicrm_dedupe_rule_dedupe_rule_group_id FOREIGN KEY (`dedupe_rule_group_id`) REFERENCES `civicrm_dedupe_rule_group`(`id`)
-)
+  CONSTRAINT FK_civicrm_dedupe_rule_dedupe_rule_group_id FOREIGN KEY (`dedupe_rule_group_id`) REFERENCES `civicrm_dedupe_rule_group`(`id`))
 ENGINE=InnoDB DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci ROW_FORMAT=DYNAMIC;
 
 -- /*******************************************************
@@ -1173,8 +1131,7 @@ CREATE TABLE `civicrm_dedupe_exception` (
   PRIMARY KEY (`id`),
   UNIQUE INDEX `UI_contact_id1_contact_id2`(contact_id1, contact_id2),
   CONSTRAINT FK_civicrm_dedupe_exception_contact_id1 FOREIGN KEY (`contact_id1`) REFERENCES `civicrm_contact`(`id`) ON DELETE CASCADE,
-  CONSTRAINT FK_civicrm_dedupe_exception_contact_id2 FOREIGN KEY (`contact_id2`) REFERENCES `civicrm_contact`(`id`) ON DELETE CASCADE
-)
+  CONSTRAINT FK_civicrm_dedupe_exception_contact_id2 FOREIGN KEY (`contact_id2`) REFERENCES `civicrm_contact`(`id`) ON DELETE CASCADE)
 ENGINE=InnoDB DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci ROW_FORMAT=DYNAMIC;
 
 -- /*******************************************************
@@ -1194,8 +1151,7 @@ CREATE TABLE `civicrm_case_type` (
   `weight` int NOT NULL DEFAULT 1 COMMENT 'Ordering of the case types',
   `definition` blob COMMENT 'xml definition of case type',
   PRIMARY KEY (`id`),
-  UNIQUE INDEX `case_type_name`(name)
-)
+  UNIQUE INDEX `case_type_name`(name))
 ENGINE=InnoDB DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci ROW_FORMAT=DYNAMIC;
 
 -- /*******************************************************
@@ -1214,8 +1170,7 @@ CREATE TABLE `civicrm_tell_friend` (
   `thankyou_title` varchar(255) COMMENT 'Text for Tell a Friend thank you page header and HTML title.',
   `thankyou_text` text COMMENT 'Thank you message displayed on success page.',
   `is_active` tinyint NOT NULL DEFAULT 1,
-  PRIMARY KEY (`id`)
-)
+  PRIMARY KEY (`id`))
 ENGINE=InnoDB DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci ROW_FORMAT=DYNAMIC;
 
 -- /*******************************************************
@@ -1236,8 +1191,7 @@ CREATE TABLE `civicrm_pledge_block` (
   `is_pledge_start_date_visible` tinyint NOT NULL DEFAULT 0 COMMENT 'If true - recurring start date is shown.',
   `is_pledge_start_date_editable` tinyint NOT NULL DEFAULT 0 COMMENT 'If true - recurring start date is editable.',
   PRIMARY KEY (`id`),
-  INDEX `index_entity`(entity_table, entity_id)
-)
+  INDEX `index_entity`(entity_table, entity_id))
 ENGINE=InnoDB DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci ROW_FORMAT=DYNAMIC;
 
 -- /*******************************************************
@@ -1260,8 +1214,7 @@ CREATE TABLE `civicrm_queue` (
   `error` varchar(16) NULL COMMENT 'Fallback behavior for unhandled errors',
   `is_template` tinyint NOT NULL DEFAULT 0 COMMENT 'Is this a template configuration (for use by other/future queues)?',
   PRIMARY KEY (`id`),
-  UNIQUE INDEX `UI_name`(name)
-)
+  UNIQUE INDEX `UI_name`(name))
 ENGINE=InnoDB DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci ROW_FORMAT=DYNAMIC;
 
 -- /*******************************************************
@@ -1280,8 +1233,7 @@ CREATE TABLE `civicrm_queue_item` (
   `run_count` int NOT NULL DEFAULT 0 COMMENT 'Number of times execution has been attempted.',
   `data` longtext COMMENT 'Serialized queue data',
   PRIMARY KEY (`id`),
-  INDEX `index_queueids`(queue_name, weight, id)
-)
+  INDEX `index_queueids`(queue_name, weight, id))
 ENGINE=InnoDB DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci ROW_FORMAT=DYNAMIC;
 
 -- /*******************************************************
@@ -1307,8 +1259,7 @@ CREATE TABLE `civicrm_pcp` (
   `is_active` tinyint NOT NULL DEFAULT 1 COMMENT 'Is Personal Campaign Page enabled/active?',
   `is_notify` tinyint NOT NULL DEFAULT 0 COMMENT 'Notify owner via email when someone donates to page?',
   PRIMARY KEY (`id`),
-  CONSTRAINT FK_civicrm_pcp_contact_id FOREIGN KEY (`contact_id`) REFERENCES `civicrm_contact`(`id`) ON DELETE CASCADE
-)
+  CONSTRAINT FK_civicrm_pcp_contact_id FOREIGN KEY (`contact_id`) REFERENCES `civicrm_contact`(`id`) ON DELETE CASCADE)
 ENGINE=InnoDB DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci ROW_FORMAT=DYNAMIC;
 
 -- /*******************************************************
@@ -1330,8 +1281,7 @@ CREATE TABLE `civicrm_cxn` (
   `fetched_date` timestamp NULL DEFAULT NULL COMMENT 'The last time the application metadata was fetched.',
   PRIMARY KEY (`id`),
   UNIQUE INDEX `UI_appid`(app_guid),
-  UNIQUE INDEX `UI_keypair_cxnid`(cxn_guid)
-)
+  UNIQUE INDEX `UI_keypair_cxnid`(cxn_guid))
 ENGINE=InnoDB DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci ROW_FORMAT=DYNAMIC;
 
 -- /*******************************************************
@@ -1352,8 +1302,7 @@ CREATE TABLE `civicrm_cache` (
   PRIMARY KEY (`id`),
   UNIQUE INDEX `UI_group_name_path`(group_name, path),
   INDEX `index_expired_date`(expired_date),
-  CONSTRAINT FK_civicrm_cache_component_id FOREIGN KEY (`component_id`) REFERENCES `civicrm_component`(`id`)
-)
+  CONSTRAINT FK_civicrm_cache_component_id FOREIGN KEY (`component_id`) REFERENCES `civicrm_component`(`id`))
 ENGINE=InnoDB DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci ROW_FORMAT=DYNAMIC;
 
 -- /*******************************************************
@@ -1375,8 +1324,7 @@ CREATE TABLE `civicrm_country` (
   PRIMARY KEY (`id`),
   UNIQUE INDEX `UI_name_iso_code`(name, iso_code),
   CONSTRAINT FK_civicrm_country_address_format_id FOREIGN KEY (`address_format_id`) REFERENCES `civicrm_address_format`(`id`),
-  CONSTRAINT FK_civicrm_country_region_id FOREIGN KEY (`region_id`) REFERENCES `civicrm_worldregion`(`id`)
-)
+  CONSTRAINT FK_civicrm_country_region_id FOREIGN KEY (`region_id`) REFERENCES `civicrm_worldregion`(`id`))
 ENGINE=InnoDB DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci ROW_FORMAT=DYNAMIC;
 
 -- /*******************************************************
@@ -1413,8 +1361,7 @@ CREATE TABLE `civicrm_custom_group` (
   PRIMARY KEY (`id`),
   UNIQUE INDEX `UI_title_extends`(title, extends),
   UNIQUE INDEX `UI_name`(name),
-  CONSTRAINT FK_civicrm_custom_group_created_id FOREIGN KEY (`created_id`) REFERENCES `civicrm_contact`(`id`) ON DELETE SET NULL
-)
+  CONSTRAINT FK_civicrm_custom_group_created_id FOREIGN KEY (`created_id`) REFERENCES `civicrm_contact`(`id`) ON DELETE SET NULL)
 ENGINE=InnoDB DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci ROW_FORMAT=DYNAMIC;
 
 -- /*******************************************************
@@ -1455,12 +1402,12 @@ CREATE TABLE `civicrm_custom_field` (
   `filter` varchar(255) COMMENT 'Stores Contact Get API params contact reference custom fields. May be used for other filters in the future.',
   `in_selector` tinyint NOT NULL DEFAULT 0 COMMENT 'Should the multi-record custom field values be displayed in tab table listing',
   `fk_entity` varchar(255) DEFAULT NULL COMMENT 'Name of entity being referenced.',
+  `fk_entity_on_delete` varchar(255) NOT NULL DEFAULT 'set_null' COMMENT 'Behavior if referenced entity is deleted.',
   PRIMARY KEY (`id`),
   UNIQUE INDEX `UI_label_custom_group_id`(label, custom_group_id),
   UNIQUE INDEX `UI_name_custom_group_id`(name, custom_group_id),
   CONSTRAINT FK_civicrm_custom_field_custom_group_id FOREIGN KEY (`custom_group_id`) REFERENCES `civicrm_custom_group`(`id`) ON DELETE CASCADE,
-  CONSTRAINT FK_civicrm_custom_field_option_group_id FOREIGN KEY (`option_group_id`) REFERENCES `civicrm_option_group`(`id`) ON DELETE SET NULL
-)
+  CONSTRAINT FK_civicrm_custom_field_option_group_id FOREIGN KEY (`option_group_id`) REFERENCES `civicrm_option_group`(`id`) ON DELETE SET NULL)
 ENGINE=InnoDB DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci ROW_FORMAT=DYNAMIC;
 
 -- /*******************************************************
@@ -1480,8 +1427,7 @@ CREATE TABLE `civicrm_domain` (
   `locale_custom_strings` text COMMENT 'Locale specific string overrides',
   PRIMARY KEY (`id`),
   UNIQUE INDEX `UI_name`(name),
-  CONSTRAINT FK_civicrm_domain_contact_id FOREIGN KEY (`contact_id`) REFERENCES `civicrm_contact`(`id`)
-)
+  CONSTRAINT FK_civicrm_domain_contact_id FOREIGN KEY (`contact_id`) REFERENCES `civicrm_contact`(`id`))
 ENGINE=InnoDB DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci ROW_FORMAT=DYNAMIC;
 
 -- /*******************************************************
@@ -1509,8 +1455,7 @@ CREATE TABLE `civicrm_email` (
   INDEX `UI_email`(email),
   INDEX `index_is_primary`(is_primary),
   INDEX `index_is_billing`(is_billing),
-  CONSTRAINT FK_civicrm_email_contact_id FOREIGN KEY (`contact_id`) REFERENCES `civicrm_contact`(`id`) ON DELETE CASCADE
-)
+  CONSTRAINT FK_civicrm_email_contact_id FOREIGN KEY (`contact_id`) REFERENCES `civicrm_contact`(`id`) ON DELETE CASCADE)
 ENGINE=InnoDB DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci ROW_FORMAT=DYNAMIC;
 
 -- /*******************************************************
@@ -1530,8 +1475,7 @@ CREATE TABLE `civicrm_file` (
   `upload_date` datetime COMMENT 'Date and time that this attachment was uploaded or written to server.',
   `created_id` int unsigned COMMENT 'FK to civicrm_contact, who uploaded this file',
   PRIMARY KEY (`id`),
-  CONSTRAINT FK_civicrm_file_created_id FOREIGN KEY (`created_id`) REFERENCES `civicrm_contact`(`id`) ON DELETE SET NULL
-)
+  CONSTRAINT FK_civicrm_file_created_id FOREIGN KEY (`created_id`) REFERENCES `civicrm_contact`(`id`) ON DELETE SET NULL)
 ENGINE=InnoDB DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci ROW_FORMAT=DYNAMIC;
 
 -- /*******************************************************
@@ -1554,8 +1498,7 @@ CREATE TABLE `civicrm_im` (
   INDEX `UI_provider_id`(provider_id),
   INDEX `index_is_primary`(is_primary),
   INDEX `index_is_billing`(is_billing),
-  CONSTRAINT FK_civicrm_im_contact_id FOREIGN KEY (`contact_id`) REFERENCES `civicrm_contact`(`id`) ON DELETE CASCADE
-)
+  CONSTRAINT FK_civicrm_im_contact_id FOREIGN KEY (`contact_id`) REFERENCES `civicrm_contact`(`id`) ON DELETE CASCADE)
 ENGINE=InnoDB DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci ROW_FORMAT=DYNAMIC;
 
 -- /*******************************************************
@@ -1578,8 +1521,7 @@ CREATE TABLE `civicrm_job` (
   `parameters` text COMMENT 'List of parameters to the command.',
   `is_active` tinyint NOT NULL DEFAULT 1 COMMENT 'Is this job active?',
   PRIMARY KEY (`id`),
-  CONSTRAINT FK_civicrm_job_domain_id FOREIGN KEY (`domain_id`) REFERENCES `civicrm_domain`(`id`)
-)
+  CONSTRAINT FK_civicrm_job_domain_id FOREIGN KEY (`domain_id`) REFERENCES `civicrm_domain`(`id`))
 ENGINE=InnoDB DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci ROW_FORMAT=DYNAMIC;
 
 -- /*******************************************************
@@ -1600,8 +1542,7 @@ CREATE TABLE `civicrm_job_log` (
   `data` longtext COMMENT 'Potential extended data for specific job run (e.g. tracebacks).',
   PRIMARY KEY (`id`),
   CONSTRAINT FK_civicrm_job_log_domain_id FOREIGN KEY (`domain_id`) REFERENCES `civicrm_domain`(`id`),
-  CONSTRAINT FK_civicrm_job_log_job_id FOREIGN KEY (`job_id`) REFERENCES `civicrm_job`(`id`) ON DELETE SET NULL
-)
+  CONSTRAINT FK_civicrm_job_log_job_id FOREIGN KEY (`job_id`) REFERENCES `civicrm_job`(`id`) ON DELETE SET NULL)
 ENGINE=InnoDB DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci ROW_FORMAT=DYNAMIC;
 
 -- /*******************************************************
@@ -1620,8 +1561,7 @@ CREATE TABLE `civicrm_log` (
   `modified_date` datetime COMMENT 'When was the referenced entity created or modified or deleted.',
   PRIMARY KEY (`id`),
   INDEX `index_entity`(entity_table, entity_id),
-  CONSTRAINT FK_civicrm_log_modified_id FOREIGN KEY (`modified_id`) REFERENCES `civicrm_contact`(`id`) ON DELETE CASCADE
-)
+  CONSTRAINT FK_civicrm_log_modified_id FOREIGN KEY (`modified_id`) REFERENCES `civicrm_contact`(`id`) ON DELETE CASCADE)
 ENGINE=InnoDB DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci ROW_FORMAT=DYNAMIC;
 
 -- /*******************************************************
@@ -1657,8 +1597,7 @@ CREATE TABLE `civicrm_mail_settings` (
   `activity_assignees` varchar(16) COMMENT 'Which email recipients to add as the activity assignees (from, to, cc, bcc).',
   PRIMARY KEY (`id`),
   CONSTRAINT FK_civicrm_mail_settings_domain_id FOREIGN KEY (`domain_id`) REFERENCES `civicrm_domain`(`id`) ON DELETE CASCADE,
-  CONSTRAINT FK_civicrm_mail_settings_campaign_id FOREIGN KEY (`campaign_id`) REFERENCES `civicrm_campaign`(`id`) ON DELETE SET NULL
-)
+  CONSTRAINT FK_civicrm_mail_settings_campaign_id FOREIGN KEY (`campaign_id`) REFERENCES `civicrm_campaign`(`id`) ON DELETE SET NULL)
 ENGINE=InnoDB DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci ROW_FORMAT=DYNAMIC;
 
 -- /*******************************************************
@@ -1686,8 +1625,7 @@ CREATE TABLE `civicrm_mapping_field` (
   PRIMARY KEY (`id`),
   CONSTRAINT FK_civicrm_mapping_field_mapping_id FOREIGN KEY (`mapping_id`) REFERENCES `civicrm_mapping`(`id`) ON DELETE CASCADE,
   CONSTRAINT FK_civicrm_mapping_field_location_type_id FOREIGN KEY (`location_type_id`) REFERENCES `civicrm_location_type`(`id`),
-  CONSTRAINT FK_civicrm_mapping_field_relationship_type_id FOREIGN KEY (`relationship_type_id`) REFERENCES `civicrm_relationship_type`(`id`)
-)
+  CONSTRAINT FK_civicrm_mapping_field_relationship_type_id FOREIGN KEY (`relationship_type_id`) REFERENCES `civicrm_relationship_type`(`id`))
 ENGINE=InnoDB DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci ROW_FORMAT=DYNAMIC;
 
 -- /*******************************************************
@@ -1723,8 +1661,7 @@ CREATE TABLE `civicrm_menu` (
   PRIMARY KEY (`id`),
   UNIQUE INDEX `UI_path_domain_id`(path, domain_id),
   CONSTRAINT FK_civicrm_menu_domain_id FOREIGN KEY (`domain_id`) REFERENCES `civicrm_domain`(`id`),
-  CONSTRAINT FK_civicrm_menu_component_id FOREIGN KEY (`component_id`) REFERENCES `civicrm_component`(`id`)
-)
+  CONSTRAINT FK_civicrm_menu_component_id FOREIGN KEY (`component_id`) REFERENCES `civicrm_component`(`id`))
 ENGINE=InnoDB DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci ROW_FORMAT=DYNAMIC;
 
 -- /*******************************************************
@@ -1749,8 +1686,7 @@ CREATE TABLE `civicrm_navigation` (
   `weight` int NOT NULL DEFAULT 0 COMMENT 'Ordering of the navigation items in various blocks.',
   PRIMARY KEY (`id`),
   CONSTRAINT FK_civicrm_navigation_domain_id FOREIGN KEY (`domain_id`) REFERENCES `civicrm_domain`(`id`),
-  CONSTRAINT FK_civicrm_navigation_parent_id FOREIGN KEY (`parent_id`) REFERENCES `civicrm_navigation`(`id`) ON DELETE CASCADE
-)
+  CONSTRAINT FK_civicrm_navigation_parent_id FOREIGN KEY (`parent_id`) REFERENCES `civicrm_navigation`(`id`) ON DELETE CASCADE)
 ENGINE=InnoDB DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci ROW_FORMAT=DYNAMIC;
 
 -- /*******************************************************
@@ -1773,8 +1709,7 @@ CREATE TABLE `civicrm_note` (
   `privacy` varchar(255) NOT NULL DEFAULT 0 COMMENT 'Foreign Key to Note Privacy Level (which is an option value pair and hence an implicit FK)',
   PRIMARY KEY (`id`),
   INDEX `index_entity`(entity_table, entity_id),
-  CONSTRAINT FK_civicrm_note_contact_id FOREIGN KEY (`contact_id`) REFERENCES `civicrm_contact`(`id`) ON DELETE SET NULL
-)
+  CONSTRAINT FK_civicrm_note_contact_id FOREIGN KEY (`contact_id`) REFERENCES `civicrm_contact`(`id`) ON DELETE SET NULL)
 ENGINE=InnoDB DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci ROW_FORMAT=DYNAMIC;
 
 -- /*******************************************************
@@ -1806,8 +1741,7 @@ CREATE TABLE `civicrm_option_value` (
   INDEX `index_option_group_id_name`(name(128), option_group_id),
   CONSTRAINT FK_civicrm_option_value_option_group_id FOREIGN KEY (`option_group_id`) REFERENCES `civicrm_option_group`(`id`) ON DELETE CASCADE,
   CONSTRAINT FK_civicrm_option_value_component_id FOREIGN KEY (`component_id`) REFERENCES `civicrm_component`(`id`),
-  CONSTRAINT FK_civicrm_option_value_domain_id FOREIGN KEY (`domain_id`) REFERENCES `civicrm_domain`(`id`)
-)
+  CONSTRAINT FK_civicrm_option_value_domain_id FOREIGN KEY (`domain_id`) REFERENCES `civicrm_domain`(`id`))
 ENGINE=InnoDB DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci ROW_FORMAT=DYNAMIC;
 
 -- /*******************************************************
@@ -1834,8 +1768,7 @@ CREATE TABLE `civicrm_phone` (
   INDEX `index_is_billing`(is_billing),
   INDEX `UI_mobile_provider_id`(mobile_provider_id),
   INDEX `index_phone_numeric`(phone_numeric),
-  CONSTRAINT FK_civicrm_phone_contact_id FOREIGN KEY (`contact_id`) REFERENCES `civicrm_contact`(`id`) ON DELETE CASCADE
-)
+  CONSTRAINT FK_civicrm_phone_contact_id FOREIGN KEY (`contact_id`) REFERENCES `civicrm_contact`(`id`) ON DELETE CASCADE)
 ENGINE=InnoDB DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci ROW_FORMAT=DYNAMIC;
 
 -- /*******************************************************
@@ -1851,8 +1784,7 @@ CREATE TABLE `civicrm_state_province` (
   `is_active` tinyint NOT NULL DEFAULT 1 COMMENT 'Is this StateProvince active?',
   PRIMARY KEY (`id`),
   UNIQUE INDEX `UI_name_country_id`(name, country_id),
-  CONSTRAINT FK_civicrm_state_province_country_id FOREIGN KEY (`country_id`) REFERENCES `civicrm_country`(`id`)
-)
+  CONSTRAINT FK_civicrm_state_province_country_id FOREIGN KEY (`country_id`) REFERENCES `civicrm_country`(`id`))
 ENGINE=InnoDB DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci ROW_FORMAT=DYNAMIC;
 
 -- /*******************************************************
@@ -1878,8 +1810,7 @@ CREATE TABLE `civicrm_tag` (
   PRIMARY KEY (`id`),
   UNIQUE INDEX `UI_name`(name),
   CONSTRAINT FK_civicrm_tag_parent_id FOREIGN KEY (`parent_id`) REFERENCES `civicrm_tag`(`id`),
-  CONSTRAINT FK_civicrm_tag_created_id FOREIGN KEY (`created_id`) REFERENCES `civicrm_contact`(`id`) ON DELETE SET NULL
-)
+  CONSTRAINT FK_civicrm_tag_created_id FOREIGN KEY (`created_id`) REFERENCES `civicrm_contact`(`id`) ON DELETE SET NULL)
 ENGINE=InnoDB DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci ROW_FORMAT=DYNAMIC;
 
 -- /*******************************************************
@@ -1902,8 +1833,7 @@ CREATE TABLE `civicrm_uf_match` (
   UNIQUE INDEX `UI_uf_name_domain_id`(uf_name, domain_id),
   UNIQUE INDEX `UI_contact_domain_id`(contact_id, domain_id),
   CONSTRAINT FK_civicrm_uf_match_domain_id FOREIGN KEY (`domain_id`) REFERENCES `civicrm_domain`(`id`),
-  CONSTRAINT FK_civicrm_uf_match_contact_id FOREIGN KEY (`contact_id`) REFERENCES `civicrm_contact`(`id`) ON DELETE CASCADE
-)
+  CONSTRAINT FK_civicrm_uf_match_contact_id FOREIGN KEY (`contact_id`) REFERENCES `civicrm_contact`(`id`) ON DELETE CASCADE)
 ENGINE=InnoDB DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci ROW_FORMAT=DYNAMIC;
 
 -- /*******************************************************
@@ -1929,8 +1859,7 @@ CREATE TABLE `civicrm_user_job` (
   PRIMARY KEY (`id`),
   UNIQUE INDEX `UI_name`(name),
   CONSTRAINT FK_civicrm_user_job_created_id FOREIGN KEY (`created_id`) REFERENCES `civicrm_contact`(`id`) ON DELETE SET NULL,
-  CONSTRAINT FK_civicrm_user_job_queue_id FOREIGN KEY (`queue_id`) REFERENCES `civicrm_queue`(`id`) ON DELETE SET NULL
-)
+  CONSTRAINT FK_civicrm_user_job_queue_id FOREIGN KEY (`queue_id`) REFERENCES `civicrm_queue`(`id`) ON DELETE SET NULL)
 ENGINE=InnoDB DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci ROW_FORMAT=DYNAMIC;
 
 -- /*******************************************************
@@ -1946,8 +1875,7 @@ CREATE TABLE `civicrm_timezone` (
   `offset` int,
   `country_id` int unsigned NOT NULL COMMENT 'Country ID',
   PRIMARY KEY (`id`),
-  CONSTRAINT FK_civicrm_timezone_country_id FOREIGN KEY (`country_id`) REFERENCES `civicrm_country`(`id`)
-)
+  CONSTRAINT FK_civicrm_timezone_country_id FOREIGN KEY (`country_id`) REFERENCES `civicrm_country`(`id`))
 ENGINE=InnoDB DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci ROW_FORMAT=DYNAMIC;
 
 -- /*******************************************************
@@ -1967,8 +1895,7 @@ CREATE TABLE `civicrm_openid` (
   PRIMARY KEY (`id`),
   INDEX `index_location_type`(location_type_id),
   UNIQUE INDEX `UI_openid`(openid),
-  CONSTRAINT FK_civicrm_openid_contact_id FOREIGN KEY (`contact_id`) REFERENCES `civicrm_contact`(`id`) ON DELETE CASCADE
-)
+  CONSTRAINT FK_civicrm_openid_contact_id FOREIGN KEY (`contact_id`) REFERENCES `civicrm_contact`(`id`) ON DELETE CASCADE)
 ENGINE=InnoDB DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci ROW_FORMAT=DYNAMIC;
 
 -- /*******************************************************
@@ -1985,8 +1912,7 @@ CREATE TABLE `civicrm_website` (
   `website_type_id` int unsigned COMMENT 'Which Website type does this website belong to.',
   PRIMARY KEY (`id`),
   INDEX `UI_website_type_id`(website_type_id),
-  CONSTRAINT FK_civicrm_website_contact_id FOREIGN KEY (`contact_id`) REFERENCES `civicrm_contact`(`id`) ON DELETE CASCADE
-)
+  CONSTRAINT FK_civicrm_website_contact_id FOREIGN KEY (`contact_id`) REFERENCES `civicrm_contact`(`id`) ON DELETE CASCADE)
 ENGINE=InnoDB DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci ROW_FORMAT=DYNAMIC;
 
 -- /*******************************************************
@@ -2011,8 +1937,7 @@ CREATE TABLE `civicrm_setting` (
   CONSTRAINT FK_civicrm_setting_domain_id FOREIGN KEY (`domain_id`) REFERENCES `civicrm_domain`(`id`) ON DELETE CASCADE,
   CONSTRAINT FK_civicrm_setting_contact_id FOREIGN KEY (`contact_id`) REFERENCES `civicrm_contact`(`id`) ON DELETE CASCADE,
   CONSTRAINT FK_civicrm_setting_component_id FOREIGN KEY (`component_id`) REFERENCES `civicrm_component`(`id`),
-  CONSTRAINT FK_civicrm_setting_created_id FOREIGN KEY (`created_id`) REFERENCES `civicrm_contact`(`id`) ON DELETE SET NULL
-)
+  CONSTRAINT FK_civicrm_setting_created_id FOREIGN KEY (`created_id`) REFERENCES `civicrm_contact`(`id`) ON DELETE SET NULL)
 ENGINE=InnoDB DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci ROW_FORMAT=DYNAMIC;
 
 -- /*******************************************************
@@ -2035,8 +1960,7 @@ CREATE TABLE `civicrm_print_label` (
   `is_reserved` tinyint NOT NULL DEFAULT 1 COMMENT 'Is this reserved label?',
   `created_id` int unsigned COMMENT 'FK to civicrm_contact, who created this label layout',
   PRIMARY KEY (`id`),
-  CONSTRAINT FK_civicrm_print_label_created_id FOREIGN KEY (`created_id`) REFERENCES `civicrm_contact`(`id`) ON DELETE SET NULL
-)
+  CONSTRAINT FK_civicrm_print_label_created_id FOREIGN KEY (`created_id`) REFERENCES `civicrm_contact`(`id`) ON DELETE SET NULL)
 ENGINE=InnoDB DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci ROW_FORMAT=DYNAMIC;
 
 -- /*******************************************************
@@ -2055,8 +1979,7 @@ CREATE TABLE `civicrm_word_replacement` (
   `domain_id` int unsigned COMMENT 'FK to Domain ID. This is for Domain specific word replacement',
   PRIMARY KEY (`id`),
   UNIQUE INDEX `UI_domain_find`(domain_id, find_word),
-  CONSTRAINT FK_civicrm_word_replacement_domain_id FOREIGN KEY (`domain_id`) REFERENCES `civicrm_domain`(`id`)
-)
+  CONSTRAINT FK_civicrm_word_replacement_domain_id FOREIGN KEY (`domain_id`) REFERENCES `civicrm_domain`(`id`))
 ENGINE=InnoDB DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci ROW_FORMAT=DYNAMIC;
 
 -- /*******************************************************
@@ -2077,8 +2000,7 @@ CREATE TABLE `civicrm_status_pref` (
   `is_active` tinyint NOT NULL DEFAULT 1 COMMENT 'Is this status check active?',
   PRIMARY KEY (`id`),
   INDEX `UI_status_pref_name`(name),
-  CONSTRAINT FK_civicrm_status_pref_domain_id FOREIGN KEY (`domain_id`) REFERENCES `civicrm_domain`(`id`)
-)
+  CONSTRAINT FK_civicrm_status_pref_domain_id FOREIGN KEY (`domain_id`) REFERENCES `civicrm_domain`(`id`))
 ENGINE=InnoDB DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci ROW_FORMAT=DYNAMIC;
 
 -- /*******************************************************
@@ -2119,8 +2041,7 @@ CREATE TABLE `civicrm_group` (
   UNIQUE INDEX `UI_name`(name),
   CONSTRAINT FK_civicrm_group_saved_search_id FOREIGN KEY (`saved_search_id`) REFERENCES `civicrm_saved_search`(`id`) ON DELETE CASCADE,
   CONSTRAINT FK_civicrm_group_created_id FOREIGN KEY (`created_id`) REFERENCES `civicrm_contact`(`id`) ON DELETE SET NULL,
-  CONSTRAINT FK_civicrm_group_modified_id FOREIGN KEY (`modified_id`) REFERENCES `civicrm_contact`(`id`) ON DELETE SET NULL
-)
+  CONSTRAINT FK_civicrm_group_modified_id FOREIGN KEY (`modified_id`) REFERENCES `civicrm_contact`(`id`) ON DELETE SET NULL)
 ENGINE=InnoDB DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci ROW_FORMAT=DYNAMIC;
 
 -- /*******************************************************
@@ -2140,8 +2061,7 @@ CREATE TABLE `civicrm_subscription_history` (
   `tracking` varchar(255) COMMENT 'IP address or other tracking info',
   PRIMARY KEY (`id`),
   CONSTRAINT FK_civicrm_subscription_history_contact_id FOREIGN KEY (`contact_id`) REFERENCES `civicrm_contact`(`id`) ON DELETE CASCADE,
-  CONSTRAINT FK_civicrm_subscription_history_group_id FOREIGN KEY (`group_id`) REFERENCES `civicrm_group`(`id`) ON DELETE CASCADE
-)
+  CONSTRAINT FK_civicrm_subscription_history_group_id FOREIGN KEY (`group_id`) REFERENCES `civicrm_group`(`id`) ON DELETE CASCADE)
 ENGINE=InnoDB DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci ROW_FORMAT=DYNAMIC;
 
 -- /*******************************************************
@@ -2158,8 +2078,7 @@ CREATE TABLE `civicrm_group_contact_cache` (
   PRIMARY KEY (`id`),
   UNIQUE INDEX `UI_contact_group`(contact_id, group_id),
   CONSTRAINT FK_civicrm_group_contact_cache_group_id FOREIGN KEY (`group_id`) REFERENCES `civicrm_group`(`id`) ON DELETE CASCADE,
-  CONSTRAINT FK_civicrm_group_contact_cache_contact_id FOREIGN KEY (`contact_id`) REFERENCES `civicrm_contact`(`id`) ON DELETE CASCADE
-)
+  CONSTRAINT FK_civicrm_group_contact_cache_contact_id FOREIGN KEY (`contact_id`) REFERENCES `civicrm_contact`(`id`) ON DELETE CASCADE)
 ENGINE=InnoDB DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci ROW_FORMAT=DYNAMIC;
 
 -- /*******************************************************
@@ -2175,8 +2094,7 @@ CREATE TABLE `civicrm_group_nesting` (
   `parent_group_id` int unsigned NOT NULL COMMENT 'ID of the parent group',
   PRIMARY KEY (`id`),
   CONSTRAINT FK_civicrm_group_nesting_child_group_id FOREIGN KEY (`child_group_id`) REFERENCES `civicrm_group`(`id`) ON DELETE CASCADE,
-  CONSTRAINT FK_civicrm_group_nesting_parent_group_id FOREIGN KEY (`parent_group_id`) REFERENCES `civicrm_group`(`id`) ON DELETE CASCADE
-)
+  CONSTRAINT FK_civicrm_group_nesting_parent_group_id FOREIGN KEY (`parent_group_id`) REFERENCES `civicrm_group`(`id`) ON DELETE CASCADE)
 ENGINE=InnoDB DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci ROW_FORMAT=DYNAMIC;
 
 -- /*******************************************************
@@ -2193,8 +2111,7 @@ CREATE TABLE `civicrm_group_organization` (
   PRIMARY KEY (`id`),
   UNIQUE INDEX `UI_group_organization`(group_id, organization_id),
   CONSTRAINT FK_civicrm_group_organization_group_id FOREIGN KEY (`group_id`) REFERENCES `civicrm_group`(`id`) ON DELETE CASCADE,
-  CONSTRAINT FK_civicrm_group_organization_organization_id FOREIGN KEY (`organization_id`) REFERENCES `civicrm_contact`(`id`) ON DELETE CASCADE
-)
+  CONSTRAINT FK_civicrm_group_organization_organization_id FOREIGN KEY (`organization_id`) REFERENCES `civicrm_contact`(`id`) ON DELETE CASCADE)
 ENGINE=InnoDB DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci ROW_FORMAT=DYNAMIC;
 
 -- /*******************************************************
@@ -2212,8 +2129,7 @@ CREATE TABLE `civicrm_mailing_event_subscribe` (
   `time_stamp` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT 'When this subscription event occurred.',
   PRIMARY KEY (`id`),
   CONSTRAINT FK_civicrm_mailing_event_subscribe_group_id FOREIGN KEY (`group_id`) REFERENCES `civicrm_group`(`id`) ON DELETE CASCADE,
-  CONSTRAINT FK_civicrm_mailing_event_subscribe_contact_id FOREIGN KEY (`contact_id`) REFERENCES `civicrm_contact`(`id`) ON DELETE CASCADE
-)
+  CONSTRAINT FK_civicrm_mailing_event_subscribe_contact_id FOREIGN KEY (`contact_id`) REFERENCES `civicrm_contact`(`id`) ON DELETE CASCADE)
 ENGINE=InnoDB DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci ROW_FORMAT=DYNAMIC;
 
 -- /*******************************************************
@@ -2228,8 +2144,7 @@ CREATE TABLE `civicrm_mailing_event_confirm` (
   `event_subscribe_id` int unsigned NOT NULL COMMENT 'FK to civicrm_mailing_event_subscribe',
   `time_stamp` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT 'When this confirmation event occurred.',
   PRIMARY KEY (`id`),
-  CONSTRAINT FK_civicrm_mailing_event_confirm_event_subscribe_id FOREIGN KEY (`event_subscribe_id`) REFERENCES `civicrm_mailing_event_subscribe`(`id`) ON DELETE CASCADE
-)
+  CONSTRAINT FK_civicrm_mailing_event_confirm_event_subscribe_id FOREIGN KEY (`event_subscribe_id`) REFERENCES `civicrm_mailing_event_subscribe`(`id`) ON DELETE CASCADE)
 ENGINE=InnoDB DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci ROW_FORMAT=DYNAMIC;
 
 -- /*******************************************************
@@ -2291,8 +2206,7 @@ CREATE TABLE `civicrm_contribution_page` (
   UNIQUE INDEX `UI_name`(name),
   CONSTRAINT FK_civicrm_contribution_page_financial_type_id FOREIGN KEY (`financial_type_id`) REFERENCES `civicrm_financial_type`(`id`),
   CONSTRAINT FK_civicrm_contribution_page_created_id FOREIGN KEY (`created_id`) REFERENCES `civicrm_contact`(`id`) ON DELETE SET NULL,
-  CONSTRAINT FK_civicrm_contribution_page_campaign_id FOREIGN KEY (`campaign_id`) REFERENCES `civicrm_campaign`(`id`) ON DELETE SET NULL
-)
+  CONSTRAINT FK_civicrm_contribution_page_campaign_id FOREIGN KEY (`campaign_id`) REFERENCES `civicrm_campaign`(`id`) ON DELETE SET NULL)
 ENGINE=InnoDB DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci ROW_FORMAT=DYNAMIC;
 
 -- /*******************************************************
@@ -2323,8 +2237,7 @@ CREATE TABLE `civicrm_product` (
   `frequency_unit` varchar(8) DEFAULT 'month' COMMENT 'Frequency unit and interval allow option to store actual delivery frequency for a subscription or service.',
   `frequency_interval` int COMMENT 'Number of units for delivery frequency of subscription, service, membership (e.g. every 3 Months).',
   PRIMARY KEY (`id`),
-  CONSTRAINT FK_civicrm_product_financial_type_id FOREIGN KEY (`financial_type_id`) REFERENCES `civicrm_financial_type`(`id`) ON DELETE SET NULL
-)
+  CONSTRAINT FK_civicrm_product_financial_type_id FOREIGN KEY (`financial_type_id`) REFERENCES `civicrm_financial_type`(`id`) ON DELETE SET NULL)
 ENGINE=InnoDB DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci ROW_FORMAT=DYNAMIC;
 
 -- /*******************************************************
@@ -2343,8 +2256,7 @@ CREATE TABLE `civicrm_premiums_product` (
   PRIMARY KEY (`id`),
   CONSTRAINT FK_civicrm_premiums_product_premiums_id FOREIGN KEY (`premiums_id`) REFERENCES `civicrm_premiums`(`id`),
   CONSTRAINT FK_civicrm_premiums_product_product_id FOREIGN KEY (`product_id`) REFERENCES `civicrm_product`(`id`),
-  CONSTRAINT FK_civicrm_premiums_product_financial_type_id FOREIGN KEY (`financial_type_id`) REFERENCES `civicrm_financial_type`(`id`) ON DELETE SET NULL
-)
+  CONSTRAINT FK_civicrm_premiums_product_financial_type_id FOREIGN KEY (`financial_type_id`) REFERENCES `civicrm_financial_type`(`id`) ON DELETE SET NULL)
 ENGINE=InnoDB DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci ROW_FORMAT=DYNAMIC;
 
 -- /*******************************************************
@@ -2373,8 +2285,7 @@ CREATE TABLE `civicrm_contribution_widget` (
   `color_about_link` varchar(10),
   `color_homepage_link` varchar(10),
   PRIMARY KEY (`id`),
-  CONSTRAINT FK_civicrm_contribution_widget_contribution_page_id FOREIGN KEY (`contribution_page_id`) REFERENCES `civicrm_contribution_page`(`id`) ON DELETE CASCADE
-)
+  CONSTRAINT FK_civicrm_contribution_widget_contribution_page_id FOREIGN KEY (`contribution_page_id`) REFERENCES `civicrm_contribution_page`(`id`) ON DELETE CASCADE)
 ENGINE=InnoDB DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci ROW_FORMAT=DYNAMIC;
 
 -- /*******************************************************
@@ -2410,8 +2321,7 @@ CREATE TABLE `civicrm_payment_processor` (
   PRIMARY KEY (`id`),
   UNIQUE INDEX `UI_name_test_domain_id`(name, is_test, domain_id),
   CONSTRAINT FK_civicrm_payment_processor_domain_id FOREIGN KEY (`domain_id`) REFERENCES `civicrm_domain`(`id`),
-  CONSTRAINT FK_civicrm_payment_processor_payment_processor_type_id FOREIGN KEY (`payment_processor_type_id`) REFERENCES `civicrm_payment_processor_type`(`id`)
-)
+  CONSTRAINT FK_civicrm_payment_processor_payment_processor_type_id FOREIGN KEY (`payment_processor_type_id`) REFERENCES `civicrm_payment_processor_type`(`id`))
 ENGINE=InnoDB DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci ROW_FORMAT=DYNAMIC;
 
 -- /*******************************************************
@@ -2438,8 +2348,7 @@ CREATE TABLE `civicrm_payment_token` (
   PRIMARY KEY (`id`),
   CONSTRAINT FK_civicrm_payment_token_contact_id FOREIGN KEY (`contact_id`) REFERENCES `civicrm_contact`(`id`) ON DELETE CASCADE,
   CONSTRAINT FK_civicrm_payment_token_payment_processor_id FOREIGN KEY (`payment_processor_id`) REFERENCES `civicrm_payment_processor`(`id`) ON DELETE RESTRICT,
-  CONSTRAINT FK_civicrm_payment_token_created_id FOREIGN KEY (`created_id`) REFERENCES `civicrm_contact`(`id`) ON DELETE SET NULL
-)
+  CONSTRAINT FK_civicrm_payment_token_created_id FOREIGN KEY (`created_id`) REFERENCES `civicrm_contact`(`id`) ON DELETE SET NULL)
 ENGINE=InnoDB DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci ROW_FORMAT=DYNAMIC;
 
 -- /*******************************************************
@@ -2462,8 +2371,7 @@ CREATE TABLE `civicrm_sms_provider` (
   `is_active` tinyint NOT NULL DEFAULT 1,
   `domain_id` int unsigned COMMENT 'Which Domain is this sms provider for',
   PRIMARY KEY (`id`),
-  CONSTRAINT FK_civicrm_sms_provider_domain_id FOREIGN KEY (`domain_id`) REFERENCES `civicrm_domain`(`id`) ON DELETE SET NULL
-)
+  CONSTRAINT FK_civicrm_sms_provider_domain_id FOREIGN KEY (`domain_id`) REFERENCES `civicrm_domain`(`id`) ON DELETE SET NULL)
 ENGINE=InnoDB DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci ROW_FORMAT=DYNAMIC;
 
 -- /*******************************************************
@@ -2499,8 +2407,7 @@ CREATE TABLE `civicrm_membership_type` (
   INDEX `index_relationship_type_id`(relationship_type_id),
   CONSTRAINT FK_civicrm_membership_type_domain_id FOREIGN KEY (`domain_id`) REFERENCES `civicrm_domain`(`id`),
   CONSTRAINT FK_civicrm_membership_type_member_of_contact_id FOREIGN KEY (`member_of_contact_id`) REFERENCES `civicrm_contact`(`id`) ON DELETE RESTRICT,
-  CONSTRAINT FK_civicrm_membership_type_financial_type_id FOREIGN KEY (`financial_type_id`) REFERENCES `civicrm_financial_type`(`id`)
-)
+  CONSTRAINT FK_civicrm_membership_type_financial_type_id FOREIGN KEY (`financial_type_id`) REFERENCES `civicrm_financial_type`(`id`))
 ENGINE=InnoDB DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci ROW_FORMAT=DYNAMIC;
 
 -- /*******************************************************
@@ -2526,8 +2433,7 @@ CREATE TABLE `civicrm_membership_block` (
   `is_active` tinyint NOT NULL DEFAULT 1 COMMENT 'Is this membership_block enabled',
   PRIMARY KEY (`id`),
   CONSTRAINT FK_civicrm_membership_block_entity_id FOREIGN KEY (`entity_id`) REFERENCES `civicrm_contribution_page`(`id`),
-  CONSTRAINT FK_civicrm_membership_block_membership_type_default FOREIGN KEY (`membership_type_default`) REFERENCES `civicrm_membership_type`(`id`)
-)
+  CONSTRAINT FK_civicrm_membership_block_membership_type_default FOREIGN KEY (`membership_type_default`) REFERENCES `civicrm_membership_type`(`id`))
 ENGINE=InnoDB DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci ROW_FORMAT=DYNAMIC;
 
 -- /*******************************************************
@@ -2551,8 +2457,7 @@ CREATE TABLE `civicrm_case` (
   PRIMARY KEY (`id`),
   INDEX `index_case_type_id`(case_type_id),
   INDEX `index_is_deleted`(is_deleted),
-  CONSTRAINT FK_civicrm_case_case_type_id FOREIGN KEY (`case_type_id`) REFERENCES `civicrm_case_type`(`id`)
-)
+  CONSTRAINT FK_civicrm_case_case_type_id FOREIGN KEY (`case_type_id`) REFERENCES `civicrm_case_type`(`id`))
 ENGINE=InnoDB DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci ROW_FORMAT=DYNAMIC;
 
 -- /*******************************************************
@@ -2569,8 +2474,7 @@ CREATE TABLE `civicrm_case_contact` (
   PRIMARY KEY (`id`),
   UNIQUE INDEX `UI_case_contact_id`(case_id, contact_id),
   CONSTRAINT FK_civicrm_case_contact_case_id FOREIGN KEY (`case_id`) REFERENCES `civicrm_case`(`id`) ON DELETE CASCADE,
-  CONSTRAINT FK_civicrm_case_contact_contact_id FOREIGN KEY (`contact_id`) REFERENCES `civicrm_contact`(`id`) ON DELETE CASCADE
-)
+  CONSTRAINT FK_civicrm_case_contact_contact_id FOREIGN KEY (`contact_id`) REFERENCES `civicrm_contact`(`id`) ON DELETE CASCADE)
 ENGINE=InnoDB DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci ROW_FORMAT=DYNAMIC;
 
 -- /*******************************************************
@@ -2607,8 +2511,7 @@ CREATE TABLE `civicrm_pledge` (
   CONSTRAINT FK_civicrm_pledge_contact_id FOREIGN KEY (`contact_id`) REFERENCES `civicrm_contact`(`id`) ON DELETE CASCADE,
   CONSTRAINT FK_civicrm_pledge_financial_type_id FOREIGN KEY (`financial_type_id`) REFERENCES `civicrm_financial_type`(`id`),
   CONSTRAINT FK_civicrm_pledge_contribution_page_id FOREIGN KEY (`contribution_page_id`) REFERENCES `civicrm_contribution_page`(`id`) ON DELETE SET NULL,
-  CONSTRAINT FK_civicrm_pledge_campaign_id FOREIGN KEY (`campaign_id`) REFERENCES `civicrm_campaign`(`id`) ON DELETE SET NULL
-)
+  CONSTRAINT FK_civicrm_pledge_campaign_id FOREIGN KEY (`campaign_id`) REFERENCES `civicrm_campaign`(`id`) ON DELETE SET NULL)
 ENGINE=InnoDB DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci ROW_FORMAT=DYNAMIC;
 
 -- /*******************************************************
@@ -2645,8 +2548,7 @@ CREATE TABLE `civicrm_report_instance` (
   CONSTRAINT FK_civicrm_report_instance_created_id FOREIGN KEY (`created_id`) REFERENCES `civicrm_contact`(`id`) ON DELETE SET NULL,
   CONSTRAINT FK_civicrm_report_instance_owner_id FOREIGN KEY (`owner_id`) REFERENCES `civicrm_contact`(`id`) ON DELETE SET NULL,
   CONSTRAINT FK_civicrm_report_instance_navigation_id FOREIGN KEY (`navigation_id`) REFERENCES `civicrm_navigation`(`id`) ON DELETE SET NULL,
-  CONSTRAINT FK_civicrm_report_instance_drilldown_id FOREIGN KEY (`drilldown_id`) REFERENCES `civicrm_report_instance`(`id`) ON DELETE SET NULL
-)
+  CONSTRAINT FK_civicrm_report_instance_drilldown_id FOREIGN KEY (`drilldown_id`) REFERENCES `civicrm_report_instance`(`id`) ON DELETE SET NULL)
 ENGINE=InnoDB DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci ROW_FORMAT=DYNAMIC;
 
 -- /*******************************************************
@@ -2671,8 +2573,7 @@ CREATE TABLE `civicrm_price_set` (
   PRIMARY KEY (`id`),
   UNIQUE INDEX `UI_name`(name),
   CONSTRAINT FK_civicrm_price_set_domain_id FOREIGN KEY (`domain_id`) REFERENCES `civicrm_domain`(`id`),
-  CONSTRAINT FK_civicrm_price_set_financial_type_id FOREIGN KEY (`financial_type_id`) REFERENCES `civicrm_financial_type`(`id`) ON DELETE SET NULL
-)
+  CONSTRAINT FK_civicrm_price_set_financial_type_id FOREIGN KEY (`financial_type_id`) REFERENCES `civicrm_financial_type`(`id`) ON DELETE SET NULL)
 ENGINE=InnoDB DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci ROW_FORMAT=DYNAMIC;
 
 -- /*******************************************************
@@ -2687,8 +2588,7 @@ CREATE TABLE `civicrm_price_set_entity` (
   `price_set_id` int unsigned NOT NULL COMMENT 'price set being used',
   PRIMARY KEY (`id`),
   UNIQUE INDEX `UI_entity`(entity_table, entity_id),
-  CONSTRAINT FK_civicrm_price_set_entity_price_set_id FOREIGN KEY (`price_set_id`) REFERENCES `civicrm_price_set`(`id`)
-)
+  CONSTRAINT FK_civicrm_price_set_entity_price_set_id FOREIGN KEY (`price_set_id`) REFERENCES `civicrm_price_set`(`id`))
 ENGINE=InnoDB DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci ROW_FORMAT=DYNAMIC;
 
 -- /*******************************************************
@@ -2704,8 +2604,7 @@ CREATE TABLE `civicrm_county` (
   `is_active` tinyint NOT NULL DEFAULT 1 COMMENT 'Is this County active?',
   PRIMARY KEY (`id`),
   UNIQUE INDEX `UI_name_state_id`(name, state_province_id),
-  CONSTRAINT FK_civicrm_county_state_province_id FOREIGN KEY (`state_province_id`) REFERENCES `civicrm_state_province`(`id`)
-)
+  CONSTRAINT FK_civicrm_county_state_province_id FOREIGN KEY (`state_province_id`) REFERENCES `civicrm_state_province`(`id`))
 ENGINE=InnoDB DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci ROW_FORMAT=DYNAMIC;
 
 -- /*******************************************************
@@ -2729,8 +2628,7 @@ CREATE TABLE `civicrm_dashboard` (
   `cache_minutes` int unsigned NOT NULL DEFAULT 60 COMMENT 'Number of minutes to cache dashlet content in browser localStorage.',
   `directive` varchar(255) COMMENT 'Element name of angular directive to invoke (lowercase hyphenated format)',
   PRIMARY KEY (`id`),
-  CONSTRAINT FK_civicrm_dashboard_domain_id FOREIGN KEY (`domain_id`) REFERENCES `civicrm_domain`(`id`) ON DELETE CASCADE
-)
+  CONSTRAINT FK_civicrm_dashboard_domain_id FOREIGN KEY (`domain_id`) REFERENCES `civicrm_domain`(`id`) ON DELETE CASCADE)
 ENGINE=InnoDB DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci ROW_FORMAT=DYNAMIC;
 
 -- /*******************************************************
@@ -2750,8 +2648,7 @@ CREATE TABLE `civicrm_discount` (
   PRIMARY KEY (`id`),
   INDEX `index_entity`(entity_table, entity_id),
   INDEX `index_entity_option_id`(entity_table, entity_id, price_set_id),
-  CONSTRAINT FK_civicrm_discount_price_set_id FOREIGN KEY (`price_set_id`) REFERENCES `civicrm_price_set`(`id`) ON DELETE CASCADE
-)
+  CONSTRAINT FK_civicrm_discount_price_set_id FOREIGN KEY (`price_set_id`) REFERENCES `civicrm_price_set`(`id`) ON DELETE CASCADE)
 ENGINE=InnoDB DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci ROW_FORMAT=DYNAMIC;
 
 -- /*******************************************************
@@ -2768,8 +2665,7 @@ CREATE TABLE `civicrm_entity_file` (
   `file_id` int unsigned NOT NULL COMMENT 'FK to civicrm_file',
   PRIMARY KEY (`id`),
   UNIQUE INDEX `UI_entity_id_entity_table_file_id`(entity_id, entity_table, file_id),
-  CONSTRAINT FK_civicrm_entity_file_file_id FOREIGN KEY (`file_id`) REFERENCES `civicrm_file`(`id`)
-)
+  CONSTRAINT FK_civicrm_entity_file_file_id FOREIGN KEY (`file_id`) REFERENCES `civicrm_file`(`id`))
 ENGINE=InnoDB DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci ROW_FORMAT=DYNAMIC;
 
 -- /*******************************************************
@@ -2786,8 +2682,7 @@ CREATE TABLE `civicrm_entity_tag` (
   `tag_id` int unsigned NOT NULL COMMENT 'FK to civicrm_tag',
   PRIMARY KEY (`id`),
   UNIQUE INDEX `UI_entity_id_entity_table_tag_id`(entity_id, entity_table, tag_id),
-  CONSTRAINT FK_civicrm_entity_tag_tag_id FOREIGN KEY (`tag_id`) REFERENCES `civicrm_tag`(`id`) ON DELETE CASCADE
-)
+  CONSTRAINT FK_civicrm_entity_tag_tag_id FOREIGN KEY (`tag_id`) REFERENCES `civicrm_tag`(`id`) ON DELETE CASCADE)
 ENGINE=InnoDB DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci ROW_FORMAT=DYNAMIC;
 
 -- /*******************************************************
@@ -2799,10 +2694,11 @@ ENGINE=InnoDB DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci ROW_FORMA
 -- *******************************************************/
 CREATE TABLE `civicrm_uf_group` (
   `id` int unsigned NOT NULL AUTO_INCREMENT COMMENT 'Unique table ID',
+  `name` varchar(64) NOT NULL COMMENT 'Name of the UF group for directly addressing it in the codebase',
   `is_active` tinyint NOT NULL DEFAULT 1 COMMENT 'Is this profile currently active? If false, hide all related fields for all sharing contexts.',
   `group_type` varchar(255) COMMENT 'Comma separated list of the type(s) of profile fields.',
   `title` varchar(64) NOT NULL COMMENT 'Form title.',
-  `frontend_title` varchar(64) COMMENT 'Profile Form Public title',
+  `frontend_title` varchar(64) NOT NULL COMMENT 'Profile Form Public title',
   `description` text COMMENT 'Optional verbose description of the profile.',
   `help_pre` text COMMENT 'Description and/or help text to display before fields in form.',
   `help_post` text COMMENT 'Description and/or help text to display after fields in form.',
@@ -2818,7 +2714,6 @@ CREATE TABLE `civicrm_uf_group` (
   `is_cms_user` tinyint NOT NULL DEFAULT 0 COMMENT 'Should we create a cms user for this profile ',
   `notify` text,
   `is_reserved` tinyint NOT NULL DEFAULT 0 COMMENT 'Is this group reserved for use by some other CiviCRM functionality?',
-  `name` varchar(64) COMMENT 'Name of the UF group for directly addressing it in the codebase',
   `created_id` int unsigned COMMENT 'FK to civicrm_contact, who created this UF group',
   `created_date` datetime COMMENT 'Date and time this UF group was created.',
   `is_proximity_search` tinyint NOT NULL DEFAULT 0 COMMENT 'Should we include proximity search feature in this profile search form?',
@@ -2829,8 +2724,7 @@ CREATE TABLE `civicrm_uf_group` (
   UNIQUE INDEX `UI_name`(name),
   CONSTRAINT FK_civicrm_uf_group_limit_listings_group_id FOREIGN KEY (`limit_listings_group_id`) REFERENCES `civicrm_group`(`id`) ON DELETE SET NULL,
   CONSTRAINT FK_civicrm_uf_group_add_to_group_id FOREIGN KEY (`add_to_group_id`) REFERENCES `civicrm_group`(`id`) ON DELETE SET NULL,
-  CONSTRAINT FK_civicrm_uf_group_created_id FOREIGN KEY (`created_id`) REFERENCES `civicrm_contact`(`id`) ON DELETE SET NULL
-)
+  CONSTRAINT FK_civicrm_uf_group_created_id FOREIGN KEY (`created_id`) REFERENCES `civicrm_contact`(`id`) ON DELETE SET NULL)
 ENGINE=InnoDB DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci ROW_FORMAT=DYNAMIC;
 
 -- /*******************************************************
@@ -2863,8 +2757,7 @@ CREATE TABLE `civicrm_uf_field` (
   PRIMARY KEY (`id`),
   INDEX `IX_website_type_id`(website_type_id),
   CONSTRAINT FK_civicrm_uf_field_uf_group_id FOREIGN KEY (`uf_group_id`) REFERENCES `civicrm_uf_group`(`id`) ON DELETE CASCADE,
-  CONSTRAINT FK_civicrm_uf_field_location_type_id FOREIGN KEY (`location_type_id`) REFERENCES `civicrm_location_type`(`id`) ON DELETE SET NULL
-)
+  CONSTRAINT FK_civicrm_uf_field_location_type_id FOREIGN KEY (`location_type_id`) REFERENCES `civicrm_location_type`(`id`) ON DELETE SET NULL)
 ENGINE=InnoDB DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci ROW_FORMAT=DYNAMIC;
 
 -- /*******************************************************
@@ -2885,8 +2778,7 @@ CREATE TABLE `civicrm_uf_join` (
   `module_data` longtext COMMENT 'Json serialized array of data used by the ufjoin.module',
   PRIMARY KEY (`id`),
   INDEX `index_entity`(entity_table, entity_id),
-  CONSTRAINT FK_civicrm_uf_join_uf_group_id FOREIGN KEY (`uf_group_id`) REFERENCES `civicrm_uf_group`(`id`)
-)
+  CONSTRAINT FK_civicrm_uf_join_uf_group_id FOREIGN KEY (`uf_group_id`) REFERENCES `civicrm_uf_group`(`id`))
 ENGINE=InnoDB DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci ROW_FORMAT=DYNAMIC;
 
 -- /*******************************************************
@@ -2944,8 +2836,7 @@ CREATE TABLE `civicrm_action_schedule` (
   CONSTRAINT FK_civicrm_action_schedule_group_id FOREIGN KEY (`group_id`) REFERENCES `civicrm_group`(`id`) ON DELETE SET NULL,
   CONSTRAINT FK_civicrm_action_schedule_msg_template_id FOREIGN KEY (`msg_template_id`) REFERENCES `civicrm_msg_template`(`id`) ON DELETE SET NULL,
   CONSTRAINT FK_civicrm_action_schedule_sms_template_id FOREIGN KEY (`sms_template_id`) REFERENCES `civicrm_msg_template`(`id`) ON DELETE SET NULL,
-  CONSTRAINT FK_civicrm_action_schedule_sms_provider_id FOREIGN KEY (`sms_provider_id`) REFERENCES `civicrm_sms_provider`(`id`) ON DELETE SET NULL
-)
+  CONSTRAINT FK_civicrm_action_schedule_sms_provider_id FOREIGN KEY (`sms_provider_id`) REFERENCES `civicrm_sms_provider`(`id`) ON DELETE SET NULL)
 ENGINE=InnoDB DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci ROW_FORMAT=DYNAMIC;
 
 -- /*******************************************************
@@ -2968,8 +2859,7 @@ CREATE TABLE `civicrm_action_log` (
   `reference_date` datetime DEFAULT NULL COMMENT 'Stores the date from the entity which triggered this reminder action (e.g. membership.end_date for most membership renewal reminders)',
   PRIMARY KEY (`id`),
   CONSTRAINT FK_civicrm_action_log_contact_id FOREIGN KEY (`contact_id`) REFERENCES `civicrm_contact`(`id`) ON DELETE CASCADE,
-  CONSTRAINT FK_civicrm_action_log_action_schedule_id FOREIGN KEY (`action_schedule_id`) REFERENCES `civicrm_action_schedule`(`id`) ON DELETE CASCADE
-)
+  CONSTRAINT FK_civicrm_action_log_action_schedule_id FOREIGN KEY (`action_schedule_id`) REFERENCES `civicrm_action_schedule`(`id`) ON DELETE CASCADE)
 ENGINE=InnoDB DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci ROW_FORMAT=DYNAMIC;
 
 -- /*******************************************************
@@ -2989,8 +2879,7 @@ CREATE TABLE `civicrm_dashboard_contact` (
   PRIMARY KEY (`id`),
   UNIQUE INDEX `index_dashboard_id_contact_id`(dashboard_id, contact_id),
   CONSTRAINT FK_civicrm_dashboard_contact_dashboard_id FOREIGN KEY (`dashboard_id`) REFERENCES `civicrm_dashboard`(`id`) ON DELETE CASCADE,
-  CONSTRAINT FK_civicrm_dashboard_contact_contact_id FOREIGN KEY (`contact_id`) REFERENCES `civicrm_contact`(`id`) ON DELETE CASCADE
-)
+  CONSTRAINT FK_civicrm_dashboard_contact_contact_id FOREIGN KEY (`contact_id`) REFERENCES `civicrm_contact`(`id`) ON DELETE CASCADE)
 ENGINE=InnoDB DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci ROW_FORMAT=DYNAMIC;
 
 -- /*******************************************************
@@ -3018,8 +2907,7 @@ CREATE TABLE `civicrm_relationship` (
   CONSTRAINT FK_civicrm_relationship_contact_id_a FOREIGN KEY (`contact_id_a`) REFERENCES `civicrm_contact`(`id`) ON DELETE CASCADE,
   CONSTRAINT FK_civicrm_relationship_contact_id_b FOREIGN KEY (`contact_id_b`) REFERENCES `civicrm_contact`(`id`) ON DELETE CASCADE,
   CONSTRAINT FK_civicrm_relationship_relationship_type_id FOREIGN KEY (`relationship_type_id`) REFERENCES `civicrm_relationship_type`(`id`) ON DELETE CASCADE,
-  CONSTRAINT FK_civicrm_relationship_case_id FOREIGN KEY (`case_id`) REFERENCES `civicrm_case`(`id`) ON DELETE CASCADE
-)
+  CONSTRAINT FK_civicrm_relationship_case_id FOREIGN KEY (`case_id`) REFERENCES `civicrm_case`(`id`) ON DELETE CASCADE)
 ENGINE=InnoDB DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci ROW_FORMAT=DYNAMIC;
 
 -- /*******************************************************
@@ -3051,8 +2939,7 @@ CREATE TABLE `civicrm_relationship_cache` (
   CONSTRAINT FK_civicrm_relationship_cache_relationship_type_id FOREIGN KEY (`relationship_type_id`) REFERENCES `civicrm_relationship_type`(`id`) ON DELETE CASCADE,
   CONSTRAINT FK_civicrm_relationship_cache_near_contact_id FOREIGN KEY (`near_contact_id`) REFERENCES `civicrm_contact`(`id`) ON DELETE CASCADE,
   CONSTRAINT FK_civicrm_relationship_cache_far_contact_id FOREIGN KEY (`far_contact_id`) REFERENCES `civicrm_contact`(`id`) ON DELETE CASCADE,
-  CONSTRAINT FK_civicrm_relationship_cache_case_id FOREIGN KEY (`case_id`) REFERENCES `civicrm_case`(`id`) ON DELETE CASCADE
-)
+  CONSTRAINT FK_civicrm_relationship_cache_case_id FOREIGN KEY (`case_id`) REFERENCES `civicrm_case`(`id`) ON DELETE CASCADE)
 ENGINE=InnoDB DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci ROW_FORMAT=DYNAMIC;
 
 -- /*******************************************************
@@ -3120,8 +3007,7 @@ CREATE TABLE `civicrm_mailing` (
   CONSTRAINT FK_civicrm_mailing_approver_id FOREIGN KEY (`approver_id`) REFERENCES `civicrm_contact`(`id`) ON DELETE SET NULL,
   CONSTRAINT FK_civicrm_mailing_campaign_id FOREIGN KEY (`campaign_id`) REFERENCES `civicrm_campaign`(`id`) ON DELETE SET NULL,
   CONSTRAINT FK_civicrm_mailing_sms_provider_id FOREIGN KEY (`sms_provider_id`) REFERENCES `civicrm_sms_provider`(`id`) ON DELETE SET NULL,
-  CONSTRAINT FK_civicrm_mailing_location_type_id FOREIGN KEY (`location_type_id`) REFERENCES `civicrm_location_type`(`id`) ON DELETE SET NULL
-)
+  CONSTRAINT FK_civicrm_mailing_location_type_id FOREIGN KEY (`location_type_id`) REFERENCES `civicrm_location_type`(`id`) ON DELETE SET NULL)
 ENGINE=InnoDB DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci ROW_FORMAT=DYNAMIC;
 
 -- /*******************************************************
@@ -3140,8 +3026,7 @@ CREATE TABLE `civicrm_mailing_group` (
   `search_id` int COMMENT 'The filtering search. custom search id or -1 for civicrm api search',
   `search_args` text COMMENT 'The arguments to be sent to the search function',
   PRIMARY KEY (`id`),
-  CONSTRAINT FK_civicrm_mailing_group_mailing_id FOREIGN KEY (`mailing_id`) REFERENCES `civicrm_mailing`(`id`) ON DELETE CASCADE
-)
+  CONSTRAINT FK_civicrm_mailing_group_mailing_id FOREIGN KEY (`mailing_id`) REFERENCES `civicrm_mailing`(`id`) ON DELETE CASCADE)
 ENGINE=InnoDB DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci ROW_FORMAT=DYNAMIC;
 
 -- /*******************************************************
@@ -3156,8 +3041,7 @@ CREATE TABLE `civicrm_mailing_trackable_url` (
   `url` text NOT NULL COMMENT 'The URL to be tracked.',
   `mailing_id` int unsigned NOT NULL COMMENT 'FK to the mailing',
   PRIMARY KEY (`id`),
-  CONSTRAINT FK_civicrm_mailing_trackable_url_mailing_id FOREIGN KEY (`mailing_id`) REFERENCES `civicrm_mailing`(`id`) ON DELETE CASCADE
-)
+  CONSTRAINT FK_civicrm_mailing_trackable_url_mailing_id FOREIGN KEY (`mailing_id`) REFERENCES `civicrm_mailing`(`id`) ON DELETE CASCADE)
 ENGINE=InnoDB DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci ROW_FORMAT=DYNAMIC;
 
 -- /*******************************************************
@@ -3181,8 +3065,7 @@ CREATE TABLE `civicrm_mailing_job` (
   `job_limit` int DEFAULT 0 COMMENT 'Queue size limit for each child job',
   PRIMARY KEY (`id`),
   CONSTRAINT FK_civicrm_mailing_job_mailing_id FOREIGN KEY (`mailing_id`) REFERENCES `civicrm_mailing`(`id`) ON DELETE CASCADE,
-  CONSTRAINT FK_civicrm_mailing_job_parent_id FOREIGN KEY (`parent_id`) REFERENCES `civicrm_mailing_job`(`id`) ON DELETE CASCADE
-)
+  CONSTRAINT FK_civicrm_mailing_job_parent_id FOREIGN KEY (`parent_id`) REFERENCES `civicrm_mailing_job`(`id`) ON DELETE CASCADE)
 ENGINE=InnoDB DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci ROW_FORMAT=DYNAMIC;
 
 -- /*******************************************************
@@ -3202,8 +3085,7 @@ CREATE TABLE `civicrm_mailing_recipients` (
   CONSTRAINT FK_civicrm_mailing_recipients_mailing_id FOREIGN KEY (`mailing_id`) REFERENCES `civicrm_mailing`(`id`) ON DELETE CASCADE,
   CONSTRAINT FK_civicrm_mailing_recipients_contact_id FOREIGN KEY (`contact_id`) REFERENCES `civicrm_contact`(`id`) ON DELETE CASCADE,
   CONSTRAINT FK_civicrm_mailing_recipients_email_id FOREIGN KEY (`email_id`) REFERENCES `civicrm_email`(`id`) ON DELETE SET NULL,
-  CONSTRAINT FK_civicrm_mailing_recipients_phone_id FOREIGN KEY (`phone_id`) REFERENCES `civicrm_phone`(`id`) ON DELETE SET NULL
-)
+  CONSTRAINT FK_civicrm_mailing_recipients_phone_id FOREIGN KEY (`phone_id`) REFERENCES `civicrm_phone`(`id`) ON DELETE SET NULL)
 ENGINE=InnoDB DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci ROW_FORMAT=DYNAMIC;
 
 -- /*******************************************************
@@ -3222,8 +3104,7 @@ CREATE TABLE `civicrm_mailing_spool` (
   `added_at` timestamp NULL DEFAULT NULL COMMENT 'date on which this job was added.',
   `removed_at` timestamp NULL DEFAULT NULL COMMENT 'date on which this job was removed.',
   PRIMARY KEY (`id`),
-  CONSTRAINT FK_civicrm_mailing_spool_job_id FOREIGN KEY (`job_id`) REFERENCES `civicrm_mailing_job`(`id`) ON DELETE CASCADE
-)
+  CONSTRAINT FK_civicrm_mailing_spool_job_id FOREIGN KEY (`job_id`) REFERENCES `civicrm_mailing_job`(`id`) ON DELETE CASCADE)
 ENGINE=InnoDB DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci ROW_FORMAT=DYNAMIC;
 
 -- /*******************************************************
@@ -3248,8 +3129,7 @@ CREATE TABLE `civicrm_mailing_event_queue` (
   CONSTRAINT FK_civicrm_mailing_event_queue_mailing_id FOREIGN KEY (`mailing_id`) REFERENCES `civicrm_mailing`(`id`) ON DELETE SET NULL,
   CONSTRAINT FK_civicrm_mailing_event_queue_email_id FOREIGN KEY (`email_id`) REFERENCES `civicrm_email`(`id`) ON DELETE SET NULL,
   CONSTRAINT FK_civicrm_mailing_event_queue_contact_id FOREIGN KEY (`contact_id`) REFERENCES `civicrm_contact`(`id`) ON DELETE CASCADE,
-  CONSTRAINT FK_civicrm_mailing_event_queue_phone_id FOREIGN KEY (`phone_id`) REFERENCES `civicrm_phone`(`id`) ON DELETE SET NULL
-)
+  CONSTRAINT FK_civicrm_mailing_event_queue_phone_id FOREIGN KEY (`phone_id`) REFERENCES `civicrm_phone`(`id`) ON DELETE SET NULL)
 ENGINE=InnoDB DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci ROW_FORMAT=DYNAMIC;
 
 -- /*******************************************************
@@ -3266,8 +3146,7 @@ CREATE TABLE `civicrm_mailing_event_bounce` (
   `bounce_reason` varchar(255) COMMENT 'The reason the email bounced.',
   `time_stamp` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT 'When this bounce event occurred.',
   PRIMARY KEY (`id`),
-  CONSTRAINT FK_civicrm_mailing_event_bounce_event_queue_id FOREIGN KEY (`event_queue_id`) REFERENCES `civicrm_mailing_event_queue`(`id`) ON DELETE CASCADE
-)
+  CONSTRAINT FK_civicrm_mailing_event_bounce_event_queue_id FOREIGN KEY (`event_queue_id`) REFERENCES `civicrm_mailing_event_queue`(`id`) ON DELETE CASCADE)
 ENGINE=InnoDB DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci ROW_FORMAT=DYNAMIC;
 
 -- /*******************************************************
@@ -3282,8 +3161,7 @@ CREATE TABLE `civicrm_mailing_event_delivered` (
   `event_queue_id` int unsigned NOT NULL COMMENT 'FK to EventQueue',
   `time_stamp` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT 'When this delivery event occurred.',
   PRIMARY KEY (`id`),
-  CONSTRAINT FK_civicrm_mailing_event_delivered_event_queue_id FOREIGN KEY (`event_queue_id`) REFERENCES `civicrm_mailing_event_queue`(`id`) ON DELETE CASCADE
-)
+  CONSTRAINT FK_civicrm_mailing_event_delivered_event_queue_id FOREIGN KEY (`event_queue_id`) REFERENCES `civicrm_mailing_event_queue`(`id`) ON DELETE CASCADE)
 ENGINE=InnoDB DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci ROW_FORMAT=DYNAMIC;
 
 -- /*******************************************************
@@ -3300,8 +3178,7 @@ CREATE TABLE `civicrm_mailing_event_forward` (
   `time_stamp` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT 'When this forward event occurred.',
   PRIMARY KEY (`id`),
   CONSTRAINT FK_civicrm_mailing_event_forward_event_queue_id FOREIGN KEY (`event_queue_id`) REFERENCES `civicrm_mailing_event_queue`(`id`) ON DELETE CASCADE,
-  CONSTRAINT FK_civicrm_mailing_event_forward_dest_queue_id FOREIGN KEY (`dest_queue_id`) REFERENCES `civicrm_mailing_event_queue`(`id`) ON DELETE SET NULL
-)
+  CONSTRAINT FK_civicrm_mailing_event_forward_dest_queue_id FOREIGN KEY (`dest_queue_id`) REFERENCES `civicrm_mailing_event_queue`(`id`) ON DELETE SET NULL)
 ENGINE=InnoDB DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci ROW_FORMAT=DYNAMIC;
 
 -- /*******************************************************
@@ -3316,8 +3193,7 @@ CREATE TABLE `civicrm_mailing_event_opened` (
   `event_queue_id` int unsigned NOT NULL COMMENT 'FK to EventQueue',
   `time_stamp` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT 'When this open event occurred.',
   PRIMARY KEY (`id`),
-  CONSTRAINT FK_civicrm_mailing_event_opened_event_queue_id FOREIGN KEY (`event_queue_id`) REFERENCES `civicrm_mailing_event_queue`(`id`) ON DELETE CASCADE
-)
+  CONSTRAINT FK_civicrm_mailing_event_opened_event_queue_id FOREIGN KEY (`event_queue_id`) REFERENCES `civicrm_mailing_event_queue`(`id`) ON DELETE CASCADE)
 ENGINE=InnoDB DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci ROW_FORMAT=DYNAMIC;
 
 -- /*******************************************************
@@ -3332,8 +3208,7 @@ CREATE TABLE `civicrm_mailing_event_reply` (
   `event_queue_id` int unsigned NOT NULL COMMENT 'FK to EventQueue',
   `time_stamp` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT 'When this reply event occurred.',
   PRIMARY KEY (`id`),
-  CONSTRAINT FK_civicrm_mailing_event_reply_event_queue_id FOREIGN KEY (`event_queue_id`) REFERENCES `civicrm_mailing_event_queue`(`id`) ON DELETE CASCADE
-)
+  CONSTRAINT FK_civicrm_mailing_event_reply_event_queue_id FOREIGN KEY (`event_queue_id`) REFERENCES `civicrm_mailing_event_queue`(`id`) ON DELETE CASCADE)
 ENGINE=InnoDB DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci ROW_FORMAT=DYNAMIC;
 
 -- /*******************************************************
@@ -3350,8 +3225,7 @@ CREATE TABLE `civicrm_mailing_event_trackable_url_open` (
   `time_stamp` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT 'When this trackable URL open occurred.',
   PRIMARY KEY (`id`),
   CONSTRAINT FK_civicrm_mailing_event_trackable_url_open_event_queue_id FOREIGN KEY (`event_queue_id`) REFERENCES `civicrm_mailing_event_queue`(`id`) ON DELETE CASCADE,
-  CONSTRAINT FK_civicrm_mailing_event_trackable_url_open_trackable_url_id FOREIGN KEY (`trackable_url_id`) REFERENCES `civicrm_mailing_trackable_url`(`id`) ON DELETE CASCADE
-)
+  CONSTRAINT FK_civicrm_mailing_event_trackable_url_open_trackable_url_id FOREIGN KEY (`trackable_url_id`) REFERENCES `civicrm_mailing_trackable_url`(`id`) ON DELETE CASCADE)
 ENGINE=InnoDB DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci ROW_FORMAT=DYNAMIC;
 
 -- /*******************************************************
@@ -3367,8 +3241,7 @@ CREATE TABLE `civicrm_mailing_event_unsubscribe` (
   `org_unsubscribe` tinyint NOT NULL COMMENT 'Unsubscribe at org- or group-level',
   `time_stamp` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT 'When this delivery event occurred.',
   PRIMARY KEY (`id`),
-  CONSTRAINT FK_civicrm_mailing_event_unsubscribe_event_queue_id FOREIGN KEY (`event_queue_id`) REFERENCES `civicrm_mailing_event_queue`(`id`) ON DELETE CASCADE
-)
+  CONSTRAINT FK_civicrm_mailing_event_unsubscribe_event_queue_id FOREIGN KEY (`event_queue_id`) REFERENCES `civicrm_mailing_event_queue`(`id`) ON DELETE CASCADE)
 ENGINE=InnoDB DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci ROW_FORMAT=DYNAMIC;
 
 -- /*******************************************************
@@ -3415,8 +3288,7 @@ CREATE TABLE `civicrm_contribution_recur` (
   CONSTRAINT FK_civicrm_contribution_recur_payment_token_id FOREIGN KEY (`payment_token_id`) REFERENCES `civicrm_payment_token`(`id`) ON DELETE SET NULL,
   CONSTRAINT FK_civicrm_contribution_recur_payment_processor_id FOREIGN KEY (`payment_processor_id`) REFERENCES `civicrm_payment_processor`(`id`) ON DELETE SET NULL,
   CONSTRAINT FK_civicrm_contribution_recur_financial_type_id FOREIGN KEY (`financial_type_id`) REFERENCES `civicrm_financial_type`(`id`) ON DELETE SET NULL,
-  CONSTRAINT FK_civicrm_contribution_recur_campaign_id FOREIGN KEY (`campaign_id`) REFERENCES `civicrm_campaign`(`id`) ON DELETE SET NULL
-)
+  CONSTRAINT FK_civicrm_contribution_recur_campaign_id FOREIGN KEY (`campaign_id`) REFERENCES `civicrm_campaign`(`id`) ON DELETE SET NULL)
 ENGINE=InnoDB DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci ROW_FORMAT=DYNAMIC;
 
 -- /*******************************************************
@@ -3449,8 +3321,7 @@ CREATE TABLE `civicrm_financial_trxn` (
   INDEX `UI_ftrxn_check_number`(check_number),
   CONSTRAINT FK_civicrm_financial_trxn_from_financial_account_id FOREIGN KEY (`from_financial_account_id`) REFERENCES `civicrm_financial_account`(`id`),
   CONSTRAINT FK_civicrm_financial_trxn_to_financial_account_id FOREIGN KEY (`to_financial_account_id`) REFERENCES `civicrm_financial_account`(`id`),
-  CONSTRAINT FK_civicrm_financial_trxn_payment_processor_id FOREIGN KEY (`payment_processor_id`) REFERENCES `civicrm_payment_processor`(`id`) ON DELETE SET NULL
-)
+  CONSTRAINT FK_civicrm_financial_trxn_payment_processor_id FOREIGN KEY (`payment_processor_id`) REFERENCES `civicrm_payment_processor`(`id`) ON DELETE SET NULL)
 ENGINE=InnoDB DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci ROW_FORMAT=DYNAMIC;
 
 -- /*******************************************************
@@ -3484,8 +3355,7 @@ CREATE TABLE `civicrm_membership` (
   CONSTRAINT FK_civicrm_membership_status_id FOREIGN KEY (`status_id`) REFERENCES `civicrm_membership_status`(`id`) ON DELETE CASCADE,
   CONSTRAINT FK_civicrm_membership_owner_membership_id FOREIGN KEY (`owner_membership_id`) REFERENCES `civicrm_membership`(`id`) ON DELETE SET NULL,
   CONSTRAINT FK_civicrm_membership_contribution_recur_id FOREIGN KEY (`contribution_recur_id`) REFERENCES `civicrm_contribution_recur`(`id`) ON DELETE SET NULL,
-  CONSTRAINT FK_civicrm_membership_campaign_id FOREIGN KEY (`campaign_id`) REFERENCES `civicrm_campaign`(`id`) ON DELETE SET NULL
-)
+  CONSTRAINT FK_civicrm_membership_campaign_id FOREIGN KEY (`campaign_id`) REFERENCES `civicrm_campaign`(`id`) ON DELETE SET NULL)
 ENGINE=InnoDB DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci ROW_FORMAT=DYNAMIC;
 
 -- /*******************************************************
@@ -3509,8 +3379,7 @@ CREATE TABLE `civicrm_membership_log` (
   CONSTRAINT FK_civicrm_membership_log_membership_id FOREIGN KEY (`membership_id`) REFERENCES `civicrm_membership`(`id`) ON DELETE CASCADE,
   CONSTRAINT FK_civicrm_membership_log_status_id FOREIGN KEY (`status_id`) REFERENCES `civicrm_membership_status`(`id`) ON DELETE CASCADE,
   CONSTRAINT FK_civicrm_membership_log_modified_id FOREIGN KEY (`modified_id`) REFERENCES `civicrm_contact`(`id`) ON DELETE SET NULL,
-  CONSTRAINT FK_civicrm_membership_log_membership_type_id FOREIGN KEY (`membership_type_id`) REFERENCES `civicrm_membership_type`(`id`) ON DELETE SET NULL
-)
+  CONSTRAINT FK_civicrm_membership_log_membership_type_id FOREIGN KEY (`membership_type_id`) REFERENCES `civicrm_membership_type`(`id`) ON DELETE SET NULL)
 ENGINE=InnoDB DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci ROW_FORMAT=DYNAMIC;
 
 -- /*******************************************************
@@ -3559,8 +3428,7 @@ CREATE TABLE `civicrm_activity` (
   CONSTRAINT FK_civicrm_activity_parent_id FOREIGN KEY (`parent_id`) REFERENCES `civicrm_activity`(`id`) ON DELETE SET NULL,
   CONSTRAINT FK_civicrm_activity_relationship_id FOREIGN KEY (`relationship_id`) REFERENCES `civicrm_relationship`(`id`) ON DELETE SET NULL,
   CONSTRAINT FK_civicrm_activity_original_id FOREIGN KEY (`original_id`) REFERENCES `civicrm_activity`(`id`) ON DELETE SET NULL,
-  CONSTRAINT FK_civicrm_activity_campaign_id FOREIGN KEY (`campaign_id`) REFERENCES `civicrm_campaign`(`id`) ON DELETE SET NULL
-)
+  CONSTRAINT FK_civicrm_activity_campaign_id FOREIGN KEY (`campaign_id`) REFERENCES `civicrm_campaign`(`id`) ON DELETE SET NULL)
 ENGINE=InnoDB DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci ROW_FORMAT=DYNAMIC;
 
 -- /*******************************************************
@@ -3579,8 +3447,7 @@ CREATE TABLE `civicrm_activity_contact` (
   UNIQUE INDEX `UI_activity_contact`(contact_id, activity_id, record_type_id),
   INDEX `index_record_type`(activity_id, record_type_id),
   CONSTRAINT FK_civicrm_activity_contact_activity_id FOREIGN KEY (`activity_id`) REFERENCES `civicrm_activity`(`id`) ON DELETE CASCADE,
-  CONSTRAINT FK_civicrm_activity_contact_contact_id FOREIGN KEY (`contact_id`) REFERENCES `civicrm_contact`(`id`) ON DELETE CASCADE
-)
+  CONSTRAINT FK_civicrm_activity_contact_contact_id FOREIGN KEY (`contact_id`) REFERENCES `civicrm_contact`(`id`) ON DELETE CASCADE)
 ENGINE=InnoDB DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci ROW_FORMAT=DYNAMIC;
 
 -- /*******************************************************
@@ -3597,8 +3464,7 @@ CREATE TABLE `civicrm_case_activity` (
   PRIMARY KEY (`id`),
   INDEX `UI_case_activity_id`(case_id, activity_id),
   CONSTRAINT FK_civicrm_case_activity_case_id FOREIGN KEY (`case_id`) REFERENCES `civicrm_case`(`id`) ON DELETE CASCADE,
-  CONSTRAINT FK_civicrm_case_activity_activity_id FOREIGN KEY (`activity_id`) REFERENCES `civicrm_activity`(`id`) ON DELETE CASCADE
-)
+  CONSTRAINT FK_civicrm_case_activity_activity_id FOREIGN KEY (`activity_id`) REFERENCES `civicrm_activity`(`id`) ON DELETE CASCADE)
 ENGINE=InnoDB DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci ROW_FORMAT=DYNAMIC;
 
 -- /*******************************************************
@@ -3626,8 +3492,7 @@ CREATE TABLE `civicrm_price_field` (
   `visibility_id` int unsigned DEFAULT 1 COMMENT 'Implicit FK to civicrm_option_group with name = \'visibility\'',
   PRIMARY KEY (`id`),
   INDEX `index_name`(name),
-  CONSTRAINT FK_civicrm_price_field_price_set_id FOREIGN KEY (`price_set_id`) REFERENCES `civicrm_price_set`(`id`)
-)
+  CONSTRAINT FK_civicrm_price_field_price_set_id FOREIGN KEY (`price_set_id`) REFERENCES `civicrm_price_set`(`id`))
 ENGINE=InnoDB DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci ROW_FORMAT=DYNAMIC;
 
 -- /*******************************************************
@@ -3657,8 +3522,7 @@ CREATE TABLE `civicrm_price_field_value` (
   PRIMARY KEY (`id`),
   CONSTRAINT FK_civicrm_price_field_value_price_field_id FOREIGN KEY (`price_field_id`) REFERENCES `civicrm_price_field`(`id`),
   CONSTRAINT FK_civicrm_price_field_value_membership_type_id FOREIGN KEY (`membership_type_id`) REFERENCES `civicrm_membership_type`(`id`) ON DELETE SET NULL,
-  CONSTRAINT FK_civicrm_price_field_value_financial_type_id FOREIGN KEY (`financial_type_id`) REFERENCES `civicrm_financial_type`(`id`) ON DELETE SET NULL
-)
+  CONSTRAINT FK_civicrm_price_field_value_financial_type_id FOREIGN KEY (`financial_type_id`) REFERENCES `civicrm_financial_type`(`id`) ON DELETE SET NULL)
 ENGINE=InnoDB DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci ROW_FORMAT=DYNAMIC;
 
 -- /*******************************************************
@@ -3683,8 +3547,7 @@ CREATE TABLE `civicrm_pcp_block` (
   `is_active` tinyint NOT NULL DEFAULT 1 COMMENT 'Is Personal Campaign Page Block enabled/active?',
   `notify_email` varchar(255) DEFAULT NULL COMMENT 'If set, notification is automatically emailed to this email-address on create/update Personal Campaign Page',
   PRIMARY KEY (`id`),
-  CONSTRAINT FK_civicrm_pcp_block_supporter_profile_id FOREIGN KEY (`supporter_profile_id`) REFERENCES `civicrm_uf_group`(`id`) ON DELETE SET NULL
-)
+  CONSTRAINT FK_civicrm_pcp_block_supporter_profile_id FOREIGN KEY (`supporter_profile_id`) REFERENCES `civicrm_uf_group`(`id`) ON DELETE SET NULL)
 ENGINE=InnoDB DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci ROW_FORMAT=DYNAMIC;
 
 -- /*******************************************************
@@ -3735,8 +3598,7 @@ CREATE TABLE `civicrm_address` (
   CONSTRAINT FK_civicrm_address_county_id FOREIGN KEY (`county_id`) REFERENCES `civicrm_county`(`id`) ON DELETE SET NULL,
   CONSTRAINT FK_civicrm_address_state_province_id FOREIGN KEY (`state_province_id`) REFERENCES `civicrm_state_province`(`id`) ON DELETE SET NULL,
   CONSTRAINT FK_civicrm_address_country_id FOREIGN KEY (`country_id`) REFERENCES `civicrm_country`(`id`) ON DELETE SET NULL,
-  CONSTRAINT FK_civicrm_address_master_id FOREIGN KEY (`master_id`) REFERENCES `civicrm_address`(`id`) ON DELETE SET NULL
-)
+  CONSTRAINT FK_civicrm_address_master_id FOREIGN KEY (`master_id`) REFERENCES `civicrm_address`(`id`) ON DELETE SET NULL)
 ENGINE=InnoDB DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci ROW_FORMAT=DYNAMIC;
 
 -- /*******************************************************
@@ -3764,8 +3626,7 @@ CREATE TABLE `civicrm_loc_block` (
   CONSTRAINT FK_civicrm_loc_block_address_2_id FOREIGN KEY (`address_2_id`) REFERENCES `civicrm_address`(`id`) ON DELETE SET NULL,
   CONSTRAINT FK_civicrm_loc_block_email_2_id FOREIGN KEY (`email_2_id`) REFERENCES `civicrm_email`(`id`) ON DELETE SET NULL,
   CONSTRAINT FK_civicrm_loc_block_phone_2_id FOREIGN KEY (`phone_2_id`) REFERENCES `civicrm_phone`(`id`) ON DELETE SET NULL,
-  CONSTRAINT FK_civicrm_loc_block_im_2_id FOREIGN KEY (`im_2_id`) REFERENCES `civicrm_im`(`id`) ON DELETE SET NULL
-)
+  CONSTRAINT FK_civicrm_loc_block_im_2_id FOREIGN KEY (`im_2_id`) REFERENCES `civicrm_im`(`id`) ON DELETE SET NULL)
 ENGINE=InnoDB DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci ROW_FORMAT=DYNAMIC;
 
 -- /*******************************************************
@@ -3787,8 +3648,7 @@ CREATE TABLE `civicrm_group_contact` (
   CONSTRAINT FK_civicrm_group_contact_group_id FOREIGN KEY (`group_id`) REFERENCES `civicrm_group`(`id`) ON DELETE CASCADE,
   CONSTRAINT FK_civicrm_group_contact_contact_id FOREIGN KEY (`contact_id`) REFERENCES `civicrm_contact`(`id`) ON DELETE CASCADE,
   CONSTRAINT FK_civicrm_group_contact_location_id FOREIGN KEY (`location_id`) REFERENCES `civicrm_loc_block`(`id`) ON DELETE SET NULL,
-  CONSTRAINT FK_civicrm_group_contact_email_id FOREIGN KEY (`email_id`) REFERENCES `civicrm_email`(`id`)
-)
+  CONSTRAINT FK_civicrm_group_contact_email_id FOREIGN KEY (`email_id`) REFERENCES `civicrm_email`(`id`))
 ENGINE=InnoDB DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci ROW_FORMAT=DYNAMIC;
 
 -- /*******************************************************
@@ -3843,8 +3703,7 @@ CREATE TABLE `civicrm_contribution` (
   CONSTRAINT FK_civicrm_contribution_contribution_page_id FOREIGN KEY (`contribution_page_id`) REFERENCES `civicrm_contribution_page`(`id`) ON DELETE SET NULL,
   CONSTRAINT FK_civicrm_contribution_contribution_recur_id FOREIGN KEY (`contribution_recur_id`) REFERENCES `civicrm_contribution_recur`(`id`) ON DELETE SET NULL,
   CONSTRAINT FK_civicrm_contribution_address_id FOREIGN KEY (`address_id`) REFERENCES `civicrm_address`(`id`) ON DELETE SET NULL,
-  CONSTRAINT FK_civicrm_contribution_campaign_id FOREIGN KEY (`campaign_id`) REFERENCES `civicrm_campaign`(`id`) ON DELETE SET NULL
-)
+  CONSTRAINT FK_civicrm_contribution_campaign_id FOREIGN KEY (`campaign_id`) REFERENCES `civicrm_campaign`(`id`) ON DELETE SET NULL)
 ENGINE=InnoDB DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci ROW_FORMAT=DYNAMIC;
 
 -- /*******************************************************
@@ -3866,8 +3725,7 @@ CREATE TABLE `civicrm_contribution_product` (
   PRIMARY KEY (`id`),
   CONSTRAINT FK_civicrm_contribution_product_product_id FOREIGN KEY (`product_id`) REFERENCES `civicrm_product`(`id`) ON DELETE CASCADE,
   CONSTRAINT FK_civicrm_contribution_product_contribution_id FOREIGN KEY (`contribution_id`) REFERENCES `civicrm_contribution`(`id`) ON DELETE CASCADE,
-  CONSTRAINT FK_civicrm_contribution_product_financial_type_id FOREIGN KEY (`financial_type_id`) REFERENCES `civicrm_financial_type`(`id`) ON DELETE SET NULL
-)
+  CONSTRAINT FK_civicrm_contribution_product_financial_type_id FOREIGN KEY (`financial_type_id`) REFERENCES `civicrm_financial_type`(`id`) ON DELETE SET NULL)
 ENGINE=InnoDB DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci ROW_FORMAT=DYNAMIC;
 
 -- /*******************************************************
@@ -3890,8 +3748,7 @@ CREATE TABLE `civicrm_contribution_soft` (
   INDEX `index_id`(pcp_id),
   CONSTRAINT FK_civicrm_contribution_soft_contribution_id FOREIGN KEY (`contribution_id`) REFERENCES `civicrm_contribution`(`id`) ON DELETE CASCADE,
   CONSTRAINT FK_civicrm_contribution_soft_contact_id FOREIGN KEY (`contact_id`) REFERENCES `civicrm_contact`(`id`) ON DELETE CASCADE,
-  CONSTRAINT FK_civicrm_contribution_soft_pcp_id FOREIGN KEY (`pcp_id`) REFERENCES `civicrm_pcp`(`id`) ON DELETE SET NULL
-)
+  CONSTRAINT FK_civicrm_contribution_soft_pcp_id FOREIGN KEY (`pcp_id`) REFERENCES `civicrm_pcp`(`id`) ON DELETE SET NULL)
 ENGINE=InnoDB DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci ROW_FORMAT=DYNAMIC;
 
 -- /*******************************************************
@@ -3908,8 +3765,7 @@ CREATE TABLE `civicrm_entity_financial_trxn` (
   PRIMARY KEY (`id`),
   INDEX `UI_entity_financial_trxn_entity_table`(entity_table),
   INDEX `UI_entity_financial_trxn_entity_id`(entity_id),
-  CONSTRAINT FK_civicrm_entity_financial_trxn_financial_trxn_id FOREIGN KEY (`financial_trxn_id`) REFERENCES `civicrm_financial_trxn`(`id`) ON DELETE SET NULL
-)
+  CONSTRAINT FK_civicrm_entity_financial_trxn_financial_trxn_id FOREIGN KEY (`financial_trxn_id`) REFERENCES `civicrm_financial_trxn`(`id`) ON DELETE SET NULL)
 ENGINE=InnoDB DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci ROW_FORMAT=DYNAMIC;
 
 -- /*******************************************************
@@ -3926,8 +3782,7 @@ CREATE TABLE `civicrm_membership_payment` (
   PRIMARY KEY (`id`),
   UNIQUE INDEX `UI_contribution_membership`(contribution_id, membership_id),
   CONSTRAINT FK_civicrm_membership_payment_membership_id FOREIGN KEY (`membership_id`) REFERENCES `civicrm_membership`(`id`) ON DELETE CASCADE,
-  CONSTRAINT FK_civicrm_membership_payment_contribution_id FOREIGN KEY (`contribution_id`) REFERENCES `civicrm_contribution`(`id`) ON DELETE CASCADE
-)
+  CONSTRAINT FK_civicrm_membership_payment_contribution_id FOREIGN KEY (`contribution_id`) REFERENCES `civicrm_contribution`(`id`) ON DELETE CASCADE)
 ENGINE=InnoDB DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci ROW_FORMAT=DYNAMIC;
 
 -- /*******************************************************
@@ -3990,7 +3845,7 @@ CREATE TABLE `civicrm_event` (
   `requires_approval` tinyint NOT NULL DEFAULT 0 COMMENT 'Whether participants require approval before they can finish registering.',
   `expiration_time` int unsigned COMMENT 'Expire pending but unconfirmed registrations after this many hours.',
   `allow_selfcancelxfer` tinyint NOT NULL DEFAULT 0 COMMENT 'Allow self service cancellation or transfer for event?',
-  `selfcancelxfer_time` int DEFAULT 0 COMMENT 'Number of hours prior to event start date to allow self-service cancellation or transfer.',
+  `selfcancelxfer_time` int NOT NULL DEFAULT 0 COMMENT 'Number of hours prior to event start date to allow self-service cancellation or transfer.',
   `waitlist_text` text COMMENT 'Text to display when the event is full, but participants can signup for a waitlist.',
   `approval_req_text` text COMMENT 'Text to display when the approval is required to complete registration for an event.',
   `is_template` tinyint NOT NULL DEFAULT 0 COMMENT 'whether the event has template',
@@ -4013,8 +3868,7 @@ CREATE TABLE `civicrm_event` (
   CONSTRAINT FK_civicrm_event_loc_block_id FOREIGN KEY (`loc_block_id`) REFERENCES `civicrm_loc_block`(`id`) ON DELETE SET NULL,
   CONSTRAINT FK_civicrm_event_created_id FOREIGN KEY (`created_id`) REFERENCES `civicrm_contact`(`id`) ON DELETE SET NULL,
   CONSTRAINT FK_civicrm_event_campaign_id FOREIGN KEY (`campaign_id`) REFERENCES `civicrm_campaign`(`id`) ON DELETE SET NULL,
-  CONSTRAINT FK_civicrm_event_dedupe_rule_group_id FOREIGN KEY (`dedupe_rule_group_id`) REFERENCES `civicrm_dedupe_rule_group`(`id`)
-)
+  CONSTRAINT FK_civicrm_event_dedupe_rule_group_id FOREIGN KEY (`dedupe_rule_group_id`) REFERENCES `civicrm_dedupe_rule_group`(`id`))
 ENGINE=InnoDB DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci ROW_FORMAT=DYNAMIC;
 
 -- /*******************************************************
@@ -4054,8 +3908,7 @@ CREATE TABLE `civicrm_participant` (
   CONSTRAINT FK_civicrm_participant_campaign_id FOREIGN KEY (`campaign_id`) REFERENCES `civicrm_campaign`(`id`) ON DELETE SET NULL,
   CONSTRAINT FK_civicrm_participant_cart_id FOREIGN KEY (`cart_id`) REFERENCES `civicrm_event_carts`(`id`) ON DELETE SET NULL,
   CONSTRAINT FK_civicrm_participant_transferred_to_contact_id FOREIGN KEY (`transferred_to_contact_id`) REFERENCES `civicrm_contact`(`id`) ON DELETE SET NULL,
-  CONSTRAINT FK_civicrm_participant_created_id FOREIGN KEY (`created_id`) REFERENCES `civicrm_contact`(`id`) ON DELETE SET NULL
-)
+  CONSTRAINT FK_civicrm_participant_created_id FOREIGN KEY (`created_id`) REFERENCES `civicrm_contact`(`id`) ON DELETE SET NULL)
 ENGINE=InnoDB DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci ROW_FORMAT=DYNAMIC;
 
 -- /*******************************************************
@@ -4070,8 +3923,7 @@ CREATE TABLE `civicrm_participant_payment` (
   PRIMARY KEY (`id`),
   UNIQUE INDEX `UI_contribution_participant`(contribution_id, participant_id),
   CONSTRAINT FK_civicrm_participant_payment_participant_id FOREIGN KEY (`participant_id`) REFERENCES `civicrm_participant`(`id`) ON DELETE CASCADE,
-  CONSTRAINT FK_civicrm_participant_payment_contribution_id FOREIGN KEY (`contribution_id`) REFERENCES `civicrm_contribution`(`id`) ON DELETE CASCADE
-)
+  CONSTRAINT FK_civicrm_participant_payment_contribution_id FOREIGN KEY (`contribution_id`) REFERENCES `civicrm_contribution`(`id`) ON DELETE CASCADE)
 ENGINE=InnoDB DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci ROW_FORMAT=DYNAMIC;
 
 -- /*******************************************************
@@ -4085,8 +3937,7 @@ CREATE TABLE `civicrm_events_in_carts` (
   `event_cart_id` int unsigned COMMENT 'FK to Event Cart ID',
   PRIMARY KEY (`id`),
   CONSTRAINT FK_civicrm_events_in_carts_event_id FOREIGN KEY (`event_id`) REFERENCES `civicrm_event`(`id`) ON DELETE CASCADE,
-  CONSTRAINT FK_civicrm_events_in_carts_event_cart_id FOREIGN KEY (`event_cart_id`) REFERENCES `civicrm_event_carts`(`id`) ON DELETE CASCADE
-)
+  CONSTRAINT FK_civicrm_events_in_carts_event_cart_id FOREIGN KEY (`event_cart_id`) REFERENCES `civicrm_event_carts`(`id`) ON DELETE CASCADE)
 ENGINE=InnoDB DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci ROW_FORMAT=DYNAMIC;
 
 -- /*******************************************************
@@ -4111,8 +3962,7 @@ CREATE TABLE `civicrm_pledge_payment` (
   INDEX `index_contribution_pledge`(contribution_id, pledge_id),
   INDEX `index_status`(status_id),
   CONSTRAINT FK_civicrm_pledge_payment_pledge_id FOREIGN KEY (`pledge_id`) REFERENCES `civicrm_pledge`(`id`) ON DELETE CASCADE,
-  CONSTRAINT FK_civicrm_pledge_payment_contribution_id FOREIGN KEY (`contribution_id`) REFERENCES `civicrm_contribution`(`id`) ON DELETE CASCADE
-)
+  CONSTRAINT FK_civicrm_pledge_payment_contribution_id FOREIGN KEY (`contribution_id`) REFERENCES `civicrm_contribution`(`id`) ON DELETE CASCADE)
 ENGINE=InnoDB DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci ROW_FORMAT=DYNAMIC;
 
 -- /*******************************************************
@@ -4141,6 +3991,5 @@ CREATE TABLE `civicrm_line_item` (
   CONSTRAINT FK_civicrm_line_item_contribution_id FOREIGN KEY (`contribution_id`) REFERENCES `civicrm_contribution`(`id`) ON DELETE SET NULL,
   CONSTRAINT FK_civicrm_line_item_price_field_id FOREIGN KEY (`price_field_id`) REFERENCES `civicrm_price_field`(`id`) ON DELETE SET NULL,
   CONSTRAINT FK_civicrm_line_item_price_field_value_id FOREIGN KEY (`price_field_value_id`) REFERENCES `civicrm_price_field_value`(`id`) ON DELETE SET NULL,
-  CONSTRAINT FK_civicrm_line_item_financial_type_id FOREIGN KEY (`financial_type_id`) REFERENCES `civicrm_financial_type`(`id`) ON DELETE SET NULL
-)
+  CONSTRAINT FK_civicrm_line_item_financial_type_id FOREIGN KEY (`financial_type_id`) REFERENCES `civicrm_financial_type`(`id`) ON DELETE SET NULL)
 ENGINE=InnoDB DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci ROW_FORMAT=DYNAMIC;

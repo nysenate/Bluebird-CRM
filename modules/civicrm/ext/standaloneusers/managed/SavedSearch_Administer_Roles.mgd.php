@@ -11,7 +11,7 @@ return [
       'version' => 4,
       'values' => [
         'name' => 'Roles',
-        'label' => E::ts('Roles'),
+        'label' => E::ts('Administer Roles'),
         'form_values' => NULL,
         'mapping_id' => NULL,
         'search_custom_id' => NULL,
@@ -47,7 +47,7 @@ return [
       'version' => 4,
       'values' => [
         'name' => 'Roles_Table_1',
-        'label' => E::ts('Roles Table 1'),
+        'label' => E::ts('Administer Roles'),
         'saved_search_id.name' => 'Roles',
         'type' => 'table',
         'settings' => [
@@ -140,6 +140,18 @@ return [
               'style' => 'primary',
               'entity' => 'Role',
               'action' => 'add',
+            ],
+            [
+              'path' => 'civicrm/admin/rolepermissions',
+              'icon' => 'fa-external-link',
+              'text' => E::ts('Permissions'),
+              'style' => 'info',
+              'condition' => [],
+              'task' => '',
+              'entity' => '',
+              'action' => '',
+              'join' => '',
+              'target' => '',
             ],
           ],
         ],

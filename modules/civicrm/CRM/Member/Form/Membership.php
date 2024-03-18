@@ -427,7 +427,7 @@ DESC limit 1");
           $selOrgMemType[$memberOfContactId][$key] = $values['name'] ?? NULL;
         }
       }
-      $totalAmount = $values['minimum_fee'] ?? NULL;
+      $totalAmount = $values['minimum_fee'] ?? 0;
       // build membership info array, which is used when membership type is selected to:
       // - set the payment information block
       // - set the max related block
@@ -1051,7 +1051,7 @@ DESC limit 1");
 
       // This is a candidate for shared beginPostProcess function.
       // @todo Do we need this now we have $this->formatParamsForPaymentProcessor() ?
-      CRM_Core_Payment_Form::mapParams($this->_bltID, $formValues, $paymentParams, TRUE);
+      CRM_Core_Payment_Form::mapParams(NULL, $formValues, $paymentParams, TRUE);
       // CRM-7137 -for recurring membership,
       // we do need contribution and recurring records.
       $result = NULL;
@@ -1063,7 +1063,7 @@ DESC limit 1");
           'line_items' => $this->getLineItemForOrderApi(),
           'is_test' => $this->isTest(),
           'campaign_id' => $this->getSubmittedValue('campaign_id'),
-          'source' => CRM_Utils_Array::value('source', $paymentParams, CRM_Utils_Array::value('description', $paymentParams)),
+          'source' => $paymentParams['source'] ?? $paymentParams['description'] ?? NULL,
           'payment_instrument_id' => $this->getPaymentInstrumentID(),
           'financial_type_id' => $this->getFinancialTypeID(),
           'receive_date' => $this->getReceiveDate(),

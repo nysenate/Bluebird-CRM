@@ -1,0 +1,5 @@
+{
+    "require": {
+        "smarty/smarty": "4.3.1"
+    }
+}

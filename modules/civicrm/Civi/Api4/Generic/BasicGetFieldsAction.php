@@ -136,7 +136,7 @@ class BasicGetFieldsAction extends BasicGetAction {
       ], $fieldDefaults);
       $field += $defaults + $fieldDefaults;
       if (array_key_exists('label', $fieldDefaults)) {
-        $field['label'] = $field['label'] ?? $field['title'] ?? $field['name'];
+        $field['label'] ??= $field['title'] ?? $field['name'];
       }
       if (isset($field['options']) && is_array($field['options']) && empty($field['suffixes']) && array_key_exists('suffixes', $field)) {
         $this->setFieldSuffixes($field);
@@ -145,6 +145,12 @@ class BasicGetFieldsAction extends BasicGetAction {
         $this->formatOptionList($field);
       }
       $field = array_diff_key($field, $internalProps);
+    }
+    // Hide the 'contact_type' field from Individual,Organization,Household pseudo-entities
+    if (!$isInternal && $this->getEntityName() !== 'Contact' && CoreUtil::isContact($this->getEntityName())) {
+      $values = array_filter($values, function($field) {
+        return $field['name'] !== 'contact_type';
+      });
     }
   }
 

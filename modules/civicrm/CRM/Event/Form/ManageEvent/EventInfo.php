@@ -20,10 +20,14 @@ use Civi\Api4\Event;
  * This class generates form components for processing Event.
  */
 class CRM_Event_Form_ManageEvent_EventInfo extends CRM_Event_Form_ManageEvent {
+  use CRM_Custom_Form_CustomDataTrait;
 
   /**
    * Event type.
+   *
    * @var int
+   *
+   * @deprecated - never set.
    */
   protected $_eventType;
 
@@ -44,10 +48,6 @@ class CRM_Event_Form_ManageEvent_EventInfo extends CRM_Event_Form_ManageEvent {
       $this->set('subType', $_POST['event_type_id'] ?? '');
       $this->assign('customDataSubType', $_POST['event_type_id'] ?? '');
       $this->set('entityId', $entityID);
-
-      CRM_Custom_Form_CustomData::preProcess($this, NULL, $this->_eventType, 1, 'Event', $entityID);
-      CRM_Custom_Form_CustomData::buildQuickForm($this);
-      CRM_Custom_Form_CustomData::setDefaultValues($this);
     }
   }
 
@@ -91,9 +91,9 @@ class CRM_Event_Form_ManageEvent_EventInfo extends CRM_Event_Form_ManageEvent {
     $this->assign('description', $defaults['description'] ?? '');
 
     // Provide suggested text for event full and waitlist messages if they're empty
-    $defaults['event_full_text'] = $defaults['event_full_text'] ?? ts('This event is currently full.');
+    $defaults['event_full_text'] ??= ts('This event is currently full.');
 
-    $defaults['waitlist_text'] = $defaults['waitlist_text'] ?? ts('This event is currently full. However you can register now and get added to a waiting list. You will be notified if spaces become available.');
+    $defaults['waitlist_text'] ??= ts('This event is currently full. However you can register now and get added to a waiting list. You will be notified if spaces become available.');
     $defaults['template_id'] = $this->_templateId;
 
     return $defaults;
@@ -185,6 +185,16 @@ class CRM_Event_Form_ManageEvent_EventInfo extends CRM_Event_Form_ManageEvent {
     $this->addElement('checkbox', 'is_active', ts('Is this Event Active?'));
 
     $this->addFormRule(['CRM_Event_Form_ManageEvent_EventInfo', 'formRule']);
+    if ($this->isSubmitted()) {
+      // The custom data fields are added to the form by an ajax form.
+      // However, if they are not present in the element index they will
+      // not be available from `$this->getSubmittedValue()` in post process.
+      // We do not have to set defaults or otherwise render - just add to the element index.
+      $this->addCustomDataFieldsToForm('Event', array_filter([
+        'id' => $this->getEventID(),
+        'event_type_id' => $_POST['event_type_id'],
+      ]));
+    }
 
     parent::buildQuickForm();
   }
@@ -216,23 +226,23 @@ class CRM_Event_Form_ManageEvent_EventInfo extends CRM_Event_Form_ManageEvent {
     $params = array_merge($this->controller->exportValues($this->_name), $this->_submitValues);
 
     //format params
-    $params['start_date'] = $params['start_date'] ?? NULL;
-    $params['end_date'] = $params['end_date'] ?? NULL;
-    $params['has_waitlist'] = $params['has_waitlist'] ?? FALSE;
-    $params['is_map'] = $params['is_map'] ?? FALSE;
-    $params['is_active'] = $params['is_active'] ?? FALSE;
-    $params['is_public'] = $params['is_public'] ?? FALSE;
-    $params['is_share'] = $params['is_share'] ?? FALSE;
-    $params['is_show_calendar_links'] = $params['is_show_calendar_links'] ?? FALSE;
-    $params['default_role_id'] = $params['default_role_id'] ?? FALSE;
-    $params['id'] = $this->_id;
+    $params['start_date'] ??= NULL;
+    $params['end_date'] ??= NULL;
+    $params['has_waitlist'] ??= FALSE;
+    $params['is_map'] ??= FALSE;
+    $params['is_active'] ??= FALSE;
+    $params['is_public'] ??= FALSE;
+    $params['is_share'] ??= FALSE;
+    $params['is_show_calendar_links'] ??= FALSE;
+    $params['default_role_id'] ??= FALSE;
+    $params['id'] = $this->getEventID();
     //merge params with defaults from templates
     if (!empty($params['template_id'])) {
       $params = array_merge(CRM_Event_BAO_Event::getTemplateDefaultValues($params['template_id']), $params);
     }
 
-    $params['custom'] = CRM_Core_BAO_CustomField::postProcess($params,
-      $this->_id,
+    $params['custom'] = CRM_Core_BAO_CustomField::postProcess($this->getSubmittedValues(),
+      $this->getEventID(),
       'Event'
     );
 

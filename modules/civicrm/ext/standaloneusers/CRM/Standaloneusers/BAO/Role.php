@@ -1,7 +1,10 @@
 <?php
-// phpcs:disable
-use CRM_Standaloneusers_ExtensionUtil as E;
-// phpcs:enable
+/**
+ * @package CRM
+ * @copyright CiviCRM LLC https://civicrm.org/licensing
+ */
+
+use Civi\Api4\Event\AuthorizeRecordEvent;
 
 class CRM_Standaloneusers_BAO_Role extends CRM_Standaloneusers_DAO_Role implements \Civi\Core\HookInterface {
 
@@ -10,21 +13,6 @@ class CRM_Standaloneusers_BAO_Role extends CRM_Standaloneusers_DAO_Role implemen
    * @param \Civi\Core\Event\PostEvent $event
    */
   public static function self_hook_civicrm_post(\Civi\Core\Event\PostEvent $event) {
-    // Remove role from users on deletion
-    if ($event->action === 'delete') {
-      $users = \Civi\Api4\User::get(FALSE)
-        ->addSelect('id', 'roles')
-        ->addWhere('roles', 'CONTAINS', $event->id)
-        ->execute();
-      foreach ($users as $user) {
-        $roles = array_diff($user['roles'], [$event->id]);
-        \Civi\Api4\User::update(FALSE)
-          ->addValue('roles', $roles)
-          ->addWhere('id', '=', $user['id'])
-          ->execute();
-      }
-    }
-
     // Reset cache
     Civi::cache('metadata')->clear();
   }
@@ -32,22 +20,41 @@ class CRM_Standaloneusers_BAO_Role extends CRM_Standaloneusers_DAO_Role implemen
   /**
    * Check access permission
    *
-   * @param string $entityName
-   * @param string $action
-   * @param array $record
-   * @param integer|null $userID
-   * @return boolean
-   * @see CRM_Core_DAO::checkAccess
+   * Note that $e->getRecord() returns the data passed INTO the API, e.g. if it
+   * has a 'name' key, then the value is that passed into the API (e.g. for an
+   * update action), not the current value.
+   *
+   * @param \Civi\Api4\Event\AuthorizeRecordEvent $e
+   * @see \Civi\Api4\Utils\CoreUtil::checkAccessRecord
    */
-  public static function _checkAccess(string $entityName, string $action, array $record, ?int $userID): bool {
-    // Prevent users from updating or deleting the admin and everyone roles
-    if (in_array($action, ['delete', 'update'], TRUE)) {
-      $name = $record['name'] ?? CRM_Core_DAO::getFieldValue(self::class, $record['id']);
-      if (in_array($name, ['admin', 'everyone'], TRUE)) {
-        return FALSE;
+  public static function self_civi_api4_authorizeRecord(AuthorizeRecordEvent $e): void {
+    $record = $e->getRecord();
+    $action = $e->getActionName();
+    if (!in_array($action, ['delete', 'update'], TRUE)) {
+      // We only care about these actions.
+      return;
+    }
+
+    // Load the role name from the record that is to be updated/deleted.
+    $storedRoleName = CRM_Core_DAO::getFieldValue(self::class, $record['id'], 'name');
+
+    // Protect the admin role: it must have access to everything.
+    if ($storedRoleName === 'admin') {
+      $e->setAuthorized(FALSE);
+      return;
+    }
+
+    // Protect the everyone role
+    if ($storedRoleName === 'everyone') {
+      if ($action === 'delete') {
+        // Do not allow deletion of the everyone role.
+        $e->setAuthorized(FALSE);
+      }
+      // Updates: Disallow changing name and is_active
+      if (array_intersect(['name', 'is_active'], array_keys($record))) {
+        $e->setAuthorized(FALSE);
       }
     }
-    return TRUE;
   }
 
 }

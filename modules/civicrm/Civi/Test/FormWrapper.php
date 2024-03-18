@@ -36,6 +36,15 @@ class FormWrapper {
 
   private $mail;
 
+  private $exception;
+
+  /**
+   * @return \Exception
+   */
+  public function getException() {
+    return $this->exception;
+  }
+
   /**
    * @return null|array
    */
@@ -74,7 +83,17 @@ class FormWrapper {
 
   private $mailSpoolID;
 
+  /**
+   * @var array|bool
+   */
   private $validation;
+
+  /**
+   * @return array|bool
+   */
+  public function getValidationOutput() {
+    return $this->validation;
+  }
 
   private $originalMailSetting;
 
@@ -115,12 +134,13 @@ class FormWrapper {
       $this->form->buildForm();
     }
     if ($state > self::BUILT) {
-      $this->validation = $this->form->validate();
+      $this->form->validate();
+      $this->validation = $this->form->_errors;
     }
     if ($state > self::VALIDATED) {
       $this->postProcess();
     }
-    $this->templateVariables = \CRM_Core_Smarty::singleton()->get_template_vars();
+    $this->templateVariables = \CRM_Core_Smarty::singleton()->getTemplateVars();
     \CRM_Core_Smarty::singleton()->popScope([]);
     return $this;
   }
@@ -175,11 +195,18 @@ class FormWrapper {
    */
   public function postProcess(): self {
     $this->startTrackingMail();
-    $this->form->postProcess();
-    foreach ($this->subsequentForms as $form) {
-      $form->preProcess();
-      $form->buildForm();
-      $form->postProcess();
+    try {
+      $this->form->postProcess();
+      foreach ($this->subsequentForms as $form) {
+        $form->preProcess();
+        $form->buildForm();
+        $form->validate();
+        $this->validation[$form->getName()] = $form->_errors;
+        $form->postProcess();
+      }
+    }
+    catch (\CRM_Core_Exception_PrematureExitException $e) {
+      $this->exception = $e;
     }
     $this->stopTrackingMail();
     return $this;

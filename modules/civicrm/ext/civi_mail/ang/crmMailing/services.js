@@ -510,8 +510,7 @@
   });
 
   // The preview manager performs preview actions while putting up a visible UI (e.g. dialogs & status alerts)
-  //NYSS 13571
-  angular.module('crmMailing').factory('crmMailingPreviewMgr', function ($q, dialogService, crmMailingMgr, crmStatus) {
+  angular.module('crmMailing').factory('crmMailingPreviewMgr', function (dialogService, crmMailingMgr, crmStatus) {
     return {
       // @param mode string one of 'html', 'text', or 'full'
       // @return Promise
@@ -542,18 +541,15 @@
       // @param to Object with either key "email" (string) or "gid" (int)
       // @return Promise
       sendTest: function sendTest(mailing, recipient) {
-        var d = $q.defer();
         var promise = crmMailingMgr.sendTest(mailing, recipient)
             .then(function (deliveryInfos) {
               var count = Object.keys(deliveryInfos).length;
               if (count === 0) {
-                //NYSS 11277/13571
-                CRM.alert(ts('Unable to send test email. Either there are no valid recipients or your outbound email settings are incorrect.'));
-                d.reject();              }
+                CRM.alert(ts('Could not identify any recipients. Perhaps your test group is empty, all contacts are set to deceased/opt out/do_not_email, or you tried sending to contacts that do not exist and you have no permission to add contacts.'));
+              }
             })
           ;
-        //NYSS 13571
-        return crmStatus({start: ts('Sending...'), success: ts('Sent'), error: ts('Error')}, d.promise);
+        return crmStatus({start: ts('Sending...'), success: ts('Sent')}, promise);
       }
     };
   });

@@ -460,7 +460,7 @@ class DB_pgsql extends DB_common
             unset($this->row[(int)$result]);
             unset($this->_num_rows[(int)$result]);
             $this->affected = 0;
-            return @pg_freeresult($result);
+            return @pg_free_result($result);
         }
         return false;
     }
@@ -534,7 +534,7 @@ class DB_pgsql extends DB_common
      */
     function numCols($result)
     {
-        $cols = @pg_numfields($result);
+        $cols = @pg_num_fields($result);
         if (!$cols) {
             return $this->pgsqlRaiseError();
         }
@@ -559,7 +559,7 @@ class DB_pgsql extends DB_common
      */
     function numRows($result)
     {
-        $rows = @pg_numrows($result);
+        $rows = @pg_num_rows($result);
         if ($rows === null) {
             return $this->pgsqlRaiseError();
         }
@@ -664,7 +664,7 @@ class DB_pgsql extends DB_common
         $repeat = false;
         do {
             $this->pushErrorHandling(PEAR_ERROR_RETURN);
-            $result = $this->query("SELECT NEXTVAL('${seqname}')");
+            $result = $this->query("SELECT NEXTVAL('{$seqname}')");
             $this->popErrorHandling();
             if ($ondemand && DB::isError($result) &&
                 $result->getCode() == DB_ERROR_NOSUCHTABLE) {
@@ -703,7 +703,7 @@ class DB_pgsql extends DB_common
     function createSequence($seq_name)
     {
         $seqname = $this->getSequenceName($seq_name);
-        $result = $this->query("CREATE SEQUENCE ${seqname}");
+        $result = $this->query("CREATE SEQUENCE {$seqname}");
         return $result;
     }
 
@@ -791,7 +791,7 @@ class DB_pgsql extends DB_common
      */
     function errorNative()
     {
-        return @pg_errormessage($this->connection);
+        return @pg_last_error($this->connection);
     }
 
     // }}}
@@ -916,7 +916,7 @@ class DB_pgsql extends DB_common
             $case_func = 'strval';
         }
 
-        $count = @pg_numfields($id);
+        $count = @pg_num_fields($id);
         $res   = array();
 
         if ($mode) {
@@ -926,9 +926,9 @@ class DB_pgsql extends DB_common
         for ($i = 0; $i < $count; $i++) {
             $res[$i] = array(
                 'table' => $got_string ? $case_func($result) : '',
-                'name'  => $case_func(@pg_fieldname($id, $i)),
-                'type'  => @pg_fieldtype($id, $i),
-                'len'   => @pg_fieldsize($id, $i),
+                'name'  => $case_func(@pg_field_name($id, $i)),
+                'type'  => @pg_field_type($id, $i),
+                'len'   => @pg_field_size($id, $i),
                 'flags' => $got_string
                            ? $this->_pgFieldFlags($id, $i, $result)
                            : '',
@@ -943,7 +943,7 @@ class DB_pgsql extends DB_common
 
         // free the result only if we were called on a table
         if ($got_string) {
-            @pg_freeresult($id);
+            @pg_free_result($id);
         }
         return $res;
     }
@@ -967,7 +967,7 @@ class DB_pgsql extends DB_common
      */
     function _pgFieldFlags($resource, $num_field, $table_name)
     {
-        $field_name = @pg_fieldname($resource, $num_field);
+        $field_name = @pg_field_name($resource, $num_field);
 
         // Check if there's a schema in $table_name and update things
         // accordingly.
@@ -986,7 +986,7 @@ class DB_pgsql extends DB_common
                                 AND typ.typrelid = f.attrelid
                                 AND f.attname = '$field_name'
                                 AND $tableWhere");
-        if (@pg_numrows($result) > 0) {
+        if (@pg_num_rows($result) > 0) {
             $row = @pg_fetch_row($result, 0);
             $flags  = ($row[0] == 't') ? 'not_null ' : '';
 
@@ -1010,7 +1010,7 @@ class DB_pgsql extends DB_common
                                 AND f.attrelid = i.indrelid
                                 AND f.attname = '$field_name'
                                 AND $tableWhere");
-        $count = @pg_numrows($result);
+        $count = @pg_num_rows($result);
 
         for ($i = 0; $i < $count ; $i++) {
             $row = @pg_fetch_row($result, $i);

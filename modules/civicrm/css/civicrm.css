@@ -1863,8 +1863,10 @@ input.crm-form-entityref {
 
 .crm-container .crm-submit-buttons,
 .crm-container .action-link {
-  height: 27px;
   margin: 4px 0 4px 2px;
+}
+.crm-container .action-link {
+  height: 27px;
 }
 
 .crm-container .register_link-top {
@@ -1902,9 +1904,7 @@ input.crm-form-entityref {
   text-decoration: none;
   cursor: pointer;
   border: 1px solid #3e3e3e;
-  display: block;
-  float: left;
-  overflow: hidden;
+  display: inline-block;
   line-height: 135%;
   border-radius: 3px;
 }
@@ -2203,6 +2203,10 @@ div.crm-master-accordion-header a.helpicon {
   font-weight: bold;
 }
 
+.crm-container table summary { /* Makes summary match the size of the rest of the table it's in */
+  font-size: inherit;
+}
+
 .crm-container summary::-webkit-details-marker { /* Safari fix to remove summary icon */
   display: none;
 }
@@ -2261,7 +2265,10 @@ div.crm-master-accordion-header a.helpicon {
   background-color: transparent;
   font-weight: normal;
   color: #3e3e3e;
-  font-size: 1rem;
+}
+
+.crm-container .crm-accordion-wrapper .crm-master-accordion-header {
+  font-size: 16px;
 }
 
 .crm-container .crm-master-accordion-header.crm-accordion-header:hover,

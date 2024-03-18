@@ -4,7 +4,7 @@
 
 namespace Composer\Autoload;
 
-class ComposerStaticInitd5bdefcb63e0870eb95622af3de75945
+class ComposerStaticInitb652831170d15a9d6c1a587248711474
 {
     public static $files = array (
         'a4a119a56e50fbb293281d9a48007e0e' => __DIR__ . '/..' . '/symfony/polyfill-php80/bootstrap.php',
@@ -80,8 +80,6 @@ class ComposerStaticInitd5bdefcb63e0870eb95622af3de75945
         '23c18046f52bef3eea034657bafda50f' => __DIR__ . '/..' . '/symfony/polyfill-php81/bootstrap.php',
         '9e4824c5afbdc1482b6025ce3d4dfde8' => __DIR__ . '/..' . '/league/csv/src/functions_include.php',
         'def43f6c87e4f8dfd0c9e1b1bab14fe8' => __DIR__ . '/..' . '/symfony/polyfill-iconv/bootstrap.php',
-        '0d59ee240a4cd96ddbb4ff164fccea4d' => __DIR__ . '/..' . '/symfony/polyfill-php73/bootstrap.php',
-        'b686b8e46447868025a15ce5d0cb2634' => __DIR__ . '/..' . '/symfony/polyfill-php74/bootstrap.php',
         '5897ea0ac4cccf14d323035e65887801' => __DIR__ . '/..' . '/symfony/polyfill-php82/bootstrap.php',
         '667aeda72477189d0494fecd327c3641' => __DIR__ . '/..' . '/symfony/var-dumper/Resources/functions/dump.php',
         'bad842bce63596a608e2623519fb382c' => __DIR__ . '/..' . '/xkerman/restricted-unserialize/src/function.php',
@@ -122,8 +120,6 @@ class ComposerStaticInitd5bdefcb63e0870eb95622af3de75945
             'Symfony\\Polyfill\\Php82\\' => 23,
             'Symfony\\Polyfill\\Php81\\' => 23,
             'Symfony\\Polyfill\\Php80\\' => 23,
-            'Symfony\\Polyfill\\Php74\\' => 23,
-            'Symfony\\Polyfill\\Php73\\' => 23,
             'Symfony\\Polyfill\\Php72\\' => 23,
             'Symfony\\Polyfill\\Mbstring\\' => 26,
             'Symfony\\Polyfill\\Iconv\\' => 23,
@@ -149,6 +145,7 @@ class ComposerStaticInitd5bdefcb63e0870eb95622af3de75945
             'Psr\\Http\\Message\\' => 17,
             'Psr\\Http\\Client\\' => 16,
             'Psr\\Container\\' => 14,
+            'Pontedilana\\PhpWeasyPrint\\' => 26,
             'PhpOffice\\PhpWord\\' => 18,
             'PhpOffice\\PhpSpreadsheet\\' => 25,
             'Padaliyajay\\PHPAutoprefixer\\' => 28,
@@ -169,6 +166,10 @@ class ComposerStaticInitd5bdefcb63e0870eb95622af3de75945
             'LastCall\\DownloadsPlugin\\' => 25,
             'Laminas\\ZendFrameworkBridge\\' => 28,
             'Laminas\\Escaper\\' => 16,
+        ),
+        'K' => 
+        array (
+            'Knp\\Snappy\\' => 11,
         ),
         'G' => 
         array (
@@ -240,14 +241,6 @@ class ComposerStaticInitd5bdefcb63e0870eb95622af3de75945
         'Symfony\\Polyfill\\Php80\\' => 
         array (
             0 => __DIR__ . '/..' . '/symfony/polyfill-php80',
-        ),
-        'Symfony\\Polyfill\\Php74\\' => 
-        array (
-            0 => __DIR__ . '/..' . '/symfony/polyfill-php74',
-        ),
-        'Symfony\\Polyfill\\Php73\\' => 
-        array (
-            0 => __DIR__ . '/..' . '/symfony/polyfill-php73',
         ),
         'Symfony\\Polyfill\\Php72\\' => 
         array (
@@ -338,6 +331,10 @@ class ComposerStaticInitd5bdefcb63e0870eb95622af3de75945
         array (
             0 => __DIR__ . '/..' . '/psr/container/src',
         ),
+        'Pontedilana\\PhpWeasyPrint\\' => 
+        array (
+            0 => __DIR__ . '/..' . '/pontedilana/php-weasyprint/src',
+        ),
         'PhpOffice\\PhpWord\\' => 
         array (
             0 => __DIR__ . '/..' . '/phpoffice/phpword/src/PhpWord',
@@ -394,6 +391,10 @@ class ComposerStaticInitd5bdefcb63e0870eb95622af3de75945
         'Laminas\\Escaper\\' => 
         array (
             0 => __DIR__ . '/..' . '/laminas/laminas-escaper/src',
+        ),
+        'Knp\\Snappy\\' => 
+        array (
+            0 => __DIR__ . '/..' . '/knplabs/knp-snappy/src/Knp/Snappy',
         ),
         'GuzzleHttp\\Psr7\\' => 
         array (
@@ -569,7 +570,6 @@ class ComposerStaticInitd5bdefcb63e0870eb95622af3de75945
         'Datamatrix' => __DIR__ . '/..' . '/tecnickcom/tcpdf/include/barcodes/datamatrix.php',
         'Dompdf\\Cpdf' => __DIR__ . '/..' . '/dompdf/dompdf/lib/Cpdf.php',
         'ICallbackNamed' => __DIR__ . '/..' . '/rubobaquero/phpquery/phpQuery/phpQuery/Callback.php',
-        'JsonException' => __DIR__ . '/..' . '/symfony/polyfill-php73/Resources/stubs/JsonException.php',
         'PDF417' => __DIR__ . '/..' . '/tecnickcom/tcpdf/include/barcodes/pdf417.php',
         'PEAR_Exception' => __DIR__ . '/..' . '/pear/pear_exception/PEAR/Exception.php',
         'PhpToken' => __DIR__ . '/..' . '/symfony/polyfill-php80/Resources/stubs/PhpToken.php',
@@ -713,11 +713,11 @@ class ComposerStaticInitd5bdefcb63e0870eb95622af3de75945
     public static function getInitializer(ClassLoader $loader)
     {
         return \Closure::bind(function () use ($loader) {
-            $loader->prefixLengthsPsr4 = ComposerStaticInitd5bdefcb63e0870eb95622af3de75945::$prefixLengthsPsr4;
-            $loader->prefixDirsPsr4 = ComposerStaticInitd5bdefcb63e0870eb95622af3de75945::$prefixDirsPsr4;
-            $loader->prefixesPsr0 = ComposerStaticInitd5bdefcb63e0870eb95622af3de75945::$prefixesPsr0;
-            $loader->fallbackDirsPsr0 = ComposerStaticInitd5bdefcb63e0870eb95622af3de75945::$fallbackDirsPsr0;
-            $loader->classMap = ComposerStaticInitd5bdefcb63e0870eb95622af3de75945::$classMap;
+            $loader->prefixLengthsPsr4 = ComposerStaticInitb652831170d15a9d6c1a587248711474::$prefixLengthsPsr4;
+            $loader->prefixDirsPsr4 = ComposerStaticInitb652831170d15a9d6c1a587248711474::$prefixDirsPsr4;
+            $loader->prefixesPsr0 = ComposerStaticInitb652831170d15a9d6c1a587248711474::$prefixesPsr0;
+            $loader->fallbackDirsPsr0 = ComposerStaticInitb652831170d15a9d6c1a587248711474::$fallbackDirsPsr0;
+            $loader->classMap = ComposerStaticInitb652831170d15a9d6c1a587248711474::$classMap;
 
         }, null, ClassLoader::class);
     }
