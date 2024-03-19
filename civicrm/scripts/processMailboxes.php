@@ -547,9 +547,8 @@ function storeAttachments($message, $params, $rowId) {
 
     // Allow mime type application with certain file extensions,
     // and allow audio/image/video
-    // TODO should this include 'text'?
     if (($type == 'application' && preg_match($pattern, $fileExt))
-      || in_array($type, ['audio', 'image', 'video'])
+      || in_array($type, ['audio', 'image', 'video', 'text'])
     ) {
       if ($attributes['size'] > MAX_ATTACHMENT_SIZE) {
         $rej_reason = "File is larger than ".MAX_ATTACHMENT_SIZE." bytes";
@@ -619,8 +618,10 @@ function storeMessage($imapMsg, $message, $params) {
   // CiviCRM will force '<' and '>' to htmlentities, so handle it here
   $msgSubject = mb_strcut(htmlspecialchars($message->getSubject(), ENT_QUOTES), 0, 255);
   $msgDate = $message->getDate()->first()->toArray()['formatted'];
-  $msgBody = $message->getHTMLBody() ?? $message->getTextBody();
+  $msgBody = (!empty($message->getHTMLBody())) ? $message->getHTMLBody() : nl2br($message->getTextBody());
   $msgUid = $message->getUid();
+  bbscript_log(LL::TRACE, 'getHTMLBody', $message->getHTMLBody());
+  bbscript_log(LL::TRACE, 'getTextBody', $message->getTextBody());
 
   /**
    * If there is at least one secondary address, we WILL use an address from
@@ -694,14 +695,14 @@ function storeMessage($imapMsg, $message, $params) {
 
     $timeStart = microtime(true);
     if (!storeAttachments($message, $params, $rowId)) {
-      bbscript_log(LL::WARN, "Unable to store attachments");
+      bbscript_log(LL::WARN, "Unable to store attachments for rowId = {$rowId}.", $message);
     }
     $totalTime = microtime(true) - $timeStart;
     bbscript_log(LL::DEBUG, "Attachment processing time: $totalTime");
   }
 
   return TRUE;
-} // storeMessage()
+}
 
 
 // Process each message, looking for a match between the sender's email
