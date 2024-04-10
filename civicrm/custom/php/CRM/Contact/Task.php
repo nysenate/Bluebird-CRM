@@ -172,7 +172,7 @@ class CRM_Contact_Task extends CRM_Core_Task {
       ];
 
       //CRM-16329, if SMS provider is configured show sms action.
-      $providersCount = CRM_SMS_BAO_Provider::activeProviderCount();
+      $providersCount = CRM_SMS_BAO_SmsProvider::activeProviderCount();
       if ($providersCount && CRM_Core_Permission::check('send SMS')) {
         self::$_tasks[self::TASK_SMS] = [
           'title' => ts('SMS - schedule/send'),
@@ -263,11 +263,11 @@ class CRM_Contact_Task extends CRM_Core_Task {
       /*if (CRM_Core_Permission::access('CiviMail')
         || (CRM_Mailing_Info::workflowEnabled() && CRM_Core_Permission::check('create mailings'))
       ) {
-        self::$_tasks[self::CREATE_MAILING] = array(
+        self::$_tasks[self::CREATE_MAILING] = [
           'title' => ts('Email - schedule/send via CiviMail'),
           'class' => 'CRM_Mailing_Form_Task_AdhocMailing',
           'result' => FALSE,
-        );
+        ];
       }*/
 
       if (CRM_Core_Permission::access('CiviCase')) {
@@ -332,11 +332,7 @@ class CRM_Contact_Task extends CRM_Core_Task {
         $tasks[self::MAP_CONTACTS] = self::$_tasks[self::MAP_CONTACTS]['title'];
       }
 
-      foreach ([
-        self::MAP_CONTACTS,
-        self::CREATE_MAILING,
-        self::TASK_SMS,
-      ] as $task) {
+      foreach ([self::MAP_CONTACTS, self::CREATE_MAILING, self::TASK_SMS] as $task) {
         if (isset(self::$_tasks[$task]) &&
           !empty(self::$_tasks[$task]['title'])
         ) {

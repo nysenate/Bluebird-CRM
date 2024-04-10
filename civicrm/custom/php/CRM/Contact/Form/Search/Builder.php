@@ -65,8 +65,6 @@ class CRM_Contact_Form_Search_Builder extends CRM_Contact_Form_Search {
       }
     }
 
-    $this->_loadedMappingId = $this->get('savedMapping');
-
     if ($this->get('showSearchForm')) {
       $this->assign('showSearchForm', TRUE);
     }
@@ -201,7 +199,7 @@ class CRM_Contact_Form_Search_Builder extends CRM_Contact_Form_Search {
             $fldType = $fldValue['type'] ?? NULL;
             $type = CRM_Utils_Type::typeToString($fldType);
 
-            if (strstr($v[1], 'IN')) {
+            if (str_contains($v[1], 'IN')) {
               if (empty($v[2])) {
                 $errorMsg["value[$v[3]][$v[4]]"] = ts("Please enter a value.");
               }
@@ -221,7 +219,7 @@ class CRM_Contact_Form_Search_Builder extends CRM_Contact_Form_Search {
 
           if ($type && empty($errorMsg)) {
             // check for valid format while using IN Operator
-            if (strstr($v[1], 'IN')) {
+            if (str_contains($v[1], 'IN')) {
               if (!is_array($v[2])) {
                 $inVal = trim($v[2]);
                 //checking for format to avoid db errors
@@ -365,14 +363,7 @@ class CRM_Contact_Form_Search_Builder extends CRM_Contact_Form_Search {
     // get it from controller only if form has been submitted, else preProcess has set this
     if (!empty($_POST)) {
       $this->_formValues = $this->controller->exportValues($this->_name);
-
-      // set the group if group is submitted
-      if (!empty($this->_formValues['uf_group_id'])) {
-        $this->set('id', $this->_formValues['uf_group_id']);
-      }
-      else {
-        $this->set('id', '');
-      }
+      $this->set('uf_group_id', $this->_formValues['uf_group_id'] ?? '');
     }
 
     // we dont want to store the sortByCharacter in the formValue, it is more like
@@ -473,7 +464,7 @@ class CRM_Contact_Form_Search_Builder extends CRM_Contact_Form_Search {
         elseif (in_array(substr($field, 0, 3), [
           'is_',
           'do_',
-        ]) || CRM_Utils_Array::value('data_type', $info) == 'Boolean'
+        ]) || ($info['data_type'] ?? NULL) == 'Boolean'
         ) {
           $options[$field] = 'yesno';
           if ($entity != 'contact') {
@@ -583,9 +574,11 @@ class CRM_Contact_Form_Search_Builder extends CRM_Contact_Form_Search {
 
       foreach ($value as $key1 => $value1) {
         //CRM-2676, replacing the conflict for same custom field name from different custom group.
-        $customGroupName = CRM_Core_BAO_Mapping::getCustomGroupName($key1);
+        $customFieldId = CRM_Core_BAO_CustomField::getKeyID($key1);
 
-        if ($customGroupName) {
+        if ($customFieldId) {
+          $customGroupName = CRM_Core_BAO_CustomField::getField($customFieldId)['custom_group']['title'];
+          $customGroupName = CRM_Utils_String::ellipsify($customGroupName, 13);
           $relatedMapperFields[$key][$key1] = $mapperFields[$key][$key1] = $customGroupName . ': ' . $value1['title'];
         }
         else {
@@ -691,9 +684,7 @@ class CRM_Contact_Form_Search_Builder extends CRM_Contact_Form_Search {
     ];
 
     if (isset($mappingId)) {
-      list($mappingName, $mappingContactType, $mappingLocation, $mappingPhoneType, $mappingImProvider,
-        $mappingRelation, $mappingOperator, $mappingValue
-        ) = $this->getMappingFields($mappingId);
+      [$mappingName, $mappingContactType, $mappingLocation, $mappingPhoneType, $mappingImProvider, $mappingRelation, $mappingOperator, $mappingValue] = $this->getMappingFields($mappingId);
 
       $blkCnt = count($mappingName);
       if ($blkCnt >= $blockCount) {
@@ -925,12 +916,12 @@ class CRM_Contact_Form_Search_Builder extends CRM_Contact_Form_Search {
 
         $jsSet = TRUE;
 
-        if (CRM_Utils_Array::value($i, CRM_Utils_Array::value($x, $mappingOperator))) {
-          $defaults["operator[$x][$i]"] = $mappingOperator[$x][$i] ?? NULL;
+        if (!empty($mappingOperator[$x][$i])) {
+          $defaults["operator[$x][$i]"] = $mappingOperator[$x][$i];
         }
 
         if (isset($mappingValue[$x][$i])) {
-          $defaults["value[$x][$i]"] = $mappingValue[$x][$i] ?? NULL;
+          $defaults["value[$x][$i]"] = $mappingValue[$x][$i];
         }
       }
     }
