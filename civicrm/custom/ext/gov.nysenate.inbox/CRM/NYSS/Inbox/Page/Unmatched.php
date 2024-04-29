@@ -20,17 +20,17 @@ class CRM_NYSS_Inbox_Page_Unmatched extends CRM_Core_Page {
   static function getUnmatched() {
     //Civi::log()->debug('getUnmatched', array('$_GET' => $_GET));
 
-    $requiredParameters = array();
-    $optionalParameters = array(
+    $requiredParameters = [];
+    $optionalParameters = [
       'range' => 'Integer',
       'term' => 'String',
-    );
+    ];
     $params = CRM_Core_Page_AJAX::defaultSortAndPagerParams();
     $params += CRM_Core_Page_AJAX::validateParams($requiredParameters, $optionalParameters);
 
     //get unmatched records
     $unmatched = CRM_NYSS_Inbox_BAO_Inbox::getMessages($params, 'unmatched');
-    /*Civi::log()->debug('getUnmatched', array('unmatched' => $unmatched));*/
+    //Civi::log()->debug('getUnmatched', array('unmatched' => $unmatched));
 
     CRM_Utils_JSON::output($unmatched);
   }
