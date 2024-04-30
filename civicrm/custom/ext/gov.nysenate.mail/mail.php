@@ -59,7 +59,6 @@ function mail_civicrm_install() {
  * @link http://wiki.civicrm.org/confluence/display/CRMDOC/hook_civicrm_uninstall
  */
 function mail_civicrm_uninstall() {
-  _mail_civix_civicrm_uninstall();
 }
 
 /**
@@ -77,7 +76,6 @@ function mail_civicrm_enable() {
  * @link http://wiki.civicrm.org/confluence/display/CRMDOC/hook_civicrm_disable
  */
 function mail_civicrm_disable() {
-  _mail_civix_civicrm_disable();
 }
 
 /**
@@ -93,7 +91,7 @@ function mail_civicrm_disable() {
  * @link http://wiki.civicrm.org/confluence/display/CRMDOC/hook_civicrm_upgrade
  */
 function mail_civicrm_upgrade($op, CRM_Queue_Queue $queue = NULL) {
-  return _mail_civix_civicrm_upgrade($op, $queue);
+  return;
 }
 
 /**
@@ -1273,7 +1271,8 @@ function _mail_alterMailingBlockMosaico(phpQueryObject $doc) {
   //Civi::log()->debug(__FUNCTION__, ['doc' => $doc]);
 
   //sync thumbnails whenever we open a Mosaico mailing
-  CRM_NYSS_Mail_Utils::createMosaicoThumbnails();
+  //moved to API with 16329
+  //CRM_NYSS_Mail_Utils::createMosaicoThumbnails();
 
   //NYSS 5581 - mailing category options
   $catOptions = "<option value=''>- select -</option>";

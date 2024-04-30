@@ -4,7 +4,7 @@ use CRM_NYSS_Mail_ExtensionUtil as E;
 /**
  * Collection of upgrade steps.
  */
-class CRM_NYSS_Mail_Upgrader extends CRM_NYSS_Mail_Upgrader_Base {
+class CRM_NYSS_Mail_Upgrader extends CRM_Extension_Upgrader_Base {
 
   // By convention, functions that look like "function upgrade_NNNN()" are
   // upgrade tasks. They are executed in order (like Drupal's hook_update_N).
@@ -130,6 +130,20 @@ class CRM_NYSS_Mail_Upgrader extends CRM_NYSS_Mail_Upgrader_Base {
     return TRUE;
   }
 
+  public function upgrade_1200(): bool {
+    $this->ctx->log->info('Applying update 1200 (v1.2)');
+
+    \Civi\Api4\Job::create(FALSE)
+      ->addValue('run_frequency', 'Daily')
+      ->addValue('name', 'Process Mosaico Thumbnails')
+      ->addValue('api_entity', 'Nyss')
+      ->addValue('api_action', 'processmosaicothumbnails')
+      ->addValue('is_active', TRUE)
+      ->addValue('domain_id', 1)
+      ->execute();
+
+    return TRUE;
+  }
 
   /**
    * Example: Run an external SQL script.
