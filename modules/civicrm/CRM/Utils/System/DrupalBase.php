@@ -286,7 +286,10 @@ abstract class CRM_Utils_System_DrupalBase extends CRM_Utils_System_Base {
    * @inheritDoc
    */
   public function clearResourceCache() {
-    _drupal_flush_css_js();
+    // Sometimes metadata gets cleared while the cms isn't bootstrapped.
+    if (function_exists('_drupal_flush_css_js')) {
+      _drupal_flush_css_js();
+    }
   }
 
   /**
@@ -572,7 +575,7 @@ abstract class CRM_Utils_System_DrupalBase extends CRM_Utils_System_Base {
     if (!empty($action)) {
       return $action;
     }
-    return $this->url($_GET['q']);
+    return (string) Civi::url('current://' . $_GET['q']);
   }
 
   /**

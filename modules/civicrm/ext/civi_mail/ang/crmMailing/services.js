@@ -510,8 +510,7 @@
   });
 
   // The preview manager performs preview actions while putting up a visible UI (e.g. dialogs & status alerts)
-  //NYSS 13571
-  angular.module('crmMailing').factory('crmMailingPreviewMgr', function ($q, dialogService, crmMailingMgr, crmStatus) {
+  angular.module('crmMailing').factory('crmMailingPreviewMgr', function (dialogService, crmMailingMgr, crmStatus) {
     return {
       // @param mode string one of 'html', 'text', or 'full'
       // @return Promise
@@ -542,23 +541,15 @@
       // @param to Object with either key "email" (string) or "gid" (int)
       // @return Promise
       sendTest: function sendTest(mailing, recipient) {
-        //NYSS 13571
-        var d = $q.defer();
-        crmMailingMgr.sendTest(mailing, recipient)
+        var promise = crmMailingMgr.sendTest(mailing, recipient)
             .then(function (deliveryInfos) {
               var count = Object.keys(deliveryInfos).length;
               if (count === 0) {
-                //NYSS 11277/13571
-                CRM.alert(ts('Unable to send test email. Either there are no valid recipients or your outbound email settings are incorrect.'));
-                d.reject();
-              }
-              else {
-                d.resolve();
+                CRM.alert(ts('Could not identify any recipients. Perhaps your test group is empty, all contacts are set to deceased/opt out/do_not_email, or you tried sending to contacts that do not exist and you have no permission to add contacts.'));
               }
             })
           ;
-        //NYSS 13571
-        return crmStatus({start: ts('Sending...'), success: ts('Sent'), error: ts('Error')}, d.promise);
+        return crmStatus({start: ts('Sending...'), success: ts('Sent')}, promise);
       }
     };
   });
@@ -648,7 +639,7 @@
             scope.mailing = newValue;
           });
           scope.crmMailingConst = CRM.crmMailing;
-          scope.ts = CRM.ts(null);
+          scope.ts = CRM.ts('civi_mail');
           scope.hs = crmUiHelp({file: 'CRM/Mailing/MailingUI'});
           scope.checkPerm = CRM.checkPerm;
           scope[directiveName] = attr[directiveName] ? scope.$parent.$eval(attr[directiveName]) : {};

@@ -66,12 +66,6 @@ class CRM_Dedupe_BAO_DedupeRuleGroup extends CRM_Dedupe_DAO_DedupeRuleGroup {
         'civicrm_country.name' => 'civicrm_address.country_id',
         'civicrm_county.name' => 'civicrm_address.county_id',
         'civicrm_state_province.name' => 'civicrm_address.state_province_id',
-        'gender.label' => 'civicrm_contact.gender_id',
-        'individual_prefix.label' => 'civicrm_contact.prefix_id',
-        'individual_suffix.label' => 'civicrm_contact.suffix_id',
-        'addressee.label' => 'civicrm_contact.addressee_id',
-        'email_greeting.label' => 'civicrm_contact.email_greeting_id',
-        'postal_greeting.label' => 'civicrm_contact.postal_greeting_id',
         'civicrm_phone.phone' => 'civicrm_phone.phone_numeric',
       ];
       // the table names we support in dedupe rules - a filter for importableFields()
@@ -109,18 +103,19 @@ class CRM_Dedupe_BAO_DedupeRuleGroup extends CRM_Dedupe_DAO_DedupeRuleGroup {
         // exension is installed (https://github.com/eileenmcnaughton/org.wikimedia.thethe)
         $fields[$ctype]['civicrm_contact']['sort_name'] = ts('Sort Name');
 
+        $customGroups = CRM_Core_BAO_CustomGroup::getAll([
+          'extends' => $ctype,
+          'is_active' => TRUE,
+        ], CRM_Core_Permission::EDIT);
         // add all custom data fields including those only for sub_types.
-        foreach (CRM_Core_BAO_CustomGroup::getTree($ctype, NULL, NULL, -1, [], NULL, TRUE, NULL, TRUE) as $key => $cg) {
-          if (!is_int($key)) {
-            continue;
-          }
+        foreach ($customGroups as $cg) {
           foreach ($cg['fields'] as $cf) {
             $fields[$ctype][$cg['table_name']][$cf['column_name']] = $cg['title'] . ' : ' . $cf['label'];
           }
         }
       }
       //Does this have to run outside of cache?
-      CRM_Utils_Hook::dupeQuery(CRM_Core_DAO::$_nullObject, 'supportedFields', $fields);
+      CRM_Utils_Hook::dupeQuery(NULL, 'supportedFields', $fields);
       Civi::$statics[__CLASS__]['supportedFields'] = $fields;
     }
 
@@ -144,16 +139,6 @@ class CRM_Dedupe_BAO_DedupeRuleGroup extends CRM_Dedupe_DAO_DedupeRuleGroup {
   private static function importableFields($contactType): array {
 
     $fields = CRM_Contact_DAO_Contact::import();
-
-    // get the fields thar are meant for contact types
-    if (in_array($contactType, [
-      'Individual',
-      'Household',
-      'Organization',
-      'All',
-    ])) {
-      $fields = array_merge($fields, CRM_Core_OptionValue::getFields('', $contactType));
-    }
 
     $locationFields = array_merge(CRM_Core_DAO_Address::import(),
       CRM_Core_DAO_Phone::import(),
@@ -220,12 +205,11 @@ class CRM_Dedupe_BAO_DedupeRuleGroup extends CRM_Dedupe_DAO_DedupeRuleGroup {
     if (!$this->name == NULL || $this->is_reserved == NULL) {
       $this->find(TRUE);
     }
+    $contactType = $this->contact_type;
 
     // Reserved Rule Groups can optionally get special treatment by
     // implementing an optimization class and returning a query array.
-    if ($this->is_reserved &&
-      CRM_Utils_File::isIncludable("CRM/Dedupe/BAO/QueryBuilder/{$this->name}.php")
-    ) {
+    if ($this->isUseReservedQuery()) {
       $command = empty($this->params) ? 'internal' : 'record';
       $queries = call_user_func(["CRM_Dedupe_BAO_QueryBuilder_{$this->name}", $command], $this);
     }
@@ -244,11 +228,15 @@ class CRM_Dedupe_BAO_DedupeRuleGroup extends CRM_Dedupe_DAO_DedupeRuleGroup {
       // tailored to respect the param and contactId options provided.
       $queries = [];
       while ($bao->fetch()) {
-        $bao->contactIds = $this->contactIds;
-        $bao->params = $this->params;
-
         // Skipping empty rules? Empty rules shouldn't exist; why check?
-        if ($query = $bao->sql()) {
+        if ($query = self::sql($this->params, $this->contactIds, [
+          'id' => (int) $bao->id,
+          'rule_table' => $bao->rule_table,
+          'rule_length' => $bao->rule_length,
+          'rule_field' => $bao->rule_field,
+          'rule_weight' => $bao->rule_weight,
+          'dedupe_rule_group_id' => $bao->dedupe_rule_group_id,
+        ], $contactType)) {
           $queries["{$bao->rule_table}.{$bao->rule_field}.{$bao->rule_weight}"] = $query;
         }
       }
@@ -264,7 +252,168 @@ class CRM_Dedupe_BAO_DedupeRuleGroup extends CRM_Dedupe_DAO_DedupeRuleGroup {
     return $queries;
   }
 
-  public function fillTable() {
+  /**
+   * Return the SQL query for the given rule - either for finding matching
+   * pairs of contacts, or for matching against the $params variable (if set).
+   *
+   * @param array|null $params
+   *   Params to dedupe against (queries against the whole contact set otherwise)
+   * @param array $contactIDs
+   *   Ids of the contacts to limit the SQL queries (whole-database queries otherwise)
+   * @param array $rule
+   * @param string $contactType
+   *
+   * @return string
+   *   SQL query performing the search
+   *   or NULL if params is present and doesn't have and for a field.
+   *
+   * @throws \CRM_Core_Exception
+   * @internal do not call from outside tested core code. No universe uses Feb 2024.
+   *
+   */
+  private static function sql($params, $contactIDs, array $rule, string $contactType): ?string {
+    if ($params &&
+      (!array_key_exists($rule['rule_table'], $params) ||
+        !array_key_exists($rule['rule_field'], $params[$rule['rule_table']])
+      )
+    ) {
+      // if params is present and doesn't have an entry for a field, don't construct the clause.
+      return NULL;
+    }
+
+    $filter = self::getRuleTableFilter($rule['rule_table'], $contactType);
+    $contactIDFieldName = self::getContactIDFieldName($rule['rule_table']);
+
+    // build FROM (and WHERE, if it's a parametrised search)
+    // based on whether the rule is about substrings or not
+    if ($params) {
+      $select = "t1.$contactIDFieldName id1, {$rule['rule_weight']} weight";
+      $subSelect = 'id1, weight';
+      $where = $filter ? ['t1.' . $filter] : [];
+      $from = "{$rule['rule_table']} t1";
+      $str = 'NULL';
+      if (isset($params[$rule['rule_table']][$rule['rule_field']])) {
+        $str = trim(CRM_Utils_Type::escape($params[$rule['rule_table']][$rule['rule_field']], 'String'));
+      }
+      if ($rule['rule_length']) {
+        $where[] = "SUBSTR(t1.{$rule['rule_field']}, 1, {$rule['rule_length']}) = SUBSTR('$str', 1, {$rule['rule_length']})";
+        $where[] = "t1.{$rule['rule_field']} IS NOT NULL";
+      }
+      else {
+        $where[] = "t1.{$rule['rule_field']} = '$str'";
+      }
+    }
+    else {
+      $select = "t1.$contactIDFieldName id1, t2.$contactIDFieldName id2, {$rule['rule_weight']} weight";
+      $subSelect = 'id1, id2, weight';
+      $where = $filter ? [
+        't1.' . $filter,
+        't2.' . $filter,
+      ] : [];
+      $where[] = "t1.$contactIDFieldName < t2.$contactIDFieldName";
+      $from = "{$rule['rule_table']} t1 INNER JOIN {$rule['rule_table']} t2 ON (" . self::getRuleFieldFilter($rule) . ")";
+    }
+
+    $query = "SELECT $select FROM $from WHERE " . implode(' AND ', $where);
+    if ($contactIDs) {
+      $cids = [];
+      foreach ($contactIDs as $cid) {
+        $cids[] = CRM_Utils_Type::escape($cid, 'Integer');
+      }
+      if (count($cids) == 1) {
+        $query .= " AND (t1.$contactIDFieldName = {$cids[0]}) UNION $query AND t2.$contactIDFieldName = {$cids[0]}";
+      }
+      else {
+        $query .= " AND t1.$contactIDFieldName IN (" . implode(',', $cids) . ")
+        UNION $query AND  t2.$contactIDFieldName IN (" . implode(',', $cids) . ")";
+      }
+      // The `weight` is ambiguous in the context of the union; put the whole
+      // thing in a subquery.
+      $query = "SELECT $subSelect FROM ($query) subunion";
+    }
+
+    return $query;
+  }
+
+  /**
+   * Get the name of the field in the table that refers to the Contact ID.
+   *
+   * e.g in civicrm_contact this is 'id' whereas in civicrm_address this is
+   * contact_id and in a custom field table it might be entity_id.
+   *
+   * @param string $tableName
+   *
+   * @return string
+   *   Usually id, contact_id or entity_id.
+   * @throws \CRM_Core_Exception
+   */
+  private static function getContactIDFieldName(string $tableName): string {
+    if ($tableName === 'civicrm_contact') {
+      return 'id';
+    }
+    if (isset(CRM_Core_DAO::getDynamicReferencesToTable('civicrm_contact')[$tableName][0])) {
+      return CRM_Core_DAO::getDynamicReferencesToTable('civicrm_contact')[$tableName][0];
+    }
+    if (isset(\CRM_Core_DAO::getReferencesToContactTable()[$tableName][0])) {
+      return \CRM_Core_DAO::getReferencesToContactTable()[$tableName][0];
+    }
+    throw new CRM_Core_Exception('invalid field');
+  }
+
+  /**
+   * Get any where filter that restricts the specific table.
+   *
+   * Generally this is along the lines of entity_table = civicrm_contact
+   * although for the contact table it could be the id restriction.
+   *
+   * @param string $tableName
+   * @param string $contactType
+   *
+   * @return string
+   */
+  private static function getRuleTableFilter(string $tableName, string $contactType): string {
+    if ($tableName === 'civicrm_contact') {
+      return "contact_type = '{$contactType}'";
+    }
+    $dynamicReferences = CRM_Core_DAO::getDynamicReferencesToTable('civicrm_contact')[$tableName] ?? NULL;
+    if (!$dynamicReferences) {
+      return '';
+    }
+    if (!empty(CRM_Core_DAO::getDynamicReferencesToTable('civicrm_contact')[$tableName])) {
+      return $dynamicReferences[1] . "= 'civicrm_contact'";
+    }
+    return '';
+  }
+
+  /**
+   * @param array $rule
+   *
+   * @return string
+   * @throws \CRM_Core_Exception
+   */
+  private static function getRuleFieldFilter(array $rule): string {
+    if ($rule['rule_length']) {
+      $on = ["SUBSTR(t1.{$rule['rule_field']}, 1, {$rule['rule_length']}) = SUBSTR(t2.{$rule['rule_field']}, 1, {$rule['rule_length']})"];
+      return "(" . implode(' AND ', $on) . ")";
+    }
+    $innerJoinClauses = [
+      "t1.{$rule['rule_field']} IS NOT NULL",
+      "t2.{$rule['rule_field']} IS NOT NULL",
+      "t1.{$rule['rule_field']} = t2.{$rule['rule_field']}",
+    ];
+
+    if (in_array(CRM_Dedupe_BAO_DedupeRule::getFieldType($rule['rule_field'], $rule['rule_table']), CRM_Utils_Type::getTextTypes(), TRUE)) {
+      $innerJoinClauses[] = "t1.{$rule['rule_field']} <> ''";
+      $innerJoinClauses[] = "t2.{$rule['rule_field']} <> ''";
+    }
+    return "(" . implode(' AND ', $innerJoinClauses) . ")";
+  }
+
+  /**
+   * @return void
+   * @throws \Civi\Core\Exception\DBQueryException
+   */
+  public function fillTable(): void {
     // get the list of queries handy
     $tableQueries = $this->tableQuery();
 
@@ -596,6 +745,28 @@ class CRM_Dedupe_BAO_DedupeRuleGroup extends CRM_Dedupe_DAO_DedupeRuleGroup {
     }
 
     return \Civi::$statics[__CLASS__]['rule_groups'][$rule_group_id]['contact_type'];
+  }
+
+  /**
+   * Is a file based reserved query configured.
+   *
+   * File based reserved queries were an early idea about how to optimise the dedupe queries.
+   *
+   * In theory extensions could implement them although there is no evidence any of them have.
+   * However, if these are implemented by core or by extensions we should not attempt to optimise
+   * the query by (e.g.) combining queries.
+   *
+   * In practice the queries implemented only return one query anyway
+   *
+   * @see \CRM_Dedupe_BAO_QueryBuilder_IndividualGeneral
+   * @see \CRM_Dedupe_BAO_QueryBuilder_IndividualSupervised
+   * @see \CRM_Dedupe_BAO_QueryBuilder_IndividualUnsupervised
+   *
+   * @return bool
+   */
+  private function isUseReservedQuery(): bool {
+    return $this->is_reserved &&
+      CRM_Utils_File::isIncludable("CRM/Dedupe/BAO/QueryBuilder/{$this->name}.php");
   }
 
 }

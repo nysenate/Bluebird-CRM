@@ -3600,32 +3600,32 @@
 }
 
 #bootstrap-theme .btn-info {
-	color: white;
+	color: black;
 	background-color: #cde8fe;
 	border-color: #cde8fe;
 }
 
 #bootstrap-theme .btn-info:focus, #bootstrap-theme .btn-info.focus {
-	color: white;
+	color: black;
 	background-color: #9bd1fd;
 	border-color: #50affc;
 }
 
 #bootstrap-theme .btn-info:hover {
-	color: white;
+	color: black;
 	background-color: #9bd1fd;
 	border-color: #91ccfd;
 }
 
 #bootstrap-theme .btn-info:active, #bootstrap-theme .btn-info.active, .open > #bootstrap-theme .btn-info.dropdown-toggle {
-	color: white;
+	color: black;
 	background-color: #9bd1fd;
 	background-image: none;
 	border-color: #91ccfd;
 }
 
 #bootstrap-theme .btn-info:active:hover, #bootstrap-theme .btn-info:active:focus, #bootstrap-theme .btn-info:active.focus, #bootstrap-theme .btn-info.active:hover, #bootstrap-theme .btn-info.active:focus, #bootstrap-theme .btn-info.active.focus, .open > #bootstrap-theme .btn-info.dropdown-toggle:hover, .open > #bootstrap-theme .btn-info.dropdown-toggle:focus, .open > #bootstrap-theme .btn-info.dropdown-toggle.focus {
-	color: white;
+	color: black;
 	background-color: #78c1fc;
 	border-color: #50affc;
 }
@@ -3637,7 +3637,7 @@
 
 #bootstrap-theme .btn-info .badge {
 	color: #cde8fe;
-	background-color: white;
+	background-color: black;
 }
 
 #bootstrap-theme .btn-warning {

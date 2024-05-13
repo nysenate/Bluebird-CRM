@@ -34,7 +34,7 @@ class FunctionCallCompiler extends Base {
 	 *
 	 * @var array
 	 */
-	protected $shorttag_order = ['var1', 'var2', 'var3'];
+	protected $shorttag_order = [];
 
 	/**
 	 * Compiles code for the execution of a registered function
@@ -49,7 +49,8 @@ class FunctionCallCompiler extends Base {
 	 * @throws \Smarty\CompilerException
 	 * @throws \Smarty\Exception
 	 */
-	public function compile($args, Template $compiler, $parameter = [], $tag = null, $function = null) {
+	public function compile($args, Template $compiler, $parameter = [], $tag = null, $function = null): string
+	{
 
 		// check and get attributes
 		$_attr = $this->getAttributes($compiler, $args);
@@ -58,19 +59,15 @@ class FunctionCallCompiler extends Base {
 		$_paramsArray = $this->formatParamsArray($_attr);
 		$_params = 'array(' . implode(',', $_paramsArray) . ')';
 
-		try {
-			$value = array_shift($_attr);
-			$output = $compiler->compileModifier([array_merge([$function], $_attr)], $value);
-		} catch (\Smarty\CompilerException $e) {
-			if ($functionHandler = $compiler->getSmarty()->getFunctionHandler($function)) {
 
-				// not cacheable?
-				$compiler->tag_nocache = $compiler->tag_nocache || !$functionHandler->isCacheable();
-				$output = "\$_smarty_tpl->getSmarty()->getFunctionHandler(" . var_export($function, true) . ")";
-				$output .= "->handle($_params, \$_smarty_tpl)";
-			} else {
-				throw $e;
-			}
+		if ($functionHandler = $compiler->getSmarty()->getFunctionHandler($function)) {
+
+			// not cacheable?
+			$compiler->tag_nocache = $compiler->tag_nocache || !$functionHandler->isCacheable();
+			$output = "\$_smarty_tpl->getSmarty()->getFunctionHandler(" . var_export($function, true) . ")";
+			$output .= "->handle($_params, \$_smarty_tpl)";
+		} else {
+			$compiler->trigger_template_error("unknown function '{$function}'", null, true);
 		}
 
 		if (!empty($parameter['modifierlist'])) {

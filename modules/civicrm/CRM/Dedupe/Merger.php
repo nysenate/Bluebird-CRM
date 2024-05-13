@@ -729,25 +729,6 @@ INNER JOIN  civicrm_membership membership2 ON membership1.membership_type_id = m
     ) {
       $data['contact_sub_type'] = CRM_Utils_Array::implodePadded($params['contact_sub_type']);
     }
-    elseif (array_key_exists('contact_sub_type_hidden', $params) &&
-      !empty($params['contact_sub_type_hidden'])
-    ) {
-      CRM_Core_Error::deprecatedWarning('code should be unreachable, slated for removal');
-      // if profile was used, and had any subtype, we obtain it from there
-      //CRM-13596 - add to existing contact types, rather than overwriting
-      if (empty($data['contact_sub_type'])) {
-        // If we don't have a contact ID the $data['contact_sub_type'] will not be defined...
-        $data['contact_sub_type'] = CRM_Utils_Array::implodePadded($params['contact_sub_type_hidden']);
-      }
-      else {
-        $data_contact_sub_type_arr = CRM_Utils_Array::explodePadded($data['contact_sub_type']);
-        if (!in_array($params['contact_sub_type_hidden'], $data_contact_sub_type_arr)) {
-          //CRM-20517 - make sure contact_sub_type gets the correct delimiters
-          $data['contact_sub_type'] = trim($data['contact_sub_type'], CRM_Core_DAO::VALUE_SEPARATOR);
-          $data['contact_sub_type'] = CRM_Core_DAO::VALUE_SEPARATOR . $data['contact_sub_type'] . CRM_Utils_Array::implodePadded($params['contact_sub_type_hidden']);
-        }
-      }
-    }
 
     $locationType = [];
     $count = 1;
@@ -951,15 +932,9 @@ INNER JOIN  civicrm_membership membership2 ON membership1.membership_type_id = m
           }
 
           //CRM-13596 - check for contact_sub_type_hidden first
-          if (array_key_exists('contact_sub_type_hidden', $params)) {
-            CRM_Core_Error::deprecatedWarning('code should be unreachable, slated for removal');
-            $type = $params['contact_sub_type_hidden'];
-          }
-          else {
-            $type = $data['contact_type'];
-            if (!empty($data['contact_sub_type'])) {
-              $type = CRM_Utils_Array::explodePadded($data['contact_sub_type']);
-            }
+          $type = $data['contact_type'];
+          if (!empty($data['contact_sub_type'])) {
+            $type = CRM_Utils_Array::explodePadded($data['contact_sub_type']);
           }
 
           CRM_Core_BAO_CustomField::formatCustomField($customFieldId,
@@ -1986,8 +1961,8 @@ INNER JOIN  civicrm_membership membership2 ON membership1.membership_type_id = m
   /**
    * Get the cache key string for the merge action.
    *
-   * @param int $rule_group_id
-   * @param int $group_id
+   * @param int|null $rule_group_id
+   * @param int|null $group_id
    * @param array $criteria
    *   Additional criteria to narrow down the merge group.
    *   Currently we are only supporting the key 'contact' within it.
@@ -2003,8 +1978,8 @@ INNER JOIN  civicrm_membership membership2 ON membership1.membership_type_id = m
   public static function getMergeCacheKeyString($rule_group_id, $group_id, $criteria, $checkPermissions, $searchLimit) {
     $contactType = CRM_Dedupe_BAO_DedupeRuleGroup::getContactTypeForRuleGroup($rule_group_id);
     $cacheKeyString = "merge_{$contactType}";
-    $cacheKeyString .= $rule_group_id ? "_{$rule_group_id}" : '_0';
-    $cacheKeyString .= $group_id ? "_{$group_id}" : '_0';
+    $cacheKeyString .= '_' . (int) $rule_group_id;
+    $cacheKeyString .= '_' . (int) $group_id;
     $cacheKeyString .= '_' . (int) $searchLimit;
     $cacheKeyString .= !empty($criteria) ? md5(serialize($criteria)) : '_0';
     if ($checkPermissions) {

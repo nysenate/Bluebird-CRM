@@ -9,6 +9,7 @@
  +--------------------------------------------------------------------+
  */
 
+use Civi\Api4\Contact;
 use Civi\Api4\Event\AuthorizeRecordEvent;
 use Civi\Token\TokenProcessor;
 
@@ -1151,7 +1152,11 @@ WHERE     civicrm_contact.id = " . CRM_Utils_Type::escape($id, 'Integer');
         // $controller is not used at all but we need the CRM_Core_Controller object as in it's constructor
         // It retrieves the qfKey from GET or POST and then passes it to CRM_Core_Key::validate the generated key and redirects to a standard error message if fails
         $controller = new CRM_Core_Controller_Simple($formName, ts('New Contact'), NULL, TRUE, FALSE);
-        if (!CRM_Contact_BAO_Contact::_checkAccess('Contact', 'update', ['id' => $cid], NULL)) {
+
+        if (!Contact::checkAccess()
+          ->setAction('update')
+          ->addValue('id', $cid)
+          ->execute()->first()['access']) {
           CRM_Utils_System::permissionDenied();
         }
         CRM_Contact_BAO_Contact::deleteContactImage($cid);
@@ -3367,7 +3372,7 @@ LEFT JOIN civicrm_address ON ( civicrm_address.contact_id = civicrm_contact.id )
       !empty($event->object->is_primary) &&
       !empty($event->object->contact_id)
     ) {
-      $daoClass = CRM_Core_DAO_AllCoreTables::getFullName($event->entity);
+      $daoClass = CRM_Core_DAO_AllCoreTables::getDAONameForEntity($event->entity);
       $dao = new $daoClass();
       $dao->contact_id = $event->object->contact_id;
       $dao->is_primary = 1;
@@ -3637,7 +3642,11 @@ LEFT JOIN civicrm_address ON ( civicrm_address.contact_id = civicrm_contact.id )
    *   Id of the contact.
    * @throws CRM_Core_Exception
    */
-  public static function getEntityIcon(string $entityName, int $entityId) {
+  public static function getEntityIcon(string $entityName, int $entityId = NULL): ?string {
+    $default = parent::getEntityIcon($entityName);
+    if (!$entityId) {
+      return $default;
+    }
     $contactTypes = CRM_Contact_BAO_ContactType::getAllContactTypes();
     $subTypes = CRM_Utils_Array::explodePadded(CRM_Core_DAO::getFieldValue(parent::class, $entityId, 'contact_sub_type'));
     foreach ((array) $subTypes as $subType) {
@@ -3647,7 +3656,7 @@ LEFT JOIN civicrm_address ON ( civicrm_address.contact_id = civicrm_contact.id )
     }
     // If no sub-type icon, lookup contact type
     $contactType = CRM_Core_DAO::getFieldValue(parent::class, $entityId, 'contact_type');
-    return $contactTypes[$contactType]['icon'] ?? self::$_icon;
+    return $contactTypes[$contactType]['icon'] ?? $default;
   }
 
 }

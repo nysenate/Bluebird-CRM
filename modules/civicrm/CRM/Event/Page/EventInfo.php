@@ -74,7 +74,7 @@ class CRM_Event_Page_EventInfo extends CRM_Core_Page {
     // Add Event Type to $values in case folks want to display it
     $values['event']['event_type'] = CRM_Utils_Array::value($values['event']['event_type_id'], CRM_Event_PseudoConstant::eventType());
 
-    $this->assign('isShowLocation', CRM_Utils_Array::value('is_show_location', $values['event']));
+    $this->assign('isShowLocation', $values['event']['is_show_location'] ?? NULL);
 
     $eventCurrency = CRM_Utils_Array::value('currency', $values['event'], $config->defaultCurrency);
     $this->assign('eventCurrency', $eventCurrency);
@@ -201,8 +201,8 @@ class CRM_Event_Page_EventInfo extends CRM_Core_Page {
         'lat' => (float ) ($maxLat - $minLat),
         'lng' => (float ) ($maxLng - $minLng),
       ];
-      $this->assign_by_ref('center', $center);
-      $this->assign_by_ref('span', $span);
+      $this->assign('center', $center);
+      $this->assign('span', $span);
       if ($action == CRM_Core_Action::PREVIEW) {
         $mapURL = CRM_Utils_System::url('civicrm/contact/map/event',
           "eid={$this->_id}&reset=1&action=preview",

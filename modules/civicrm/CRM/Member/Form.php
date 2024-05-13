@@ -20,7 +20,7 @@
  *
  */
 class CRM_Member_Form extends CRM_Contribute_Form_AbstractEditPayment {
-
+  use CRM_Custom_Form_CustomDataTrait;
   use CRM_Core_Form_EntityFormTrait;
 
   /**
@@ -72,6 +72,8 @@ class CRM_Member_Form extends CRM_Contribute_Form_AbstractEditPayment {
    * Price set ID configured for the form.
    *
    * @var int
+   *
+   * @deprecated use getPriceSetID()
    */
   public $_priceSetId;
 
@@ -254,9 +256,9 @@ class CRM_Member_Form extends CRM_Contribute_Form_AbstractEditPayment {
 
       if (!empty($defaults['is_override'])) {
         $defaults['is_override'] = CRM_Member_StatusOverrideTypes::PERMANENT;
-      }
-      if (!empty($defaults['status_override_end_date'])) {
-        $defaults['is_override'] = CRM_Member_StatusOverrideTypes::UNTIL_DATE;
+        if (!empty($defaults['status_override_end_date'])) {
+          $defaults['is_override'] = CRM_Member_StatusOverrideTypes::UNTIL_DATE;
+        }
       }
     }
 
@@ -551,20 +553,21 @@ class CRM_Member_Form extends CRM_Contribute_Form_AbstractEditPayment {
   }
 
   /**
-   * Get the selected price set id.
+   * Get the price set ID.
    *
-   * @param array $params
-   *   Parameters submitted to the form.
+   * @api Supported for external use.
    *
    * @return int
    */
-  protected function getPriceSetID(array $params): int {
-    $priceSetID = $params['price_set_id'] ?? NULL;
-    if (!$priceSetID) {
-      $priceSetDetails = $this->getPriceSetDetails($params);
-      return (int) key($priceSetDetails);
+  public function getPriceSetID(): int {
+    $this->_priceSetId = $this->getSubmittedValue('price_set_id') ?? NULL;
+    if (!$this->_priceSetId) {
+      $priceSet = CRM_Price_BAO_PriceSet::getDefaultPriceSet('membership');
+      $priceSet = reset($priceSet);
+      $priceSetDetails = CRM_Price_BAO_PriceSet::getSetDetail($priceSet['setID']);
+      $this->_priceSetId = key($priceSetDetails);
     }
-    return (int) $priceSetID;
+    return (int) $this->_priceSetId;
   }
 
   /**
@@ -577,7 +580,7 @@ class CRM_Member_Form extends CRM_Contribute_Form_AbstractEditPayment {
    */
   protected function setPriceSetParameters(array $formValues): array {
     // process price set and get total amount and line items.
-    $this->_priceSetId = $this->getPriceSetID($formValues);
+    $this->getPriceSetID();
     $this->ensurePriceParamsAreSet($formValues);
     $priceSetDetails = $this->getPriceSetDetails($formValues);
     $this->_priceSet = $priceSetDetails[$this->_priceSetId];
@@ -585,12 +588,12 @@ class CRM_Member_Form extends CRM_Contribute_Form_AbstractEditPayment {
     $this->order->setForm($this);
     $this->order->setPriceSelectionFromUnfilteredInput($formValues);
 
-    if (isset($formValues['total_amount'])) {
-      $this->order->setOverrideTotalAmount((float) $formValues['total_amount']);
+    if ($this->getSubmittedValue('total_amount')) {
+      $this->order->setOverrideTotalAmount((float) $this->getSubmittedValue('total_amount'));
     }
 
-    if ($this->isQuickConfig()) {
-      $this->order->setOverrideFinancialTypeID((int) $formValues['financial_type_id']);
+    if ($this->isQuickConfig() && $this->getSubmittedValue('financial_type_id')) {
+      $this->order->setOverrideFinancialTypeID((int) $this->getSubmittedValue('financial_type_id'));
     }
 
     return $formValues;
@@ -601,8 +604,25 @@ class CRM_Member_Form extends CRM_Contribute_Form_AbstractEditPayment {
    *
    * @return bool
    */
-  private function isQuickConfig(): bool {
-    return $this->_priceSetId && CRM_Price_BAO_PriceSet::isQuickConfig($this->_priceSetId);
+  protected function isQuickConfig(): bool {
+    return $this->getPriceSetID() && CRM_Price_BAO_PriceSet::isQuickConfig($this->getPriceSetID());
+  }
+
+  /**
+   * Overriding this entity trait function as the function does not
+   * at this stage use the CustomDataTrait which works better with php8.2.
+   */
+  public function addCustomDataToForm() {
+    if ($this->isSubmitted()) {
+      // The custom data fields are added to the form by an ajax form.
+      // However, if they are not present in the element index they will
+      // not be available from `$this->getSubmittedValue()` in post process.
+      // We do not have to set defaults or otherwise render - just add to the element index.
+      $this->addCustomDataFieldsToForm('Membership', array_filter([
+        'id' => $this->getMembershipID(),
+        'membership_type_id' => $this->getSubmittedValue('membership_type_id'),
+      ]));
+    }
   }
 
   /**

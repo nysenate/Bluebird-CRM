@@ -79,13 +79,6 @@ class CRM_Member_Form_Membership extends CRM_Member_Form {
    *
    * We continue to rely on legacy handling.
    */
-  public function addCustomDataToForm() {}
-
-  /**
-   * Overriding this entity trait function as not yet tested.
-   *
-   * We continue to rely on legacy handling.
-   */
   public function addFormButtons() {}
 
   /**
@@ -154,8 +147,14 @@ class CRM_Member_Form_Membership extends CRM_Member_Form {
 
     // get price set id.
     $this->_priceSetId = $_GET['priceSetId'] ?? NULL;
-    $this->set('priceSetId', $this->_priceSetId);
-    $this->assign('priceSetId', $this->_priceSetId);
+    // This is assigned only for the purposes of displaying the price block
+    // INSTEAD of the edit form. ie when the form is being overloaded
+    // via ajax (which is a long-standing anti-pattern - in
+    // some cases we have moved that overload behaviour
+    // to a separate form but note that it is necessary to
+    // add the fields to QuickForm when the form
+    // has been submitted so they appear in submittedValues().
+    $this->assign('priceSetId', $_GET['priceSetId'] ?? NULL);
 
     if ($this->_action & CRM_Core_Action::DELETE) {
       $contributionID = CRM_Member_BAO_Membership::getMembershipContributionId($this->_id);
@@ -224,8 +223,9 @@ class CRM_Member_Form_Membership extends CRM_Member_Form {
       }
     }
 
-    // Add custom data to form
-    CRM_Custom_Form_CustomData::addToForm($this, $this->_memType);
+    $this->assign('customDataType', 'Membership');
+    $this->assign('customDataSubType', $this->_memType);
+
     $this->setPageTitle(ts('Membership'));
   }
 
@@ -349,7 +349,7 @@ DESC limit 1");
       $this->assign('autoRenewOption', CRM_Price_BAO_PriceSet::checkAutoRenewForPriceSet($this->_priceSetId));
 
       $this->assign('optionsMembershipTypes', $optionsMembershipTypes);
-      $this->assign('contributionType', CRM_Utils_Array::value('financial_type_id', $this->_priceSet));
+      $this->assign('contributionType', $this->_priceSet['financial_type_id'] ?? NULL);
 
       // get only price set form elements.
       if ($getOnlyPriceSetElements) {
@@ -594,7 +594,7 @@ DESC limit 1");
   public static function formRule($params, $files, $self) {
     $errors = [];
 
-    $priceSetId = $self->getPriceSetID($params);
+    $priceSetId = $self->getPriceSetID();
     $priceSetDetails = $self->getPriceSetDetails($params);
 
     $selectedMemberships = self::getSelectedMemberships($priceSetDetails[$priceSetId], $params);
@@ -877,7 +877,7 @@ DESC limit 1");
     else {
       $this->assign('receiptType', 'membership signup');
     }
-    $this->assign('receive_date', CRM_Utils_Array::value('receive_date', $formValues));
+    $this->assign('receive_date', $formValues['receive_date'] ?? NULL);
     $this->assign('formValues', $formValues);
 
     $this->assign('mem_start_date', CRM_Utils_Date::formatDateOnlyLong($membership['start_date']));
@@ -1158,7 +1158,7 @@ DESC limit 1");
       }
 
       $this->set('params', $formValues);
-      $this->assign('trxn_id', CRM_Utils_Array::value('trxn_id', $result));
+      $this->assign('trxn_id', $result['trxn_id'] ?? NULL);
       $this->assign('receive_date',
         CRM_Utils_Date::mysqlToIso($params['receive_date'])
       );
@@ -1207,10 +1207,23 @@ DESC limit 1");
         // If we are recording a contribution we *do* want to trigger a recalculation of membership status so it can go from Pending->New/Current
         // So here we check if status_id is empty, default (ie. status in database) is pending and that we are not recording a contribution -
         //   If all those are true then we skip the status calculation and explicitly set the pending status (to avoid a DB constraint status_id=0).
+        // Test cover in `CRM_Member_Form_MembershipTest::testOverrideSubmit()`.
+        $isPaymentPending = FALSE;
+        if ($this->getMembershipID()) {
+          $contributionId = CRM_Member_BAO_Membership::getMembershipContributionId($this->getMembershipID());
+          if ($contributionId) {
+            $isPaymentPending = \Civi\Api4\Contribution::get(FALSE)
+              ->addSelect('contribution_status_id:name')
+              ->addWhere('id', '=', $contributionId)
+              ->execute()
+              ->first()['contribution_status_id:name'] === 'Pending';
+          }
+        }
         if (empty($membershipParams['status_id'])
           && !empty($this->_defaultValues['status_id'])
           && !$this->getSubmittedValue('record_contribution')
           && (int) $this->_defaultValues['status_id'] === $pendingMembershipStatusId
+          && $isPaymentPending
         ) {
           $membershipParams['status_id'] = $this->_defaultValues['status_id'];
         }
@@ -1259,8 +1272,12 @@ DESC limit 1");
     $contributionId = $this->ids['Contribution'] ?? CRM_Member_BAO_Membership::getMembershipContributionId($this->getMembershipID());
     $membershipIds = $this->_membershipIDs;
     if ($this->getSubmittedValue('send_receipt') && $contributionId && !empty($membershipIds)) {
-      $contributionDetails = CRM_Contribute_BAO_Contribution::getContributionDetails(CRM_Export_Form_Select::MEMBER_EXPORT, $this->_membershipIDs);
-      if ($contributionDetails[$this->getMembershipID()]['contribution_status'] === 'Completed') {
+      $contributionStatus = \Civi\Api4\Contribution::get(FALSE)
+        ->addSelect('contribution_status_id:name')
+        ->addWhere('id', '=', $contributionId)
+        ->execute()
+        ->first();
+      if ($contributionStatus['contribution_status_id:name'] === 'Completed') {
         $formValues['contact_id'] = $this->_contactID;
         $formValues['contribution_id'] = $contributionId;
         // receipt_text_signup is no longer used in receipts from 5.47
@@ -1485,7 +1502,7 @@ DESC limit 1");
    * @throws \CRM_Core_Exception
    */
   protected function emailMembershipReceipt($formValues) {
-    $customValues = $this->getCustomValuesForReceipt($formValues);
+    $customValues = $this->getCustomValuesForReceipt();
     $this->assign('customValues', $customValues);
     $this->assign('total_amount', $this->order->getTotalAmount());
     $this->assign('totalTaxAmount', $this->order->getTotalTaxAmount());
@@ -1511,35 +1528,46 @@ DESC limit 1");
   /**
    * Filter the custom values from the input parameters (for display in the email).
    *
-   * @todo figure out why the scary code this calls does & document.
+   * @todo move this to the WorkFlowMessageTrait.
    *
-   * @param array $formValues
    * @return array
    */
-  protected function getCustomValuesForReceipt($formValues): array {
-    $customFields = $customValues = [];
-    if (property_exists($this, '_groupTree')
-      && !empty($this->_groupTree)
-    ) {
-      foreach ($this->_groupTree as $groupID => $group) {
-        if ($groupID === 'info') {
-          continue;
-        }
-        foreach ($group['fields'] as $k => $field) {
-          $field['title'] = $field['label'];
-          $customFields["custom_{$k}"] = $field;
-        }
+  protected function getCustomValuesForReceipt(): array {
+    $customFieldValues = $this->getCustomFieldValues();
+    $customValues = [];
+    foreach ($customFieldValues as $customFieldString => $submittedValue) {
+      if ($submittedValue === NULL) {
+        // This would occur when the field is no longer appropriate - ie changing
+        // from a membership type with the field to one without it.
+        continue;
+      }
+      $customFieldID = (int) CRM_Core_BAO_CustomField::getKeyID($customFieldString);
+      $value = CRM_Core_BAO_CustomField::displayValue($this->getSubmittedValue($customFieldString), $customFieldID);
+      $customValues[CRM_Core_BAO_CustomField::getField($customFieldID)['label']] = $value;
+    }
+    return $customValues;
+  }
+
+  /**
+   * Get the custom fields tat are on the form with the submitted values.
+   *
+   * @internal I think it would be good to make this field
+   * available as an api supported method - maybe on the form custom data trait
+   * but I feel like we might want to talk about the format of the returned results
+   * (key-value vs array, custom field ID keys vs custom_, filters/ multiple functions
+   * with different formatting) so keeping private for now.
+   *
+   * @return array
+   */
+  private function getCustomFieldValues(): array {
+    $customFields = [];
+    foreach ($this->_elements as $element) {
+      $customFieldID = CRM_Core_BAO_CustomField::getKeyID($element->getName());
+      if ($customFieldID) {
+        $customFields[$element->getName()] = $this->getSubmittedValue($element->getName());
       }
     }
-
-    $members = [['member_id', '=', $this->getMembershipID(), 0, 0]];
-    // check whether its a test drive
-    if ($this->_mode === 'test') {
-      $members[] = ['member_test', '=', 1, 0, 0];
-    }
-
-    CRM_Core_BAO_UFGroup::getValues($formValues['contact_id'], $customFields, $customValues, FALSE, $members);
-    return $customValues;
+    return $customFields;
   }
 
   /**
@@ -1678,7 +1706,6 @@ DESC limit 1");
    * @throws \CRM_Core_Exception
    */
   protected function getFormMembershipParams(): array {
-    $submittedValues = $this->controller->exportValues($this->_name);
     return [
       'status_id' => $this->getSubmittedValue('status_id'),
       'source' => $this->getSubmittedValue('source') ?? $this->getContributionSource(),
@@ -1686,7 +1713,7 @@ DESC limit 1");
       'is_override' => $this->getSubmittedValue('is_override'),
       'status_override_end_date' => $this->getSubmittedValue('status_override_end_date'),
       'campaign_id' => $this->getSubmittedValue('campaign_id'),
-      'custom' => CRM_Core_BAO_CustomField::postProcess($submittedValues,
+      'custom' => CRM_Core_BAO_CustomField::postProcess($this->getSubmittedValues(),
         $this->_id,
         'Membership'
       ),
@@ -1742,9 +1769,20 @@ DESC limit 1");
         $membershipTypeValues[$memType]['max_related'] = $this->getSubmittedValue('max_related');
       }
     }
-
+    // Really we don't need to do all this unless one of the join dates
+    // has been left empty by the submitter - ie in an ADD scenario but not really
+    // valid when editing & it would possibly not get the number of terms right
+    // so ideally the fields would be required on edit & the below would only
+    // be called on ADD
     foreach ($this->order->getMembershipLineItems() as $membershipLineItem) {
-      $memTypeNumTerms = $this->getSubmittedValue('num_terms') ?: $membershipLineItem['membership_num_terms'];
+      if ($this->getAction() === CRM_Core_Action::ADD && $this->isQuickConfig()) {
+        $memTypeNumTerms = $this->getSubmittedValue('num_terms');
+      }
+      else {
+        // The submitted value is hidden when a price set is selected so
+        // although it is present it should be ignored.
+        $memTypeNumTerms = $membershipLineItem['membership_num_terms'];
+      }
       $calcDates = CRM_Member_BAO_MembershipType::getDatesForMembershipType(
         $membershipLineItem['membership_type_id'],
         $this->getSubmittedValue('join_date'),

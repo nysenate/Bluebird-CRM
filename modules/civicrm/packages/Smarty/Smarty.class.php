@@ -1161,6 +1161,28 @@ class Smarty
       $this->register_block('localize', 'smarty_block_localize');
     }
   }
+
+  /**
+   * Get template directories
+   *
+   * @param mixed $index    index of directory to get, null to get all
+   * @param bool  $isConfig true for config_dir
+   *
+   * @return array|string list of template directories, or directory of $index
+   */
+  public function getTemplateDir($index = null, $isConfig = false)
+  {
+    if ($isConfig) {
+      $dir = &$this->config_dir;
+    } else {
+      $dir = &$this->template_dir;
+    }
+    if ($index !== null) {
+      return isset($dir[ $index ]) ? $dir[ $index ] : null;
+    }
+    return $dir;
+  }
+
     /**
      * Returns an array containing config variables
      *

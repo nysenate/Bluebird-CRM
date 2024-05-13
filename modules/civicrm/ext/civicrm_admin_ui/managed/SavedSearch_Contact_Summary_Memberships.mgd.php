@@ -1,6 +1,11 @@
 <?php
 use CRM_CivicrmAdminUi_ExtensionUtil as E;
 
+// Temporary check can be removed when moving this file to the civi_member extension.
+if (!CRM_Core_Component::isEnabled('CiviMember')) {
+  return [];
+}
+
 return [
   [
     'name' => 'SavedSearch_Contact_Summary_Memberships',
@@ -24,12 +29,15 @@ return [
             'status_id:label',
             'source',
             'Membership_ContributionRecur_contribution_recur_id_01.auto_renew',
-            'IF(owner_membership_id, "(by relationship)", owner_membership_id) AS IF_owner_membership_id_owner_membership_id',
-            'owner_membership_id',
+            'IF(owner_membership_id, "(' . E::ts('by relationship') . ')", owner_membership_id) AS IF_owner_membership_id_owner_membership_id',
+            'COUNT(DISTINCT Membership_Membership_owner_membership_id_01.id) AS COUNT_Membership_Membership_owner_membership_id_01_id',
           ],
           'orderBy' => [],
           'where' => [],
-          'groupBy' => [],
+          'groupBy' => [
+            'id',
+            'Membership_ContributionRecur_contribution_recur_id_01.id',
+          ],
           'join' => [
             [
               'ContributionRecur AS Membership_ContributionRecur_contribution_recur_id_01',
@@ -38,6 +46,15 @@ return [
                 'contribution_recur_id',
                 '=',
                 'Membership_ContributionRecur_contribution_recur_id_01.id',
+              ],
+            ],
+            [
+              'Membership AS Membership_Membership_owner_membership_id_01',
+              'LEFT',
+              [
+                'id',
+                '=',
+                'Membership_Membership_owner_membership_id_01.owner_membership_id',
               ],
             ],
           ],
@@ -145,11 +162,10 @@ return [
             ],
             [
               'type' => 'field',
-              'key' => 'owner_membership_id',
+              'key' => 'COUNT_Membership_Membership_owner_membership_id_01_id',
               'dataType' => 'Integer',
               'label' => E::ts('Related'),
               'sortable' => TRUE,
-              'rewrite' => "{crmAPI var='owner_count' entity='Membership' action='getcount' owner_membership_id=[id]}\n{if \$owner_count}\n  {\$owner_count} {ts}created{/ts}\n{else}\n  {ts}N/A{/ts}\n{/if}",
             ],
             [
               'text' => '',

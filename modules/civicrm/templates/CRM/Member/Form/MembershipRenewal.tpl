@@ -109,7 +109,7 @@
         </tr>
         <tr id="fromEmail">
           <td class="label">{$form.from_email_address.label}</td>
-          <td>{$form.from_email_address.html}  {help id="id-from_email" file="CRM/Contact/Form/Task/Help/Email/id-from_email.hlp"}</td>
+          <td>{$form.from_email_address.html}  {help id="id-from_email" file="CRM/Contact/Form/Task/Help/Email/id-from_email.hlp" title=$form.from_email_address.label}</td>
         </tr>
         <tr id="notice" class="crm-member-membershiprenew-form-block-receipt_text">
           <td class="label">{$form.receipt_text.label}</td>
@@ -122,7 +122,7 @@
       </table>
     {/if}
 
-    {include file="CRM/common/customDataBlock.tpl"}
+    {include file="CRM/common/customDataBlock.tpl" groupID='' customDataType='Membership' cid=false}
 
     <div>{include file="CRM/common/formButtons.tpl" location="bottom"}</div>
 

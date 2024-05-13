@@ -9055,8 +9055,7 @@ INSERT INTO civicrm_option_group
   {ts}Invoice{/ts}
 {/if}
  - {contact.display_name}
-', '{ts}Contribution Invoice{/ts}
-', '<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+', '', '<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
@@ -9084,14 +9083,14 @@ INSERT INTO civicrm_option_group
       </tr>
       <tr>
         <td><font size="1" align="center">{contact.display_name}{if \'{contact.current_employer}\'} ({contact.current_employer}){/if}</font></td>
-        <td><font size="1" align="right">{$invoice_date}</font></td>
+        <td><font size="1" align="right">{contribution.receive_date|crmDate:"Full"}</font></td>
         <td style="white-space: nowrap"><font size="1" align="right">
           {domain.street_address}
           {domain.supplemental_address_1}
         </font></td>
       </tr>
       <tr>
-        <td><font size="1" align="center">{$street_address} {$supplemental_address_1}</font></td>
+        <td><font size="1" align="center">{contact.address_billing.street_address} {contact.address_billing.supplemental_address_1}</font></td>
         <td><b><font size="1" align="right">{ts}Invoice Number:{/ts}</font></b></td>
         <td><font size="1" align="right">
           {domain.supplemental_address_2}
@@ -9099,7 +9098,7 @@ INSERT INTO civicrm_option_group
         </font></td>
       </tr>
       <tr>
-        <td><font size="1" align="center">{$supplemental_address_2} {$stateProvinceAbbreviation}</font></td>
+        <td><font size="1" align="center">{contact.address_billing.supplemental_address_2} {contact.address_billing.state_province_id:abbr}</font></td>
         <td><font size="1" align="right">{contribution.invoice_number}</font></td>
         <td style="white-space: nowrap"><font size="1" align="right">
           {domain.city}
@@ -9107,12 +9106,12 @@ INSERT INTO civicrm_option_group
         </font></td>
       </tr>
       <tr>
-        <td><font size="1" align="right">{$city}  {$postal_code}</font></td>
+        <td><font size="1" align="right">{contact.address_billing.city}  {contact.address_billing.postal_code}</font></td>
         <td height="10"><b><font size="1" align="right">{ts}Reference:{/ts}</font></b></td>
         <td><font size="1" align="right">{domain.country_id:label}</font></td>
       </tr>
       <tr>
-        <td><font size="1" align="right"> {$country}</font></td>
+        <td><font size="1" align="right"> {contact.address_billing.country_id:label}</font></td>
         <td><font size="1" align="right">{contribution.source}</font></td>
         <td valign="top" style="white-space: nowrap"><font size="1" align="right">{domain.email}</font> </td>
       </tr>
@@ -9129,7 +9128,7 @@ INSERT INTO civicrm_option_group
         <th style="text-align:right;font-weight:bold;white-space: nowrap"><font size="1">{ts}Quantity{/ts}</font></th>
         <th style="text-align:right;font-weight:bold;white-space: nowrap"><font size="1">{ts}Unit Price{/ts}</font></th>
         <th style="text-align:right;font-weight:bold;white-space: nowrap"><font size="1">{domain.tax_term}</font></th>
-        <th style="text-align:right;font-weight:bold;white-space: nowrap"><font size="1">{ts 1=$currency}Amount %1{/ts}</font></th>
+        <th style="text-align:right;font-weight:bold;white-space: nowrap"><font size="1">{ts 1=\'{contribution.currency}\'}Amount %1{/ts}</font></th>
       </tr>
       {foreach from=$lineItems item=line}
         <tr>
@@ -9149,7 +9148,7 @@ INSERT INTO civicrm_option_group
       <tr>
         <td colspan="3"></td>
         <td style="text-align:right;"><font size="1">{ts}Sub Total{/ts}</font></td>
-        <td style="text-align:right;"><font size="1">{$subTotal|crmMoney:$currency}</font></td>
+        <td style="text-align:right;"><font size="1">{contribution.tax_exclusive_amount}</font></td>
       </tr>
       {foreach from=$taxRateBreakdown item=taxDetail key=taxRate}
         {if $taxRate != 0}
@@ -9162,8 +9161,8 @@ INSERT INTO civicrm_option_group
       {/foreach}
       <tr>
         <td colspan="3"></td>
-        <td style="text-align:right;white-space: nowrap"><b><font size="1">{ts 1=$currency}TOTAL %1{/ts}</font></b></td>
-        <td style="text-align:right;"><font size="1">{$amount|crmMoney:$currency}</font></td>
+        <td style="text-align:right;white-space: nowrap"><b><font size="1">{ts 1=\'{contribution.currency}\'}TOTAL %1{/ts}</font></b></td>
+        <td style="text-align:right;"><font size="1">{contribution.total_amount}</font></td>
       </tr>
       <tr>
         <td colspan="3"></td>
@@ -9174,7 +9173,7 @@ INSERT INTO civicrm_option_group
             {ts}Amount Paid{/ts}
           {/if}
         </font></td>
-        <td style="text-align:right;"><font size="1">{$amountPaid|crmMoney:$currency}</font></td>
+        <td style="text-align:right;"><font size="1">{contribution.paid_amount}</font></td>
       </tr>
       <tr>
         <td colspan="3"></td>
@@ -9183,7 +9182,7 @@ INSERT INTO civicrm_option_group
       <tr>
         <td colspan="3"></td>
         <td style="text-align:right;white-space: nowrap" ><b><font size="1">{ts}AMOUNT DUE:{/ts}</font></b></td>
-        <td style="text-align:right;"><b><font size="1">{$amountDue|crmMoney:$currency}</font></b></td>
+        <td style="text-align:right;"><b><font size="1">{contribution.balance_amount}</font></b></td>
       </tr>
       <tr>
         <td colspan="5"></td>
@@ -9228,15 +9227,15 @@ INSERT INTO civicrm_option_group
                 <td><font size="1" align="right">{contribution.invoice_number}</font></td>
               </tr>
               <tr><td colspan="5" style="color:#F5F5F5;"><hr></td></tr>
-              {if $is_pay_later == 1}
+              {if {contribution.is_pay_later|boolean}}
                 <tr>
                   <td><font size="1" align="right" style="font-weight:bold;">{ts}Amount Due:{/ts}</font></td>
-                  <td><font size="1" align="right" style="font-weight:bold;">{$amount|crmMoney:$currency}</font></td>
+                  <td><font size="1" align="right" style="font-weight:bold;">{contribution.total_amount}</font></td>
                 </tr>
               {else}
                 <tr>
                   <td><font size="1" align="right" style="font-weight:bold;">{ts}Amount Due:{/ts}</font></td>
-                  <td><font size="1" align="right" style="font-weight:bold;">{$amountDue|crmMoney:$currency}</font></td>
+                  <td><font size="1" align="right" style="font-weight:bold;">{contribution.paid_amount}</font></td>
                 </tr>
               {/if}
               <tr>
@@ -9269,14 +9268,14 @@ INSERT INTO civicrm_option_group
       </tr>
       <tr>
         <td style="padding-left:17px;"><font size="1" align="center">{contact.display_name}{if \'{contact.current_employer}\'} ({contact.current_employer}){/if}</font></td>
-        <td style="padding-left:30px;"><font size="1" align="right">{$invoice_date}</font></td>
+        <td style="padding-left:30px;"><font size="1" align="right">{contribution.receive_date|crmDate:"Full"}</font></td>
         <td><font size="1" align="right">
           {domain.street_address}
           {domain.supplemental_address_1}
          </font></td>
       </tr>
       <tr>
-        <td style="padding-left:17px;"><font size="1" align="center">{$street_address}   {$supplemental_address_1}</font></td>
+        <td style="padding-left:17px;"><font size="1" align="center">{contact.address_billing.street_address}   {contact.address_billing.supplemental_address_1}</font></td>
         <td style="padding-left:30px;"><b><font size="1" align="right">{ts}Credit Note Number:{/ts}</font></b></td>
         <td><font size="1" align="right">
           {domain.supplemental_address_2}
@@ -9284,7 +9283,7 @@ INSERT INTO civicrm_option_group
         </font></td>
       </tr>
       <tr>
-        <td style="padding-left:17px;"><font size="1" align="center">{$supplemental_address_2}  {$stateProvinceAbbreviation}</font></td>
+        <td style="padding-left:17px;"><font size="1" align="center">{contact.address_billing.supplemental_address_2} {contact.address_billing.state_province_id:abbr}</font></td>
         <td style="padding-left:30px;"><font size="1" align="right">{contribution.creditnote_id}</font></td>
         <td><font size="1" align="right">
           {domain.city}
@@ -9292,7 +9291,7 @@ INSERT INTO civicrm_option_group
         </font></td>
       </tr>
       <tr>
-        <td style="padding-left:17px;"><font size="1" align="right">{$city}  {$postal_code}</font></td>
+        <td style="padding-left:17px;"><font size="1" align="right">{contact.address_billing.city}  {contact.address_billing.postal_code}</font></td>
         <td height="10" style="padding-left:30px;"><b><font size="1" align="right">{ts}Reference:{/ts}</font></b></td>
         <td><font size="1" align="right">
           {domain.country_id:label}
@@ -9323,7 +9322,7 @@ INSERT INTO civicrm_option_group
               <th style="padding-left:28px;text-align:right;font-weight:bold;"><font size="1">{ts}Quantity{/ts}</font></th>
               <th style="padding-left:28px;text-align:right;font-weight:bold;"><font size="1">{ts}Unit Price{/ts}</font></th>
               <th style="padding-left:28px;text-align:right;font-weight:bold;"><font size="1">{domain.tax_term}</font></th>
-              <th style="padding-left:28px;text-align:right;font-weight:bold;"><font size="1">{ts 1=$currency}Amount %1{/ts}</font></th>
+              <th style="padding-left:28px;text-align:right;font-weight:bold;"><font size="1">{ts 1="{contribution.currency}"}Amount %1{/ts}</font></th>
             </tr>
             {foreach from=$lineItems item=line key=index}
               <tr><td colspan="5"><hr {if $index == 0}size="3" style="color:#000;"{else}style="color:#F5F5F5;"{/if}></hr></td></tr>
@@ -9332,7 +9331,7 @@ INSERT INTO civicrm_option_group
                   {$line.title}
                 </font></td>
                 <td style="padding-left:28px;text-align:right;"><font size="1">{$line.qty}</font></td>
-                <td style="padding-left:28px;text-align:right;"><font size="1">{$line.unit_price|crmMoney:$currency}</font></td>
+                <td style="padding-left:28px;text-align:right;"><font size="1">{$line.unit_price|crmMoney:\'{contribution.currency}\'}</font></td>
                 {if $line.tax_amount != \'\'}
                   <td style="padding-left:28px;text-align:right;"><font size="1">{if $line.tax_rate}{$line.tax_rate|crmNumberFormat}%{/if}</font></td>
                 {else}
@@ -9345,7 +9344,7 @@ INSERT INTO civicrm_option_group
             <tr>
               <td colspan="3"></td>
               <td style="padding-left:28px;text-align:right;"><font size="1">{ts}Sub Total{/ts}</font></td>
-              <td style="padding-left:28px;text-align:right;"><font size="1">{$subTotal|crmMoney:$currency}</font></td>
+              <td style="padding-left:28px;text-align:right;"><font size="1">{contribution.tax_exclusive_amount}</font></td>
             </tr>
             {foreach from=$taxRateBreakdown item=taxDetail key=taxRate}
                 {if $taxRate != 0}
@@ -9362,14 +9361,14 @@ INSERT INTO civicrm_option_group
             </tr>
             <tr>
               <td colspan="3"></td>
-              <td style="padding-left:28px;text-align:right;"><b><font size="1">{ts 1=$currency}TOTAL %1{/ts}</font></b></td>
-              <td style="padding-left:28px;text-align:right;"><font size="1">{$amount|crmMoney:$currency}</font></td>
+              <td style="padding-left:28px;text-align:right;"><b><font size="1">{ts 1=\'{contribution.currency}\'}TOTAL %1{/ts}</font></b></td>
+              <td style="padding-left:28px;text-align:right;"><font size="1">{contribution.total_amount}</font></td>
             </tr>
-            {if \'{contribution.is_pay_later}\' == 0}
+            {if !\'{contribution.is_pay_later|boolean}\'}
               <tr>
                 <td colspan="3"></td>
                 <td style="padding-left:28px;text-align:right;"><font size="1">{ts}LESS Credit to invoice(s){/ts}</font></td>
-                <td style="padding-left:28px;text-align:right;"><font size="1">{$amount|crmMoney:$currency}</font></td>
+                <td style="padding-left:28px;text-align:right;"><font size="1">{contribution.total_amount}</font></td>
               </tr>
               <tr>
                 <td colspan="3"></td>
@@ -9378,7 +9377,7 @@ INSERT INTO civicrm_option_group
               <tr>
                 <td colspan="3"></td>
                 <td style="padding-left:28px;text-align:right;"><b><font size="1">{ts}REMAINING CREDIT{/ts}</font></b></td>
-                <td style="padding-left:28px;text-align:right;"><b><font size="1">{$amountDue|crmMoney:$currency}</font></b></td>
+                <td style="padding-left:28px;text-align:right;"><b><font size="1">{contribution.balance_amount}</font></b></td>
                 <td style="padding-left:28px;"><font size="1" align="right"></font></td>
               </tr>
             {/if}
@@ -9420,7 +9419,7 @@ INSERT INTO civicrm_option_group
             <tr>
               <td colspan="2"></td>
               <td><font size="1" align="right" style="font-weight:bold;">{ts}Credit Amount:{/ts}</font></td>
-              <td width=\'50px\'><font size="1" align="right" style="font-weight:bold;">{$amount|crmMoney:$currency}</font></td>
+              <td width=\'50px\'><font size="1" align="right" style="font-weight:bold;">{contribution.total_amount}</font></td>
             </tr>
           </table>
         </td>
@@ -9448,8 +9447,7 @@ INSERT INTO civicrm_option_group
   {ts}Invoice{/ts}
 {/if}
  - {contact.display_name}
-', '{ts}Contribution Invoice{/ts}
-', '<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+', '', '<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
@@ -9477,14 +9475,14 @@ INSERT INTO civicrm_option_group
       </tr>
       <tr>
         <td><font size="1" align="center">{contact.display_name}{if \'{contact.current_employer}\'} ({contact.current_employer}){/if}</font></td>
-        <td><font size="1" align="right">{$invoice_date}</font></td>
+        <td><font size="1" align="right">{contribution.receive_date|crmDate:"Full"}</font></td>
         <td style="white-space: nowrap"><font size="1" align="right">
           {domain.street_address}
           {domain.supplemental_address_1}
         </font></td>
       </tr>
       <tr>
-        <td><font size="1" align="center">{$street_address} {$supplemental_address_1}</font></td>
+        <td><font size="1" align="center">{contact.address_billing.street_address} {contact.address_billing.supplemental_address_1}</font></td>
         <td><b><font size="1" align="right">{ts}Invoice Number:{/ts}</font></b></td>
         <td><font size="1" align="right">
           {domain.supplemental_address_2}
@@ -9492,7 +9490,7 @@ INSERT INTO civicrm_option_group
         </font></td>
       </tr>
       <tr>
-        <td><font size="1" align="center">{$supplemental_address_2} {$stateProvinceAbbreviation}</font></td>
+        <td><font size="1" align="center">{contact.address_billing.supplemental_address_2} {contact.address_billing.state_province_id:abbr}</font></td>
         <td><font size="1" align="right">{contribution.invoice_number}</font></td>
         <td style="white-space: nowrap"><font size="1" align="right">
           {domain.city}
@@ -9500,12 +9498,12 @@ INSERT INTO civicrm_option_group
         </font></td>
       </tr>
       <tr>
-        <td><font size="1" align="right">{$city}  {$postal_code}</font></td>
+        <td><font size="1" align="right">{contact.address_billing.city}  {contact.address_billing.postal_code}</font></td>
         <td height="10"><b><font size="1" align="right">{ts}Reference:{/ts}</font></b></td>
         <td><font size="1" align="right">{domain.country_id:label}</font></td>
       </tr>
       <tr>
-        <td><font size="1" align="right"> {$country}</font></td>
+        <td><font size="1" align="right"> {contact.address_billing.country_id:label}</font></td>
         <td><font size="1" align="right">{contribution.source}</font></td>
         <td valign="top" style="white-space: nowrap"><font size="1" align="right">{domain.email}</font> </td>
       </tr>
@@ -9522,7 +9520,7 @@ INSERT INTO civicrm_option_group
         <th style="text-align:right;font-weight:bold;white-space: nowrap"><font size="1">{ts}Quantity{/ts}</font></th>
         <th style="text-align:right;font-weight:bold;white-space: nowrap"><font size="1">{ts}Unit Price{/ts}</font></th>
         <th style="text-align:right;font-weight:bold;white-space: nowrap"><font size="1">{domain.tax_term}</font></th>
-        <th style="text-align:right;font-weight:bold;white-space: nowrap"><font size="1">{ts 1=$currency}Amount %1{/ts}</font></th>
+        <th style="text-align:right;font-weight:bold;white-space: nowrap"><font size="1">{ts 1=\'{contribution.currency}\'}Amount %1{/ts}</font></th>
       </tr>
       {foreach from=$lineItems item=line}
         <tr>
@@ -9542,7 +9540,7 @@ INSERT INTO civicrm_option_group
       <tr>
         <td colspan="3"></td>
         <td style="text-align:right;"><font size="1">{ts}Sub Total{/ts}</font></td>
-        <td style="text-align:right;"><font size="1">{$subTotal|crmMoney:$currency}</font></td>
+        <td style="text-align:right;"><font size="1">{contribution.tax_exclusive_amount}</font></td>
       </tr>
       {foreach from=$taxRateBreakdown item=taxDetail key=taxRate}
         {if $taxRate != 0}
@@ -9555,8 +9553,8 @@ INSERT INTO civicrm_option_group
       {/foreach}
       <tr>
         <td colspan="3"></td>
-        <td style="text-align:right;white-space: nowrap"><b><font size="1">{ts 1=$currency}TOTAL %1{/ts}</font></b></td>
-        <td style="text-align:right;"><font size="1">{$amount|crmMoney:$currency}</font></td>
+        <td style="text-align:right;white-space: nowrap"><b><font size="1">{ts 1=\'{contribution.currency}\'}TOTAL %1{/ts}</font></b></td>
+        <td style="text-align:right;"><font size="1">{contribution.total_amount}</font></td>
       </tr>
       <tr>
         <td colspan="3"></td>
@@ -9567,7 +9565,7 @@ INSERT INTO civicrm_option_group
             {ts}Amount Paid{/ts}
           {/if}
         </font></td>
-        <td style="text-align:right;"><font size="1">{$amountPaid|crmMoney:$currency}</font></td>
+        <td style="text-align:right;"><font size="1">{contribution.paid_amount}</font></td>
       </tr>
       <tr>
         <td colspan="3"></td>
@@ -9576,7 +9574,7 @@ INSERT INTO civicrm_option_group
       <tr>
         <td colspan="3"></td>
         <td style="text-align:right;white-space: nowrap" ><b><font size="1">{ts}AMOUNT DUE:{/ts}</font></b></td>
-        <td style="text-align:right;"><b><font size="1">{$amountDue|crmMoney:$currency}</font></b></td>
+        <td style="text-align:right;"><b><font size="1">{contribution.balance_amount}</font></b></td>
       </tr>
       <tr>
         <td colspan="5"></td>
@@ -9621,15 +9619,15 @@ INSERT INTO civicrm_option_group
                 <td><font size="1" align="right">{contribution.invoice_number}</font></td>
               </tr>
               <tr><td colspan="5" style="color:#F5F5F5;"><hr></td></tr>
-              {if $is_pay_later == 1}
+              {if {contribution.is_pay_later|boolean}}
                 <tr>
                   <td><font size="1" align="right" style="font-weight:bold;">{ts}Amount Due:{/ts}</font></td>
-                  <td><font size="1" align="right" style="font-weight:bold;">{$amount|crmMoney:$currency}</font></td>
+                  <td><font size="1" align="right" style="font-weight:bold;">{contribution.total_amount}</font></td>
                 </tr>
               {else}
                 <tr>
                   <td><font size="1" align="right" style="font-weight:bold;">{ts}Amount Due:{/ts}</font></td>
-                  <td><font size="1" align="right" style="font-weight:bold;">{$amountDue|crmMoney:$currency}</font></td>
+                  <td><font size="1" align="right" style="font-weight:bold;">{contribution.paid_amount}</font></td>
                 </tr>
               {/if}
               <tr>
@@ -9662,14 +9660,14 @@ INSERT INTO civicrm_option_group
       </tr>
       <tr>
         <td style="padding-left:17px;"><font size="1" align="center">{contact.display_name}{if \'{contact.current_employer}\'} ({contact.current_employer}){/if}</font></td>
-        <td style="padding-left:30px;"><font size="1" align="right">{$invoice_date}</font></td>
+        <td style="padding-left:30px;"><font size="1" align="right">{contribution.receive_date|crmDate:"Full"}</font></td>
         <td><font size="1" align="right">
           {domain.street_address}
           {domain.supplemental_address_1}
          </font></td>
       </tr>
       <tr>
-        <td style="padding-left:17px;"><font size="1" align="center">{$street_address}   {$supplemental_address_1}</font></td>
+        <td style="padding-left:17px;"><font size="1" align="center">{contact.address_billing.street_address}   {contact.address_billing.supplemental_address_1}</font></td>
         <td style="padding-left:30px;"><b><font size="1" align="right">{ts}Credit Note Number:{/ts}</font></b></td>
         <td><font size="1" align="right">
           {domain.supplemental_address_2}
@@ -9677,7 +9675,7 @@ INSERT INTO civicrm_option_group
         </font></td>
       </tr>
       <tr>
-        <td style="padding-left:17px;"><font size="1" align="center">{$supplemental_address_2}  {$stateProvinceAbbreviation}</font></td>
+        <td style="padding-left:17px;"><font size="1" align="center">{contact.address_billing.supplemental_address_2} {contact.address_billing.state_province_id:abbr}</font></td>
         <td style="padding-left:30px;"><font size="1" align="right">{contribution.creditnote_id}</font></td>
         <td><font size="1" align="right">
           {domain.city}
@@ -9685,7 +9683,7 @@ INSERT INTO civicrm_option_group
         </font></td>
       </tr>
       <tr>
-        <td style="padding-left:17px;"><font size="1" align="right">{$city}  {$postal_code}</font></td>
+        <td style="padding-left:17px;"><font size="1" align="right">{contact.address_billing.city}  {contact.address_billing.postal_code}</font></td>
         <td height="10" style="padding-left:30px;"><b><font size="1" align="right">{ts}Reference:{/ts}</font></b></td>
         <td><font size="1" align="right">
           {domain.country_id:label}
@@ -9716,7 +9714,7 @@ INSERT INTO civicrm_option_group
               <th style="padding-left:28px;text-align:right;font-weight:bold;"><font size="1">{ts}Quantity{/ts}</font></th>
               <th style="padding-left:28px;text-align:right;font-weight:bold;"><font size="1">{ts}Unit Price{/ts}</font></th>
               <th style="padding-left:28px;text-align:right;font-weight:bold;"><font size="1">{domain.tax_term}</font></th>
-              <th style="padding-left:28px;text-align:right;font-weight:bold;"><font size="1">{ts 1=$currency}Amount %1{/ts}</font></th>
+              <th style="padding-left:28px;text-align:right;font-weight:bold;"><font size="1">{ts 1="{contribution.currency}"}Amount %1{/ts}</font></th>
             </tr>
             {foreach from=$lineItems item=line key=index}
               <tr><td colspan="5"><hr {if $index == 0}size="3" style="color:#000;"{else}style="color:#F5F5F5;"{/if}></hr></td></tr>
@@ -9725,7 +9723,7 @@ INSERT INTO civicrm_option_group
                   {$line.title}
                 </font></td>
                 <td style="padding-left:28px;text-align:right;"><font size="1">{$line.qty}</font></td>
-                <td style="padding-left:28px;text-align:right;"><font size="1">{$line.unit_price|crmMoney:$currency}</font></td>
+                <td style="padding-left:28px;text-align:right;"><font size="1">{$line.unit_price|crmMoney:\'{contribution.currency}\'}</font></td>
                 {if $line.tax_amount != \'\'}
                   <td style="padding-left:28px;text-align:right;"><font size="1">{if $line.tax_rate}{$line.tax_rate|crmNumberFormat}%{/if}</font></td>
                 {else}
@@ -9738,7 +9736,7 @@ INSERT INTO civicrm_option_group
             <tr>
               <td colspan="3"></td>
               <td style="padding-left:28px;text-align:right;"><font size="1">{ts}Sub Total{/ts}</font></td>
-              <td style="padding-left:28px;text-align:right;"><font size="1">{$subTotal|crmMoney:$currency}</font></td>
+              <td style="padding-left:28px;text-align:right;"><font size="1">{contribution.tax_exclusive_amount}</font></td>
             </tr>
             {foreach from=$taxRateBreakdown item=taxDetail key=taxRate}
                 {if $taxRate != 0}
@@ -9755,14 +9753,14 @@ INSERT INTO civicrm_option_group
             </tr>
             <tr>
               <td colspan="3"></td>
-              <td style="padding-left:28px;text-align:right;"><b><font size="1">{ts 1=$currency}TOTAL %1{/ts}</font></b></td>
-              <td style="padding-left:28px;text-align:right;"><font size="1">{$amount|crmMoney:$currency}</font></td>
+              <td style="padding-left:28px;text-align:right;"><b><font size="1">{ts 1=\'{contribution.currency}\'}TOTAL %1{/ts}</font></b></td>
+              <td style="padding-left:28px;text-align:right;"><font size="1">{contribution.total_amount}</font></td>
             </tr>
-            {if \'{contribution.is_pay_later}\' == 0}
+            {if !\'{contribution.is_pay_later|boolean}\'}
               <tr>
                 <td colspan="3"></td>
                 <td style="padding-left:28px;text-align:right;"><font size="1">{ts}LESS Credit to invoice(s){/ts}</font></td>
-                <td style="padding-left:28px;text-align:right;"><font size="1">{$amount|crmMoney:$currency}</font></td>
+                <td style="padding-left:28px;text-align:right;"><font size="1">{contribution.total_amount}</font></td>
               </tr>
               <tr>
                 <td colspan="3"></td>
@@ -9771,7 +9769,7 @@ INSERT INTO civicrm_option_group
               <tr>
                 <td colspan="3"></td>
                 <td style="padding-left:28px;text-align:right;"><b><font size="1">{ts}REMAINING CREDIT{/ts}</font></b></td>
-                <td style="padding-left:28px;text-align:right;"><b><font size="1">{$amountDue|crmMoney:$currency}</font></b></td>
+                <td style="padding-left:28px;text-align:right;"><b><font size="1">{contribution.balance_amount}</font></b></td>
                 <td style="padding-left:28px;"><font size="1" align="right"></font></td>
               </tr>
             {/if}
@@ -9813,7 +9811,7 @@ INSERT INTO civicrm_option_group
             <tr>
               <td colspan="2"></td>
               <td><font size="1" align="right" style="font-weight:bold;">{ts}Credit Amount:{/ts}</font></td>
-              <td width=\'50px\'><font size="1" align="right" style="font-weight:bold;">{$amount|crmMoney:$currency}</font></td>
+              <td width=\'50px\'><font size="1" align="right" style="font-weight:bold;">{contribution.total_amount}</font></td>
             </tr>
           </table>
         </td>
@@ -12887,7 +12885,7 @@ INSERT INTO civicrm_option_group
                     {ts}Transaction #{/ts}
                   </td>
                   <td {$valueStyle}>
-                    {contribution.trxn_id|boolean}
+                    {contribution.trxn_id}
                   </td>
                 </tr>
               {/if}
@@ -13368,7 +13366,7 @@ INSERT INTO civicrm_option_group
                     {ts}Transaction #{/ts}
                   </td>
                   <td {$valueStyle}>
-                    {contribution.trxn_id|boolean}
+                    {contribution.trxn_id}
                   </td>
                 </tr>
               {/if}
@@ -17903,7 +17901,7 @@ or need to modify your payment schedule.{/ts}</p>
     INSERT INTO civicrm_msg_template
     (msg_title, msg_subject, msg_text, msg_html, workflow_name, workflow_id, is_default, is_reserved)
     VALUES
-    ('Profiles - Admin Notification', '{$grouptitle} {ts 1=$displayName}Submitted by %1{/ts} - {contact.display_name}
+    ('Profiles - Admin Notification', '{$grouptitle} {ts 1=$userDisplayName}Submitted by %1{/ts} - {contact.display_name}
 ', '', '<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
@@ -17932,7 +17930,7 @@ or need to modify your payment schedule.{/ts}</p>
        {ts}Submitted For{/ts}
       </td>
       <td {$valueStyle}>
-       {$displayName}
+       {contact.display_name}
       </td>
      </tr>
      <tr>
@@ -17940,7 +17938,7 @@ or need to modify your payment schedule.{/ts}</p>
        {ts}Date{/ts}
       </td>
       <td {$valueStyle}>
-       {$currentDate}
+       {domain.now|crmDate:"Full"}
       </td>
      </tr>
      <tr>
@@ -17981,7 +17979,7 @@ or need to modify your payment schedule.{/ts}</p>
     INSERT INTO civicrm_msg_template
     (msg_title, msg_subject, msg_text, msg_html, workflow_name, workflow_id, is_default, is_reserved)
     VALUES
-    ('Profiles - Admin Notification', '{$grouptitle} {ts 1=$displayName}Submitted by %1{/ts} - {contact.display_name}
+    ('Profiles - Admin Notification', '{$grouptitle} {ts 1=$userDisplayName}Submitted by %1{/ts} - {contact.display_name}
 ', '', '<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
@@ -18010,7 +18008,7 @@ or need to modify your payment schedule.{/ts}</p>
        {ts}Submitted For{/ts}
       </td>
       <td {$valueStyle}>
-       {$displayName}
+       {contact.display_name}
       </td>
      </tr>
      <tr>
@@ -18018,7 +18016,7 @@ or need to modify your payment schedule.{/ts}</p>
        {ts}Date{/ts}
       </td>
       <td {$valueStyle}>
-       {$currentDate}
+       {domain.now|crmDate:"Full"}
       </td>
      </tr>
      <tr>
@@ -20370,5 +20368,5 @@ INSERT INTO `civicrm_report_instance`
 VALUES
     (  @domainID, 'Survey Details', 'survey/detail', 'Detailed report for canvassing, phone-banking, walk lists or other surveys.', 'access CiviReport', 'a:39:{s:6:"fields";a:2:{s:9:"sort_name";s:1:"1";s:6:"result";s:1:"1";}s:22:"assignee_contact_id_op";s:2:"eq";s:25:"assignee_contact_id_value";s:0:"";s:12:"sort_name_op";s:3:"has";s:15:"sort_name_value";s:0:"";s:17:"street_number_min";s:0:"";s:17:"street_number_max";s:0:"";s:16:"street_number_op";s:3:"lte";s:19:"street_number_value";s:0:"";s:14:"street_name_op";s:3:"has";s:17:"street_name_value";s:0:"";s:15:"postal_code_min";s:0:"";s:15:"postal_code_max";s:0:"";s:14:"postal_code_op";s:3:"lte";s:17:"postal_code_value";s:0:"";s:7:"city_op";s:3:"has";s:10:"city_value";s:0:"";s:20:"state_province_id_op";s:2:"in";s:23:"state_province_id_value";a:0:{}s:13:"country_id_op";s:2:"in";s:16:"country_id_value";a:0:{}s:12:"survey_id_op";s:2:"in";s:15:"survey_id_value";a:0:{}s:12:"status_id_op";s:2:"eq";s:15:"status_id_value";s:1:"1";s:11:"custom_1_op";s:2:"in";s:14:"custom_1_value";a:0:{}s:11:"custom_2_op";s:2:"in";s:14:"custom_2_value";a:0:{}s:17:"custom_3_relative";s:1:"0";s:13:"custom_3_from";s:0:"";s:11:"custom_3_to";s:0:"";s:11:"description";s:75:"Detailed report for canvassing, phone-banking, walk lists or other surveys.";s:13:"email_subject";s:0:"";s:8:"email_to";s:0:"";s:8:"email_cc";s:0:"";s:10:"permission";s:17:"access CiviReport";s:6:"groups";s:0:"";s:9:"domain_id";i:1;}');
 
-UPDATE civicrm_domain SET version = '5.71.1';
+UPDATE civicrm_domain SET version = '5.73.1';
 

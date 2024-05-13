@@ -7,7 +7,7 @@ $baseDir = dirname($vendorDir);
 
 return array(
     'Validate' => array($vendorDir . '/pear/validate_finance_creditcard'),
-    'TOGoS_GitIgnore_' => array($vendorDir . '/togos/gitignore/src/main/php'),
+    'TOGoS_GitIgnore_' => array($vendorDir . '/civicrm/gitignore/src/main/php'),
     'PHPUnit_' => array($baseDir . '/packages'),
     'Net' => array($vendorDir . '/pear/net_socket', $vendorDir . '/pear/net_smtp'),
     'Mail' => array($vendorDir . '/pear/mail', $vendorDir . '/pear/mail_mime'),

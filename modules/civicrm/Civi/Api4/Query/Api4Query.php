@@ -239,6 +239,7 @@ abstract class Api4Query {
     if (!in_array($operator, CoreUtil::getOperators(), TRUE)) {
       throw new \CRM_Core_Exception('Illegal operator');
     }
+    $fieldAlias = NULL;
 
     // For WHERE clause, expr must be the name of a field.
     if ($type === 'WHERE' && !$isExpression) {
@@ -263,7 +264,7 @@ abstract class Api4Query {
       if (isset($this->selectAliases[$expr])) {
         $fieldAlias = $expr;
         // Attempt to format if this is a real field
-        if (isset($this->apiFieldSpec[$expr])) {
+        if (isset($this->apiFieldSpec[$expr]) && !$isExpression) {
           $field = $this->getField($expr);
           FormattingUtil::formatInputValue($value, $expr, $field, $this->entityValues, $operator);
         }
@@ -273,7 +274,7 @@ abstract class Api4Query {
         $fieldAlias = array_search($expr, $this->selectAliases);
       }
       // If either the having or select field contains a pseudoconstant suffix, match and perform substitution
-      else {
+      elseif (!$isExpression) {
         [$fieldName] = explode(':', $expr);
         foreach ($this->selectAliases as $selectAlias => $selectExpr) {
           [$selectField] = explode(':', $selectAlias);
@@ -294,6 +295,13 @@ abstract class Api4Query {
         }
       }
       $fieldAlias = '`' . $fieldAlias . '`';
+      if ($isExpression) {
+        $targetField = isset($this->selectAliases[$value]) ? $value : array_search($value, $this->selectAliases);
+        if (!$targetField) {
+          throw new \CRM_Core_Exception("Invalid expression in HAVING clause: '$value'. Must use a value from SELECT clause.");
+        }
+        return sprintf('%s %s `%s`', $fieldAlias, $operator, $targetField);
+      }
     }
     elseif ($type === 'ON' || ($type === 'WHERE' && $isExpression)) {
       $expr = $this->getExpression($expr);
@@ -351,6 +359,8 @@ abstract class Api4Query {
       return $sql ? implode(' AND ', $sql) : NULL;
     }
 
+    $original_operator = $operator;
+
     // The CONTAINS and NOT CONTAINS operators match a substring for strings.
     // For arrays & serialized fields, they only match a complete (not partial) string within the array.
     if ($operator === 'CONTAINS' || $operator === 'NOT CONTAINS') {
@@ -403,10 +413,6 @@ abstract class Api4Query {
       }
     }
 
-    if ($operator == 'REGEXP' || $operator == 'NOT REGEXP' || $operator == 'REGEXP BINARY' || $operator == 'NOT REGEXP BINARY') {
-      return sprintf('%s %s "%s"', (str_ends_with($operator, 'BINARY') ? 'CAST(' . $fieldAlias . ' AS BINARY)' : $fieldAlias), $operator, \CRM_Core_DAO::escapeString($value));
-    }
-
     if (!$value && ($operator === 'IN' || $operator === 'NOT IN')) {
       $value[] = FALSE;
     }
@@ -415,7 +421,19 @@ abstract class Api4Query {
       $value = (int) $value;
     }
 
-    return \CRM_Core_DAO::createSQLFilter($fieldAlias, [$operator => $value]);
+    if ($operator == 'REGEXP' || $operator == 'NOT REGEXP' || $operator == 'REGEXP BINARY' || $operator == 'NOT REGEXP BINARY') {
+      $sqlClause = sprintf('%s %s "%s"', (str_ends_with($operator, 'BINARY') ? 'CAST(' . $fieldAlias . ' AS BINARY)' : $fieldAlias), $operator, \CRM_Core_DAO::escapeString($value));
+    }
+    else {
+      $sqlClause = \CRM_Core_DAO::createSQLFilter($fieldAlias, [$operator => $value]);
+    }
+
+    if ($original_operator === "NOT CONTAINS") {
+      // For a "NOT CONTAINS", this adds an "OR IS NULL" clause - we want to know that a particular value is not present and don't care whether it has any other value
+      return "(($sqlClause) OR $fieldAlias IS NULL)";
+    }
+
+    return $sqlClause;
   }
 
   /**
@@ -475,17 +493,24 @@ abstract class Api4Query {
   }
 
   /**
-   * @return \CRM_Utils_SQL_Select
-   */
-  public function getQuery() {
-    return $this->query;
-  }
-
-  /**
    * @return bool|string
    */
   public function getCheckPermissions() {
     return $this->api->getCheckPermissions();
+  }
+
+  /**
+   * @return mixed
+   */
+  public function getApiParam($param) {
+    return call_user_func([$this->api, 'get' . ucfirst($param)]);
+  }
+
+  /**
+   * @return \CRM_Utils_SQL_Select
+   */
+  public function getQuery() {
+    return $this->query;
   }
 
   /**

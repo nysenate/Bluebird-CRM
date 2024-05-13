@@ -12,12 +12,12 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/smarty-php/smarty.git",
-                "reference": "15e48b6af3cd296882bdcfc9942419f50ed8592c"
+                "reference": "beafa5ec31f2ca241a67ba9d04d868ba8596f62f"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/smarty-php/smarty/zipball/15e48b6af3cd296882bdcfc9942419f50ed8592c",
-                "reference": "15e48b6af3cd296882bdcfc9942419f50ed8592c",
+                "url": "https://api.github.com/repos/smarty-php/smarty/zipball/beafa5ec31f2ca241a67ba9d04d868ba8596f62f",
+                "reference": "beafa5ec31f2ca241a67ba9d04d868ba8596f62f",
                 "shasum": ""
             },
             "require": {
@@ -75,7 +75,7 @@
                 "issues": "https://github.com/smarty-php/smarty/issues",
                 "source": "https://github.com/smarty-php/smarty/tree/master"
             },
-            "time": "2024-02-05T13:11:44+00:00"
+            "time": "2024-03-27T21:57:07+00:00"
         },
         {
             "name": "symfony/polyfill-mbstring",

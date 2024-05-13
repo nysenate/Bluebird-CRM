@@ -18,6 +18,7 @@
 
 use Civi\API\EntityLookupTrait;
 use Civi\Api4\Contribution;
+use Civi\Api4\LineItem;
 
 /**
  * Back office participant form.
@@ -172,6 +173,8 @@ class CRM_Event_Form_Participant extends CRM_Contribute_Form_AbstractEditPayment
    * Id of payment, if any
    *
    * @var int
+   *
+   * @internal
    */
   public $_paymentId;
 
@@ -456,10 +459,6 @@ class CRM_Event_Form_Participant extends CRM_Contribute_Form_AbstractEditPayment
         }
       }
 
-      $submittedRole = $this->getElementValue('role_id');
-      if (!empty($submittedRole[0])) {
-        $roleID = $submittedRole[0];
-      }
       $submittedEvent = $this->getElementValue('event_id');
       if (!empty($submittedEvent[0])) {
         $eventID = $submittedEvent[0];
@@ -541,7 +540,8 @@ class CRM_Event_Form_Participant extends CRM_Contribute_Form_AbstractEditPayment
     $this->assign('partiallyPaidStatusId', $partiallyPaidStatusId);
 
     if ($this->isOverloadFeesMode()) {
-      return $this->buildEventFeeForm($this);
+      $this->buildEventFeeForm($this);
+      return;
     }
 
     if ($this->isSubmitted()) {
@@ -1237,7 +1237,7 @@ class CRM_Event_Form_Participant extends CRM_Contribute_Form_AbstractEditPayment
         $form->assign('priceSet', $form->_priceSet ?? NULL);
       }
       else {
-        $this->buildAmount($form, $form->getDiscountID(), $this->getPriceSetID());
+        $this->buildAmount();
       }
       $discounts = [];
       if (!empty($form->_values['discount'])) {
@@ -1558,10 +1558,15 @@ class CRM_Event_Form_Participant extends CRM_Contribute_Form_AbstractEditPayment
       'note' => $this->getSubmittedValue('note'),
       'is_test' => $this->isTest(),
     ];
-    $order = $this->getOrder();
-    if ($order) {
-      $participantParams['fee_level'] = $order->getAmountLevel();
-      $participantParams['fee_amount'] = $order->getTotalAmount();
+    if (!$this->getParticipantID()) {
+      // For new registrations fill in fee detail. For existing
+      // registrations we are not doing anything on this form that would require
+      // these fields to change.
+      $order = $this->getOrder();
+      if ($order) {
+        $participantParams['fee_level'] = $order->getAmountLevel();
+        $participantParams['fee_amount'] = $order->getTotalAmount();
+      }
     }
     $participantParams['discount_id'] = $this->getSubmittedValue('discount_id');
     $participant = CRM_Event_BAO_Participant::create($participantParams);
@@ -1586,19 +1591,35 @@ class CRM_Event_Form_Participant extends CRM_Contribute_Form_AbstractEditPayment
    * 2) _paymentID is the contribution id.
    *
    * @return bool
+   * @throws \CRM_Core_Exception
    */
   protected function isPaymentOnExistingContribution(): bool {
-    return ($this->getParticipantID() && $this->_action & CRM_Core_Action::UPDATE) && $this->_paymentId;
+    return (bool) $this->getExistingContributionID();
   }
 
   /**
-   * @return false|int
+   * @return null|int
+   * @throws \CRM_Core_Exception
    */
-  protected function getExistingContributionID() {
-    if ($this->isPaymentOnExistingContribution()) {
-      return (int) $this->_paymentId;
+  protected function getExistingContributionID(): ?int {
+    if (!$this->getParticipantID()) {
+      return NULL;
     }
-    return FALSE;
+    if ($this->isDefined('ExistingContribution')) {
+      return $this->lookup('ExistingContribution', 'id');
+    }
+    // CRM-12615 - Get payment information from the primary registration if relevant.
+    $participantID = $this->getParticipantValue('registered_by_id') ?: $this->getParticipantID();
+    $lineItem = LineItem::get(FALSE)
+      ->addWhere('entity_table', '=', 'civicrm_participant')
+      ->addWhere('entity_id', '=', $participantID)
+      ->addWhere('contribution_id', 'IS NOT NULL')
+      ->execute()->first();
+    if (empty($lineItem)) {
+      return NULL;
+    }
+    $this->define('Contribution', 'ExistingContribution', ['id' => $lineItem['contribution_id']]);
+    return $lineItem['contribution_id'];
   }
 
   /**
@@ -2048,35 +2069,15 @@ INNER JOIN civicrm_price_field_value value ON ( value.id = lineItem.price_field_
    * @internal function is not currently called by any extentions in our civi
    * 'universe' and is not supported for such use. Signature has changed & will
    * change again.
-   *
-   * @param self $form
-   *   Form object.
-   * @param int|null $discountId
-   *   Discount id for the event.
-   * @param int|null $priceSetID
-   *
-   * @throws \CRM_Core_Exception
    */
-  private function buildAmount($form, $discountId, $priceSetID): void {
-    $feeFields = $form->_values['fee'] ?? NULL;
-
-    //check for discount.
-    $discountedFee = $form->_values['discount'] ?? NULL;
-    if (is_array($discountedFee) && !empty($discountedFee)) {
-      if (!$discountId) {
-        $form->_discountId = $discountId = CRM_Core_BAO_Discount::findSet($form->_eventId, 'civicrm_event');
-      }
-      if ($discountId) {
-        $feeFields = &$form->_values['discount'][$discountId];
-      }
-    }
-
+  private function buildAmount(): void {
+    $feeFields = $this->_values['fee'] ?? NULL;
     //its time to call the hook.
-    CRM_Utils_Hook::buildAmount('event', $form, $feeFields);
+    CRM_Utils_Hook::buildAmount('event', $this, $feeFields);
 
     //build the priceset fields.
     // This is probably not required now - normally loaded from event ....
-    $form->add('hidden', 'priceSetId', $priceSetID);
+    $this->add('hidden', 'priceSetId', $this->getPriceSetID());
 
     foreach ($feeFields as $field) {
       // public AND admin visibility fields are included for back-office registration and back-office change selections
@@ -2095,7 +2096,7 @@ INNER JOIN civicrm_price_field_value value ON ( value.id = lineItem.price_field_
       //soft suppress required rule when option is full.
       if (!empty($options)) {
         //build the element.
-        CRM_Price_BAO_PriceField::addQuickFormElement($form,
+        CRM_Price_BAO_PriceField::addQuickFormElement($this,
           $elementName,
           $fieldId,
           FALSE,
@@ -2105,8 +2106,8 @@ INNER JOIN civicrm_price_field_value value ON ( value.id = lineItem.price_field_
         );
       }
     }
-    $form->_priceSet['id'] ??= $priceSetID;
-    $form->assign('priceSet', $form->_priceSet);
+    $this->_priceSet['id'] ??= $this->getPriceSetID();
+    $this->assign('priceSet', $this->_priceSet);
   }
 
 }

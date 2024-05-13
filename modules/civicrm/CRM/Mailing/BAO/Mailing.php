@@ -1167,7 +1167,7 @@ ORDER BY   civicrm_email.is_bulkmail DESC
     if ($useSmarty) {
       $smarty = CRM_Core_Smarty::singleton();
       // also add the contact tokens to the template
-      $smarty->assign_by_ref('contact', $contact);
+      $smarty->assign('contact', $contact);
     }
 
     $mailParams = $headers;
@@ -1204,9 +1204,7 @@ ORDER BY   civicrm_email.is_bulkmail DESC
       $mailParams['Subject'] = implode('', $mailParams['Subject']);
     }
 
-    $mailParams['toName'] = CRM_Utils_Array::value('display_name',
-      $contact
-    );
+    $mailParams['toName'] = $contact['display_name'] ?? NULL;
     $mailParams['toEmail'] = $email;
 
     // Add job ID to mailParams for external email delivery service to utilise
@@ -1592,10 +1590,6 @@ ORDER BY   civicrm_email.is_bulkmail DESC
 
     $mailing = self::add($params);
 
-    if (is_a($mailing, 'CRM_Core_Error')) {
-      $transaction->rollback();
-      return $mailing;
-    }
     // update mailings with hash values
     CRM_Contact_BAO_Contact_Utils::generateChecksum($mailing->id, NULL, NULL, NULL, 'mailing', 16);
 
@@ -1661,38 +1655,43 @@ ORDER BY   civicrm_email.is_bulkmail DESC
       }
       $mailing->copyValues($params);
     }
-
     $errors = [];
-    foreach (['subject', 'name', 'from_name', 'from_email'] as $field) {
-      if (empty($mailing->{$field})) {
-        $errors[$field] = ts('Field "%1" is required.', [
-          1 => $field,
-        ]);
+    if ($mailing->sms_provider_id) {
+      if (empty($mailing->body_text)) {
+        $errors['body'] = ts('Field "body_text" is required.');
       }
     }
-    if (empty($mailing->body_html) && empty($mailing->body_text)) {
-      $errors['body'] = ts('Field "body_html" or "body_text" is required.');
-    }
-
-    if (!Civi::settings()->get('disable_mandatory_tokens_check')) {
-      $header = $mailing->header_id && $mailing->header_id !== 'null' ? CRM_Mailing_BAO_MailingComponent::findById($mailing->header_id) : NULL;
-      $footer = $mailing->footer_id && $mailing->footer_id !== 'null' ? CRM_Mailing_BAO_MailingComponent::findById($mailing->footer_id) : NULL;
-      foreach (['body_html', 'body_text'] as $field) {
+    else {
+      foreach (['subject', 'name', 'from_name', 'from_email'] as $field) {
         if (empty($mailing->{$field})) {
-          continue;
+          $errors[$field] = ts('Field "%1" is required.', [
+            1 => $field,
+          ]);
         }
-        $str = ($header ? $header->{$field} : '') . $mailing->{$field} . ($footer ? $footer->{$field} : '');
-        $err = CRM_Utils_Token::requiredTokens($str);
-        if ($err !== TRUE) {
-          foreach ($err as $token => $desc) {
-            $errors["{$field}:{$token}"] = ts('This message is missing a required token - {%1}: %2',
-              [1 => $token, 2 => $desc]
-            );
+      }
+      if (empty($mailing->body_html) && empty($mailing->body_text)) {
+        $errors['body'] = ts('Field "body_html" or "body_text" is required.');
+      }
+
+      if (!Civi::settings()->get('disable_mandatory_tokens_check')) {
+        $header = $mailing->header_id && $mailing->header_id !== 'null' ? CRM_Mailing_BAO_MailingComponent::findById($mailing->header_id) : NULL;
+        $footer = $mailing->footer_id && $mailing->footer_id !== 'null' ? CRM_Mailing_BAO_MailingComponent::findById($mailing->footer_id) : NULL;
+        foreach (['body_html', 'body_text'] as $field) {
+          if (empty($mailing->{$field})) {
+            continue;
+          }
+          $str = ($header ? $header->{$field} : '') . $mailing->{$field} . ($footer ? $footer->{$field} : '');
+          $err = CRM_Utils_Token::requiredTokens($str);
+          if ($err !== TRUE) {
+            foreach ($err as $token => $desc) {
+              $errors["{$field}:{$token}"] = ts('This message is missing a required token - {%1}: %2',
+                [1 => $token, 2 => $desc]
+              );
+            }
           }
         }
       }
     }
-
     return $errors;
   }
 
@@ -2564,9 +2563,11 @@ LEFT JOIN civicrm_mailing_group g ON g.mailing_id   = m.id
           ['onChange' => "selectValue( this.value, '{$prefix}');", 'class' => 'crm-select2 huge']
         );
       }
-      $form->add('checkbox', "{$prefix}updateTemplate", ts('Update Template'), NULL);
-      $form->add('checkbox', "{$prefix}saveTemplate", ts('Save As New Template'), ['onclick' => "showSaveDetails(this, '{$prefix}');"]);
-      $form->add('text', "{$prefix}saveTemplateName", ts('Template Title'));
+      if (\CRM_Core_Permission::check('edit message templates')) {
+        $form->add('checkbox', "{$prefix}updateTemplate", ts('Update Template'), NULL);
+        $form->add('checkbox', "{$prefix}saveTemplate", ts('Save As New Template'), ['onclick' => "showSaveDetails(this, '{$prefix}');"]);
+        $form->add('text', "{$prefix}saveTemplateName", ts('Template Title'));
+      }
     }
 
     // I'm not sure this is ever called.
@@ -2820,10 +2821,10 @@ ORDER BY civicrm_mailing.id DESC";
         "mid={$values['mailing_id']}&reset=1&cid={$params['contact_id']}&event=queue&context=mailing");
       $mailing['start_date'] = CRM_Utils_Date::customFormat($values['start_date']);
       //CRM-12814
-      $mailing['openstats'] = "Opens: " .
-        CRM_Utils_Array::value($values['mailing_id'], $openCounts, 0) .
-        "<br />Clicks: " .
-        $clickCounts[$values['mailing_id']] ?? 0;
+      $clicks = $clickCounts[$values['mailing_id']] ?? 0;
+      $opens = $openCounts[$values['mailing_id']] ?? 0;
+      $mailing['openstats'] = ts('Opens: %1', [1 => $opens]) . '<br />' .
+        ts('Clicks: %1', [1 => $clicks]);
 
       $actionLinks = [
         CRM_Core_Action::VIEW => [

@@ -2,6 +2,8 @@
 
 namespace Smarty\Extension;
 
+use Smarty\Exception;
+
 class DefaultExtension extends Base {
 
 	private $modifiers = [];
@@ -27,7 +29,9 @@ class DefaultExtension extends Base {
 			case 'escape': $this->modifiers[$modifier] = new \Smarty\Compile\Modifier\EscapeModifierCompiler(); break;
 			case 'from_charset': $this->modifiers[$modifier] = new \Smarty\Compile\Modifier\FromCharsetModifierCompiler(); break;
 			case 'indent': $this->modifiers[$modifier] = new \Smarty\Compile\Modifier\IndentModifierCompiler(); break;
+			case 'is_array': $this->modifiers[$modifier] = new \Smarty\Compile\Modifier\IsArrayModifierCompiler(); break;
 			case 'isset': $this->modifiers[$modifier] = new \Smarty\Compile\Modifier\IssetModifierCompiler(); break;
+			case 'json_encode': $this->modifiers[$modifier] = new \Smarty\Compile\Modifier\JsonEncodeModifierCompiler(); break;
 			case 'lower': $this->modifiers[$modifier] = new \Smarty\Compile\Modifier\LowerModifierCompiler(); break;
 			case 'nl2br': $this->modifiers[$modifier] = new \Smarty\Compile\Modifier\Nl2brModifierCompiler(); break;
 			case 'noprint': $this->modifiers[$modifier] = new \Smarty\Compile\Modifier\NoPrintModifierCompiler(); break;
@@ -37,6 +41,7 @@ class DefaultExtension extends Base {
 			case 'strip': $this->modifiers[$modifier] = new \Smarty\Compile\Modifier\StripModifierCompiler(); break;
 			case 'strip_tags': $this->modifiers[$modifier] = new \Smarty\Compile\Modifier\StripTagsModifierCompiler(); break;
 			case 'strlen': $this->modifiers[$modifier] = new \Smarty\Compile\Modifier\StrlenModifierCompiler(); break;
+			case 'substr': $this->modifiers[$modifier] = new \Smarty\Compile\Modifier\SubstrModifierCompiler(); break;
 			case 'to_charset': $this->modifiers[$modifier] = new \Smarty\Compile\Modifier\ToCharsetModifierCompiler(); break;
 			case 'unescape': $this->modifiers[$modifier] = new \Smarty\Compile\Modifier\UnescapeModifierCompiler(); break;
 			case 'upper': $this->modifiers[$modifier] = new \Smarty\Compile\Modifier\UpperModifierCompiler(); break;
@@ -54,11 +59,15 @@ class DefaultExtension extends Base {
 			case 'debug_print_var': return [$this, 'smarty_modifier_debug_print_var'];
 			case 'escape': return [$this, 'smarty_modifier_escape'];
 			case 'explode': return [$this, 'smarty_modifier_explode'];
+			case 'implode': return [$this, 'smarty_modifier_implode'];
+			case 'in_array': return [$this, 'smarty_modifier_in_array'];
+			case 'join': return [$this, 'smarty_modifier_join'];
 			case 'mb_wordwrap': return [$this, 'smarty_modifier_mb_wordwrap'];
 			case 'number_format': return [$this, 'smarty_modifier_number_format'];
 			case 'regex_replace': return [$this, 'smarty_modifier_regex_replace'];
 			case 'replace': return [$this, 'smarty_modifier_replace'];
 			case 'spacify': return [$this, 'smarty_modifier_spacify'];
+			case 'split': return [$this, 'smarty_modifier_split'];
 			case 'truncate': return [$this, 'smarty_modifier_truncate'];
 		}
 		return null;
@@ -82,12 +91,8 @@ class DefaultExtension extends Base {
 			case 'html_select_date': $this->functionHandlers[$functionName] = new \Smarty\FunctionHandler\HtmlSelectDate(); break;
 			case 'html_select_time': $this->functionHandlers[$functionName] = new \Smarty\FunctionHandler\HtmlSelectTime(); break;
 			case 'html_table': $this->functionHandlers[$functionName] = new \Smarty\FunctionHandler\HtmlTable(); break;
-			case 'in_array': $this->functionHandlers[$functionName] = new \Smarty\FunctionHandler\InArray(); break;
-			case 'is_array': $this->functionHandlers[$functionName] = new \Smarty\FunctionHandler\IsArray(); break;
 			case 'mailto': $this->functionHandlers[$functionName] = new \Smarty\FunctionHandler\Mailto(); break;
 			case 'math': $this->functionHandlers[$functionName] = new \Smarty\FunctionHandler\Math(); break;
-			case 'strlen': $this->functionHandlers[$functionName] = new \Smarty\FunctionHandler\Strlen(); break;
-			case 'time': $this->functionHandlers[$functionName] = new \Smarty\FunctionHandler\Time(); break;
 		}
 
 		return $this->functionHandlers[$functionName] ?? null;
@@ -211,7 +216,7 @@ class DefaultExtension extends Base {
 		 * > 1 would be returned, unless value was null, in which case 0 would be returned.
 		 */
 
-		if ($arrayOrObject instanceof Countable || is_array($arrayOrObject)) {
+		if ($arrayOrObject instanceof \Countable || is_array($arrayOrObject)) {
 			return count($arrayOrObject, (int) $mode);
 		} elseif ($arrayOrObject === null) {
 			return 0;
@@ -518,8 +523,89 @@ class DefaultExtension extends Base {
 	 */
 	public function smarty_modifier_explode($separator, $string, ?int $limit = null)
 	{
+		trigger_error("Using explode is deprecated. " .
+			"Use split, using the array first, separator second.", E_USER_DEPRECATED);
 		// provide $string default to prevent deprecation errors in PHP >=8.1
 		return explode($separator, $string ?? '', $limit ?? PHP_INT_MAX);
+	}
+
+	/**
+	 * Smarty split modifier plugin
+	 * Type:     modifier
+	 * Name:     split
+	 * Purpose:  split a string by a string
+	 *
+	 * @param string $string
+	 * @param string   $separator
+	 * @param int|null $limit
+	 *
+	 * @return array
+	 */
+	public function smarty_modifier_split($string, $separator, ?int $limit = null)
+	{
+		// provide $string default to prevent deprecation errors in PHP >=8.1
+		return explode($separator, $string ?? '', $limit ?? PHP_INT_MAX);
+	}
+
+	/**
+	 * Smarty implode modifier plugin
+	 * Type:     modifier
+	 * Name:     implode
+	 * Purpose:  join an array of values into a single string
+	 *
+	 * @param array   $values
+	 * @param string   $separator
+	 *
+	 * @return string
+	 */
+	public function smarty_modifier_implode($values, $separator = '')
+	{
+
+		trigger_error("Using implode is deprecated. " .
+			"Use join using the array first, separator second.", E_USER_DEPRECATED);
+
+		if (is_array($separator)) {
+			return implode((string) ($values ?? ''), (array) $separator);
+		}
+		return implode((string) ($separator ?? ''), (array) $values);
+	}
+
+	/**
+	 * Smarty in_array modifier plugin
+	 * Type:     modifier
+	 * Name:     in_array
+	 * Purpose:  test if value is contained in an array
+	 *
+	 * @param mixed   $needle
+	 * @param array   $array
+	 * @param bool   $strict
+	 *
+	 * @return bool
+	 */
+	public function smarty_modifier_in_array($needle, $array, $strict = false)
+	{
+		return in_array($needle, (array) $array, (bool) $strict);
+	}
+
+	/**
+	 * Smarty join modifier plugin
+	 * Type:     modifier
+	 * Name:     join
+	 * Purpose:  join an array of values into a single string
+	 *
+	 * @param array   $values
+	 * @param string   $separator
+	 *
+	 * @return string
+	 */
+	public function smarty_modifier_join($values, $separator = '')
+	{
+		if (is_array($separator)) {
+			trigger_error("Using join with the separator first is deprecated. " .
+				"Call join using the array first, separator second.", E_USER_DEPRECATED);
+			return implode((string) ($values ?? ''), (array) $separator);
+		}
+		return implode((string) ($separator ?? ''), (array) $values);
 	}
 
 	/**

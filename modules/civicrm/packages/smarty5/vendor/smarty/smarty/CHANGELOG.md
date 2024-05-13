@@ -6,15 +6,35 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [5.0.1] - 2024-03-27
+- Fix error in Smarty\Smarty::compileAllTemplates() by including missing FilesystemIterator class [#966](https://github.com/smarty-php/smarty/issues/966)  
+
+
+## [5.0.0] - 2024-03-25
+- Fixed that scoped variables would overwrite parent scope [#952](https://github.com/smarty-php/smarty/issues/952)
+- Removed publicly accessible `$tpl->_var_stack` variable
+
+
+### Fixed
+- Too many shorthand attributes error when using a modifier as a function with more than 3 parameters in an expression [#949](https://github.com/smarty-php/smarty/issues/949)
+
+### Removed
+- Dropped support for undocumented `{time()}` added in v5.0.0 since we already have the documented `{$smarty.now}`
+
+## [5.0.0-rc3] - 2024-02-26
+
 ### Added
 - PHP8.3 support [#925](https://github.com/smarty-php/smarty/issues/925)
 - Backlink to GitHub in docs
 - Explain how to do escaping and set-up auto-escaping in docs [#865](https://github.com/smarty-php/smarty/issues/865)
 - Link to variable scope page in the documentation for the assign tag [#878](https://github.com/smarty-php/smarty/issues/878)
+- Add support for implode, substr and json_encode as modifiers/functions in templates [#939](https://github.com/smarty-php/smarty/issues/939)
+- Add template path to CompilerException to enable rich debug features [#935](https://github.com/smarty-php/smarty/issues/935)
 
 ### Fixed
 - The {debug} tag was broken in v5 [#922](https://github.com/smarty-php/smarty/issues/922)
 - Documentation on `{if $x is even by $y}` syntax
+- Fix incorrect compilation of expressions when escape_html=true [#930](https://github.com/smarty-php/smarty/pull/930)
 
 ## [5.0.0-rc2] - 2023-11-11
 

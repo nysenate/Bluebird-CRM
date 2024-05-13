@@ -270,7 +270,7 @@ class CRM_Admin_Page_Extensions extends CRM_Core_Page_Basic {
       );
       if (isset($localExtensionRows[$info->key])) {
         if (array_key_exists('version', $localExtensionRows[$info->key])) {
-          if (version_compare($localExtensionRows[$info->key]['version'], $info->version, '<')) {
+          if (version_compare($localExtensionRows[$info->key]['version'] ?? '', $info->version, '<')) {
             $row['upgradelink'] = $mapper->getUpgradeLink($remoteExtensions[$info->key], $localExtensionRows[$info->key]);
           }
         }
@@ -361,6 +361,7 @@ class CRM_Admin_Page_Extensions extends CRM_Core_Page_Basic {
       'comments' => FALSE,
     ];
     $info = array_merge($defaultKeys, $info);
+    $info['is_stable'] = $info['develStage'] === 'stable' && !preg_match(";(alpha|beta|dev);", $info['version']);
     foreach ($info['authors'] as &$author) {
       $author = array_merge(['homepage' => ''], $author);
     }

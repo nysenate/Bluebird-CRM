@@ -438,7 +438,7 @@ abstract class CRM_Utils_Hook {
    * @return null
    *   the return value is ignored
    */
-  public static function links($op, $objectName, &$objectId, &$links, &$mask = NULL, &$values = []) {
+  public static function links($op, $objectName, $objectId, &$links, &$mask = NULL, &$values = []) {
     return self::singleton()->invoke(['op', 'objectName', 'objectId', 'links', 'mask', 'values'], $op, $objectName, $objectId, $links, $mask, $values, 'civicrm_links');
   }
 
@@ -649,7 +649,7 @@ abstract class CRM_Utils_Hook {
    *   Values from WHERE or ON clause
    */
   public static function selectWhereClause($entity, array &$clauses, int $userId = NULL, array $conditions = []): void {
-    $entityName = is_object($entity) ? CRM_Core_DAO_AllCoreTables::getBriefName(get_class($entity)) : $entity;
+    $entityName = is_object($entity) ? CRM_Core_DAO_AllCoreTables::getEntityNameForClass(get_class($entity)) : $entity;
     $null = NULL;
     $userId ??= (int) CRM_Core_Session::getLoggedInContactID();
     self::singleton()->invoke(['entity', 'clauses', 'userId', 'conditions'],
@@ -1619,21 +1619,25 @@ abstract class CRM_Utils_Hook {
   /**
    * This hook allows modification of the queries constructed from dupe rules.
    *
+   * @deprecated since 5.72
+   *
    * @param string $obj
    *   Object of rulegroup class.
    * @param string $type
    *   Type of queries e.g table / threshold.
    * @param array $query
    *   Set of queries.
-   *
-   * @return mixed
    */
   public static function dupeQuery($obj, $type, &$query) {
     $null = NULL;
-    return self::singleton()->invoke(['obj', 'type', 'query'], $obj, $type, $query,
+    $original = $query;
+    self::singleton()->invoke(['obj', 'type', 'query'], $obj, $type, $query,
       $null, $null, $null,
       'civicrm_dupeQuery'
     );
+    if ($original !== $query && $type !== 'supportedFields') {
+      CRM_Core_Error::deprecatedWarning('hook_civicrm_dupeQuery is deprecated.');
+    }
   }
 
   /**

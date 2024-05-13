@@ -331,7 +331,7 @@ function _civicrm_api3_get_DAO($name) {
     $name = strtoupper($name);
   }
 
-  $dao = CRM_Core_DAO_AllCoreTables::getFullName($name);
+  $dao = CRM_Core_DAO_AllCoreTables::getDAONameForEntity($name);
   if ($dao || !$name) {
     return $dao;
   }
@@ -1227,7 +1227,7 @@ function formatCheckBoxField(&$checkboxFieldValue, $customFieldLabel, $entity) {
  * @return array
  */
 function _civicrm_api3_basic_get($bao_name, $params, $returnAsSuccess = TRUE, $entity = "", $sql = NULL, $uniqueFields = FALSE) {
-  $entity = $entity ?: CRM_Core_DAO_AllCoreTables::getBriefName($bao_name);
+  $entity = $entity ?: CRM_Core_DAO_AllCoreTables::getEntityNameForClass($bao_name);
   $options = _civicrm_api3_get_options_from_params($params);
 
   // Skip query if table doesn't exist yet due to pending upgrade
@@ -1323,7 +1323,7 @@ function _civicrm_api3_basic_create($bao_name, &$params, $entity = NULL) {
       $alreadyHandled[] = 'Tag';
       $alreadyHandled[] = 'Website';
       if (!in_array($entity, $alreadyHandled)) {
-        CRM_Core_BAO_CustomValueTable::store($params['custom'], CRM_Core_DAO_AllCoreTables::getTableForClass(CRM_Core_DAO_AllCoreTables::getFullName($entity)), $bao->id);
+        CRM_Core_BAO_CustomValueTable::store($params['custom'], CRM_Core_DAO_AllCoreTables::getTableForClass(CRM_Core_DAO_AllCoreTables::getDAONameForEntity($entity)), $bao->id);
       }
     }
     $values = [];
@@ -1423,7 +1423,7 @@ function _civicrm_api3_custom_data_get(&$returnArray, $checkPermission, $entity,
   CRM_Core_BAO_CustomGroup::setDefaults($groupTree, $customValues);
   $fieldInfo = [];
   foreach ($groupTree as $set) {
-    $fieldInfo += $set['fields'];
+    $fieldInfo += ($set['fields'] ?? []);
   }
   if (!empty($customValues)) {
     foreach ($customValues as $key => $val) {
@@ -1939,7 +1939,7 @@ function _civicrm_api_get_fields($entity, $unique = FALSE, &$params = []) {
   // Translate FKClassName to the corresponding api
   foreach ($fields as $name => &$field) {
     if (!empty($field['FKClassName'])) {
-      $FKApi = CRM_Core_DAO_AllCoreTables::getBriefName($field['FKClassName']);
+      $FKApi = CRM_Core_DAO_AllCoreTables::getEntityNameForClass($field['FKClassName']);
       if ($FKApi) {
         $field['FKApiName'] = $FKApi;
       }

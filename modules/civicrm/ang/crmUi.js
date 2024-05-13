@@ -14,7 +14,7 @@
         scope: {
           crmUiAccordion: '='
         },
-        template: '<details class="crm-accordion-wrapper"><summary class="crm-accordion-header">{{crmUiAccordion.title}} <a crm-ui-help="help" ng-if="help"></a></summary><div class="crm-accordion-body" ng-transclude></div></details>',
+        template: '<details class="crm-accordion-bold"><summary>{{crmUiAccordion.title}} <a crm-ui-help="help" ng-if="help"></a></summary><div class="crm-accordion-body" ng-transclude></div></details>',
         transclude: true,
         link: function (scope, element, attrs) {
           scope.help = null;
@@ -350,8 +350,7 @@
               iframe.setAttribute('src', scope.$parent.$eval(attrs.crmUiIframeSrc));
             }
             else {
-              //NYSS 12135
-              var iframeHtml = scope.$parent.$eval(attrs.crmUiIframe).replace(/<a /g, "<a target='_blank' ");
+              var iframeHtml = scope.$parent.$eval(attrs.crmUiIframe);
 
               var doc = iframe.document;
               if (iframe.contentDocument) {

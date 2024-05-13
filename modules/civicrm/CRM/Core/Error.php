@@ -182,7 +182,7 @@ class CRM_Core_Error extends PEAR_ErrorStack {
         else {
           $mysql_error = 'fixme-unknown-db-cxn';
         }
-        $template->assign_by_ref('mysql_code', $mysql_error);
+        $template->assign('mysql_code', $mysql_error);
       }
     }
 
@@ -199,9 +199,9 @@ class CRM_Core_Error extends PEAR_ErrorStack {
       }
     }
 
-    $template->assign_by_ref('error', $error);
+    $template->assign('error', $error);
     $errorDetails = CRM_Core_Error::debug('', $error, FALSE);
-    $template->assign_by_ref('errorDetails', $errorDetails);
+    $template->assign('errorDetails', $errorDetails);
 
     CRM_Core_Error::debug_var('Fatal Error Details', $error, TRUE, TRUE, '', PEAR_LOG_ERR);
     CRM_Core_Error::backtrace('backTrace', TRUE);
@@ -450,6 +450,9 @@ class CRM_Core_Error extends PEAR_ErrorStack {
     if ($config->backtrace) {
       $content = self::formatHtmlException($exception) . $content;
     }
+
+    // set the response code before starting the request
+    http_response_code(500);
 
     echo CRM_Utils_System::theme($content);
     $exit = CRM_Utils_System::shouldExitAfterFatal();

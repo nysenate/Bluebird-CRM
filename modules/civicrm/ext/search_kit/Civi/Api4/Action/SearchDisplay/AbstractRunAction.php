@@ -308,17 +308,37 @@ abstract class AbstractRunAction extends \Civi\Api4\Generic\AbstractAction {
     $output = $this->replaceTokens($column['rewrite'], $data, 'view');
     if ($hasSmarty) {
       $vars = [];
+      $nestedIds = [];
       // Convert dots to nested arrays which are more Smarty-friendly
       foreach ($data as $key => $value) {
         $parent = &$vars;
-        $keys = array_map('CRM_Utils_String::munge', explode('.', $key));
+        $allKeys = $keys = array_map('CRM_Utils_String::munge', explode('.', $key));
         while (count($keys) > 1) {
           $level = array_shift($keys);
           $parent[$level] = $parent[$level] ?? [];
+          // Fix collisions between e.g. contact_id & contact_id.display_name by nesting the id
+          if (is_scalar($parent[$level])) {
+            $nestedIds[] = implode('.', array_slice($allKeys, 0, count($keys)));
+            $parent[$level] = [
+              'id' => $parent[$level],
+            ];
+          }
           $parent = &$parent[$level];
         }
         $level = array_shift($keys);
-        $parent[$level] = $value;
+        // Fix collisions between e.g. contact_id & contact_id.display_name by nesting the id
+        if (isset($parent[$level]) && is_array($parent[$level])) {
+          $nestedIds[] = implode('.', $allKeys);
+          $parent[$level]['id'] = $value;
+        }
+        else {
+          $parent[$level] = $value;
+        }
+      }
+      // Fix references to e.g. contact_id as scalar if it was moved by above fixes, change reference to nested id
+      foreach (array_unique($nestedIds) as $nestedId) {
+        $quotedId = preg_quote('$' . $nestedId);
+        $output = preg_replace("/$quotedId(?![.\w])/", '$' . "$nestedId.id", $output);
       }
       $smarty = \CRM_Core_Smarty::singleton();
       $output = $smarty->fetchWith("string:$output", $vars);
@@ -509,7 +529,7 @@ abstract class AbstractRunAction extends \Civi\Api4\Generic\AbstractAction {
       $out['text'] = $this->replaceTokens($column['text'], $data, 'view');
     }
     foreach ($column['links'] as $item) {
-      if (!$this->checkLinkCondition($item, $data)) {
+      if (!$this->checkLinkConditions($item, $data)) {
         continue;
       }
       $link = $this->formatLink($item, $data);
@@ -703,21 +723,37 @@ abstract class AbstractRunAction extends \Civi\Api4\Generic\AbstractAction {
    * Given a link, check if it is set to be displayed conditionally.
    * If so, evaluate the condition, else return TRUE.
    *
-   * @param array $item
+   * @param array $link
    * @param array $data
    * @return bool
    */
-  protected function checkLinkCondition(array $item, array $data): bool {
-    if (empty($item['condition'][0]) || empty($item['condition'][1])) {
+  protected function checkLinkConditions(array $link, array $data): bool {
+    foreach ($link['conditions'] ?? [] as $condition) {
+      if (!$this->checkLinkCondition($condition, $data)) {
+        return FALSE;
+      }
+    }
+    return TRUE;
+  }
+
+  /**
+   * Evaluate a link condition.
+   *
+   * @param array $condition
+   * @param array $data
+   * @return bool
+   */
+  protected function checkLinkCondition(array $condition, array $data): bool {
+    if (empty($condition[0]) || empty($condition[1])) {
       return TRUE;
     }
-    $op = $item['condition'][1];
-    if ($item['condition'][0] === 'check user permission') {
+    $op = $condition[1];
+    if ($condition[0] === 'check user permission') {
       // No permission == open access
-      if (empty($item['condition'][2])) {
+      if (empty($condition[2])) {
         return TRUE;
       }
-      $permissions = (array) $item['condition'][2];
+      $permissions = (array) $condition[2];
       if ($op === 'CONTAINS') {
         // Place conditions in OR array for CONTAINS operator
         $permissions = [$permissions];
@@ -725,15 +761,15 @@ abstract class AbstractRunAction extends \Civi\Api4\Generic\AbstractAction {
       return \CRM_Core_Permission::check($permissions) == ($op !== '!=');
     }
     // Convert the conditional value of 'current_domain' into an actual value that filterCompare can work with
-    if (($item['condition'][2] ?? '') === 'current_domain') {
-      if (str_ends_with($item['condition'][0], ':label') !== FALSE) {
-        $item['condition'][2] = \CRM_Core_BAO_Domain::getDomain()->name;
+    if (($condition[2] ?? '') === 'current_domain') {
+      if (str_ends_with($condition[0], ':label') !== FALSE) {
+        $condition[2] = \CRM_Core_BAO_Domain::getDomain()->name;
       }
       else {
-        $item['condition'][2] = \CRM_Core_Config::domainID();
+        $condition[2] = \CRM_Core_Config::domainID();
       }
     }
-    return self::filterCompare($data, $item['condition']);
+    return self::filterCompare($data, $condition);
   }
 
   /**
@@ -758,7 +794,7 @@ abstract class AbstractRunAction extends \Civi\Api4\Generic\AbstractAction {
   }
 
   /**
-   * @param array{path: string, entity: string, action: string, task: string, join: string, target: string, style: string, title: string, text: string, prefix: string} $link
+   * @param array{path: string, entity: string, action: string, task: string, join: string, target: string, style: string, title: string, text: string, prefix: string, conditions: array} $link
    */
   private function preprocessLink(array &$link): void {
     $link += [
@@ -769,6 +805,7 @@ abstract class AbstractRunAction extends \Civi\Api4\Generic\AbstractAction {
       'title' => '',
       'prefix' => '',
       'key' => '',
+      'conditions' => [],
     ];
     $entity = $link['entity'];
     if ($entity && CoreUtil::entityExists($entity)) {
@@ -789,6 +826,7 @@ abstract class AbstractRunAction extends \Civi\Api4\Generic\AbstractAction {
           ],
         ]);
         $link['path'] = $getLinks[0]['path'] ?? NULL;
+        $link['conditions'] = $getLinks[0]['conditions'] ?? [];
         // This is a bit clunky, the function_join_field gets un-munged later by $this->getJoinFromAlias()
         if ($this->canAggregate($link['prefix'] . $idKey)) {
           $link['prefix'] = 'GROUP_CONCAT_' . str_replace('.', '_', $link['prefix']);
@@ -799,6 +837,7 @@ abstract class AbstractRunAction extends \Civi\Api4\Generic\AbstractAction {
       }
       elseif (!$link['path'] && !empty($link['task'])) {
         $task = $this->getTask($link['task']);
+        $link['conditions'] = $task['conditions'] ?? [];
         // Convert legacy tasks (which have a url)
         if (!empty($task['crmPopup'])) {
           $idField = CoreUtil::getIdFieldName($link['entity']);
@@ -824,6 +863,17 @@ abstract class AbstractRunAction extends \Civi\Api4\Generic\AbstractAction {
       }
       $link['key'] = $link['prefix'] . $idKey;
     }
+    // Add join prefix to predefined conditions
+    foreach ($link['conditions'] as &$condition) {
+      if (!empty($condition[0]) && $condition[0] !== 'check user permission') {
+        $condition[0] = $link['prefix'] . $condition[0];
+      }
+    }
+    // Combine predefined link conditions with condition set in the search display
+    if (!empty($link['condition'])) {
+      $link['conditions'][] = $link['condition'];
+    }
+    unset($link['condition']);
   }
 
   /**
@@ -837,8 +887,10 @@ abstract class AbstractRunAction extends \Civi\Api4\Generic\AbstractAction {
     if (!$link['path'] && !empty($link['task'])) {
       $tokens[] = $link['prefix'] . $this->getIdKeyName($link['entity']);
     }
-    if (!empty($link['condition'][0])) {
-      $tokens[] = $link['condition'][0];
+    foreach ($link['conditions'] ?? [] as $condition) {
+      if (!empty($condition[0]) && $condition[0] !== 'check user permission') {
+        $tokens[] = $condition[0];
+      }
     }
     return array_merge($tokens, $this->getTokens($link['path'] . $link['text'] . $link['title']));
   }

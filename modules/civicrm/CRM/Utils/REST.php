@@ -390,7 +390,7 @@ class CRM_Utils_REST {
     }
     $param = array_map('htmlentities', $_GET);
     unset($param['q']);
-    $smarty->assign_by_ref("request", $param);
+    $smarty->assign("request", $param);
 
     if (!self::isWebServiceRequest()) {
 
@@ -631,6 +631,10 @@ class CRM_Utils_REST {
    *       <A HREF>, <IFRAME>, <IMG>, `Location:`, or similar CSRF vector.
    */
   public static function isWebServiceRequest(): bool {
+    if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
+      return TRUE;
+    }
+
     if (($_SERVER['HTTP_X_REQUESTED_WITH'] ?? NULL) === 'XMLHttpRequest') {
       return TRUE;
     }

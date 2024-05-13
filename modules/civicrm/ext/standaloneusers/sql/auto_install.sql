@@ -44,7 +44,7 @@ CREATE TABLE `civicrm_role` (
   `is_active` tinyint NOT NULL DEFAULT 1 COMMENT 'Only active roles grant permissions',
   PRIMARY KEY (`id`)
 )
-ENGINE=InnoDB;
+ENGINE=InnoDB DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci ROW_FORMAT=DYNAMIC;
 
 -- /*******************************************************
 -- *
@@ -61,7 +61,7 @@ CREATE TABLE `civicrm_session` (
   PRIMARY KEY (`id`),
   UNIQUE INDEX `index_session_id`(session_id)
 )
-ENGINE=InnoDB;
+ENGINE=InnoDB DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci ROW_FORMAT=DYNAMIC;
 
 -- /*******************************************************
 -- *
@@ -84,7 +84,7 @@ CREATE TABLE `civicrm_uf_match` (
   `is_active` tinyint NOT NULL DEFAULT 1,
   `timezone` varchar(32) NULL COMMENT 'User\'s timezone',
   `language` varchar(5) COMMENT 'UI language preferred by the given user/contact',
-  `password_reset_token` varchar(40) COMMENT 'The unspent token',
+  `password_reset_token` varchar(255) COMMENT 'The unspent token',
   PRIMARY KEY (`id`),
   INDEX `I_civicrm_uf_match_uf_id`(uf_id),
   UNIQUE INDEX `UI_username`(username),
@@ -93,7 +93,7 @@ CREATE TABLE `civicrm_uf_match` (
   CONSTRAINT FK_civicrm_uf_match_domain_id FOREIGN KEY (`domain_id`) REFERENCES `civicrm_domain`(`id`),
   CONSTRAINT FK_civicrm_uf_match_contact_id FOREIGN KEY (`contact_id`) REFERENCES `civicrm_contact`(`id`) ON DELETE SET NULL
 )
-ENGINE=InnoDB;
+ENGINE=InnoDB DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci ROW_FORMAT=DYNAMIC;
 
 -- /*******************************************************
 -- *
@@ -110,4 +110,4 @@ CREATE TABLE `civicrm_user_role` (
   CONSTRAINT FK_civicrm_user_role_user_id FOREIGN KEY (`user_id`) REFERENCES `civicrm_uf_match`(`id`) ON DELETE CASCADE,
   CONSTRAINT FK_civicrm_user_role_role_id FOREIGN KEY (`role_id`) REFERENCES `civicrm_role`(`id`) ON DELETE CASCADE
 )
-ENGINE=InnoDB;
+ENGINE=InnoDB DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci ROW_FORMAT=DYNAMIC;

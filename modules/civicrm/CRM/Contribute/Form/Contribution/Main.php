@@ -125,8 +125,8 @@ class CRM_Contribute_Form_Contribution_Main extends CRM_Contribute_Form_Contribu
     // Make the contributionPageID available to the template
     $this->assign('contributionPageID', $this->_id);
     $this->assign('ccid', $this->_ccid);
-    $this->assign('isShare', CRM_Utils_Array::value('is_share', $this->_values));
-    $this->assign('isConfirmEnabled', CRM_Utils_Array::value('is_confirm_enabled', $this->_values));
+    $this->assign('isShare', $this->_values['is_share'] ?? NULL);
+    $this->assign('isConfirmEnabled', $this->_values['is_confirm_enabled'] ?? NULL);
 
     // Required for currency formatting in the JS layer
     // this is a temporary fix intended to resolve a regression quickly
@@ -250,7 +250,7 @@ class CRM_Contribute_Form_Contribution_Main extends CRM_Contribute_Form_Contribu
             $opMemTypeId = $priceFieldOption['membership_type_id'] ?? NULL;
             $priceFieldName = 'price_' . $priceFieldOption['price_field_id'];
             $priceFieldValue = CRM_Price_BAO_PriceSet::getPriceFieldValueFromURL($this, $priceFieldName);
-            if (!empty($priceFieldValue) && !$existingMembershipTypeID) {
+            if (!empty($priceFieldValue)) {
               CRM_Price_BAO_PriceSet::setDefaultPriceSetField($priceFieldName, $priceFieldValue, $val['html_type'], $this->_defaults);
               // break here to prevent overwriting of default due to 'is_default'
               // option configuration or setting of current membership or
@@ -340,7 +340,7 @@ class CRM_Contribute_Form_Contribution_Main extends CRM_Contribute_Form_Contribu
     }
 
     $this->applyFilter('__ALL__', 'trim');
-    $this->assign('showMainEmail', empty($this->_ccid));
+    $this->assign('showMainEmail', (empty($this->_ccid) && $this->_emailExists === FALSE));
     if (empty($this->_ccid)) {
       if ($this->_emailExists == FALSE) {
         $this->add('text', "email-{$this->_bltID}",
@@ -814,13 +814,16 @@ class CRM_Contribute_Form_Contribution_Main extends CRM_Contribute_Form_Contribu
    *   true if no errors, else array of errors
    */
   public static function formRule($fields, $files, $self) {
+    foreach ($fields as $key => $field) {
+      $fields[$key] = $self->getUnLocalizedSubmittedValue($key, $field);
+    }
     $self->resetOrder($fields);
     $errors = array_filter(['auto_renew' => $self->getAutoRenewError($fields)]);
     // @todo - should just be $this->getOrder()->getTotalAmount()
     $amount = $self->computeAmount($fields, $self->_values);
 
     if ((!empty($fields['selectMembership']) &&
-        $fields['selectMembership'] != 'no_thanks'
+        $fields['selectMembership'] !== 'no_thanks'
       ) ||
       (!empty($fields['priceSetId']) &&
         $self->_useForMember
@@ -862,7 +865,7 @@ class CRM_Contribute_Form_Contribution_Main extends CRM_Contribute_Form_Contribu
             $otherAmount = $priceField->id;
           }
           elseif (!empty($fields["price_{$priceField->id}"])) {
-            $otherAmountVal = CRM_Utils_Rule::cleanMoney($fields["price_{$priceField->id}"]);
+            $otherAmountVal = $fields["price_{$priceField->id}"];
             $min = $self->_values['min_amount'] ?? NULL;
             $max = $self->_values['max_amount'] ?? NULL;
             if ($min && $otherAmountVal < $min) {
@@ -1131,21 +1134,20 @@ class CRM_Contribute_Form_Contribution_Main extends CRM_Contribute_Form_Contribu
    */
   private function computeAmount($params, $formValues) {
     $amount = 0;
-    // First clean up the other amount field if present.
-    if (isset($params['amount_other'])) {
-      $params['amount_other'] = CRM_Utils_Rule::cleanMoney($params['amount_other']);
-    }
 
     if (($params['amount'] ?? NULL) == 'amount_other_radio' || !empty($params['amount_other'])) {
+      // @todo - probably unreachable - field would be (e.) price_12 now....
       $amount = $params['amount_other'];
     }
     elseif (!empty($params['pledge_amount'])) {
       foreach ($params['pledge_amount'] as $paymentId => $dontCare) {
+        // @todo - why would this be a good thing? Is it reachable.
         $amount += CRM_Core_DAO::getFieldValue('CRM_Pledge_DAO_PledgePayment', $paymentId, 'scheduled_amount');
       }
     }
     else {
       if (!empty($formValues['amount'])) {
+        // @todo - probably unreachable.
         $amountID = $params['amount'] ?? NULL;
 
         if ($amountID) {
@@ -1315,8 +1317,7 @@ class CRM_Contribute_Form_Contribution_Main extends CRM_Contribute_Form_Contribu
 
     // build the confirm page
     $confirmForm = &$this->controller->_pages['Confirm'];
-    $confirmForm->preProcess();
-    $confirmForm->buildQuickForm();
+    $confirmForm->buildForm();
 
     // the confirmation page is valid
     $data = &$this->controller->container();

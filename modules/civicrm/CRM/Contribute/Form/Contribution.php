@@ -20,6 +20,7 @@ class CRM_Contribute_Form_Contribution extends CRM_Contribute_Form_AbstractEditP
   use CRM_Contact_Form_ContactFormTrait;
   use CRM_Contribute_Form_ContributeFormTrait;
   use CRM_Financial_Form_PaymentProcessorFormTrait;
+  use CRM_Custom_Form_CustomDataTrait;
 
   /**
    * The id of the contribution that we are processing.
@@ -302,9 +303,15 @@ class CRM_Contribute_Form_Contribution extends CRM_Contribute_Form_AbstractEditP
     }
     $this->assign('is_template', $this->_values['is_template']);
 
-    // when custom data is included in this page
-    if (!empty($_POST['hidden_custom'])) {
-      $this->applyCustomData('Contribution', $this->getFinancialTypeID(), $this->_id);
+    if ($this->isSubmitted()) {
+      // The custom data fields are added to the form by an ajax form.
+      // However, if they are not present in the element index they will
+      // not be available from `$this->getSubmittedValue()` in post process.
+      // We do not have to set defaults or otherwise render - just add to the element index.
+      $this->addCustomDataFieldsToForm('Contribution', array_filter([
+        'id' => $this->getContributionID(),
+        'financial_type_id' => $this->getFinancialTypeID(),
+      ]));
     }
 
     $this->_lineItems = [];
@@ -490,9 +497,13 @@ class CRM_Contribute_Form_Contribution extends CRM_Contribute_Form_AbstractEditP
     if (empty($defaults['payment_instrument_id'])) {
       $defaults['payment_instrument_id'] = $this->getDefaultPaymentInstrumentId();
     }
-    $this->assign('is_test', !empty($defaults['is_test']));
 
+    $this->assign('is_test', !empty($defaults['is_test']));
+    $this->assign('email', $this->getContactValue('email_primary.email'));
+    $this->assign('is_pay_later', !empty($defaults['is_pay_later']));
+    $this->assign('contribution_status_id', $defaults['contribution_status_id'] ?? NULL);
     $this->assign('showOption', TRUE);
+
     // For Premium section.
     if ($this->_premiumID) {
       $this->assign('showOption', FALSE);
@@ -500,9 +511,8 @@ class CRM_Contribute_Form_Contribution extends CRM_Contribute_Form_AbstractEditP
       if (!$options) {
         $this->assign('showOption', TRUE);
       }
-      $options_key = CRM_Utils_Array::key($this->_productDAO->product_option, $options);
-      if ($options_key) {
-        $defaults['product_name'] = [$this->_productDAO->product_id, trim($options_key)];
+      if ($this->_productDAO->product_option) {
+        $defaults['product_name'] = [$this->_productDAO->product_id, $this->_productDAO->product_option];
       }
       else {
         $defaults['product_name'] = [$this->_productDAO->product_id];
@@ -512,9 +522,6 @@ class CRM_Contribute_Form_Contribution extends CRM_Contribute_Form_AbstractEditP
       }
     }
 
-    $this->assign('is_pay_later', !empty($defaults['is_pay_later']));
-
-    $this->assign('contribution_status_id', CRM_Utils_Array::value('contribution_status_id', $defaults));
     if (!empty($defaults['contribution_status_id']) && in_array(
         CRM_Contribute_PseudoConstant::contributionStatus($defaults['contribution_status_id'], 'name'),
         // Historically not 'Cancelled' hence not using CRM_Contribute_BAO_Contribution::isContributionStatusNegative.
@@ -542,8 +549,8 @@ class CRM_Contribute_Form_Contribution extends CRM_Contribute_Form_AbstractEditP
     $this->assign('currency', $currency);
     // Hack to get currency info to the js layer. CRM-11440.
     CRM_Utils_Money::format(1);
-    $this->assign('currencySymbol', CRM_Utils_Array::value($currency, CRM_Utils_Money::$_currencySymbols));
-    $this->assign('totalAmount', CRM_Utils_Array::value('total_amount', $defaults));
+    $this->assign('currencySymbol', CRM_Utils_Money::$_currencySymbols[$currency] ?? NULL);
+    $this->assign('totalAmount', $defaults['total_amount'] ?? NULL);
 
     // Inherit campaign from pledge.
     if ($this->_ppID && !empty($this->_pledgeValues['campaign_id'])) {
@@ -687,8 +694,7 @@ class CRM_Contribute_Form_Contribution extends CRM_Contribute_Form_AbstractEditP
 
     $this->applyFilter('__ALL__', 'trim');
 
-    //need to assign custom data type and subtype to the template
-    $this->assign('customDataType', 'Contribution');
+    //need to assign custom data subtype to the template for initial custom data load
     $this->assign('customDataSubType', $this->getFinancialTypeID());
     $this->assign('entityID', $this->getContributionID());
     $this->assign('email', $this->getContactValue('email_primary.email'));
@@ -2144,7 +2150,7 @@ class CRM_Contribute_Form_Contribution extends CRM_Contribute_Form_AbstractEditP
         $this->assign('getTaxDetails', $getTaxDetails);
       }
       else {
-        $this->assign('totalTaxAmount', CRM_Utils_Array::value('tax_amount', $submittedValues));
+        $this->assign('totalTaxAmount', $submittedValues['tax_amount'] ?? NULL);
       }
     }
   }
