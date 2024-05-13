@@ -75,6 +75,7 @@ if (!ini_get('date.timezone')) {
 
 //no limit
 set_time_limit(0);
+ini_set('memory_limit', '2G');
 
 $prog = basename(__FILE__);
 
@@ -664,7 +665,7 @@ function storeMessage($imapMsg, $message, $params) {
   }
 
   $sql = "
-    INSERT INTO nyss_inbox_messages
+    INSERT IGNORE INTO nyss_inbox_messages
     (message_id, sender_name, sender_email, subject, body,
      forwarder, status, updated_date, email_date)
     VALUES (%1, %2, %3, %4, %5, %6, %7, CURRENT_TIMESTAMP, %8)
@@ -695,7 +696,8 @@ function storeMessage($imapMsg, $message, $params) {
 
     $timeStart = microtime(true);
     if (!storeAttachments($message, $params, $rowId)) {
-      bbscript_log(LL::WARN, "Unable to store attachments for rowId = {$rowId}.", $message);
+      bbscript_log(LL::WARN, "Unable to store attachments for rowId = {$rowId}.");
+      //bbscript_log(LL::DEBUG, "Message", $message);
     }
     $totalTime = microtime(true) - $timeStart;
     bbscript_log(LL::DEBUG, "Attachment processing time: $totalTime");

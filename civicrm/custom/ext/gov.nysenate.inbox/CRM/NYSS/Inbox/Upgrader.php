@@ -156,6 +156,17 @@ class CRM_NYSS_Inbox_Upgrader extends CRM_Extension_Upgrader_Base {
     return TRUE;
   }
 
+  public function upgrade_2400(): bool {
+    $this->ctx->log->info('Applying update 2400 (v2.4)');
+
+    CRM_Core_DAO::executeQuery("
+      ALTER TABLE `nyss_inbox_attachments`
+          CHANGE `file_full` `file_full` VARCHAR(512) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL;
+    ");
+
+    return TRUE;
+  }
+
   /**
    * Example: Run an external SQL script.
    *
