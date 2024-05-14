@@ -26,21 +26,29 @@
   {/if}
   {foreach from=$email key="blockId" item=item}
     {if $item.email}
-    <div class="crm-summary-row {if !empty($item.is_primary)}{ts}primary{/ts}{/if}">
+    <div class="crm-summary-row {if !empty($item.is_primary)}primary{/if}">
       {*NYSS 4717 4603 4601*}
       <div class="crm-label">
         {$item.location_type} {ts}Email{/ts}
         {if $privacy.do_not_email}<span class="icon privacy-flag do-not-email" title="{ts}Privacy flag: Do Not Email{/ts}"></span>{elseif $item.on_hold}<span class="icon privacy-flag email-hold" title="{ts}Email on hold {if $item.on_hold eq 1}(bounce){elseif $item.on_hold eq 2}(unsubscribe){/if}.{/ts}"></span>{/if}
       </div>
-      <div class="crm-content crm-contact_email {if $item.is_primary eq 1}primary{/if}">
-        <a href="mailto:{$item.email}">{$item.email}</a>{if $item.on_hold == 2}&nbsp;({ts}On Hold - Opt Out{/ts}){elseif $item.on_hold}&nbsp;({ts}On Hold{/ts}){/if}{if $item.is_bulkmail}&nbsp;({ts}Bulk{/ts}){/if}
-          {if $emailMailing.$blockId.mailingID && $item.on_hold}
-            {assign var=mid value=$emailMailing.$blockId.mailingID}
-            <a href="{crmURL p='civicrm/mailing/report/event' q="reset=1&event=bounce&mid=$mid"}" title="{ts}view bounce report{/ts}" target="_blank">{$item.hold_date|crmDate:"%m/%d/%Y"}</a>
-          {elseif $item.on_hold}
-            {$item.hold_date|crmDate:"%m/%d/%Y"}
+      <div class="crm-content crm-contact_email">
+        {if !$item.on_hold and !$privacy.do_not_email}
+          {if $mailingOutboundOption == 2} {* Outbound email is disabled, use a mailto link *}
+            <a href="mailto:{$item.email}" title="{ts 1=$item.email}Send email to %1{/ts}">
+            {$item.email}
+            </a>
+          {else}
+            <a href="{crmURL p="civicrm/activity/email/add" q="action=add&reset=1&email_id=`$item.id`"}" class="crm-popup" title="{ts 1=$item.email}Send email to %1{/ts}">
+            {$item.email}
+            </a>
           {/if}
-        {if $item.signature_text OR $item.signature_html}
+        {else}
+          {$item.email}
+        {/if}
+        {crmAPI var='civi_mail' entity='Extension' action='get' full_name="civi_mail" is_active=1}
+        {if $item.on_hold == 2}&nbsp;({ts}On Hold - Opt Out{/ts})&nbsp;{ts}{$item.hold_date|truncate:10:''|crmDate}{/ts}{elseif $item.on_hold}&nbsp;{if $civi_mail.count}<a href="{crmURL p="civicrm/contact/view/bounces" f="?email_id=`$item.id`"}" class="crm-popup" title="{ts 1=$item.email}Email Bounce History{/ts}">{/if}({ts}On Hold{/ts})&nbsp;{ts}{$item.hold_date|truncate:10:''|crmDate}{/ts}{if $civi_mail.count}&nbsp;<i class="crm-i fa-list-alt" aria-hidden="true"></i></a>{/if}{/if}{if $item.is_bulkmail}&nbsp;({ts}Bulk{/ts}){/if}
+        {if !empty($item.signature_text) OR !empty($item.signature_html)}
         <span class="signature-link description">
           <a href="#" title="{ts}Signature{/ts}" onClick="showHideSignature( '{$blockId}' ); return false;">{ts}(signature){/ts}</a>
         </span>

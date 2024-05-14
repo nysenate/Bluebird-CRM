@@ -37,7 +37,7 @@
 {/foreach}
 </table></td><!-- NYSS -->
 
-{if empty($skipEntityAction) and empty($form.frozen)}
+{if !empty($tagsetInfo) and empty($skipEntityAction) and empty($form.frozen)}
   <script type="text/javascript">
     {* Add/remove entity tags via ajax api *}
     {literal}

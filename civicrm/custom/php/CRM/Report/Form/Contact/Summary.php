@@ -16,20 +16,20 @@
  */
 class CRM_Report_Form_Contact_Summary extends CRM_Report_Form {
 
-  public $_summary = NULL;
+  public $_summary;
 
   protected $_emailField = FALSE;
 
   protected $_phoneField = FALSE;
 
-  protected $_customGroupExtends = array(
+  protected $_customGroupExtends = [
     'Contact',
     'Individual',
     'Household',
     'Organization',
-  );
+  ];
 
-  public $_drilldownReport = array('contact/detail' => 'Link to Detail Report');
+  public $_drilldownReport = ['contact/detail' => 'Link to Detail Report'];
 
   /**
    * This report has not been optimised for group filtering.
@@ -48,122 +48,92 @@ class CRM_Report_Form_Contact_Summary extends CRM_Report_Form {
    */
   public function __construct() {
     $this->_autoIncludeIndexedFieldsAsOrderBys = 1;
-    $this->_columns = array(
-      'civicrm_contact' => array(
+    $this->_columns = [
+      'civicrm_contact' => [
         'dao' => 'CRM_Contact_DAO_Contact',
         'fields' => array_merge(
           $this->getBasicContactFields(),
-          array(
-            'modified_date' => array(
+          [
+            'modified_date' => [
               'title' => ts('Modified Date'),
               'default' => FALSE,
-            ),
+            ],
             //NYSS 9515
-            'created_date' => array(
+            'created_date' => [
               'title' => ts('Created Date'),
-            ),
-          )
+            ],
+          ]
         ),
-        'filters' => array(
-          'sort_name' => array(
-            'title' => ts('Contact Name'),
-          ),
-          'source' => array(
-            'title' => ts('Contact Source'),
-            'type' => CRM_Utils_Type::T_STRING,
-          ),
-          'id' => array(
-            'title' => ts('Contact ID'),
-            'no_display' => TRUE,
-          ),
-          'gender_id' => array(
-            'title' => ts('Gender'),
-            'operatorType' => CRM_Report_Form::OP_MULTISELECT,
-            'options' => CRM_Core_PseudoConstant::get('CRM_Contact_DAO_Contact', 'gender_id'),
-          ),
-          'birth_date' => array(
-            'title' => ts('Birth Date'),
-            'operatorType' => CRM_Report_Form::OP_DATE,
-          ),
-          'contact_type' => array(
-            'title' => ts('Contact Type'),
-          ),
-          'contact_sub_type' => array(
-            'title' => ts('Contact Subtype'),
-          ),
-          'modified_date' => array(
-            'title' => ts('Modified Date'),
-            'operatorType' => CRM_Report_Form::OP_DATE,
-            'type' => CRM_Utils_Type::T_DATE,
-          ),
+        'filters' => $this->getBasicContactFilters() +
           //NYSS 9515
-          'created_date' =>
-          array('title' => ts('Created Date'),
-            'default' => 'this.month',
-            'operatorType' => CRM_Report_Form::OP_DATE,
-            'type' => CRM_Utils_Type::T_DATE,
-          ),
-        ),
+          [
+            'created_date' => [
+              'title' => ts('Created Date'),
+              'default' => 'this.month',
+              'operatorType' => CRM_Report_Form::OP_DATE,
+              'type' => CRM_Utils_Type::T_DATE,
+            ],
+          ],
         'grouping' => 'contact-fields',
-        'order_bys' => array(
-          'sort_name' => array(
+        'order_bys' => [
+          'sort_name' => [
             //NYSS 4236 alter defaults
             'title' => ts('Contact Name'),
             'default' => '1',
             'default_weight' => '0',
             'default_order' => 'ASC',
-          ),
-          'first_name' => array(
+          ],
+          'first_name' => [
             'name' => 'first_name',
             'title' => ts('First Name'),
-          ),
-          'gender_id' => array(
+          ],
+          'gender_id' => [
             'name' => 'gender_id',
             'title' => ts('Gender'),
-          ),
-          'birth_date' => array(
+          ],
+          'birth_date' => [
             'name' => 'birth_date',
             'title' => ts('Birth Date'),
-          ),
-          'contact_type' => array(
+          ],
+          'contact_type' => [
             'title' => ts('Contact Type'),
-          ),
-          'contact_sub_type' => array(
+          ],
+          'contact_sub_type' => [
             'title' => ts('Contact Subtype'),
-          ),
+          ],
           //NYSS 9515
-          'created_date' => array(
+          'created_date' => [
             'title' => ts('Created Date'),
-          ),
-        ),
-      ),
-      'civicrm_email' => array(
+          ],
+        ],
+      ],
+      'civicrm_email' => [
         'dao' => 'CRM_Core_DAO_Email',
-        'fields' => array(
-          'email' => array(
+        'fields' => [
+          'email' => [
             'title' => ts('Email'),
             'no_repeat' => TRUE,
-          ),
-        ),
+          ],
+        ],
         'grouping' => 'contact-fields',
-        'order_bys' => array(
+        'order_bys' => [
           //NYSS
-          /*'email' => array(
+          /*'email' => [
             'title' => ts('Email'),
-          ),*/
-        ),
-      ),
-      'civicrm_phone' => array(
+          ],*/
+        ],
+      ],
+      'civicrm_phone' => [
         'dao' => 'CRM_Core_DAO_Phone',
-        'fields' => array(
+        'fields' => [
           'phone' => NULL,
-          'phone_ext' => array(
+          'phone_ext' => [
             'title' => ts('Phone Extension'),
-          ),
-        ),
+          ],
+        ],
         'grouping' => 'contact-fields',
-      ),
-    ) + $this->getAddressColumns(array('group_bys' => FALSE));
+      ],
+    ] + $this->getAddressColumns(['group_bys' => FALSE]);
 
     $this->_groupFilter = TRUE;
     $this->_tagFilter = TRUE;
@@ -177,11 +147,11 @@ class CRM_Report_Form_Contact_Summary extends CRM_Report_Form {
   //NYSS 5057 - remove some of the custom field order bys
   function buildForm( ) {
     parent::buildForm( );
-    
+
     $elements   = $this->_elementIndex;
     $orderByEle = $elements['order_bys[1][column]'];
-    $orderBys   =& $this->_elements[$orderByEle];  
-      
+    $orderBys   =& $this->_elements[$orderByEle];
+
     $removeOrderBys = array(
       'custom_64', //privacy options note
       'custom_25', //DOS

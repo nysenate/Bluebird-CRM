@@ -43,8 +43,8 @@ class CRM_Utils_Mail {
         throw new CRM_Core_Exception(ts('There is no valid smtp server setting. Click <a href=\'%1\'>Administer >> System Setting >> Outbound Email</a> to set the SMTP Server.', [1 => CRM_Utils_System::url('civicrm/admin/setting/smtp', 'reset=1')]));
       }
 
-      $params['host'] = $mailingInfo['smtpServer'] ? $mailingInfo['smtpServer'] : 'localhost';
-      $params['port'] = $mailingInfo['smtpPort'] ? $mailingInfo['smtpPort'] : 25;
+      $params['host'] = $mailingInfo['smtpServer'] ?: 'localhost';
+      $params['port'] = $mailingInfo['smtpPort'] ?: 25;
 
       if ($mailingInfo['smtpAuth']) {
         $params['username'] = $mailingInfo['smtpUsername'];
@@ -142,7 +142,8 @@ class CRM_Utils_Mail {
 
   /**
    * Wrapper function to send mail in CiviCRM. Hooks are called from this function. The input parameter
-   * is an associateive array which holds the values of field needed to send an email. These are:
+   * is an associateive array which holds the values of field needed to send an email. Note that these
+   * parameters are case-sensitive. The Parameters are:
    *
    * from    : complete from envelope
    * toName  : name of person to send email
@@ -189,7 +190,7 @@ class CRM_Utils_Mail {
       $htmlMessage = FALSE;
     }
     $attachments = $params['attachments'] ?? NULL;
-    if (!empty($params['text'])) {
+    if (!empty($params['text']) && trim($params['text'])) {
       $textMessage = $params['text'];
     }
     else {
@@ -197,6 +198,16 @@ class CRM_Utils_Mail {
       // Render the &amp; entities in text mode, so that the links work.
       // This is copied from the Action Schedule send code.
       $textMessage = str_replace('&amp;', '&', $textMessage);
+    }
+    if (str_contains($textMessage, 'Undefined array key') || str_contains($htmlMessage, 'Undefined array key') || str_contains($htmlMessage, 'Undefined index')) {
+      $logCount = \Civi::$statics[__CLASS__][__FUNCTION__]['count'] ?? 0;
+      if ($logCount < 3) {
+        // Only record the first 3 times since there might be different messages but after 3 chances are
+        // it's just bulk run of the same..
+        CRM_Core_Error::deprecatedWarning('email output affected by undefined php properties:' . (CRM_Utils_Constant::value('CIVICRM_UF') === 'UnitTests' ? CRM_Utils_String::purifyHTML($htmlMessage) : ''));
+        $logCount++;
+        \Civi::$statics[__CLASS__][__FUNCTION__]['count'] = $logCount;
+      }
     }
 
     $headers = [];
@@ -206,8 +217,8 @@ class CRM_Utils_Mail {
     }
     $headers['From'] = $params['from'];
     $headers['To'] = self::formatRFC822Email(
-      CRM_Utils_Array::value('toName', $params),
-      CRM_Utils_Array::value('toEmail', $params),
+      $params['toName'] ?? NULL,
+      $params['toEmail'] ?? NULL,
       FALSE
     );
 
@@ -228,7 +239,7 @@ class CRM_Utils_Mail {
     $headers['Return-Path'] = CRM_Utils_Array::value('returnPath', $params, $defaultReturnPath);
 
     // CRM-11295: Omit reply-to headers if empty; this avoids issues with overzealous mailservers
-    $replyTo = CRM_Utils_Array::value('replyTo', $params, CRM_Utils_Array::value('from', $params));
+    $replyTo = ($params['replyTo'] ?? ($params['from'] ?? NULL));
 
     if (!empty($replyTo)) {
       $headers['Reply-To'] = $replyTo;
@@ -277,7 +288,13 @@ class CRM_Utils_Mail {
           TRUE,
           'base64',
           'attachment',
-          (isset($attach['charset']) ? $attach['charset'] : '')
+          (isset($attach['charset']) ? $attach['charset'] : ''),
+          '',
+          '',
+          NULL,
+          NULL,
+          '',
+          'utf-8'
         );
       }
     }
@@ -359,16 +376,6 @@ class CRM_Utils_Mail {
     ]) . '</p>';
 
     return $message;
-  }
-
-  /**
-   * @param $to
-   * @param $headers
-   * @param $message
-   * @deprecated
-   */
-  public static function logger(&$to, &$headers, &$message) {
-    CRM_Utils_Mail_Logger::log($to, $headers, $message);
   }
 
   /**
