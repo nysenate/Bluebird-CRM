@@ -89,7 +89,7 @@ function do_download() {
 ##############################
 ## Build installable ZIP file
 function do_zipfile() {
-  local canary="$EXTROOT/packages/mosaico/dist/mosaico.min.css"
+  local canary="$EXTROOT/packages/mosaico/dist/rs/mosaico.min.css"
   if [ ! -f "$canary" ]; then
     echo "Error: File $canary missing. Are you sure the build is ready?"
     exit 1

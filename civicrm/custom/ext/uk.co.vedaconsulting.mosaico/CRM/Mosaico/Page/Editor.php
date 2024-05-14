@@ -24,20 +24,8 @@ class CRM_Mosaico_Page_Editor extends CRM_Core_Page {
     $mosaicoDistUrl = CRM_Mosaico_Utils::getMosaicoDistUrl('relative');
     $mosaicoExtUrl = CRM_Core_Resources::singleton()->getUrl('uk.co.vedaconsulting.mosaico');
     return [
-      "{$mosaicoDistUrl}/vendor/knockout.js?r={$cacheCode}",
-      "{$mosaicoDistUrl}/vendor/jquery.min.js?r={$cacheCode}",
-      "{$mosaicoDistUrl}/vendor/jquery-ui.min.js?r={$cacheCode}",
-      "{$mosaicoDistUrl}/vendor/jquery.ui.touch-punch.min.js?r={$cacheCode}",
-      "{$mosaicoDistUrl}/vendor/load-image.all.min.js?r={$cacheCode}",
-      "{$mosaicoDistUrl}/vendor/canvas-to-blob.min.js?r={$cacheCode}",
-      "{$mosaicoDistUrl}/vendor/jquery.iframe-transport.js?r={$cacheCode}",
-      "{$mosaicoDistUrl}/vendor/jquery.fileupload.js?r={$cacheCode}",
-      "{$mosaicoDistUrl}/vendor/jquery.fileupload-process.js?r={$cacheCode}",
-      "{$mosaicoDistUrl}/vendor/jquery.fileupload-image.js?r={$cacheCode}",
-      "{$mosaicoDistUrl}/vendor/jquery.fileupload-validate.js?r={$cacheCode}",
-      "{$mosaicoDistUrl}/vendor/knockout-jqueryui.min.js?r={$cacheCode}",
-      "{$mosaicoDistUrl}/vendor/tinymce.min.js?r={$cacheCode}",
-      "{$mosaicoDistUrl}/mosaico.min.js?v=0.15?&={$cacheCode}",
+      "{$mosaicoDistUrl}/mosaico-libs-and-tinymce.min.js?v=0.18&r={$cacheCode}",
+      "{$mosaicoDistUrl}/mosaico.min.js?v=0.18&r={$cacheCode}",
     ];
   }
 
@@ -46,8 +34,8 @@ class CRM_Mosaico_Page_Editor extends CRM_Core_Page {
     $mosaicoDistUrl = CRM_Mosaico_Utils::getMosaicoDistUrl('relative');
     // $mosaicoExtUrl = CRM_Core_Resources::singleton()->getUrl('uk.co.vedaconsulting.mosaico');
     return [
-      "{$mosaicoDistUrl}/mosaico-material.min.css?v=0.10&r={$cacheCode}",
-      "{$mosaicoDistUrl}/vendor/notoregular/stylesheet.css?r={$cacheCode}",
+      "{$mosaicoDistUrl}/mosaico-libs-and-tinymce.min.css?v=0.18&r={$cacheCode}",
+      "{$mosaicoDistUrl}/mosaico-material.min.css?v=0.18&r={$cacheCode}",
     ];
   }
 
@@ -101,9 +89,21 @@ class CRM_Mosaico_Page_Editor extends CRM_Core_Page {
     // Adding translation strings if exist
     $locale = CRM_Core_I18n::getLocale();
     $lang = CRM_Core_I18n_PseudoConstant::shortForLong($locale);
-    $translationFile = CRM_Core_Resources::singleton()->getPath(E::LONG_NAME, "packages/mosaico/dist/lang/mosaico-{$lang}.json");
+    $translationFile = E::path("packages/mosaico/dist/rs/lang/mosaico-{$lang}.json");
     if (file_exists($translationFile)) {
       $config['strings'] = json_decode(file_get_contents($translationFile));
+    }
+
+    // TinyMCE configuration
+    // Must be a locale listed here: https://www.tiny.cloud/docs-4x/configure/localization/
+    $tinymceLocale = $this->getTinymceLocale($locale);
+    if (file_exists(E::path("packages/mosaico/dist/tinymce/langs/{$tinymceLocale}.js"))) {
+      $config['tinymceConfig']['language'] = $tinymceLocale;
+      $config['tinymceConfig']['language_url'] = "tinymce/langs/{$tinymceLocale}.js";
+    }
+    elseif (file_exists(E::path("packages/mosaico/dist/tinymce/langs/{$lang}.js"))) {
+      $config['tinymceConfig']['language'] = $lang;
+      $config['tinymceConfig']['language_url'] = "tinymce/langs/{$lang}.js";
     }
 
     // Allow configuration to be modified by a hook
@@ -167,6 +167,20 @@ class CRM_Mosaico_Page_Editor extends CRM_Core_Page {
     $plugins = '[ ' . implode(',', $plugins) . ' ]';
 
     return $plugins;
+  }
+
+  /**
+   * Returns the closest supported locale by TinyMCE
+   *
+   * It seems like it has to be from this list:
+   * https://www.tiny.cloud/docs-4x/configure/localization/
+   * For example, fr_CA does not work, even if fr_CA.js is present
+   */
+  public function getTinymceLocale($locale) {
+    if ($locale == 'fr_CA') {
+      return 'fr_FR';
+    }
+    return $locale;
   }
 
 }

@@ -5,7 +5,7 @@
     "civicrm/composer-downloads-plugin": "^3.0"
   },
   "replace": {
-    "guzzlehttp/guzzle": "^6.5",
+    "guzzlehttp/guzzle": "^6.5 || ^7.0",
     "guzzlehttp/psr7": "^1.8.5"
   },
   "config": {
@@ -16,7 +16,7 @@
   "extra": {
     "downloads": {
       "mosaico": {
-        "version": "v0.15-civicrm-2.1",
+        "version": "v0.18.10-civicrm-2.0",
         "path": "packages/mosaico",
         "url": "https://github.com/civicrm/mosaico/releases/download/{$version}/mosaico-dist.tar.gz"
       }

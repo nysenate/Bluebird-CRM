@@ -1,2 +1,285 @@
-.crm-mosaico-page .helpicon{background-color:#0071bd}.ui-datepicker{background:#fff;border:1px solid rgba(0,0,0,.15);border-radius:0;box-shadow:0 3px 18px 0 rgba(48,40,40,.25);min-width:160px;padding:10px;width:auto}.ui-datepicker,.ui-datepicker *{border-radius:0;font-family:Open Sans,Helvetica Neue,Helvetica,Arial,sans-serif}.ui-datepicker *{background:none;box-shadow:none}.ui-datepicker .ui-datepicker-calendar td[data-handler] a,.ui-datepicker td[data-handler] a{background:#f3f6f7}.ui-datepicker .ui-datepicker-calendar td[data-handler] a.ui-state-highlight,.ui-datepicker td[data-handler] a.ui-state-highlight{border-color:#0071bd}.ui-datepicker .ui-datepicker-header{border:0;margin-bottom:5px}.ui-datepicker .ui-datepicker-header .ui-datepicker-next,.ui-datepicker .ui-datepicker-header .ui-datepicker-prev{box-shadow:none;height:28px;top:4px}.ui-datepicker .ui-datepicker-header .ui-datepicker-next:before,.ui-datepicker .ui-datepicker-header .ui-datepicker-prev:before{display:inline-block;line-height:30px}.ui-datepicker .ui-datepicker-header .ui-datepicker-prev:before{font-family:FontAwesome;font-style:normal;text-rendering:auto;font-size:13px;content:"";color:#4d4d69;padding-left:5px}.ui-datepicker .ui-datepicker-header .ui-datepicker-next:before{font-family:FontAwesome;font-style:normal;text-rendering:auto;font-size:13px;content:"";color:#4d4d69;padding-left:15px}.ui-datepicker .ui-datepicker-header select{-webkit-appearance:none;-moz-appearance:none;appearance:none;background:url(../svgs/drop-down-arrow.svg) no-repeat 100%;display:inline-block;font-family:Open Sans,Helvetica Neue,Helvetica,Arial,sans-serif;font-size:.8em;padding-left:5px;padding-right:10px;position:relative;top:1px;width:75px}.ui-datepicker-header .ui-datepicker-next,.ui-datepicker-header .ui-datepicker-prev{border-radius:2px;cursor:pointer;text-align:center;width:35px}.ui-datepicker-header .ui-datepicker-next span,.ui-datepicker-header .ui-datepicker-prev span{background:none}.ui-datepicker-header .ui-datepicker-next:before,.ui-datepicker-header .ui-datepicker-prev:before{color:#535a67;font-size:14px;font-weight:400;padding:0}.ui-datepicker-header .ui-datepicker-next-hover,.ui-datepicker-header .ui-datepicker-prev-hover{background:#f3f6f7;border:0;border-color:#525966;color:#535a67}.ui-datepicker-header .ui-datepicker-prev:before{font-family:FontAwesome;font-style:normal;text-rendering:auto;font-size:13px;content:"";color:#4d4d69}.ui-datepicker-header .ui-datepicker-prev-hover{left:2px}.ui-datepicker-header .ui-datepicker-next:before{font-family:FontAwesome;font-style:normal;text-rendering:auto;font-size:13px;content:"";color:#4d4d69}.ui-datepicker-header .ui-datepicker-next-hover{right:2px}.ui-datepicker-header .ui-datepicker-title{padding:0 30px}.ui-datepicker-header .ui-datepicker-title .select2-container{background:#fff;margin:0 5px}.ui-datepicker-header .ui-datepicker-title .select2-container .select2-choice{background:none;border:1px solid #c2cfd8;border-radius:2px;box-shadow:inset 0 0 3px 0 rgba(0,0,0,.2);font-weight:400}.ui-datepicker-header .ui-datepicker-title .select2-container .select2-arrow{background:none;padding:0 5px}.ui-datepicker-calendar{border:0}.ui-datepicker-calendar thead th{color:#525966;font-size:11px}.ui-datepicker-calendar td.ui-state-disabled,.ui-datepicker-calendar td[data-handler]{background:#f3f6f7;border:0;font-size:11px;opacity:1;padding:7px}.ui-datepicker-calendar td.ui-state-disabled a,.ui-datepicker-calendar td[data-handler] a{background:transparent;border:0;border-radius:20px;color:#535a67;cursor:pointer;line-height:1;padding:7px;text-align:center;width:auto}.ui-datepicker-calendar td.ui-state-disabled.ui-datepicker-days-cell-over.ui-datepicker-today a.ui-state-highlight,.ui-datepicker-calendar td.ui-state-disabled a.ui-state-active,.ui-datepicker-calendar td[data-handler].ui-datepicker-days-cell-over.ui-datepicker-today a.ui-state-highlight,.ui-datepicker-calendar td[data-handler] a.ui-state-active{background:#0071bd;color:#fff}.ui-state-default{border:0}.input-group-addon.fa-calendar{background:none;border:1px solid #4d4d69;border-left:0;color:#0071bd;cursor:pointer}.crm-mosaico-page .crm-form-date-wrapper .form-control{display:inline-block}.crm-mosaico-page .crm-form-date-wrapper .crm-form-date{border-radius:2px 0 0 2px;border-right:0;min-width:100px!important;width:100px}.crm-mosaico-page .crm-form-date-wrapper .crm-form-time{width:75px}.crm-mosaico-page .crm-form-date-wrapper .fa-calendar{background-color:#f3f3f6;border:1px solid #c2cfd8;border-radius:0 2px 2px 0;height:30px;line-height:26px;margin-bottom:0;margin-right:10px;padding:2px 0 0;text-align:center;width:30px}.crm-mosaico-page .crm-form-date-wrapper .crm-clear-link{background:none;border:none;position:relative;top:2px}.crm-mosaico-page span.crmMailing-include{color:#464354}.crm-mosaico-page .crmMailing-recip-est{background:#fff}.crm-mosaico-page .crm-group .label{display:block;padding:8px 0;text-align:left;width:100%}.crm-mosaico-page .crm-group .content{clear:both;margin:0}.crm-mosaico-page .crm-group .content .select2-container{max-width:350px}.crm-mosaico-page div[ng-form=editRecipOptionsForm] .crm-group .label,.crm-mosaico-page div[ng-form=editRecipOptionsForm] .crm-group label,.crm-mosaico-page div[ng-form=editRecipOptionsForm] .crm-group label span{color:#464354;font-weight:600;font-size:13px;width:100%;text-align:left}.crm-mosaico-page div[ng-form=editRecipOptionsForm] .crm-group label span.crm-marker{color:#cf3458;margin-left:5px}.crm-mosaico-page div[ng-form=editRecipOptionsForm] .crm-group .content{margin:0}.crm-mosaico-page div[ng-form=editRecipOptionsForm] .crm-group .crm-section{margin-bottom:.5em}.crm-mosaico-page .select2-search-field input[type=text]:focus,.crm-mosaico-page .select2-search-field select:focus,.crm-mosaico-page .select2-search-field textarea:focus{border:none;box-shadow:none}.crm-mosaico-page #responses .select2-container{min-width:350px}.crm-mosaico-page .crm-hover-button{background:none;border:none}
+/**
+ * Absolutely positions and vertically and horizontally centers an element
+ */
+/**
+ * Dropdown arrow
+ */
+/**
+ * Apply uniform padding for all children
+ */
+.crm-mosaico-page .helpicon {
+  background-color: #0071bd;
+}
+
+.ui-datepicker {
+  background: #fff;
+  border: 1px solid rgba(0, 0, 0, 0.15);
+  border-radius: 0;
+  box-shadow: 0 3px 18px 0 rgba(48, 40, 40, 0.25);
+  min-width: 160px;
+  padding: 10px;
+  width: auto;
+}
+.ui-datepicker,
+.ui-datepicker * {
+  border-radius: 0;
+  font-family: "Open Sans", "Helvetica Neue", Helvetica, Arial, sans-serif;
+}
+.ui-datepicker * {
+  background: none;
+  box-shadow: none;
+}
+.ui-datepicker td[data-handler] a,
+.ui-datepicker .ui-datepicker-calendar td[data-handler] a {
+  background: #f3f6f7;
+}
+.ui-datepicker td[data-handler] a.ui-state-highlight,
+.ui-datepicker .ui-datepicker-calendar td[data-handler] a.ui-state-highlight {
+  border-color: #0071bd;
+}
+
+.ui-datepicker .ui-datepicker-header {
+  border: 0;
+  margin-bottom: 5px;
+}
+.ui-datepicker .ui-datepicker-header .ui-datepicker-next,
+.ui-datepicker .ui-datepicker-header .ui-datepicker-prev {
+  box-shadow: none;
+  height: 28px;
+  top: 4px;
+}
+.ui-datepicker .ui-datepicker-header .ui-datepicker-next::before,
+.ui-datepicker .ui-datepicker-header .ui-datepicker-prev::before {
+  display: inline-block;
+  line-height: 30px;
+}
+.ui-datepicker .ui-datepicker-header .ui-datepicker-prev::before {
+  font-family: "FontAwesome";
+  font-style: normal;
+  text-rendering: auto;
+  font-size: 13px;
+  content: "\f0d9";
+  color: #4d4d69;
+  padding-left: 5px;
+}
+.ui-datepicker .ui-datepicker-header .ui-datepicker-next::before {
+  font-family: "FontAwesome";
+  font-style: normal;
+  text-rendering: auto;
+  font-size: 13px;
+  content: "\f0da";
+  color: #4d4d69;
+  padding-left: 15px;
+}
+.ui-datepicker .ui-datepicker-header select {
+  appearance: none;
+  background: url("../svgs/drop-down-arrow.svg") no-repeat right;
+  display: inline-block;
+  font-family: "Open Sans", "Helvetica Neue", Helvetica, Arial, sans-serif;
+  font-size: 0.8em;
+  padding-left: 5px;
+  padding-right: 10px;
+  position: relative;
+  top: 1px;
+  width: 75px;
+}
+
+.ui-datepicker-header .ui-datepicker-next,
+.ui-datepicker-header .ui-datepicker-prev {
+  border-radius: 2px;
+  cursor: pointer;
+  text-align: center;
+  width: 35px;
+}
+.ui-datepicker-header .ui-datepicker-next span,
+.ui-datepicker-header .ui-datepicker-prev span {
+  background: none;
+}
+.ui-datepicker-header .ui-datepicker-next:before,
+.ui-datepicker-header .ui-datepicker-prev:before {
+  color: #535a67;
+  font-size: 14px;
+  font-weight: normal;
+  padding: 0;
+}
+.ui-datepicker-header .ui-datepicker-next-hover,
+.ui-datepicker-header .ui-datepicker-prev-hover {
+  background: #f3f6f7;
+  border: 0;
+  border-color: #525966;
+  color: #535a67;
+}
+.ui-datepicker-header .ui-datepicker-prev:before {
+  font-family: "FontAwesome";
+  font-style: normal;
+  text-rendering: auto;
+  font-size: 13px;
+  content: "\f053";
+  color: #4d4d69;
+}
+.ui-datepicker-header .ui-datepicker-prev-hover {
+  left: 2px;
+}
+.ui-datepicker-header .ui-datepicker-next:before {
+  font-family: "FontAwesome";
+  font-style: normal;
+  text-rendering: auto;
+  font-size: 13px;
+  content: "\f054";
+  color: #4d4d69;
+}
+.ui-datepicker-header .ui-datepicker-next-hover {
+  right: 2px;
+}
+.ui-datepicker-header .ui-datepicker-title {
+  padding: 0 30px;
+}
+.ui-datepicker-header .ui-datepicker-title .select2-container {
+  background: #fff;
+  margin: 0 5px;
+}
+.ui-datepicker-header .ui-datepicker-title .select2-container .select2-choice {
+  background: none;
+  border: 1px solid #c2cfd8;
+  border-radius: 2px;
+  box-shadow: inset 0 0 3px 0 rgba(0, 0, 0, 0.2);
+  font-weight: 400;
+}
+.ui-datepicker-header .ui-datepicker-title .select2-container .select2-arrow {
+  background: none;
+  padding: 0 5px;
+}
+
+.ui-datepicker-calendar {
+  border: 0;
+}
+.ui-datepicker-calendar thead th {
+  color: #525966;
+  font-size: 11px;
+}
+.ui-datepicker-calendar td.ui-state-disabled,
+.ui-datepicker-calendar td[data-handler] {
+  background: #f3f6f7;
+  border: 0;
+  font-size: 11px;
+  opacity: 1;
+  padding: 7px;
+}
+.ui-datepicker-calendar td.ui-state-disabled a,
+.ui-datepicker-calendar td[data-handler] a {
+  background: transparent;
+  border: 0;
+  border-radius: 20px;
+  color: #535a67;
+  cursor: pointer;
+  line-height: 1;
+  padding: 7px;
+  text-align: center;
+  width: auto;
+}
+.ui-datepicker-calendar td.ui-state-disabled a.ui-state-active,
+.ui-datepicker-calendar td[data-handler] a.ui-state-active {
+  background: #0071bd;
+  color: #fff;
+}
+.ui-datepicker-calendar td.ui-state-disabled.ui-datepicker-days-cell-over.ui-datepicker-today a.ui-state-highlight,
+.ui-datepicker-calendar td[data-handler].ui-datepicker-days-cell-over.ui-datepicker-today a.ui-state-highlight {
+  background: #0071bd;
+  color: #fff;
+}
+
+.ui-state-default {
+  border: 0;
+}
+
+.input-group-addon.fa-calendar {
+  background: none;
+  border: solid 1px #4d4d69;
+  border-left: 0;
+  color: #0071bd;
+  cursor: pointer;
+}
+
+.crm-mosaico-page .crm-form-date-wrapper .form-control {
+  display: inline-block;
+}
+.crm-mosaico-page .crm-form-date-wrapper .crm-form-date {
+  border-radius: 2px 0 0 2px;
+  border-right: 0;
+  min-width: 100px !important;
+  width: 100px;
+}
+.crm-mosaico-page .crm-form-date-wrapper .crm-form-time {
+  width: 75px;
+}
+.crm-mosaico-page .crm-form-date-wrapper .fa-calendar {
+  background-color: #f3f3f6;
+  border: 1px solid #c2cfd8;
+  border-radius: 0 2px 2px 0;
+  height: 30px;
+  line-height: 26px;
+  margin-bottom: 0;
+  margin-right: 10px;
+  padding: 2px 0 0;
+  text-align: center;
+  width: 30px;
+}
+.crm-mosaico-page .crm-form-date-wrapper .crm-clear-link {
+  background: none;
+  border: none;
+  position: relative;
+  top: 2px;
+}
+.crm-mosaico-page span.crmMailing-include {
+  color: #464354;
+}
+.crm-mosaico-page .crmMailing-recip-est {
+  background: #fff;
+}
+.crm-mosaico-page .crm-group .label {
+  display: block;
+  padding: 8px 0;
+  text-align: left;
+  width: 100%;
+}
+.crm-mosaico-page .crm-group .content {
+  clear: both;
+  margin: 0;
+}
+.crm-mosaico-page .crm-group .content .select2-container {
+  max-width: 350px;
+}
+.crm-mosaico-page div[ng-form=editRecipOptionsForm] .crm-group .label,
+.crm-mosaico-page div[ng-form=editRecipOptionsForm] .crm-group label,
+.crm-mosaico-page div[ng-form=editRecipOptionsForm] .crm-group label span {
+  color: #464354;
+  font-weight: 600;
+  font-size: 13px;
+  width: 100%;
+  text-align: left;
+}
+.crm-mosaico-page div[ng-form=editRecipOptionsForm] .crm-group label span.crm-marker {
+  color: #cf3458;
+  margin-left: 5px;
+}
+.crm-mosaico-page div[ng-form=editRecipOptionsForm] .crm-group .content {
+  margin: 0;
+}
+.crm-mosaico-page div[ng-form=editRecipOptionsForm] .crm-group .crm-section {
+  margin-bottom: 0.5em;
+}
+.crm-mosaico-page .select2-search-field input[type=text]:focus,
+.crm-mosaico-page .select2-search-field textarea:focus,
+.crm-mosaico-page .select2-search-field select:focus {
+  border: none;
+  box-shadow: none;
+}
+.crm-mosaico-page #responses .select2-container {
+  min-width: 350px;
+}
+.crm-mosaico-page .crm-hover-button {
+  background: none;
+  border: none;
+}
+
 /*# sourceMappingURL=legacy.css.map */

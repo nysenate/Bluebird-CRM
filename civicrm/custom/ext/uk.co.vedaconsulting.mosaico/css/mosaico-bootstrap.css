@@ -1,2 +1,281 @@
-#bootstrap-theme .full-width-force{width:100%!important}#bootstrap-theme .margin-bottom-10{margin-bottom:10px}#bootstrap-theme .success{color:#44cb7e}#bootstrap-theme .crm-mosaico-page .crm-form-date-wrapper .form-control{display:inline-block}#bootstrap-theme .crm-mosaico-page .crm-form-date-wrapper .crm-form-date{border-radius:2px 0 0 2px;border-right:0;min-width:100px!important;width:100px}#bootstrap-theme .crm-mosaico-page .crm-form-date-wrapper .crm-form-time{width:75px}#bootstrap-theme .crm-mosaico-page .crm-form-date-wrapper .fa-calendar{background-color:#f3f3f6;border:1px solid #c2cfd8;border-radius:0 2px 2px 0;height:30px;line-height:26px;margin-bottom:0;margin-right:10px;padding:2px 0 0;text-align:center;width:30px}#bootstrap-theme .crm-mosaico-page .crm-form-date-wrapper .crm-clear-link{background:none;border:none;position:relative;top:2px}#bootstrap-theme .crm-mosaico-page span.crmMailing-include{color:#464354}#bootstrap-theme .crm-mosaico-page .crmMailing-recip-est{background:#fff}#bootstrap-theme .crm-mosaico-page .crm-group .label{display:block;padding:8px 0;text-align:left;width:100%}#bootstrap-theme .crm-mosaico-page .crm-group .content{clear:both;margin:0}#bootstrap-theme .crm-mosaico-page .crm-group .content .select2-container{max-width:350px}#bootstrap-theme .crm-mosaico-page div[ng-form=editRecipOptionsForm] .crm-group .label,#bootstrap-theme .crm-mosaico-page div[ng-form=editRecipOptionsForm] .crm-group label,#bootstrap-theme .crm-mosaico-page div[ng-form=editRecipOptionsForm] .crm-group label span{color:#464354;font-weight:600;font-size:13px;width:100%;text-align:left}#bootstrap-theme .crm-mosaico-page div[ng-form=editRecipOptionsForm] .crm-group label span.crm-marker{color:#cf3458;margin-left:5px}#bootstrap-theme .crm-mosaico-page div[ng-form=editRecipOptionsForm] .crm-group .content{margin:0}#bootstrap-theme .crm-mosaico-page div[ng-form=editRecipOptionsForm] .crm-group .crm-section{margin-bottom:.5em}#bootstrap-theme .crm-mosaico-page .select2-search-field input[type=text]:focus,#bootstrap-theme .crm-mosaico-page .select2-search-field select:focus,#bootstrap-theme .crm-mosaico-page .select2-search-field textarea:focus{border:none;box-shadow:none}#bootstrap-theme .crm-mosaico-page #responses .select2-container{min-width:350px}#bootstrap-theme .crm-mosaico-page .crm-hover-button{background:none;border:none}#bootstrap-theme .crm-mosaico-wizard{padding:.7em}#bootstrap-theme .crm-mosaico-wizard .crm_wizard__title .nav-pills{margin:0}#bootstrap-theme .crm-mosaico-wizard .crm_wizard__title .nav-pills li a{outline:0}#bootstrap-theme .crm-mosaico-wizard .crm_wizard__title .nav-pills li.disabled a{color:#464354}#bootstrap-theme .crm-mosaico-wizard .crm_wizard__footer .crmb-wizard-button-right button:not(:last-child){margin-right:10px}#bootstrap-theme .crm-mosaico-wizard .crm_wizard__body .form-group{max-width:640px}#bootstrap-theme .crm-mosaico-wizard .crm_wizard__body .form-control:-ms-input-placeholder{color:#aab2b9}#bootstrap-theme .crm-mosaico-wizard .crm_wizard__body .form-control::placeholder{color:#aab2b9}#bootstrap-theme .crm-mosaico-wizard .crm_wizard__body .token-holder .select2-container{min-width:260px}#bootstrap-theme .crm-mosaico-wizard .crm_wizard__body .ng-invalid.ng-invalid-incomplete-date-time{border:none}#bootstrap-theme .mosaico-templates-wrapper{margin-top:30px}div[ng-controller=PreviewMailingDialogCtrl] iframe.resized{height:calc(100% - 57px);position:absolute;z-index:-1}#bootstrap-theme .crm-mosaico-selected.center-block{float:none}#bootstrap-theme .crm-mosaico-selected.center-block .crm-mosaico-template-item{width:240px}#bootstrap-theme .crm-mosaico-selected.center-block .crm-mosaico-template-item .crm-mosaico-template-image-wrapper{height:275px}#bootstrap-theme .crm-mosaico-selected.center-block .crm-mosaico-template-item .crm-mosaico-template-title-wrapper p{width:225px}#bootstrap-theme .crm-mosaico-template-item{background:#f3f6f7;border:2px solid #fff;border-radius:4px;margin:auto;opacity:1;width:165px;margin-bottom:30px}#bootstrap-theme .crm-mosaico-template-item.thumbnail{padding:0}#bootstrap-theme .crm-mosaico-template-item:hover{border:2px solid #0071bd;box-shadow:inset 0 1px 10px 0 rgba(0,0,0,.25)}#bootstrap-theme .crm-mosaico-template-item:hover .crm-mosaico-template-actions{opacity:1}#bootstrap-theme .crm-mosaico-template-item:hover img{opacity:.66}#bootstrap-theme .crm-mosaico-template-item .crm-mosaico-template-image-wrapper{background:#333;height:200px;overflow:hidden;position:relative}#bootstrap-theme .crm-mosaico-template-item .crm-mosaico-template-image-wrapper img{height:auto!important}#bootstrap-theme .crm-mosaico-template-item .crm-mosaico-template-actions-wrapper{bottom:0;display:table;height:100%;left:0;position:absolute;right:0;text-align:center;top:0;width:100%}#bootstrap-theme .crm-mosaico-template-item .crm-mosaico-template-actions{display:table-cell;opacity:0;transition:opacity .4s;vertical-align:middle}#bootstrap-theme .crm-mosaico-template-item .crm-mosaico-template-image-wrapper .crm-mosaico-template-actions .btn{float:none!important;margin-bottom:7px;width:63%}#bootstrap-theme .crm-mosaico-template-item .crm-mosaico-template-image-wrapper .crm-mosaico-template-actions .btn:last-child{margin-bottom:0}#bootstrap-theme .crm-mosaico-template-item .crm-mosaico-template-title-wrapper{border:1px solid #e8eef0;color:#464354;font-weight:600;height:60px;line-height:16px;overflow:hidden;padding:10px 5px;position:relative;vertical-align:middle;text-align:center;text-decoration:none}#bootstrap-theme .crm-mosaico-template-item .crm-mosaico-template-title-wrapper small{display:block;font-weight:400;margin-top:3px}#bootstrap-theme .crm-mosaico-template-item .crm-mosaico-template-title-wrapper p{left:50%;position:absolute;top:50%;transform:translate(-50%,-50%);width:160px}#bootstrap-theme .crmMosaico-schedule-inner{margin:15px 0}#bootstrap-theme .crmMosaico-schedule-title{margin:0}#bootstrap-theme .crmMosaico-schedule-inner .form-group label{line-height:1.5em}#bootstrap-theme .crm-mosaico-page input[name=subject],#bootstrap-theme .crm-mosaico-page input[name=subjectA]{width:80%}#bootstrap-theme .crm-mosaico-page input[name=campaign],#bootstrap-theme .crm-mosaico-page select[name=optout_id],#bootstrap-theme .crm-mosaico-page select[name=preview_test_group],#bootstrap-theme .crm-mosaico-page select[name=resubscribe_id],#bootstrap-theme .crm-mosaico-page select[name=unsubscribe_id],#bootstrap-theme .crm-mosaico-page select[name=visibility]{width:98%}#bootstrap-theme .crm-mosaico-page .crm-mosaico-test-group button{margin-top:1em}#bootstrap-theme .crm-mosaico-page .crm-mailing-recipients-row select{width:70%}#bootstrap-theme .crm-mosaico-page input[type=radio]:not(.old-radiocheckbox-style):checked+label[for]:after{left:3px;top:7px}#bootstrap-theme .crm-mosaico-page .tab-content #responses .crm-block{padding:0}#bootstrap-theme .crm-mosaico-modal-panel{box-shadow:none;border-top:1px solid #e8eef0;margin-top:-10px;margin-left:-20px;margin-right:-20px}#bootstrap-theme .mosaico-panels-group{box-shadow:0 3px 18px 0 rgba(48,40,40,.25)}#bootstrap-theme .mosaico-panels-group .panel{box-shadow:none;margin-bottom:0}#bootstrap-theme .mosaico-panels-group .panel:not(:last-child) .panel-body{border-bottom:1px solid #d3dee2}
+/**
+ * Absolutely positions and vertically and horizontally centers an element
+ */
+/**
+ * Dropdown arrow
+ */
+/**
+ * Apply uniform padding for all children
+ */
+.full-width-force {
+  width: 100% !important;
+}
+
+.margin-bottom-10 {
+  margin-bottom: 10px;
+}
+
+.success {
+  color: #44cb7e;
+}
+
+.crm-mosaico-page .crm-form-date-wrapper .form-control {
+  display: inline-block;
+}
+.crm-mosaico-page .crm-form-date-wrapper .crm-form-date {
+  border-radius: 2px 0 0 2px;
+  border-right: 0;
+  min-width: 100px !important;
+  width: 100px;
+}
+.crm-mosaico-page .crm-form-date-wrapper .crm-form-time {
+  width: 75px;
+}
+.crm-mosaico-page .crm-form-date-wrapper .fa-calendar {
+  background-color: #f3f3f6;
+  border: 1px solid #c2cfd8;
+  border-radius: 0 2px 2px 0;
+  height: 30px;
+  line-height: 26px;
+  margin-bottom: 0;
+  margin-right: 10px;
+  padding: 2px 0 0;
+  text-align: center;
+  width: 30px;
+}
+.crm-mosaico-page .crm-form-date-wrapper .crm-clear-link {
+  background: none;
+  border: none;
+  position: relative;
+  top: 2px;
+}
+.crm-mosaico-page span.crmMailing-include {
+  color: #464354;
+}
+.crm-mosaico-page .crmMailing-recip-est {
+  background: #fff;
+}
+.crm-mosaico-page .crm-group .label {
+  display: block;
+  padding: 8px 0;
+  text-align: left;
+  width: 100%;
+}
+.crm-mosaico-page .crm-group .content {
+  clear: both;
+  margin: 0;
+}
+.crm-mosaico-page .crm-group .content .select2-container {
+  max-width: 350px;
+}
+.crm-mosaico-page div[ng-form=editRecipOptionsForm] .crm-group .label,
+.crm-mosaico-page div[ng-form=editRecipOptionsForm] .crm-group label,
+.crm-mosaico-page div[ng-form=editRecipOptionsForm] .crm-group label span {
+  color: #464354;
+  font-weight: 600;
+  font-size: 13px;
+  width: 100%;
+  text-align: left;
+}
+.crm-mosaico-page div[ng-form=editRecipOptionsForm] .crm-group label span.crm-marker {
+  color: #cf3458;
+  margin-left: 5px;
+}
+.crm-mosaico-page div[ng-form=editRecipOptionsForm] .crm-group .content {
+  margin: 0;
+}
+.crm-mosaico-page div[ng-form=editRecipOptionsForm] .crm-group .crm-section {
+  margin-bottom: 0.5em;
+}
+.crm-mosaico-page .select2-search-field input[type=text]:focus,
+.crm-mosaico-page .select2-search-field textarea:focus,
+.crm-mosaico-page .select2-search-field select:focus {
+  border: none;
+  box-shadow: none;
+}
+.crm-mosaico-page #responses .select2-container {
+  min-width: 350px;
+}
+.crm-mosaico-page .crm-hover-button {
+  background: none;
+  border: none;
+}
+
+.crm-mosaico-wizard {
+  padding: 0.7em;
+}
+.crm-mosaico-wizard .crm_wizard__title .nav-pills {
+  margin: 0;
+}
+.crm-mosaico-wizard .crm_wizard__title .nav-pills li a {
+  outline: 0;
+}
+.crm-mosaico-wizard .crm_wizard__title .nav-pills li.disabled a {
+  color: #464354;
+}
+.crm-mosaico-wizard .crm_wizard__footer .crmb-wizard-button-right button:not(:last-child) {
+  margin-right: 10px;
+}
+.crm-mosaico-wizard .crm_wizard__body .form-group {
+  max-width: 640px;
+}
+.crm-mosaico-wizard .crm_wizard__body .form-control::placeholder {
+  color: #AAB2B9;
+}
+.crm-mosaico-wizard .crm_wizard__body .token-holder .select2-container {
+  min-width: 260px;
+}
+.crm-mosaico-wizard .crm_wizard__body .ng-invalid.ng-invalid-incomplete-date-time {
+  border: none;
+}
+
+.mosaico-templates-wrapper {
+  margin-top: 30px;
+}
+
+div[ng-controller=PreviewMailingDialogCtrl] iframe.resized {
+  height: calc(100% - 57px);
+  position: absolute;
+  z-index: -1;
+}
+
+#bootstrap-theme .crm-mosaico-selected.center-block {
+  float: none;
+}
+#bootstrap-theme .crm-mosaico-selected.center-block .crm-mosaico-template-item .crm-mosaico-template-image-wrapper {
+  height: 275px;
+}
+
+.mosaico-templates-list {
+  margin-top: 2rem;
+}
+
+#bootstrap-theme .crm-mosaico-template-item.thumbnail {
+  padding: 0;
+  display: flex;
+  width: 100%;
+  background: #f3f6f7;
+  border: 2px solid #fff;
+  border-radius: 4px;
+  margin: auto;
+  opacity: 1;
+  margin-bottom: 30px;
+}
+#bootstrap-theme .crm-mosaico-template-item:hover {
+  border: 2px solid #0071bd;
+  box-shadow: inset 0 1px 10px 0 rgba(0, 0, 0, 0.25);
+}
+#bootstrap-theme .crm-mosaico-template-item:hover .crm-mosaico-template-actions {
+  opacity: 1;
+}
+#bootstrap-theme .crm-mosaico-template-item:hover img {
+  opacity: 0.66;
+}
+#bootstrap-theme .crm-mosaico-template-item .crm-mosaico-template-image-wrapper {
+  background: #333;
+  flex: 0 0 160px;
+  overflow: hidden;
+  position: relative;
+  height: 275px;
+}
+#bootstrap-theme .crm-mosaico-template-item .crm-mosaico-template-image-wrapper img {
+  height: auto !important;
+}
+#bootstrap-theme .crm-mosaico-template-item .crm-mosaico-template-actions-wrapper {
+  bottom: 0;
+  display: table;
+  height: 100%;
+  left: 0;
+  position: absolute;
+  right: 0;
+  text-align: center;
+  top: 0;
+  width: 100%;
+}
+#bootstrap-theme .crm-mosaico-template-item .crm-mosaico-template-actions {
+  display: table-cell;
+  opacity: 0;
+  transition: opacity 400ms;
+  vertical-align: middle;
+}
+#bootstrap-theme .crm-mosaico-template-item .crm-mosaico-template-image-wrapper .crm-mosaico-template-actions .btn {
+  float: none !important;
+  margin-bottom: 7px;
+  width: 63%;
+}
+#bootstrap-theme .crm-mosaico-template-item .crm-mosaico-template-image-wrapper .crm-mosaico-template-actions .btn:last-child {
+  margin-bottom: 0;
+}
+#bootstrap-theme .crm-mosaico-template-item .crm-mosaico-template-title-wrapper {
+  border: 1px solid #e8eef0;
+  color: #464354;
+  font-weight: 600;
+  line-height: 16px;
+  overflow: hidden;
+  padding: 10px 5px;
+  position: relative;
+  vertical-align: middle;
+  text-decoration: none;
+  flex: 1 0 160px;
+}
+#bootstrap-theme .crm-mosaico-template-item .crm-mosaico-template-title-wrapper small {
+  display: block;
+  font-weight: 400;
+  margin-top: 3px;
+}
+
+.crmMosaico-schedule-inner {
+  margin: 15px 0;
+}
+
+.crmMosaico-schedule-title {
+  margin: 0;
+}
+
+.crmMosaico-schedule-inner .form-group label {
+  line-height: 1.5em;
+}
+
+.crm-mosaico-page input[name=subject], .crm-mosaico-page input[name=subjectA] {
+  width: 80%;
+}
+.crm-mosaico-page input[name=campaign] {
+  width: 98%;
+}
+.crm-mosaico-page select[name=optout_id], .crm-mosaico-page select[name=preview_test_group], .crm-mosaico-page select[name=resubscribe_id], .crm-mosaico-page select[name=unsubscribe_id], .crm-mosaico-page select[name=visibility] {
+  width: 98%;
+}
+.crm-mosaico-page .crm-mosaico-test-group button {
+  margin-top: 1em;
+}
+.crm-mosaico-page .crm-mailing-recipients-row select {
+  width: 70%;
+}
+.crm-mosaico-page input[type=radio]:not(.old-radiocheckbox-style):checked + label[for]::after {
+  left: 3px;
+  top: 7px;
+}
+.crm-mosaico-page .tab-content #responses .crm-block {
+  padding: 0;
+}
+
+.crm-mosaico-modal-panel {
+  box-shadow: none;
+  border-top: 1px solid #e8eef0;
+  margin-top: -10px;
+  margin-left: -20px;
+  margin-right: -20px;
+}
+
+.mosaico-panels-group {
+  box-shadow: 0 3px 18px 0 rgba(48, 40, 40, 0.25);
+}
+.mosaico-panels-group .panel {
+  box-shadow: none;
+  margin-bottom: 0;
+}
+.mosaico-panels-group .panel:not(:last-child) .panel-body {
+  border-bottom: 1px solid #d3dee2;
+}
+
 /*# sourceMappingURL=mosaico-bootstrap.css.map */

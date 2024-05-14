@@ -44,3 +44,7 @@ Vars: mailing:obj, testContact:obj, testGroup:obj, crmMailing:FormController
   <button type="button" class="btn btn-sm btn-primary" title="{{ crmMailing.$invalid || !testGroup.gid ? ts('Complete all required-mark fields first') : ts('Send test message to group') }}" ng-disabled="crmMailing.$invalid || !testGroup.gid" crm-confirm="{resizable: true, width: '40%', height: '40%', open: previewTestGroup}"
       on-yes="doSend({gid: testGroup.gid})">{{:: ts('Send test') }}</button>
 </div>
+
+<div class="form-group" ng-if="isSplit(mailing)">
+  <em>{{ts('The draft mailing allows two variations (A/B).')}}<br/>{{ts('If you send a test now, it will use all available variations.')}}</em>
+</div>

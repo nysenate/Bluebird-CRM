@@ -17,7 +17,7 @@
 .crm-mosaico-template-item {
   border-radius: 4px;
   opacity: 1;
-  width: 165px;
+  display: flex;
 
   &.thumbnail {
     background: transparent;
@@ -41,6 +41,7 @@
   }
 
   .crm-mosaico-template-image-wrapper {
+    flex: 0 0 165px;
     background: $crm-mosaico-template-item-wrapper;
     height: 200px;
     overflow: hidden;
@@ -87,27 +88,18 @@
     //border: 1px solid $crm-mosaico-template-border;
     color: $gray-darker;
     font-weight: 600;
-    height: 60px;
     line-height: 16px;
     overflow: hidden;
-    padding: 10px 5px;
+    padding: 10px;
     position: relative;
     vertical-align: middle;
-    text-align: center;
     text-decoration: none;
+    flex: 1 0 12em;
 
     small {
       display: block;
       font-weight: 400;
       margin-top: 3px;
-    }
-
-    p {
-      left: 50%;
-      position: absolute;
-      top: 50%;
-      transform: translate(-50%, -50%);
-      width: 160px;
     }
   }
 }
