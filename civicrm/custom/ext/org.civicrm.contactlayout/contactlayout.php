@@ -23,59 +23,12 @@ function contactlayout_civicrm_install() {
 }
 
 /**
- * Implements hook_civicrm_postInstall().
- *
- * @link http://wiki.civicrm.org/confluence/display/CRMDOC/hook_civicrm_postInstall
- */
-function contactlayout_civicrm_postInstall() {
-  _contactlayout_civix_civicrm_postInstall();
-}
-
-/**
- * Implements hook_civicrm_uninstall().
- *
- * @link http://wiki.civicrm.org/confluence/display/CRMDOC/hook_civicrm_uninstall
- */
-function contactlayout_civicrm_uninstall() {
-  _contactlayout_civix_civicrm_uninstall();
-}
-
-/**
  * Implements hook_civicrm_enable().
  *
  * @link http://wiki.civicrm.org/confluence/display/CRMDOC/hook_civicrm_enable
  */
 function contactlayout_civicrm_enable() {
   _contactlayout_civix_civicrm_enable();
-}
-
-/**
- * Implements hook_civicrm_disable().
- *
- * @link http://wiki.civicrm.org/confluence/display/CRMDOC/hook_civicrm_disable
- */
-function contactlayout_civicrm_disable() {
-  _contactlayout_civix_civicrm_disable();
-}
-
-/**
- * Implements hook_civicrm_upgrade().
- *
- * @link http://wiki.civicrm.org/confluence/display/CRMDOC/hook_civicrm_upgrade
- */
-function contactlayout_civicrm_upgrade($op, CRM_Queue_Queue $queue = NULL) {
-  return _contactlayout_civix_civicrm_upgrade($op, $queue);
-}
-
-/**
- * Implements hook_civicrm_entityTypes().
- *
- * Declare entity types provided by this module.
- *
- * @link http://wiki.civicrm.org/confluence/display/CRMDOC/hook_civicrm_entityTypes
- */
-function contactlayout_civicrm_entityTypes(&$entityTypes) {
-  _contactlayout_civix_civicrm_entityTypes($entityTypes);
 }
 
 /**

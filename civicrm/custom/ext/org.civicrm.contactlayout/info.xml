@@ -14,15 +14,15 @@
     <url desc="Support">https://github.com/civicrm/org.civicrm.contactlayout/issues</url>
     <url desc="Licensing">http://www.gnu.org/licenses/agpl-3.0.html</url>
   </urls>
-  <releaseDate>2022-11-29</releaseDate>
-  <version>2.1.3</version>
+  <releaseDate>2024-02-09</releaseDate>
+  <version>2.2.3</version>
   <develStage>stable</develStage>
   <compatibility>
-    <ver>5.45</ver>
+    <ver>5.57</ver>
   </compatibility>
   <civix>
     <namespace>CRM/Contactlayout</namespace>
-    <format>22.10.0</format>
+    <format>23.02.1</format>
   </civix>
   <classloader>
     <psr4 prefix="Civi\" path="Civi"/>
@@ -32,5 +32,8 @@
     <mixin>ang-php@1.0.0</mixin>
     <mixin>menu-xml@1.0.0</mixin>
     <mixin>setting-php@1.0.0</mixin>
+    <mixin>smarty-v2@1.0.1</mixin>
+    <mixin>entity-types-php@1.0.0</mixin>
   </mixins>
+  <upgrader>CRM_Contactlayout_Upgrader</upgrader>
 </extension>

@@ -59,6 +59,7 @@ class CRM_Contactlayout_BAO_ContactLayout extends CRM_Contactlayout_DAO_ContactL
     }
     // Convert group names to ids, and verify groups exist
     $groupIds = (array) civicrm_api4('Group', 'get', [
+      'checkPermissions' => FALSE,
       'where' => [['name', 'IN', $layout['groups']]],
     ], ['name' => 'id']);
 
@@ -175,21 +176,28 @@ class CRM_Contactlayout_BAO_ContactLayout extends CRM_Contactlayout_DAO_ContactL
         return FALSE;
       }
 
-      return ($relationship['direction'] === 'r' && (
-          ($contactType === $relationship['type']['contact_type_a'] &&
-            $blockContactType === $relationship['type']['contact_type_b']) ||
-          ($contactType === $relationship['type']['contact_type_b'] &&
-            $blockContactType === $relationship['type']['contact_type_a']))) ||
-        ($relationship['direction'] === 'ab' && (
-          $blockContactType === $relationship['type']['contact_type_a'] &&
-          $contactType === $relationship['type']['contact_type_b'])) ||
-        ($relationship['direction'] === 'ba' && (
-          $blockContactType === $relationship['type']['contact_type_b'] &&
-          $contactType === $relationship['type']['contact_type_a']));
+      return self::checkBlockRelation($relationship, $contactType, $blockContactType);
     }
     else {
-      return $blockInfo && (!$contactType || !$blockContactType || $contactType == $blockContactType);
+      return $blockInfo && (!$contactType || !$blockContactType || in_array($contactType, (array) $blockContactType, TRUE));
     }
+  }
+
+  /**
+   * @param array $relationship
+   * @param $contactType
+   * @param $blockContactType
+   * @return bool
+   */
+  private static function checkBlockRelation(array $relationship, $contactType, $blockContactType) {
+    // Reciprocal relationship - check both directions
+    if ($relationship['direction'] === 'r') {
+      return self::checkBlockRelation(['direction' => 'ab'] + $relationship, $contactType, $blockContactType) ||
+        self::checkBlockRelation(['direction' => 'ba'] + $relationship, $contactType, $blockContactType);
+    }
+    [$a, $b] = str_split($relationship['direction']);
+    return $contactType === $relationship['type']["contact_type_$b"] &&
+      ((!$blockContactType && !$relationship['type']["contact_type_$a"]) || in_array($relationship['type']["contact_type_$a"], $blockContactType, TRUE));
   }
 
   /**
@@ -198,10 +206,11 @@ class CRM_Contactlayout_BAO_ContactLayout extends CRM_Contactlayout_DAO_ContactL
    * The parameter might come in the format `15_ab` where `15` is the relationship
    * type ID, and `ab` is the direction.
    *
+   * @throws Exception
    * @param string $relationshipOption
    * @return array
    */
-  protected static function getRelationshipFromOption($relationshipOption) {
+  protected static function getRelationshipFromOption($relationshipOption): array {
     $relationship = explode('_', $relationshipOption);
     $relationshipTypeId = $relationship[0];
     $relationshipType = \Civi\Api4\RelationshipType::get(FALSE)
@@ -225,7 +234,8 @@ class CRM_Contactlayout_BAO_ContactLayout extends CRM_Contactlayout_DAO_ContactL
    * @return array
    */
   protected static function loadAllBlocks() {
-    $contactTypes = CRM_Contact_BAO_ContactType::basicTypes(TRUE);
+    $enabledContactTypes = CRM_Contact_BAO_ContactType::basicTypes();
+    $allContactTypes = CRM_Contact_BAO_ContactType::basicTypes(TRUE);
     $blocks = [
       'core' => [
         'title' => E::ts('Predefined'),
@@ -298,7 +308,7 @@ class CRM_Contactlayout_BAO_ContactLayout extends CRM_Contactlayout_DAO_ContactL
       'sample' => [E::ts('User')],
       'edit' => FALSE,
       'selector' => '#crm-openid-content',
-      'contact_type' => 'Individual',
+      'contact_type' => ['Individual'],
       'system_default' => [1, 1],
     ];
     $blocks['core']['blocks']['Address'] = [
@@ -324,7 +334,7 @@ class CRM_Contactlayout_BAO_ContactLayout extends CRM_Contactlayout_DAO_ContactL
       'sample' => [E::ts('Gender'), E::ts('Date of Birth'), E::ts('Age')],
       'edit' => FALSE,
       'selector' => '#crm-demographic-content',
-      'contact_type' => 'Individual',
+      'contact_type' => ['Individual'],
       'system_default' => [3, 1],
     ];
 
@@ -340,7 +350,7 @@ class CRM_Contactlayout_BAO_ContactLayout extends CRM_Contactlayout_DAO_ContactL
       ->addGroupBy('id')
       ->execute();
     foreach ($profiles as $profile) {
-      $profileType = array_intersect($contactTypes, $profile['uf_group_id.group_type'] ?? []);
+      $profileType = array_intersect($allContactTypes, $profile['uf_group_id.group_type'] ?? []);
       $blocks['profile']['blocks'][$profile['uf_group_id.name']] = [
         'title' => $profile['uf_group_id.title'],
         'tpl_file' => 'CRM/Contactlayout/Page/Inline/Profile.tpl',
@@ -350,7 +360,7 @@ class CRM_Contactlayout_BAO_ContactLayout extends CRM_Contactlayout_DAO_ContactL
         'edit' => TRUE,
         'refresh' => [],
         'selector' => '#crm-profile-content-' . $profile['uf_group_id.name'],
-        'contact_type' => CRM_Utils_Array::first($profileType),
+        'contact_type' => $profileType ?: NULL,
       ];
     }
 
@@ -358,7 +368,7 @@ class CRM_Contactlayout_BAO_ContactLayout extends CRM_Contactlayout_DAO_ContactL
       ->addSelect('id', 'name', 'title', 'is_multiple', 'collapse_display', 'extends')
       ->addSelect('GROUP_CONCAT(fields.id) AS field_ids')
       ->addSelect('GROUP_CONCAT(fields.label ORDER BY fields.weight) AS field_labels')
-      ->addWhere('extends', 'IN', array_merge(['Contact'], $contactTypes))
+      ->addWhere('extends', 'IN', array_merge(['Contact'], $enabledContactTypes))
       ->addWhere('style', '=', 'Inline')
       ->addWhere('is_active', '=', TRUE)
       ->addJoin('CustomField AS fields', 'LEFT',
@@ -378,7 +388,7 @@ class CRM_Contactlayout_BAO_ContactLayout extends CRM_Contactlayout_DAO_ContactL
         'collapsed' => !empty($group['collapse_display']),
         'edit' => 'civicrm/admin/custom/group/field?reset=1&action=browse&gid=' . $group['id'],
         'selector' => '#custom-set-content-' . $group['id'],
-        'contact_type' => $group['extends'] === 'Contact' ? NULL : $group['extends'],
+        'contact_type' => $group['extends'] === 'Contact' ? NULL : [$group['extends']],
         'system_default' => [4, $index % 2],
       ];
     }
@@ -403,7 +413,9 @@ class CRM_Contactlayout_BAO_ContactLayout extends CRM_Contactlayout_DAO_ContactL
   public static function addBlockRelations(&$blocks, $profiles, $customGroups) {
     $customFields = [];
     foreach ($customGroups as $group) {
-      $customFields['#custom-set-content-' . $group['id']] = $group['field_ids'];
+      if (!empty($group['field_ids'])) {
+        $customFields['#custom-set-content-' . $group['id']] = $group['field_ids'];
+      }
     }
     $coreBlocks = [
       '#crm-contactname-content' => [
@@ -477,9 +489,9 @@ class CRM_Contactlayout_BAO_ContactLayout extends CRM_Contactlayout_DAO_ContactL
    * @return array
    */
   public static function getAllTabs() {
-    $contactTypes = CRM_Contact_BAO_ContactType::basicTypes(TRUE);
+    $enabledContactTypes = CRM_Contact_BAO_ContactType::basicTypes();
     $tabs = CRM_Contact_Page_View_Summary::basicTabs();
-    foreach (CRM_Core_Component::getEnabledComponents() as $name => $component) {
+    foreach (CRM_Core_Component::getEnabledComponents() as $component) {
       $tab = $component->registerTab();
       if ($tab) {
         $tabs[] = $tab + ['id' => $component->getKeyword(), 'icon' => $component->getIcon()];
@@ -489,7 +501,7 @@ class CRM_Contactlayout_BAO_ContactLayout extends CRM_Contactlayout_DAO_ContactL
     $customGroups = \Civi\Api4\CustomGroup::get()
       ->addWhere('style', 'IN', ['Tab', 'Tab with table'])
       ->addWhere('is_active', '=', 1)
-      ->addWhere('extends', 'IN', array_merge(['Contact'], $contactTypes))
+      ->addWhere('extends', 'IN', array_merge(['Contact'], $enabledContactTypes))
       ->addOrderBy('weight')
       ->execute();
     foreach ($customGroups as $group) {
@@ -498,31 +510,27 @@ class CRM_Contactlayout_BAO_ContactLayout extends CRM_Contactlayout_DAO_ContactL
         'title' => $group['title'],
         'weight' => $weight += 10,
         'icon' => 'crm-i ' . ($group['icon'] ?? 'fa-gear'),
-        'contact_type' => $group['extends'] == 'Contact' ? NULL : $group['extends'],
+        'contact_type' => $group['extends'] == 'Contact' ? NULL : [$group['extends']],
       ];
     }
+    // Call the hook for extensions to add tabs
     $context = [
-      'contact_id' => CRM_Core_Session::getLoggedInContactID(),
-      'contact_type' => 'Individual',
+      'contact_id' => 0,
+      'contact_type' => NULL,
       'caller' => 'ContactLayout',
     ];
     CRM_Utils_Hook::tabset('civicrm/contact/view', $tabs, $context);
-    foreach ($tabs as &$tab) {
-      // Hack for CiviDiscount
-      if ($tab['id'] === 'discounts') {
-        $tabs[] = array(
-          'id' => 'discounts_assigned',
-          'title' => ts('Codes Assigned', ['domain' => 'org.civicrm.module.cividiscount']),
-          'weight' => 115,
-          'icon' => $tab['icon'],
-          'contact_type' => 'Organization',
-          'is_active' => TRUE,
-        );
-      }
-      $tab['is_active'] = TRUE;
+    $allTabs = [];
+    foreach ($tabs as $index => $tab) {
+      // Every tab OUGHT to have an 'id' but the documentation about this has been unclear.
+      // Proactively convert array key to id if missing.
+      $allTabs[] = $tab + [
+        'is_active' => TRUE,
+        'id' => $index,
+      ];
     }
-    usort($tabs, ['CRM_Utils_Sort', 'cmpFunc']);
-    return $tabs;
+    usort($allTabs, ['CRM_Utils_Sort', 'cmpFunc']);
+    return $allTabs;
   }
 
 }

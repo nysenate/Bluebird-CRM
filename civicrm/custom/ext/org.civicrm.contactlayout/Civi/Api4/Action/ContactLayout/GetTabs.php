@@ -30,6 +30,10 @@ class GetTabs extends \Civi\Api4\Generic\BasicGetAction {
         'data_type' => 'String',
       ],
       [
+        'name' => 'contact_type',
+        'data_type' => 'Array',
+      ],
+      [
         'name' => 'is_active',
         'data_type' => 'Boolean',
       ],
