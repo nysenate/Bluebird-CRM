@@ -506,7 +506,7 @@ class CRM_Report_Form_Activity extends CRM_Report_Form {
           str_contains($clause, 'civicrm_phone_source.') ||
           str_contains($clause, 'civicrm_employer_target.') ||
           str_contains($clause, 'civicrm_employer_source.') ||
-          str_contains($clause, 'civicrm_address_')
+          str_contains($clause, 'civicrm_address_') ||
           str_contains($clause, 'district_info_civireport.') //NYSS 12558
         ) {
           $removeKeys[] = $key;
@@ -525,7 +525,7 @@ class CRM_Report_Form_Activity extends CRM_Report_Form {
           str_contains($clause, 'civicrm_phone_assignee.') ||
           str_contains($clause, 'civicrm_employer_target.') ||
           str_contains($clause, 'civicrm_employer_assignee.') ||
-          str_contains($clause, 'civicrm_address_')
+          str_contains($clause, 'civicrm_address_') ||
           str_contains($clause, 'district_info_civireport.') //NYSS 12558
         ) {
           $removeKeys[] = $key;
@@ -549,7 +549,7 @@ class CRM_Report_Form_Activity extends CRM_Report_Form {
           str_contains($clause, 'civicrm_employer_contact_source_employer') ||
           str_contains($clause, 'civicrm_employer_contact_assignee_employer') ||
           str_contains($clause, 'civicrm_employer_contact_target_employer') ||
-          str_contains($clause, 'civicrm_address_')
+          str_contains($clause, 'civicrm_address_') ||
           str_contains($clause, 'civicrm_value_district_') //NYSS 12558
         ) {
           $this->_selectClauses[$key] = "GROUP_CONCAT(DISTINCT $clause SEPARATOR ';') as $clause";

@@ -60,8 +60,8 @@ function inbox_civicrm_navigationMenu(&$menu) {
 
 function inbox_civicrm_permission(&$permissions) {
   $permissions['access inbox polling'] = [
-    'Bluebird: access inbox polling',
-    'Access inbox polling tools.',
+    'label' => 'Bluebird: access inbox polling',
+    'description' => 'Access inbox polling tools.',
   ];
 }
 

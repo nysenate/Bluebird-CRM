@@ -35,12 +35,12 @@ fi
 echo "running drupal db upgrade..."
 $drush $instance updb -y -q
 
+echo "upgrade extensions..."
+$drush $instance cvapi extension.upgrade --quiet
+
 ## upgrade civicrm db
 echo "running civicrm db upgrade..."
 $drush $instance civicrm-upgrade-db -y -q
-
-echo "upgrade extensions..."
-$drush $instance cvapi extension.upgrade --quiet
 
 php $script_dir/../civicrm/scripts/logUpdateSchema.php -S $instance
 

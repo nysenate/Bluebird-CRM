@@ -527,7 +527,8 @@ AND    (TABLE_NAME LIKE 'log_civicrm_%' $nonStandardTableNameString )
    * @return array|mixed|string
    */
   private function _getColumnQuery($col, $createQuery) {
-    $line = preg_grep("/^  `$col` /", $createQuery);
+    //NYSS case-insensitive
+    $line = preg_grep("/^  `$col` /i", $createQuery);
     $line = rtrim(array_pop($line), ',');
     // CRM-11179
     $line = self::fixTimeStampAndNotNullSQL($line);
@@ -718,7 +719,8 @@ WHERE  table_schema IN ('{$this->db}', '{$civiDB}')";
     $diff = ['ADD' => [], 'MODIFY' => [], 'OBSOLETE' => []];
 
     // Columns to be added
-    $diff['ADD'] = array_diff(array_keys($civiTableSpecs), array_keys($logTableSpecs));
+    //NYSS case-insensitive comparison
+    $diff['ADD'] = array_map('strtolower', array_udiff(array_keys($civiTableSpecs), array_keys($logTableSpecs), 'strcasecmp'));
 
     // Columns to be modified
     // Only pick columns where there is a spec change and the column definition was not deliberately modified by
@@ -727,7 +729,8 @@ WHERE  table_schema IN ('{$this->db}', '{$civiDB}')";
       if (!isset($logTableSpecs[$col]) || !is_array($logTableSpecs[$col])) {
         $logTableSpecs[$col] = [];
       }
-      $specDiff = array_diff($civiTableSpecs[$col], $logTableSpecs[$col]);
+      //NYSS case-insensitive comparison
+      $specDiff = array_map('strtolower', array_udiff($civiTableSpecs[$col], $logTableSpecs[$col], 'strcasecmp'));
       if (!empty($specDiff) && $col !== 'id' && !in_array($col, $diff['ADD'])) {
         if (empty($colSpecs['EXTRA']) || (!empty($colSpecs['EXTRA']) && $colSpecs['EXTRA'] !== 'auto_increment')) {
           // ignore 'id' column for any spec changes, to avoid any auto-increment mysql errors
@@ -763,7 +766,8 @@ WHERE  table_schema IN ('{$this->db}', '{$civiDB}')";
     }
 
     // columns to made obsolete by turning into not-null
-    $oldCols = array_diff(array_keys($logTableSpecs), array_keys($civiTableSpecs));
+    //NYSS case-insensitive comparison
+    $oldCols = array_map('strtolower', array_udiff(array_keys($logTableSpecs), array_keys($civiTableSpecs), 'strcasecmp'));
     foreach ($oldCols as $col) {
       if (!in_array($col, ['log_date', 'log_conn_id', 'log_user_id', 'log_action']) &&
         $logTableSpecs[$col]['IS_NULLABLE'] === 'NO'

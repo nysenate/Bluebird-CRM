@@ -3589,7 +3589,8 @@ WHERE cg.extends IN ('" . implode("','", $this->_customGroupExtends) . "') AND
     }
     else {
       //NYSS 4619 need to look for row count in two ways
-      $rowCount = (!empty($this->_contactSelected)) ? count($this->_contactSelected) : count($rows);
+      $countSelected = $this->get('_contactSelected');
+      $rowCount = (!empty($countSelected) && is_array($countSelected)) ? count($countSelected) : count($rows ?? []);
       //CRM_Core_Error::debug_var('$rowCount', $rowCount);
       if ($rowCount > $maxCountAllowed && !CRM_NYSS_BAO_NYSS::isAdmin()) {
         $msg = 'You cannot print, export, or generate a PDF for reports with more than 10,000 records. Please adjust your criteria to reduce the report size and try again.';
@@ -3604,7 +3605,8 @@ WHERE cg.extends IN ('" . implode("','", $this->_customGroupExtends) . "') AND
           }
 
           $this->sendEmail();
-        } elseif (!empty($this->outputHandler)) {
+        }
+        elseif (!empty($this->outputHandler)) {
           $this->outputHandler->download();
           CRM_Utils_System::civiExit();
         }

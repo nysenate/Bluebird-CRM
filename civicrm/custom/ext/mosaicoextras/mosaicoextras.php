@@ -129,8 +129,8 @@ function mosaicoextras_civicrm_mosaicoConfig(&$config) {
  */
 function mosaicoextras_civicrm_permission(&$permissions) {
   $permissions['delete Mosaico templates'] = [
-    E::ts('MosaicoExtras: delete Mosaico templates'),
-    E::ts('Grants the necessary API permissions to access mosaico templates and delete without Administer CiviCRM permission'),
+    'label' => E::ts('MosaicoExtras: delete Mosaico templates'),
+    'description' => E::ts('Grants the necessary API permissions to access mosaico templates and delete without Administer CiviCRM permission'),
   ];
 }
 
