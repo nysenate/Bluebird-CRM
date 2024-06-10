@@ -134,6 +134,7 @@ $prefs['versionCheck'] = false;
 $prefs['checksumTimeout'] = 7;
 $prefs['menubar_color'] = '#ffffff';
 $prefs['ajaxPopupsEnabled'] = 1;
+$prefs['acl_cache_refresh_mode'] = 1; //https://docs.civicrm.org/sysadmin/en/latest/setup/optimizations/#smart-group-and-acl-performance
 $prefs['mailing_format'] = "{contact.addressee}
 {contact.job_title}
 {contact.current_employer}
@@ -304,6 +305,10 @@ $prefs['mosaico_toolbar'] = 'bold italic forecolor backcolor hr bullist numlist 
 
 // OAuth
 $prefs['oauthClientRedirectUrl'] = "{$bbcfg['public.url.base']}/{$bbcfg['envname']}/{$bbcfg['shortname']}/oauth";
+
+if (strtoupper(substr(PHP_OS, 0, 3)) !== 'WIN' && !defined('CIVICRM_EXCLUDE_DIRS_PATTERN')) {
+  define('CIVICRM_EXCLUDE_DIRS_PATTERN', '@/(\.|node_modules|js/|css/|bower_components|packages/|sites/default/files/private)@');
+}
 
 if (isset($bbcfg['xhprof.profile']) && $bbcfg['xhprof.profile']) {
   function xhprof_shutdown_func($source, $run_id = null) {

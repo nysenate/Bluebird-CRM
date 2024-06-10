@@ -262,6 +262,10 @@ function nyss_ioimport_form_submit($form, &$form_state) {
   require_once 'api/api.php';
   require_once(dirname(__FILE__) . '/nyss_io_definitions.inc');
 
+  global $nyss_iofields;
+  global $nyss_iosuffixes;
+  global $nyss_ioprefixes;
+
   $config = CRM_Core_Config::singleton();
   $nyss_conn = nyss_getConnection($bbconfig);
 
@@ -336,7 +340,7 @@ function nyss_ioimport_form_submit($form, &$form_state) {
     //nyss_out('debug', $l, true); //exit();
 
     //seconds to process each row
-    set_time_limit (30);
+    set_time_limit (0);
 
     //increase line number
     ++$nyss_ioline;
@@ -832,7 +836,7 @@ function nyss_ioimportData($tbl, &$l, $dryrun, $form_state)
       }
       else {
         //if ($tbl=='civicrm_value_constituent_information_1' || $tbl=='civicrm_value_district_information_7') {
-        print_r($sqlUP."<br>"); //debug
+        //print_r($sqlUP."<br>"); //debug
         //}
       }
       nyss_out('debug', "line {$nyss_ioline}: updated record. " . $sqlUP, FALSE);
@@ -1265,8 +1269,7 @@ function _fixParseName(&$l)
 } // _fixParseName()
 
 
-function _fixPrefix(&$l, $aPrefix, $nyss_ioprefixes)
-{
+function _fixPrefix(&$l, $aPrefix, $nyss_ioprefixes) {
   if (isset($l['prefix_id'])) {
     $prefix_val = '';
 
@@ -1277,10 +1280,6 @@ function _fixPrefix(&$l, $aPrefix, $nyss_ioprefixes)
     //check if in prefix map
     elseif (array_key_exists(strtoupper($l['prefix_id']), $nyss_ioprefixes)) {
       $prefix_val = $nyss_ioprefixes[strtoupper($l['prefix_id'])];
-    }
-    //if odd, ignore
-    else {
-      $prefix_val = '';
     }
 
     $l['prefix_id'] = $aPrefix[$prefix_val];
