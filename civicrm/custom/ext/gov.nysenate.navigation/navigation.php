@@ -809,9 +809,9 @@ function _buildInboxMenu($inboxNavID) {
       ],
       $inboxNavID+3 => [
         'attributes' => [
-          'label' => 'Reports',
-          'name' => 'Reports',
-          'url' => 'civicrm/nyss/inbox/report',
+          'label' => 'Search Messages',
+          'name' => 'Search Messages',
+          'url' => 'civicrm/nyss/inbox/search',
           'permission' => 'access inbox polling',
           'operator' => 'AND',
           'separator' => 2,

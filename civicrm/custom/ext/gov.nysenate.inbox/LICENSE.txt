@@ -1,5 +1,5 @@
 Package: gov.nysenate.inbox
-Copyright (C) 2017, FIXME <FIXME>
+Copyright (C) 2024, Brian Shaughnessy <brian@lcdservices.biz>
 Licensed under the GNU Affero Public License 3.0 (below).
 
 -------------------------------------------------------------------------------
