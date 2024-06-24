@@ -1,0 +1,88 @@
+<?xml version="1.0" encoding="iso-8859-1" ?>
+
+<table>
+  <base>CRM/NYSS/Inbox</base>
+  <class>InboxMessagesMatched</class>
+  <name>nyss_inbox_messages_matched</name>
+  <comment>Links messages with matched contacts and activities</comment>
+  <log>true</log>
+
+  <field>
+    <name>id</name>
+    <type>int unsigned</type>
+    <required>true</required>
+    <comment>Unique InboxMessagesMatched ID</comment>
+    <html>
+      <type>Number</type>
+    </html>
+  </field>
+  <primaryKey>
+    <name>id</name>
+    <autoincrement>true</autoincrement>
+  </primaryKey>
+
+  <field>
+    <name>row_id</name>
+    <type>int</type>
+    <comment>FK to inbox row ID</comment>
+  </field>
+  <foreignKey>
+    <name>row_id</name>
+    <table>nyss_inbox_messages</table>
+    <key>id</key>
+    <onDelete>SET NULL</onDelete>
+  </foreignKey>
+  <index>
+    <name>idx_row_id</name>
+    <fieldName>row_id</fieldName>
+  </index>
+
+  <field>
+    <name>message_id</name>
+    <type>int</type>
+    <comment>FK to inbox message ID</comment>
+  </field>
+  <foreignKey>
+    <name>message_id</name>
+    <table>nyss_inbox_messages</table>
+    <key>message_id</key>
+    <onDelete>SET NULL</onDelete>
+  </foreignKey>
+  <index>
+    <name>idx_message_id</name>
+    <fieldName>message_id</fieldName>
+  </index>
+
+  <field>
+    <name>matched_id</name>
+    <type>int</type>
+    <comment>FK to matched contact ID</comment>
+  </field>
+  <foreignKey>
+    <name>matched_id</name>
+    <table>civicrm_contact</table>
+    <key>id</key>
+    <onDelete>SET NULL</onDelete>
+  </foreignKey>
+  <index>
+    <name>idx_matched_id</name>
+    <fieldName>matched_id</fieldName>
+  </index>
+
+  <field>
+    <name>activity_id</name>
+    <type>int</type>
+    <comment>FK to activity ID</comment>
+  </field>
+  <foreignKey>
+    <name>activity_id</name>
+    <table>civicrm_activity</table>
+    <key>id</key>
+    <onDelete>SET NULL</onDelete>
+  </foreignKey>
+  <index>
+    <name>idx_activity_id</name>
+    <fieldName>activity_id</fieldName>
+  </index>
+
+</table>
