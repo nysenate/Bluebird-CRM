@@ -25,6 +25,7 @@ function nyss_civihooks_menu_alter(&$items) {
 function nyss_civihooks_form_alter(&$form, &$form_state, $form_id) {
   //watchdog('bluebird', 'form_id: <pre>'.print_r($form_id, TRUE).'</pre>');
   //watchdog('bluebird', 'form: <pre>'.print_r($form, TRUE).'</pre>');
+  //watchdog('bluebird', 'form_state: <pre>'.print_r($form_state, TRUE).'</pre>');
 
   //6062/11725
   if ($form_id == 'user_profile_form') {
@@ -62,6 +63,8 @@ function nyss_civihooks_form_alter(&$form, &$form_state, $form_id) {
     $form['account']['roles'][4]['#prefix'] = '
       <div class="nyss-roles-section-header">Administrator Roles</div>
     ';
+
+    $form['#submit'][] = 'nyss_civihooks_user_profile_form_submit';
   }
 
   if ($form_id == 'user_cancel_confirm_form') {
@@ -98,7 +101,6 @@ function nyss_civihooks_form_alter(&$form, &$form_state, $form_id) {
 
   //watchdog('bluebird', 'form (after hook): <pre>'.print_r($form, TRUE).'</pre>');
 } // nyss_civihooks_form_alter()
-
 
 function nyss_civihooks_page_alter(&$page)
 {
@@ -189,6 +191,15 @@ function nyss_civihooks_getfile()
   }
   fclose($fh);
 } // nyss_civihooks_getfile()
+
+function nyss_civihooks_user_profile_form_submit($form, &$form_state) {
+  //watchdog('bluebird', 'form: <pre>'.print_r($form, TRUE).'</pre>');
+  //watchdog('bluebird', 'form_state: <pre>'.print_r($form_state, TRUE).'</pre>');
+
+  if ($form_state['clicked_button']['#value'] == 'Save') {
+    \Civi\Api4\System::flush(FALSE)->execute();
+  }
+}
 
 
 function nyss_civihooks_civicrm_config(&$config)
