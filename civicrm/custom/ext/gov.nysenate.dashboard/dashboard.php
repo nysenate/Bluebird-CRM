@@ -136,56 +136,49 @@ function dashboard_civicrm_entityTypes(&$entityTypes) {
 
 function dashboard_civicrm_pageRun(&$page) {
   if (is_a($page, 'CRM_Contact_Page_DashBoard')) {
+    $bbcfg = get_bluebird_instance_config();
+    $intranet_url = $bbcfg['intranet.url'] ?? '';
+    $intranet_label = $bbcfg['intranet.label'] ?? 'Bluebird Info';
+    $rss_url = $bbcfg['rss.url'] ?? '';
+    $rss_label = $bbcfg['rss.label'] ?? 'Latest Bluebird News';
+
     CRM_Core_Resources::singleton()->addScriptFile(CRM_Dashboard_ExtensionUtil::LONG_NAME, 'js/dashboard.js');
     CRM_Core_Resources::singleton()->addStyleFile(CRM_Dashboard_ExtensionUtil::LONG_NAME, 'css/dashboard.css');
 
-    CRM_Core_Resources::singleton()->addVars('NYSS', [
-      'bbNewsUrl' => '<a href="https://senateonline.nysenate.gov/BluebirdNews.nsf" target="_blank">Bluebird News</a>'
-    ]);
+    if ($intranet_url) {
+      $val = [
+        'bbNewsUrl' => "<a href=\"$intranet_url\" target=\"_blank\">$intranet_label</a>"
+      ];
+      CRM_Core_Resources::singleton()->addVars('NYSS', $val);
+    }
 
     //check to see if already loaded this session
     if (CRM_Core_Session::singleton()->get('bbDashNews')) {
       return;
     }
 
-    $rss_tags = [
-      'title',
-      'pubDate',
-      'description',
-      'link',
-      'category',
-      'creator',
-      'comments',
-      'guid',
-      'encoded',
-    ];
+    // if rss.url was specified in the config file, use it to pull the latest
+    // Bluebird News from an RSS feed.
+    if ($rss_url) {
+      $articles = _dashboard_RssToArray($rss_url);
+      //Civi::log()->debug('', ['$articles' => $articles]);
 
-    $bbcfg = get_bluebird_instance_config();
-    if (isset($bbcfg['news.url'])) {
-      $news_url = $bbcfg['news.url'];
-    }
-    else {
-      $news_url = 'https://senateonline.nysenate.gov/BluebirdNews.nsf';
-    }
-    $rss_url = "{$news_url}/feed.rss";
+      $news_html_items = [];
+      foreach ($articles as $article) {
+        $title = $article['title'];
+        $link = $article['link'];
+        $news_html_items[] = "<li><a href=\"$link\" target=\"_blank\">$title</a></li>";
+      }
 
-    $articles = _dashboard_RSStoArray('item', $rss_tags, $rss_url);
-    //Civi::log()->debug('', ['$articles' => $articles]);
+      if (count($news_html_items) > 0) {
+        $news_html_list = '<ul>'.implode("\n", $news_html_items).'</ul>';
 
-    $message = [];
-    foreach ($articles as $article) {
-      $content = CRM_Utils_String::ellipsify(strip_tags($article['encoded']), 100);
-      $message[] = "<li><a href='{$article['guid']}' target='_blank' title='{$content}'>{$article['title']}</a></li>";
-    }
+        //trigger notification
+        CRM_Core_Session::setStatus($news_html_list, $rss_label, 'info', ['unique' => TRUE]);
 
-    if (!empty($message)) {
-      $messageHtml = '<ul>'.implode("\n", $message).'</ul>';
-
-      //trigger notification
-      CRM_Core_Session::setStatus($messageHtml, 'Latest Bluebird News', 'info', ['unique' => TRUE]);
-
-      //set notification session var
-      CRM_Core_Session::singleton()->set('bbDashNews', TRUE);
+        //set notification session var
+        CRM_Core_Session::singleton()->set('bbDashNews', TRUE);
+      }
     }
   }
 }
@@ -197,26 +190,23 @@ function dashboard_civicrm_alterAngular(\Civi\Angular\Manager $angular) {
   $angular->add($changeSet);
 }
 
-function _dashboard_RSStoArray($tag, $array, $url) {
+function _dashboard_RssToArray($url) {
+  $tags = [ 'title', 'link', 'pubDate' ];
+  $rss_array = [];
+  $i = 0;
   $doc = new DOMdocument();
   $doc->load($url);
-  $rss_array = array();
-  $items = array();
-  $i = 0;
 
-  foreach ($doc->getElementsByTagName($tag) as $node) {
-    //only show the 5 most recent posts
-    if ($i > 4) {
+  foreach ($doc->getElementsByTagName('item') as $node) {
+    $items = [];
+    foreach ($tags as $value) {
+      $items[$value] = $node->getElementsByTagName($value)->item(0)->nodeValue;
+    }
+    $rss_array[] = $items;
+    // Only show the 5 most recent posts.
+    if (++$i > 4) {
       break;
     }
-    foreach ($array as $key => $value) {
-      $items[$value] = $node->getElementsByTagName($value)->item(0)->nodeValue;
-      if ($value == 'pubDate') {
-        $items[$value] = date("l, M j, Y g:ia", strtotime($items[$value]));
-      }
-    }
-    array_push($rss_array, $items);
-    $i++;
   }
 
   return $rss_array;
