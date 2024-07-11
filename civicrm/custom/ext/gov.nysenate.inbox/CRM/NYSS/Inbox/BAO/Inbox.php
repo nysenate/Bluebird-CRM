@@ -968,7 +968,7 @@ class CRM_NYSS_Inbox_BAO_Inbox {
     ]);
 
     if (empty($forwarderId)) {
-      $forwarderId = self::DEFAULT_CONTACT_ID;
+      $forwarderId = CRM_Core_Session::getLoggedInContactID() ?? self::DEFAULT_CONTACT_ID;
     }
 
     return $forwarderId;
