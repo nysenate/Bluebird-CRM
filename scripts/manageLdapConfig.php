@@ -143,7 +143,7 @@ function setFields($dbh, $tabname, $fields)
 
   $sql_set = $delim = '';
   foreach ($fields as $fldname => $fldval) {
-    $sql_set .= "$delim $fldname = '$fldval'";
+    $sql_set .= "$delim `$fldname` = '$fldval'";
     if (empty($delim)) {
       $delim = ',';
     }
