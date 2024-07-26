@@ -22,6 +22,15 @@ usage() {
   echo "Usage: $prog [--dry-run] [--verbose] [--ok] instanceName" >&2
 }
 
+deprecated() {
+  echo "This script has been deprecated due to it's dependency on the mysqludf_preg library." >&2
+  echo "Should you ever need to run it again, first rewrite all calls to preg_capture() with" >&2
+  echo "mysql built-in functions" >&2
+}
+
+deprecated;
+exit 1
+
 if [ $# -lt 1 ]; then
   usage
   exit 1
@@ -51,6 +60,11 @@ and n.subject='OMIS DATA' and n.note not rlike 'HOUSE: ([0-9]+)?\n'"
 
 tabs="civicrm_address a, civicrm_contact c, civicrm_note n"
 
+##
+# preg_capture along with the mysqludf_preg library has been deprecated (or removed).
+# If you ever need to use this script again, then this code
+# will need to be rewritten using built-in mysql functions
+##
 preg_house="preg_capture('/HOUSE: ([^\n]*)/', n.note, 1)"
 preg_num="preg_capture('/HOUSE: ([0-9]+)/', n.note, 1)"
 preg_suffix="preg_capture('/HOUSE: [0-9]*([^\n]*)/', n.note, 1)"

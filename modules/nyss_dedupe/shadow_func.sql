@@ -31,8 +31,8 @@ CREATE FUNCTION BB_ADDR_REPLACE (address varchar(255) CHARACTER SET utf8 COLLATE
         -- Loop through strings that might possibly be the street suffix
         replace_loop: LOOP
 
-            -- This regex allows us to skip lookups for alphanumeric components
-            SET address_part = preg_capture('/([A-Za-z]+)/', address, 1, occurence);
+            -- This regex allows us to skip lookups for non-alphanumeric components
+            SET address_part = REGEXP_SUBSTR(address, '[[:alpha:]]+', 1, occurence);
 
             -- Preg_capture will return null when it runs out of matches
             IF address_part IS NULL THEN
@@ -93,10 +93,10 @@ CREATE FUNCTION BB_NORMALIZE_ADDR (value VARCHAR(255))
         END IF;
 
         -- Lower the case and strip out all the ordinals from the street numbers
-        SET address = preg_replace('/(?<=[0-9])(?:st|nd|rd|th)/','', TRIM(LCASE(value)));
+        SET address = REGEXP_REPLACE(TRIM(LCASE(value)), '(?<=[0-9])(?:st|nd|rd|th)','');
 
         -- Standardize spacing from the street numbers from 7B, 7-B, 7 B => 7 B
-        SET address = preg_replace('/^(\d+)-?(\w+)\s/', '$1 $2 ', address);
+        SET address = REGEXP_REPLACE(address, '^(\d+)-?(\w+)\s', '$1 $2 ');
 
         -- Strip out all the different kinds of punctuation
         -- SPECIAL: Don't replace 's with spaces
@@ -120,7 +120,7 @@ CREATE FUNCTION BB_NORMALIZE_ADDR (value VARCHAR(255))
         SET address = REPLACE( address, 'south', 's');
 
         -- Normalize the spaces on the way out the door
-        RETURN preg_replace('/ +/', ' ', TRIM(address));
+        RETURN REGEXP_REPLACE(TRIM(address), ' +', ' ');
     END
 |
 
