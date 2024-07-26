@@ -69,8 +69,8 @@ if [ $cnt -gt 0 ]; then
 
     sql="
 update civicrm_mailing_component
-set body_html=preg_replace('|$html_regexp|', '', body_html),
-    body_text=preg_replace('|$text_regexp|', '', body_text)
+set body_html=regexp_replace(body_html, '$html_regexp', ''),
+    body_text=regexp_replace(body_text, '$text_regexp', '')
 where component_type='Footer';
 "
     $execSql -q $instance -c "$sql"
@@ -80,8 +80,8 @@ where component_type='Footer';
     $execSql -q $instance -c "$sql"
     echo "After fix-up:"
     sql="
-select preg_replace('|$html_regexp|', '', body_html),
-       preg_replace('|$text_regexp|', '', body_text)
+select regexp_replace(body_html,'$html_regexp', ''),
+       regexp_replace(body_text,'$text_regexp', '')
 from civicrm_mailing_component
 where component_type='Footer';
 "

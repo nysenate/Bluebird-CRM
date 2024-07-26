@@ -648,7 +648,10 @@ function delete_batch_notes($db, $lo_id, $hi_id)
     JOIN civicrm_address a ON n.entity_id = a.contact_id
     WHERE a.id BETWEEN $lo_id AND $hi_id
       AND n.subject LIKE '".REDIST_NOTE_PATTERN.INSTATE_NOTE."%'
-      AND preg_capture('/[[]id=([0-9]+)[]]/', n.subject, 1) BETWEEN $lo_id AND $hi_id
+      AND substring(n.subject 
+                    FROM INSTR(n.subject, '[id=') + 4
+                    FOR REGEXP_INSTR(n.subject,'\\\\[id=[0-9]+(?=\\\\])',1,1,1) - INSTR(n.subject, '[id=') - 4) 
+          BETWEEN $lo_id AND $hi_id
   ";
   bb_mysql_query($q, $db, true);
   $row_cnt = mysqli_affected_rows($db);

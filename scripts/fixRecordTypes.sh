@@ -24,6 +24,15 @@ usage() {
   echo "Usage: $prog [--dry-run] [--verbose] [--ok] [--update-contacts] instance" >&2
 }
 
+deprecated() {
+  echo "This script has been deprecated due to it's dependency on the mysqludf_preg library." >&2
+  echo "Should you ever need to run it again, first rewrite all calls to preg_capture() with" >&2
+  echo "mysql built-in functions" >&2
+}
+
+deprecated;
+exit 1
+
 
 if [ $# -lt 1 ]; then
   usage
@@ -56,6 +65,11 @@ echo "==> Processing CRM instance [$instance]" >&2
 # First, compare OMIS RT values to Bluebird record_type values, and fix
 # mismatched values using the OMIS RT value as the authoritative source.
 
+##
+# preg_capture along with the mysqludf_preg library has been deprecated (or removed).
+# If you ever need to use this script again, then this code
+# will need to be rewritten using built-in mysql functions
+##
 rt_capture="preg_capture('/RT: ([0-9]+)/',n.note,1)"
 tabs="civicrm_note n, civicrm_value_constituent_information_1 ci"
 updt="ci.record_type_61=$rt_capture"
