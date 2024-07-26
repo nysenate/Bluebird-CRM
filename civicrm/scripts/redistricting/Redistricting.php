@@ -519,6 +519,7 @@ function process_batch_results($db, &$orig_batch, &$batch_results, &$cnts)
     delete_batch_notes($db, $addr_lo_id, $addr_hi_id);
   }
   else {
+    bbscript_log(LL::DEBUG, "Skipping delete_batch_notes() with address ID range ($addr_lo_id - $addr_hi_id)");
     bbscript_log(LL::INFO, "UPDATE_NOTES disabled - No notes were removed and none will be added");
   }
 
@@ -648,9 +649,7 @@ function delete_batch_notes($db, $lo_id, $hi_id)
     JOIN civicrm_address a ON n.entity_id = a.contact_id
     WHERE a.id BETWEEN $lo_id AND $hi_id
       AND n.subject LIKE '".REDIST_NOTE_PATTERN.INSTATE_NOTE."%'
-      AND substring(n.subject 
-                    FROM INSTR(n.subject, '[id=') + 4
-                    FOR REGEXP_INSTR(n.subject,'\\\\[id=[0-9]+(?=\\\\])',1,1,1) - INSTR(n.subject, '[id=') - 4) 
+      AND REGEXP_REPLACE(n.subject, '^.*\\\\[id=([0-9]+)\\\\].*$', '$1')
           BETWEEN $lo_id AND $hi_id
   ";
   bb_mysql_query($q, $db, true);
