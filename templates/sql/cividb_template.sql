@@ -6152,7 +6152,7 @@ BEGIN
         replace_loop: LOOP
 
             
-            SET address_part = preg_capture('/([A-Za-z]+)/', address, 1, occurence);
+            SET address_part = REGEXP_SUBSTR(address, '[[:alpha:]]+', 1, occurence);
 
             
             IF address_part IS NULL THEN
@@ -6234,11 +6234,9 @@ BEGIN
             RETURN NULL;
         END IF;
 
+        SET address = REGEXP_REPLACE(TRIM(LCASE(value)), '(?<=[0-9])(?:st|nd|rd|th)','');
         
-        SET address = preg_replace('/(?<=[0-9])(?:st|nd|rd|th)/','', TRIM(LCASE(value)));
-
-        
-        SET address = preg_replace('/^(\d+)-?(\w+)\s/', '$1 $2 ', address);
+        SET address = REGEXP_REPLACE(address, '^(\d+)-?(\w+)\s', '$1 $2 ');
 
         
         
@@ -6262,7 +6260,7 @@ BEGIN
         SET address = REPLACE( address, 'south', 's');
 
         
-        RETURN preg_replace('/ +/', ' ', TRIM(address));
+        RETURN REGEXP_REPLACE(TRIM(address), ' +', ' ');
     END ;;
 DELIMITER ;
 /*!50003 SET sql_mode              = @saved_sql_mode */ ;
