@@ -413,9 +413,9 @@ class CRM_NYSS_Inbox_BAO_Inbox {
       LIMIT {$params['rowCount']}
       OFFSET {$params['offset']}
     ";
-    //Civi::log()->debug('getMessages', array('sql' => $sql));
+    //Civi::log()->debug('getMessages', ['sql' => $sql]);
     $dao = CRM_Core_DAO::executeQuery($sql);
-    //Civi::log()->debug('getMessages', array('$dao' => $dao));
+    //Civi::log()->debug('getMessages', ['$dao' => $dao]);
 
     // Add total.
     $params['total'] = CRM_Core_DAO::singleValueQuery('SELECT FOUND_ROWS();');
@@ -469,7 +469,8 @@ class CRM_NYSS_Inbox_BAO_Inbox {
             $msg['sender_name'] = $senderName;
         }
 
-        $msg['subject'] = CRM_NYSS_Inbox_BAO_Inbox::cleanText($dao->subject, 25) . $attachment;
+        $subject = CRM_NYSS_Inbox_BAO_Inbox::cleanText($dao->subject, 25) . $attachment;
+        $msg['subject'] = preg_replace("/[^A-Za-z0-9 ',.]/i", '', $subject);
         $msg['updated_date'] = date('M d, Y', strtotime($dao->updated_date));
         $msg['forwarder'] = $dao->forwarder;
 
