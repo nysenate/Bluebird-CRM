@@ -174,6 +174,18 @@ function contact_civicrm_buildForm($formName, &$form) {
       }
     }
   }
+
+  //16473 - make sure not date extends to future; may be able to revert in future version
+  if  ($formName == 'CRM_Note_Form_Note') {
+    if ($form->elementExists('note_date')) {
+      $ele =& $form->getElement('note_date');
+      //Civi::log()->debug(__FUNCTION__, ['ele' => $ele]);
+
+      $existingMaxYear = date('Y', strtotime('-10 year'));
+      $newMaxYear = date('Y', strtotime('+10 year'));
+      $ele->_attributes['data-crm-datepicker'] = str_replace($existingMaxYear, $newMaxYear, $ele->_attributes['data-crm-datepicker']);
+    }
+  }
 }
 
 /**

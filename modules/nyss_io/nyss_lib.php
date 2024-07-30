@@ -34,7 +34,7 @@ function nyss_out($type, $v, $toscreen = false) {
       ob_flush();
     }
     elseif ($type == 'debug' && defined('NYSSIODEBUG') && NYSSIODEBUG) {
-      CRM_Core_Error::debug_var('$type', $v, TRUE, TRUE, 'nyssio');
+      CRM_Core_Error::debug_var("$type", $v, TRUE, TRUE, 'nyssio');
     }
 
     unset($v);

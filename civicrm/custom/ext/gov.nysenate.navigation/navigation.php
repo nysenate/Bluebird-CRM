@@ -809,9 +809,9 @@ function _buildInboxMenu($inboxNavID) {
       ],
       $inboxNavID+3 => [
         'attributes' => [
-          'label' => 'Reports',
-          'name' => 'Reports',
-          'url' => 'civicrm/nyss/inbox/report',
+          'label' => 'Search Messages',
+          'name' => 'Search Messages',
+          'url' => 'civicrm/nyss/inbox/search',
           'permission' => 'access inbox polling',
           'operator' => 'AND',
           'separator' => 2,
@@ -1083,6 +1083,16 @@ function _buildAdminMenu($nyssBaseID) {
 
 //11965
 function _buildHelpMenu($nyssBaseID) {
+  $bbcfg = get_bluebird_instance_config();
+  $bburl = $bbcfg['intranet.url'] ?? '';
+  $bblabel = $bbcfg['intranet.label'] ?? 'Bluebird Info';
+  if ($bburl) {
+    $hasIntranetUrl = true;
+  }
+  else {
+    $hasIntranetUrl = false;
+  }
+
   $nav = [
     'attributes' => [
       'label' => 'Help',
@@ -1168,15 +1178,15 @@ function _buildHelpMenu($nyssBaseID) {
       ],
       $nyssBaseID+6 => [
         'attributes' => [
-          'label' => 'Bluebird News',
-          'name' => 'Bluebird News',
-          'url' => 'https://senateonline.nysenate.gov/BluebirdNews.nsf',
+          'label' => $bblabel,
+          'name' => $bblabel,
+          'url' => $bburl,
           'permission' => 'access CiviCRM',
           'operator' => 'OR',
           'separator' => 0,
           'parentID' => $nyssBaseID,
           'navID' => $nyssBaseID+6,
-          'active' => 1,
+          'active' => $hasIntranetUrl,
           'target' => '_blank',
         ],
       ],
