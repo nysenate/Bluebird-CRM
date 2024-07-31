@@ -76,7 +76,7 @@ class CRM_Core_Payment_iATSService extends CRM_Core_Payment {
     static $settings = array();
     if (empty($settings)) {
       try {
-        $settings = civicrm_api3('Setting', 'getvalue', array('name' => 'iats_settings'));
+        $settings = CRM_Iats_Utils::getSettings();
         if (empty($settings['days'])) {
           $settings['days'] = array('-1');
         }
@@ -253,7 +253,7 @@ class CRM_Core_Payment_iATSService extends CRM_Core_Payment {
         }
         $receive_ts = empty($receive_date) ? time() : strtotime($receive_date);
         // If the admin setting is in force, ensure it's compatible.
-        if (max($allow_days) > 0) {
+        if (!empty($allow_days) && (max($allow_days) > 0)) {
           $receive_ts = CRM_Iats_Transaction::contributionrecur_next($receive_ts, $allow_days);
         }
         // convert to a reliable format

@@ -1,5 +1,5 @@
 {
     "require": {
-        "smarty/smarty": "dev-master"
+        "smarty/smarty": "^5"
     }
 }

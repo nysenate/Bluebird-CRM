@@ -386,7 +386,7 @@ FROM civicrm_action_schedule cas
         $swapLocale = empty($row->context['locale']) ? NULL : \CRM_Utils_AutoClean::swapLocale($row->context['locale']);
 
         if ($actionSchedule->mode === 'SMS' || $actionSchedule->mode === 'User_Preference') {
-          CRM_Utils_Array::extend($errors, self::sendReminderSms($tokenRow, $actionSchedule, $dao->contactID));
+          CRM_Utils_Array::extend($errors, self::sendReminderSms($tokenRow, $actionSchedule, $dao->contactID, $dao->entityID));
         }
 
         if ($actionSchedule->mode === 'Email' || $actionSchedule->mode === 'User_Preference') {
@@ -543,7 +543,7 @@ FROM civicrm_action_schedule cas
     $activityParams = [
       'subject' => $tokenRow->render('subject'),
       'details' => $tokenRow->render('body_html'),
-      'source_contact_id' => $session->get('userID') ? $session->get('userID') : $contactID,
+      'source_contact_id' => $session->get('userID') ?: $contactID,
       'target_contact_id' => $contactID,
       // @todo - not required with api
       'activity_date_time' => CRM_Utils_Time::getTime('YmdHis'),
@@ -595,11 +595,12 @@ FROM civicrm_action_schedule cas
    * @param \Civi\Token\TokenRow $tokenRow
    * @param CRM_Core_DAO_ActionSchedule $schedule
    * @param int $toContactID
+   * @param int|null $entityID
    * @throws CRM_Core_Exception
    * @return array
    *   List of error messages.
    */
-  protected static function sendReminderSms($tokenRow, $schedule, $toContactID) {
+  protected static function sendReminderSms($tokenRow, $schedule, $toContactID, $entityID = NULL) {
     $toPhoneNumber = self::pickSmsPhoneNumber($toContactID);
     if (!$toPhoneNumber) {
       return ["sms_phone_missing" => "Couldn't find recipient's phone number."];
@@ -615,7 +616,7 @@ FROM civicrm_action_schedule cas
     $sms_body_text = $tokenRow->render('sms_body_text');
 
     $session = CRM_Core_Session::singleton();
-    $userID = $session->get('userID') ? $session->get('userID') : $tokenRow->context['contactId'];
+    $userID = $session->get('userID') ?: $tokenRow->context['contactId'];
     $smsParams = [
       'To' => $toPhoneNumber,
       'provider_id' => $schedule->sms_provider_id,
@@ -638,7 +639,8 @@ FROM civicrm_action_schedule cas
         $sms_body_text,
         $smsParams,
         $activity->id,
-        $userID
+        $userID,
+        $entityID
       );
     }
     catch (CRM_Core_Exception $e) {

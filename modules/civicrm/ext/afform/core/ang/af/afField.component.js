@@ -17,11 +17,8 @@
         ctrl = this,
         // Prefix used for SearchKit explicit joins
         namePrefix = '',
-        boolOptions = [{id: true, label: ts('Yes')}, {id: false, label: ts('No')}],
-        // Used to store chain select options loaded on-the-fly
-        chainSelectOptions = null,
-        // Only used for is_primary radio button
-        noOptions = [{id: true, label: ''}];
+        // Either defn.options or chain select options loaded on-the-fly
+        fieldOptions = null;
 
       // Attributes for each of the low & high date fields when using search_range
       this.inputAttrs = [];
@@ -41,13 +38,20 @@
           this.search_operator = this.defn.search_operator;
         }
 
+        fieldOptions = this.defn.options || null;
+
         // Ensure boolean options are truly boolean
-        if (this.defn.data_type === 'Boolean' && this.defn.options) {
-          this.defn.options.forEach((option) => option.id = !!option.id);
+        if (this.defn.data_type === 'Boolean') {
+          if (fieldOptions) {
+            fieldOptions.forEach((option) => option.id = !!option.id);
+          } else {
+            fieldOptions = [{id: true, label: ts('Yes')}, {id: false, label: ts('No')}];
+          }
         }
 
         // is_primary field - watch others in this afRepeat block to ensure only one is selected
         if (ctrl.fieldName === 'is_primary' && 'repeatIndex' in $scope.dataProvider) {
+          fieldOptions = [{id: true, label: ''}];
           $scope.$watch('dataProvider.afRepeat.getEntityController().getData()', function (items, prev) {
             var index = $scope.dataProvider.repeatIndex;
             // Set first item to primary if there isn't a primary
@@ -91,11 +95,11 @@
               crmApi4('Afform', 'getOptions', params)
                 .then(function(data) {
                   $('input[crm-ui-select]', $element).removeClass('loading').prop('disabled', !data.length);
-                  chainSelectOptions = data;
+                  fieldOptions = data;
                   validateValue();
                 });
             } else {
-              chainSelectOptions = null;
+              fieldOptions = null;
               validateValue();
             }
           }, true);
@@ -181,8 +185,14 @@
 
       // Set default value; ensure data type matches input type
       function setValue(value) {
+        // For values passed from the url, split
+        if (typeof value === 'string' && ctrl.isMultiple()) {
+          value = value.split(',');
+        }
         // correct the value type
-        value = correctValueType(value, ctrl.defn.data_type);
+        if (ctrl.defn.input_type !== 'DisplayOnly') {
+          value = correctValueType(value, ctrl.defn.data_type);
+        }
 
         if (ctrl.defn.input_type === 'Date' && typeof value === 'string' && value.startsWith('now')) {
           value = getRelativeDate(value);
@@ -206,9 +216,6 @@
             '>=': ('' + value).split('-')[0],
             '<=': ('' + value).split('-')[1] || '',
           };
-        }
-        else if (_.isString(value) && ctrl.isMultiple()) {
-          value = value.split(',');
         }
         $scope.getSetValue(value);
       }
@@ -264,7 +271,7 @@
       };
 
       $scope.getOptions = function () {
-        return chainSelectOptions || ctrl.defn.options || (ctrl.fieldName === 'is_primary' && ctrl.defn.input_type === 'Radio' ? noOptions : boolOptions);
+        return fieldOptions;
       };
 
       $scope.select2Options = function() {

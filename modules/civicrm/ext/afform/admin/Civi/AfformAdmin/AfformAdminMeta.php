@@ -43,19 +43,11 @@ class AfformAdminMeta {
   }
 
   /**
-   * Get info about an api entity, with special handling for contact types
+   * Get info about an api entity
    * @param string $entityName
    * @return array|null
    */
   public static function getApiEntity(string $entityName) {
-    $contactTypes = \CRM_Contact_BAO_ContactType::basicTypeInfo();
-    if (isset($contactTypes[$entityName])) {
-      return [
-        'entity' => 'Contact',
-        'contact_type' => $entityName,
-        'label' => $contactTypes[$entityName]['label'],
-      ];
-    }
     $info = \Civi\Api4\Entity::get(FALSE)
       ->addWhere('name', '=', $entityName)
       ->execute()->first();
@@ -99,10 +91,6 @@ class AfformAdminMeta {
       'select' => ['name', 'label', 'input_type', 'input_attrs', 'required', 'options', 'help_pre', 'help_post', 'serialize', 'data_type', 'entity', 'fk_entity', 'readonly', 'operators'],
       'where' => [['deprecated', '=', FALSE], ['input_type', 'IS NOT NULL']],
     ];
-    if (in_array($entityName, \CRM_Contact_BAO_ContactType::basicTypes(TRUE), TRUE)) {
-      $params['values']['contact_type'] = $entityName;
-      $entityName = 'Contact';
-    }
     if ($entityName === 'Address') {
       // The stateProvince option list is waaay too long unless country limits are set
       if (!\Civi::settings()->get('provinceLimit')) {
@@ -131,16 +119,18 @@ class AfformAdminMeta {
     }
     // Index by name
     $fields = array_column($fields, NULL, 'name');
-    if ($params['action'] === 'create') {
-      // Add existing entity field
-      $idField = CoreUtil::getIdFieldName($entityName);
+    $idField = CoreUtil::getIdFieldName($entityName);
+    // Convert ID field to existing entity field
+    if (isset($fields[$idField])) {
       $fields[$idField]['readonly'] = FALSE;
       $fields[$idField]['input_type'] = 'EntityRef';
       // Afform-only (so far) metadata tells the form to update an existing entity autofilled from this value
       $fields[$idField]['input_attrs']['autofill'] = 'update';
       $fields[$idField]['fk_entity'] = $entityName;
       $fields[$idField]['label'] = E::ts('Existing %1', [1 => CoreUtil::getInfoItem($entityName, 'title')]);
-      // Mix in alterations declared by afform entities
+    }
+    // Mix in alterations declared by afform entities
+    if ($params['action'] === 'create') {
       $afEntity = self::getMetadata()['entities'][$entityName] ?? [];
       if (!empty($afEntity['alterFields'])) {
         foreach ($afEntity['alterFields'] as $fieldName => $changes) {

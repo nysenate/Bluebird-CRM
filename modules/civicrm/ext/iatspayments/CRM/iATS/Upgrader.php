@@ -162,10 +162,10 @@ class CRM_Iats_Upgrader extends CRM_Extension_Upgrader_Base {
   public function upgrade_1_7_002() {
     $this->ctx->log->info('Applying update 1_7_002');
     try {
-      $insert = 'INSERT INTO civicrm_payment_token (contact_id, payment_processor_id, token, ip_address, email) 
+      $insert = 'INSERT INTO civicrm_payment_token (contact_id, payment_processor_id, token, ip_address, email)
         SELECT cr.contact_id, cr.payment_processor_id, icc.customer_code, icc.ip, icc.email FROM civicrm_contribution_recur cr INNER JOIN civicrm_iats_customer_codes icc ON cr.id = icc.recur_id';
       $dao = CRM_Core_DAO::executeQuery($insert);
-      $update = 'UPDATE civicrm_contribution_recur cr INNER JOIN civicrm_iats_customer_codes icc ON cr.id = icc.recur_id 
+      $update = 'UPDATE civicrm_contribution_recur cr INNER JOIN civicrm_iats_customer_codes icc ON cr.id = icc.recur_id
         INNER JOIN civicrm_payment_token pt on pt.token = icc.customer_code SET cr.payment_token_id = pt.id';
       $dao = CRM_Core_DAO::executeQuery($update);
       $rename = 'RENAME TABLE `civicrm_iats_customer_codes` TO `backup_iats_customer_codes`';
@@ -199,6 +199,12 @@ class CRM_Iats_Upgrader extends CRM_Extension_Upgrader_Base {
     catch (Exception $e) {
       $this->ctx->log->info($e->getMessage());
     }
+    return TRUE;
+  }
+
+  public function upgrade_1_9_001() {
+    $this->ctx->log->info('Applying update 1_9_001 convert settings from an array into individual settings in CiviCRM');
+    CRM_Iats_Utils::migrateSettings();
     return TRUE;
   }
 

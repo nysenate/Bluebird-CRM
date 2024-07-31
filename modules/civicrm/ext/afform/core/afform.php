@@ -334,6 +334,12 @@ function _afform_hook_civicrm_angularModules($e) {
       'exports' => [
         $afform['directive_name'] => 'E',
       ],
+      // Permissions needed for conditionally displaying edit-links
+      'permissions' => [
+        'administer afform',
+        'administer search_kit',
+        'all CiviCRM permissions and ACLs',
+      ],
     ];
   }
 
@@ -434,6 +440,7 @@ function afform_civicrm_permission(&$permissions) {
   $permissions['administer afform'] = [
     'label' => E::ts('FormBuilder: edit and delete forms'),
     'description' => E::ts('Allows non-admin users to create, update and delete forms'),
+    'implied_by' => ['administer CiviCRM'],
   ];
 }
 

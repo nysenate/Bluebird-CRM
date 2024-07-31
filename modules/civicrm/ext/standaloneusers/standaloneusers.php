@@ -6,10 +6,7 @@ if (!defined('CIVICRM_HIBP_URL')) {
 }
 
 require_once 'standaloneusers.civix.php';
-// phpcs:disable
 use CRM_Standaloneusers_ExtensionUtil as E;
-// phpcs:enable
-
 
 function standaloneusers_civicrm_alterBundle(CRM_Core_Resources_Bundle $bundle) {
   if ($bundle->name !== 'coreResources') {
@@ -77,13 +74,14 @@ function standaloneusers_civicrm_enable() {
  */
 function standaloneusers_civicrm_permission(&$permissions) {
   $permissions['access password resets'] = [
-    'label' => E::ts('Allow users to access the reset password system'),
+    'label' => E::ts('CiviCRM Standalone Users: Allow users to access the reset password system'),
   ];
-  // Concrete implementations of synthetic cms: permissions.
-  $permissions['administer users'] = [
-    'label' => E::ts('Administer user accounts'),
+  // provide expected cms: permissions.
+  $permissions['cms:administer users'] = [
+    'label' => E::ts('CiviCRM Standalone Users: Administer user accounts'),
+    'implies' => ['cms:view user account'],
   ];
-  $permissions['view user account'] = [
-    'label' => E::ts('View user accounts'),
+  $permissions['cms:view user account'] = [
+    'label' => E::ts('CiviCRM Standalone Users: View user accounts'),
   ];
 }

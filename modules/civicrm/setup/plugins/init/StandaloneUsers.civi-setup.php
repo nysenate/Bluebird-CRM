@@ -141,9 +141,10 @@ if (!defined('CIVI_SETUP')) {
             'view own manual batches',
             'access all custom data',
             'access contact reference fields',
-            // Standalone-defined permissions that have the same name as the cms: prefixed synthetic ones
-            'administer users',
-            'view user account',
+            // standaloneusers provides concrete permissions in place of
+            // the synthetic ones on other UF
+            'cms:administer users',
+            'cms:view user account',
             // The admninister CiviCRM data implicitly sets other permissions as well.
             // Such as, edit message templates and admnister dedupe rules.
             'administer CiviCRM Data',
@@ -178,9 +179,9 @@ if (!defined('CIVI_SETUP')) {
     $userID = \CRM_Core_BAO_CMSUser::create($params, 'email');
 
     // Assign 'admin' role to user
-    \Civi\Api4\User::update(FALSE)
-      ->addWhere('id', '=', $userID)
-      ->addValue('roles:name', ['admin'])
+    \Civi\Api4\UserRole::create(FALSE)
+      ->addValue('user_id', $userID)
+      ->addValue('role_id', $roles['admin']['id'])
       ->execute();
 
     $message = "Created new user \"{$e->getModel()->extras['adminUser']}\" (user ID #$userID, contact ID #$contactID) with 'admin' role and ";

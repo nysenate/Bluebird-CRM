@@ -197,9 +197,9 @@ class CRM_Utils_System_Standalone extends CRM_Utils_System_Base {
    *   the current menu path
    */
   public static function currentPath() {
-    $path = parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH);
-    $path = trim($path, '/');
-    return $path;
+    $path = parse_url($_SERVER['REQUEST_URI'] ?? '', PHP_URL_PATH);
+
+    return $path ? trim($path, '/') : NULL;
   }
 
   /**
@@ -243,6 +243,22 @@ class CRM_Utils_System_Standalone extends CRM_Utils_System_Base {
    */
   public function logout() {
     return Security::singleton()->logoutUser();
+  }
+
+  /**
+   * @inheritDoc
+   *
+   * Standalone offers different HTML templates for front and back-end routes.
+   *
+   */
+  public static function getContentTemplate($print = 0): string {
+    if ($print) {
+      return parent::getContentTemplate($print);
+    }
+    else {
+      $isPublic = CRM_Utils_System::isFrontEndPage();
+      return $isPublic ? 'CRM/common/standalone-frontend.tpl' : 'CRM/common/standalone.tpl';
+    }
   }
 
   /**
@@ -352,7 +368,7 @@ class CRM_Utils_System_Standalone extends CRM_Utils_System_Base {
     }
 
     return [
-      'url' => CRM_Utils_File::addTrailingSlash(CIVICRM_UF_BASEURL, '/') . '/core/',
+      'url' => CRM_Utils_File::addTrailingSlash(CIVICRM_UF_BASEURL, '/') . 'core/',
       'path' => CRM_Utils_File::addTrailingSlash($civicrm_root),
     ];
   }
@@ -370,6 +386,10 @@ class CRM_Utils_System_Standalone extends CRM_Utils_System_Base {
       return $civicrm_paths['cms.root']['path'];
     }
     throw new \RuntimeException("Standalone requires the path is set for now. Set \$civicrm_paths['cms.root']['path'] in civicrm.settings.php to the webroot.");
+  }
+
+  public function isFrontEndPage() {
+    return CRM_Core_Menu::isPublicRoute(CRM_Utils_System::currentPath() ?? '');
   }
 
   /**

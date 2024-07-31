@@ -82,5 +82,6 @@ return array(
     '5897ea0ac4cccf14d323035e65887801' => $vendorDir . '/symfony/polyfill-php82/bootstrap.php',
     '667aeda72477189d0494fecd327c3641' => $vendorDir . '/symfony/var-dumper/Resources/functions/dump.php',
     'bad842bce63596a608e2623519fb382c' => $vendorDir . '/xkerman/restricted-unserialize/src/function.php',
+    '23c7c9fb739a56c448f3bc838e8b186d' => $baseDir . '/functions.php',
     '59969633dcdb4ee3e2fec945065028d6' => $baseDir . '/guzzle_php81_shim.php',
 );

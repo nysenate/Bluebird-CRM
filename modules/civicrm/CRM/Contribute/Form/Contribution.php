@@ -160,6 +160,7 @@ class CRM_Contribute_Form_Contribution extends CRM_Contribute_Form_AbstractEditP
 
   /**
    * Price set as an array
+   *
    * @var array
    */
   public $_priceSet;
@@ -213,6 +214,8 @@ class CRM_Contribute_Form_Contribution extends CRM_Contribute_Form_AbstractEditP
    * @var bool
    */
   private $_payNow;
+
+  private $order;
 
   /**
    * Explicitly declare the form context.
@@ -862,7 +865,7 @@ class CRM_Contribute_Form_Contribution extends CRM_Contribute_Form_AbstractEditP
     $this->add('text', 'source', ts('Contribution Source'), CRM_Utils_Array::value('source', $attributes));
 
     // CRM-7362 --add campaigns.
-    CRM_Campaign_BAO_Campaign::addCampaign($this, CRM_Utils_Array::value('campaign_id', $this->_values));
+    CRM_Campaign_BAO_Campaign::addCampaign($this, $this->_values['campaign_id'] ?? NULL);
 
     if (empty($this->_payNow)) {
       CRM_Contribute_Form_SoftCredit::buildQuickForm($this);
@@ -930,32 +933,45 @@ class CRM_Contribute_Form_Contribution extends CRM_Contribute_Form_AbstractEditP
   }
 
   /**
+   * @throws \CRM_Core_Exception
+   */
+  protected function getOrder(): CRM_Financial_BAO_Order {
+    if (!$this->order) {
+      $this->initializeOrder();
+    }
+    return $this->order;
+  }
+
+  /**
+   * @throws \CRM_Core_Exception
+   */
+  protected function initializeOrder(): void {
+    $this->order = new CRM_Financial_BAO_Order();
+    $this->order->setPriceSetID($this->getPriceSetID());
+    $this->order->setForm($this);
+    $this->order->setPriceSelectionFromUnfilteredInput($this->getSubmittedValues());
+  }
+
+  /**
+   * Get the form context.
+   *
+   * This is important for passing to the buildAmount hook as CiviDiscount checks it.
+   *
+   * @return string
+   */
+  public function getFormContext(): string {
+    return 'contribution';
+  }
+
+  /**
    * Build the price set form.
    */
   private function buildPriceSet(): void {
-    $priceSetId = $this->getPriceSetID();
     $form = $this;
-    $component = 'contribution';
-    $priceSet = CRM_Price_BAO_PriceSet::getSetDetail($priceSetId, TRUE, FALSE);
-    $form->_priceSet = $priceSet[$priceSetId] ?? NULL;
-    $validPriceFieldIds = array_keys($form->_priceSet['fields']);
-
-    $form->_priceSet['id'] ??= $priceSetId;
-    $form->assign('priceSet', $form->_priceSet);
-
-    $feeBlock = &$form->_priceSet['fields'];
-
-    // Call the buildAmount hook.
-    CRM_Utils_Hook::buildAmount($component ?? 'contribution', $form, $feeBlock);
-
-    $hideAdminValues = !CRM_Core_Permission::check('edit contributions');
-    // CRM-14492 Admin price fields should show up on event registration if user has 'administer CiviCRM' permissions
-    $adminFieldVisible = CRM_Core_Permission::check('administer CiviCRM');
-    $checklifetime = FALSE;
-    foreach ($feeBlock as $id => $field) {
+    $this->_priceSet = $this->getOrder()->getPriceSetMetadata();
+    foreach ($this->getPriceFieldMetaData() as $id => $field) {
       $options = $field['options'] ?? NULL;
-
-      if (!is_array($options) || !in_array($id, $validPriceFieldIds)) {
+      if (!is_array($options)) {
         continue;
       }
 
@@ -970,6 +986,29 @@ class CRM_Contribute_Form_Contribution extends CRM_Contribute_Form_AbstractEditP
         );
       }
     }
+    $form->assign('priceSet', $form->_priceSet);
+  }
+
+  /**
+   * Get price field metadata.
+   *
+   * The returned value is an array of arrays where each array
+   * is an id-keyed price field and an 'options' key has been added to that
+   * array for any options.
+   *
+   * @api This function will not change in a minor release and is supported for
+   * use outside of core. This annotation / external support for properties
+   * is only given where there is specific test cover.
+   *
+   * @return array
+   */
+  public function getPriceFieldMetaData(): array {
+    if (!empty($this->_priceSet['fields'])) {
+      return $this->_priceSet['fields'];
+    }
+
+    $this->_priceSet['fields'] = $this->getOrder()->getPriceFieldsMetadata();
+    return $this->_priceSet['fields'];
   }
 
   /**
@@ -1432,7 +1471,7 @@ class CRM_Contribute_Form_Contribution extends CRM_Contribute_Form_AbstractEditP
     CRM_Contribute_BAO_ContributionSoft::processSoftContribution($params, $contribution);
 
     if ($isPledge) {
-      $form = CRM_Contribute_Form_Contribution_Confirm::handlePledge($form, $params, $contributionParams, $pledgeID, $contribution, $isEmailReceipt);
+      $this->processPledge($params, $contributionParams, $pledgeID, $contribution, $isEmailReceipt);
     }
 
     if ($contribution) {
@@ -1456,6 +1495,108 @@ class CRM_Contribute_Form_Contribution extends CRM_Contribute_Form_AbstractEditP
 
     $transaction->commit();
     return $contribution;
+  }
+
+  /**
+   * Previously shared code. Probably handles an online-only workflow & that code can go.
+   *
+   * @param $params
+   * @param $contributionParams
+   * @param $pledgeID
+   * @param $contribution
+   * @param $isEmailReceipt
+   */
+  private function processPledge($params, $contributionParams, $pledgeID, $contribution, $isEmailReceipt): void {
+    $form = $this;
+    if ($pledgeID) {
+      //when user doing pledge payments.
+      //update the schedule when payment(s) are made
+      $amount = $params['amount'];
+      $pledgePaymentParams = [];
+      foreach ($params['pledge_amount'] as $paymentId => $dontCare) {
+        $scheduledAmount = CRM_Core_DAO::getFieldValue(
+          'CRM_Pledge_DAO_PledgePayment',
+          $paymentId,
+          'scheduled_amount',
+          'id'
+        );
+
+        $pledgePayment = ($amount >= $scheduledAmount) ? $scheduledAmount : $amount;
+        if ($pledgePayment > 0) {
+          $pledgePaymentParams[] = [
+            'id' => $paymentId,
+            'contribution_id' => $contribution->id,
+            'status_id' => $contribution->contribution_status_id,
+            'actual_amount' => $pledgePayment,
+          ];
+          $amount -= $pledgePayment;
+        }
+      }
+      if ($amount > 0 && count($pledgePaymentParams)) {
+        $pledgePaymentParams[count($pledgePaymentParams) - 1]['actual_amount'] += $amount;
+      }
+      foreach ($pledgePaymentParams as $p) {
+        CRM_Pledge_BAO_PledgePayment::add($p);
+      }
+
+      //update pledge status according to the new payment statuses
+      CRM_Pledge_BAO_PledgePayment::updatePledgePaymentStatus($pledgeID);
+      return;
+    }
+    else {
+      //when user creating pledge record.
+      CRM_Core_Error::deprecatedWarning('code slated for removal, believed to be only reachable in the online flow');
+      $pledgeParams = [];
+      $pledgeParams['contact_id'] = $contribution->contact_id;
+      $pledgeParams['installment_amount'] = $pledgeParams['actual_amount'] = $contribution->total_amount;
+      $pledgeParams['contribution_id'] = $contribution->id;
+      $pledgeParams['contribution_page_id'] = $contribution->contribution_page_id;
+      $pledgeParams['financial_type_id'] = $contribution->financial_type_id;
+      $pledgeParams['frequency_interval'] = $params['pledge_frequency_interval'];
+      $pledgeParams['installments'] = $params['pledge_installments'];
+      $pledgeParams['frequency_unit'] = $params['pledge_frequency_unit'];
+      if ($pledgeParams['frequency_unit'] === 'month') {
+        $pledgeParams['frequency_day'] = intval(date("d"));
+      }
+      else {
+        $pledgeParams['frequency_day'] = 1;
+      }
+      $pledgeParams['create_date'] = $pledgeParams['start_date'] = $pledgeParams['scheduled_date'] = date("Ymd");
+      if (!empty($params['start_date'])) {
+        $pledgeParams['frequency_day'] = intval(date("d", strtotime($params['start_date'])));
+        $pledgeParams['start_date'] = $pledgeParams['scheduled_date'] = date('Ymd', strtotime($params['start_date']));
+      }
+      $pledgeParams['status_id'] = $contribution->contribution_status_id;
+      $pledgeParams['max_reminders'] = $form->_values['max_reminders'];
+      $pledgeParams['initial_reminder_day'] = $form->_values['initial_reminder_day'];
+      $pledgeParams['additional_reminder_day'] = $form->_values['additional_reminder_day'];
+      $pledgeParams['is_test'] = $contribution->is_test;
+      $pledgeParams['acknowledge_date'] = date('Ymd');
+      $pledgeParams['original_installment_amount'] = $pledgeParams['installment_amount'];
+
+      //inherit campaign from contirb page.
+      $pledgeParams['campaign_id'] = $contributionParams['campaign_id'] ?? NULL;
+
+      $pledge = CRM_Pledge_BAO_Pledge::create($pledgeParams);
+
+      $form->_params['pledge_id'] = $pledge->id;
+
+      //send acknowledgment email. only when pledge is created
+      if ($pledge->id && $isEmailReceipt) {
+        //build params to send acknowledgment.
+        $pledgeParams['id'] = $pledge->id;
+        $pledgeParams['receipt_from_name'] = $form->_values['receipt_from_name'];
+        $pledgeParams['receipt_from_email'] = $form->_values['receipt_from_email'];
+
+        //scheduled amount will be same as installment_amount.
+        $pledgeParams['scheduled_amount'] = $pledgeParams['installment_amount'];
+
+        //get total pledge amount.
+        $pledgeParams['total_pledge_amount'] = $pledge->amount;
+
+        CRM_Pledge_BAO_Pledge::sendAcknowledgment($form, $pledgeParams);
+      }
+    }
   }
 
   /**
@@ -1979,19 +2120,22 @@ class CRM_Contribute_Form_Contribution extends CRM_Contribute_Form_AbstractEditP
         $params[$f] = $formValues[$f] ?? NULL;
       }
       if ($this->_id && $action & CRM_Core_Action::UPDATE) {
+        // @todo - should we remove all this - if it's going from Pending to Completed then
+        // add payment handles that - what statuses CAN be changed here?
+        // Also - the changing of is_pay_later to 0 here has been debated at times
+        // as it could be argued it still showed the intent.
         // Can only be updated to contribution which is handled via Payment.create
         $params['contribution_status_id'] = $this->getSubmittedValue('contribution_status_id');
-
-        // Set is_pay_later flag for back-office offline Pending status contributions CRM-8996
-        // else if contribution_status is changed to Completed is_pay_later flag is changed to 0, CRM-15041
-        if ($params['contribution_status_id'] == CRM_Core_PseudoConstant::getKey('CRM_Contribute_BAO_Contribution', 'contribution_status_id', 'Pending')) {
-          $params['is_pay_later'] = 1;
-        }
-        elseif ($params['contribution_status_id'] == CRM_Core_PseudoConstant::getKey('CRM_Contribute_BAO_Contribution', 'contribution_status_id', 'Completed')) {
+        if ($params['contribution_status_id'] == CRM_Core_PseudoConstant::getKey('CRM_Contribute_BAO_Contribution', 'contribution_status_id', 'Completed')) {
           // @todo - if the contribution is new then it should be Pending status & then we use
           // Payment.create to update to Completed.
+          // If contribution_status is changed to Completed is_pay_later flag is changed to 0, CRM-15041
           $params['is_pay_later'] = 0;
         }
+      }
+      // Set is_pay_later flag for new back-office offline Pending status contributions CRM-8996
+      if (!$this->getContributionID() && $params['contribution_status_id'] == CRM_Core_PseudoConstant::getKey('CRM_Contribute_BAO_Contribution', 'contribution_status_id', 'Pending')) {
+        $params['is_pay_later'] = 1;
       }
 
       $params['revenue_recognition_date'] = NULL;

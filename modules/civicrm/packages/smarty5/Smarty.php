@@ -5,21 +5,10 @@ class Smarty {
 
   private \Smarty\Smarty $smarty;
 
+  private $registeredPluginDirectories = [];
+
   public function __construct() {
     $this->smarty = new Smarty\Smarty();
-    global $civicrm_root;
-    $pluginsDirectory = $civicrm_root . DIRECTORY_SEPARATOR . 'CRM' . DIRECTORY_SEPARATOR . 'Core' . DIRECTORY_SEPARATOR . 'Smarty'  . DIRECTORY_SEPARATOR . 'plugins';
-    $files = scandir($pluginsDirectory);
-    foreach ($files as $file) {
-      if (str_starts_with($file, '.')) {
-        continue;
-      }
-      if (CRM_Utils_File::isIncludable($pluginsDirectory .DIRECTORY_SEPARATOR . $file)) {
-        require_once $pluginsDirectory .DIRECTORY_SEPARATOR . $file;
-        $parts = explode('.', $file);
-        $this->smarty->registerPlugin($parts[0], $parts[1], 'smarty_' . $parts[0] . '_' . $parts[1]);
-      }
-    }
   }
 
   public function __call($name, $arguments) {
@@ -51,6 +40,40 @@ class Smarty {
     else {
       $this->smarty->loadFilter($type, $name);
     }
+  }
+
+  /**
+   * @param null|string|array $pluginsDirectory
+   *
+   * @return void
+   * @throws \Smarty\Exception
+   */
+  public function addPluginsDir($pluginsDirectories): void {
+    foreach ((array) $pluginsDirectories as $pluginsDirectory) {
+      if (in_array($pluginsDirectory, $this->registeredPluginDirectories, TRUE)) {
+        continue;
+      }
+      $files = scandir($pluginsDirectory);
+      foreach ($files as $file) {
+        if (str_starts_with($file, '.')) {
+          continue;
+        }
+        $registeredPlugins = $this->smarty->registered_plugins;
+        if (CRM_Utils_File::isIncludable($pluginsDirectory . DIRECTORY_SEPARATOR . $file)) {
+          require_once $pluginsDirectory . DIRECTORY_SEPARATOR . $file;
+          $parts = explode('.', $file);
+          if (!empty($registeredPlugins[$parts[0]][$parts[1]])) {
+            continue;
+          }
+          $this->smarty->registerPlugin($parts[0], $parts[1], 'smarty_' . $parts[0] . '_' . $parts[1]);
+        }
+      }
+      $this->registeredPluginDirectories[] = $pluginsDirectory;
+    }
+  }
+
+  public function getVersion(): ?int {
+    return 5;
   }
 
 }

@@ -224,7 +224,7 @@ class CRM_Member_Form_Membership extends CRM_Member_Form {
     }
 
     $this->assign('customDataType', 'Membership');
-    $this->assign('customDataSubType', $this->_memType);
+    $this->assign('customDataSubType', $this->getMembershipValue('membership_type_id'));
 
     $this->setPageTitle(ts('Membership'));
   }
@@ -323,7 +323,7 @@ DESC limit 1");
     $isUpdateToExistingRecurringMembership = $this->isUpdateToExistingRecurringMembership();
     // build price set form.
     $buildPriceSet = FALSE;
-    if ($this->_priceSetId || !empty($_POST['price_set_id'])) {
+    if ($this->isAjaxOverLoadMode() || !empty($_POST['price_set_id'])) {
       if (!empty($_POST['price_set_id'])) {
         $buildPriceSet = TRUE;
       }
@@ -333,11 +333,10 @@ DESC limit 1");
         $getOnlyPriceSetElements = FALSE;
       }
 
-      $this->set('priceSetId', $this->_priceSetId);
-      CRM_Price_BAO_PriceSet::buildPriceSet($this, 'membership', FALSE);
+      $this->buildMembershipPriceSet();
 
       $optionsMembershipTypes = [];
-      foreach ($this->_priceSet['fields'] as $pField) {
+      foreach ($this->getPriceFieldMetaData() as $pField) {
         if (empty($pField['options'])) {
           continue;
         }
@@ -409,24 +408,21 @@ DESC limit 1");
     // retrieve all memberships
     $allMembershipInfo = [];
     foreach ($this->allMembershipTypeDetails as $key => $values) {
-      if ($this->_mode && empty($values['minimum_fee'])) {
-        continue;
-      }
-      else {
-        $memberOfContactId = $values['member_of_contact_id'] ?? NULL;
-        if (empty($selMemTypeOrg[$memberOfContactId])) {
-          $selMemTypeOrg[$memberOfContactId] = CRM_Core_DAO::getFieldValue('CRM_Contact_DAO_Contact',
-            $memberOfContactId,
-            'display_name',
-            'id'
-          );
 
-          $selOrgMemType[$memberOfContactId][0] = ts('- select -');
-        }
-        if (empty($selOrgMemType[$memberOfContactId][$key])) {
-          $selOrgMemType[$memberOfContactId][$key] = $values['name'] ?? NULL;
-        }
+      $memberOfContactId = $values['member_of_contact_id'] ?? NULL;
+      if (empty($selMemTypeOrg[$memberOfContactId])) {
+        $selMemTypeOrg[$memberOfContactId] = CRM_Core_DAO::getFieldValue('CRM_Contact_DAO_Contact',
+          $memberOfContactId,
+          'display_name',
+          'id'
+        );
+
+        $selOrgMemType[$memberOfContactId][0] = ts('- select -');
       }
+      if (empty($selOrgMemType[$memberOfContactId][$key])) {
+        $selOrgMemType[$memberOfContactId][$key] = $values['name'] ?? NULL;
+      }
+
       $totalAmount = $values['minimum_fee'] ?? 0;
       // build membership info array, which is used when membership type is selected to:
       // - set the payment information block
@@ -574,6 +570,64 @@ DESC limit 1");
     $this->assign('isEmailEnabledForSite', ($mailingInfo['outBound_option'] != 2));
 
     parent::buildQuickForm();
+  }
+
+  /**
+   * Build the price set form.
+   *
+   * @return void
+   *
+   * @deprecated this should be updated to align with the other forms that use getOrder()
+   */
+  private function buildMembershipPriceSet() {
+    $form = $this;
+
+    $this->_priceSet = $this->getOrder()->getPriceSetMetadata();
+    $validPriceFieldIds = array_keys($this->getPriceFieldMetaData());
+
+    // Mark which field should have the auto-renew checkbox, if any. CRM-18305
+    // This is probably never set & relates to another form from previously shared code.
+    if (!empty($form->_membershipTypeValues) && is_array($form->_membershipTypeValues)) {
+      $autoRenewMembershipTypes = [];
+      foreach ($form->_membershipTypeValues as $membershipTypeValue) {
+        if ($membershipTypeValue['auto_renew']) {
+          $autoRenewMembershipTypes[] = $membershipTypeValue['id'];
+        }
+      }
+      foreach ($form->getPriceFieldMetaData() as $field) {
+        if (array_key_exists('options', $field) && is_array($field['options'])) {
+          foreach ($field['options'] as $option) {
+            if (!empty($option['membership_type_id'])) {
+              if (in_array($option['membership_type_id'], $autoRenewMembershipTypes)) {
+                $form->_priceSet['auto_renew_membership_field'] = $field['id'];
+                // Only one field can offer auto_renew memberships, so break here.
+                // May not relate to this form? From previously shared code.
+                break;
+              }
+            }
+          }
+        }
+      }
+    }
+    $form->assign('priceSet', $form->_priceSet);
+
+    $checklifetime = FALSE;
+    foreach ($this->getPriceFieldMetaData() as $id => $field) {
+      $options = $field['options'] ?? NULL;
+      if (!is_array($options) || !in_array($id, $validPriceFieldIds)) {
+        continue;
+      }
+      if (!empty($options)) {
+        CRM_Price_BAO_PriceField::addQuickFormElement($form,
+          'price_' . $field['id'],
+          $field['id'],
+          FALSE,
+          $field['is_required'] ?? FALSE,
+          NULL,
+          $options
+        );
+      }
+    }
   }
 
   /**
@@ -789,6 +843,44 @@ DESC limit 1");
   }
 
   /**
+   * Get price field metadata.
+   *
+   * The returned value is an array of arrays where each array
+   * is an id-keyed price field and an 'options' key has been added to that
+   * array for any options.
+   *
+   * @api  - this is not yet being used by the form - only by a test but
+   * follows standard methodology so should stay the same.
+   *
+   * @return array
+   */
+  public function getPriceFieldMetaData(): array {
+    $this->_priceSet['fields'] = $this->getOrder()->getPriceFieldsMetadata();
+    return $this->_priceSet['fields'];
+  }
+
+  /**
+   * @return \CRM_Financial_BAO_Order
+   * @throws \CRM_Core_Exception
+   */
+  protected function getOrder(): CRM_Financial_BAO_Order {
+    if (!$this->order) {
+      $this->initializeOrder();
+    }
+    return $this->order;
+  }
+
+  /**
+   * @throws \CRM_Core_Exception
+   */
+  protected function initializeOrder(): void {
+    $this->order = new CRM_Financial_BAO_Order();
+    $this->order->setPriceSetID($this->getPriceSetID());
+    $this->order->setForm($this);
+    $this->order->setPriceSelectionFromUnfilteredInput($this->getSubmittedValues());
+  }
+
+  /**
    * Process the form submission.
    *
    * @throws \CRM_Core_Exception
@@ -847,7 +939,6 @@ DESC limit 1");
    *
    */
   protected function emailReceipt($formValues) {
-    $membership = $this->getMembership();
     // retrieve 'from email id' for acknowledgement
     $receiptFrom = $formValues['from_email_address'] ?? NULL;
 
@@ -856,20 +947,8 @@ DESC limit 1");
       $paymentInstrument = CRM_Contribute_PseudoConstant::paymentInstrument();
       $formValues['paidBy'] = $paymentInstrument[$formValues['payment_instrument_id']];
     }
-
+    // @todo - as of 5.74 module is noisy deprecated - can stop assigning around 5.80.
     $this->assign('module', 'Membership');
-
-    if (!empty($formValues['contribution_id'])) {
-      $this->assign('currency', CRM_Core_DAO::getFieldValue('CRM_Contribute_DAO_Contribution', $formValues['contribution_id'], 'currency'));
-    }
-    else {
-      $this->assign('currency', CRM_Core_Config::singleton()->defaultCurrency);
-    }
-
-    if (!empty($formValues['contribution_status_id'])) {
-      $this->assign('contributionStatusID', $formValues['contribution_status_id']);
-      $this->assign('contributionStatus', CRM_Contribute_PseudoConstant::contributionStatus($formValues['contribution_status_id'], 'name'));
-    }
 
     if (!empty($formValues['is_renew'])) {
       $this->assign('receiptType', 'membership renewal');
@@ -877,14 +956,8 @@ DESC limit 1");
     else {
       $this->assign('receiptType', 'membership signup');
     }
-    $this->assign('receive_date', $formValues['receive_date'] ?? NULL);
+    // @todo - as of 5.74 form values is noisy deprecated - can stop assigning around 5.80.
     $this->assign('formValues', $formValues);
-
-    $this->assign('mem_start_date', CRM_Utils_Date::formatDateOnlyLong($membership['start_date']));
-    if (!CRM_Utils_System::isNull($membership['end_date'])) {
-      $this->assign('mem_end_date', CRM_Utils_Date::formatDateOnlyLong($membership['end_date']));
-    }
-    $this->assign('membership_name', CRM_Member_PseudoConstant::membershipType($membership['membership_type_id']));
 
     if ((empty($this->_contributorDisplayName) || empty($this->_contributorEmail))) {
       // in this case the form is being called statically from the batch editing screen
@@ -1402,6 +1475,13 @@ DESC limit 1");
       $url = CRM_Utils_System::url('civicrm/contact/view',
         "reset=1&cid={$this->_contactID}&selectedChild=member"
       );
+      // Refresh other tabs with related data
+      $this->ajaxResponse['updateTabs'] = [
+        '#tab_activity' => TRUE,
+      ];
+      if (CRM_Core_Permission::access('CiviContribute')) {
+        $this->ajaxResponse['updateTabs']['#tab_contribute'] = CRM_Contact_BAO_Contact::getCountComponent('contribution', $this->_contactID);
+      }
     }
     $session->replaceUserContext($url);
   }
@@ -1416,7 +1496,7 @@ DESC limit 1");
     foreach ($this->getCreatedMemberships() as $membership) {
       $endDate = $membership['end_date'] ?? NULL;
     }
-    $statusMsg = ts('Membership for %1 has been updated.', [1 => $this->_memberDisplayName]);
+    $statusMsg = ts('Membership for %1 has been updated.', [1 => htmlentities($this->_memberDisplayName)]);
     if ($endDate) {
       $endDate = CRM_Utils_Date::customFormat($endDate);
       $statusMsg .= ' ' . ts('The Membership Expiration Date is %1.', [1 => $endDate]);
@@ -1434,7 +1514,7 @@ DESC limit 1");
     foreach ($this->getCreatedMemberships() as $membership) {
       $statusMsg[$membership['membership_type_id']] = ts('%1 membership for %2 has been added.', [
         1 => $this->allMembershipTypeDetails[$membership['membership_type_id']]['name'],
-        2 => $this->_memberDisplayName,
+        2 => htmlentities($this->_memberDisplayName),
       ]);
 
       $memEndDate = $membership['end_date'] ?? NULL;
@@ -1776,7 +1856,7 @@ DESC limit 1");
     // be called on ADD
     foreach ($this->order->getMembershipLineItems() as $membershipLineItem) {
       if ($this->getAction() === CRM_Core_Action::ADD && $this->isQuickConfig()) {
-        $memTypeNumTerms = $this->getSubmittedValue('num_terms');
+        $memTypeNumTerms = $this->getSubmittedValue('num_terms') ?: 1;
       }
       else {
         // The submitted value is hidden when a price set is selected so

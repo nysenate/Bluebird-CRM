@@ -4,20 +4,20 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "3bd1562338f6d3746c9005a766bb0b52",
+    "content-hash": "a4cb83c948020f1527c8984f1c481914",
     "packages": [
         {
             "name": "smarty/smarty",
-            "version": "dev-master",
+            "version": "v5.2.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/smarty-php/smarty.git",
-                "reference": "beafa5ec31f2ca241a67ba9d04d868ba8596f62f"
+                "reference": "cdee97d3f1dff597be8583625adb42710da2c885"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/smarty-php/smarty/zipball/beafa5ec31f2ca241a67ba9d04d868ba8596f62f",
-                "reference": "beafa5ec31f2ca241a67ba9d04d868ba8596f62f",
+                "url": "https://api.github.com/repos/smarty-php/smarty/zipball/cdee97d3f1dff597be8583625adb42710da2c885",
+                "reference": "cdee97d3f1dff597be8583625adb42710da2c885",
                 "shasum": ""
             },
             "require": {
@@ -28,7 +28,6 @@
                 "phpunit/phpunit": "^8.5 || ^7.5",
                 "smarty/smarty-lexer": "^4.0.2"
             },
-            "default-branch": true,
             "type": "library",
             "extra": {
                 "branch-alias": {
@@ -73,9 +72,9 @@
             "support": {
                 "forum": "https://github.com/smarty-php/smarty/discussions",
                 "issues": "https://github.com/smarty-php/smarty/issues",
-                "source": "https://github.com/smarty-php/smarty/tree/master"
+                "source": "https://github.com/smarty-php/smarty/tree/v5.2.0"
             },
-            "time": "2024-03-27T21:57:07+00:00"
+            "time": "2024-05-28T21:45:16+00:00"
         },
         {
             "name": "symfony/polyfill-mbstring",
@@ -161,9 +160,7 @@
     "packages-dev": [],
     "aliases": [],
     "minimum-stability": "stable",
-    "stability-flags": {
-        "smarty/smarty": 20
-    },
+    "stability-flags": [],
     "prefer-stable": false,
     "prefer-lowest": false,
     "platform": [],

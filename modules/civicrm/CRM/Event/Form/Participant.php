@@ -52,6 +52,8 @@ class CRM_Event_Form_Participant extends CRM_Contribute_Form_AbstractEditPayment
    * The values for the contribution db object.
    *
    * @var array
+   *
+   * @deprecated use $this->getPriceFieldMetadata()
    */
   public $_values;
 
@@ -796,6 +798,9 @@ class CRM_Event_Form_Participant extends CRM_Contribute_Form_AbstractEditPayment
    * Process the form submission.
    */
   public function postProcess() {
+    if ($this->getPriceSetID()) {
+      $this->getOrder()->setPriceSelectionFromUnfilteredInput($this->getSubmittedValues());
+    }
     $statusMsg = $this->submit($this->getSubmittedValues());
     CRM_Core_Session::setStatus($statusMsg, ts('Saved'), 'success');
     $session = CRM_Core_Session::singleton();
@@ -821,6 +826,15 @@ class CRM_Event_Form_Participant extends CRM_Contribute_Form_AbstractEditPayment
       $session->replaceUserContext(CRM_Utils_System::url('civicrm/contact/view/participant',
         "reset=1&action=add&context={$this->_context}&cid={$this->_contactId}"
       ));
+    }
+    elseif ($this->_contactId) {
+      // Refresh other tabs with related data
+      $this->ajaxResponse['updateTabs'] = [
+        '#tab_activity' => TRUE,
+      ];
+      if (CRM_Core_Permission::access('CiviContribute')) {
+        $this->ajaxResponse['updateTabs']['#tab_contribute'] = CRM_Contact_BAO_Contact::getCountComponent('contribution', $this->_contactId);
+      }
     }
   }
 
@@ -1213,7 +1227,7 @@ class CRM_Event_Form_Participant extends CRM_Contribute_Form_AbstractEditPayment
       //retrieve custom information
       $this->_values = [];
       $this->_values['line_items'] = CRM_Price_BAO_LineItem::getLineItems($this->_id, 'participant');
-      self::initEventFee($form, $this->getPriceSetID());
+      $this->initEventFee($this->getPriceSetID());
       if ($form->_context === 'standalone' || $form->_context === 'participant') {
         $discountedEvent = CRM_Core_BAO_Discount::getOptionGroup($event['id'], 'civicrm_event');
         if (is_array($discountedEvent)) {
@@ -1255,26 +1269,13 @@ class CRM_Event_Form_Participant extends CRM_Contribute_Form_AbstractEditPayment
           ['class' => "crm-select2"]
         );
       }
-      if (CRM_Financial_BAO_FinancialType::isACLFinancialTypeStatus()
-        && empty($form->_values['fee'])
-        && ($_REQUEST['snippet'] ?? NULL) == CRM_Core_Smarty::PRINT_NOFORM
-      ) {
-        CRM_Core_Session::setStatus(ts('You do not have all the permissions needed for this page.'), 'Permission Denied', 'error');
-        return FALSE;
-      }
 
       CRM_Core_Payment_Form::buildPaymentForm($form, $form->_paymentProcessor, FALSE, TRUE, self::getDefaultPaymentInstrumentId());
       if (!$form->_mode) {
         $form->addElement('checkbox', 'record_contribution', ts('Record Payment?'), NULL,
           ['onclick' => "return showHideByValue('record_contribution','','payment_information','table-row','radio',false);"]
         );
-        // Check permissions for financial type first
-        if (CRM_Financial_BAO_FinancialType::isACLFinancialTypeStatus()) {
-          CRM_Financial_BAO_FinancialType::getAvailableFinancialTypes($financialTypes, $form->_action);
-        }
-        else {
-          $financialTypes = CRM_Contribute_BAO_Contribution::buildOptions('financial_type_id', 'create');
-        }
+        $financialTypes = CRM_Contribute_BAO_Contribution::buildOptions('financial_type_id', 'create');
 
         $form->add('select', 'financial_type_id',
           ts('Financial Type'),
@@ -1327,7 +1328,7 @@ class CRM_Event_Form_Participant extends CRM_Contribute_Form_AbstractEditPayment
 
     $form->add('select', 'from_email_address', ts('Receipt From'), $form->getAvailableFromEmails()['from_email_id']);
 
-    $form->add('textarea', 'receipt_text', ts('Confirmation Message'));
+    $form->add('wysiwyg', 'receipt_text', ts('Confirmation Message'));
 
     // Retrieve the name and email of the contact - form will be the TO for receipt email ( only if context is not standalone)
     if ($form->_context !== 'standalone') {
@@ -1349,27 +1350,37 @@ class CRM_Event_Form_Participant extends CRM_Contribute_Form_AbstractEditPayment
   /**
    * Initiate event fee.
    *
-   * @param self $form
    * @param int|null $priceSetId
    *   ID of the price set in use.
    *
    * @internal function has had several recent signature changes & is expected to be eventually removed.
    */
-  private static function initEventFee($form, $priceSetId): void {
+  private function initEventFee($priceSetId): void {
     if (!$priceSetId) {
       CRM_Core_Error::deprecatedWarning('this should not be reachable');
       return;
     }
+    $this->_priceSet = $this->getOrder()->getPriceSetMetadata();
+    $this->_priceSet['fields'] = $this->order->getPriceFieldsMetadata();
+    $this->_values['fee'] = $this->getPriceFieldMetaData();
+    $this->set('priceSet', $this->_priceSet);
+  }
 
-    $priceSet = CRM_Price_BAO_PriceSet::getSetDetail($priceSetId, NULL, FALSE);
-    $form->_priceSet = $priceSet[$priceSetId] ?? NULL;
-    $form->_values['fee'] = $form->_priceSet['fields'] ?? NULL;
-    $form->set('priceSet', $form->_priceSet);
-
-    $eventFee = $form->_values['fee'] ?? NULL;
-    if (!is_array($eventFee) || empty($eventFee)) {
-      $form->_values['fee'] = [];
-    }
+  /**
+   * Get price field metadata.
+   *
+   * The returned value is an array of arrays where each array
+   * is an id-keyed price field and an 'options' key has been added to that
+   * arry for any options.
+   *
+   * @api This function will not change in a minor release and is supported for
+   * use outside of core. This annotation / external support for properties
+   * is only given where there is specific test cover.
+   *
+   * @return array
+   */
+  public function getPriceFieldMetaData(): array {
+    return $this->order->getPriceFieldsMetadata();
   }
 
   /**
@@ -1405,9 +1416,6 @@ class CRM_Event_Form_Participant extends CRM_Contribute_Form_AbstractEditPayment
       if (!isset($lineItem[0])) {
         $lineItem[0] = [];
       }
-      CRM_Price_BAO_PriceSet::processAmount($this->_values['fee'],
-        $params, $lineItem[0]
-      );
       //CRM-11529 for quick config backoffice transactions
       //when financial_type_id is passed in form, update the
       //lineitems with the financial type selected in form
@@ -1419,16 +1427,9 @@ class CRM_Event_Form_Participant extends CRM_Contribute_Form_AbstractEditPayment
         }
       }
 
-      $params['fee_level'] = $params['amount_level'];
-      if ($this->isQuickConfig() && !empty($params['total_amount']) &&
-        $params['status_id'] != array_search('Partially paid', $participantStatus)
-      ) {
-        $params['fee_amount'] = $params['total_amount'];
-      }
-      else {
-        //fix for CRM-3086
-        $params['fee_amount'] = $params['amount'];
-      }
+      $params['fee_level'] = $this->getOrder()->getAmountLevel();
+      $params['fee_amount'] = $this->getOrder()->getTotalAmount();
+      $params['amount'] = $this->getOrder()->getTotalAmount();
     }
 
     return $params;
@@ -1558,10 +1559,11 @@ class CRM_Event_Form_Participant extends CRM_Contribute_Form_AbstractEditPayment
       'note' => $this->getSubmittedValue('note'),
       'is_test' => $this->isTest(),
     ];
-    if (!$this->getParticipantID()) {
-      // For new registrations fill in fee detail. For existing
-      // registrations we are not doing anything on this form that would require
-      // these fields to change.
+    if (!$this->getParticipantID() || !$this->getContributionID()) {
+      // For new registrations, or existing ones with no contribution,
+      // fill in fee detail. For existing
+      // registrations with a contribution the user will have the option to
+      // change the fees via a different form.
       $order = $this->getOrder();
       if ($order) {
         $participantParams['fee_level'] = $order->getAmountLevel();
@@ -1829,7 +1831,7 @@ INNER JOIN civicrm_price_field_value value ON ( value.id = lineItem.price_field_
         'PDFFilename' => ts('confirmation') . '.pdf',
         'modelProps' => [
           'participantID' => $participantID,
-          'userEnteredText' => $this->getSubmittedValue('receipt_text'),
+          'userEnteredHTML' => $this->getSubmittedValue('receipt_text'),
           'eventID' => $params['event_id'],
           'contributionID' => $contributionID,
         ],
@@ -2038,7 +2040,6 @@ INNER JOIN civicrm_price_field_value value ON ( value.id = lineItem.price_field_
         $this->submittableMoneyFields[] = 'price_' . $priceField['id'];
       }
     }
-    $this->order->setPriceSelectionFromUnfilteredInput($this->getSubmittedValues());
   }
 
   /**
@@ -2071,15 +2072,11 @@ INNER JOIN civicrm_price_field_value value ON ( value.id = lineItem.price_field_
    * change again.
    */
   private function buildAmount(): void {
-    $feeFields = $this->_values['fee'] ?? NULL;
-    //its time to call the hook.
-    CRM_Utils_Hook::buildAmount('event', $this, $feeFields);
-
     //build the priceset fields.
     // This is probably not required now - normally loaded from event ....
     $this->add('hidden', 'priceSetId', $this->getPriceSetID());
 
-    foreach ($feeFields as $field) {
+    foreach ($this->getPriceFieldMetaData() as $field) {
       // public AND admin visibility fields are included for back-office registration and back-office change selections
       $fieldId = $field['id'];
       $elementName = 'price_' . $fieldId;
@@ -2106,7 +2103,6 @@ INNER JOIN civicrm_price_field_value value ON ( value.id = lineItem.price_field_
         );
       }
     }
-    $this->_priceSet['id'] ??= $this->getPriceSetID();
     $this->assign('priceSet', $this->_priceSet);
   }
 

@@ -459,7 +459,7 @@ WHERE  email = %2
   ) {
     $dao = new CRM_Core_DAO();
 
-    $unsub = self::$_tableName;
+    $unsub = self::getTableName();
     $queueObject = new CRM_Mailing_Event_BAO_MailingEventQueue();
     $queue = $queueObject->getTableName();
     $mailingObject = new CRM_Mailing_BAO_Mailing();
@@ -501,7 +501,7 @@ WHERE  email = %2
       return $dao->N;
     }
     else {
-      return $dao->unsubs ? $dao->unsubs : 0;
+      return $dao->unsubs ?: 0;
     }
   }
 
@@ -533,7 +533,7 @@ WHERE  email = %2
 
     $dao = new CRM_Core_DAO();
 
-    $unsub = self::$_tableName;
+    $unsub = self::getTableName();
     $queueObject = new CRM_Mailing_Event_BAO_MailingEventQueue();
     $queue = $queueObject->getTableName();
     $mailingObject = new CRM_Mailing_BAO_Mailing();

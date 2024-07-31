@@ -13,11 +13,12 @@
  <summary>Abstraction of various SASL mechanism responses</summary>
  <description>
 Provides code to generate responses to common SASL mechanisms, including:
-- Digest-MD5
-- Cram-MD5
-- Plain
 - Anonymous
-- Login (Pseudo mechanism)
+- Cram-MD5 (DEPRECATED)
+- Digest-MD5 (DEPRECATED)
+- External
+- Login (Pseudo mechanism) (DEPRECATED)
+- Plain
 - SCRAM
  </description>
 
@@ -39,10 +40,16 @@ Provides code to generate responses to common SASL mechanisms, including:
   <email>michael@bretterklieber.com</email>
   <active>no</active>
  </lead>
+ <lead>
+  <name>Armin Graefe</name>
+  <user>schengawegga</user>
+  <email>schengawegga@gmail.com</email>
+  <active>yes</active>
+ </lead>
 
- <date>2017-03-07</date>
+ <date>2023-12-21</date>
  <version>
-  <release>1.1.0</release>
+  <release>1.2.0</release>
   <api>1.1.0</api>
  </version>
  <stability>
@@ -51,10 +58,9 @@ Provides code to generate responses to common SASL mechanisms, including:
  </stability>
  <license uri="http://www.opensource.org/licenses/bsd-license.php">BSD</license>
  <notes>
-* Set minimum PHP version to 5.4.0
-* Set minimum PEAR version to 1.10.1
-
-* Request #21033: PHP warning depreciated
+* feature: PHP8.2 ready
+* bugfix: scram-sha-224 broken #14
+* task: mark authentication methods cram-md5, digest-md5, and login as deprecated #14
  </notes>
 
  <contents>
@@ -89,6 +95,24 @@ Provides code to generate responses to common SASL mechanisms, including:
  <phprelease />
 
  <changelog>
+
+  <release>
+   <version>
+    <release>1.2.0</release>
+    <api>1.1.0</api>
+   </version>
+   <stability>
+    <release>stable</release>
+    <api>stable</api>
+   </stability>
+   <date>2023-12-21</date>
+   <license uri="http://www.opensource.org/licenses/bsd-license.php">BSD</license>
+   <notes>
+* feature: PHP8.2 ready
+* bugfix: scram-sha-224 broken #14
+* task: mark authentication methods cram-md5, digest-md5, and login as deprecated #14
+   </notes>
+  </release>
 
   <release>
    <version>

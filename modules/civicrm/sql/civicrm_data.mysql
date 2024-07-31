@@ -7044,24 +7044,7 @@ INSERT INTO civicrm_option_group
     (msg_title, msg_subject, msg_text, msg_html, workflow_name, workflow_id, is_default, is_reserved)
     VALUES
     ('Contributions - Duplicate Organization Alert', '{ts}CiviContribute Alert: Possible Duplicate Contact Record{/ts} - {contact.display_name}
-', '{ts}A contribution / membership signup was made on behalf of the organization listed below.{/ts}
-{ts}The information provided matched multiple existing database records based on the configured Duplicate Matching Rules for your site.{/ts}
-
-{ts}Organization Name{/ts}: {$onBehalfName}
-{ts}Organization Email{/ts}: {$onBehalfEmail}
-{ts}Organization Contact ID{/ts}: {$onBehalfID}
-
-{ts}If you think this may be a duplicate contact which should be merged with an existing record - Go to "Contacts >> Find and Merge Duplicate Contacts". Use the strict rule for Organizations to find the potential duplicates and merge them if appropriate.{/ts}
-
-{if $receiptMessage}
-###########################################################
-{ts}Copy of Contribution Receipt{/ts}
-
-###########################################################
-{$receiptMessage}
-
-{/if}
-', '<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+', '', '<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
@@ -7150,24 +7133,7 @@ INSERT INTO civicrm_option_group
     (msg_title, msg_subject, msg_text, msg_html, workflow_name, workflow_id, is_default, is_reserved)
     VALUES
     ('Contributions - Duplicate Organization Alert', '{ts}CiviContribute Alert: Possible Duplicate Contact Record{/ts} - {contact.display_name}
-', '{ts}A contribution / membership signup was made on behalf of the organization listed below.{/ts}
-{ts}The information provided matched multiple existing database records based on the configured Duplicate Matching Rules for your site.{/ts}
-
-{ts}Organization Name{/ts}: {$onBehalfName}
-{ts}Organization Email{/ts}: {$onBehalfEmail}
-{ts}Organization Contact ID{/ts}: {$onBehalfID}
-
-{ts}If you think this may be a duplicate contact which should be merged with an existing record - Go to "Contacts >> Find and Merge Duplicate Contacts". Use the strict rule for Organizations to find the potential duplicates and merge them if appropriate.{/ts}
-
-{if $receiptMessage}
-###########################################################
-{ts}Copy of Contribution Receipt{/ts}
-
-###########################################################
-{$receiptMessage}
-
-{/if}
-', '<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+', '', '<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
@@ -7260,122 +7226,7 @@ INSERT INTO civicrm_option_group
     (msg_title, msg_subject, msg_text, msg_html, workflow_name, workflow_id, is_default, is_reserved)
     VALUES
     ('Contributions - Receipt (off-line)', '{ts}Contribution Receipt{/ts} - {contact.display_name}
-', '{assign var="greeting" value="{contact.email_greeting_display}"}{if $greeting}{$greeting},{/if}
-
-{if {contribution.contribution_page_id.receipt_text|boolean}}
-{contribution.contribution_page_id.receipt_text}
-{elseif {contribution.paid_amount|boolean}} {ts}Below you will find a receipt for this contribution.{/ts}
-{/if}
-
-===========================================================
-{ts}Contribution Information{/ts}
-
-===========================================================
-{ts}Contributor{/ts}: {contact.display_name}
-{if \'{contribution.financial_type_id}\'}
-{ts}Financial Type{/ts}: {contribution.financial_type_id:label}
-{/if}
-{if $isShowLineItems}
----------------------------------------------------------
-{capture assign=ts_item}{ts}Item{/ts}{/capture}
-{capture assign=ts_qty}{ts}Qty{/ts}{/capture}
-{capture assign=ts_each}{ts}Each{/ts}{/capture}
-{if $isShowTax && {contribution.tax_amount|boolean}}
-{capture assign=ts_subtotal}{ts}Subtotal{/ts}{/capture}
-{capture assign=ts_taxRate}{ts}Tax Rate{/ts}{/capture}
-{capture assign=ts_taxAmount}{ts}Tax Amount{/ts}{/capture}
-{/if}
-{capture assign=ts_total}{ts}Total{/ts}{/capture}
-{$ts_item|string_format:"%-30s"} {$ts_qty|string_format:"%5s"} {$ts_each|string_format:"%10s"} {if $isShowTax && {contribution.tax_amount|boolean}} {$ts_subtotal|string_format:"%10s"} {$ts_taxRate} {$ts_taxAmount|string_format:"%10s"} {/if} {$ts_total|string_format:"%10s"}
-----------------------------------------------------------
-{foreach from=$lineItems item=line}
-{capture assign=ts_item}{$line.title}{/capture}{$ts_item|truncate:30:"..."|string_format:"%-30s"} {$line.qty|string_format:"%5s"} {$line.unit_price|crmMoney:\'{contribution.currency}\'|string_format:"%10s"} {if $isShowTax && {contribution.tax_amount|boolean}}{$line.line_total|crmMoney:\'{contribution.currency}\'|string_format:"%10s"} {if $line.tax_rate || $line.tax_amount != ""} {$line.tax_rate|string_format:"%.2f"} %   {$line.tax_amount|crmMoney:\'{contribution.currency}\'|string_format:"%10s"} {else}                  {/if} {/if}   {$line.line_total_inclusive|crmMoney:\'{contribution.currency}\'|string_format:"%10s"}
-{/foreach}
-{/if}
-
-
-{if $isShowTax && {contribution.tax_amount|boolean}}
-{ts}Amount before Tax{/ts} : {contribution.tax_exclusive_amount}
-{/if}
-{foreach from=$taxRateBreakdown item=taxDetail key=taxRate}
-{if $taxRate == 0}{ts}No{/ts} {$taxTerm}{else}{$taxTerm} {$taxDetail.percentage}%{/if} : {$taxDetail.amount|crmMoney:\'{contribution.currency}\'}
-{/foreach}
-
-{if $isShowTax}
-{ts}Total Tax Amount{/ts} : {contribution.tax_amount}
-{/if}
-{ts}Total Amount{/ts} : {contribution.total_amount}
-{if \'{contribution.receive_date}\'}
-{ts}Contribution Date{/ts}: {contribution.receive_date|crmDate:"shortdate"}
-{/if}
-{if \'{contribution.receipt_date}\'}
-{ts}Receipt Date{/ts}: {contribution.receipt_date|crmDate:"shortdate"}
-{/if}
-{if {contribution.payment_instrument_id|boolean} && {contribution.paid_amount|boolean}}
-{ts}Paid By{/ts}: {contribution.payment_instrument_id:label}
-{if \'{contribution.check_number}\'}
-{ts}Check Number{/ts}: {contribution.check_number}
-{/if}
-{/if}
-{if \'{contribution.trxn_id}\'}
-{ts}Transaction ID{/ts}: {contribution.trxn_id}
-{/if}
-
-{if !empty($ccContribution)}
-===========================================================
-{ts}Billing Name and Address{/ts}
-
-===========================================================
-{$billingName}
-{$address}
-
-===========================================================
-{ts}Credit Card Information{/ts}
-
-===========================================================
-{$credit_card_type}
-{$credit_card_number}
-{ts}Expires{/ts}: {$credit_card_exp_date|truncate:7:\'\'|crmDate}
-{/if}
-{if !empty($customGroup)}
-{foreach from=$customGroup item=value key=customName}
-===========================================================
-{$customName}
-===========================================================
-{foreach from=$value item=v key=n}
-{$n}: {$v}
-{/foreach}
-{/foreach}
-{/if}
-
-{if !empty($softCreditTypes) and !empty($softCredits)}
-{foreach from=$softCreditTypes item=softCreditType key=n}
-===========================================================
-{$softCreditType}
-===========================================================
-{foreach from=$softCredits.$n item=value key=label}
-{$label}: {$value}
-{/foreach}
-{/foreach}
-{/if}
-
-{if !empty($formValues.product_name)}
-===========================================================
-{ts}Premium Information{/ts}
-
-===========================================================
-{$formValues.product_name}
-{if $formValues.product_option}
-{ts}Option{/ts}: {$formValues.product_option}
-{/if}
-{if $formValues.product_sku}
-{ts}SKU{/ts}: {$formValues.product_sku}
-{/if}
-{if !empty($fulfilled_date)}
-{ts}Sent{/ts}: {$fulfilled_date|crmDate}
-{/if}
-{/if}
-', '<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+', '', '<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
@@ -7698,122 +7549,7 @@ INSERT INTO civicrm_option_group
     (msg_title, msg_subject, msg_text, msg_html, workflow_name, workflow_id, is_default, is_reserved)
     VALUES
     ('Contributions - Receipt (off-line)', '{ts}Contribution Receipt{/ts} - {contact.display_name}
-', '{assign var="greeting" value="{contact.email_greeting_display}"}{if $greeting}{$greeting},{/if}
-
-{if {contribution.contribution_page_id.receipt_text|boolean}}
-{contribution.contribution_page_id.receipt_text}
-{elseif {contribution.paid_amount|boolean}} {ts}Below you will find a receipt for this contribution.{/ts}
-{/if}
-
-===========================================================
-{ts}Contribution Information{/ts}
-
-===========================================================
-{ts}Contributor{/ts}: {contact.display_name}
-{if \'{contribution.financial_type_id}\'}
-{ts}Financial Type{/ts}: {contribution.financial_type_id:label}
-{/if}
-{if $isShowLineItems}
----------------------------------------------------------
-{capture assign=ts_item}{ts}Item{/ts}{/capture}
-{capture assign=ts_qty}{ts}Qty{/ts}{/capture}
-{capture assign=ts_each}{ts}Each{/ts}{/capture}
-{if $isShowTax && {contribution.tax_amount|boolean}}
-{capture assign=ts_subtotal}{ts}Subtotal{/ts}{/capture}
-{capture assign=ts_taxRate}{ts}Tax Rate{/ts}{/capture}
-{capture assign=ts_taxAmount}{ts}Tax Amount{/ts}{/capture}
-{/if}
-{capture assign=ts_total}{ts}Total{/ts}{/capture}
-{$ts_item|string_format:"%-30s"} {$ts_qty|string_format:"%5s"} {$ts_each|string_format:"%10s"} {if $isShowTax && {contribution.tax_amount|boolean}} {$ts_subtotal|string_format:"%10s"} {$ts_taxRate} {$ts_taxAmount|string_format:"%10s"} {/if} {$ts_total|string_format:"%10s"}
-----------------------------------------------------------
-{foreach from=$lineItems item=line}
-{capture assign=ts_item}{$line.title}{/capture}{$ts_item|truncate:30:"..."|string_format:"%-30s"} {$line.qty|string_format:"%5s"} {$line.unit_price|crmMoney:\'{contribution.currency}\'|string_format:"%10s"} {if $isShowTax && {contribution.tax_amount|boolean}}{$line.line_total|crmMoney:\'{contribution.currency}\'|string_format:"%10s"} {if $line.tax_rate || $line.tax_amount != ""} {$line.tax_rate|string_format:"%.2f"} %   {$line.tax_amount|crmMoney:\'{contribution.currency}\'|string_format:"%10s"} {else}                  {/if} {/if}   {$line.line_total_inclusive|crmMoney:\'{contribution.currency}\'|string_format:"%10s"}
-{/foreach}
-{/if}
-
-
-{if $isShowTax && {contribution.tax_amount|boolean}}
-{ts}Amount before Tax{/ts} : {contribution.tax_exclusive_amount}
-{/if}
-{foreach from=$taxRateBreakdown item=taxDetail key=taxRate}
-{if $taxRate == 0}{ts}No{/ts} {$taxTerm}{else}{$taxTerm} {$taxDetail.percentage}%{/if} : {$taxDetail.amount|crmMoney:\'{contribution.currency}\'}
-{/foreach}
-
-{if $isShowTax}
-{ts}Total Tax Amount{/ts} : {contribution.tax_amount}
-{/if}
-{ts}Total Amount{/ts} : {contribution.total_amount}
-{if \'{contribution.receive_date}\'}
-{ts}Contribution Date{/ts}: {contribution.receive_date|crmDate:"shortdate"}
-{/if}
-{if \'{contribution.receipt_date}\'}
-{ts}Receipt Date{/ts}: {contribution.receipt_date|crmDate:"shortdate"}
-{/if}
-{if {contribution.payment_instrument_id|boolean} && {contribution.paid_amount|boolean}}
-{ts}Paid By{/ts}: {contribution.payment_instrument_id:label}
-{if \'{contribution.check_number}\'}
-{ts}Check Number{/ts}: {contribution.check_number}
-{/if}
-{/if}
-{if \'{contribution.trxn_id}\'}
-{ts}Transaction ID{/ts}: {contribution.trxn_id}
-{/if}
-
-{if !empty($ccContribution)}
-===========================================================
-{ts}Billing Name and Address{/ts}
-
-===========================================================
-{$billingName}
-{$address}
-
-===========================================================
-{ts}Credit Card Information{/ts}
-
-===========================================================
-{$credit_card_type}
-{$credit_card_number}
-{ts}Expires{/ts}: {$credit_card_exp_date|truncate:7:\'\'|crmDate}
-{/if}
-{if !empty($customGroup)}
-{foreach from=$customGroup item=value key=customName}
-===========================================================
-{$customName}
-===========================================================
-{foreach from=$value item=v key=n}
-{$n}: {$v}
-{/foreach}
-{/foreach}
-{/if}
-
-{if !empty($softCreditTypes) and !empty($softCredits)}
-{foreach from=$softCreditTypes item=softCreditType key=n}
-===========================================================
-{$softCreditType}
-===========================================================
-{foreach from=$softCredits.$n item=value key=label}
-{$label}: {$value}
-{/foreach}
-{/foreach}
-{/if}
-
-{if !empty($formValues.product_name)}
-===========================================================
-{ts}Premium Information{/ts}
-
-===========================================================
-{$formValues.product_name}
-{if $formValues.product_option}
-{ts}Option{/ts}: {$formValues.product_option}
-{/if}
-{if $formValues.product_sku}
-{ts}SKU{/ts}: {$formValues.product_sku}
-{/if}
-{if !empty($fulfilled_date)}
-{ts}Sent{/ts}: {$fulfilled_date|crmDate}
-{/if}
-{/if}
-', '<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+', '', '<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
@@ -10334,15 +10070,7 @@ INSERT INTO civicrm_option_group
     (msg_title, msg_subject, msg_text, msg_html, workflow_name, workflow_id, is_default, is_reserved)
     VALUES
     ('Contributions - Recurring Updates', '{ts}Recurring Contribution Update Notification{/ts} - {contact.display_name}
-', '{assign var="greeting" value="{contact.email_greeting_display}"}{if $greeting}{$greeting},{/if}
-
-{ts}Your recurring contribution has been updated as requested:{/ts}
-
-{ts 1=$amount 2=$recur_frequency_interval 3=$recur_frequency_unit}Recurring contribution is for %1, every %2 %3(s){/ts}
-{if $installments}{ts 1=$installments} for %1 installments.{/ts}{/if}
-
-{ts 1=$receipt_from_email}If you have questions please contact us at %1.{/ts}
-', '<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+', '', '<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
@@ -10382,15 +10110,7 @@ INSERT INTO civicrm_option_group
     (msg_title, msg_subject, msg_text, msg_html, workflow_name, workflow_id, is_default, is_reserved)
     VALUES
     ('Contributions - Recurring Updates', '{ts}Recurring Contribution Update Notification{/ts} - {contact.display_name}
-', '{assign var="greeting" value="{contact.email_greeting_display}"}{if $greeting}{$greeting},{/if}
-
-{ts}Your recurring contribution has been updated as requested:{/ts}
-
-{ts 1=$amount 2=$recur_frequency_interval 3=$recur_frequency_unit}Recurring contribution is for %1, every %2 %3(s){/ts}
-{if $installments}{ts 1=$installments} for %1 installments.{/ts}{/if}
-
-{ts 1=$receipt_from_email}If you have questions please contact us at %1.{/ts}
-', '<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+', '', '<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
@@ -10974,29 +10694,7 @@ INSERT INTO civicrm_option_group
     (msg_title, msg_subject, msg_text, msg_html, workflow_name, workflow_id, is_default, is_reserved)
     VALUES
     ('Personal Campaign Pages - Owner Notification', '{ts}Someone has just donated to your personal campaign page{/ts} - {contact.display_name}
-', '===========================================================
-{ts}Personal Campaign Page Owner Notification{/ts}
-
-===========================================================
-{assign var="greeting" value="{contact.email_greeting_display}"}{if $greeting}{$greeting},{/if}
-
-{ts}You have received a donation at your personal page{/ts}: {$page_title}
->> {$pcpInfoURL}
-
-{ts}Your fundraising total has been updated.{/ts}
-{ts}The donor\'s information is listed below.  You can choose to contact them and convey your thanks if you wish.{/ts}
-{if $is_honor_roll_enabled}
-    {ts}The donor\'s name has been added to your honor roll unless they asked not to be included.{/ts}
-{/if}
-
-{ts}Contribution Date{/ts}: {$receive_date|crmDate}
-
-{ts}Amount{/ts}: {$total_amount|crmMoney:$currency}
-
-{ts}Name{/ts}: {$donors_display_name}
-
-{ts}Email{/ts}: {$donors_email}
-', '<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+', '', '<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
@@ -11030,29 +10728,7 @@ INSERT INTO civicrm_option_group
     (msg_title, msg_subject, msg_text, msg_html, workflow_name, workflow_id, is_default, is_reserved)
     VALUES
     ('Personal Campaign Pages - Owner Notification', '{ts}Someone has just donated to your personal campaign page{/ts} - {contact.display_name}
-', '===========================================================
-{ts}Personal Campaign Page Owner Notification{/ts}
-
-===========================================================
-{assign var="greeting" value="{contact.email_greeting_display}"}{if $greeting}{$greeting},{/if}
-
-{ts}You have received a donation at your personal page{/ts}: {$page_title}
->> {$pcpInfoURL}
-
-{ts}Your fundraising total has been updated.{/ts}
-{ts}The donor\'s information is listed below.  You can choose to contact them and convey your thanks if you wish.{/ts}
-{if $is_honor_roll_enabled}
-    {ts}The donor\'s name has been added to your honor roll unless they asked not to be included.{/ts}
-{/if}
-
-{ts}Contribution Date{/ts}: {$receive_date|crmDate}
-
-{ts}Amount{/ts}: {$total_amount|crmMoney:$currency}
-
-{ts}Name{/ts}: {$donors_display_name}
-
-{ts}Email{/ts}: {$donors_email}
-', '<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+', '', '<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
@@ -11271,17 +10947,6 @@ INSERT INTO civicrm_option_group
           {event.start_date|crmDate}{if {event.end_date|boolean}}-{if \'{event.end_date|crmDate:"%Y%m%d"}\' === \'{event.start_date|crmDate:"%Y%m%d"}\'}{event.end_date|crmDate:"Time"}{else}{event.end_date}{/if}{/if}
         </td>
       </tr>
-
-      {if {participant.role_id|boolean}}
-      <tr>
-        <td {$labelStyle}>
-          {ts}Participant Role{/ts}
-        </td>
-        <td {$valueStyle}>
-         {participant.role_id:label}
-        </td>
-      </tr>
-      {/if}
 
       {if {event.is_show_location|boolean}}
             <tr>
@@ -11544,17 +11209,6 @@ INSERT INTO civicrm_option_group
         </td>
       </tr>
 
-      {if {participant.role_id|boolean}}
-      <tr>
-        <td {$labelStyle}>
-          {ts}Participant Role{/ts}
-        </td>
-        <td {$valueStyle}>
-         {participant.role_id:label}
-        </td>
-      </tr>
-      {/if}
-
       {if {event.is_show_location|boolean}}
             <tr>
               <td colspan="2" {$valueStyle}>
@@ -11695,17 +11349,6 @@ INSERT INTO civicrm_option_group
        {event.start_date|crmDate}{if {event.end_date|boolean}}-{if \'{event.end_date|crmDate:"%Y%m%d"}\' === \'{event.start_date|crmDate:"%Y%m%d"}\'}{event.end_date|crmDate:"Time"}{else}{event.end_date}{/if}{/if}
       </td>
      </tr>
-
-     {if "{participant.role_id:label}" neq \'Attendee\'}
-      <tr>
-       <td {$labelStyle}>
-        {ts}Participant Role{/ts}
-       </td>
-       <td {$valueStyle}>
-         {participant.role_id:label}
-       </td>
-      </tr>
-     {/if}
 
      {if {event.is_show_location|boolean}}
       <tr>
@@ -12142,17 +11785,6 @@ INSERT INTO civicrm_option_group
       </td>
      </tr>
 
-     {if "{participant.role_id:label}" neq \'Attendee\'}
-      <tr>
-       <td {$labelStyle}>
-        {ts}Participant Role{/ts}
-       </td>
-       <td {$valueStyle}>
-         {participant.role_id:label}
-       </td>
-      </tr>
-     {/if}
-
      {if {event.is_show_location|boolean}}
       <tr>
        <td colspan="2" {$valueStyle}>
@@ -12563,9 +12195,9 @@ INSERT INTO civicrm_option_group
         <p>{event.confirm_email_text}</p>
       {else}
         <p>{ts}Thank you for your registration.{/ts}
-            {if $participant_status}{ts 1=$participant_status}This is a confirmation that your registration has been received and your status has been updated to<strong> %1</strong>.{/ts}
+            {if $participant_status}{ts 1=$participant_status}This is a confirmation that your registration has been received and your status has been updated to <strong>%1</strong>.{/ts}
             {else}
-              {if $isOnWaitlist}{ts}This is a confirmation that your registration has been received and your status has been updated to<strong>waitlisted</strong>.{/ts}
+              {if $isOnWaitlist}{ts}This is a confirmation that your registration has been received and your status has been updated to <strong>waitlisted</strong>.{/ts}
               {else}{ts}This is a confirmation that your registration has been received and your status has been updated to <strong>registered<strong>.{/ts}
               {/if}
             {/if}
@@ -12601,17 +12233,6 @@ INSERT INTO civicrm_option_group
             {event.start_date|crmDate:"%A"} {event.start_date|crmDate}{if {event.end_date|boolean}}-{if \'{event.end_date|crmDate:"%Y%m%d"}\' === \'{event.start_date|crmDate:"%Y%m%d"}\'}{event.end_date|crmDate:"Time"}{else}{event.end_date|crmDate:"%A"} {event.end_date|crmDate}{/if}{/if}
           </td>
         </tr>
-
-        {if "{participant.role_id:label}" neq \'Attendee\'}
-          <tr>
-            <td {$labelStyle}>
-              {ts}Participant Role{/ts}
-            </td>
-            <td {$valueStyle}>
-              {participant.role_id:label}
-            </td>
-          </tr>
-        {/if}
 
         {if {event.is_show_location|boolean}}
           <tr>
@@ -13044,9 +12665,9 @@ INSERT INTO civicrm_option_group
         <p>{event.confirm_email_text}</p>
       {else}
         <p>{ts}Thank you for your registration.{/ts}
-            {if $participant_status}{ts 1=$participant_status}This is a confirmation that your registration has been received and your status has been updated to<strong> %1</strong>.{/ts}
+            {if $participant_status}{ts 1=$participant_status}This is a confirmation that your registration has been received and your status has been updated to <strong>%1</strong>.{/ts}
             {else}
-              {if $isOnWaitlist}{ts}This is a confirmation that your registration has been received and your status has been updated to<strong>waitlisted</strong>.{/ts}
+              {if $isOnWaitlist}{ts}This is a confirmation that your registration has been received and your status has been updated to <strong>waitlisted</strong>.{/ts}
               {else}{ts}This is a confirmation that your registration has been received and your status has been updated to <strong>registered<strong>.{/ts}
               {/if}
             {/if}
@@ -13082,17 +12703,6 @@ INSERT INTO civicrm_option_group
             {event.start_date|crmDate:"%A"} {event.start_date|crmDate}{if {event.end_date|boolean}}-{if \'{event.end_date|crmDate:"%Y%m%d"}\' === \'{event.start_date|crmDate:"%Y%m%d"}\'}{event.end_date|crmDate:"Time"}{else}{event.end_date|crmDate:"%A"} {event.end_date|crmDate}{/if}{/if}
           </td>
         </tr>
-
-        {if "{participant.role_id:label}" neq \'Attendee\'}
-          <tr>
-            <td {$labelStyle}>
-              {ts}Participant Role{/ts}
-            </td>
-            <td {$valueStyle}>
-              {participant.role_id:label}
-            </td>
-          </tr>
-        {/if}
 
         {if {event.is_show_location|boolean}}
           <tr>
@@ -13904,14 +13514,6 @@ INSERT INTO civicrm_option_group
        {event.start_date|crmDate:"%A"} {event.start_date|crmDate}{if {event.end_date|boolean}}-{if \'{event.end_date|crmDate:"%Y%m%d"}\' === \'{event.start_date|crmDate:"%Y%m%d"}\'}{event.end_date|crmDate:"Time"}{else}{event.end_date|crmDate:"%A"} {event.end_date|crmDate}{/if}{/if}
       </td>
      </tr>
-     <tr>
-      <td {$labelStyle}>
-       {ts}Participant Role{/ts}:
-      </td>
-      <td {$valueStyle}>
-       {participant.role_id:label}
-      </td>
-     </tr>
     {if {event.is_show_location|boolean}}
         <tr>
           <td colspan="2" {$valueStyle}>
@@ -14061,14 +13663,6 @@ INSERT INTO civicrm_option_group
       <td colspan="2" {$valueStyle}>
        {event.title}<br />
        {event.start_date|crmDate:"%A"} {event.start_date|crmDate}{if {event.end_date|boolean}}-{if \'{event.end_date|crmDate:"%Y%m%d"}\' === \'{event.start_date|crmDate:"%Y%m%d"}\'}{event.end_date|crmDate:"Time"}{else}{event.end_date|crmDate:"%A"} {event.end_date|crmDate}{/if}{/if}
-      </td>
-     </tr>
-     <tr>
-      <td {$labelStyle}>
-       {ts}Participant Role{/ts}:
-      </td>
-      <td {$valueStyle}>
-       {participant.role_id:label}
       </td>
      </tr>
     {if {event.is_show_location|boolean}}
@@ -14242,14 +13836,6 @@ INSERT INTO civicrm_option_group
       <td colspan="2" {$valueStyle}>
        {event.title}<br />
        {event.start_date|crmDate:"%A"} {event.start_date|crmDate}{if {event.end_date|boolean}}-{if \'{event.end_date|crmDate:"%Y%m%d"}\' === \'{event.start_date|crmDate:"%Y%m%d"}\'}{event.end_date|crmDate:"Time"}{else}{event.end_date|crmDate:"%A"} {event.end_date|crmDate}{/if}{/if}
-      </td>
-     </tr>
-     <tr>
-      <td {$labelStyle}>
-       {ts}Participant Role{/ts}:
-      </td>
-      <td {$valueStyle}>
-        {participant.role_id:label}
       </td>
      </tr>
      {if {event.is_show_location|boolean}}
@@ -14444,14 +14030,6 @@ INSERT INTO civicrm_option_group
        {event.start_date|crmDate:"%A"} {event.start_date|crmDate}{if {event.end_date|boolean}}-{if \'{event.end_date|crmDate:"%Y%m%d"}\' === \'{event.start_date|crmDate:"%Y%m%d"}\'}{event.end_date|crmDate:"Time"}{else}{event.end_date|crmDate:"%A"} {event.end_date|crmDate}{/if}{/if}
       </td>
      </tr>
-     <tr>
-      <td {$labelStyle}>
-       {ts}Participant Role{/ts}:
-      </td>
-      <td {$valueStyle}>
-        {participant.role_id:label}
-      </td>
-     </tr>
      {if {event.is_show_location|boolean}}
         <tr>
           <td colspan="2" {$valueStyle}>
@@ -14633,15 +14211,6 @@ or want to inquire about reinstating your registration for this event.{/ts}</p>
        {event.start_date|crmDate:"%A"} {event.start_date|crmDate}{if {event.end_date|boolean}}-{if \'{event.end_date|crmDate:"%Y%m%d"}\' === \'{event.start_date|crmDate:"%Y%m%d"}\'}{event.end_date|crmDate:"Time"}{else}{event.end_date|crmDate:"%A"} {event.end_date|crmDate}{/if}{/if}
       </td>
      </tr>
-     <tr>
-      <td {$labelStyle}>
-       {ts}Participant Role{/ts}:
-      </td>
-      <td {$valueStyle}>
-        {participant.role_id:label}
-      </td>
-     </tr>
-
     {if {event.is_show_location|boolean}}
         <tr>
           <td colspan="2" {$valueStyle}>
@@ -14783,15 +14352,6 @@ or want to inquire about reinstating your registration for this event.{/ts}</p>
        {event.start_date|crmDate:"%A"} {event.start_date|crmDate}{if {event.end_date|boolean}}-{if \'{event.end_date|crmDate:"%Y%m%d"}\' === \'{event.start_date|crmDate:"%Y%m%d"}\'}{event.end_date|crmDate:"Time"}{else}{event.end_date|crmDate:"%A"} {event.end_date|crmDate}{/if}{/if}
       </td>
      </tr>
-     <tr>
-      <td {$labelStyle}>
-       {ts}Participant Role{/ts}:
-      </td>
-      <td {$valueStyle}>
-        {participant.role_id:label}
-      </td>
-     </tr>
-
     {if {event.is_show_location|boolean}}
         <tr>
           <td colspan="2" {$valueStyle}>
@@ -14934,15 +14494,6 @@ or want to inquire about reinstating your registration for this event.{/ts}</p>
        {event.start_date|crmDate:"%A"} {event.start_date|crmDate}{if {event.end_date|boolean}}-{if \'{event.end_date|crmDate:"%Y%m%d"}\' === \'{event.start_date|crmDate:"%Y%m%d"}\'}{event.end_date|crmDate:"Time"}{else}{event.end_date|crmDate:"%A"} {event.end_date|crmDate}{/if}{/if}
       </td>
      </tr>
-     <tr>
-      <td {$labelStyle}>
-       {ts}Participant Role{/ts}:
-      </td>
-      <td {$valueStyle}>
-       {participant.role_id:label}
-      </td>
-     </tr>
-
      {if {event.is_show_location|boolean}}
         <tr>
           <td colspan="2" {$valueStyle}>
@@ -15094,15 +14645,6 @@ or want to inquire about reinstating your registration for this event.{/ts}</p>
        {event.start_date|crmDate:"%A"} {event.start_date|crmDate}{if {event.end_date|boolean}}-{if \'{event.end_date|crmDate:"%Y%m%d"}\' === \'{event.start_date|crmDate:"%Y%m%d"}\'}{event.end_date|crmDate:"Time"}{else}{event.end_date|crmDate:"%A"} {event.end_date|crmDate}{/if}{/if}
       </td>
      </tr>
-     <tr>
-      <td {$labelStyle}>
-       {ts}Participant Role{/ts}:
-      </td>
-      <td {$valueStyle}>
-       {participant.role_id:label}
-      </td>
-     </tr>
-
      {if {event.is_show_location|boolean}}
         <tr>
           <td colspan="2" {$valueStyle}>
@@ -15218,22 +14760,7 @@ or want to inquire about reinstating your registration for this event.{/ts}</p>
     (msg_title, msg_subject, msg_text, msg_html, workflow_name, workflow_id, is_default, is_reserved)
     VALUES
     ('Tell-a-Friend Email', '{ts 1=$senderContactName 2=$title}%1 wants you to know about %2{/ts}
-', '{$senderMessage}
-
-{if $generalLink}{ts}For more information, visit:{/ts}
->> {$generalLink}
-
-{/if}
-{if $contribute}{ts}To make a contribution, go to:{/ts}
->> {$pageURL}
-
-{/if}
-{if $event}{ts}To find out more about this event, go to:{/ts}
->> {$pageURL}
-{/if}
-
-
-', '<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+', '', '<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
@@ -15277,22 +14804,7 @@ or want to inquire about reinstating your registration for this event.{/ts}</p>
     (msg_title, msg_subject, msg_text, msg_html, workflow_name, workflow_id, is_default, is_reserved)
     VALUES
     ('Tell-a-Friend Email', '{ts 1=$senderContactName 2=$title}%1 wants you to know about %2{/ts}
-', '{$senderMessage}
-
-{if $generalLink}{ts}For more information, visit:{/ts}
->> {$generalLink}
-
-{/if}
-{if $contribute}{ts}To make a contribution, go to:{/ts}
->> {$pageURL}
-
-{/if}
-{if $event}{ts}To find out more about this event, go to:{/ts}
->> {$pageURL}
-{/if}
-
-
-', '<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+', '', '<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
@@ -15344,110 +14856,7 @@ or want to inquire about reinstating your registration for this event.{/ts}</p>
 {elseif $receiptType EQ \'membership renewal\'}
 {ts}Membership Renewal Confirmation and Receipt{/ts}
 {/if} - {contact.display_name}
-', '{assign var="greeting" value="{contact.email_greeting_display}"}{if $greeting}{$greeting},{/if}
-
-{if $userTextPlain}
-{$userTextPlain}
-{else}{ts}Thank you for this contribution.{/ts}{/if}
-
-{if !$isShowLineItems}
-===========================================================
-{ts}Membership Information{/ts}
-
-===========================================================
-{ts}Membership Type{/ts}: {membership.membership_type_id:name}
-{/if}
-{if \'{membership.status_id:name}\' !== \'Cancelled\'}
-{if !$isShowLineItems}
-{ts}Membership Start Date{/ts}: {membership.start_date|crmDate:"Full"}
-{ts}Membership Expiration Date{/ts}: {membership.end_date|crmDate:"Full"}
-{/if}
-
-{if {contribution.total_amount|boolean}}
-===========================================================
-{ts}Membership Fee{/ts}
-
-===========================================================
-{if {contribution.financial_type_id|boolean}}
-{ts}Financial Type{/ts}: {contribution.financial_type_id:label}
-{/if}
-{if $isShowLineItems}
-{capture assign=ts_item}{ts}Item{/ts}{/capture}
-{capture assign=ts_total}{ts}Fee{/ts}{/capture}
-{if $isShowTax && \'{contribution.tax_amount|boolean}\'}
-{capture assign=ts_subtotal}{ts}Subtotal{/ts}{/capture}
-{capture assign=ts_taxRate}{ts}Tax Rate{/ts}{/capture}
-{capture assign=ts_taxAmount}{ts}Tax Amount{/ts}{/capture}
-{capture assign=ts_total}{ts}Total{/ts}{/capture}
-{/if}
-{capture assign=ts_start_date}{ts}Membership Start Date{/ts}{/capture}
-{capture assign=ts_end_date}{ts}Membership Expiration Date{/ts}{/capture}
-{$ts_item|string_format:"%-30s"} {$ts_total|string_format:"%10s"} {if $isShowTax && {contribution.tax_amount|boolean}} {$ts_subtotal|string_format:"%10s"} {$ts_taxRate|string_format:"%10s"} {$ts_taxAmount|string_format:"%10s"} {$ts_total|string_format:"%10s"} {/if} {$ts_start_date|string_format:"%20s"} {$ts_end_date|string_format:"%20s"}
---------------------------------------------------------------------------------------------------
-
-{foreach from=$lineItems item=line}
-{line.title} {$line.line_total|crmMoney|string_format:"%10s"}  {if $isShowTax && {contribution.tax_amount|boolean}} {$line.line_total|crmMoney:\'{contribution.currency}\'|string_format:"%10s"} {if $line.tax_rate || $line.tax_amount != ""}  {$line.tax_rate|string_format:"%.2f"} %  {$line.tax_amount|crmMoney:\'{contribution.currency}\'|string_format:"%10s"}  {else}                  {/if}   {$line.line_total_inclusive|crmMoney|string_format:"%10s"} {/if} {$line.membership.start_date|string_format:"%20s"} {$line.membership.end_date|string_format:"%20s"}
-{/foreach}
-
-{if $isShowTax && {contribution.tax_amount|boolean}}
-{ts}Amount before Tax:{/ts} {contribution.tax_exclusive_amount}
-
-{foreach from=$taxRateBreakdown item=taxDetail key=taxRate}
-{if $taxRate == 0}{ts}No{/ts} {$taxTerm}{else} {$taxTerm} {$taxDetail.percentage}%{/if}: {$taxDetail.amount|crmMoney:\'{contribution.currency}\'}
-{/foreach}
-{/if}
---------------------------------------------------------------------------------------------------
-{/if}
-
-{if {contribution.tax_amount|boolean}}
-{ts}Total Tax Amount{/ts}: {contribution.tax_amount}
-{/if}
-
-{ts}Amount{/ts}: {contribution.total_amount}
-{if {contribution.receive_date|boolean}}
-{ts}Contribution Date{/ts}: {contribution.receive_date}
-{/if}
-{if {contribution.payment_instrument_id|boolean}}
-{ts}Paid By{/ts}: {contribution.payment_instrument_id:label}
-{if {contribution.check_number|boolean}}
-{ts}Check Number{/ts}: {contribution.check_number|boolean}
-{/if}
-{/if}
-{/if}
-{/if}
-
-{if !empty($isPrimary)}
-{if !empty($billingName)}
-
-===========================================================
-{ts}Billing Name and Address{/ts}
-
-===========================================================
-{$billingName}
-{$address}
-{/if}
-
-{if !empty($credit_card_type)}
-===========================================================
-{ts}Credit Card Information{/ts}
-
-===========================================================
-{$credit_card_type}
-{$credit_card_number}
-{ts}Expires{/ts}: {$credit_card_exp_date|truncate:7:\'\'|crmDate}
-{/if}
-{/if}
-
-{if !empty($customValues)}
-===========================================================
-{ts}Membership Options{/ts}
-
-===========================================================
-{foreach from=$customValues item=value key=customName}
- {$customName} : {$value}
-{/foreach}
-{/if}
-', '<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+', '', '<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
         "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
@@ -15741,110 +15150,7 @@ or want to inquire about reinstating your registration for this event.{/ts}</p>
 {elseif $receiptType EQ \'membership renewal\'}
 {ts}Membership Renewal Confirmation and Receipt{/ts}
 {/if} - {contact.display_name}
-', '{assign var="greeting" value="{contact.email_greeting_display}"}{if $greeting}{$greeting},{/if}
-
-{if $userTextPlain}
-{$userTextPlain}
-{else}{ts}Thank you for this contribution.{/ts}{/if}
-
-{if !$isShowLineItems}
-===========================================================
-{ts}Membership Information{/ts}
-
-===========================================================
-{ts}Membership Type{/ts}: {membership.membership_type_id:name}
-{/if}
-{if \'{membership.status_id:name}\' !== \'Cancelled\'}
-{if !$isShowLineItems}
-{ts}Membership Start Date{/ts}: {membership.start_date|crmDate:"Full"}
-{ts}Membership Expiration Date{/ts}: {membership.end_date|crmDate:"Full"}
-{/if}
-
-{if {contribution.total_amount|boolean}}
-===========================================================
-{ts}Membership Fee{/ts}
-
-===========================================================
-{if {contribution.financial_type_id|boolean}}
-{ts}Financial Type{/ts}: {contribution.financial_type_id:label}
-{/if}
-{if $isShowLineItems}
-{capture assign=ts_item}{ts}Item{/ts}{/capture}
-{capture assign=ts_total}{ts}Fee{/ts}{/capture}
-{if $isShowTax && \'{contribution.tax_amount|boolean}\'}
-{capture assign=ts_subtotal}{ts}Subtotal{/ts}{/capture}
-{capture assign=ts_taxRate}{ts}Tax Rate{/ts}{/capture}
-{capture assign=ts_taxAmount}{ts}Tax Amount{/ts}{/capture}
-{capture assign=ts_total}{ts}Total{/ts}{/capture}
-{/if}
-{capture assign=ts_start_date}{ts}Membership Start Date{/ts}{/capture}
-{capture assign=ts_end_date}{ts}Membership Expiration Date{/ts}{/capture}
-{$ts_item|string_format:"%-30s"} {$ts_total|string_format:"%10s"} {if $isShowTax && {contribution.tax_amount|boolean}} {$ts_subtotal|string_format:"%10s"} {$ts_taxRate|string_format:"%10s"} {$ts_taxAmount|string_format:"%10s"} {$ts_total|string_format:"%10s"} {/if} {$ts_start_date|string_format:"%20s"} {$ts_end_date|string_format:"%20s"}
---------------------------------------------------------------------------------------------------
-
-{foreach from=$lineItems item=line}
-{line.title} {$line.line_total|crmMoney|string_format:"%10s"}  {if $isShowTax && {contribution.tax_amount|boolean}} {$line.line_total|crmMoney:\'{contribution.currency}\'|string_format:"%10s"} {if $line.tax_rate || $line.tax_amount != ""}  {$line.tax_rate|string_format:"%.2f"} %  {$line.tax_amount|crmMoney:\'{contribution.currency}\'|string_format:"%10s"}  {else}                  {/if}   {$line.line_total_inclusive|crmMoney|string_format:"%10s"} {/if} {$line.membership.start_date|string_format:"%20s"} {$line.membership.end_date|string_format:"%20s"}
-{/foreach}
-
-{if $isShowTax && {contribution.tax_amount|boolean}}
-{ts}Amount before Tax:{/ts} {contribution.tax_exclusive_amount}
-
-{foreach from=$taxRateBreakdown item=taxDetail key=taxRate}
-{if $taxRate == 0}{ts}No{/ts} {$taxTerm}{else} {$taxTerm} {$taxDetail.percentage}%{/if}: {$taxDetail.amount|crmMoney:\'{contribution.currency}\'}
-{/foreach}
-{/if}
---------------------------------------------------------------------------------------------------
-{/if}
-
-{if {contribution.tax_amount|boolean}}
-{ts}Total Tax Amount{/ts}: {contribution.tax_amount}
-{/if}
-
-{ts}Amount{/ts}: {contribution.total_amount}
-{if {contribution.receive_date|boolean}}
-{ts}Contribution Date{/ts}: {contribution.receive_date}
-{/if}
-{if {contribution.payment_instrument_id|boolean}}
-{ts}Paid By{/ts}: {contribution.payment_instrument_id:label}
-{if {contribution.check_number|boolean}}
-{ts}Check Number{/ts}: {contribution.check_number|boolean}
-{/if}
-{/if}
-{/if}
-{/if}
-
-{if !empty($isPrimary)}
-{if !empty($billingName)}
-
-===========================================================
-{ts}Billing Name and Address{/ts}
-
-===========================================================
-{$billingName}
-{$address}
-{/if}
-
-{if !empty($credit_card_type)}
-===========================================================
-{ts}Credit Card Information{/ts}
-
-===========================================================
-{$credit_card_type}
-{$credit_card_number}
-{ts}Expires{/ts}: {$credit_card_exp_date|truncate:7:\'\'|crmDate}
-{/if}
-{/if}
-
-{if !empty($customValues)}
-===========================================================
-{ts}Membership Options{/ts}
-
-===========================================================
-{foreach from=$customValues item=value key=customName}
- {$customName} : {$value}
-{/foreach}
-{/if}
-', '<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+', '', '<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
         "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
@@ -17028,21 +16334,7 @@ or want to inquire about reinstating your registration for this event.{/ts}</p>
     (msg_title, msg_subject, msg_text, msg_html, workflow_name, workflow_id, is_default, is_reserved)
     VALUES
     ('Memberships - Auto-renew Cancellation Notification', '{ts}Autorenew Membership Cancellation Notification{/ts} - {contact.display_name}
-', '{assign var="greeting" value="{contact.email_greeting_display}"}{if $greeting}{$greeting},{/if}
-
-{ts 1=$membershipType}The automatic renewal of your %1 membership has been cancelled as requested. This does not affect the status of your membership - you will receive a separate notification when your membership is up for renewal.{/ts}
-
-===========================================================
-{ts}Membership Information{/ts}
-
-===========================================================
-{ts}Membership Status{/ts}: {$membership_status}
-{if $mem_start_date}{ts}Membership Start Date{/ts}: {$mem_start_date|crmDate}
-{/if}
-{if $mem_end_date}{ts}Membership Expiration Date{/ts}: {$mem_end_date|crmDate}
-{/if}
-
-', '<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+', '', '<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
@@ -17116,21 +16408,7 @@ or want to inquire about reinstating your registration for this event.{/ts}</p>
     (msg_title, msg_subject, msg_text, msg_html, workflow_name, workflow_id, is_default, is_reserved)
     VALUES
     ('Memberships - Auto-renew Cancellation Notification', '{ts}Autorenew Membership Cancellation Notification{/ts} - {contact.display_name}
-', '{assign var="greeting" value="{contact.email_greeting_display}"}{if $greeting}{$greeting},{/if}
-
-{ts 1=$membershipType}The automatic renewal of your %1 membership has been cancelled as requested. This does not affect the status of your membership - you will receive a separate notification when your membership is up for renewal.{/ts}
-
-===========================================================
-{ts}Membership Information{/ts}
-
-===========================================================
-{ts}Membership Status{/ts}: {$membership_status}
-{if $mem_start_date}{ts}Membership Start Date{/ts}: {$mem_start_date|crmDate}
-{/if}
-{if $mem_end_date}{ts}Membership Expiration Date{/ts}: {$mem_end_date|crmDate}
-{/if}
-
-', '<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+', '', '<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
@@ -17208,30 +16486,7 @@ or want to inquire about reinstating your registration for this event.{/ts}</p>
     (msg_title, msg_subject, msg_text, msg_html, workflow_name, workflow_id, is_default, is_reserved)
     VALUES
     ('Memberships - Auto-renew Billing Updates', '{ts}Membership Autorenewal Billing Updates{/ts} - {contact.display_name}
-', '{assign var="greeting" value="{contact.email_greeting_display}"}{if $greeting}{$greeting},{/if}
-
-{ts 1=$membershipType}Billing details for your automatically renewed %1 membership have been updated.{/ts}
-
-===========================================================
-{ts}Billing Name and Address{/ts}
-
-===========================================================
-{$billingName}
-{$address}
-
-{$email}
-
-===========================================================
-{ts}Credit Card Information{/ts}
-
-===========================================================
-{$credit_card_type}
-{$credit_card_number}
-{ts}Expires{/ts}: {$credit_card_exp_date|truncate:7:\'\'|crmDate}
-
-
-{ts 1=$receipt_from_email}If you have questions please contact us at %1{/ts}
-', '<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+', '', '<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
@@ -17301,30 +16556,7 @@ or want to inquire about reinstating your registration for this event.{/ts}</p>
     (msg_title, msg_subject, msg_text, msg_html, workflow_name, workflow_id, is_default, is_reserved)
     VALUES
     ('Memberships - Auto-renew Billing Updates', '{ts}Membership Autorenewal Billing Updates{/ts} - {contact.display_name}
-', '{assign var="greeting" value="{contact.email_greeting_display}"}{if $greeting}{$greeting},{/if}
-
-{ts 1=$membershipType}Billing details for your automatically renewed %1 membership have been updated.{/ts}
-
-===========================================================
-{ts}Billing Name and Address{/ts}
-
-===========================================================
-{$billingName}
-{$address}
-
-{$email}
-
-===========================================================
-{ts}Credit Card Information{/ts}
-
-===========================================================
-{$credit_card_type}
-{$credit_card_number}
-{ts}Expires{/ts}: {$credit_card_exp_date|truncate:7:\'\'|crmDate}
-
-
-{ts 1=$receipt_from_email}If you have questions please contact us at %1{/ts}
-', '<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+', '', '<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
@@ -19564,7 +18796,6 @@ VALUES ( @fieldID, 'contribution_amount', 'Contribution Amount', '1', '1', '0', 
 INSERT IGNORE INTO civicrm_extension (`file`,`full_name`,`is_active`,`label`,`name`,`type`) VALUES
 ("sequentialcreditnotes","sequentialcreditnotes","1","Sequential credit notes","Sequential credit notes","module"),
 ("greenwich","greenwich","1","Theme: Greenwich","Theme: Greenwich","module"),
-("financialacls","financialacls","1","Financial ACLs","Financial ACLs","module"),
 ("recaptcha","recaptcha","1","reCAPTCHA","reCAPTCHA","module"),
 ("ckeditor4","ckeditor4","1","CKEditor4","CKEditor4","module"),
 ("flexmailer","org.civicrm.flexmailer","1","FlexMailer","FlexMailer","module"),
@@ -19778,7 +19009,7 @@ VALUES
     ( @domainID, 'civicrm/participant/add?reset=1&action=add&context=standalone', 'Register Event Participant', 'Register Event Participant', 'access CiviEvent,edit event participants', 'AND', @eventlastID, '1', NULL, 2 ),
     ( @domainID, 'civicrm/event/search?reset=1',                            'Find Participants',  'Find Participants',    'access CiviEvent', '',    @eventlastID, '1', NULL, 3 ),
     ( @domainID, 'civicrm/report/list?compid=1&reset=1', 'Event Reports', 'Event Reports', 'access CiviEvent', '', @eventlastID, '1', 1,    4 ),
-    ( @domainID, 'civicrm/event/import?reset=1',                            'Import Participants','Import Participants',  'access CiviEvent,edit event participants', 'AND',    @eventlastID, '1', '1',  5 ),
+    ( @domainID, 'civicrm/import/participant?reset=1',                            'Import Participants','Import Participants',  'access CiviEvent,edit event participants', 'AND',    @eventlastID, '1', '1',  5 ),
     ( @domainID, 'civicrm/event/add?reset=1&action=add',                    'New Event',          'New Event',            'access CiviEvent,edit all events', 'AND',    @eventlastID, '0', NULL, 6 ),
     ( @domainID, 'civicrm/event/manage?reset=1',                            'Manage Events',      'Manage Events',        'access CiviEvent,edit all events', 'AND',    @eventlastID, '1', 1, 7 ),
     ( @domainID, 'civicrm/admin/pcp?reset=1&page_type=event',               'Personal Campaign Pages',    'Personal Campaign Pages',   'access CiviEvent,administer CiviCRM', 'AND', @eventlastID, '1', 1, 8 ),
@@ -19822,7 +19053,7 @@ VALUES
     ( @domainID, 'civicrm/member/search?reset=1',                       'Find Memberships',    'Find Memberships','access CiviMember', '', @memberlastID, '1', NULL, 3 ),
     ( @domainID, 'civicrm/report/list?compid=3&reset=1',                'Membership Reports',  'Membership Reports', 'access CiviMember', '', @memberlastID, '1', 1,    4 ),
     ( @domainID, 'civicrm/batch?reset=1',                               'Batch Data Entry',     'Batch Data Entry','access CiviContribute', '', @memberlastID, '1', NULL, 5 ),
-    ( @domainID, 'civicrm/member/import?reset=1',                       'Import Memberships',  'Import Members',  'access CiviMember,edit memberships', 'AND', @memberlastID, '1', 1, 6 ),
+    ( @domainID, 'civicrm/import/membership?reset=1',                       'Import Memberships',  'Import Members',  'access CiviMember,edit memberships', 'AND', @memberlastID, '1', 1, 6 ),
     ( @domainID, 'civicrm/admin/price/edit?reset=1&action=add',         'New Price Set',       'New Price Set',   'access CiviMember,administer CiviCRM', 'AND',  @memberlastID, '0', NULL, 7 ),
     ( @domainID, 'civicrm/admin/price?reset=1',                         'Manage Price Sets',   'Manage Price Sets', 'access CiviMember,administer CiviCRM', 'AND',  @memberlastID, '1', NULL, 8 );
 
@@ -20151,7 +19382,7 @@ SET @reportlastID:=LAST_INSERT_ID();
 INSERT INTO civicrm_navigation
     ( domain_id, url, label, name, permission, permission_operator, parent_id, is_active, has_separator, weight )
 VALUES
-    ( @domainID, 'civicrm/report/list?compid=99&reset=1', 'Contact Reports', 'Contact Reports', 'administer CiviCRM', '', @reportlastID, '1', 0,    1 );
+    ( @domainID, 'civicrm/report/list?compid=99&reset=1', 'Contact Reports', 'Contact Reports', 'access CiviReport', '', @reportlastID, '1', 0,    1 );
 INSERT INTO civicrm_navigation
     ( domain_id, url, label, name, permission, permission_operator, parent_id, is_active, has_separator, weight )
 VALUES
@@ -20368,5 +19599,5 @@ INSERT INTO `civicrm_report_instance`
 VALUES
     (  @domainID, 'Survey Details', 'survey/detail', 'Detailed report for canvassing, phone-banking, walk lists or other surveys.', 'access CiviReport', 'a:39:{s:6:"fields";a:2:{s:9:"sort_name";s:1:"1";s:6:"result";s:1:"1";}s:22:"assignee_contact_id_op";s:2:"eq";s:25:"assignee_contact_id_value";s:0:"";s:12:"sort_name_op";s:3:"has";s:15:"sort_name_value";s:0:"";s:17:"street_number_min";s:0:"";s:17:"street_number_max";s:0:"";s:16:"street_number_op";s:3:"lte";s:19:"street_number_value";s:0:"";s:14:"street_name_op";s:3:"has";s:17:"street_name_value";s:0:"";s:15:"postal_code_min";s:0:"";s:15:"postal_code_max";s:0:"";s:14:"postal_code_op";s:3:"lte";s:17:"postal_code_value";s:0:"";s:7:"city_op";s:3:"has";s:10:"city_value";s:0:"";s:20:"state_province_id_op";s:2:"in";s:23:"state_province_id_value";a:0:{}s:13:"country_id_op";s:2:"in";s:16:"country_id_value";a:0:{}s:12:"survey_id_op";s:2:"in";s:15:"survey_id_value";a:0:{}s:12:"status_id_op";s:2:"eq";s:15:"status_id_value";s:1:"1";s:11:"custom_1_op";s:2:"in";s:14:"custom_1_value";a:0:{}s:11:"custom_2_op";s:2:"in";s:14:"custom_2_value";a:0:{}s:17:"custom_3_relative";s:1:"0";s:13:"custom_3_from";s:0:"";s:11:"custom_3_to";s:0:"";s:11:"description";s:75:"Detailed report for canvassing, phone-banking, walk lists or other surveys.";s:13:"email_subject";s:0:"";s:8:"email_to";s:0:"";s:8:"email_cc";s:0:"";s:10:"permission";s:17:"access CiviReport";s:6:"groups";s:0:"";s:9:"domain_id";i:1;}');
 
-UPDATE civicrm_domain SET version = '5.73.1';
+UPDATE civicrm_domain SET version = '5.75.1';
 

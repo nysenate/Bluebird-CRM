@@ -129,7 +129,7 @@ function civicrm_api3_job_Iatsrecurringcontributions($params) {
     $output[] = "Failsafe Analysis: stale date $stale_date, limit $failsafe_limit, count ".$staleRecurringContributions['count'];
     $output[] = "Failsafe Decision: ". ($failsafeFlag ? 'Flagged': 'Clear');
   }
-  $settings = Civi::settings()->get('iats_settings');
+  $settings = CRM_Iats_Utils::getSettings();
   $receipt_recurring = $settings['receipt_recurring'] ?? null;
   $email_failure_report = empty($settings['email_recurring_failure_report']) ? '' : $settings['email_recurring_failure_report'];
   $email_failure_contribution_receipt = empty($settings['email_failure_contribution_receipt']) ? FALSE : TRUE;

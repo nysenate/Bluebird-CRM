@@ -312,7 +312,7 @@ class CRM_Pledge_Form_Pledge extends CRM_Core_Form {
     );
 
     // CRM-7362 --add campaigns.
-    CRM_Campaign_BAO_Campaign::addCampaign($this, CRM_Utils_Array::value('campaign_id', $this->_values));
+    CRM_Campaign_BAO_Campaign::addCampaign($this, $this->_values['campaign_id'] ?? NULL);
 
     $pageIds = [];
     CRM_Core_DAO::commonRetrieveAll('CRM_Pledge_DAO_PledgeBlock', 'entity_table',
@@ -565,6 +565,13 @@ class CRM_Pledge_Form_Pledge extends CRM_Core_Form {
         $session->replaceUserContext(CRM_Utils_System::url('civicrm/contact/view',
           "reset=1&cid={$this->_contactID}&selectedChild=pledge"
         ));
+        // Refresh other tabs with related data
+        $this->ajaxResponse['updateTabs'] = [
+          '#tab_activity' => TRUE,
+        ];
+        if (CRM_Core_Permission::access('CiviContribute')) {
+          $this->ajaxResponse['updateTabs']['#tab_contribute'] = CRM_Contact_BAO_Contact::getCountComponent('contribution', $this->_contactID);
+        }
       }
     }
     elseif ($buttonName === $this->getButtonName('upload', 'new')) {

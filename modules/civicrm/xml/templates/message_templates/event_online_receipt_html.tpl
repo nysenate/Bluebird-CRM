@@ -27,9 +27,9 @@
         <p>{event.confirm_email_text}</p>
       {else}
         <p>{ts}Thank you for your registration.{/ts}
-            {if $participant_status}{ts 1=$participant_status}This is a confirmation that your registration has been received and your status has been updated to<strong> %1</strong>.{/ts}
+            {if $participant_status}{ts 1=$participant_status}This is a confirmation that your registration has been received and your status has been updated to <strong>%1</strong>.{/ts}
             {else}
-              {if $isOnWaitlist}{ts}This is a confirmation that your registration has been received and your status has been updated to<strong>waitlisted</strong>.{/ts}
+              {if $isOnWaitlist}{ts}This is a confirmation that your registration has been received and your status has been updated to <strong>waitlisted</strong>.{/ts}
               {else}{ts}This is a confirmation that your registration has been received and your status has been updated to <strong>registered<strong>.{/ts}
               {/if}
             {/if}
@@ -65,17 +65,6 @@
             {event.start_date|crmDate:"%A"} {event.start_date|crmDate}{if {event.end_date|boolean}}-{if '{event.end_date|crmDate:"%Y%m%d"}' === '{event.start_date|crmDate:"%Y%m%d"}'}{event.end_date|crmDate:"Time"}{else}{event.end_date|crmDate:"%A"} {event.end_date|crmDate}{/if}{/if}
           </td>
         </tr>
-
-        {if "{participant.role_id:label}" neq 'Attendee'}
-          <tr>
-            <td {$labelStyle}>
-              {ts}Participant Role{/ts}
-            </td>
-            <td {$valueStyle}>
-              {participant.role_id:label}
-            </td>
-          </tr>
-        {/if}
 
         {if {event.is_show_location|boolean}}
           <tr>

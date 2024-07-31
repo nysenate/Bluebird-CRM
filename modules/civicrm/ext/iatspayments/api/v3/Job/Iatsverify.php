@@ -68,7 +68,7 @@ function _civicrm_api3_job_iatsverify_spec(&$spec) {
  */
 function civicrm_api3_job_iatsverify($params) {
 
-  $settings = Civi::settings()->get('iats_settings');
+  $settings = CRM_Iats_Utils::getSettings();
   $receipt_recurring = $settings['receipt_recurring'] ?? null;
   define('IATS_VERIFY_DAYS', 30);
   // I've added an extra 2 days when getting candidates from CiviCRM to be sure i've got them all.

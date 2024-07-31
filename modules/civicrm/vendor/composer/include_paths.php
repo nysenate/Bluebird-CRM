@@ -7,8 +7,8 @@ $baseDir = dirname($vendorDir);
 
 return array(
     $vendorDir . '/tecnickcom',
-    $vendorDir . '/pear/pear_exception',
     $vendorDir . '/pear/auth_sasl',
+    $vendorDir . '/pear/pear_exception',
     $vendorDir . '/pear/console_getopt',
     $vendorDir . '/pear/pear-core-minimal/src',
     $vendorDir . '/pear/db',

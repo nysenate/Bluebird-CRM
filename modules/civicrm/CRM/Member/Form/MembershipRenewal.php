@@ -144,19 +144,11 @@ class CRM_Member_Form_MembershipRenewal extends CRM_Member_Form {
     $currentMembership = civicrm_api3('Membership', 'getsingle', ['id' => $this->_id]);
     CRM_Member_BAO_Membership::fixMembershipStatusBeforeRenew($currentMembership);
 
-    $this->assign('endDate', $currentMembership['end_date']);
-    $this->assign('membershipStatus',
-      CRM_Core_DAO::getFieldValue('CRM_Member_DAO_MembershipStatus',
-        CRM_Core_DAO::getFieldValue('CRM_Member_DAO_Membership',
-          $this->_id, 'status_id'
-        ),
-        'name'
-      )
-    );
+    $this->assign('endDate', $this->getMembershipValue('end_date'));
+    $this->assign('membershipStatus', $this->getMembershipValue('membership_status_id:name'));
 
     if ($this->_mode) {
-      $membershipFee = CRM_Core_DAO::getFieldValue('CRM_Member_DAO_MembershipType', $this->_memType, 'minimum_fee');
-      if (!$membershipFee) {
+      if (!$this->getMembershipValue('membership_type_id.minimum_fee')) {
         $statusMsg = ts('Membership Renewal using a credit card requires a Membership fee. Since there is no fee associated with the selected membership type, you can use the normal renewal mode.');
         CRM_Core_Session::setStatus($statusMsg, '', 'info');
         CRM_Utils_System::redirect(CRM_Utils_System::url('civicrm/contact/view/membership',
@@ -215,8 +207,7 @@ class CRM_Member_Form_MembershipRenewal extends CRM_Member_Form {
     $scTypes = CRM_Core_OptionGroup::values('soft_credit_type');
     $defaults['soft_credit_type_id'] = CRM_Utils_Array::value(ts('Gift'), array_flip($scTypes));
 
-    $renewalDate = $defaults['renewal_date'] ?? NULL;
-    $this->assign('renewalDate', $renewalDate);
+    $this->assign('renewalDate', $defaults['renewal_date']);
     $this->assign('member_is_test', $defaults['member_is_test'] ?? NULL);
 
     if ($this->_mode) {
@@ -566,8 +557,6 @@ class CRM_Member_Form_MembershipRenewal extends CRM_Member_Form {
       $this->assign('trxn_id', $result['trxn_id']);
     }
 
-    $renewalDate = !empty($this->_params['renewal_date']) ? $renewalDate = $this->_params['renewal_date'] : NULL;
-
     // chk for renewal for multiple terms CRM-8750
     $numRenewTerms = 1;
     if (is_numeric($this->_params['num_terms'] ?? '')) {
@@ -594,7 +583,7 @@ class CRM_Member_Form_MembershipRenewal extends CRM_Member_Form {
     if ($contributionRecurID) {
       $membershipParams['contribution_recur_id'] = $contributionRecurID;
     }
-    $membership = $this->processMembership($membershipParams, $renewalDate, $numRenewTerms, $pending);
+    $membership = $this->processMembership($membershipParams, $this->getSubmittedValue('renewal_date'), $numRenewTerms, $pending);
 
     if (!empty($this->_params['record_contribution']) || $this->_mode) {
       // set the source
@@ -631,18 +620,16 @@ class CRM_Member_Form_MembershipRenewal extends CRM_Member_Form {
     }
 
     if (!empty($this->_params['send_receipt'])) {
-      $this->sendReceipt($membership);
+      $this->sendReceipt();
     }
   }
 
   /**
    * Send a receipt.
    *
-   * @param CRM_Member_BAO_Membership $membership
-   *
    * @throws \CRM_Core_Exception
    */
-  protected function sendReceipt($membership) {
+  protected function sendReceipt() {
     $receiptFrom = $this->_params['from_email_address'];
 
     if (!empty($this->_params['payment_instrument_id'])) {
@@ -671,21 +658,11 @@ class CRM_Member_Form_MembershipRenewal extends CRM_Member_Form {
     CRM_Core_BAO_UFGroup::getValues($this->_contactID, $customFields, $customValues, FALSE, $members);
 
     $this->assign('formValues', $this->_params);
-
-    $this->assign('membership_name', CRM_Core_DAO::getFieldValue('CRM_Member_DAO_MembershipType',
-      $membership->membership_type_id
-    ));
     $this->assign('customValues', $customValues);
 
-    $membership_status = CRM_Member_PseudoConstant::membershipStatus($membership->status_id, NULL, 'label');
-    $this->assign('mem_status', $membership_status);
-    $this->assign('mem_join_date', CRM_Utils_Date::formatDateOnlyLong($membership->join_date));
-    $this->assign('mem_start_date', CRM_Utils_Date::formatDateOnlyLong($membership->start_date));
-    $this->assign('mem_end_date', CRM_Utils_Date::formatDateOnlyLong($membership->end_date));
     if ($this->_mode) {
       $this->assign('address', CRM_Utils_Address::getFormattedBillingAddressFieldsFromParameters(
         $this->_params,
-        $this->_bltID
       ));
 
       $this->assign('is_pay_later', 0);

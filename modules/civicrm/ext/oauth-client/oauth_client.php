@@ -1,9 +1,7 @@
 <?php
 
 require_once 'oauth_client.civix.php';
-// phpcs:disable
 use CRM_OauthClient_ExtensionUtil as E;
-// phpcs:enable
 
 /**
  * Implements hook_civicrm_config().
@@ -41,6 +39,7 @@ function oauth_client_civicrm_permission(&$permissions) {
   $permissions['manage all OAuth contact tokens'] = [
     'label' => $prefix . ts('manage all OAuth contact tokens'),
     'description' => ts("Manage OAuth tokens for all contacts"),
+    'implies' => ['manage my OAuth contact tokens'],
   ];
 }
 

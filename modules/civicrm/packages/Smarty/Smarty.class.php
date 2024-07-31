@@ -1107,8 +1107,8 @@ class Smarty
    *
    * @return \Smarty current Smarty instance for chaining
    */
-  public function setTemplateDir($template_dir, $isConfig = false) {
-    $this->addTemplateDir($template_dir, null, $isConfig);
+  public function setTemplateDir($template_dir) {
+    $this->template_dir = (array) $template_dir;
     return $this;
   }
 
@@ -1241,9 +1241,10 @@ class Smarty
      */
     function fetch($resource_name, $cache_id = null, $compile_id = null, $display = false)
     {
-      if (preg_match('/^(\s+)?string:/', $resource_name)) {
-        $old_security = $this->security;
-        $this->security = TRUE;
+      // Do we need this forked? Seems like recipe for confusion.
+      $useSecurityPolicy = preg_match('/^(\s+)?string:/', $resource_name) && empty($smarty->security);
+      if ($useSecurityPolicy) {
+        Civi::service('civi.smarty.userContent')->enable();
       }
       try {
         static $_cache_info = [];
@@ -1357,8 +1358,8 @@ class Smarty
               error_reporting($_smarty_old_error_level);
               // restore initial cache_info
               $this->_cache_info = array_pop($_cache_info);
-              if (isset($old_security)) {
-                $this->security = $old_security;
+              if ($useSecurityPolicy) {
+                Civi::service('civi.smarty.userContent')->disable();
               }
               return TRUE;
             }
@@ -1451,24 +1452,24 @@ class Smarty
             echo smarty_core_display_debug_console($_params, $this);
           }
           error_reporting($_smarty_old_error_level);
-          if (isset($old_security)) {
-            $this->security = $old_security;
+          if ($useSecurityPolicy) {
+            Civi::service('civi.smarty.userContent')->disable();
           }
           return;
         }
         else {
           error_reporting($_smarty_old_error_level);
           if (isset($_smarty_results)) {
-            if (isset($old_security)) {
-              $this->security = $old_security;
+            if ($useSecurityPolicy) {
+              Civi::service('civi.smarty.userContent')->disable();
             }
             return $_smarty_results;
           }
         }
       }
       finally {
-        if (isset($old_security)) {
-          $this->security = $old_security;
+        if ($useSecurityPolicy) {
+          Civi::service('civi.smarty.userContent')->disable();
         }
       }
     }
@@ -2150,6 +2151,19 @@ class Smarty
 			return $function;
 		}
 	}
+
+  /**
+   * Adds directory of plugin files
+   *
+   * @param null|array|string $plugins_dir
+   *
+   * @return Smarty current Smarty instance for chaining
+   */
+  public function addPluginsDir($plugins_dir)
+  {
+    $this->plugins_dir = array_merge($this->plugins_dir, (array) $plugins_dir);
+    return $this;
+  }
 
     /**#@-*/
 

@@ -195,7 +195,7 @@ function iats_civicrm_navigationMenu(&$navMenu) {
     'settings_page' => array(
       'label'      => 'iATS Payments Settings',
       'name'       => 'iATS Payments Settings',
-      'url'        => 'civicrm/admin/contribute/iatssettings',
+      'url'        => 'civicrm/admin/setting/iats',
       'parent'    => array('Administer', 'CiviContribute'),
       'permission' => 'access CiviContribute,administer CiviCRM',
       'operator'   => 'AND',
@@ -233,9 +233,9 @@ function iats_civicrm_buildForm($formName, &$form) {
  * Modifications to a (public/frontend) contribution financial forms for iATS
  * procesors.
  * 1. enable public selection of future recurring contribution start date, but only if the form allows recurring!
- * 
+ *
  * We're only handling financial payment class forms here. Note that we can no
- * longer test for whether the page has/is recurring or not. 
+ * longer test for whether the page has/is recurring or not.
  * Special note - if a page offers recurring contributions and if
  * future recurring start dates are enabled with restrictions on which days,
  * then any one-time contribution will be forced to use those rules as well.
@@ -257,9 +257,12 @@ function iats_civicrm_buildForm_CRM_Financial_Form_Payment(&$form) {
   }
   // If future public start dates are enabled on a recurring-enabled page ...
   // Uses javascript to hide/reset unless they have recurring contributions checked.
-  $settings = Civi::settings()->get('iats_settings');
+  // 2023-11-08 updated how the payment processor object is found temporarily
+  //   update to use getter method in the future.
+  $settings = CRM_Iats_Utils::getSettings();
   if (!empty($settings['enable_public_future_recurring_start'])
-    && $form->_paymentObject->supports('FutureRecurStartDate')
+  //  && $form->getPaymentProcessorObject()->supports('FutureRecurStartDate') 
+    && $form->_paymentProcessor['object']->supports('FutureRecurStartDate')
   ) {
     $allow_days = empty($settings['days']) ? array('-1') : $settings['days'];
     $start_dates = CRM_Iats_Transaction::get_future_monthly_start_dates(time(), $allow_days);
@@ -285,6 +288,19 @@ function iats_civicrm_buildForm_CRM_Contribute_Form_Contribution_Main(&$form) {
 }
 
 /**
+ * Implements hook_civicrm_buildForm for the CRM_Admin_Form_Generic form
+ *
+ * @var CRM_Admin_Form_Generic $form
+ */
+function iats_civicrm_buildForm_CRM_Admin_Form_Generic($form) {
+  if ($form->getSettingPageFIlter() === 'iats') {
+    $form->addRule('iats_email_recurring_failure_report', ts('Email address is not a valid format.'), 'email');
+    $form->addRule('iats_bcc_email_recurring_failure_report', ts('Email address is not a valid format.'), 'email');
+    $form->addRule('iats_recurring_failure_threshhold', ts('Threshhold must be a positive integer.'), 'integer');
+  }
+}
+
+/**
  *
  */
 function iats_civicrm_pageRun(&$page) {
@@ -300,7 +316,7 @@ function iats_civicrm_pageRun(&$page) {
  * link to iATS CustomerLink display and editing pages.
  */
 function iats_civicrm_pageRun_CRM_Contribute_Page_ContributionRecur($page) {
-  // Get the corresponding (most recently created) iATS customer code record 
+  // Get the corresponding (most recently created) iATS customer code record
   // we'll also get the expiry date and last four digits (at least, our best information about that).
   $extra = array();
   $crid = CRM_Utils_Request::retrieve('id', 'Integer', $page, FALSE);
@@ -381,7 +397,7 @@ function iats_civicrm_pre($op, $objectName, $objectId, &$params) {
   if (('ContributionRecur' == $objectName) && ('create' == $op || 'edit' == $op) && !empty($params['payment_processor_id'])) {
     if ($type = _iats_civicrm_is_iats($params['payment_processor_id'])) {
       if (!empty($params['next_sched_contribution_date'])) {
-        $settings = Civi::settings()->get('iats_settings');
+        $settings = CRM_Iats_Utils::getSettings();
         $allow_days = empty($settings['days']) ? array('-1') : $settings['days'];
         // Force one of the fixed days, and set the cycle_day at the same time.
         if (0 < max($allow_days)) {
@@ -402,8 +418,8 @@ function iats_civicrm_pre($op, $objectName, $objectId, &$params) {
 
 function iats_get_setting($key = NULL) {
   static $settings;
-  if (empty($settings)) { 
-    $settings = Civi::settings()->get('iats_settings');
+  if (empty($settings)) {
+    $settings = CRM_Iats_Utils::getSettings();
   }
   return empty($key) ?  $settings : (isset($settings[$key]) ? $settings[$key] : '');
 }
@@ -497,7 +513,7 @@ function _iats_get_form_payment_processors($form) {
     $id = $form->_paymentProcessor['id'];
     return array($id => $form->_paymentProcessor);
   }
-  else { 
+  else {
     // Handle the legacy: event and contribution page forms
     if (empty($form->_paymentProcessors)) {
       if (empty($form->_paymentProcessorIDs)) {
@@ -609,14 +625,14 @@ function iats_civicrm_buildForm_CRM_Contribute_Form_UpdateSubscription(&$form) {
      && (0 !== strpos($payment_processor_type, 'Payment_Faps')) ){
     return;
   }
-  $settings = civicrm_api3('Setting', 'getvalue', array('name' => 'iats_settings'));
+  $settings = CRM_Iats_Utils::getSettings();
   // don't do this if the site administrator has disabled it.
   if (!empty($settings['no_edit_extra'])) {
     return;
   }
   $allow_days = empty($settings['days']) ? array('-1') : $settings['days'];
   if (0 < max($allow_days)) {
-    $userAlert = ts('Your next scheduled contribution date will automatically be updated to the next allowable day of the month: %1', 
+    $userAlert = ts('Your next scheduled contribution date will automatically be updated to the next allowable day of the month: %1',
       array(1 => implode(', ', $allow_days)));
     CRM_Core_Session::setStatus($userAlert, ts('Warning'), 'alert');
   }
@@ -649,7 +665,7 @@ function iats_civicrm_buildForm_CRM_Contribute_Form_UpdateSubscription(&$form) {
     'is_email_receipt' => 'Email receipt for each Contribution in this Recurring Series',
   );
   $dupe_fields = array();
-  // To be a good citizen, I check if core or another extension hasn't already added these fields 
+  // To be a good citizen, I check if core or another extension hasn't already added these fields
   // and don't add them again if they have.
   foreach (array_keys($edit_fields) as $fid) {
     if ($form->elementExists($fid)) {

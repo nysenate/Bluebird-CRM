@@ -174,7 +174,10 @@ trait CRM_Core_Form_EntityFormTrait {
     ]));
     }
      */
-
+    $this->assign('customDataType', $this->getDefaultEntity());
+    $this->assign('customDataSubType', $this->getEntitySubTypeId());
+    $this->assign('entityID', $this->getEntityId());
+    $this->assign('cid', NULL);
     if ($this->isSubmitted()) {
       $customisableEntities = CRM_Core_SelectValues::customGroupExtends();
       if (isset($customisableEntities[$this->getDefaultEntity()])) {
@@ -347,7 +350,7 @@ trait CRM_Core_Form_EntityFormTrait {
   protected function addEntityFieldsToTemplate() {
     foreach ($this->getEntityFields() as $fieldSpec) {
       if (empty($fieldSpec['not-auto-addable'])) {
-        $element = $this->addField($fieldSpec['name'], [], CRM_Utils_Array::value('required', $fieldSpec), FALSE);
+        $element = $this->addField($fieldSpec['name'], [], $fieldSpec['required'] ?? FALSE, FALSE);
         if (!empty($fieldSpec['is_freeze'])) {
           $element->freeze();
         }

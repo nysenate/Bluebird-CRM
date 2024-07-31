@@ -597,7 +597,12 @@ function _civicrm_member_roles_sync($ext_uid = NULL, $cid = NULL, $sync_type = N
     $roleCondition = is_array($rid) ? 'IN' : '=';
 
     if (empty($contactMemberships) && !empty($rid)) {
-      db_delete('users_roles')->condition('uid', $uid)->condition('rid', $rid, $roleCondition)->execute();
+      $account = user_load($uid, TRUE);
+      if ($account !== FALSE) {
+        $rolesRetain = array_diff_key($account->roles, array_flip($rid));
+        // Remove the user roles set by membership.
+        user_save($account, array('roles' => $rolesRetain));
+      }
     }
     else {
       foreach ($contactMemberships as $membership) {

@@ -1,5 +1,7 @@
 <?php
 
+use Civi\Api4\Contact;
+
 /**
  * Class CRM_Event_Cart_Form_Checkout_Payment
  */
@@ -16,6 +18,11 @@ class CRM_Event_Cart_Form_Checkout_Payment extends CRM_Event_Cart_Form_Cart {
   public $payer_contact_id;
   public $is_pay_later = FALSE;
   public $pay_later_receipt;
+  public $_price_values;
+  public $_paymentFields;
+  public $sub_trxn_index;
+  public $trxn_id;
+  public $trxn_date;
 
   /**
    * @var array
@@ -37,9 +44,9 @@ class CRM_Event_Cart_Form_Checkout_Payment extends CRM_Event_Cart_Form_Cart {
       'id' => $participant->id,
       'event_id' => $event->id,
       'register_date' => date('YmdHis'),
-      'source' => CRM_Utils_Array::value('participant_source', $params, $this->description),
+      'source' => $params['participant_source'] ?? $this->description,
       'is_pay_later' => $this->is_pay_later,
-      'fee_amount' => CRM_Utils_Array::value('amount', $params, 0),
+      'fee_amount' => $params['amount'] ?? 0,
       'fee_currency' => $params['currencyID'] ?? NULL,
     ];
 
@@ -90,7 +97,7 @@ class CRM_Event_Cart_Form_Checkout_Payment extends CRM_Event_Cart_Form_Cart {
       CRM_Core_BAO_Address::fixAddress($location['address'][1]);
     }
 
-    list($pre_id, $post_id) = CRM_Event_Cart_Form_MerParticipant::get_profile_groups($participant->event_id);
+    [$pre_id, $post_id] = CRM_Event_Cart_Form_MerParticipant::get_profile_groups($participant->event_id);
     $payer_values = [
       'email' => '',
       'name' => '',
@@ -415,11 +422,10 @@ class CRM_Event_Cart_Form_Checkout_Payment extends CRM_Event_Cart_Form_Cart {
     $transaction = new CRM_Core_Transaction();
 
     foreach ($main_participants as $participant) {
-      $defaults = [];
-      $ids = ['contact_id' => $participant->contact_id];
-      $contact = CRM_Contact_BAO_Contact::retrieve($ids, $defaults);
-      $contact->is_deleted = 0;
-      $contact->save();
+      Contact::update(FALSE)
+        ->addValue('is_deleted', FALSE)
+        ->addWhere('id', '=', $participant->contact_id)
+        ->execute();
     }
 
     $trxn_prefix = 'VR';
@@ -478,7 +484,6 @@ class CRM_Event_Cart_Form_Checkout_Payment extends CRM_Event_Cart_Form_Cart {
     $this->cart->save();
     $this->set('last_event_cart_id', $this->cart->id);
 
-    $contribution_statuses = CRM_Contribute_PseudoConstant::contributionStatus(NULL, 'name');
     $params['payment_instrument_id'] = NULL;
     if (!empty($params['is_pay_later'])) {
       $params['payment_instrument_id'] = CRM_Core_PseudoConstant::getKey('CRM_Contribute_BAO_Contribution', 'payment_instrument_id', 'Check');
@@ -488,10 +493,10 @@ class CRM_Event_Cart_Form_Checkout_Payment extends CRM_Event_Cart_Form_Cart {
       $params['payment_instrument_id'] = CRM_Core_PseudoConstant::getKey('CRM_Contribute_BAO_Contribution', 'payment_instrument_id', 'Credit Card');
     }
     if ($this->is_pay_later && empty($params['payment_completed'])) {
-      $params['contribution_status_id'] = array_search('Pending', $contribution_statuses);
+      $params['contribution_status_id'] = CRM_Core_PseudoConstant::getKey('CRM_Contribute_BAO_Contribution', 'contribution_status_id', 'Pending');
     }
     else {
-      $params['contribution_status_id'] = array_search('Completed', $contribution_statuses);
+      $params['contribution_status_id'] = CRM_Core_PseudoConstant::getKey('CRM_Contribute_BAO_Contribution', 'contribution_status_id', 'Completed');
       $params['participant_status'] = 'Registered';
       $params['is_pay_later'] = 0;
     }
@@ -605,7 +610,7 @@ class CRM_Event_Cart_Form_Checkout_Payment extends CRM_Event_Cart_Form_Cart {
       'trxn_id' => "{$params['trxn_id']}-{$this->sub_trxn_index}",
       'currency' => $params['currencyID'] ?? NULL,
       'source' => $event->title,
-      'is_pay_later' => CRM_Utils_Array::value('is_pay_later', $params, 0),
+      'is_pay_later' => $params['is_pay_later'] ?? 0,
       'contribution_status_id' => $params['contribution_status_id'],
       'payment_instrument_id' => $params['payment_instrument_id'],
       'check_number' => $params['check_number'] ?? NULL,
@@ -660,7 +665,7 @@ class CRM_Event_Cart_Form_Checkout_Payment extends CRM_Event_Cart_Form_Cart {
 
     if (self::getContactID()) {
       $params = ['id' => self::getContactID()];
-      $contact = CRM_Contact_BAO_Contact::retrieve($params, $defaults);
+      $contact = $this->retrieveContact($params, $defaults);
 
       foreach ($contact->email as $email) {
         if ($email['is_billing']) {

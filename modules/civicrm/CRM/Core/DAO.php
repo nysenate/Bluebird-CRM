@@ -28,8 +28,6 @@ if (!defined('DB_DSN_MODE')) {
 require_once 'PEAR.php';
 require_once 'DB/DataObject.php';
 
-require_once 'CRM/Core/I18n.php';
-
 /**
  * Class CRM_Core_DAO
  */
@@ -142,7 +140,9 @@ class CRM_Core_DAO extends DB_DataObject {
    */
   public function __construct() {
     $this->initialize();
-    $this->__table = $this::getLocaleTableName();
+    if (is_subclass_of($this, 'CRM_Core_DAO')) {
+      $this->__table = $this::getLocaleTableName();
+    }
   }
 
   /**
@@ -154,6 +154,10 @@ class CRM_Core_DAO extends DB_DataObject {
     $className = static::class;
     CRM_Core_Error::deprecatedWarning("$className needs to be regenerated. Missing getEntityTitle method.");
     return CRM_Core_DAO_AllCoreTables::getEntityNameForClass($className);
+  }
+
+  public static function getLabelField(): ?string {
+    return static::$_labelField;
   }
 
   /**
@@ -2298,6 +2302,9 @@ SELECT contact_id
     if ($string === NULL) {
       return '';
     }
+    if (isset($GLOBALS['CIVICRM_SQL_ESCAPER'])) {
+      return call_user_func($GLOBALS['CIVICRM_SQL_ESCAPER'], $string);
+    }
     static $_dao = NULL;
     if (!$_dao) {
       // If this is an atypical case (e.g. preparing .sql file before CiviCRM
@@ -3213,9 +3220,9 @@ SELECT contact_id
       $allTableNames = CRM_Core_DAO_AllCoreTables::tables();
       $relatedEntities = array_intersect_key(array_flip((array) $entityTableValues), $allTableNames);
     }
-    // No valid entity_table in WHERE clause so build an ACL case for every possible entity type
+    // No valid entity_table in WHERE clause so build an ACL case for every enabled entity type
     if (empty($relatedEntities)) {
-      $relatedEntities = static::buildOptions($entityTableField, 'get');
+      $relatedEntities = static::buildOptions($entityTableField, 'create');
     }
     // Hmm, this entity is missing entity_table pseudoconstant. We really should fix that.
     if (!$relatedEntities) {
@@ -3225,6 +3232,10 @@ SELECT contact_id
     foreach ($relatedEntities as $table => $ent) {
       // Ensure $ent is the machine name of the entity not a translated title
       $ent = CRM_Core_DAO_AllCoreTables::getEntityNameForTable($table);
+      // Skip if entity doesn't exist. This shouldn't happen, but better safe than sorry.
+      if (!$ent) {
+        continue;
+      }
       // Prevent infinite recursion
       $subquery = $table === static::getTableName() ? NULL : CRM_Utils_SQL::mergeSubquery($ent);
       if ($subquery) {
@@ -3486,7 +3497,7 @@ SELECT contact_id
       // No unique index on "name", do nothing
       return;
     }
-    $labelField = $this::$_labelField;
+    $labelField = $this::getLabelField();
     $label = $this->$labelField ?? NULL;
     if (!$label && $label !== '0') {
       // No label supplied, do nothing
@@ -3566,12 +3577,15 @@ SELECT contact_id
 
   /**
    * Check if component is enabled for this DAO class
-   *
+   * @deprecated
    * @return bool
    */
   public static function isComponentEnabled(): bool {
-    $daoName = static::class;
-    return !defined("$daoName::COMPONENT") || CRM_Core_Component::isEnabled($daoName::COMPONENT);
+    $entityName = CRM_Core_DAO_AllCoreTables::getEntityNameForClass(static::class);
+    if (!$entityName) {
+      return FALSE;
+    }
+    return \Civi\Api4\Utils\CoreUtil::entityExists($entityName);
   }
 
   /**

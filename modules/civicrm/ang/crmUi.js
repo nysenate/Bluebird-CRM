@@ -82,17 +82,21 @@
           ngModel.$render = function () {
             element.val(ngModel.$viewValue).change();
           };
+          let settings = angular.copy(scope.crmUiDatepicker || {});
+          // Set defaults to be non-restrictive
+          settings.start_date_years = settings.start_date_years || 100;
+          settings.end_date_years = settings.end_date_years || 100;
 
           element
-            .crmDatepicker(scope.crmUiDatepicker)
+            .crmDatepicker(settings)
             .on('change', function() {
               // Because change gets triggered from the $render function we could be either inside or outside the $digest cycle
               $timeout(function() {
-                var requiredLength = 19;
-                if (scope.crmUiDatepicker && scope.crmUiDatepicker.time === false) {
+                let requiredLength = 19;
+                if (settings.time === false) {
                   requiredLength = 10;
                 }
-                if (scope.crmUiDatepicker && scope.crmUiDatepicker.date === false) {
+                if (settings.date === false) {
                   requiredLength = 8;
                 }
                 ngModel.$setValidity('incompleteDateTime', !(element.val().length && element.val().length !== requiredLength));
@@ -350,8 +354,7 @@
               iframe.setAttribute('src', scope.$parent.$eval(attrs.crmUiIframeSrc));
             }
             else {
-              //NYSS 12135
-              var iframeHtml = scope.$parent.$eval(attrs.crmUiIframe).replace(/<a /g, "<a target='_blank' ");
+              var iframeHtml = scope.$parent.$eval(attrs.crmUiIframe);
 
               var doc = iframe.document;
               if (iframe.contentDocument) {
@@ -617,7 +620,7 @@
                 var newVal = _.cloneDeep(ngModel.$modelValue);
                 // Fix possible data-type mismatch
                 if (typeof newVal === 'string' && element.select2('container').hasClass('select2-container-multi')) {
-                  newVal = newVal.length ? newVal.split(',') : [];
+                  newVal = newVal.length ? newVal.split(scope.crmUiSelect.separator || ',') : [];
                 }
                 element.select2('val', newVal);
               });
@@ -625,6 +628,10 @@
           }
           function refreshModel() {
             var oldValue = ngModel.$viewValue, newValue = element.select2('val');
+            // Let ng-list do the splitting
+            if (Array.isArray(newValue) && attrs.ngList) {
+              newValue = newValue.join(attrs.ngList);
+            }
             if (oldValue != newValue) {
               scope.$parent.$apply(function () {
                 ngModel.$setViewValue(newValue);

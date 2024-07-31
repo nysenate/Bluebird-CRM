@@ -47,14 +47,8 @@ class SqlFunctionDAYSTOANNIV extends SqlFunction {
    * @inheritDoc
    */
   protected function renderExpression(string $output): string {
-    return "DATEDIFF(
-      IF(
-          DATE(CONCAT(YEAR(CURDATE()), '-', MONTH({$output}), '-', DAY({$output}))) < CURDATE(),
-          CONCAT(YEAR(CURDATE()) + 1, '-', MONTH({$output}), '-', DAY({$output})),
-          CONCAT(YEAR(CURDATE()), '-', MONTH({$output}), '-', DAY({$output}))
-      ),
-      CURDATE()
-    )";
+    $anniversarySql = \CRM_Utils_Date::getAnniversarySql($output);
+    return "DATEDIFF($anniversarySql, CURDATE())";
   }
 
 }

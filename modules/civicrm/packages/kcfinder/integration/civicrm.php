@@ -200,10 +200,25 @@ function authenticate_joomla($config) {
   require_once ( JPATH_BASE .DS.'includes'.DS.'defines.php' );
   require_once ( JPATH_BASE .DS.'includes'.DS.'framework.php' );
 
-  $mainframe = JFactory::getApplication('administrator');
-  $mainframe->initialise();
+  if (version_compare(JVERSION, '4.0.0', 'lt')) {
+    $mainframe = JFactory::getApplication('administrator');
+    $mainframe->initialise();
+    
+    $user_id = JFactory::getUser()->id;
+  } else {
+    // Boot the DI container.
+    $container = \Joomla\CMS\Factory::getContainer();
 
-  if (JFactory::getUser()->id == 0) {
+    // Alias the session service key to the web session service.
+    $container->alias(\Joomla\Session\SessionInterface::class, 'session.web.site');
+
+    // Get the application.
+    $app = $container->get(\Joomla\CMS\Application\AdministratorApplication::class);
+    
+    $user_id = Joomla\CMS\Factory::getUser()->id;
+  }
+
+  if ($user_id == 0) {
     return false;
   }
   return true;
