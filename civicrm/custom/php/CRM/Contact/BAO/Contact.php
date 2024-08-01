@@ -747,12 +747,12 @@ WHERE     civicrm_contact.id = " . CRM_Utils_Type::escape($id, 'Integer');
    *
    * Call this via the api, not directly.
    *
-   * @param \CRM_Contact_BAO_Contact $contact
+   * @param \CRM_Contact_DAO_Contact $contact
    *
    * @return bool
    * @throws \CRM_Core_Exception
    */
-  protected static function contactTrash($contact): bool {
+  protected static function contactTrash(CRM_Contact_DAO_Contact $contact): bool {
     $updateParams = [
       'id' => $contact->id,
       'is_deleted' => 1,
@@ -766,23 +766,6 @@ WHERE     civicrm_contact.id = " . CRM_Utils_Type::escape($id, 'Integer');
     CRM_Utils_Hook::post('edit', $contact->contact_type, $contact->id, $contact);
 
     return TRUE;
-  }
-
-  /**
-   * Get the values for pseudoconstants for name->value and reverse.
-   *
-   * @param array $defaults
-   *   (reference) the default values, some of which need to be resolved.
-   * @param bool $reverse
-   *   Always true as this function is only called from one place..
-   *
-   * @deprecated
-   *
-   * This is called specifically from the contact import parser & should be moved there
-   * as it is not truly a generic function.
-   *
-   */
-  public static function resolveDefaults(&$defaults, $reverse = FALSE) {
   }
 
   /**
@@ -869,12 +852,7 @@ WHERE     civicrm_contact.id = " . CRM_Utils_Type::escape($id, 'Integer');
    *
    * @throws \CRM_Core_Exception
    */
-  public static function deleteContact($id, $restore = FALSE, $skipUndelete = FALSE, $checkPermissions = TRUE) {
-
-    if (!$id || !is_numeric($id)) {
-      CRM_Core_Error::deprecatedFunctionWarning('calling delete contact without a valid contact ID is deprecated.');
-      return FALSE;
-    }
+  public static function deleteContact(int $id, bool $restore = FALSE, bool $skipUndelete = FALSE, bool $checkPermissions = TRUE): bool {
     // If trash is disabled in system settings then we always skip
     if (!Civi::settings()->get('contact_undelete')) {
       $skipUndelete = TRUE;
@@ -2511,6 +2489,9 @@ LEFT JOIN civicrm_email    ON ( civicrm_contact.id = civicrm_email.contact_id )
 
   /**
    * Fetch the object and store the values in the values array.
+   *
+   * @deprecated avoid this function, no planned removed at this stage as there
+   * are still core callers.
    *
    * @param array $params
    *   Input parameters to find object.

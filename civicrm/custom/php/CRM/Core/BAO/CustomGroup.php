@@ -185,9 +185,6 @@ class CRM_Core_BAO_CustomGroup extends CRM_Core_DAO_CustomGroup implements \Civi
     }
     // create custom group dao, populate fields and then save.
     $group = new CRM_Core_DAO_CustomGroup();
-    if (isset($params['title'])) {
-      $group->title = $params['title'];
-    }
 
     $extendsChildType = NULL;
     // lets allow user to pass direct child type value, CRM-6893
@@ -231,14 +228,17 @@ class CRM_Core_BAO_CustomGroup extends CRM_Core_DAO_CustomGroup implements \Civi
     }
     $group->extends_entity_column_value = $extendsChildType;
 
-    if (isset($params['id'])) {
+    // Assign new weight
+    if (empty($params['id'])) {
+      $group->weight = CRM_Utils_Weight::updateOtherWeights('CRM_Core_DAO_CustomGroup', 0, $params['weight'] ?? CRM_Utils_Weight::getMax('CRM_Core_DAO_CustomGroup'));
+    }
+    // Update weight
+    if (isset($params['weight']) && !empty($params['id'])) {
       $oldWeight = CRM_Core_DAO::getFieldValue('CRM_Core_DAO_CustomGroup', $params['id'], 'weight', 'id');
+      $group->weight = CRM_Utils_Weight::updateOtherWeights('CRM_Core_DAO_CustomGroup', $oldWeight, $params['weight']);
     }
-    else {
-      $oldWeight = 0;
-    }
-    $group->weight = CRM_Utils_Weight::updateOtherWeights('CRM_Core_DAO_CustomGroup', $oldWeight, CRM_Utils_Array::value('weight', $params, FALSE));
     $fields = [
+      'title',
       'style',
       'collapse_display',
       'collapse_adv_display',
@@ -310,7 +310,7 @@ class CRM_Core_BAO_CustomGroup extends CRM_Core_DAO_CustomGroup implements \Civi
       $group->is_reserved = $params['is_reserved'] ? 1 : 0;
     }
     $op = isset($params['id']) ? 'edit' : 'create';
-    CRM_Utils_Hook::pre($op, 'CustomGroup', CRM_Utils_Array::value('id', $params), $params);
+    CRM_Utils_Hook::pre($op, 'CustomGroup', $params['id'] ?? NULL, $params);
 
     // enclose the below in a transaction
     $transaction = new CRM_Core_Transaction();
@@ -347,12 +347,7 @@ class CRM_Core_BAO_CustomGroup extends CRM_Core_DAO_CustomGroup implements \Civi
     // reset the cache
     CRM_Utils_System::flushCache();
 
-    if ($tableName) {
-      CRM_Utils_Hook::post('create', 'CustomGroup', $group->id, $group);
-    }
-    else {
-      CRM_Utils_Hook::post('edit', 'CustomGroup', $group->id, $group);
-    }
+    CRM_Utils_Hook::post($op, 'CustomGroup', $group->id, $group);
 
     return $group;
   }
@@ -459,8 +454,7 @@ class CRM_Core_BAO_CustomGroup extends CRM_Core_DAO_CustomGroup implements \Civi
    * @param bool $onlySubType
    *   Only return specified subtype or return specified subtype + unrestricted fields.
    * @param bool $returnAll
-   *   Do not restrict by subtype at all. (The parameter feels a bit cludgey but is only used from the
-   *   api - through which it is properly tested - so can be refactored with some comfort.)
+   *   Do not restrict by subtype at all.
    * @param bool|int $checkPermission
    *   Either a CRM_Core_Permission constant or FALSE to disable checks
    * @param string|int $singleRecord
@@ -945,6 +939,18 @@ class CRM_Core_BAO_CustomGroup extends CRM_Core_DAO_CustomGroup implements \Civi
   }
 
   /**
+   * Get custom group details for a group. Legacy function for backwards compatibility.
+   * @deprecated Legacy function
+   *
+   * @see CRM_Core_BAO_CustomGroup::getAll()
+   * for a better alternative.
+   */
+  public static function &getGroupDetail($groupId = NULL, $searchable = FALSE, &$extends = NULL, $inSelector = NULL) {
+    CRM_Core_Error::deprecatedFunctionWarning('getCustomGroupDetail');
+    return self::getCustomGroupDetail($groupId, $extends, $inSelector);
+  }
+
+  /**
    * @deprecated Legacy function
    *
    * @see CRM_Core_BAO_CustomGroup::getAll()
@@ -952,8 +958,6 @@ class CRM_Core_BAO_CustomGroup extends CRM_Core_DAO_CustomGroup implements \Civi
    *
    * @param int $groupId
    *   Group id whose details are needed.
-   * @param bool $searchable
-   *   Is this field searchable.
    * @param array $extends
    *   Which table does it extend if any.
    * @param bool $inSelector
@@ -961,16 +965,13 @@ class CRM_Core_BAO_CustomGroup extends CRM_Core_DAO_CustomGroup implements \Civi
    * @return array
    *   array consisting of all group and field details
    */
-  public static function &getGroupDetail($groupId = NULL, $searchable = NULL, &$extends = NULL, $inSelector = NULL) {
+  public static function &getCustomGroupDetail($groupId = NULL, $extends = NULL, $inSelector = NULL) {
     $groupFilters = [
       'is_active' => TRUE,
     ];
     $fieldFilters = [];
     if ($groupId) {
       $groupFilters['id'] = $groupId;
-    }
-    if ($searchable) {
-      $fieldFilters['is_searchable'] = TRUE;
     }
     if ($inSelector) {
       $groupFilters['is_multiple'] = TRUE;
@@ -1500,7 +1501,7 @@ class CRM_Core_BAO_CustomGroup extends CRM_Core_DAO_CustomGroup implements \Civi
       return [];
     }
 
-    $groupTree = CRM_Core_BAO_CustomGroup::getTree($type);
+    $groupTree = CRM_Core_BAO_CustomGroup::getTree($type, [], NULL, NULL, [], NULL, TRUE, NULL, TRUE);
     $customValue = [];
     $htmlType = [
       'CheckBox',

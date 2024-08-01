@@ -59,11 +59,11 @@ function civicrm_api3_mailing_create($params) {
   if (!$timestampCheck) {
     //NYSS 14432
     if (max(array_map('ord', str_split($params['body_html']))) >= 240) {
-      throw new API_Exception("Mailing has not been saved. The mailing content may have invalid characters, such as emojis. Please edit the content and remove any non-alphanumeric characters and then re-save.");
+      throw new CRM_Core_Exception("Mailing has not been saved. The mailing content may have invalid characters, such as emojis. Please edit the content and remove any non-alphanumeric characters and then re-save.");
     }
     else {
       //NYSS 14454
-      throw new API_Exception("Mailing has not been saved. Content may be out of date as a result of other users working in the mailing. Please refresh the page and try again.");
+      throw new CRM_Core_Exception("Mailing has not been saved. Content may be out of date as a result of other users working in the mailing. Please refresh the page and try again.");
     }
   }
   // If we're going to autosend, then check validity before saving.
