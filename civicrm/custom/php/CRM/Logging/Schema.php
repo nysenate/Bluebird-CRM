@@ -174,17 +174,8 @@ AND    TABLE_NAME LIKE 'civicrm_%'
     //NYSS 6560 add other tables to exclusion list
     $this->tables = preg_grep('/_changelog_/', $this->tables, PREG_GREP_INVERT);
 
-    if (defined('CIVICRM_LOGGING_DSN')) {
-      $dsn = CRM_Utils_SQL::autoSwitchDSN(CIVICRM_LOGGING_DSN);
-      $dsn = DB::parseDSN($dsn);
-      $this->useDBPrefix = (CIVICRM_LOGGING_DSN != CIVICRM_DSN);
-    }
-    else {
-      $dsn = CRM_Utils_SQL::autoSwitchDSN(CIVICRM_DSN);
-      $dsn = DB::parseDSN($dsn);
-      $this->useDBPrefix = FALSE;
-    }
-    $this->db = $dsn['database'];
+    $this->db = $this->getDatabaseNameFromDSN(defined('CIVICRM_LOGGING_DSN') ? CIVICRM_LOGGING_DSN : CIVICRM_DSN);
+    $this->useDBPrefix = $this->db !== $civiDBName;
 
     $dao = CRM_Core_DAO::executeQuery("
 SELECT TABLE_NAME
@@ -476,7 +467,10 @@ AND    (TABLE_NAME LIKE 'log_civicrm_%' $nonStandardTableNameString )
       if (!empty($cols[$alterType])) {
         foreach ($cols[$alterType] as $col) {
           $line = $this->_getColumnQuery($col, $create);
-          CRM_Core_DAO::executeQuery("ALTER TABLE `{$this->db}`.log_$table {$alterType} {$line}", [], TRUE, NULL, FALSE, FALSE);
+          //NYSS make sure we have something to add/modify
+          if (!empty($line)) {
+            CRM_Core_DAO::executeQuery("ALTER TABLE `{$this->db}`.log_$table {$alterType} {$line}", [], TRUE, NULL, FALSE, FALSE);
+          }
         }
       }
     }
@@ -527,8 +521,7 @@ AND    (TABLE_NAME LIKE 'log_civicrm_%' $nonStandardTableNameString )
    * @return array|mixed|string
    */
   private function _getColumnQuery($col, $createQuery) {
-    //NYSS case-insensitive
-    $line = preg_grep("/^  `$col` /i", $createQuery);
+    $line = preg_grep("/^  `$col` /", $createQuery);
     $line = rtrim(array_pop($line), ',');
     // CRM-11179
     $line = self::fixTimeStampAndNotNullSQL($line);
@@ -719,8 +712,7 @@ WHERE  table_schema IN ('{$this->db}', '{$civiDB}')";
     $diff = ['ADD' => [], 'MODIFY' => [], 'OBSOLETE' => []];
 
     // Columns to be added
-    //NYSS case-insensitive comparison
-    $diff['ADD'] = array_map('strtolower', array_udiff(array_keys($civiTableSpecs), array_keys($logTableSpecs), 'strcasecmp'));
+    $diff['ADD'] = array_diff(array_keys($civiTableSpecs), array_keys($logTableSpecs));
 
     // Columns to be modified
     // Only pick columns where there is a spec change and the column definition was not deliberately modified by
@@ -729,8 +721,7 @@ WHERE  table_schema IN ('{$this->db}', '{$civiDB}')";
       if (!isset($logTableSpecs[$col]) || !is_array($logTableSpecs[$col])) {
         $logTableSpecs[$col] = [];
       }
-      //NYSS case-insensitive comparison
-      $specDiff = array_map('strtolower', array_udiff($civiTableSpecs[$col], $logTableSpecs[$col], 'strcasecmp'));
+      $specDiff = array_diff($civiTableSpecs[$col], $logTableSpecs[$col]);
       if (!empty($specDiff) && $col !== 'id' && !in_array($col, $diff['ADD'])) {
         if (empty($colSpecs['EXTRA']) || (!empty($colSpecs['EXTRA']) && $colSpecs['EXTRA'] !== 'auto_increment')) {
           // ignore 'id' column for any spec changes, to avoid any auto-increment mysql errors
@@ -766,8 +757,7 @@ WHERE  table_schema IN ('{$this->db}', '{$civiDB}')";
     }
 
     // columns to made obsolete by turning into not-null
-    //NYSS case-insensitive comparison
-    $oldCols = array_map('strtolower', array_udiff(array_keys($logTableSpecs), array_keys($civiTableSpecs), 'strcasecmp'));
+    $oldCols = array_diff(array_keys($logTableSpecs), array_keys($civiTableSpecs));
     foreach ($oldCols as $col) {
       if (!in_array($col, ['log_date', 'log_conn_id', 'log_user_id', 'log_action']) &&
         $logTableSpecs[$col]['IS_NULLABLE'] === 'NO'

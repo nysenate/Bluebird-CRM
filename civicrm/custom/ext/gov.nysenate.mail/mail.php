@@ -313,7 +313,7 @@ function mail_civicrm_entityTypes(&$entityTypes) {
   //Civi::log()->debug('mail_civicrm_entityTypes', array('entityTypes' => $entityTypes));
 
   //formally declare our additions to the mailing table as entity fields
-  $entityTypes['CRM_Mailing_DAO_Mailing']['fields_callback'][] = function($class, &$fields) {
+  $entityTypes['Mailing']['fields_callback'][] = function($class, &$fields) {
     //Civi::log()->debug('mail_civicrm_entityTypes', array('$class' => $class, 'fields' => $fields));
 
     $fields['all_emails'] = [

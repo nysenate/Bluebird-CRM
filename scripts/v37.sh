@@ -35,12 +35,28 @@ fi
 echo "running drupal db upgrade..."
 $drush $instance updb -y -q
 
+## modify activity table FK
+echo "modify activity table FK"
+sql="
+  UPDATE civicrm_activity
+    SET activity_date_time = NULL
+    WHERE activity_date_time LIKE '0000-00-00 00:00:00';
+  ALTER TABLE civicrm_activity DROP FOREIGN KEY FK_civicrm_activity_parent_id;
+  ALTER TABLE civicrm_activity ADD CONSTRAINT FK_civicrm_activity_parent_id FOREIGN KEY (parent_id) REFERENCES civicrm_activity (id) ON DELETE SET NULL;
+"
+$execSql -i $instance -c "$sql" -q
+
 echo "upgrade extensions..."
 $drush $instance cvapi extension.upgrade --quiet
 
 ## upgrade civicrm db
 echo "running civicrm db upgrade..."
 $drush $instance civicrm-upgrade-db -y -q
+
+## activity table cleanup
+echo "activity table cleanup"
+sql="DELETE FROM civicrm_activity WHERE is_current_revision = 0"
+$execSql -i $instance -c "$sql" -q
 
 php $script_dir/../civicrm/scripts/logUpdateSchema.php -S $instance
 
