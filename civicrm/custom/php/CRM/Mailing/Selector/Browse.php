@@ -381,9 +381,9 @@ LEFT JOIN  civicrm_contact scheduledContact ON ( $mailing.scheduled_id = schedul
           'Paused',
         ])) {
           if ($allAccess ||
-            ($showApprovalLinks && $showCreateLinks && $showScheduleLinks)
+            //NYSS 16512 allow pausing/resuming for approvers
+            $showApprovalLinks
           ) {
-
             $actionMask |= CRM_Core_Action::DISABLE;
             if ($row['status'] == "Paused") {
               $actionMask |= CRM_Core_Action::REOPEN;
