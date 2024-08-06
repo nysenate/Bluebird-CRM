@@ -374,13 +374,13 @@
       singleArticleBlock:preview,
       doubleArticleBlock:preview,
       tripleArticleBlock:preview,
-      articleImageBlock:preview,
-      articleImageWrapBlock:preview,
       titleBlock:preview,
       titleBlock2:preview,
       footerBlock:preview,
       socialBlock:preview,
       /*NYSS*/
+      articleImageBlock:preview,
+      articleImageWrapBlock:preview,
       socialBlockSimple:preview,
       buttonBlock:preview,
       titleBlock:preview { -ko-background-color: @[backgroundColor] }
@@ -1049,7 +1049,7 @@
                     <td height="9" style="font-size:1px; line-height: 1px;">&nbsp;</td>
                   </tr>
                   <tr data-ko-display="imagePos eq 'left'" style="display: block; float: left; margin-right: 10px; margin-bottom: 10px;">
-                    <td valign="top" align="left" class="links-color">
+                    <td valign="top" align="left" class="links-color" style="-ko-attr-width: @[imageWidth]">
                       <a data-ko-link="image.url" href="">
                         <img
                           data-ko-editable="image.src" width="285" data-ko-placeholder-height="150"
@@ -1059,7 +1059,7 @@
                     </td>
                   </tr>
                   <tr data-ko-display="imagePos eq 'right'" style="display: block; float: right; margin-left: 10px; margin-bottom: 10px;">
-                    <td valign="top" align="left" class="links-color">
+                    <td valign="top" align="left" class="links-color" style="-ko-attr-width: @[imageWidth]">
                       <a data-ko-link="image.url" href="">
                         <img
                           data-ko-editable="image.src" width="285" data-ko-placeholder-height="150"
