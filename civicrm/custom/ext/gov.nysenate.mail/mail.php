@@ -525,10 +525,10 @@ function mail_civicrm_links($op, $objectName, $objectId, &$links, &$mask, &$valu
     }
   }
 
-  //15622
+  //15622/16512
   if ($op == 'view.mailing.browse.scheduled' &&
     $objectName == 'Mailing' &&
-    !CRM_Core_Permission::check('access CiviMail')
+    !(CRM_Core_Permission::check('access CiviMail') || CRM_Core_Permission::check('approve mailings'))
   ) {
     foreach ($links as $k => $link) {
       if (in_array($link['name'], ['Resume', 'Pause'])) {

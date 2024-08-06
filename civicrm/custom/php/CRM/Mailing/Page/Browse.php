@@ -175,7 +175,8 @@ class CRM_Mailing_Page_Browse extends CRM_Core_Page {
       CRM_Utils_System::redirect($context);
     }
     elseif ($this->_action & CRM_Core_Action::REOPEN) {
-      if (!CRM_Core_Permission::checkActionPermission('CiviMail', CRM_Core_Action::CLOSE)) {
+      //NYSS 16512
+      if (!(CRM_Core_Permission::checkActionPermission('CiviMail', CRM_Core_Action::CLOSE) || CRM_Core_Permission::check('approve mailings'))) {
         CRM_Core_Error::statusBounce(ts('You do not have permission to access this page.'));
       }
       CRM_Mailing_BAO_MailingJob::resume($this->_mailingId);
