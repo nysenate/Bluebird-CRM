@@ -2,9 +2,10 @@
 
 /*
  * Project: BluebirdCRM
- * Authors: Brian Shaughnessy
+ * Authors: Brian Shaughnessy and Ken Zalewski
  * Organization: New York State Senate
  * Date: 2015-04-10
+ * Revised: 2024-03-20
  */
 
 class CRM_NYSS_BAO_Integration_Website
@@ -37,27 +38,23 @@ class CRM_NYSS_BAO_Integration_Website
     ");
 
     return $cid;
-  } //getContactId()
+  } //getWebId()
 
   /*
-   * build contact params from row; we now need to look in multiple places.
+   * build contact params from row; we now need to look in multiple places:
    * 1. check for table columns (first level row elements)
    * 2. check in msg_info->user_info
-   * 3. check in msg_info->form_info
    *
    * in each case, we will look for the existence of first/last name
    */
   static function getContactParams($row) {
-    $params = json_decode($row->msg_info);
-    $user_info = $params->user_info;
-    $form_info = $params->form_info;
-    //CRM_Core_Error::debug_var('getContactParams $params', $params);
-    //CRM_Core_Error::debug_var('getContactParams $user_info', $user_info);
-    //CRM_Core_Error::debug_var('getContactParams $form_info', $form_info);
+    $contactParams = [];
+    $evdata = json_decode($row->event_data);
+    $user_info = $evdata->user_info;
+    //CRM_Core_Error::debug_var('getContactParams $evdata', $evdata);
 
-    $contactParams = array();
     if (!empty($row->first_name) || !empty($row->last_name)) {
-      $contactParams = array(
+      $contactParams = [
         'web_user_id' => $row->user_id,
         'first_name' => $row->first_name,
         'last_name' => $row->last_name,
@@ -67,10 +64,10 @@ class CRM_NYSS_BAO_Integration_Website
         'city' => $row->city,
         'state' => $row->state,
         'postal_code' => $row->zip,
-      );
+      ];
     }
     elseif (!empty($user_info->first_name) || !empty($user_info->last_name)) {
-      $contactParams = array(
+      $contactParams = [
         'web_user_id' => $user_info->id,
         'first_name' => $user_info->first_name,
         'last_name' => $user_info->last_name,
@@ -79,21 +76,11 @@ class CRM_NYSS_BAO_Integration_Website
         'city' => $user_info->city,
         'state' => $user_info->state,
         'postal_code' => $user_info->zipcode,
-      );
-    }
-    elseif (!empty($form_info->first_name) || !empty($form_info->last_name)) {
-      $contactParams = array(
-        'first_name' => $form_info->first_name,
-        'last_name' => $form_info->last_name,
-        'email' => $form_info->user_email,
-        'street_address' => $form_info->user_address,
-        'city' => $form_info->user_city,
-        'state' => $form_info->user_state,
-        'postal_code' => $form_info->user_zipcode,
-      );
+      ];
     }
 
-    //if we have address fields, pass them through SAGE so we correct any mispellings
+    // if we have address fields, pass them through SAGE so we correct
+    // any misspellings
     if (!empty($contactParams['state'])) {
       //match params format required by SAGE checkAddress
       $contactParams['state_province'] = $contactParams['state'];
@@ -153,7 +140,7 @@ class CRM_NYSS_BAO_Integration_Website
     //CRM_Core_Error::debug_var('$sql', $sql);
     $r = CRM_Core_DAO::executeQuery($sql);
 
-    $dupeIDs = array();
+    $dupeIDs = [];
     while ($r->fetch()) {
       $dupeIDs[] = $r->id;
     }
@@ -261,11 +248,11 @@ class CRM_NYSS_BAO_Integration_Website
       }
     }
 
-    /*Civi::log()->debug('cleanContactParams', array(
+    /*Civi::log()->debug('cleanContactParams', [
       'contactFields' => $contactFields,
       'addressFields' => $addressFields,
       'params' => $params,
-    ));*/
+    ]);*/
   }//cleanContactParams
 
   //TODO when a user moves to a different district, need to reset web_user_id
@@ -292,11 +279,11 @@ class CRM_NYSS_BAO_Integration_Website
       FROM civicrm_tag
       WHERE name = %1
         AND parent_id = {$parentId}
-    ", array(1 => array($tagName, 'String')));
+    ", [1 => [$tagName, 'String']]);
     //CRM_Core_Error::debug_var('tagId', $tagId);
 
     if (!$tagId) {
-      $tag = civicrm_api('tag', 'create', array(
+      $tag = civicrm_api('tag', 'create', [
         'version' => 3,
         'name' => $tagName,
         'parent_id' => $parentId,
@@ -305,7 +292,7 @@ class CRM_NYSS_BAO_Integration_Website
         'used_for' => 'civicrm_contact',
         'created_date' => date('Y-m-d H:i:s'),
         'description' => '',//TODO store link back to website
-      ));
+      ]);
       //CRM_Core_Error::debug_var('$tag', $tag);
 
       if ($tag['is_error']) {
@@ -316,7 +303,7 @@ class CRM_NYSS_BAO_Integration_Website
     }
 
     //clear tag cache; entity_tag sometimes fails because newly created tag isn't recognized by pseudoconstant
-    civicrm_api3('Tag', 'getfields', array('cache_clear' => 1));
+    civicrm_api3('Tag', 'getfields', ['cache_clear' => 1]);
 
     $apiAction = ($action == 'follow') ? 'create' : 'delete';
     $et = self::entityTagAction($contactId, $tagId, $apiAction);
@@ -347,11 +334,11 @@ class CRM_NYSS_BAO_Integration_Website
       FROM civicrm_tag
       WHERE name = %1
         AND parent_id = {$parentId}
-    ", array(1 => array($tagName, 'String')));
+    ", [1 => [$tagName, 'String']]);
     //CRM_Core_Error::debug_var('tagId', $tagId);
 
     if (!$tagId) {
-      $tag = civicrm_api('tag', 'create', array(
+      $tag = civicrm_api('tag', 'create', [
         'version' => 3,
         'name' => $tagName,
         'parent_id' => $parentId,
@@ -360,7 +347,7 @@ class CRM_NYSS_BAO_Integration_Website
         'used_for' => 'civicrm_contact',
         'created_date' => date('Y-m-d H:i:s'),
         'description' => ''//TODO store link back to website
-      ));
+      ]);
       //CRM_Core_Error::debug_var('$tag', $tag);
 
       if ($tag['is_error']) {
@@ -371,7 +358,7 @@ class CRM_NYSS_BAO_Integration_Website
     }
 
     //clear tag cache; entity_tag sometimes fails because newly created tag isn't recognized by pseudoconstant
-    civicrm_api3('Tag', 'getfields', array('cache_clear' => 1));
+    civicrm_api3('Tag', 'getfields', ['cache_clear' => 1]);
 
     $apiAction = ($action == 'follow') ? 'create' : 'delete';
     $et = self::entityTagAction($contactId, $tagId, $apiAction);;
@@ -413,13 +400,13 @@ class CRM_NYSS_BAO_Integration_Website
         $tagNameOpposite = $tagNameBase.': SUPPORT';
         break;
       default:
-        return array(
+        return [
           'is_error' => 1,
           'error_message' => 'Unable to determine bill action',
           'contactId' => $contactId,
           'action' => $action,
           'params' => $params,
-        );
+        ];
     }
 
     $tagId = CRM_Core_DAO::singleValueQuery("
@@ -427,11 +414,11 @@ class CRM_NYSS_BAO_Integration_Website
       FROM civicrm_tag
       WHERE name = %1
         AND parent_id = $parentId
-    ", array(1 => array($tagName, 'String')));
+    ", [1 => [$tagName, 'String']]);
     //CRM_Core_Error::debug_var('tagId', $tagId);
 
     if (!$tagId) {
-      $tag = civicrm_api('tag', 'create', array(
+      $tag = civicrm_api('tag', 'create', [
         'version' => 3,
         'name' => $tagName,
         'parent_id' => $parentId,
@@ -439,7 +426,7 @@ class CRM_NYSS_BAO_Integration_Website
         'is_reserved' => 1,
         'used_for' => 'civicrm_contact',
         'created_date' => date('Y-m-d H:i:s')
-      ));
+      ]);
       //CRM_Core_Error::debug_var('$tag', $tag);
 
       if ($tag['is_error']) {
@@ -450,7 +437,7 @@ class CRM_NYSS_BAO_Integration_Website
     }
 
     //clear tag cache; entity_tag sometimes fails because newly created tag isn't recognized by pseudoconstant
-    civicrm_api3('Tag', 'getfields', array('cache_clear' => 1));
+    civicrm_api3('Tag', 'getfields', ['cache_clear' => 1]);
     $et = self::entityTagAction($contactId, $tagId, $apiAction);
 
     //see if the opposite tag exists and if so, remove it
@@ -460,7 +447,7 @@ class CRM_NYSS_BAO_Integration_Website
         FROM civicrm_tag
         WHERE name = %1
           AND parent_id = $parentId
-      ", array(1 => array($tagNameOpposite, 'String')));
+      ", [1 => [$tagNameOpposite, 'String']]);
 
       //if the tag doesn't even exist, it's never been used on the site and we can skip the check
       if ($tagIdOpp) {
@@ -495,7 +482,7 @@ class CRM_NYSS_BAO_Integration_Website
       FROM civicrm_tag
       WHERE name = %1
         AND parent_id = {$parentId}
-    ", array(1 => array($tagName, 'String')));
+    ", [1 => [$tagName, 'String']]);
     //CRM_Core_Error::debug_var('tagId1', $tagId);
 
     //search by stub if not found by name
@@ -505,7 +492,7 @@ class CRM_NYSS_BAO_Integration_Website
         FROM civicrm_tag
         WHERE name = %1
           AND parent_id = {$parentId}
-      ", array(1 => array($tagStub, 'String')));
+      ", [1 => [$tagStub, 'String']]);
     }
     //CRM_Core_Error::debug_var('tagId2', $tagId);
 
@@ -524,10 +511,10 @@ class CRM_NYSS_BAO_Integration_Website
       }
       catch (CiviCRM_API3_Exception $e) {
         CRM_Core_Error::debug_var('processPetition tag creation', $e);
-        return array(
+        return [
           'is_error' => 1,
           'details' => $e,
-        );
+        ];
       }
 
       if ($tag['is_error']) {
@@ -538,9 +525,9 @@ class CRM_NYSS_BAO_Integration_Website
     }
 
     //clear tag cache; entity_tag sometimes fails because newly created tag isn't recognized by pseudoconstant
-    civicrm_api3('Tag', 'getfields', array('cache_clear' => 1));
+    civicrm_api3('Tag', 'getfields', ['cache_clear' => 1]);
 
-    $apiAction = (in_array($action, array('sign', 'signature update'))) ? 'create' : 'delete';
+    $apiAction = (in_array($action, ['sign', 'signature update'])) ? 'create' : 'delete';
     try {
       $et = self::entityTagAction($contactId, $tagId, $apiAction);
     }
@@ -572,16 +559,16 @@ class CRM_NYSS_BAO_Integration_Website
         break;
 
       default:
-        return array(
+        return [
           'is_error' => 1,
           'error_message' => 'Unable to determine account action',
           'contactId' => $contactId,
           'action' => $action,
           'params' => $params,
-        );
+        ];
     }
 
-    return array('is_error' => 0, 'version' => 3);
+    return ['is_error' => 0, 'version' => 3];
   } //processAccount()
 
 
@@ -591,16 +578,16 @@ class CRM_NYSS_BAO_Integration_Website
 
     //only available action is account edited
     if ($action != 'account edited') {
-      return array(
+      return [
         'is_error' => 1,
         'error_message' => 'Unknown action type for profile: '.$action,
         'params' => $params,
-      );
+      ];
     }
 
     $status = ($params->status) ? $params->status : 'edited';
 
-    $profileParams = array(
+    $profileParams = [
       'entity_id' => $contactId,
       'custom_65' => $row->first_name,
       'custom_66' => $row->last_name,
@@ -612,12 +599,11 @@ class CRM_NYSS_BAO_Integration_Website
       'custom_72' => $row->email_address,
       'custom_73' => ($row->dob) ? date('Ymd', $row->dob) : '',//dob comes as timestamp
       'custom_74' => $row->gender,
-      'custom_75' => $row->contact_me,
       'custom_76' => $row->top_issue,
       'custom_77' => $status,
       'custom_78' => $row->user_is_verified,
       'custom_79' => date('YmdHis', $row->created_at),
-    );
+    ];
     //CRM_Core_Error::debug_var('profileParams', $profileParams);
 
     try {
@@ -630,27 +616,27 @@ class CRM_NYSS_BAO_Integration_Website
       $errorCode = $e->getErrorCode();
       $errorData = $e->getExtraParams();
 
-      return array(
+      return [
         'is_error' => 1,
         'error_message' => $errorMessage,
         'error_code' => $errorCode,
         'error_data' => $errorData
-      );
+      ];
     }
 
     //9581 update contact record if data missing
-    $contact = civicrm_api3('contact', 'getsingle', array('id' => $contactId));
+    $contact = civicrm_api3('contact', 'getsingle', ['id' => $contactId]);
 
-    $updateParams = array(
+    $updateParams = [
       'id' => $contactId,
-    );
+    ];
     $update = false;
 
     if (empty($contact['email']) && !empty($row->email_address)) {
-      $updateParams['api.email.create'] = array(
+      $updateParams['api.email.create'] = [
         'email' => $row->email_address,
         'location_type_id' => 1,
-      );
+      ];
       $update = true;
     }
 
@@ -676,14 +662,14 @@ class CRM_NYSS_BAO_Integration_Website
     }
 
     if (empty($contact['street_address']) && !empty($row->address1)) {
-      $updateParams['api.address.create'] = array(
+      $updateParams['api.address.create'] = [
         'street_address' => $row->address1,
         'supplemental_addresss_1' => $row->address2,
         'city' => $row->city,
         'state_province' => $row->state,
         'postal_code' => $row->zip,
         'location_type_id' => 1,
-      );
+      ];
       $update = true;
     }
 
@@ -753,12 +739,12 @@ class CRM_NYSS_BAO_Integration_Website
       $errorCode = $e->getErrorCode();
       $errorData = $e->getExtraParams();
 
-      return array(
+      return [
         'is_error' => 1,
         'error_message' => $errorMessage,
         'error_code' => $errorCode,
         'error_data' => $errorData
-      );
+      ];
     }
 
     return $result;
@@ -776,24 +762,24 @@ class CRM_NYSS_BAO_Integration_Website
     }
 
     if (empty($flds)) {
-      return array(
+      return [
         'is_error' => 1,
         'error_message' => 'Unable to build survey'
-      );
+      ];
     }
 
     //build array for activity
-    $actParams = array(
+    $actParams = [
       'subject' => $params->form_title,
       'date' => date('Y-m-d H:i:s'),
       'activity_type_id' => CRM_Core_OptionGroup::getValue('activity_type', 'Website Survey', 'name'),
       'details' => (!empty($params->detail)) ? $params->detail : '',
       'target_contact_id' => $contactId,
-      'source_contact_id' => civicrm_api3('uf_match', 'getvalue', array(
+      'source_contact_id' => civicrm_api3('uf_match', 'getvalue', [
         'uf_id' => 1,
         'return' => 'contact_id',
-      )),
-    );
+      ]),
+    ];
     //CRM_Core_Error::debug_var('actParams', $actParams);
 
     //wrap activity and custom data in a transaction
@@ -837,12 +823,12 @@ class CRM_NYSS_BAO_Integration_Website
       CRM_Core_Error::debug_var('Survey Construction Issue', $e, TRUE, TRUE, 'integration');
     }
 
-    return array(
+    return [
       'is_error' => 1,
       'details' => 'Unable to store survey',
       'form_id' => $params->form_id,
       'contact_id' => $contactId,
-    );
+    ];
   } //processSurvey()
 
 
@@ -860,12 +846,12 @@ class CRM_NYSS_BAO_Integration_Website
     ";
     $r = CRM_Core_DAO::executeQuery($sql);
 
-    $rows = array();
+    $rows = [];
     while ($r->fetch()) {
-      $rows[] = array(
+      $rows[] = [
         'action' => $r->action,
         'created' => date('F jS, Y g:i A', strtotime($r->created_date)),
-      );
+      ];
     }
 
     return $rows;
@@ -887,13 +873,13 @@ class CRM_NYSS_BAO_Integration_Website
     ";
     $r = CRM_Core_DAO::executeQuery($sql);
 
-    $rows = array();
+    $rows = [];
     while ($r->fetch()) {
-      $rows[] = array(
+      $rows[] = [
         'subject' => $r->subject,
         'modified_date' => date('F jS, Y', strtotime($r->modified_date)),
         'note' => nl2br($r->note),
-      );
+      ];
     }
 
     return $rows;
@@ -932,7 +918,7 @@ class CRM_NYSS_BAO_Integration_Website
     }
 
     //get custom fields for this set
-    $cf = civicrm_api3('custom_field', 'get', array('custom_group_id' => $cs));
+    $cf = civicrm_api3('custom_field', 'get', ['custom_group_id' => $cs]);
     //CRM_Core_Error::debug_var('$cf', $cf);
 
     //check to see if existing fields count equals params field count
@@ -942,7 +928,7 @@ class CRM_NYSS_BAO_Integration_Website
       //CRM_Core_Error::debug_var('$fields', $fields);
     }
 
-    $fields = array();
+    $fields = [];
     foreach ($cf['values'] as $id => $f) {
       $fields[$f['label']] = "custom_{$id}";
     }
@@ -977,18 +963,18 @@ class CRM_NYSS_BAO_Integration_Website
       $addedText = strlen((string)$data->form_id) + 12;
       $formTitle = substr($data->form_title, 0, 128 - $addedText);
 
-      $params = array(
+      $params = [
         'name' => "Survey_{$data->form_id}",
         'title' => "Survey: {$formTitle} [{$data->form_id}]",
         'table_name' => "civicrm_value_surveydata_{$data->form_id}",
-        'extends' => array('0' => 'Activity'),
+        'extends' => ['0' => 'Activity'],
         'extends_entity_column_value' => CRM_Core_OptionGroup::getValue('activity_type', 'Website Survey', 'name'),
         'collapse_display' => 1,
         'collapse_adv_display' => 1,
         'style' => 'Inline',
         'is_active' => 1,
-        'weight' => $weight++,
-      );
+        'weight' => $weight++
+      ];
 
       try {
         $cg = civicrm_api3('custom_group', 'create', $params);
@@ -1002,13 +988,11 @@ class CRM_NYSS_BAO_Integration_Website
     }
 
     //get existing fields for this custom data set
-    $existingFieldsList = array();
-    $existingFields = civicrm_api3('custom_field', 'get', array(
+    $existingFieldsList = [];
+    $existingFields = civicrm_api3('custom_field', 'get', [
       'custom_group_id' => $csID,
-      'options' => array(
-        'limit' => 0,
-      ),
-    ));
+      'options' => ['limit' => 0]
+    ]);
     //CRM_Core_Error::debug_var('existingFields', $existingFields);
     //CRM_Core_Error::debug_var('$data->form_values', $data->form_values);
 
@@ -1016,7 +1000,7 @@ class CRM_NYSS_BAO_Integration_Website
       $existingFieldsList[$ef['id']] = $ef['label'];
     }
 
-    $fields = array();
+    $fields = [];
     $weight = 0;
     $fieldCreated = false;
     foreach ($data->form_values as $k => $f) {
@@ -1035,7 +1019,7 @@ class CRM_NYSS_BAO_Integration_Website
       }
       //CRM_Core_Error::debug_var('buildSurvey $label', $label, TRUE, TRUE, 'integration');
 
-      $params = array(
+      $params = [
         'custom_group_id' => $csID,
         'label' => $label,
         'data_type' => 'String',
@@ -1044,7 +1028,7 @@ class CRM_NYSS_BAO_Integration_Website
         'is_active' => 1,
         'is_view' => 1,
         'weight' => $weight++,
-      );
+      ];
       //CRM_Core_Error::debug_var('fields $params', $params);
 
       try {
@@ -1102,7 +1086,7 @@ class CRM_NYSS_BAO_Integration_Website
     $parentNames = CRM_Core_BAO_Tag::getTagSet('civicrm_contact');
     //CRM_Core_Error::debug_var('$parentNames', $parentNames);
 
-    $tags = array(
+    $tags = [
       'Website Bills' =>
         CRM_Core_BAO_EntityTag::getChildEntityTagDetails(array_search('Website Bills', $parentNames), $cid),
       'Website Committees' =>
@@ -1111,7 +1095,7 @@ class CRM_NYSS_BAO_Integration_Website
         CRM_Core_BAO_EntityTag::getChildEntityTagDetails(array_search('Website Issues', $parentNames), $cid),
       'Website Petitions' =>
         CRM_Core_BAO_EntityTag::getChildEntityTagDetails(array_search('Website Petitions', $parentNames), $cid),
-    );
+    ];
 
     //CRM_Core_Error::debug_var('$tags', $tags);
     return $tags;
@@ -1133,12 +1117,12 @@ class CRM_NYSS_BAO_Integration_Website
     //CRM_Core_Error::debug_var('getActivityStream $type', $type);
     $typeSql = ($type) ? "AND type = '{$type}'" : '';
 
-    $sortMapper = array(
+    $sortMapper = [
       0 => 'sort_name',
       1 => 'type',
       2 => 'created_date',
       3 => 'details',
-    );
+    ];
 
     $sEcho = CRM_Utils_Type::escape($_REQUEST['sEcho'], 'Integer');
     $offset = isset($_REQUEST['iDisplayStart']) ? CRM_Utils_Type::escape($_REQUEST['iDisplayStart'], 'Integer') : 0;
@@ -1162,7 +1146,7 @@ class CRM_NYSS_BAO_Integration_Website
 
     $orderBy = ($params['sortBy']) ? $params['sortBy'] : 'created_date desc';
 
-    $activity = array();
+    $activity = [];
     $sql = "
       SELECT SQL_CALC_FOUND_ROWS a.*, c.sort_name, c.id as cid
       FROM nyss_web_activity a
@@ -1182,7 +1166,7 @@ class CRM_NYSS_BAO_Integration_Website
       $url = CRM_Utils_System::url('civicrm/contact/view', "reset=1&cid={$dao->cid}");
 
       $additionalDetails = '';
-      if (in_array($dao->type, array('Direct Message', 'Context Message')) &&
+      if (in_array($dao->type, ['Direct Message', 'Context Message']) &&
         !empty($dao->data)
       ) {
         $data = json_decode($dao->data, true);
@@ -1196,19 +1180,19 @@ class CRM_NYSS_BAO_Integration_Website
         }
       }
 
-      $activity[$dao->id] = array(
+      $activity[$dao->id] = [
         'sort_name' => "<a href='{$url}'>{$dao->sort_name}</a>",
         'type' => $dao->type,
         'created_date' => date('m/d/Y g:i A', strtotime($dao->created_date)),
         'details' => $dao->details.$additionalDetails,
-      );
+      ];
     }
     //CRM_Core_Error::debug_var('getActivityStream $activity', $activity);
 
     $iFilteredTotal = $iTotal = $params['total'] = $totalRows;
-    $selectorElements = array(
+    $selectorElements = [
       'sort_name', 'type', 'created_date', 'details',
-    );
+    ];
 
     echo CRM_Utils_JSON::encodeDataTableSelector($activity, $sEcho, $iTotal, $iFilteredTotal, $selectorElements);
     CRM_Utils_System::civiExit();
@@ -1222,7 +1206,7 @@ class CRM_NYSS_BAO_Integration_Website
   {
     //CRM_Core_Error::debug_var('storeActivityLog', $type);
 
-    $params = array(1 => array($details, 'String'));
+    $params = [1 => [$details, 'String']];
     CRM_Core_DAO::executeQuery("
       INSERT INTO nyss_web_activity
       (contact_id, type, created_date, details, data)
@@ -1248,27 +1232,14 @@ class CRM_NYSS_BAO_Integration_Website
     $transaction = new CRM_Core_Transaction();
 
     //extra fields by type
-    $extraFields = array(
-      'bill' => array(
-        'bill_number',
-        'bill_year',
-      ),
-      'issue' => array(
-        'issue_name',
-      ),
-      'committee' => array(
-        'committee_name',
-      ),
-      'contextmsg' => array(
-        'bill_number',
-      ),
-      'petition' => array(
-        'petition_id',
-      ),
-      'survey' => array(
-        'form_id',
-      ),
-    );
+    $extraFields = [
+      'bill' => ['bill_number', 'bill_year'],
+      'issue' => ['issue_name'],
+      'committee' => ['committee_name'],
+      'contextmsg' => ['bill_number'],
+      'petition' => ['petition_id'],
+      'survey' => ['form_id']
+    ];
 
     //setup fields for common archive table insert
     $fields = array_keys(get_object_vars($row));
@@ -1283,7 +1254,7 @@ class CRM_NYSS_BAO_Integration_Website
     //CRM_Core_Error::debug_var('archiveRecord $fields', $fields);
 
     //setup data
-    $data = array();
+    $data = [];
     foreach ($row as $f => $v) {
       if (in_array($f, $fields)) {
         $data[] = CRM_Core_DAO::escapeString($v);
@@ -1309,10 +1280,10 @@ class CRM_NYSS_BAO_Integration_Website
 
     //setup any additional fields
     if (array_key_exists($type, $extraFields)) {
-      $fields = array_merge(array('archive_id'), $extraFields[$type]);
+      $fields = array_merge(['archive_id'], $extraFields[$type]);
       $fieldList = implode(', ', $fields);
 
-      $data = array($row->id);
+      $data = [$row->id];
       foreach ($extraFields[$type] as $f) {
         $data[] = CRM_Core_DAO::escapeString($params->$f);
       }
@@ -1349,14 +1320,14 @@ class CRM_NYSS_BAO_Integration_Website
   {
     //CRM_Core_Error::debug_var('getNewContacts $_REQUEST', $_REQUEST);
 
-    $sortMapper = array(
+    $sortMapper = [
       0 => 'contact',
       1 => 'date',
       2 => 'email',
       3 => 'address',
       4 => 'city',
-      5 => 'source',
-    );
+      5 => 'source'
+    ];
 
     $sEcho = CRM_Utils_Type::escape($_REQUEST['sEcho'], 'Integer');
     $offset = isset($_REQUEST['iDisplayStart']) ? CRM_Utils_Type::escape($_REQUEST['iDisplayStart'], 'Integer') : 0;
@@ -1443,7 +1414,7 @@ class CRM_NYSS_BAO_Integration_Website
       }
     }
 
-    $newcontacts = array();
+    $newcontacts = [];
     $sql = "
       SELECT SQL_CALC_FOUND_ROWS c.*, ci.contact_source_60, e.email, a.street_address, a.city
       FROM civicrm_contact c
@@ -1468,21 +1439,21 @@ class CRM_NYSS_BAO_Integration_Website
 
     while ($dao->fetch()) {
       $url = CRM_Utils_System::url('civicrm/contact/view', "reset=1&cid={$dao->id}");
-      $newcontacts[$dao->id] = array(
+      $newcontacts[$dao->id] = [
         'sort_name' => "<a href='{$url}'>{$dao->sort_name}</a>",
         'date' => date('m/d/Y g:i A', strtotime($dao->created_date)),
         'email' => $dao->email,
         'address' => $dao->street_address,
         'city' => $dao->city,
-        'source' => ($dao->contact_source_60 == 'Website Account') ? 'Website' : 'Bluebird',
-      );
+        'source' => ($dao->contact_source_60 == 'Website Account') ? 'Website' : 'Bluebird'
+      ];
     }
     //CRM_Core_Error::debug_var('getActivityStream $activity', $activity);
 
     $iFilteredTotal = $iTotal = $params['total'] = $totalRows;
-    $selectorElements = array(
+    $selectorElements = [
       'sort_name', 'date', 'email', 'address', 'city', 'source',
-    );
+    ];
 
     echo CRM_Utils_JSON::encodeDataTableSelector($newcontacts, $sEcho, $iTotal, $iFilteredTotal, $selectorElements);
     CRM_Utils_System::civiExit();
@@ -1549,19 +1520,19 @@ class CRM_NYSS_BAO_Integration_Website
       WHERE contact_id = %1
         AND email = %2
       LIMIT 1
-    ", array(
-      1 => array($cid, 'Integer'),
-      2 => array($email, 'String')
-    ));
+    ", [
+      1 => [$cid, 'Integer'],
+      2 => [$email, 'String']
+    ]);
 
     if (!$exists) {
       try {
-        civicrm_api3('email', 'create', array(
+        civicrm_api3('email', 'create', [
           'contact_id' => $cid,
           'email' => $email,
           'is_primary' => true,
           'location_type_id' => 1,
-        ));
+        ]);
       }
       catch (CiviCRM_API3_Exception $e) {}
     }
@@ -1579,11 +1550,11 @@ class CRM_NYSS_BAO_Integration_Website
    */
   static function entityTagAction($contactId, $tagId, $action, $entityTable = 'civicrm_contact') {
     //setup common params
-    $params = array(
+    $params = [
       'tag_id' => $tagId,
       'entity_id' => $contactId,
-      'entity_table' => $entityTable,
-    );
+      'entity_table' => $entityTable
+    ];
 
     try {
       //perform a get to see if entity_tag record exists
@@ -1616,7 +1587,7 @@ class CRM_NYSS_BAO_Integration_Website
    */
   static function notifyError($db, $type, $row, $params, $date) {
     $toEmails = variable_get('civicrm_error_to');
-    //Civi::log()->debug('notifyError', array('$toEmails' => $toEmails));
+    //Civi::log()->debug('notifyError', ['$toEmails' => $toEmails]);
 
     if (empty($toEmails)) {
       return;
@@ -1639,7 +1610,7 @@ class CRM_NYSS_BAO_Integration_Website
         'html' => $html,
         'from' => reset($fromEmailAddress),
       ];
-      //Civi::log()->debug('notifyError', array('mailParams' => $mailParams));
+      //Civi::log()->debug('notifyError', ['mailParams' => $mailParams]);
 
       CRM_Utils_Mail::send($mailParams);
     }
