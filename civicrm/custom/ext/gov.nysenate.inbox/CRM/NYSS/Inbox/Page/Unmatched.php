@@ -30,7 +30,7 @@ class CRM_NYSS_Inbox_Page_Unmatched extends CRM_Core_Page {
 
     //get unmatched records
     $unmatched = CRM_NYSS_Inbox_BAO_Inbox::getMessages($params, 'unmatched');
-    //Civi::log()->debug('getUnmatched', array('unmatched' => $unmatched));
+    //Civi::log()->debug('getUnmatched', ['unmatched' => $unmatched]);
 
     CRM_Utils_JSON::output($unmatched);
   }
