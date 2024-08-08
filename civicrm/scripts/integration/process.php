@@ -99,7 +99,8 @@ class CRM_Integration_Process
       $params = json_decode($row->msg_info);
       bbscript_log(LL::TRACE, 'Params after json_decode():', $params);
 
-      $date = date('Y-m-d H:i:s', $row->created_at);
+      $created_at = new DateTime($row->created_at);
+      $created_date = $created_at->format('Y-m-d H:i:s');
 
       //check contact/user
       bbscript_log(LL::TRACE, 'calling getContactId('.$row->user_id.')');
@@ -140,7 +141,8 @@ class CRM_Integration_Process
 
         $contactParams['birth_date'] = '';
         if (!empty($row->dob)) {
-          $contactParams['birth_date'] = date('Y-m-d', $row->dob); //dob comes as timestamp
+          $birth_date = new DateTime($row->created_at);
+          $contactParams['birth_date'] = $birth_date->format('Y-m-d'); //dob comes as timestamp
         }
 
         bbscript_log(LL::TRACE, 'calling matchContact() with:', $contactParams);
