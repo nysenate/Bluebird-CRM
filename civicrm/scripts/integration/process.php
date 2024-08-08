@@ -13,6 +13,9 @@ require_once dirname(__FILE__).'/../script_utils.php';
 
 class CRM_Integration_Process
 {
+
+    private bool $dry = false;
+
   function run()
   {
     // Parse the options
@@ -25,6 +28,11 @@ class CRM_Integration_Process
       $usage = '[--dryrun] [--stats] [--archive] [--type TYPE] [--log-level LEVEL]';
       error_log("Usage: ".basename(__FILE__)."  $stdusage  $usage\n");
       exit(1);
+    }
+
+    if (isset($optlist['dryrun'])) {
+        $this->dry = true;
+        bbscript_log(LL::NOTICE, 'Dryrun option is set. No changes will be made.🤞');
     }
 
     if (isset($optlist['log-level'])) {
@@ -70,7 +78,7 @@ class CRM_Integration_Process
     $row = CRM_Core_DAO::executeQuery($sql);
     bbscript_log(LL::DEBUG, 'SQL query:', $sql);
 
-    $stats = [ 'processed' => [], 'unprocessed' => [], 'error' => [] ];
+    $stats = [ 'processed' => [], 'unprocessed' => [], 'error' => [], 'dryrun_skips' => [] ];
 
     while ($row->fetch()) {
       bbscript_log(LL::TRACE, 'fetched row:', $row);
@@ -79,7 +87,11 @@ class CRM_Integration_Process
       if ($row->target_shortname != $row->user_shortname &&
           in_array($row->msg_type, ['DIRECTMSG', 'CONTEXTMSG'])
       ) {
-        CRM_NYSS_BAO_Integration_Website::archiveRecord($intDB, 'other', $row, null);
+
+          $this->dryrun(function() use ($intDB, $row) {
+              CRM_NYSS_BAO_Integration_Website::archiveRecord($intDB, 'other', $row, null);
+          }, "CRM_NYSS_BAO_Integration_Website::archiveRecord");
+
         continue;
       }
 
@@ -102,7 +114,9 @@ class CRM_Integration_Process
           if ($optlist['archive']) {
             $archiveTable = strtolower($row->msg_type);
             bbscript_log(LL::DEBUG, "Archiving unmatched/uncreated record to $archiveTable and archive_error table");
-            CRM_NYSS_BAO_Integration_Website::archiveRecord($intDB, $archiveTable, $row, $params, false);
+              $this->dryrun(function() use ($intDB, $archiveTable, $row, $params) {
+                  CRM_NYSS_BAO_Integration_Website::archiveRecord($intDB, $archiveTable, $row, $params, false);
+              }, "CRM_NYSS_BAO_Integration_Website::archiveRecord");
           }
 
           continue;
@@ -145,14 +159,18 @@ class CRM_Integration_Process
         if ($optlist['archive']) {
           $archiveTable = strtolower($row->msg_type);
           bbscript_log(LL::DEBUG, "Archiving non-matched record to $archiveTable and archive_error table");
-          CRM_NYSS_BAO_Integration_Website::archiveRecord($intDB, $archiveTable, $row, $params, false);
+            $this->dryrun(function() use ($intDB, $archiveTable, $row, $params) {
+                CRM_NYSS_BAO_Integration_Website::archiveRecord($intDB, $archiveTable, $row, $params, false);
+            }, "CRM_NYSS_BAO_Integration_Website::archiveRecord");
         }
 
         continue;
       }
 
       //update email address
-      CRM_NYSS_BAO_Integration_Website::updateEmail($cid, $row);
+        $this->dryrun(function() use ($cid, $row) {
+            CRM_NYSS_BAO_Integration_Website::updateEmail($cid, $row);
+        }, "CRM_NYSS_BAO_Integration_Website::updateEmail");
 
       $archiveTable = $activity_data = '';
       $skipActivityLog = false;
@@ -161,35 +179,46 @@ class CRM_Integration_Process
 
       switch ($row->msg_type) {
         case 'BILL':
-          $result = CRM_NYSS_BAO_Integration_Website::processBill($cid, $row->msg_action, $params);
+            $result = $this->dryrun(function() use ($cid, $row, $params) {
+                return CRM_NYSS_BAO_Integration_Website::processBill($cid, $row->event_action, $params);
+            }, "CRM_NYSS_BAO_Integration_Website::processBill");
+          //$result = CRM_NYSS_BAO_Integration_Website::processBill($cid, $row->event_action, $params);
           $activity_type = 'Bill';
           $billName = CRM_NYSS_BAO_Integration_Website::buildBillName($params);
           $activity_details = "{$row->msg_action} :: {$billName}";
           break;
 
         case 'ISSUE':
-          $result = CRM_NYSS_BAO_Integration_Website::processIssue($cid, $row->msg_action, $params);
+          $result = $this->dryrun(function() use ($cid, $row, $params) {
+              return CRM_NYSS_BAO_Integration_Website::processIssue($cid, $row->event_action, $params);
+          }, "CRM_NYSS_BAO_Integration_Website::processIssue");
           $activity_type = 'Issue';
           $activity_details = "{$row->msg_action} :: {$params->issue_name}";
           break;
 
         case 'COMMITTEE':
-          $result = CRM_NYSS_BAO_Integration_Website::processCommittee($cid, $row->msg_action, $params);
+          $result = $this->dryrun(function() use ($cid, $row, $params) {
+              return CRM_NYSS_BAO_Integration_Website::processCommittee($cid, $row->event_action, $params);
+          }, "CRM_NYSS_BAO_Integration_Website::processCommittee");
           $activity_type = 'Committee';
           $activity_details = "{$row->msg_action} :: {$params->committee_name}";
           break;
 
         case 'DIRECTMSG':
-          $result = CRM_NYSS_BAO_Integration_Website::processCommunication($cid, $row->msg_action, $params,
-            $row->msg_type, $row->created_at);
+        $result = $this->dryrun(function() use ($cid, $row, $params) {
+            return CRM_NYSS_BAO_Integration_Website::processCommunication($cid, $row->event_action, $params,
+                                                                          $row->event_type, $row->created_at);
+        }, "CRM_NYSS_BAO_Integration_Website::processCommunication");
           $activity_type = 'Direct Message';
           $activity_details = ($row->subject) ? $row->subject : '';
           $activity_data = json_encode(['note_id' => $result['id']]);
           break;
 
         case 'CONTEXTMSG':
-          $result = CRM_NYSS_BAO_Integration_Website::processCommunication($cid, $row->msg_action, $params,
-            $row->msg_type, $row->created_at);
+            $result = $this->dryrun(function() use ($cid, $row, $params) {
+                return CRM_NYSS_BAO_Integration_Website::processCommunication($cid, $row->event_action, $params,
+                                                                              $row->event_type, $row->created_at);
+            }, "CRM_NYSS_BAO_Integration_Website::processCommunication");
           $activity_type = 'Context Message';
           $activity_details = ($row->subject) ? $row->subject : '';
           $activity_data = json_encode(['note_id' => $result['id']]);
@@ -197,13 +226,17 @@ class CRM_Integration_Process
 
         case 'PETITION':
           if ($row->msg_action == 'questionnaire response') {
-            $result = CRM_NYSS_BAO_Integration_Website::processSurvey($cid, $row->msg_action, $params);
+              $result = $this->dryrun(function() use ($cid, $row, $params) {
+                  return CRM_NYSS_BAO_Integration_Website::processSurvey($cid, $row->event_action, $params);
+              }, "CRM_NYSS_BAO_Integration_Website::processSurvey");
             $activity_type = 'Survey';
             $activity_details = "survey :: {$params->form_title}";
             $archiveTable = 'survey';
           }
           else {
-            $result = CRM_NYSS_BAO_Integration_Website::processPetition($cid, $row->msg_action, $params);
+              $result = $this->dryrun(function() use ($cid, $row, $params) {
+                  return CRM_NYSS_BAO_Integration_Website::processPetition($cid, $row->event_action, $params);
+              }, "CRM_NYSS_BAO_Integration_Website::processPetition");
             $activity_type = 'Petition';
             $tagName = CRM_NYSS_BAO_Integration_Website::getTagName($params, 'petition_name');
             $activity_details = "{$row->msg_action} :: {$tagName}";
@@ -215,18 +248,24 @@ class CRM_Integration_Process
           break;*/
 
         case 'ACCOUNT':
-          $result = CRM_NYSS_BAO_Integration_Website::processAccount($cid, $row->msg_action, $params, $date);
+            $result = $this->dryrun(function() use ($cid, $row, $params, $created_date) {
+                return CRM_NYSS_BAO_Integration_Website::processAccount($cid, $row->event_action, $params, $created_date);
+            }, "CRM_NYSS_BAO_Integration_Website::processAccount");
           $activity_type = 'Account';
           $activity_details = "{$row->msg_action}";
 
           if ($row->msg_action == 'account created') {
-            CRM_NYSS_BAO_Integration_Website::processProfile($cid, 'account edited', $params, $row);
+              $result = $this->dryrun(function() use ($cid, $row, $params) {
+                  return CRM_NYSS_BAO_Integration_Website::processProfile($cid, 'account edited', $params, $row);
+              }, "CRM_NYSS_BAO_Integration_Website::processProfile");
           }
 
           break;
 
         case 'PROFILE':
-          $result = CRM_NYSS_BAO_Integration_Website::processProfile($cid, $row->msg_action, $params, $row);
+            $result = $this->dryrun(function() use ($cid, $row, $params) {
+                return CRM_NYSS_BAO_Integration_Website::processProfile($cid, $row->event_action, $params, $row);
+            }, "CRM_NYSS_BAO_Integration_Website::processProfile");
           $activity_type = 'Profile';
           $activity_details = $row->msg_action;
           $activity_details .= ($params->status) ? " :: {$params->status}" : '';
@@ -249,8 +288,13 @@ class CRM_Integration_Process
         if ($optlist['archive']) {
           $archiveTable = (!empty($archiveTable)) ? $archiveTable : strtolower($row->msg_type);
           bbscript_log(LL::DEBUG, 'Archiving matched/created record to $archiveTable and archive_error table');
-          CRM_NYSS_BAO_Integration_Website::archiveRecord($intDB, $archiveTable, $row, $params, false);
+            $this->dryrun(function() use ($intDB, $row, $archiveTable, $params) {
+                CRM_NYSS_BAO_Integration_Website::archiveRecord($intDB, $archiveTable, $row, $params, false);
+            }, "CRM_NYSS_BAO_Integration_Website::archiveRecord");
+
         }
+      } elseif ($this->dry) {
+          $stats['dryrun_skips'][] = $row->id;
       }
       else {
         $stats['processed'][] = $row->id;
@@ -258,14 +302,18 @@ class CRM_Integration_Process
         //store activity log record
         if (!$skipActivityLog) {
           bbscript_log(LL::DEBUG, "Storing activity log record; cid=$cid; type=$activity_type");
-          CRM_NYSS_BAO_Integration_Website::storeActivityLog($cid, $activity_type, $date, $activity_details, $activity_data);
+            $this->dryrun(function() use ($cid, $activity_type, $created_date, $activity_details, $activity_data) {
+                CRM_NYSS_BAO_Integration_Website::storeActivityLog($cid, $activity_type, $created_date, $activity_details, $activity_data);
+            }, "CRM_NYSS_BAO_Integration_Website::storeActivityLog");
         }
 
         //archive rows by ID
         if ($optlist['archive']) {
           $archiveTable = (!empty($archiveTable)) ? $archiveTable : strtolower($row->msg_type);
           bbscript_log(LL::DEBUG, 'Archiving matched/created record to $archiveTable table');
-          CRM_NYSS_BAO_Integration_Website::archiveRecord($intDB, $archiveTable, $row, $params);
+            $this->dryrun(function() use ($intDB, $archiveTable, $row, $params) {
+                CRM_NYSS_BAO_Integration_Website::archiveRecord($intDB, $archiveTable, $row, $params);
+            }, "CRM_NYSS_BAO_Integration_Website::archiveRecord");
         }
       }
     }
@@ -274,6 +322,7 @@ class CRM_Integration_Process
     $counts = [
       'processed' => count($stats['processed']),
       'unprocessed' => count($stats['unprocessed']),
+      'dryrun_skips' => count($stats['dryrun_skips']),
       'error' => count($stats['error'])
     ];
 
@@ -283,9 +332,25 @@ class CRM_Integration_Process
       bbscript_log(LL::NOTICE, "\nProcessing details:");
       bbscript_log(LL::NOTICE, "Processed:", $stats['processed']);
       bbscript_log(LL::NOTICE, "Unprocessed:", $stats['unprocessed']);
+      bbscript_log(LL::NOTICE, "Dry Run Skips:", $stats['dryrun_skips']);
       bbscript_log(LL::NOTICE, "Errors:", $stats['error']);
     }
   }//run
+
+    /**
+     * When dryrun mode is activated, prevents changes to stored data, and just logs the intended action instead.
+     * @param callable $callback a callable block of code that will lead to data changes
+     * @param string $desc description of the callable code block for the log message
+     * @return array
+     */
+    function dryrun (callable $callback, string $desc) {
+      if ($this->dry) {
+          bbscript_log(LL::NOTICE, "Dryrun. Skipping:" . $desc);
+          return ['dryrun' => true];
+      } else {
+          return $callback();
+      }
+    }
 
 }//end class
 
