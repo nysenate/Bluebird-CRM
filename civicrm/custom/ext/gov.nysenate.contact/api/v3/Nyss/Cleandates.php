@@ -29,9 +29,23 @@ function _civicrm_api3_nyss_cleandates_spec(&$spec) {
 function civicrm_api3_nyss_cleandates($params) {
   $result = [
     'dryrun_nullable' => [],
-    'non_nullable' => [],
     'dryrun_fixable' => [],
+    'processed' => 0,
+    'non_nullable' => [],
   ];
+
+  if (!$params['dryrun']) {
+    //get current sql_mode and set mode absent NO_ZERO...
+    $sqlModes = $tempSqlModes = CRM_Utils_SQL::getSqlModes();
+    unset($tempSqlModes[array_search('NO_ZERO_DATE', $tempSqlModes)]);
+    unset($tempSqlModes[array_search('NO_ZERO_IN_DATE', $tempSqlModes)]);
+
+    //disable triggers
+    $trg = CRM_Core_DAO::executeQuery('SHOW TRIGGERS');
+    while ($trg->fetch()) {
+      CRM_Core_DAO::executeQuery("DROP TRIGGER IF EXISTS {$trg->Trigger}");
+    }
+  }
 
   //get all date fields
   $dao = CRM_Core_DAO::executeQuery("
@@ -65,6 +79,7 @@ function civicrm_api3_nyss_cleandates($params) {
         }
       }
       else {
+        CRM_Core_DAO::executeQuery("SET SESSION sql_mode = %1", [1 => [implode(',', $tempSqlModes), 'String']]);
         CRM_Core_DAO::executeQuery("
           UPDATE {$dao->TABLE_NAME}
           SET {$dao->COLUMN_NAME} = NULL
@@ -94,10 +109,11 @@ function civicrm_api3_nyss_cleandates($params) {
             ];
           }
           else {
+            CRM_Core_DAO::executeQuery("SET SESSION sql_mode = %1", [1 => [implode(',', $tempSqlModes), 'String']]);
             CRM_Core_DAO::executeQuery("
               UPDATE {$dao->TABLE_NAME}
               SET {$dao->COLUMN_NAME} = '2010-01-01'
-              WHERE {$dao->COLUMN_NAME} LIKE '0000-00-00%'
+              WHERE {$dao->COLUMN_NAME} LIKE '0000-00-00%';
             ");
           }
         }
@@ -110,6 +126,14 @@ function civicrm_api3_nyss_cleandates($params) {
         }
       }
     }
+  }
+
+  if (!$params['dryrun']) {
+    //restore SQL mode
+    CRM_Core_DAO::executeQuery("SET SESSION sql_mode = %1", [1 => [implode(',', $sqlModes), 'String']]);
+
+    //rebuild triggers
+    Civi::service('sql_triggers')->rebuild(NULL, TRUE);
   }
 
   return civicrm_api3_create_success(['results' => $result], $params, 'Nyss', 'cleandates');
