@@ -19,7 +19,7 @@ class CRM_NYSS_BAO_Integration_Website
     $cid = CRM_Core_DAO::singleValueQuery("
       SELECT id
       FROM civicrm_contact
-      WHERE web_user_id = {$userId}
+      WHERE web_user_id = '{$userId}'
     ");
 
     return $cid;
@@ -46,6 +46,7 @@ class CRM_NYSS_BAO_Integration_Website
    * 2. check in msg_info->user_info
    *
    * in each case, we will look for the existence of first/last name
+   * @deprecated Use CRM_NYSS_BAO_Integration_WebsiteEventData
    */
   static function getContactParams($row) {
     $contactParams = [];
@@ -137,6 +138,7 @@ class CRM_NYSS_BAO_Integration_Website
       FROM civicrm_contact as contact JOIN ($sql) as dupes
       WHERE dupes.id1 = contact.id AND contact.is_deleted = 0
     ";
+
     //CRM_Core_Error::debug_var('$sql', $sql);
     $r = CRM_Core_DAO::executeQuery($sql);
 
@@ -1211,17 +1213,17 @@ class CRM_NYSS_BAO_Integration_Website
       INSERT INTO nyss_web_activity
       (contact_id, type, created_date, details, data)
       VALUES
-      ({$cid}, '{$type}', '{$date}', %1, '{$data}')
-    ", $params);
+      ({$cid}, '{$type}', '{$date}', '{$details}', '{$data}')
+    ");
   } //storeActivityLog()
 
 
   /*
    * archive the accumulator record and then delete from accumulator
    */
-  static function archiveRecord($db, $type, $row, $params, $success = true)
+  static function archiveRecord($db, CRM_NYSS_BAO_Integration_WebsiteEventInterface $event_type, $row, $params, $success = true)
   {
-    //CRM_Core_Error::debug_var('archiveRecord $type', $type);
+    //CRM_Core_Error::debug_var('archiveRecord $event_type', $event_type);
     //CRM_Core_Error::debug_var('archiveRecord $row', $row);
     //CRM_Core_Error::debug_var('archiveRecord $params', $params);
 
@@ -1231,15 +1233,15 @@ class CRM_NYSS_BAO_Integration_Website
     //wrap in a transaction so we store archive and delete from accumulator together
     $transaction = new CRM_Core_Transaction();
 
-    //extra fields by type
-    $extraFields = [
-      'bill' => ['bill_number', 'bill_year'],
-      'issue' => ['issue_name'],
-      'committee' => ['committee_name'],
-      'contextmsg' => ['bill_number'],
-      'petition' => ['petition_id'],
-      'survey' => ['form_id']
-    ];
+    //extra fields by type -- now handled by WebsiteEvent class
+    //$extraFields = [
+    //  'bill' => ['bill_number', 'bill_year'],
+    //  'issue' => ['issue_name'],
+    //  'committee' => ['committee_name'],
+    //  'contextmsg' => ['bill_number'],
+    //  'petition' => ['petition_id'],
+    //  'survey' => ['form_id']
+    //];
 
     //setup fields for common archive table insert
     $fields = array_keys(get_object_vars($row));
@@ -1270,33 +1272,19 @@ class CRM_NYSS_BAO_Integration_Website
     $mainArchiveTable = ($success) ? 'archive' : 'archive_error';
 
     $sql = "
-      INSERT IGNORE INTO {$db}.{$mainArchiveTable}
+      INSERT INTO {$db}.{$mainArchiveTable}
       ({$fieldList})
       VALUES
       ('{$dataList}')
     ";
+
     //CRM_Core_Error::debug_var('archiveRecord $sql', $sql);
     CRM_Core_DAO::executeQuery($sql);
 
-    //setup any additional fields
-    if (array_key_exists($type, $extraFields)) {
-      $fields = array_merge(['archive_id'], $extraFields[$type]);
-      $fieldList = implode(', ', $fields);
-
-      $data = [$row->id];
-      foreach ($extraFields[$type] as $f) {
-        $data[] = CRM_Core_DAO::escapeString($params->$f);
-      }
-      $dataList = implode("', '", $data);
-
-      $sql = "
-      INSERT INTO {$db}.archive_{$type}
-      ({$fieldList})
-      VALUES
-      ('{$dataList}')
-    ";
-      //CRM_Core_Error::debug_var('archiveRecord extra $sql', $sql);
-      CRM_Core_DAO::executeQuery($sql);
+    // Save to Event Specific Archive Table
+    if ($event_type->hasArchiveTable()) {
+        $sql = $event_type->getArchiveSQL($row->id, $db);
+        CRM_Core_DAO::executeQuery($sql);
     }
 
     //now delete record from accumulator
@@ -1307,7 +1295,7 @@ class CRM_NYSS_BAO_Integration_Website
 
     //if errored, trigger notification email
     if (!$success) {
-      self::notifyError($db, $type, $row, $params, $date);
+      self::notifyError($db, $event_type->getEventDescription(), $row, $params, $date);
     }
 
     $transaction->commit();
@@ -1484,14 +1472,15 @@ class CRM_NYSS_BAO_Integration_Website
     return $tagName;
   }//getTagName
 
-  /*
-   * we want to make sure we store the email address, regardless of whether we
-   * have created the contact or found an existing one.
-   * given a contact ID, we determine if the email address already exists;
-   * if so, continue with no action. if it does not exist, add it and set it as
-   * the primary email for the contact
-   */
-  static function updateEmail($cid, $row) {
+
+    /**
+     * method has been deprecated, but left in place for backward compatibility.
+     * @deprecated use createContactEmail() instead
+     * @param int $cid
+     * @param object $row
+     * @return void
+     */
+    static function updateEmail(int $cid, object $row) : void {
     //email reside in one of three places
     $params = json_decode($row->msg_info);
     $email = null;
@@ -1510,8 +1499,27 @@ class CRM_NYSS_BAO_Integration_Website
       return;
     }
 
-    //determine if email already exists for contact
-    $exists = CRM_Core_DAO::singleValueQuery("
+    self::createContactEmail($cid,$email);
+
+  }
+
+    /*
+     * we want to make sure we store the email address, regardless of whether we
+     * have created the contact or found an existing one.
+     * given a contact ID, we determine if the email address already exists;
+     * if so, continue with no action. if it does not exist, add it and set it as
+     * the primary email for the contact
+     */
+    /**
+     * @throws CRM_Core_Exception
+     */
+    public static function createContactEmail(int $contact_id, string $email): int
+  {
+
+      $count_updated = 0;
+
+      //determine if email already exists for contact
+      $exists = CRM_Core_DAO::singleValueQuery("
       SELECT e.id
       FROM civicrm_email e
       JOIN civicrm_contact c
@@ -1521,21 +1529,26 @@ class CRM_NYSS_BAO_Integration_Website
         AND email = %2
       LIMIT 1
     ", [
-      1 => [$cid, 'Integer'],
-      2 => [$email, 'String']
-    ]);
+          1 => [$contact_id, 'Integer'],
+          2 => [$email, 'String']
+      ]);
 
-    if (!$exists) {
-      try {
-        civicrm_api3('email', 'create', [
-          'contact_id' => $cid,
-          'email' => $email,
-          'is_primary' => true,
-          'location_type_id' => 1,
-        ]);
+      if (!$exists) {
+          $result = civicrm_api3('email', 'create', [
+              'contact_id' => $contact_id,
+              'email' => $email,
+              'is_primary' => true,
+              'location_type_id' => 1,
+          ]);
+
+          if ($result['is_error'] === 1) {
+            throw new Exception($result['error_message']);
+          } else {
+            return (int)$result['count'];
+          }
       }
-      catch (CiviCRM_API3_Exception $e) {}
-    }
+
+      return $count_updated;
   }
 
   /**
@@ -1588,7 +1601,6 @@ class CRM_NYSS_BAO_Integration_Website
   static function notifyError($db, $type, $row, $params, $date) {
     $toEmails = variable_get('civicrm_error_to');
     //Civi::log()->debug('notifyError', ['$toEmails' => $toEmails]);
-
     if (empty($toEmails)) {
       return;
     }
