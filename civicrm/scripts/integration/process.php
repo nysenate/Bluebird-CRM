@@ -17,16 +17,20 @@ class CRM_Integration_Process
     private bool $dry = false;
     private ?array $optlist = null;
 
+    /**
+     * @var ?int Max number of entries / rows to query and process during a run. Null means no limit.
+     */
+    private ?int $max = null;
   function run()
   {
     // Parse the options
-    $shortopts = 'dsat:l:';
-    $longopts = [ 'dryrun', 'stats', 'archive', 'type=', 'log-level=' ];
-    $optlist = civicrm_script_init($shortopts, $longopts);
+    $shortopts = 'dsat:l:m:';
+    $longopts = [ 'dryrun', 'stats', 'archive', 'type=', 'log-level=', 'max=' ];
+    $this->optlist = civicrm_script_init($shortopts, $longopts);
 
     if ($this->optlist === null) {
       $stdusage = civicrm_script_usage();
-      $usage = '[--dryrun] [--stats] [--archive] [--type TYPE] [--log-level LEVEL]';
+      $usage = '[--dryrun] [--stats] [--archive] [--type TYPE] [--log-level LEVEL] [--max MAX_ENTRIES]';
       error_log("Usage: ".basename(__FILE__)."  $stdusage  $usage\n");
       exit(1);
     }
@@ -35,6 +39,11 @@ class CRM_Integration_Process
         $this->dry = true;
         bbscript_log(LL::NOTICE, 'Dryrun option is set. No changes will be made.🤞');
     }
+
+      if (isset($this->optlist['max']) && is_numeric($this->optlist['max'])) {
+          $this->max = $this->optlist['max'];
+          bbscript_log(LL::NOTICE, 'Max option is set. Will only process '.$this->optlist['max'].' rows.');
+      }
 
     if (isset($this->optlist['log-level'])) {
       set_bbscript_log_level($this->optlist['log-level']);
@@ -59,6 +68,7 @@ class CRM_Integration_Process
     //set website integration DB
     $intDB = $bbcfg['website.local.db.name'];
     $typeSql = ($optlist['type']) ? "AND msg_type = '{$optlist['type']}'" : '';
+    $limitSql = (! empty($this->max)) ? "LIMIT $this->max" : '';
     $addSql = '';
 
     //handle survey in special way
@@ -69,14 +79,14 @@ class CRM_Integration_Process
 
     //get all accumulator records for instance (target)
     $sql = "
-      SELECT *
-      FROM {$intDB}.accumulator
-      WHERE target_shortname = '{$optlist['site']}'
-        AND (target_shortname = user_shortname OR msg_type = 'PROFILE')
-        $typeSql
-        $addSql
-    ";
-    $row = CRM_Core_DAO::executeQuery($sql);
+        SELECT * 
+        FROM {$this->intDB}.accumulator 
+        WHERE target_shortname = '{$this->optlist['site']}' 
+          AND (target_shortname = user_shortname OR event_type = '".WebsiteEvent::EVENT_TYPE_PROFILE."') 
+          $typeSql 
+          $addSql
+          $limitSql";
+
     bbscript_log(LL::DEBUG, 'SQL query:', $sql);
 
     $stats = [ 'processed' => [], 'unprocessed' => [], 'error' => [], 'dryrun_skips' => [] ];
