@@ -1,18 +1,17 @@
 <?php
 
-namespace CRM_NYSS_BAO_Integration_WebsiteEvent;
-
 use Civi\API\Exception\UnauthorizedException;
 use CRM_Core_Exception;
-use CRM_NYSS_BAO_Integration\WebsiteEventInterface;
 use CRM_NYSS_BAO_Integration_OpenLegislation;
-use CRM_NYSS_BAO_Integration_WebsiteEvent\BaseEvent;
 use InvalidArgumentException;
+use CRM_NYSS_BAO_Integration_WebsiteEvent;
+use CRM_NYSS_BAO_Integration_WebsiteEventInteface;
 
-class BillEvent extends BaseEvent implements WebsiteEventInterface
+class CRM_NYSS_BAO_Integration_WebsiteEvent_BillEvent extends CRM_NYSS_BAO_Integration_WebsiteEvent implements CRM_NYSS_BAO_Integration_WebsiteEventInterface
 {
-    use FollowableEvent;
+    use CRM_NYSS_BAO_Integration_WebsiteEvent_FollowableEvent;
 
+    const ACTIVITY_TYPE = 'Bill';
     const ACTION_SUPPORT = 'aye';
     const ACTION_OPPOSE = 'nay';
 
@@ -20,14 +19,14 @@ class BillEvent extends BaseEvent implements WebsiteEventInterface
     const TAG_SUFFIX_SUPPORT = 'SUPPORT';
     const TAG_SUFFIX_OPPOSE = 'OPPOSE';
 
-    protected string $bill_name;
+    protected string $bill_name = '';
 
-    protected array $base_tag = [];
+    //protected array $base_tag = [];
 
-    public function __construct(int $contact_id, string $action, array $event_info)
+    public function __construct(CRM_NYSS_BAO_Integration_WebsiteEventData $event_data)
     {
 
-        parent::__construct($contact_id, $action, $event_info);
+        parent::__construct($event_data);
 
         if (empty($this->getBillNum())) {
             throw new InvalidArgumentException("bill_number must be in event info.");
@@ -41,11 +40,9 @@ class BillEvent extends BaseEvent implements WebsiteEventInterface
             $this->setBillSponsor(CRM_NYSS_BAO_Integration_OpenLegislation::getBillSponsor($this->getBillNum().'-'.$this->getBillYear()));
         }
 
-        // Build Bill Name
-        $this->bill_name = $this->buildBillName($this->getBillNum(), $this->getBillYear(), $this->getBillSponsor());
-        // Get Tag
-        $this->setTagName($this->bill_name);
-        $this->setTag($this->findTag($this->getTagName(),$this->getParentTagId()));
+        // Archive Table Name
+        $this->setArchiveTableName('archive_bill');
+        $this->archiveFields = ['bill_number','bill_year','bill_sponsor'];
 
         return $this;
     }
@@ -54,31 +51,90 @@ class BillEvent extends BaseEvent implements WebsiteEventInterface
      * @throws UnauthorizedException
      * @throws \CRM_Core_Exception
      */
-    public function process(): static {
+    public function process(int $contact_id): static {
+
+        if (empty($contact_id)) {
+            throw new InvalidArgumentException("Contact ID required to process event.");
+        }
+
+        parent::process($contact_id);
+
+        // Build Bill Name
+        $this->bill_name = $this->buildBillName($this->getBillNum(), $this->getBillYear(), $this->getBillSponsor());
+        // Get Tag
+        $this->setTagName($this->getBillName());
+        $this->setTag($this->findTag($this->getTagName(),$this->getParentTagId(),true));
 
         // Process Specific Action
-        switch ($this->getAction()) {
+        switch ($this->getEventAction()) {
             case self::ACTION_FOLLOW:
-                if (! $this->isFollowing()) {
-                    $this->follow();
+                if (! $this->isFollowing($contact_id)) {
+                    $this->follow($contact_id);
                 }
                 break;
             case self::ACTION_UNFOLLOW:
-                if ($this->isFollowing()) {
-                    $this->unfollow();
+                if ($this->isFollowing($contact_id)) {
+                    $this->unfollow($contact_id);
                 }
                 break;
             case self::ACTION_SUPPORT:
-                $this->supportBill();
+                $this->supportBill($contact_id);
                 break;
             case self::ACTION_OPPOSE:
-                $this->opposeBill();
+                $this->opposeBill($contact_id);
                 break;
             default:
                 throw new CRM_Core_Exception("Unable to determine bill action");
         }
 
         return $this;
+    }
+
+    public function getEventDetails(): string {
+        return $this->getEventAction() . ' :: ' . $this->getBillName();
+    }
+
+    public function getEventDescription(): string
+    {
+        return self::ACTIVITY_TYPE;
+    }
+
+    public function getActivityData(): ?string
+    {
+        // Historically, bill events have not included activity data
+        return '';
+    }
+
+    public function getArchiveValues(): ?array
+    {
+        return [
+          $this->getBillNum(),
+          $this->getBillYear(),
+          $this->getBillSponsor()
+        ];
+    }
+
+    public function getArchiveSQL(int $archive_id, ?string $prefix = null) : string {
+
+        if (empty($archive_id)) {
+            throw new InvalidArgumentException("Archive ID required for building archival SQL command.");
+        }
+
+        $template = "INSERT INTO :prefix:table (archive_id, :fields) VALUES ('".$archive_id."', :values)";
+
+        // Escape and Quote Values
+        $data = array_map(function ($value) {
+            return "'" . CRM_Core_DAO::escapeString($value) . "'";
+        }, $this->getArchiveValues());
+
+        $replacements = [':prefix'=>empty($prefix) ? '' : $prefix . '.',
+                         ':table'=>$this->getArchiveTableName(),
+                         ':fields'=>implode(", ", $this->getArchiveFields()),
+                         ':values'=>implode(", ", $data)
+                        ];
+
+        return strtr($template, $replacements);
+
     }
 
     protected function buildBillName(string $bill_num, string $bill_year, ?string $sponsor = NULL): string
@@ -88,48 +144,59 @@ class BillEvent extends BaseEvent implements WebsiteEventInterface
 
         // If there's a sponsor, then include it in the bill name
         if (! empty($sponsor)) {
-            $bill_name .= "($sponsor)";
+            $bill_name .= " ($sponsor)";
         }
 
         return strtoupper($bill_name);
     }
 
-    protected function supportBill(): static {
+    protected function supportBill($contact_id): static {
+
+        if (empty($contact_id)) {
+            throw new InvalidArgumentException("Contact ID required to support bill.");
+        }
+
         $support_tag = $this->findTag($this->getTagNameSupport(), $this->getParentTagId(), true);
-        $this->createEntityTag($this->getContactId(),$support_tag['id']);
+        $this->createEntityTag($contact_id,$support_tag['id']);
 
         // remove oppose tag, if contact is now in support of bill
         $oppose_tag = $this->findTag($this->getTagNameOppose(), $this->getParentTagId(), false);
-        if (! empty($oppose_tag) && $this->hasEntityTag($this->getContactId(),$oppose_tag['id'])) {
-            $this->deleteEntityTag($this->getContactId(),$oppose_tag['id']);
+        if (! empty($oppose_tag) && $this->hasEntityTag($contact_id,$oppose_tag['id'])) {
+            $this->deleteEntityTag($contact_id,$oppose_tag['id']);
         }
         return $this;
     }
 
-    protected function opposeBill(): static {
+    protected function opposeBill($contact_id): static {
+
+        if (empty($contact_id)) {
+            throw new InvalidArgumentException("Contact ID required to oppose bill.");
+        }
+
         $oppose_tag = $this->findTag($this->getTagNameOppose(), $this->getParentTagId(), true);
-        $this->createEntityTag($this->getContactId(),$oppose_tag['id']);
+        $this->createEntityTag($contact_id,$oppose_tag['id']);
 
         // remove support tag, if contact is now in support of bill
         $support_tag = $this->findTag($this->getTagNameSupport(), $this->getParentTagId(), false);
-        if (! empty($support_tag) && $this->hasEntityTag($this->getContactId(),$support_tag['id'])) {
-            $this->deleteEntityTag($this->getContactId(),$support_tag['id']);
+        if (! empty($support_tag) && $this->hasEntityTag($contact_id,$support_tag['id'])) {
+            $this->deleteEntityTag($contact_id,$support_tag['id']);
         }
         return $this;
     }
 
     protected function getTagNameSupport(): string {
-        if (empty($this->base_tag)) {
+        if (empty($this->getTag())) {
             throw new \CRM_Core_Exception('No base tag set.');
         }
-        return $this->base_tag['name'].': '. self::TAG_SUFFIX_SUPPORT;
+        $tag = $this->getTag();
+        return $tag['name'].': '. self::TAG_SUFFIX_SUPPORT;
     }
 
     protected function getTagNameOppose(): string {
-        if (empty($this->base_tag)) {
+        if (empty($this->getTag())) {
             throw new \CRM_Core_Exception('No base tag set.');
         }
-        return $this->base_tag['name'].': '. self::TAG_SUFFIX_OPPOSE;
+        return $this->getTag()['name'].': '. self::TAG_SUFFIX_OPPOSE;
     }
 
     public function getParentTagName(): string
@@ -139,21 +206,21 @@ class BillEvent extends BaseEvent implements WebsiteEventInterface
 
     public function getBillNum(): ?string {
         $event_info = $this->getEventInfo();
-        return $event_info['bill_number'] ?? null;
+        return $event_info->bill_number ?? null;
     }
 
     public function getBillYear(): ?string {
         $event_info = $this->getEventInfo();
-        return $event_info['bill_year'] ?? null;
+        return $event_info->bill_year ?? null;
     }
 
     public function getBillSponsor(): ?string {
         $event_info = $this->getEventInfo();
-        return $event_info['sponsors'] ?? null;
+        return $event_info->sponsors ?? null;
     }
 
     private function setBillSponsor(string $sponsor): static {
-        $this->setEventInfoAttribute('sponsors',$sponsor);
+        $this->getEventInfo()->setEventInfoAttribute('sponsors',$sponsor);
         return $this;
     }
 
@@ -161,6 +228,7 @@ class BillEvent extends BaseEvent implements WebsiteEventInterface
     {
         return $this->bill_name;
     }
+
 
 
 }

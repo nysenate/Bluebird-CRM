@@ -1,26 +1,20 @@
 <?php
 
-namespace CRM_NYSS_BAO_Integration;
-
-interface WebsiteEventInterface
+interface CRM_NYSS_BAO_Integration_WebsiteEventInterface
 {
-    public const EVENT_TYPE_BILL = 'BILL';
-    public const EVENT_TYPE_ISSUE = 'ISSUE';
-    public const EVENT_TYPE_COMMITTEE = 'COMMITTEE';
-    public const EVENT_TYPE_DIRECTMSG = 'DIRECTMSG';
-    public const EVENT_TYPE_CONTEXTMSG = 'CONTEXTMSG';
-    public const EVENT_TYPE_PETITION = 'PETITION';
-    public const EVENT_TYPE_ACCOUNT = 'ACCOUNT';
-    public const EVENT_TYPE_PROFILE = 'PROFILE';
-
-
     /**
      * @return $this
      * Processes Website Event.
      */
-    public function process(): static;
+    public function process(int $contact_id): static;
     function getParentTagName(): string;
-    function findParentTagId(): int;
-    //public function archiveRecord() : void;
-
+    //function findParentTagId(): int;
+    public function getEventDetails(): string;
+    public function getEventDescription(): string;
+    public function getActivityData() : ?string;
+    public function hasArchiveTable() : bool;
+    public function getArchiveTableName(): string;
+    public function getArchiveFields(): ?array;
+    public function getArchiveValues(): ?array;
+    public function getArchiveSQL(int $archive_id, ?string $prefix = null) : string;
 }

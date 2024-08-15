@@ -1,33 +1,37 @@
 <?php
 
-namespace CRM_NYSS_BAO_Integration_WebsiteEvent;
 
 use Civi\API\Exception\UnauthorizedException;
 
-trait FollowableEvent
+trait CRM_NYSS_BAO_Integration_WebsiteEvent_FollowableEvent
 {
     const ACTION_FOLLOW = 'follow';
     const ACTION_UNFOLLOW = 'unfollow';
 
-    protected function isFollowing(): bool {
-        if (empty($this->base_tag)) {
+    protected function isFollowing($contact_id): bool {
+        if (empty($this->getTag())) {
             throw new \CRM_Core_Exception('No base tag set.');
         }
-        return $this->hasEntityTag($this->getContactId(), $this->base_tag['id']);
+        return $this->hasEntityTag($contact_id, $this->getTag()['id']);
     }
 
     /**
      * @throws UnauthorizedException
      * @throws \CRM_Core_Exception
      */
-    protected function follow(): static {
+    protected function follow($contact_id): static {
+
+        if (empty($contact_id)) {
+            throw new InvalidArgumentException("Contact ID required to follow.");
+        }
+
         // if we don't already have the base tag info, then we likely need to create it.
-        // getTag() will do the creation with the 3rd parameter set to true.
-        if (empty($this->base_tag)) {
+        // findTag() will do the creation with the 3rd parameter set to true.
+        if (empty($this->getTag())) {
             $this->findTag($this->getTagName(),$this->getParentTagId(), true);
         }
         // associate the tag to the entity (the contact) through an Entity Tag
-        $this->createEntityTag($this->getContactId(),$this->base_tag['id']);
+        $this->createEntityTag($contact_id,$this->getTag()['id']);
         return $this;
     }
 
@@ -35,14 +39,19 @@ trait FollowableEvent
      * @throws UnauthorizedException
      * @throws \CRM_Core_Exception
      */
-    protected function unfollow(): static {
-        if (empty($this->base_tag)) {
+    protected function unfollow($contact_id): static {
+
+        if (empty($contact_id)) {
+            throw new InvalidArgumentException("Contact ID required to unfollow.");
+        }
+
+        if (empty($this->getTag())) {
             // if we don't already have the base tag info, then we likely need to create it.
-            // getTag() will do the creation with the 3rd parameter set to true.
+            // findTag() will do the creation with the 3rd parameter set to true.
             $this->findTag($this->getTagName(),$this->getParentTagId(), true);
         }
         // disassociate the tag from the entity (the contact) by removing the Entity Tag
-        $this->deleteEntityTag($this->getContactId(),$this->base_tag['id']);
+        $this->deleteEntityTag($contact_id,$this->getTag()['id']);
         return $this;
     }
 }
