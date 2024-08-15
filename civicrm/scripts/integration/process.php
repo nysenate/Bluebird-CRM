@@ -15,6 +15,7 @@ class CRM_Integration_Process
 {
 
     private bool $dry = false;
+    private ?array $optlist = null;
 
   function run()
   {
@@ -23,26 +24,26 @@ class CRM_Integration_Process
     $longopts = [ 'dryrun', 'stats', 'archive', 'type=', 'log-level=' ];
     $optlist = civicrm_script_init($shortopts, $longopts);
 
-    if ($optlist === null) {
+    if ($this->optlist === null) {
       $stdusage = civicrm_script_usage();
       $usage = '[--dryrun] [--stats] [--archive] [--type TYPE] [--log-level LEVEL]';
       error_log("Usage: ".basename(__FILE__)."  $stdusage  $usage\n");
       exit(1);
     }
 
-    if (isset($optlist['dryrun'])) {
+    if (isset($this->optlist['dryrun'])) {
         $this->dry = true;
         bbscript_log(LL::NOTICE, 'Dryrun option is set. No changes will be made.🤞');
     }
 
-    if (isset($optlist['log-level'])) {
-      set_bbscript_log_level($optlist['log-level']);
+    if (isset($this->optlist['log-level'])) {
+      set_bbscript_log_level($this->optlist['log-level']);
     }
 
     bbscript_log(LL::INFO, 'Initiating website integration processing...');
 
     //get instance settings
-    $bbcfg = get_bluebird_instance_config($optlist['site']);
+    $bbcfg = get_bluebird_instance_config($this->optlist['site']);
     bbscript_log(LL::DEBUG, 'Bluebird config:', $bbcfg);
 
     $civicrm_root = $bbcfg['drupal.rootdir'].'/sites/all/modules/civicrm';
@@ -287,11 +288,11 @@ class CRM_Integration_Process
         $stats['error'][] = $result;
 
         //archive rows by ID into archive_error table
-        if ($optlist['archive']) {
           $archiveTable = (!empty($archiveTable)) ? $archiveTable : strtolower($row->msg_type);
           bbscript_log(LL::DEBUG, 'Archiving matched/created record to $archiveTable and archive_error table');
             $this->dryrun(function() use ($intDB, $row, $archiveTable, $params) {
                 CRM_NYSS_BAO_Integration_Website::archiveRecord($intDB, $archiveTable, $row, $params, false);
+        if ($this->>optlist['archive']) {
             }, "CRM_NYSS_BAO_Integration_Website::archiveRecord");
 
         }
@@ -310,11 +311,11 @@ class CRM_Integration_Process
         }
 
         //archive rows by ID
-        if ($optlist['archive']) {
           $archiveTable = (!empty($archiveTable)) ? $archiveTable : strtolower($row->msg_type);
           bbscript_log(LL::DEBUG, 'Archiving matched/created record to $archiveTable table');
             $this->dryrun(function() use ($intDB, $archiveTable, $row, $params) {
                 CRM_NYSS_BAO_Integration_Website::archiveRecord($intDB, $archiveTable, $row, $params);
+        if ($this->>optlist['archive']) {
             }, "CRM_NYSS_BAO_Integration_Website::archiveRecord");
         }
       }
@@ -330,7 +331,7 @@ class CRM_Integration_Process
 
     bbscript_log(LL::NOTICE, "Processing stats:", $counts);
 
-    if ($optlist['stats']) {
+    if ($this->optlist['stats']) {
       bbscript_log(LL::NOTICE, "\nProcessing details:");
       bbscript_log(LL::NOTICE, "Processed:", $stats['processed']);
       bbscript_log(LL::NOTICE, "Unprocessed:", $stats['unprocessed']);
