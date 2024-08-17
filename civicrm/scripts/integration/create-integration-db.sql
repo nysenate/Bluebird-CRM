@@ -54,64 +54,16 @@ CREATE TABLE `accumulator` (
 --
 
 DROP TABLE IF EXISTS `archive`;
-CREATE TABLE `archive` (
-   `id` int(10) unsigned NOT NULL COMMENT 'EventID from website accumulator',
-   `user_id` int(10) unsigned DEFAULT 0 COMMENT 'Website userID associated with this event',
-   `user_is_verified` tinyint(4) NOT NULL DEFAULT 0 COMMENT 'If the user is verified or not',
-   `user_district` int(10) unsigned DEFAULT NULL COMMENT 'Website user''s senate district',
-   `user_shortname` varchar(32) DEFAULT '' COMMENT 'Website user''s senator shortname',
-   `target_district` int(10) unsigned DEFAULT NULL COMMENT 'Event target''s senate district',
-   `target_shortname` varchar(32) DEFAULT '' COMMENT 'Event target''s senator shortname',
-   `event_type` enum('account', 'bill', 'committee', 'issue', 'poll', 'senator') NOT NULL COMMENT 'Type of event being recorded',
-   `event_action` enum('aye', 'nay', 'follow', 'unfollow', 'webform', 'created', 'edited', 'comment', 'message') NOT NULL COMMENT 'The specific action of the event',
-   `event_data` text COMMENT 'JSON-formatted data specific to the type of event',
-   `created_at` datetime DEFAULT NULL COMMENT 'Timestamp for when the event was recorded',
-   `email_address` varchar(200) NOT NULL DEFAULT '' COMMENT 'User''s email address',
-   `first_name` varchar(50) DEFAULT NULL COMMENT 'User''s first name',
-   `last_name` varchar(50) DEFAULT NULL COMMENT 'User''s last name',
-   `address1` varchar(200) NOT NULL DEFAULT '' COMMENT 'Street address, line 1',
-   `address2` varchar(200) NOT NULL DEFAULT '' COMMENT 'Street address, line 2',
-   `city` varchar(50) NOT NULL DEFAULT '' COMMENT 'City',
-   `state` varchar(16) NOT NULL DEFAULT '' COMMENT 'State / Province code',
-   `zip` varchar(16) NOT NULL DEFAULT '' COMMENT 'Postal / ZIP code',
-   `dob` date DEFAULT NULL COMMENT 'User''s date of birth',
-   `gender` varchar(16) DEFAULT NULL COMMENT 'User''s gender',
-   `top_issue` varchar(255) NOT NULL DEFAULT '' COMMENT 'Top Issue selection',
-   `archive_date` datetime DEFAULT CURRENT_TIMESTAMP COMMENT 'Timestamp archived',
-   PRIMARY KEY (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+CREATE TABLE `archive` AS SELECT * FROM accumulator;
+ALTER TABLE `archive`
+    ADD COLUMN `archive_date` DATETIME DEFAULT CURRENT_TIMESTAMP COMMENT 'Timestamp archived';
 
 --
 -- Table structure for table `archive_error`
 --
 
 DROP TABLE IF EXISTS `archive_error`;
-CREATE TABLE `archive_error` (
-   `id` int(10) unsigned NOT NULL COMMENT 'EventID from website accumulator',
-   `user_id` int(10) unsigned DEFAULT 0 COMMENT 'Website userID associated with this event',
-   `user_is_verified` tinyint(4) NOT NULL DEFAULT 0 COMMENT 'If the user is verified or not',
-   `user_district` int(10) unsigned DEFAULT NULL COMMENT 'Website user''s senate district',
-   `user_shortname` varchar(32) DEFAULT '' COMMENT 'Website user''s senator shortname',
-   `target_district` int(10) unsigned DEFAULT NULL COMMENT 'Event target''s senate district',
-   `target_shortname` varchar(32) DEFAULT '' COMMENT 'Event target''s senator shortname',
-   `event_type` enum('account', 'bill', 'committee', 'issue', 'poll', 'senator') NOT NULL COMMENT 'Type of event being recorded',
-   `event_action` enum('aye', 'nay', 'follow', 'unfollow', 'webform', 'created', 'edited', 'comment', 'message') NOT NULL COMMENT 'The specific action of the event',
-   `event_data` text COMMENT 'JSON-formatted data specific to the type of event',
-   `created_at` datetime DEFAULT NULL COMMENT 'Timestamp for when the event was recorded',
-   `email_address` varchar(200) NOT NULL DEFAULT '' COMMENT 'User''s email address',
-   `first_name` varchar(50) DEFAULT NULL COMMENT 'User''s first name',
-   `last_name` varchar(50) DEFAULT NULL COMMENT 'User''s last name',
-   `address1` varchar(200) NOT NULL DEFAULT '' COMMENT 'Street address, line 1',
-   `address2` varchar(200) NOT NULL DEFAULT '' COMMENT 'Street address, line 2',
-   `city` varchar(50) NOT NULL DEFAULT '' COMMENT 'City',
-   `state` varchar(16) NOT NULL DEFAULT '' COMMENT 'State / Province code',
-   `zip` varchar(16) NOT NULL DEFAULT '' COMMENT 'Postal / ZIP code',
-   `dob` date DEFAULT NULL COMMENT 'User''s date of birth',
-   `gender` varchar(16) DEFAULT NULL COMMENT 'User''s gender',
-   `top_issue` varchar(255) NOT NULL DEFAULT '' COMMENT 'Top Issue selection',
-   `archive_date` datetime DEFAULT CURRENT_TIMESTAMP COMMENT 'Timestamp archived',
-   PRIMARY KEY (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+CREATE TABLE `archive_error` AS SELECT * FROM archive;
 
 --
 -- Table structure for table `archive_bill`
