@@ -23,7 +23,7 @@ class CRM_NYSS_BAO_Integration_WebsiteEvent_CommitteeEvent extends CRM_NYSS_BAO_
 
     // Archive Table Name
     $this->setArchiveTableName('archive_committee');
-    $this->archiveFields = [];
+    $this->archiveFields = ['committee_name'];
 
     return $this;
   }
@@ -72,7 +72,7 @@ class CRM_NYSS_BAO_Integration_WebsiteEvent_CommitteeEvent extends CRM_NYSS_BAO_
   }
 
   public function getEventDetails(): string {
-    return $this->getEventAction() . '::' . $this->getCommitteeName();
+    return $this->getEventAction() . ' :: ' . $this->getCommitteeName();
   }
 
   public function getEventDescription(): string {
