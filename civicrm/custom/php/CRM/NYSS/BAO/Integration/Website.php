@@ -1209,12 +1209,28 @@ class CRM_NYSS_BAO_Integration_Website
     //CRM_Core_Error::debug_var('storeActivityLog', $type);
 
     $params = [1 => [$details, 'String']];
-    CRM_Core_DAO::executeQuery("
-      INSERT INTO nyss_web_activity
-      (contact_id, type, created_date, details, data)
-      VALUES
-      ({$cid}, '{$type}', '{$date}', '{$details}', '{$data}')
-    ");
+    $template = "INSERT INTO nyss_web_activity (contact_id, type, created_date, details, data)
+            VALUES (:values)";
+
+    $values = [
+      $cid,
+      $type,
+      $date,
+      $details,
+      $data
+    ];
+
+    // Escape and Quote Values
+    $data = array_map(function($value) {
+      return "'" . CRM_Core_DAO::escapeString($value) . "'";
+    }, $values);
+
+    $replacements = [
+      ':values' => implode(", ", $data),
+    ];
+
+    $sql = strtr($template, $replacements);
+    CRM_Core_DAO::executeQuery($sql);
   } //storeActivityLog()
 
 
