@@ -1275,14 +1275,20 @@ class CRM_NYSS_BAO_Integration_Website
     $data = [];
     foreach ($row as $f => $v) {
       if (in_array($f, $fields)) {
-        $data[] = CRM_Core_DAO::escapeString($v);
+        // BUG: treats all values as strings, but not all values are strings.
+        // temporary fix is to handle non-string fields differently.
+        if ($f == 'dob' || $f == 'created_at') {
+          $data[] = (empty($v)) ? 'NULL' : "'" . $v . "'";
+        } else {
+          $data[] = "'" . CRM_Core_DAO::escapeString($v) . "'";
+        }
       }
     }
 
     //add date stamp
-    $data[] = $date;
+    $data[] = "'" . $date . "'";
 
-    $dataList = implode("', '", $data);
+    $dataList = implode(",", $data);
     //CRM_Core_Error::debug_var('archiveRecord $data', $data);
 
     $mainArchiveTable = ($success) ? 'archive' : 'archive_error';
@@ -1291,9 +1297,9 @@ class CRM_NYSS_BAO_Integration_Website
       INSERT INTO {$db}.{$mainArchiveTable}
       ({$fieldList})
       VALUES
-      ('{$dataList}')
+      ({$dataList})
     ";
-
+    
     //CRM_Core_Error::debug_var('archiveRecord $sql', $sql);
     CRM_Core_DAO::executeQuery($sql);
 
