@@ -7,6 +7,7 @@
 
 use CRM_NYSS_BAO_Integration_WebsiteEvent as WebsiteEvent;
 use CRM_NYSS_BAO_Integration_WebsiteEvent_BillEvent as BillEvent;
+use CRM_NYSS_BAO_Integration_WebsiteEventFactory as WebsiteEventFactory;
 
 error_reporting(E_ERROR | E_PARSE | E_WARNING);
 set_time_limit(0);
@@ -97,7 +98,7 @@ class CRM_Integration_Process {
         SELECT * 
         FROM {$this->intDB}.accumulator 
         WHERE target_shortname = '{$this->optlist['site']}' 
-          AND (target_shortname = user_shortname OR event_type = '" . WebsiteEvent::EVENT_TYPE_PROFILE . "') 
+          AND (target_shortname = user_shortname OR event_type = '" . WebsiteEventFactory::EVENT_TYPE_PROFILE . "') 
           $typeSql 
           $addSql
           ORDER BY id ASC
@@ -124,7 +125,7 @@ class CRM_Integration_Process {
       // This "catch" was added during upgrades/fixes related to the restructuring of the
       // website accumulator data. As new events become supported on the website side,
       // we'll reimplement them here.
-      if (!WebsiteEvent::isSupportedEvent($event_data->getEventType())) {
+      if (!CRM_NYSS_BAO_Integration_WebsiteEventFactory::canCreate($event_data->getEventType())) {
         bbscript_log(LL::NOTICE, "Skipping unsupported event type [{$event_data->getEventType()}]");
         continue;
       }

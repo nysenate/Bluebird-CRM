@@ -7,26 +7,6 @@ use PhpParser\Node\Expr\Cast\Object_;
 
 abstract class CRM_NYSS_BAO_Integration_WebsiteEvent implements CRM_NYSS_BAO_Integration_WebsiteEventInterface {
 
-  final public const EVENT_TYPE_BILL = 'bill';
-
-  final public const EVENT_TYPE_ISSUE = 'issue';
-
-  final public const EVENT_TYPE_COMMITTEE = 'committee';
-
-  final public const EVENT_TYPE_ACCOUNT = 'account';
-
-  final public const EVENT_TYPE_POLL = 'poll';
-
-  final public const EVENT_TYPE_DIRECTMSG = 'directmsg';
-
-  final public const EVENT_TYPE_CONTEXTMSG = 'contextmsg';
-
-  final public const EVENT_TYPE_PETITION = 'petition';
-
-  final public const EVENT_TYPE_PROFILE = 'profile';
-
-  final public const EVENT_TYPE_SURVEY = 'survey';
-
   protected CRM_NYSS_BAO_Integration_WebsiteEventData $event_data;
 
   protected int $parent_tag_id = 0;
@@ -51,17 +31,6 @@ abstract class CRM_NYSS_BAO_Integration_WebsiteEvent implements CRM_NYSS_BAO_Int
    * because there is no active user.
    */
   protected bool $civi_api4_permission_check = TRUE;
-
-  public static function isSupportedEvent(string $event_type): bool {
-    if (in_array($event_type, [
-      self::EVENT_TYPE_BILL,
-      self::EVENT_TYPE_COMMITTEE,
-    ])) {
-      return TRUE;
-    }
-
-    return FALSE;
-  }
 
   public function __construct(CRM_NYSS_BAO_Integration_WebsiteEventData $event_data) {
     $this->event_data = $event_data;
