@@ -281,37 +281,6 @@ class CRM_Integration_Process {
        * Switch is handled in WebsiteEventFactory, which returns the appropriate object based on event type
 
         switch ($row->event_type) {
-          case WebsiteEvent::EVENT_TYPE_BILL:
-              try {
-                  $bill_event = new BillEvent($cid,$row->event_action,$params->event_info);
-                  $result = $this->(function() use ($bill_event) {
-                      return $bill_event->process();
-                  }, "BillEvent::process()");
-              }
-              catch (Exception $e) {
-
-              }
-            //$result = CRM_NYSS_BAO_Integration_Website::processBill($cid, $row->event_action, $params);
-
-            //$billName = CRM_NYSS_BAO_Integration_Website::buildBillName($params);
-            //$activity_details = "{$row->event_action} :: {$billName}";
-            break;
-
-            case WebsiteEvent::EVENT_TYPE_ISSUE:
-            $result = $this->(function() use ($cid, $row, $params) {
-                return CRM_NYSS_BAO_Integration_Website::processIssue($cid, $row->event_action, $params);
-            }, "CRM_NYSS_BAO_Integration_Website::processIssue");
-            $activity_type = 'Issue';
-            $activity_details = "{$row->event_action} :: {$params->issue_name}";
-            break;
-
-            case WebsiteEvent::EVENT_TYPE_COMMITTEE:
-            $result = $this->(function() use ($cid, $row, $params) {
-                return CRM_NYSS_BAO_Integration_Website::processCommittee($cid, $row->event_action, $params);
-            }, "CRM_NYSS_BAO_Integration_Website::processCommittee");
-            $activity_type = 'Committee';
-            $activity_details = "{$row->event_action} :: {$params->committee_name}";
-            break;
 
           case WebsiteEvent::EVENT_TYPE_DIRECTMSG:
           $result = $this->(function() use ($cid, $row, $params) {
