@@ -18,7 +18,7 @@ class CRM_NYSS_BAO_Integration_WebsiteEvent_CommitteeEvent extends CRM_NYSS_BAO_
     parent::__construct($event_data);
 
     if (empty($this->getCommitteeName())) {
-      throw new InvalidArgumentException("issue_name must be in event info.");
+      throw new InvalidArgumentException("committee_name must be in event info.");
     }
 
     // Archive Table Name
