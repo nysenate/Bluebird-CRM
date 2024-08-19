@@ -10,6 +10,8 @@ class CRM_NYSS_BAO_Integration_WebsiteEvent_IssueEvent extends CRM_NYSS_BAO_Inte
 
   use CRM_NYSS_BAO_Integration_WebsiteEvent_FollowableEvent;
 
+  const ACTIVITY_TYPE = 'Issue';
+
   const PARENT_TAG_NAME = 'Website Issues';
 
   public function __construct(CRM_NYSS_BAO_Integration_WebsiteEventData $event_data) {
@@ -20,8 +22,8 @@ class CRM_NYSS_BAO_Integration_WebsiteEvent_IssueEvent extends CRM_NYSS_BAO_Inte
     }
 
     // Archive Table Name
-    $this->setArchiveTableName('archive_committee');
-    $this->archiveFields = [];
+    $this->setArchiveTableName('archive_issue');
+    $this->archiveFields = ['issue_name'];
 
     return $this;
   }
@@ -39,7 +41,7 @@ class CRM_NYSS_BAO_Integration_WebsiteEvent_IssueEvent extends CRM_NYSS_BAO_Inte
 
     // Get Tag
     $this->setTagName($this->getIssueName());
-    $this->setTag($this->findTag($this->getTagName(), $this->getParentTagId(), FALSE));
+    $this->setTag($this->findTag($this->getTagName(), $this->getParentTagId(), true));
 
     // Process Specific Action
     switch ($this->getEventAction()) {
@@ -54,7 +56,7 @@ class CRM_NYSS_BAO_Integration_WebsiteEvent_IssueEvent extends CRM_NYSS_BAO_Inte
         }
         break;
       default:
-        throw new CRM_Core_Exception("Unable to determine committee action");
+        throw new CRM_Core_Exception("Unable to determine issue action");
     }
 
     return $this;
@@ -62,7 +64,7 @@ class CRM_NYSS_BAO_Integration_WebsiteEvent_IssueEvent extends CRM_NYSS_BAO_Inte
 
   public function getIssueName(): ?string {
     $event_info = $this->getEventInfo();
-    return $event_info['issue_name'] ?? NULL;
+    return $event_info->issue_name ?? NULL;
   }
 
   public function getParentTagName(): string {
@@ -70,23 +72,22 @@ class CRM_NYSS_BAO_Integration_WebsiteEvent_IssueEvent extends CRM_NYSS_BAO_Inte
   }
 
   public function getEventDetails(): string {
-    // TODO: Implement getEventDetails() method.
+    return $this->getEventAction() . ' :: ' . $this->getIssueName();
   }
 
   public function getEventDescription(): string {
-    // TODO: Implement getEventDescription() method.
+    return self::ACTIVITY_TYPE;
   }
 
   public function getActivityData(): ?string {
-    // TODO: Implement getActivityData() method.
+    // Historically, committee events have not included activity data
+    return '';
   }
 
   public function getArchiveValues(): ?array {
-    // TODO: Implement getArchiveValues() method.
-  }
-
-  public function getArchiveSQL(int $archive_id, ?string $prefix = NULL): string {
-    // TODO: Implement getArchiveSQL() method.
+    return [
+      $this->getIssueName(),
+    ];
   }
 
 }

@@ -10,7 +10,7 @@ trait CRM_NYSS_BAO_Integration_WebsiteEvent_FollowableEvent {
 
   protected function isFollowing($contact_id): bool {
     if (empty($this->getTag())) {
-      throw new \CRM_Core_Exception('No base tag set.');
+      return false; // If the tag doesn't exist, it's not being followed
     }
     return $this->hasEntityTag($contact_id, $this->getTag()['id']);
   }
@@ -29,6 +29,7 @@ trait CRM_NYSS_BAO_Integration_WebsiteEvent_FollowableEvent {
     if (empty($this->getTag())) {
       $this->findTag($this->getTagName(), $this->getParentTagId(), TRUE);
     }
+
     // associate the tag to the entity (the contact) through an Entity Tag
     $this->createEntityTag($contact_id, $this->getTag()['id']);
     return $this;
