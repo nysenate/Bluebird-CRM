@@ -125,7 +125,7 @@ class CRM_Integration_Process {
       // This "catch" was added during upgrades/fixes related to the restructuring of the
       // website accumulator data. As new events become supported on the website side,
       // we'll reimplement them here.
-      if (!CRM_NYSS_BAO_Integration_WebsiteEventFactory::canCreate($event_data->getEventType())) {
+      if (!CRM_NYSS_BAO_Integration_WebsiteEventFactory::canCreate($event_data)) {
         bbscript_log(LL::NOTICE, "Skipping unsupported event type [{$event_data->getEventType()}]");
         continue;
       }

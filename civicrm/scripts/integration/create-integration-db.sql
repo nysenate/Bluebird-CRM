@@ -119,6 +119,7 @@ DROP TABLE IF EXISTS `archive_poll`;
 CREATE TABLE `archive_poll` (
   `archive_id` int(10) unsigned NOT NULL,
   `form_id` varchar(256) DEFAULT NULL,
+  `petition_name` varchar(256) DEFAULT NULL,
   KEY `idx_archive_id` (`archive_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;

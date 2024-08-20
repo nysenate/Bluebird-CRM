@@ -1,31 +1,21 @@
 <?php
 
-namespace NYSS\BAO\Integration\WebsiteEvent;
+use Civi\API\Exception\UnauthorizedException;
+use CRM_Core_Exception;
+use CRM_NYSS_BAO_Integration_WebsiteEvent_FollowableEvent;
+use CRM_NYSS_BAO_Integration_WebsiteEventData;
+use InvalidArgumentException;
+use CRM_NYSS_BAO_Integration_WebsiteEvent;
+use CRM_NYSS_BAO_Integration_WebsiteEventInteface;
 
-class CRM_NYSS_BAO_Integration_WebsiteEvent_PollEvent extends \CRM_NYSS_BAO_Integration_WebsiteEvent implements \CRM_NYSS_BAO_Integration_WebsiteEventInterface {
+abstract class CRM_NYSS_BAO_Integration_WebsiteEvent_PollEvent extends CRM_NYSS_BAO_Integration_WebsiteEvent implements \CRM_NYSS_BAO_Integration_WebsiteEventInterface {
 
-  function getParentTagName(): string {
-    // TODO: Implement getParentTagName() method.
-  }
+  const ACTIVITY_TYPE = 'Poll';
 
-  public function getEventDetails(): string {
-    // TODO: Implement getEventDetails() method.
-  }
+  public function __construct(CRM_NYSS_BAO_Integration_WebsiteEventData $event_data) {
 
-  public function getEventDescription(): string {
-    // TODO: Implement getEventDescription() method.
-  }
+    return parent::__construct($event_data);
 
-  public function getActivityData(): ?string {
-    // TODO: Implement getActivityData() method.
-  }
-
-  public function getArchiveValues(): ?array {
-    // TODO: Implement getArchiveValues() method.
-  }
-
-  public function getArchiveSQL(int $archive_id, ?string $prefix = NULL): string {
-    // TODO: Implement getArchiveSQL() method.
   }
 
 }
