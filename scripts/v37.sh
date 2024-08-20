@@ -35,12 +35,13 @@ fi
 echo "running drupal db upgrade..."
 $drush $instance updb -y -q
 
+## cleanup dates
+echo "cleanup date fields..."
+$drush $instance cvapi nyss.cleandates dryrun=0 --quiet
+
 ## modify activity table FK
 echo "modify activity table FK"
 sql="
-  UPDATE civicrm_activity
-    SET activity_date_time = NULL
-    WHERE activity_date_time LIKE '0000-00-00 00:00:00';
   ALTER TABLE civicrm_activity DROP FOREIGN KEY FK_civicrm_activity_parent_id;
   ALTER TABLE civicrm_activity ADD CONSTRAINT FK_civicrm_activity_parent_id FOREIGN KEY (parent_id) REFERENCES civicrm_activity (id) ON DELETE SET NULL;
 "
