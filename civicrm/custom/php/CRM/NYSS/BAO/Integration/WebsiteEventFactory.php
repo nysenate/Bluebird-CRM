@@ -39,6 +39,7 @@ class CRM_NYSS_BAO_Integration_WebsiteEventFactory {
       self::EVENT_TYPE_COMMITTEE => 'CRM_NYSS_BAO_Integration_WebsiteEvent_CommitteeEvent',
       self::EVENT_TYPE_ISSUE => 'CRM_NYSS_BAO_Integration_WebsiteEvent_IssueEvent',
       self::EVENT_TYPE_PETITION => 'CRM_NYSS_BAO_Integration_WebsiteEvent_PetitionEvent',
+      self::EVENT_TYPE_SURVEY => 'CRM_NYSS_BAO_Integration_WebsiteEvent_SurveyEvent',
       default => '',
     };
   }
