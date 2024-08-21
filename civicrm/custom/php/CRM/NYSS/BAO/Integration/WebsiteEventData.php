@@ -68,7 +68,9 @@ class CRM_NYSS_BAO_Integration_WebsiteEventData {
 
     // target_district and target_shortname
     if (!empty($data->target_shortname) && $data->target_district > 0) {
-      $this->user_district = new CRM_NYSS_BAO_Integration_SenateDistrict($data->target_district, $data->target_shortname);
+      $this->target_district = new CRM_NYSS_BAO_Integration_SenateDistrict($data->target_district, $data->target_shortname);
+    } else {
+      throw new InvalidArgumentException("target district/shortname cannot be empty.");
     }
 
     // created_at
