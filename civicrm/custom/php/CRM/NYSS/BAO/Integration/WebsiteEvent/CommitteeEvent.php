@@ -79,11 +79,6 @@ class CRM_NYSS_BAO_Integration_WebsiteEvent_CommitteeEvent extends CRM_NYSS_BAO_
     return self::ACTIVITY_TYPE;
   }
 
-  public function getActivityData(): ?string {
-    // Historically, committee events have not included activity data
-    return '';
-  }
-
   public function getArchiveValues(): ?array {
     return [
       $this->getCommitteeName(),

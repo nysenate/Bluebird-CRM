@@ -99,11 +99,6 @@ class CRM_NYSS_BAO_Integration_WebsiteEvent_BillEvent extends CRM_NYSS_BAO_Integ
     return self::ACTIVITY_TYPE;
   }
 
-  public function getActivityData(): ?string {
-    // Historically, bill events have not included activity data
-    return '';
-  }
-
   public function getArchiveValues(): ?array {
     return [
       $this->getBillNum(),

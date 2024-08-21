@@ -72,11 +72,6 @@ class CRM_NYSS_BAO_Integration_WebsiteEvent_PetitionEvent extends CRM_NYSS_BAO_I
     return self::ACTIVITY_TYPE;
   }
 
-  public function getActivityData(): ?string {
-    // Historically, petition events have not included activity data
-    return '';
-  }
-
   public function getArchiveValues(): ?array {
     return [
       $this->getPetitionName(),

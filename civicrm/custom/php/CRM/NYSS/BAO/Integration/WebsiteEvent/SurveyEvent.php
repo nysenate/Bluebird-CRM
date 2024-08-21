@@ -89,10 +89,6 @@ class CRM_NYSS_BAO_Integration_WebsiteEvent_SurveyEvent extends CRM_NYSS_BAO_Int
   public function getEventDescription(): string {
     return self::ACTIVITY_TYPE;
   }
-  public function getActivityData(): ?string {
-    // Historically, survey/webform events have not included activity data
-    return '';
-  }
 
   public function getArchiveValues(): ?array {
     return [

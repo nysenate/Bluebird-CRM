@@ -214,6 +214,12 @@ abstract class CRM_NYSS_BAO_Integration_WebsiteEvent implements CRM_NYSS_BAO_Int
     return $this->event_data->getEventAction();
   }
 
+  public function getActivityData(): ?string {
+    // Historically, most event types don't contain any activity data.
+    // Will override as needed
+    return '';
+  }
+
   public function setParentTagId(int $parent_tag_id): CRM_NYSS_BAO_Integration_WebsiteEvent {
     $this->parent_tag_id = $parent_tag_id;
     return $this;
