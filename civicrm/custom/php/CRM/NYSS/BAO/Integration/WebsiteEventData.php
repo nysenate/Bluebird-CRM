@@ -52,9 +52,8 @@ class CRM_NYSS_BAO_Integration_WebsiteEventData {
 
       if (!empty($event_data->event_info)) {
         $this->event_info = $event_data->event_info;
-      }
-      else {
-        throw new InvalidArgumentException("event_info cannot be empty.");
+      } else {
+        $this->event_info = new stdClass();
       }
     }
     else {
@@ -276,6 +275,13 @@ class CRM_NYSS_BAO_Integration_WebsiteEventData {
 
   public function getDob(): ?string {
     return $this->user_info->dob ?? NULL;
+  /**
+   * If they have a user id, then we assume they have been verified on the website via email verification.
+   * @return bool
+   * @deprecated user_is_verified data point will be removed in the future.
+   */
+  public function getUserIsVerified() : bool {
+    return (bool) $this->user_info->id;
   }
 
   public function getEventType(): string {

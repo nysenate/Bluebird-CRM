@@ -22,7 +22,7 @@ abstract class CRM_NYSS_BAO_Integration_WebsiteEvent implements CRM_NYSS_BAO_Int
    */
   protected ?array $tag = NULL;
 
-  protected ?string $archiveTableName = NULL;
+  protected ?string $archiveTableName = '';
 
   protected ?array $archiveFields = NULL;
 

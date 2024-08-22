@@ -548,6 +548,7 @@ class CRM_NYSS_BAO_Integration_Website
   {
     switch ($action) {
       case 'account created':
+      case 'created': // new way of saying "account created"
       case 'account deleted':
       case 'login':
       case 'logout':
