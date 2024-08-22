@@ -19,6 +19,14 @@ class CRM_NYSS_BAO_Integration_WebsiteEventData {
 
   protected object $event_info;
 
+  /**
+   * Typically this would be stored on $user_info, but because it's a
+   * DateTime and needs to be treated as such, the quick fix is to make
+   * it its own property
+   * @var \DateTime
+   */
+  protected DateTime $dob;
+
   protected DateTime $created_at;
 
   public function __construct(CRM_Core_DAO $data) {
@@ -93,8 +101,8 @@ class CRM_NYSS_BAO_Integration_WebsiteEventData {
 
     // date of birth (possibly deprecated as well)
     if (!empty($data->dob)) {
-      $dob = new DateTime($data->dob);
-      $this->setDob($dob->format('Y-m-d'));
+      $this->setDob(new DateTime($data->dob));
+       // $dob->format('Y-m-d')
     }
 
     return $this;
@@ -121,7 +129,7 @@ class CRM_NYSS_BAO_Integration_WebsiteEventData {
         'postal_code' => $this->getZipCode(),
         'gender' => $this->getGender(),
         'gender_id' => $this->getGenderId(),
-        'birthdate' => $this->getDob(),
+        'birthdate' => (!is_null($this->getDob())) ? $this->getDob()->format('Y-m-d') : null,
       ];
     }
     return [];
@@ -269,12 +277,14 @@ class CRM_NYSS_BAO_Integration_WebsiteEventData {
     return $this->user_info->gender_id ?? NULL;
   }
 
-  public function setDob(string $dob): void {
-    $this->user_info->dob = $dob;
+  public function setDob(DateTime $dob): void {
+    $this->dob = $dob;
   }
 
-  public function getDob(): ?string {
-    return $this->user_info->dob ?? NULL;
+  public function getDob(): ?DateTime {
+    return $this->dob ?? NULL;
+  }
+
   /**
    * If they have a user id, then we assume they have been verified on the website via email verification.
    * @return bool
@@ -300,8 +310,12 @@ class CRM_NYSS_BAO_Integration_WebsiteEventData {
     return $this->target_district;
   }
 
-  public function getCreatedAt(): string {
-    return $this->created_at->format('Y-m-d H:i:s');
+  public function getCreatedAt(string $format = 'Y-m-d H:i:s'): string {
+    return $this->created_at->format($format);
+  }
+
+  public function getCreatedAtAsDateTime(): DateTime {
+    return $this->created_at;
   }
 
 }
