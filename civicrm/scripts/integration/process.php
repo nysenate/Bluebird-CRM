@@ -98,6 +98,7 @@ class CRM_Integration_Process {
         SELECT * 
         FROM {$this->intDB}.accumulator 
         WHERE target_shortname = '{$this->optlist['site']}' 
+          AND user_id IS NOT NULL AND user_id != 0
           AND (target_shortname = user_shortname OR event_type = '" . WebsiteEventFactory::EVENT_TYPE_PROFILE . "') 
           $typeSql 
           $addSql
@@ -175,11 +176,15 @@ class CRM_Integration_Process {
       //     $event_data->setDob($birth_date->format('Y-m-d')); //dob comes as timestamp
       // }
 
+
       //check contact/user
       $cid = NULL;
       if (!empty($event_data->getWebUserId())) {
         bbscript_log(LL::TRACE, 'calling getContactId(' . $event_data->getWebUserId() . ')');
         $cid = CRM_NYSS_BAO_Integration_Website::getContactId($event_data->getWebUserId());
+      } else {
+        // No Web User ID, then don't process row
+        continue;
       }
 
       // Did not find user based on web user id. Try to match by name / contact info

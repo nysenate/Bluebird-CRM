@@ -112,7 +112,8 @@ LEFT JOIN user__field_gender_user gu ON a.user_id=gu.entity_id
 LEFT JOIN (user__field_top_issue ti
            INNER JOIN taxonomy_term_field_data taxdata ON ti.field_top_issue_target_id=taxdata.tid)
      ON a.user_id=ti.entity_id
-  WHERE a.id > :currentmax ;
+  WHERE a.id > :currentmax 
+    AND a.user_id IS NOT NULL AND a.user_id != 0;
 REMOTEQUERY;
 
 bbscript_log(LL::DEBUG, "Executing query:", $query);
