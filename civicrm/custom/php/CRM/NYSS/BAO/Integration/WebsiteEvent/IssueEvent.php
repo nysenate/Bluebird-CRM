@@ -41,7 +41,7 @@ class CRM_NYSS_BAO_Integration_WebsiteEvent_IssueEvent extends CRM_NYSS_BAO_Inte
 
     // Get Tag
     $this->setTagName($this->getIssueName());
-    $this->setTag($this->findTag($this->getTagName(), $this->getParentTagId(), true));
+    $this->setTag($this->findTag($this->getTagName(), $this->getParentTagId(), TRUE));
 
     // Process Specific Action
     switch ($this->getEventAction()) {

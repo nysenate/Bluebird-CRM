@@ -11,6 +11,7 @@ class CRM_NYSS_BAO_Integration_WebsiteEventFactory {
   final public const EVENT_TYPE_COMMITTEE = 'committee';
 
   final public const EVENT_TYPE_PETITION = 'petition';
+
   final public const EVENT_TYPE_POLL = 'poll';
 
   final public const EVENT_TYPE_PROFILE = 'profile';
@@ -18,8 +19,11 @@ class CRM_NYSS_BAO_Integration_WebsiteEventFactory {
   final public const EVENT_TYPE_ACCOUNT = 'account';
 
   final public const EVENT_TYPE_SURVEY = 'survey';
+
   final public const EVENT_ACTION_FOLLOW = 'follow';
+
   final public const EVENT_ACTION_UNFOLLOW = 'unfollow';
+
   final public const EVENT_ACTION_WEBFORM = 'webform';
 
   public static function getClassName(CRM_NYSS_BAO_Integration_WebsiteEventData $data): string {
@@ -28,10 +32,10 @@ class CRM_NYSS_BAO_Integration_WebsiteEventFactory {
       if ($data->getEventAction() == self::EVENT_ACTION_FOLLOW || $data->getEventAction() == self::EVENT_ACTION_UNFOLLOW) {
         // It's a petition
         $type = self::EVENT_TYPE_PETITION;
-      } elseif ($data->getEventAction() == self::EVENT_ACTION_WEBFORM) {
+      }
+      elseif ($data->getEventAction() == self::EVENT_ACTION_WEBFORM) {
         $type = self::EVENT_TYPE_SURVEY;
       }
-
     }
 
     return match ($type) {

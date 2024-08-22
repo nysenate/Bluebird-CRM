@@ -1,36 +1,39 @@
 <?php
 
-class CRM_NYSS_BAO_Integration_SenateDistrict
-{
-    protected int $number;
-    protected string $shortname; // Senator last name
+class CRM_NYSS_BAO_Integration_SenateDistrict {
 
-    public function __construct(int $number, string $shortname)
-    {
-        $this->number = $number;
-        $this->shortname = $shortname;
-        return $this;
-    }
+  /**
+   * @var int district number
+   */
+  protected int $number;
 
-    public function getNumber(): int
-    {
-        return $this->number;
-    }
+  /**
+   * @var string district shortname, which is typically a Senator's last name.
+   */
+  protected string $shortname; // Senator last name
 
-    public function setNumber(int $number): CRM_NYSS_BAO_Integration_SenateDistrict
-    {
-        $this->number = $number;
-        return $this;
-    }
+  public function __construct(int $number, string $shortname) {
+    $this->number = $number;
+    $this->shortname = $shortname;
+    return $this;
+  }
 
-    public function getShortname(): string
-    {
-        return $this->shortname;
-    }
+  public function getNumber(): int {
+    return $this->number;
+  }
 
-    public function setShortname(string $shortname): CRM_NYSS_BAO_Integration_SenateDistrict
-    {
-        $this->shortname = $shortname;
-        return $this;
-    }
+  public function setNumber(int $number): CRM_NYSS_BAO_Integration_SenateDistrict {
+    $this->number = $number;
+    return $this;
+  }
+
+  public function getShortname(): string {
+    return $this->shortname;
+  }
+
+  public function setShortname(string $shortname): CRM_NYSS_BAO_Integration_SenateDistrict {
+    $this->shortname = $shortname;
+    return $this;
+  }
+
 }

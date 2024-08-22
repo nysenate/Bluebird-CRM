@@ -10,7 +10,7 @@ trait CRM_NYSS_BAO_Integration_WebsiteEvent_FollowableEvent {
 
   protected function isFollowing($contact_id): bool {
     if (empty($this->getTag())) {
-      return false; // If the tag doesn't exist, it's not being followed
+      return FALSE; // If the tag doesn't exist, it's not being followed
     }
     return $this->hasEntityTag($contact_id, $this->getTag()['id']);
   }

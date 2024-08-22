@@ -307,29 +307,6 @@ class CRM_Integration_Process {
             $activity_data = json_encode(['note_id' => $result['id']]);
             break;
 
-          case WebsiteEvent::EVENT_TYPE_ACCOUNT:
-              $result = $this->doOrDry(function() use ($cid, $row, $params, $created_date) {
-                  return CRM_NYSS_BAO_Integration_Website::processAccount($cid, $row->event_action, $params, $created_date);
-              }, "CRM_NYSS_BAO_Integration_Website::processAccount");
-            $activity_type = 'Account';
-            $activity_details = "{$row->event_action}";
-
-            if ($row->event_action == 'account created') {
-                $result = $this->(function() use ($cid, $row, $params) {
-                    return CRM_NYSS_BAO_Integration_Website::processProfile($cid, 'account edited', $params, $row);
-                }, "CRM_NYSS_BAO_Integration_Website::processProfile");
-            }
-
-            break;
-
-          case WebsiteEvent::EVENT_TYPE_PROFILE:
-              $result = $this->(function() use ($cid, $row, $params) {
-                  return CRM_NYSS_BAO_Integration_Website::processProfile($cid, $row->event_action, $params, $row);
-              }, "CRM_NYSS_BAO_Integration_Website::processProfile");
-            $activity_type = 'Profile';
-            $activity_details = $row->event_action;
-            $activity_details .= ($params->status) ? " :: {$params->status}" : '';
-            break;
 
           default:
             $result = [
@@ -398,8 +375,10 @@ class CRM_Integration_Process {
   }//run
 
   /**
-   * When dryrun mode is activated, prevents changes to stored data, and just
-   * logs the intended action instead.
+   * When dryrun mode is activated, the block of code specified in $callable
+   * will NOT be executed. Instead, the intended action is only logged.
+   * This allows a block of code to be executed or not depending on --dryrun
+   * command line option. --dryrun generally means "don't make any changes".
    *
    * @param callable $callback a callable block of code that will lead to data
    *   changes

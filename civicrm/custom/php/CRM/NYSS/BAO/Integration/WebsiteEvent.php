@@ -7,8 +7,17 @@ use PhpParser\Node\Expr\Cast\Object_;
 
 abstract class CRM_NYSS_BAO_Integration_WebsiteEvent implements CRM_NYSS_BAO_Integration_WebsiteEventInterface {
 
+  /**
+   * Stores data needed to process an event
+   *
+   * @var \CRM_NYSS_BAO_Integration_WebsiteEventData
+   */
   protected CRM_NYSS_BAO_Integration_WebsiteEventData $event_data;
 
+  /**
+   * @var int a civicrm_tag ID that identifies the parent
+   * tag used for child tags associated with the event type.
+   */
   protected int $parent_tag_id = 0;
 
   /**
@@ -22,8 +31,16 @@ abstract class CRM_NYSS_BAO_Integration_WebsiteEvent implements CRM_NYSS_BAO_Int
    */
   protected ?array $tag = NULL;
 
+  /**
+   * @var string|null specifies the name of an event type specific archive
+   * table such as archive_issue or archive_bill.
+   */
   protected ?string $archiveTableName = '';
 
+  /**
+   * @var array|null specifies specific database table field names to be
+   * included in the results of getArchiveSQL()
+   */
   protected ?array $archiveFields = NULL;
 
   /** @var bool whether to check civicrm v4 API user permissions. Defaults to true for security,
@@ -38,6 +55,15 @@ abstract class CRM_NYSS_BAO_Integration_WebsiteEvent implements CRM_NYSS_BAO_Int
     return $this;
   }
 
+  /**
+   * Main entry point/method for processing an event type.
+   *
+   * @param int $contact_id
+   *
+   * @return $this
+   * @throws \CRM_Core_Exception
+   * @throws \Civi\API\Exception\UnauthorizedException
+   */
   public function process(int $contact_id): static {
     // Load Parent Tag ID
     $this->setParentTagId($this->findParentTagId());
@@ -60,10 +86,6 @@ abstract class CRM_NYSS_BAO_Integration_WebsiteEvent implements CRM_NYSS_BAO_Int
     return $this->archiveFields;
   }
 
-  /**
-   * @throws UnauthorizedException
-   * @throws \CRM_Core_Exception
-   */
   public function findParentTagId(): int {
     $tags = \Civi\Api4\Tag::get($this->getCiviPermissionCheck())
       ->selectRowCount()
@@ -92,6 +114,9 @@ abstract class CRM_NYSS_BAO_Integration_WebsiteEvent implements CRM_NYSS_BAO_Int
   }
 
   /**
+   * Checks to see if a tag exists. If $create is set to true, then the tag
+   * will be created if it doesn't already exist.
+   *
    * @param string $tag_name
    * @param string|null $parent_id
    * @param bool $create Specify whether to create the tag if it doesn't
@@ -132,6 +157,17 @@ abstract class CRM_NYSS_BAO_Integration_WebsiteEvent implements CRM_NYSS_BAO_Int
     return $tag;
   }
 
+  /**
+   * Creates a new tag in civicrm_tag with the given name and associated with
+   * the given parent.
+   *
+   * @param string $tag_name
+   * @param int $parent_id
+   *
+   * @return array
+   * @throws \CRM_Core_Exception
+   * @throws \Civi\API\Exception\UnauthorizedException
+   */
   protected function createTag(string $tag_name, int $parent_id): array {
     $results = \Civi\Api4\Tag::create($this->getCiviPermissionCheck())
       ->addValue('name', $tag_name)
@@ -155,6 +191,16 @@ abstract class CRM_NYSS_BAO_Integration_WebsiteEvent implements CRM_NYSS_BAO_Int
     return $results[0];
   }
 
+  /**
+   * Checks to see if a relationship exists between a contact and a tag.
+   *
+   * @param int $contact_id unique id from civicrm_contact
+   * @param int $tag_id unique id from civicrm tag
+   *
+   * @return bool true for "relationship exists". False otherwise.
+   * @throws \CRM_Core_Exception
+   * @throws \Civi\API\Exception\UnauthorizedException
+   */
   protected function hasEntityTag(int $contact_id, int $tag_id): bool {
     $entityTags = \Civi\Api4\EntityTag::get($this->getCiviPermissionCheck())
       ->addSelect('id')
@@ -169,8 +215,10 @@ abstract class CRM_NYSS_BAO_Integration_WebsiteEvent implements CRM_NYSS_BAO_Int
   }
 
   /**
-   * @param int $contact_id
-   * @param int $tag_id
+   * Creates a relationship between the specified contact and tag.
+   *
+   * @param int $contact_id unique id from civicrm_contact
+   * @param int $tag_id unique id from civicrm tag
    *
    * @return void
    * @throws UnauthorizedException
@@ -190,8 +238,14 @@ abstract class CRM_NYSS_BAO_Integration_WebsiteEvent implements CRM_NYSS_BAO_Int
   }
 
   /**
+   * Removes the relationship between a contact and a tag
+   *
+   * @param int $contact_id unique id from civicrm_contact
+   * @param int $tag_id unique id from civicrm_tag
+   *
+   * @return void
    * @throws \CRM_Core_Exception
-   * @throws UnauthorizedException
+   * @throws \Civi\API\Exception\UnauthorizedException
    */
   protected function deleteEntityTag(int $contact_id, int $tag_id): void {
     $results = \Civi\Api4\EntityTag::delete($this->getCiviPermissionCheck())
@@ -247,6 +301,15 @@ abstract class CRM_NYSS_BAO_Integration_WebsiteEvent implements CRM_NYSS_BAO_Int
     return $this->tag;
   }
 
+  /**
+   * Generates an SQL statement that can be used to archive event type specific
+   * values to an event type specific table.
+   *
+   * @param int $archive_id
+   * @param string|null $prefix
+   *
+   * @return string
+   */
   public function getArchiveSQL(int $archive_id, ?string $prefix = NULL): string {
     if (empty($archive_id)) {
       throw new InvalidArgumentException("Archive ID required for building archival SQL command.");

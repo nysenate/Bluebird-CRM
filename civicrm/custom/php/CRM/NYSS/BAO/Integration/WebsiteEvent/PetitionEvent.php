@@ -9,7 +9,6 @@ class CRM_NYSS_BAO_Integration_WebsiteEvent_PetitionEvent extends CRM_NYSS_BAO_I
   const PARENT_TAG_NAME = 'Website Petitions';
 
   public function __construct(CRM_NYSS_BAO_Integration_WebsiteEventData $event_data) {
-
     parent::__construct($event_data);
 
     if (empty($this->getPetitionName())) {
@@ -35,7 +34,7 @@ class CRM_NYSS_BAO_Integration_WebsiteEvent_PetitionEvent extends CRM_NYSS_BAO_I
 
     // Get Tag
     $this->setTagName($this->getPetitionName());
-    $this->setTag($this->findTag($this->getTagName(), $this->getParentTagId(), true));
+    $this->setTag($this->findTag($this->getTagName(), $this->getParentTagId(), TRUE));
 
     // Process Specific Action
     switch ($this->getEventAction()) {
@@ -60,6 +59,7 @@ class CRM_NYSS_BAO_Integration_WebsiteEvent_PetitionEvent extends CRM_NYSS_BAO_I
     $event_info = $this->getEventInfo();
     return $event_info->name ?? NULL;
   }
+
   function getParentTagName(): string {
     return self::PARENT_TAG_NAME;
   }

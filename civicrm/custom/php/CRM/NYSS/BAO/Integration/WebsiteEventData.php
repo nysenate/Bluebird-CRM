@@ -5,28 +5,67 @@ use PhpParser\Node\Expr\Cast\Object_;
 
 class CRM_NYSS_BAO_Integration_WebsiteEventData {
 
+  /**
+   * Identifies the user's district. includes district ID and
+   * shortname (senator's last name).
+   *
+   * @var \CRM_NYSS_BAO_Integration_SenateDistrict
+   */
   protected CRM_NYSS_BAO_Integration_SenateDistrict $user_district;
 
+  /**
+   * Identifies the target district, which is the district that should receive
+   * the event type. This is typically the same as $user_district, but not
+   * necessarily. It includes district ID and shortname (senator's last name).
+   *
+   * @var \CRM_NYSS_BAO_Integration_SenateDistrict
+   */
   protected CRM_NYSS_BAO_Integration_SenateDistrict $target_district;
 
+  /**
+   * @var string Event Type -- a general classification of events
+   */
   protected string $event_type;
 
+  /**
+   * @var string Event Action -- specifies what action was taken and is the best
+   * indicator for how to process the event.
+   */
   protected string $event_action;
 
+  /**
+   * @var object Most user specific information is stored here.
+   */
   protected object $user_info;
 
+  /**
+   * @var object Might not be necessary, but at one point I noticed $user_info
+   * being mutated / modified. So, I wanted a place to store the original data
+   * with no mutations.
+   */
   protected object $raw_user_info;
 
+  /**
+   * Stores information unique to the event type. Data will change depending on
+   * the type of event.
+   *
+   * @var object|\stdClass
+   */
   protected object $event_info;
 
   /**
    * Typically this would be stored on $user_info, but because it's a
    * DateTime and needs to be treated as such, the quick fix is to make
-   * it its own property
+   * it its own property since $user_info is a generic object and doesn't
+   * specify property data types
+   *
    * @var \DateTime
    */
   protected DateTime $dob;
 
+  /**
+   * @var \DateTime Date that the event was created
+   */
   protected DateTime $created_at;
 
   public function __construct(CRM_Core_DAO $data) {
@@ -60,7 +99,8 @@ class CRM_NYSS_BAO_Integration_WebsiteEventData {
 
       if (!empty($event_data->event_info)) {
         $this->event_info = $event_data->event_info;
-      } else {
+      }
+      else {
         $this->event_info = new stdClass();
       }
     }
@@ -76,7 +116,8 @@ class CRM_NYSS_BAO_Integration_WebsiteEventData {
     // target_district and target_shortname
     if (!empty($data->target_shortname) && $data->target_district > 0) {
       $this->target_district = new CRM_NYSS_BAO_Integration_SenateDistrict($data->target_district, $data->target_shortname);
-    } else {
+    }
+    else {
       throw new InvalidArgumentException("target district/shortname cannot be empty.");
     }
 
@@ -102,7 +143,7 @@ class CRM_NYSS_BAO_Integration_WebsiteEventData {
     // date of birth taken from user_info ... not dob field
     if (!empty($this->user_info->dob)) {
       $this->setDob(new DateTime($this->user_info->dob));
-       // $dob->format('Y-m-d')
+      // $dob->format('Y-m-d')
     }
 
     return $this;
@@ -129,7 +170,8 @@ class CRM_NYSS_BAO_Integration_WebsiteEventData {
         'postal_code' => $this->getZipCode(),
         'gender' => $this->getGender(),
         'gender_id' => $this->getGenderId(),
-        'birthdate' => (!is_null($this->getDob())) ? $this->getDob()->format('Y-m-d') : null,
+        'birthdate' => (!is_null($this->getDob())) ? $this->getDob()
+          ->format('Y-m-d') : NULL,
       ];
     }
     return [];
@@ -286,11 +328,13 @@ class CRM_NYSS_BAO_Integration_WebsiteEventData {
   }
 
   /**
-   * If they have a user id, then we assume they have been verified on the website via email verification.
+   * If they have a user id, then we assume they have been verified on the
+   * website via email verification.
+   *
    * @return bool
    * @deprecated user_is_verified data point will be removed in the future.
    */
-  public function getUserIsVerified() : bool {
+  public function getUserIsVerified(): bool {
     return (bool) $this->user_info->id;
   }
 
