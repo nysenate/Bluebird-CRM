@@ -12,6 +12,7 @@ class CRM_NYSS_BAO_Integration_WebsiteEvent_AccountEvent extends \CRM_NYSS_BAO_I
   const ACTIVITY_TYPE = 'Account';
 
   const ACTION_CREATE = 'created';
+  const ACTION_EDITED = 'edited';
 
   public function __construct(CRM_NYSS_BAO_Integration_WebsiteEventData $event_data) {
     parent::__construct($event_data);
@@ -29,6 +30,9 @@ class CRM_NYSS_BAO_Integration_WebsiteEvent_AccountEvent extends \CRM_NYSS_BAO_I
     switch ($this->getEventAction()) {
       case self::ACTION_CREATE:
         $this->processAccount($contact_id);
+        $this->processProfile($contact_id);
+        break;
+      case self::ACTION_EDITED:
         $this->processProfile($contact_id);
         break;
       default:
