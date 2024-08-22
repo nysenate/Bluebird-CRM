@@ -83,9 +83,9 @@ class CRM_NYSS_BAO_Integration_WebsiteEventData {
     // created_at
     $this->created_at = new DateTime($data->created_at);
 
-    // gender (possibly deprecated, but keeping code)
-    if ($data->gender) {
-      switch ($data->gender) {
+    // gender comes from user_info... not gender field
+    if (!empty($this->user_info->gender)) {
+      switch ($this->user_info->gender) {
         case 'male':
           $this->setGender(CRM_NYSS_BAO_Integration_WebsiteEventData_Gender::MALE);
           break;
@@ -99,9 +99,9 @@ class CRM_NYSS_BAO_Integration_WebsiteEventData {
       }
     }
 
-    // date of birth (possibly deprecated as well)
-    if (!empty($data->dob)) {
-      $this->setDob(new DateTime($data->dob));
+    // date of birth taken from user_info ... not dob field
+    if (!empty($this->user_info->dob)) {
+      $this->setDob(new DateTime($this->user_info->dob));
        // $dob->format('Y-m-d')
     }
 
