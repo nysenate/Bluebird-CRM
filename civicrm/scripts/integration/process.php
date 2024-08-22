@@ -307,29 +307,6 @@ class CRM_Integration_Process {
             $activity_data = json_encode(['note_id' => $result['id']]);
             break;
 
-          case WebsiteEvent::EVENT_TYPE_PETITION:
-            if ($row->event_action == 'questionnaire response') {
-                $result = $this->(function() use ($cid, $row, $params) {
-                    return CRM_NYSS_BAO_Integration_Website::processSurvey($cid, $row->event_action, $params);
-                }, "CRM_NYSS_BAO_Integration_Website::processSurvey");
-              $activity_type = 'Survey';
-              $activity_details = "survey :: {$params->form_title}";
-              $archiveTable = 'survey';
-            }
-            else {
-                $result = $this->(function() use ($cid, $row, $params) {
-                    return CRM_NYSS_BAO_Integration_Website::processPetition($cid, $row->event_action, $params);
-                }, "CRM_NYSS_BAO_Integration_Website::processPetition");
-              $activity_type = 'Petition';
-              $tagName = CRM_NYSS_BAO_Integration_Website::getTagName($params, 'petition_name');
-              $activity_details = "{$row->event_action} :: {$tagName}";
-            }
-            break;
-
-          //case 'SURVEY':
-            //$result = CRM_NYSS_BAO_Integration_Website::processSurvey($cid, $row->event_action, $params);
-            //break;
-
           case WebsiteEvent::EVENT_TYPE_ACCOUNT:
               $result = $this->doOrDry(function() use ($cid, $row, $params, $created_date) {
                   return CRM_NYSS_BAO_Integration_Website::processAccount($cid, $row->event_action, $params, $created_date);
