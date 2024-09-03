@@ -25,18 +25,25 @@
     {include file="CRM/common/formButtons.tpl" location="top"}
     </div>
 
-    <div class="crm-accordion-wrapper crm-contactDetails-accordion">
-      <div class="crm-accordion-header">
+    <details class="crm-accordion-bold crm-contactDetails-accordion" open>
+      <summary>
         {ts}Contact Details{/ts}
-      </div><!-- /.crm-accordion-header -->
+      </summary>
       <div class="crm-accordion-body" id="contactDetails">
+        <div id="contactDetails">
         <table>
           <tr>
             <td>
-              <span class="crm-button crm-button_qf_Contact_refresh_dedupe">
-                {$form._qf_Contact_refresh_dedupe.html}
-              </span>
-              {help id="id-check-matching-contacts" file="CRM/Contact/Form/Contact.hlp"}
+              {*add dupe buttons *}
+          {$form._qf_Contact_refresh_dedupe.html}
+          {help id="id-check-matching-contacts" file="CRM/Contact/Form/Contact.hlp"}
+          {if !empty($isDuplicate)}
+            &nbsp;&nbsp;
+            {$form._qf_Contact_upload_duplicate.html}
+          {/if}
+
+          <div class="spacer"></div>
+
               {include file="CRM/Contact/Form/Edit/$contactType.tpl"}
             </td>
           </tr>
@@ -102,17 +109,17 @@
           <div id="customData1" class="crm-accordion-body">
             <table class="form-layout-compressed">
               <tr class="custom_field-row">
-                <td class="html-adjust" width="20%">
+                <td class="html-adjust" style='width=20%;'>
                     {assign var='custom_18' value=$groupTree.1.fields.18.element_name}
                     {$form.$custom_18.label}<br />
                     {$form.$custom_18.html}<span class="crm-clear-link">(<a href="#" title="unselect" onclick="unselectRadio('{$custom_18}', '{$form.formName}'); return false;" >{ts}clear{/ts}</a>)</span>
                 </td>
-                <td class="html-adjust" width="20%">
+                <td class="html-adjust" style='width=20%;'>
                     {assign var='custom_17' value=$groupTree.1.fields.17.element_name}
                     {$form.$custom_17.label}<br />
                     {$form.$custom_17.html}<span class="crm-clear-link">(<a href="#" title="unselect" onclick="unselectRadio('{$custom_17}', '{$form.formName}'); return false;" >{ts}clear{/ts}</a>)</span>
                 </td>
-                <td class="html-adjust" width="60%">
+                <td class="html-adjust" style='width=60%;'>
                     {assign var='custom_19' value=$groupTree.1.fields.19.element_name}
                     {$form.$custom_19.label}<br />
                     {$form.$custom_19.html}<span class="crm-clear-link">(<a href="#" title="unselect" onclick="unselectRadio('{$custom_19}', '{$form.formName}'); return false;" >{ts}clear{/ts}</a>)</span>
@@ -151,14 +158,16 @@
           </div>
         </div>
       {/if}
+      </div>
+    </details>
 
-      {foreach from = $editOptions item = "title" key="name"}
-          {if $name eq 'CustomData' }
-            <div id='customData'>{include file="CRM/Contact/Form/Edit/CustomData.tpl"}</div>
-          {elseif $name neq "Address"}
-              {include file="CRM/Contact/Form/Edit/$name.tpl"}
-          {/if}
-      {/foreach}
+    {foreach from = $editOptions item = "title" key="name"}
+      {if $name eq 'CustomData'}
+        <div id='customData_{$contactType}'>{include file="CRM/Contact/Form/Edit/CustomData.tpl" isSingleRecordEdit=false skipTitle=false}</div>
+      {elseif $name neq "Address"}
+        {include file="CRM/Contact/Form/Edit/$name.tpl"}
+      {/if}
+    {/foreach}
     <div class="crm-submit-buttons">
     {include file="CRM/common/formButtons.tpl" location="bottom"}
     </div>

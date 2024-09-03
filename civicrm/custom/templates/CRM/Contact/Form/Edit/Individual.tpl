@@ -85,4 +85,5 @@
       {if $form.external_identifier.value}{$form.external_identifier.value}{/if}
     </td>
   </tr>
+  {/crmRegion}
 </table>
