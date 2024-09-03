@@ -74,6 +74,8 @@ class DefaultSender extends BaseListener {
           \CRM_Mailing_BAO_MailingJob::pause($mailing->id);
           $msg = "A bulk mailing was paused (ID: {$mailing->id}) due to SMTP socket errors, suggesting a problem connecting with the SMTP provider.";
           \CRM_NYSS_Errorhandler_BAO::notifySlack($msg, "Mailing {$mailing->id} Paused");
+          //NYSS 16512
+          \CRM_NYSS_BAO_Mailing::notify($mailing->id);
 
           // these are socket write errors which most likely means smtp connection errors
           // lets skip them and reconnect.

@@ -329,9 +329,9 @@ class CRM_Utils_Mail {
       }
       // CRM-10699
       CRM_Utils_Hook::postEmailSend($params);
-      return TRUE;
     }
-    return FALSE;
+
+    return [$headers, $message];
   }
 
   /**
