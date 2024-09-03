@@ -90,4 +90,63 @@ class CRM_NYSS_BAO_Mailing {
 
     return NULL;
   }
+
+  /**
+   * @param $mailingId
+   * @param $role
+   * @return void
+   *
+   * $roles = [created, approver, scheduled]
+   */
+  static function notify($mailingId, $roles = ['created', 'approver']) {
+    $select = ['name'];
+    foreach ($roles as $role) {
+      $select[] = "{$role}_id";
+      $select[] = "{$role}_id.display_name";
+    }
+
+    //using this format so we can pass select fields as array
+    $mailings = civicrm_api4('Mailing', 'get', [
+      'select' => $select,
+      'where' => [
+        ['id', '=', $mailingId],
+      ],
+      'checkPermissions' => FALSE,
+    ]);
+
+    $fromEmailAddress = CRM_Core_OptionGroup::values('from_email_address', NULL, NULL, NULL, ' AND is_default = 1');
+
+    /*Civi::log()->debug(__METHOD__, [
+      'select' => $select,
+      'mailings' => $mailings,
+      'fromEmailAddress' => $fromEmailAddress,
+    ]);*/
+
+    foreach ($mailings as $mailing) {
+      foreach ($roles as $role) {
+        $email = \Civi\Api4\Email::get(FALSE)
+          ->addSelect('email')
+          ->addWhere('on_hold', 'IS EMPTY')
+          ->addWhere('contact_id', '=', $mailing["{$role}_id"])
+          ->addOrderBy('is_primary', 'DESC')
+          ->execute()
+          ->first();
+
+        $params = [
+          'toEmail' => $email['email'],
+          'toName' => $mailing["{$role}_id.display_name"],
+          'subject' => "Bluebird mailing has been paused: {$mailing['name']} (ID: {$mailingId})",
+          'html' => "
+          <p>A mailing you helped prepare has been paused. This generally indicates a temporary connection issue with the email delivery service. Please review the mailing from within Bluebird and select resume if you wish to continue delivery.</p>
+          <p>Mailing Name: {$mailing['name']}</p>
+        ",
+          'from' => reset($fromEmailAddress),
+        ];
+
+        //Civi::log()->debug(__METHOD__, ['$params' => $params]);
+
+        CRM_Utils_Mail::send($params);
+      }
+    }
+  }
 }
