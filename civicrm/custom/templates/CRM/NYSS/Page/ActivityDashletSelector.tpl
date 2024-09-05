@@ -56,8 +56,8 @@
             "url": {/literal}'{crmURL p="civicrm/ajax/allactivities" h=0 q="snippet=4&context=$context&cid=$contactId"}'{literal},
             "data": function (d) {
               var status_id = $('.crm-allactivity-selector-' + context + ' select#status_id').val() || [];
-              d.activity_type_id = $('.crm-allactivity-selector-' + context + ' select#activity_type_filter_id').val(),
-              d.activity_type_exclude_id = $('.crm-allactivity-selector-' + context + ' select#activity_type_exclude_filter_id').val(),
+              d.activity_type_id = $('.crm-allactivity-selector-' + context + ' select#all_activity_type_filter_id').val(),
+              d.activity_type_exclude_id = $('.crm-allactivity-selector-' + context + ' select#all_activity_type_exclude_filter_id').val(),
               d.activity_date_time_relative = $('select#all_activity_date_time_relative').val(),
               d.activity_date_time_low = $('#all_activity_date_time_low').val(),
               d.activity_date_time_high = $('#all_activity_date_time_high').val(),
