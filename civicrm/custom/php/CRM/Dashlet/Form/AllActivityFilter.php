@@ -26,7 +26,7 @@ class CRM_Dashlet_Form_AllActivityFilter extends CRM_Core_Form {
 
     $this->add('select', 'all_activity_type_filter_id', ts('Include'), $activityOptions, FALSE, ['class' => 'crm-select2', 'multiple' => TRUE, 'placeholder' => ts('- all activity type(s) -')]);
     $this->add('select', 'all_activity_type_exclude_filter_id', ts('Exclude'), $activityOptions, FALSE, ['class' => 'crm-select2', 'multiple' => TRUE, 'placeholder' => ts('- no types excluded -')]);
-    $this->addDatePickerRange('all_activity_date', ts('Date'));
+    $this->addDatePickerRange('all_activity_date_time', ts('Date'));
     $this->addSelect('status_id',
       ['entity' => 'activity', 'multiple' => 'multiple', 'option_url' => NULL, 'placeholder' => ts('- any -')]
     );
