@@ -23,7 +23,7 @@ class CRM_Core_JobManager {
    *
    * Format is ($id => CRM_Core_ScheduledJob).
    *
-   * @var array
+   * @var CRM_Core_ScheduledJob[]
    */
   public $jobs = NULL;
 
@@ -32,15 +32,25 @@ class CRM_Core_JobManager {
    */
   public $currentJob = NULL;
 
+  /**
+   * @var array
+   *
+   * @fixme How are these set? What do they do?
+   */
   public $singleRunParams = [];
 
+  /**
+   * @var string|null
+   *
+   * @fixme Looks like this is only used by "singleRun"
+   */
   public $_source = NULL;
 
   /**
    * Class constructor.
    */
   public function __construct() {
-    $this->jobs = $this->_getJobs();
+    $this->jobs = $this->getJobs();
   }
 
   /**
@@ -76,17 +86,11 @@ class CRM_Core_JobManager {
   }
 
   /**
-   * Class destructor.
-   */
-  public function __destruct() {
-  }
-
-  /**
    * @param $entity
    * @param $action
    */
   public function executeJobByAction($entity, $action) {
-    $job = $this->_getJob(NULL, $entity, $action);
+    $job = $this->getJob(NULL, $entity, $action);
     $this->executeJob($job);
   }
 
@@ -94,7 +98,7 @@ class CRM_Core_JobManager {
    * @param int $id
    */
   public function executeJobById($id) {
-    $job = $this->_getJob($id);
+    $job = $this->getJob($id);
     $this->executeJob($job);
   }
 
@@ -130,19 +134,16 @@ class CRM_Core_JobManager {
     try {
       $result = civicrm_api($job->api_entity, $job->api_action, $params);
     }
-    catch (Exception$e) {
+    catch (Exception $e) {
       $this->logEntry('Error while executing ' . $job->name . ': ' . $e->getMessage());
       $result = $e;
     }
     CRM_Utils_Hook::postJob($job, $params, $result);
-    $this->logEntry('Finished execution of ' . $job->name . ' with result: ' . $this->_apiResultToMessage($result));
+    $this->logEntry('Finished execution of ' . $job->name . ' with result: ' . $this->apiResultToMessage($result));
     $this->currentJob = FALSE;
 
-    //Disable outBound option after executing the job.
-    $environment = CRM_Core_Config::environment(NULL, TRUE);
-    if ($environment != 'Production' && !empty($job->apiParams['runInNonProductionEnvironment'])) {
-      Civi::settings()->set('mailing_backend', ['outBound_option' => CRM_Mailing_Config::OUTBOUND_OPTION_DISABLED]);
-    }
+    // Save the job last run end date (if this doesn't get written we know the job crashed and was not caught (eg. OOM).
+    $job->saveLastRunEnd();
   }
 
   /**
@@ -152,7 +153,7 @@ class CRM_Core_JobManager {
    * @return array
    *   ($id => CRM_Core_ScheduledJob)
    */
-  private function _getJobs(): array {
+  private function getJobs(): array {
     $jobs = [];
     $dao = new CRM_Core_DAO_Job();
     $dao->orderBy('name');
@@ -177,7 +178,7 @@ class CRM_Core_JobManager {
    * @return CRM_Core_ScheduledJob
    * @throws Exception
    */
-  private function _getJob($id = NULL, $entity = NULL, $action = NULL) {
+  private function getJob($id = NULL, $entity = NULL, $action = NULL) {
     if (is_null($id) && is_null($action)) {
       throw new CRM_Core_Exception('You need to provide either id or name to use this method');
     }
@@ -197,7 +198,7 @@ class CRM_Core_JobManager {
    * @param $entity
    * @param $job
    * @param array $params
-   * @param null $source
+   * @param string|null $source
    */
   public function setSingleRunParams($entity, $job, $params, $source = NULL) {
     $this->_source = $source;
@@ -258,7 +259,7 @@ class CRM_Core_JobManager {
    *
    * @return string
    */
-  private function _apiResultToMessage($apiResult) {
+  private function apiResultToMessage($apiResult) {
     $status = ($apiResult['is_error'] ?? FALSE) ? ts('Failure') : ts('Success');
     $msg = CRM_Utils_Array::value('error_message', $apiResult, 'empty error_message!');
     $vals = CRM_Utils_Array::value('values', $apiResult, 'empty values!');

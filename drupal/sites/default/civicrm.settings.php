@@ -375,9 +375,6 @@ function nyss_bootstrap_settings($rootdir)
     define('CIVICRM_CLEANURL', 0);
   }
 
-  // force PHP to auto-detect Mac line endings
-  ini_set('auto_detect_line_endings', '1');
-
   // Get the current PHP memory limit.
   $memLimitString = trim(ini_get('memory_limit'));
   $memLimitUnit   = strtolower(substr($memLimitString, -1));

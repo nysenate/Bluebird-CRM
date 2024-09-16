@@ -39,19 +39,8 @@ class CRM_NYSS_Inbox_Form_DateFilter extends CRM_Core_Form {
     // This is awkward, but probably the easiest way to make it happen.
     // The from/to suffix *must* be as set for the user-land JS to work.
     // The dateFormat does not actually propagate.
-    CRM_Core_Form_Date::buildDateRange(
-      $this,         /* form object */
-      'date_range',  /* field name */
-      1,             /* count */
-      '_low',        /* from suffix */
-      '_high',       /* to suffix */
-      ts('From:'),   /* from label */
-      FALSE,         /* required */
-      [],            /* operators */
-      'yy-mm-dd',    /* dateFormat */
-      FALSE,         /* display time */
-      []             /* attributes*/
-    );
+    $this->add('datepicker', 'date_range_low', ts('From'), [], FALSE, ['time' => FALSE]);
+    $this->add('datepicker', 'date_range_high', ts('To'), [], FALSE, ['time' => FALSE]);
   }
 
 }

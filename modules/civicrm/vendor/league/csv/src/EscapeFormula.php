@@ -22,7 +22,6 @@ use function array_unique;
 use function is_object;
 use function is_string;
 use function method_exists;
-use function sprintf;
 
 /**
  * A Formatter to tackle CSV Formula Injection.
@@ -34,7 +33,7 @@ class EscapeFormula
     /**
      * Spreadsheet formula starting character.
      */
-    const FORMULA_STARTING_CHARS = ['=', '-', '+', '@'];
+    const FORMULA_STARTING_CHARS = ['=', '-', '+', '@', "\t", "\r"];
 
     /**
      * Effective Spreadsheet formula starting characters.
@@ -57,15 +56,14 @@ class EscapeFormula
      * @param string[] $special_chars additional spreadsheet formula starting characters
      *
      */
-    public function __construct(string $escape = "\t", array $special_chars = [])
+    public function __construct(string $escape = "'", array $special_chars = [])
     {
         $this->escape = $escape;
         if ([] !== $special_chars) {
             $special_chars = $this->filterSpecialCharacters(...$special_chars);
         }
 
-        $chars = array_merge(self::FORMULA_STARTING_CHARS, $special_chars);
-        $chars = array_unique($chars);
+        $chars = array_unique(array_merge(self::FORMULA_STARTING_CHARS, $special_chars));
         $this->special_chars = array_fill_keys($chars, 1);
     }
 
@@ -82,7 +80,7 @@ class EscapeFormula
     {
         foreach ($characters as $str) {
             if (1 != strlen($str)) {
-                throw new InvalidArgumentException(sprintf('The submitted string %s must be a single character', $str));
+                throw new InvalidArgumentException('The submitted string '.$str.' must be a single character');
             }
         }
 
@@ -128,13 +126,13 @@ class EscapeFormula
     /**
      * Escape a CSV cell if its content is stringable.
      *
-     * @param mixed $cell the content of the cell
+     * @param int|float|string|object|resource|array $cell the content of the cell
      *
-     * @return mixed|string the escaped content
+     * @return mixed the escaped content
      */
     protected function escapeField($cell)
     {
-        if (!$this->isStringable($cell)) {
+        if (!is_string($cell) && (!is_object($cell) || !method_exists($cell, '__toString'))) {
             return $cell;
         }
 
@@ -147,17 +145,15 @@ class EscapeFormula
     }
 
     /**
+     * @deprecated since 9.7.2 will be removed in the next major release
+     *
      * Tells whether the submitted value is stringable.
      *
      * @param mixed $value value to check if it is stringable
      */
     protected function isStringable($value): bool
     {
-        if (is_string($value)) {
-            return true;
-        }
-
-        return is_object($value)
-            && method_exists($value, '__toString');
+        return is_string($value)
+            || (is_object($value) && method_exists($value, '__toString'));
     }
 }

@@ -146,7 +146,7 @@ INSERT INTO {$componentTable} SELECT distinct gc.contact_id FROM civicrm_group_c
     $paymentDetails = [];
     if ($processor->isExportPaymentFields()) {
       // get payment related in for event and members
-      $paymentDetails = CRM_Contribute_BAO_Contribution::getContributionDetails($exportMode, $ids);
+      $paymentDetails = $processor->getContributionDetails();
       //get all payment headers.
       // If we haven't selected specific payment fields, load in all the
       // payment headers.
@@ -265,56 +265,6 @@ INSERT INTO {$componentTable} SELECT distinct gc.contact_id FROM civicrm_group_c
         }
       }
     }
-    CRM_Utils_System::civiExit();
-  }
-
-  /**
-   * @param $customSearchClass
-   * @param $formValues
-   * @param $order
-   */
-  public static function exportCustom($customSearchClass, $formValues, $order) {
-    $ext = CRM_Extension_System::singleton()->getMapper();
-    if (!$ext->isExtensionClass($customSearchClass)) {
-      require_once str_replace('_', DIRECTORY_SEPARATOR, $customSearchClass) . '.php';
-    }
-    else {
-      require_once $ext->classToPath($customSearchClass);
-    }
-    $search = new $customSearchClass($formValues);
-
-    $includeContactIDs = FALSE;
-    if ($formValues['radio_ts'] == 'ts_sel') {
-      $includeContactIDs = TRUE;
-    }
-
-    $sql = $search->all(0, 0, $order, $includeContactIDs);
-
-    $columns = $search->columns();
-
-    $header = array_keys($columns);
-    $fields = array_values($columns);
-
-    $rows = [];
-    $dao = CRM_Core_DAO::executeQuery($sql);
-    $alterRow = FALSE;
-    if (method_exists($search, 'alterRow')) {
-      $alterRow = TRUE;
-    }
-    while ($dao->fetch()) {
-      $row = [];
-
-      foreach ($fields as $field) {
-        $unqualified_field = CRM_Utils_Array::First(array_slice(explode('.', $field), -1));
-        $row[$field] = $dao->$unqualified_field;
-      }
-      if ($alterRow) {
-        $search->alterRow($row);
-      }
-      $rows[] = $row;
-    }
-
-    CRM_Core_Report_Excel::writeCSVFile(ts('CiviCRM Contact Search'), $header, $rows);
     CRM_Utils_System::civiExit();
   }
 

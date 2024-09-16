@@ -5,6 +5,13 @@
   <class>Mapping</class>
   <name>civicrm_mapping</name>
   <comment>Store field mappings in import or export for reuse</comment>
+  <labelField>name</labelField>
+  <title>Field Mapping</title>
+  <paths>
+    <add>civicrm/admin/mapping/edit?reset=1&amp;action=add</add>
+    <browse>civicrm/admin/mapping?reset=1</browse>
+    <update>civicrm/admin/mapping/edit?reset=1&amp;action=update&amp;id=[id]</update>
+  </paths>
   <add>1.2</add>
   <field>
     <name>id</name>
@@ -25,9 +32,10 @@
   <field>
     <name>name</name>
     <title>Mapping Name</title>
+    <required>true</required>
     <type>varchar</type>
     <length>64</length>
-    <comment>Name of Mapping</comment>
+    <comment>Unique name of Mapping</comment>
     <add>1.2</add>
   </field>
   <field>
@@ -54,6 +62,7 @@
   <index>
     <name>UI_name</name>
     <fieldName>name</fieldName>
+    <unique>true</unique>
     <add>1.2</add>
   </index>
 </table>

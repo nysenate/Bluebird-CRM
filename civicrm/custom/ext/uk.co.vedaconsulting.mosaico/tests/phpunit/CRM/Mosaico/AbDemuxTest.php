@@ -19,9 +19,17 @@ class CRM_Mosaico_AbDemuxTest extends CRM_Mosaico_TestCase implements \Civi\Test
 
   /**
    * Generated Entity IDs keyed by the entity name
+   *
+   * We don't use `$ids` directly, but `ContactTestTrait` does. Prior to
+   * 5.64, the declaration satisfied an undeclared property issue. In 5.64, it became declared
+   * (by way of `ContactTestTrait` => `EntityTrait`).
+   *
+   * For the moment, we must match `EntityTrait::$ids` exactly to be portable.
+   * Consider removing this declaration once 5.63 goes EOL.
+   *
    * @var array
    */
-  protected $ids;
+  protected $ids = [];
 
   /**
    * Civi\Test has many helpers, like install(), uninstall(), sql(), and sqlFile().

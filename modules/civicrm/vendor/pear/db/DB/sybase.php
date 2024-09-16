@@ -17,12 +17,13 @@
  * @category   Database
  * @package    DB
  * @author     Sterling Hughes <sterling@php.net>
- * @author     Antônio Carlos Venâncio Júnior <floripa@php.net>
+ * @author     AntÃ´nio Carlos VenÃ¢ncio JÃºnior <floripa@php.net>
  * @author     Daniel Convissor <danielc@php.net>
  * @copyright  1997-2007 The PHP Group
  * @license    http://www.php.net/license/3_0.txt  PHP License 3.0
  * @version    CVS: $Id$
  * @link       http://pear.php.net/package/DB
+ * @deprecated since 1.12.0
  */
 
 /**
@@ -42,12 +43,13 @@ require_once 'DB/common.php';
  * @category   Database
  * @package    DB
  * @author     Sterling Hughes <sterling@php.net>
- * @author     Antônio Carlos Venâncio Júnior <floripa@php.net>
+ * @author     AntÃ´nio Carlos VenÃ¢ncio JÃºnior <floripa@php.net>
  * @author     Daniel Convissor <danielc@php.net>
  * @copyright  1997-2007 The PHP Group
  * @license    http://www.php.net/license/3_0.txt  PHP License 3.0
  * @version    Release: @package_version@
  * @link       http://pear.php.net/package/DB
+ * @deprecated since 1.12.0
  */
 class DB_sybase extends DB_common
 {

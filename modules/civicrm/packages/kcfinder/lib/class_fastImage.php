@@ -202,6 +202,7 @@ class fastImage
   private function getChars($n)
   {
     $response = null;
+    $this->str = $this->str ?: ''; /* buffer should be a string */
 
     // do we need more data?
     if ($this->strpos + $n -1 >= strlen($this->str))

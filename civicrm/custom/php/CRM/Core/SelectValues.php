@@ -156,9 +156,9 @@ class CRM_Core_SelectValues {
    */
   public static function eventDate() {
     return [
-      'start_date' => ts('start date'),
-      'end_date' => ts('end date'),
-      'join_date' => ts('member since'),
+      'start_date' => ts('Membership Start Date'),
+      'end_date' => ts('Membership Expiration Date'),
+      'join_date' => ts('Member Since'),
     ];
   }
 
@@ -218,6 +218,11 @@ class CRM_Core_SelectValues {
         'id' => 'Link',
         'name' => 'Link',
         'label' => ts('Link'),
+      ],
+      [
+        'id' => 'Hidden',
+        'name' => 'Hidden',
+        'label' => ts('Hidden'),
       ],
     ];
   }
@@ -364,8 +369,8 @@ class CRM_Core_SelectValues {
   public static function ufVisibility() {
     return [
       'User and User Admin Only' => ts('User and User Admin Only'),
-      'Public Pages' => ts('Expose Publicly'),
-      'Public Pages and Listings' => ts('Expose Publicly and for Listings'),
+      'Public Pages' => ts('Public Pages'),
+      'Public Pages and Listings' => ts('Public Pages and Listings'),
     ];
   }
 
@@ -488,6 +493,19 @@ class CRM_Core_SelectValues {
     return $addr;
   }
 
+  public static function smsProvider(): array {
+    $providers = CRM_SMS_BAO_SmsProvider::getProviders(NULL, NULL, TRUE, 'is_default desc, title');
+    $result = [];
+    foreach ($providers as $provider) {
+      $result[] = [
+        'id' => $provider['id'],
+        'name' => $provider['name'],
+        'label' => $provider['title'],
+      ];
+    }
+    return $result;
+  }
+
   /**
    * Different type of Mailing Tokens.
    *
@@ -540,9 +558,12 @@ class CRM_Core_SelectValues {
   /**
    * Different type of Membership Tokens.
    *
+   * @deprecated
+   *
    * @return array
    */
   public static function membershipTokens(): array {
+    CRM_Core_Error::deprecatedFunctionWarning('token processor');
     return [
       '{membership.id}' => ts('Membership ID'),
       '{membership.status_id:label}' => ts('Status'),
@@ -562,6 +583,7 @@ class CRM_Core_SelectValues {
    * @return array
    */
   public static function eventTokens(): array {
+    CRM_Core_Error::deprecatedFunctionWarning('token processor');
     $tokenProcessor = new TokenProcessor(Civi::dispatcher(), ['schema' => ['eventId']]);
     $allTokens = $tokenProcessor->listTokens();
     foreach (array_keys($allTokens) as $token) {
@@ -580,6 +602,7 @@ class CRM_Core_SelectValues {
    * @return array
    */
   public static function contributionTokens(): array {
+    CRM_Core_Error::deprecatedFunctionWarning('use the token processor');
     $tokenProcessor = new TokenProcessor(Civi::dispatcher(), ['schema' => ['contributionId']]);
     $allTokens = $tokenProcessor->listTokens();
     foreach (array_keys($allTokens) as $token) {
@@ -616,6 +639,7 @@ class CRM_Core_SelectValues {
    * @return array
    */
   public static function participantTokens(): array {
+    CRM_Core_Error::deprecatedFunctionWarning('user TokenProcessor');
     $tokenProcessor = new TokenProcessor(Civi::dispatcher(), ['schema' => ['participantId']]);
     $allTokens = $tokenProcessor->listTokens();
     foreach (array_keys($allTokens) as $token) {
@@ -1061,16 +1085,19 @@ class CRM_Core_SelectValues {
         'id' => CRM_Contact_BAO_Relationship::NONE,
         'name' => 'None',
         'label' => ts('None'),
+        'icon' => NULL,
       ],
       [
         'id' => CRM_Contact_BAO_Relationship::VIEW,
         'name' => 'View only',
         'label' => ts('View only'),
+        'icon' => 'fa-eye',
       ],
       [
         'id' => CRM_Contact_BAO_Relationship::EDIT,
         'name' => 'View and update',
         'label' => ts('View and update'),
+        'icon' => 'fa-pencil-square',
       ],
     ];
   }
@@ -1088,6 +1115,79 @@ class CRM_Core_SelectValues {
       $optionValues[$i] = $i;
     }
     return $optionValues;
+  }
+
+  public static function getQuicksearchOptions(): array {
+    $includeEmail = Civi::settings()->get('includeEmailInName');
+    $options = [
+      [
+        'key' => 'sort_name',
+        'label' => $includeEmail ? ts('Name/Email') : ts('Name'),
+      ],
+      [
+        'key' => 'id',
+        'label' => ts('Contact ID'),
+      ],
+      [
+        'key' => 'external_identifier',
+        'label' => ts('External ID'),
+      ],
+      [
+        'key' => 'first_name',
+        'label' => ts('First Name'),
+      ],
+      [
+        'key' => 'last_name',
+        'label' => ts('Last Name'),
+      ],
+      [
+        'key' => 'email_primary.email',
+        'label' => ts('Email'),
+        'adv_search_legacy' => 'email',
+      ],
+      [
+        'key' => 'phone_primary.phone_numeric',
+        'label' => ts('Phone'),
+        'adv_search_legacy' => 'phone_numeric',
+      ],
+      [
+        'key' => 'address_primary.street_address',
+        'label' => ts('Street Address'),
+        'adv_search_legacy' => 'street_address',
+      ],
+      [
+        'key' => 'address_primary.city',
+        'label' => ts('City'),
+        'adv_search_legacy' => 'city',
+      ],
+      [
+        'key' => 'address_primary.postal_code',
+        'label' => ts('Postal Code'),
+        'adv_search_legacy' => 'postal_code',
+      ],
+      [
+        'key' => 'employer_id.sort_name',
+        'label' => ts('Current Employer'),
+      ],
+      [
+        'key' => 'job_title',
+        'label' => ts('Job Title'),
+      ],
+    ];
+    $customGroups = CRM_Core_BAO_CustomGroup::getAll(['extends' => 'Contact', 'is_active' => TRUE], CRM_Core_Permission::VIEW);
+    foreach ($customGroups as $group) {
+      foreach ($group['fields'] as $field) {
+        if (in_array($field['data_type'], ['Date', 'File', 'ContactReference', 'EntityReference'])) {
+          continue;
+        }
+        $options[] = [
+          'key' => $group['name'] . '.' . $field['name'] . ($field['option_group_id'] ? ':label' : ''),
+          'label' => $group['title'] . ': ' . $field['label'],
+          'adv_search_legacy' => 'custom_' . $field['id'],
+        ];
+      }
+    }
+    return $options;
   }
 
   /**
@@ -1190,6 +1290,13 @@ class CRM_Core_SelectValues {
     ];
   }
 
+  public static function beforeAfter() {
+    return [
+      'before' => ts('Before'),
+      'after' => ts('After'),
+    ];
+  }
+
   /**
    * Columns from the option_value table which may or may not be used by each option_group.
    *
@@ -1205,6 +1312,25 @@ class CRM_Core_SelectValues {
       'icon' => 'icon',
       'color' => 'color',
     ];
+  }
+
+  /**
+   * Callback for Role.permissions pseudoconstant values.
+   *
+   * Permissions for Civi Standalone, not used by CMS-based systems.
+   *
+   * @return array
+   */
+  public static function permissions() {
+    $perms = $options = [];
+    \CRM_Utils_Hook::permissionList($perms);
+
+    foreach ($perms as $machineName => $details) {
+      if (!empty($details['is_active'])) {
+        $options[$machineName] = $details['title'];
+      }
+    }
+    return $options;
   }
 
 }

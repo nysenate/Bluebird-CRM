@@ -72,7 +72,7 @@ class CRM_Dashlet_Page_NewContacts extends CRM_Core_Page {
     $this->_id = CRM_Utils_Request::retrieve('id', 'Positive', $this);
     $this->browse();
 
-    return parent::run( );
+    parent::run();
   }
 }
 

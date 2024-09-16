@@ -22,6 +22,10 @@
        <strong>{ts}Import has completed successfully.{/ts}</strong>
      {/if}
    </p>
+   {if $templateURL}
+     <p>
+       {ts 1=$templateURL|smarty:nodefaults}You can re-use this import configuration <a href="%1">here</a>{/ts}</p>
+   {/if}
 
    {if $unMatchCount}
         <p class="error">
@@ -61,7 +65,7 @@
   {* Summary of Import Results (record counts) *}
   <table id="summary-counts" class="report">
     <tr><td class="label crm-grid-cell">{ts}Total Rows{/ts}</td>
-      <td class="data">{$totalRowCount}</td>
+      <td class="data">{if $allRowsUrl} <a href="{$allRowsUrl}" target="_blank" rel="noopener noreferrer">{$totalRowCount}</a>{else}{$totalRowCount}{/if}</td>
       <td class="explanation">{ts}Total number of rows in the imported data.{/ts}</td>
     </tr>
     {if $unprocessedRowCount}
@@ -100,7 +104,7 @@
 
     <tr>
       <td class="label crm-grid-cell">{ts}Total Rows Imported{/ts}</td>
-      <td class="data">{$importedRowCount}</td>
+      <td class="data">{if $importedRowsUrl} <a href="{$importedRowsUrl}" target="_blank" rel="noopener noreferrer">{$importedRowCount}</a>{else}{$importedRowCount}{/if}</td>
       <td class="explanation">{ts}Total number of primary records created or modified during the import.{/ts}</td>
     </tr>
     {foreach from=$trackingSummary item="summaryRow"}
@@ -114,7 +118,7 @@
     {if $groupAdditions}
     <tr><td class="label crm-grid-cell">{ts}Import to Groups{/ts}</td>
         <td colspan="2" class="explanation">
-            {foreach from="$groupAdditions" item="group"}
+            {foreach from=$groupAdditions item="group"}
                 <label><a href="{$group.url}">{$group.name}</a></label>:
                 {if $group.new}
                     {ts count=$group.added plural='%count contacts added to this new group.'}One contact added to this new group.{/ts}
@@ -130,7 +134,7 @@
     {if $tagAdditions}
     <tr><td class="label crm-grid-cell">{ts}Tagged Imported Contacts{/ts}</td>
         <td colspan="2" class="explanation">
-            {foreach from="$tagAdditions" item="tag"}
+            {foreach from=$tagAdditions item="tag"}
                 <label>{$tag.name}</label>:
                 {ts count=$tag.added plural='%count contacts are tagged with this tag.'}One contact is tagged with this tag.{/ts}
                 {if $tag.notAdded}{ts count=$tag.notAdded plural='%count contacts NOT tagged (already tagged to this tag).'}One contact NOT tagged (already tagged to this tag).{/ts}{/if}<br />

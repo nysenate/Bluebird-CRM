@@ -26,18 +26,18 @@
         }
     ],
     "require": {
-        "php" : ">=7.2.5",
+        "php" : "^7.3 || ^8.0",
         "ext-json" : "*",
         "ext-mbstring" : "*"
     },
     "require-dev": {
         "ext-curl" : "*",
         "ext-dom": "*",
-        "friendsofphp/php-cs-fixer": "^2.16",
-        "phpunit/phpunit" : "^8.5",
-        "phpstan/phpstan": "^0.12.0",
-        "phpstan/phpstan-strict-rules": "^0.12.0",
-        "phpstan/phpstan-phpunit": "^0.12.0"
+        "friendsofphp/php-cs-fixer": "^3.0",
+        "phpunit/phpunit" : "^9.5",
+        "phpstan/phpstan": "^1.0",
+        "phpstan/phpstan-strict-rules": "^1.0",
+        "phpstan/phpstan-phpunit": "^1.0.0"
     },
     "autoload": {
         "psr-4": {
@@ -51,25 +51,19 @@
         }
     },
     "scripts": {
-        "phpcs": "php-cs-fixer fix -v --diff --dry-run --allow-risky=yes --ansi",
-        "phpstan-src": "phpstan analyse -l max -c phpstan.src.neon src --ansi",
-        "phpstan-tests": "phpstan analyse -l max -c phpstan.tests.neon tests --ansi",
-        "phpstan": [
-            "@phpstan-src",
-            "@phpstan-tests"
-        ],
+        "phpcs": "php-cs-fixer fix -vvv --diff --dry-run --allow-risky=yes --ansi",
+        "phpcs:fix": "php-cs-fixer fix -vvv --allow-risky=yes --ansi",
+        "phpstan": "phpstan analyse -l max -c phpstan.neon src --ansi --memory-limit=192M",
         "phpunit": "phpunit --coverage-text",
         "test": [
-            "@phpcs",
+            "@phpunit",
             "@phpstan",
-            "@phpunit"
+            "@phpcs"
         ]
     },
     "scripts-descriptions": {
         "phpcs": "Runs coding style test suite",
         "phpstan": "Runs complete codebase static analysis",
-        "phpstan-src": "Runs source code static analysis",
-        "phpstan-test": "Runs test suite static analysis",
         "phpunit": "Runs unit and functional testing",
         "test": "Runs full test suite"
     },

@@ -1,4 +1,4 @@
-<div class="form-inline" ng-if="!mailing.template_options.variants">
+<div class="form-inline" ng-if="!isSplit()">
 
   <div class="from-group">
     <input
@@ -22,7 +22,7 @@
 
 </div>
 
-<div class="form-inline" ng-if="!!mailing.template_options.variants">
+<div class="form-inline" ng-if="isSplit()">
   <div class="group" ng-repeat="(vid, variant) in mailing.template_options.variants">
     ({{labels[vid]}})
 

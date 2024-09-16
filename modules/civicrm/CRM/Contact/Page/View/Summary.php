@@ -21,6 +21,42 @@
 class CRM_Contact_Page_View_Summary extends CRM_Contact_Page_View {
 
   /**
+   * Contents of contact_view_options setting.
+   *
+   * @var array
+   * @internal
+   */
+  public $_viewOptions;
+
+  /**
+   * Provide support for extensions that are using the _show{Block} properties
+   * (e.g. `_showCustomData`, `_showAddress`, `_showPhone` etc)
+   *
+   * These properties were dynamically defined,
+   * based on the available `contact_edit_options`,
+   * and so have been deprecated for PHP 8.2 support.
+   *
+   * Extension authors can read contact_edit_options directly.
+   * The show{Block} values are also still assigned to the template layer.
+   *
+   * @param string $name
+   * @return bool|null
+   */
+  public function __get($name) {
+    if (str_starts_with($name, '_show')) {
+      $blockName = substr($name, strlen('_show'));
+      $editOptions = CRM_Core_BAO_Setting::valueOptions(
+        CRM_Core_BAO_Setting::SYSTEM_PREFERENCES_NAME,
+        'contact_edit_options'
+      );
+
+      CRM_Core_Error::deprecatedWarning('_show{Block} properties are deprecated in CRM_Contact_Page_View_Summary. Read contact_edit_options directly instead.');
+      return $editOptions[$blockName] ?? FALSE;
+    }
+    return NULL;
+  }
+
+  /**
    * Heart of the viewing process.
    *
    * The runner gets all the meta data for the contact and calls the appropriate type of page to view.
@@ -140,6 +176,8 @@ class CRM_Contact_Page_View_Summary extends CRM_Contact_Page_View {
       'email_greeting_custom' => '',
       'addressee_custom' => '',
       'communication_style_display' => '',
+      'email_greeting_display' => '',
+      'postal_greeting_display' => '',
       // for Demographics.tpl
       'age' => ['y' => '', 'm' => ''],
       'birth_date' => '',
@@ -208,15 +246,14 @@ class CRM_Contact_Page_View_Summary extends CRM_Contact_Page_View {
     $defaults['privacy_values'] = CRM_Core_SelectValues::privacy();
 
     //Show blocks only if they are visible in edit form
-    $this->_editOptions = CRM_Core_BAO_Setting::valueOptions(
+    $editOptions = CRM_Core_BAO_Setting::valueOptions(
       CRM_Core_BAO_Setting::SYSTEM_PREFERENCES_NAME,
       'contact_edit_options'
     );
 
-    foreach ($this->_editOptions as $blockName => $value) {
-      $varName = '_show' . $blockName;
-      $this->$varName = $value;
-      $this->assign(substr($varName, 1), $this->$varName);
+    foreach ($editOptions as $blockName => $value) {
+      $varName = 'show' . $blockName;
+      $this->assign($varName, $value);
     }
 
     // get contact name of shared contact names
@@ -239,7 +276,7 @@ class CRM_Contact_Page_View_Summary extends CRM_Contact_Page_View {
     // FIXME: when we sort out TZ isssues with DATETIME/TIMESTAMP, we can skip next query
     // also assign the last modifed details
     $lastModified = CRM_Core_BAO_Log::lastModified($this->_contactId, 'civicrm_contact');
-    $this->assign_by_ref('lastModified', $lastModified);
+    $this->assign('lastModified', $lastModified);
 
     $this->_viewOptions = CRM_Core_BAO_Setting::valueOptions(
       CRM_Core_BAO_Setting::SYSTEM_PREFERENCES_NAME,
@@ -248,7 +285,7 @@ class CRM_Contact_Page_View_Summary extends CRM_Contact_Page_View {
     );
 
     $changeLog = $this->_viewOptions['log'];
-    $this->assign_by_ref('changeLog', $changeLog);
+    $this->assign('changeLog', $changeLog);
 
     $this->assign('allTabs', $this->getTabs($defaults));
 
@@ -257,7 +294,7 @@ class CRM_Contact_Page_View_Summary extends CRM_Contact_Page_View {
     $contentPlacement = CRM_Utils_Hook::SUMMARY_BELOW;
     CRM_Utils_Hook::summary($this->_contactId, $content, $contentPlacement);
     if ($content) {
-      $this->assign_by_ref('hookContent', $content);
+      $this->assign('hookContent', $content);
       $this->assign('hookContentPlacement', $contentPlacement);
     }
   }
@@ -303,25 +340,11 @@ class CRM_Contact_Page_View_Summary extends CRM_Contact_Page_View {
         'icon' => 'crm-i fa-tasks',
       ],
       [
-        'id' => 'rel',
-        'title' => ts('Relationships'),
-        'class' => 'livePage',
-        'weight' => 80,
-        'icon' => 'crm-i fa-handshake-o',
-      ],
-      [
         'id' => 'group',
         'title' => ts('Groups'),
         'class' => 'ajaxForm',
         'weight' => 90,
         'icon' => 'crm-i fa-users',
-      ],
-      [
-        'id' => 'note',
-        'title' => ts('Notes'),
-        'class' => 'livePage',
-        'weight' => 100,
-        'icon' => 'crm-i fa-sticky-note-o',
       ],
       [
         'id' => 'tag',
@@ -394,18 +417,18 @@ class CRM_Contact_Page_View_Summary extends CRM_Contact_Page_View {
     }
 
     // now add all the custom tabs
-    $entityType = $this->get('contactType');
-    $activeGroups = CRM_Core_BAO_CustomGroup::getActiveGroups(
-      $entityType,
-      'civicrm/contact/view/cd',
-      $this->_contactId
-    );
+    $filters = [
+      'is_active' => TRUE,
+      'extends' => $this->get('contactType'),
+      'style' => ['Tab', 'Tab with table'],
+    ];
+    $activeGroups = CRM_Core_BAO_CustomGroup::getAll($filters, CRM_Core_Permission::VIEW);
 
     foreach ($activeGroups as $group) {
       $id = "custom_{$group['id']}";
       $allTabs[] = [
         'id' => $id,
-        'url' => CRM_Utils_System::url($group['path'], $group['query'] . "&selectedChild=$id"),
+        'url' => CRM_Utils_System::url('civicrm/contact/view/cd', "reset=1&gid={$group['id']}&cid={$this->_contactId}&selectedChild=$id"),
         'title' => $group['title'],
         'weight' => $weight,
         'count' => NULL,

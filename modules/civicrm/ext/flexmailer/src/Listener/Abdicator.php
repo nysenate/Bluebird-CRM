@@ -10,6 +10,7 @@
  */
 namespace Civi\FlexMailer\Listener;
 
+use Civi\Core\Service\AutoService;
 use Civi\FlexMailer\Event\RunEvent;
 
 /**
@@ -22,23 +23,20 @@ use Civi\FlexMailer\Event\RunEvent;
  *
  * During incubation, we want to mostly step-aside -- for traditional
  * mailings, simply continue using the old system.
+ *
+ * @service civi_flexmailer_abdicator
  */
-class Abdicator {
+class Abdicator extends AutoService {
+
+  use IsActiveTrait;
 
   /**
    * @param \CRM_Mailing_BAO_Mailing $mailing
    * @return bool
    */
   public static function isFlexmailPreferred($mailing) {
-    if ($mailing->sms_provider_id) {
-      return FALSE;
-    }
-
-    // Use FlexMailer for new-style email blasts (with custom `template_type`).
-    if ($mailing->template_type && $mailing->template_type !== 'traditional') {
-      return TRUE;
-    }
-    return TRUE;
+    // Yes for CiviMail - no for CiviSMS
+    return empty($mailing->sms_provider_id);
   }
 
   /**
@@ -76,7 +74,7 @@ class Abdicator {
     $errors = \CRM_Mailing_BAO_Mailing::checkSendable($e->getMailing());
     if (is_array($errors)) {
       foreach ($errors as $key => $message) {
-        $e->setError($key, $message);;
+        $e->setError($key, $message);
       }
     }
   }

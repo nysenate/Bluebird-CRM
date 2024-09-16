@@ -95,7 +95,9 @@ function rules_scheduler_action_schedule($args, $element) {
     ));
   }
   else {
-    throw new RulesEvaluationException('Unable to get the component %name', array('%name' => $args['component']), $element, RulesLog::ERROR);
+    throw new RulesEvaluationException('Unable to get the component %name', array(
+      '%name' => $args['component'],
+    ), $element, RulesLog::ERROR);
   }
 }
 

@@ -156,7 +156,6 @@ class CRM_Contact_Tokens extends CRM_Core_EntityTokens {
       'image_URL',
       'preferred_communication_method',
       'preferred_language',
-      'preferred_mail_format',
       'hash',
       'source',
       'first_name',
@@ -169,6 +168,7 @@ class CRM_Contact_Tokens extends CRM_Core_EntityTokens {
       'job_title',
       'gender_id',
       'birth_date',
+      'deceased_date',
       'employer_id',
       'is_deleted',
       'created_date',
@@ -183,7 +183,7 @@ class CRM_Contact_Tokens extends CRM_Core_EntityTokens {
   /**
    * Get the fields exposed from related entities.
    *
-   * @return \string[][]
+   * @return string[][]
    */
   protected function getRelatedEntityTokenMetadata(): array {
     return [
@@ -397,14 +397,17 @@ class CRM_Contact_Tokens extends CRM_Core_EntityTokens {
       foreach ($metadata as $field) {
         if ($entity === 'website') {
           // It's not the primary - it's 'just one of them' - so the name is _first not _primary
+          $field['name'] = 'website_first.' . $field['name'];
           $this->addFieldToTokenMetadata($tokensMetadata, $field, $exposedFields, 'website_first');
         }
         else {
+          $field['name'] = $entity . '_primary.' . $field['name'];
           $this->addFieldToTokenMetadata($tokensMetadata, $field, $exposedFields, $entity . '_primary');
           $field['label'] .= ' (' . ts('Billing') . ')';
           // Set audience to sysadmin in case adding them to UI annoys people. If people ask to see this
           // in the UI we could set to 'user'.
           $field['audience'] = 'sysadmin';
+          $field['name'] = str_replace('_primary.', '_billing.', $field['name']);
           $this->addFieldToTokenMetadata($tokensMetadata, $field, $exposedFields, $entity . '_billing');
         }
       }
@@ -412,8 +415,11 @@ class CRM_Contact_Tokens extends CRM_Core_EntityTokens {
     // Manually add in the abbreviated state province as that maps to
     // what has traditionally been delivered.
     $tokensMetadata['address_primary.state_province_id:abbr'] = $tokensMetadata['address_primary.state_province_id:label'];
-    $tokensMetadata['address_primary.state_province_id:abbr']['name'] = 'state_province_id:abbr';
+    $tokensMetadata['address_primary.state_province_id:abbr']['name'] = 'address_primary.state_province_id:abbr';
     $tokensMetadata['address_primary.state_province_id:abbr']['audience'] = 'user';
+    $tokensMetadata['address_billing.state_province_id:abbr'] = $tokensMetadata['address_billing.state_province_id:label'];;
+    $tokensMetadata['address_billing.state_province_id:abbr']['name'] = 'address_billing.state_province_id:abbr';
+
     // Hide the label for now because we are not sure if there are paths
     // where legacy token resolution is in play where this could not be resolved.
     $tokensMetadata['address_primary.state_province_id:label']['audience'] = 'sysadmin';
@@ -446,6 +452,20 @@ class CRM_Contact_Tokens extends CRM_Core_EntityTokens {
     }
     $joins = [];
     $customFields = [];
+    $billingFields = [];
+    foreach ($requiredFields as $field) {
+      if (str_contains($field, '_billing.')) {
+        // Make sure we have enough data to fall back to primary.
+        $billingEntity = explode('.', $field)[0];
+        $billingFields[$field] = $billingEntity;
+        $extraFields = [$billingEntity . '.id', str_replace('_billing.', '_primary.', $field)];
+        foreach ($extraFields as $extraField) {
+          if (!in_array($extraField, $requiredFields, TRUE)) {
+            $requiredFields[] = $extraField;
+          }
+        }
+      }
+    }
     foreach ($requiredFields as $field) {
       $fieldSpec = $this->getMetadataForField($field);
       $prefix = '';
@@ -453,13 +473,11 @@ class CRM_Contact_Tokens extends CRM_Core_EntityTokens {
         if ($fieldSpec['table_name'] === 'civicrm_website') {
           $tableAlias = 'website_first';
           $joins[$tableAlias] = $fieldSpec['entity'];
-          $prefix = $tableAlias . '.';
         }
         if ($fieldSpec['table_name'] === 'civicrm_openid') {
           // We could start to deprecate this one maybe..... I've made it un-advertised.
           $tableAlias = 'openid_primary';
           $joins[$tableAlias] = $fieldSpec['entity'];
-          $prefix = $tableAlias . '.';
         }
         if ($fieldSpec['type'] === 'Custom') {
           $customFields['custom_' . $fieldSpec['custom_field_id']] = $fieldSpec['name'];
@@ -486,6 +504,11 @@ class CRM_Contact_Tokens extends CRM_Core_EntityTokens {
       // This is probably a test-only situation where tokens are retrieved for a
       // fake contact id - check `testReplaceGreetingTokens`
       return [];
+    }
+    foreach ($this->getEmptyBillingEntities($billingFields, $contact) as $billingEntityFields) {
+      foreach ($billingEntityFields as $billingField) {
+        $contact[$billingField] = $contact[str_replace('_billing.', '_primary.', $billingField)];
+      }
     }
 
     foreach ($this->getDeprecatedTokens() as $apiv3Name => $fieldName) {
@@ -640,6 +663,7 @@ class CRM_Contact_Tokens extends CRM_Core_EntityTokens {
         'type' => 'calculated',
         'options' => NULL,
         'data_type' => 'String',
+        'input_type' => NULL,
         'audience' => 'user',
       ],
       'employer_id.display_name' => [
@@ -653,11 +677,12 @@ class CRM_Contact_Tokens extends CRM_Core_EntityTokens {
       ],
       'address_primary.country_id.region_id:name' => [
         'title' => ts('World Region'),
-        'name' => 'country_id.region_id.name',
+        'name' => 'address_primary.country_id.region_id:name',
         'type' => 'mapped',
         'api_v3' => 'world_region',
         'options' => NULL,
         'data_type' => 'String',
+        'input_type' => 'Text',
         'advertised_name' => 'world_region',
         'audience' => 'user',
       ],
@@ -668,6 +693,7 @@ class CRM_Contact_Tokens extends CRM_Core_EntityTokens {
         'type' => 'Field',
         'options' => NULL,
         'data_type' => 'String',
+        'input_type' => 'Text',
         'audience' => 'sysadmin',
       ],
       // this gets forced out if we specify individual fields
@@ -677,9 +703,43 @@ class CRM_Contact_Tokens extends CRM_Core_EntityTokens {
         'type' => 'Field',
         'options' => NULL,
         'data_type' => 'String',
+        'input_type' => 'Text',
         'audience' => 'sysadmin',
       ],
     ];
+  }
+
+  /**
+   * Get the array of related billing entities that are empty.
+   *
+   * The billing tokens fall back to the primary address tokens as we cannot rely
+   * on all contacts having an address with is_billing set and the code historically has
+   * treated billing addresses as 'get the best billing address', despite the failure
+   * to set the fields.
+   *
+   * Here we figure out the entities where swapping in the primary fields makes sense.
+   * This is the case when there is no billing address at all, but we don't want to 'supplement'
+   * a partial billing address with data from a possibly-completely-different primary address.
+   *
+   * @param array $billingFields
+   * @param array $contact
+   *
+   * @return array
+   */
+  private function getEmptyBillingEntities(array $billingFields, array $contact): array {
+    $billingEntitiesToReplaceWithPrimary = [];
+    foreach ($billingFields as $billingField => $billingEntity) {
+      // In most cases it is enough to check the 'id' is not present but it is possible
+      // that a partial address is passed in in preview mode - in which case
+      // we need to treat the entire address as 'usable'.
+      if (empty($contact[$billingField]) && empty($contact[$billingEntity . '.id'])) {
+        $billingEntitiesToReplaceWithPrimary[$billingEntity][] = $billingField;
+      }
+      else {
+        unset($billingEntitiesToReplaceWithPrimary[$billingEntity]);
+      }
+    }
+    return $billingEntitiesToReplaceWithPrimary;
   }
 
   /**

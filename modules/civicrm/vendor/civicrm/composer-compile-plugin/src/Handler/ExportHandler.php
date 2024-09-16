@@ -20,6 +20,12 @@ use Composer\IO\IOInterface;
  */
 class ExportHandler
 {
+
+    /**
+     * @var string
+     */
+    public $rootPackagePath;
+
     /**
      * ExportHandler constructor.
      */

@@ -37,7 +37,7 @@
     <div class="crm-clear crm-inline-block-content">
       <h4>{ts}No relationship found.{/ts}</h4>
       <p>
-        <a href="{crmURL p='civicrm/contact/view' q="reset=1&selectedChild=rel&cid=`$contactId`"}">
+        <a href="{crmURL p='civicrm/contact/view' q="reset=1&selectedChild=rel&cid=$contactId"}">
           {ts}View Relationships{/ts}
         </a>
       </p>

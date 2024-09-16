@@ -29,7 +29,6 @@ use function iterator_count;
 use function iterator_to_array;
 use function mb_strlen;
 use function mb_substr;
-use function sprintf;
 use function strlen;
 use function substr;
 use const PHP_VERSION_ID;
@@ -40,6 +39,8 @@ use const STREAM_FILTER_READ;
  */
 class Reader extends AbstractCsv implements TabularDataReader, JsonSerializable
 {
+    protected const STREAM_FILTER_MODE = STREAM_FILTER_READ;
+
     /**
      * header offset.
      *
@@ -50,7 +51,7 @@ class Reader extends AbstractCsv implements TabularDataReader, JsonSerializable
     /**
      * header record.
      *
-     * @var string[]
+     * @var array<string>
      */
     protected $header = [];
 
@@ -60,11 +61,6 @@ class Reader extends AbstractCsv implements TabularDataReader, JsonSerializable
      * @var int
      */
     protected $nb_records = -1;
-
-    /**
-     * {@inheritdoc}
-     */
-    protected $stream_filter_mode = STREAM_FILTER_READ;
 
     /**
      * @var bool
@@ -84,7 +80,6 @@ class Reader extends AbstractCsv implements TabularDataReader, JsonSerializable
      */
     protected function resetProperties(): void
     {
-        parent::resetProperties();
         $this->nb_records = -1;
         $this->header = [];
     }
@@ -129,7 +124,7 @@ class Reader extends AbstractCsv implements TabularDataReader, JsonSerializable
     {
         $header = $this->seekRow($offset);
         if (in_array($header, [[], [null]], true)) {
-            throw new SyntaxError(sprintf('The header record does not exist or is empty at offset: `%s`', $offset));
+            throw SyntaxError::dueToHeaderNotFound($offset);
         }
 
         if (0 !== $offset) {
@@ -138,7 +133,7 @@ class Reader extends AbstractCsv implements TabularDataReader, JsonSerializable
 
         $header = $this->removeBOM($header, mb_strlen($this->getInputBOM()), $this->enclosure);
         if ([''] === $header) {
-            throw new SyntaxError(sprintf('The header record does not exist or is empty at offset: `%s`', $offset));
+            throw SyntaxError::dueToHeaderNotFound($offset);
         }
 
         return $header;
@@ -304,11 +299,15 @@ class Reader extends AbstractCsv implements TabularDataReader, JsonSerializable
             $header = $this->getHeader();
         }
 
-        if ($header === array_unique(array_filter($header, 'is_string'))) {
-            return $header;
+        if ($header !== ($filtered_header = array_filter($header, 'is_string'))) {
+            throw SyntaxError::dueToInvalidHeaderColumnNames();
         }
 
-        throw new SyntaxError('The header record must be an empty or a flat array with unique string values.');
+        if ($header !== array_unique($filtered_header)) {
+            throw SyntaxError::dueToDuplicateHeaderColumnNames($header);
+        }
+
+        return $header;
     }
 
     /**
@@ -386,7 +385,7 @@ class Reader extends AbstractCsv implements TabularDataReader, JsonSerializable
         }
 
         if (null !== $offset && 0 > $offset) {
-            throw new InvalidArgument(__METHOD__.'() expects 1 Argument to be greater or equal to 0');
+            throw InvalidArgument::dueToInvalidHeaderOffset($offset, __METHOD__);
         }
 
         $this->header_offset = $offset;

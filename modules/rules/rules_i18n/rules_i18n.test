@@ -9,6 +9,7 @@
  * Test the i18n integration.
  */
 class RulesI18nTestCase extends DrupalWebTestCase {
+  protected $admin_user;
 
   /**
    * Declares test metadata.

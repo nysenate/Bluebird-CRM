@@ -76,7 +76,7 @@ class CRM_Core_Payment_iATSService extends CRM_Core_Payment {
     static $settings = array();
     if (empty($settings)) {
       try {
-        $settings = civicrm_api3('Setting', 'getvalue', array('name' => 'iats_settings'));
+        $settings = CRM_Iats_Utils::getSettings();
         if (empty($settings['days'])) {
           $settings['days'] = array('-1');
         }
@@ -170,16 +170,22 @@ class CRM_Core_Payment_iATSService extends CRM_Core_Payment {
    */
   public function doPayment(&$params, $component = 'contribute') {
 
+    if (empty($params['amount'])) {
+      return _iats_payment_status_complete();
+    }
     if (!$this->_profile) {
       return self::error('Unexpected error, missing profile');
     }
     // Use the iATSService object for interacting with iATS. Recurring contributions go through a more complex process.
-    $isRecur = CRM_Utils_Array::value('is_recur', $params) && $params['contributionRecurID'];
+    $isRecur = CRM_Utils_Array::value('is_recur', $params);
+    if ($isRecur && empty($params['contributionRecurID'])) {
+      return self::error('Invalid call to doPayment with is_recur and no contributionRecurID');
+    }
     $methodType = $isRecur ? 'customer' : 'process';
     $method = $isRecur ? 'create_credit_card_customer' : 'cc';
-    $iats = new CRM_Iats_iATSServiceRequest(array('type' => $methodType, 'method' => $method, 'iats_domain' => $this->_profile['iats_domain'], 'currencyID' => $params['currencyID']));
+    $iats = new CRM_Iats_iATSServiceRequest(array('type' => $methodType, 'method' => $method, 'iats_domain' => $this->_profile['iats_domain'], 'currency' => $params['currency']));
     $request = $this->convertParams($params, $method);
-    $request['customerIPAddress'] = (function_exists('ip_address') ? ip_address() : $_SERVER['REMOTE_ADDR']);
+    $request['customerIPAddress'] = CRM_Iats_Transaction::remote_ip_address();
     $credentials = array(
       'agentCode' => $this->_paymentProcessor['user_name'],
       'password'  => $this->_paymentProcessor['password'],
@@ -247,7 +253,7 @@ class CRM_Core_Payment_iATSService extends CRM_Core_Payment {
         }
         $receive_ts = empty($receive_date) ? time() : strtotime($receive_date);
         // If the admin setting is in force, ensure it's compatible.
-        if (max($allow_days) > 0) {
+        if (!empty($allow_days) && (max($allow_days) > 0)) {
           $receive_ts = CRM_Iats_Transaction::contributionrecur_next($receive_ts, $allow_days);
         }
         // convert to a reliable format
@@ -272,7 +278,7 @@ class CRM_Core_Payment_iATSService extends CRM_Core_Payment {
         }
         else {
           // run the (first) transaction immediately
-          $iats = new CRM_Iats_iATSServiceRequest(array('type' => 'process', 'method' => 'cc_with_customer_code', 'iats_domain' => $this->_profile['iats_domain'], 'currencyID' => $params['currencyID']));
+          $iats = new CRM_Iats_iATSServiceRequest(array('type' => 'process', 'method' => 'cc_with_customer_code', 'iats_domain' => $this->_profile['iats_domain'], 'currency' => $params['currency']));
           $request = array('invoiceNum' => $params['invoiceID']);
           $request['total'] = sprintf('%01.2f', CRM_Utils_Rule::cleanMoney($params['amount']));
           $request['customerCode'] = $customer_code;
@@ -462,17 +468,8 @@ class CRM_Core_Payment_iATSService extends CRM_Core_Payment {
    */
   public function updateSubscriptionBillingInfo(&$message = '', $params = array()) {
 
-    // Fix billing form update bug https://github.com/iATSPayments/com.iatspayments.civicrm/issues/252 by getting crid from _POST
-    if (empty($params['crid'])) {
-      $params['crid'] = !empty($_POST['crid']) ? (int) $_POST['crid'] : (!empty($_GET['crid']) ? (int) $_GET['crid'] : 0);
-      if (empty($params['crid']) && !empty($params['entryURL'])) {
-        $components = parse_url($params['entryURL']);
-        parse_str(html_entity_decode($components['query']), $entryURLquery);
-        $params['crid'] = $entryURLquery['crid'];
-      }
-    }
-    // updatedBillingInfo array changed sometime after 4.7.27
-    $crid = !empty($params['crid']) ? $params['crid'] : $params['recur_id'];
+    // updatedBillingInfo array has changed a few times, we'll try a few different keys to pull the contribution recurring id
+    $crid = !empty($params['contributionRecurID']) ? $params['contributionRecurID'] : (!empty($params['crid']) ? $params['crid'] : $params['recur_id']);
     if (empty($crid)) {
       $alert = ts('This system is unable to perform self-service updates to credit cards. Please contact the administrator of this site.');
       throw new Exception($alert);

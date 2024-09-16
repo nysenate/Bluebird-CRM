@@ -22,59 +22,12 @@ function recentmenu_civicrm_install() {
 }
 
 /**
- * Implements hook_civicrm_postInstall().
- *
- * @link http://wiki.civicrm.org/confluence/display/CRMDOC/hook_civicrm_postInstall
- */
-function recentmenu_civicrm_postInstall() {
-  _recentmenu_civix_civicrm_postInstall();
-}
-
-/**
- * Implements hook_civicrm_uninstall().
- *
- * @link http://wiki.civicrm.org/confluence/display/CRMDOC/hook_civicrm_uninstall
- */
-function recentmenu_civicrm_uninstall() {
-  _recentmenu_civix_civicrm_uninstall();
-}
-
-/**
  * Implements hook_civicrm_enable().
  *
  * @link http://wiki.civicrm.org/confluence/display/CRMDOC/hook_civicrm_enable
  */
 function recentmenu_civicrm_enable() {
   _recentmenu_civix_civicrm_enable();
-}
-
-/**
- * Implements hook_civicrm_disable().
- *
- * @link http://wiki.civicrm.org/confluence/display/CRMDOC/hook_civicrm_disable
- */
-function recentmenu_civicrm_disable() {
-  _recentmenu_civix_civicrm_disable();
-}
-
-/**
- * Implements hook_civicrm_upgrade().
- *
- * @link http://wiki.civicrm.org/confluence/display/CRMDOC/hook_civicrm_upgrade
- */
-function recentmenu_civicrm_upgrade($op, CRM_Queue_Queue $queue = NULL) {
-  return _recentmenu_civix_civicrm_upgrade($op, $queue);
-}
-
-/**
- * Implements hook_civicrm_entityTypes().
- *
- * Declare entity types provided by this module.
- *
- * @link http://wiki.civicrm.org/confluence/display/CRMDOC/hook_civicrm_entityTypes
- */
-function recentmenu_civicrm_entityTypes(&$entityTypes) {
-  _recentmenu_civix_civicrm_entityTypes($entityTypes);
 }
 
 /**
@@ -108,7 +61,7 @@ function recentmenu_civicrm_postProcess($formName, &$form) {
  * Implements hook_civicrm_coreResourceList().
  */
 function recentmenu_civicrm_coreResourceList(&$list, $region) {
-  if ($region == 'html-header' && CRM_Core_Permission::check('access CiviCRM')) {
+  if ($region == 'html-header') {
     $recentMenuItems = _get_recentmenu_items();
     if ($recentMenuItems) {
       Civi::resources()
@@ -122,6 +75,9 @@ function recentmenu_civicrm_coreResourceList(&$list, $region) {
  * @return array|NULL
  */
 function _get_recentmenu_items() {
+  if (!CRM_Core_Permission::check('access CiviCRM')) {
+    return NULL;
+  }
   // Lookup existing menu item to get the possibly user-defined label and icon
   $navigation = \Civi\Api4\Navigation::get(FALSE)
     ->addWhere('name', '=', 'recent_items')
@@ -135,7 +91,7 @@ function _get_recentmenu_items() {
   try {
     $recent = \Civi\Api4\RecentItem::get()->execute();
   }
-  catch (API_Exception $e) {
+  catch (Exception $e) {
     // No logged-in user?
     return NULL;
   }

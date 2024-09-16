@@ -2,10 +2,17 @@
 
 <table>
   <base>CRM/SMS</base>
-  <class>Provider</class>
+  <class>SmsProvider</class>
   <name>civicrm_sms_provider</name>
   <comment>Table to add different sms providers </comment>
   <add>4.2</add>
+  <paths>
+    <add>civicrm/admin/sms/provider/edit?reset=1&amp;action=add</add>
+    <delete>civicrm/admin/sms/provider/edit?reset=1&amp;action=delete&amp;id=[id]</delete>
+    <update>civicrm/admin/sms/provider/edit?reset=1&amp;action=update&amp;id=[id]</update>
+    <browse>civicrm/admin/sms/provider?reset=1</browse>
+  </paths>
+  <title>SMS Provider</title>
   <field>
     <name>id</name>
     <title>SMS Provider ID</title>

@@ -12,8 +12,8 @@
     <access_arguments>make online contributions</access_arguments>
   </item>
   <item>
-    <path>civicrm/admin/contribute/iatssettings</path>
-    <page_callback>CRM_Iats_Form_Settings</page_callback>
+    <path>civicrm/admin/setting/iats</path>
+    <page_callback>CRM_Admin_Form_Generic</page_callback>
     <title>iATS Payments Settings</title>
     <access_arguments>access CiviContribute,administer CiviCRM</access_arguments>
   </item>

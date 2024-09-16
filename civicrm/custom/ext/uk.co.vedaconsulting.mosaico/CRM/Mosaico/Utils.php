@@ -161,7 +161,7 @@ class CRM_Mosaico_Utils {
   public static function getMosaicoDistUrl($preferFormat, $file = NULL) {
     $key = "distUrl";
     if (!isset(Civi::$statics[__CLASS__][$key])) {
-      Civi::$statics[__CLASS__][$key] = CRM_Core_Resources::singleton()->getUrl('uk.co.vedaconsulting.mosaico', 'packages/mosaico/dist');
+      Civi::$statics[__CLASS__][$key] = CRM_Core_Resources::singleton()->getUrl('uk.co.vedaconsulting.mosaico', 'packages/mosaico/dist/rs');
     }
     return self::filterAbsoluteRelative($preferFormat, Civi::$statics[__CLASS__][$key] . ($file ? "/$file" : ''));
   }
@@ -431,8 +431,23 @@ class CRM_Mosaico_Utils {
     header("Content-type:" . $mime_type);
 
     readfile($file);
-    ob_flush();
+    if (ob_get_length()) {
+      ob_flush();
+    }
     flush();
+  }
+
+  public static function getAngularSettings(): array {
+    return [
+      'canDelete' => Civi::service('civi_api_kernel')->runAuthorize('MosaicoTemplate', 'delete', ['version' => 3, 'check_permissions' => 1]),
+      // If there are any navbars that we should try to avoid, include them
+      // in these jQuery selectors.
+      'topNav' => '#civicrm-menu',
+      'drupalNav' => '#toolbar',
+      'joomlaNav' => '.com_civicrm > .navbar',
+      'leftNav' => '.wp-admin #adminmenu',
+      'variantsPct' => CRM_Mosaico_AbDemux::DEFAULT_AB_PERCENTAGE,
+    ];
   }
 
 }

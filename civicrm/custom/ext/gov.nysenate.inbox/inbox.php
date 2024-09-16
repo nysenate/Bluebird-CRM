@@ -33,8 +33,8 @@ function inbox_civicrm_enable(): void {
 
 function inbox_civicrm_permission(&$permissions) {
   $permissions['access inbox polling'] = [
-    'Bluebird: access inbox polling',
-    'Access inbox polling tools.',
+    'label' => 'Bluebird: access inbox polling',
+    'description' => 'Access inbox polling tools.',
   ];
 }
 

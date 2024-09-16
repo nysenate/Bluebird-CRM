@@ -70,6 +70,13 @@ define('FILE_EXISTS_ERROR', 2);
 define('FILE_STATUS_PERMANENT', 1);
 
 /**
+ * A pipe-separated list of insecure extensions.
+ *
+ * @see file_munge_filename(), file_save_upload()
+ */
+define('FILE_INSECURE_EXTENSIONS', 'php|phar|pl|py|cgi|asp|js|phtml');
+
+/**
  * Provides Drupal stream wrapper registry.
  *
  * A stream wrapper is an abstraction of a file system that allows Drupal to
@@ -1180,9 +1187,8 @@ function file_munge_filename($filename, $extensions, $alerts = TRUE) {
 
     $whitelist = array_unique(explode(' ', strtolower(trim($extensions))));
 
-    // Remove unsafe extensions from the list of allowed extensions. The list is
-    // copied from file_save_upload().
-    $whitelist = array_diff($whitelist, explode('|', 'php|phar|pl|py|cgi|asp|js'));
+    // Remove unsafe extensions from the list of allowed extensions.
+    $whitelist = array_diff($whitelist, explode('|', FILE_INSECURE_EXTENSIONS));
 
     // Split the filename up by periods. The first part becomes the basename
     // the last part the final extension.
@@ -1562,7 +1568,7 @@ function file_save_upload($form_field_name, $validators = array(), $destination 
     // rename filename.php.foo and filename.php to filename.php_.foo_.txt and
     // filename.php_.txt, respectively). Don't rename if 'allow_insecure_uploads'
     // evaluates to TRUE.
-    if (preg_match('/\.(php|phar|pl|py|cgi|asp|js)(\.|$)/i', $file->filename)) {
+    if (preg_match('/\.(' . FILE_INSECURE_EXTENSIONS . ')(\.|$)/i', $file->filename)) {
       // If the file will be rejected anyway due to a disallowed extension, it
       // should not be renamed; rather, we'll let file_validate_extensions()
       // reject it below.
@@ -1754,7 +1760,7 @@ function file_validate(stdClass &$file, $validators = array()) {
   // malicious extension. Contributed and custom code that calls this method
   // needs to take similar steps if they need to permit files with malicious
   // extensions to be uploaded.
-  if (empty($errors) && !variable_get('allow_insecure_uploads', 0) && preg_match('/\.(php|phar|pl|py|cgi|asp|js)(\.|$)/i', $file->filename)) {
+  if (empty($errors) && !variable_get('allow_insecure_uploads', 0) && preg_match('/\.(' . FILE_INSECURE_EXTENSIONS . ')(\.|$)/i', $file->filename)) {
     $errors[] = t('For security reasons, your upload has been rejected.');
   }
 
@@ -1856,7 +1862,7 @@ function file_validate_is_image(stdClass $file) {
 
   $info = image_get_info($file->uri);
   if (!$info || empty($info['extension'])) {
-    $errors[] = t('Only JPEG, PNG and GIF images are allowed.');
+    $errors[] = t('The image file is invalid or the image type is not allowed. Allowed types: %allowed_types', array('%allowed_types' => t('Only JPEG, PNG and GIF images are allowed.')));
   }
 
   return $errors;
@@ -1899,6 +1905,8 @@ function file_validate_image_resolution(stdClass $file, $maximum_dimensions = 0,
         if ($image = image_load($file->uri)) {
           image_scale($image, $width, $height);
           image_save($image);
+          // Update the image info since we have resized it.
+          $info = $image->info;
           $file->filesize = $image->info['file_size'];
           drupal_set_message(t('The image was resized to fit within the maximum allowed dimensions of %dimensions pixels.', array('%dimensions' => $maximum_dimensions)));
         }
@@ -2073,6 +2081,7 @@ function file_download() {
   $scheme = array_shift($args);
   $target = implode('/', $args);
   $uri = $scheme . '://' . $target;
+  $uri = file_uri_normalize_dot_segments($uri);
   if (file_stream_wrapper_valid_scheme($scheme) && file_exists($uri)) {
     $headers = file_download_headers($uri);
     if (count($headers)) {
@@ -2728,6 +2737,58 @@ function file_get_content_headers($file) {
     'Content-Length' => $file->filesize,
     'Cache-Control' => 'private',
   );
+}
+
+/**
+ * Normalize dot segments in a URI.
+ *
+ * @param $uri
+ *   A stream, referenced as "scheme://target".
+ *
+ * @return string
+ *   The URI with dot segments removed and slashes as directory separator.
+ */
+function file_uri_normalize_dot_segments($uri) {
+  $scheme = file_uri_scheme($uri);
+
+  if (file_stream_wrapper_valid_scheme($scheme)) {
+    $target = file_uri_target($uri);
+
+    if ($target !== FALSE) {
+      if (!in_array($scheme, variable_get('file_sa_core_2023_005_schemes', array()))) {
+        $class = file_stream_wrapper_get_class($scheme);
+        $is_local = is_subclass_of($class, 'DrupalLocalStreamWrapper');
+        if ($is_local) {
+          $target = str_replace(DIRECTORY_SEPARATOR, '/', $target);
+        }
+
+        $parts = explode('/', $target);
+        $normalized_parts = array();
+        while ($parts) {
+          $part = array_shift($parts);
+          if ($part === '' || $part === '.') {
+            continue;
+          }
+          elseif ($part === '..' && $is_local && $normalized_parts === array()) {
+            $normalized_parts[] = $part;
+            break;
+          }
+          elseif ($part === '..') {
+            array_pop($normalized_parts);
+          }
+          else {
+            $normalized_parts[] = $part;
+          }
+        }
+
+        $target = implode('/', array_merge($normalized_parts, $parts));
+      }
+
+      $uri = $scheme . '://' . $target;
+    }
+  }
+
+  return $uri;
 }
 
 /**

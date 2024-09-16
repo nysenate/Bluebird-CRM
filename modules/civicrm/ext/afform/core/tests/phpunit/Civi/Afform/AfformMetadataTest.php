@@ -21,14 +21,14 @@ class AfformMetadataTest extends \PHPUnit\Framework\TestCase implements Headless
     $this->assertEquals(['name', 'label', 'icon', 'description'], $fields['type']['suffixes']);
 
     $this->assertTrue($fields['base_module']['options']);
-    $this->assertTrue($fields['contact_summary']['options']);
+    $this->assertTrue($fields['placement']['options']);
   }
 
   public function testGetEntityFields():void {
     $individualFields = \Civi\AfformAdmin\AfformAdminMeta::getFields('Individual');
 
     // Ensure the "Existing" contact field exists
-    $this->assertEquals('Existing Contact', $individualFields['id']['label']);
+    $this->assertEquals('Existing Individual', $individualFields['id']['label']);
     $this->assertEquals('EntityRef', $individualFields['id']['input_type']);
   }
 

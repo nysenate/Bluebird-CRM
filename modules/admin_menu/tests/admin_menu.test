@@ -48,7 +48,7 @@ class AdminMenuWebTestCase extends DrupalWebTestCase {
    * @return
    *   TRUE if the assertion succeeded, FALSE otherwise.
    */
-  protected function assertElementByXPath($xpath, array $arguments = array(), $message, $group = 'Other') {
+  protected function assertElementByXPath($xpath, array $arguments, $message, $group = 'Other') {
     $elements = $this->xpath($xpath, $arguments);
     return $this->assertTrue(!empty($elements[0]), $message, $group);
   }
@@ -69,7 +69,7 @@ class AdminMenuWebTestCase extends DrupalWebTestCase {
    * @return
    *   TRUE if the assertion succeeded, FALSE otherwise.
    */
-  protected function assertNoElementByXPath($xpath, array $arguments = array(), $message, $group = 'Other') {
+  protected function assertNoElementByXPath($xpath, array $arguments, $message, $group = 'Other') {
     $elements = $this->xpath($xpath, $arguments);
     return $this->assertTrue(empty($elements), $message, $group);
   }

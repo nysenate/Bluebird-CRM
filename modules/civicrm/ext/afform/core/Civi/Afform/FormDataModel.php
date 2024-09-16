@@ -123,9 +123,10 @@ class FormDataModel {
       return TRUE;
     }
 
-    // "Update" effectively means "read+save".
+    // "Get" is used for autofilling entities in "update" mode, but also for
+    // pre-populating fields from a template in "create" mode.
     if ($action === 'get') {
-      $action = 'update';
+      return TRUE;
     }
 
     $result = !empty($entityDefn['actions'][$action]);
@@ -194,9 +195,10 @@ class FormDataModel {
    * @param string $entityName
    * @param string $fieldName
    * @param string $action
+   * @param array $values
    * @return array|NULL
    */
-  public static function getField(string $entityName, string $fieldName, string $action): ?array {
+  public static function getField(string $entityName, string $fieldName, string $action, array $values = []): ?array {
     // For explicit joins, strip the alias off the field name
     if (strpos($entityName, ' AS ')) {
       [$entityName, $alias] = explode(' AS ', $entityName);
@@ -207,18 +209,19 @@ class FormDataModel {
     if ($action === 'get' && strpos($fieldName, '.')) {
       $namesToMatch[] = substr($fieldName, 0, strrpos($fieldName, '.'));
     }
+    $select = ['name', 'label', 'input_type', 'data_type', 'input_attrs', 'help_pre', 'help_post', 'options', 'fk_entity', 'required'];
+    if ($action === 'get') {
+      $select[] = 'operators';
+    }
     $params = [
       'action' => $action,
       'where' => [['name', 'IN', $namesToMatch]],
-      'select' => ['name', 'label', 'input_type', 'input_attrs', 'help_pre', 'help_post', 'options', 'fk_entity', 'required'],
+      'select' => $select,
       'loadOptions' => ['id', 'label'],
       // If the admin included this field on the form, then it's OK to get metadata about the field regardless of user permissions.
       'checkPermissions' => FALSE,
+      'values' => $values,
     ];
-    if (in_array($entityName, \CRM_Contact_BAO_ContactType::basicTypes(TRUE))) {
-      $params['values'] = ['contact_type' => $entityName];
-      $entityName = 'Contact';
-    }
     foreach (civicrm_api4($entityName, 'getFields', $params) as $field) {
       // In the highly unlikely event of 2 fields returned, prefer the exact match
       if ($field['name'] === $fieldName) {
@@ -229,12 +232,13 @@ class FormDataModel {
       return NULL;
     }
     // Id field for selecting existing entity
-    if ($action === 'create' && $field['name'] === CoreUtil::getIdFieldName($entityName)) {
+    if ($field['name'] === CoreUtil::getIdFieldName($entityName)) {
       $entityTitle = CoreUtil::getInfoItem($entityName, 'title');
       $field['input_type'] = 'EntityRef';
       $field['fk_entity'] = $entityName;
-      $field['is_id'] = TRUE;
       $field['label'] = E::ts('Existing %1', [1 => $entityTitle]);
+      // Afform-only (so far) metadata tells the form to update an existing entity autofilled from this value
+      $field['input_attrs']['autofill'] = 'update';
       $field['input_attrs']['placeholder'] = E::ts('Select %1', [1 => $entityTitle]);
     }
     // If this is an implicit join, get new field from fk entity

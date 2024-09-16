@@ -94,15 +94,10 @@ class CRM_Core_BAO_UFGroup extends CRM_Core_DAO_UFGroup implements \Civi\Core\Ho
   }
 
   /**
-   * Update the is_active flag in the db.
-   *
+   * @deprecated - this bypasses hooks.
    * @param int $id
-   *   Id of the database record.
    * @param bool $is_active
-   *   Value we want to set the is_active field.
-   *
    * @return bool
-   *   true if we found and updated the object, else false
    */
   public static function setIsActive($id, $is_active) {
     return CRM_Core_DAO::setFieldValue('CRM_Core_DAO_UFGroup', $id, 'is_active', $is_active);
@@ -462,7 +457,7 @@ class CRM_Core_BAO_UFGroup extends CRM_Core_DAO_UFGroup implements \Civi\Core\Ho
     if (isset($field->phone_type_id)) {
       $name .= "-{$field->phone_type_id}";
     }
-    $fieldMetaData = CRM_Utils_Array::value($name, $importableFields, ($importableFields[$field->field_name] ?? []));
+    $fieldMetaData = $importableFields[$name] ?? $importableFields[$field->field_name] ?? [];
 
     // No lie: this is bizarre; why do we need to mix so many UFGroup properties into UFFields?
     // I guess to make field self sufficient with all the required data and avoid additional calls
@@ -474,15 +469,15 @@ class CRM_Core_BAO_UFGroup extends CRM_Core_DAO_UFGroup implements \Civi\Core\Ho
       'groupHelpPre' => empty($group->help_pre) ? '' : $group->help_pre,
       'groupHelpPost' => empty($group->help_post) ? '' : $group->help_post,
       'title' => $title,
-      'where' => CRM_Utils_Array::value('where', CRM_Utils_Array::value($field->field_name, $importableFields)),
-      'attributes' => CRM_Core_DAO::makeAttribute(CRM_Utils_Array::value($field->field_name, $importableFields)),
+      'where' => $importableFields[$field->field_name]['where'] ?? NULL,
+      'attributes' => CRM_Core_DAO::makeAttribute($importableFields[$field->field_name] ?? NULL),
       'is_required' => $field->is_required,
       'is_view' => $field->is_view,
       'help_pre' => $field->help_pre,
       'help_post' => $field->help_post,
       'visibility' => $field->visibility,
       'in_selector' => $field->in_selector,
-      'rule' => CRM_Utils_Array::value('rule', CRM_Utils_Array::value($field->field_name, $importableFields)),
+      'rule' => $importableFields[$field->field_name]['rule'] ?? NULL,
       'location_type_id' => $field->location_type_id ?? NULL,
       'website_type_id' => $field->website_type_id ?? NULL,
       'phone_type_id' => $field->phone_type_id ?? NULL,
@@ -491,15 +486,9 @@ class CRM_Core_BAO_UFGroup extends CRM_Core_DAO_UFGroup implements \Civi\Core\Ho
       'add_captcha' => $group->add_captcha ?? NULL,
       'field_type' => $field->field_type,
       'field_id' => $field->id,
-      'pseudoconstant' => CRM_Utils_Array::value(
-        'pseudoconstant',
-        CRM_Utils_Array::value($field->field_name, $importableFields)
-      ),
+      'pseudoconstant' => $importableFields[$field->field_name]['pseudoconstant'] ?? NULL,
       // obsolete this when we remove the name / dbName discrepancy with gender/suffix/prefix
-      'dbName' => CRM_Utils_Array::value(
-        'dbName',
-        CRM_Utils_Array::value($field->field_name, $importableFields)
-      ),
+      'dbName' => $importableFields[$field->field_name]['dbName'] ?? NULL,
       'skipDisplay' => 0,
       'data_type' => CRM_Utils_Type::getDataTypeFromFieldMetadata($fieldMetaData),
       'bao' => $fieldMetaData['bao'] ?? NULL,
@@ -521,7 +510,7 @@ class CRM_Core_BAO_UFGroup extends CRM_Core_DAO_UFGroup implements \Civi\Core\Ho
         $formattedField['options_per_line'] = $customFields[$field->field_name]['options_per_line'];
         $formattedField['html_type'] = $customFields[$field->field_name]['html_type'];
 
-        if (CRM_Utils_Array::value('html_type', $formattedField) == 'Select Date') {
+        if (($formattedField['html_type'] ?? NULL) == 'Select Date') {
           $formattedField['date_format'] = $customFields[$field->field_name]['date_format'];
           $formattedField['time_format'] = $customFields[$field->field_name]['time_format'];
           $formattedField['is_datetime_field'] = TRUE;
@@ -721,28 +710,26 @@ class CRM_Core_BAO_UFGroup extends CRM_Core_DAO_UFGroup implements \Civi\Core\Ho
 
   /**
    * @param $ctype
-   * @param int|bool $checkPermission
-   * @return mixed
+   * @param int|null $checkPermission
+   * @return array
    */
   protected static function getCustomFields($ctype, $checkPermission = CRM_Core_Permission::VIEW) {
     // Only Edit and View is supported in ACL for custom field.
-    if ($checkPermission == CRM_Core_Permission::CREATE) {
+    if ($checkPermission && $checkPermission != CRM_Core_Permission::VIEW) {
       $checkPermission = CRM_Core_Permission::EDIT;
     }
-    $cacheKey = 'uf_group_custom_fields_' . $ctype . '_' . (int) $checkPermission;
-    if (!Civi::cache('metadata')->has($cacheKey)) {
-      $customFields = CRM_Core_BAO_CustomField::getFieldsForImport($ctype, FALSE, FALSE, FALSE, $checkPermission, TRUE);
+    $customFields = CRM_Core_BAO_CustomField::getFieldsForImport($ctype, FALSE, FALSE, FALSE, $checkPermission, TRUE);
 
-      // hack to add custom data for components
-      $components = ['Contribution', 'Participant', 'Membership', 'Activity', 'Case'];
-      foreach ($components as $value) {
-        $customFields = array_merge($customFields, CRM_Core_BAO_CustomField::getFieldsForImport($value));
-      }
-      $addressCustomFields = CRM_Core_BAO_CustomField::getFieldsForImport('Address');
-      $customFields = array_merge($customFields, $addressCustomFields);
-      Civi::cache('metadata')->set($cacheKey, [$customFields, $addressCustomFields]);
+    // Fixme: why this hardcoded list? If we truly want all fields we should use CRM_Core_BAO_CustomGroup::getAll().
+    $components = ['Contribution', 'Participant', 'Membership', 'Activity', 'Case'];
+    foreach ($components as $value) {
+      $extraFields = CRM_Core_BAO_CustomField::getFieldsForImport($value, FALSE, FALSE, FALSE, $checkPermission);
+      $customFields = array_merge($customFields, $extraFields);
     }
-    return Civi::cache('metadata')->get($cacheKey);
+    $addressCustomFields = CRM_Core_BAO_CustomField::getFieldsForImport('Address', FALSE, FALSE, FALSE, $checkPermission);
+    $customFields = array_merge($customFields, $addressCustomFields);
+    // For some reason this function returns Address custom fields as a second item.
+    return [$customFields, $addressCustomFields];
   }
 
   /**
@@ -829,9 +816,7 @@ class CRM_Core_BAO_UFGroup extends CRM_Core_DAO_UFGroup implements \Civi\Core\Ho
       );
       if ($reset || $doNotProcess) {
         // hack to make sure we do not process this form
-        $oldQFDefault = CRM_Utils_Array::value('_qf_default',
-          $_POST
-        );
+        $oldQFDefault = $_POST['_qf_default'] ?? NULL;
         unset($_POST['_qf_default']);
         unset($_REQUEST['_qf_default']);
         if ($reset) {
@@ -916,11 +901,10 @@ class CRM_Core_BAO_UFGroup extends CRM_Core_DAO_UFGroup implements \Civi\Core\Ho
 
         $template = CRM_Core_Smarty::singleton();
 
-        // Hide CRM error messages if they are displayed using drupal form_set_error.
-        if (!empty($_POST) && CRM_Core_Config::singleton()->userFramework == 'Drupal') {
-          if (arg(0) == 'user' || (arg(0) == 'admin' && arg(1) == 'people')) {
-            $template->assign('suppressForm', TRUE);
-          }
+        // Hide CRM error messages if they are set by the CMS.
+        if (!empty($_POST)) {
+          $supressForm = CRM_Core_Config::singleton()->userSystem->suppressProfileFormErrors();
+          $template->assign('suppressForm', $supressForm);
         }
 
         $templateFile = "CRM/Profile/Form/{$profileID}/Dynamic.tpl";
@@ -1290,7 +1274,7 @@ class CRM_Core_BAO_UFGroup extends CRM_Core_DAO_UFGroup implements \Civi\Core\Ho
         }
       }
 
-      if ((CRM_Utils_Array::value('visibility', $field) == 'Public Pages and Listings') &&
+      if ((($field['visibility'] ?? NULL) == 'Public Pages and Listings') &&
         CRM_Core_Permission::check('profile listings and forms')
       ) {
 
@@ -1403,6 +1387,7 @@ class CRM_Core_BAO_UFGroup extends CRM_Core_DAO_UFGroup implements \Civi\Core\Ho
    * @deprecated
    */
   public static function del($id) {
+    CRM_Core_Error::deprecatedFunctionWarning('deleteRecord');
     return (bool) static::deleteRecord(['id' => $id]);
   }
 
@@ -1461,28 +1446,7 @@ class CRM_Core_BAO_UFGroup extends CRM_Core_DAO_UFGroup implements \Civi\Core\Ho
       $params['group_type'] = implode(',', $params['group_type']);
     }
 
-    $hook = empty($params['id']) ? 'create' : 'edit';
-    CRM_Utils_Hook::pre($hook, 'UFGroup', ($params['id'] ?? NULL), $params);
-
-    $ufGroup = new CRM_Core_DAO_UFGroup();
-    $ufGroup->copyValues($params);
-
-    $ufGroupID = CRM_Utils_Array::value('ufgroup', $ids, CRM_Utils_Array::value('id', $params));
-    if (!$ufGroupID && empty($params['name'])) {
-      $ufGroup->name = CRM_Utils_String::munge($ufGroup->title, '_', 56);
-    }
-    $ufGroup->id = $ufGroupID;
-
-    $ufGroup->save();
-
-    if (!$ufGroupID && empty($params['name'])) {
-      $ufGroup->name = $ufGroup->name . "_{$ufGroup->id}";
-      $ufGroup->save();
-    }
-
-    CRM_Utils_Hook::post($hook, 'UFGroup', $ufGroup->id, $ufGroup);
-
-    return $ufGroup;
+    return self::writeRecord($params);
   }
 
   /**
@@ -1673,7 +1637,7 @@ AND    ( entity_id IS NULL OR entity_id <= 0 )
    *   array of ufgroups for a module
    */
   public static function getModuleUFGroup($moduleName = NULL, $count = 0, $skipPermission = TRUE, $op = CRM_Core_Permission::VIEW, $returnFields = NULL) {
-    $selectFields = ['id', 'title', 'created_id', 'is_active', 'is_reserved', 'group_type', 'description'];
+    $selectFields = ['id', 'name', 'title', 'created_id', 'is_active', 'is_reserved', 'group_type', 'description'];
 
     if (CRM_Core_BAO_SchemaHandler::checkIfFieldExists('civicrm_uf_group', 'frontend_title')) {
       $selectFields[] = 'frontend_title';
@@ -1811,7 +1775,7 @@ AND    ( entity_id IS NULL OR entity_id <= 0 )
     $view = $field['is_view'];
     $required = ($mode == CRM_Profile_Form::MODE_SEARCH) ? FALSE : $field['is_required'];
     $search = $mode == CRM_Profile_Form::MODE_SEARCH;
-    $isShared = CRM_Utils_Array::value('is_shared', $field, 0);
+    $isShared = $field['is_shared'] ?? 0;
 
     // do not display view fields in drupal registration form
     // CRM-4632
@@ -1846,7 +1810,7 @@ AND    ( entity_id IS NULL OR entity_id <= 0 )
         CRM_Core_Action::DELETE => [
           'name' => ts('Delete Contact Image'),
           'url' => 'civicrm/contact/image',
-          'qs' => 'reset=1&id=%%id%%&gid=%%gid%%&action=delete',
+          'qs' => 'reset=1&id=%%id%%&gid=%%gid%%&action=delete&qfKey=%%key%%',
           'extra' => 'onclick = "' . htmlspecialchars("if (confirm($deleteExtra)) this.href+='&confirmed=1'; else return false;") . '"',
         ],
       ];
@@ -1855,6 +1819,7 @@ AND    ( entity_id IS NULL OR entity_id <= 0 )
         [
           'id' => $form->get('id'),
           'gid' => $form->get('gid'),
+          'key' => $form->controller->_key,
         ],
         ts('more'),
         FALSE,
@@ -1894,6 +1859,9 @@ AND    ( entity_id IS NULL OR entity_id <= 0 )
       }
     }
     elseif (substr($fieldName, 0, 9) === 'image_URL') {
+      if (!isset($attributes['accept'])) {
+        $attributes['accept'] = 'image/png, image/jpeg, image/gif';
+      }
       $form->add('file', $name, $title, $attributes, $required);
       $form->addUploadElement($name);
     }
@@ -1919,7 +1887,7 @@ AND    ( entity_id IS NULL OR entity_id <= 0 )
         }
       }
     }
-    elseif (CRM_Utils_Array::value('name', $field) == 'membership_type') {
+    elseif (($field['name'] ?? NULL) == 'membership_type') {
       [$orgInfo, $types] = CRM_Member_BAO_MembershipType::getMembershipTypeInfo();
       $sel = &$form->addElement('hierselect', $name, $title);
       $select = ['' => ts('- select membership type -')];
@@ -1927,8 +1895,9 @@ AND    ( entity_id IS NULL OR entity_id <= 0 )
         // we only have one org - so we should default to it. Not sure about defaulting to first type
         // as it could be missed - so adding a select
         // however, possibly that is more similar to the membership form
-        if (count($types[1]) > 1) {
-          $types[1] = $select + $types[1];
+        $orgId = array_key_first($orgInfo);
+        if (!empty($types[$orgId])) {
+          $types[$orgId] = $select + $types[$orgId];
         }
       }
       else {
@@ -1936,7 +1905,7 @@ AND    ( entity_id IS NULL OR entity_id <= 0 )
       }
       $sel->setOptions([$orgInfo, $types]);
     }
-    elseif (CRM_Utils_Array::value('name', $field) == 'membership_status') {
+    elseif (($field['name'] ?? NULL) == 'membership_status') {
       $form->add('select', $name, $title,
         CRM_Member_PseudoConstant::membershipStatus(NULL, NULL, 'label'), $required
       );
@@ -1956,7 +1925,7 @@ AND    ( entity_id IS NULL OR entity_id <= 0 )
       ], $required);
     }
     elseif ($fieldName === 'contact_sub_type') {
-      $gId = $form->get('gid') ? $form->get('gid') : CRM_Utils_Array::value('group_id', $field);
+      $gId = $form->get('gid') ?:  $field['group_id'] ?? NULL;
       if ($usedFor == 'onbehalf') {
         $profileType = 'Organization';
       }
@@ -1990,7 +1959,7 @@ AND    ( entity_id IS NULL OR entity_id <= 0 )
     }
     elseif (in_array($fieldName, CRM_Contact_BAO_Contact::$_greetingTypes)) {
       // Get contact type for greeting selector
-      $gId = $form->get('gid') ?: CRM_Utils_Array::value('group_id', $field);
+      $gId = $form->get('gid') ?:  $field['group_id'] ?? NULL;
       $profileType = CRM_Core_BAO_UFField::getProfileType($gId, TRUE, FALSE, TRUE);
 
       if (!$profileType || in_array($profileType, ['Contact', 'Contribution', 'Participant', 'Membership'])) {
@@ -2168,9 +2137,7 @@ AND    ( entity_id IS NULL OR entity_id <= 0 )
     }
     elseif (substr($fieldName, -11) == 'campaign_id') {
       if (CRM_Campaign_BAO_Campaign::isComponentEnabled()) {
-        $campaigns = CRM_Campaign_BAO_Campaign::getCampaigns(CRM_Utils_Array::value($contactId,
-          $form->_componentCampaigns
-        ));
+        $campaigns = CRM_Campaign_BAO_Campaign::getCampaigns($form->_componentCampaigns[$contactId] ?? NULL, NULL, TRUE, FALSE);
         $form->add('select', $name, $title,
           $campaigns, $required,
           [
@@ -2197,7 +2164,7 @@ AND    ( entity_id IS NULL OR entity_id <= 0 )
       if (substr($fieldName, 0, 3) === 'is_' or substr($fieldName, 0, 7) === 'do_not_') {
         $form->add('advcheckbox', $name, $title, $attributes, $required);
       }
-      elseif (CRM_Utils_Array::value('html_type', $field) === 'Select Date') {
+      elseif (($field['html_type'] ?? NULL) === 'Select Date') {
         $extra = isset($field['datepicker']) ? $field['datepicker']['extra'] : CRM_Utils_Date::getDatePickerExtra($field);
         $attributes = isset($field['datepicker']) ? $field['datepicker']['attributes'] : CRM_Utils_Date::getDatePickerAttributes($field);
         $form->add('datepicker', $name, $title, $attributes, $required, $extra);
@@ -2353,7 +2320,7 @@ AND    ( entity_id IS NULL OR entity_id <= 0 )
 
                 // fixed for CRM-665
                 if (is_numeric($locTypeId)) {
-                  if ($primaryLocationType || $locTypeId == CRM_Utils_Array::value('location_type_id', $value)) {
+                  if ($primaryLocationType || $locTypeId == ($value['location_type_id'] ?? NULL)) {
                     if (!empty($value[$fieldName])) {
                       //to handle stateprovince and country
                       if ($fieldName == 'state_province') {
@@ -2519,7 +2486,7 @@ AND    ( entity_id IS NULL OR entity_id <= 0 )
    * Check whether a profile is valid combination of
    * required profile fields
    *
-   * @param array $ufId
+   * @param array $ufID
    *   Integer id of the profile.
    * @param array $required
    *   Array of fields those are required in the profile.
@@ -2527,17 +2494,17 @@ AND    ( entity_id IS NULL OR entity_id <= 0 )
    * @return array
    *   associative array of profiles
    */
-  public static function checkValidProfile($ufId, $required = NULL) {
+  public static function checkValidProfile($ufID, $required = NULL) {
     $validProfile = FALSE;
-    if (!$ufId) {
+    if (!$ufID) {
       return $validProfile;
     }
 
-    if (!CRM_Core_DAO::getFieldValue('CRM_Core_DAO_UFGroup', $ufId, 'is_active')) {
+    if (!CRM_Core_DAO::getFieldValue('CRM_Core_DAO_UFGroup', $ufID, 'is_active')) {
       return $validProfile;
     }
 
-    $profileFields = self::getFields($ufId, FALSE, CRM_Core_Action::VIEW, NULL,
+    $profileFields = self::getFields($ufID, FALSE, CRM_Core_Action::VIEW, NULL,
       NULL, FALSE, NULL, FALSE, NULL,
       CRM_Core_Permission::CREATE, NULL
     );
@@ -2647,7 +2614,7 @@ AND    ( entity_id IS NULL OR entity_id <= 0 )
       $params = [1 => [$copy->id, 'Integer']];
       CRM_Core_DAO::executeQuery($query, $params);
     }
-    CRM_Utils_Hook::copy('UFGroup', $copy);
+    CRM_Utils_Hook::copy('UFGroup', $copy, $id);
 
     return $copy;
   }
@@ -2665,41 +2632,21 @@ AND    ( entity_id IS NULL OR entity_id <= 0 )
       return;
 
     }
-    $template = CRM_Core_Smarty::singleton();
-
-    $displayName = CRM_Core_DAO::getFieldValue('CRM_Contact_DAO_Contact',
-      $contactID,
-      'display_name'
-    );
-
-    self::profileDisplay($values['id'], $values['values'], $template);
     $emailList = explode(',', $values['email']);
-
-    $contactLink = CRM_Utils_System::url('civicrm/contact/view',
-      "reset=1&cid=$contactID",
-      TRUE, NULL, FALSE, FALSE, TRUE
-    );
 
     //get the default domain email address.
     [$domainEmailName, $domainEmailAddress] = CRM_Core_BAO_Domain::getNameAndEmail();
 
-    if (!$domainEmailAddress || $domainEmailAddress == 'info@EXAMPLE.ORG') {
+    if (!$domainEmailAddress || $domainEmailAddress === 'info@EXAMPLE.ORG') {
       $fixUrl = CRM_Utils_System::url('civicrm/admin/domain', 'action=update&reset=1');
       CRM_Core_Error::statusBounce(ts('The site administrator needs to enter a valid \'FROM Email Address\' in <a href="%1">Administer CiviCRM &raquo; Communications &raquo; FROM Email Addresses</a>. The email address used may need to be a valid mail account with your email service provider.', [1 => $fixUrl]));
     }
 
     foreach ($emailList as $emailTo) {
-      // FIXME: take the below out of the foreach loop
       CRM_Core_BAO_MessageTemplate::sendTemplate(
         [
-          'groupName' => 'msg_tpl_workflow_uf',
           'workflow' => 'uf_notify',
-          'contactId' => $contactID,
-          'tplParams' => [
-            'displayName' => $displayName,
-            'currentDate' => date('r'),
-            'contactLink' => $contactLink,
-          ],
+          'modelProps' => ['contactID' => $contactID, 'profileID' => $values['id'], 'profileFields' => $values['values']],
           'from' => "$domainEmailName <$domainEmailAddress>",
           'toEmail' => $emailTo,
         ]
@@ -2743,22 +2690,6 @@ AND    ( entity_id IS NULL OR entity_id <= 0 )
       }
     }
     return NULL;
-  }
-
-  /**
-   * Assign uf fields to template.
-   *
-   * @param int $gid
-   *   Group id.
-   * @param array $values
-   * @param CRM_Core_Smarty $template
-   */
-  public static function profileDisplay($gid, $values, $template) {
-    $groupTitle = CRM_Core_DAO::getFieldValue('CRM_Core_DAO_UFGroup', $gid, 'title');
-    $template->assign('grouptitle', $groupTitle);
-    if (count($values)) {
-      $template->assign('values', $values);
-    }
   }
 
   /**
@@ -3192,7 +3123,8 @@ AND    ( entity_id IS NULL OR entity_id <= 0 )
 
         //FIX ME: We need to loop defaults, but once we move to custom_1_x convention this code can be simplified.
         foreach ($defaults as $customKey => $customValue) {
-          if ($customFieldDetails = CRM_Core_BAO_CustomField::getKeyID($customKey, TRUE)) {
+          $customFieldDetails = CRM_Core_BAO_CustomField::getKeyID($customKey, TRUE);
+          if ($customFieldDetails[0]) {
             if ($name == 'custom_' . $customFieldDetails[0]) {
 
               //hack to set default for checkbox
@@ -3202,12 +3134,12 @@ AND    ( entity_id IS NULL OR entity_id <= 0 )
 
               foreach ($formattedGroupTree as $tree) {
                 if (!empty($tree['fields'][$customFieldDetails[0]])) {
-                  if ('CheckBox' == CRM_Utils_Array::value('html_type', $tree['fields'][$customFieldDetails[0]])) {
+                  if ('CheckBox' == ($tree['fields'][$customFieldDetails[0]]['html_type'] ?? NULL)) {
                     $skipValue = TRUE;
                     $defaults['field'][$componentId][$name] = $customValue;
                     break;
                   }
-                  elseif (CRM_Utils_Array::value('data_type', $tree['fields'][$customFieldDetails[0]]) == 'Date') {
+                  elseif (($tree['fields'][$customFieldDetails[0]]['data_type'] ?? NULL) == 'Date') {
                     $skipValue = TRUE;
 
                     // CRM-6681, $default contains formatted date, time values.
@@ -3562,8 +3494,8 @@ SELECT  group_id
    * @throws \CRM_Core_Exception
    */
   public static function getFrontEndTitle(int $profileID) {
-    $profile = civicrm_api3('UFGroup', 'getsingle', ['id' => $profileID, 'return' => ['title', 'frontend_title']]);
-    return $profile['frontend_title'] ?? $profile['title'];
+    $profile = civicrm_api3('UFGroup', 'getsingle', ['id' => $profileID, 'return' => ['frontend_title']]);
+    return $profile['frontend_title'];
   }
 
   /**

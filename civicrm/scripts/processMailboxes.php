@@ -227,13 +227,13 @@ $imap_params['uploadDir'] = $uploadDir;
 $imap_params['uploadInbox'] = $uploadInbox;
 $imap_params['authForwarders'] = $authForwarders;
 
-bbscript_log(LL::DEBUG, "imap_params before processing mailbox:", $imap_params);
+bbscript_log(LL::DEBUG, "imap_params before processing mailboxes:", $imap_params);
 
-// Previously, this script would Iterate over all IMAP accounts associated
-// with the current CRM instance.  In practice, multiple IMAP accounts were
-// never used.  This has been simplified to support a single IMAP username
-// and password for each CRM instance.
-{
+//we now support multiple mailbox processing, provided as a comma-separated list in the config file
+$mailboxes = explode(',', $imap_params['mailbox']);
+foreach ($mailboxes as $mailbox) {
+  //reset mailbox param to preserve downstream handling
+  $imap_params['mailbox'] = trim($mailbox);
   $rc = processMailboxCommand($cmd, $imap_params);
   if (!$rc) {
     bbscript_log(LL::ERROR, "Failed to process IMAP account {$imap_params['user']}@{$imap_params['host']}");

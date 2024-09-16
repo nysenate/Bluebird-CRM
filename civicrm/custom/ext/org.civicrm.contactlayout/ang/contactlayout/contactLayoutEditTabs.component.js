@@ -2,7 +2,7 @@
 
   angular.module('contactlayout').component('contactLayoutEditTabs', {
     bindings:  {
-      defaults: '=',
+      defaults: '<',
       layout: '<',
       contactType: '<',
       isSystem: '<'
@@ -20,12 +20,25 @@
         cancel: 'input,textarea,button,select,option,a,.crm-editable-enabled,[contenteditable]'
       };
 
+      this.$onInit = () => {
+        // Check default & active tabsets for any missing tabs (e.g. from a newly-enabled extension)
+        this.defaultTabs = angular.copy(this.defaults);
+        CRM.vars.contactlayout.tabs.forEach((tab) => {
+          if (!_.findWhere(ctrl.defaultTabs, {id: tab.id})) {
+            ctrl.defaultTabs.push(angular.copy(tab));
+          }
+          if (ctrl.layout.tabs && !_.findWhere(ctrl.layout.tabs, {id: tab.id})) {
+            ctrl.layout.tabs.push(angular.copy(tab));
+          }
+        });
+      };
+
       // Toggle between using defaults & custom tabs
       this.toggleTabs = function() {
         if (ctrl.layout.tabs) {
           ctrl.layout.tabs = null;
         } else {
-          ctrl.layout.tabs = angular.copy(ctrl.defaults);
+          ctrl.layout.tabs = angular.copy(ctrl.defaultTabs);
         }
       };
 
@@ -34,6 +47,10 @@
         if (!tab.is_active) {
           tab.title = allTabs[tab.id].title;
         }
+      };
+
+      this.tabIsValid = function(tab) {
+        return !tab.contact_type || !ctrl.contactType || tab.contact_type.includes(ctrl.contactType);
       };
 
       this.pickTabIcon = function(tab) {

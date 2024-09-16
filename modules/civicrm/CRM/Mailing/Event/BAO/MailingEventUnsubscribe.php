@@ -38,7 +38,7 @@ class CRM_Mailing_Event_BAO_MailingEventUnsubscribe extends CRM_Mailing_Event_DA
    *   Was the contact successfully unsubscribed?
    */
   public static function unsub_from_domain($job_id, $queue_id, $hash) {
-    $q = CRM_Mailing_Event_BAO_MailingEventQueue::verify($job_id, $queue_id, $hash);
+    $q = CRM_Mailing_Event_BAO_MailingEventQueue::verify(NULL, $queue_id, $hash);
     if (!$q) {
       return FALSE;
     }
@@ -93,8 +93,7 @@ WHERE  email = %2
   /**
    * Unsubscribe a contact from all groups that received this mailing.
    *
-   * @param int $job_id
-   *   The job ID.
+   * @param null $unused
    * @param int $queue_id
    *   The Queue Event ID of the recipient.
    * @param string $hash
@@ -107,17 +106,17 @@ WHERE  email = %2
    *
    * @throws \CRM_Core_Exception
    */
-  public static function unsub_from_mailing($job_id, $queue_id, $hash, $return = FALSE): ?array {
+  public static function unsub_from_mailing($unused, $queue_id, $hash, $return = FALSE): ?array {
     // First make sure there's a matching queue event.
 
-    $q = CRM_Mailing_Event_BAO_MailingEventQueue::verify($job_id, $queue_id, $hash);
+    $q = CRM_Mailing_Event_BAO_MailingEventQueue::verify(NULL, $queue_id, $hash);
     if (!$q) {
       return NULL;
     }
 
     $contact_id = $q->contact_id;
 
-    $mailing_id = (int) civicrm_api3('MailingJob', 'getvalue', ['id' => $job_id, 'return' => 'mailing_id']);
+    $mailing_id = (int) civicrm_api3('MailingEventQueue', 'getvalue', ['id' => $queue_id, 'return' => 'mailing_id']);
     $mailing_type = CRM_Core_DAO::getFieldValue('CRM_Mailing_DAO_Mailing', $mailing_id, 'mailing_type', 'id');
 
     // We need a mailing id that points to the mailing that defined the recipients.
@@ -278,18 +277,18 @@ WHERE  email = %2
       }
       while ($doAdded->fetch()) {
         $returnGroups[$doAdded->group_id] = [
-          'title' => !empty($doAdded->frontend_title) ? $doAdded->frontend_title : $doAdded->title,
-          'description' => !empty($doAdded->frontend_description) ? $doAdded->frontend_description : $doAdded->description,
+          'title' => $doAdded->frontend_title,
+          'description' => $doAdded->frontend_description,
         ];
       }
       return $returnGroups;
     }
     else {
       while ($doCached->fetch()) {
-        $groups[$doCached->group_id] = !empty($doCached->frontend_title) ? $doCached->frontend_title : $doCached->title;
+        $groups[$doCached->group_id] = $doCached->frontend_title;
       }
       while ($doAdded->fetch()) {
-        $groups[$doAdded->group_id] = !empty($doAdded->frontend_title) ? $doAdded->frontend_title : $doAdded->title;
+        $groups[$doAdded->group_id] = $doAdded->frontend_title;
       }
     }
     $transaction = new CRM_Core_Transaction();
@@ -335,8 +334,6 @@ WHERE  email = %2
   public static function send_unsub_response($queue_id, $groups, $is_domain, $job) {
     $config = CRM_Core_Config::singleton();
     $domain = CRM_Core_BAO_Domain::getDomain();
-    $jobObject = new CRM_Mailing_BAO_MailingJob();
-    $jobTable = $jobObject->getTableName();
     $mailingObject = new CRM_Mailing_DAO_Mailing();
     $mailingTable = $mailingObject->getTableName();
     $contactsObject = new CRM_Contact_DAO_Contact();
@@ -351,9 +348,9 @@ WHERE  email = %2
 
     $dao = new CRM_Mailing_BAO_Mailing();
     $dao->query("   SELECT * FROM $mailingTable
-                        INNER JOIN $jobTable ON
-                            $jobTable.mailing_id = $mailingTable.id
-                        WHERE $jobTable.id = $job");
+                        INNER JOIN civicrm_mailing_event_queue queue ON
+                            queue.mailing_id = $mailingTable.id
+                        WHERE queue.id = $queue_id");
     $dao->fetch();
 
     $component = new CRM_Mailing_BAO_MailingComponent();
@@ -395,7 +392,7 @@ WHERE  email = %2
       }
     }
 
-    [$addresses, $urls] = CRM_Mailing_BAO_Mailing::getVerpAndUrls($job, $queue_id, $eq->hash, $eq->email);
+    [$addresses, $urls] = CRM_Mailing_BAO_Mailing::getVerpAndUrls($job, $queue_id, $eq->hash);
     $bao = new CRM_Mailing_BAO_Mailing();
     $bao->body_text = $text;
     $bao->body_html = $html;
@@ -462,7 +459,7 @@ WHERE  email = %2
   ) {
     $dao = new CRM_Core_DAO();
 
-    $unsub = self::$_tableName;
+    $unsub = self::getTableName();
     $queueObject = new CRM_Mailing_Event_BAO_MailingEventQueue();
     $queue = $queueObject->getTableName();
     $mailingObject = new CRM_Mailing_BAO_Mailing();
@@ -504,7 +501,7 @@ WHERE  email = %2
       return $dao->N;
     }
     else {
-      return $dao->unsubs ? $dao->unsubs : 0;
+      return $dao->unsubs ?: 0;
     }
   }
 
@@ -536,7 +533,7 @@ WHERE  email = %2
 
     $dao = new CRM_Core_DAO();
 
-    $unsub = self::$_tableName;
+    $unsub = self::getTableName();
     $queueObject = new CRM_Mailing_Event_BAO_MailingEventQueue();
     $queue = $queueObject->getTableName();
     $mailingObject = new CRM_Mailing_BAO_Mailing();

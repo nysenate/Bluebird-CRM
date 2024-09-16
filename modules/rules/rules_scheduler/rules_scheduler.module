@@ -68,7 +68,9 @@ function rules_scheduler_run_task(array $task) {
 function rules_scheduler_task_handler(array $task) {
   $class = !empty($task['handler']) ? $task['handler'] : 'RulesSchedulerDefaultTaskHandler';
   if (!class_exists($class)) {
-    throw new RulesEvaluationException('Missing task handler implementation %class.', array('%class' => $class), NULL, RulesLog::ERROR);
+    throw new RulesEvaluationException('Missing task handler implementation %class.', array(
+      '%class' => $class,
+    ), NULL, RulesLog::ERROR);
   }
   return new $class($task);
 }

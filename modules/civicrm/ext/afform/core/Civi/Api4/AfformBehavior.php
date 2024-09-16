@@ -8,6 +8,7 @@ namespace Civi\Api4;
  * Provided by the Afform: Core Runtime extension.
  *
  * @searchable secondary
+ * @since 5.56
  * @package Civi\Api4
  */
 class AfformBehavior extends Generic\AbstractEntity {
@@ -27,7 +28,7 @@ class AfformBehavior extends Generic\AbstractEntity {
   public static function permissions() {
     return [
       'meta' => ['access CiviCRM'],
-      'get' => [['administer CiviCRM', 'administer afform']],
+      'get' => ['administer afform'],
     ];
   }
 

@@ -80,6 +80,14 @@ trait CRM_Contact_Form_Task_EmailTrait {
    */
   protected $suppressedEmails = [];
 
+  public $_contactDetails = [];
+
+  public $_entityTagValues;
+
+  public $_caseId;
+
+  public $_context;
+
   /**
    * Getter for isSearchContext.
    *
@@ -393,7 +401,7 @@ trait CRM_Contact_Form_Task_EmailTrait {
       $cc,
       $bcc,
       $additionalDetails,
-      CRM_Utils_Array::value('campaign_id', $formValues),
+      $formValues['campaign_id'] ?? NULL,
       $this->getCaseID()
     );
     //NYSS 7362 store activityId so it's available to postProcess hook
@@ -849,7 +857,7 @@ trait CRM_Contact_Form_Task_EmailTrait {
       $details = "-ALTERNATIVE ITEM 0-\n{$html}{$additionalDetails}\n-ALTERNATIVE ITEM 1-\n{$text}{$additionalDetails}\n-ALTERNATIVE END-\n";
     }
     else {
-      $details = $html ? $html : $text;
+      $details = $html ?: $text;
       $details .= $additionalDetails;
     }
 
@@ -930,6 +938,7 @@ trait CRM_Contact_Form_Task_EmailTrait {
     // create the params array
     $mailParams = [
       'groupName' => 'Activity Email Sender',
+      'contactId' => $toID,
       'from' => $from,
       'toName' => $toDisplayName,
       'toEmail' => $toEmail,

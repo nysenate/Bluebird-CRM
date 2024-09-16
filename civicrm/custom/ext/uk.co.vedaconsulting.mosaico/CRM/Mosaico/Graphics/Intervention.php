@@ -11,7 +11,7 @@ use Intervention\Image\ImageManagerStatic as Image;
  */
 class CRM_Mosaico_Graphics_Intervention extends CRM_Mosaico_Graphics_Interface {
 
-  const FONT_PATH = 'packages/mosaico/dist/vendor/notoregular/NotoSans-Regular-webfont.ttf';
+  const FONT_PATH = 'packages/mosaico/dist/rs/notoregular/noto-sans-400-normal.ttf';
 
   /**
    * CRM_Mosaico_Graphics_Intervention constructor.

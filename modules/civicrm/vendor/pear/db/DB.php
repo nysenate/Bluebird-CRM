@@ -589,7 +589,7 @@ class DB
      *
      * @return string  the DB API version number
      */
-    function apiVersion()
+    public static function apiVersion()
     {
         return '@package_version@';
     }
@@ -779,7 +779,11 @@ class DB
         if (is_array($dsn)) {
             $dsn = array_merge($parsed, $dsn);
             if (!$dsn['dbsyntax']) {
-                $dsn['dbsyntax'] = $dsn['phptype'];
+                if($dsn['phptype'] == "sqlite3") {
+                    $dsn['dbsyntax'] = "sqlite";
+                } else {
+                    $dsn['dbsyntax'] = $dsn['phptype'];
+                }
             }
             return $dsn;
         }

@@ -15,8 +15,8 @@
     <author>JMA Consulting</author>
     <email>joe.murray@jmaconsulting.biz</email>
   </maintainer>
-  <releaseDate>2020-12-15</releaseDate>
-  <version>1.9</version>
+  <releaseDate>2023-06-28</releaseDate>
+  <version>2.0</version>
   <develStage>stable</develStage>
   <compatibility>
     <ver>5.9</ver>

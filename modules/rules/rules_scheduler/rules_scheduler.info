@@ -12,8 +12,8 @@ files[] = includes/rules_scheduler_views_filter.inc
 files[] = tests/rules_scheduler.test
 files[] = tests/rules_scheduler_test.inc
 
-; Information added by Drupal.org packaging script on 2021-12-02
-version = "7.x-2.13"
+; Information added by Drupal.org packaging script on 2023-08-02
+version = "7.x-2.14"
 core = "7.x"
 project = "rules"
-datestamp = "1638479566"
+datestamp = "1691009303"

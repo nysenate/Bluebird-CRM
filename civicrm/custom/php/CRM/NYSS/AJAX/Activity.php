@@ -72,17 +72,17 @@ class CRM_NYSS_AJAX_Activity
 
     $params = CRM_Core_Page_AJAX::defaultSortAndPagerParams();
     $params += CRM_Core_Page_AJAX::validateParams($requiredParameters, $optionalParameters);
-    //Civi::log()->debug('getDashletActivities', array('$params' => $params));
+    Civi::log()->debug(__METHOD__, ['$params' => $params]);
 
     // get the activities
     $activities = self::getContactActivitySelector($params);
-    //Civi::log()->debug('getDashletActivities', array('activities' => $activities));
+    //Civi::log()->debug(__METHOD__, ['activities' => $activities]);
 
     foreach ($activities['data'] as $key => $value) {
       // Check if recurring activity.
       if (!empty($value['is_recurring_activity'])) {
         $repeat = $value['is_recurring_activity'];
-        $activities['data'][$key]['activity_type'] .= '<br/><span class="bold">' . ts('Repeating (%1 of %2)', array(1 => $repeat[0], 2 => $repeat[1])) . '</span>';
+        $activities['data'][$key]['activity_type'] .= '<br/><span class="bold">' . ts('Repeating (%1 of %2)', [1 => $repeat[0], 2 => $repeat[1]]) . '</span>';
       }
     }
 
@@ -111,7 +111,7 @@ class CRM_NYSS_AJAX_Activity
       Civi::contactSettings()->set('activity_tab_filter', $activityFilter);
     }
     if (!empty($_GET['is_unit_test'])) {
-      return array($activities, $activityFilter);
+      return [$activities, $activityFilter];
     }
 
     CRM_Utils_JSON::output($activities);

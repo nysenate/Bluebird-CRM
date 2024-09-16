@@ -261,7 +261,8 @@ class uploader {
         // HOST APPLICATIONS INIT
         if (isset($_GET['CKEditorFuncNum'])) {
             $this->opener['name'] = "ckeditor";
-            $this->opener['CKEditor'] = array('funcNum' => $_GET['CKEditorFuncNum']);
+            $malicious = array("(", ")", ";", "=", "-", "*", "/", "+", "!", "@", "#", "%", "^", "&", "`", "'", "\"");
+            $this->opener['CKEditor'] = array('funcNum' => htmlentities(str_replace($malicious, '', $_GET['CKEditorFuncNum']), ENT_QUOTES, 'UTF-8'));
 
         } elseif (isset($_GET['opener'])) {
             $this->opener['name'] = $_GET['opener'];
@@ -553,6 +554,11 @@ class uploader {
             $exts = explode(" ", $exts);
             if (in_array($ext, $exts))
                 return false;
+        }
+
+        //Incoporate CiviCRM Safe File Extension.
+        if (!\CRM_Utils_File::isExtensionSafe($ext)) {
+            return FALSE;
         }
 
         $exts = trim($this->types[$type]);

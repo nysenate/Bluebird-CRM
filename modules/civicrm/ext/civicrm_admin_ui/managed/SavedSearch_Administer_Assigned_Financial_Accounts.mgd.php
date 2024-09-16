@@ -1,6 +1,11 @@
 <?php
 use CRM_CivicrmAdminUi_ExtensionUtil as E;
 
+// Temporary check can be removed when moving this file to the civi_contribute extension.
+if (!CRM_Core_Component::isEnabled('CiviContribute')) {
+  return [];
+}
+
 return [
   [
     'name' => 'SavedSearch_Administer_Assigned_Financial_Accounts',
@@ -46,6 +51,9 @@ return [
         'expires_date' => NULL,
         'description' => NULL,
       ],
+      'match' => [
+        'name',
+      ],
     ],
   ],
   [
@@ -61,7 +69,7 @@ return [
         'saved_search_id.name' => 'Administer_Assigned_Financial_Accounts',
         'type' => 'table',
         'settings' => [
-          'actions' => FALSE,
+          'actions' => TRUE,
           'limit' => 50,
           'classes' => [
             'table',
@@ -70,6 +78,7 @@ return [
           'pager' => [
             'show_count' => TRUE,
             'expose_limit' => TRUE,
+            'hide_single' => TRUE,
           ],
           'placeholder' => 5,
           'sort' => [],
@@ -138,7 +147,7 @@ return [
                   'text' => E::ts('Delete'),
                   'style' => 'danger',
                   'condition' => [
-                    'account_relationship:label',
+                    'account_relationship:name',
                     '!=',
                     'Accounts Receivable Account is',
                   ],
@@ -148,7 +157,8 @@ return [
                   'target' => 'crm-popup',
                 ],
               ],
-              'type' => 'buttons',
+              'type' => 'menu',
+              'icon' => 'fa-bars',
               'alignment' => 'text-right',
             ],
           ],
@@ -160,13 +170,22 @@ return [
               FALSE,
             ],
           ],
-          'addButton' => [
-            'path' => 'civicrm/admin/financial/financialType/accounts?action=add&reset=1&aid=[entity_id]',
-            'text' => E::ts('Add Assigned Account'),
-            'icon' => 'fa-plus',
+          'toolbar' => [
+            [
+              'entity' => 'EntityFinancialAccount',
+              'action' => 'add',
+              'target' => 'crm-popup',
+              'style' => 'primary',
+              'text' => E::ts('Add Assigned Account'),
+              'icon' => 'fa-plus',
+            ],
           ],
         ],
         'acl_bypass' => FALSE,
+      ],
+      'match' => [
+        'name',
+        'saved_search_id',
       ],
     ],
   ],
