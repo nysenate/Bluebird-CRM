@@ -23,31 +23,30 @@ DROP TABLE IF EXISTS `accumulator`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `accumulator` (
-  `id` int(10) unsigned NOT NULL COMMENT 'Unique ID, as noted from remote source',
-  `user_id` int(10) unsigned DEFAULT '0' COMMENT 'The user ID for whom this action was created.',
-  `user_is_verified` tinyint(4) NOT NULL DEFAULT '0' COMMENT 'If the user is verified or not',
-  `target_shortname` varchar(32) COLLATE utf8_unicode_ci DEFAULT '' COMMENT 'The target Senator’s shortname',
-  `target_district` int(10) unsigned DEFAULT NULL COMMENT 'The target Senator’s district',
-  `user_shortname` varchar(32) COLLATE utf8_unicode_ci DEFAULT '' COMMENT 'The user’s Senator’s shortname',
-  `user_district` int(10) unsigned DEFAULT NULL COMMENT 'The user’s district',
-  `msg_type` enum('BILL','ISSUE','COMMITTEE','DIRECTMSG','CONTEXTMSG','PETITION','ACCOUNT','PROFILE','MISC') COLLATE utf8_unicode_ci NOT NULL DEFAULT 'MISC' COMMENT 'The type of message being recorded',
-  `msg_action` varchar(32) COLLATE utf8_unicode_ci DEFAULT '' COMMENT 'The specific action of the message',
-  `msg_info` text COLLATE utf8_unicode_ci COMMENT 'JSON-formatted data specific to the type of message',
-  `created_at` int(10) unsigned DEFAULT '0' COMMENT 'When the message was recorded',
-  `email_address` varchar(254) COLLATE utf8_unicode_ci NOT NULL DEFAULT '',
-  `first_name` varchar(255) COLLATE utf8_unicode_ci DEFAULT NULL,
-  `last_name` varchar(255) COLLATE utf8_unicode_ci DEFAULT NULL,
-  `contact_me` tinyint(4) NOT NULL DEFAULT '0',
-  `address1` varchar(255) COLLATE utf8_unicode_ci NOT NULL DEFAULT '' COMMENT 'Street address, line 1.',
-  `address2` varchar(255) COLLATE utf8_unicode_ci NOT NULL DEFAULT '' COMMENT 'Street address, line 2.',
-  `city` varchar(255) COLLATE utf8_unicode_ci NOT NULL DEFAULT '' COMMENT 'City.',
-  `state` varchar(16) COLLATE utf8_unicode_ci NOT NULL DEFAULT '' COMMENT 'State / Province code.',
-  `zip` varchar(16) COLLATE utf8_unicode_ci NOT NULL DEFAULT '' COMMENT 'Postal / ZIP code.',
-  `dob` int(11) DEFAULT NULL,
-  `gender` varchar(255) COLLATE utf8_unicode_ci DEFAULT NULL,
-  `top_issue` varchar(255) COLLATE utf8_unicode_ci NOT NULL DEFAULT '' COMMENT 'Top Issue selection',
+  `id` int(10) unsigned NOT NULL COMMENT 'EventID from website accumulator',
+  `user_id` int(10) unsigned DEFAULT 0 COMMENT 'Website userID associated with this event',
+  `user_is_verified` tinyint(4) NOT NULL DEFAULT 0 COMMENT 'If the user is verified or not',
+  `user_district` int(10) unsigned DEFAULT NULL COMMENT 'Website user''s senate district',
+  `user_shortname` varchar(32) DEFAULT '' COMMENT 'Website user''s senator shortname',
+  `target_district` int(10) unsigned DEFAULT NULL COMMENT 'Event target''s senate district',
+  `target_shortname` varchar(32) DEFAULT '' COMMENT 'Event target''s senator shortname',
+  `event_type` enum('account', 'bill', 'committee', 'issue', 'poll', 'senator') NOT NULL COMMENT 'Type of event being recorded',
+  `event_action` enum('aye', 'nay', 'follow', 'unfollow', 'webform', 'created', 'edited', 'comment', 'message') NOT NULL COMMENT 'The specific action of the event',
+  `event_data` text COMMENT 'JSON-formatted data specific to the type of event',
+  `created_at` datetime DEFAULT NULL COMMENT 'Timestamp for when the event was recorded',
+  `email_address` varchar(200) NOT NULL DEFAULT '' COMMENT 'User''s email address',
+  `first_name` varchar(50) DEFAULT NULL COMMENT 'User''s first name',
+  `last_name` varchar(50) DEFAULT NULL COMMENT 'User''s last name',
+  `address1` varchar(200) NOT NULL DEFAULT '' COMMENT 'Street address, line 1',
+  `address2` varchar(200) NOT NULL DEFAULT '' COMMENT 'Street address, line 2',
+  `city` varchar(50) NOT NULL DEFAULT '' COMMENT 'City',
+  `state` varchar(16) NOT NULL DEFAULT '' COMMENT 'State / Province code',
+  `zip` varchar(16) NOT NULL DEFAULT '' COMMENT 'Postal / ZIP code',
+  `dob` date DEFAULT NULL COMMENT 'User''s date of birth',
+  `gender` varchar(16) DEFAULT NULL COMMENT 'User''s gender',
+  `top_issue` varchar(255) NOT NULL DEFAULT '' COMMENT 'Top Issue selection',
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci COMMENT='Objects that have been flagged.';
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='Objects that have been flagged.';
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -55,72 +54,16 @@ CREATE TABLE `accumulator` (
 --
 
 DROP TABLE IF EXISTS `archive`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `archive` (
-  `id` int(10) unsigned NOT NULL COMMENT 'Unique ID, as noted from remote source',
-  `user_id` int(10) unsigned DEFAULT '0' COMMENT 'The user ID for whom this action was created.',
-  `user_is_verified` tinyint(4) NOT NULL DEFAULT '0' COMMENT 'If the user is verified or not',
-  `target_shortname` varchar(32) COLLATE utf8_unicode_ci DEFAULT '' COMMENT 'The target Senator’s shortname',
-  `target_district` int(10) unsigned DEFAULT NULL COMMENT 'The target Senator’s district',
-  `user_shortname` varchar(32) COLLATE utf8_unicode_ci DEFAULT '' COMMENT 'The user’s Senator’s shortname',
-  `user_district` int(10) unsigned DEFAULT NULL COMMENT 'The user’s district',
-  `msg_type` enum('BILL','ISSUE','COMMITTEE','DIRECTMSG','CONTEXTMSG','PETITION','ACCOUNT','PROFILE','MISC') COLLATE utf8_unicode_ci NOT NULL DEFAULT 'MISC' COMMENT 'The type of message being recorded',
-  `msg_action` varchar(32) COLLATE utf8_unicode_ci DEFAULT '' COMMENT 'The specific action of the message',
-  `msg_info` text COLLATE utf8_unicode_ci COMMENT 'JSON-formatted data specific to the type of message',
-  `created_at` int(10) unsigned DEFAULT '0' COMMENT 'When the message was recorded',
-  `email_address` varchar(254) COLLATE utf8_unicode_ci NOT NULL DEFAULT '',
-  `first_name` varchar(255) COLLATE utf8_unicode_ci DEFAULT NULL,
-  `last_name` varchar(255) COLLATE utf8_unicode_ci DEFAULT NULL,
-  `contact_me` tinyint(4) NOT NULL DEFAULT '0',
-  `address1` varchar(255) COLLATE utf8_unicode_ci NOT NULL DEFAULT '' COMMENT 'Street address, line 1.',
-  `address2` varchar(255) COLLATE utf8_unicode_ci NOT NULL DEFAULT '' COMMENT 'Street address, line 2.',
-  `city` varchar(255) COLLATE utf8_unicode_ci NOT NULL DEFAULT '' COMMENT 'City.',
-  `state` varchar(16) COLLATE utf8_unicode_ci NOT NULL DEFAULT '' COMMENT 'State / Province code.',
-  `zip` varchar(16) COLLATE utf8_unicode_ci NOT NULL DEFAULT '' COMMENT 'Postal / ZIP code.',
-  `dob` int(11) DEFAULT NULL,
-  `gender` varchar(255) COLLATE utf8_unicode_ci DEFAULT NULL,
-  `top_issue` varchar(255) COLLATE utf8_unicode_ci NOT NULL DEFAULT '' COMMENT 'Top Issue selection',
-  `archive_date` datetime DEFAULT NULL COMMENT 'Date/time record was archived',
-  PRIMARY KEY (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
-/*!40101 SET character_set_client = @saved_cs_client */;
+CREATE TABLE `archive` AS SELECT * FROM accumulator;
+ALTER TABLE `archive`
+    ADD COLUMN `archive_date` DATETIME DEFAULT CURRENT_TIMESTAMP COMMENT 'Timestamp archived';
 
 --
 -- Table structure for table `archive_error`
 --
 
 DROP TABLE IF EXISTS `archive_error`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `archive_error` (
-  `id` int(10) unsigned NOT NULL COMMENT 'Unique ID, as noted from remote source',
-  `user_id` int(10) unsigned DEFAULT '0' COMMENT 'The user ID for whom this action was created.',
-  `user_is_verified` tinyint(4) NOT NULL DEFAULT '0' COMMENT 'If the user is verified or not',
-  `target_shortname` varchar(32) COLLATE utf8_unicode_ci DEFAULT '' COMMENT 'The target Senator’s shortname',
-  `target_district` int(10) unsigned DEFAULT NULL COMMENT 'The target Senator’s district',
-  `user_shortname` varchar(32) COLLATE utf8_unicode_ci DEFAULT '' COMMENT 'The user’s Senator’s shortname',
-  `user_district` int(10) unsigned DEFAULT NULL COMMENT 'The user’s district',
-  `msg_type` enum('BILL','ISSUE','COMMITTEE','DIRECTMSG','CONTEXTMSG','PETITION','ACCOUNT','PROFILE','MISC') COLLATE utf8_unicode_ci NOT NULL DEFAULT 'MISC' COMMENT 'The type of message being recorded',
-  `msg_action` varchar(32) COLLATE utf8_unicode_ci DEFAULT '' COMMENT 'The specific action of the message',
-  `msg_info` text COLLATE utf8_unicode_ci COMMENT 'JSON-formatted data specific to the type of message',
-  `created_at` int(10) unsigned DEFAULT '0' COMMENT 'When the message was recorded',
-  `email_address` varchar(254) COLLATE utf8_unicode_ci NOT NULL DEFAULT '',
-  `first_name` varchar(255) COLLATE utf8_unicode_ci DEFAULT NULL,
-  `last_name` varchar(255) COLLATE utf8_unicode_ci DEFAULT NULL,
-  `contact_me` tinyint(4) NOT NULL DEFAULT '0',
-  `address1` varchar(255) COLLATE utf8_unicode_ci NOT NULL DEFAULT '' COMMENT 'Street address, line 1.',
-  `address2` varchar(255) COLLATE utf8_unicode_ci NOT NULL DEFAULT '' COMMENT 'Street address, line 2.',
-  `city` varchar(255) COLLATE utf8_unicode_ci NOT NULL DEFAULT '' COMMENT 'City.',
-  `state` varchar(16) COLLATE utf8_unicode_ci NOT NULL DEFAULT '' COMMENT 'State / Province code.',
-  `zip` varchar(16) COLLATE utf8_unicode_ci NOT NULL DEFAULT '' COMMENT 'Postal / ZIP code.',
-  `dob` int(11) DEFAULT NULL,
-  `gender` varchar(255) COLLATE utf8_unicode_ci DEFAULT NULL,
-  `top_issue` varchar(255) COLLATE utf8_unicode_ci NOT NULL DEFAULT '' COMMENT 'Top Issue selection',
-  `archive_date` datetime DEFAULT NULL COMMENT 'Date/time record was archived',
-  PRIMARY KEY (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
-/*!40101 SET character_set_client = @saved_cs_client */;
+CREATE TABLE `archive_error` AS SELECT * FROM archive;
 
 --
 -- Table structure for table `archive_bill`
@@ -131,10 +74,11 @@ DROP TABLE IF EXISTS `archive_bill`;
 /*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `archive_bill` (
   `archive_id` int(10) unsigned NOT NULL,
-  `bill_number` varchar(255) COLLATE utf8_unicode_ci DEFAULT NULL,
-  `bill_year` varchar(255) COLLATE utf8_unicode_ci DEFAULT NULL,
+  `bill_number` varchar(32) DEFAULT NULL,
+  `bill_year` varchar(8) DEFAULT NULL,
+  `bill_sponsor` varchar(63) DEFAULT NULL,
   KEY `idx_archive_id` (`archive_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -146,23 +90,9 @@ DROP TABLE IF EXISTS `archive_committee`;
 /*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `archive_committee` (
   `archive_id` int(10) unsigned NOT NULL,
-  `committee_name` varchar(255) COLLATE utf8_unicode_ci DEFAULT NULL,
+  `committee_name` varchar(64) DEFAULT NULL,
   KEY `idx_archive_id` (`archive_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
-/*!40101 SET character_set_client = @saved_cs_client */;
-
---
--- Table structure for table `archive_contextmsg`
---
-
-DROP TABLE IF EXISTS `archive_contextmsg`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `archive_contextmsg` (
-  `archive_id` int(10) unsigned NOT NULL,
-  `bill_number` varchar(255) COLLATE utf8_unicode_ci DEFAULT NULL,
-  KEY `idx_archive_id` (`archive_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -174,37 +104,24 @@ DROP TABLE IF EXISTS `archive_issue`;
 /*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `archive_issue` (
   `archive_id` int(10) unsigned NOT NULL,
-  `issue_name` varchar(255) COLLATE utf8_unicode_ci DEFAULT NULL,
+  `issue_name` varchar(256) DEFAULT NULL,
   KEY `idx_archive_id` (`archive_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
--- Table structure for table `archive_petition`
+-- Table structure for table `archive_poll`
 --
 
-DROP TABLE IF EXISTS `archive_petition`;
+DROP TABLE IF EXISTS `archive_poll`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `archive_petition` (
+CREATE TABLE `archive_poll` (
   `archive_id` int(10) unsigned NOT NULL,
-  `petition_id` varchar(255) COLLATE utf8_unicode_ci DEFAULT NULL,
+  `form_id` varchar(256) DEFAULT NULL,
+  `petition_name` varchar(256) DEFAULT NULL,
   KEY `idx_archive_id` (`archive_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
-/*!40101 SET character_set_client = @saved_cs_client */;
-
---
--- Table structure for table `archive_survey`
---
-
-DROP TABLE IF EXISTS `archive_survey`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `archive_survey` (
-  `archive_id` int(10) unsigned NOT NULL,
-  `form_id` varchar(255) COLLATE utf8_unicode_ci DEFAULT NULL,
-  KEY `idx_archive_id` (`archive_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -215,10 +132,14 @@ DROP TABLE IF EXISTS `settings`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `settings` (
-  `option_name` varchar(50) COLLATE utf8_unicode_ci NOT NULL,
-  `option_value` varchar(255) COLLATE utf8_unicode_ci NOT NULL DEFAULT '',
+  `option_name` varchar(64) NOT NULL,
+  `option_value` varchar(256) DEFAULT '',
   PRIMARY KEY (`option_name`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+INSERT INTO settings VALUES ('last_update', NOW()), ('max_eventid', '0');
+
+
 /*!40101 SET character_set_client = @saved_cs_client */;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
 
