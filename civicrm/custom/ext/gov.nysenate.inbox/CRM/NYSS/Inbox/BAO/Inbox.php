@@ -1065,7 +1065,7 @@ class CRM_NYSS_Inbox_BAO_Inbox {
     $res = [];
 
     // Convert message body into tagless text.
-    $text = preg_replace('/<(p|br)[^>]*>|\r/', "\n", $msgBody);
+    $text = preg_replace('/<(div|p|br)[^>]*>|\r/', "\n", $msgBody);
     $text = strip_tags($text);
     $text = html_entity_decode($text, ENT_QUOTES | ENT_HTML401, 'ISO-8859-1');
 
