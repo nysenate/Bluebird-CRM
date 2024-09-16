@@ -23,7 +23,7 @@
             {$form.all_activity_type_exclude_filter_id.label}<br /> {$form.all_activity_type_exclude_filter_id.html|crmAddClass:medium}
           </td>
 
-          {include file="CRM/Core/DatePickerRangeWrapper.tpl" fieldName="all_activity_date" hideRelativeLabel=false}
+          {include file="CRM/Core/DatePickerRangeWrapper.tpl" fieldName="all_activity_date_time" hideRelativeLabel=false}
           <td class="crm-contact-form-block-activity_status_filter_id crm-inline-edit-field">
             <label>{ts}Status{/ts}</label><br /> {$form.status_id.html|crmAddClass:medium}
           </td>
@@ -56,11 +56,11 @@
             "url": {/literal}'{crmURL p="civicrm/ajax/allactivities" h=0 q="snippet=4&context=$context&cid=$contactId"}'{literal},
             "data": function (d) {
               var status_id = $('.crm-allactivity-selector-' + context + ' select#status_id').val() || [];
-              d.activity_type_id = $('.crm-allactivity-selector-' + context + ' select#activity_type_filter_id').val(),
-              d.activity_type_exclude_id = $('.crm-allactivity-selector-' + context + ' select#activity_type_exclude_filter_id').val(),
-              d.activity_date_relative = $('select#all_activity_date_relative').val(),
-              d.activity_date_low = $('#all_activity_date_low').val(),
-              d.activity_date_high = $('#all_activity_date_high').val(),
+              d.activity_type_id = $('.crm-allactivity-selector-' + context + ' select#all_activity_type_filter_id').val(),
+              d.activity_type_exclude_id = $('.crm-allactivity-selector-' + context + ' select#all_activity_type_exclude_filter_id').val(),
+              d.activity_date_time_relative = $('select#all_activity_date_time_relative').val(),
+              d.activity_date_time_low = $('#all_activity_date_time_low').val(),
+              d.activity_date_time_high = $('#all_activity_date_time_high').val(),
               d.activity_status_id = status_id.join(',')
             }
           }

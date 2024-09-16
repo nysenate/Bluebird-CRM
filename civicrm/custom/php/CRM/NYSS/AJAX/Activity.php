@@ -98,12 +98,16 @@ class CRM_NYSS_AJAX_Activity
           $formSearchField = 'activity_type_exclude_filter_id';
         }
         if (!empty($params[$searchField])) {
-          $activityFilter[$formSearchField] = CRM_Utils_Type::escape($params[$searchField], $dataType);
-          if (in_array($searchField, array('activity_date_low', 'activity_date_high'))) {
-            $activityFilter['activity_date_relative'] = 0;
+
+          $activityFilter[$formSearchField] = array_map(function ($p) use ($dataType) {
+            return CRM_Utils_Type::escape($p, $dataType);
+          }, (array)$params[$searchField]);
+          
+          if (in_array($searchField, array('activity_date_time_low', 'activity_date_time_high'))) {
+            $activityFilter['activity_date_time_relative'] = 0;
           }
           elseif ($searchField == 'activity_status_id') {
-            $activityFilter['status_id'] = explode(',', $activityFilter[$searchField]);
+            $activityFilter['status_id'] = $activityFilter[$searchField];
           }
         }
       }
