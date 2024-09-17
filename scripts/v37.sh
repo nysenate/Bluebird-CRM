@@ -39,6 +39,10 @@ $drush $instance updb -y -q
 echo "cleanup date fields..."
 $drush $instance cvapi nyss.cleandates dryrun=0 --quiet
 
+echo "uninstall tutorial extension..."
+$drush $instance cvapi extension.disable key=org.civicrm.tutorial --quiet
+$drush $instance cvapi extension.uninstall key=org.civicrm.tutorial --quiet
+
 ## modify activity table FK
 echo "modify activity table FK"
 sql="
@@ -47,12 +51,12 @@ sql="
 "
 $execSql -i $instance -c "$sql" -q
 
-echo "upgrade extensions..."
-$drush $instance cvapi extension.upgrade --quiet
-
 ## upgrade civicrm db
 echo "running civicrm db upgrade..."
 $drush $instance civicrm-upgrade-db -y -q
+
+echo "upgrade extensions..."
+$drush $instance cvapi extension.upgrade --quiet
 
 ## activity table cleanup
 echo "activity table cleanup"
