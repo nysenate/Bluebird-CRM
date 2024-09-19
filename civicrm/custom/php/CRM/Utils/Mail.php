@@ -410,51 +410,6 @@ class CRM_Utils_Mail {
     //NYSS allow content-transfer-encoding to be overwritten
     $headers = $msg->headers($headers, TRUE);
 
-    $to = [$params['toEmail']];
-    $mailer = \Civi::service('pear_mail');
-
-    // CRM-3795, CRM-7355, CRM-7557, CRM-9058, CRM-9887, CRM-12883, CRM-19173 and others ...
-    // The PEAR library requires different parameters based on the mailer used:
-    // * Mail_mail requires the Cc/Bcc recipients listed ONLY in the $headers variable
-    // * All other mailers require that all be recipients be listed in the $to array AND that
-    //   the Bcc must not be present in $header as otherwise it will be shown to all recipients
-    // ref: https://pear.php.net/bugs/bug.php?id=8047, full thread and answer [2011-04-19 20:48 UTC]
-    // TODO: Refactor this quirk-handler as another filter in FilteredPearMailer. But that would merit review of impact on universe.
-    $driver = ($mailer instanceof CRM_Utils_Mail_FilteredPearMailer) ? $mailer->getDriver() : NULL;
-    $isPhpMail = (get_class($mailer) === "Mail_mail" || $driver === 'mail');
-    if (!$isPhpMail) {
-      // get emails from headers, since these are
-      // combination of name and email addresses.
-      if (!empty($headers['Cc'])) {
-        $to[] = $headers['Cc'] ?? NULL;
-      }
-      if (!empty($headers['Bcc'])) {
-        $to[] = $headers['Bcc'] ?? NULL;
-        unset($headers['Bcc']);
-      }
-    }
-
-    if (is_object($mailer)) {
-      try {
-        $result = $mailer->send($to, $headers, $message);
-      }
-      catch (Exception $e) {
-        \Civi::log()->error('Mailing error: ' . $e->getMessage());
-        CRM_Core_Session::setStatus(ts('Unable to send email. Please report this message to the site administrator'), ts('Mailing Error'), 'error');
-        return FALSE;
-      }
-      if (is_a($result, 'PEAR_Error')) {
-        $message = self::errorMessage($mailer, $result);
-        // append error message in case multiple calls are being made to
-        // this method in the course of sending a batch of messages.
-        \Civi::log()->error('Mailing error: ' . $message);
-        CRM_Core_Session::setStatus(ts('Unable to send email. Please report this message to the site administrator'), ts('Mailing Error'), 'error');
-        return FALSE;
-      }
-      // CRM-10699
-      CRM_Utils_Hook::postEmailSend($params);
-    }
-
     return [$headers, $message];
   }
 
