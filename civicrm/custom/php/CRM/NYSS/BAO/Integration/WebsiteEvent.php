@@ -1,8 +1,6 @@
 <?php
 
 use Civi\API\Exception\UnauthorizedException;
-use CRM_Core_DAO;
-use InvalidArgumentException;
 use PhpParser\Node\Expr\Cast\Object_;
 
 abstract class CRM_NYSS_BAO_Integration_WebsiteEvent implements CRM_NYSS_BAO_Integration_WebsiteEventInterface {

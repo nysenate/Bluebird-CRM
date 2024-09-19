@@ -1,6 +1,5 @@
 <?php
 
-use InvalidArgumentException;
 use PhpParser\Node\Expr\Cast\Object_;
 
 class CRM_NYSS_BAO_Integration_WebsiteEventData {

@@ -1,7 +1,5 @@
 <?php
 
-use CRM_NYSS_BAO_Integration_WebsiteEvent_PollEvent;
-
 class CRM_NYSS_BAO_Integration_WebsiteEvent_PetitionEvent extends CRM_NYSS_BAO_Integration_WebsiteEvent_PollEvent implements CRM_NYSS_BAO_Integration_WebsiteEventInterface {
 
   use CRM_NYSS_BAO_Integration_WebsiteEvent_FollowableEvent;
