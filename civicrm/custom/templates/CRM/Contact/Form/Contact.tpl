@@ -175,6 +175,7 @@
   {literal}
 
   <script type="text/javascript" >
+
   CRM.$(function($) {
     var $form = $("form.{/literal}{$form.formClass}{literal}"),
       action = {/literal}{$action|string_format:"%d"}{literal},
@@ -442,7 +443,6 @@
       }
     }
     processDeceased();
-  </script>
 
     // Open an alert about possible duplicate contacts
     function openDupeAlert(data, iconType) {
