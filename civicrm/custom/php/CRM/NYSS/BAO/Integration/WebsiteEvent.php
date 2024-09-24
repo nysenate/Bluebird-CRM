@@ -1,8 +1,6 @@
 <?php
 
 use Civi\API\Exception\UnauthorizedException;
-use CRM_Core_DAO;
-use InvalidArgumentException;
 use PhpParser\Node\Expr\Cast\Object_;
 
 abstract class CRM_NYSS_BAO_Integration_WebsiteEvent implements CRM_NYSS_BAO_Integration_WebsiteEventInterface {
@@ -225,15 +223,18 @@ abstract class CRM_NYSS_BAO_Integration_WebsiteEvent implements CRM_NYSS_BAO_Int
    * @throws \CRM_Core_Exception
    */
   protected function createEntityTag(int $contact_id, int $tag_id): void {
-    $results = \Civi\Api4\EntityTag::create($this->getCiviPermissionCheck())
-      ->addValue('entity_table', 'civicrm_contact')
-      ->addValue('entity_id', $contact_id)
-      ->addValue('tag_id', $tag_id)
-      ->setCheckPermissions($this->getCiviPermissionCheck())
-      ->execute();
+    // only create if it doesn't already exist
+    if (! $this->hasEntityTag($contact_id,$tag_id)) {
+        $results = \Civi\Api4\EntityTag::create($this->getCiviPermissionCheck())
+            ->addValue('entity_table', 'civicrm_contact')
+            ->addValue('entity_id', $contact_id)
+            ->addValue('tag_id', $tag_id)
+            ->setCheckPermissions($this->getCiviPermissionCheck())
+            ->execute();
 
-    if ((count($results) < 1) || (isset($results[0]['error_code']))) {
-      throw new \CRM_Core_Exception('Failed to create tag with error: ' . $results[0]['error_message']);
+        if ((count($results) < 1) || (isset($results[0]['error_code']))) {
+            throw new \CRM_Core_Exception('Failed to create tag with error: ' . $results[0]['error_message']);
+        }
     }
   }
 
@@ -248,16 +249,18 @@ abstract class CRM_NYSS_BAO_Integration_WebsiteEvent implements CRM_NYSS_BAO_Int
    * @throws \Civi\API\Exception\UnauthorizedException
    */
   protected function deleteEntityTag(int $contact_id, int $tag_id): void {
-    $results = \Civi\Api4\EntityTag::delete($this->getCiviPermissionCheck())
-      ->addWhere('entity_table', '=', 'civicrm_contact')
-      ->addWhere('entity_id', '=', $contact_id)
-      ->addWhere('tag_id', '=', $tag_id)
-      ->setCheckPermissions($this->getCiviPermissionCheck())
-      ->execute();
+      if ($this->hasEntityTag($contact_id,$tag_id)) {
+          $results = \Civi\Api4\EntityTag::delete($this->getCiviPermissionCheck())
+              ->addWhere('entity_table', '=', 'civicrm_contact')
+              ->addWhere('entity_id', '=', $contact_id)
+              ->addWhere('tag_id', '=', $tag_id)
+              ->setCheckPermissions($this->getCiviPermissionCheck())
+              ->execute();
 
-    if (count($results) < 1) {
-      throw new \CRM_Core_Exception('Failed to delete entity tag');
-    }
+          if (count($results) < 1) {
+              throw new \CRM_Core_Exception('Failed to delete entity tag');
+          }
+      }
   }
 
   public function getEventInfo(): object {

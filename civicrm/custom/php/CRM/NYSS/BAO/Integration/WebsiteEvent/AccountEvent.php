@@ -1,12 +1,5 @@
 <?php
 
-use CRM_Core_Exception;
-use CRM_NYSS_BAO_Integration_Website;
-use CRM_NYSS_BAO_Integration_WebsiteEventData;
-use Exception;
-use InvalidArgumentException;
-use stdClass;
-
 class CRM_NYSS_BAO_Integration_WebsiteEvent_AccountEvent extends \CRM_NYSS_BAO_Integration_WebsiteEvent implements \CRM_NYSS_BAO_Integration_WebsiteEventInterface {
 
   const ACTIVITY_TYPE = 'Account';

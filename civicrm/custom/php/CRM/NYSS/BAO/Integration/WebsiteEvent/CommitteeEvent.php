@@ -1,10 +1,6 @@
 <?php
 
 use Civi\API\Exception\UnauthorizedException;
-use CRM_Core_Exception;
-use CRM_NYSS_BAO_Integration_WebsiteEvent;
-use CRM_NYSS_BAO_Integration_WebsiteEventInteface;
-use InvalidArgumentException;
 
 class CRM_NYSS_BAO_Integration_WebsiteEvent_CommitteeEvent extends CRM_NYSS_BAO_Integration_WebsiteEvent implements CRM_NYSS_BAO_Integration_WebsiteEventInterface {
 

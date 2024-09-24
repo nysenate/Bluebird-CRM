@@ -775,7 +775,7 @@ class CRM_NYSS_BAO_Integration_Website
     $actParams = [
       'subject' => $params->form_title,
       'date' => date('Y-m-d H:i:s'),
-      'activity_type_id' => CRM_Core_OptionGroup::getValue('activity_type', 'Website Survey', 'name'),
+      'activity_type_id' => CRM_Core_PseudoConstant::getKey('CRM_Activity_BAO_Activity', 'activity_type_id', 'Website Survey'),
       'details' => (!empty($params->detail)) ? $params->detail : '',
       'target_contact_id' => $contactId,
       'source_contact_id' => civicrm_api3('uf_match', 'getvalue', [
@@ -971,7 +971,7 @@ class CRM_NYSS_BAO_Integration_Website
         'title' => "Survey: {$formTitle} [{$data->form_id}]",
         'table_name' => "civicrm_value_surveydata_{$data->form_id}",
         'extends' => ['0' => 'Activity'],
-        'extends_entity_column_value' => CRM_Core_OptionGroup::getValue('activity_type', 'Website Survey', 'name'),
+        'extends_entity_column_value' => CRM_Core_PseudoConstant::getKey('CRM_Activity_BAO_Activity', 'activity_type_id', 'Website Survey'),
         'collapse_display' => 1,
         'collapse_adv_display' => 1,
         'style' => 'Inline',
