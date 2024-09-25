@@ -34,7 +34,10 @@ class CRM_NYSS_BAO_Integration_WebsiteEvent_BillEvent extends CRM_NYSS_BAO_Integ
 
     // If no sponsor, then query Open Leg and try to get a value for it.
     if (empty($this->getBillSponsor())) {
-      $this->setBillSponsor(CRM_NYSS_BAO_Integration_OpenLegislation::getBillSponsor($this->getBillNum() . '-' . $this->getBillYear()));
+        $sponsor = CRM_NYSS_BAO_Integration_OpenLegislation::getBillSponsor($this->getBillNum() . '-' . $this->getBillYear());
+        if (!empty($sponsor)) {
+            $this->setBillSponsor($sponsor);
+        }
     }
 
     // Archive Table Name
@@ -181,7 +184,7 @@ class CRM_NYSS_BAO_Integration_WebsiteEvent_BillEvent extends CRM_NYSS_BAO_Integ
   }
 
   private function setBillSponsor(string $sponsor): static {
-    $this->getEventInfo()->setEventInfoAttribute('sponsors', $sponsor);
+    $this->getEventData()->setEventInfoAttribute('sponsors', $sponsor);
     return $this;
   }
 
