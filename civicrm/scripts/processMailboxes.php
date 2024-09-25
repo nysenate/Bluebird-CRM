@@ -83,12 +83,14 @@ require_once 'script_utils.php';
 $stdusage = civicrm_script_usage();
 $usage = "[--imap-user|-u username]  [--imap-pass|-s password]  [--cmd|-c <poll|list|delarchive>]  [--log-level|-l LEVEL]  [--host|-h imap_host]  [--port|-p imap_port]  [--imap-flags|-f imap_flags]  [--mailbox|-m name]  [--archivebox|-a name]  [--valid-senders|-v EMAILS]  [--deny-unauthorized|-x]  [--default-activity-status|-d <Completed|Scheduled|Cancelled>]  [--no-archive|-A]  [--no-auto-create|-C]  [--no-email|-E]  [--recheck-unmatched|-r]";
 $shortopts = "u:s:c:l:h:p:f:m:a:v:xd:ACEr";
-$longopts = array("imap-user=", "imap-pass=", "cmd=", "log-level=",
-                  "host=", "port=", "imap-flags=", "mailbox=", "archivebox=",
-                  "valid-senders=", "deny-unauthorized",
-                  "default-activity-status=",
-                  "no-archive", "no-auto-create", "no-email",
-                  "recheck-unmatched");
+$longopts = [
+  "imap-user=", "imap-pass=", "cmd=", "log-level=",
+  "host=", "port=", "imap-flags=", "mailbox=", "archivebox=",
+  "valid-senders=", "deny-unauthorized",
+  "default-activity-status=",
+  "no-archive", "no-auto-create", "no-email",
+  "recheck-unmatched"
+];
 
 $optlist = civicrm_script_init($shortopts, $longopts);
 
@@ -96,6 +98,8 @@ if ($optlist === null) {
   error_log("Usage: $prog  $stdusage  $usage\n");
   exit(1);
 }
+
+drupal_script_init();
 
 if (!empty($optlist['log-level'])) {
   set_bbscript_log_level($optlist['log-level']);
@@ -227,13 +231,13 @@ $imap_params['uploadDir'] = $uploadDir;
 $imap_params['uploadInbox'] = $uploadInbox;
 $imap_params['authForwarders'] = $authForwarders;
 
-bbscript_log(LL::DEBUG, "imap_params before processing mailboxes:", $imap_params);
+bbscript_log(LL::DEBUG, "imap_params before processing mailbox:", $imap_params);
 
-//we now support multiple mailbox processing, provided as a comma-separated list in the config file
-$mailboxes = explode(',', $imap_params['mailbox']);
-foreach ($mailboxes as $mailbox) {
-  //reset mailbox param to preserve downstream handling
-  $imap_params['mailbox'] = trim($mailbox);
+//we now support multiple users processing, provided as a comma-separated list in the config file
+$users = explode(',', $imap_params['user']);
+foreach ($users as $user) {
+  //reset user param to preserve downstream handling
+  $imap_params['user'] = trim($user);
   $rc = processMailboxCommand($cmd, $imap_params);
   if (!$rc) {
     bbscript_log(LL::ERROR, "Failed to process IMAP account {$imap_params['user']}@{$imap_params['host']}");
