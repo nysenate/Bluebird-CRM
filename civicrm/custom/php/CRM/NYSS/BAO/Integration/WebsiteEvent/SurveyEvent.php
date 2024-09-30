@@ -106,7 +106,7 @@ class CRM_NYSS_BAO_Integration_WebsiteEvent_SurveyEvent extends CRM_NYSS_BAO_Int
     // Scalar values and arrays of scalar values are treated as single fields
     if (is_scalar($value) or is_null($value)) {
       // It's a "simple value" field. Just add the field
-      $fields[] = $this->getFieldDef($field_label, $value);
+      $fields[] = $this->getFieldDef($field_label, $value ?? '');
       return; // don't recurse
     } else if (is_array($value)) {
       if (array_reduce($value, fn($c, $v) => $c && (is_scalar($v) || is_null($v)),
