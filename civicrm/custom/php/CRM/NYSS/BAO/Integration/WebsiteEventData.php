@@ -228,8 +228,8 @@ class CRM_NYSS_BAO_Integration_WebsiteEventData {
     return $this->event_info;
   }
 
-  protected function setEventInfoAttribute($name, $value): static {
-    $this->event_info[$name] = $value;
+  public function setEventInfoAttribute($name, $value): static {
+    $this->event_info->$name = $value;
     return $this;
   }
 

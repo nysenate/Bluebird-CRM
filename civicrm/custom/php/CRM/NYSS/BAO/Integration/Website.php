@@ -259,6 +259,9 @@ class CRM_NYSS_BAO_Integration_Website
 
   //TODO when a user moves to a different district, need to reset web_user_id
 
+    /**
+     * @deprecated Use CRM_NYSS_BAO_Integration_WebsiteEvent_IssueEvent
+     */
   static function processIssue($contactId, $action, $params)
   {
     //find out if tag exists
@@ -313,7 +316,9 @@ class CRM_NYSS_BAO_Integration_Website
     return $et;
   } //processIssue()
 
-
+    /**
+     * @deprecated Use CRM_NYSS_BAO_Integration_WebsiteEvent_CommitteeEvent
+     */
   static function processCommittee($contactId, $action, $params)
   {
     //find out if tag exists
@@ -368,7 +373,9 @@ class CRM_NYSS_BAO_Integration_Website
     return $et;
   } //processCommittee()
 
-
+  /**
+   * @deprecated Use CRM_NYSS_BAO_Integration_WebsiteEvent_BillEvent instead
+   */
   static function processBill($contactId, $action, $params) {
     //CRM_Core_Error::debug_var('processBill $params', $params, true, true, 'integration');
 
@@ -460,7 +467,9 @@ class CRM_NYSS_BAO_Integration_Website
     return $et;
   } //processBill()
 
-
+  /**
+   * @deprecated use CRM_NYSS_BAO_Integration_WebsiteEvent_PetitionEvent
+   */
   static function processPetition($contactId, $action, $params) {
     //find out if tag exists
     $parentId = CRM_Core_DAO::singleValueQuery("
