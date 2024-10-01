@@ -1173,6 +1173,11 @@ class CRM_Core_SelectValues {
         'key' => 'job_title',
         'label' => ts('Job Title'),
       ],
+      //NYSS 14379
+      [
+        'key' => 'case_id',
+        'label' => ts('Case ID'),
+      ],
     ];
     $customGroups = CRM_Core_BAO_CustomGroup::getAll(['extends' => 'Contact', 'is_active' => TRUE], CRM_Core_Permission::VIEW);
     foreach ($customGroups as $group) {
@@ -1197,35 +1202,7 @@ class CRM_Core_SelectValues {
    * @throws \CRM_Core_Exception
    */
   public static function quicksearchOptions() {
-    $includeEmail = civicrm_api3('setting', 'getvalue', ['name' => 'includeEmailInName', 'group' => 'Search Preferences']);
-    $options = [
-      'sort_name' => $includeEmail ? ts('Name/Email') : ts('Name'),
-      'contact_id' => ts('Contact ID'),
-      'external_identifier' => ts('External ID'),
-      'first_name' => ts('First Name'),
-      'last_name' => ts('Last Name'),
-      'email' => ts('Email'),
-      'phone_numeric' => ts('Phone'),
-      'street_address' => ts('Street Address'),
-      'city' => ts('City'),
-      'postal_code' => ts('Postal Code'),
-      'job_title' => ts('Job Title'),
-      //NYSS 14379
-      'case_id' => ts('Case ID'),
-    ];
-    $custom = civicrm_api3('CustomField', 'get', [
-      'return' => ['name', 'label', 'custom_group_id.title'],
-      'custom_group_id.extends' => ['IN' => array_merge(['Contact'], CRM_Contact_BAO_ContactType::basicTypes())],
-      'data_type' => ['NOT IN' => ['ContactReference', 'Date', 'File']],
-      'custom_group_id.is_active' => 1,
-      'is_active' => 1,
-      'is_searchable' => 1,
-      'options' => ['sort' => ['custom_group_id.weight', 'weight'], 'limit' => 0],
-    ]);
-    foreach ($custom['values'] as $field) {
-      $options['custom_' . $field['name']] = $field['custom_group_id.title'] . ': ' . $field['label'];
-    }
-    return $options;
+    return array_column(self::getQuicksearchOptions(), 'label', 'key');
   }
 
   /**
