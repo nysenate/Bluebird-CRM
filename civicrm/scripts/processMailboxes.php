@@ -83,12 +83,14 @@ require_once 'script_utils.php';
 $stdusage = civicrm_script_usage();
 $usage = "[--imap-user|-u username]  [--imap-pass|-s password]  [--cmd|-c <poll|list|delarchive>]  [--log-level|-l LEVEL]  [--host|-h imap_host]  [--port|-p imap_port]  [--imap-flags|-f imap_flags]  [--mailbox|-m name]  [--archivebox|-a name]  [--valid-senders|-v EMAILS]  [--deny-unauthorized|-x]  [--default-activity-status|-d <Completed|Scheduled|Cancelled>]  [--no-archive|-A]  [--no-auto-create|-C]  [--no-email|-E]  [--recheck-unmatched|-r]";
 $shortopts = "u:s:c:l:h:p:f:m:a:v:xd:ACEr";
-$longopts = array("imap-user=", "imap-pass=", "cmd=", "log-level=",
-                  "host=", "port=", "imap-flags=", "mailbox=", "archivebox=",
-                  "valid-senders=", "deny-unauthorized",
-                  "default-activity-status=",
-                  "no-archive", "no-auto-create", "no-email",
-                  "recheck-unmatched");
+$longopts = [
+  "imap-user=", "imap-pass=", "cmd=", "log-level=",
+  "host=", "port=", "imap-flags=", "mailbox=", "archivebox=",
+  "valid-senders=", "deny-unauthorized",
+  "default-activity-status=",
+  "no-archive", "no-auto-create", "no-email",
+  "recheck-unmatched"
+];
 
 $optlist = civicrm_script_init($shortopts, $longopts);
 
@@ -96,6 +98,8 @@ if ($optlist === null) {
   error_log("Usage: $prog  $stdusage  $usage\n");
   exit(1);
 }
+
+drupal_script_init();
 
 if (!empty($optlist['log-level'])) {
   set_bbscript_log_level($optlist['log-level']);
