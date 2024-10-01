@@ -266,6 +266,20 @@ class CRM_Integration_Process {
           $this->archiveSuccess($web_event, $row, 'Record Successfully Processed');
         }
       }
+      catch (CRM_NYSS_BAO_Integration_TagNotFoundException $e) {
+        // Don't Archive. Leave it and try again next run. This is likely a temporary error.
+        bbscript_log(LL::ERROR, "A TagNotFoundException occurred while processing event.");
+        bbscript_log(LL::DEBUG, $e->getMessage());
+        bbscript_log(LL::TRACE, $e->getTraceAsString());
+        $stats['error'][] = [
+          'is_error' => 1,
+          'error_message' => 'Unable to process event',
+          'params' => $web_event->getEventInfo(),
+        ];
+
+        CRM_NYSS_Errorhandler_BAO::notifySlack('Tag Not Found Exception:' . var_export($row, true));
+        CRM_NYSS_Errorhandler_BAO::notifyEmail('Tag Not Found Exception:' . var_export($row, true), 'Tag Not Found Exception');
+      }
       catch (Exception $e) {
         bbscript_log(LL::ERROR, "An unexpected error occurred while processing event.");
         bbscript_log(LL::DEBUG, $e->getMessage());

@@ -27,11 +27,17 @@ trait CRM_NYSS_BAO_Integration_WebsiteEvent_FollowableEvent {
     // if we don't already have the base tag info, then we likely need to create it.
     // findTag() will do the creation with the 3rd parameter set to true.
     if (empty($this->getTag())) {
-      $this->findTag($this->getTagName(), $this->getParentTagId(), TRUE);
+      $tag = $this->findTag($this->getTagName(), $this->getParentTagId(), TRUE);
+      $this->setTag($tag);
     }
 
     // associate the tag to the entity (the contact) through an Entity Tag
-    $this->createEntityTag($contact_id, $this->getTag()['id']);
+    if (! empty($this->getTag())) {
+      $this->createEntityTag($contact_id, $this->getTag()['id']);
+    } else {
+      throw new CRM_NYSS_BAO_Integration_TagNotFoundException($this->getTagName(), $this->getParentTagId());
+    }
+
     return $this;
   }
 
@@ -47,10 +53,17 @@ trait CRM_NYSS_BAO_Integration_WebsiteEvent_FollowableEvent {
     if (empty($this->getTag())) {
       // if we don't already have the base tag info, then we likely need to create it.
       // findTag() will do the creation with the 3rd parameter set to true.
-      $this->findTag($this->getTagName(), $this->getParentTagId(), TRUE);
+      $tag = $this->findTag($this->getTagName(), $this->getParentTagId(), TRUE);
+      $this->setTag($tag);
     }
     // disassociate the tag from the entity (the contact) by removing the Entity Tag
-    $this->deleteEntityTag($contact_id, $this->getTag()['id']);
+    // associate the tag to the entity (the contact) through an Entity Tag
+    if (! empty($this->getTag())) {
+      $this->deleteEntityTag($contact_id, $this->getTag()['id']);
+    } else {
+      throw new CRM_NYSS_BAO_Integration_TagNotFoundException($this->getTagName(), $this->getParentTagId());
+    }
+
     return $this;
   }
 
