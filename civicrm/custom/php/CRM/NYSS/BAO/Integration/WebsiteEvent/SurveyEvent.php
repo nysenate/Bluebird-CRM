@@ -88,7 +88,6 @@ class CRM_NYSS_BAO_Integration_WebsiteEvent_SurveyEvent extends CRM_NYSS_BAO_Int
       $used_labels[] = $field_label = self::ensureUnique($fv->field,$used_labels);
       $this->inspectField($fv->value,$fields, $field_label);
     }
-    print_r($fields);
     return $fields;
   }
 
@@ -153,8 +152,18 @@ class CRM_NYSS_BAO_Integration_WebsiteEvent_SurveyEvent extends CRM_NYSS_BAO_Int
   protected function getFieldDef(string $label, string $value) : object {
     return (object) [
       "field" => $label,
-      "value" => substr($value, 0, 255)
+      "value" => $this->cleanValue($value)
     ];
+  }
+
+  protected function cleanValue(string $string): string {
+    // keep newlines
+    $string = str_replace(array("<p>", "</p>", "<br>", "<br/>"), "\n", $string);
+    // remove HTML (probably unnecessary, but also, civicrm will convert to character
+    // entities, which makes the string longer than expected e.g. "<" becomes
+    // &lt; (4 characters)
+    $string = strip_tags($string);
+    return substr($string, 0, 255);
   }
 
   function getParentTagName(): string {
