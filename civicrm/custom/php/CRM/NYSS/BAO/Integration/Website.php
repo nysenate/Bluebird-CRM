@@ -1013,6 +1013,7 @@ class CRM_NYSS_BAO_Integration_Website
     }
 
     $fields = [];
+    $field_names = [];
     $weight = 0;
     $fieldCreated = false;
     foreach ($data->form_values as $k => $f) {
@@ -1029,11 +1030,20 @@ class CRM_NYSS_BAO_Integration_Website
         $label = substr($label, 0, 1010);
         $label = "{$label} ({$k})";
       }
+
+      //make sure name is unique
+      $field_name = substr(trim($f->field), 0, 64);
+      if (array_key_exists($field_name, $field_names)) {
+        $field_name = substr($field_name, 0, 60);
+        $field_name = "{$field_name} ({$k})";
+      }
+
       //CRM_Core_Error::debug_var('buildSurvey $label', $label, TRUE, TRUE, 'integration');
 
       $params = [
         'custom_group_id' => $csID,
         'label' => $label,
+        'name' => $field_name,
         'data_type' => 'String',
         'html_type' => 'Text',
         'is_searchable' => 1,
@@ -1047,7 +1057,7 @@ class CRM_NYSS_BAO_Integration_Website
         $cf = civicrm_api3('custom_field', 'create', $params);
 
         $fields[$f->field] = "custom_{$cf['id']}";
-
+        $field_names[] = $field_name;
         $fieldCreated = TRUE;
       }
       catch (CiviCRM_API3_Exception $e) {
