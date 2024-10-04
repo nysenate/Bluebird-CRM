@@ -126,18 +126,19 @@ class CRM_NYSS_BAO_Integration_WebsiteEvent_SurveyEvent extends CRM_NYSS_BAO_Int
   /**
    * @param string $str
    * @param array $existing
+   * @param int $max_length
    * Takes the given string ($str) and makes sure that it is unique among
    * ($existing) strings. If not unique, appends a number to make it unique.
    * @return string
    */
-  protected static function ensureUnique(string $str, array $existing) : string {
+  public static function ensureUnique(string $str, array $existing, int $max_length = 1020) : string {
     $cnt = 1;
     // This probably belongs somewhere else, or the function should be renamed
     // because it does more than just "ensure uniqueness"
-    $str = preg_replace('/[^a-zA-Z0-9]+/', '_', $str);
+    $str = preg_replace('/[^a-zA-Z0-9]+/', '_', substr($str,0,$max_length));
     while (in_array($str,$existing)) {
-      // database field is limited to 1020
-      $str = substr($str,0,1016) . "_" . $cnt++;
+      $suffix = "_" . $cnt++;
+      $str = substr($str,0,$max_length - strlen($suffix)) . $suffix;
     }
     return $str;
   }

@@ -1000,7 +1000,8 @@ class CRM_NYSS_BAO_Integration_Website
     }
 
     //get existing fields for this custom data set
-    $existingFieldsList = [];
+    $existingFieldLabels = [];
+    $existingFieldNames = [];
     $existingFields = civicrm_api3('custom_field', 'get', [
       'custom_group_id' => $csID,
       'options' => ['limit' => 0]
@@ -1009,17 +1010,17 @@ class CRM_NYSS_BAO_Integration_Website
     //CRM_Core_Error::debug_var('$data->form_values', $data->form_values);
 
     foreach ($existingFields['values'] as $ef) {
-      $existingFieldsList[$ef['id']] = $ef['label'];
+      $existingFieldLabels[$ef['id']] = $ef['label'];
+      $existingFieldNames[] = $ef['name'];
     }
 
     $fields = [];
-    $field_names = [];
     $weight = 0;
     $fieldCreated = false;
     foreach ($data->form_values as $k => $f) {
       //check to see if field has already been created; if so, set to fields and skip
-      if (in_array(trim($f->field), $existingFieldsList)) {
-        $efKey = array_search($f->field, $existingFieldsList);
+      if (in_array(trim($f->field), $existingFieldLabels)) {
+        $efKey = array_search($f->field, $existingFieldLabels);
         $fields[$f->field] = "custom_{$efKey}";
         continue;
       }
@@ -1031,12 +1032,9 @@ class CRM_NYSS_BAO_Integration_Website
         $label = "{$label} ({$k})";
       }
 
-      //make sure name is unique
-      $field_name = substr(trim($f->field), 0, 64);
-      if (array_key_exists($field_name, $field_names)) {
-        $field_name = substr($field_name, 0, 60);
-        $field_name = "{$field_name} ({$k})";
-      }
+      //make sure name is unique -- name is different than label and also
+      // needs to be unique
+      $field_name = CRM_NYSS_BAO_Integration_WebsiteEvent_SurveyEvent::ensureUnique($f->field, $existingFieldNames,64);
 
       //CRM_Core_Error::debug_var('buildSurvey $label', $label, TRUE, TRUE, 'integration');
 
@@ -1057,7 +1055,7 @@ class CRM_NYSS_BAO_Integration_Website
         $cf = civicrm_api3('custom_field', 'create', $params);
 
         $fields[$f->field] = "custom_{$cf['id']}";
-        $field_names[] = $field_name;
+        $existingFieldNames[] = $field_name;
         $fieldCreated = TRUE;
       }
       catch (CiviCRM_API3_Exception $e) {
