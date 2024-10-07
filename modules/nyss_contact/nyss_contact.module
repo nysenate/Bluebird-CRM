@@ -5,41 +5,6 @@ function nyss_contact_civicrm_buildForm($formName, &$form) {
   //CRM_Core_Error::debug_var('form',$form);
   //CRM_Core_Error::debug_var('$formName',$formName);
 
-  //contact form edits
-  if ($formName == 'CRM_Contact_Form_Contact') {
-    //3527 add js action to deceased field
-    if (isset($form->_elementIndex['is_deceased'])) {
-      $deceased =& $form->getElement('is_deceased');
-      $js = "showDeceasedDate();processDeceased();";
-      $deceased->_attributes['onclick'] = $js;
-    } //end deceased
-
-    //3530 tweak js to place cursor at end of http in website field (IE8)
-    if (isset($form->_elementIndex['website[1][url]'])) {
-      $website =& $form->getElement('website[1][url]');
-      $js = "if(!this.value) {
-        this.value='http://';
-        if (this.createTextRange) {
-          var FieldRange = this.createTextRange();
-          FieldRange.moveStart('character', this.value.length);
-          FieldRange.collapse();
-          FieldRange.select();
-        }
-      } else { return false; }";
-      $website->_attributes['onfocus'] = $js;
-    }
-
-    //NYSS 4407 remove bulk email from privacy list as it is a separate element
-    if (isset($form->_elementIndex['privacy'])) {
-      $privacy =& $form->getElement('privacy');
-      foreach ($privacy->_elements as $key=>$option) {
-        if ($option->_attributes['name'] == 'is_opt_out') {
-          unset($privacy->_elements[$key]);
-        }
-      }
-    }
-  }
-
   //NYSS 11383 sort activity types
   if (in_array($formName, array(
     'CRM_Activity_Form_Search',

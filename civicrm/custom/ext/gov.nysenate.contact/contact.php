@@ -145,11 +145,45 @@ function contact_civicrm_buildForm($formName, &$form) {
 
   //13832
   if ($formName == 'CRM_Contact_Form_Contact') {
+    CRM_Core_Resources::singleton()->addScriptFile(E::LONG_NAME, 'js/DemographicsForm.js');
+
     if ($form->_action == CRM_Core_Action::ADD) {
       Civi::resources()->addScript("CRM.$('.address-custom-cell').remove();");
     }
     else {
       CRM_Core_Resources::singleton()->addScriptFile(E::LONG_NAME, 'js/DistrictInformation.js');
+    }
+
+    //3527 add js action to deceased field
+    if (isset($form->_elementIndex['is_deceased'])) {
+      $deceased =& $form->getElement('is_deceased');
+      $js = "showDeceasedDate();processDeceased();";
+      $deceased->_attributes['onclick'] = $js;
+    }
+
+    //3530 tweak js to place cursor at end of http in website field (IE8)
+    if (isset($form->_elementIndex['website[1][url]'])) {
+      $website =& $form->getElement('website[1][url]');
+      $js = "if(!this.value) {
+        this.value='http://';
+        if (this.createTextRange) {
+          var FieldRange = this.createTextRange();
+          FieldRange.moveStart('character', this.value.length);
+          FieldRange.collapse();
+          FieldRange.select();
+        }
+      } else { return false; }";
+      $website->_attributes['onfocus'] = $js;
+    }
+
+    //NYSS 4407 remove bulk email from privacy list as it is a separate element
+    if (isset($form->_elementIndex['privacy'])) {
+      $privacy =& $form->getElement('privacy');
+      foreach ($privacy->_elements as $key=>$option) {
+        if ($option->_attributes['name'] == 'is_opt_out') {
+          unset($privacy->_elements[$key]);
+        }
+      }
     }
   }
 
@@ -158,6 +192,10 @@ function contact_civicrm_buildForm($formName, &$form) {
     //set personal pronoun custom field for use in tpl
     $cfId = CRM_Core_BAO_CustomField::getCustomFieldID('preferred_pronouns', 'Additional_Constituent_Information', FALSE);
     $form->assign('cf_preferred_pronoun_id', $cfId);
+  }
+
+  if (in_array($formName, ['CRM_Contact_Form_Edit_Demographics', 'CRM_Contact_Form_Inline_Demographics'])) {
+    CRM_Core_Resources::singleton()->addScriptFile(E::LONG_NAME, 'js/DemographicsForm.js');
   }
 
   //15495
