@@ -356,7 +356,8 @@
     // Check for matches on input when action == ADD
     if (action === 1) {
       $ruleElements.on('change', function () {
-        if ($(this).is('input[type=text]') && $(this).val().length < 3) {
+        //NYSS 16668
+        if (($(this).is('input[type=text]') || $(this).is('input[type=email]')) && $(this).val().length < 3) {
           return;
         }
         checkMatches().done(function (data) {
