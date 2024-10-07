@@ -135,3 +135,9 @@ div.crm-address-block div.crm-summary-row a {
   background-color: #7EA5AF !important;
   min-width: 350px !important;
 }
+
+/*16676*/
+.matching-contacts-actions a {
+  color: #dddddd;
+}
+
