@@ -140,4 +140,6 @@ div.crm-address-block div.crm-summary-row a {
 .matching-contacts-actions a {
   color: #dddddd;
 }
-
+#crm-notification-container div.ui-notify-message-style {
+  background: rgba(0,0,0,0.95) !important;
+}
