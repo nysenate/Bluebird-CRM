@@ -497,6 +497,11 @@ function mail_civicrm_links($op, $objectName, $objectId, &$links, &$mask, &$valu
       if ($link['name'] == 'Public View') {
         unset($links[$key]);
       }
+      // 16659 "Continue" should be prioritized over "Copy"
+      // for unscheduled mass emails
+      if ($op == 'view.mailing.browse.unscheduled' && $link['name'] == 'Continue') {
+        $links[$key]['weight'] = "-50";
+      }
     }
   }
 
