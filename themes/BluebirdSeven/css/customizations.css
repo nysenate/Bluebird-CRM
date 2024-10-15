@@ -134,6 +134,9 @@ input#schedule-test-email {
 a#send-test {
   vertical-align: top !important;
 }
+#bootstrap-theme .crm-mosaico-template-item.thumbnail {
+  display: block;
+}
 
 /*********** BELOW SHOULD BE TEMPORARY! *************/
 
