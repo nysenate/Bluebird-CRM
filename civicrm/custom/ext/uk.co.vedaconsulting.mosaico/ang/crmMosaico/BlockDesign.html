@@ -12,7 +12,8 @@
         <input class="form-control crm-mosaico-template-category" ng-model="mosaicoCtrl.selectedCategory" ng-change="mosaicoCtrl.categoryFilter = mosaicoCtrl.categoryFilters[mosaicoCtrl.selectedCategory].filter" crm-ui-select="{data: mosaicoCtrl.categoryFilters, placeholder: ts('All Categories')}">
       </div>
       <div ng-repeat="template in mosaicoCtrl.templates | filter:mosaicoCtrl.categoryFilter" class="mosaico-templates-list">
-        <div class="col-xs-6 col-md-4"
+        <!--NYSS change col settings-->
+        <div class="col-xs-4 col-md-2"
              crm-mosaico-template-item="{state:'select', title: (template.base ? template.title : template.type), subtitle: template.category, img: template.thumbnail}"
              on-item-click="mosaicoCtrl.select(template)">
         </div>
