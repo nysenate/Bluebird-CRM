@@ -115,6 +115,19 @@ input[type=color] {
 #bootstrap-theme .crm_wizard__body .form-group div[crm-mailing-block-recipients] .select2-container-multi {
   width: 300px !important;
 }
+
+/* loosely related to 16695 */
+#bootstrap-theme .crm_wizard__body textarea[name="approval_note"] {
+  min-width: 30%;
+  height: 10em;
+}
+/* loosely related to 16695 */
+#bootstrap-theme .crm_wizard__body div[ng-form="approveForm"] .label {
+  text-align: left;
+  padding-left: 0;
+}
+
+
 input#schedule-test-email {
   width: auto !important;
 }
