@@ -21,35 +21,15 @@
   <div class="form-group">
     <label for="inputFrom" ng-class="checkPerm('create mailings') ? 'control-label' : 'control-label required-mark'">{{ts('From')}}
       <a crm-ui-help="hs({id: 'from_email', title: ts('From')})"></a></label>
-    <div ng-controller="EmailAddrCtrl" crm-mailing-from-address="fromPlaceholder" crm-mailing="mailing">
-      <select
-          id="inputFrom"
-          class="form-control"
-          crm-ui-select="{dropdownAutoWidth : true, allowClear: false}"
-          name="fromAddress"
-          ng-model="fromPlaceholder.label"
-          required>
-        <option ng-repeat="frm in crmFromAddresses.getAll() | filter:{is_active:1} | orderBy:'weight'"
-                value="{{frm.label}}">{{frm.label}}
-        </option>
-      </select>
+    <div>
+      <crm-mosaico-from-list crm-mailing="mailing" />
     </div>
   </div>
 
   <div class="form-group" ng-show="crmMailingConst.enableReplyTo">
     <label for="inputReplyTo" class="control-label">{{ts('Reply-To')}}</label>
-    <div ng-controller="EmailAddrCtrl">
-      <select
-          id="inputReplyTo"
-          class="form-control"
-          crm-ui-select="{dropdownAutoWidth : true, allowClear: true, placeholder: ts('Email address')}"
-          name="replyTo"
-          ng-change="checkReplyToChange(mailing)"
-          ng-model="mailing.replyto_email"
-      >
-        <option value=""></option>
-        <option ng-repeat="frm in crmFromAddresses.getAll() | filter:{is_active:1} | orderBy:'weight'" value="{{frm.label}}">{{frm.label}}</option>
-      </select>
+    <div>
+      <crm-mosaico-reply-to-list crm-mailing="mailing" />
     </div>
   </div>
 
@@ -58,20 +38,35 @@
     <div crm-mailing-block-recipients="{name: 'recipients', id: 'subform.recipients'}" crm-mailing="mailing"></div>
   </div>
 
+  <!--NYSS restore single subject option (no A/B)-->
   <div class="form-group">
     <label for="inputSubject" ng-class="checkPerm('create mailings') ? 'control-label' : 'control-label required-mark'">{{ts('Subject')}}</label>
     <div>
-      <crm-mosaico-subject-list crm-mailing="mailing" />
+      <div style="float: right;" class="token-holder">
+        <input class="form-control" crm-mailing-token on-select="$broadcast('insert:subject', token.name)" tabindex="-1"/>
     </div>
+      <input
+        id="inputSubject"
+        crm-ui-insert-rx="insert:subject"
+        name="subject"
+        type="text"
+        class="form-control"
+        placeholder="{{ts('Subject')}}"
+        ng-model="mailing.subject"
+        ng-required="!checkPerm('create mailings')"
+      />
+  </div>
   </div>
 
-  <div class="form-group" ng-if="isMailingSplit(mailing, 'subject')">
-    <em>({{ts('Define two options for the subject. We will use A/B testing to determine which is better.')}})</em>
+  <div class="form-group" ng-if="mailing.template_options.variants">
+    <label class="control-label">{{ts('Distribution')}}</label>
+    <crm-mosaico-distribution crm-mailing="mailing" />
   </div>
 
   <span ng-controller="EditUnsubGroupCtrl">
     <div class="form-group" ng-if="isUnsubGroupRequired(mailing)">
-      <label for="inputUnsubscribeGroup" class="control-label required-mark">{{ts('Unsubscribe Group')}}</label>
+      <!-- NYSS -->
+      <label for="inputUnsubscribeGroup" ng-class="checkPerm('create mailings') ? 'control-label' : 'control-label required-mark'">{{ts('Unsubscribe Group')}}</label>
       <input
         crm-entityref="{entity: 'Group', api: {params: {is_hidden: 0, is_active: 1}}, select: {allowClear:true, minimumInputLength: 0}}"
         class="form-control"

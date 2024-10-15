@@ -1184,7 +1184,7 @@ function _mail_alterMailingWizard(phpQueryObject $doc) {
   $extDir = CRM_Core_Resources::singleton()->getPath('gov.nysenate.mail');
   $html = file_get_contents($extDir.'/html/workflow.html');
   $doc->find('div[ng-form=crmMailingSubform]')->html($html);
-} // _mail_alterMailingWizard()
+}
 
 
 /**

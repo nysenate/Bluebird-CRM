@@ -108,6 +108,20 @@ input[type=color] {
   z-index: 100000 !important;
 }
 
+/*mosaico*/
+#bootstrap-theme .crm_wizard__body .form-group, #bootstrap-theme .crm_wizard__body .form-group-lg {
+  max-width: 650px !important;
+}
+#bootstrap-theme .crm_wizard__body .form-group div[crm-mailing-block-recipients] .select2-container-multi {
+  width: 300px !important;
+}
+input#schedule-test-email {
+  width: auto !important;
+}
+a#send-test {
+  vertical-align: top !important;
+}
+
 /*********** BELOW SHOULD BE TEMPORARY! *************/
 
 /*remove old icons (should be unnecessary in future release of shoreditch...)*/

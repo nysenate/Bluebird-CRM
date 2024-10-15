@@ -163,7 +163,7 @@ class CRM_Mosaico_AbDemux {
       'mailing_id_b' => $b['id'],
       'mailing_id_c' => $c['id'],
       'testing_criteria' => 'full_email',
-      'group_percentage' => CRM_Utils_Array::value('variantsPct', $a['template_options'], self::DEFAULT_AB_PERCENTAGE),
+      'group_percentage' => $a['template_options']['variantsPct'] ?? self::DEFAULT_AB_PERCENTAGE,
       'winner_criteria' => 'open',
       'declare_winning_time' => self::DEFAULT_WINNING_TIME,
     ]);
@@ -216,7 +216,7 @@ class CRM_Mosaico_AbDemux {
    *   An API entry function which works like "civicrm_api3()`
    */
   protected function makeApi3($apiRequest) {
-    $check = ['check_permissions' => CRM_Utils_Array::value('check_permissions', $apiRequest['params'], FALSE)];
+    $check = ['check_permissions' => $apiRequest['params']['check_permissions'] ?? FALSE];
     $api3 = function ($entity, $action, $params) use ($check) {
       return civicrm_api3($entity, $action, $params + $check);
     };

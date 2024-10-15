@@ -81,6 +81,9 @@ class CRM_Mosaico_Page_Editor extends CRM_Core_Page {
         'browser_spellcheck' => TRUE,
       ],
       'tinymceConfigFull' => [
+        'external_plugins' => [
+          'civicrmtoken' => $res->getUrl('uk.co.vedaconsulting.mosaico', 'js/tinymce-plugins/civicrmtoken/plugin.js', 1),
+        ],
         'plugins' => ['link hr paste lists textcolor code civicrmtoken'],
         'toolbar1' => 'bold italic forecolor backcolor hr bullist styleselect removeformat | civicrmtoken | link unlink | pastetext code',
       ],

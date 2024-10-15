@@ -13,7 +13,7 @@ return [
       'values' => [
         'label' => E::ts('New Mailing (Traditional)'),
         'name' => 'traditional_mailing',
-        'url' => CRM_Utils_System::url('civicrm/a/', NULL, TRUE, '/mailing/new/traditional'),
+        'url' => 'civicrm/a#/mailing/new/traditional',
         'icon' => '',
         'permission' => [
           'access CiviMail',
@@ -65,7 +65,7 @@ return [
       'values' => [
         'label' => E::ts('Mosaico Settings'),
         'name' => 'mosaico_settings',
-        'url' => CRM_Utils_System::url('civicrm/admin/setting/mosaico', 'reset=1', TRUE),
+        'url' => 'civicrm/admin/setting/mosaico',
         'icon' => '',
         'permission' => [
           'administer CiviCRM',

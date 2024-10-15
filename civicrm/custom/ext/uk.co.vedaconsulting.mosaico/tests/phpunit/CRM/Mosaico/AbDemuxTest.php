@@ -65,6 +65,12 @@ class CRM_Mosaico_AbDemuxTest extends CRM_Mosaico_TestCase implements \Civi\Test
       ['subject' => 'New Subject A', 'body_html' => 'New Html A'],
       ['subject' => 'New Subject B', 'body_html' => 'New Html B'],
     ];
+    $cases[] = [
+      ['from_email' => 'albert@example.org', 'from_name' => 'Albert Albertson', 'subject' => 'Subject A'],
+      ['from_email' => 'albert@example.org', 'from_name' => 'Barb Barbagelata', 'subject' => 'Subject B'],
+      ['from_email' => 'albert@example.org', 'from_name' => 'Albert Albertson', 'subject' => 'Subject A'],
+      ['from_email' => 'albert@example.org', 'from_name' => 'Barb Barbagelata', 'subject' => 'Subject B'],
+    ];
 
     return $cases;
   }

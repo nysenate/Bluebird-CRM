@@ -2,7 +2,7 @@
   "name": "civipkg/uk.co.vedaconsulting.mosaico",
   "require": {
     "intervention/image": "^2.4",
-    "civicrm/composer-downloads-plugin": "^3.0"
+    "civicrm/composer-downloads-plugin": "^3.0 || ^4.0"
   },
   "replace": {
     "guzzlehttp/guzzle": "^6.5 || ^7.0",
@@ -16,7 +16,7 @@
   "extra": {
     "downloads": {
       "mosaico": {
-        "version": "v0.18.10-civicrm-2.0",
+        "version": "v0.18.10-civicrm-3.0",
         "path": "packages/mosaico",
         "url": "https://github.com/civicrm/mosaico/releases/download/{$version}/mosaico-dist.tar.gz"
       }

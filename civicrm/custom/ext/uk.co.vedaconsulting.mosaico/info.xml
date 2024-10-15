@@ -15,8 +15,8 @@
     <url desc="Support">https://github.com/veda-consulting-company/uk.co.vedaconsulting.mosaico/issues</url>
     <url desc="Licensing">http://www.gnu.org/licenses/agpl-3.0.html</url>
   </urls>
-  <releaseDate>2024-03-01</releaseDate>
-  <version>3.5.1709296836</version>
+  <releaseDate>2024-09-06</releaseDate>
+  <version>3.6.1725615009</version>
   <develStage>stable</develStage>
   <compatibility>
     <ver>5.65</ver>

@@ -1,9 +1,9 @@
 <?php return array(
     'root' => array(
         'name' => 'civipkg/uk.co.vedaconsulting.mosaico',
-        'pretty_version' => '3.5',
-        'version' => '3.5.0.0',
-        'reference' => 'b31e62eb369c922eded15ca388559ff3f289e9ca',
+        'pretty_version' => '3.6',
+        'version' => '3.6.0.0',
+        'reference' => '1e898907a4539d5db2bf99e9cb9d000ec3b15af6',
         'type' => 'library',
         'install_path' => __DIR__ . '/../../',
         'aliases' => array(),
@@ -20,9 +20,9 @@
             'dev_requirement' => false,
         ),
         'civipkg/uk.co.vedaconsulting.mosaico' => array(
-            'pretty_version' => '3.5',
-            'version' => '3.5.0.0',
-            'reference' => 'b31e62eb369c922eded15ca388559ff3f289e9ca',
+            'pretty_version' => '3.6',
+            'version' => '3.6.0.0',
+            'reference' => '1e898907a4539d5db2bf99e9cb9d000ec3b15af6',
             'type' => 'library',
             'install_path' => __DIR__ . '/../../',
             'aliases' => array(),
