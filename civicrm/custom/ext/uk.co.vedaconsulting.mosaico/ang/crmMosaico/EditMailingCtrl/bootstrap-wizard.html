@@ -8,7 +8,6 @@
 
       <!-- NYSS -->
       <div crmb-wizard-step crm-title="ts('Design')" ng-if="checkPerm('create mailings') || checkPerm('access CiviMail')" ng-form="designForm">
-
         <div ng-if="!isMailingSplit(mailing, 'body_html')">
           <div crm-mosaico-block-design crm-mailing="mailing" crm-mailing-variant="null" crm-mailing-attachments="attachments" on-save="save()"></div>
 
@@ -60,7 +59,8 @@
 
       <!-- NYSS -->
       <div crmb-wizard-step crm-title="ts('Approve')" ng-if="checkPerm('approve mailings') || checkPerm('access CiviMail')" ng-form="approveForm">
-        <div crm-mosaico-block-approve crm-mailing="mailing"></div>
+        <!-- NYSS 16695-->
+        <div crm-mailing-block-approve crm-mailing="mailing"></div>
       </div>
 
       <button class="btn btn-secondary-outline" crmb-wizard-button-position="left" ng-click="crmbWizardCtrl.previous()" ng-show="!crmbWizardCtrl.$first()">
@@ -86,12 +86,12 @@
 
       <!--NYSS 13568/14760-->
       <button ng-if="(!checkPerm('approve mailings') && !checkPerm('access CiviMail') && !checkPerm('create mailings')) || checkPerm('schedule mailings')" class="btn btn-primary" crmb-wizard-button-position="right" ng-show="crmbWizardCtrl.$last()" ng-disabled="block.check() || !crmbWizardCtrl.$validStep()" ng-click="submit()">
-        <span class="btn-icon"><i class="fa fa-send"></i></span>
+      <span class="btn-icon"><i class="fa fa-send"></i></span>
       {{checkPerm('schedule mailings') ? ts('Schedule Mailing') : ts('Submit Mailing')}}
     </button>
 
      <button ng-if="checkPerm('approve mailings') || checkPerm('access CiviMail')" class="btn btn-primary" crmb-wizard-button-position="right" ng-show="crmbWizardCtrl.$last()" ng-disabled="block.check() || !crmbWizardCtrl.$validStep()" ng-click="approve('Approved')">
-     <span class="btn-icon"><i class="fa fa-send"></i></span>
+        <span class="btn-icon"><i class="fa fa-send"></i></span>
      {{ts('Approve and Submit Mailing')}}
       </button>
 

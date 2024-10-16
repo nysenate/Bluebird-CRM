@@ -273,7 +273,8 @@ $prefs['includeEmailInName'] = get_config_value($bbcfg, 'search.include_email_in
 // includeNickNameInName
 // includeAlphabeticalPager
 $prefs['smartGroupCacheTimeout'] = 10;
-$prefs['defaultSearchProfileID'] = 11;
+//NYSS 16679 - no longer needed but leaving in place for reference
+//$prefs['defaultSearchProfileID'] = 11;
 $prefs['searchPrimaryDetailsOnly'] = false;
 $prefs['quicksearch_options'] = ['sort_name', 'first_name', 'last_name', 'email_primary.email', 'phone_primary.phone_numeric', 'address_primary.street_address', 'address_primary.city', 'address_primary.postal_code', 'case_id'];
 

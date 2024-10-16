@@ -497,6 +497,11 @@ function mail_civicrm_links($op, $objectName, $objectId, &$links, &$mask, &$valu
       if ($link['name'] == 'Public View') {
         unset($links[$key]);
       }
+      // 16659 "Continue" should be prioritized over "Copy"
+      // for unscheduled mass emails
+      if ($op == 'view.mailing.browse.unscheduled' && $link['name'] == 'Continue') {
+        $links[$key]['weight'] = "-50";
+      }
     }
   }
 
@@ -1184,7 +1189,7 @@ function _mail_alterMailingWizard(phpQueryObject $doc) {
   $extDir = CRM_Core_Resources::singleton()->getPath('gov.nysenate.mail');
   $html = file_get_contents($extDir.'/html/workflow.html');
   $doc->find('div[ng-form=crmMailingSubform]')->html($html);
-} // _mail_alterMailingWizard()
+}
 
 
 /**
