@@ -783,7 +783,8 @@ class CRM_NYSS_BAO_Integration_Website
     //build array for activity
     $actParams = [
       'subject' => $params->form_title,
-      'date' => date('Y-m-d H:i:s'),
+      // activity date should be based on time of website event
+      'activity_date_time' => (isset($params->created_at) && $params->created_at instanceof DateTime) ? $params->created_at->format('Y-m-d H:i:s') : date('Y-m-d H:i:s'),
       'activity_type_id' => CRM_Core_PseudoConstant::getKey('CRM_Activity_BAO_Activity', 'activity_type_id', 'Website Survey'),
       'details' => (!empty($params->detail)) ? $params->detail : '',
       'target_contact_id' => $contactId,

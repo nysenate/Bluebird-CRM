@@ -51,6 +51,7 @@ class CRM_NYSS_BAO_Integration_WebsiteEvent_SurveyEvent extends CRM_NYSS_BAO_Int
     $params->form_values = $this->getFormFields();
     $params->form_title = $this->getFormTitle();
     $params->detail = $this->getEventDetails();
+    $params->created_at = $this->getEventData()->getCreatedAtAsDateTime();
 
     $result = CRM_NYSS_BAO_Integration_Website::processSurvey($contact_id, $this->getEventAction(), $params);
     if ($result['is_error'] == 1) {
