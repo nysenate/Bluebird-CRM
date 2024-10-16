@@ -157,8 +157,8 @@ function mail_civicrm_pageRun(&$page) {
 
     $bbconfig = get_bluebird_instance_config();
 
-    //14402 //16661 force suppression of attachments; leaving code in place in case we want to re-enable
-    if (TRUE /*empty($bbconfig['email.allow_attachments'])*/) {
+    //14402
+    if (empty($bbconfig['email.allow_attachments'])) {
       Civi::resources()->addStyle('
         li[aria-controls=tab-attachments] { display: none; }
 
