@@ -59,7 +59,8 @@
 
       <!-- NYSS -->
       <div crmb-wizard-step crm-title="ts('Approve')" ng-if="checkPerm('approve mailings') || checkPerm('access CiviMail')" ng-form="approveForm">
-        <div crm-mosaico-block-approve crm-mailing="mailing"></div>
+        <!-- NYSS 16695-->
+        <div crm-mailing-block-approve crm-mailing="mailing"></div>
       </div>
 
       <button class="btn btn-secondary-outline" crmb-wizard-button-position="left" ng-click="crmbWizardCtrl.previous()" ng-show="!crmbWizardCtrl.$first()">
