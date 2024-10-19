@@ -165,6 +165,32 @@ class CRM_NYSS_Contact_Upgrader extends CRM_NYSS_Contact_Upgrader_Base {
     return TRUE;
   }
 
+  public function upgrade_1400(): bool {
+    $this->ctx->log->info('Contact extension update 1400: v3.7 upgrade');
+
+    //correct bad data
+    CRM_Core_DAO::executeQuery("
+      UPDATE civicrm_activity
+      SET activity_date_time = NULL
+      WHERE activity_date_time LIKE '0000-00-00 00:00:00'
+    ");
+
+    //set entity_id default NULL (should have happened during an earlier release...)
+    CRM_Core_DAO::executeQuery("
+      ALTER TABLE `civicrm_managed`
+          CHANGE `entity_id` `entity_id` INT(10) UNSIGNED NULL DEFAULT NULL
+          COMMENT 'Soft foreign key to the referenced item.';
+    ");
+
+    //remove note_used_for option values that have since been migrated to activities
+    \Civi\Api4\OptionValue::delete(FALSE)
+      ->addWhere('option_group_id:name', '=', 'note_used_for')
+      ->addWhere('value', 'IN', ['nyss_directmsg', 'nyss_contextmsg'])
+      ->execute();
+
+    return TRUE;
+  }
+
   /**
    * Example: Run an external SQL script.
    *

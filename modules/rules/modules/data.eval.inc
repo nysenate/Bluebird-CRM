@@ -19,7 +19,10 @@ function rules_action_data_set($wrapper, $value, $settings, $state, $element) {
       $wrapper->set($value);
     }
     catch (EntityMetadataWrapperException $e) {
-      throw new RulesEvaluationException('Unable to modify data "@selector": ' . $e->getMessage(), array('@selector' => $settings['data:select']));
+      throw new RulesEvaluationException('Unable to modify data "@selector": @message', array(
+        '@selector' => $settings['data:select'],
+        '@message' => $e->getMessage(),
+      ));
     }
     // Save changes if a property of a variable has been changed.
     if (strpos($element->settings['data:select'], ':') !== FALSE) {
@@ -302,11 +305,16 @@ function rules_action_data_create($args, $element) {
       return array('data_created' => $data);
     }
     catch (EntityMetadataWrapperException $e) {
-      throw new RulesEvaluationException('Unable to create @data": ' . $e->getMessage(), array('@data' => $type), $element);
+      throw new RulesEvaluationException('Unable to create @data: @message', array(
+        '@data' => $type,
+        '@message' => $e->getMessage(),
+      ), $element);
     }
   }
   else {
-    throw new RulesEvaluationException('Unable to create @data, no creation callback found.', array('@data' => $type), $element, RulesLog::ERROR);
+    throw new RulesEvaluationException('Unable to create @data, no creation callback found.', array(
+      '@data' => $type,
+    ), $element, RulesLog::ERROR);
   }
 }
 

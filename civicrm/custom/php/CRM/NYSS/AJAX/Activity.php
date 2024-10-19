@@ -72,17 +72,17 @@ class CRM_NYSS_AJAX_Activity
 
     $params = CRM_Core_Page_AJAX::defaultSortAndPagerParams();
     $params += CRM_Core_Page_AJAX::validateParams($requiredParameters, $optionalParameters);
-    //Civi::log()->debug('getDashletActivities', array('$params' => $params));
+    Civi::log()->debug(__METHOD__, ['$params' => $params]);
 
     // get the activities
     $activities = self::getContactActivitySelector($params);
-    //Civi::log()->debug('getDashletActivities', array('activities' => $activities));
+    //Civi::log()->debug(__METHOD__, ['activities' => $activities]);
 
     foreach ($activities['data'] as $key => $value) {
       // Check if recurring activity.
       if (!empty($value['is_recurring_activity'])) {
         $repeat = $value['is_recurring_activity'];
-        $activities['data'][$key]['activity_type'] .= '<br/><span class="bold">' . ts('Repeating (%1 of %2)', array(1 => $repeat[0], 2 => $repeat[1])) . '</span>';
+        $activities['data'][$key]['activity_type'] .= '<br/><span class="bold">' . ts('Repeating (%1 of %2)', [1 => $repeat[0], 2 => $repeat[1]]) . '</span>';
       }
     }
 
@@ -98,12 +98,16 @@ class CRM_NYSS_AJAX_Activity
           $formSearchField = 'activity_type_exclude_filter_id';
         }
         if (!empty($params[$searchField])) {
-          $activityFilter[$formSearchField] = CRM_Utils_Type::escape($params[$searchField], $dataType);
-          if (in_array($searchField, array('activity_date_low', 'activity_date_high'))) {
-            $activityFilter['activity_date_relative'] = 0;
+
+          $activityFilter[$formSearchField] = array_map(function ($p) use ($dataType) {
+            return CRM_Utils_Type::escape($p, $dataType);
+          }, (array)$params[$searchField]);
+          
+          if (in_array($searchField, array('activity_date_time_low', 'activity_date_time_high'))) {
+            $activityFilter['activity_date_time_relative'] = 0;
           }
           elseif ($searchField == 'activity_status_id') {
-            $activityFilter['status_id'] = explode(',', $activityFilter[$searchField]);
+            $activityFilter['status_id'] = $activityFilter[$searchField];
           }
         }
       }
@@ -111,7 +115,7 @@ class CRM_NYSS_AJAX_Activity
       Civi::contactSettings()->set('activity_tab_filter', $activityFilter);
     }
     if (!empty($_GET['is_unit_test'])) {
-      return array($activities, $activityFilter);
+      return [$activities, $activityFilter];
     }
 
     CRM_Utils_JSON::output($activities);

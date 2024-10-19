@@ -1,6 +1,6 @@
 name = CiviCRM Contact Reference Field
 description = Makes a CiviCRM Contact Reference Field.
-version = 7.x-5.57.1
+version = 7.x-5.75.1
 core = 7.x
 package = CiviCRM
 project = civicrm

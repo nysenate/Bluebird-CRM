@@ -1,20 +1,21 @@
 <div class="mosaico-templates-wrapper">
   <div class="row">
-    <span ng-model="body_html_defined" crm-ui-validate="!!mailing.body_html"></span>
+    <span ng-model="body_html_defined" crm-ui-validate="mosaicoCtrl.hasMarkup()"></span>
     <div class="col-xs-4 col-md-4 crm-mosaico-selected center-block"
-         crm-mosaico-template-item="{state:'selected', title: ts('My Design'), subtitle: mosaicoCtrl.getTemplate(mailing).type, img: mosaicoCtrl.getTemplate(mailing).thumbnail}"
-         on-item-click="mosaicoCtrl.edit(mailing)"
-         on-item-reset="mosaicoCtrl.reset(mailing)"
-         ng-show="!!mailing.template_options.mosaicoTemplate">
+         crm-mosaico-template-item="{state:'selected', title: ts('My Design'), subtitle: mosaicoCtrl.getTemplate().type, img: mosaicoCtrl.getTemplate().thumbnail}"
+         on-item-click="mosaicoCtrl.edit()"
+         on-item-reset="mosaicoCtrl.reset()"
+         ng-show="mosaicoCtrl.hasSelection()">
     </div>
-    <div ng-if="!mailing.template_options.mosaicoTemplate && mosaicoCtrl.templates.length">
+    <div ng-if="!mosaicoCtrl.hasSelection() && mosaicoCtrl.templates.length">
       <div class="form-inline">
         <input class="form-control crm-mosaico-template-category" ng-model="mosaicoCtrl.selectedCategory" ng-change="mosaicoCtrl.categoryFilter = mosaicoCtrl.categoryFilters[mosaicoCtrl.selectedCategory].filter" crm-ui-select="{data: mosaicoCtrl.categoryFilters, placeholder: ts('All Categories')}">
       </div>
-      <div ng-repeat="template in mosaicoCtrl.templates | filter:mosaicoCtrl.categoryFilter">
-        <div class="col-xs-4 col-md-3"
+      <div ng-repeat="template in mosaicoCtrl.templates | filter:mosaicoCtrl.categoryFilter" class="mosaico-templates-list">
+        <!--NYSS change col settings-->
+        <div class="col-xs-4 col-md-2"
              crm-mosaico-template-item="{state:'select', title: (template.base ? template.title : template.type), subtitle: template.category, img: template.thumbnail}"
-             on-item-click="mosaicoCtrl.select(mailing, template)">
+             on-item-click="mosaicoCtrl.select(template)">
         </div>
       </div>
     </div>

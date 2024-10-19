@@ -285,6 +285,7 @@ class CRM_Iats_Form_Report_Recur extends CRM_Report_Form {
             'title' => ts('Frequency Unit'),
             'operatorType' => CRM_Report_Form::OP_MULTISELECT,
             'options' => CRM_Core_OptionGroup::values('recur_frequency_units'),
+	    'type' => CRM_Utils_Type::T_STRING,	  
           ),
           'next_sched_contribution_date' => array(
             'title' => ts('Next Scheduled Contribution Date'),

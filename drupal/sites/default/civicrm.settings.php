@@ -273,9 +273,10 @@ $prefs['includeEmailInName'] = get_config_value($bbcfg, 'search.include_email_in
 // includeNickNameInName
 // includeAlphabeticalPager
 $prefs['smartGroupCacheTimeout'] = 10;
-$prefs['defaultSearchProfileID'] = 11;
+//NYSS 16679 - no longer needed but leaving in place for reference
+//$prefs['defaultSearchProfileID'] = 11;
 $prefs['searchPrimaryDetailsOnly'] = false;
-$prefs['quicksearch_options'] = ['sort_name', 'first_name', 'last_name', 'email', 'phone_numeric', 'street_address', 'city', 'postal_code', 'case_id'];
+$prefs['quicksearch_options'] = ['sort_name', 'first_name', 'last_name', 'email_primary.email', 'phone_primary.phone_numeric', 'address_primary.street_address', 'address_primary.city', 'address_primary.postal_code', 'case_id'];
 
 // URL settings, from Url.setting.php
 $prefs['userFrameworkResourceURL'] = 'sites/all/modules/civicrm/';
@@ -374,9 +375,6 @@ function nyss_bootstrap_settings($rootdir)
   else {
     define('CIVICRM_CLEANURL', 0);
   }
-
-  // force PHP to auto-detect Mac line endings
-  ini_set('auto_detect_line_endings', '1');
 
   // Get the current PHP memory limit.
   $memLimitString = trim(ini_get('memory_limit'));

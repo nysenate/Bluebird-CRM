@@ -10,50 +10,51 @@
 {* tpl for building Individual related fields *}
 {*NYSS*}
 {assign var=formtextbig value='crm-form-text big'}
-<table class="form-layout-compressed individual-contact-details">
-  <tr>
-    {if !empty($form.prefix_id)}
-    <td>
-      {$form.prefix_id.label}<br/>
-      {$form.prefix_id.html}
-    </td>
-    {/if}
-    {if $form.formal_title}
-    <td>
-      {$form.formal_title.label}<br/>
-      {$form.formal_title.html}
-    </td>
-    {/if}
-    {if !empty($form.first_name)}
-    <td>
-      {$form.first_name.label}<br />
-      {$form.first_name.html}
-    </td>
-    {/if}
-    {if !empty($form.middle_name)}
-    <td>
-      {$form.middle_name.label}<br />
-      {$form.middle_name.html}
-    </td>
-    {/if}
-    {if !empty($form.last_name)}
-    <td>
-      {$form.last_name.label}<br />
-      {$form.last_name.html}
-    </td>
-    {/if}
-    {if !empty($form.suffix_id)}
-    <td>
-      {$form.suffix_id.label}<br/>
-      {$form.suffix_id.html}
-    </td>
-    {/if}
-    <td>
-      {assign var='cf_preferred_pronoun' value=$groupTree.1.fields.$cf_preferred_pronoun_id.element_name}
-      {$form.$cf_preferred_pronoun.label}<br />
-      {$form.$cf_preferred_pronoun.html}
-    </td>
-  </tr>
+<table class="form-layout-compressed">
+  {crmRegion name="contact-form-edit-individual"}
+    <tr>
+      {if !empty($form.prefix_id)}
+      <td>
+        {$form.prefix_id.label}<br/>
+        {$form.prefix_id.html}
+      </td>
+      {/if}
+      {if $form.formal_title}
+      <td>
+        {$form.formal_title.label}<br/>
+        {$form.formal_title.html}
+      </td>
+      {/if}
+      {if !empty($form.first_name)}
+      <td>
+        {$form.first_name.label}<br />
+        {$form.first_name.html}
+      </td>
+      {/if}
+      {if !empty($form.middle_name)}
+      <td>
+        {$form.middle_name.label}<br />
+        {$form.middle_name.html}
+      </td>
+      {/if}
+      {if !empty($form.last_name)}
+      <td>
+        {$form.last_name.label}<br />
+        {$form.last_name.html}
+      </td>
+      {/if}
+      {if !empty($form.suffix_id)}
+      <td>
+        {$form.suffix_id.label}<br/>
+        {$form.suffix_id.html}
+      </td>
+      {/if}
+      <td>
+        {assign var='cf_preferred_pronoun' value=$groupTree.1.fields.$cf_preferred_pronoun_id.element_name}
+        {$form.$cf_preferred_pronoun.label}<br />
+        {$form.$cf_preferred_pronoun.html}
+      </td>
+    </tr>
 
   <tr>
     {*NYSS*}
@@ -84,4 +85,5 @@
       {if $form.external_identifier.value}{$form.external_identifier.value}{/if}
     </td>
   </tr>
+  {/crmRegion}
 </table>

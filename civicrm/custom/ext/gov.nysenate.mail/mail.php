@@ -54,44 +54,12 @@ function mail_civicrm_install() {
 }
 
 /**
- * Implements hook_civicrm_uninstall().
- *
- * @link http://wiki.civicrm.org/confluence/display/CRMDOC/hook_civicrm_uninstall
- */
-function mail_civicrm_uninstall() {
-}
-
-/**
  * Implements hook_civicrm_enable().
  *
  * @link http://wiki.civicrm.org/confluence/display/CRMDOC/hook_civicrm_enable
  */
 function mail_civicrm_enable() {
   _mail_civix_civicrm_enable();
-}
-
-/**
- * Implements hook_civicrm_disable().
- *
- * @link http://wiki.civicrm.org/confluence/display/CRMDOC/hook_civicrm_disable
- */
-function mail_civicrm_disable() {
-}
-
-/**
- * Implements hook_civicrm_upgrade().
- *
- * @param $op string, the type of operation being performed; 'check' or 'enqueue'
- * @param $queue CRM_Queue_Queue, (for 'enqueue') the modifiable list of pending up upgrade tasks
- *
- * @return mixed
- *   Based on op. for 'check', returns array(boolean) (TRUE if upgrades are pending)
- *                for 'enqueue', returns void
- *
- * @link http://wiki.civicrm.org/confluence/display/CRMDOC/hook_civicrm_upgrade
- */
-function mail_civicrm_upgrade($op, CRM_Queue_Queue $queue = NULL) {
-  return;
 }
 
 /**
@@ -169,6 +137,11 @@ function mail_civicrm_mosaicoStyles(&$styles) {
 function mail_civicrm_mosaicoConfig(&$config) {
   //13618
   $config['tinymceConfigFull']['browser_spellcheck'] = TRUE;
+
+  //Mosaico 3.5 removes toolbar plugins; store locally from v2.11
+  $config['tinymceConfig']['external_plugins']['anchor'] = E::url('js/tinymce-plugins/anchor/plugin.js');
+  $config['tinymceConfig']['external_plugins']['charmap'] = E::url('js/tinymce-plugins/charmap/plugin.js');
+  $config['tinymceConfig']['external_plugins']['table'] = E::url('js/tinymce-plugins/table/plugin.js');
 }
 
 function mail_civicrm_pageRun(&$page) {
@@ -340,7 +313,7 @@ function mail_civicrm_entityTypes(&$entityTypes) {
   //Civi::log()->debug('mail_civicrm_entityTypes', array('entityTypes' => $entityTypes));
 
   //formally declare our additions to the mailing table as entity fields
-  $entityTypes['CRM_Mailing_DAO_Mailing']['fields_callback'][] = function($class, &$fields) {
+  $entityTypes['Mailing']['fields_callback'][] = function($class, &$fields) {
     //Civi::log()->debug('mail_civicrm_entityTypes', array('$class' => $class, 'fields' => $fields));
 
     $fields['all_emails'] = [
@@ -524,6 +497,11 @@ function mail_civicrm_links($op, $objectName, $objectId, &$links, &$mask, &$valu
       if ($link['name'] == 'Public View') {
         unset($links[$key]);
       }
+      // 16659 "Continue" should be prioritized over "Copy"
+      // for unscheduled mass emails
+      if ($op == 'view.mailing.browse.unscheduled' && $link['name'] == 'Continue') {
+        $links[$key]['weight'] = "-50";
+      }
     }
   }
 
@@ -565,14 +543,12 @@ function mail_civicrm_links($op, $objectName, $objectId, &$links, &$mask, &$valu
   }
 }
 
-
 function mail_civicrm_mosaicoBaseTemplates(&$templates) {
   //Civi::log()->debug('', array('templates' => $templates));
   unset($templates['tedc15']);
   unset($templates['tutorial']);
   unset($templates['versafix-1']);
 }
-
 
 function mail_civicrm_apiWrappers(&$wrappers, $apiRequest) {
   /*Civi::log()->debug('', [
@@ -601,7 +577,6 @@ function mail_civicrm_apiWrappers(&$wrappers, $apiRequest) {
     $wrappers[] = new CRM_NYSS_Mail_APIWrapper();
   }
 }
-
 
 function mail_civicrm_alterAPIPermissions($entity, $action, &$params, &$permissions) {
   /*Civi::log()->debug(__FUNCTION__, [
@@ -1214,7 +1189,7 @@ function _mail_alterMailingWizard(phpQueryObject $doc) {
   $extDir = CRM_Core_Resources::singleton()->getPath('gov.nysenate.mail');
   $html = file_get_contents($extDir.'/html/workflow.html');
   $doc->find('div[ng-form=crmMailingSubform]')->html($html);
-} // _mail_alterMailingWizard()
+}
 
 
 /**

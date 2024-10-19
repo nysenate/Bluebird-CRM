@@ -123,7 +123,7 @@ function dao_civicrm_alterSettingsFolders(&$metaDataFolders = NULL) {
 }
 
 function dao_civicrm_entityTypes(&$entityTypes) {
-  $entityTypes['CRM_Contact_DAO_Contact']['fields_callback'][] = function($class, &$fields) {
+  $entityTypes['Contact']['fields_callback'][] = function($class, &$fields) {
     $fields['do_not_trade']['title'] = 'Undeliverable: Do Not Mail';//4766
     $fields['preferred_mail_format']['title'] = 'Preferred Email Format';
 
@@ -155,7 +155,7 @@ function dao_civicrm_entityTypes(&$entityTypes) {
     ];
   };
 
-  $entityTypes['CRM_Core_DAO_Address']['fields_callback'][] = function($class, &$fields) {
+  $entityTypes['Address']['fields_callback'][] = function($class, &$fields) {
     $fields['street_number']['import'] = TRUE; //include parsed address fields in import
     $fields['street_name']['import'] = TRUE;
     $fields['street_unit']['import'] = TRUE;
@@ -166,27 +166,27 @@ function dao_civicrm_entityTypes(&$entityTypes) {
     //set fields that should not be exportable
     $fields['geo_code_1']['export'] = FALSE;
     $fields['geo_code_2']['export'] = FALSE;
-    $fields['address_name']['export'] = FALSE;
+    $fields['name']['export'] = FALSE;
     $fields['master_id']['export'] = FALSE;
     $fields['county_id']['export'] = FALSE;
   };
 
-  $entityTypes['CRM_Core_DAO_Worldregion']['fields_callback'][] = function($class, &$fields) {
-    $fields['world_region']['export'] = FALSE;
+  $entityTypes['WorldRegion']['fields_callback'][] = function($class, &$fields) {
+    $fields['name']['export'] = FALSE;
   };
 
   //9784
-  $entityTypes['CRM_Core_DAO_CustomField']['fields_callback'][] = function($class, &$fields) {
+  $entityTypes['CustomField']['fields_callback'][] = function($class, &$fields) {
     $fields['label']['maxlength'] = 1020;
   };
 
   //9784
-  $entityTypes['CRM_Core_DAO_CustomGroup']['fields_callback'][] = function($class, &$fields) {
+  $entityTypes['CustomGroup']['fields_callback'][] = function($class, &$fields) {
     $fields['title']['maxlength'] = 128;
   };
 
   //2729
-  $entityTypes['CRM_Core_DAO_Email']['fields_callback'][] = function($class, &$fields) {
+  $entityTypes['Email']['fields_callback'][] = function($class, &$fields) {
     $fields['is_primary']['title'] = 'Is Email Primary?';
     $fields['signature_text']['export'] = FALSE;
     $fields['signature_html']['export'] = FALSE;
@@ -212,12 +212,13 @@ function dao_civicrm_entityTypes(&$entityTypes) {
   };
 
   //2719
-  $entityTypes['CRM_Core_DAO_OpenID']['fields_callback'][] = function($class, &$fields) {
+  $entityTypes['OpenID']['fields_callback'][] = function($class, &$fields) {
     $fields['openid']['export'] = FALSE;
   };
 
   //9656
-  $entityTypes['CRM_Core_DAO_Tag']['fields_callback'][] = function($class, &$fields) {
+  $entityTypes['Tag']['fields_callback'][] = function($class, &$fields) {
     $fields['name']['maxlength'] = 128;
+    $fields['label']['maxlength'] = 128;
   };
 }

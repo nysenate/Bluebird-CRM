@@ -8,10 +8,6 @@ Have you ever wanted to rearrange the contact summary screen? Move the most impo
 
 ![Screenshot](/images/summary.png)
 
-## Requirements
-
-* CiviCRM 5.38+
-
 ## Basic Usage
 
 * Once installed, navigate to **Administer -> Customize Data and Screens -> Contact Summary Layouts** to open the editor.

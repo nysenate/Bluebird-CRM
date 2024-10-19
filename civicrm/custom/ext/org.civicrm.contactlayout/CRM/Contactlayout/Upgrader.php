@@ -6,7 +6,7 @@ use CRM_Contactlayout_ExtensionUtil as E;
 /**
  * Collection of upgrade steps.
  */
-class CRM_Contactlayout_Upgrader extends CRM_Contactlayout_Upgrader_Base {
+class CRM_Contactlayout_Upgrader extends CRM_Extension_Upgrader_Base {
 
   /**
    * Install script

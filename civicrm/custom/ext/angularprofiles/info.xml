@@ -8,11 +8,11 @@
     <author>Ginkgo Street Labs</author>
     <email>inquire@ginkgostreet.com</email>
   </maintainer>
-  <releaseDate>2021-02-08</releaseDate>
-  <version>1.2.2</version>
+  <releaseDate>2023-12-15</releaseDate>
+  <version>6.2.4</version>
   <develStage>stable</develStage>
   <compatibility>
-    <ver>5.23</ver>
+    <ver>5.65</ver>
   </compatibility>
   <comments>
     This extension is a utility for allowing AngularJS pages to load CiviCRM's Backbone.js-based profile editor/selector
@@ -21,6 +21,7 @@
   </comments>
   <civix>
     <namespace>CRM/AngularProfiles</namespace>
+    <format>23.02.1</format>
   </civix>
   <urls>
     <url desc="Main Extension Page">https://lab.civicrm.org/extensions/angularprofiles</url>
@@ -28,4 +29,12 @@
     <url desc="Support">https://lab.civicrm.org/extensions/angularprofiles/-/issues</url>
     <url desc="Licensing">http://www.gnu.org/licenses/agpl-3.0.html</url>
   </urls>
+  <mixins>
+    <mixin>menu-xml@1.0.0</mixin>
+    <mixin>smarty-v2@1.0.1</mixin>
+  </mixins>
+  <classloader>
+    <psr0 prefix="CRM_" path="."/>
+    <psr4 prefix="Civi\" path="Civi"/>
+  </classloader>
 </extension>

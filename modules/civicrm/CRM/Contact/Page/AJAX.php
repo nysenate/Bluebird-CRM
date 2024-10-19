@@ -265,19 +265,6 @@ class CRM_Contact_Page_AJAX {
     CRM_Utils_JSON::output($ret);
   }
 
-  /**
-   * Fetch the custom field help.
-   */
-  public static function customField() {
-    $fieldId = CRM_Utils_Type::escape($_REQUEST['id'], 'Integer');
-    $params = ['id' => $fieldId];
-    $returnProperties = ['help_pre', 'help_post'];
-    $values = [];
-
-    CRM_Core_DAO::commonRetrieve('CRM_Core_DAO_CustomField', $params, $values, $returnProperties);
-    CRM_Utils_JSON::output($values);
-  }
-
   public static function groupTree() {
     CRM_Utils_System::setHttpHeader('Content-Type', 'application/json');
     $gids = CRM_Utils_Type::escape($_GET['gids'], 'String');
@@ -324,7 +311,7 @@ class CRM_Contact_Page_AJAX {
     }
 
     $config = CRM_Core_Config::singleton();
-    $username = trim(CRM_Utils_Array::value('cms_name', $_REQUEST));
+    $username = trim($_REQUEST['cms_name'] ?? '');
 
     $params = ['name' => $username];
 
@@ -399,67 +386,6 @@ LIMIT {$rowCount}
     CRM_Utils_System::civiExit();
   }
 
-  public static function getContactPhone() {
-
-    $queryString = NULL;
-    $sqlParmas = [];
-    //check for mobile type
-    $phoneTypes = CRM_Core_OptionGroup::values('phone_type', TRUE, FALSE, FALSE, NULL, 'name');
-    $mobileType = $phoneTypes['Mobile'] ?? NULL;
-
-    $name = CRM_Utils_Request::retrieveValue('name', 'String', NULL, FALSE, 'GET');
-    if ($name) {
-      $key = (int) count(array_keys($sqlParmas)) + 1;
-      $queryString = " ( cc.sort_name LIKE %{$key} OR cp.phone LIKE %{$key} ) ";
-      $sqlParams[$key] = ['%' . $name . '%', 'String'];
-    }
-    else {
-      $cid = CRM_Utils_Request::retrieveValue('cid', 'CommaSeparatedIntegers', NULL, FALSE, 'GET');
-      if ($cid) {
-        $queryString = " cc.id IN ( $cid )";
-      }
-    }
-
-    if ($queryString) {
-      $result = [];
-      $offset = (int) CRM_Utils_Request::retrieveValue('offset', 'Integer', 0, FALSE, 'GET');
-      $rowCount = (int) CRM_Utils_Request::retrieveValue('rowcount', 'Integer', 20, FALSE, 'GET');
-
-      // add acl clause here
-      [$aclFrom, $aclWhere] = CRM_Contact_BAO_Contact_Permission::cacheClause('cc');
-      if ($aclWhere) {
-        $aclWhere = " AND $aclWhere";
-      }
-
-      $query = "
-SELECT sort_name name, cp.phone, cc.id
-FROM   civicrm_phone cp INNER JOIN civicrm_contact cc ON cc.id = cp.contact_id
-       {$aclFrom}
-WHERE  cc.is_deceased = 0 AND cc.do_not_sms = 0 AND cp.phone_type_id = {$mobileType} AND {$queryString}
-       {$aclWhere}
-LIMIT {$offset}, {$rowCount}
-";
-
-      // send query to hook to be modified if needed
-      CRM_Utils_Hook::contactListQuery($query,
-        $name,
-        CRM_Utils_Request::retrieve('context', 'Alphanumeric'),
-        CRM_Utils_Request::retrieve('cid', 'Positive')
-      );
-
-      $dao = CRM_Core_DAO::executeQuery($query, $sqlParams);
-
-      while ($dao->fetch()) {
-        $result[] = [
-          'text' => '"' . $dao->name . '" (' . $dao->phone . ')',
-          'id' => (CRM_Utils_Array::value('id', $_GET)) ? "{$dao->id}::{$dao->phone}" : '"' . $dao->name . '" <' . $dao->phone . '>',
-        ];
-      }
-      CRM_Utils_JSON::output($result);
-    }
-    CRM_Utils_System::civiExit();
-  }
-
   public static function buildSubTypes() {
     $parent = CRM_Utils_Request::retrieve('parentId', 'Positive');
 
@@ -483,7 +409,7 @@ LIMIT {$offset}, {$rowCount}
   }
 
   public static function buildDedupeRules() {
-    $contactType = CRM_Utils_Request::retrieve('parentId', 'Positive');
+    $contactType = CRM_Utils_Request::retrieve('parentId', 'String');
     $dedupeRules = CRM_Dedupe_BAO_DedupeRuleGroup::getByType($contactType);
 
     CRM_Utils_JSON::output($dedupeRules);
@@ -951,7 +877,7 @@ LIMIT {$offset}, {$rowCount}
   public static function toggleDedupeSelect() {
     $pnid = $_REQUEST['pnid'];
     $isSelected = CRM_Utils_Type::escape($_REQUEST['is_selected'], 'Boolean');
-    $cacheKeyString = CRM_Utils_Request::retrieve('cacheKey', 'Alphanumeric', $null, FALSE);
+    $cacheKeyString = CRM_Utils_Request::retrieve('cacheKey', 'Alphanumeric', NULL, FALSE);
 
     $params = [
       1 => [$isSelected, 'Boolean'],
@@ -979,7 +905,9 @@ LIMIT {$offset}, {$rowCount}
   }
 
   /**
-   * Retrieve contact relationships.
+   * @deprecated since 5.68. Will be removed around 5.74.
+   *
+   * Only-used-by-user-dashboard.
    */
   public static function getContactRelationships() {
     $contactID = CRM_Utils_Type::escape($_GET['cid'], 'Integer');

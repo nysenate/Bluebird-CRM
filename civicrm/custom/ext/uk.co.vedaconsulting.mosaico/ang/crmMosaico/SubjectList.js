@@ -1,6 +1,6 @@
 (function(angular, $, _) {
   // Example usage: <crm-mosaico-subject-list crm-mailing="myMailing" />
-  angular.module('crmMosaico').directive('crmMosaicoSubjectList', function(crmUiHelp) {
+  angular.module('crmMosaico').directive('crmMosaicoSubjectList', function(crmUiHelp, crmMosaicoVariants) {
     return {
       scope: {
         crmMailing: '@'
@@ -14,23 +14,10 @@
         scope.hs = crmUiHelp({file: 'CRM/Mailing/MailingUI'});
         scope.checkPerm = CRM.checkPerm;
 
-        scope.addSubj = function addSubj() {
-          scope.mailing.template_options.variants = [
-            {subject: scope.mailing.subject},
-            {subject: scope.mailing.subject}
-          ]
-        };
-
-        scope.rmSubj = function rmSubj(vid) {
-          var m = scope.mailing;
-          m.template_options.variants.splice(vid, 1);
-          if (m.template_options.variants.length === 1) {
-            m.subject = m.template_options.variants[0].subject;
-            delete m.template_options.variants;
-          }
-        };
-
-        scope.labels = ['A', 'B'];
+        scope.addSubj = () => crmMosaicoVariants.split(scope.mailing, 'subject');
+        scope.rmSubj = (vid) => crmMosaicoVariants.remove(scope.mailing, 'subject', vid);
+        scope.isSplit = () => crmMosaicoVariants.isSplit(scope.mailing, 'subject');
+        scope.labels = crmMosaicoVariants.getLabels();
       }
     };
 

@@ -63,15 +63,23 @@ class ActionObjectProvider extends AutoService implements EventSubscriberInterfa
    */
   public function invoke($action) {
     // Load result class based on @return annotation in the execute() method.
-    $reflection = new \ReflectionClass($action);
-    $doc = ReflectionUtils::getCodeDocs($reflection->getMethod('execute'), 'Method');
-    $resultClass = $doc['return'][0] ?? '\\Civi\\Api4\\Generic\\Result';
+    $resultClass = $this->getResultClass($action);
     $result = new $resultClass();
     $result->action = $action->getActionName();
     $result->entity = $action->getEntityName();
     $action->_run($result);
     $this->handleChains($action, $result);
     return $result;
+  }
+
+  private function getResultClass($action): string {
+    $actionClassName = get_class($action);
+    if (!isset(\Civi::$statics[__CLASS__][__FUNCTION__][$actionClassName])) {
+      $reflection = new \ReflectionClass($action);
+      $doc = ReflectionUtils::getCodeDocs($reflection->getMethod('execute'), 'Method');
+      \Civi::$statics[__CLASS__][__FUNCTION__][$actionClassName] = $doc['return'][0] ?? '\Civi\Api4\Generic\Result';
+    }
+    return \Civi::$statics[__CLASS__][__FUNCTION__][$actionClassName];
   }
 
   /**
@@ -161,6 +169,7 @@ class ActionObjectProvider extends AutoService implements EventSubscriberInterfa
       // Allow extensions to modify the list of entities
       $event = GenericHookEvent::create(['entities' => &$entities]);
       \Civi::dispatcher()->dispatch('civi.api4.entityTypes', $event);
+      $this->fillEntityDefaults($entities);
       ksort($entities);
       $cache->set('api4.entities.info', $entities);
     }
@@ -168,11 +177,19 @@ class ActionObjectProvider extends AutoService implements EventSubscriberInterfa
     return $entities;
   }
 
+  public function fillEntityDefaults(array &$entities) {
+    foreach ($entities as &$entity) {
+      if (!isset($entity['search_fields'])) {
+        $entity['search_fields'] = (array) ($entity['label_field'] ?? NULL);
+      }
+    }
+  }
+
   /**
    * Scan all api directories to discover entities
    * @return \Civi\Api4\Generic\AbstractEntity[]
    */
-  private function getAllApiClasses() {
+  public function getAllApiClasses(): array {
     $classNames = [];
     $locations = array_merge([\Civi::paths()->getPath('[civicrm.root]/Civi.php')],
       array_column(\CRM_Extension_System::singleton()->getMapper()->getActiveModuleFiles(), 'filePath')

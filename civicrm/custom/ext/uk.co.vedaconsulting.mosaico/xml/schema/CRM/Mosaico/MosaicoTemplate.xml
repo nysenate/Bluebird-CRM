@@ -36,8 +36,11 @@
     <comment>Name of the Mosaico base template (e.g. versafix-1)</comment>
     <title>Base Template</title>
     <html>
-      <type>Text</type>
+      <type>Select</type>
     </html>
+    <pseudoconstant>
+      <callback>CRM_Mosaico_BAO_MosaicoTemplate::getBaseTemplateOptions</callback>
+    </pseudoconstant>
   </field>
 
   <field>

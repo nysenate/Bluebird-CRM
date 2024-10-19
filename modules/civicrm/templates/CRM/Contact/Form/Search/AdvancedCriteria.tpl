@@ -13,18 +13,17 @@
 CRM.$(function($) {
   // Bind first click of accordion header to load crm-accordion-body with snippet
   // everything else is taken care of by crmAccordions()
-  $('.crm-search_criteria_basic-accordion .crm-accordion-header').addClass('active');
-  $('.crm-ajax-accordion').on('click', '.crm-accordion-header:not(.active)', function() {
+  $('.crm-search_criteria_basic-accordion summary').addClass('active');
+  $('.crm-ajax-accordion').on('click', 'summary:not(.active)', function() {
     loadPanes($(this).attr('id'));
   });
-  $('.crm-ajax-accordion:not(.collapsed) .crm-accordion-header').each(function() {
+  $('.crm-ajax-accordion:not(.collapsed) summary').each(function() {
     loadPanes($(this).attr('id'));
   });
   $('.crm-ajax-accordion').on('click', '.crm-close-accordion', function() {
     var header = $(this).parent();
     header.next().html('');
     header.removeClass('active');
-    header.parent('.crm-ajax-accordion:not(.collapsed)').crmAccordionToggle();
     // Reset results-display mode if it depends on this pane
     var mode = modes[$('#component_mode').val()] || null;
     if (mode && header.attr('id') == mode) {
@@ -47,7 +46,7 @@ CRM.$(function($) {
     $('#task').val('');
     var mode = modes[$('#component_mode').val()] || null;
     if (mode) {
-      $('.crm-' + mode + '-accordion.collapsed').crmAccordionToggle();
+      $('.crm-' + mode + '-accordion:not([open])').prop('open', true);
       loadPanes(mode);
     }
     if ('related_contact' === modes[$('#component_mode').val()]) {
@@ -72,6 +71,8 @@ CRM.$(function($) {
       CRM.loadPage(url, {target: body, block: false});
     }
   }
+  // Keeps the detail/accordion of 'active' fieldsets open after a search
+  $('summary.active').parent('details').attr('open', '');
 });
 </script>
 {/literal}
@@ -86,37 +87,37 @@ CRM.$(function($) {
 {/if}
 
 {strip}
-  <div class="crm-accordion-wrapper crm-search_criteria_basic-accordion ">
-    <div class="crm-accordion-header">
+  <details class="crm-accordion-bold crm-search_criteria_basic-accordion" open>
+    <summary>
       {ts}Display Settings For Results{/ts}
-    </div>
+    </summary>
     <div class="crm-accordion-body">
       {include file="CRM/Contact/Form/Search/Criteria/DisplaySettings.tpl"}
     </div>
-  </div>
-  <div class="crm-accordion-wrapper crm-search_criteria_basic-accordion ">
-    <div class="crm-accordion-header">
+  </details>
+  <details class="crm-accordion-bold crm-search_criteria_basic-accordion" open>
+    <summary>
       {ts}Search Settings{/ts}
-    </div>
+    </summary>
     <div class="crm-accordion-body">
       {include file="CRM/Contact/Form/Search/Criteria/SearchSettings.tpl"}
     </div>
-  </div>
-  <div class="crm-accordion-wrapper crm-search_criteria_basic-accordion ">
-    <div class="crm-accordion-header">
+  </details>
+  <details class="crm-accordion-bold crm-search_criteria_basic-accordion" open>
+    <summary>
       {ts}Basic Criteria{/ts}
-    </div>
+    </summary>
     <div class="crm-accordion-body">
       {include file="CRM/Contact/Form/Search/Criteria/Basic.tpl"}
     </div>
-  </div>
+  </details>
   {foreach from=$allPanes key=paneName item=paneValue}
-    <div class="crm-accordion-wrapper crm-ajax-accordion crm-{$paneValue.id}-accordion {if $paneValue.open eq 'true' || array_key_exists($paneName, $openedPanes)} {else}collapsed{/if}">
-      <div class="crm-accordion-header" id="{$paneValue.id}">
+    <details class="crm-accordion-bold crm-ajax-accordion crm-{$paneValue.id}-accordion {if $paneValue.open eq 'true' || array_key_exists($paneName, $openedPanes)} {else}collapsed{/if}">
+      <summary id="{$paneValue.id}">
         {$paneName}
-      </div>
+      </summary>
     <div class="crm-accordion-body {$paneValue.id}"></div>
-    </div><!-- Surplus /div is required (not sure why but breakage is obvious when you remove it) -->
+    </details>
   {/foreach}
   <div class="spacer"></div>
 

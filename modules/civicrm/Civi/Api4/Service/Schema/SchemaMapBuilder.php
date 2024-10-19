@@ -13,10 +13,10 @@
 namespace Civi\Api4\Service\Schema;
 
 use Civi\Api4\Entity;
-use Civi\Api4\Event\Events;
 use Civi\Api4\Event\SchemaMapBuildEvent;
 use Civi\Api4\Service\Schema\Joinable\CustomGroupJoinable;
 use Civi\Api4\Service\Schema\Joinable\Joinable;
+use Civi\Api4\Utils\CoreUtil;
 use Civi\Core\Service\AutoService;
 use Civi\Core\CiviEventDispatcherInterface;
 use CRM_Core_DAO_AllCoreTables as AllCoreTables;
@@ -41,18 +41,18 @@ class SchemaMapBuilder extends AutoService {
    */
   public function __construct(CiviEventDispatcherInterface $dispatcher) {
     $this->dispatcher = $dispatcher;
-    $this->apiEntities = array_keys((array) Entity::get(FALSE)->addSelect('name')->execute()->indexBy('name'));
+    $this->apiEntities = Entity::get(FALSE)->addSelect('name')->execute()->column('name');
   }
 
   /**
    * @return SchemaMap
    */
-  public function build() {
+  public function build(): SchemaMap {
     $map = new SchemaMap();
     $this->loadTables($map);
 
     $event = new SchemaMapBuildEvent($map);
-    $this->dispatcher->dispatch(Events::SCHEMA_MAP_BUILD, $event);
+    $this->dispatcher->dispatch('api.schema_map.build', $event);
 
     return $map;
   }
@@ -64,14 +64,14 @@ class SchemaMapBuilder extends AutoService {
    */
   private function loadTables(SchemaMap $map) {
     /** @var \CRM_Core_DAO $daoName */
-    foreach (AllCoreTables::get() as $data) {
+    foreach (AllCoreTables::getEntities() as $name => $data) {
       $table = new Table($data['table']);
       foreach ($data['class']::fields() as $fieldData) {
         $this->addJoins($table, $fieldData['name'], $fieldData);
       }
       $map->addTable($table);
-      if (in_array($data['name'], $this->apiEntities)) {
-        $this->addCustomFields($map, $table, $data['name']);
+      if (in_array($name, $this->apiEntities)) {
+        $this->addCustomFields($map, $table, $name);
       }
     }
   }
@@ -105,50 +105,57 @@ class SchemaMapBuilder extends AutoService {
     if (!$customInfo) {
       return;
     }
-    $fieldData = \CRM_Utils_SQL_Select::from('civicrm_custom_field f')
-      ->join('custom_group', 'INNER JOIN civicrm_custom_group g ON g.id = f.custom_group_id')
-      ->select(['g.name as custom_group_name', 'g.table_name', 'g.is_multiple', 'f.name', 'f.data_type', 'label', 'column_name', 'option_group_id', 'serialize'])
-      ->where('g.extends IN (@entity)', ['@entity' => $customInfo['extends']])
-      ->where('g.is_active')
-      ->where('f.is_active')
-      ->execute();
+    $filters = [
+      'extends' => $customInfo['extends'],
+      'is_active' => TRUE,
+      'fields' => TRUE,
+    ];
+    foreach (\CRM_Core_BAO_CustomGroup::getAll($filters) as $customGroup) {
+      $customTable = new Table($customGroup['table_name']);
 
-    $links = [];
-
-    while ($fieldData->fetch()) {
-      $tableName = $fieldData->table_name;
-
-      $customTable = $map->getTableByName($tableName);
-      if (!$customTable) {
-        $customTable = new Table($tableName);
+      // Add entity_id join from multi-record custom group to the base entity
+      if (!empty($customGroup['is_multiple'])) {
+        $newJoin = new Joinable($baseTable->getName(), $customInfo['column'], 'entity_id');
+        $customTable->addTableLink('entity_id', $newJoin);
+        // Deprecated "contact" join name
+        $oldJoin = new Joinable($baseTable->getName(), $customInfo['column'], AllCoreTables::convertEntityNameToLower($entityName));
+        $oldJoin->setDeprecatedBy('entity_id');
+        $customTable->addTableLink('entity_id', $oldJoin);
       }
 
+      // Add joins for entityReference fields
+      foreach ($customGroup['fields'] as $field) {
+        if ($field['data_type'] === 'EntityReference' && isset($field['fk_entity'])) {
+          $targetTable = self::getTableName($field['fk_entity']);
+          $joinable = new Joinable($targetTable, 'id', $field['name']);
+          $customTable->addTableLink($field['column_name'], $joinable);
+        }
+
+        if ($field['data_type'] === 'ContactReference') {
+          $joinable = new Joinable('civicrm_contact', 'id', $field['name']);
+          if ($field['serialize']) {
+            $joinable->setSerialize((int) $field['serialize']);
+          }
+          $customTable->addTableLink($field['column_name'], $joinable);
+        }
+      }
       $map->addTable($customTable);
 
-      $alias = $fieldData->custom_group_name;
-      $links[$alias]['tableName'] = $tableName;
-      $links[$alias]['isMultiple'] = !empty($fieldData->is_multiple);
-      $links[$alias]['columns'][$fieldData->name] = $fieldData->column_name;
-
-      // Add backreference
-      if (!empty($fieldData->is_multiple)) {
-        $joinable = new Joinable($baseTable->getName(), $customInfo['column'], AllCoreTables::convertEntityNameToLower($entityName));
-        $customTable->addTableLink('entity_id', $joinable);
-      }
-
-      if ($fieldData->data_type === 'ContactReference') {
-        $joinable = new Joinable('civicrm_contact', 'id', $fieldData->name);
-        if ($fieldData->serialize) {
-          $joinable->setSerialize((int) $fieldData->serialize);
-        }
-        $customTable->addTableLink($fieldData->column_name, $joinable);
-      }
-    }
-
-    foreach ($links as $alias => $link) {
-      $joinable = new CustomGroupJoinable($link['tableName'], $alias, $link['isMultiple'], $link['columns']);
+      // Add custom join
+      $joinable = new CustomGroupJoinable($customGroup['table_name'], $customGroup['name'], $customGroup['is_multiple'], $entityName);
       $baseTable->addTableLink($customInfo['column'], $joinable);
     }
+  }
+
+  /**
+   * @param string $entityName
+   * @return string
+   */
+  private static function getTableName(string $entityName) {
+    if (CoreUtil::isContact($entityName)) {
+      return 'civicrm_contact';
+    }
+    return AllCoreTables::getTableForEntityName($entityName);
   }
 
 }

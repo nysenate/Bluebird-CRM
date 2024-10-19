@@ -13,6 +13,8 @@
  * enabled.
  */
 class RulesUIController {
+  protected $event_info;
+  protected $cache;
 
   /**
    * Generates menu items to manipulate rules configurations.

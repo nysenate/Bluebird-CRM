@@ -3,43 +3,21 @@
   "version": "2.0.0",
   "description": "This extension integrates Mosaico a responsive email template editor, with CiviCRM. - Initial Blog Post - https://civicrm.org/blogs/parvez/a-new-beginning-for-civimail - Beta Blog Post - https://civicrm.org/blog/deepaksrivastava/email-template-builder-civimosaico-is-now-beta - Initial Video - https://vimeo.com/156633077",
   "main": "index.js",
+  "type": "module",
   "directories": {
     "test": "tests"
   },
-  "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
-  },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/compucorp/uk.co.vedaconsulting.mosaico.git"
+    "url": "git+https://github.com/veda-consulting-company/uk.co.vedaconsulting.mosaico.git"
   },
   "author": "",
   "license": "ISC",
   "bugs": {
-    "url": "https://github.com/compucorp/uk.co.vedaconsulting.mosaico/issues"
+    "url": "https://github.com/veda-consulting-company/uk.co.vedaconsulting.mosaico/issues"
   },
-  "homepage": "https://github.com/compucorp/uk.co.vedaconsulting.mosaico#readme",
+  "homepage": "https://github.com/veda-consulting-company/uk.co.vedaconsulting.mosaico#readme",
   "devDependencies": {
-    "ansi-colors": "^2.0.2",
-    "backstopjs": "^6.1.4",
-    "civicrm-scssroot": "git://github.com/totten/civicrm-scssroot.git#v0.1.1",
-    "clean": "^4.0.2",
-    "fs": "0.0.1-security",
-    "gulp": "^4.0.2",
-    "gulp-autoprefixer": "^3.1.1",
-    "gulp-clean": "^0.4.0",
-    "gulp-cssnano": "^2.1.2",
-    "gulp-file": "^0.4.0",
-    "gulp-notify": "^3.2.0",
-    "gulp-postcss": "^6.4.0",
-    "gulp-sass": "^3.1.0",
-    "gulp-sourcemaps": "^2.6.5",
-    "lodash": "^4.17.21",
-    "path": "^0.12.7",
-    "plugin-error": "^1.0.1",
-    "postcss": "^7.0.36",
-    "postcss-discard-duplicates": "^2.1.0",
-    "postcss-prefix-selector": "^1.7.2",
-    "yargs": "^15.3.1"
+    "sass": "^1.70.0"
   }
 }

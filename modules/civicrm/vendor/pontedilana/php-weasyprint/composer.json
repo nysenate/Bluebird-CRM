@@ -1,0 +1,50 @@
+{
+    "name": "pontedilana/php-weasyprint",
+    "description": "PHP library allowing PDF generation from an url or a html page. Wrapper for Kozea/WeasyPrint.",
+    "license": "MIT",
+    "type": "library",
+    "keywords": [
+        "weasyprint",
+        "pdf",
+        "php"
+    ],
+    "authors": [
+        {
+            "name": "Pontedilana Dev Team",
+            "homepage": "https://www.pontedilana.it"
+        }
+    ],
+    "require": {
+        "php": "7.4.* || 8.0.* || 8.1.* || 8.2.* || 8.3.*",
+        "psr/log": "^1.1 || ^2.0 || ^3.0",
+        "symfony/process": "^5.4 || ^6.2  || ^7"
+    },
+    "require-dev": {
+        "friendsofphp/php-cs-fixer": "^3.4",
+        "phpstan/extension-installer": "^1.1",
+        "phpstan/phpstan": "^1.2",
+        "phpstan/phpstan-phpunit": "^1.0",
+        "phpunit/phpunit": "^9.5"
+    },
+    "autoload": {
+        "psr-4": {
+            "Pontedilana\\PhpWeasyPrint\\": "src/"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "Pontedilana\\PhpWeasyPrint\\Tests\\": "tests/"
+        }
+    },
+    "config": {
+        "allow-plugins": {
+            "phpstan/extension-installer": true
+        }
+    },
+    "scripts": {
+        "check-cs": "vendor/bin/php-cs-fixer fix --diff --dry-run --verbose",
+        "fix-cs": "vendor/bin/php-cs-fixer fix --verbose",
+        "static-analysis": "vendor/bin/phpstan analyse --ansi",
+        "unit-tests": "vendor/bin/phpunit"
+    }
+}

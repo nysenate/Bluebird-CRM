@@ -65,7 +65,7 @@ function civicrm_api3_job_fapsquery($params) {
   }
   // CRM_Core_Error::debug_var('Payment Processors', $payment_processors);
   // get the settings: TODO allow more detailed configuration of which transactions to import?
-  $iats_settings = Civi::settings()->get('iats_settings');
+  $iats_settings = CRM_Iats_Utils::getSettings();
   // I also use the settings to keep track of the last time I imported journal data from iATS/FAPS.
   $iats_faps_journal = Civi::settings()->get('iats_faps_journal');
   /* initialize some values so I can report at the end */

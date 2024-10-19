@@ -263,8 +263,8 @@
 
 @font-face {
 	font-family: "Glyphicons Halflings";
-	src: url("../fonts/glyphicons-halflings-regular.eot");
-	src: url("../fonts/glyphicons-halflings-regular.eot?#iefix") format("embedded-opentype"), url("../fonts/glyphicons-halflings-regular.woff2") format("woff2"), url("../fonts/glyphicons-halflings-regular.woff") format("woff"), url("../fonts/glyphicons-halflings-regular.ttf") format("truetype"), url("../fonts/glyphicons-halflings-regular.svg#glyphicons_halflingsregular") format("svg");
+	src: url("../extern/bootstrap3/assets/fonts/bootstrap/glyphicons-halflings-regular.eot");
+	src: url("../extern/bootstrap3/assets/fonts/bootstrap/glyphicons-halflings-regular.eot?#iefix") format("embedded-opentype"), url("../extern/bootstrap3/assets/fonts/bootstrap/glyphicons-halflings-regular.woff2") format("woff2"), url("../extern/bootstrap3/assets/fonts/bootstrap/glyphicons-halflings-regular.woff") format("woff"), url("../extern/bootstrap3/assets/fonts/bootstrap/glyphicons-halflings-regular.ttf") format("truetype"), url("../extern/bootstrap3/assets/fonts/bootstrap/glyphicons-halflings-regular.svg#glyphicons_halflingsregular") format("svg");
 }
 
 #bootstrap-theme .glyphicon {
@@ -3600,32 +3600,32 @@
 }
 
 #bootstrap-theme .btn-info {
-	color: white;
+	color: black;
 	background-color: #cde8fe;
 	border-color: #cde8fe;
 }
 
 #bootstrap-theme .btn-info:focus, #bootstrap-theme .btn-info.focus {
-	color: white;
+	color: black;
 	background-color: #9bd1fd;
 	border-color: #50affc;
 }
 
 #bootstrap-theme .btn-info:hover {
-	color: white;
+	color: black;
 	background-color: #9bd1fd;
 	border-color: #91ccfd;
 }
 
 #bootstrap-theme .btn-info:active, #bootstrap-theme .btn-info.active, .open > #bootstrap-theme .btn-info.dropdown-toggle {
-	color: white;
+	color: black;
 	background-color: #9bd1fd;
 	background-image: none;
 	border-color: #91ccfd;
 }
 
 #bootstrap-theme .btn-info:active:hover, #bootstrap-theme .btn-info:active:focus, #bootstrap-theme .btn-info:active.focus, #bootstrap-theme .btn-info.active:hover, #bootstrap-theme .btn-info.active:focus, #bootstrap-theme .btn-info.active.focus, .open > #bootstrap-theme .btn-info.dropdown-toggle:hover, .open > #bootstrap-theme .btn-info.dropdown-toggle:focus, .open > #bootstrap-theme .btn-info.dropdown-toggle.focus {
-	color: white;
+	color: black;
 	background-color: #78c1fc;
 	border-color: #50affc;
 }
@@ -3637,7 +3637,7 @@
 
 #bootstrap-theme .btn-info .badge {
 	color: #cde8fe;
-	background-color: white;
+	background-color: black;
 }
 
 #bootstrap-theme .btn-warning {
@@ -7292,6 +7292,10 @@
 #bootstrap-theme .select2-container .select2-choice > .select2-chosen {
 	font-size: inherit;
 	font-weight: normal;
+}
+
+#bootstrap-theme summary {
+	display: list-item;
 }
 
 #bootstrap-theme .form-control .select2-choice {

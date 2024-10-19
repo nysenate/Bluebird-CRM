@@ -7,12 +7,29 @@
         <div class="panel-heading">{{ts('Mailing')}}</div>
         <div class="panel-body" crm-mosaico-block-mailing crm-mailing="mailing"></div>
 
-        <div class="panel-heading">
-          <span class="required-mark">{{ts('Design')}}</span>
+        <div class="panel-heading" ng-repeat-start="design in getDesigns(mailing)">
+          <div style="float: right" ng-if="!!design.action">
+            <button ng-if="design.action === 'split'"
+                    class="btn btn-primary-outline btn-xs"
+                    crm-confirm="{message: ts('With A/B testing, you can design two alternative versions of the mailing.')}"
+                    on-yes="splitDesign(mailing)">
+              <span class="fa fa-copy" aria-hidden="true"></span>
+              {{ts('A/B Test')}}
+            </button>
+            <button ng-if="design.action === 'unsplit'"
+                    class="btn btn-primary-outline btn-xs"
+                    crm-confirm="{message: ts('Are you sure you want to delete %1? The other design will become primary.', {1: design.title})}"
+                    on-yes="unsplitDesign(mailing, design.vid)">
+              <span class="fa fa-trash" aria-hidden="true"></span>
+              {{ts('Delete')}}
+            </button>
+          </div>
+
+          <span class="required-mark">{{design.title}}</span>
           <div style="clear: both"></div>
         </div>
-        <div class="panel-body">
-          <div crm-mosaico-block-design crm-mailing="mailing" crm-mosaico-ctrl="mosaicoCtrl"></div>
+        <div class="panel-body" ng-repeat-end>
+          <div crm-mosaico-block-design crm-mailing="mailing" crm-mailing-attachments="attachments" crm-mailing-variant="design.vid" on-save="save()"></div>
         </div>
 
         <div class="panel-heading">

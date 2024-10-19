@@ -27,14 +27,14 @@ class Statement
     /**
      * Callables to filter the iterator.
      *
-     * @var callable[]
+     * @var array<callable>
      */
     protected $where = [];
 
     /**
      * Callables to sort the iterator.
      *
-     * @var callable[]
+     * @var array<callable>
      */
     protected $order_by = [];
 
@@ -97,7 +97,7 @@ class Statement
     public function offset(int $offset): self
     {
         if (0 > $offset) {
-            throw new InvalidArgument(sprintf('%s() expects the offset to be a positive integer or 0, %s given', __METHOD__, $offset));
+            throw InvalidArgument::dueToInvalidRecordOffset($offset, __METHOD__);
         }
 
         if ($offset === $this->offset) {
@@ -118,7 +118,7 @@ class Statement
     public function limit(int $limit): self
     {
         if (-1 > $limit) {
-            throw new InvalidArgument(sprintf('%s() expects the limit to be greater or equal to -1, %s given', __METHOD__, $limit));
+            throw InvalidArgument::dueToInvalidLimit($limit, __METHOD__);
         }
 
         if ($limit === $this->limit) {
@@ -134,7 +134,7 @@ class Statement
     /**
      * Execute the prepared Statement on the {@link Reader} object.
      *
-     * @param string[] $header an optional header to use instead of the CSV document header
+     * @param array<string> $header an optional header to use instead of the CSV document header
      */
     public function process(TabularDataReader $tabular_data, array $header = []): TabularDataReader
     {

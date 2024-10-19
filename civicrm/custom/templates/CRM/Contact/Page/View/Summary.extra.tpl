@@ -6,10 +6,7 @@
   cj('li.crm-contact-permanently-delete span').html('<div class="icon delete-icon"></div>Delete Contact Permanently');
 
   //4715 remove delete/trash button; moved to action dropdown
-  cj('a.delete.button').parent('li.crm-delete-action.crm-contact-delete').remove();
-
-  //7367 move display name inline block; shrink form blocks
-  //cj('div.crm-summary-contactname-block').insertBefore('div.contactTopBar');
+  cj('li.crm-contact-delete').remove();
 
   //remove move privacy notes set
   cj('div.crm-custom-set-block-8').remove();
@@ -29,26 +26,6 @@
     if ( title.length > 30 ) {
       var short = cj.trim(title).substring(0, 30).slice(0, -1) + "...";
       cj(this).text(short);
-    }
-  });
-
-  //get contact ID
-  var contactID = {/literal}{$contactId};{literal}
-
-  //get changelog count
-  var postUrl = {/literal}"{crmURL p='civicrm/ajax/count/changelog' h=0 }"{literal};
-  cj.ajax({
-    type: "POST",
-    data:  "contactId=" + contactID + "&key={/literal}{crmKey name='civicrm/ajax/count/changelog'}{literal}",
-    url: postUrl,
-    success: function(tabCount){
-      if(Number(tabCount) > 0) {
-        var ele = cj('#tab_log a');
-        if (!ele.find('em').length) {
-          ele.append($('<em/>'));
-        }
-        ele.find('em').html(tabCount);
-      }
     }
   });
 

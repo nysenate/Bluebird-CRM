@@ -135,3 +135,14 @@ div.crm-address-block div.crm-summary-row a {
   background-color: #7EA5AF !important;
   min-width: 350px !important;
 }
+
+/*16676, 16706*/
+#crm-notification-container div.ui-notify-message-style,
+#crm-notification-container div.ui-notify-message-style a {
+  background: rgba(0,0,0,0.95) !important;
+  color: #dddddd !important;
+
+}
+#crm-notification-container div.ui-notify-message-style h1 {
+  color: skyblue !important;
+}

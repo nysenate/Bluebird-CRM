@@ -66,7 +66,7 @@ class CRM_Core_Config extends CRM_Core_Config_MagicMerge {
    *
    * @var CRM_Core_Config
    */
-  private static $_singleton = NULL;
+  private static $_singleton;
 
   /**
    * Singleton function used to manage this object.
@@ -87,11 +87,27 @@ class CRM_Core_Config extends CRM_Core_Config_MagicMerge {
       \Civi\Core\Container::boot($loadFromDB);
       if ($loadFromDB && self::$_singleton->dsn) {
         $domain = \CRM_Core_BAO_Domain::getDomain();
+        if (CIVICRM_UF === 'Standalone') {
+          // Standalone's session cannot be initialized until CiviCRM is booted,
+          // since it is defined in an extension, and we need the session
+          // initialized before calling applyLocale.
+          $sess = \CRM_Core_Session::singleton();
+          $sess->initialize();
+          if ($sess->getLoggedInContactID()) {
+            // Apply user's timezone.
+            if (is_callable([self::$_singleton->userSystem, 'setMySQLTimeZone'])) {
+              self::$_singleton->userSystem->setMySQLTimeZone();
+            }
+          }
+        }
         \CRM_Core_BAO_ConfigSetting::applyLocale(\Civi::settings($domain->id), $domain->locales);
 
         unset($errorScope);
 
-        CRM_Utils_Hook::config(self::$_singleton);
+        CRM_Utils_Hook::config(self::$_singleton, [
+          'civicrm' => TRUE,
+          'uf' => self::$_singleton->userSystem->isLoaded(),
+        ]);
         self::$_singleton->authenticate();
 
         // Extreme backward compat: $config binds to active domain at moment of setup.
@@ -265,13 +281,16 @@ class CRM_Core_Config extends CRM_Core_Config_MagicMerge {
    *
    * @param bool $sessionReset
    */
-  public function cleanupCaches($sessionReset = TRUE) {
+  public function cleanupCaches($sessionReset = FALSE) {
     // cleanup templates_c directory
     $this->cleanup(1, FALSE);
     UserJob::delete(FALSE)->addWhere('expires_date', '<', 'now')->execute();
     // clear all caches
     self::clearDBCache();
-    Civi::cache('session')->clear();
+    // Avoid clearing QuickForm sessions unless explicitly requested
+    if ($sessionReset) {
+      Civi::cache('session')->clear();
+    }
     Civi::cache('metadata')->clear();
     CRM_Core_DAO_AllCoreTables::flush();
     CRM_Utils_System::flushCache();
@@ -290,7 +309,7 @@ class CRM_Core_Config extends CRM_Core_Config_MagicMerge {
     if ($this->userPermissionClass->isModulePermissionSupported()) {
       // Can store permissions -- so do it!
       $this->userPermissionClass->upgradePermissions(
-        CRM_Core_Permission::basicPermissions()
+        CRM_Core_Permission::basicPermissions(TRUE)
       );
     }
     elseif (get_class($this->userPermissionClass) !== 'CRM_Core_Permission_UnitTests') {
@@ -333,7 +352,8 @@ class CRM_Core_Config extends CRM_Core_Config_MagicMerge {
     $queries = [
       'TRUNCATE TABLE civicrm_acl_cache',
       'TRUNCATE TABLE civicrm_acl_contact_cache',
-      'TRUNCATE TABLE civicrm_cache',
+      // Do not truncate, reduce risks of losing a quickform session
+      'DELETE FROM civicrm_cache WHERE group_name NOT LIKE "CiviCRM%Session"',
       'TRUNCATE TABLE civicrm_prevnext_cache',
       'UPDATE civicrm_group SET cache_date = NULL',
       'TRUNCATE TABLE civicrm_group_contact_cache',
@@ -344,6 +364,11 @@ class CRM_Core_Config extends CRM_Core_Config_MagicMerge {
     foreach ($queries as $query) {
       CRM_Core_DAO::executeQuery($query);
     }
+
+    // Clear the Redis prev-next cache, if there is one.
+    // Since we truncated the civicrm_cache table it is logical to also remove
+    // the same from the Redis cache here.
+    \Civi::service('prevnext')->deleteItem();
 
     // also delete all the import and export temp tables
     self::clearTempTables();
@@ -363,12 +388,10 @@ class CRM_Core_Config extends CRM_Core_Config_MagicMerge {
    *   tables created recently from being deleted.
    */
   public static function clearTempTables($timeInterval = FALSE): void {
-
-    $dao = new CRM_Core_DAO();
     $query = "
       SELECT TABLE_NAME as tableName
       FROM   INFORMATION_SCHEMA.TABLES
-      WHERE  TABLE_SCHEMA = %1
+      WHERE  TABLE_SCHEMA = DATABASE()
       AND TABLE_NAME LIKE 'civicrm_tmp_d%'
     ";
 
@@ -376,13 +399,9 @@ class CRM_Core_Config extends CRM_Core_Config_MagicMerge {
       $query .= " AND CREATE_TIME < DATE_SUB(NOW(), INTERVAL {$timeInterval})";
     }
 
-    $tableDAO = CRM_Core_DAO::executeQuery($query, [1 => [$dao->database(), 'String']]);
+    $tableDAO = CRM_Core_DAO::executeQuery($query);
     $tables = [];
     while ($tableDAO->fetch()) {
-      $tables[] = $tableDAO->tableName;
-    }
-    if (!empty($tables)) {
-      $table = implode(',', $tables);
       // If a User Job references the table do not drop it. This is a bit quick & dirty, but we don't want to
       // get into calling more sophisticated functions in a cache clear, and the table names are pretty unique
       // (ex: "civicrm_tmp_d_dflt_1234abcd5678efgh"), and the "metadata" may continue to evolve for the next
@@ -390,10 +409,14 @@ class CRM_Core_Config extends CRM_Core_Config_MagicMerge {
       // TODO: Circa v5.60+, consider a more precise cleanup. Discussion: https://github.com/civicrm/civicrm-core/pull/24538
       // A separate process will reap the UserJobs but here the goal is just not to delete them during cache clearing
       // if they are still referenced.
-      if (!CRM_Core_DAO::executeQuery("SELECT count(*) FROM civicrm_user_job WHERE metadata LIKE '%" . $tableDAO->tableName . "%'")) {
-        // drop leftover temporary tables
-        CRM_Core_DAO::executeQuery("DROP TABLE $table");
+      if (!CRM_Core_DAO::singleValueQuery("SELECT count(*) FROM civicrm_user_job WHERE metadata LIKE '%" . $tableDAO->tableName . "%'")) {
+        $tables[] = $tableDAO->tableName;
       }
+    }
+    if (!empty($tables)) {
+      $table = implode(',', $tables);
+      // drop leftover temporary tables
+      CRM_Core_DAO::executeQuery("DROP TABLE $table");
     }
   }
 
@@ -425,11 +448,7 @@ class CRM_Core_Config extends CRM_Core_Config_MagicMerge {
       $path = $_GET[$urlVar] ?? NULL;
     }
 
-    if ($path && preg_match('/^civicrm\/upgrade(\/.*)?$/', $path)) {
-      return TRUE;
-    }
-
-    return FALSE;
+    return ($path && preg_match('/^civicrm\/upgrade(\/.*)?$/', $path));
   }
 
   /**

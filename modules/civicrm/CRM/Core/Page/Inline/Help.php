@@ -22,6 +22,8 @@ class CRM_Core_Page_Inline_Help {
   public function run() {
     $args = $_REQUEST;
     $file = (string) ($args['file'] ?? '');
+    // windows - just replace so the regex can match
+    $file = str_replace('\\', '/', $file);
     if (preg_match('@^[a-zA-Z0-9_-]+(/[a-zA-Z0-9_-]+)*$@', $file)) {
       $additionalTPLFile = "$file.extra.hlp";
       $file .= '.hlp';
@@ -38,7 +40,7 @@ class CRM_Core_Page_Inline_Help {
       if ($smarty->template_exists($additionalTPLFile)) {
         $extraoutput .= trim($smarty->fetch($additionalTPLFile));
         // Allow override param to replace default text e.g. {hlp id='foo' override=1}
-        if ($smarty->get_template_vars('override_help_text')) {
+        if ($smarty->getTemplateVars('override_help_text')) {
           $output = '';
         }
       }

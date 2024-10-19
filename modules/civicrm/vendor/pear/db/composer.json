@@ -11,6 +11,11 @@
             "role": "Lead"
         },
         {
+            "email": "schengawegga@gmail.com",
+            "name": "Armin Graefe",
+            "role": "Lead"
+        },
+        {
             "email": "stig@php.net",
             "name": "Stig Bakken",
             "role": "Developer"

@@ -35,19 +35,19 @@ class CRM_Iats_ContributioniATSTest extends BaseTestClass {
       ->apply();
   }
 
-  public function setUp() {
+  public function setUp(): void {
     $this->_apiversion = 3;
     parent::setUp();
   }
 
-  public function tearDown() {
+  public function tearDown(): void {
     parent::tearDown();
   }
 
   /**
    * Test a Credit Card Contribution - one time iATS Credit Card - TEST41 - Backend
    */
-  public function testIATSCreditCardBackend() {
+  public function testIATSCreditCardBackend(): void {
 
     $params = array(
       'sequential' => 1,
@@ -64,14 +64,11 @@ class CRM_Iats_ContributioniATSTest extends BaseTestClass {
     $processor = $this->paymentProcessor->getPaymentProcessor();
     $this->paymentProcessorID = $processor['id'];
 
-    $form = new CRM_Contribute_Form_Contribution();
-    $form->_mode = 'Live';
-
     $contribution_params = array(
+      'soft_credit_contact_id' => array(),
       'total_amount' => 1.00,
       'financial_type_id' => 1,
-      'receive_date' => '08/03/2017',
-      'receive_date_time' => '11:59PM',
+      'receive_date' => date('Y-m-d H:i:s'),
       'contact_id' => $individual['id'],
       'payment_instrument_id' => 1,
       'contribution_status_id' => 1,
@@ -96,13 +93,16 @@ class CRM_Iats_ContributioniATSTest extends BaseTestClass {
       'hidden_AdditionalDetail' => 1,
       'hidden_Premium' => 1,
       'receipt_date' => '',
-      'receipt_date_time' => '',
+      'cancel_date' => '',
       'payment_processor_id' => $this->paymentProcessorID,
       'currency' => 'CAD',
       'source' => 'iATS CC TEST88',
     );
 
-    $form->testSubmit($contribution_params, CRM_Core_Action::ADD);
+    $form = $this->getFormObject('CRM_Contribute_Form_Contribution', $contribution_params);
+    $form->buildForm();
+    $form->_mode = 'Live';
+    $form->postProcess();
 
     $contribution = $this->callAPISuccessGetSingle('Contribution', array(
       'contact_id' => $individual['id'],
@@ -120,7 +120,7 @@ class CRM_Iats_ContributioniATSTest extends BaseTestClass {
   /**
    * Test a SWIPE Contribution - one time iATS SWIPE - TEST41 - Backend
    */
-  public function testIATSSWIPEBackend() {
+  public function testIATSSWIPEBackend(): void {
 
     $params = array(
       'sequential' => 1,
@@ -137,14 +137,11 @@ class CRM_Iats_ContributioniATSTest extends BaseTestClass {
     $processor = $this->paymentProcessor->getPaymentProcessor();
     $this->paymentProcessorID = $processor['id'];
 
-    $form = new CRM_Contribute_Form_Contribution();
-    $form->_mode = 'Live';
-
     $contribution_params = array(
+      'soft_credit_contact_id' => array(),
       'total_amount' => 2.00,
       'financial_type_id' => 1,
-      'receive_date' => '08/03/2017',
-      'receive_date_time' => '11:59PM',
+      'receive_date' => date('Y-m-d H:i:s'),
       'contact_id' => $individual['id'],
       'payment_instrument_id' => 1,
       'contribution_status_id' => 1,
@@ -170,13 +167,16 @@ class CRM_Iats_ContributioniATSTest extends BaseTestClass {
       'hidden_AdditionalDetail' => 1,
       'hidden_Premium' => 1,
       'receipt_date' => '',
-      'receipt_date_time' => '',
+      'cancel_date' => '',
       'payment_processor_id' => $this->paymentProcessorID,
       'currency' => 'CAD',
       'source' => 'iATS SWIPE TEST88',
     );
 
-    $form->testSubmit($contribution_params, CRM_Core_Action::ADD);
+    $form = $this->getFormObject('CRM_Contribute_Form_Contribution', $contribution_params);
+    $form->buildForm();
+    $form->_mode = 'Live';
+    $form->postProcess();
 
     $contribution = $this->callAPISuccessGetSingle('Contribution', array(
       'contact_id' => $individual['id'],

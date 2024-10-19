@@ -117,19 +117,12 @@ class CRM_Core_BAO_Block {
    *   true if the block has data, otherwise false
    */
   public static function dataExists($blockFields, &$params) {
-    //NYSS 4775
-    $isEmpty = TRUE;
     foreach ($blockFields as $field) {
-      if (!CRM_Utils_System::isNull(CRM_Utils_Array::value($field, $params))) {
-        $isEmpty = FALSE;
+      if (CRM_Utils_System::isNull($params[$field] ?? NULL)) {
+        return FALSE;
       }
     }
-    if ($isEmpty) {
-      return FALSE;
-    }
-    else {
-      return TRUE;
-    }
+    return TRUE;
   }
 
   /**
@@ -227,8 +220,8 @@ class CRM_Core_BAO_Block {
 
     $contactId = $params['contact_id'];
 
-    $updateBlankLocInfo = CRM_Utils_Array::value('updateBlankLocInfo', $params, FALSE);
-    $isIdSet = CRM_Utils_Array::value('isIdSet', $params[$blockName], FALSE);
+    $updateBlankLocInfo = $params['updateBlankLocInfo'] ?? FALSE;
+    $isIdSet = $params[$blockName]['isIdSet'] ?? FALSE;
 
     //get existing block ids.
     $blockIds = self::getBlockIds($blockName, $contactId, $entityElements);
@@ -251,11 +244,11 @@ class CRM_Core_BAO_Block {
       // if in some cases (eg. email used in Online Conribution Page, Profiles, etc.) id is not set
       // lets try to add using the previous method to avoid any false creation of existing data.
       foreach ($blockIds as $blockId => $blockValue) {
-        if (empty($value['id']) && $blockValue['locationTypeId'] == CRM_Utils_Array::value('location_type_id', $value) && !$isIdSet) {
+        if (empty($value['id']) && $blockValue['locationTypeId'] == ($value['location_type_id'] ?? NULL) && !$isIdSet) {
           $valueId = FALSE;
           if ($blockName == 'phone') {
             $phoneTypeBlockValue = $blockValue['phoneTypeId'] ?? NULL;
-            if ($phoneTypeBlockValue == CRM_Utils_Array::value('phone_type_id', $value)) {
+            if ($phoneTypeBlockValue == ($value['phone_type_id'] ?? NULL)) {
               $valueId = TRUE;
             }
           }
@@ -283,7 +276,7 @@ class CRM_Core_BAO_Block {
       // $updateBlankLocInfo will help take appropriate decision. CRM-5969
       if (!empty($value['id']) && !$dataExists && $updateBlankLocInfo) {
         //delete the existing record
-        $baoString::del($value['id']);
+        $baoString::deleteRecord($value);
         continue;
       }
       elseif (!$dataExists) {
@@ -301,7 +294,10 @@ class CRM_Core_BAO_Block {
       }
 
       $blockFields = array_merge($value, $contactFields);
-      $blocks[] = $baoString::create($blockFields);
+      if ($baoString === 'CRM_Core_BAO_Address') {
+        CRM_Core_BAO_Address::fixAddress($blockFields);
+      }
+      $blocks[] = $baoString::writeRecord($blockFields);
     }
 
     return $blocks;
@@ -326,7 +322,7 @@ class CRM_Core_BAO_Block {
     }
 
     $baoString = 'CRM_Core_BAO_' . $name;
-    $baoString::del($params['id']);
+    $baoString::deleteRecord($params);
   }
 
   /**
@@ -401,7 +397,7 @@ class CRM_Core_BAO_Block {
        * is_primary to 1
        * @see https://issues.civicrm.org/jira/browse/CRM-10451
        */
-      if ($existingEntities->N == 1 && $existingEntities->id == CRM_Utils_Array::value('id', $params)) {
+      if ($existingEntities->N == 1 && $existingEntities->id == ($params['id'] ?? NULL)) {
         $params['is_primary'] = 1;
         return;
       }
@@ -476,7 +472,7 @@ class CRM_Core_BAO_Block {
    * @param array $locations
    */
   public static function sortPrimaryFirst(&$locations) {
-    uasort($locations, 'self::primaryComparison');
+    uasort($locations, [__CLASS__, 'primaryComparison']);
   }
 
   /**

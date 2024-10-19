@@ -2,7 +2,7 @@
   // example: <div crm-mailing-block-preview crm-mailing="myMailing" on-preview="openPreview(myMailing, preview.mode)" on-send="sendEmail(myMailing,preview.recipient)">
   // note: the directive defines a variable called "preview" with any inputs supplied by the user (e.g. the target recipient for an example mailing)
 
-  angular.module('crmMosaico').directive('crmMosaicoBlockPreview', function(crmUiHelp) {
+  angular.module('crmMosaico').directive('crmMosaicoBlockPreview', function(crmUiHelp, crmMosaicoVariants) {
     return {
       templateUrl: '~/crmMosaico/BlockPreview.html',
       link: function(scope, elm, attr) {
@@ -25,6 +25,7 @@
 
           return ($.inArray(false, validityArr) == -1);
         };
+        scope.isSplit = crmMosaicoVariants.isSplit;
 
         scope.doPreview = function(mode) {
           scope.$eval(attr.onPreview, {

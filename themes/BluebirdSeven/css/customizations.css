@@ -108,6 +108,36 @@ input[type=color] {
   z-index: 100000 !important;
 }
 
+/*mosaico*/
+#bootstrap-theme .crm_wizard__body .form-group, #bootstrap-theme .crm_wizard__body .form-group-lg {
+  max-width: 650px !important;
+}
+#bootstrap-theme .crm_wizard__body .form-group div[crm-mailing-block-recipients] .select2-container-multi {
+  width: 300px !important;
+}
+
+/* loosely related to 16695 */
+#bootstrap-theme .crm_wizard__body textarea[name="approval_note"] {
+  min-width: 30%;
+  height: 10em;
+}
+/* loosely related to 16695 */
+#bootstrap-theme .crm_wizard__body div[ng-form="approveForm"] .label {
+  text-align: left;
+  padding-left: 0;
+}
+
+
+input#schedule-test-email {
+  width: auto !important;
+}
+a#send-test {
+  vertical-align: top !important;
+}
+#bootstrap-theme .crm-mosaico-template-item.thumbnail {
+  display: block;
+}
+
 /*********** BELOW SHOULD BE TEMPORARY! *************/
 
 /*remove old icons (should be unnecessary in future release of shoreditch...)*/

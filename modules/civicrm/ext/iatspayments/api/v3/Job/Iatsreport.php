@@ -65,7 +65,7 @@ function civicrm_api3_job_iatsreport($params) {
   }
   // CRM_Core_Error::debug_var('Payment Processors', $payment_processors);
   // get the settings: TODO allow more detailed configuration of which transactions to import?
-  $iats_settings = Civi::settings()->get('iats_settings');
+  $iats_settings = CRM_Iats_Utils::getSettings();
   // I also use the setttings to keep track of the last time I imported journal data from iATS.
   $iats_journal = Civi::settings()->get('iats_journal');
   foreach (array('quick', 'recur', 'series') as $setting) {
@@ -96,7 +96,6 @@ function civicrm_api3_job_iatsreport($params) {
       foreach ($process_methods_per_type as $method => $payment_status_id) {
         // initialize my counts
         $processed[$user_name][$type][$method] = 0;
-        // watchdog('civicrm_iatspayments_com', 'pp: <pre>!pp</pre>', array('!pp' => print_r($payment_processor,TRUE)), WATCHDOG_NOTICE);
         /* get approvals from yesterday, approvals from previous days, and then rejections for this payment processor */
         /* we're going to assume that all the payment_processors_per_type are using the same server */
         $iats_service_params['method'] = $method;
@@ -187,7 +186,6 @@ function civicrm_api3_job_iatsreport($params) {
     }
   }
   Civi::settings()->set('iats_journal', $iats_journal);
-  // watchdog('civicrm_iatspayments_com', 'found: <pre>!found</pre>', array('!found' => print_r($processed,TRUE)), WATCHDOG_NOTICE);
   $message = '';
   foreach ($processed as $user_name => $p) {
     foreach ($p as $type => $ps) {

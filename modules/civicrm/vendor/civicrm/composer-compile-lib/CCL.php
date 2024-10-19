@@ -1,5 +1,5 @@
 <?php
-// AUTO-GENERATED VIA /home/publisher/bknix-min/build/cividist/src/vendor/civicrm/composer-compile-lib/src/StubsTpl.php
+// AUTO-GENERATED VIA /home/jenkins/bknix-min/build/cividist/src/vendor/civicrm/composer-compile-lib/src/StubsTpl.php
 // If this file somehow becomes invalid (eg when patching CCL), you may safely delete and re-run install.
 use Symfony\Component\Filesystem\Exception\IOException;
 use Symfony\Component\Filesystem\Exception\FileNotFoundException;

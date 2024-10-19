@@ -59,7 +59,7 @@ class IDS_Caching_Apc implements IDS_Caching_Interface
     /**
      * Cache configuration
      *
-     * @var array
+     * @var IDS_Init
      */
     private $config = null;
 
@@ -82,7 +82,7 @@ class IDS_Caching_Apc implements IDS_Caching_Interface
      * Constructor
      *
      * @param  string $type caching type
-     * @param  array  $init the IDS_Init object
+     * @param  IDS_Init  $init the IDS_Init object
      * 
      * @return void
      */

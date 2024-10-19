@@ -34,14 +34,14 @@
         if (!$scope.selectedLayout.contact_type) {
           return true;
         } else if (!block.related_rel) {
-          return !block.contact_type || ($scope.selectedLayout.contact_type === block.contact_type);
+          return !block.contact_type || (block.contact_type.includes($scope.selectedLayout.contact_type));
         } else {
           var relationship = contactLayoutRelationshipOptions.getRelationshipFromOption(block.related_rel);
 
           if (relationship.direction === 'r') {
-            return (relationship.type.contact_type_a === block.contact_type &&
+            return (block.contact_type.includes(relationship.type.contact_type_a) &&
               relationship.type.contact_type_b === $scope.selectedLayout.contact_type) ||
-              (relationship.type.contact_type_b === block.contact_type &&
+              (block.contact_type.includes(relationship.type.contact_type_b) &&
                 relationship.type.contact_type_a === $scope.selectedLayout.contact_type);
           } else {
             var contactTypes = relationship.direction === 'ab' ?
@@ -49,7 +49,7 @@
               {onBlock: relationship.type.contact_type_b, viewing: relationship.type.contact_type_a};
 
             return $scope.selectedLayout.contact_type === contactTypes.viewing ||
-              block.contact_type === contactTypes.onBlock;
+              block.contact_type.includes(contactTypes.onBlock);
           }
         }
       };
@@ -90,7 +90,7 @@
           _.each(layout.blocks, function(row) {
             _.each(row, function(col, i) {
               row[i] = _.filter(col, function(block) {
-                return !block.contact_type || block.contact_type === layout.contact_type;
+                return !block.contact_type || block.contact_type.includes(layout.contact_type);
               });
             });
           });
@@ -247,7 +247,7 @@
       // Returns the set of icons for the given relationship type, direction, and block's contact type.
       function getIconsForRelationship(relationship, block) {
         if (relationship.direction === 'r') {
-          return block.contact_type === relationship.type.contact_type_a ?
+          return block.contact_type.includes(relationship.type.contact_type_a) ?
             {onBlock: relationship.type.contact_type_a, viewing: relationship.type.contact_type_b} :
             {onBlock: relationship.type.contact_type_b, viewing: relationship.type.contact_type_a};
         } else {

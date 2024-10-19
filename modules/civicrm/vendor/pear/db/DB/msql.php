@@ -443,7 +443,7 @@ class DB_msql extends DB_common
         $repeat = false;
         do {
             $this->pushErrorHandling(PEAR_ERROR_RETURN);
-            $result = $this->query("SELECT _seq FROM ${seqname}");
+            $result = $this->query("SELECT _seq FROM {$seqname}");
             $this->popErrorHandling();
             if ($ondemand && DB::isError($result) &&
                 $result->getCode() == DB_ERROR_NOSUCHTABLE) {
@@ -490,7 +490,7 @@ class DB_msql extends DB_common
         if (DB::isError($res)) {
             return $res;
         }
-        $res = $this->query("CREATE SEQUENCE ON ${seqname}");
+        $res = $this->query("CREATE SEQUENCE ON {$seqname}");
         return $res;
     }
 

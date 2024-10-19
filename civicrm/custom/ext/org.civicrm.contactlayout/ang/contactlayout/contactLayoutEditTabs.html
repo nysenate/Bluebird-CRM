@@ -9,7 +9,7 @@
   </div>
   <!--  Editable tabs -->
   <div ng-if="$ctrl.layout.tabs" ui-sortable="$ctrl.sortableOptions" ng-model="$ctrl.layout.tabs">
-    <div class="cse-tab crm-draggable" data-tab-id="{{ tab.id }}" ng-if="!tab.contact_type || !$ctrl.contactType || tab.contact_type === $ctrl.contactType" ng-class="{'cse-tab-disabled': !tab.is_active}" ng-repeat="tab in $ctrl.layout.tabs">
+    <div class="cse-tab crm-draggable" data-tab-id="{{ tab.id }}" ng-if="$ctrl.tabIsValid(tab)" ng-class="{'cse-tab-disabled': !tab.is_active}" ng-repeat="tab in $ctrl.layout.tabs">
       <span class="cse-tab-icon crm-editable-enabled" ng-if="tab.is_active" ng-click="$ctrl.pickTabIcon(tab)">
         <i class="{{ tab.icon || 'crm-i fa-puzzle-piece' }}"></i>
       </span>
@@ -22,7 +22,7 @@
   </div>
   <!-- Default tabs -->
   <div ng-if="!$ctrl.layout.tabs">
-    <div class="cse-tab" ng-repeat="tab in $ctrl.defaults">
+    <div class="cse-tab" ng-repeat="tab in $ctrl.defaultTabs" ng-if="$ctrl.tabIsValid(tab)">
       <span class="cse-tab-icon">
         <i class="{{ tab.icon || 'crm-i fa-puzzle-piece' }}"></i>
       </span>

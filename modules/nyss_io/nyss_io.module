@@ -1722,19 +1722,29 @@ function _processTags($tagContacts, $type = 'Keywords')
           if (empty($tagid)) {
             nyss_out('debug', "creating {$type}: {$tag}", true);
 
-            $sql = "
-              INSERT INTO civicrm_tag (name, parent_id, is_selectable, used_for, created_id, created_date)
-              VALUES ('{$tag}', {$parentId}, 1, 'civicrm_contact,civicrm_activity,civicrm_case', 1, NOW());
-            ";
-            CRM_Core_DAO::executeQuery($sql);
+            try {
+              $sql = "
+                INSERT INTO civicrm_tag (name, label, parent_id, is_selectable, used_for, created_id, created_date)
+                VALUES (%1, %1, %2, 1, 'civicrm_contact,civicrm_activity,civicrm_case', 1, NOW());
+              ";
+              CRM_Core_DAO::executeQuery($sql, [
+                1 => [$tag, 'String'],
+                2 => [$parentId, 'Positive'],
+              ]);
 
-            $sql = "
-              SELECT id
-              FROM civicrm_tag
-              WHERE parent_id = $parentId
-                AND name = '{$tag}';
-            ";
-            $tagid = CRM_Core_DAO::singleValueQuery($sql);
+              $sql = "
+                SELECT id
+                FROM civicrm_tag
+                WHERE parent_id = $parentId
+                  AND name = %1;
+              ";
+              $tagid = CRM_Core_DAO::singleValueQuery($sql, [
+                1 => [$tag, 'String'],
+              ]);
+            }
+            catch (CRM_Core_Exception $e) {
+              nyss_out('debug', $e, true);
+            }
 
             //$tagid = $tag['id'];
           }
@@ -1824,9 +1834,6 @@ function _processGroup($form_state, $imported_contacts, $new_contacts, $dryrun)
       $groupID = $group['id'];
     }
 
-    //now prepare array for adding contacts to group
-    $params = ['group_id' => $groupID];
-
     //construct the list of contacts to add
     switch ($form_state['values']['addtogroup_handling']) {
       case 'all' :
@@ -1840,22 +1847,30 @@ function _processGroup($form_state, $imported_contacts, $new_contacts, $dryrun)
         break;
     }
 
-    foreach ($groupContacts as $i => $contact_id) {
-      if ($i == 0)
-        $params['contact_id'] = $contact_id;
-      else
-        $params["contact_id.$i"] = $contact_id;
-    }
-    //CRM_Core_Error::debug_var('create group_contact params',$params);
+    if (!empty($groupContacts)) {
+      //prepare params for adding contacts to group
+      $params = [
+        'group_id' => $groupID,
+        'contact_id' => $groupContacts,
+        'status' => 'Added',
+      ];
+      //nyss_out('debug', $params, true);
+      nyss_out('debug', "group handing: {$form_state['values']['addtogroup_handling']}", true);
 
-    if (!$dryrun) {
-      $gc = civicrm_api3('group_contact', 'create', $params);
+      if (!$dryrun) {
+        try {
+          civicrm_api3('group_contact', 'create', $params);
+        }
+        catch (CRM_Core_Exception $e) {
+          nyss_out('debug', $e, true);
+        }
+      }
     }
 
     $groupContactsCount = count($groupContacts);
     nyss_out('status', "Adding {$groupContactsCount} to the {$groupName} group.", true);
   }
-} // _processGroup()
+}
 
 
 function _processEmailImport($new_contacts, $nyss_conn)

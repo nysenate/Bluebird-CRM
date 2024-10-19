@@ -8,7 +8,43 @@
 
       <!-- NYSS -->
       <div crmb-wizard-step crm-title="ts('Design')" ng-if="checkPerm('create mailings') || checkPerm('access CiviMail')" ng-form="designForm">
-        <div crm-mosaico-block-design crm-mailing="mailing" crm-mosaico-ctrl="mosaicoCtrl"></div>
+        <div ng-if="!isMailingSplit(mailing, 'body_html')">
+          <div crm-mosaico-block-design crm-mailing="mailing" crm-mailing-variant="null" crm-mailing-attachments="attachments" on-save="save()"></div>
+
+          <!-- NYSS 16662 -->
+          <!--<div class="text-center">
+            <button class="btn btn-primary-outline btn-xs"
+                    crm-confirm="{message: ts('With A/B testing, you can design two alternative versions of the mailing.')}"
+                    on-yes="splitDesign(mailing)">
+              <span class="fa fa-copy" aria-hidden="true"></span>
+              {{ts('Add A/B Test')}}
+            </button>
+          </div>-->
+        </div>
+
+        <div ng-if="isMailingSplit(mailing, 'body_html')">
+          <p class="text-center"><em>({{ts('Define two options for the design. We will use A/B testing to determine which is better.')}})</em></p>
+
+          <div class="panel panel-default" ng-repeat="design in getDesigns(mailing)">
+            <div class="panel-heading" >
+              <div style="float: right">
+                <button class="btn btn-primary-outline btn-xs"
+                        crm-confirm="{message: ts('Are you sure you want to delete %1? The other design will become primary.', {1: design.title})}"
+                        on-yes="unsplitDesign(mailing, design.vid)">
+                  <span class="fa fa-trash" aria-hidden="true"></span>
+                  {{ts('Delete')}}
+                </button>
+              </div>
+
+              <span class="required-mark">{{design.title}}</span>
+              <div style="clear: both"></div>
+            </div>
+            <div class="panel-body">
+              <div crm-mosaico-block-design crm-mailing="mailing" crm-mailing-attachments="attachments" crm-mailing-variant="design.vid" on-save="save()"></div>
+            </div>
+          </div>
+        </div>
+
       </div>
 
       <!-- NYSS -->
@@ -24,29 +60,30 @@
 
       <!-- NYSS -->
       <div crmb-wizard-step crm-title="ts('Approve')" ng-if="checkPerm('approve mailings') || checkPerm('access CiviMail')" ng-form="approveForm">
-        <div crm-mosaico-block-approve crm-mailing="mailing"></div>
+        <!-- NYSS 16695-->
+        <div crm-mailing-block-approve crm-mailing="mailing"></div>
       </div>
 
       <button class="btn btn-secondary-outline" crmb-wizard-button-position="left" ng-click="crmbWizardCtrl.previous()" ng-show="!crmbWizardCtrl.$first()">
-      <span class="btn-icon"><i class="fa fa-chevron-left"></i></span>
-      {{ts('Back')}}
-    </button>
+        <span class="btn-icon"><i class="fa fa-chevron-left"></i></span>
+        {{ts('Back')}}
+      </button>
 
       <button class="btn btn-danger-outline" crmb-wizard-button-position="left" ng-show="checkPerm('delete in CiviMail') && crmbWizardCtrl.$first()" ng-disabled="block.check()" crm-confirm="{title:ts('Delete Draft'), message:ts('Are you sure you want to permanently delete this mailing?')}"
           on-yes="delete()">
-      <span class="btn-icon"><i class="fa fa-trash"></i></span>
-      {{ts('Delete Draft')}}
-    </button>
+        <span class="btn-icon"><i class="fa fa-trash"></i></span>
+        {{ts('Delete Draft')}}
+      </button>
 
       <button class="btn btn-secondary-outline" crmb-wizard-button-position="right" ng-disabled="block.check()" ng-click="save().then(leave)">
-      <span class="btn-icon"><i class="fa fa-floppy-o"></i></span>
-      {{ts('Save Draft')}}
-    </button>
+        <span class="btn-icon"><i class="fa fa-floppy-o"></i></span>
+        {{ts('Save Draft')}}
+      </button>
 
       <button class="btn btn-primary" crmb-wizard-button-position="right" title="{{!crmbWizardCtrl.$validStep() ? ts('Complete all required-mark fields first') : ts('Next step')}}" ng-click="crmbWizardCtrl.next()" ng-show="!crmbWizardCtrl.$last()" ng-disabled="!crmbWizardCtrl.$validStep()">
-      <span class="btn-icon"><i class="fa fa-chevron-right"></i></span>
-      {{ts('Continue')}}
-    </button>
+        <span class="btn-icon"><i class="fa fa-chevron-right"></i></span>
+        {{ts('Continue')}}
+      </button>
 
       <!--NYSS 13568/14760-->
       <button ng-if="(!checkPerm('approve mailings') && !checkPerm('access CiviMail') && !checkPerm('create mailings')) || checkPerm('schedule mailings')" class="btn btn-primary" crmb-wizard-button-position="right" ng-show="crmbWizardCtrl.$last()" ng-disabled="block.check() || !crmbWizardCtrl.$validStep()" ng-click="submit()">
@@ -55,9 +92,9 @@
     </button>
 
      <button ng-if="checkPerm('approve mailings') || checkPerm('access CiviMail')" class="btn btn-primary" crmb-wizard-button-position="right" ng-show="crmbWizardCtrl.$last()" ng-disabled="block.check() || !crmbWizardCtrl.$validStep()" ng-click="approve('Approved')">
-     <span class="btn-icon"><i class="fa fa-send"></i></span>
+        <span class="btn-icon"><i class="fa fa-send"></i></span>
      {{ts('Approve and Submit Mailing')}}
-   </button>
+      </button>
 
     </div>
 

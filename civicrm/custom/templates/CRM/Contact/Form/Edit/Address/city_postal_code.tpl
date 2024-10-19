@@ -29,6 +29,7 @@
           </td>
       {/if}
     {/if}
+    <td colspan="2">&nbsp;&nbsp;</td>
 </tr>
 </table>
 </td></tr>

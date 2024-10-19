@@ -4,12 +4,13 @@
     
 
 Provides code to generate responses to common SASL mechanisms, including:
-- Digest-MD5
-- Cram-MD5
-- Plain
 - Anonymous
-- Login (Pseudo mechanism)
-- SCRAM	
+- Cram-MD5 (DEPRECATED)
+- Digest-MD5 (DEPRECATED)
+- External
+- Login (Pseudo mechanism) (DEPRECATED)
+- Plain
+- SCRAM
 
 [Homepage](http://pear.php.net/package/Auth_SASL/)
 

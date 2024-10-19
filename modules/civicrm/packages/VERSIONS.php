@@ -131,7 +131,6 @@
  * eZ Components  2009.1.2   BSD 3-cl.   http://ezcomponents.org/                                      local changes
  * html2text      0.9.1      GPL 3+      http://roundcube.net/download             copied from program/lib/Roundcube/rcube_html2text.php
  * reCAPTCHA      1.10       X11         http://recaptcha.net/
- * Snappy         ??         X11         https://github.com/knplabs/snappy
  * Backbone       0.9.9      X11/MIT     http://backbonejs.org/
  * Backone Forms  c6920b3c89 X11/MIT     https://github.com/powmedia/backbone-forms
  * Backbon.Collectionsubset d3de0d6804 X11/MIT https://github.com/anthonyshort/backbone.collectionsubset

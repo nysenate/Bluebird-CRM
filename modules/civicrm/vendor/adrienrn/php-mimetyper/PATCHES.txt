@@ -5,3 +5,7 @@ Update gitignore to ensure that sites that manage via git don't miss out on the 
 Source: https://patch-diff.githubusercontent.com/raw/adrienrn/php-mimetyper/pull/15.patch
 
 
+Apply patch to fix php8.2 deprecation notice on dynamic property $filename
+Source: https://patch-diff.githubusercontent.com/raw/adrienrn/php-mimetyper/pull/17.patch
+
+

@@ -17,10 +17,12 @@ use Symfony\Component\VarDumper\Cloner\Stub;
  * Casts Amqp related classes to array representation.
  *
  * @author Grégoire Pineau <lyrixx@lyrixx.info>
+ *
+ * @final since Symfony 4.4
  */
 class AmqpCaster
 {
-    private static $flags = [
+    private const FLAGS = [
         \AMQP_DURABLE => 'AMQP_DURABLE',
         \AMQP_PASSIVE => 'AMQP_PASSIVE',
         \AMQP_EXCLUSIVE => 'AMQP_EXCLUSIVE',
@@ -37,7 +39,7 @@ class AmqpCaster
         \AMQP_REQUEUE => 'AMQP_REQUEUE',
     ];
 
-    private static $exchangeTypes = [
+    private const EXCHANGE_TYPES = [
         \AMQP_EX_TYPE_DIRECT => 'AMQP_EX_TYPE_DIRECT',
         \AMQP_EX_TYPE_FANOUT => 'AMQP_EX_TYPE_FANOUT',
         \AMQP_EX_TYPE_TOPIC => 'AMQP_EX_TYPE_TOPIC',
@@ -131,7 +133,7 @@ class AmqpCaster
             $prefix.'flags' => self::extractFlags($c->getFlags()),
         ];
 
-        $type = isset(self::$exchangeTypes[$c->getType()]) ? new ConstStub(self::$exchangeTypes[$c->getType()], $c->getType()) : $c->getType();
+        $type = isset(self::EXCHANGE_TYPES[$c->getType()]) ? new ConstStub(self::EXCHANGE_TYPES[$c->getType()], $c->getType()) : $c->getType();
 
         // Recent version of the extension already expose private properties
         if (isset($a["\x00AMQPExchange\x00name"])) {
@@ -191,11 +193,11 @@ class AmqpCaster
         return $a;
     }
 
-    private static function extractFlags($flags)
+    private static function extractFlags(int $flags): ConstStub
     {
         $flagsArray = [];
 
-        foreach (self::$flags as $value => $name) {
+        foreach (self::FLAGS as $value => $name) {
             if ($flags & $value) {
                 $flagsArray[] = $name;
             }

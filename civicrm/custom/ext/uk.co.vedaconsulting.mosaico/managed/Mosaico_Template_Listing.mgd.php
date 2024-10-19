@@ -31,6 +31,9 @@ return [
         'description' => NULL,
         'mapping_id' => NULL,
       ],
+      'match' => [
+        'name',
+      ],
     ],
   ],
   [
@@ -95,6 +98,10 @@ return [
           'cssRules' => [],
         ],
         'acl_bypass' => FALSE,
+      ],
+      'match' => [
+        'name',
+        'saved_search_id',
       ],
     ],
   ],

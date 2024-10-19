@@ -17,7 +17,7 @@
 
     <filter>
         <whitelist>
-            <directory suffix=".php">Net/</directory>
+            <directory suffix=".php">Auth/</directory>
         </whitelist>
     </filter>
 

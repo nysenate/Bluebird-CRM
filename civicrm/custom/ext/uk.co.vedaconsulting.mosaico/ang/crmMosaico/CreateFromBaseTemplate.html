@@ -9,7 +9,7 @@
 
     <label>{{:: ts('Base Template') }}</label>
     <div class="form-inline">
-      <label style="width: 200px; margin-right: 10px;" class="text-center" ng-repeat="base in $ctrl.bases" ng-class="{'bg-info': base.type === $ctrl.model.base}">
+      <label style="width: 200px; margin-right: 10px;" class="text-center" ng-repeat="base in $ctrl.bases" ng-class="{'bg-info': base.baseDetails.name === $ctrl.model.base}">
         <!-- Todo: move inline stye to css file -->
         <img class="img-thumbnail" alt="{{ base.type }}" ng-src="{{:: base.thumbnail }}" style="
             object-fit: cover;
@@ -18,7 +18,7 @@
             object-position: top;
             background-color: transparent;
         ">
-        <input type="radio" name="base" required value="{{ base.type }}" ng-model="$ctrl.model.base">
+        <input type="radio" name="base" required value="{{ base.baseDetails.name }}" ng-model="$ctrl.model.base">
         {{:: base.type }}
       </label>
     </div>

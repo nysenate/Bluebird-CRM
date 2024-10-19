@@ -8,7 +8,7 @@
 
     crmMosaicoTemplates.whenLoaded().then(function() {
       ctrl.bases = _.sortBy(crmMosaicoTemplates.getBases(), 'type');
-      ctrl.model.base = ctrl.bases[0].type;
+      ctrl.model.base = ctrl.bases[0].baseDetails.name;
     });
 
     this.create = function() {

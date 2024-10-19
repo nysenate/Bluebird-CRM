@@ -279,7 +279,7 @@ class CRM_NYSS_BAO_NYSS {
       }
 
       $output[] = (!empty($field)) ? (
-      preg_match("/(?:${delimiter_esc}|${enclosure_esc}|\s)/", $field) ?
+      preg_match("/(?:{$delimiter_esc}|{$enclosure_esc}|\s)/", $field) ?
         ($enclosure . str_replace($enclosure, $enclosure . $enclosure, $field) . $enclosure) :
         $field
       ) : (($mysql_null) ? 'NULL' : NULL);

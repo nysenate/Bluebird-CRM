@@ -159,11 +159,15 @@ class RulesState {
         $this->variables[$name] = rules_wrap_data($data, $this->info[$name]);
         $this->info[$name]['handler'] = FALSE;
         if (!isset($data)) {
-          throw new RulesEvaluationException('Unable to load variable %name, aborting.', array('%name' => $name), NULL, RulesLog::INFO);
+          throw new RulesEvaluationException('Unable to load variable %name, aborting.', array(
+            '%name' => $name,
+          ), NULL, RulesLog::INFO);
         }
       }
       else {
-        throw new RulesEvaluationException('Unable to get variable %name, it is not defined.', array('%name' => $name), NULL, RulesLog::ERROR);
+        throw new RulesEvaluationException('Unable to get variable %name, it is not defined.', array(
+          '%name' => $name,
+        ), NULL, RulesLog::ERROR);
       }
     }
     return $this->variables[$name];
@@ -299,7 +303,9 @@ class RulesState {
       return $wrapper;
     }
     elseif (!$wrapper instanceof EntityMetadataWrapper) {
-      throw new RulesEvaluationException('Unable to apply data selector %selector. The specified variable is not wrapped correctly.', array('%selector' => $selector));
+      throw new RulesEvaluationException('Unable to apply data selector %selector. The specified variable is not wrapped correctly.', array(
+        '%selector' => $selector,
+      ));
     }
     try {
       foreach (explode(':', $parts[1]) as $name) {
@@ -312,13 +318,19 @@ class RulesState {
           $wrapper = $wrapper->get($name);
         }
         else {
-          throw new RulesEvaluationException('Unable to apply data selector %selector. The specified variable is not a list or a structure: %wrapper.', array('%selector' => $selector, '%wrapper' => $wrapper));
+          throw new RulesEvaluationException('Unable to apply data selector %selector. The specified variable is not a list or a structure: %wrapper.', array(
+            '%selector' => $selector,
+            '%wrapper' => $wrapper,
+          ));
         }
       }
     }
     catch (EntityMetadataWrapperException $e) {
       // In case of an exception, re-throw it.
-      throw new RulesEvaluationException('Unable to apply data selector %selector: %error', array('%selector' => $selector, '%error' => $e->getMessage()));
+      throw new RulesEvaluationException('Unable to apply data selector %selector: %error', array(
+        '%selector' => $selector,
+        '%error' => $e->getMessage(),
+      ));
     }
     return $wrapper;
   }

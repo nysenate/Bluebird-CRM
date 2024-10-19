@@ -34,9 +34,17 @@ class CRM_Utils_System_Joomla extends CRM_Utils_System_Base {
   }
 
   /**
+   * @internal
+   * @return bool
+   */
+  public function isLoaded(): bool {
+    return class_exists('JFactory');
+  }
+
+  /**
    * @inheritDoc
    */
-  public function createUser(&$params, $mail) {
+  public function createUser(&$params, $mailParam) {
     $baseDir = JPATH_SITE;
     $userParams = JComponentHelper::getParams('com_users');
 
@@ -72,7 +80,7 @@ class CRM_Utils_System_Joomla extends CRM_Utils_System_Base {
     $values['name'] = $fullname;
     $values['username'] = trim($params['cms_name']);
     $values['password1'] = $values['password2'] = $params['cms_pass'];
-    $values['email1'] = $values['email2'] = trim($params[$mail]);
+    $values['email1'] = $values['email2'] = trim($params[$mailParam]);
 
     $lang = JFactory::getLanguage();
     $lang->load('com_users', $baseDir);
@@ -80,6 +88,8 @@ class CRM_Utils_System_Joomla extends CRM_Utils_System_Base {
     $register = $model->register($values);
 
     $ufID = JUserHelper::getUserId($values['username']);
+    JUserHelper::addUserToGroup($ufID, $userType);
+
     return $ufID;
   }
 
@@ -100,20 +110,36 @@ class CRM_Utils_System_Joomla extends CRM_Utils_System_Base {
   }
 
   /**
-   * Check if username and email exists in the Joomla db.
-   *
-   * @param array $params
-   *   Array of name and mail values.
-   * @param array $errors
-   *   Array of errors.
-   * @param string $emailName
-   *   Field label for the 'email'.
+   * @inheritdoc
+   */
+  public function getEmailFieldName(CRM_Core_Form $form, array $fields):string {
+    $emailName = '';
+    $billingLocationTypeID = CRM_Core_BAO_LocationType::getBilling();
+    if (array_key_exists("email-{$billingLocationTypeID}", $fields)) {
+      // this is a transaction related page
+      $emailName = 'email-' . $billingLocationTypeID;
+    }
+    else {
+      // find the email field in a profile page
+      foreach ($fields as $name => $dontCare) {
+        if (str_starts_with($name, 'email')) {
+          $emailName = $name;
+          break;
+        }
+      }
+    }
+
+    return $emailName;
+  }
+
+  /**
+   * @inheritdoc
    */
   public function checkUserNameEmailExists(&$params, &$errors, $emailName = 'email') {
     $config = CRM_Core_Config::singleton();
 
-    $name = CRM_Utils_Array::value('name', $params);
-    $email = CRM_Utils_Array::value('mail', $params);
+    $name = $params['name'] ?? NULL;
+    $email = $params['mail'] ?? NULL;
     //don't allow the special characters and min. username length is two
     //regex \\ to match a single backslash would become '/\\\\/'
     $isNotValid = (bool) preg_match('/[\<|\>|\"|\'|\%|\;|\(|\)|\&|\\\\|\/]/im', $name);
@@ -175,7 +201,7 @@ class CRM_Utils_System_Joomla extends CRM_Utils_System_Base {
    */
   public function appendBreadCrumb($breadCrumbs) {
     $template = CRM_Core_Smarty::singleton();
-    $bc = $template->get_template_vars('breadcrumb');
+    $bc = $template->getTemplateVars('breadcrumb');
 
     if (is_array($breadCrumbs)) {
       foreach ($breadCrumbs as $crumbs) {
@@ -193,7 +219,7 @@ class CRM_Utils_System_Joomla extends CRM_Utils_System_Base {
         $bc[] = $crumbs;
       }
     }
-    $template->assign_by_ref('breadcrumb', $bc);
+    $template->assign('breadcrumb', $bc);
   }
 
   /**
@@ -245,8 +271,7 @@ class CRM_Utils_System_Joomla extends CRM_Utils_System_Base {
     $absolute = FALSE,
     $fragment = NULL,
     $frontend = FALSE,
-    $forceBackend = FALSE,
-    $htmlize = TRUE
+    $forceBackend = FALSE
   ) {
     $config = CRM_Core_Config::singleton();
     $separator = '&';
@@ -657,7 +682,7 @@ class CRM_Utils_System_Joomla extends CRM_Utils_System_Base {
 
     // CRM-14281 Joomla wasn't available during bootstrap, so hook_civicrm_config never executes.
     $config = CRM_Core_Config::singleton();
-    CRM_Utils_Hook::config($config);
+    CRM_Utils_Hook::config($config, ['uf' => TRUE]);
     return TRUE;
   }
 
@@ -952,7 +977,7 @@ class CRM_Utils_System_Joomla extends CRM_Utils_System_Base {
    *   - url: string. ex: "http://example.com/sites/all/modules/civicrm"
    *   - path: string. ex: "/var/www/sites/all/modules/civicrm"
    */
-  public function getCiviSourceStorage() {
+  public function getCiviSourceStorage():array {
     global $civicrm_root;
     if (!defined('CIVICRM_UF_BASEURL')) {
       throw new RuntimeException('Undefined constant: CIVICRM_UF_BASEURL');
@@ -999,6 +1024,33 @@ class CRM_Utils_System_Joomla extends CRM_Utils_System_Base {
       'ufAccessURL' => $ufAccessURL,
       'jAccessParams' => $jAccessParams,
     ];
+  }
+
+  /**
+   * @inheritdoc
+   */
+  public function getContactDetailsFromUser($uf_match):array {
+    $contactParameters = [];
+    $user = $uf_match['user'];
+    $contactParameters['email'] = $user->email;
+    if ($user->name) {
+      CRM_Utils_String::extractName($user->name, $contactParameters);
+    }
+
+    return $contactParameters;
+  }
+
+  /**
+   * @inheritdoc
+   */
+  public function modifyStandaloneProfile($profile, $params):string {
+    $urlReplaceWith = 'civicrm/profile/create&amp;gid=' . $params['gid'] . '&amp;reset=1';
+    $profile = str_replace('civicrm/admin/uf/group', $urlReplaceWith, $profile);
+
+    // FIXME: (CRM-3587) hack to make standalone profile work
+    // in Joomla without administrator login.
+    $profile = str_replace('/administrator/', '/index.php', $profile);
+    return $profile;
   }
 
 }
