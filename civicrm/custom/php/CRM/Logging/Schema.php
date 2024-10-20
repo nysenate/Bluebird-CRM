@@ -585,7 +585,8 @@ AND    (TABLE_NAME LIKE 'log_civicrm_%' $nonStandardTableNameString )
   /**
    * Add reports.
    */
-  private function addReports() {
+  //NYSS make public
+  public function addReports() {
     $titles = [
       'logging/contact/detail' => ts('Logging Details'),
       'logging/contact/summary' => ts('Contact Logging Report (Summary)'),
