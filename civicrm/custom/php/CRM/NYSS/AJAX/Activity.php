@@ -72,7 +72,7 @@ class CRM_NYSS_AJAX_Activity
 
     $params = CRM_Core_Page_AJAX::defaultSortAndPagerParams();
     $params += CRM_Core_Page_AJAX::validateParams($requiredParameters, $optionalParameters);
-    Civi::log()->debug(__METHOD__, ['$params' => $params]);
+    //Civi::log()->debug(__METHOD__, ['$params' => $params]);
 
     // get the activities
     $activities = self::getContactActivitySelector($params);
@@ -102,7 +102,7 @@ class CRM_NYSS_AJAX_Activity
           $activityFilter[$formSearchField] = array_map(function ($p) use ($dataType) {
             return CRM_Utils_Type::escape($p, $dataType);
           }, (array)$params[$searchField]);
-          
+
           if (in_array($searchField, array('activity_date_time_low', 'activity_date_time_high'))) {
             $activityFilter['activity_date_time_relative'] = 0;
           }
