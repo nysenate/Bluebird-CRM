@@ -2,3 +2,7 @@
 table.vb-container.fullwidth {
   border-spacing: 0 !important;
 }
+/*16725*/
+body.mo-standalone #main-toolbox #tooltabs.ui-tabs .ui-tabs-nav li {
+  margin: 1px 0 0 0;
+}
