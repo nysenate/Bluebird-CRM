@@ -17,6 +17,10 @@ define('DEFAULT_REPLYTO', 'bluebird.admin@nysenate.gov');
  */
 function mail_civicrm_config(&$config) {
   _mail_civix_civicrm_config($config);
+
+  //16724
+  Civi::dispatcher()->addListener('civi.search.autocompleteDefault', [
+    'CRM_NYSS_Mail_APIWrapperRecipient', 'autocompleteDefault'], -100);
 }
 
 function mail_civicrm_alterMenu(&$items) {
