@@ -19,7 +19,6 @@
 {if $rows}
 <div id="ltype">
 <p></p>
-{include file="CRM/common/pager.tpl" location="top"}
 {include file="CRM/common/pagerAToZ.tpl"}
 {include file="CRM/common/jsortable.tpl"}
 {strip}
@@ -44,7 +43,7 @@
     <td>{$row.start_date|crmDate}</td>
     <td>{if $row.end_date}{$row.end_date|crmDate}{else}({ts}ongoing{/ts}){/if}</td>
     <td>{$row.status_id}</td>
-    <td id={$row.id}>{$row.action|replace:'xx':$row.id}</td>
+    <td id={$row.id}>{$row.action|smarty:nodefaults|replace:'xx':$row.id}</td>
   </tr>
   {/foreach}
   </tbody>
@@ -53,7 +52,7 @@
 </div>
 {else}
 <div class="messages status no-popup">
-<div class="icon inform-icon"></div>
+{icon icon="fa-info-circle"}{/icon}
     {if $isSearch}
         {ts}There are no Personal Campaign Pages which match your search criteria.{/ts}
     {else}

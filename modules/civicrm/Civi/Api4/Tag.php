@@ -1,5 +1,4 @@
 <?php
-
 /*
  +--------------------------------------------------------------------+
  | Copyright CiviCRM LLC. All rights reserved.                        |
@@ -9,16 +8,6 @@
  | and copyright information, see https://civicrm.org/licensing       |
  +--------------------------------------------------------------------+
  */
-
-/**
- *
- * @package CRM
- * @copyright CiviCRM LLC https://civicrm.org/licensing
- * $Id$
- *
- */
-
-
 namespace Civi\Api4;
 
 /**
@@ -28,8 +17,11 @@ namespace Civi\Api4;
  * They are connected to those entities via the EntityTag table.
  *
  * @see https://docs.civicrm.org/user/en/latest/organising-your-data/groups-and-tags/#tags
+ * @searchable secondary
+ * @since 5.19
  * @package Civi\Api4
  */
 class Tag extends Generic\DAOEntity {
+  use Generic\Traits\ManagedEntity;
 
 }

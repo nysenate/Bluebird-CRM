@@ -7,7 +7,7 @@
  | and copyright information, see https://civicrm.org/licensing       |
  +--------------------------------------------------------------------+
 *}
-{if !$printOnly} {* NO print section starts *}
+{if empty($printOnly)} {* NO print section starts *}
 
   {* build the print pdf buttons *}
     <div class="crm-tasks">
@@ -19,21 +19,21 @@
             <table class="form-layout-compressed">
               <tr>
                 {include file="CRM/common/tasks.tpl" location="botton"}
-                {if $instanceUrl}
-                  <td>&nbsp;&nbsp;&raquo;&nbsp;<a href="{$instanceUrl}">{ts}Existing report(s) from this template{/ts}</a></td>
+                {if !empty($instanceUrl)}
+                  <td>&nbsp;&nbsp;<i class="crm-i fa-chevron-right" aria-hidden="true"></i> <a href="{$instanceUrl}">{ts}Existing report(s) from this template{/ts}</a></td>
                 {/if}
               </tr>
             </table>
           </td>
           <td>
             <table class="form-layout-compressed" align="right">
-              {if $chartSupported}
+              {if !empty($chartSupported)}
                 <tr>
                   <td>{$form.charts.html|crmAddClass:big}</td>
                   <td align="right">{$form.$chart.html}</td>
                 </tr>
               {/if}
-              {if $form.groups}
+              {if !empty($form.groups)}
                 <tr>
                   <td>
                     {$form.groups.html}{$form.$group.html}
@@ -42,7 +42,7 @@
                       (function($) {
                         $('#groups').val('').change(function() {
                           CRM.confirm({
-                            message: ts({/literal}'{ts escape='js' 1='<em>%1</em>'}Add all contacts to %1 group?{/ts}'{literal}, {1: $('option:selected', '#groups').text()})
+                            message: ts({/literal}'{ts escape='js' 1='<em>%1</em>'}Add all contacts to %1 group?{/ts}'{literal}, {1: CRM._.escape($('option:selected', '#groups').text())})
                           })
                             .on({
                               'crmConfirm:yes': function() {
@@ -71,7 +71,7 @@
       // Disable print/pdf output of charts
       $('select[name=charts]', 'form.crm-report-form').change(function() {
         var viewType = $(this).val(),
-          flashChartType = '{/literal}{if $chartType}{$chartType}{else}{/if}{literal}';
+          flashChartType = '{/literal}{if !empty($chartType)}{$chartType}{else}{/if}{literal}';
         $('#_qf_Summary_submit_pdf, #_qf_Summary_submit_print').prop('disabled', (viewType && flashChartType != viewType));
       });
     });

@@ -1,0 +1,39 @@
+{
+    "name": "civicrm/composer-compile-plugin",
+    "description": "Define a 'compile' event for all packages in the dependency-graph",
+    "type": "composer-plugin",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Tim Otten",
+            "email": "info@civicrm.org"
+        }
+    ],
+    "config": {
+        "platform": {
+            "php": "7.2"
+        }
+    },
+    "require": {
+        "composer-plugin-api": "^1.1 || ^2.0",
+        "php": ">=7.2",
+        "totten/lurkerlite": "^1.3"
+    },
+    "require-dev": {
+        "composer/composer": "~1.0",
+        "totten/process-helper": "^1.0.1"
+    },
+    "autoload": {
+        "psr-4": {
+            "Civi\\CompilePlugin\\": "src/"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "Civi\\CompilePlugin\\Tests\\": "tests/"
+        }
+    },
+    "extra": {
+        "class": "Civi\\CompilePlugin\\CompilePlugin"
+    }
+}

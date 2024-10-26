@@ -521,7 +521,6 @@ class CRM_ImportSampleData {
           $diData['custom_53'] = $di->ward_53;
           $diData['custom_54'] = $di->school_district_54;
           $diData['custom_55'] = $di->new_york_city_council_55;
-          $diData['custom_56'] = $di->neighborhood_56;
         }
 
         $contact['api.address.create'][] = array(

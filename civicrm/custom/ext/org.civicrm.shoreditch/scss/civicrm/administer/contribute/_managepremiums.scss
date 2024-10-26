@@ -1,5 +1,3 @@
-/* stylelint-disable max-nesting-depth, selector-max-compound-selectors, selector-no-qualifying-type, selector-max-id */
-
 &#{civi-page('admin-contribute-managepremiums')} {
   #crm-main-content-wrapper {
     .dataTables_wrapper {
@@ -20,14 +18,15 @@
       }
 
       .premium-full-disabled {
-        input[type='button'] {
+        button {
+          background: darken($crm-copy, $crm-darken-percentage);
           margin: 20px 0;
         }
       }
 
       .crm-contribution-manage_premiums-form-block {
         padding: 0;
-        
+
         .collapsible-title {
           margin-bottom: 0;
         }

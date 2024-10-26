@@ -214,7 +214,6 @@ $bluebird_db_info = array(
           'ward_53',
           'school_district_54',
           'new_york_city_council_55',
-          'neighborhood_56',
           'last_import_57'
       )
   ),

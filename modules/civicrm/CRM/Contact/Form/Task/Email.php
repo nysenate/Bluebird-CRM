@@ -25,10 +25,11 @@ class CRM_Contact_Form_Task_Email extends CRM_Contact_Form_Task {
   /**
    * Build all the data structures needed to build the form.
    *
-   * @throws \CiviCRM_API3_Exception
    * @throws \CRM_Core_Exception
    */
   public function preProcess() {
+    // @todo - more of the handling in this function should be move to the trait. Notably the title part is
+    //  not set on other forms that share the trait.
     // store case id if present
     $this->_caseId = CRM_Utils_Request::retrieve('caseid', 'String', $this, FALSE);
     $this->_context = CRM_Utils_Request::retrieve('context', 'Alphanumeric', $this);
@@ -56,41 +57,28 @@ class CRM_Contact_Form_Task_Email extends CRM_Contact_Form_Task {
         $displayName[] = CRM_Contact_BAO_Contact::displayName($val);
       }
 
-      CRM_Utils_System::setTitle(implode(',', $displayName) . ' - ' . ts('Email'));
+      $this->setTitle(implode(',', $displayName) . ' - ' . ts('Email'));
     }
     else {
-      CRM_Utils_System::setTitle(ts('New Email'));
+      $this->setTitle(ts('New Email'));
     }
     if ($this->_context === 'search') {
       $this->_single = TRUE;
     }
-    CRM_Contact_Form_Task_EmailCommon::preProcessFromAddress($this);
-
-    if (!$cid && $this->_context !== 'standalone') {
-      parent::preProcess();
+    if ($cid || $this->_context === 'standalone') {
+      // When search context is false the parent pre-process is not set. That avoids it changing the
+      // redirect url & attempting to set the search params of the form. It may have only
+      // historical significance.
+      $this->setIsSearchContext(FALSE);
     }
-
-    $this->assign('single', $this->_single);
-    if (CRM_Core_Permission::check('administer CiviCRM')) {
-      $this->assign('isAdmin', 1);
-    }
+    $this->traitPreProcess();
   }
 
   /**
-   * List available tokens for this form.
+   * Stub function  as EmailTrait calls this.
    *
-   * @return array
+   * @todo move some code from preProcess into here.
    */
-  public function listTokens() {
-    $tokens = CRM_Core_SelectValues::contactTokens();
-
-    if (isset($this->_caseId) || isset($this->_caseIds)) {
-      // For a single case, list tokens relevant for only that case type
-      $caseTypeId = isset($this->_caseId) ? CRM_Core_DAO::getFieldValue('CRM_Case_DAO_Case', $this->_caseId, 'case_type_id') : NULL;
-      $tokens += CRM_Core_SelectValues::caseTokens($caseTypeId);
-    }
-
-    return $tokens;
-  }
+  public function setContactIDs() {}
 
 }

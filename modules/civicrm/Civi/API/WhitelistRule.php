@@ -14,14 +14,14 @@ namespace Civi\API;
  * A WhitelistRule is used to determine if an API call is authorized.
  * For example:
  *
- * @code
+ * ```
  * new WhitelistRule(array(
  *   'entity' => 'Contact',
  *   'actions' => array('get','getsingle'),
  *   'required' => array('contact_type' => 'Organization'),
  *   'fields' => array('id', 'display_name', 'sort_name', 'created_date'),
  * ));
- * @endcode
+ * ```
  *
  * This rule would allow API requests that attempt to get contacts of type "Organization",
  * but only a handful of fields ('id', 'display_name', 'sort_name', 'created_date')
@@ -181,7 +181,7 @@ class WhitelistRule {
         // Kind'a silly we need to (re(re))parse here for each rule; would be more
         // performant if pre-parsed by Request::create().
         $options = _civicrm_api3_get_options_from_params($apiRequest['params'], TRUE, $apiRequest['entity'], 'get');
-        $return = \CRM_Utils_Array::value('return', $options, []);
+        $return = $options['return'] ?? [];
         $activatedFields = array_merge($activatedFields, array_keys($return));
       }
 
@@ -220,7 +220,7 @@ class WhitelistRule {
    *   API result.
    * @return array
    *   Modified API result.
-   * @throws \API_Exception
+   * @throws \CRM_Core_Exception
    */
   public function filter($apiRequest, $apiResult) {
     if ($this->fields === '*') {
@@ -238,7 +238,7 @@ class WhitelistRule {
         return $apiResult;
       }
     }
-    throw new \API_Exception(sprintf('Filtering failed for %s.%s. Unrecognized result format.', $apiRequest['entity'], $apiRequest['action']));
+    throw new \CRM_Core_Exception(sprintf('Filtering failed for %s.%s. Unrecognized result format.', $apiRequest['entity'], $apiRequest['action']));
   }
 
   /**

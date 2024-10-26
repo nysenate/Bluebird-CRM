@@ -10,15 +10,6 @@
  +--------------------------------------------------------------------+
  */
 
-/**
- *
- * @package CRM
- * @copyright CiviCRM LLC https://civicrm.org/licensing
- * $Id$
- *
- */
-
-
 namespace Civi\Api4\Generic\Traits;
 
 use Civi\API\Exception\NotImplementedException;
@@ -32,16 +23,31 @@ trait ArrayQueryActionTrait {
 
   /**
    * @param array $values
-   *   List of all rows
-   * @return array
-   *   Filtered list of rows
+   *   List of all rows to be filtered
+   * @param \Civi\Api4\Generic\Result $result
+   *   Object to store result
    */
-  protected function queryArray($values) {
+  protected function queryArray($values, $result) {
     $values = $this->filterArray($values);
     $values = $this->sortArray($values);
+
+    if (in_array('row_count', $this->getSelect())) {
+      $result->setCountMatched(count($values));
+    }
+    else {
+      // Set total count before applying limit
+      //
+      // This is kept here for backward compatibility, but could be confusing because
+      // the API behaviour is different with ArrayQueryActionTrait than with DAO
+      // queries. With DAO queries, the rowCount is only the same as the total
+      // matched count in specific cases, whereas with the implementation here we are
+      // setting rowCount explicitly to the matches count, before we apply limit.
+      $result->rowCount = count($values);
+    }
+
     $values = $this->limitArray($values);
     $values = $this->selectArray($values);
-    return $values;
+    $result->exchangeArray($values);
   }
 
   /**
@@ -60,7 +66,7 @@ trait ArrayQueryActionTrait {
    * @return bool
    */
   private function evaluateFilters($row) {
-    $where = $this->getWhere();
+    $where = array_values($this->getWhere());
     $allConditions = in_array($where[0], ['AND', 'OR', 'NOT']) ? $where : ['AND', $where];
     return $this->walkFilters($row, $allConditions);
   }
@@ -94,23 +100,25 @@ trait ArrayQueryActionTrait {
         return $result;
 
       default:
-        return $this->filterCompare($row, $filters);
+        return self::filterCompare($row, $filters);
     }
   }
 
   /**
    * @param array $row
    * @param array $condition
+   * @param int $index
    * @return bool
    * @throws \Civi\API\Exception\NotImplementedException
    */
-  private function filterCompare($row, $condition) {
-    if (!is_array($condition)) {
-      throw new NotImplementedException('Unexpected where syntax; expecting array.');
-    }
+  public static function filterCompare(array $row, array $condition, int $index = NULL): bool {
     $value = $row[$condition[0]] ?? NULL;
     $operator = $condition[1];
     $expected = $condition[2] ?? NULL;
+    // Comparison for aggregated values
+    if (isset($index) && is_array($value) && $operator !== 'IN' && $operator !== 'NOT IN') {
+      $value = $value[$index] ?? NULL;
+    }
     switch ($operator) {
       case '=':
       case '!=':
@@ -129,6 +137,10 @@ trait ArrayQueryActionTrait {
       case 'IS NULL':
       case 'IS NOT NULL':
         return is_null($value) == ($operator == 'IS NULL');
+
+      case 'IS EMPTY':
+      case 'IS NOT EMPTY':
+        return empty($value) == ($operator == 'IS EMPTY');
 
       case '>':
         return $value > $expected;
@@ -152,11 +164,31 @@ trait ArrayQueryActionTrait {
         $pattern = '/^' . str_replace('%', '.*', preg_quote($expected, '/')) . '$/i';
         return !preg_match($pattern, $value) == ($operator != 'LIKE');
 
+      case 'REGEXP':
+      case 'NOT REGEXP':
+      case 'REGEXP BINARY':
+      case 'NOT REGEXP BINARY':
+        // Perform case-sensitive matching for BINARY operator, otherwise insensitive
+        $i = str_ends_with($operator, 'BINARY') ? '' : 'i';
+        $pattern = '/' . str_replace('/', '\\/', $expected) . "/$i";
+        return !preg_match($pattern, $value) == str_starts_with($operator, 'NOT');
+
       case 'IN':
         return in_array($value, $expected);
 
       case 'NOT IN':
         return !in_array($value, $expected);
+
+      case 'CONTAINS':
+      case 'NOT CONTAINS':
+        if (is_array($value)) {
+          return in_array($expected, $value) == ($operator == 'CONTAINS');
+        }
+        elseif (is_string($value) || is_numeric($value)) {
+          // Lowercase check if string contains string
+          return (str_contains(strtolower((string) $value), strtolower((string) $expected))) == ($operator == 'CONTAINS');
+        }
+        return ($value == $expected) == ($operator == 'CONTAINS');
 
       default:
         throw new NotImplementedException("Unsupported operator: '$operator' cannot be used with array data");
@@ -199,8 +231,17 @@ trait ArrayQueryActionTrait {
       $values = [['row_count' => count($values)]];
     }
     elseif ($this->getSelect()) {
+      // Return only fields specified by SELECT
       foreach ($values as &$value) {
         $value = array_intersect_key($value, array_flip($this->getSelect()));
+      }
+    }
+    else {
+      // With no SELECT specified, return all values that are keyed by plain field name; omit those with :pseudoconstant suffixes
+      foreach ($values as &$value) {
+        $value = array_filter($value, function($key) {
+          return strpos($key, ':') === FALSE;
+        }, ARRAY_FILTER_USE_KEY);
       }
     }
     return $values;

@@ -8,11 +8,8 @@
  +--------------------------------------------------------------------+
 *}
 <div class="crm-form-block crm-block crm-contact-task-addtotag-form-block">
-<h3>
-{ts}Tag Contact(s){/ts}
-</h3>
-<div class="crm-submit-buttons">{include file="CRM/common/formButtons.tpl" location="top"}</div>
-<table class="form-layout-compressed">
+  <h3>{ts}Tag Contacts{/ts}</h3>
+  <table class="form-layout-compressed">
     <tr class="crm-contact-task-addtotag-form-block-tag">
         {*NYSS 13011*}
         <td class="label"><label>Issue Codes</label></td>
@@ -32,8 +29,7 @@
         {*NYSS 13011*}
         {include file="CRM/common/Tagset.tpl" tableLayout=1}
     </tr>
-
     <tr><td>{include file="CRM/Contact/Form/Task.tpl"}</td></tr>
-</table>
-    <div class="crm-submit-buttons">{include file="CRM/common/formButtons.tpl" location="bottom"}</div>
+  </table>
+  <div class="crm-submit-buttons">{include file="CRM/common/formButtons.tpl" location="bottom"}</div>
 </div>

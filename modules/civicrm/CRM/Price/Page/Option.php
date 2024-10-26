@@ -13,8 +13,6 @@
  *
  * @package CRM
  * @copyright CiviCRM LLC https://civicrm.org/licensing
- * $Id$
- *
  */
 
 /**
@@ -26,6 +24,8 @@
  *
  */
 class CRM_Price_Page_Option extends CRM_Core_Page {
+
+  use CRM_Financial_Form_SalesTaxTrait;
 
   public $useLivePageJS = TRUE;
 
@@ -68,31 +68,36 @@ class CRM_Price_Page_Option extends CRM_Core_Page {
       self::$_actionLinks = [
         CRM_Core_Action::UPDATE => [
           'name' => ts('Edit Option'),
-          'url' => 'civicrm/admin/price/field/option',
+          'url' => 'civicrm/admin/price/field/option/edit',
           'qs' => 'reset=1&action=update&oid=%%oid%%&fid=%%fid%%&sid=%%sid%%',
           'title' => ts('Edit Price Option'),
+          'weight' => -50,
         ],
         CRM_Core_Action::VIEW => [
           'name' => ts('View'),
-          'url' => 'civicrm/admin/price/field/option',
+          'url' => 'civicrm/admin/price/field/option/edit',
           'qs' => 'action=view&oid=%%oid%%',
           'title' => ts('View Price Option'),
+          'weight' => CRM_Core_Action::getLabel(CRM_Core_Action::VIEW),
         ],
         CRM_Core_Action::DISABLE => [
           'name' => ts('Disable'),
           'ref' => 'crm-enable-disable',
           'title' => ts('Disable Price Option'),
+          'weight' => CRM_Core_Action::getLabel(CRM_Core_Action::DISABLE),
         ],
         CRM_Core_Action::ENABLE => [
           'name' => ts('Enable'),
           'ref' => 'crm-enable-disable',
           'title' => ts('Enable Price Option'),
+          'weight' => CRM_Core_Action::getLabel(CRM_Core_Action::ENABLE),
         ],
         CRM_Core_Action::DELETE => [
           'name' => ts('Delete'),
-          'url' => 'civicrm/admin/price/field/option',
+          'url' => 'civicrm/admin/price/field/option/edit',
           'qs' => 'action=delete&oid=%%oid%%',
           'title' => ts('Disable Price Option'),
+          'weight' => CRM_Core_Action::getLabel(CRM_Core_Action::DELETE),
         ],
       ];
     }
@@ -104,7 +109,8 @@ class CRM_Price_Page_Option extends CRM_Core_Page {
    *
    * @return void
    */
-  public function browse() {
+  public function browse(): void {
+    $this->assign('usedBy', NULL);
     $priceOptions = civicrm_api3('PriceFieldValue', 'get', [
       'price_field_id' => $this->_fid,
          // Explicitly do not check permissions so we are not
@@ -126,12 +132,8 @@ class CRM_Price_Page_Option extends CRM_Core_Page {
       $isEvent = TRUE;
     }
 
-    $config = CRM_Core_Config::singleton();
     $taxRate = CRM_Core_PseudoConstant::getTaxRates();
-    // display taxTerm for priceFields
-    $invoiceSettings = Civi::settings()->get('contribution_invoice_settings');
-    $taxTerm = $invoiceSettings['tax_term'] ?? NULL;
-    $invoicing = $invoiceSettings['invoicing'] ?? NULL;
+
     $getTaxDetails = FALSE;
     foreach ($customOption as $id => $values) {
       $action = array_sum(array_keys(self::actionLinks()));
@@ -139,10 +141,10 @@ class CRM_Price_Page_Option extends CRM_Core_Page {
       if (isset($taxRate[$values['financial_type_id']])) {
         // Cast to float so trailing zero decimals are removed
         $customOption[$id]['tax_rate'] = (float) $taxRate[$values['financial_type_id']];
-        if ($invoicing && isset($customOption[$id]['tax_rate'])) {
+        if (Civi::settings()->get('invoicing') && isset($customOption[$id]['tax_rate'])) {
           $getTaxDetails = TRUE;
         }
-        $taxAmount = CRM_Contribute_BAO_Contribution_Utils::calculateTaxAmount($customOption[$id]['amount'], $customOption[$id]['tax_rate'], TRUE);
+        $taxAmount = CRM_Contribute_BAO_Contribution_Utils::calculateTaxAmount($customOption[$id]['amount'], $customOption[$id]['tax_rate']);
         $customOption[$id]['tax_amount'] = $taxAmount['tax_amount'];
       }
       if (!empty($values['financial_type_id'])) {
@@ -160,13 +162,9 @@ class CRM_Price_Page_Option extends CRM_Core_Page {
           $action -= CRM_Core_Action::DISABLE;
         }
       }
-      if (!empty($customOption[$id]['is_default'])) {
-        $customOption[$id]['is_default'] = '<img src="' . $config->resourceBase . 'i/check.gif" />';
-      }
-      else {
-        $customOption[$id]['is_default'] = '';
-      }
       $customOption[$id]['order'] = $customOption[$id]['weight'];
+      $customOption[$id]['help_pre'] ??= NULL;
+      $customOption[$id]['help_post'] ??= NULL;
       $customOption[$id]['action'] = CRM_Core_Action::formLink(self::actionLinks(), $action,
         [
           'oid' => $id,
@@ -187,11 +185,11 @@ class CRM_Price_Page_Option extends CRM_Core_Page {
       'id', $returnURL, $filter
     );
 
-    $this->assign('taxTerm', $taxTerm);
     $this->assign('getTaxDetails', $getTaxDetails);
     $this->assign('customOption', $customOption);
     $this->assign('sid', $this->_sid);
     $this->assign('isEvent', $isEvent);
+    $this->assign('taxTerm', $this->getSalesTaxTerm());
   }
 
   /**
@@ -215,6 +213,7 @@ class CRM_Price_Page_Option extends CRM_Core_Page {
 
       $usedBy = CRM_Price_BAO_PriceSet::getUsedBy($sid);
     }
+    $this->assign('usedBy', $usedBy ?? NULL);
     // set the userContext stack
     $session = CRM_Core_Session::singleton();
 
@@ -234,10 +233,9 @@ class CRM_Price_Page_Option extends CRM_Core_Page {
         $url
       );
       $this->assign('usedPriceSetTitle', CRM_Price_BAO_PriceFieldValue::getOptionLabel($oid));
-      $this->assign('usedBy', $usedBy);
       $comps = [
-        "Event" => "civicrm_event",
-        "Contribution" => "civicrm_contribution_page",
+        'Event' => 'civicrm_event',
+        'Contribution' => 'civicrm_contribution_page',
       ];
       $priceSetContexts = [];
       foreach ($comps as $name => $table) {

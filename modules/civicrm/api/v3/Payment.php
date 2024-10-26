@@ -24,46 +24,42 @@
  * @return array
  *   Array of financial transactions which are payments, if error an array with an error id and error message
  *
- * @throws \CiviCRM_API3_Exception
+ * @throws \CRM_Core_Exception
  */
 function civicrm_api3_payment_get($params) {
-  $financialTrxn = [];
-  $limit = '';
-  if (isset($params['options']) && !empty($params['options']['limit'])) {
-    $limit = $params['options']['limit'] ?? NULL;
-  }
-  $params['options']['limit'] = 0;
-  if (isset($params['trxn_id'])) {
-    $params['financial_trxn_id.trxn_id'] = $params['trxn_id'];
-  }
-  $eftParams = $params;
-  unset($eftParams['return']);
-  // @todo - why do we fetch EFT params at all?
-  $eft = civicrm_api3('EntityFinancialTrxn', 'get', $eftParams);
-  if (!empty($eft['values'])) {
-    $eftIds = [];
-    foreach ($eft['values'] as $efts) {
-      if (empty($efts['financial_trxn_id'])) {
-        continue;
-      }
-      $eftIds[] = $efts['financial_trxn_id'];
-      $map[$efts['financial_trxn_id']] = $efts['entity_id'];
+  $params['is_payment'] = TRUE;
+  $contributionID = $params['entity_id'] ?? NULL;
+
+  // In order to support contribution id we need to do an extra lookup.
+  if ($contributionID) {
+    $eftParams = [
+      'entity_id' => $contributionID,
+      'entity_table' => 'civicrm_contribution',
+      'options' => ['limit' => 0],
+      'financial_trxn_id.is_payment' => 1,
+    ];
+    $eft = civicrm_api3('EntityFinancialTrxn', 'get', $eftParams)['values'];
+    if (empty($eft)) {
+      return civicrm_api3_create_success([], $params, 'Payment', 'get');
     }
-    if (!empty($eftIds)) {
-      $ftParams = [
-        'id' => ['IN' => $eftIds],
-        'is_payment' => 1,
-      ];
-      if ($limit) {
-        $ftParams['options']['limit'] = $limit;
-      }
-      $financialTrxn = civicrm_api3('FinancialTrxn', 'get', $ftParams);
-      foreach ($financialTrxn['values'] as &$values) {
-        $values['contribution_id'] = $map[$values['id']];
-      }
+    $ftIds = array_column($eft, 'financial_trxn_id');
+    $params['financial_trxn_id'] = ['IN' => $ftIds];
+  }
+
+  $financialTrxn = civicrm_api3('FinancialTrxn', 'get', array_merge($params, ['sequential' => FALSE]))['values'];
+  if ($contributionID) {
+    foreach ($financialTrxn as &$values) {
+      $values['contribution_id'] = $contributionID;
     }
   }
-  return civicrm_api3_create_success(CRM_Utils_Array::value('values', $financialTrxn, []), $params, 'Payment', 'get');
+  elseif (!empty($financialTrxn)) {
+    $entityFinancialTrxns = civicrm_api3('EntityFinancialTrxn', 'get', ['financial_trxn_id' => ['IN' => array_keys($financialTrxn)], 'entity_table' => 'civicrm_contribution', 'options' => ['limit' => 0]])['values'];
+    foreach ($entityFinancialTrxns as $entityFinancialTrxn) {
+      $financialTrxn[$entityFinancialTrxn['financial_trxn_id']]['contribution_id'] = $entityFinancialTrxn['entity_id'];
+    }
+  }
+
+  return civicrm_api3_create_success($financialTrxn, $params, 'Payment', 'get');
 }
 
 /**
@@ -75,7 +71,7 @@ function civicrm_api3_payment_get($params) {
  * @return array
  *   Api result array
  *
- * @throws \CiviCRM_API3_Exception
+ * @throws \CRM_Core_Exception
  */
 function civicrm_api3_payment_delete($params) {
   return civicrm_api3('FinancialTrxn', 'delete', $params);
@@ -90,21 +86,23 @@ function civicrm_api3_payment_delete($params) {
  * @return array
  *   Api result array
  *
- * @throws \CiviCRM_API3_Exception
- * @throws API_Exception
+ * @throws \CRM_Core_Exception
+ * @throws CRM_Core_Exception
  */
 function civicrm_api3_payment_cancel($params) {
   $eftParams = [
     'entity_table' => 'civicrm_contribution',
     'financial_trxn_id' => $params['id'],
+    'return' => ['entity', 'amount', 'entity_id', 'financial_trxn_id.check_number'],
   ];
   $entity = civicrm_api3('EntityFinancialTrxn', 'getsingle', $eftParams);
 
   $paymentParams = [
     'total_amount' => -$entity['amount'],
     'contribution_id' => $entity['entity_id'],
-    'trxn_date' => CRM_Utils_Array::value('trxn_date', $params, 'now'),
+    'trxn_date' => $params['trxn_date'] ?? 'now',
     'cancelled_payment_id' => $params['id'],
+    'check_number' => $entity['financial_trxn_id.check_number'] ?? NULL,
   ];
 
   foreach (['trxn_id', 'payment_instrument_id'] as $permittedParam) {
@@ -126,7 +124,6 @@ function civicrm_api3_payment_cancel($params) {
  *   Api result array
  *
  * @throws \CRM_Core_Exception
- * @throws \CiviCRM_API3_Exception
  */
 function civicrm_api3_payment_create($params) {
   if (empty($params['skipCleanMoney'])) {
@@ -135,12 +132,6 @@ function civicrm_api3_payment_create($params) {
         $params[$field] = CRM_Utils_Rule::cleanMoney($params[$field]);
       }
     }
-  }
-  if (!empty($params['payment_processor'])) {
-    // I can't find evidence this is passed in - I was gonna just remove it but decided to deprecate  as I see getToFinancialAccount
-    // also anticipates it.
-    CRM_Core_Error::deprecatedFunctionWarning('passing payment_processor is deprecated - use payment_processor_id');
-    $params['payment_processor_id'] = $params['payment_processor'];
   }
   // Check if it is an update
   if (!empty($params['id'])) {
@@ -276,6 +267,22 @@ function _civicrm_api3_payment_create_spec(&$params) {
         'type' => 'Text',
       ],
     ],
+    'order_reference' => [
+      'name' => 'order_reference',
+      'type' => CRM_Utils_Type::T_STRING,
+      'title' => 'Order Reference',
+      'description' => 'Payment Processor external order reference',
+      'maxlength' => 255,
+      'size' => 25,
+      'where' => 'civicrm_financial_trxn.order_reference',
+      'table_name' => 'civicrm_financial_trxn',
+      'entity' => 'FinancialTrxn',
+      'bao' => 'CRM_Financial_DAO_FinancialTrxn',
+      'localizable' => 0,
+      'html' => [
+        'type' => 'Text',
+      ],
+    ],
     'check_number' => [
       'name' => 'check_number',
       'type' => CRM_Utils_Type::T_STRING,
@@ -295,7 +302,7 @@ function _civicrm_api3_payment_create_spec(&$params) {
     'pan_truncation' => [
       'name' => 'pan_truncation',
       'type' => CRM_Utils_Type::T_STRING,
-      'title' => ts('Pan Truncation'),
+      'title' => ts('PAN Truncation'),
       'description' => ts('Last 4 digits of credit card'),
       'maxlength' => 4,
       'size' => 4,
@@ -325,10 +332,6 @@ function _civicrm_api3_payment_get_spec(&$params) {
       'title' => ts('Contribution ID'),
       'type' => CRM_Utils_Type::T_INT,
     ],
-    'entity_table' => [
-      'title' => ts('Entity Table'),
-      'api.default' => 'civicrm_contribution',
-    ],
     'entity_id' => [
       'title' => ts('Entity ID'),
       'type' => CRM_Utils_Type::T_INT,
@@ -337,6 +340,11 @@ function _civicrm_api3_payment_get_spec(&$params) {
     'trxn_id' => [
       'title' => ts('Transaction ID'),
       'description' => ts('Transaction id supplied by external processor. This may not be unique.'),
+      'type' => CRM_Utils_Type::T_STRING,
+    ],
+    'order_reference' => [
+      'title' => ts('Order Reference'),
+      'description' => ts('Payment Processor external order reference'),
       'type' => CRM_Utils_Type::T_STRING,
     ],
     'trxn_date' => [

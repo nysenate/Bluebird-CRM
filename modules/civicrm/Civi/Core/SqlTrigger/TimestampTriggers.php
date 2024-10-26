@@ -119,7 +119,7 @@ class TimestampTriggers {
    *
    * @param array $info
    *   See hook_civicrm_triggerInfo.
-   * @param string|NULL $tableFilter
+   * @param string|null $tableFilter
    *   See hook_civicrm_triggerInfo.
    */
   public function alterTriggerInfo(&$info, $tableFilter = NULL) {
@@ -195,13 +195,13 @@ class TimestampTriggers {
         'table' => $relatedTableNames,
         'when' => 'AFTER',
         'event' => ['INSERT', 'UPDATE'],
-        'sql' => "\nUPDATE {$this->getTableName()} SET {$this->getModifiedDate()} = CURRENT_TIMESTAMP WHERE id = NEW.$contactRefColumn;\n",
+        'sql' => "UPDATE {$this->getTableName()} SET {$this->getModifiedDate()} = CURRENT_TIMESTAMP WHERE id = NEW.$contactRefColumn;",
       ];
       $info[] = [
         'table' => $relatedTableNames,
         'when' => 'AFTER',
         'event' => ['DELETE'],
-        'sql' => "\nUPDATE {$this->getTableName()} SET {$this->getModifiedDate()} = CURRENT_TIMESTAMP WHERE id = OLD.$contactRefColumn;\n",
+        'sql' => "UPDATE {$this->getTableName()} SET {$this->getModifiedDate()} = CURRENT_TIMESTAMP WHERE id = OLD.$contactRefColumn;",
       ];
     }
   }
@@ -299,12 +299,10 @@ class TimestampTriggers {
     $relations = $this->getRelations();
 
     if ($this->getCustomDataEntity()) {
-      $customGroupDAO = \CRM_Core_BAO_CustomGroup::getAllCustomGroupsByBaseEntity($this->getCustomDataEntity());
-      $customGroupDAO->is_multiple = 0;
-      $customGroupDAO->find();
-      while ($customGroupDAO->fetch()) {
+      $customGroups = \CRM_Core_BAO_CustomGroup::getAll(['extends' => $this->getCustomDataEntity(), 'is_multiple' => FALSE]);
+      foreach ($customGroups as $customGroup) {
         $relations[] = [
-          'table' => $customGroupDAO->table_name,
+          'table' => $customGroup['table_name'],
           'column' => 'entity_id',
         ];
       }

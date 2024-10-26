@@ -20,8 +20,6 @@
  *
  * @package CRM
  * @copyright CiviCRM LLC https://civicrm.org/licensing
- * $Id$
- *
  */
 class CRM_Core_Selector_Controller {
 
@@ -112,9 +110,11 @@ class CRM_Core_Selector_Controller {
    * Are we in print mode? if so we need to modify the display
    * functionality to do a minimal display :)
    *
-   * @var bool
+   * @var int|string
+   *   Should match a CRM_Core_Smarty::PRINT_* constant,
+   *   or equal 0 if not in print mode
    */
-  protected $_print = FALSE;
+  protected $_print = 0;
 
   /**
    * The storage object (typically a form or a page)
@@ -158,6 +158,8 @@ class CRM_Core_Selector_Controller {
    */
   protected $_dynamicAction = FALSE;
 
+  protected $_case;
+
   /**
    * Class constructor.
    *
@@ -181,8 +183,8 @@ class CRM_Core_Selector_Controller {
   public function __construct($object, $pageID, $sortID, $action, $store = NULL, $output = self::TEMPLATE, $prefix = NULL, $case = NULL) {
 
     $this->_object = $object;
-    $this->_pageID = $pageID ? $pageID : 1;
-    $this->_sortID = $sortID ? $sortID : NULL;
+    $this->_pageID = $pageID ?: 1;
+    $this->_sortID = $sortID ?: NULL;
     $this->_action = $action;
     $this->_store = $store;
     $this->_output = $output;
@@ -230,7 +232,7 @@ class CRM_Core_Selector_Controller {
       $params['rowCount'] = $storeRowCount;
     }
     elseif (!isset($params['rowCount'])) {
-      $params['rowCount'] = CRM_Utils_Pager::ROWCOUNT;
+      $params['rowCount'] = Civi::settings()->get('default_pager_size');
     }
 
     $this->_pager = new CRM_Utils_Pager($params);
@@ -317,13 +319,13 @@ class CRM_Core_Selector_Controller {
       }
       else {
         // assign to template and display them.
-        self::$_template->assign_by_ref('rows', $rows);
-        self::$_template->assign_by_ref('columnHeaders', $columnHeaders);
+        self::$_template->assign('rows', $rows);
+        self::$_template->assign('columnHeaders', $columnHeaders);
       }
     }
     else {
       // output requires paging/sorting capability
-      $rows = self::getRows($this);
+      $rows = $this->getRows($this);
       CRM_Utils_Hook::searchColumns($contextName, $columnHeaders, $rows, $this);
       $reorderedHeaders = [];
       $noWeightHeaders = [];
@@ -357,11 +359,11 @@ class CRM_Core_Selector_Controller {
         $this->_store->set("{$this->_prefix}summary", $summary);
       }
       else {
-        self::$_template->assign_by_ref("{$this->_prefix}pager", $this->_pager);
-        self::$_template->assign_by_ref("{$this->_prefix}sort", $this->_sort);
+        self::$_template->assign("{$this->_prefix}pager", $this->_pager);
+        self::$_template->assign("{$this->_prefix}sort", $this->_sort);
 
-        self::$_template->assign_by_ref("{$this->_prefix}columnHeaders", $finalColumnHeaders);
-        self::$_template->assign_by_ref("{$this->_prefix}rows", $rows);
+        self::$_template->assign("{$this->_prefix}columnHeaders", $finalColumnHeaders);
+        self::$_template->assign("{$this->_prefix}rows", $rows);
         self::$_template->assign("{$this->_prefix}rowsEmpty", !$rows);
         self::$_template->assign("{$this->_prefix}qill", $qill);
         self::$_template->assign("{$this->_prefix}summary", $summary);
@@ -448,7 +450,7 @@ class CRM_Core_Selector_Controller {
    * @return void
    */
   public function moveFromSessionToTemplate() {
-    self::$_template->assign_by_ref("{$this->_prefix}pager", $this->_pager);
+    self::$_template->assign("{$this->_prefix}pager", $this->_pager);
 
     $rows = $this->_store->get("{$this->_prefix}rows");
 
@@ -462,8 +464,18 @@ class CRM_Core_Selector_Controller {
       );
     }
 
-    self::$_template->assign_by_ref("{$this->_prefix}sort", $this->_sort);
-    self::$_template->assign("{$this->_prefix}columnHeaders", $this->_store->get("{$this->_prefix}columnHeaders"));
+    self::$_template->assign("{$this->_prefix}sort", $this->_sort);
+    $columnHeaders = (array) $this->_store->get("{$this->_prefix}columnHeaders");
+    foreach ($columnHeaders as $index => $columnHeader) {
+      // Fill out the keys to avoid e-notices.
+      if (!isset($columnHeader['sort'])) {
+        $columnHeaders[$index]['sort'] = NULL;
+      }
+      if (!isset($columnHeader['name'])) {
+        $columnHeaders[$index]['name'] = NULL;
+      }
+    }
+    self::$_template->assign("{$this->_prefix}columnHeaders", $columnHeaders);
     self::$_template->assign("{$this->_prefix}rows", $rows);
     self::$_template->assign("{$this->_prefix}rowsEmpty", $this->_store->get("{$this->_prefix}rowsEmpty"));
     self::$_template->assign("{$this->_prefix}qill", $this->_store->get("{$this->_prefix}qill"));
@@ -474,13 +486,8 @@ class CRM_Core_Selector_Controller {
     }
 
     self::$_template->assign('tplFile', $this->_object->getHookedTemplateFileName());
-    if ($this->_print) {
-      $content = self::$_template->fetch('CRM/common/print.tpl');
-    }
-    else {
-      $config = CRM_Core_Config::singleton();
-      $content = self::$_template->fetch('CRM/common/' . strtolower($config->userFramework) . '.tpl');
-    }
+    $contentTpl = CRM_Utils_System::getContentTemplate($this->_print);
+    $content = self::$_template->fetch($contentTpl);
     echo CRM_Utils_System::theme($content, $this->_print);
   }
 
@@ -508,7 +515,9 @@ class CRM_Core_Selector_Controller {
   /**
    * Setter for print.
    *
-   * @param bool $print
+   * @param int|string $print
+   *   Should match a CRM_Core_Smarty::PRINT_* constant,
+   *   or equal 0 if not in print mode
    *
    * @return void
    */
@@ -519,8 +528,9 @@ class CRM_Core_Selector_Controller {
   /**
    * Getter for print.
    *
-   * @return bool
-   *   return the print value
+   * @return int|string
+   *   Value matching a CRM_Core_Smarty::PRINT_* constant,
+   *   or 0 if not in print mode
    */
   public function getPrint() {
     return $this->_print;

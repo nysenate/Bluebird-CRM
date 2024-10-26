@@ -24,8 +24,7 @@
  * @return array
  *   API result array.
  *
- * @throws \API_Exception
- * @throws \CiviCRM_API3_Exception
+ * @throws \CRM_Core_Exception
  */
 function civicrm_api3_loc_block_create($params) {
   $entities = [];
@@ -55,7 +54,7 @@ function civicrm_api3_loc_block_create($params) {
         }
         // Bother calling the api.
         else {
-          $info['contact_id'] = CRM_Utils_Array::value('contact_id', $info, 'null');
+          $info['contact_id'] ??= 'null';
           $result = civicrm_api3($item, 'create', $info);
           $entities[$key] = $result['values'][$result['id']];
           $params[$key . '_id'] = $result['id'];
@@ -71,7 +70,7 @@ function civicrm_api3_loc_block_create($params) {
     _civicrm_api3_object_to_array($dao, $values[$dao->id]);
     return civicrm_api3_create_success($values, $params, 'LocBlock', 'create', $dao);
   }
-  throw new API_Exception('Unable to create LocBlock. Please check your params.');
+  throw new CRM_Core_Exception('Unable to create LocBlock. Please check your params.');
 }
 
 /**

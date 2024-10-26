@@ -22,12 +22,12 @@
  *
  * @return array
  *   API Success Array
- * @throws \API_Exception
+ * @throws \CRM_Core_Exception
  * @throws \Civi\API\Exception\UnauthorizedException
  */
 function civicrm_api3_logging_revert($params) {
   $schema = new CRM_Logging_Schema();
-  $reverter = new CRM_Logging_Reverter($params['log_conn_id'], CRM_Utils_Array::value('log_date', $params));
+  $reverter = new CRM_Logging_Reverter($params['log_conn_id'], $params['log_date'] ?? NULL);
   $tables = !empty($params['tables']) ? (array) $params['tables'] : $schema->getLogTablesForContact();
   $reverter->calculateDiffsFromLogConnAndDate($tables);
   $reverter->revert();
@@ -39,7 +39,7 @@ function civicrm_api3_logging_revert($params) {
  *
  * @param array $params
  *
- * @throws \API_Exception
+ * @throws \CRM_Core_Exception
  * @throws \Civi\API\Exception\UnauthorizedException
  */
 function _civicrm_api3_logging_revert_spec(&$params) {
@@ -73,13 +73,13 @@ function _civicrm_api3_logging_revert_spec(&$params) {
  *
  * @return array
  *   API Success Array
- * @throws \API_Exception
+ * @throws \CRM_Core_Exception
  * @throws \Civi\API\Exception\UnauthorizedException
  */
 function civicrm_api3_logging_get($params) {
   $schema = new CRM_Logging_Schema();
   $interval = (empty($params['log_date'])) ? NULL : $params['interval'];
-  $differ = new CRM_Logging_Differ($params['log_conn_id'], CRM_Utils_Array::value('log_date', $params), $interval);
+  $differ = new CRM_Logging_Differ($params['log_conn_id'], $params['log_date'] ?? NULL, $interval);
   $tables = !empty($params['tables']) ? (array) $params['tables'] : $schema->getLogTablesForContact();
   return civicrm_api3_create_success($differ->getAllChangesForConnection($tables));
 }
@@ -89,7 +89,7 @@ function civicrm_api3_logging_get($params) {
  *
  * @param array $params
  *
- * @throws \API_Exception
+ * @throws \CRM_Core_Exception
  * @throws \Civi\API\Exception\UnauthorizedException
  */
 function _civicrm_api3_logging_get_spec(&$params) {

@@ -2,11 +2,11 @@ name = Chaos tools plugins test
 description = Provides hooks for testing ctools plugins.
 package = Chaos tool suite
 core = 7.x
-dependencies[] = ctools
+dependencies[] = ctools:ctools
 hidden = TRUE
 
-; Information added by Drupal.org packaging script on 2019-02-08
-version = "7.x-1.15"
+; Information added by Drupal.org packaging script on 2023-01-31
+version = "7.x-1.21"
 core = "7.x"
 project = "ctools"
-datestamp = "1549603691"
+datestamp = "1675152418"

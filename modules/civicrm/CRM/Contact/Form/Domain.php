@@ -49,31 +49,21 @@ class CRM_Contact_Form_Domain extends CRM_Core_Form {
   protected $_locationDefaults = [];
 
   /**
-   * How many locationBlocks should we display?
-   *
-   * @var int
-   * @const
-   */
-  const LOCATION_BLOCKS = 1;
-
-  /**
    * Explicitly declare the entity api name.
    */
-  public function getDefaultEntity() {
+  public function getDefaultEntity(): string {
     return 'Domain';
   }
 
   /**
    * Explicitly declare the form context.
    */
-  public function getDefaultContext() {
+  public function getDefaultContext(): string {
     return 'create';
   }
 
   public function preProcess() {
-    CRM_Utils_System::setTitle(ts('Organization Address and Contact Info'));
-    $breadCrumbPath = CRM_Utils_System::url('civicrm/admin', 'reset=1');
-    CRM_Utils_System::appendBreadCrumb(ts('Administer CiviCRM'), $breadCrumbPath);
+    $this->setTitle(ts('Organization Address and Contact Info'));
     $session = CRM_Core_Session::singleton();
     $session->replaceUserContext(CRM_Utils_System::url('civicrm/admin', 'reset=1'));
 
@@ -81,9 +71,6 @@ class CRM_Contact_Form_Domain extends CRM_Core_Form {
     $this->_action = CRM_Utils_Request::retrieve('action', 'String',
       $this, FALSE, 'view'
     );
-    //location blocks.
-    $location = new CRM_Contact_Form_Location();
-    $location->preProcess($this);
   }
 
   /**
@@ -123,13 +110,25 @@ class CRM_Contact_Form_Domain extends CRM_Core_Form {
 
   /**
    * Build the form object.
+   *
+   * @throws \CRM_Core_Exception
    */
-  public function buildQuickForm() {
+  public function buildQuickForm(): void {
     $this->addField('name', ['label' => ts('Organization Name')], TRUE);
     $this->addField('description', ['label' => ts('Description'), 'size' => 30]);
 
     //build location blocks.
-    CRM_Contact_Form_Location::buildQuickForm($this);
+    $this->assign('addressSequence', CRM_Core_BAO_Address::addressSequence());
+    CRM_Contact_Form_Edit_Address::buildQuickForm($this, 1);
+
+    //Email box
+    $this->addField("email[1][email]", [
+      'entity' => 'email',
+      'aria-label' => ts('Email 1'),
+      'label' => ts('Email 1'),
+    ]);
+    $this->addRule("email[1][email]", ts('Email is not valid.'), 'email');
+    CRM_Contact_Form_Edit_Phone::buildQuickForm($this, 1);
 
     $this->addButtons([
       [

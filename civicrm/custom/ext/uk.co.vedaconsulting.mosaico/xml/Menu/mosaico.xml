@@ -1,8 +1,8 @@
 <?xml version="1.0"?>
 <menu>
   <item>
-    <path>civicrm/admin/mosaico</path>
-    <page_callback>CRM_Mosaico_Form_MosaicoAdmin</page_callback>
+    <path>civicrm/admin/setting/mosaico</path>
+    <page_callback>CRM_Admin_Form_Generic</page_callback>
     <title>Mosaico Settings</title>
     <adminGroup>CiviMail</adminGroup>
     <icon>admin/small/Profile.png</icon>
@@ -24,6 +24,13 @@
     <path>civicrm/mosaico/upload</path>
     <page_callback>CRM_Mosaico_Utils::processUpload</page_callback>
     <title>Integration with Mosaico</title>
+    <access_arguments>access CiviMail;create mailings;edit message templates</access_arguments>
+  </item>
+  <item>
+    <path>civicrm/mosaico/img/placeholder</path>
+    <page_callback>CRM_Mosaico_Utils::processImg</page_callback>
+    <title>Integration with Mosaico</title>
+    <access_callback>CRM_Core_Permission::checkMenu</access_callback>
     <access_arguments>access CiviMail;create mailings;edit message templates</access_arguments>
   </item>
   <item>

@@ -31,7 +31,8 @@ class CRM_Contact_Form_Edit_Individual {
    *   ( 1 for contact summary.
    * top bar form and 2 for display name edit )
    */
-  public static function buildQuickForm(&$form, $inlineEditMode = NULL) {
+  public static function buildQuickForm($form, $inlineEditMode = NULL): void {
+    $form->addOptionalQuickFormElement('formal_title');
     $form->applyFilter('__ALL__', 'trim');
 
     if (!$inlineEditMode || $inlineEditMode == 1) {
@@ -46,7 +47,7 @@ class CRM_Contact_Form_Edit_Individual {
       // Fixme: dear god why? these come out in a format that is NOT the name of the fields.
       foreach ($nameFields as &$fix) {
         $fix = str_replace(' ', '_', strtolower($fix));
-        if ($fix == 'prefix' || $fix == 'suffix') {
+        if ($fix === 'prefix' || $fix === 'suffix') {
           // God, why god?
           $fix .= '_id';
         }
@@ -71,24 +72,19 @@ class CRM_Contact_Form_Edit_Individual {
       $form->addField('job_title', ['size' => '30']);
 
       //Current Employer Element
-      $props = [
-        'api' => ['params' => ['contact_type' => 'Organization']],
-        'create' => TRUE,
-      ];
-      $form->addField('employer_id', $props);
+      $form->addField('employer_id', ['create' => TRUE]);
       $form->addField('contact_source', ['class' => 'big']);
     }
 
     if (!$inlineEditMode) {
       //External Identifier Element
-      $form->addField('external_identifier', ['label' => 'External ID']);
+      $form->addField('external_identifier', ['label' => ts('External ID')]);
 
       $form->addRule('external_identifier',
         ts('External ID already exists in Database.'),
         'objectExists',
         ['CRM_Contact_DAO_Contact', $form->_contactId, 'external_identifier']
       );
-      CRM_Core_ShowHideBlocks::links($form, 'demographics', '', '');
     }
   }
 
@@ -109,9 +105,10 @@ class CRM_Contact_Form_Edit_Individual {
     $primaryID = CRM_Contact_Form_Contact::formRule($fields, $errors, $contactID, 'Individual');
 
     // make sure that firstName and lastName or a primary OpenID is set
+    //NYSS #1807
     if (!$primaryID &&
       !CRM_Utils_Array::value('first_name', $fields) &&
-      !CRM_Utils_Array::value('last_name', $fields)) {//NYSS #1807
+      !CRM_Utils_Array::value('last_name', $fields)) {
       $errors['_qf_default'] = ts('First Name, Last Name, or an email address must be set.');
     }
 

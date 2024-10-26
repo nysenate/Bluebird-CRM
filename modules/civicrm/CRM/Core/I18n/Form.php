@@ -13,10 +13,24 @@
  *
  * @package CRM
  * @copyright CiviCRM LLC https://civicrm.org/licensing
- * $Id$
- *
  */
 class CRM_Core_I18n_Form extends CRM_Core_Form {
+
+  /**
+   * List of available locales
+   *
+   * @var array
+   * @internal
+   */
+  public $_locales = [];
+
+  /**
+   * Database structure of translatable columns
+   *
+   * @var array
+   * @internal
+   */
+  public $_structure = [];
 
   public function buildQuickForm() {
     $config = CRM_Core_Config::singleton();
@@ -29,7 +43,7 @@ class CRM_Core_I18n_Form extends CRM_Core_Form {
     $id = CRM_Utils_Request::retrieve('id', 'Int', $this);
     $this->_structure = CRM_Core_I18n_SchemaStructure::columns();
     if (!isset($this->_structure[$table][$field])) {
-      CRM_Core_Error::fatal("$table.$field is not internationalized.");
+      CRM_Core_Error::statusBounce("$table.$field is not internationalized.");
     }
 
     $this->addElement('hidden', 'table', $table);
@@ -82,7 +96,7 @@ class CRM_Core_I18n_Form extends CRM_Core_Form {
 
     $this->addDefaultButtons(ts('Save'), 'next', NULL);
 
-    CRM_Utils_System::setTitle(ts('Languages'));
+    $this->setTitle(ts('Languages'));
 
     $this->assign('locales', $this->_locales);
     $this->assign('field', $field);
@@ -108,7 +122,7 @@ class CRM_Core_I18n_Form extends CRM_Core_Form {
 
     // validate table and field
     if (!isset($this->_structure[$table][$field])) {
-      CRM_Core_Error::fatal("$table.$field is not internationalized.");
+      CRM_Core_Error::statusBounce("$table.$field is not internationalized.");
     }
 
     $cols = [];

@@ -18,7 +18,7 @@
 /**
  * This class contains the functions for Case Type management.
  */
-class CRM_Case_BAO_CaseType extends CRM_Case_DAO_CaseType {
+class CRM_Case_BAO_CaseType extends CRM_Case_DAO_CaseType implements \Civi\Core\HookInterface {
 
   /**
    * Static field for all the case information that we can potentially export.
@@ -57,15 +57,16 @@ class CRM_Case_BAO_CaseType extends CRM_Case_DAO_CaseType {
 
     $caseTypeName = (isset($params['name'])) ? $params['name'] : CRM_Core_DAO::getFieldValue('CRM_Case_DAO_CaseType', $params['id'], 'name', 'id', TRUE);
 
-    // function to format definition column
+    // Format definition column
     if (isset($params['definition']) && is_array($params['definition'])) {
       $params['definition'] = self::convertDefinitionToXML($caseTypeName, $params['definition']);
-      CRM_Core_ManagedEntities::scheduleReconciliation();
+      // Ensure entities declared in the definition get created.
+      // @see CRM_Case_ManagedEntities
+      CRM_Core_ManagedEntities::scheduleReconciliation(['civicrm']);
     }
 
     $caseTypeDAO->copyValues($params);
     $result = $caseTypeDAO->save();
-    CRM_Case_XMLRepository::singleton()->flush();
     return $result;
   }
 
@@ -86,6 +87,18 @@ class CRM_Case_BAO_CaseType extends CRM_Case_DAO_CaseType {
     }
   }
 
+  public static function formatOutputDefinition(&$value, $row) {
+    if ($value) {
+      [$xml] = CRM_Utils_XML::parseString($value);
+      $value = $xml ? self::convertXmlToDefinition($xml) : [];
+    }
+    elseif (!empty($row['id']) || !empty($row['name'])) {
+      $caseTypeName = $row['name'] ?? CRM_Core_DAO::getFieldValue('CRM_Case_DAO_CaseType', $row['id']);
+      $xml = CRM_Case_XMLRepository::singleton()->retrieve($caseTypeName);
+      $value = $xml ? self::convertXmlToDefinition($xml) : [];
+    }
+  }
+
   /**
    * Format / convert submitted array to xml for case type definition
    *
@@ -96,50 +109,87 @@ class CRM_Case_BAO_CaseType extends CRM_Case_DAO_CaseType {
    *   XML
    */
   public static function convertDefinitionToXML($name, $definition) {
-    $xmlFile = '<?xml version="1.0" encoding="utf-8" ?>' . "\n\n<CaseType>\n";
-    $xmlFile .= "<name>" . self::encodeXmlString($name) . "</name>\n";
+
+    $xw = new XMLWriter();
+    $xw->openMemory();
+    $xw->setIndent(TRUE);
+    $xw->setIndentString(' ');
+    $xw->startDocument("1.0", 'UTF-8');
+
+    $xw->startElement('CaseType');
+
+    $xw->startElement('name');
+    $xw->text($name);
+    $xw->fullEndElement();
 
     if (array_key_exists('forkable', $definition)) {
-      $xmlFile .= "<forkable>" . ((int) $definition['forkable']) . "</forkable>\n";
+      $xw->startElement('forkable');
+      $xw->text((int) $definition['forkable']);
+      $xw->fullEndElement();
     }
 
     if (isset($definition['activityTypes'])) {
-      $xmlFile .= "<ActivityTypes>\n";
+      $xw->startElement('ActivityTypes');
+
       foreach ($definition['activityTypes'] as $values) {
-        $xmlFile .= "<ActivityType>\n";
+        $xw->startElement('ActivityType');
         foreach ($values as $key => $value) {
-          $xmlFile .= "<{$key}>" . self::encodeXmlString($value) . "</{$key}>\n";
+          $xw->startElement($key);
+          $xw->text($value);
+          $xw->fullEndElement();
         }
-        $xmlFile .= "</ActivityType>\n";
+        // ActivityType
+        $xw->fullEndElement();
       }
-      $xmlFile .= "</ActivityTypes>\n";
+      // ActivityTypes
+      $xw->fullEndElement();
     }
 
     if (!empty($definition['statuses'])) {
-      $xmlFile .= "<Statuses>\n";
+      $xw->startElement('Statuses');
+
       foreach ($definition['statuses'] as $value) {
-        $xmlFile .= "<Status>$value</Status>\n";
+        $xw->startElement('Status');
+        $xw->text($value);
+        $xw->fullEndElement();
       }
-      $xmlFile .= "</Statuses>\n";
+      // Statuses
+      $xw->fullEndElement();
     }
 
     if (isset($definition['activitySets'])) {
-      $xmlFile .= "<ActivitySets>\n";
+
+      $xw->startElement('ActivitySets');
       foreach ($definition['activitySets'] as $k => $val) {
-        $xmlFile .= "<ActivitySet>\n";
+
+        $xw->startElement('ActivitySet');
         foreach ($val as $index => $setVal) {
           switch ($index) {
             case 'activityTypes':
               if (!empty($setVal)) {
-                $xmlFile .= "<ActivityTypes>\n";
+                $xw->startElement('ActivityTypes');
                 foreach ($setVal as $values) {
-                  $xmlFile .= "<ActivityType>\n";
+                  $xw->startElement('ActivityType');
                   foreach ($values as $key => $value) {
-                    $xmlFile .= "<{$key}>" . self::encodeXmlString($value) . "</{$key}>\n";
+                    // Some parameters here may be arrays of values.
+                    // Also, the tests expect an empty array to be represented as an empty value.
+                    $value = (array) $value;
+                    if (count($value) === 0) {
+                      // Create an empty value.
+                      $value[] = '';
+                    }
+
+                    foreach ($value as $val) {
+                      $xw->startElement($key);
+                      $xw->text($val);
+                      $xw->fullEndElement();
+                    }
                   }
-                  $xmlFile .= "</ActivityType>\n";
+                  // ActivityType
+                  $xw->fullEndElement();
                 }
-                $xmlFile .= "</ActivityTypes>\n";
+                // ActivityTypes
+                $xw->fullEndElement();
               }
               break;
 
@@ -147,68 +197,68 @@ class CRM_Case_BAO_CaseType extends CRM_Case_DAO_CaseType {
             case 'sequence':
             case 'timeline':
               if ($setVal) {
-                $xmlFile .= "<{$index}>true</{$index}>\n";
+                $xw->startElement($index);
+                $xw->text('true');
+                $xw->fullEndElement();
               }
               break;
 
             default:
-              $xmlFile .= "<{$index}>" . self::encodeXmlString($setVal) . "</{$index}>\n";
+              $xw->startElement($index);
+              $xw->text($setVal);
+              $xw->fullEndElement();
           }
         }
-
-        $xmlFile .= "</ActivitySet>\n";
+        // ActivitySet
+        $xw->fullEndElement();
       }
-
-      $xmlFile .= "</ActivitySets>\n";
+      // ActivitySets
+      $xw->fullEndElement();
     }
 
     if (isset($definition['caseRoles'])) {
-      $xmlFile .= "<CaseRoles>\n";
+      $xw->startElement('CaseRoles');
       foreach ($definition['caseRoles'] as $values) {
-        $xmlFile .= "<RelationshipType>\n";
+        $xw->startElement('RelationshipType');
         foreach ($values as $key => $value) {
-          $xmlFile .= "<{$key}>" . ($key == 'groups' ? implode(',', array_map(['\CRM_Case_BAO_CaseType', 'encodeXmlString'], (array) $value)) : self::encodeXmlString($value)) . "</{$key}>\n";
+          $xw->startElement($key);
+          if ($key == 'groups') {
+            $xw->text(implode(',', (array) $value));
+          }
+          else {
+            $xw->text($value);
+          }
+          // $key
+          $xw->fullEndElement();
         }
-        $xmlFile .= "</RelationshipType>\n";
+        // RelationshipType
+        $xw->fullEndElement();
       }
-      $xmlFile .= "</CaseRoles>\n";
+      // CaseRoles
+      $xw->fullEndElement();
     }
 
     if (array_key_exists('restrictActivityAsgmtToCmsUser', $definition)) {
-      $xmlFile .= "<RestrictActivityAsgmtToCmsUser>" . $definition['restrictActivityAsgmtToCmsUser'] . "</RestrictActivityAsgmtToCmsUser>\n";
+      $xw->startElement('RestrictActivityAsgmtToCmsUser');
+      $xw->text($definition['restrictActivityAsgmtToCmsUser']);
+      $xw->fullEndElement();
     }
-
     if (!empty($definition['activityAsgmtGrps'])) {
-      $xmlFile .= "<ActivityAsgmtGrps>\n";
+      $xw->startElement('ActivityAsgmtGrps');
       foreach ((array) $definition['activityAsgmtGrps'] as $value) {
-        $xmlFile .= "<Group>$value</Group>\n";
+        $xw->startElement('Group');
+        $xw->text($value);
+        $xw->fullEndElement();
       }
-      $xmlFile .= "</ActivityAsgmtGrps>\n";
+      // ActivityAsgmtGrps
+      $xw->fullEndElement();
     }
 
-    $xmlFile .= '</CaseType>';
+    // CaseType
+    $xw->fullEndElement();
+    $xw->endDocument();
 
-    return $xmlFile;
-  }
-
-  /**
-   * Ugh. This shouldn't exist. Use a real XML-encoder.
-   *
-   * Escape a string for use in XML.
-   *
-   * @param string $str
-   *   A string which should outputted to XML.
-   * @return string
-   * @deprecated
-   */
-  protected static function encodeXmlString($str) {
-    // PHP 5.4: return htmlspecialchars($str, ENT_XML1, 'UTF-8')
-    if (is_scalar($str)) {
-      return htmlspecialchars($str);
-    }
-    else {
-      return NULL;
-    }
+    return $xw->outputMemory();
   }
 
   /**
@@ -334,12 +384,22 @@ class CRM_Case_BAO_CaseType extends CRM_Case_DAO_CaseType {
    */
   public static function &create(&$params) {
     $transaction = new CRM_Core_Transaction();
+    // Computed properties.
+    unset($params['is_forkable']);
+    unset($params['is_forked']);
 
-    if (!empty($params['id'])) {
-      CRM_Utils_Hook::pre('edit', 'CaseType', $params['id'], $params);
-    }
-    else {
-      CRM_Utils_Hook::pre('create', 'CaseType', NULL, $params);
+    $action = empty($params['id']) ? 'create' : 'edit';
+
+    CRM_Utils_Hook::pre($action, 'CaseType', $params['id'] ?? NULL, $params);
+
+    // This is an existing case-type.
+    if ($action === 'edit' && isset($params['definition'])
+      // which is not yet forked
+      && !self::isForked($params['id'])
+      // for which new forks are prohibited
+      && !self::isForkable($params['id'])
+    ) {
+      unset($params['definition']);
     }
 
     $caseType = self::add($params);
@@ -348,16 +408,9 @@ class CRM_Case_BAO_CaseType extends CRM_Case_DAO_CaseType {
       $transaction->rollback();
       return $caseType;
     }
-
-    if (!empty($params['id'])) {
-      CRM_Utils_Hook::post('edit', 'CaseType', $caseType->id, $case);
-    }
-    else {
-      CRM_Utils_Hook::post('create', 'CaseType', $caseType->id, $case);
-    }
     $transaction->commit();
-    CRM_Case_XMLRepository::singleton(TRUE);
-    CRM_Core_OptionGroup::flushAll();
+
+    CRM_Utils_Hook::post($action, 'CaseType', $caseType->id, $case);
 
     return $caseType;
   }
@@ -383,20 +436,41 @@ class CRM_Case_BAO_CaseType extends CRM_Case_DAO_CaseType {
   /**
    * @param int $caseTypeId
    *
+   * @deprecated
    * @throws CRM_Core_Exception
-   * @return mixed
+   * @return CRM_Case_DAO_CaseType
    */
   public static function del($caseTypeId) {
-    $caseType = new CRM_Case_DAO_CaseType();
-    $caseType->id = $caseTypeId;
-    $refCounts = $caseType->getReferenceCounts();
-    $total = array_sum(CRM_Utils_Array::collect('count', $refCounts));
-    if ($total) {
-      throw new CRM_Core_Exception(ts("You can not delete this case type -- it is assigned to %1 existing case record(s). If you do not want this case type to be used going forward, consider disabling it instead.", [1 => $total]));
+    CRM_Core_Error::deprecatedFunctionWarning('deleteRecord');
+    return static::deleteRecord(['id' => $caseTypeId]);
+  }
+
+  /**
+   * Callback for hook_civicrm_pre().
+   * @param \Civi\Core\Event\PreEvent $event
+   * @throws CRM_Core_Exception
+   */
+  public static function self_hook_civicrm_pre(\Civi\Core\Event\PreEvent $event) {
+    // Before deleting a caseType, check references
+    if ($event->action === 'delete') {
+      $caseType = new CRM_Case_DAO_CaseType();
+      $caseType->id = $event->id;
+      $refCounts = $caseType->getReferenceCounts();
+      $total = array_sum(array_column($refCounts, 'count'));
+      if ($total) {
+        throw new CRM_Core_Exception(ts("You can not delete this case type -- it is assigned to %1 existing case record(s). If you do not want this case type to be used going forward, consider disabling it instead.", [1 => $total]));
+      }
     }
-    $result = $caseType->delete();
-    CRM_Case_XMLRepository::singleton(TRUE);
-    return $result;
+  }
+
+  /**
+   * Callback for hook_civicrm_post().
+   * @param \Civi\Core\Event\PostEvent $event
+   */
+  public static function self_hook_civicrm_post(\Civi\Core\Event\PostEvent $event) {
+    // When a caseType is saved or deleted, flush xml and optionGroup cache
+    CRM_Case_XMLRepository::singleton()->flush();
+    CRM_Core_OptionGroup::flushAll();
   }
 
   /**

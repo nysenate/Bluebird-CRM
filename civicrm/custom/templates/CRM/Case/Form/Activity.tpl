@@ -10,28 +10,20 @@
 
 {* this template is used for adding/editing activities for a case. *}
 <div class="crm-block crm-form-block crm-case-activity-form-block">
-
-  {if $action neq 8 and $action  neq 32768 }
-  {* Include form buttons on top for new and edit modes. *}
-  <div class="crm-submit-buttons">{include file="CRM/common/formButtons.tpl" location="top"}</div>
-  {/if}
-
-  {if $action eq 8 or $action eq 32768 }
+  {if $action eq 8 or $action eq 32768}
   <div class="messages status no-popup">
-    <i class="crm-i fa-info-circle"></i> &nbsp;
+    <i class="crm-i fa-info-circle" aria-hidden="true"></i> &nbsp;
     {if $action eq 8}
-      {* activityTypeName means label here not name, but it's ok because label is desired here (dev/core#1116-ok-label) *}
-      {ts 1=$activityTypeName}Click Delete to move this &quot;%1&quot; activity to the Trash.{/ts}
+      {ts 1=$activityTypeNameAndLabel.displayLabel|escape}Click Delete to move this &quot;%1&quot; activity to the Trash.{/ts}
     {else}
-      {* activityTypeName means label here not name, but it's ok because label is desired here (dev/core#1116-ok-label) *}
-      {ts 1=$activityTypeName}Click Restore to retrieve this &quot;%1&quot; activity from the Trash.{/ts}
+      {ts 1=$activityTypeNameAndLabel.displayLabel|escape}Click Restore to retrieve this &quot;%1&quot; activity from the Trash.{/ts}
     {/if}
   </div><br />
   {else}
   <table class="form-layout">
-    {if $activityTypeDescription }
+    {if $activityTypeDescription}
       <tr>
-        <div class="help">{$activityTypeDescription}</div>
+        <div class="help">{$activityTypeDescription|purify}</div>
       </tr>
     {/if}
     {* Block for change status, case type and start date. *}
@@ -49,10 +41,10 @@
       {* Added Activity Details accordion tab *}
       <tr class="crm-case-activity-form-block-activity-details">
         <td colspan="2">
-          <div id="activity-details" class="crm-accordion-wrapper collapsed">
-            <div class="crm-accordion-header">
+          <details id="activity-details" class="crm-accordion-bold">
+            <summary>
               {ts}Activity Details{/ts}
-            </div><!-- /.crm-accordion-header -->
+            </summary>
             <div class="crm-accordion-body">
     {else}
       <tr class="crm-case-activity-form-block-activity-details">
@@ -62,9 +54,9 @@
             <table class="form-layout-compressed">
               <tbody>
                 <tr id="with-clients" class="crm-case-activity-form-block-client_name">
-                  <td class="label font-size12pt">{ts}Client{/ts}</td>
+                  <td class="label">{ts}Client{/ts}</td>
                   <td class="view-value">
-                    <span class="font-size12pt">
+                    <span>
                       {foreach from=$client_names item=client name=clients key=id}
                         {foreach from=$client_names.$id item=client1}
                           {$client1.display_name}
@@ -75,7 +67,7 @@
 
                     {if $action eq 1 or $action eq 2}
                       <br />
-                      <a href="#" class="crm-with-contact">&raquo; {ts}With other contact(s){/ts}</a>
+                      <a href="#" class="crm-with-contact"><i class="crm-i fa-user-plus" aria-hidden="true"></i> {ts}With other contact(s){/ts}</a>
                     {/if}
                   </td>
                 </tr>
@@ -87,7 +79,7 @@
                       {$form.target_contact_id.html}
                       <br/>
                       <a href="#" class="crm-with-contact">
-                        &raquo; {if not $multiClient}{ts}With client{/ts}{else}{ts}With client(s){/ts}{/if}
+                        <i class="crm-i fa-user" aria-hidden="true"></i> {if not $multiClient}{ts}With client{/ts}{else}{ts}With client(s){/ts}{/if}
                       </a>
                     </td>
                   </tr>
@@ -95,8 +87,7 @@
 
                 <tr class="crm-case-activity-form-block-activityTypeName">
                   <td class="label">{ts}Activity Type{/ts}</td>
-                  {* activityTypeName means label here not name, but it's ok because label is desired here (dev/core#1116-ok-label) *}
-                  <td class="view-value bold">{$activityTypeName|escape}</td>
+                  <td class="view-value bold">{$activityTypeNameAndLabel.displayLabel|escape}</td>
                 </tr>
                 <tr class="crm-case-activity-form-block-source_contact_id">
                   <td class="label">{$form.source_contact_id.label}</td>
@@ -110,7 +101,7 @@
                   <td>{$form.assignee_contact_id.html}
                     {if $activityAssigneeNotification}
                       <br />
-                      <span id="notify_assignee_msg" class="description"><i class="crm-i fa-paper-plane"></i> {ts}A copy of this activity will be emailed to each Assignee.{/ts}</span>
+                      <span id="notify_assignee_msg" class="description"><i class="crm-i fa-paper-plane" aria-hidden="true"></i> {ts}A copy of this activity will be emailed to each Assignee.{/ts}</span>
                     {/if}
                   </td>
                 </tr>
@@ -124,14 +115,18 @@
               {/if}
               <tr class="crm-case-activity-form-block-medium_id">
                 <td class="label">{$form.medium_id.label}</td>
-                <td class="view-value">{$form.medium_id.html}&nbsp;&nbsp;&nbsp;{$form.location.label} &nbsp;{$form.location.html|crmAddClass:huge}</td>
+                <td class="view-value">{$form.medium_id.html}</td>
+              </tr>
+              <tr class="crm-case-activity-form-block-location">
+                <td class="label">{$form.location.label}</td>
+                <td class="view-value">{$form.location.html|crmAddClass:huge}</td>
               </tr>
               <tr class="crm-case-activity-form-block-activity_date_time">
                 <td class="label">{$form.activity_date_time.label}</td>
                 <td class="view-value">
                   {$form.activity_date_time.html}
                   {if $action eq 2 && $activityTypeFile eq 'OpenCase'}
-                    <div class="description">Use a <a class="open-inline" href="{$changeStartURL}">Change Start Date</a> activity to change the date</div>
+                    <div class="description">{ts}Use a <a class="open-inline" href="{$changeStartURL}">Change Start Date</a> activity to change the date{/ts}</div>
                   {/if}
                 </td>
               </tr>
@@ -144,7 +139,7 @@
               </tr>
               {/if}
               <tr>
-                <td colspan="2">{include file="CRM/common/customDataBlock.tpl"}</td>
+                <td colspan="2">{include file="CRM/common/customDataBlock.tpl" groupID='' customDataType='Activity'}</td>
               </tr>
               {if NOT $activityTypeFile}
                 <tr class="crm-case-activity-form-block-details">
@@ -165,8 +160,8 @@
         {if $activityTypeFile EQ 'ChangeCaseStatus'
         || $activityTypeFile EQ 'ChangeCaseType'
         || $activityTypeFile EQ 'ChangeCaseStartDate'}
-          </div><!-- /.crm-accordion-body -->
-        </div><!-- /.crm-accordion-wrapper -->
+          </div>
+        </details>
         {* End of Activity Details accordion tab *}
       {/if}
       </td>
@@ -177,10 +172,10 @@
     {if $searchRows} {* We have got case role rows to display for "Send Copy To" feature *}
       <tr class="crm-case-activity-form-block-send_copy">
         <td colspan="2">
-          <div id="sendcopy" class="crm-accordion-wrapper collapsed">
-            <div class="crm-accordion-header">
+          <details id="sendcopy" class="crm-accordion-bold">
+            <summary>
               {ts}Send a Copy{/ts}
-            </div><!-- /.crm-accordion-header -->
+            </summary>
             <div id="sendcopy-body" class="crm-accordion-body">
 
               <div class="description">{ts}Email a complete copy of this activity record to other people involved with the case. Click the top left box to select all.{/ts}</div>
@@ -206,8 +201,8 @@
                   {/foreach}
                 </table>
               {/strip}
-            </div><!-- /.crm-accordion-body -->
-          </div><!-- /.crm-accordion-wrapper -->
+            </div>
+          </details>
         </td>
       </tr>
     {/if}
@@ -234,7 +229,7 @@
       </tr>
     {/if}
     {*NYSS 12439*}
-    {if $form.tag.html}
+    {if !empty($form.tag.html)}
     <tr class="crm-case-activity-form-block-tag">
       <td class="label">Issue Codes</td>
       <td class="view-value">
@@ -242,8 +237,10 @@
       </td>
     </tr>
     {/if}
-{*NYSS 13030*}
+{if $isTagset}
+  {*NYSS 13030*}
   <tr class="crm-case-activity-form-block-tag_set">{include file="CRM/common/Tagset.tpl" tagsetType='activity' tableLayout=1}</tr>
+{/if}
   </table>
 
   {/if}
@@ -273,10 +270,14 @@
   {if $action neq 8 and $action neq 32768 and empty($activityTypeFile)}
   <script type="text/javascript">
     {if $searchRows}
-      cj('#sendcopy').crmAccordionToggle();
+      {literal}
+      cj('#sendcopy').prop('open', function(i, val) {return !val;});
+      {/literal}
     {/if}
 
-    cj('#follow-up').crmAccordionToggle();
+    {literal}
+    cj('#follow-up').prop('open', function(i, val) {return !val;});
+    {/literal}
   </script>
   {/if}
 

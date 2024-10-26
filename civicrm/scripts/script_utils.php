@@ -269,15 +269,15 @@ function bbscript_log($lvl, $msg, $var = null)
 {
   global $bbscript_log_level;
 
-  static $log_levels = array(
-    LL::FATAL  => array('FATAL', 35),  /* purple */
-    LL::ERROR  => array('ERROR', 31),  /* red */
-    LL::WARN   => array('WARN', 33),   /* yellow */
-    LL::NOTICE => array('NOTICE', 34), /* blue */
-    LL::INFO   => array('INFO', 32),   /* green */
-    LL::DEBUG  => array('DEBUG', 36),  /* cyan */
-    LL::TRACE  => array('TRACE', 30)   /* grey */
-  );
+  static $log_levels = [
+    LL::FATAL  => ['FATAL', 35],  /* purple */
+    LL::ERROR  => ['ERROR', 31],  /* red */
+    LL::WARN   => ['WARN', 33],   /* yellow */
+    LL::NOTICE => ['NOTICE', 34], /* blue */
+    LL::INFO   => ['INFO', 32],   /* green */
+    LL::DEBUG  => ['DEBUG', 36],  /* cyan */
+    LL::TRACE  => ['TRACE', 30]   /* grey */
+  ];
 
   if ($lvl <= $bbscript_log_level) {
     if (!isset($log_levels[$lvl])) {

@@ -1,0 +1,28 @@
+<div class="clearfix">
+  <fieldset ng-repeat="group in customGroups" class="civicase__case-filter-fieldset" ng-if="!filters.case_type_id || !filters.case_type_id.length || !group.caseTypes || !group.caseTypes.length || _.intersection(group.caseTypes, filters.case_type_id).length">
+    <legend class="civicase__case-filter-form-legend">{{ group.title }}</legend>
+    <div ng-repeat="field in group.fields" class="civicase__case-filter-form-elements">
+      <label for="case_search_field_custom_{{ field.id }}">{{ field.label }}</label>
+      <div ng-switch="field.html_type">
+        <div ng-switch-when="Autocomplete-Select">
+          <input
+            crm-ui-conditional ng-list class="form-control"
+            id="case_search_field_custom_{{ field.id }}"
+            ng-model="filters[field.name]"
+            crm-entityref="{entity: field.entity, select: {multiple: true}, api: {params: field.api_params}}"
+          />
+        </div>
+        <div ng-switch-when="Select Date">
+          <civicase-ui-date-range crm-ui-conditional id="case_search_field_custom_{{ field.id }}" date-range="filters[field.name]"></civicase-ui-date-range>
+        </div>
+        <div ng-switch-default>
+          <input crm-ui-conditional type="{{ field.data_type === 'Number' || field.data_type === 'Integer' ? 'number' : 'text' }}" ng-if="!field.options && !field.is_search_range" class="form-control" id="case_search_field_custom_{{ field.id }}" ng-model="filters[field.name]" />
+          <div crm-ui-conditional ng-if="!field.options && field.is_search_range" id="case_search_field_custom_{{ field.id }}" crm-ui-number-range="filters[field.name]"></div>
+          <select crm-ui-conditional ng-if="field.options" class="form-control" multiple id="case_search_field_custom_{{ field.id }}" crm-ui-select ng-model="filters[field.name]">
+            <option ng-repeat="opt in field.options" value="{{ opt.id }}">{{ opt.text }}</option>
+          </select>
+        </div>
+      </div>
+    </div>
+  </fieldset>
+</div>

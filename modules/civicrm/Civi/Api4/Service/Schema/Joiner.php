@@ -10,15 +10,6 @@
  +--------------------------------------------------------------------+
  */
 
-/**
- *
- * @package CRM
- * @copyright CiviCRM LLC https://civicrm.org/licensing
- * $Id$
- *
- */
-
-
 namespace Civi\Api4\Service\Schema;
 
 use Civi\Api4\Query\Api4SelectQuery;
@@ -42,68 +33,28 @@ class Joiner {
   }
 
   /**
-   * @param \Civi\Api4\Query\Api4SelectQuery $query
-   *   The query object to do the joins on
-   * @param string $joinPath
-   *   A path of aliases in dot notation, e.g. contact.phone
-   * @param string $side
-   *   Can be LEFT or INNER
+   * Get the path used to create an implicit join
    *
-   * @throws \Exception
-   * @return \Civi\Api4\Service\Schema\Joinable\Joinable[]
-   *   The path used to make the join
-   */
-  public function join(Api4SelectQuery $query, $joinPath, $side = 'LEFT') {
-    $fullPath = $this->getPath($query->getFrom(), $joinPath);
-    $baseTable = $query::MAIN_TABLE_ALIAS;
-
-    foreach ($fullPath as $link) {
-      $target = $link->getTargetTable();
-      $alias = $link->getAlias();
-      $conditions = $link->getConditionsForJoin($baseTable);
-
-      $query->join($side, $target, $alias, $conditions);
-      $query->addJoinedTable($link);
-
-      $baseTable = $link->getAlias();
-    }
-
-    return $fullPath;
-  }
-
-  /**
-   * @param \Civi\Api4\Query\Api4SelectQuery $query
-   * @param $joinPath
-   *
-   * @return bool
-   */
-  public function canJoin(Api4SelectQuery $query, $joinPath) {
-    return !empty($this->getPath($query->getFrom(), $joinPath));
-  }
-
-  /**
    * @param string $baseTable
-   * @param string $joinPath
+   * @param array $joinPath
    *
-   * @return array
-   * @throws \Exception
+   * @return \Civi\Api4\Service\Schema\Joinable\Joinable[]
+   * @throws \CRM_Core_Exception
    */
-  protected function getPath($baseTable, $joinPath) {
-    $cacheKey = sprintf('%s.%s', $baseTable, $joinPath);
+  public function getPath(string $baseTable, array $joinPath) {
+    $cacheKey = sprintf('%s.%s', $baseTable, implode('.', $joinPath));
     if (!isset($this->cache[$cacheKey])) {
-      $stack = explode('.', $joinPath);
       $fullPath = [];
 
-      foreach ($stack as $key => $targetAlias) {
-        $links = $this->schemaMap->getPath($baseTable, $targetAlias);
+      foreach ($joinPath as $targetAlias) {
+        $link = $this->schemaMap->getLink($baseTable, $targetAlias);
 
-        if (empty($links)) {
-          throw new \Exception(sprintf('Cannot join %s to %s', $baseTable, $targetAlias));
+        if (!$link) {
+          throw new \CRM_Core_Exception(sprintf('Cannot join %s to %s', $baseTable, $targetAlias));
         }
         else {
-          $fullPath = array_merge($fullPath, $links);
-          $lastLink = end($links);
-          $baseTable = $lastLink->getTargetTable();
+          $fullPath[$targetAlias] = $link;
+          $baseTable = $link->getTargetTable();
         }
       }
 
@@ -111,6 +62,26 @@ class Joiner {
     }
 
     return $this->cache[$cacheKey];
+  }
+
+  /**
+   * SpecProvider callback for joins added via a SchemaMapSubscriber.
+   *
+   * This works for extra joins declared via SchemaMapSubscriber.
+   * It allows implicit joins through custom sql, by virtue of the fact
+   * that `$query->getField` will create the join not just to the `id` field
+   * but to every field on the joined entity, allowing e.g. joins to `address_primary.country_id:label`.
+   *
+   * @param array $field
+   * @param \Civi\Api4\Query\Api4SelectQuery $query
+   * @return string
+   */
+  public static function getExtraJoinSql(array $field, Api4SelectQuery $query): string {
+    $prefix = empty($field['explicit_join']) ? '' : $field['explicit_join'] . '.';
+    $prefix .= (empty($field['implicit_join']) ? '' : $field['implicit_join'] . '.');
+    $idField = $query->getField($prefix . $field['name'] . '.id');
+    // If permission denied to join, SELECT NULL
+    return $idField['sql_name'] ?? 'NULL';
   }
 
 }

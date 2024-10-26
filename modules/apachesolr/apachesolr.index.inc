@@ -60,8 +60,7 @@ function apachesolr_index_entities($env_id, $limit) {
     $documents = array();
     foreach ($rows as $row) {
       $row_documents = apachesolr_index_entities_document($row, $entity_type, $env_id);
-      // TODO argument #1 is not an array
-      $documents = array_merge($documents, $row_documents);
+      $documents = array_merge((array) $documents, $row_documents);
     }
 
     $indexed = apachesolr_index_send_to_solr($env_id, $documents);
@@ -237,12 +236,9 @@ function apachesolr_index_entity_to_documents($item, $env_id) {
   $entity = entity_load($entity_type, array($item->entity_id));
   $entity = $entity ? reset($entity) : FALSE;
 
-  if (empty($entity)) {
-    // If the object failed to load, just stop.
-    return FALSE;
-  }
-
-  $documents = apachesolr_convert_entity_to_documents($entity, $entity_type, $env_id);
+  // Return an empty array if the entity failed to load, but not immediately,
+  // since we first need to restore the user.
+  $documents = empty($entity) ? array() : apachesolr_convert_entity_to_documents($entity, $entity_type, $env_id);
 
   // Restore the user.
   $user = $saved_user;
@@ -510,7 +506,7 @@ function apachesolr_index_get_entities_to_index($env_id, $entity_type, $limit) {
 
   // Get next batch of entities to index
   $query = _apachesolr_index_get_next_set_query($env_id, $entity_type);
-  
+
   $query->range(0, $limit);
   $records = $query->execute();
 
@@ -587,7 +583,7 @@ function apachesolr_index_delete_index($env_id, $entity_type = NULL, $bundle = N
     if (!empty($entity_type)) {
       $reindex_callback = apachesolr_entity_get_callback($entity_type, 'reindex callback');
       if (is_callable($reindex_callback)) {
-        $reindex_callback($env_id, $bundle);
+        $reindex_callback($env_id, $bundle, $entity_type);
       }
     }
     else {
@@ -757,7 +753,7 @@ function apachesolr_index_mark_for_reindex($env_id, $entity_type = NULL) {
       if (isset($entities['node']['apachesolr']) && ($entities['node']['apachesolr']['indexable'])) {
         $reindex_callback = apachesolr_entity_get_callback('node', 'reindex callback');
         if (!empty($reindex_callback)) {
-          call_user_func($reindex_callback, $env_id, $entity_type);
+          call_user_func($reindex_callback, $env_id, $entity_type, 'node');
         }
       }
     }
@@ -767,7 +763,7 @@ function apachesolr_index_mark_for_reindex($env_id, $entity_type = NULL) {
       if (isset($entity_info['apachesolr']) && ($entity_info['apachesolr']['indexable'])) {
         $reindex_callback = apachesolr_entity_get_callback($type, 'reindex callback');
         if (!empty($reindex_callback)) {
-          call_user_func($reindex_callback, $env_id);
+          call_user_func($reindex_callback, $env_id, NULL, $type);
         }
       }
     }
@@ -886,8 +882,9 @@ function apachesolr_index_node_solr_document(ApacheSolrDocument $document, $node
     // If there is no node teaser we will have to generate the teaser
     // ourselves. We have to be careful to not leak the author and other
     // information that is normally also not visible.
-    if (isset($node->body[$language][0]['safe_summary'])) {
-      $document->teaser = apachesolr_clean_text($node->body[$language][0]['safe_summary']);
+    $field_langcode = field_language('node', $node, 'body');
+    if (!empty($node->body[$field_langcode][0]['safe_summary'])) {
+      $document->teaser = apachesolr_clean_text($node->body[$field_langcode][0]['safe_summary']);
     }
     else {
       $document->teaser = truncate_utf8($document->content, 300, TRUE);
@@ -1000,7 +997,7 @@ function apachesolr_index_node_bundles_changed($env_id, $existing_bundles, $new_
  *
  * @throws Exception
  */
-function apachesolr_index_node_solr_reindex($env_id, $bundle = NULL) {
+function apachesolr_index_node_solr_reindex($env_id, $bundle = NULL, $entity_type = NULL) {
   $indexer_table = apachesolr_get_indexer_table('node');
   $transaction = db_transaction();
   try {

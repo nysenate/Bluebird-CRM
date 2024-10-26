@@ -219,7 +219,7 @@ function BluebirdPublic_breadcrumb($variables) {
  * http://www.w3.org/TR/html4/struct/global.html#h-7.5.2 specifies what makes a
  * valid ID attribute in HTML. This function:
  *
- * - Ensure an ID starts with an alpha character by optionally adding an 'n'.
+ * - Ensures an ID starts with an alpha character by optionally prepending 'id'.
  * - Replaces any character except A-Z, numbers, and underscores with dashes.
  * - Converts entire string to lowercase.
  *
@@ -229,10 +229,12 @@ function BluebirdPublic_breadcrumb($variables) {
  *  The converted string
  */
 function BluebirdPublic_id_safe($string) {
-  // Replace with dashes anything that isn't A-Z, numbers, dashes, or underscores.
-  $string = strtolower(preg_replace('/[^a-zA-Z0-9_-]+/', '-', $string));
-  // If the first character is not a-z, add 'n' in front.
-  if (!ctype_lower($string{0})) { // Don't use ctype_alpha since its locale aware.
+  // Replace with dashes anything that isn't alphanumeric, dashes, or
+  // underscores, then convert to lowercase.
+  $string = strtolower(preg_replace('/[^[:alnum:]_-]+/', '-', $string));
+  // If the first character is not a-z, prepend 'id' to the string.
+  // Don't use ctype_alpha since it is locale aware.
+  if (!ctype_lower($string[0])) {
     $string = 'id'. $string;
   }
   return $string;

@@ -1,3 +1,19 @@
+1.9.3 - Sunday 25 July 2021
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+- PHP 8.1 compatibility, by adding the ReturnTypeWillChange attribute to
+  ezcBaseOptions.
+
+1.9.2 - Sunday 25 July 2021
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+- Move from Travis to GHA
+- Disable the testRecursive tests, as they cause an incompatibility with PHPUnit 8
+- Remove default value for arguments to ezcBaseFile::walkRecursive
+- Upgrade to PHPUnit 8
+- These all make this, and the tests, work with PHP 7.2 and later.
+
+
 1.9.1 - Tuesday 11 November 2017
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 

@@ -17,6 +17,9 @@
 class CRM_Report_Form_Contact_Log extends CRM_Report_Form {
 
   protected $_summary = NULL;
+
+  protected $activityTypes = [];
+
   protected $_addressField = false; //NYSS
 
   /**
@@ -182,7 +185,7 @@ class CRM_Report_Form_Contact_Log extends CRM_Report_Form {
   /**
    * @param $fields
    * @param $files
-   * @param $self
+   * @param self $self
    *
    * @return array
    */
@@ -212,7 +215,7 @@ class CRM_Report_Form_Contact_Log extends CRM_Report_Form {
       if (array_key_exists('filters', $table)) {
         foreach ($table['filters'] as $fieldName => $field) {
           $clause = NULL;
-          if (CRM_Utils_Array::value('operatorType', $field) & CRM_Report_Form::OP_DATE
+          if (($field['operatorType'] ?? 0) & CRM_Report_Form::OP_DATE
           ) {
             $relative = $this->_params["{$fieldName}_relative"] ?? NULL;
             $from = $this->_params["{$fieldName}_from"] ?? NULL;
@@ -225,9 +228,9 @@ class CRM_Report_Form_Contact_Log extends CRM_Report_Form {
             if ($op) {
               $clause = $this->whereClause($field,
                 $op,
-                CRM_Utils_Array::value("{$fieldName}_value", $this->_params),
-                CRM_Utils_Array::value("{$fieldName}_min", $this->_params),
-                CRM_Utils_Array::value("{$fieldName}_max", $this->_params)
+                $this->_params["{$fieldName}_value"] ?? NULL,
+                $this->_params["{$fieldName}_min"] ?? NULL,
+                $this->_params["{$fieldName}_max"] ?? NULL
               );
             }
           }
@@ -316,6 +319,7 @@ ORDER BY {$this->_aliases['civicrm_log']}.modified_date DESC, {$this->_aliases['
   public function alterDisplay(&$rows) {
 
     $entryFound = FALSE;
+    //NYSS
     $display_flag = $prev_cid = $cid = 0;
     //CRM_Core_Error::debug($rows);
     foreach ($rows as $rowNum => $row) {
@@ -359,7 +363,7 @@ ORDER BY {$this->_aliases['civicrm_log']}.modified_date DESC, {$this->_aliases['
       }
       
       //NYSS strip out the activity targets (could be multiple)
-      if ( array_key_exists('civicrm_activity_activity_type_id', $row ) &&
+      if (array_key_exists('civicrm_activity_activity_type_id', $row) &&
         $row['civicrm_activity_activity_type_id'] != '' &&
         strpos( $row['civicrm_log_data'], 'target=' ) ) {
         // source, target, assignee are concatenated; we need to strip out the target
@@ -397,7 +401,7 @@ ORDER BY {$this->_aliases['civicrm_log']}.modified_date DESC, {$this->_aliases['
         
         //NYSS add details about touched contact via API
         //Gender, DOB, ALL District Information.
-        if ( $row['civicrm_contact_touched_id'] ) {
+        if ($row['civicrm_contact_touched_id']) {
           //get address, phone, email
           require_once 'api/api.php';
         

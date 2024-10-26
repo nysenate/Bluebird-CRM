@@ -19,7 +19,7 @@ CRM.$(function($) {
         {/foreach}
     {/if}
 
-    {if $loadShowHideAddressFields}
+    {if !empty($loadShowHideAddressFields)}
         {foreach from=$showHideAddressFields key="blockId" item="fieldName"}
            processAddressFields( '{$fieldName}', '{$blockId}', 0 );
         {/foreach}
@@ -156,7 +156,7 @@ function clearFirstBlock( blockName , blockId ) {
     cj("#" + element +" input, " + "#" + element + " select").each(function () {
         cj(this).val('');
     });
-    cj("#addressBlockId:not(.collapsed)").crmAccordionToggle();
+    cj("#addressBlockId[open]").prop('open', false);
     cj("#addressBlockId .active").removeClass('active');
 }
 

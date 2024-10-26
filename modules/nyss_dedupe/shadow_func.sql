@@ -1,5 +1,7 @@
 -- Functions and triggers for the shadow tables
 
+SET NAMES UTF8MB4 COLLATE utf8mb4_unicode_ci;
+
 -- Change the delimiter to make stored triggers/functions easier to write!
 DELIMITER |
 
@@ -7,7 +9,6 @@ DELIMITER |
 -- Stored Utility Functions
 -- -----------------------------
 
-SET NAMES UTF8 COLLATE utf8_unicode_ci;
 DROP FUNCTION IF EXISTS BB_ADDR_REPLACE |
 CREATE FUNCTION BB_ADDR_REPLACE (address varchar(255) CHARACTER SET utf8 COLLATE utf8_unicode_ci)
     RETURNS varchar(255) CHARACTER SET utf8 COLLATE utf8_unicode_ci DETERMINISTIC

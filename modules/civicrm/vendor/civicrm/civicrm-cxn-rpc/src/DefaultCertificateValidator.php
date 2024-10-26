@@ -13,7 +13,6 @@ namespace Civi\Cxn\Rpc;
 
 use Civi\Cxn\Rpc\Exception\ExpiredCertException;
 use Civi\Cxn\Rpc\Exception\InvalidCertException;
-use Civi\Cxn\Rpc\Http\HttpInterface;
 use Civi\Cxn\Rpc\Http\PhpHttp;
 
 /**
@@ -39,7 +38,7 @@ class DefaultCertificateValidator implements CertificateValidatorInterface {
   /**
    * @var string
    *   The CA certificate (PEM-encoded).
-   *   Use DefaultCertificateValidator::AUTOLOAD to use the bundled CiviRootCA.
+   *   Use DefaultCertificateValidator::AUTOLOAD to use the bundled CiviConnectCA.
    */
   protected $caCert;
 
@@ -65,7 +64,7 @@ class DefaultCertificateValidator implements CertificateValidatorInterface {
   protected $crlDistCert;
 
   /**
-   * @var HttpInterface|string
+   * @var \Civi\Cxn\Rpc\Http\HttpInterface|string
    *   The service to use when autoloading data.
    *   Use DefaultCertificateValidator::AUTOLOAD to download via HTTP.
    */
@@ -75,7 +74,7 @@ class DefaultCertificateValidator implements CertificateValidatorInterface {
    * @param string $caCertPem
    * @param string $crlDistCertPem
    * @param string $crlPem
-   * @param HttpInterface|string $http
+   * @param \Civi\Cxn\Rpc\Http\HttpInterface|string $http
    */
   public function __construct(
     $caCertPem = DefaultCertificateValidator::AUTOLOAD,
@@ -106,17 +105,17 @@ class DefaultCertificateValidator implements CertificateValidatorInterface {
   protected static function validate($certPem, $caCertPem, $crlPem = NULL, $crlDistCertPem = NULL) {
     $caCertObj = X509Util::loadCACert($caCertPem);
 
-    $certObj = new \File_X509();
+    $certObj = new \phpseclib\File\X509();
     $certObj->loadCA($caCertPem);
 
     if ($crlPem !== NULL) {
-      $crlObj = new \File_X509();
+      $crlObj = new \phpseclib\File\X509();
       if ($crlDistCertPem) {
         $crlDistCertObj = X509Util::loadCrlDistCert($crlDistCertPem, NULL, $caCertPem);
-        if ($crlDistCertObj->getSubjectDN(FILE_X509_DN_STRING) !== $caCertObj->getSubjectDN(FILE_X509_DN_STRING)) {
+        if ($crlDistCertObj->getSubjectDN(\phpseclib\File\X509::DN_STRING) !== $caCertObj->getSubjectDN(\phpseclib\File\X509::DN_STRING)) {
           throw new InvalidCertException(sprintf("CRL distributor (%s) does not act on behalf of this CA (%s)",
-            $crlDistCertObj->getSubjectDN(FILE_X509_DN_STRING),
-            $caCertObj->getSubjectDN(FILE_X509_DN_STRING)
+            $crlDistCertObj->getSubjectDN(\phpseclib\File\X509::DN_STRING),
+            $caCertObj->getSubjectDN(\phpseclib\File\X509::DN_STRING)
             ));
         }
         try {
@@ -151,7 +150,7 @@ class DefaultCertificateValidator implements CertificateValidatorInterface {
     if (!$certObj->validateSignature()) {
       throw new InvalidCertException("Identity is invalid. Certificate is not signed by proper CA.");
     }
-    if (!$certObj->validateDate(Time::getTime())) {
+    if (!$certObj->validateDate(Time::getTimeObject())) {
       throw new ExpiredCertException("Identity is invalid. Certificate expired.");
     }
   }
@@ -180,9 +179,10 @@ class DefaultCertificateValidator implements CertificateValidatorInterface {
    */
   public function getCrlUrl() {
     if ($this->crlUrl === self::AUTOLOAD) {
-      $this->crlUrl = NULL; // Default if we can't find something else.
+      // Default if we can't find something else.
+      $this->crlUrl = NULL;
       $caCertObj = X509Util::loadCACert($this->getCaCert());
-      // There can be multiple DPs, but in practice CiviRootCA only has one.
+      // There can be multiple DPs, but in practice CiviConnectCA only has one.
       $crlDPs = $caCertObj->getExtension('id-ce-cRLDistributionPoints');
       if (is_array($crlDPs)) {
         foreach ($crlDPs as $crlDP) {
@@ -266,7 +266,7 @@ class DefaultCertificateValidator implements CertificateValidatorInterface {
   }
 
   /**
-   * @return HttpInterface
+   * @return \Civi\Cxn\Rpc\Http\HttpInterface
    */
   public function getHttp() {
     if ($this->http === self::AUTOLOAD) {
@@ -276,7 +276,7 @@ class DefaultCertificateValidator implements CertificateValidatorInterface {
   }
 
   /**
-   * @param HttpInterface $http
+   * @param \Civi\Cxn\Rpc\Http\HttpInterface $http
    * @return $this
    */
   public function setHttp($http) {

@@ -123,7 +123,7 @@ function dao_civicrm_alterSettingsFolders(&$metaDataFolders = NULL) {
 }
 
 function dao_civicrm_entityTypes(&$entityTypes) {
-  $entityTypes['CRM_Contact_DAO_Contact']['fields_callback'][] = function($class, &$fields) {
+  $entityTypes['Contact']['fields_callback'][] = function($class, &$fields) {
     $fields['do_not_trade']['title'] = 'Undeliverable: Do Not Mail';//4766
     $fields['preferred_mail_format']['title'] = 'Preferred Email Format';
 
@@ -133,64 +133,92 @@ function dao_civicrm_entityTypes(&$entityTypes) {
     //$fields['current_employer_id']['export'] = FALSE; //13123 this breaks things downstream with API calls
     $fields['hash']['export'] = FALSE;
     $fields['image_URL']['export'] = FALSE;
+
+    $fields['web_user_id'] = [
+      'name' => 'web_user_id',
+      'type' => CRM_Utils_Type::T_INT,
+      'title' => ts('Website User ID'),
+      'description' => ts('Public site User ID'),
+      'where' => 'civicrm_contact.web_user_id',
+      'table_name' => 'civicrm_contact',
+      'entity' => 'Contact',
+      'bao' => 'CRM_Contact_BAO_Contact',
+      'localizable' => 0,
+      'FKClassName' => 'CRM_Contact_DAO_Contact',
+      'html' => [
+        'label' => ts("Website User ID"),
+      ],
+      'readonly' => TRUE,
+      'import' => TRUE,
+      'headerPattern' => '/^web_user_id$/i',
+      'export' => TRUE,
+    ];
   };
 
-  $entityTypes['CRM_Core_DAO_Address']['fields_callback'][] = function($class, &$fields) {
+  $entityTypes['Address']['fields_callback'][] = function($class, &$fields) {
     $fields['street_number']['import'] = TRUE; //include parsed address fields in import
     $fields['street_name']['import'] = TRUE;
     $fields['street_unit']['import'] = TRUE;
     $fields['supplemental_address_1']['title'] = 'Mailing Address';
     $fields['supplemental_address_2']['title'] = 'Building';
-    unset($fields['country_id']);//2771
+    //unset($fields['country_id']);//2771 //removed with C5.57 upgrade (caused errors)
 
     //set fields that should not be exportable
     $fields['geo_code_1']['export'] = FALSE;
     $fields['geo_code_2']['export'] = FALSE;
-    $fields['address_name']['export'] = FALSE;
+    $fields['name']['export'] = FALSE;
     $fields['master_id']['export'] = FALSE;
     $fields['county_id']['export'] = FALSE;
   };
 
-  $entityTypes['CRM_Core_DAO_Worldregion']['fields_callback'][] = function($class, &$fields) {
-    $fields['world_region']['export'] = FALSE;
+  $entityTypes['WorldRegion']['fields_callback'][] = function($class, &$fields) {
+    $fields['name']['export'] = FALSE;
   };
 
-  $entityTypes['CRM_Core_DAO_CustomField']['fields_callback'][] = function($class, &$fields) {
-    $fields['label']['maxlength'] = 1020; //9784
+  //9784
+  $entityTypes['CustomField']['fields_callback'][] = function($class, &$fields) {
+    $fields['label']['maxlength'] = 1020;
   };
 
-  $entityTypes['CRM_Core_DAO_CustomGroup']['fields_callback'][] = function($class, &$fields) {
-    $fields['title']['maxlength'] = 128; //9784
+  //9784
+  $entityTypes['CustomGroup']['fields_callback'][] = function($class, &$fields) {
+    $fields['title']['maxlength'] = 128;
   };
 
-  $entityTypes['CRM_Core_DAO_Email']['fields_callback'][] = function($class, &$fields) {
+  //2729
+  $entityTypes['Email']['fields_callback'][] = function($class, &$fields) {
     $fields['is_primary']['title'] = 'Is Email Primary?';
-    $fields['signature_text']['export'] = FALSE; //2729
-    $fields['signature_html']['export'] = FALSE; //2729
+    $fields['signature_text']['export'] = FALSE;
+    $fields['signature_html']['export'] = FALSE;
+
+    $fields['mailing_categories'] = [
+      'name' => 'mailing_categories',
+      'type' => CRM_Utils_Type::T_STRING,
+      'title' => ts('Mailing Categories'),
+      'description' => ts('Comma-separated list of mailing categories to EXCLUDE'),
+      'where' => 'civicrm_email.mailing_categories',
+      'table_name' => 'civicrm_email',
+      'entity' => 'Email',
+      'bao' => 'CRM_Core_BAO_Email',
+      'localizable' => 0,
+      'html' => [
+        'label' => ts('Mailing Categories'),
+      ],
+      'import' => FALSE,
+      'export' => FALSE,
+      'maxlength' => 254,
+      'size' => 30,
+    ];
   };
 
-  $entityTypes['CRM_Core_DAO_OpenID']['fields_callback'][] = function($class, &$fields) {
-    $fields['openid']['export'] = FALSE; //2719
+  //2719
+  $entityTypes['OpenID']['fields_callback'][] = function($class, &$fields) {
+    $fields['openid']['export'] = FALSE;
   };
 
-  $entityTypes['CRM_Core_DAO_Tag']['fields_callback'][] = function($class, &$fields) {
-    $fields['name']['maxlength'] = 128; //9656
+  //9656
+  $entityTypes['Tag']['fields_callback'][] = function($class, &$fields) {
+    $fields['name']['maxlength'] = 128;
+    $fields['label']['maxlength'] = 128;
   };
-
-  $entityTypes['CRM_Core_DAO_Note']['fields_callback'][] = function($class, &$fields) {
-    //set alternate callback for notes entity_table
-    $fields['entity_table']['pseudoconstant']['callback'] = '_CRM_Core_BAO_Note_entityTables';
-  };
-}
-
-/*
- * alternate callback for notes entity_table
- * so that we include our custom table options for website integration
- */
-function _CRM_Core_BAO_Note_entityTables() {
-  $tbls = CRM_Core_BAO_Note::entityTables() + array(
-    'nyss_directmsg' => 'NYSS Direct Message',
-    'nyss_contextmsg' => 'NYSS Contextual Message',
-  );
-  return $tbls;
 }

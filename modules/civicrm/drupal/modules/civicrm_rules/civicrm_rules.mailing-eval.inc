@@ -13,8 +13,6 @@
  *
  * @package CRM
  * @copyright CiviCRM LLC https://civicrm.org/licensing
- * $Id$
- *
  */
 
 require_once 'civicrm_rules_utils.inc';
@@ -22,7 +20,7 @@ require_once 'civicrm_rules_utils.inc';
 function civicrm_rules_rules_action_mailing_send_email($to,
   $subject,
   $message,
-  $from = NULL,
+  $from,
   $settings,
   RulesState $state,
   RulesPlugin $element

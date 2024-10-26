@@ -48,11 +48,8 @@ function drupal_error_levels() {
  *   The filename that the error was raised in.
  * @param $line
  *   The line number the error was raised at.
- * @param $context
- *   An array that points to the active symbol table at the point the error
- *   occurred.
  */
-function _drupal_error_handler_real($error_level, $message, $filename, $line, $context) {
+function _drupal_error_handler_real($error_level, $message, $filename, $line) {
   if ($error_level & error_reporting()) {
     $types = drupal_error_levels();
     list($severity_msg, $severity_level) = $types[$error_level];
@@ -62,7 +59,8 @@ function _drupal_error_handler_real($error_level, $message, $filename, $line, $c
       require_once DRUPAL_ROOT . '/includes/common.inc';
     }
 
-    // We treat recoverable errors as fatal.
+    // We treat recoverable errors as fatal, and also allow fatal errors to be
+    // explicitly triggered by drupal_trigger_fatal_error().
     _drupal_log_error(array(
       '%type' => isset($types[$error_level]) ? $severity_msg : 'Unknown error',
       // The standard PHP error handler considers that the error messages
@@ -72,7 +70,7 @@ function _drupal_error_handler_real($error_level, $message, $filename, $line, $c
       '%file' => $caller['file'],
       '%line' => $caller['line'],
       'severity_level' => $severity_level,
-    ), $error_level == E_RECOVERABLE_ERROR);
+    ), $error_level == E_RECOVERABLE_ERROR || drupal_static('drupal_trigger_fatal_error'));
   }
 }
 
@@ -105,8 +103,8 @@ function _drupal_decode_exception($exception) {
       // We remove that call.
       array_shift($backtrace);
     }
-    if (isset($exception->query_string, $exception->args)) {
-      $message .= ": " . $exception->query_string . "; " . print_r($exception->args, TRUE);
+    if (isset($exception->errorInfo['query_string'], $exception->errorInfo['args'])) {
+      $message .= ": " . $exception->errorInfo['query_string'] . "; " . print_r($exception->errorInfo['args'], TRUE);
     }
   }
   $caller = _drupal_get_last_caller($backtrace);
@@ -269,7 +267,7 @@ function _drupal_log_error($error, $fatal = FALSE) {
 function _drupal_get_last_caller($backtrace) {
   // Errors that occur inside PHP internal functions do not generate
   // information about file and line. Ignore black listed functions.
-  $blacklist = array('debug', '_drupal_error_handler', '_drupal_exception_handler');
+  $blacklist = array('debug', '_drupal_error_handler', '_drupal_exception_handler', 'drupal_trigger_fatal_error');
   while (($backtrace && !isset($backtrace[0]['line'])) ||
          (isset($backtrace[1]['function']) && in_array($backtrace[1]['function'], $blacklist))) {
     array_shift($backtrace);

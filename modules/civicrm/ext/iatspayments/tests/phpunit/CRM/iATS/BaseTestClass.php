@@ -17,7 +17,8 @@ use Civi\Test\TransactionalInterface;
  *       b. Disable TransactionalInterface, and handle all setup/teardown yourself.
  */
 abstract class BaseTestClass extends \PHPUnit\Framework\TestCase implements HeadlessInterface, HookInterface, TransactionalInterface {
-  //class BaseTestClass extends \PHPUnit_Framework_TestCase implements HeadlessInterface, HookInterface {
+
+  use \Civi\Test\Api3TestTrait;
 
   /**
    * Configure the headless environment.
@@ -30,167 +31,58 @@ abstract class BaseTestClass extends \PHPUnit\Framework\TestCase implements Head
       ->apply();
   }
 
-  private $_apiversion = 3;
+  /**
+   * Copied from civicrm core CiviUnitTestCase.
+   *
+   * Instantiate form object.
+   *
+   * We need to instantiate the form to run preprocess, which means we have to trick it about the request method.
+   *
+   * @param string $class
+   *   Name of form class.
+   *
+   * @param array $formValues
+   *
+   * @param string $pageName
+   *
+   * @param array $searchFormValues
+   *   Values for the search form if the form is a task eg.
+   *   for selected ids 6 & 8:
+   *   [
+   *      'radio_ts' => 'ts_sel',
+   *      'task' => CRM_Member_Task::PDF_LETTER,
+   *      'mark_x_6' => 1,
+   *      'mark_x_8' => 1,
+   *   ]
+   *
+   * @return \CRM_Core_Form
+   */
+  public function getFormObject($class, $formValues = [], $pageName = '', $searchFormValues = []) {
+    $_POST = $formValues;
+    /* @var CRM_Core_Form $form */
+    $form = new $class();
+    $_SERVER['REQUEST_METHOD'] = 'GET';
+    switch ($class) {
+      case 'CRM_Event_Cart_Form_Checkout_Payment':
+      case 'CRM_Event_Cart_Form_Checkout_ParticipantsAndPrices':
+        $form->controller = new CRM_Event_Cart_Controller_Checkout();
+        break;
 
-  /**
-   * wrap api functions.
-   * so we can ensure they succeed & throw exceptions without litterering the test with checks
-   *
-   * @param string $entity
-   * @param string $action
-   * @param array $params
-   * @param mixed $checkAgainst
-   *   Optional value to check result against, implemented for getvalue,.
-   *   getcount, getsingle. Note that for getvalue the type is checked rather than the value
-   *   for getsingle the array is compared against an array passed in - the id is not compared (for
-   *   better or worse )
-   *
-   * @return array|int
-   */
-  public function callAPISuccess($entity, $action, $params, $checkAgainst = NULL) {
-    $params = array_merge(array(
-      'version' => $this->_apiversion,
-      'debug' => 1,
-    ),
-      $params
-    );
-    switch (strtolower($action)) {
-      case 'getvalue':
-        return $this->callAPISuccessGetValue($entity, $params, $checkAgainst);
-
-      case 'getsingle':
-        return $this->callAPISuccessGetSingle($entity, $params, $checkAgainst);
-
-      case 'getcount':
-        return $this->callAPISuccessGetCount($entity, $params, $checkAgainst);
+      default:
+        $form->controller = new CRM_Core_Controller();
     }
-    $result = $this->civicrm_api($entity, $action, $params);
-    $this->assertAPISuccess($result, "Failure in api call for $entity $action");
-    return $result;
-  }
-  /**
-   * This function exists to wrap api getValue function & check the result
-   * so we can ensure they succeed & throw exceptions without litterering the test with checks
-   * There is a type check in this
-   *
-   * @param string $entity
-   * @param array $params
-   * @param string $type
-   *   Per http://php.net/manual/en/function.gettype.php possible types.
-   *   - boolean
-   *   - integer
-   *   - double
-   *   - string
-   *   - array
-   *   - object
-   *
-   * @return array|int
-   */
-  public function callAPISuccessGetValue($entity, $params, $type = NULL) {
-    $params += array(
-      'version' => $this->_apiversion,
-      'debug' => 1,
-    );
-    $result = $this->civicrm_api($entity, 'getvalue', $params);
-    if ($type) {
-      if ($type == 'integer') {
-        // api seems to return integers as strings
-        $this->assertTrue(is_numeric($result), "expected a numeric value but got " . print_r($result, 1));
-      }
-      else {
-        $this->assertType($type, $result, "returned result should have been of type $type but was ");
-      }
+    if (!$pageName) {
+      $pageName = $form->getName();
     }
-    return $result;
-  }
-  /**
-   * This function exists to wrap api getValue function & check the result
-   * so we can ensure they succeed & throw exceptions without litterering the test with checks
-   * There is a type check in this
-   * @param string $entity
-   * @param array $params
-   * @param null $count
-   * @throws Exception
-   * @return array|int
-   */
-  public function callAPISuccessGetCount($entity, $params, $count = NULL) {
-    $params += array(
-      'version' => $this->_apiversion,
-      'debug' => 1,
-    );
-    $result = $this->civicrm_api($entity, 'getcount', $params);
-    if (!is_int($result) || !empty($result['is_error']) || isset($result['values'])) {
-      throw new Exception('Invalid getcount result : ' . print_r($result, TRUE) . " type :" . gettype($result));
+    $form->controller->setStateMachine(new CRM_Core_StateMachine($form->controller));
+    $_SESSION['_' . $form->controller->_name . '_container']['values'][$pageName] = $formValues;
+    if ($searchFormValues) {
+      $_SESSION['_' . $form->controller->_name . '_container']['values']['Search'] = $searchFormValues;
     }
-    if (is_int($count)) {
-      $this->assertEquals($count, $result, "incorrect count returned from $entity getcount");
+    if (isset($formValues['_qf_button_name'])) {
+      $_SESSION['_' . $form->controller->_name . '_container']['_qf_button_name'] = $formValues['_qf_button_name'];
     }
-    return $result;
-  }
-  /**
-   * This function exists to wrap api getsingle function & check the result
-   * so we can ensure they succeed & throw exceptions without litterering the test with checks
-   *
-   * @param string $entity
-   * @param array $params
-   * @param array $checkAgainst
-   *   Array to compare result against.
-   *   - boolean
-   *   - integer
-   *   - double
-   *   - string
-   *   - array
-   *   - object
-   *
-   * @throws Exception
-   * @return array|int
-   */
-  public function callAPISuccessGetSingle($entity, $params, $checkAgainst = NULL) {
-    $params += array(
-      'version' => $this->_apiversion,
-      'debug' => 1,
-    );
-    $result = $this->civicrm_api($entity, 'getsingle', $params);
-    if (!is_array($result) || !empty($result['is_error']) || isset($result['values'])) {
-      throw new Exception('Invalid getsingle result' . print_r($result, TRUE));
-    }
-    if ($checkAgainst) {
-      // @todo - have gone with the fn that unsets id? should we check id?
-      $this->checkArrayEquals($result, $checkAgainst);
-    }
-    return $result;
-  }
-  /**
-   * Check that api returned 'is_error' => 0.
-   *
-   * @param array $apiResult
-   *   Api result.
-   * @param string $prefix
-   *   Extra test to add to message.
-   */
-  public function assertAPISuccess($apiResult, $prefix = '') {
-    if (!empty($prefix)) {
-      $prefix .= ': ';
-    }
-    $errorMessage = empty($apiResult['error_message']) ? '' : " " . $apiResult['error_message'];
-    if (!empty($apiResult['debug_information'])) {
-      $errorMessage .= "\n " . print_r($apiResult['debug_information'], TRUE);
-    }
-    if (!empty($apiResult['trace'])) {
-      $errorMessage .= "\n" . print_r($apiResult['trace'], TRUE);
-    }
-    $this->assertEquals(0, $apiResult['is_error'], $prefix . $errorMessage);
-  }
-  /**
-   * A stub for the API interface. This can be overriden by subclasses to change how the API is called.
-   *
-   * @param $entity
-   * @param $action
-   * @param array $params
-   * @return array|int
-   */
-  public function civicrm_api($entity, $action, $params) {
-    return civicrm_api($entity, $action, $params);
+    return $form;
   }
 
 }

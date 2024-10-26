@@ -21,7 +21,7 @@
  *
  * @param array $apiRequest
  *
- * @throws API_Exception
+ * @throws CRM_Core_Exception
  * @return array
  */
 function civicrm_api3_generic_setValue($apiRequest) {
@@ -56,7 +56,7 @@ function civicrm_api3_generic_setValue($apiRequest) {
   }
 
   $def = $fields[$fieldKey];
-  $title = CRM_Utils_Array::value('title', $def, ts('Field'));
+  $title = $def['title'] ?? ts('Field');
   // Disallow empty values except for the number zero.
   // TODO: create a utility for this since it's needed in many places
   if (!empty($def['required']) || !empty($def['is_required'])) {
@@ -80,9 +80,6 @@ function civicrm_api3_generic_setValue($apiRequest) {
 
     case CRM_Utils_Type::T_STRING:
     case CRM_Utils_Type::T_TEXT:
-      if (!CRM_Utils_Rule::xssString($value)) {
-        return civicrm_api3_create_error(ts('Illegal characters in input (potential scripting attack)'), ['error_code' => 'XSS']);
-      }
       if (array_key_exists('maxlength', $def)) {
         $value = substr($value, 0, $def['maxlength']);
       }

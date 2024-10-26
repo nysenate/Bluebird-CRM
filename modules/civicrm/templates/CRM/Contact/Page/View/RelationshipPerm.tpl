@@ -24,9 +24,12 @@
 {/if}
 
 <span class="fa-stack" title="{$permText}">
-  <i class="crm-i fa-square fa-stack-2x {if $permType eq 1}crm-i-blue{else}crm-i-green{/if}"></i>
-  <i class="crm-i {if $permType eq 1}fa-pencil{else}fa-eye{/if} fa-inverse fa-stack-1x"></i>
+  <i class="crm-i fa-square fa-stack-2x {if $permType eq 1}crm-i-blue{else}crm-i-green{/if}" aria-hidden="true"></i>
+  <i class="crm-i {if $permType eq 1}fa-pencil{else}fa-eye{/if} fa-inverse fa-stack-1x" aria-hidden="true"></i>
 </span>
+{if !$displayText}
+<span class="sr-only">{$permText}</span>
+{/if}
 
 {* Used for viewing a relationship *}
 {if $displayText}
@@ -34,14 +37,5 @@
 {ts 1=$permDisplayName 2=$otherDisplayName}<strong>%1</strong> can view and update information about <strong>%2</strong>.{/ts}
 {else}
 {ts 1=$permDisplayName 2=$otherDisplayName}<strong>%1</strong> can view information about <strong>%2</strong>.{/ts}
-{/if}
-{/if}
-
-{* Used for legend on relationships tab *}
-{if $afterText}
-{if $permType eq 1}
-{ts}This contact can be edited by the other.{/ts}
-{else}
-{ts}This contact can be viewed by the other.{/ts}
 {/if}
 {/if}

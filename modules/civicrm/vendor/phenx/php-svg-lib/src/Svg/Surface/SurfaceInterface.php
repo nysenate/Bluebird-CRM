@@ -2,7 +2,7 @@
 /**
  * @package php-svg-lib
  * @link    http://github.com/PhenX/php-svg-lib
- * @author  Fabien M�nager <fabien.menager@gmail.com>
+ * @author  Fabien Ménager <fabien.menager@gmail.com>
  * @license GNU LGPLv3+ http://www.gnu.org/copyleft/lesser.html
  */
 
@@ -37,11 +37,11 @@ interface SurfaceInterface
 
     public function fill();
 
-    public function stroke();
+    public function stroke(bool $close = false);
 
     public function endPath();
 
-    public function fillStroke();
+    public function fillStroke(bool $close = false);
 
     public function clip();
 

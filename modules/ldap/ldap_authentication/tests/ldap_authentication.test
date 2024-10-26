@@ -767,8 +767,8 @@ class LdapAuthenticationTestCase extends LdapTestCase {
       'excludeIfNoAuthorizations' => [
         'property' => 'excludeIfNoAuthorizations',
         'values' => [
-          [TRUE],
-          [TRUE],
+          1,
+          1,
         ],
       ],
       'emailOption' => [
@@ -811,7 +811,7 @@ class LdapAuthenticationTestCase extends LdapTestCase {
         $property = isset($conf['property']) ? $conf['property'] : $field_name;
         $desired = isset($conf['desired_result']) ? isset($conf['desired_result'][$i]) : $conf['values'][$i];
 
-        if (is_array($desired)) {
+        if (is_array($desired) && is_array($ldap_authentication_conf_post->{$property})) {
           $success = count($desired) == count($ldap_authentication_conf_post->{$property});
         }
         else {

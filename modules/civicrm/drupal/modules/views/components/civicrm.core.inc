@@ -1,25 +1,11 @@
 <?php
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 5                                                  |
- +--------------------------------------------------------------------+
- | This file is a part of CiviCRM.                                    |
+ | Copyright CiviCRM LLC. All rights reserved.                        |
  |                                                                    |
- | CiviCRM is free software; you can copy, modify, and distribute it  |
- | under the terms of the GNU Affero General Public License           |
- | Version 3, 19 November 2007 and the CiviCRM Licensing Exception.   |
- |                                                                    |
- | CiviCRM is distributed in the hope that it will be useful, but     |
- | WITHOUT ANY WARRANTY; without even the implied warranty of         |
- | MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.               |
- | See the GNU Affero General Public License for more details.        |
- |                                                                    |
- | You should have received a copy of the GNU Affero General Public   |
- | License and the CiviCRM Licensing Exception along                  |
- | with this program; if not, contact CiviCRM LLC                     |
- | at info[AT]civicrm[DOT]org. If you have questions about the        |
- | GNU Affero General Public License or the licensing of CiviCRM,     |
- | see the CiviCRM license FAQ at http://civicrm.org/licensing        |
+ | This work is published under the GNU AGPLv3 license with some      |
+ | permitted exceptions and without any warranty. For full license    |
+ | and copyright information, see https://civicrm.org/licensing       |
  +--------------------------------------------------------------------+
  */
 
@@ -721,6 +707,22 @@ function _civicrm_core_data(&$data, $enabled) {
       'handler' => 'civicrm_handler_sort_date',
     ),
   );
+  // Created date
+  $data['civicrm_contact']['created_date'] = array(
+    'title' => t('Created date'),
+    'help' => t("The date the contact's record was created."),
+    'field' => array(
+      'handler' => 'civicrm_handler_field_datetime',
+      'click sortable' => TRUE,
+    ),
+    'filter' => array(
+      'handler' => 'civicrm_handler_filter_datetime',
+      'is date' => TRUE,
+    ),
+    'sort' => array(
+      'handler' => 'civicrm_handler_sort_date',
+    ),
+  );
   // Image URL
   $data['civicrm_contact']['image_URL'] = array(
     'title' => t('Contact Image'),
@@ -1173,7 +1175,8 @@ function _civicrm_core_data(&$data, $enabled) {
   $data['civicrm_note']['table']['group'] = t('CiviCRM Note');
   $data['civicrm_note']['table']['join'] = array();
 
-  foreach (array_keys(CRM_Core_BAO_Note::entityTables()) as $entityTable) {
+  $noteEntities = civicrm_api3('Note', 'getoptions', ['field' => "entity_table"])['values'];
+  foreach (array_keys($noteEntities) as $entityTable) {
     // Explain how this table joins to others.
     $data['civicrm_note']['table']['join'][$entityTable] = array(
       'left_field' => 'id',

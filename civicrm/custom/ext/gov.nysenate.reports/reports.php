@@ -137,6 +137,11 @@ function reports_civicrm_buildForm($formName, &$form) {
       _reports_GroupRole($ele);
     }
   }
+
+  //14267 include Address custom data
+  if ($formName == 'CRM_Report_Form_Case_Summary') {
+    $form->set('_customGroupExtends', ['Case', 'Address']);
+  }
 }
 
 function reports_civicrm_validateForm($formName, &$fields, &$files, &$form, &$errors) {
@@ -197,6 +202,10 @@ function reports_civicrm_alterReportVar($varType, &$var, &$object) {
           _reports_CaseDetail_sql($var, $object);
           break;
 
+        case 'CRM_Report_Form_Case_Summary':
+          _reports_CaseSummary_sql($var, $object);
+          break;
+
         default:
       }
 
@@ -210,6 +219,14 @@ function reports_civicrm_alterReportVar($varType, &$var, &$object) {
       switch ($class) {
         case 'CRM_Report_Form_Mailing_Summary':
           _reports_MailingSummary_rows($var, $object);
+          break;
+
+        case 'CRM_Report_Form_Contact_LoggingDetail':
+          _reports_LoggingDetails_rows($var, $object);
+          break;
+
+        case 'CRM_Report_Form_Case_Summary':
+          _reports_CaseSummary_rows($var, $object);
           break;
 
         default:
@@ -278,6 +295,17 @@ function _reports_LoggingSummary_sql(&$var, &$object) {
   }
 }
 
+function _reports_LoggingDetails_rows(&$var, &$object) {
+  //11730 remove Modified/Created date from log detail report
+  foreach ($var as $rowNum => $row) {
+    if (strpos($row['field'][0], 'Modified Date') !== FALSE ||
+      strpos($row['field'][0], 'Created Date') !== FALSE
+    ) {
+      unset($var[$rowNum]);
+    }
+  }
+}
+
 function _reports_CaseDetail_col(&$var, &$object) {
   $var['civicrm_tag'] = [
     'dao' => 'CRM_Core_DAO_Tag',
@@ -342,9 +370,85 @@ function _reports_CaseDetail_sql(&$var, &$object) {
 }
 
 function _reports_CaseSummary_col(&$var, &$object) {
+  //Civi::log()->debug(__FUNCTION__, ['var' => $var]);
+
   //12635
   $relTypes = CRM_Utils_Array::index(['name_a_b'], CRM_Core_PseudoConstant::relationshipType('name'));
   $var['civicrm_relationship']['filters']['relationship_type_id']['default'] = [$relTypes['Case Manager']['id']];
+
+  //4940
+  asort($var['civicrm_relationship']['filters']['relationship_type_id']['options']);
+
+  //14267
+  $var['civicrm_address'] = [
+    'dao' => 'CRM_Core_DAO_Address',
+    'fields' => [
+      'id' => [
+        'title' => ts('Address ID'),
+        'no_display' => TRUE,
+        'required' => TRUE,
+      ],
+      'street_address' => [
+        'title' => ts('Street Address'),
+      ],
+      'supplemental_address_1' => [
+        'title' => ts('Mailing Address'),
+      ],
+      'city' => [
+        'title' => ts('City'),
+      ],
+      'state_province_id' => [
+        'title' => ts('State/Province'),
+      ],
+      'postal_code' => [
+        'title' => ts('Postal Code'),
+      ],
+    ],
+    'grouping' => 'address-fields',
+  ];
+
+  //14378
+  $var['civicrm_case']['order_bys']['id']['title'] = ts('Case ID');
+}
+
+function _reports_CaseSummary_sql(&$var, &$object) {
+  //Civi::log()->debug(__FUNCTION__, ['var' => $var]);
+
+  //14267 - regenerate from, append address, then re-append custom data
+  $object->from();
+  $from = $var->getVar('_from');
+  $from .= "
+    LEFT JOIN civicrm_address address_civireport
+      ON case_contact_civireport.contact_id = address_civireport.contact_id
+      AND address_civireport.is_primary = 1
+  ";
+  $var->setVar('_from', $from);
+  $object->customDataFrom();
+}
+
+function _reports_CaseSummary_rows(&$var, &$object) {
+  //Civi::log()->debug(__FUNCTION__, ['var' => $var]);
+
+  //14256
+  foreach ($var as $rowNum => &$row) {
+    //break out of loop if these fields are not even present
+    if (!isset($row['civicrm_c2_client_name']) && !isset($row['civicrm_c2_id'])) {
+      break;
+    }
+
+    //if values present, construct link to contact
+    if (!empty($row['civicrm_c2_client_name']) && !empty($row['civicrm_c2_id'])) {
+      $url = CRM_Utils_System::url('civicrm/contact/view',
+        'reset=1&cid=' . $row['civicrm_c2_id'],
+        $object->_absoluteUrl
+      );
+      $row['civicrm_c2_client_name_link'] = $url;
+      $row['civicrm_c2_client_name_hover'] = ts('View Contact Record');
+    }
+
+    $object->alterDisplayAddressFields($row, $var, $rowNum, NULL, NULL);
+  }
+
 }
 
 //12558
@@ -394,10 +498,6 @@ function _reports_DistrictInfo_col(&$var, &$object) {
       'custom_55' => [
         'name' => 'new_york_city_council_55',
         'title' => 'New York City Council',
-      ],
-      'custom_56' => [
-        'name' => 'neighborhood_56',
-        'title' => 'Neighborhood',
       ],
     ],
     'filters' => [
@@ -460,12 +560,6 @@ function _reports_DistrictInfo_col(&$var, &$object) {
         'title' => 'New York City Council',
         'operator' => 'like',
         'type' => CRM_Report_Form::OP_INT,
-      ],
-      'custom_56' => [
-        'name' => 'neighborhood_56',
-        'title' => 'Neighborhood',
-        'operator' => 'like',
-        'type' => CRM_Report_Form::OP_STRING,
       ],
     ],
   ];

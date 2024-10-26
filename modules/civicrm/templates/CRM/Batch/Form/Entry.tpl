@@ -10,21 +10,19 @@
 <div class="batch-entry form-item">
   <div class="help">
     {ts}Click Validate & Process below when you've entered all items for the batch. You can also Save & Continue Later at any time.{/ts}
-    {if call_user_func(array('CRM_Core_Permission','check'), 'administer CiviCRM')}
+    {crmPermission has='administer CiviCRM'}
       {capture assign=batchEntryProfileURL}{crmURL p="civicrm/admin/uf/group" q="reset=1&selectedChild=reserved-profiles"}{/capture}
       {ts 1=$batchEntryProfileURL}Add, remove or change the order of columns by editing the corresponding <a href="%1" target="_blank">Bulk Entry profile</a>.{/ts}
       {if $batchType EQ 1}
         {ts}Custom fields and a Personal Campaign Page field can be added if needed.{/ts}
       {/if}
-    {/if}
+    {/crmPermission}
   </div>
   {if $batchAmountMismatch}
     <div class="status message status-warning">
-      <i class="crm-i fa-exclamation-triangle"></i> {ts}Total for amounts entered below does not match the expected batch total.{/ts}
+      <i class="crm-i fa-exclamation-triangle" aria-hidden="true"></i> {ts}Total for amounts entered below does not match the expected batch total.{/ts}
     </div>
-    <span class="crm-button crm-button_qf_Entry_upload_force-save">
-      {$form._qf_Entry_upload_force.html}
-    </span>
+    {$form._qf_Entry_upload_force.html}
     <div class="clear"></div>
   {/if}
   <table class="form-layout-compressed batch-totals">
@@ -55,10 +53,7 @@
       {foreach from=$fields item=field key=fieldName}
         <div class="crm-grid-cell">
           {if $field.name|substr:0:11 ne 'soft_credit' and $field.name ne 'trxn_id'}
-          <img src="{$config->resourceBase}i/copy.png"
-               alt="{ts 1=$field.title}Click to copy %1 from row one to all rows.{/ts}"
-               fname="{$field.name}" class="action-icon"
-               title="{ts}Click here to copy the value in row one to ALL rows.{/ts}"/>
+          {copyIcon name=$field.name title=$field.title}
           {/if}{$field.title}
         </div>
       {/foreach}
@@ -100,14 +95,14 @@
           {elseif $n eq 'total_amount'}
              <div class="compressed crm-grid-cell">
                {$form.field.$rowNumber.$n.html}
-               {if $batchType eq 3 }
+               {if $batchType eq 3}
 		 {ts}<span id={$rowNumber} class="pledge-adjust-option"><a href='#'>adjust payment amount</a></span>{/ts}
                  <span id="adjust-select-{$rowNumber}" class="adjust-selectbox">{$form.option_type.$rowNumber.html}</span>
                {/if}
              </div>
           {else}
             <div class="compressed crm-grid-cell">
-              {$form.field.$rowNumber.$n.html}
+              {$form.field.$rowNumber.$n.html|smarty:nodefaults}
               {if $fields.$n.html_type eq 'File' && !empty($form.field.$rowNumber.$fieldName.value.size)}
                 {ts}Attached{/ts}: {$form.field.$rowNumber.$fieldName.value.name}
               {/if}
@@ -117,7 +112,7 @@
       </div>
     {/section}
   </div>
-  <div class="crm-submit-buttons">{if $fields}{$form._qf_Batch_refresh.html}{/if} &nbsp; {$form.buttons.html}</div>
+  <div class="crm-submit-buttons">{if $fields && array_key_exists('_qf_Batch_refresh', $form) && is_array($form._qf_Batch_refresh)}{$form._qf_Batch_refresh.html}{/if} &nbsp; {$form.buttons.html}</div>
 </div>
 {literal}
 <script type="text/javascript">
@@ -160,7 +155,7 @@ CRM.$(function($) {
     calculateActualTotal();
   });
 
-  {/literal}{if $batchType eq 1 }{literal}
+  {/literal}{if $batchType eq 1}{literal}
   // hide all dates if send receipt is checked
   hideSendReceipt();
 
@@ -375,7 +370,7 @@ function updateContactInfo(blockNo, prefix) {
                 cj('select[id="member_option_' + blockNo + '"]').prop('disabled', false).val(2);
                 cj('select[id="field_' + blockNo + '_membership_type_0"]').val(memTypeContactId).change();
                 cj('select[id="field_' + blockNo + '_membership_type_1"]').val(membershipTypeId).change();
-                cj('#field_' + blockNo + '_' + 'join_date').val(membershipJoinDate).trigger('change');
+                cj('#field_' + blockNo + '_' + 'membership_join_date').val(membershipJoinDate).trigger('change');
                 cj('#field_' + blockNo + '_' + 'membership_start_date').val(membershipStartDate).trigger('change');
               }
               });

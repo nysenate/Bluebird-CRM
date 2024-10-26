@@ -11,29 +11,27 @@
 
 namespace Civi\API\Event;
 
+use Civi\Api4\Event\ActiveUserTrait;
+
 /**
  * Class AuthorizeEvent
+ *
  * @package Civi\API\Event
+ *
+ * Determine whether the API request is allowed for the current user.
+ * For successful execution, at least one listener must invoke
+ * $event->authorize().
+ *
+ * Event name: 'civi.api.authorize'
  */
 class AuthorizeEvent extends Event {
-  /**
-   * @var bool
-   */
-  private $authorized = FALSE;
 
-  /**
-   * Mark the request as authorized.
-   */
-  public function authorize() {
-    $this->authorized = TRUE;
-  }
+  use AuthorizedTrait;
+  use ActiveUserTrait;
 
-  /**
-   * @return bool
-   *   TRUE if the request has been authorized.
-   */
-  public function isAuthorized() {
-    return $this->authorized;
+  public function __construct($apiProvider, $apiRequest, $apiKernel, int $userID) {
+    parent::__construct($apiProvider, $apiRequest, $apiKernel);
+    $this->setUser($userID);
   }
 
 }

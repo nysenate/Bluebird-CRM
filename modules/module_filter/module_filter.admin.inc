@@ -94,12 +94,24 @@ function module_filter_settings() {
     '#description' => t('When enabled, the description will be expanded by default.'),
     '#default_value' => variable_get('module_filter_expanded_description', 0),
   );
+  $form['tabs']['module_filter_show_path'] = array(
+    '#type' => 'checkbox',
+    '#title' => t('Show module path in modules list'),
+    '#description' => t('If enabled, the relative path of each module will display in its row.'),
+    '#default_value' => variable_get('module_filter_show_path', 0),
+  );
 
   $form['update'] = array(
     '#type' => 'fieldset',
     '#title' => t('Update status'),
     '#collapsible' => TRUE,
     '#collapsed' => (module_exists('update')) ? FALSE : TRUE,
+  );
+  $form['update']['module_filter_update_status_alter'] = array(
+    '#type' => 'checkbox',
+    '#title' => t('Enhance Update Status Report'),
+    '#description' => t('Allow module filter module to make enhancements to the update status report.'),
+    '#default_value' => variable_get('module_filter_update_status_alter', 1),
   );
   $form['update']['module_filter_remember_update_state'] = array(
     '#type' => 'checkbox',

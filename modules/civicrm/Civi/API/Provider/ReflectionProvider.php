@@ -24,11 +24,11 @@ class ReflectionProvider implements EventSubscriberInterface, ProviderInterface 
    */
   public static function getSubscribedEvents() {
     return [
-      Events::RESOLVE => [
+      'civi.api.resolve' => [
         // TODO decide if we really want to override others
         ['onApiResolve', Events::W_EARLY],
       ],
-      Events::AUTHORIZE => [
+      'civi.api.authorize' => [
         // TODO decide if we really want to override others
         ['onApiAuthorize', Events::W_EARLY],
       ],
@@ -97,7 +97,7 @@ class ReflectionProvider implements EventSubscriberInterface, ProviderInterface 
    * @inheritDoc
    * @param array $apiRequest
    * @return array
-   * @throws \API_Exception
+   * @throws \CRM_Core_Exception
    */
   public function invoke($apiRequest) {
     if (strtolower($apiRequest['entity']) == 'entity' && $apiRequest['action'] == 'get') {
@@ -114,7 +114,7 @@ class ReflectionProvider implements EventSubscriberInterface, ProviderInterface 
     }
 
     // We shouldn't get here because onApiResolve() checks $this->actions
-    throw new \API_Exception("Unsupported action (" . $apiRequest['entity'] . '.' . $apiRequest['action'] . ']');
+    throw new \CRM_Core_Exception("Unsupported action (" . $apiRequest['entity'] . '.' . $apiRequest['action'] . ']');
   }
 
   /**

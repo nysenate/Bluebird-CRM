@@ -1,0 +1,23 @@
+.panel-query {
+  > .panel-body {
+    transition: opacity 0.2s linear;
+  }
+
+  &.is-loading-page {
+    > .panel-body {
+      opacity: 0.7;
+    }
+  }
+
+  .civicase__activity-card--empty {
+    text-align: center;
+  }
+
+  .civicase__activity-card--big--empty-description {
+    margin-bottom: 0;
+  }
+  
+  .civicase__activity-no-result-icon {
+    display: inline-block;
+  }
+}

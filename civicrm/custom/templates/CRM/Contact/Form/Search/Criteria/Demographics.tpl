@@ -11,7 +11,7 @@
 <div id="demographics" class="form-item">
   <table class="form-layout">
     <tr>
-      {include file="CRM/Core/DatePickerRangeWrapper.tpl" fieldName="birth_date"}
+      {include file="CRM/Core/DatePickerRangeWrapper.tpl" fieldName="birth_date" to='' from='' colspan='' class='' hideRelativeLabel=0}
     </tr>
     <tr>
       <td>
@@ -38,7 +38,7 @@
       </td>
     </tr>
     <tr>
-      {include file="CRM/Core/DatePickerRangeWrapper.tpl" fieldName="deceased_date"}
+      {include file="CRM/Core/DatePickerRangeWrapper.tpl" fieldName="deceased_date"  to='' from='' colspan='' class='' hideRelativeLabel=0}
     </tr>
     <tr>
       <td>

@@ -19,7 +19,10 @@ function rules_action_data_set($wrapper, $value, $settings, $state, $element) {
       $wrapper->set($value);
     }
     catch (EntityMetadataWrapperException $e) {
-      throw new RulesEvaluationException('Unable to modify data "@selector": ' . $e->getMessage(), array('@selector' => $settings['data:select']));
+      throw new RulesEvaluationException('Unable to modify data "@selector": @message', array(
+        '@selector' => $settings['data:select'],
+        '@message' => $e->getMessage(),
+      ));
     }
     // Save changes if a property of a variable has been changed.
     if (strpos($element->settings['data:select'], ':') !== FALSE) {
@@ -120,7 +123,7 @@ function rules_action_data_calc_info_alter(&$element_info, RulesPlugin $element)
 /**
  * Action: Add a list item.
  */
-function rules_action_data_list_add($list, $item, $unique = FALSE, $pos = 'end', $settings, $state) {
+function rules_action_data_list_add($list, $item, $unique, $pos, $settings, $state) {
   // Optionally, only add the list item if it is not yet contained.
   if ($unique && rules_condition_data_list_contains($list, $item, $settings, $state)) {
     return;
@@ -302,11 +305,16 @@ function rules_action_data_create($args, $element) {
       return array('data_created' => $data);
     }
     catch (EntityMetadataWrapperException $e) {
-      throw new RulesEvaluationException('Unable to create @data": ' . $e->getMessage(), array('@data' => $type), $element);
+      throw new RulesEvaluationException('Unable to create @data: @message', array(
+        '@data' => $type,
+        '@message' => $e->getMessage(),
+      ), $element);
     }
   }
   else {
-    throw new RulesEvaluationException('Unable to create @data, no creation callback found.', array('@data' => $type), $element, RulesLog::ERROR);
+    throw new RulesEvaluationException('Unable to create @data, no creation callback found.', array(
+      '@data' => $type,
+    ), $element, RulesLog::ERROR);
   }
 }
 
@@ -337,7 +345,7 @@ function rules_action_data_create_info_alter(&$element_info, RulesAbstractPlugin
 /**
  * Creation callback for array structured data.
  */
-function rules_action_data_create_array($values = array(), $type) {
+function rules_action_data_create_array($values, $type) {
   // $values is an array already, so we can just pass it to the wrapper.
   return rules_wrap_data($values, array('type' => $type));
 }
@@ -406,7 +414,7 @@ function rules_condition_data_list_contains($list, $item, $settings, $state) {
 /**
  * Condition: List count comparison.
  */
-function rules_condition_data_list_count_is($list, $op = '==', $value) {
+function rules_condition_data_list_count_is($list, $op, $value) {
   switch ($op) {
     case '==':
       return count($list) == $value;
@@ -460,5 +468,5 @@ function rules_data_text_comparison($text, $text2, $op = 'contains') {
 }
 
 /**
- * @}
+ * @} End of "addtogroup rules"
  */

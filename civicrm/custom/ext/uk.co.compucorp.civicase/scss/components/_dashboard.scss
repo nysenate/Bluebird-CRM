@@ -1,0 +1,58 @@
+.civicase__dashboard {
+  .tab-pane {
+    padding: 0;
+  }
+}
+
+.civicase__dashboard__tab-container {
+  .nav {
+    width: 100%;
+    z-index: 10;
+  }
+
+  .nav.affix-top {
+    position: relative;
+  }
+
+  .nav.affix {
+    position: fixed;
+  }
+}
+
+.civicase__dashboard-activites-feed {
+  background: $gray-light;
+}
+
+.civicase__dashboard__action-btn {
+  background: $brand-primary;
+  border: 1px solid $crm-white;
+  border-radius: 2px;
+  color: $crm-white;
+  line-height: 20px;
+  margin-right: 15px;
+  margin-top: 7px;
+  padding: 6px 16px;
+
+  .material-icons {
+    font-size: 16px;
+    margin-right: 5px;
+    position: relative;
+    top: 2px;
+  }
+
+  &--light {
+    background: $crm-white;
+    color: $brand-primary;
+  }
+}
+
+.civicase__dashboard__relation-filter {
+  display: inline-block;
+  margin-right: 10px;
+  margin-top: 7px;
+  width: 190px;
+
+  .select2-choice {
+    color: $crm-gray-matte;
+  }
+}

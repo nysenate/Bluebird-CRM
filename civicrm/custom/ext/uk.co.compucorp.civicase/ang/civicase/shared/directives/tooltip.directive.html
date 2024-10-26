@@ -1,0 +1,15 @@
+<span class="civicase__tooltip">
+  <span
+    ng-if="!tooltipEnabled">
+    <span ng-transclude></span>
+  </span>
+
+  <div
+    ng-if="tooltipEnabled"
+    uib-popover="{{tooltipText}}"
+    popover-placement="bottom-left"
+    popover-class="civicase__tooltip__popup"
+    popover-trigger="'mouseenter'">
+    <span ng-transclude></span>
+  </div>
+</span>

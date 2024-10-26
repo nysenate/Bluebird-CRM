@@ -1,6 +1,28 @@
 <?php
 
-require_once 'CRM/Core/Payment.php';
+/**
+ * @file
+ * Copyright iATS Payments (c) 2020.
+ * @author Alan Dixon
+ *
+ * This file is a part of CiviCRM published extension.
+ *
+ * This extension is free software; you can copy, modify, and distribute it
+ * under the terms of the GNU Affero General Public License
+ * Version 3, 19 November 2007.
+ *
+ * It is distributed in the hope that it will be useful, but
+ * WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+ * See the GNU Affero General Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public
+ * License with this program; if not, see http://www.gnu.org/licenses/
+ *
+ * This code provides glue between CiviCRM payment model and the payment model encapsulated in the CRM\Iats\FapsRequest object
+ */
+
+use Civi\Payment\Exception\PaymentProcessorException;
 
 class CRM_Core_Payment_FapsACH extends CRM_Core_Payment_Faps {
 
@@ -14,9 +36,8 @@ class CRM_Core_Payment_FapsACH extends CRM_Core_Payment_Faps {
   function __construct( $mode, &$paymentProcessor ) {
     $this->_mode             = $mode;
     $this->_paymentProcessor = $paymentProcessor;
-    $this->_processorName    = ts('iATS Payments 1st American Payment System Interface, ACH');
     $this->disable_cryptogram    = iats_get_setting('disable_cryptogram');
-    $this->is_test = ($this->_mode == 'test' ? 1 : 0); 
+    $this->is_test = ($this->_mode == 'test' ? 1 : 0);
   }
 
   /**
@@ -68,7 +89,7 @@ class CRM_Core_Payment_FapsACH extends CRM_Core_Payment_Faps {
     ];
     $resources = CRM_Core_Resources::singleton();
     $cryptoCss = $resources->getUrl('com.iatspayments.civicrm', 'css/crypto.css');
-    $markup = '<link type="text/css" rel="stylesheet" href="'.$cryptoCss.'" media="all" /><script type="text/javascript" src="'.$cryptojs.'"></script>';
+    $markup = '<link type="text/css" rel="stylesheet" href="'.$cryptoCss.'" media="all" />'; // <script type="text/javascript" src="'.$cryptojs.'"></script>';
     CRM_Core_Region::instance('billing-block')->add(array(
       'markup' => $markup,
     ));
@@ -83,11 +104,11 @@ class CRM_Core_Payment_FapsACH extends CRM_Core_Payment_Faps {
     ));
     // and now add in a helpful cheque image and description
     switch($currency) {
-      case 'USD': 
+      case 'USD':
         CRM_Core_Region::instance('billing-block')->add(array(
           'template' => 'CRM/Iats/BillingBlockFapsACH_USD.tpl',
         ));
-      case 'CAD': 
+      case 'CAD':
         CRM_Core_Region::instance('billing-block')->add(array(
           'template' => 'CRM/Iats/BillingBlockFapsACH_CAD.tpl',
         ));
@@ -97,21 +118,23 @@ class CRM_Core_Payment_FapsACH extends CRM_Core_Payment_Faps {
 
 
   /**
-   * function doDirectPayment
+   * function doPayment
    *
    * This is the function for taking a payment using a core payment form of any kind.
    *
    */
-  public function doDirectPayment(&$params) {
-    // CRM_Core_Error::debug_var('doDirectPayment params', $params);
-
-    // Check for valid currency
-    $currency = $params['currencyID'];
-    if (('USD' != $currency) && ('CAD' != $currency)) {
-      return self::error('Invalid currency selection: ' . $currency);
+  public function doPayment(&$params, $component = 'contribute') {
+    // CRM_Core_Error::debug_var('doPayment params', $params);
+    if (empty($params['amount'])) {
+      return _iats_payment_status_complete();
     }
-    $isRecur = CRM_Utils_Array::value('is_recur', $params) && $params['contributionRecurID'];
-    $ipAddress = (function_exists('ip_address') ? ip_address() : $_SERVER['REMOTE_ADDR']);
+
+    $isRecur = CRM_Utils_Array::value('is_recur', $params);
+    if ($isRecur && empty($params['contributionRecurID'])) {
+      return self::error('Invalid call to doPayment with is_recur and no contributionRecurID');
+    }
+    // FAPS only allows ipv4 addresses
+    $ipAddress = CRM_Iats_Transaction::remote_ip_address($FILTER_FLAG_IPV4);
     $credentials = array(
       'merchantKey' => $this->_paymentProcessor['signature'],
       'processorId' => $this->_paymentProcessor['user_name']
@@ -130,7 +153,7 @@ class CRM_Core_Payment_FapsACH extends CRM_Core_Payment_Faps {
       );
       $vault_request = new CRM_Iats_FapsRequest($options);
       $request = $this->convertParams($params, $options['action']);
-      // auto-generate a compliant vault key  
+      // auto-generate a compliant vault key
       $vault_key = self::generateVaultKey($request['ownerEmail']);
       $request['vaultKey'] = $vault_key;
       $request['ipAddress'] = $ipAddress;
@@ -195,7 +218,6 @@ class CRM_Core_Payment_FapsACH extends CRM_Core_Payment_Faps {
     if ($success) {
       $params['payment_status_id'] = 2;
       $params['trxn_id'] = trim($result['data']['referenceNumber']).':'.time();
-      $params['gross_amount'] = $params['amount'];
       // Core assumes that a pending result will have no transaction id, but we have a useful one.
       if (!empty($params['contributionID'])) {
         $contribution_update = array('id' => $params['contributionID'], 'trxn_id' => $params['trxn_id']);
@@ -216,7 +238,7 @@ class CRM_Core_Payment_FapsACH extends CRM_Core_Payment_Faps {
   }
 
   /**
-   * Get the category text. 
+   * Get the category text.
    * Before I return it, check that the category text exists, and create it if
    * it doesn't.
    *
@@ -236,7 +258,7 @@ class CRM_Core_Payment_FapsACH extends CRM_Core_Payment_Faps {
     static $ach_category_text_saved;
     if (!empty($ach_category_text_saved)) {
       return $ach_category_text_saved;
-    } 
+    }
     $ach_category_text = iats_get_setting('ach_category_text');
     $ach_category_text = empty($ach_category_text) ? FAPS_DEFAULT_ACH_CATEGORY_TEXT : $ach_category_text;
     $ach_category_exists = FALSE;

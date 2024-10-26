@@ -13,7 +13,6 @@ $optList = civicrm_script_init("", array(), False);
 
 drupal_script_init();
 
-require_once 'CRM/Core/Config.php';
 $config = CRM_Core_Config::singleton();
 
 //drop civi triggers
@@ -22,10 +21,10 @@ $dropCiviTriggers = $bbconfig['app.rootdir'].'/scripts/dropCiviTriggers.sh '.$bb
 shell_exec( $dropCiviTriggers );
 
 echo "Disable Logging...\n";
-require_once 'CRM/Logging/Schema.php';
+Civi::settings()->set('logging', FALSE);
+
 $logging = new CRM_Logging_Schema;
 $logging->disableLogging();
-//CRM_Core_Error::debug('logging',$logging);
 
 //triggerRebuild picks up the hook triggers when they are not in schema info
 echo "Rebuild Triggers...\n";

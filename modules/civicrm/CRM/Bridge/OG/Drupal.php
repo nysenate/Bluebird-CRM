@@ -175,7 +175,7 @@ SELECT v.id
   public static function updateCiviACL(&$params, $op) {
     $dao = new CRM_ACL_DAO_ACL();
 
-    $dao->object_table = 'civicrm_saved_search';
+    $dao->object_table = 'civicrm_group';
     $dao->object_id = $params['civicrm_group_id'];
 
     if ($op == 'delete') {
@@ -204,7 +204,7 @@ SELECT v.id
 
     $contactID = CRM_Bridge_OG_Utils::contactID($params['uf_id']);
     if (!$contactID) {
-      CRM_Core_Error::fatal();
+      throw new CRM_Core_Exception(' no contact found');
     }
 
     // get the group id of this OG

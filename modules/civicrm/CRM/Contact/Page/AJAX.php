@@ -13,7 +13,6 @@
  *
  * @package CRM
  * @copyright CiviCRM LLC https://civicrm.org/licensing
- *
  */
 
 /**
@@ -222,7 +221,7 @@ class CRM_Contact_Page_AJAX {
 
     $ret = ['is_error' => 0];
 
-    list($relTypeId, $b, $a) = explode('_', $relType);
+    [$relTypeId, $b, $a] = explode('_', $relType);
 
     if ($relationshipID && $originalCid) {
       CRM_Case_BAO_Case::endCaseRole($caseID, $a, $originalCid, $relTypeId);
@@ -250,7 +249,7 @@ class CRM_Contact_Page_AJAX {
         ]);
         $result = civicrm_api3('relationship', 'create', $params);
       }
-      catch (CiviCRM_API3_Exception $e) {
+      catch (CRM_Core_Exception $e) {
         $ret['is_error'] = 1;
         $ret['error_message'] = $e->getMessage();
       }
@@ -264,19 +263,6 @@ class CRM_Contact_Page_AJAX {
     }
 
     CRM_Utils_JSON::output($ret);
-  }
-
-  /**
-   * Fetch the custom field help.
-   */
-  public static function customField() {
-    $fieldId = CRM_Utils_Type::escape($_REQUEST['id'], 'Integer');
-    $params = ['id' => $fieldId];
-    $returnProperties = ['help_pre', 'help_post'];
-    $values = [];
-
-    CRM_Core_DAO::commonRetrieve('CRM_Core_DAO_CustomField', $params, $values, $returnProperties);
-    CRM_Utils_JSON::output($values);
   }
 
   public static function groupTree() {
@@ -294,6 +280,11 @@ class CRM_Contact_Page_AJAX {
     $customValueID = CRM_Utils_Type::escape($_REQUEST['valueID'], 'Positive');
     $customGroupID = CRM_Utils_Type::escape($_REQUEST['groupID'], 'Positive');
     $contactId = CRM_Utils_Request::retrieve('contactId', 'Positive');
+    if (!CRM_Core_BAO_CustomGroup::checkGroupAccess($customGroupID, CRM_Core_Permission::EDIT) ||
+      !CRM_Contact_BAO_Contact_Permission::allow($contactId, CRM_Core_Permission::EDIT)
+    ) {
+      CRM_Utils_System::permissionDenied();
+    }
     CRM_Core_BAO_CustomValue::deleteCustomValue($customValueID, $customGroupID);
     if ($contactId) {
       echo CRM_Contact_BAO_Contact::getCountComponent('custom_' . $customGroupID, $contactId);
@@ -320,7 +311,7 @@ class CRM_Contact_Page_AJAX {
     }
 
     $config = CRM_Core_Config::singleton();
-    $username = trim(CRM_Utils_Array::value('cms_name', $_REQUEST));
+    $username = trim($_REQUEST['cms_name'] ?? '');
 
     $params = ['name' => $username];
 
@@ -358,7 +349,7 @@ class CRM_Contact_Page_AJAX {
       $rowCount = Civi::settings()->get('search_autocomplete_count');
 
       // add acl clause here
-      list($aclFrom, $aclWhere) = CRM_Contact_BAO_Contact_Permission::cacheClause('cc');
+      [$aclFrom, $aclWhere] = CRM_Contact_BAO_Contact_Permission::cacheClause('cc');
       if ($aclWhere) {
         $aclWhere = "AND {$aclWhere}";
       }
@@ -367,7 +358,7 @@ class CRM_Contact_Page_AJAX {
 SELECT sort_name name, ce.email, cc.id
 FROM   civicrm_email ce INNER JOIN civicrm_contact cc ON cc.id = ce.contact_id
        {$aclFrom}
-WHERE  ce.on_hold = 0 AND cc.is_deceased = 0 AND cc.do_not_email = 0 AND {$queryString}
+WHERE  ce.on_hold = 0 AND cc.is_deceased = 0 AND cc.do_not_email = 0 AND cc.is_deleted = 0 AND {$queryString}
        {$aclWhere}
 LIMIT {$rowCount}
 )";
@@ -388,67 +379,6 @@ LIMIT {$rowCount}
         $result[] = [
           'text' => '"' . $dao->name . '" <' . $dao->email . '>',
           'id' => (CRM_Utils_Array::value('id', $_GET)) ? "{$dao->id}::{$dao->email}" : '"' . $dao->name . '" <' . $dao->email . '>',
-        ];
-      }
-      CRM_Utils_JSON::output($result);
-    }
-    CRM_Utils_System::civiExit();
-  }
-
-  public static function getContactPhone() {
-
-    $queryString = NULL;
-    $sqlParmas = [];
-    //check for mobile type
-    $phoneTypes = CRM_Core_OptionGroup::values('phone_type', TRUE, FALSE, FALSE, NULL, 'name');
-    $mobileType = $phoneTypes['Mobile'] ?? NULL;
-
-    $name = CRM_Utils_Request::retrieveValue('name', 'String', NULL, FALSE, 'GET');
-    if ($name) {
-      $key = (int) count(array_keys($sqlParmas)) + 1;
-      $queryString = " ( cc.sort_name LIKE %{$key} OR cp.phone LIKE %{$key} ) ";
-      $sqlParams[$key] = ['%' . $name . '%', 'String'];
-    }
-    else {
-      $cid = CRM_Utils_Request::retrieveValue('cid', 'CommaSeparatedIntegers', NULL, FALSE, 'GET');
-      if ($cid) {
-        $queryString = " cc.id IN ( $cid )";
-      }
-    }
-
-    if ($queryString) {
-      $result = [];
-      $offset = (int) CRM_Utils_Request::retrieveValue('offset', 'Integer', 0, FALSE, 'GET');
-      $rowCount = (int) CRM_Utils_Request::retrieveValue('rowcount', 'Integer', 20, FALSE, 'GET');
-
-      // add acl clause here
-      list($aclFrom, $aclWhere) = CRM_Contact_BAO_Contact_Permission::cacheClause('cc');
-      if ($aclWhere) {
-        $aclWhere = " AND $aclWhere";
-      }
-
-      $query = "
-SELECT sort_name name, cp.phone, cc.id
-FROM   civicrm_phone cp INNER JOIN civicrm_contact cc ON cc.id = cp.contact_id
-       {$aclFrom}
-WHERE  cc.is_deceased = 0 AND cc.do_not_sms = 0 AND cp.phone_type_id = {$mobileType} AND {$queryString}
-       {$aclWhere}
-LIMIT {$offset}, {$rowCount}
-";
-
-      // send query to hook to be modified if needed
-      CRM_Utils_Hook::contactListQuery($query,
-        $name,
-        CRM_Utils_Request::retrieve('context', 'Alphanumeric'),
-        CRM_Utils_Request::retrieve('cid', 'Positive')
-      );
-
-      $dao = CRM_Core_DAO::executeQuery($query, $sqlParams);
-
-      while ($dao->fetch()) {
-        $result[] = [
-          'text' => '"' . $dao->name . '" (' . $dao->phone . ')',
-          'id' => (CRM_Utils_Array::value('id', $_GET)) ? "{$dao->id}::{$dao->phone}" : '"' . $dao->name . '" <' . $dao->phone . '>',
         ];
       }
       CRM_Utils_JSON::output($result);
@@ -479,42 +409,10 @@ LIMIT {$offset}, {$rowCount}
   }
 
   public static function buildDedupeRules() {
-    $parent = CRM_Utils_Request::retrieve('parentId', 'Positive');
-
-    switch ($parent) {
-      case 1:
-        $contactType = 'Individual';
-        break;
-
-      case 2:
-        $contactType = 'Household';
-        break;
-
-      case 4:
-        $contactType = 'Organization';
-        break;
-    }
-
-    $dedupeRules = CRM_Dedupe_BAO_RuleGroup::getByType($contactType);
+    $contactType = CRM_Utils_Request::retrieve('parentId', 'String');
+    $dedupeRules = CRM_Dedupe_BAO_DedupeRuleGroup::getByType($contactType);
 
     CRM_Utils_JSON::output($dedupeRules);
-  }
-
-  /**
-   * Function used for CiviCRM dashboard operations.
-   */
-  public static function dashboard() {
-    switch ($_REQUEST['op']) {
-      case 'save_columns':
-        CRM_Core_BAO_Dashboard::saveDashletChanges($_REQUEST['columns'] ?? NULL);
-        break;
-
-      case 'delete_dashlet':
-        $dashletID = CRM_Utils_Type::escape($_REQUEST['dashlet_id'], 'Positive');
-        CRM_Core_DAO_Dashboard::deleteRecord(['id' => $dashletID]);
-    }
-
-    CRM_Utils_System::civiExit();
   }
 
   /**
@@ -591,8 +489,8 @@ LIMIT {$offset}, {$rowCount}
       'src_email' => 'ce2.email',
       'dst_postcode' => 'ca1.postal_code',
       'src_postcode' => 'ca2.postal_code',
-      'dst_street' => 'ca1.street',
-      'src_street' => 'ca2.street',
+      'dst_street' => 'ca1.street_address',
+      'src_street' => 'ca2.street_address',
     ];
 
     foreach ($mappings as $key => $dbName) {
@@ -770,7 +668,7 @@ LIMIT {$offset}, {$rowCount}
   public static function getSearchOptionsFromRequest() {
     $searchParams = [];
     $searchData = $_REQUEST['search'] ?? NULL;
-    $searchData['value'] = CRM_Utils_Type::escape($searchData['value'], 'String');
+    $searchData['value'] = CRM_Utils_Type::escape($searchData['value'] ?? NULL, 'String');
     $selectorElements = [
       'is_selected',
       'is_selected_input',
@@ -828,22 +726,23 @@ LIMIT {$offset}, {$rowCount}
    *
    * @param int $cid
    * @param int $oid
-   * @param "dupe-nondupe|nondupe-dupe" $oper
+   * @param string $oper
+   *   'nondupe-dupe' or 'dupe-nondupe'
    *
    * @return \CRM_Core_DAO|mixed|null
    */
   public static function markNonDuplicates($cid, $oid, $oper) {
-    if ($oper == 'dupe-nondupe') {
+    if ($oper === 'dupe-nondupe') {
       try {
         civicrm_api3('Exception', 'create', ['contact_id1' => $cid, 'contact_id2' => $oid]);
         return TRUE;
       }
-      catch (CiviCRM_API3_Exception $e) {
+      catch (CRM_Core_Exception $e) {
         return FALSE;
       }
     }
 
-    $exception = new CRM_Dedupe_DAO_Exception();
+    $exception = new CRM_Dedupe_DAO_DedupeException();
     $exception->contact_id1 = $cid;
     $exception->contact_id2 = $oid;
     //make sure contact2 > contact1.
@@ -854,7 +753,7 @@ LIMIT {$offset}, {$rowCount}
     $exception->find(TRUE);
     $status = NULL;
 
-    if ($oper == 'nondupe-dupe') {
+    if ($oper === 'nondupe-dupe') {
       $status = $exception->delete();
     }
     return $status;
@@ -863,7 +762,7 @@ LIMIT {$offset}, {$rowCount}
   /**
    * Retrieve a PDF Page Format for the PDF Letter form.
    */
-  public function pdfFormat() {
+  public static function pdfFormat() {
     $formatId = CRM_Utils_Type::escape($_REQUEST['formatId'], 'Integer');
 
     $pdfFormat = CRM_Core_BAO_PdfFormat::getById($formatId);
@@ -978,7 +877,7 @@ LIMIT {$offset}, {$rowCount}
   public static function toggleDedupeSelect() {
     $pnid = $_REQUEST['pnid'];
     $isSelected = CRM_Utils_Type::escape($_REQUEST['is_selected'], 'Boolean');
-    $cacheKeyString = CRM_Utils_Request::retrieve('cacheKey', 'Alphanumeric', $null, FALSE);
+    $cacheKeyString = CRM_Utils_Request::retrieve('cacheKey', 'Alphanumeric', NULL, FALSE);
 
     $params = [
       1 => [$isSelected, 'Boolean'],
@@ -1006,7 +905,9 @@ LIMIT {$offset}, {$rowCount}
   }
 
   /**
-   * Retrieve contact relationships.
+   * @deprecated since 5.68. Will be removed around 5.74.
+   *
+   * Only-used-by-user-dashboard.
    */
   public static function getContactRelationships() {
     $contactID = CRM_Utils_Type::escape($_GET['cid'], 'Integer');

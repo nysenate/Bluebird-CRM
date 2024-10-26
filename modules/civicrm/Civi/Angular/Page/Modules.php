@@ -2,6 +2,8 @@
 
 namespace Civi\Angular\Page;
 
+use Civi\Angular\Manager;
+
 /**
  * This page aggregates data from Angular modules.
  *
@@ -85,7 +87,12 @@ class Modules extends \CRM_Core_Page {
       case 'angular-modules.js':
         $moduleNames = $page->parseModuleNames($event->params['modules'] ?? NULL, $angular);
         $event->mimeType = 'application/javascript';
-        $event->content = $page->digestJs($angular->getResources($moduleNames, 'js', 'path'));
+        $files = array_merge(
+          // FIXME: The `resetLocationProviderHashPrefix.js` has to stay in sync with `\Civi\Angular\AngularLoader::load()`.
+          [\Civi::resources()->getPath('civicrm', 'ang/resetLocationProviderHashPrefix.js')],
+          $angular->getResources($moduleNames, 'js', 'path')
+        );
+        $event->content = $page->digestJs($files);
         break;
 
       case 'angular-modules.css':
@@ -106,15 +113,20 @@ class Modules extends \CRM_Core_Page {
   public function digestJs($files) {
     $scripts = [];
     foreach ($files as $file) {
-      $scripts[] = file_get_contents($file);
+      $content = file_get_contents($file);
+      if (str_contains($file, 'monaco-editor')) {
+        $scripts[] = $content;
+      }
+      else {
+        $scripts[] = \CRM_Utils_JS::stripComments($content);
+      }
     }
     $scripts = \CRM_Utils_JS::dedupeClosures(
       $scripts,
       ['angular', '$', '_'],
       ['angular', 'CRM.$', 'CRM._']
     );
-    // This impl of stripComments currently adds 10-20ms and cuts ~7%
-    return \CRM_Utils_JS::stripComments(implode("\n", $scripts));
+    return implode("\n", $scripts);
   }
 
   /**
@@ -144,18 +156,17 @@ class Modules extends \CRM_Core_Page {
    * @param \Civi\Angular\Manager $angular
    * @return array
    */
-  public function getMetadata($moduleNames, $angular) {
-    $modules = $angular->getModules();
+  public function getMetadata(array $moduleNames, Manager $angular): array {
     $result = [];
     foreach ($moduleNames as $moduleName) {
-      if (isset($modules[$moduleName])) {
-        $result[$moduleName] = [];
-        $result[$moduleName]['domain'] = $modules[$moduleName]['ext'];
-        $result[$moduleName]['js'] = $angular->getResources($moduleName, 'js', 'rawUrl');
-        $result[$moduleName]['css'] = $angular->getResources($moduleName, 'css', 'rawUrl');
-        $result[$moduleName]['partials'] = $angular->getPartials($moduleName);
-        $result[$moduleName]['strings'] = $angular->getTranslatedStrings($moduleName);
-      }
+      $module = $angular->getModule($moduleName);
+      $result[$moduleName] = [
+        'domain' => $module['ext'],
+        'js' => $angular->getResources($moduleName, 'js', 'rawUrl'),
+        'css' => $angular->getResources($moduleName, 'css', 'rawUrl'),
+        'partials' => $angular->getPartials($moduleName),
+        'strings' => $angular->getTranslatedStrings($moduleName),
+      ];
     }
     return $result;
   }

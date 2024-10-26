@@ -16,29 +16,43 @@
  */
 
 /**
- * Use this API to create a new group.
- *
- * The 'extends' value accepts an array or a comma separated string.
- * e.g array(
- * 'Individual','Contact') or 'Individual,Contact'
- * See the CRM Data Model for custom_group property definitions
- * $params['class_name'] is a required field, class being extended.
+ * This entire function consists of legacy handling, probably for a form that no longer exists.
+ * APIv3 is where code like this goes to die...
  *
  * @param array $params
- *   Array per getfields metadata.
+ *   For legacy reasons, 'extends' can be passed as an array (for setting Participant column_value)
  *
  * @return array
- * @todo $params['extends'] is array format - is that std compatible
  */
 function civicrm_api3_custom_group_create($params) {
   if (isset($params['extends']) && is_string($params['extends'])) {
-    $extends = explode(",", $params['extends']);
-    unset($params['extends']);
-    $params['extends'] = $extends;
+    $params['extends'] = explode(',', $params['extends']);
   }
   if (!isset($params['id']) && (!isset($params['extends'][0]) || !trim($params['extends'][0]))) {
 
     return civicrm_api3_create_error("First item in params['extends'] must be a class name (e.g. 'Contact').");
+  }
+  if (!isset($params['extends_entity_column_value']) && isset($params['extends'][1])) {
+    $extendsEntity = $params['extends'][0] ?? NULL;
+    $participantEntities = [
+      'ParticipantRole',
+      'ParticipantEventName',
+      'ParticipantEventType',
+    ];
+    if (in_array($extendsEntity, $participantEntities)
+    ) {
+      $params['extends_entity_column_id'] = CRM_Core_DAO::getFieldValue('CRM_Core_DAO_OptionValue', $extendsEntity, 'value', 'name');
+    }
+    $params['extends_entity_column_value'] = $params['extends'][1];
+    if (in_array($extendsEntity, $participantEntities)) {
+      $params['extends'] = 'Participant';
+    }
+    else {
+      $params['extends'] = $extendsEntity;
+    }
+  }
+  elseif (isset($params['extends']) && (!isset($params['extends'][1]) || empty($params['extends'][1]))) {
+    $params['extends'] = $params['extends'][0];
   }
   if (isset($params['extends_entity_column_value']) && !is_array($params['extends_entity_column_value'])) {
     // BAO fails if this is a string, but API getFields says this must be a string, so we'll do a double backflip
@@ -71,8 +85,9 @@ function _civicrm_api3_custom_group_create_spec(&$params) {
 function civicrm_api3_custom_group_delete($params) {
   $values = new CRM_Core_DAO_CustomGroup();
   $values->id = $params['id'];
-  $values->find(TRUE);
-
+  if (!$values->find(TRUE)) {
+    return civicrm_api3_create_error('Error while deleting custom group');
+  }
   $result = CRM_Core_BAO_CustomGroup::deleteGroup($values, TRUE);
   return $result ? civicrm_api3_create_success() : civicrm_api3_create_error('Error while deleting custom group');
 }

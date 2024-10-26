@@ -839,7 +839,7 @@ function system_modules($form, $form_state = array()) {
       elseif (isset($visible_files[$requires])) {
         $requires_name = $files[$requires]->info['name'];
         // Disable this module if it is incompatible with the dependency's version.
-        if ($incompatible_version = drupal_check_incompatibility($v, str_replace(DRUPAL_CORE_COMPATIBILITY . '-', '', $files[$requires]->info['version']))) {
+        if ($incompatible_version = drupal_check_incompatibility($v, str_replace(DRUPAL_CORE_COMPATIBILITY . '-', '', (string) $files[$requires]->info['version']))) {
           $extra['requires'][$requires] = t('@module (<span class="admin-missing">incompatible with</span> version @version)', array(
             '@module' => $requires_name . $incompatible_version,
             '@version' => $files[$requires]->info['version'],
@@ -886,7 +886,13 @@ function system_modules($form, $form_state = array()) {
     // one.
     if ($module->status && isset($module->info['configure'])) {
       $configure_link = menu_get_item($module->info['configure']);
-      if ($configure_link['access']) {
+      if ($configure_link === FALSE) {
+        watchdog('system', 'Module %module specifies an invalid path for configuration: %configure', array(
+          '%module' => $module->info['name'],
+          '%configure' => $module->info['configure'],
+        ));
+      }
+      else if ($configure_link['access']) {
         $extra['links']['configure'] = array(
           '#type' => 'link',
           '#title' => t('Configure'),
@@ -929,6 +935,8 @@ function system_modules($form, $form_state = array()) {
       ),
       // Ensure that the "Core" package fieldset comes first.
       '#weight' => $package == 'Core' ? -10 : NULL,
+      // Hide this package unless we're running a test.
+      '#access' => !($package == 'Only For Testing' && !drupal_valid_test_ua()),
     );
   }
 
@@ -2301,7 +2309,7 @@ function system_clean_url_settings($form, &$form_state) {
     $form_state['redirect'] = url('admin/config/search/clean-urls');
     $form['clean_url_description'] = array(
       '#type' => 'markup',
-      '#markup' => '<p>' . t('Use URLs like <code>example.com/user</code> instead of <code>example.com/?q=user</code>.'),
+      '#markup' => '<p>' . t('Use URLs like <code>example.com/user</code> instead of <code>example.com/?q=user</code>.') . '</p>',
     );
     // Explain why the user is seeing this page and what to expect after
     // clicking the 'Run the clean URL test' button.
@@ -2358,6 +2366,10 @@ function system_status($check = FALSE) {
  * Menu callback: run cron manually.
  */
 function system_run_cron() {
+  if (!isset($_GET['token']) || !drupal_valid_token($_GET['token'], 'run-cron')) {
+    return MENU_ACCESS_DENIED;
+  }
+
   // Run cron manually
   if (drupal_cron_run()) {
     drupal_set_message(t('Cron ran successfully.'));
@@ -2373,7 +2385,8 @@ function system_run_cron() {
  * Menu callback: return information about PHP.
  */
 function system_php() {
-  phpinfo();
+  $phpinfo_flags = variable_get('sa_core_2023_004_phpinfo_flags', ~(INFO_VARIABLES | INFO_ENVIRONMENT));
+  phpinfo($phpinfo_flags);
   drupal_exit();
 }
 
@@ -2386,6 +2399,7 @@ function system_batch_page() {
 
   if ($output === FALSE) {
     drupal_access_denied();
+    drupal_exit();
   }
   elseif (isset($output)) {
     // Force a page without blocks or messages to

@@ -1,5 +1,154 @@
-Drupal 7.xx, xxxx-xx-xx (development version)
+Drupal 7.99, 2023-12-06
 -----------------------
+- Various security improvements
+- Various bug fixes, optimizations and improvements
+
+Drupal 7.98, 2023-06-07
+-----------------------
+- Various security improvements
+- Various bug fixes, optimizations and improvements
+
+Drupal 7.97, 2023-04-21
+-----------------------
+- Fix PHP 5.x regression caused by SA-CORE-2023-005
+
+Drupal 7.96, 2023-04-19
+-----------------------
+- Fixed security issues:
+   - SA-CORE-2023-005
+
+Drupal 7.95, 2023-03-15
+-----------------------
+- Fixed security issues:
+   - SA-CORE-2023-004
+
+Drupal 7.94, 2022-12-14
+-----------------------
+- Hotfix for book.module and Select query properties
+
+Drupal 7.93, 2022-12-07
+-----------------------
+- Improved support for PHP 8.2
+- Minimum PHP version changed to PHP 5.3
+- Various security hardenings
+- Various bug fixes, optimizations and improvements
+
+Drupal 7.92, 2022-09-07
+-----------------------
+- Improved support for PHP 8.1
+- Various security hardenings
+- Various bug fixes, optimizations and improvements
+
+Drupal 7.91, 2022-07-20
+-----------------------
+- Fixed security issues:
+   - SA-CORE-2022-012
+
+Drupal 7.90, 2022-06-01
+-----------------------
+- Improved support for PHP 8.1
+- Improved support for PostgreSQL
+- Various bug fixes, optimizations and improvements
+
+Drupal 7.89, 2022-03-02
+-----------------------
+- Bug fixes for PHP 8.1
+- Fix tests for PostgreSQL
+
+Drupal 7.88, 2022-02-15
+-----------------------
+- Fixed security issues:
+   - SA-CORE-2022-003
+
+Drupal 7.87, 2022-01-19
+-----------------------
+- Fix regression caused by jQuery UI position() backport
+
+Drupal 7.86, 2022-01-18
+-----------------------
+- Fixed security issues:
+   - SA-CORE-2022-001
+   - SA-CORE-2022-002
+
+Drupal 7.85, 2022-01-12
+-----------------------
+- Fix session cookies for sites with different base_urls but a shared domain
+
+Drupal 7.84, 2021-12-13
+-----------------------
+- Hotfix for session cookie domain on www subdomains
+
+Drupal 7.83, 2021-12-01
+-----------------------
+- Initial support for PHP 8.1
+- The has_js cookie has been removed (but can be re-enabled)
+- The leading www. is no longer stripped from cookie domain by default
+- The user entity now has a "changed" property
+- Introduced a skip_permissions_hardening setting
+- Changes to the password reset process to avoid email and username enumeration
+- Various bug fixes, optimizations and improvements
+
+Drupal 7.82, 2021-07-21
+-----------------------
+- Fixed security issues:
+   - SA-CORE-2021-004
+
+Drupal 7.81, 2021-06-02
+-----------------------
+- Block Google FLoC by default
+- Testing and accessibility enhancements
+- Various bug fixes, optimizations and improvements
+
+Drupal 7.80, 2021-04-20
+-----------------------
+- Fixed security issues:
+   - SA-CORE-2021-002
+
+Drupal 7.79, 2021-04-07
+-----------------------
+- Initial support for PHP 8
+- Support for SameSite cookie attribute
+- Avoid write for unchanged fields (opt-in)
+
+Drupal 7.78, 2021-01-19
+-----------------------
+- Fixed security issues:
+   - SA-CORE-2021-001
+
+Drupal 7.77, 2020-12-03
+-----------------------
+- Hotfix for schema.prefixed tables
+
+Drupal 7.76, 2020-12-02
+-----------------------
+- Support for MySQL 8
+- Core tests pass in SQLite
+- Better user flood control logging
+
+Drupal 7.75, 2020-11-26
+-----------------------
+- Fixed security issues:
+   - SA-CORE-2020-013
+
+Drupal 7.74, 2020-11-17
+-----------------------
+- Fixed security issues:
+   - SA-CORE-2020-012
+
+Drupal 7.73, 2020-09-16
+-----------------------
+- Fixed security issues:
+   - SA-CORE-2020-007
+
+Drupal 7.72, 2020-06-17
+-----------------------
+- Fixed security issues:
+   - SA-CORE-2020-004
+
+Drupal 7.71, 2020-06-03
+-----------------------
+- Fix for jQuery Form bug in Chromium-based browsers
+- Full support for PHP 7.4
 
 Drupal 7.70, 2020-05-19
 -----------------------

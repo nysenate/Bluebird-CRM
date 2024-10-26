@@ -3,8 +3,10 @@
   font-size: 70%;
   margin-right: 90px;
 }
-#crm-container .column-0 {
+#crm-container .column-0,
+.crm-container fieldset.crm-inactive-dashlet-fieldset:not(.collapsed)>legend {
   padding-bottom: 0;
+  margin-bottom: 0 !important;
 }
 #crm-container h3.widget-header {
   margin-left: 25px;

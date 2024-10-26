@@ -13,13 +13,13 @@
  * Implement the "reload" option. This option can be used with "create" to force
  * the API to reload a clean copy of the entity before returning the result.
  *
- * @code
+ * ```
  * $clean = civicrm_api('myentity', 'create', array(
  *   'options' => array(
  *     'reload' => 1
  *   ),
  * ));
- * @endcode
+ * ```
  *
  * @package CRM
  * @copyright CiviCRM LLC https://civicrm.org/licensing
@@ -80,7 +80,7 @@ class CRM_Utils_API_ReloadOption implements API_Wrapper {
         ];
         $reloadResult = civicrm_api3($apiRequest['entity'], 'get', $params);
         if ($reloadResult['is_error']) {
-          throw new API_Exception($reloadResult['error_message']);
+          throw new CRM_Core_Exception($reloadResult['error_message']);
         }
         $result['values'][$id] = array_merge($result['values'][$id], $reloadResult['values'][$result['id']]);
         return $result;
@@ -95,7 +95,7 @@ class CRM_Utils_API_ReloadOption implements API_Wrapper {
         return $result;
 
       default:
-        throw new API_Exception("Unknown reload mode " . $reloadMode);
+        throw new CRM_Core_Exception("Unknown reload mode " . $reloadMode);
     }
   }
 

@@ -1,0 +1,29 @@
+@mixin case-page {
+  #page { /* stylelint-disable selector-max-id */
+    margin: 0;
+    padding-top: 0;
+  }
+
+  .page-title {
+    @extend %element-invisible;
+  }
+
+  .block-civicrm > h2 { /* stylelint-disable selector-max-compound-selectors */
+    margin: 0;
+  }
+
+  #branding {
+    padding: 16px 0 !important;
+
+    .breadcrumb {
+      left: 0;
+      line-height: 18px;
+      padding: 0 20px;
+      top: 0;
+
+      > a { /* stylelint-disable max-nesting-depth */
+        left: 0;
+      }
+    }
+  }
+}

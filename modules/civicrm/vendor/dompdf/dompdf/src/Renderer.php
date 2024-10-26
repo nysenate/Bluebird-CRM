@@ -1,8 +1,7 @@
 <?php
 /**
  * @package dompdf
- * @link    http://dompdf.github.com/
- * @author  Benj Carson <benjcarson@digitaljunkies.ca>
+ * @link    https://github.com/dompdf/dompdf
  * @license http://www.gnu.org/copyleft/lesser.html GNU Lesser General Public License
  */
 namespace Dompdf;
@@ -65,19 +64,21 @@ class Renderer extends AbstractRenderer
 
         $style = $frame->get_style();
 
-        if (in_array($style->visibility, array("hidden", "collapse"))) {
+        if (in_array($style->visibility, ["hidden", "collapse"], true)) {
             return;
         }
 
         $display = $style->display;
+        $transformList = $style->transform;
+        $hasTransform = $transformList !== [];
 
         // Starts the CSS transformation
-        if ($style->transform && is_array($style->transform)) {
+        if ($hasTransform) {
             $this->_canvas->save();
             list($x, $y) = $frame->get_padding_box();
             $origin = $style->transform_origin;
 
-            foreach ($style->transform as $transform) {
+            foreach ($transformList as $transform) {
                 list($function, $values) = $transform;
                 if ($function === "matrix") {
                     $function = "transform";
@@ -87,7 +88,7 @@ class Renderer extends AbstractRenderer
                 $values[] = $x + (float)$style->length_in_pt($origin[0], (float)$style->length_in_pt($style->width));
                 $values[] = $y + (float)$style->length_in_pt($origin[1], (float)$style->length_in_pt($style->height));
 
-                call_user_func_array(array($this->_canvas, $function), $values);
+                call_user_func_array([$this->_canvas, $function], $values);
             }
         }
 
@@ -154,23 +155,23 @@ class Renderer extends AbstractRenderer
 
         // Starts the overflow: hidden box
         if ($style->overflow === "hidden") {
-            list($x, $y, $w, $h) = $frame->get_padding_box();
-
-            // get border radii
+            $padding_box = $frame->get_padding_box();
+            [$x, $y, $w, $h] = $padding_box;
             $style = $frame->get_style();
-            list($tl, $tr, $br, $bl) = $style->get_computed_border_radius($w, $h);
 
-            if ($tl + $tr + $br + $bl > 0) {
-                $this->_canvas->clipping_roundrectangle($x, $y, (float)$w, (float)$h, $tl, $tr, $br, $bl);
+            if ($style->has_border_radius()) {
+                $border_box = $frame->get_border_box();
+                [$tl, $tr, $br, $bl] = $style->resolve_border_radius($border_box, $padding_box);
+                $this->_canvas->clipping_roundrectangle($x, $y, $w, $h, $tl, $tr, $br, $bl);
             } else {
-                $this->_canvas->clipping_rectangle($x, $y, (float)$w, (float)$h);
+                $this->_canvas->clipping_rectangle($x, $y, $w, $h);
             }
         }
 
-        $stack = array();
+        $stack = [];
 
         foreach ($frame->get_children() as $child) {
-            // < 0 : nagative z-index
+            // < 0 : negative z-index
             // = 0 : no z-index, no stacking context
             // = 1 : stacking context without z-index
             // > 1 : z-index
@@ -179,8 +180,8 @@ class Renderer extends AbstractRenderer
             $z_index = 0;
 
             if ($child_z_index !== "auto") {
-                $z_index = intval($child_z_index) + 1;
-            } elseif ($child_style->float !== "none" || $child->is_positionned()) {
+                $z_index = $child_z_index + 1;
+            } elseif ($child_style->float !== "none" || $child->is_positioned()) {
                 $z_index = 1;
             }
 
@@ -200,7 +201,7 @@ class Renderer extends AbstractRenderer
             $this->_canvas->clipping_end();
         }
 
-        if ($style->transform && is_array($style->transform)) {
+        if ($hasTransform) {
             $this->_canvas->restore();
         }
 
@@ -212,27 +213,22 @@ class Renderer extends AbstractRenderer
      * Check for callbacks that need to be performed when a given event
      * gets triggered on a frame
      *
-     * @param string $event the type of event
-     * @param Frame $frame  the frame that event is triggered on
+     * @param string $event The type of event
+     * @param Frame  $frame The frame that event is triggered on
      */
-    protected function _check_callbacks($event, $frame)
+    protected function _check_callbacks(string $event, Frame $frame): void
     {
         if (!isset($this->_callbacks)) {
             $this->_callbacks = $this->_dompdf->getCallbacks();
         }
 
-        if (is_array($this->_callbacks) && isset($this->_callbacks[$event])) {
-            $info = array(0 => $this->_canvas, "canvas" => $this->_canvas,
-                1 => $frame, "frame" => $frame);
+        if (isset($this->_callbacks[$event])) {
             $fs = $this->_callbacks[$event];
+            $canvas = $this->_canvas;
+            $fontMetrics = $this->_dompdf->getFontMetrics();
+
             foreach ($fs as $f) {
-                if (is_callable($f)) {
-                    if (is_array($f)) {
-                        $f[0]->{$f[1]}($info);
-                    } else {
-                        $f($info);
-                    }
-                }
+                $f($frame, $canvas, $fontMetrics);
             }
         }
     }

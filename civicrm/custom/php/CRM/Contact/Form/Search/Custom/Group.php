@@ -228,7 +228,6 @@ class CRM_Contact_Form_Search_Custom_Group extends CRM_Contact_Form_Search_Custo
    * @param bool $justIDs
    *
    * @return string
-   * @throws \Exception
    */
   public function all(
     $offset = 0, $rowcount = 0, $sort = NULL,
@@ -349,7 +348,7 @@ class CRM_Contact_Form_Search_Custom_Group extends CRM_Contact_Form_Search_Custo
         //if no group selected search for all groups
         $iGroups = NULL;
       }
-      if (is_array($this->_excludeGroups)) {
+      if (is_array($this->_excludeGroups) && !empty($this->_excludeGroups)) {
         $xGroups = implode(',', $this->_excludeGroups);
       }
       else {
@@ -357,7 +356,6 @@ class CRM_Contact_Form_Search_Custom_Group extends CRM_Contact_Form_Search_Custo
       }
 
       $this->_xGTable->createWithColumns("contact_id int primary key");
-
       //used only when exclude group is selected
       if ($xGroups != 0) {
         $excludeGroup = "INSERT INTO  {$this->_xGTableName} ( contact_id )
@@ -376,7 +374,7 @@ class CRM_Contact_Form_Search_Custom_Group extends CRM_Contact_Form_Search_Custo
             $ssGroup = new CRM_Contact_DAO_Group();
             $ssGroup->id = $values;
             if (!$ssGroup->find(TRUE)) {
-              CRM_Core_Error::fatal();
+              CRM_Core_Error::statusBounce(ts('Smart group sepecifed in exclude groups is not found in the database'));
             }
             CRM_Contact_BAO_GroupContactCache::load($ssGroup);
 
@@ -436,7 +434,7 @@ WHERE  gcc.group_id = {$ssGroup->id}
           $ssGroup = new CRM_Contact_DAO_Group();
           $ssGroup->id = $values;
           if (!$ssGroup->find(TRUE)) {
-            CRM_Core_Error::fatal();
+            CRM_Core_Error::statusBounce(ts('Smart group sepecifed in include groups is not found in the database'));
           }
           CRM_Contact_BAO_GroupContactCache::load($ssGroup);
 
@@ -484,7 +482,7 @@ WHERE  gcc.group_id = {$ssGroup->id}
         //if no group selected search for all groups
         $iTags = NULL;
       }
-      if (is_array($this->_excludeTags)) {
+      if (is_array($this->_excludeTags) && !empty($this->_excludeTags)) {
         $xTags = implode(',', $this->_excludeTags);
       }
       else {
@@ -732,7 +730,7 @@ WHERE  gcc.group_id = {$ssGroup->id}
   }
 
   //NYSS 4899
-  function alterRow( &$row ) {
+  function alterRow(&$row) {
     $row['contact_type' ] =
       CRM_Contact_BAO_Contact_Utils::getImage( $row['contact_type'],
         false,

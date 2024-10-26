@@ -15,10 +15,12 @@ namespace Civi\Core\Event;
  * Class SystemInstallEvent
  * @package Civi\API\Event
  */
-class SystemInstallEvent extends \Symfony\Component\EventDispatcher\Event {
+class SystemInstallEvent extends GenericHookEvent {
 
   /**
    * The SystemInstallEvent fires once after installation - during the first page-view.
+   *
+   * @deprecated - You may simply use the event name directly. dev/core#1744
    */
   const EVENT_NAME = 'civi.core.install';
 
@@ -27,7 +29,7 @@ class SystemInstallEvent extends \Symfony\Component\EventDispatcher\Event {
    * @see \CRM_Utils_Hook::eventDefs
    */
   public static function hookEventDefs($e) {
-    $e->inspector->addEventClass(self::EVENT_NAME, __CLASS__);
+    $e->inspector->addEventClass('civi.core.install', __CLASS__);
   }
 
 }

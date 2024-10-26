@@ -2,11 +2,13 @@
 /**
  * @package php-svg-lib
  * @link    http://github.com/PhenX/php-svg-lib
- * @author  Fabien Ménager <fabien.menager@gmail.com>
+ * @author  Fabien MÃ©nager <fabien.menager@gmail.com>
  * @license GNU LGPLv3+ http://www.gnu.org/copyleft/lesser.html
  */
 
 namespace Svg\Tag;
+
+use Svg\Style;
 
 class Image extends AbstractTag
 {
@@ -28,31 +30,43 @@ class Image extends AbstractTag
 
     public function start($attributes)
     {
-        $document = $this->document;
         $height = $this->document->getHeight();
+        $width = $this->document->getWidth();
         $this->y = $height;
 
         if (isset($attributes['x'])) {
-            $this->x = $attributes['x'];
+            $this->x = $this->convertSize($attributes['x'], $width);
         }
         if (isset($attributes['y'])) {
-            $this->y = $height - $attributes['y'];
+            $this->y = $height - $this->convertSize($attributes['y'], $height);
         }
 
         if (isset($attributes['width'])) {
-            $this->width = $attributes['width'];
+            $this->width = $this->convertSize($attributes['width'], $width);
         }
         if (isset($attributes['height'])) {
-            $this->height = $attributes['height'];
+            $this->height = $this->convertSize($attributes['height'], $height);
         }
 
         if (isset($attributes['xlink:href'])) {
             $this->href = $attributes['xlink:href'];
         }
 
-        $document->getSurface()->transform(1, 0, 0, -1, 0, $height);
+        if (isset($attributes['href'])) {
+            $this->href = $attributes['href'];
+        }
 
-        $document->getSurface()->drawImage($this->href, $this->x, $this->y, $this->width, $this->height);
+        $this->document->getSurface()->transform(1, 0, 0, -1, 0, $height);
+
+        $scheme = \strtolower(parse_url($this->href, PHP_URL_SCHEME) ?: "");
+        if (
+            $scheme === "phar" || \strtolower(\substr($this->href, 0, 7)) === "phar://"
+            || ($this->document->allowExternalReferences === false && $scheme !== "data")
+        ) {
+            return;
+        }
+
+        $this->document->getSurface()->drawImage($this->href, $this->x, $this->y, $this->width, $this->height);
     }
 
     protected function after()

@@ -1,0 +1,12 @@
+civicase-masonry-grid {
+  width: 100%;
+
+  .civicase__masonry-grid__column {
+    float: left;
+    width: 50%;
+  }
+}
+
+civicase-masonry-grid-item {
+  display: block;
+}

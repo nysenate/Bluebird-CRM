@@ -13,18 +13,17 @@
 CRM.$(function($) {
   // Bind first click of accordion header to load crm-accordion-body with snippet
   // everything else is taken care of by crmAccordions()
-  $('.crm-search_criteria_basic-accordion .crm-accordion-header').addClass('active');
-  $('.crm-ajax-accordion').on('click', '.crm-accordion-header:not(.active)', function() {
+  $('.crm-search_criteria_basic-accordion summary').addClass('active');
+  $('.crm-ajax-accordion').on('click', 'summary:not(.active)', function() {
     loadPanes($(this).attr('id'));
   });
-  $('.crm-ajax-accordion:not(.collapsed) .crm-accordion-header').each(function() {
+  $('.crm-ajax-accordion:not(.collapsed) summary').each(function() {
     loadPanes($(this).attr('id'));
   });
   $('.crm-ajax-accordion').on('click', '.crm-close-accordion', function() {
     var header = $(this).parent();
     header.next().html('');
     header.removeClass('active');
-    header.parent('.crm-ajax-accordion:not(.collapsed)').crmAccordionToggle();
     // Reset results-display mode if it depends on this pane
     var mode = modes[$('#component_mode').val()] || null;
     if (mode && header.attr('id') == mode) {
@@ -40,14 +39,14 @@ CRM.$(function($) {
     return false;
   });
   // TODO: Why are the modes numeric? If they used the string there would be no need for this map
-  var modes = {/literal}{$component_mappings}{literal};
+  var modes = {/literal}{$component_mappings|smarty:nodefaults}{literal};
   // Handle change of results mode
   $('#component_mode').change(function() {
     // Reset task dropdown
     $('#task').val('');
     var mode = modes[$('#component_mode').val()] || null;
     if (mode) {
-      $('.crm-' + mode + '-accordion.collapsed').crmAccordionToggle();
+      $('.crm-' + mode + '-accordion:not([open])').prop('open', true);
       loadPanes(mode);
     }
     if ('related_contact' === modes[$('#component_mode').val()]) {
@@ -67,56 +66,58 @@ CRM.$(function($) {
     var body = $('.crm-accordion-body.' + id);
     if (header.length > 0 && body.length > 0 && !body.html()) {
       body.html('<div class="crm-loading-element"><span class="loading-text">{/literal}{ts escape='js'}Loading{/ts}{literal}...</span></div>');
-      header.append('{/literal}<a href="#" class="crm-close-accordion crm-hover-button css_right" title="{ts escape='js'}Remove from search criteria{/ts}"><i class="crm-i fa-times"></i></a>{literal}');
+      header.append('{/literal}<a href="#" class="crm-close-accordion crm-hover-button css_right" title="{ts escape='js'}Remove from search criteria{/ts}"><i class="crm-i fa-times" aria-hidden="true"></i></a>{literal}');
       header.addClass('active');
       CRM.loadPage(url, {target: body, block: false});
     }
   }
+  // Keeps the detail/accordion of 'active' fieldsets open after a search
+  $('summary.active').parent('details').attr('open', '');
 });
 </script>
 {/literal}
 
-{if $context EQ 'smog' || $context EQ 'amtg' || $savedSearch}
+{if $context EQ 'smog' || $context EQ 'amtg' || !empty($savedSearch)}
   <h3>
     {if $context EQ 'smog'}{ts}Find Contacts within this Group{/ts}
     {elseif $context EQ 'amtg'}{ts}Find Contacts to Add to this Group{/ts}
-    {elseif $savedSearch}{ts 1=$savedSearch.name}%1 Smart Group Criteria{/ts} &nbsp; {help id='id-advanced-smart'}
+    {elseif !empty($savedSearch)}{ts 1=$savedSearch.name}%1 Smart Group Criteria{/ts} &nbsp; {help id='id-advanced-smart'}
     {/if}
   </h3>
 {/if}
 
 {strip}
-  <div class="crm-accordion-wrapper crm-search_criteria_basic-accordion ">
-    <div class="crm-accordion-header">
+  <details class="crm-accordion-bold crm-search_criteria_basic-accordion" open>
+    <summary>
       {ts}Display Settings For Results{/ts}
-    </div>
+    </summary>
     <div class="crm-accordion-body">
       {include file="CRM/Contact/Form/Search/Criteria/DisplaySettings.tpl"}
     </div>
-  </div>
-  <div class="crm-accordion-wrapper crm-search_criteria_basic-accordion ">
-    <div class="crm-accordion-header">
+  </details>
+  <details class="crm-accordion-bold crm-search_criteria_basic-accordion" open>
+    <summary>
       {ts}Search Settings{/ts}
-    </div>
+    </summary>
     <div class="crm-accordion-body">
       {include file="CRM/Contact/Form/Search/Criteria/SearchSettings.tpl"}
     </div>
-  </div>
-  <div class="crm-accordion-wrapper crm-search_criteria_basic-accordion ">
-    <div class="crm-accordion-header">
+  </details>
+  <details class="crm-accordion-bold crm-search_criteria_basic-accordion" open>
+    <summary>
       {ts}Basic Criteria{/ts}
-    </div>
+    </summary>
     <div class="crm-accordion-body">
       {include file="CRM/Contact/Form/Search/Criteria/Basic.tpl"}
     </div>
-  </div>
+  </details>
   {foreach from=$allPanes key=paneName item=paneValue}
-    <div class="crm-accordion-wrapper crm-ajax-accordion crm-{$paneValue.id}-accordion {if $paneValue.open eq 'true' || $openedPanes.$paneName} {else}collapsed{/if}">
-      <div class="crm-accordion-header" id="{$paneValue.id}">
+    <details class="crm-accordion-bold crm-ajax-accordion crm-{$paneValue.id}-accordion {if $paneValue.open eq 'true' || array_key_exists($paneName, $openedPanes)} {else}collapsed{/if}">
+      <summary id="{$paneValue.id}">
         {$paneName}
-      </div>
+      </summary>
     <div class="crm-accordion-body {$paneValue.id}"></div>
-    </div><!-- Surplus /div is required (not sure why but breakage is obvious when you remove it) -->
+    </details>
   {/foreach}
   <div class="spacer"></div>
 
@@ -126,7 +127,7 @@ CRM.$(function($) {
         {include file="CRM/common/formButtons.tpl" location="bottom"}
         <div class="crm-submit-buttons reset-advanced-search">
           <a href="{crmURL p='civicrm/contact/search/advanced' q='reset=1'}" id="resetAdvancedSearch" class="crm-hover-button" title="{ts}Clear all search criteria{/ts}">
-            <i class="crm-i fa-undo"></i>
+            <i class="crm-i fa-undo" aria-hidden="true"></i>
             &nbsp;{ts}Reset Form{/ts}
           </a>
         </div>

@@ -23,5 +23,5 @@ function _civicrm_api3_job_mosaico_purge_spec(&$spec) {
  */
 function civicrm_api3_job_mosaico_purge($params) {
   CRM_Core_DAO::executeQuery('DELETE FROM civicrm_mosaico_msg_template');
-  return civicrm_api3_create_success(array(), $params, 'Job', 'mosaico_purge');
+  return civicrm_api3_create_success([], $params, 'Job', 'mosaico_purge');
 }

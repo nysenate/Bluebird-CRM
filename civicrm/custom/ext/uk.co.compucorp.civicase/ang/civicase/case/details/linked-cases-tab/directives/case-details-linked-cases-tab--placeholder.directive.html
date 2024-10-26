@@ -1,0 +1,65 @@
+<div>
+  <div class="civicase__case-tab__actions">
+    <button
+      class="btn btn-large btn-primary"
+      disabled
+    >
+      <i class="fa fa-link"></i>
+      {{ ts('Link Cases') }}
+    </button>
+  </div>
+  <div class="panel panel-default civicase__summary-tab__other-cases">
+    <div class="panel-heading">
+      <h3 class="panel-title">
+        <span
+          role="button"
+          data-toggle="collapse"
+          href="#collapse-other-cases-placeholder"
+          class="text-muted">
+          {{ ts("Other Cases") }}
+        </span>
+      </h3>
+    </div>
+    <div id="collapse-other-cases-placeholder" class="panel-collapse collapse in">
+      <div class="panel-body">
+        <div
+          class="panel panel-default civicase__case-card civicase__case-card--other"
+          ng-repeat="placeholder in [1,2,3]">
+          <div class="panel-body">
+            <div class="civicase__case-card__right_container pull-right" style="width: 10em">
+              <span class="civicase__case-card__dates">
+                <div class="civicase__loading-placeholder__oneline" style="width: 100%;"></div>
+              </span>
+            </div>
+
+            <div class="civicase__contact-name-container">
+              <i class="material-icons civicase__contact-icon">person</i>
+              <div class="civicase__loading-placeholder__oneline civicase__loading-placeholder--big" style="width: 20em; margin-bottom: 10px;"></div>
+            </div>
+
+            <div class="civicase__case-card__type">
+              <div class="civicase__loading-placeholder__oneline" style="width: 15em; margin-bottom: 10px;"></div>
+            </div>
+
+            <span class="civicase__case-card__activity-info">
+              <div class="civicase__case-card__activity-count-container">
+                <div class="civicase__loading-placeholder__oneline" style="width: 3em; display: inline-block;"></div>
+              </div>
+              <div class="civicase__case-card__activity-count-container">
+                <div class="civicase__loading-placeholder__oneline" style="width: 3em; display: inline-block;"></div>
+              </div>
+              <div class="civicase__case-card__activity-count-container">
+                <div class="civicase__loading-placeholder__oneline" style="width: 3em; display: inline-block;"></div>
+              </div>
+            </span>
+          </div>
+        </div>
+      </div>
+      <div class="panel-footer">
+        <div class="center-block civicase__pager">
+          <div class="civicase__loading-placeholder__oneline" style="width: 20em; display: inline-block;"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

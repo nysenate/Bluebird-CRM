@@ -236,20 +236,36 @@ function system_requirements($phase) {
 
   // Test settings.php file writability
   if ($phase == 'runtime') {
-    $conf_dir = drupal_verify_install_file(conf_path(), FILE_NOT_WRITABLE, 'dir');
-    $conf_file = drupal_verify_install_file(conf_path() . '/settings.php', FILE_EXIST|FILE_READABLE|FILE_NOT_WRITABLE);
-    if (!$conf_dir || !$conf_file) {
+    $conf_errors = array();
+    // Allow system administrators to ignore permissions hardening for the site
+    // directory. This allows additional files in the site directory to be
+    // updated when they are managed in a version control system.
+    $skip_permissions_hardening = variable_get('skip_permissions_hardening', FALSE);
+
+    if ($skip_permissions_hardening) {
+      $error_value = t('Protection disabled');
+      // If permissions hardening is disabled, then only show a warning for a
+      // writable file, as a reminder, rather than an error.
+      $file_protection_severity = REQUIREMENT_WARNING;
+    }
+    else {
+      $error_value = t('Not protected');
+      // In normal operation, writable files or directories are an error.
+      $file_protection_severity = REQUIREMENT_ERROR;
+      if (!drupal_verify_install_file(conf_path(), FILE_NOT_WRITABLE, 'dir')) {
+        $conf_errors[] = $t('The directory %file is not protected from modifications and poses a security risk. You must change the directory\'s permissions to be non-writable. ', array('%file' => conf_path()));
+      }
+    }
+    if (!drupal_verify_install_file(conf_path() . '/settings.php', FILE_EXIST | FILE_READABLE | FILE_NOT_WRITABLE, 'file', !$skip_permissions_hardening)) {
+      $conf_errors[] = $t('The file %file is not protected from modifications and poses a security risk. You must change the file\'s permissions to be non-writable.', array('%file' => conf_path() . '/settings.php'));
+    }
+
+    if (!empty($conf_errors)) {
       $requirements['settings.php'] = array(
-        'value' => $t('Not protected'),
-        'severity' => REQUIREMENT_ERROR,
-        'description' => '',
+        'value' => $error_value,
+        'severity' => $file_protection_severity,
+        'description' => implode('<br />', $conf_errors),
       );
-      if (!$conf_dir) {
-        $requirements['settings.php']['description'] .= $t('The directory %file is not protected from modifications and poses a security risk. You must change the directory\'s permissions to be non-writable. ', array('%file' => conf_path()));
-      }
-      if (!$conf_file) {
-        $requirements['settings.php']['description'] .= $t('The file %file is not protected from modifications and poses a security risk. You must change the file\'s permissions to be non-writable.', array('%file' => conf_path() . '/settings.php'));
-      }
     }
     else {
       $requirements['settings.php'] = array(
@@ -323,7 +339,7 @@ function system_requirements($phase) {
       $description = $t('Cron has not run recently.') . ' ' . $help;
     }
 
-    $description .= ' ' . $t('You can <a href="@cron">run cron manually</a>.', array('@cron' => url('admin/reports/status/run-cron')));
+    $description .= ' ' . $t('You can <a href="@cron">run cron manually</a>.', array('@cron' => url('admin/reports/status/run-cron', array('query' => array('token' => drupal_get_token('run-cron'))))));
     $description .= '<br />' . $t('To run cron from outside the site, go to <a href="!cron">!cron</a>', array('!cron' => url($base_url . '/cron.php', array('external' => TRUE, 'query' => array('cron_key' => variable_get('cron_key', 'drupal'))))));
 
     $requirements['cron'] = array(
@@ -473,7 +489,7 @@ function system_requirements($phase) {
         // Check for an incompatible version.
         $required_file = $files[$required_module];
         $required_name = $required_file->info['name'];
-        $version = str_replace(DRUPAL_CORE_COMPATIBILITY . '-', '', $required_file->info['version']);
+        $version = str_replace(DRUPAL_CORE_COMPATIBILITY . '-', '', (string) $required_file->info['version']);
         $compatibility = drupal_check_incompatibility($requirement, $version);
         if ($compatibility) {
           $compatibility = rtrim(substr($compatibility, 2), ')');
@@ -516,6 +532,37 @@ function system_requirements($phase) {
         'value' => $t('Fails'),
         'severity' => REQUIREMENT_ERROR,
         'description' => $t('Your system or network configuration does not allow Drupal to access web pages, resulting in reduced functionality. This could be due to your webserver configuration or PHP settings, and should be resolved in order to download information about available updates, fetch aggregator feeds, sign in via OpenID, or use other network-dependent services. If you are certain that Drupal can access web pages but you are still seeing this message, you may add <code>$conf[\'drupal_http_request_fails\'] = FALSE;</code> to the bottom of your settings.php file.'),
+      );
+    }
+  }
+
+  // Warning for httpoxy on IIS with affected PHP versions.
+  // @see https://www.drupal.org/node/2783079
+  if (strpos((string) $software, 'Microsoft-IIS') !== FALSE && (version_compare(PHP_VERSION, '5.5.38', '<')
+    || (version_compare(PHP_VERSION, '5.6.0', '>=') && version_compare(PHP_VERSION, '5.6.24', '<'))
+    || (version_compare(PHP_VERSION, '7.0.0', '>=') && version_compare(PHP_VERSION, '7.0.9', '<'))
+    )) {
+    $dom = new \DOMDocument('1.0', 'UTF-8');
+    $webconfig = file_get_contents('web.config');
+    // If you are here the web.config file must - of course - be well formed.
+    // But the PHP DOM component will throw warnings on some XML compliant
+    // stuff, so silently parse the configuration file.
+    @$dom->loadHTML($webconfig);
+    $httpoxy_rewrite = FALSE;
+    foreach ($dom->getElementsByTagName('rule') as $rule) {
+      foreach ($rule->attributes as $attr) {
+        if (@$attr->name == 'name' && @$attr->nodeValue == 'Erase HTTP_PROXY') {
+          $httpoxy_rewrite = TRUE;
+          break 2;
+        }
+      }
+    }
+    if (!$httpoxy_rewrite) {
+      $requirements['iis_httpoxy_protection'] = array(
+        'title' => t('IIS httpoxy protection'),
+        'value' => t('Your PHP runtime version is affected by the httpoxy vulnerability.'),
+        'description' => t('Either update your PHP runtime version or uncomment the "Erase HTTP_PROXY" rule in your web.config file and add HTTP_PROXY to the allowed headers list. See more details in the <a href="@link">security advisory</a>.', array('@link' => 'https://www.drupal.org/SA-CORE-2016-003')),
+        'severity' => REQUIREMENT_ERROR,
       );
     }
   }
@@ -624,6 +671,9 @@ function system_install() {
   // Populate the cron key variable.
   $cron_key = drupal_random_key();
   variable_set('cron_key', $cron_key);
+
+  // This variable indicates that the database is ready for hashed session ids.
+  variable_set('hashed_session_ids_supported', TRUE);
 }
 
 /**
@@ -1564,13 +1614,13 @@ function system_schema() {
         'not null' => TRUE,
       ),
       'sid' => array(
-        'description' => "A session ID. The value is generated by Drupal's session handlers.",
+        'description' => "A session ID (hashed). The value is generated by Drupal's session handlers.",
         'type' => 'varchar',
         'length' => 128,
         'not null' => TRUE,
       ),
       'ssid' => array(
-        'description' => "Secure session ID. The value is generated by Drupal's session handlers.",
+        'description' => "Secure session ID (hashed). The value is generated by Drupal's session handlers.",
         'type' => 'varchar',
         'length' => 128,
         'not null' => TRUE,
@@ -3297,6 +3347,68 @@ function system_update_7082() {
  */
 function system_update_7083() {
   // Empty update to force a rebuild of hook_library() and JS aggregates.
+}
+
+/**
+ * Rebuild JavaScript aggregates to include 'ajax.js' fix for Chrome 83.
+ */
+function system_update_7084() {
+  // Empty update to force a rebuild of JS aggregates.
+}
+
+/**
+ * Remove FLoC-blocking variable.
+ */
+function system_update_7085() {
+  variable_del('block_interest_cohort');
+}
+
+/**
+ * Prepare the schema and data of the sessions table for hashed session ids.
+ */
+function system_update_7086() {
+  // Update the session ID fields' description.
+  $spec = array(
+    'description' => "A session ID (hashed). The value is generated by Drupal's session handlers.",
+    'type' => 'varchar',
+    'length' => 128,
+    'not null' => TRUE,
+  );
+  db_drop_primary_key('sessions');
+  db_change_field('sessions', 'sid', 'sid', $spec, array('primary key' => array('sid', 'ssid')));
+  // Updates the secure session ID field's description.
+  $spec = array(
+    'description' => "Secure session ID (hashed). The value is generated by Drupal's session handlers.",
+    'type' => 'varchar',
+    'length' => 128,
+    'not null' => TRUE,
+    'default' => '',
+  );
+  db_drop_primary_key('sessions');
+  db_change_field('sessions', 'ssid', 'ssid', $spec, array('primary key' => array('sid', 'ssid')));
+
+  // Update all existing sessions.
+  if (!variable_get('do_not_hash_session_ids', FALSE)) {
+    $sessions = db_query('SELECT sid, ssid FROM {sessions}');
+    while ($session = $sessions->fetchAssoc()) {
+      $query = db_update('sessions');
+      $fields = array();
+      if (!empty($session['sid'])) {
+        $fields['sid'] = drupal_hash_base64($session['sid']);
+        $query->condition('sid', $session['sid']);
+      }
+      if (!empty($session['ssid'])) {
+        $fields['ssid'] = drupal_hash_base64($session['ssid']);
+        $query->condition('ssid', $session['ssid']);
+      }
+      $query
+        ->fields($fields)
+        ->execute();
+    }
+  }
+
+  // This variable indicates that the database is ready for hashed session ids.
+  variable_set('hashed_session_ids_supported', TRUE);
 }
 
 /**

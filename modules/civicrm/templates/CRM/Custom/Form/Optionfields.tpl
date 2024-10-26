@@ -15,7 +15,7 @@
 </td>
 </tr>
 
-<tr id="option_group" {if !$form.option_group_id}class="hiddenElement"{/if}>
+<tr id="option_group" {if empty($form.option_group_id)}class="hiddenElement"{/if}>
   <td class="label">{$form.option_group_id.label}</td>
   <td class="html-adjust">{$form.option_group_id.html}</td>
 </tr>
@@ -42,7 +42,7 @@
   <tr id="optionField_{$index}" class="form-item {cycle values="odd-row,even-row"}">
         <td>
         {if $index GT 1}
-            <a onclick="showHideRow({$index}); return false;" name="optionField_{$index}" href="#" class="form-link"><i class="crm-i fa-trash" title="{ts}hide field or section{/ts}"></i></a>
+            <a onclick="showHideRow({$index}); return false;" name="optionField_{$index}" href="#" class="form-link"><i class="crm-i fa-trash" title="{ts}hide field or section{/ts}" aria-hidden="true"></i></a>
         {/if}
         </td>
       <td>
@@ -61,7 +61,7 @@
     {/section}
     </table>
   <div id="optionFieldLink" class="add-remove-link">
-        <a onclick="showHideRow(); return false;" name="optionFieldLink" href="#" class="form-link"><i class="crm-i fa-plus-circle"></i> {ts}add another choice{/ts}</a>
+        <a onclick="showHideRow(); return false;" name="optionFieldLink" href="#" class="form-link"><i class="crm-i fa-plus-circle" aria-hidden="true"></i> {ts}add another choice{/ts}</a>
     </div>
   <span id="additionalOption" class="description">
     {ts}If you need additional options - you can add them after you Save your current entries.{/ts}
@@ -86,7 +86,7 @@
     {* hide and display the appropriate blocks as directed by the php code *}
     on_load_init_blocks( showRows, hideBlocks, '' );
 
-{if $form.option_group_id}
+{if !empty($form.option_group_id)}
 {literal}
 function showOptionSelect( ) {
    if ( document.getElementsByName("option_type")[0].checked ) {

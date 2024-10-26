@@ -10,115 +10,90 @@
  +--------------------------------------------------------------------+
  */
 
-/**
- *
- * @package CRM
- * @copyright CiviCRM LLC https://civicrm.org/licensing
- * $Id$
- *
- */
-
-
 namespace Civi\Api4\Service\Spec;
 
-use Civi\Api4\Utils\CoreUtil;
-
+/**
+ * Contains APIv4 field metadata
+ */
 class FieldSpec {
+
+  // BasicSpecTrait: name, title, description
+  use \Civi\Schema\Traits\BasicSpecTrait;
+
+  // DataTypeSpecTrait: dataType, serialize, fkEntity
+  use \Civi\Schema\Traits\DataTypeSpecTrait;
+
+  // OptionsSpecTrait: options, optionsCallback, suffixes
+  use \Civi\Schema\Traits\OptionsSpecTrait;
+
+  // GuiSpecTrait: label, inputType, inputAttrs, helpPre, helpPost
+  use \Civi\Schema\Traits\GuiSpecTrait;
+
+  // SqlSpecTrait tableName, columnName, operators, sqlFilters
+  use \Civi\Schema\Traits\SqlSpecTrait;
+
+  // ArrayFormatTrait: toArray():array, loadArray($array)
+  use \Civi\Schema\Traits\ArrayFormatTrait;
+
   /**
    * @var mixed
    */
-  protected $defaultValue;
+  public $defaultValue;
 
   /**
-   * @var string
-   */
-  protected $name;
-
-  /**
-   * @var string
-   */
-  protected $title;
-
-  /**
-   * @var string
-   */
-  protected $entity;
-
-  /**
-   * @var string
-   */
-  protected $description;
-
-  /**
-   * @var bool
-   */
-  protected $required = FALSE;
-
-  /**
-   * @var bool
-   */
-  protected $requiredIf;
-
-  /**
-   * @var array|bool
-   */
-  protected $options;
-
-  /**
-   * @var string
-   */
-  protected $dataType;
-
-  /**
-   * @var string
-   */
-  protected $inputType;
-
-  /**
-   * @var array
-   */
-  protected $inputAttrs = [];
-
-  /**
-   * @var string
-   */
-  protected $fkEntity;
-
-  /**
-   * @var int
-   */
-  protected $serialize;
-
-  /**
-   * @var string
-   */
-  protected $helpPre;
-
-  /**
-   * @var string
-   */
-  protected $helpPost;
-
-  /**
-   * @var array
-   */
-  protected $permission;
-
-  /**
-   * @var string
-   */
-  protected $columnName;
-
-  /**
-   * Aliases for the valid data types
+   * Meta-type indicating how this field was defined/implemented.
    *
+   * Ex: 'Field' (normal/standard DB field), 'Custom' (auxiliary DB field),
+   * 'Filter' (read-oriented filter option), 'Extra' (special/programmatic field).
+   *
+   * @var string
+   */
+  public $type = 'Extra';
+
+  /**
+   * @var string
+   */
+  public $entity;
+
+  /**
+   * @var bool
+   */
+  public $required = FALSE;
+
+  /**
+   * @var bool
+   */
+  public $nullable = TRUE;
+
+  /**
+   * @var string
+   */
+  public $requiredIf;
+
+  /**
    * @var array
    */
-  public static $typeAliases = [
-    'Int' => 'Integer',
-    'Link' => 'Url',
-    'Memo' => 'Text',
-  ];
+  public $permission;
+
+  /**
+   * @var bool
+   */
+  public $readonly = FALSE;
+
+  /**
+   * @var bool
+   */
+  public $deprecated = FALSE;
+
+  /**
+   * @var callable[]
+   */
+  public $outputFormatters;
+
+  /**
+   * @var string[]
+   */
+  public array $usage = [];
 
   /**
    * @param string $name
@@ -127,7 +102,7 @@ class FieldSpec {
    */
   public function __construct($name, $entity, $dataType = 'String') {
     $this->entity = $entity;
-    $this->name = $this->columnName = $name;
+    $this->name = $name;
     $this->setDataType($dataType);
   }
 
@@ -150,19 +125,12 @@ class FieldSpec {
   }
 
   /**
-   * @return string
-   */
-  public function getName() {
-    return $this->name;
-  }
-
-  /**
-   * @param string $name
+   * @param string $entity
    *
    * @return $this
    */
-  public function setName($name) {
-    $this->name = $name;
+  public function setEntity(string $entity) {
+    $this->entity = $entity;
 
     return $this;
   }
@@ -170,42 +138,24 @@ class FieldSpec {
   /**
    * @return string
    */
-  public function getTitle() {
-    return $this->title;
-  }
-
-  /**
-   * @param string $title
-   *
-   * @return $this
-   */
-  public function setTitle($title) {
-    $this->title = $title;
-
-    return $this;
-  }
-
-  /**
-   * @return string
-   */
-  public function getEntity() {
+  public function getEntity(): ?string {
     return $this->entity;
   }
 
   /**
-   * @return string
+   * @return bool
    */
-  public function getDescription() {
-    return $this->description;
+  public function getNullable(): bool {
+    return $this->nullable;
   }
 
   /**
-   * @param string $description
+   * @param bool $nullable
    *
    * @return $this
    */
-  public function setDescription($description) {
-    $this->description = $description;
+  public function setNullable(bool $nullable) {
+    $this->nullable = $nullable;
 
     return $this;
   }
@@ -213,7 +163,7 @@ class FieldSpec {
   /**
    * @return bool
    */
-  public function isRequired() {
+  public function isRequired(): bool {
     return $this->required;
   }
 
@@ -222,26 +172,8 @@ class FieldSpec {
    *
    * @return $this
    */
-  public function setRequired($required) {
+  public function setRequired(bool $required) {
     $this->required = $required;
-
-    return $this;
-  }
-
-  /**
-   * @return bool
-   */
-  public function getRequiredIf() {
-    return $this->requiredIf;
-  }
-
-  /**
-   * @param bool $requiredIf
-   *
-   * @return $this
-   */
-  public function setRequiredIf($requiredIf) {
-    $this->requiredIf = $requiredIf;
 
     return $this;
   }
@@ -249,43 +181,17 @@ class FieldSpec {
   /**
    * @return string
    */
-  public function getDataType() {
-    return $this->dataType;
+  public function getRequiredIf(): ?string {
+    return $this->requiredIf;
   }
 
   /**
-   * @param $dataType
+   * @param string|null $requiredIf
    *
    * @return $this
-   * @throws \Exception
    */
-  public function setDataType($dataType) {
-    if (array_key_exists($dataType, self::$typeAliases)) {
-      $dataType = self::$typeAliases[$dataType];
-    }
-
-    if (!in_array($dataType, $this->getValidDataTypes())) {
-      throw new \Exception(sprintf('Invalid data type "%s', $dataType));
-    }
-
-    $this->dataType = $dataType;
-
-    return $this;
-  }
-
-  /**
-   * @return int
-   */
-  public function getSerialize() {
-    return $this->serialize;
-  }
-
-  /**
-   * @param int|null $serialize
-   * @return $this
-   */
-  public function setSerialize($serialize) {
-    $this->serialize = $serialize;
+  public function setRequiredIf(?string $requiredIf) {
+    $this->requiredIf = $requiredIf;
 
     return $this;
   }
@@ -307,162 +213,70 @@ class FieldSpec {
   }
 
   /**
-   * @return string
-   */
-  public function getInputType() {
-    return $this->inputType;
-  }
-
-  /**
-   * @param string $inputType
+   * @param callable[] $outputFormatters
    * @return $this
    */
-  public function setInputType($inputType) {
-    $this->inputType = $inputType;
+  public function setOutputFormatters($outputFormatters) {
+    $this->outputFormatters = $outputFormatters;
 
     return $this;
   }
 
   /**
-   * @return array
-   */
-  public function getInputAttrs() {
-    return $this->inputAttrs;
-  }
-
-  /**
-   * @param array $inputAttrs
+   * @param callable $outputFormatter
    * @return $this
    */
-  public function setInputAttrs($inputAttrs) {
-    $this->inputAttrs = $inputAttrs;
-
-    return $this;
-  }
-
-  /**
-   * @return string|NULL
-   */
-  public function getHelpPre() {
-    return $this->helpPre;
-  }
-
-  /**
-   * @param string|NULL $helpPre
-   */
-  public function setHelpPre($helpPre) {
-    $this->helpPre = is_string($helpPre) && strlen($helpPre) ? $helpPre : NULL;
-  }
-
-  /**
-   * @return string|NULL
-   */
-  public function getHelpPost() {
-    return $this->helpPost;
-  }
-
-  /**
-   * @param string|NULL $helpPost
-   */
-  public function setHelpPost($helpPost) {
-    $this->helpPost = is_string($helpPost) && strlen($helpPost) ? $helpPost : NULL;
-  }
-
-  /**
-   * Add valid types that are not not part of \CRM_Utils_Type::dataTypes
-   *
-   * @return array
-   */
-  private function getValidDataTypes() {
-    $extraTypes = ['Boolean', 'Text', 'Float', 'Url', 'Array'];
-    $extraTypes = array_combine($extraTypes, $extraTypes);
-
-    return array_merge(\CRM_Utils_Type::dataTypes(), $extraTypes);
-  }
-
-  /**
-   * @param array $values
-   * @return array
-   */
-  public function getOptions($values = []) {
-    if (!isset($this->options) || $this->options === TRUE) {
-      $fieldName = $this->getName();
-
-      if ($this instanceof CustomFieldSpec) {
-        // buildOptions relies on the custom_* type of field names
-        $fieldName = sprintf('custom_%d', $this->getCustomFieldId());
-      }
-
-      $bao = CoreUtil::getBAOFromApiName($this->getEntity());
-      $options = $bao::buildOptions($fieldName, NULL, $values);
-
-      if (!is_array($options) || !$options) {
-        $options = FALSE;
-      }
-
-      $this->setOptions($options);
+  public function addOutputFormatter($outputFormatter) {
+    if (!$this->outputFormatters) {
+      $this->outputFormatters = [];
     }
-    return $this->options;
-  }
-
-  /**
-   * @param array|bool $options
-   *
-   * @return $this
-   */
-  public function setOptions($options) {
-    $this->options = $options;
-    return $this;
-  }
-
-  /**
-   * @return string
-   */
-  public function getFkEntity() {
-    return $this->fkEntity;
-  }
-
-  /**
-   * @param string $fkEntity
-   *
-   * @return $this
-   */
-  public function setFkEntity($fkEntity) {
-    $this->fkEntity = $fkEntity;
+    $this->outputFormatters[] = $outputFormatter;
 
     return $this;
   }
 
   /**
-   * @return string
-   */
-  public function getColumnName() {
-    return $this->columnName;
-  }
-
-  /**
-   * @param string $columnName
-   *
+   * @param string $type
    * @return $this
    */
-  public function setColumnName($columnName) {
-    $this->columnName = $columnName;
+  public function setType(string $type) {
+    $this->type = $type;
+
     return $this;
   }
 
   /**
-   * @param array $values
-   * @return array
+   * @param bool $readonly
+   * @return $this
    */
-  public function toArray($values = []) {
-    $ret = [];
-    foreach (get_object_vars($this) as $key => $val) {
-      $key = strtolower(preg_replace('/(?=[A-Z])/', '_$0', $key));
-      if (!$values || in_array($key, $values)) {
-        $ret[$key] = $val;
-      }
-    }
-    return $ret;
+  public function setReadonly(bool $readonly) {
+    $this->readonly = $readonly;
+
+    return $this;
+  }
+
+  /**
+   * @param bool $deprecated
+   * @return $this
+   */
+  public function setDeprecated(bool $deprecated) {
+    $this->deprecated = $deprecated;
+
+    return $this;
+  }
+
+  /**
+   * @return string[]
+   */
+  public function getUsage(): array {
+    return $this->usage;
+  }
+
+  /**
+   * @param string[] $usage
+   */
+  public function setUsage(array $usage): void {
+    $this->usage = $usage;
   }
 
 }

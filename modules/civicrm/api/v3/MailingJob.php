@@ -22,10 +22,16 @@
  * @param array $params
  *
  * @return array
- * @throws \API_Exception
+ * @throws \CRM_Core_Exception
  */
 function civicrm_api3_mailing_job_create($params) {
-  return _civicrm_api3_basic_create(_civicrm_api3_get_BAO(__FUNCTION__), $params, 'MailingJob');
+  $result = _civicrm_api3_basic_create(_civicrm_api3_get_BAO(__FUNCTION__), $params, 'MailingJob');
+  if (!empty($params['mailing_id']) && empty('is_calling_function_updated_to_reflect_deprecation')) {
+    // This horrible behaviour used to be in the BAO but it now by-passes the BAO create
+    CRM_Core_Error::deprecatedWarning('mail recipients should not be generated during MailingJob::create');
+    CRM_Mailing_BAO_Mailing::getRecipients($params['mailing_id']);
+  }
+  return $result;
 }
 
 /**
@@ -60,7 +66,7 @@ function civicrm_api3_mailing_job_get($params) {
  * @param array $params
  *
  * @return array
- * @throws \API_Exception
+ * @throws \CRM_Core_Exception
  */
 function civicrm_api3_mailing_job_delete($params) {
   return _civicrm_api3_basic_delete(_civicrm_api3_get_BAO(__FUNCTION__), $params, 'MailingJob');

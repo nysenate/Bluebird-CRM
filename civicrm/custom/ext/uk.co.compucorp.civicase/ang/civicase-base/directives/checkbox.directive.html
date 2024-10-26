@@ -1,0 +1,20 @@
+<div class="civicase__checkbox__container">
+  <span
+    class="civicase__checkbox"
+    role="checkbox"
+    aria-checked="{{isChecked}}"
+    tabindex="0"
+    ng-click="toggleCheckbox($event)"
+    ng-keydown="toggleCheckbox($event)"
+  >
+    <i
+      ng-if="isChecked"
+      class="civicase__checkbox--checked material-icons"
+    >check_box</i>
+  </span>
+  <label
+    ng-click="toggleCheckbox($event)"
+    class="control-label"
+    ng-transclude
+  ></label>
+</div>

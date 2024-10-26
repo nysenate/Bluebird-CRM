@@ -1,0 +1,36 @@
+name: Linters
+
+on: pull_request
+     
+env:
+  GITHUB_BASE_REF: ${{ github.base_ref }}
+
+jobs:
+  run-linters:
+
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v2
+
+    - name: Run npm install
+      run: npm i
+
+    - name: Fetch target branch
+      run: git fetch -n origin ${GITHUB_BASE_REF}
+            
+    - name: Run phpcs linter 
+      run: git diff --diff-filter=d  origin/${GITHUB_BASE_REF} --name-only -- '*.php' | xargs -r ./bin/phpcs.phar --standard=phpcs-ruleset.xml
+
+    - name: Run stylelint linter
+      #This step will always run regardless of previous step's status
+      #without if: ${{ always() }}, if the previous step is failure,
+      #the remaining step will not be executed. 
+      if: ${{ always() }} 
+      run: git diff --diff-filter=d origin/${GITHUB_BASE_REF} --name-only -- '*.scss' | xargs -r  npx stylelint --config .stylelintrc
+        
+
+    - name: Run eslint linter
+      if: ${{ always() }}
+      run: git diff --diff-filter=d origin/${GITHUB_BASE_REF} --name-only -- '*.js' | xargs -r  npx eslint --max-warnings=0 -c .eslintrc.json
+        

@@ -39,11 +39,14 @@ if (!defined('CIVI_SETUP')) {
 
     // Compute DSN.
     global $databases;
+    $ssl_params = \Civi\Setup\DrupalUtil::guessSslParams($databases['default']['default']);
+    // @todo Does Backdrop support unixsocket in config? Set 'server' => 'unix(/path/to/socket.sock)'
     $model->db = $model->cmsDb = array(
       'server' => \Civi\Setup\DbUtil::encodeHostPort($databases['default']['default']['host'], $databases['default']['default']['port'] ?: NULL),
       'username' => $databases['default']['default']['username'],
       'password' => $databases['default']['default']['password'],
       'database' => $databases['default']['default']['database'],
+      'ssl_params' => empty($ssl_params) ? NULL : $ssl_params,
     );
 
     // Compute URLs
@@ -54,6 +57,8 @@ if (!defined('CIVI_SETUP')) {
     // $model->paths['civicrm.files']['url'] = $filePublicPath;
     $model->paths['civicrm.files']['path'] = implode(DIRECTORY_SEPARATOR,
       [_backdrop_civisetup_getPublicFiles(), 'civicrm']);
+    $model->paths['civicrm.private']['path'] = implode(DIRECTORY_SEPARATOR,
+      [_backdrop_civisetup_getPrivateFiles(), 'civicrm']);
 
     // Compute templateCompileDir.
     $model->templateCompilePath = implode(DIRECTORY_SEPARATOR,

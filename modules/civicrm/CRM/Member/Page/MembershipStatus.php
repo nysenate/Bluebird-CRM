@@ -13,23 +13,14 @@
  *
  * @package CRM
  * @copyright CiviCRM LLC https://civicrm.org/licensing
- * $Id$
- *
  */
 
 /**
- * Page for displaying list of membership types
+ * Page for displaying list of membership statuses
  */
 class CRM_Member_Page_MembershipStatus extends CRM_Core_Page_Basic {
 
   public $useLivePageJS = TRUE;
-
-  /**
-   * The action links that we need to display for the browse screen.
-   *
-   * @var array
-   */
-  public static $_links = NULL;
 
   /**
    * Get BAO Name.
@@ -39,42 +30,6 @@ class CRM_Member_Page_MembershipStatus extends CRM_Core_Page_Basic {
    */
   public function getBAOName() {
     return 'CRM_Member_BAO_MembershipStatus';
-  }
-
-  /**
-   * Get action Links.
-   *
-   * @return array
-   *   (reference) of action links
-   */
-  public function &links() {
-    if (!(self::$_links)) {
-      self::$_links = [
-        CRM_Core_Action::UPDATE => [
-          'name' => ts('Edit'),
-          'url' => 'civicrm/admin/member/membershipStatus',
-          'qs' => 'action=update&id=%%id%%&reset=1',
-          'title' => ts('Edit Membership Status'),
-        ],
-        CRM_Core_Action::DISABLE => [
-          'name' => ts('Disable'),
-          'ref' => 'crm-enable-disable',
-          'title' => ts('Disable Membership Status'),
-        ],
-        CRM_Core_Action::ENABLE => [
-          'name' => ts('Enable'),
-          'ref' => 'crm-enable-disable',
-          'title' => ts('Enable Membership Status'),
-        ],
-        CRM_Core_Action::DELETE => [
-          'name' => ts('Delete'),
-          'url' => 'civicrm/admin/member/membershipStatus',
-          'qs' => 'action=delete&id=%%id%%',
-          'title' => ts('Delete Membership Status'),
-        ],
-      ];
-    }
-    return self::$_links;
   }
 
   /**
@@ -114,11 +69,24 @@ class CRM_Member_Page_MembershipStatus extends CRM_Core_Page_Basic {
           $dao->id
         );
       }
-      if ($startEvent = CRM_Utils_Array::value('start_event', $membershipStatus[$dao->id])) {
+      $startEvent = $membershipStatus[$dao->id]['start_event'] ?? NULL;
+      $endEvent = $membershipStatus[$dao->id]['end_event'] ?? NULL;
+      $startEventUnit = $membershipStatus[$dao->id]['start_event_adjust_unit'] ?? NULL;
+      $endEventUnit = $membershipStatus[$dao->id]['end_event_adjust_unit'] ?? NULL;
+      $startEventInterval = $membershipStatus[$dao->id]['start_event_adjust_interval'] ?? NULL;
+      $endEventInterval = $membershipStatus[$dao->id]['end_event_adjust_interval'] ?? NULL;
+
+      if ($startEvent) {
         $membershipStatus[$dao->id]['start_event'] = ($startEvent == 'join_date') ? 'member since' : str_replace("_", " ", $startEvent);
       }
-      if ($endEvent = CRM_Utils_Array::value('end_event', $membershipStatus[$dao->id])) {
+      if ($endEvent) {
         $membershipStatus[$dao->id]['end_event'] = ($endEvent == 'join_date') ? 'member since' : str_replace("_", " ", $endEvent);
+      }
+      if ($startEventUnit && $startEventInterval) {
+        $membershipStatus[$dao->id]['start_event_adjust_unit_interval'] = "{$startEventInterval} {$startEventUnit}";
+      }
+      if ($endEventUnit && $endEventInterval) {
+        $membershipStatus[$dao->id]['end_event_adjust_interval'] = "{$endEventInterval} {$endEventUnit}";
       }
     }
     // Add order changing widget to selector

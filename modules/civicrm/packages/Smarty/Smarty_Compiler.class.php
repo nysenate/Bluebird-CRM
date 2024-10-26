@@ -21,7 +21,6 @@
  * @link http://smarty.php.net/
  * @author Monte Ohrt <monte at ohrt dot com>
  * @author Andrei Zmievski <andrei@php.net>
- * @version 2.6.25-dev
  * @copyright 2001-2005 New Digital Group, Inc.
  * @package Smarty
  */
@@ -392,7 +391,7 @@ class Smarty_Compiler extends Smarty {
         }
 
         // put header at the top of the compiled template
-        $template_header = "<?php /* Smarty version ".$this->_version.", created on ".strftime("%Y-%m-%d %H:%M:%S")."\n";
+        $template_header = "<?php /* Smarty version ".$this->_version.", created on ". date("Y-m-d H:i:s")."\n";
         $template_header .= "         compiled from ".strtr(urlencode($resource_name), array('%2F'=>'/', '%3A'=>':'))." */ ?>\n";
 
         /* Emit code to load needed plugins. */
@@ -443,7 +442,7 @@ class Smarty_Compiler extends Smarty {
 
         $tag_command = $match[1];
         $tag_modifier = isset($match[2]) ? $match[2] : null;
-        $tag_args = isset($match[3]) ? $match[3] : null;
+        $tag_args = $match[3] ?? '';
 
         if (preg_match('~^' . $this->_num_const_regexp . '|' . $this->_obj_call_regexp . '|' . $this->_var_regexp . '$~', $tag_command)) {
             /* tag name is a variable or object */
@@ -1192,7 +1191,7 @@ class Smarty_Compiler extends Smarty {
         }
 
         $output = '<?php ';
-        $output .= "\$_from = $from; if (!is_array(\$_from) && !is_object(\$_from)) { settype(\$_from, 'array'); }";
+        $output .= "\$_from = $from; if ((\$_from instanceof StdClass) || (!is_array(\$_from) && !is_object(\$_from))) { settype(\$_from, 'array'); }";
         if (isset($name)) {
             $foreach_props = "\$this->_foreach[$name]";
             $output .= "{$foreach_props} = array('total' => count(\$_from), 'iteration' => 0);\n";

@@ -1,6 +1,13 @@
 <?php
 
 class BootstrapIPAddressTestCase extends DrupalWebTestCase {
+  protected $oldserver;
+  protected $remote_ip;
+  protected $proxy_ip;
+  protected $proxy2_ip;
+  protected $forwarded_ip;
+  protected $cluster_ip;
+  protected $untrusted_ip;
 
   public static function getInfo() {
     return array(
@@ -187,6 +194,7 @@ class BootstrapPageCacheTestCase extends DrupalWebTestCase {
     $this->assertEqual($this->drupalGetHeader('Cache-Control'), 'public, max-age=0', 'Cache-Control header was sent.');
     $this->assertEqual($this->drupalGetHeader('Expires'), 'Sun, 19 Nov 1978 05:00:00 GMT', 'Expires header was sent.');
     $this->assertEqual($this->drupalGetHeader('Foo'), 'bar', 'Custom header was sent.');
+    $this->assertEqual($this->drupalGetHeader('X-Content-Type-Options'), 'nosniff', 'X-Content-Type-Options header was sent.');
 
     // Check replacing default headers.
     $this->drupalGet('system-test/set-header', array('query' => array('name' => 'Expires', 'value' => 'Fri, 19 Nov 2008 05:00:00 GMT')));
@@ -236,6 +244,9 @@ class BootstrapPageCacheTestCase extends DrupalWebTestCase {
     $this->assertTitle(t('Welcome to @site-name | @site-name', array('@site-name' => variable_get('site_name', 'Drupal'))), 'Site title matches.');
     $this->assertRaw('</html>', 'Page was not compressed.');
 
+    // Verify that an empty page doesn't throw an error when being decompressed.
+    $this->drupalGet('system-test/empty-page');
+
     // Disable compression mode.
     variable_set('page_compression', FALSE);
 
@@ -247,6 +258,27 @@ class BootstrapPageCacheTestCase extends DrupalWebTestCase {
     // Verify if cached page is still available for a client without compression support.
     $this->drupalGet('');
     $this->assertRaw('</html>', 'Page was delivered after compression mode is changed (compression support disabled).');
+  }
+
+  /**
+   * Test page cache headers.
+   */
+  function testPageCacheHeaders() {
+    variable_set('cache', 1);
+    // First request should store a response in the page cache.
+    $this->drupalGet('system-test/page-cache-headers');
+
+    // The test callback should remove the query string leaving the same path
+    // as the previous request, which we'll try to retrieve from cache_page.
+    $this->drupalGet('system-test/page-cache-headers', array('query' => array('return_headers' => 'TRUE')));
+
+    $headers = json_decode($this->drupalGetHeader('Page-Cache-Headers'), TRUE);
+    if (is_null($headers)) {
+      $this->fail('No headers were retrieved from the page cache.');
+    }
+    else {
+      $this->assertEqual($headers['X-Content-Type-Options'], 'nosniff', 'X-Content-Type-Options header retrieved from response in the page cache.');
+    }
   }
 }
 
@@ -453,13 +485,13 @@ class BootstrapGetFilenameTestCase extends DrupalUnitTestCase {
   /**
    * Skips handling of "file not found" errors.
    */
-  public function fileNotFoundErrorHandler($error_level, $message, $filename, $line, $context) {
+  public function fileNotFoundErrorHandler($error_level, $message, $filename, $line) {
     // Skip error handling if this is a "file not found" error.
     if (strpos($message, 'is missing from the file system:') !== FALSE || strpos($message, 'has moved within the file system:') !== FALSE) {
       $this->getFilenameTestTriggeredError = $message;
       return;
     }
-    _drupal_error_handler($error_level, $message, $filename, $line, $context);
+    _drupal_error_handler($error_level, $message, $filename, $line);
   }
 }
 
@@ -569,13 +601,13 @@ class BootstrapGetFilenameWebTestCase extends DrupalWebTestCase {
   /**
    * Skips handling of "file not found" errors.
    */
-  public function fileNotFoundErrorHandler($error_level, $message, $filename, $line, $context) {
+  public function fileNotFoundErrorHandler($error_level, $message, $filename, $line) {
     // Skip error handling if this is a "file not found" error.
     if (strpos($message, 'is missing from the file system:') !== FALSE || strpos($message, 'has moved within the file system:') !== FALSE) {
       $this->getFilenameTestTriggeredError = $message;
       return;
     }
-    _drupal_error_handler($error_level, $message, $filename, $line, $context);
+    _drupal_error_handler($error_level, $message, $filename, $line);
   }
 
   /**
@@ -870,5 +902,64 @@ class BootstrapDestinationTestCase extends DrupalWebTestCase {
     variable_set('site_404', 'system-test/get-destination');
     $this->drupalGet('http://example.com', array('external' => FALSE));
     $this->assertIdentical('', $this->drupalGetContent(), 'External URL is not allowed on 404 pages.');
+  }
+}
+
+/**
+ * Tests DrupalCacheArray functionality.
+ */
+class BootstrapDrupalCacheArrayTestCase extends DrupalWebTestCase {
+
+  public static function getInfo() {
+    return array(
+      'name' => 'DrupalCacheArray tests',
+      'description' => 'Test DrupalCacheArray functionality.',
+      'group' => 'Bootstrap',
+    );
+  }
+
+  /**
+   * Simulate unsafe deserialization of payload prepared by the phpggc project.
+   *
+   * @see https://github.com/ambionics/phpggc/pull/28
+   */
+  public function testGadgetChainDrupal7RCE1() {
+    // phpggc -s Drupal7/RCE1 phpinfo 2
+    $payload = 'O:11:"SchemaCache":4:{s:6:"%00*%00cid"%3Bs:14:"form_DrupalRCE"%3Bs:6:"%00*%00bin"%3Bs:10:"cache_form"%3Bs:16:"%00*%00keysToPersist"%3Ba:3:{s:8:"#form_id"%3Bb:1%3Bs:8:"#process"%3Bb:1%3Bs:9:"#attached"%3Bb:1%3B}s:10:"%00*%00storage"%3Ba:3:{s:8:"#form_id"%3Bs:9:"DrupalRCE"%3Bs:8:"#process"%3Ba:1:{i:0%3Bs:23:"drupal_process_attached"%3B}s:9:"#attached"%3Ba:1:{s:7:"phpinfo"%3Ba:1:{i:0%3Ba:1:{i:0%3Bs:1:"2"%3B}}}}}';
+    $object = unserialize(urldecode($payload));
+
+    // The object then needs to be destructed.
+    unset($object);
+
+    // If the exploit was successful, there should now be a row in cache_form.
+    $payload2 = db_query_range('SELECT data FROM {cache_form} WHERE cid LIKE :cid', 0, 1, array(':cid' => 'form_DrupalRCE'))->fetchField();
+    $this->assertFalse(is_string($payload2) && (strpos($payload2, 'phpinfo') !== FALSE), 'Second stage payload was not written to cache_form.');
+
+    // The final exploit is executed via the ajax system, but is not a
+    // sufficiently valid ajax form submission to use drupalPost for testing.
+    $headers = array(
+      'Content-Type: application/x-www-form-urlencoded',
+    );
+    $curl_options = array(
+      CURLOPT_URL => url('system/ajax', array('absolute' => TRUE)),
+      CURLOPT_POST => TRUE,
+      CURLOPT_POSTFIELDS => 'form_build_id=DrupalRCE',
+      CURLOPT_HTTPHEADER => $headers,
+    );
+    // The second stage payload causes several PHP warnings / notices if it is
+    // there in cache_form.
+    $content = $this->curlExec($curl_options);
+    $this->assertFalse((strpos($content, 'Rasmus Lerdorf') !== FALSE), 'Remote Code Execution was not successful.');
+
+    // Now opt-out of the cache_form protection.
+    variable_set('drupal_cache_array_persist_cache_form', TRUE);
+    $object = unserialize(urldecode($payload));
+
+    // The object then needs to be destructed.
+    unset($object);
+
+    // If the exploit was successful, there should now be a row in cache_form.
+    $payload2 = db_query_range('SELECT data FROM {cache_form} WHERE cid LIKE :cid', 0, 1, array(':cid' => 'form_DrupalRCE'))->fetchField();
+    $this->assertTrue(is_string($payload2) && (strpos($payload2, 'phpinfo') !== FALSE), 'DrupalCacheArray persisted data to cache_form.');
   }
 }

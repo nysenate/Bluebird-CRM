@@ -1,7 +1,7 @@
 <?php
 namespace Civi\ActionSchedule\Event;
 
-use Symfony\Component\EventDispatcher\Event;
+use Civi\Core\Event\GenericHookEvent;
 
 /**
  * Class MailingQueryEvent
@@ -13,20 +13,29 @@ use Symfony\Component\EventDispatcher\Event;
  *
  * The basic mailing query looks a bit like this (depending on configuration):
  *
- * @code
+ * ```
  * SELECT reminder.id AS reminderID, reminder.contact_id as contactID, ...
  * FROM `civicrm_action_log` reminder
  * ... JOIN `target_entity` e ON e.id = reminder.entity_id ...
  * WHERE reminder.action_schedule_id = #casActionScheduleId
- * @endcode
+ * ```
  *
  * Listeners may modify the query. For example, suppose we want to load
  * additional fields from the related 'foo' entity:
  *
- * @code
+ * ```
  * $event->query->join('foo', '!casMailingJoinType civicrm_foo foo ON foo.myentity_id = e.id')
  *   ->select('foo.bar_value AS bar');
- * @endcode
+ * ```
+ *
+ * Modifications may be used to do the following:
+ *
+ * - Joining to business tables - to help target filter-criteria/temporal criteria on other entites.
+ *   (Ex: Join to the `civicrm_participant` table and filter on participant status or registration date.)
+ * - Joining business tables - to select/return additional columns. In particular, return the IDs of business-records that
+ *   may be useful for token-handling. Use the prefix `tokenContext_*`.
+ *     Ex query: `$event->query->select('foo.id AS tokenContext_fooId')
+ *     Ex output: `$tokenRow->context['fooId']`
  *
  * There are several parameters pre-set for use in queries:
  *  - 'casActionScheduleId'
@@ -37,8 +46,10 @@ use Symfony\Component\EventDispatcher\Event;
  *
  * (Note: When adding more JOINs, it seems typical to use !casMailingJoinType, although
  * some hard-code a LEFT JOIN. Don't have an explanation for why.)
+ *
+ * Event name: 'civi.actionSchedule.prepareMailingQuery'
  */
-class MailingQueryEvent extends Event {
+class MailingQueryEvent extends GenericHookEvent {
 
   /**
    * The schedule record which produced this mailing.

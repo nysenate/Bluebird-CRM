@@ -22,74 +22,133 @@
  * implementation which is not tied to scheduled reminders, although
  * that is outside the current scope.
  */
-class CRM_Member_Tokens extends \Civi\Token\AbstractTokenSubscriber {
+class CRM_Member_Tokens extends CRM_Core_EntityTokens {
 
   /**
-   * Class constructor.
-   */
-  public function __construct() {
-    parent::__construct('membership', array_merge(
-      [
-        'fee' => ts('Membership Fee'),
-        'id' => ts('Membership ID'),
-        'join_date' => ts('Membership Join Date'),
-        'start_date' => ts('Membership Start Date'),
-        'end_date' => ts('Membership End Date'),
-        'status' => ts('Membership Status'),
-        'type' => ts('Membership Type'),
-      ],
-      CRM_Utils_Token::getCustomFieldTokens('Membership')
-    ));
-  }
-
-  /**
-   * @inheritDoc
-   */
-  public function checkActive(\Civi\Token\TokenProcessor $processor) {
-    // Extracted from scheduled-reminders code. See the class description.
-    return !empty($processor->context['actionMapping'])
-      && $processor->context['actionMapping']->getEntity() === 'civicrm_membership';
-  }
-
-  /**
-   * Alter action schedule query.
+   * Get the entity name for api v4 calls.
    *
-   * @param \Civi\ActionSchedule\Event\MailingQueryEvent $e
+   * @return string
    */
-  public function alterActionScheduleQuery(\Civi\ActionSchedule\Event\MailingQueryEvent $e) {
-    if ($e->mapping->getEntity() !== 'civicrm_membership') {
-      return;
-    }
+  protected function getApiEntityName(): string {
+    return 'Membership';
+  }
 
-    // FIXME: `select('e.*')` seems too broad.
-    $e->query
-      ->select('e.*')
-      ->select('mt.minimum_fee as fee, e.id as id , e.join_date, e.start_date, e.end_date, ms.name as status, mt.name as type')
-      ->join('mt', "!casMailingJoinType civicrm_membership_type mt ON e.membership_type_id = mt.id")
-      ->join('ms', "!casMailingJoinType civicrm_membership_status ms ON e.status_id = ms.id");
+  /**
+   * List out the fields that are exposed.
+   *
+   * For historical reasons these are the only exposed fields.
+   *
+   * It is also possible to list 'skippedFields'
+   *
+   * @return string[]
+   */
+  protected function getExposedFields(): array {
+    return [
+      'id',
+      'join_date',
+      'start_date',
+      'end_date',
+      'status_id',
+      'membership_type_id',
+      'source',
+      'status_override_end_date',
+    ];
   }
 
   /**
    * @inheritDoc
+   * @throws \CRM_Core_Exception
    */
   public function evaluateToken(\Civi\Token\TokenRow $row, $entity, $field, $prefetch = NULL) {
-    $actionSearchResult = $row->context['actionSearchResult'];
-
-    if (in_array($field, ['start_date', 'end_date', 'join_date'])) {
-      $row->tokens($entity, $field, \CRM_Utils_Date::customFormat($actionSearchResult->$field));
-    }
-    elseif ($field == 'fee') {
-      $row->tokens($entity, $field, \CRM_Utils_Money::format($actionSearchResult->$field, NULL, NULL, TRUE));
-    }
-    elseif (isset($actionSearchResult->$field)) {
-      $row->tokens($entity, $field, $actionSearchResult->$field);
-    }
-    elseif ($cfID = \CRM_Core_BAO_CustomField::getKeyID($field)) {
-      $row->customToken($entity, $cfID, $actionSearchResult->entity_id);
+    if ($field === 'fee') {
+      parent::evaluateToken($row, $entity, 'membership_type_id.minimum_fee', $prefetch);
+      $row->format('text/plain')->tokens($entity, $field, $row->tokens['membership']['membership_type_id.minimum_fee']);
     }
     else {
-      $row->tokens($entity, $field, '');
+      parent::evaluateToken($row, $entity, $field, $prefetch);
     }
+  }
+
+  /**
+   * Get any overrides for token metadata.
+   *
+   * This is most obviously used for setting the audience, which
+   * will affect widget-presence.
+   *
+   * Changing the audience is done in order to simplify the
+   * UI for more general users.
+   *
+   * @return \string[][]
+   */
+  protected function getTokenMetadataOverrides(): array {
+    return [
+      'owner_membership_id' => ['audience' => 'sysadmin'],
+      'max_related' => ['audience' => 'sysadmin'],
+      'contribution_recur_id' => ['audience' => 'sysadmin'],
+      'is_override' => ['audience' => 'sysadmin'],
+      'is_test' => ['audience' => 'sysadmin'],
+      // Pay later is considered to be unreliable in the schema
+      // and will eventually be removed.
+      'is_pay_later' => ['audience' => 'deprecated'],
+    ];
+  }
+
+  /**
+   * These tokens still work but we don't advertise them.
+   *
+   * We will actively remove from the following places
+   * - scheduled reminders
+   * - add to 'blocked' on pdf letter & email
+   *
+   * & then at some point start issuing warnings for them.
+   *
+   * @return string[]
+   */
+  protected function getDeprecatedTokens(): array {
+    return [
+      'fee' => 'membership_type_id.minimum_fee',
+    ];
+  }
+
+  /**
+   * Get fields which need to be returned to render another token.
+   *
+   * @return array
+   */
+  public function getDependencies(): array {
+    return ['fee' => 'membership_type_id.minimum_fee'];
+  }
+
+  /**
+   * Get any tokens with custom calculation.
+   *
+   * In this case 'fee' should be converted to{membership.membership_type_id.fee}
+   * but we don't have the formatting support to do that with no
+   * custom intervention yet.
+   */
+  protected function getBespokeTokens(): array {
+    return [
+      'fee' => [
+        'title' => ts('Membership Fee'),
+        'name' => 'fee',
+        'type' => 'calculated',
+        'options' => NULL,
+        'data_type' => 'integer',
+        'audience' => 'hidden',
+      ],
+    ];
+  }
+
+  /**
+   * Get related tokens related to membership e.g. recurring contribution tokens
+   */
+  protected function getRelatedTokens(): array {
+    $tokens = [];
+    $hiddenTokens = ['modified_date', 'create_date', 'trxn_id', 'invoice_id', 'is_test', 'payment_token_id', 'payment_processor_id', 'payment_instrument_id', 'cycle_day', 'installments', 'processor_id', 'next_sched_contribution_date', 'failure_count', 'failure_retry_date', 'auto_renew', 'is_email_receipt', 'contribution_status_id'];
+    $tokens += $this->getRelatedTokensForEntity('ContributionRecur', 'contribution_recur_id', ['*'], $hiddenTokens);
+    $tokens += $this->getRelatedTokensForEntity('MembershipType', 'membership_type_id', ['minimum_fee']);
+    $tokens += $this->getRelatedTokensForEntity('MembershipStatus', 'status_id', ['is_new']);
+    return $tokens;
   }
 
 }

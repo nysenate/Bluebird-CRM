@@ -15,6 +15,7 @@ namespace League\Csv;
 
 use InvalidArgumentException;
 use php_user_filter;
+use function array_map;
 use function in_array;
 use function str_replace;
 use function strcspn;
@@ -33,21 +34,6 @@ use function strlen;
 class EncloseField extends php_user_filter
 {
     const FILTERNAME = 'convert.league.csv.enclosure';
-
-    /**
-     * the filter name used to instantiate the class with.
-     *
-     * @var string
-     */
-    public $filtername;
-
-    /**
-     * Contents of the params parameter passed to stream_filter_append
-     * or stream_filter_prepend functions.
-     *
-     * @var mixed
-     */
-    public $params;
 
     /**
      * Default sequence.
@@ -74,7 +60,7 @@ class EncloseField extends php_user_filter
     /**
      * Static method to register the class as a stream filter.
      */
-    public static function register()
+    public static function register(): void
     {
         if (!in_array(self::FILTERNAME, stream_get_filters(), true)) {
             stream_filter_register(self::FILTERNAME, self::class);
@@ -85,6 +71,7 @@ class EncloseField extends php_user_filter
      * Static method to add the stream filter to a {@link Writer} object.
      *
      * @throws InvalidArgumentException if the sequence is malformed
+     * @throws Exception
      */
     public static function addTo(Writer $csv, string $sequence): Writer
     {
@@ -94,13 +81,10 @@ class EncloseField extends php_user_filter
             throw new InvalidArgumentException('The sequence must contain at least one character to force enclosure');
         }
 
-        $formatter = static function (array $record) use ($sequence) {
-            foreach ($record as &$value) {
-                $value = $sequence.$value;
-            }
-            unset($value);
-
-            return $record;
+        $formatter = function (array $record) use ($sequence): array {
+            return array_map(function (?string $value) use ($sequence): string {
+                return $sequence.$value;
+            }, $record);
         };
 
         return $csv
@@ -121,16 +105,19 @@ class EncloseField extends php_user_filter
     /**
      * {@inheritdoc}
      */
-    public function onCreate()
+    public function onCreate(): bool
     {
         return isset($this->params['sequence'])
-            && $this->isValidSequence($this->params['sequence']);
+            && self::isValidSequence($this->params['sequence']);
     }
 
     /**
-     * {@inheritdoc}
+     * @param resource $in
+     * @param resource $out
+     * @param int      $consumed
+     * @param bool     $closing
      */
-    public function filter($in, $out, &$consumed, $closing)
+    public function filter($in, $out, &$consumed, $closing): int
     {
         while ($res = stream_bucket_make_writeable($in)) {
             $res->data = str_replace($this->params['sequence'], '', $res->data);

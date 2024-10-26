@@ -31,7 +31,7 @@ class CRM_Contribute_Form_ContributionPage_TabHeader {
       $tabs = self::process($form);
       $form->set('tabHeader', $tabs);
     }
-    $form->assign_by_ref('tabHeader', $tabs);
+    $form->assign('tabHeader', $tabs);
     CRM_Core_Resources::singleton()
       ->addScriptFile('civicrm', 'templates/CRM/common/TabHeader.js', 1, 'html-header')
       ->addSetting([
@@ -45,7 +45,7 @@ class CRM_Contribute_Form_ContributionPage_TabHeader {
   /**
    * @param CRM_Core_Form $form
    *
-   * @return array
+   * @return array|null
    */
   public static function process(&$form) {
     if ($form->getVar('_id') <= 0) {
@@ -57,6 +57,11 @@ class CRM_Contribute_Form_ContributionPage_TabHeader {
       'valid' => FALSE,
       'active' => FALSE,
       'current' => FALSE,
+      'class' => FALSE,
+      'extra' => FALSE,
+      'template' => FALSE,
+      'count' => FALSE,
+      'icon' => FALSE,
     ];
 
     $tabs = [
@@ -174,7 +179,7 @@ class CRM_Contribute_Form_ContributionPage_TabHeader {
       }
     }
 
-    $current = $current ? $current : 'settings';
+    $current = $current ?: 'settings';
     return $current;
   }
 

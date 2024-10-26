@@ -13,14 +13,12 @@
  *
  * @package CRM
  * @copyright CiviCRM LLC https://civicrm.org/licensing
- * $Id$
- *
  * Convenience class for PHP-Gettext compatibility.
  */
 class CRM_Core_I18n_NativeGettext {
 
   /**
-   * @param $string
+   * @param string $string
    *
    * @return string
    */
@@ -31,8 +29,8 @@ class CRM_Core_I18n_NativeGettext {
   /**
    * Based on php-gettext, since native gettext does not support this as is.
    *
-   * @param $context
-   * @param $text
+   * @param string $context
+   * @param string $text
    *
    * @return string
    */
@@ -49,9 +47,9 @@ class CRM_Core_I18n_NativeGettext {
   }
 
   /**
-   * @param $text
-   * @param $plural
-   * @param $count
+   * @param string $text
+   * @param string $plural
+   * @param int $count
    *
    * @return string
    */

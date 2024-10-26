@@ -21,26 +21,7 @@
 class CRM_Utils_Chart {
 
   /**
-   * Colours.
-   * @var array
-   */
-  private static $_colours = [
-    "#C3CC38",
-    "#C8B935",
-    "#CEA632",
-    "#D3932F",
-    "#D9802C",
-    "#FA6900",
-    "#DC9B57",
-    "#F78F01",
-    "#5AB56E",
-    "#6F8069",
-    "#C92200",
-    "#EB6C5C",
-  ];
-
-  /**
-   * Build The Bar Gharph.
+   * Build The Bar Graph.
    *
    * @param array $params
    *   Assoc array of name/value pairs.
@@ -145,9 +126,9 @@ class CRM_Utils_Chart {
   }
 
   /**
-   * @param $rows
-   * @param $chart
-   * @param $interval
+   * @param array $rows
+   * @param string $chart
+   * @param string $interval
    *
    * @return array
    */
@@ -215,11 +196,7 @@ class CRM_Utils_Chart {
     $chartData['yname'] = $rows['yname'] ?? NULL;
 
     // carry some chart params if pass.
-    foreach ([
-      'xSize',
-      'ySize',
-      'divName',
-    ] as $f) {
+    foreach (['xSize', 'ySize', 'divName'] as $f) {
       if (!empty($rows[$f])) {
         $chartData[$f] = $rows[$f];
       }
@@ -229,10 +206,10 @@ class CRM_Utils_Chart {
   }
 
   /**
-   * @param $rows
-   * @param $chart
-   * @param $interval
-   * @param $chartInfo
+   * @param array $rows
+   * @param string $chart
+   * @param array $interval
+   * @param array $chartInfo
    *
    * @return array
    */
@@ -255,11 +232,7 @@ class CRM_Utils_Chart {
     }
 
     // carry some chart params if pass.
-    foreach ([
-      'xSize',
-      'ySize',
-      'divName',
-    ] as $f) {
+    foreach (['xSize', 'ySize', 'divName'] as $f) {
       if (!empty($rows[$f])) {
         $chartData[$f] = $rows[$f];
       }
@@ -270,7 +243,7 @@ class CRM_Utils_Chart {
 
   /**
    * @param array $params
-   * @param $chart
+   * @param string $chart
    *
    * @return array
    */

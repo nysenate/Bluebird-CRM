@@ -1,0 +1,16 @@
+{
+    "type": "search",
+    "requires": ["crmMosaico"],
+    "title": "Mosaico Templates",
+    "description": "",
+    "is_dashlet": false,
+    "is_public": false,
+    "is_token": false,
+    "server_route": "civicrm/mosaico-template-list",
+    "permission": "edit message templates",
+    "entity_type": null,
+    "join_entity": null,
+    "contact_summary": null,
+    "redirect": null,
+    "create_submission": null
+}

@@ -40,22 +40,21 @@
 class CRM_NYSS_Form_Integration_NewContactsFilter extends CRM_Core_Form {
   public function buildQuickForm() {
     //add search filters
-    $optSource = array(
+    $optSource = [
       'Bluebird' => 'Bluebird',
       'Website' => 'Website',
-    );
-    $this->add('select', 'newcontact_source_filter', ts('Filter by'), array('' => ts('- source -')) + $optSource);
-
-    CRM_Core_Form_Date::buildDateRange($this, 'newcontact_date', 1, '_low', '_high', ts('From'), FALSE, FALSE);
+    ];
+    $this->add('select', 'newcontact_source_filter', ts('Filter by'), ['' => ts('- source -')] + $optSource);
+    $this->addDatePickerRange('newcontact_date', ts('Date'));
 
     $this->assign('suppressForm', TRUE);
   }
 
   function setDefaultValues() {
-    $defaults = array(
+    $defaults = [
       'newcontact_source_filter' => 'Website',
       'newcontact_date_relative' => 'ending.month',
-    );
+    ];
 
     //CRM_Core_Error::debug_var('setDefaultValues', $defaults);
     return $defaults;

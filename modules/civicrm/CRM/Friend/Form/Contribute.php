@@ -13,8 +13,6 @@
  *
  * @package CRM
  * @copyright CiviCRM LLC https://civicrm.org/licensing
- * $Id$
- *
  */
 
 /**
@@ -32,6 +30,7 @@ class CRM_Friend_Form_Contribute extends CRM_Contribute_Form_ContributionPage {
 
   public function preProcess() {
     parent::preProcess();
+    $this->setSelectedChild('friend');
   }
 
   /**
@@ -96,7 +95,7 @@ class CRM_Friend_Form_Contribute extends CRM_Contribute_Form_ContributionPage {
     $formValues['entity_table'] = 'civicrm_contribution_page';
     $formValues['entity_id'] = $this->_id;
     $formValues['title'] = $formValues['tf_title'];
-    $formValues['is_active'] = CRM_Utils_Array::value('tf_is_active', $formValues, FALSE);
+    $formValues['is_active'] = $formValues['tf_is_active'] ?? FALSE;
     $formValues['thankyou_title'] = $formValues['tf_thankyou_title'] ?? NULL;
     $formValues['thankyou_text'] = $formValues['tf_thankyou_text'] ?? NULL;
 

@@ -55,12 +55,14 @@ class CRM_Admin_Page_Mapping extends CRM_Core_Page_Basic {
           'url' => 'civicrm/admin/mapping',
           'qs' => 'action=update&id=%%id%%&reset=1',
           'title' => ts('Edit Mapping'),
+          'weight' => CRM_Core_Action::getWeight(CRM_Core_Action::UPDATE),
         ],
         CRM_Core_Action::DELETE => [
           'name' => ts('Delete'),
           'url' => 'civicrm/admin/mapping',
           'qs' => 'action=delete&id=%%id%%',
           'title' => ts('Delete Mapping'),
+          'weight' => CRM_Core_Action::getWeight(CRM_Core_Action::DELETE),
         ],
       ];
     }
@@ -123,8 +125,17 @@ class CRM_Admin_Page_Mapping extends CRM_Core_Page_Basic {
    * Run the basic page.
    */
   public function run() {
-    $sort = 'mapping_type asc';
-    return parent::run($sort);
+    $sort = 'mapping_type_id ASC, name ASC';
+    return parent::run(NULL, NULL, $sort);
+  }
+
+  /**
+   * Get any properties that should always be present in each row (null if no value).
+   *
+   * @return array
+   */
+  protected function getExpectedRowProperties(): array {
+    return ['description'];
   }
 
 }

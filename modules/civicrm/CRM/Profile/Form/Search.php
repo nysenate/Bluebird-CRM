@@ -27,7 +27,7 @@ class CRM_Profile_Form_Search extends CRM_Profile_Form {
   /**
    * Pre processing work done here.
    */
-  public function preProcess() {
+  public function preProcess(): void {
     $this->_mode = CRM_Profile_Form::MODE_SEARCH;
     parent::preProcess();
   }
@@ -63,10 +63,7 @@ class CRM_Profile_Form_Search extends CRM_Profile_Form {
           $value[$item] = 1;
         }
       }
-      elseif (in_array($key, [
-        'birth_date',
-        'deceased_date',
-      ])) {
+      elseif (in_array($key, ['birth_date', 'deceased_date'])) {
         list($value) = CRM_Utils_Date::setDateDefaults($value);
       }
 
@@ -78,7 +75,7 @@ class CRM_Profile_Form_Search extends CRM_Profile_Form {
   /**
    * Build the form object.
    */
-  public function buildQuickForm() {
+  public function buildQuickForm(): void {
     // Is proximity search enabled for this profile?
     $proxSearch = CRM_Core_DAO::getFieldValue('CRM_Core_DAO_UFGroup',
       $this->get('gid'),
@@ -102,7 +99,7 @@ class CRM_Profile_Form_Search extends CRM_Profile_Form {
   /**
    * Post process function.
    */
-  public function postProcess() {
+  public function postProcess(): void {
   }
 
 }

@@ -2,7 +2,7 @@
 <extension key="gov.nysenate.newversion" type="module">
   <file>newversion</file>
   <name>NYSS: New Version Alert</name>
-  <description></description>
+  <description/>
   <license>AGPL-3.0</license>
   <maintainer>
     <author>Lighthouse Consulting and Design, Inc.</author>

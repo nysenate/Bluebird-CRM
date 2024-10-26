@@ -18,11 +18,14 @@ class CRM_Iats_Transaction {
    */
   static function getContributionTemplate($contribution) {
     // Get the most recent contribution in this series that matches the same total_amount, if present.
-    $template = array();
-    $get = ['contribution_recur_id' => $contribution['contribution_recur_id'], 'options' => ['sort' => ' id DESC', 'limit' => 1]];
-    if (!empty($contribution['total_amount'])) {
-      $get['total_amount'] = $contribution['total_amount'];
+    $template = [];
+    $get = ['options' => ['sort' => ' id DESC', 'limit' => 1]];
+    foreach (['contribution_recur_id', 'total_amount', 'is_test'] as $key) {
+      if (!empty($contribution[$key])) {
+        $get[$key] = $contribution[$key];
+      }
     }
+    // CRM_Core_Error::debug_var('Contribution', $get);
     $result = civicrm_api3('contribution', 'get', $get);
     if (!empty($result['values'])) {
       $template = reset($result['values']);
@@ -77,7 +80,7 @@ class CRM_Iats_Transaction {
    *   Used in the Iatsrecurringcontributions.php job and the one-time ('card on file') form.
    *   
    */
-  static function process_contribution_payment(&$contribution, $paymentProcessor, $payment_token) {
+  static function process_contribution_payment(&$contribution, $paymentProcessor, $payment_token, $contributionRecurUpdate = []) {
     // By default, don't use repeattransaction
     $use_repeattransaction = FALSE;
     $is_recurrence = !empty($contribution['original_contribution_id']);
@@ -85,12 +88,12 @@ class CRM_Iats_Transaction {
     $payment_result = self::process_payment($contribution, $paymentProcessor, $payment_token);
     $success = $payment_result['success'];
     $auth_code = $payment_result['auth_code'];
-    $auth_response = $payment_result['auth_response'];
-    $trxn_id = $payment_result['trxn_id'];
+    $auth_response = empty($payment_result['auth_response']) ? '' : $payment_result['auth_response'];
+    $trxn_id = empty($payment_result['trxn_id']) ? '' : $payment_result['trxn_id'];
     // Handle any case of a failure of some kind, either the card failed, or the system failed.
     if (!$success) {
       $error_message = $payment_result['message'];
-      /* set the failed transaction status, or pending if I had a server issue */
+      /* set the failed transaction status (=4), or pending (= 2) if I had a server issue */
       $contribution['contribution_status_id'] = empty($auth_code) ? 2 : 4;
       /* and include the reason in the source field */
       $contribution['source'] .= ' ' . $error_message;
@@ -104,6 +107,34 @@ class CRM_Iats_Transaction {
       // 1. if we want it (i.e. if it's for a recurring schedule)
       // 2. if we don't already have a contribution id
       $use_repeattransaction = $is_recurrence && empty($contribution['id']);
+    }
+    // Update the recurring contribution record with the next scheduled contribution date
+    // Note: applies if we have come from the iats recurring contribution job.
+    if (!empty($contributionRecurUpdate)) {
+      /* by default, just set the failure count back to 0 */
+      /* special handling for confirmed, hopefully transient, card failures: try again at next opportunity if we haven't failed too often */
+      if (4 == $contribution['contribution_status_id']) {
+        $contributionRecurUpdate['failure_count'] = $contributionRecurUpdate['failure_count'] + 1;
+        /* if it has failed and the failure threshold will not be reached with this failure, set the next sched contribution date to what it was */
+        if ($contributionRecurUpdate['failure_count'] < $contributionRecurUpdate['failure_threshold']) {
+          // Override/set the next_sched_contribution_date to it's current value so we can try again.
+          $contributionRecurUpdate['next_sched_contribution_date'] = $contributionRecurUpdate['current_sched_contribution_date'];
+        }
+        // otherwise, we'll keep the next collection date as passed in from the caller
+      }
+      elseif (!empty($auth_code)) {
+        // set the failure count back to zero unless I had a server issue
+        $contributionRecurUpdate['failure_count'] = 0;
+      }
+      // unset some of the passed in values that were useful but not part of the recurring record
+      unset($contributionRecurUpdate['failure_threshold']);
+      unset($contributionRecurUpdate['current_sched_contribution_date']);
+      try {
+        civicrm_api3('ContributionRecur', 'create', $contributionRecurUpdate);
+      }
+      catch (Exception $e) {
+        // Ignore this, though perhaps I should log it.
+      }
     }
     if ($use_repeattransaction) {
       // We processed it successflly and I can try to use repeattransaction. 
@@ -138,13 +169,18 @@ class CRM_Iats_Transaction {
         // If repeattransaction succeded.
         // First restore/add various fields that the repeattransaction api may overwrite or ignore.
         // TODO - fix this in core to allow these to be set above.
-        civicrm_api3('contribution', 'create', array('id' => $contribution['id'], 
-          'invoice_id' => $contribution['invoice_id'],
-          'source' => $contribution['source'],
-          'receive_date' => $contribution['receive_date'],
-          'payment_instrument_id' => $contribution['payment_instrument_id'],
-          // '' => $contribution['receive_date'],
-        ));
+        try {
+          civicrm_api3('contribution', 'create', array('id' => $contribution['id'], 
+            'invoice_id' => $contribution['invoice_id'],
+            'source' => $contribution['source'],
+            'receive_date' => $contribution['receive_date'],
+            'payment_instrument_id' => $contribution['payment_instrument_id'],
+            // '' => $contribution['receive_date'],
+          ));
+        }
+        catch (Exception $e) {
+          // Not sure why this might fail, but let's be careful
+        }
         // Save my status in the contribution array that was passed in.
         $contribution['contribution_status_id'] = $payment_result['payment_status_id'];
         if ($contribution['contribution_status_id'] == 1) {
@@ -181,11 +217,18 @@ class CRM_Iats_Transaction {
     if (!$use_repeattransaction) {
       /* If I'm not using repeattransaction for any reason, I'll create the contribution manually */
       // This code assumes that the contribution_status_id has been set properly above, either pending or failed.
-      $contributionResult = civicrm_api3('contribution', 'create', $contribution);
+      try {
+        $contributionResult = civicrm_api3('contribution', 'create', $contribution);
+      }
+      catch (Exception $e) {
+        // log the error and continue
+        CRM_Core_Error::debug_var('Unexpected Exception', $e);
+        $contributionResult = [];
+      }
       // Pass back the created id indirectly since I'm calling by reference.
       $contribution['id'] = CRM_Utils_Array::value('id', $contributionResult);
       // Connect to a membership if requested.
-      if (!empty($contribution['membership_id'])) {
+      if (!empty($contribution['id']) && !empty($contribution['membership_id'])) {
         try {
           civicrm_api3('MembershipPayment', 'create', array('contribution_id' => $contribution['id'], 'membership_id' => $contribution['membership_id']));
         }
@@ -319,7 +362,7 @@ class CRM_Iats_Transaction {
           $result['message'] = $result['auth_response'] = empty($data['authResponse']) ? '' : trim($data['authResponse']);
         }
         else {
-          $result['message'] = $result['result']['errorMessages'];
+          $result['message'] = implode(',', $result['result']['errorMessages']);
         }
         /* in case of critical failure set the series to pending */
         switch ($result['auth_code']) {
@@ -358,9 +401,10 @@ class CRM_Iats_Transaction {
         // Process the soap response into a readable result.
         $result['result'] = $iats->result($response);
         $result['success'] = !empty($result['result']['status']);
+        $result['auth_code'] = $result['result']['auth_result'];
         if ($result['success']) {
           $result['trxn_id'] = trim($result['result']['remote_id']) . ':' . time();
-          $result['message'] = $result['auth_code'] = $result['result']['auth_result'];
+          $result['message'] = $result['auth_code'];
         }
         else {
           $result['message'] = $result['result']['reasonMessage'];
@@ -379,7 +423,7 @@ class CRM_Iats_Transaction {
    * @param $start_date a timestamp, only return dates after this.
    * @param $allow_days an array of allowable days of the month.
    *
-   *   A low-level utility function for triggering a transaction on iATS.
+   *   A low-level utility function used to get an array of the next allowable start dates
    */
   static function get_future_monthly_start_dates($start_date, $allow_days) {
     // Future date options.
@@ -388,7 +432,7 @@ class CRM_Iats_Transaction {
     $today = date('Ymd').'030000';
     // If not set, only allow for the first 28 days of the month.
     if (max($allow_days) <= 0) {
-      $allow_days = range(1,28);
+      $allow_days = range(1,31);
     }
     for ($j = 0; $j < count($allow_days); $j++) {
       // So I don't get into an infinite loop somehow ..
@@ -404,11 +448,29 @@ class CRM_Iats_Transaction {
         $key = ''; // date('YmdHis');
       }
       else {
-        $display = strftime('%B %e, %Y', $start_date);
+        // display of the future date option to the user
+        $display = CRM_Utils_Date::customFormatTs($start_date,Civi::settings()->get('dateformatFull'));
       }
       $start_dates[$key] = $display;
       $start_date += (24 * 60 * 60);
     }
     return $start_dates;
   }
+
+
+  /*
+   * Get the ip of the source of the transaction.
+   *
+   * Test to make sure we're not sending an invalid value!
+   * $param $filter = an optional additional FILTER to validate the ip
+   */
+  static function remote_ip_address($filter = 0) {
+    $ipAddress = (function_exists('ip_address') ? ip_address() : $_SERVER['REMOTE_ADDR']);
+    $filter = $filter | FILTER_FLAG_NO_PRIV_RANGE;
+    if (!filter_var($ipAddress, FILTER_VALIDATE_IP, $filter)) {
+        $ipAddress = '';
+    }
+    return $ipAddress;
+  }
+
 }

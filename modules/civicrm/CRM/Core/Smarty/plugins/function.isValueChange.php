@@ -17,7 +17,6 @@
  * @package CRM
  * @author Allen Shaw <allen@nswebsolutions.com>
  * @copyright CiviCRM LLC https://civicrm.org/licensing
- * $Id$
  */
 
 /**
@@ -40,7 +39,7 @@ function smarty_function_isValueChange($params, &$smarty) {
   static $values = [];
 
   if (empty($params['key'])) {
-    $smarty->trigger_error("Missing required parameter, 'key', in isValueChange plugin.");
+    trigger_error('Missing required parameter, &#039;key&#039;, in isValueChange plugin.', E_USER_ERROR);
     return NULL;
   }
 

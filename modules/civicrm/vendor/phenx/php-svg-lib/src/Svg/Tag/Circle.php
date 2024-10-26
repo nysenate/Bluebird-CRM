@@ -2,11 +2,13 @@
 /**
  * @package php-svg-lib
  * @link    http://github.com/PhenX/php-svg-lib
- * @author  Fabien Ménager <fabien.menager@gmail.com>
+ * @author  Fabien MÃ©nager <fabien.menager@gmail.com>
  * @license GNU LGPLv3+ http://www.gnu.org/copyleft/lesser.html
  */
 
 namespace Svg\Tag;
+
+use Svg\Style;
 
 class Circle extends Shape
 {
@@ -17,13 +19,16 @@ class Circle extends Shape
     public function start($attributes)
     {
         if (isset($attributes['cx'])) {
-            $this->cx = $attributes['cx'];
+            $width = $this->document->getWidth();
+            $this->cx = $this->convertSize($attributes['cx'], $width);
         }
         if (isset($attributes['cy'])) {
-            $this->cy = $attributes['cy'];
+            $height = $this->document->getHeight();
+            $this->cy = $this->convertSize($attributes['cy'], $height);
         }
         if (isset($attributes['r'])) {
-            $this->r = $attributes['r'];
+            $diagonal = $this->document->getDiagonal();
+            $this->r = $this->convertSize($attributes['r'], $diagonal);
         }
 
         $this->document->getSurface()->circle($this->cx, $this->cy, $this->r);

@@ -21,20 +21,25 @@
 class CRM_SMS_Form_Provider extends CRM_Core_Form {
   protected $_id = NULL;
 
+  /**
+   * @var bool
+   */
+  public $submitOnce = TRUE;
+
   public function preProcess() {
 
-    $this->_id = $this->get('id');
+    $this->_id = CRM_Utils_Request::retrieve('id', 'Integer', $this);
 
     $this->setPageTitle(ts('SMS Provider'));
 
     if ($this->_id) {
-      $refreshURL = CRM_Utils_System::url('civicrm/admin/sms/provider',
+      $refreshURL = CRM_Utils_System::url('civicrm/admin/sms/provider/edit',
         "reset=1&action=update&id={$this->_id}",
         FALSE, NULL, FALSE
       );
     }
     else {
-      $refreshURL = CRM_Utils_System::url('civicrm/admin/sms/provider',
+      $refreshURL = CRM_Utils_System::url('civicrm/admin/sms/provider/edit',
         "reset=1&action=add",
         FALSE, NULL, FALSE
       );
@@ -65,19 +70,19 @@ class CRM_SMS_Form_Provider extends CRM_Core_Form {
       return;
     }
 
-    $attributes = CRM_Core_DAO::getAttribute('CRM_SMS_DAO_Provider');
+    $attributes = CRM_Core_DAO::getAttribute('CRM_SMS_DAO_SmsProvider');
 
     $providerNames = CRM_Core_OptionGroup::values('sms_provider_name', FALSE, FALSE, FALSE, NULL, 'label');
     $apiTypes = CRM_Core_OptionGroup::values('sms_api_type', FALSE, FALSE, FALSE, NULL, 'label');
 
-    $this->add('select', 'name', ts('Name'), ['' => '- select -'] + $providerNames, TRUE);
+    $this->add('select', 'name', ts('Name'), $providerNames, TRUE, ['placeholder' => TRUE]);
 
     $this->add('text', 'title', ts('Title'),
       $attributes['title'], TRUE
     );
 
     $this->addRule('title', ts('This Title already exists in Database.'), 'objectExists', [
-      'CRM_SMS_DAO_Provider',
+      'CRM_SMS_DAO_SmsProvider',
       $this->_id,
     ]);
 
@@ -94,7 +99,7 @@ class CRM_SMS_Form_Provider extends CRM_Core_Form {
     $this->add('text', 'api_url', ts('API Url'), $attributes['api_url'], TRUE);
 
     $this->add('textarea', 'api_params', ts('API Parameters'),
-      "cols=50 rows=6", TRUE
+      ['cols' => 50, 'rows' => 6], TRUE
     );
 
     $this->add('checkbox', 'is_active', ts('Is this provider active?'));
@@ -114,7 +119,7 @@ class CRM_SMS_Form_Provider extends CRM_Core_Form {
     if ($name) {
       $defaults['name'] = $name;
       $provider = CRM_SMS_Provider::singleton(['provider' => $name]);
-      $defaults['api_url'] = $provider->_apiURL;
+      $defaults['api_url'] = $provider->_apiURL ?? '';
     }
 
     if (!$this->_id) {
@@ -122,7 +127,7 @@ class CRM_SMS_Form_Provider extends CRM_Core_Form {
       return $defaults;
     }
 
-    $dao = new CRM_SMS_DAO_Provider();
+    $dao = new CRM_SMS_DAO_SmsProvider();
     $dao->id = $this->_id;
 
     if ($name) {
@@ -146,14 +151,14 @@ class CRM_SMS_Form_Provider extends CRM_Core_Form {
     CRM_Utils_System::flushCache();
 
     if ($this->_action & CRM_Core_Action::DELETE) {
-      CRM_SMS_BAO_Provider::del($this->_id);
+      CRM_SMS_BAO_SmsProvider::del($this->_id);
       CRM_Core_Session::setStatus(ts('Selected Provider has been deleted.'), ts('Deleted'), 'success');
       return;
     }
 
     $recData = $values = $this->controller->exportValues($this->_name);
-    $recData['is_active'] = CRM_Utils_Array::value('is_active', $recData, 0);
-    $recData['is_default'] = CRM_Utils_Array::value('is_default', $recData, 0);
+    $recData['is_active'] ??= 0;
+    $recData['is_default'] ??= 0;
 
     if ($this->_action && (CRM_Core_Action::UPDATE || CRM_Core_Action::ADD)) {
       if ($this->_id) {

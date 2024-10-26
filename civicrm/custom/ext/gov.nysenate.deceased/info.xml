@@ -2,7 +2,7 @@
 <extension key="gov.nysenate.deceased" type="module">
   <file>deceased</file>
   <name>NYSS: Deceased Contact Processing</name>
-  <description></description>
+  <description/>
   <license>AGPL-3.0</license>
   <maintainer>
     <author>NYS Senate</author>

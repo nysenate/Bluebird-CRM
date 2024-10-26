@@ -13,8 +13,6 @@
  *
  * @package CRM
  * @copyright CiviCRM LLC https://civicrm.org/licensing
- * $Id$
- *
  */
 
 /**
@@ -27,6 +25,22 @@ class CRM_Core_Permission_Base {
    * @var array
    */
   public $permissions = NULL;
+
+  /**
+   * Is this user someone with access for the entire system.
+   *
+   * @var bool
+   */
+  protected $_viewAdminUser = FALSE;
+  protected $_editAdminUser = FALSE;
+
+  /**
+   * Am in in view permission or edit permission?
+   *
+   * @var bool
+   */
+  protected $_viewPermission = FALSE;
+  protected $_editPermission = FALSE;
 
   /**
    * Translate permission.
@@ -43,17 +57,15 @@ class CRM_Core_Permission_Base {
    *   a permission name
    */
   public function translatePermission($perm, $nativePrefix, $map) {
-    list ($civiPrefix, $name) = CRM_Utils_String::parsePrefix(':', $perm, NULL);
+    [$civiPrefix, $name] = CRM_Utils_String::parsePrefix(':', $perm, NULL);
     switch ($civiPrefix) {
       case $nativePrefix:
+      case NULL:
         return $name;
 
       // pass through
       case 'cms':
-        return CRM_Utils_Array::value($name, $map, CRM_Core_Permission::ALWAYS_DENY_PERMISSION);
-
-      case NULL:
-        return $name;
+        return $map[$name] ?? CRM_Core_Permission::ALWAYS_DENY_PERMISSION;
 
       default:
         return CRM_Core_Permission::ALWAYS_DENY_PERMISSION;
@@ -61,13 +73,21 @@ class CRM_Core_Permission_Base {
   }
 
   /**
-   * Get the current permission of this user.
+   * Get the maximum permission of the current user with respect to _any_ contact records.
    *
-   * @return string
-   *   the permission of the user (edit or view or null)
+   * @return int|string|null
+   * @see \CRM_Core_Permission::getPermission()
    */
   public function getPermission() {
-    return CRM_Core_Permission::EDIT;
+    $this->group();
+
+    if ($this->_editPermission) {
+      return CRM_Core_Permission::EDIT;
+    }
+    elseif ($this->_viewPermission) {
+      return CRM_Core_Permission::VIEW;
+    }
+    return NULL;
   }
 
   /**
@@ -119,7 +139,56 @@ class CRM_Core_Permission_Base {
    *   array reference of all groups.
    */
   public function group($groupType = NULL, $excludeHidden = TRUE) {
-    return CRM_Core_PseudoConstant::allGroup($groupType, $excludeHidden);
+    $userId = CRM_Core_Session::getLoggedInContactID();
+    $domainId = CRM_Core_Config::domainID();
+    if (!isset(Civi::$statics['CRM_ACL_API']['viewPermissionedGroups_' . $domainId . '_' . $userId])) {
+      Civi::$statics['CRM_ACL_API']['viewPermissionedGroups_' . $domainId . '_' . $userId] = Civi::$statics['CRM_ACL_API']['editPermissionedGroups_' . $domainId . '_' . $userId] = [];
+    }
+
+    $groupKey = $groupType ?: 'all';
+
+    if (!isset(Civi::$statics['CRM_ACL_API']['viewPermissionedGroups_' . $domainId . '_' . $userId][$groupKey])) {
+      Civi::$statics['CRM_ACL_API']['viewPermissionedGroups_' . $domainId . '_' . $userId][$groupKey] = Civi::$statics['CRM_ACL_API']['editPermissionedGroups_' . $domainId . '_' . $userId][$groupKey] = [];
+
+      $groups = CRM_Core_PseudoConstant::allGroup($groupType, $excludeHidden);
+
+      if (CRM_Core_Permission::check('edit all contacts')) {
+        // this is the most powerful permission, so we return
+        // immediately rather than dilute it further
+        $this->_editAdminUser = $this->_viewAdminUser = TRUE;
+        $this->_editPermission = $this->_viewPermission = TRUE;
+        Civi::$statics['CRM_ACL_API']['editPermissionedGroups_' . $domainId . '_' . $userId][$groupKey] = $groups;
+        Civi::$statics['CRM_ACL_API']['viewPermissionedGroups_' . $domainId . '_' . $userId][$groupKey] = $groups;
+        return Civi::$statics['CRM_ACL_API']['viewPermissionedGroups_' . $domainId . '_' . $userId][$groupKey];
+      }
+      elseif (CRM_Core_Permission::check('view all contacts')) {
+        $this->_viewAdminUser = TRUE;
+        $this->_viewPermission = TRUE;
+        Civi::$statics['CRM_ACL_API']['viewPermissionedGroups_' . $domainId . '_' . $userId][$groupKey] = $groups;
+      }
+
+      $ids = CRM_ACL_API::group(CRM_Core_Permission::VIEW, NULL, 'civicrm_group', $groups);
+      if (!empty($ids)) {
+        foreach (array_values($ids) as $id) {
+          $title = $groups[$id] ?? CRM_Core_DAO::getFieldValue('CRM_Contact_DAO_Group', $id, 'title');
+          Civi::$statics['CRM_ACL_API']['viewPermissionedGroups_' . $domainId . '_' . $userId][$groupKey][$id] = $title;
+          $this->_viewPermission = TRUE;
+        }
+      }
+
+      $ids = CRM_ACL_API::group(CRM_Core_Permission::EDIT, NULL, 'civicrm_group', $groups);
+      if (!empty($ids)) {
+        foreach (array_values($ids) as $id) {
+          $title = $groups[$id] ?? CRM_Core_DAO::getFieldValue('CRM_Contact_DAO_Group', $id, 'title');
+          Civi::$statics['CRM_ACL_API']['editPermissionedGroups_' . $domainId . '_' . $userId][$groupKey][$id] = $title;
+          Civi::$statics['CRM_ACL_API']['viewPermissionedGroups_' . $domainId . '_' . $userId][$groupKey][$id] = $title;
+          $this->_editPermission = TRUE;
+          $this->_viewPermission = TRUE;
+        }
+      }
+    }
+
+    return Civi::$statics['CRM_ACL_API']['viewPermissionedGroups_' . $domainId . '_' . $userId][$groupKey];
   }
 
   /**
@@ -136,7 +205,62 @@ class CRM_Core_Permission_Base {
    *   the group where clause for this user
    */
   public function groupClause($type, &$tables, &$whereTables) {
-    return ' (1) ';
+    $userId = CRM_Core_Session::getLoggedInContactID();
+    $domainId = CRM_Core_Config::domainID();
+    if (!isset(Civi::$statics['CRM_ACL_API']['viewPermissionedGroups_' . $domainId . '_' . $userId])) {
+      $this->group();
+    }
+
+    // we basically get all the groups here
+    $groupKey = 'all';
+    if ($type == CRM_Core_Permission::EDIT) {
+      if ($this->_editAdminUser) {
+        $clause = ' ( 1 ) ';
+      }
+      elseif (empty(Civi::$statics['CRM_ACL_API']['editPermissionedGroups_' . $domainId . '_' . $userId][$groupKey])) {
+        $clause = ' ( 0 ) ';
+      }
+      else {
+        $clauses = [];
+        $groups = implode(', ', Civi::$statics['CRM_ACL_API']['editPermissionedGroups_' . $domainId . '_' . $userId][$groupKey]);
+        $clauses[] = ' ( civicrm_group_contact.group_id IN ( ' . implode(', ', array_keys(Civi::$statics['CRM_ACL_API']['editPermissionedGroups_' . $domainId . '_' . $userId][$groupKey])) . " ) AND civicrm_group_contact.status = 'Added' ) ";
+        $tables['civicrm_group_contact'] = 1;
+        $whereTables['civicrm_group_contact'] = 1;
+
+        // foreach group that is potentially a saved search, add the saved search clause
+        foreach (array_keys(Civi::$statics['CRM_ACL_API']['editPermissionedGroups_' . $domainId . '_' . $userId][$groupKey]) as $id) {
+          $group = new CRM_Contact_DAO_Group();
+          $group->id = $id;
+          if ($group->find(TRUE) && $group->saved_search_id) {
+            $clause = CRM_Contact_BAO_SavedSearch::whereClause($group->saved_search_id,
+              $tables,
+              $whereTables
+            );
+            if (trim($clause)) {
+              $clauses[] = $clause;
+            }
+          }
+        }
+        $clause = ' ( ' . implode(' OR ', $clauses) . ' ) ';
+      }
+    }
+    else {
+      if ($this->_viewAdminUser) {
+        $clause = ' ( 1 ) ';
+      }
+      elseif (empty(Civi::$statics['CRM_ACL_API']['viewPermissionedGroups_' . $domainId . '_' . $userId][$groupKey])) {
+        $clause = ' ( 0 ) ';
+      }
+      else {
+        $clauses = [];
+        $groups = implode(', ', Civi::$statics['CRM_ACL_API']['viewPermissionedGroups_' . $domainId . '_' . $userId][$groupKey]);
+        $clauses[] = ' civicrm_group.id IN (' . implode(', ', array_keys(Civi::$statics['CRM_ACL_API']['viewPermissionedGroups_' . $domainId . '_' . $userId][$groupKey])) . " )  ";
+        $tables['civicrm_group'] = 1;
+        $whereTables['civicrm_group'] = 1;
+        $clause = ' ( ' . implode(' OR ', $clauses) . ' ) ';
+      }
+    }
+    return $clause;
   }
 
   /**
@@ -146,9 +270,12 @@ class CRM_Core_Permission_Base {
    *   The permission to check.
    * @param int $userId
    *
+   * @return bool;
+   *
    */
   public function check($str, $userId = NULL) {
     //no default behaviour
+    return FALSE;
   }
 
   /**
@@ -165,14 +292,49 @@ class CRM_Core_Permission_Base {
   }
 
   /**
+   * Get the palette of available permissions in the CMS's user-management system.
+   *
+   * @return array
+   *   List of permissions, keyed by symbolic name. Each item may have fields:
+   *     - title: string
+   *     - description: string
+   *
+   *   The permission-name should correspond to the Civi notation used by
+   *   'CRM_Core_Permission::check()'. For CMS-specific permissions, these are
+   *   translated names (eg "WordPress:list_users" or "Drupal:post comments").
+   *
+   *   The list should include *only* CMS permissions. Exclude Civi-native permissions.
+   *
+   * @see \CRM_Core_Permission_Base::translatePermission()
+   */
+  public function getAvailablePermissions() {
+    // These "synthetic" permissions are translated to the relevant CMS permissions in CRM/Core/Permission/*.php
+    // using the `translatePermission()` mechanism.
+    // EXCEPT in Standalone, where they are not needed
+    return [
+      'cms:view user account' => [
+        'title' => ts('CMS') . ': ' . ts('View user accounts'),
+        'description' => ts('View user accounts. (Synthetic permission - adapts to local CMS)'),
+        'is_synthetic' => TRUE,
+      ],
+      'cms:administer users' => [
+        'title' => ts('CMS') . ': ' . ts('Administer user accounts'),
+        'description' => ts('Administer user accounts. (Synthetic permission - adapts to local CMS)'),
+        'is_synthetic' => TRUE,
+      ],
+    ];
+  }
+
+  /**
    * Get all the contact emails for users that have a specific permission.
    *
    * @param string $permissionName
    *   Name of the permission we are interested in.
    *
+   * @throws CRM_Core_Exception.
    */
   public function permissionEmails($permissionName) {
-    CRM_Core_Error::fatal("this function only works in Drupal 6 at the moment");
+    throw new CRM_Core_Exception("this function only works in Drupal 6 at the moment");
   }
 
   /**
@@ -181,9 +343,10 @@ class CRM_Core_Permission_Base {
    * @param string $roleName
    *   Name of the role we are interested in.
    *
+   * @throws CRM_Core_Exception.
    */
   public function roleEmails($roleName) {
-    CRM_Core_Error::fatal("this function only works in Drupal 6 at the moment");
+    throw new CRM_Core_Exception("this function only works in Drupal 6 at the moment");
   }
 
   /**
@@ -226,7 +389,7 @@ class CRM_Core_Permission_Base {
    *   Array of permissions, in the same format as CRM_Core_Permission::getCorePermissions().
    * @see CRM_Core_Permission::getCorePermissions
    */
-  public static function getModulePermissions($module) {
+  public function getModulePermissions($module): array {
     $return_permissions = [];
     $fn_name = "{$module}_civicrm_permission";
     if (function_exists($fn_name)) {
@@ -241,24 +404,30 @@ class CRM_Core_Permission_Base {
    * Get the permissions defined in the hook_civicrm_permission implementation
    * in all enabled CiviCRM module extensions.
    *
-   * @param bool $descriptions
-   *
    * @return array
    *   Array of permissions, in the same format as CRM_Core_Permission::getCorePermissions().
+   * @throws RuntimeException
    */
-  public function getAllModulePermissions($descriptions = FALSE) {
+  public function getAllModulePermissions(): array {
     $permissions = [];
     CRM_Utils_Hook::permission($permissions);
 
-    if ($descriptions) {
-      foreach ($permissions as $permission => $label) {
-        $permissions[$permission] = (is_array($label)) ? $label : [$label];
+    // Normalize permission array format.
+    // Historically, a string was acceptable (interpreted as label), as was a non-associative array.
+    // Convert them all to associative arrays.
+    foreach ($permissions as $name => $defn) {
+      $defn = (array) $defn;
+      if (!isset($defn['label'])) {
+        CRM_Core_Error::deprecatedWarning("Permission '$name' should be declared with 'label' and 'description' keys. See https://docs.civicrm.org/dev/en/latest/hooks/hook_civicrm_permission/");
       }
-    }
-    else {
-      foreach ($permissions as $permission => $label) {
-        $permissions[$permission] = (is_array($label)) ? array_shift($label) : $label;
-      }
+      $permission = [
+        'label' => $defn['label'] ?? $defn[0],
+        'description' => $defn['description'] ?? $defn[1] ?? NULL,
+        'disabled' => $defn['disabled'] ?? NULL,
+        'implies' => $defn['implies'] ?? NULL,
+        'implied_by' => $defn['implied_by'] ?? NULL,
+      ];
+      $permissions[$name] = array_filter($permission, fn($item) => isset($item));
     }
     return $permissions;
   }

@@ -17,7 +17,7 @@
       {if ( $context eq 'fulltext' || $context eq 'search' ) && $searchKey}
       {assign var='urlParams' value="reset=1&id=$id&cid=$contact_id&action=update&context=$context&key=$searchKey"}
       {/if}
-            <a class="button" href="{crmURL p='civicrm/contact/view/membership' q=$urlParams}" accesskey="e" id="crm-membership-edit-button-top"><span><i class="crm-i fa-pencil"></i> {ts}Edit{/ts}</span></a>
+            <a class="button" href="{crmURL p='civicrm/contact/view/membership' q=$urlParams}" accesskey="e" id="crm-membership-edit-button-top"><span><i class="crm-i fa-pencil" aria-hidden="true"></i> {ts}Edit{/ts}</span></a>
         {/if}
         {if ! ($owner_contact_id AND call_user_func(array('CRM_Core_Permission','check'), 'delete in CiviMember'))
           && (call_user_func(array('CRM_Core_Permission', 'check'), "delete contributions of type $financialTypeId") || $noACL)}
@@ -25,7 +25,7 @@
       {if ( $context eq 'fulltext' || $context eq 'search' ) && $searchKey}
       {assign var='urlParams' value="reset=1&id=$id&cid=$contact_id&action=delete&context=$context&key=$searchKey"}
       {/if}
-            <a class="button" href="{crmURL p='civicrm/contact/view/membership' q=$urlParams}" id="crm-membership-delete-button-top"><span><i class="crm-i fa-trash"></i> {ts}Delete{/ts}</span></a>
+            <a class="button" href="{crmURL p='civicrm/contact/view/membership' q=$urlParams}" id="crm-membership-delete-button-top"><span><i class="crm-i fa-trash" aria-hidden="true"></i> {ts}Delete{/ts}</span></a>
         {/if}
         {include file="CRM/common/formButtons.tpl" location="bottom"}
     </div>
@@ -44,18 +44,18 @@
         {if $has_related}
             <tr><td class="label">{ts}Max related{/ts}</td><td>{$max_related}</td></tr>
         {/if}
-        <tr><td class="label">{ts}Status{/ts}</td><td>{$status} {if $member_is_override}({ts}Overridden{/ts}){/if}</td></tr>
-        <tr><td class="label">{ts}Source{/ts}</td><td>{$source}</td></tr>
+        <tr><td class="label">{ts}Status{/ts}</td><td>{$status} {if $is_override}({ts}Overridden{/ts}){/if}</td></tr>
+        <tr><td class="label">{ts}Membership Source{/ts}</td><td>{$source}</td></tr>
   {if $campaign}<tr><td class="label">{ts}Campaign{/ts}</td><td>{$campaign}</td></tr>{/if}
         <tr><td class="label">{ts}Member Since{/ts}</td><td>{$join_date|crmDate}</td></tr>
-        <tr><td class="label">{ts}Start date{/ts}</td><td>{$start_date|crmDate}</td></tr>
-        <tr><td class="label">{ts}End date{/ts}</td><td>{$end_date|crmDate}</td></tr>
+        <tr><td class="label">{ts}Membership Start Date{/ts}</td><td>{$start_date|crmDate}</td></tr>
+        <tr><td class="label">{ts}Membership Expiration Date{/ts}</td><td>{$end_date|crmDate}</td></tr>
         <tr><td class="label">{ts}Auto-renew{/ts}</td><td>{$auto_renew}</td></tr>
      {if $contribution_recur_id}
           <tr>
             <td class="label">{ts}Recurring Contribution{/ts}</td>
             <td>
-              <a class="crm-hover-button action-item" href='{crmURL p="civicrm/contact/view/contributionrecur" q="reset=1&id=`$contribution_recur_id`&cid=`$contactId`&context=contribution"}'>View Recurring Contribution</a>
+              <a class="crm-hover-button action-item" href='{crmURL p="civicrm/contact/view/contributionrecur" q="reset=1&id=`$contribution_recur_id`&cid=`$contactId`&context=contribution"}'>{ts}View Recurring Contribution{/ts}</a>
             </td>
           </tr>
      {/if}
@@ -64,10 +64,10 @@
     {include file="CRM/Custom/Page/CustomDataView.tpl"}
 
     {if $accessContribution}
-      <div class="crm-accordion-wrapper">
-        <div class="crm-accordion-header">
+      <details class="crm-accordion-bold" open>
+        <summary>
           {ts}Related Contributions and Recurring Contributions{/ts}
-        </div>
+        </summary>
         <div class="crm-accordion-body">
           {if $rows.0.contribution_id}
             {include file="CRM/Contribute/Form/Selector.tpl" context="Search"}
@@ -97,14 +97,14 @@
           </script>
           <div id="membership-recurring-contributions"></div>
         </div>
-      </div>
+      </details>
     {/if}
 
     {if $softCredit}
-        <div class="crm-accordion-wrapper">
-            <div class="crm-accordion-header">{ts}Related Soft Contributions{/ts}</div>
+        <details class="crm-accordion-bold" open>
+            <summary>{ts}Related Soft Contributions{/ts}</summary>
             <div class="crm-accordion-body">{include file="CRM/Contribute/Page/ContributionSoft.tpl" context="membership"}</div>
-        </div>
+        </details>
     {/if}
 
     {if $has_related}
@@ -119,7 +119,7 @@
           {if ( $context eq 'fulltext' || $context eq 'search' ) && $searchKey}
             {assign var='urlParams' value="reset=1&id=$id&cid=$contact_id&action=update&context=$context&key=$searchKey"}
           {/if}
-          <a class="button" href="{crmURL p='civicrm/contact/view/membership' q=$urlParams}" accesskey="e" id="crm-membership-edit-button-bottom"><span><i class="crm-i fa-pencil"></i> {ts}Edit{/ts}</span></a>
+          <a class="button" href="{crmURL p='civicrm/contact/view/membership' q=$urlParams}" accesskey="e" id="crm-membership-edit-button-bottom"><span><i class="crm-i fa-pencil" aria-hidden="true"></i> {ts}Edit{/ts}</span></a>
         {/if}
         {if ! ($owner_contact_id AND call_user_func(array('CRM_Core_Permission','check'), 'delete in CiviMember'))
           && (call_user_func(array('CRM_Core_Permission', 'check'), "delete contributions of type $financialTypeId") || $noACL)}
@@ -127,7 +127,7 @@
           {if ( $context eq 'fulltext' || $context eq 'search' ) && $searchKey}
             {assign var='urlParams' value="reset=1&id=$id&cid=$contact_id&action=delete&context=$context&key=$searchKey"}
           {/if}
-          <a class="button" href="{crmURL p='civicrm/contact/view/membership' q=$urlParams}" id="crm-membership-delete-button-bottom"><span><i class="crm-i fa-trash"></i> {ts}Delete{/ts}</span></a>
+          <a class="button" href="{crmURL p='civicrm/contact/view/membership' q=$urlParams}" id="crm-membership-delete-button-bottom"><span><i class="crm-i fa-trash" aria-hidden="true"></i> {ts}Delete{/ts}</span></a>
         {/if}
         {include file="CRM/common/formButtons.tpl" location="bottom"}
     </div>

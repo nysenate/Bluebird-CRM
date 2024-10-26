@@ -12,7 +12,7 @@
   <div class="crm-clear crm-inline-block-content" {if $permission EQ 'edit'}title="{ts}Add or edit website{/ts}"{/if}>
     {if $permission EQ 'edit'}
       <div class="crm-edit-help">
-        <span class="crm-i fa-pencil"></span> {if empty($website)}{ts}Add website{/ts}{else}{ts}Add or edit website{/ts}{/if}
+        <span class="crm-i fa-pencil" aria-hidden="true"></span> {if empty($website)}{ts}Add website{/ts}{else}{ts}Add or edit website{/ts}{/if}
       </div>
     {/if}
     {if empty($website)}
@@ -20,7 +20,7 @@
         <div class="crm-label">{ts}Website{/ts}</div>
         <div class="crm-content"></div>
       </div>
-    {/if}
+    {else}
     {foreach from=$website item=item}
       {if !empty($item.url)}
       <div class="crm-summary-row">
@@ -29,5 +29,6 @@
       </div>
       {/if}
     {/foreach}
+    {/if}
   </div>
 </div>

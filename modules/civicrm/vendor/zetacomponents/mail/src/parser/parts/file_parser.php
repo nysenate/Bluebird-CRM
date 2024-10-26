@@ -9,9 +9,9 @@
  * to you under the Apache License, Version 2.0 (the
  * "License"); you may not use this file except in compliance
  * with the License.  You may obtain a copy of the License at
- * 
+ *
  *   http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing,
  * software distributed under the License is distributed on an
  * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
@@ -120,9 +120,10 @@ class ezcMailFileParser extends ezcMailPartParser
         // figure out the base filename
         // search Content-Disposition first as specified by RFC 2183
         $matches = array();
-        if ( preg_match( '/\s*filename=\s?"?([^;"]*);?/i',
-                        $this->headers['Content-Disposition'], $matches ) )
-        {
+        if (
+            $this->headers['Content-Disposition'] &&
+            preg_match( '/\s*filename=\s?"?([^;"]*);?/i', $this->headers['Content-Disposition'], $matches )
+        ) {
             $fileName = trim( $matches[1], '"' );
         }
         // fallback to the name parameter in Content-Type as specified by RFC 2046 4.5.1
@@ -142,7 +143,12 @@ class ezcMailFileParser extends ezcMailPartParser
         }
 
         // clean file name (replace unsafe characters with underscores)
-        $fileName = strtr( $fileName, "/\\\0\"|?*<:;>+[]", '______________' );
+        $fileName = preg_replace( '/[^A-Za-z0-9-. ]/', '_', $fileName );
+
+        if ( strlen( $fileName ) > 200 )
+        {
+            $fileName = substr( $fileName, 0, 200 ) . '.' . pathinfo( $fileName, PATHINFO_EXTENSION );
+        }
 
         $this->fp = $this->openFile( $fileName ); // propagate exception
     }
@@ -172,8 +178,8 @@ class ezcMailFileParser extends ezcMailPartParser
         ezcMailParserShutdownHandler::registerForRemoval( $dirName );
         $this->fileName = $dirName . $fileName;
 
-        $fp = fopen( $this->fileName, 'w' );
-        if ( $this->fp === false )
+        $fp = @fopen( $this->fileName, 'w' );
+        if ( $fp === false )
         {
             throw new ezcBaseFileNotFoundException( $this->fileName );
         }
@@ -210,6 +216,11 @@ class ezcMailFileParser extends ezcMailPartParser
      */
     private function appendStreamFilters( $line )
     {
+        if ( ! is_string( $this->headers['Content-Transfer-Encoding'] ) )
+        {
+            return;
+        }
+
         // append the correct decoding filter
         switch ( strtolower( $this->headers['Content-Transfer-Encoding'] ) )
         {
@@ -313,15 +324,16 @@ class ezcMailFileParser extends ezcMailPartParser
 
         // set inline disposition mode if set.
         $matches = array();
-        if ( preg_match( '/^\s*inline;?/i',
-                        $this->headers['Content-Disposition'], $matches ) )
+        if ( $this->headers['Content-Disposition'] )
         {
-            $filePart->dispositionType = ezcMailFile::DISPLAY_INLINE;
-        }
-        if ( preg_match( '/^\s*attachment;?/i',
-                        $this->headers['Content-Disposition'], $matches ) )
-        {
-            $filePart->dispositionType = ezcMailFile::DISPLAY_ATTACHMENT;
+            if ( preg_match( '/^\s*inline;?/i', $this->headers['Content-Disposition'], $matches ) )
+            {
+                $filePart->dispositionType = ezcMailFile::DISPLAY_INLINE;
+            }
+            if ( preg_match( '/^\s*attachment;?/i', $this->headers['Content-Disposition'], $matches ) )
+            {
+                $filePart->dispositionType = ezcMailFile::DISPLAY_ATTACHMENT;
+            }
         }
         $filePart->size = filesize( $this->fileName );
         return $filePart;

@@ -1,9 +1,9 @@
 CRM.$(function($) {
   $(document).ready(function(){
     //wait for element existence to attach to
-    var intervalId = setInterval(function(){
+    var sortName = setInterval(function(){
       if ($('li#crm-qsearch input[value=sort_name]').length != 0){
-        clearInterval(intervalId);
+        clearInterval(sortName);
         buildQSearchHelp();
       }
     }, 5);
@@ -31,5 +31,22 @@ CRM.$(function($) {
         }
       });
     }
+
+    //NYSS 14379 - overwrite autocomplete.select from crm.menubar.js
+    //direct to either contact or case record
+    $('#crm-qsearch-input').autocomplete({
+      select: function (event, ui) {
+        var selectedOpt = $('input[name=quickSearchField]:checked').val();
+        if (ui.item.value > 0) {
+          var linkUrl = CRM.url('civicrm/contact/view', {reset: 1, cid: ui.item.value});
+          if (selectedOpt === 'case_id') {
+            linkUrl = CRM.url('civicrm/contact/view/case', {reset: 1, action: 'view', context: 'case', cid: ui.item.value, id: $(this).val()});
+          }
+
+          document.location = linkUrl;
+        }
+        return false;
+      }
+    });
   });
 });

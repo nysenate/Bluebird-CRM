@@ -1,0 +1,16 @@
+.civicase__responsive-calendar {
+  thead,
+  tbody {
+    display: block;
+  }
+
+  tr {
+    display: flex;
+  }
+
+  td,
+  th {
+    padding: 0;
+    width: 100%;
+  }
+}

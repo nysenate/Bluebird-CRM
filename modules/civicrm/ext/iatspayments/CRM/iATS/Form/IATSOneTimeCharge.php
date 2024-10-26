@@ -87,7 +87,10 @@ class CRM_Iats_Form_IATSOneTimeCharge extends CRM_Core_Form {
     // Generate another (possibly) recurring contribution, matching our recurring template with submitted value.
     $is_recurrence = !empty($values['is_recurrence']);
     $total_amount = $values['amount'];
-    $contribution_template = CRM_Iats_Transaction::getContributionTemplate(array('contribution_recur_id' => $values['crid']));
+    $contribution_recur_id = $values['crid'];
+    $is_test = $values['is_test'];
+    $contribution_template = CRM_Iats_Transaction::getContributionTemplate(['contribution_recur_id' => $contribution_recur_id, 'is_test' => $is_test]);
+    // CRM_Core_Error::debug_var('Contribution Template', $contribution_template);
     $contact_id = $values['cid'];
     $hash = md5(uniqid(rand(), TRUE));
     $contribution_recur_id    = $values['crid'];
@@ -143,7 +146,7 @@ class CRM_Iats_Form_IATSOneTimeCharge extends CRM_Core_Form {
       throw new Exception($error);
     }
     try {
-      $paymentProcessor = civicrm_api3('PaymentProcessor', 'getsingle', array('id' => 3)); 
+      $paymentProcessor = civicrm_api3('PaymentProcessor', 'getsingle', array('id' => $payment_processor_id)); 
     }
     catch (Exception $e) {
       $error = E::ts('Unexpected error getting payment processor information for recurring schedule id %1', array(1 => $contribution_recur_id));
@@ -154,6 +157,7 @@ class CRM_Iats_Form_IATSOneTimeCharge extends CRM_Core_Form {
       $error = E::ts('Unexpected error transacting one-time payment for schedule id %1', array(1 => $contribution_recur_id));
       throw new Exception($error);
     }
+    // CRM_Core_Error::debug_var('Contribution', $contribution);
     $result = CRM_Iats_Transaction::process_contribution_payment($contribution, $paymentProcessor, $payment_token);
     return $result;
   }

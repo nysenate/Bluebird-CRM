@@ -17,6 +17,8 @@
 
 /**
  * This class provides the common functionality for sending sms to one or a group of contact ids.
+ *
+ * @deprecated since 5.71 will be removed around 5.77.
  */
 class CRM_Contact_Form_Task_SMSCommon {
   const RECIEVED_SMS_ACTIVITY_SUBJECT = "SMS Received";
@@ -30,9 +32,12 @@ class CRM_Contact_Form_Task_SMSCommon {
   /**
    * Pre process the provider.
    *
+   * @deprecated since 5.71 will be removed around 5.77.
+   *
    * @param CRM_Core_Form $form
    */
   public static function preProcessProvider(&$form) {
+    CRM_Core_Error::deprecatedFunctionWarning('no alternative');
     $form->_single = FALSE;
     $className = CRM_Utils_System::getClassName($form);
 
@@ -43,7 +48,7 @@ class CRM_Contact_Form_Task_SMSCommon {
       $form->_single = TRUE;
     }
 
-    $providersCount = CRM_SMS_BAO_Provider::activeProviderCount();
+    $providersCount = CRM_SMS_BAO_SmsProvider::activeProviderCount();
 
     if (!$providersCount) {
       CRM_Core_Error::statusBounce(ts('There are no SMS providers configured, or no SMS providers are set active'));
@@ -68,12 +73,15 @@ class CRM_Contact_Form_Task_SMSCommon {
    * Build the form object.
    *
    * @param CRM_Core_Form $form
+   *
+   * @deprecated since 5.71 will be removed around 5.77.
    */
   public static function buildQuickForm(&$form) {
+    CRM_Core_Error::deprecatedFunctionWarning('no alternative supported for non-core use');
 
     $toArray = [];
 
-    $providers = CRM_SMS_BAO_Provider::getProviders(NULL, NULL, TRUE, 'is_default desc');
+    $providers = CRM_SMS_BAO_SmsProvider::getProviders(NULL, NULL, TRUE, 'is_default desc');
 
     $providerSelect = [];
     foreach ($providers as $provider) {
@@ -102,7 +110,7 @@ class CRM_Contact_Form_Task_SMSCommon {
 
       $form->_contactIds = [];
       foreach ($allToPhone as $value) {
-        list($contactId, $phone) = explode('::', $value);
+        [$contactId, $phone] = explode('::', $value);
         if ($contactId) {
           $form->_contactIds[] = $contactId;
           $form->_toContactPhone[] = $phone;
@@ -156,25 +164,18 @@ class CRM_Contact_Form_Task_SMSCommon {
     }
 
     if (is_array($form->_contactIds) && !empty($form->_contactIds) && $toSetDefault) {
-      $returnProperties = [
-        'sort_name' => 1,
-        'phone' => 1,
-        'do_not_sms' => 1,
-        'is_deceased' => 1,
-        'display_name' => 1,
-      ];
-
-      list($form->_contactDetails) = CRM_Utils_Token::getTokenDetails($form->_contactIds,
-        $returnProperties,
-        FALSE,
-        FALSE
-      );
+      $form->_contactDetails = civicrm_api3('Contact', 'get', [
+        'id' => ['IN' => $form->_contactIds],
+        'return' => ['sort_name', 'phone', 'do_not_sms', 'is_deceased', 'display_name'],
+        'options' => ['limit' => 0],
+      ])['values'];
 
       // make a copy of all contact details
       $form->_allContactDetails = $form->_contactDetails;
 
       foreach ($form->_contactIds as $key => $contactId) {
-        $value = $form->_contactDetails[$contactId];
+        $mobilePhone = NULL;
+        $contactDetails = $form->_contactDetails[$contactId];
 
         //to check if the phone type is "Mobile"
         $phoneTypes = CRM_Core_OptionGroup::values('phone_type', TRUE, FALSE, FALSE, NULL, 'name');
@@ -192,25 +193,21 @@ class CRM_Contact_Form_Task_SMSCommon {
           }
         }
 
-        if ((isset($value['phone_type_id']) && $value['phone_type_id'] != CRM_Utils_Array::value('Mobile', $phoneTypes)) || $value['do_not_sms'] || empty($value['phone']) || !empty($value['is_deceased'])) {
-
+        // No phone, No SMS or Deceased: then we suppress it.
+        if (empty($contactDetails['phone']) || $contactDetails['do_not_sms'] || !empty($contactDetails['is_deceased'])) {
+          $suppressedSms++;
+          unset($form->_contactDetails[$contactId]);
+          continue;
+        }
+        elseif ($contactDetails['phone_type_id'] != ($phoneTypes['Mobile'] ?? NULL)) {
           //if phone is not primary check if non-primary phone is "Mobile"
-          if (!empty($value['phone'])
-            && $value['phone_type_id'] != CRM_Utils_Array::value('Mobile', $phoneTypes) && empty($value['is_deceased'])
-          ) {
-            $filter = ['do_not_sms' => 0];
-            $contactPhones = CRM_Core_BAO_Phone::allPhones($contactId, FALSE, 'Mobile', $filter);
-            if (count($contactPhones) > 0) {
-              $mobilePhone = CRM_Utils_Array::retrieveValueRecursive($contactPhones, 'phone');
-              $form->_contactDetails[$contactId]['phone_id'] = CRM_Utils_Array::retrieveValueRecursive($contactPhones, 'id');
-              $form->_contactDetails[$contactId]['phone'] = $mobilePhone;
-              $form->_contactDetails[$contactId]['phone_type_id'] = $phoneTypes['Mobile'] ?? NULL;
-            }
-            else {
-              $suppressedSms++;
-              unset($form->_contactDetails[$contactId]);
-              continue;
-            }
+          $filter = ['do_not_sms' => 0];
+          $contactPhones = CRM_Core_BAO_Phone::allPhones($contactId, FALSE, 'Mobile', $filter);
+          if (count($contactPhones) > 0) {
+            $mobilePhone = CRM_Utils_Array::retrieveValueRecursive($contactPhones, 'phone');
+            $form->_contactDetails[$contactId]['phone_id'] = CRM_Utils_Array::retrieveValueRecursive($contactPhones, 'id');
+            $form->_contactDetails[$contactId]['phone'] = $mobilePhone;
+            $form->_contactDetails[$contactId]['phone_type_id'] = $phoneTypes['Mobile'] ?? NULL;
           }
           else {
             $suppressedSms++;
@@ -223,7 +220,7 @@ class CRM_Contact_Form_Task_SMSCommon {
           $phone = $mobilePhone;
         }
         elseif (empty($form->_toContactPhone)) {
-          $phone = $value['phone'];
+          $phone = $contactDetails['phone'];
         }
         else {
           $phone = $form->_toContactPhone[$key] ?? NULL;
@@ -231,7 +228,7 @@ class CRM_Contact_Form_Task_SMSCommon {
 
         if ($phone) {
           $toArray[] = [
-            'text' => '"' . $value['sort_name'] . '" (' . $phone . ')',
+            'text' => '"' . $contactDetails['sort_name'] . '" (' . $phone . ')',
             'id' => "$contactId::{$phone}",
           ];
         }
@@ -286,7 +283,7 @@ class CRM_Contact_Form_Task_SMSCommon {
    * @param array $fields
    *   The input form values.
    * @param array $dontCare
-   * @param array $self
+   * @param self $self
    *   Additional values form 'this'.
    *
    * @return bool|array
@@ -294,7 +291,7 @@ class CRM_Contact_Form_Task_SMSCommon {
    */
   public static function formRule($fields, $dontCare, $self) {
     $errors = [];
-
+    CRM_Core_Error::deprecatedFunctionWarning('no alternative supported for non-core use');
     $template = CRM_Core_Smarty::singleton();
 
     if (empty($fields['sms_text_message'])) {
@@ -322,10 +319,11 @@ class CRM_Contact_Form_Task_SMSCommon {
    * Process the form after the input has been submitted and validated.
    *
    * @param CRM_Core_Form $form
+   *
+   * @deprecated since 5.71 will be removed around 5.77.
    */
   public static function postProcess(&$form) {
-
-    // check and ensure that
+    CRM_Core_Error::deprecatedFunctionWarning('no alternative supported for non-core use');
     $thisValues = $form->controller->exportValues($form->getName());
 
     $fromSmsProviderId = $thisValues['sms_provider_id'];
@@ -376,7 +374,7 @@ class CRM_Contact_Form_Task_SMSCommon {
     $contactIds = array_keys($form->_contactDetails);
     $allContactIds = array_keys($form->_allContactDetails);
 
-    list($sent, $activityId, $countSuccess) = CRM_Activity_BAO_Activity::sendSMS($formattedContactDetails,
+    [$sent, $activityId, $countSuccess] = CRM_Activity_BAO_Activity::sendSMS($formattedContactDetails,
       $thisValues,
       $smsParams,
       $contactIds

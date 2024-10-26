@@ -1,0 +1,10 @@
+{
+    "name": "civicrm/civicrm-core:json-formatter",
+    "url": "https://github.com/mohsen1/json-formatter/archive/v0.7.0.zip",
+    "checksum": "ba0681e9d523a869632b67b638573b1c59f16da13a9d64677fb0424ba8a28bf3",
+    "ignore": [
+        "demo",
+        "test",
+        "screenshot.png"
+    ]
+}

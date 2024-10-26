@@ -1,0 +1,45 @@
+{
+    "name": "civicrm/composer-compile-lib",
+    "description": "Small library of compilation helpers",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "CiviCRM",
+            "email": "info@civicrm.org"
+        }
+    ],
+    "autoload": {
+      "psr-0": {
+        "CCL": ""
+      },
+      "psr-4": {
+        "CCL\\": ["src/"]
+      }
+    },
+    "config": {
+        "platform": {
+            "php": "7.2"
+        },
+        "allow-plugins": {
+            "civicrm/composer-compile-plugin": true
+        }
+    },
+    "require": {
+        "civicrm/composer-compile-plugin": "~0.19 || ~1.0",
+        "symfony/filesystem": "~2.8 || ~3.4 || ~4.0 || ~5.0 || ~6.0",
+        "scssphp/scssphp": "^1.8.1",
+        "padaliyajay/php-autoprefixer": "~1.2",
+        "tubalmartin/cssmin": "^4.1"
+    },
+    "extra": {
+        "compile": [
+            {
+                "title": "Generate <comment>CCL</comment> wrapper functions",
+                "run": ["@php-method \\CCL\\Tasks::template"],
+                "tpl-file": "src/StubsTpl.php",
+                "tpl-items": {"CCL.php": true},
+                "watch-files": ["src/StubsTpl.php", "src/Functions.php"]
+            }
+        ]
+    }
+}

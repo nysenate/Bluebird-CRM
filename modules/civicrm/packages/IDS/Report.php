@@ -211,7 +211,7 @@ class IDS_Report implements Countable, IteratorAggregate
      *
      * @return integer
      */
-    public function count()
+    public function count(): int
     {
         return count($this->events);
     }
@@ -225,6 +225,7 @@ class IDS_Report implements Countable, IteratorAggregate
      *
      * @return ArrayObject the event collection
      */
+    #[\ReturnTypeWillChange]
     public function getIterator()
     {
         return new ArrayObject($this->events);
@@ -235,7 +236,7 @@ class IDS_Report implements Countable, IteratorAggregate
      *
      * @return boolean
      */
-    public function isEmpty()
+    public function isEmpty(): bool
     {
         return empty($this->events);
     }

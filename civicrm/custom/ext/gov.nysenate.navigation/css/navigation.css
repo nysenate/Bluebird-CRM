@@ -17,3 +17,8 @@ div.nyss-logout {
 #civicrm-menu li[data-name="log_out"] {
   float: right;
 }
+
+/*13780 hide menu item search*/
+#civicrm-menu [data-name=MenubarDrillDown] {
+  display: none !important;
+}

@@ -66,6 +66,22 @@ function user_pass() {
  * @see user_pass_submit()
  */
 function user_pass_validate($form, &$form_state) {
+  if (isset($form_state['values']['name']) && !is_scalar($form_state['values']['name'])) {
+    form_set_error('name', t('An illegal value has been detected. Please contact the site administrator.'));
+    return;
+  }
+  $user_pass_reset_ip_window = variable_get('user_pass_reset_ip_window', 3600);
+  // Do not allow any password reset from the current user's IP if the limit
+  // has been reached. Default is 50 attempts allowed in one hour. This is
+  // independent of the per-user limit to catch attempts from one IP to request
+  // resets for many different user accounts. We have a reasonably high limit
+  // since there may be only one apparent IP for all users at an institution.
+  if (!flood_is_allowed('pass_reset_ip', variable_get('user_pass_reset_ip_limit', 50), $user_pass_reset_ip_window)) {
+    form_set_error('name', t('Sorry, too many password reset attempts from your IP address. This IP address is temporarily blocked. Try again later or <a href="@url">request a new password</a>.', array('@url' => url('user/password'))));
+    return;
+  }
+  // Always register an per-IP event.
+  flood_register_event('pass_reset_ip', $user_pass_reset_ip_window);
   $name = trim($form_state['values']['name']);
   // Try to load by email.
   $users = user_load_multiple(array(), array('mail' => $name, 'status' => '1'));
@@ -76,10 +92,20 @@ function user_pass_validate($form, &$form_state) {
     $account = reset($users);
   }
   if (isset($account->uid)) {
+    // Register user flood events based on the uid only, so they can be cleared
+    // when a password is reset successfully.
+    $identifier = $account->uid;
+    $user_pass_reset_user_window = variable_get('user_pass_reset_user_window', 21600);
+    $user_pass_reset_user_limit = variable_get('user_pass_reset_user_limit', 5);
+    // Don't allow password reset if the limit for this user has been reached.
+    // Default is to allow 5 passwords resets every 6 hours.
+    if (!flood_is_allowed('pass_reset_user', $user_pass_reset_user_limit, $user_pass_reset_user_window, $identifier)) {
+      form_set_error('name', format_plural($user_pass_reset_user_limit, 'Sorry, there has been more than one password reset attempt for this account. It is temporarily blocked. Try again later or <a href="@url">login with your password</a>.', 'Sorry, there have been more than @count password reset attempts for this account. It is temporarily blocked. Try again later or <a href="@url">login with your password</a>.', array('@url' => url('user/login'))));
+      return;
+    }
+    // Register a per-user event.
+    flood_register_event('pass_reset_user', $user_pass_reset_user_window, $identifier);
     form_set_value(array('#parents' => array('account')), $account, $form_state);
-  }
-  else {
-    form_set_error('name', t('Sorry, %name is not recognized as a user name or an e-mail address.', array('%name' => $name)));
   }
 }
 
@@ -91,23 +117,45 @@ function user_pass_validate($form, &$form_state) {
 function user_pass_submit($form, &$form_state) {
   global $language;
 
-  $account = $form_state['values']['account'];
-  // Mail one time login URL and instructions using current language.
-  $mail = _user_mail_notify('password_reset', $account, $language);
-  if (!empty($mail)) {
-    watchdog('user', 'Password reset instructions mailed to %name at %email.', array('%name' => $account->name, '%email' => $account->mail));
-    drupal_set_message(t('Further instructions have been sent to your e-mail address.'));
+  $name = $form_state['values']['name'];
+  if (isset($form_state['values']['account'])) {
+    $account = $form_state['values']['account'];
+    // Mail one time login URL and instructions using current language.
+    $mail = _user_mail_notify('password_reset', $account, $language);
+    if (!empty($mail)) {
+      watchdog('user', 'Password reset instructions mailed to %name at %email.', array('%name' => $account->name, '%email' => $account->mail));
+    }
+  }
+  else {
+    watchdog('user', 'Password reset form was submitted with an unknown or inactive account: %name.', array('%name' => $name));
   }
 
+  $password_reset_text = variable_get('user_password_reset_text', t('If %identifier is a valid account, an email will be sent with instructions to reset your password.'));
+  drupal_set_message(format_string($password_reset_text, array('%identifier' => $name)));
   $form_state['redirect'] = 'user';
   return;
 }
 
 /**
  * Menu callback; process one time login link and redirects to the user page on success.
+ *
+ * In order to never disclose password reset hashes via referrer headers or
+ * web browser history, this function always issues a redirect when a valid
+ * password reset hash is in the URL.
  */
 function user_pass_reset($form, &$form_state, $uid, $timestamp, $hashed_pass, $action = NULL) {
   global $user;
+
+  // Check for a reset hash in the session. Immediately remove it (to prevent it
+  // from being reused, for example if this page is visited again via the
+  // browser history) and store it for later use.
+  if (isset($_SESSION['pass_reset_hash'])) {
+    $session_reset_hash = $_SESSION['pass_reset_hash'];
+    unset($_SESSION['pass_reset_hash']);
+  }
+  else {
+    $session_reset_hash = NULL;
+  }
 
   // When processing the one-time login link, we have to make sure that a user
   // isn't already logged in.
@@ -130,7 +178,16 @@ function user_pass_reset($form, &$form_state, $uid, $timestamp, $hashed_pass, $a
     // A different user is already logged in on the computer.
     else {
       $reset_link_account = user_load($uid);
-      if (!empty($reset_link_account)) {
+      $is_valid = FALSE;
+      if (!empty($reset_link_account) && $timestamp >= $reset_link_account->login && $timestamp <= REQUEST_TIME) {
+        if ($hashed_pass == user_pass_rehash($reset_link_account->pass, $timestamp, $reset_link_account->login, $reset_link_account->uid, $reset_link_account->mail)) {
+          $is_valid = TRUE;
+        }
+        elseif ($session_reset_hash && $session_reset_hash == user_pass_rehash($reset_link_account->pass, $timestamp, $reset_link_account->login, $reset_link_account->uid, $reset_link_account->mail)) {
+          $is_valid = TRUE;
+        }
+      }
+      if ($is_valid) {
         drupal_set_message(t('Another user (%other_user) is already logged into the site on this computer, but you tried to use a one-time link for user %resetting_user. Please <a href="!logout">logout</a> and try using the link again.',
           array('%other_user' => $user->name, '%resetting_user' => $reset_link_account->name, '!logout' => url('user/logout'))), 'warning');
       } else {
@@ -153,14 +210,59 @@ function user_pass_reset($form, &$form_state, $uid, $timestamp, $hashed_pass, $a
         drupal_set_message(t('You have tried to use a one-time login link that has expired. Please request a new one using the form below.'), 'error');
         drupal_goto('user/password');
       }
-      elseif ($account->uid && $timestamp >= $account->login && $timestamp <= $current && $hashed_pass == user_pass_rehash($account->pass, $timestamp, $account->login, $account->uid)) {
+      // Validate the reset hash from the URL or from the session.
+      $is_valid = FALSE;
+      if ($account->uid && $timestamp >= $account->login && $timestamp <= $current) {
+        // If the reset hash in the URL is valid, put it in the session and
+        // redirect to the same URL but with the hash replaced by an invalid
+        // one ("confirm"). This prevents disclosing the hash via referrer
+        // headers or web browser history.
+        if ($hashed_pass == user_pass_rehash($account->pass, $timestamp, $account->login, $account->uid, $account->mail)) {
+          if ($action === 'login') {
+            // The 'login' action redirects directly to the user edit form.
+            $is_valid = TRUE;
+          }
+          else {
+            $_SESSION['pass_reset_hash'] = $hashed_pass;
+            $args = arg();
+            foreach ($args as &$arg) {
+              if ($arg == $hashed_pass) {
+                $arg = 'confirm';
+              }
+            }
+            $path = implode('/', $args);
+            drupal_goto($path, array('query' => drupal_get_query_parameters()));
+          }
+        }
+        // If the reset hash from the session is valid, use that.
+        elseif ($session_reset_hash && $session_reset_hash == user_pass_rehash($account->pass, $timestamp, $account->login, $account->uid, $account->mail)) {
+          $is_valid = TRUE;
+        }
+      }
+      if ($is_valid) {
         // First stage is a confirmation form, then login
         if ($action == 'login') {
+          if (variable_get('user_failed_login_identifier_uid_only', FALSE)) {
+            // Clear flood events based on the uid only if configured.
+            $identifier = $account->uid;
+          }
+          else {
+            // The default identifier is a combination of uid and IP address.
+            $identifier = $account->uid . '-' . ip_address();
+          }
+          // Only clear the user specific flood events. We cannot clear the more
+          // broad IP address flood events because that would open a
+          // vulnerability where an attacker with a valid account could use that
+          // to brute force other accounts.
+          flood_clear_event('failed_login_attempt_user', $identifier);
+
           // Set the new user.
           $user = $account;
           // user_login_finalize() also updates the login timestamp of the
           // user, which invalidates further use of the one-time login link.
           user_login_finalize();
+          // Clear any password reset flood events for this user.
+          flood_clear_event('pass_reset_user', $account->uid);
           watchdog('user', 'User %name used one-time login link at time %timestamp.', array('%name' => $account->name, '%timestamp' => $timestamp));
           drupal_set_message(t('You have just used your one-time login link. It is no longer necessary to use this link to log in. Please change your password.'));
           // Let the user's password be changed without the current password check.
@@ -173,7 +275,11 @@ function user_pass_reset($form, &$form_state, $uid, $timestamp, $hashed_pass, $a
           $form['help'] = array('#markup' => '<p>' . t('This login can be used only once.') . '</p>');
           $form['actions'] = array('#type' => 'actions');
           $form['actions']['submit'] = array('#type' => 'submit', '#value' => t('Log in'));
-          $form['#action'] = url("user/reset/$uid/$timestamp/$hashed_pass/login");
+          $form['#action'] = url("user/reset/$uid/$timestamp/$session_reset_hash/login");
+          // Prevent the browser from storing this page so that the token will
+          // not be visible in the form action if the back button is used to
+          // revisit this page.
+          drupal_add_http_header('Cache-Control', 'no-store');
           return $form;
         }
       }
@@ -559,7 +665,7 @@ function user_cancel_confirm($account, $timestamp = 0, $hashed_pass = '') {
   // Basic validation of arguments.
   if (isset($account->data['user_cancel_method']) && !empty($timestamp) && !empty($hashed_pass)) {
     // Validate expiration and hashed password/login.
-    if ($timestamp <= $current && $current - $timestamp < $timeout && $account->uid && $timestamp >= $account->login && $hashed_pass == user_pass_rehash($account->pass, $timestamp, $account->login, $account->uid)) {
+    if ($timestamp <= $current && $current - $timestamp < $timeout && $account->uid && $timestamp >= $account->login && $hashed_pass == user_pass_rehash($account->pass, $timestamp, $account->login, $account->uid, $account->mail)) {
       $edit = array(
         'user_cancel_notify' => isset($account->data['user_cancel_notify']) ? $account->data['user_cancel_notify'] : variable_get('user_mail_status_canceled_notify', FALSE),
       );

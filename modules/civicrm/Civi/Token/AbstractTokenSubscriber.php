@@ -41,9 +41,9 @@ abstract class AbstractTokenSubscriber implements EventSubscriberInterface {
 
   public static function getSubscribedEvents() {
     return [
-      Events::TOKEN_REGISTER => 'registerTokens',
-      Events::TOKEN_EVALUATE => 'evaluateTokens',
-      \Civi\ActionSchedule\Events::MAILING_QUERY => 'alterActionScheduleQuery',
+      'civi.token.list' => 'registerTokens',
+      'civi.token.eval' => 'evaluateTokens',
+      'civi.actionSchedule.prepareMailingQuery' => 'alterActionScheduleQuery',
     ];
   }
 
@@ -186,7 +186,6 @@ abstract class AbstractTokenSubscriber implements EventSubscriberInterface {
    *   The name of the token field.
    * @param mixed $prefetch
    *   Any data that was returned by the prefetch().
-   * @return mixed
    */
   abstract public function evaluateToken(TokenRow $row, $entity, $field, $prefetch = NULL);
 

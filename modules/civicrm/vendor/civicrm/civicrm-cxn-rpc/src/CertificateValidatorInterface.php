@@ -11,8 +11,6 @@
 
 namespace Civi\Cxn\Rpc;
 
-use Civi\Cxn\Rpc\Exception\InvalidCertException;
-
 /**
  * Interface CertificateValidatorInterface
  * @package Civi\Cxn\Rpc

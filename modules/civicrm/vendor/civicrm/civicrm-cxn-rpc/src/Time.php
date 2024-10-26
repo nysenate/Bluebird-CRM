@@ -14,7 +14,7 @@ namespace Civi\Cxn\Rpc;
 class Time {
 
   /**
-   * @var int, the seconds offset from the real world time
+   * @var intthesecondsoffsetfromtherealworldtime
    */
   static private $_delta = 0;
 
@@ -28,6 +28,15 @@ class Time {
     else {
       return floor(microtime(1) + self::$_delta);
     }
+  }
+
+  /**
+   * @return int
+   */
+  public static function getTimeObject() {
+    $time = new \DateTime();
+    $time->setTimestamp(self::getTime());
+    return $time;
   }
 
   /**

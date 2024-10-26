@@ -14,7 +14,7 @@ class CRM_UF_Page_ProfileEditor extends CRM_Core_Page {
    * @throws \Exception
    */
   public function run() {
-    CRM_Core_Error::fatal('This is not a real page!');
+    throw new CRM_Core_Exception('This is not a real page!');
   }
 
   /**
@@ -192,12 +192,25 @@ class CRM_UF_Page_ProfileEditor extends CRM_Core_Page {
           break;
 
         default:
-          throw new CRM_Core_Exception("Unrecognized entity type: $entityType");
+          if (strpos($entityType, 'Model') !== FALSE) {
+            $entity = str_replace('Model', '', $entityType);
+            $backboneModel = self::convertCiviModelToBackboneModel(
+              $entity,
+              ts('%1', [1 => $entity]),
+              $availableFields
+            );
+            if (!empty($backboneModel['schema'])) {
+              $civiSchema[$entityType] = $backboneModel;
+            }
+          }
+          if (!isset($civiSchema[$entityType])) {
+            throw new CRM_Core_Exception("Unrecognized entity type: $entityType");
+          }
       }
     }
 
     // Adding the oddball "formatting" field here because there's no other place to put it
-    foreach (['Individual', 'Organization', 'Household'] as $type) {
+    foreach (CRM_Contact_BAO_ContactType::basicTypes() as $type) {
       if (isset($civiSchema[$type . 'Model'])) {
         $civiSchema[$type . 'Model']['schema'] += [
           'formatting' => [
@@ -287,33 +300,28 @@ class CRM_UF_Page_ProfileEditor extends CRM_Core_Page {
       'is_addable' => FALSE,
     ];
 
-    $customGroup = CRM_Core_BAO_CustomGroup::getAllCustomGroupsByBaseEntity($extends);
-    $customGroup->orderBy('weight');
-    $customGroup->is_active = 1;
-    $customGroup->find();
-    while ($customGroup->fetch()) {
-      $sectionName = 'cg_' . $customGroup->id;
+    $customGroups = \CRM_Core_BAO_CustomGroup::getAll(['extends' => $extends, 'is_active' => TRUE]);
+    foreach ($customGroups as $customGroup) {
+      $sectionName = 'cg_' . $customGroup['id'];
       $section = [
-        'title' => ts('%1: %2', [1 => $title, 2 => $customGroup->title]),
-        'is_addable' => !$customGroup->is_reserved,
-        'custom_group_id' => $customGroup->id,
-        'extends_entity_column_id' => $customGroup->extends_entity_column_id,
-        'extends_entity_column_value' => CRM_Utils_Array::explodePadded($customGroup->extends_entity_column_value),
-        'is_reserved' => (bool) $customGroup->is_reserved,
+        'title' => ts('%1: %2', [1 => $title, 2 => $customGroup['title']]),
+        'is_addable' => !$customGroup['is_reserved'],
+        'custom_group_id' => (string) $customGroup['id'],
+        'extends_entity_column_id' => $customGroup['extends_entity_column_id'],
+        'extends_entity_column_value' => $customGroup['extends_entity_column_value'],
+        'is_reserved' => $customGroup['is_reserved'],
       ];
       $result['sections'][$sectionName] = $section;
-    }
-
-    // put fields in their sections
-    $fields = CRM_Core_BAO_CustomField::getFields($extends);
-    foreach ($fields as $fieldId => $field) {
-      $sectionName = 'cg_' . $field['custom_group_id'];
-      $fieldName = 'custom_' . $fieldId;
-      if (isset($result['schema'][$fieldName])) {
-        $result['schema'][$fieldName]['section'] = $sectionName;
-        $result['schema'][$fieldName]['civiIsMultiple'] = (bool) CRM_Core_BAO_CustomField::isMultiRecordField($fieldId);
+      // put fields in their sections
+      foreach ($customGroup['fields'] as $field) {
+        $fieldName = 'custom_' . $field['id'];
+        if (isset($result['schema'][$fieldName])) {
+          $result['schema'][$fieldName]['section'] = $sectionName;
+          $result['schema'][$fieldName]['civiIsMultiple'] = $customGroup['is_multiple'];
+        }
       }
     }
+
     return $result;
   }
 

@@ -10,15 +10,6 @@
  +--------------------------------------------------------------------+
  */
 
-/**
- *
- * @package CRM
- * @copyright CiviCRM LLC https://civicrm.org/licensing
- * $Id$
- *
- */
-
-
 namespace Civi\Api4\Action\CustomValue;
 
 /**
@@ -26,5 +17,13 @@ namespace Civi\Api4\Action\CustomValue;
  */
 class Update extends \Civi\Api4\Generic\DAOUpdateAction {
   use \Civi\Api4\Generic\Traits\CustomValueActionTrait;
+
+  /**
+   * Ensure entity_id is returned by getBatchRecords()
+   * @return string[]
+   */
+  protected function getSelect() {
+    return ['id', 'entity_id'];
+  }
 
 }

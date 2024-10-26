@@ -12,7 +12,7 @@
   <div class="crm-clear crm-inline-block-content" {if $permission EQ 'edit'}title="{if $add}{ts}Edit address{/ts}{else}{ts}Add address{/ts}{/if}"{/if}>
     {if $permission EQ 'edit'}
       <div class="crm-edit-help">
-        <span class="crm-i fa-pencil"></span> {if $add}{ts}Edit address{/ts}{else}{ts}Add address{/ts}{/if}
+        <span class="crm-i fa-pencil" aria-hidden="true"></span> {if $add}{ts}Edit address{/ts}{else}{ts}Add address{/ts}{/if}
       </div>
     {/if}
     {if !$add}
@@ -24,21 +24,22 @@
       <div class="crm-summary-row {if $add.is_primary eq 1} primary{/if}">
         <div class="crm-label">
           {ts 1=$add.location_type}%1 Address{/ts}
-          {if $privacy.do_not_mail}<span class="icon privacy-flag do-not-mail" title="{ts}Privacy flag: Do Not Mail{/ts}"></span>{/if}
+          {privacyFlag field=do_not_mail condition=$privacy.do_not_mail}
           {if $config->mapProvider AND
               !empty($add.geo_code_1) AND
               is_numeric($add.geo_code_1) AND
               !empty($add.geo_code_2) AND
               is_numeric($add.geo_code_2)
           }
-          <br /><a href="{crmURL p='civicrm/contact/map' q="reset=1&cid=`$contactId`&lid=`$add.location_type_id`"}" title="{ts 1=`$add.location_type`}Map %1 Address{/ts}"><span class="geotag">{ts}Map{/ts}</span></a>
+          {assign var='mapLocationTypeID' value=$add.location_type_id}
+          <br /><a href="{crmURL p='civicrm/contact/map' q="reset=1&cid=$contactId&lid=$mapLocationTypeID"}" title="{ts 1=$add.location_type}Map %1 Address{/ts}"><i class="crm-i fa-map-marker" aria-hidden="true"></i> {ts}Map{/ts}</a>
           {/if}
         </div>
         <div class="crm-content">
-          {if !empty($sharedAddresses.$locationIndex.shared_address_display.name)}
+          {if array_key_exists($locationIndex, $sharedAddresses) && !empty($sharedAddresses.$locationIndex.shared_address_display.name)}
             <strong>{ts 1=$sharedAddresses.$locationIndex.shared_address_display.name}Address belongs to %1{/ts}</strong><br />
           {/if}
-          {$add.display|nl2br}
+          {$add.display|smarty:nodefaults|purify|nl2br}
         </div>
       </div>
 
@@ -46,25 +47,23 @@
     {foreach from=$add.custom item=customGroup key=cgId} {* start of outer foreach *}
       {assign var="isAddressCustomPresent" value=1}
       {foreach from=$customGroup item=customValue key=cvId}
-        <div id="address_custom_{$cgId}_{$locationIndex}"
-        class="crm-collapsible crm-address-custom-{$cgId}-{$locationIndex}-accordion
-        {if $customValue.collapse_display}collapsed{/if}">
-        <div class="collapsible-title">
-          {$customValue.title}
-        </div>
-        <div class="crm-summary-block">
-          {foreach from=$customValue.fields item=customField key=cfId}
-          <div class="crm-summary-row">
-            <div class="crm-label">
-              {$customField.field_title}
+        <details id="address_custom_{$cgId}_{$locationIndex}" class="crm-address-custom-{$cgId}-{$locationIndex}-accordion crm-accordion-light" {if $customValue.collapse_display}{else}open{/if}>
+          <summary class="collapsible-title">
+            {$customValue.title}
+          </summary>
+          <div class="crm-summary-block">
+            {foreach from=$customValue.fields item=customField key=cfId}
+            <div class="crm-summary-row">
+              <div class="crm-label">
+                {$customField.field_title}
+              </div>
+              <div class="crm-content">
+                {$customField.field_value}
+              </div>
             </div>
-            <div class="crm-content">
-              {$customField.field_value}
-            </div>
+            {/foreach}
           </div>
-          {/foreach}
-          </div>
-        </div>
+        </details>
       {/foreach}
     {/foreach} {* end of outer custom group foreach *}
     <!-- end custom data -->

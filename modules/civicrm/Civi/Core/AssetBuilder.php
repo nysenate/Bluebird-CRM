@@ -7,6 +7,7 @@ use Civi\Core\Exception\UnknownAssetException;
 /**
  * Class AssetBuilder
  * @package Civi\Core
+ * @service asset_builder
  *
  * The AssetBuilder is used to manage semi-dynamic assets.
  * In normal production use, these assets are built on first
@@ -20,7 +21,7 @@ use Civi\Core\Exception\UnknownAssetException;
  * named "api-fields.json" which lists all the fields of
  * all the API entities.
  *
- * @code
+ * ```
  * // Build a URL to `api-fields.json`.
  * $url = \Civi::service('asset_builder')->getUrl('api-fields.json');
  *
@@ -37,7 +38,7 @@ use Civi\Core\Exception\UnknownAssetException;
  *   $mimeType = 'application/json';
  *   $content = json_encode($fields);
  * }
- * @endCode
+ * ```
  *
  * Assets can be parameterized. Each combination of ($asset,$params)
  * will be cached separately. For example, we might want a copy of
@@ -45,7 +46,7 @@ use Civi\Core\Exception\UnknownAssetException;
  * Simply pass the chosen entities into `getUrl()`, then update
  * the definition to use `$params['entities']`, as in:
  *
- * @code
+ * ```
  * // Build a URL to `api-fields.json`.
  * $url = \Civi::service('asset_builder')->getUrl('api-fields.json', array(
  *   'entities' => array('Contact', 'Phone', 'Email', 'Address'),
@@ -63,14 +64,14 @@ use Civi\Core\Exception\UnknownAssetException;
  *   $mimeType = 'application/json';
  *   $content = json_encode($fields);
  * }
- * @endCode
+ * ```
  *
  * Note: These assets are designed to hold non-sensitive data, such as
  * aggregated JS or common metadata. There probably are ways to
  * secure it (e.g. alternative digest() calculations), but the
  * current implementation is KISS.
  */
-class AssetBuilder {
+class AssetBuilder extends \Civi\Core\Service\AutoService {
 
   /**
    * @return array
@@ -137,9 +138,14 @@ class AssetBuilder {
     }
     else {
       return \CRM_Utils_System::url('civicrm/asset/builder', [
+        // The 'an' and 'ad' provide hints for cache lifespan and debugging/inspection.
         'an' => $name,
-        'ap' => $this->encode($params),
         'ad' => $this->digest($name, $params),
+        'aj' => \Civi::service('crypto.jwt')->encode([
+          'asset' => [$name, $params],
+          'exp' => 86400 * (floor(\CRM_Utils_Time::time() / 86400) + 2),
+          // Caching-friendly TTL -- We want the URL to be stable for a decent amount of time.
+        ], ['SIGN', 'WEAK_SIGN']),
       ], TRUE, NULL, FALSE);
     }
   }
@@ -188,10 +194,15 @@ class AssetBuilder {
       if (!file_exists($this->getCachePath())) {
         mkdir($this->getCachePath());
       }
-
-      $rendered = $this->render($name, $params);
-      file_put_contents($this->getCachePath($fileName), $rendered['content']);
-      return $fileName;
+      try {
+        $rendered = $this->render($name, $params);
+        file_put_contents($this->getCachePath($fileName), $rendered['content']);
+        return $fileName;
+      }
+      catch (UnknownAssetException $e) {
+        // unexpected error, log and continue
+        \Civi::log()->error('Unexpected error while rendering a file in the AssetBuilder: ' . $e->getMessage(), ['exception' => $e]);
+      }
     }
     return $fileName;
   }
@@ -236,7 +247,7 @@ class AssetBuilder {
   /**
    * Determine the local path of a cache file.
    *
-   * @param string|NULL $fileName
+   * @param string|null $fileName
    *   Ex: 'angular.abcd1234abcd1234.json'.
    * @return string
    *   URL.
@@ -252,7 +263,7 @@ class AssetBuilder {
   /**
    * Determine the URL of a cache file.
    *
-   * @param string|NULL $fileName
+   * @param string|null $fileName
    *   Ex: 'angular.abcd1234abcd1234.json'.
    * @return string
    *   URL.
@@ -275,7 +286,6 @@ class AssetBuilder {
    * @return string
    */
   protected function digest($name, $params) {
-    // WISHLIST: For secure digest, generate+persist privatekey & call hash_hmac.
     ksort($params);
     $digest = md5(
       $name .
@@ -284,40 +294,6 @@ class AssetBuilder {
       json_encode($params)
     );
     return $digest;
-  }
-
-  /**
-   * Encode $params in a format that's optimized for shorter URLs.
-   *
-   * @param array $params
-   * @return string
-   */
-  protected function encode($params) {
-    if (empty($params)) {
-      return '';
-    }
-
-    $str = json_encode($params);
-    if (function_exists('gzdeflate')) {
-      $str = gzdeflate($str);
-    }
-    return base64_encode($str);
-  }
-
-  /**
-   * @param string $str
-   * @return array
-   */
-  protected function decode($str) {
-    if ($str === NULL || $str === FALSE || $str === '') {
-      return [];
-    }
-
-    $str = base64_decode($str);
-    if (function_exists('gzdeflate')) {
-      $str = gzinflate($str);
-    }
-    return json_decode($str, TRUE);
   }
 
   /**
@@ -363,8 +339,12 @@ class AssetBuilder {
   public static function pageRender($get) {
     // Beg your pardon, sir. Please may I have an HTTP response class instead?
     try {
+      /** @var Assetbuilder $assets */
       $assets = \Civi::service('asset_builder');
-      return $assets->render($get['an'], $assets->decode($get['ap']));
+
+      $obj = \Civi::service('crypto.jwt')->decode($get['aj'], ['SIGN', 'WEAK_SIGN']);
+      $arr = json_decode(json_encode($obj), TRUE);
+      return $assets->render($arr['asset'][0], $arr['asset'][1]);
     }
     catch (UnknownAssetException $e) {
       return [

@@ -13,8 +13,6 @@
  *
  * @package CRM
  * @copyright CiviCRM LLC https://civicrm.org/licensing
- * $Id$
- *
  */
 
 /**
@@ -88,9 +86,6 @@ function civicrmtheme_system_themes_admin_form_submit($form, &$form_state) {
  */
 function civicrmtheme_custom_theme() {
   if (arg(0) != 'civicrm') {
-    return;
-  }
-  if (arg(1) == 'upgrade') {
     return;
   }
 

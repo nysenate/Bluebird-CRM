@@ -87,26 +87,28 @@ function _drupal_session_read($sid) {
   // Otherwise, if the session is still active, we have a record of the
   // client's session in the database. If it's HTTPS then we are either have
   // a HTTPS session or we are about to log in so we check the sessions table
-  // for an anonymous session with the non-HTTPS-only cookie.
+  // for an anonymous session with the non-HTTPS-only cookie. The session ID
+  // that is in the user's cookie is hashed before being stored in the database
+  // as a security measure. Thus, we have to hash it to match the database.
   if ($is_https) {
-    $user = db_query("SELECT u.*, s.* FROM {users} u INNER JOIN {sessions} s ON u.uid = s.uid WHERE s.ssid = :ssid", array(':ssid' => $sid))->fetchObject();
+    $user = db_query("SELECT u.*, s.* FROM {users} u INNER JOIN {sessions} s ON u.uid = s.uid WHERE s.ssid = :ssid", array(':ssid' => drupal_session_id($sid)))->fetchObject();
     if (!$user) {
       if (isset($_COOKIE[$insecure_session_name])) {
         $user = db_query("SELECT u.*, s.* FROM {users} u INNER JOIN {sessions} s ON u.uid = s.uid WHERE s.sid = :sid AND s.uid = 0", array(
-        ':sid' => $_COOKIE[$insecure_session_name]))
+        ':sid' => drupal_session_id($_COOKIE[$insecure_session_name])))
         ->fetchObject();
       }
     }
   }
   else {
-    $user = db_query("SELECT u.*, s.* FROM {users} u INNER JOIN {sessions} s ON u.uid = s.uid WHERE s.sid = :sid", array(':sid' => $sid))->fetchObject();
+    $user = db_query("SELECT u.*, s.* FROM {users} u INNER JOIN {sessions} s ON u.uid = s.uid WHERE s.sid = :sid", array(':sid' => drupal_session_id($sid)))->fetchObject();
   }
 
   // We found the client's session record and they are an authenticated,
   // active user.
   if ($user && $user->uid > 0 && $user->status == 1) {
     // This is done to unserialize the data member of $user.
-    $user->data = unserialize($user->data);
+    $user->data = unserialize((string) $user->data);
 
     // Add roles element to $user.
     $user->roles = array();
@@ -185,17 +187,18 @@ function _drupal_session_write($sid, $value) {
       // Use the session ID as 'sid' and an empty string as 'ssid' by default.
       // _drupal_session_read() does not allow empty strings so that's a safe
       // default.
-      $key = array('sid' => $sid, 'ssid' => '');
+      $key = array('sid' => drupal_session_id($sid), 'ssid' => '');
       // On HTTPS connections, use the session ID as both 'sid' and 'ssid'.
       if ($is_https) {
-        $key['ssid'] = $sid;
+        $key['ssid'] = drupal_session_id($sid);
         // The "secure pages" setting allows a site to simultaneously use both
         // secure and insecure session cookies. If enabled and both cookies are
-        // presented then use both keys.
+        // presented then use both keys. The session ID from the cookie is
+        // hashed before being stored in the database as a security measure.
         if (variable_get('https', FALSE)) {
           $insecure_session_name = substr(session_name(), 1);
           if (isset($_COOKIE[$insecure_session_name])) {
-            $key['sid'] = $_COOKIE[$insecure_session_name];
+            $key['sid'] = drupal_session_id($_COOKIE[$insecure_session_name]);
           }
         }
       }
@@ -284,6 +287,20 @@ function drupal_session_start() {
     // Save current session data before starting it, as PHP will destroy it.
     $session_data = isset($_SESSION) ? $_SESSION : NULL;
 
+    // Apply any overrides to the session cookie params.
+    $params = $original_params = session_get_cookie_params();
+    // PHP settings for samesite will be handled by _drupal_cookie_params().
+    unset($params['samesite']);
+    $params = _drupal_cookie_params($params);
+    if ($params !== $original_params) {
+      if (\PHP_VERSION_ID >= 70300) {
+        session_set_cookie_params($params);
+      }
+      else {
+        session_set_cookie_params($params['lifetime'], $params['path'], $params['domain'], $params['secure'], $params['httponly']);
+      }
+    }
+
     session_start();
     drupal_session_started(TRUE);
 
@@ -323,7 +340,14 @@ function drupal_session_commit() {
         $insecure_session_name = substr(session_name(), 1);
         $params = session_get_cookie_params();
         $expire = $params['lifetime'] ? REQUEST_TIME + $params['lifetime'] : 0;
-        setcookie($insecure_session_name, $_COOKIE[$insecure_session_name], $expire, $params['path'], $params['domain'], FALSE, $params['httponly']);
+        $options = array(
+          'expires' => $expire,
+          'path' => $params['path'],
+          'domain' => $params['domain'],
+          'secure' => FALSE,
+          'httponly' => $params['httponly'],
+        );
+        drupal_setcookie($insecure_session_name, $_COOKIE[$insecure_session_name], $options);
       }
     }
     // Write the session data.
@@ -365,7 +389,14 @@ function drupal_session_regenerate() {
     // $params['lifetime'] seconds from the current request. If it is not set,
     // it will expire when the browser is closed.
     $expire = $params['lifetime'] ? REQUEST_TIME + $params['lifetime'] : 0;
-    setcookie($insecure_session_name, $session_id, $expire, $params['path'], $params['domain'], FALSE, $params['httponly']);
+    $options = array(
+      'expires' => $expire,
+      'path' => $params['path'],
+      'domain' => $params['domain'],
+      'secure' => FALSE,
+      'httponly' => $params['httponly'],
+    );
+    drupal_setcookie($insecure_session_name, $session_id, $options);
     $_COOKIE[$insecure_session_name] = $session_id;
   }
 
@@ -380,19 +411,26 @@ function drupal_session_regenerate() {
   if (isset($old_session_id)) {
     $params = session_get_cookie_params();
     $expire = $params['lifetime'] ? REQUEST_TIME + $params['lifetime'] : 0;
-    setcookie(session_name(), session_id(), $expire, $params['path'], $params['domain'], $params['secure'], $params['httponly']);
-    $fields = array('sid' => session_id());
+    $options = array(
+      'expires' => $expire,
+      'path' => $params['path'],
+      'domain' => $params['domain'],
+      'secure' => $params['secure'],
+      'httponly' => $params['httponly'],
+    );
+    drupal_setcookie(session_name(), session_id(), $options);
+    $fields = array('sid' => drupal_session_id(session_id()));
     if ($is_https) {
-      $fields['ssid'] = session_id();
+      $fields['ssid'] = drupal_session_id(session_id());
       // If the "secure pages" setting is enabled, use the newly-created
       // insecure session identifier as the regenerated sid.
       if (variable_get('https', FALSE)) {
-        $fields['sid'] = $session_id;
+        $fields['sid'] = drupal_session_id($session_id);
       }
     }
     db_update('sessions')
       ->fields($fields)
-      ->condition($is_https ? 'ssid' : 'sid', $old_session_id)
+      ->condition($is_https ? 'ssid' : 'sid', drupal_session_id($old_session_id))
       ->execute();
   }
   elseif (isset($old_insecure_session_id)) {
@@ -400,8 +438,8 @@ function drupal_session_regenerate() {
     // secure site but a session was active on the insecure site, update the
     // insecure session with the new session identifiers.
     db_update('sessions')
-      ->fields(array('sid' => $session_id, 'ssid' => session_id()))
-      ->condition('sid', $old_insecure_session_id)
+      ->fields(array('sid' => drupal_session_id($session_id), 'ssid' => drupal_session_id(session_id())))
+      ->condition('sid', drupal_session_id($old_insecure_session_id))
       ->execute();
   }
   else {
@@ -453,7 +491,7 @@ function _drupal_session_destroy($sid) {
 
   // Delete session data.
   db_delete('sessions')
-    ->condition($is_https ? 'ssid' : 'sid', $sid)
+    ->condition($is_https ? 'ssid' : 'sid', drupal_session_id($sid))
     ->execute();
 
   // Reset $_SESSION and $user to prevent a new session from being started
@@ -488,7 +526,14 @@ function _drupal_session_delete_cookie($name, $secure = NULL) {
     if ($secure !== NULL) {
       $params['secure'] = $secure;
     }
-    setcookie($name, '', REQUEST_TIME - 3600, $params['path'], $params['domain'], $params['secure'], $params['httponly']);
+    $options = array(
+      'expires' => REQUEST_TIME - 3600,
+      'path' => $params['path'],
+      'domain' => $params['domain'],
+      'secure' => $params['secure'],
+      'httponly' => $params['httponly'],
+    );
+    drupal_setcookie($name, '', $options);
     unset($_COOKIE[$name]);
   }
 }
@@ -555,4 +600,23 @@ function drupal_save_session($status = NULL) {
     $save_session = $status;
   }
   return $save_session;
+}
+
+/**
+ * Session ids are hashed by default before being stored in the database.
+ *
+ * This should only be done if any existing sessions have been updated, as
+ * reflected by the hash_session_ids variable.
+ *
+ * @param $id
+ *   A session id.
+ *
+ * @return
+ *   The session id which may have been hashed.
+ */
+function drupal_session_id($id) {
+  if (variable_get('hashed_session_ids_supported', FALSE) && !variable_get('do_not_hash_session_ids', FALSE)) {
+    $id = drupal_hash_base64($id);
+  }
+  return $id;
 }

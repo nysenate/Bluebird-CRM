@@ -27,6 +27,8 @@
  */
 class CRM_Contact_Controller_Search extends CRM_Core_Controller {
 
+  protected $entity = 'Contact';
+
   /**
    * Class constructor.
    *
@@ -44,6 +46,7 @@ class CRM_Contact_Controller_Search extends CRM_Core_Controller {
 
     // add all the actions
     $this->addActions();
+    $this->set('entity', $this->entity);
   }
 
   /**
@@ -60,8 +63,7 @@ class CRM_Contact_Controller_Search extends CRM_Core_Controller {
     // see if we can figure out the url and redirect to the right search form
     // note that this happens really early on, so we can't use any of the form or controller
     // variables
-    $config = CRM_Core_Config::singleton();
-    $qString = $_GET[$config->userFrameworkURLVar];
+    $qString = CRM_Utils_System::currentPath();
     $args = "reset=1";
     $path = 'civicrm/contact/search/advanced';
     if (strpos($qString, 'basic') !== FALSE) {
@@ -70,14 +72,6 @@ class CRM_Contact_Controller_Search extends CRM_Core_Controller {
     elseif (strpos($qString, 'builder') !== FALSE) {
       $path = 'civicrm/contact/search/builder';
     }
-    elseif (
-      strpos($qString, 'custom') !== FALSE &&
-      isset($_REQUEST['csid'])
-    ) {
-      $path = 'civicrm/contact/search/custom';
-      $args = "reset=1&csid={$_REQUEST['csid']}";
-    }
-
     $url = CRM_Utils_System::url($path, $args);
     CRM_Utils_System::redirect($url);
   }

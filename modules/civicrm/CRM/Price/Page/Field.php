@@ -13,8 +13,6 @@
  *
  * @package CRM
  * @copyright CiviCRM LLC https://civicrm.org/licensing
- * $Id$
- *
  */
 
 /**
@@ -61,31 +59,36 @@ class CRM_Price_Page_Field extends CRM_Core_Page {
       self::$_actionLinks = [
         CRM_Core_Action::UPDATE => [
           'name' => ts('Edit Price Field'),
-          'url' => 'civicrm/admin/price/field',
+          'url' => 'civicrm/admin/price/field/edit',
           'qs' => 'action=update&reset=1&sid=%%sid%%&fid=%%fid%%',
           'title' => ts('Edit Price'),
+          'weight' => CRM_Core_Action::getWeight(CRM_Core_Action::UPDATE),
         ],
         CRM_Core_Action::PREVIEW => [
           'name' => ts('Preview Field'),
-          'url' => 'civicrm/admin/price/field',
+          'url' => 'civicrm/admin/price/field/edit',
           'qs' => 'action=preview&reset=1&sid=%%sid%%&fid=%%fid%%',
           'title' => ts('Preview Price'),
+          'weight' => CRM_Core_Action::getWeight(CRM_Core_Action::PREVIEW),
         ],
         CRM_Core_Action::DISABLE => [
           'name' => ts('Disable'),
           'ref' => 'crm-enable-disable',
           'title' => ts('Disable Price'),
+          'weight' => CRM_Core_Action::getWeight(CRM_Core_Action::DISABLE),
         ],
         CRM_Core_Action::ENABLE => [
           'name' => ts('Enable'),
           'ref' => 'crm-enable-disable',
           'title' => ts('Enable Price'),
+          'weight' => CRM_Core_Action::getWeight(CRM_Core_Action::ENABLE),
         ],
         CRM_Core_Action::DELETE => [
           'name' => ts('Delete'),
-          'url' => 'civicrm/admin/price/field',
+          'url' => 'civicrm/admin/price/field/edit',
           'qs' => 'action=delete&reset=1&sid=%%sid%%&fid=%%fid%%',
           'title' => ts('Delete Price'),
+          'weight' => CRM_Core_Action::getWeight(CRM_Core_Action::DELETE),
         ],
       ];
     }
@@ -110,9 +113,7 @@ class CRM_Price_Page_Field extends CRM_Core_Page {
     $priceFieldBAO->find();
 
     // display taxTerm for priceFields
-    $invoiceSettings = Civi::settings()->get('contribution_invoice_settings');
-    $taxTerm = $invoiceSettings['tax_term'] ?? NULL;
-    $invoicing = $invoiceSettings['invoicing'] ?? NULL;
+    $taxTerm = Civi::settings()->get('tax_term');
     $getTaxDetails = FALSE;
     $taxRate = CRM_Core_PseudoConstant::getTaxRates();
     CRM_Financial_BAO_FinancialType::getAvailableFinancialTypes($financialTypes);
@@ -128,12 +129,12 @@ class CRM_Price_Page_Field extends CRM_Core_Page {
         CRM_Price_BAO_PriceFieldValue::retrieve($params, $optionValues);
         $priceField[$priceFieldBAO->id]['price'] = $optionValues['amount'] ?? NULL;
         $financialTypeId = $optionValues['financial_type_id'];
-        if ($invoicing && isset($taxRate[$financialTypeId])) {
+        if (Civi::settings()->get('invoicing') && isset($taxRate[$financialTypeId])) {
           $priceField[$priceFieldBAO->id]['tax_rate'] = $taxRate[$financialTypeId];
           $getTaxDetails = TRUE;
         }
         if (isset($priceField[$priceFieldBAO->id]['tax_rate'])) {
-          $taxAmount = CRM_Contribute_BAO_Contribution_Utils::calculateTaxAmount($priceField[$priceFieldBAO->id]['price'], $priceField[$priceFieldBAO->id]['tax_rate'], TRUE);
+          $taxAmount = CRM_Contribute_BAO_Contribution_Utils::calculateTaxAmount($priceField[$priceFieldBAO->id]['price'], $priceField[$priceFieldBAO->id]['tax_rate']);
           $priceField[$priceFieldBAO->id]['tax_amount'] = $taxAmount['tax_amount'];
         }
       }
@@ -152,11 +153,11 @@ class CRM_Price_Page_Field extends CRM_Core_Page {
         }
       }
 
-      if ($priceFieldBAO->active_on == '0000-00-00 00:00:00') {
+      if (!isset($priceField[$priceFieldBAO->id]['active_on']) || $priceFieldBAO->active_on == '0000-00-00 00:00:00') {
         $priceField[$priceFieldBAO->id]['active_on'] = '';
       }
 
-      if ($priceFieldBAO->expire_on == '0000-00-00 00:00:00') {
+      if (!isset($priceField[$priceFieldBAO->id]['expire_on']) || $priceFieldBAO->expire_on == '0000-00-00 00:00:00') {
         $priceField[$priceFieldBAO->id]['expire_on'] = '';
       }
 

@@ -1,4 +1,4 @@
--- +--------------------------------------------------------------------+
+{*suppress license if within a file that already has the license*}{if $isOutputLicense}-- +--------------------------------------------------------------------+
 -- | Copyright CiviCRM LLC. All rights reserved.                        |
 -- |                                                                    |
 -- | This work is published under the GNU AGPLv3 license with some      |
@@ -9,9 +9,11 @@
 -- Generated from {$smarty.template}
 -- {$generated}
 --
+{/if}
 -- /*******************************************************
 -- *
--- * Clean up the exisiting tables
+-- * Clean up the existing tables{if !$isOutputLicense} - this section generated from {$smarty.template}{/if}
+
 -- *
 -- *******************************************************/
 

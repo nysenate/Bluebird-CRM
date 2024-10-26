@@ -22,31 +22,14 @@ class CRM_Core_BAO_Tag extends CRM_Core_DAO_Tag {
   protected $tree;
 
   /**
-   * Class constructor.
-   */
-  public function __construct() {
-    parent::__construct();
-  }
-
-  /**
-   * Fetch object based on array of properties.
-   *
+   * @deprecated
    * @param array $params
-   *   (reference ) an assoc array of name/value pairs.
    * @param array $defaults
-   *   (reference ) an assoc array to hold the flattened values.
-   *
-   * @return object
-   *   CRM_Core_DAO_Tag object on success, otherwise null
+   * @return self|null
    */
-  public static function retrieve(&$params, &$defaults) {
-    $tag = new CRM_Core_DAO_Tag();
-    $tag->copyValues($params);
-    if ($tag->find(TRUE)) {
-      CRM_Core_DAO::storeValues($tag, $defaults);
-      return $tag;
-    }
-    return NULL;
+  public static function retrieve($params, &$defaults) {
+    CRM_Core_Error::deprecatedFunctionWarning('API');
+    return self::commonRetrieve(self::class, $params, $defaults);
   }
 
   /**
@@ -68,11 +51,12 @@ class CRM_Core_BAO_Tag extends CRM_Core_DAO_Tag {
    * Build a nested array from hierarchical tags.
    *
    * Supports infinite levels of nesting.
-   * @param null $usedFor
+   *
+   * @param string|null $usedFor
    * @param bool $excludeHidden
    */
   public function buildTree($usedFor = NULL, $excludeHidden = FALSE) {
-    $sql = "SELECT id, parent_id, name, description, is_selectable FROM civicrm_tag";
+    $sql = "SELECT id, parent_id, name, label, description, is_selectable FROM civicrm_tag";
 
     $whereClause = [];
     if ($usedFor) {
@@ -97,13 +81,21 @@ class CRM_Core_BAO_Tag extends CRM_Core_DAO_Tag {
 
       $thisref['parent_id'] = $dao->parent_id;
       $thisref['name'] = $dao->name;
+      $thisref['label'] = $dao->label;
       $thisref['description'] = $dao->description;
       $thisref['is_selectable'] = $dao->is_selectable;
-
+      if (!isset($thisref['children'])) {
+        $thisref['children'] = [];
+      }
       if (!$dao->parent_id) {
         $this->tree[$dao->id] = &$thisref;
       }
       else {
+        if (!isset($refs[$dao->parent_id])) {
+          $refs[$dao->parent_id] = [
+            'children' => [],
+          ];
+        }
         $refs[$dao->parent_id]['children'][$dao->id] = &$thisref;
       }
     }
@@ -207,14 +199,15 @@ class CRM_Core_BAO_Tag extends CRM_Core_DAO_Tag {
     // Instead of recursively making mysql queries, we'll make one big
     // query and build the hierarchy with the algorithm below.
     $args = [1 => ['%' . $usedFor . '%', 'String']];
-    $query = "SELECT id, name, parent_id, is_tagset, is_selectable
+    $query = "SELECT id, name, label, parent_id, is_tagset, is_selectable
                   FROM civicrm_tag
               WHERE used_for LIKE %1";
     if ($parentId) {
       $query .= " AND parent_id = %2";
       $args[2] = [$parentId, 'Integer'];
     }
-    $query .= " ORDER BY name";
+    $query .= " ORDER BY label";
+    // @todo when it becomes localizable then we might need the i18nrewrite
     $dao = CRM_Core_DAO::executeQuery($query, $args, TRUE, NULL, FALSE, FALSE);
 
     // Sort the tags into the correct storage by the parent_id/is_tagset
@@ -240,6 +233,7 @@ class CRM_Core_BAO_Tag extends CRM_Core_DAO_Tag {
           'prefix' => '',
           'name' => $dao->name,
           'idPrefix' => $idPrefix,
+          'label' => $dao->label,
         ];
       }
       else {
@@ -249,6 +243,7 @@ class CRM_Core_BAO_Tag extends CRM_Core_DAO_Tag {
           'name' => $dao->name,
           'parent_id' => $dao->parent_id,
           'idPrefix' => $idPrefix,
+          'label' => $dao->label,
         ];
       }
     }
@@ -266,6 +261,7 @@ class CRM_Core_BAO_Tag extends CRM_Core_DAO_Tag {
         $root['prefix'],
         $root['name'],
         $root['idPrefix'],
+        $root['label'],
       ];
 
       // As you find the children, append them to the end of the new set
@@ -279,6 +275,7 @@ class CRM_Core_BAO_Tag extends CRM_Core_DAO_Tag {
               'prefix' => $tags[$root['id']][0] . $separator,
               'name' => $row['name'],
               'idPrefix' => $row['idPrefix'],
+              'label' => $row['label'],
             ];
             unset($rows[$key]);
           }
@@ -299,7 +296,7 @@ class CRM_Core_BAO_Tag extends CRM_Core_DAO_Tag {
       if (!empty($tag[2])) {
         $key = $tag[2] . "-" . $key;
       }
-      $formattedTags[$key] = $tag[0] . $tag[1];
+      $formattedTags[$key] = $tag[0] . $tag[3];
     }
 
     $tags = $formattedTags;
@@ -311,7 +308,7 @@ class CRM_Core_BAO_Tag extends CRM_Core_DAO_Tag {
    * @param bool $allowSelectingNonSelectable
    * @param null $exclude
    * @return array
-   * @throws \CiviCRM_API3_Exception
+   * @throws \CRM_Core_Exception
    */
   public static function getColorTags($usedFor = NULL, $allowSelectingNonSelectable = FALSE, $exclude = NULL) {
     $params = [
@@ -320,7 +317,7 @@ class CRM_Core_BAO_Tag extends CRM_Core_DAO_Tag {
         'sort' => "name ASC",
       ],
       'is_tagset' => 0,
-      'return' => ['name', 'description', 'parent_id', 'color', 'is_selectable', 'used_for'],
+      'return' => ['label', 'description', 'parent_id', 'color', 'is_selectable', 'used_for'],
     ];
     if ($usedFor) {
       $params['used_for'] = ['LIKE' => "%$usedFor%"];
@@ -331,7 +328,7 @@ class CRM_Core_BAO_Tag extends CRM_Core_DAO_Tag {
     $allTags = [];
     foreach (CRM_Utils_Array::value('values', civicrm_api3('Tag', 'get', $params)) as $id => $tag) {
       $allTags[$id] = [
-        'text' => $tag['name'],
+        'text' => $tag['label'],
         'id' => $id,
         'description' => $tag['description'] ?? NULL,
         'parent_id' => $tag['parent_id'] ?? NULL,
@@ -349,31 +346,12 @@ class CRM_Core_BAO_Tag extends CRM_Core_DAO_Tag {
    * Delete the tag.
    *
    * @param int $id
-   *   Tag id.
-   *
+   * @deprecated
    * @return bool
    */
   public static function del($id) {
-    // since this is a destructive operation, lets make sure
-    // id is a positive number
-    CRM_Utils_Type::validate($id, 'Positive');
-
-    // delete all crm_entity_tag records with the selected tag id
-    $entityTag = new CRM_Core_DAO_EntityTag();
-    $entityTag->tag_id = $id;
-    $entityTag->delete();
-
-    // delete from tag table
-    $tag = new CRM_Core_DAO_Tag();
-    $tag->id = $id;
-
-    CRM_Utils_Hook::pre('delete', 'Tag', $id, $tag);
-
-    if ($tag->delete()) {
-      CRM_Utils_Hook::post('delete', 'Tag', $id, $tag);
-      return TRUE;
-    }
-    return FALSE;
+    CRM_Core_Error::deprecatedFunctionWarning('deleteRecord');
+    return (bool) static::deleteRecord(['id' => $id]);
   }
 
   /**
@@ -394,8 +372,16 @@ class CRM_Core_BAO_Tag extends CRM_Core_DAO_Tag {
    */
   public static function add(&$params, $ids = []) {
     $id = $params['id'] ?? $ids['tag'] ?? NULL;
-    if (!$id && !self::dataExists($params)) {
-      return NULL;
+    if (!$id) {
+      // Make label from name if missing.
+      if (CRM_Utils_System::isNull($params['label'] ?? NULL)) {
+        // If name is also missing, cannot create object.
+        if (CRM_Utils_System::isNull($params['name'] ?? NULL)) {
+          // FIXME: Throw exception
+          return NULL;
+        }
+        $params['label'] = $params['name'];
+      }
     }
 
     // Check permission to create or modify reserved tag
@@ -412,8 +398,6 @@ class CRM_Core_BAO_Tag extends CRM_Core_DAO_Tag {
       }
     }
 
-    $tag = new CRM_Core_DAO_Tag();
-
     // if parent id is set then inherit used for and is hidden properties
     if (!empty($params['parent_id'])) {
       // get parent details
@@ -423,57 +407,32 @@ class CRM_Core_BAO_Tag extends CRM_Core_DAO_Tag {
       $params['used_for'] = implode(',', $params['used_for']);
     }
 
+    // Hack to make white null, because html5 color widget can't be empty
     if (isset($params['color']) && strtolower($params['color']) === '#ffffff') {
       $params['color'] = '';
     }
 
-    $tag->copyValues($params);
-    $tag->id = $id;
-    $hook = !$id ? 'create' : 'edit';
-    CRM_Utils_Hook::pre($hook, 'Tag', $tag->id, $params);
-
     // save creator id and time
-    if (!$tag->id) {
-      $session = CRM_Core_Session::singleton();
-      $tag->created_id = $session->get('userID');
-      $tag->created_date = date('YmdHis');
+    if (!$id) {
+      $params['created_id'] ??= CRM_Core_Session::getLoggedInContactID();
     }
 
-    $tag->save();
-    CRM_Utils_Hook::post($hook, 'Tag', $tag->id, $tag);
+    $tag = self::writeRecord($params);
 
     // if we modify parent tag, then we need to update all children
-    $tag->find(TRUE);
-    if (!$tag->parent_id && $tag->used_for) {
-      CRM_Core_DAO::executeQuery("UPDATE civicrm_tag SET used_for=%1 WHERE parent_id = %2",
-        [
+    if ($id) {
+      $tag->find(TRUE);
+      if (!$tag->parent_id && $tag->used_for) {
+        CRM_Core_DAO::executeQuery("UPDATE civicrm_tag SET used_for=%1 WHERE parent_id = %2", [
           1 => [$tag->used_for, 'String'],
           2 => [$tag->id, 'Integer'],
-        ]
-      );
+        ]);
+      }
     }
 
     CRM_Core_PseudoConstant::flush();
 
     return $tag;
-  }
-
-  /**
-   * Check if there is data to create the object.
-   *
-   * @param array $params
-   *   (reference ) an assoc array of name/value pairs.
-   *
-   * @return bool
-   */
-  public static function dataExists(&$params) {
-    // Disallow empty values except for the number zero.
-    // TODO: create a utility for this since it's needed in many places
-    if (!empty($params['name']) || (string) $params['name'] === '0') {
-      return TRUE;
-    }
-
-    return FALSE;
   }
 
   /**
@@ -487,7 +446,7 @@ class CRM_Core_BAO_Tag extends CRM_Core_DAO_Tag {
    */
   public static function getTagSet($entityTable) {
     $tagSets = [];
-    $query = "SELECT name, id FROM civicrm_tag
+    $query = "SELECT label, id FROM civicrm_tag
               WHERE is_tagset=1 AND parent_id IS NULL and used_for LIKE %1";
     $dao = CRM_Core_DAO::executeQuery($query, [
       1 => [
@@ -496,7 +455,7 @@ class CRM_Core_BAO_Tag extends CRM_Core_DAO_Tag {
       ],
     ], TRUE, NULL, FALSE, FALSE);
     while ($dao->fetch()) {
-      $tagSets[$dao->id] = $dao->name;
+      $tagSets[$dao->id] = $dao->label;
     }
     return $tagSets;
   }

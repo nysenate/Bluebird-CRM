@@ -2,7 +2,7 @@
   <div class="full" id="top">
     <div class="header-title">
       <div class="date-range-container">
-        {include file="CRM/Core/DateRange.tpl" fieldName="date_range" from='_low' to='_high'}
+        {include file="CRM/Core/DatePickerRangeWrapper.tpl" fieldName="date_range" to='_high' from='_low' colspan="2" hideRelativeLabel=0}
       </div>
     </div>
     <div class="stats">

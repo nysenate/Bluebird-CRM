@@ -49,7 +49,6 @@ $execSql -q $instance -c "$sql" --drupal
 ## 14: Mailing Creator
 ## 15: Mailing Scheduler
 ## 16: Mailing Approver
-## 17: Mailing Viewer
 ## 18: Print Production Staff
 ## 19: Manage Inbox Polling
 
@@ -316,8 +315,6 @@ sql="
     (9, 'add contacts', 'civicrm'),
     (9, 'administer district', 'nyss_civihooks'),
     (9, 'administer Reports', 'civicrm'),
-    (9, 'assign Analytics User role', 'role_delegation'),
-    (9, 'assign Conference Services role', 'role_delegation'),
     (9, 'assign Data Entry role', 'role_delegation'),
     (9, 'assign Mailing Approver role', 'role_delegation'),
     (9, 'assign Mailing Creator role', 'role_delegation'),
@@ -326,7 +323,6 @@ sql="
     (9, 'assign Manage Bluebird Inbox role', 'role_delegation'),
     (9, 'assign Office Administrator role', 'role_delegation'),
     (9, 'assign Office Manager role', 'role_delegation'),
-    (9, 'assign SOS role', 'role_delegation'),
     (9, 'assign Staff role', 'role_delegation'),
     (9, 'assign Volunteer role', 'role_delegation'),
     (9, 'cancel users with role 10', 'administerusersbyrole'),
@@ -339,9 +335,6 @@ sql="
     (9, 'cancel users with role 17', 'administerusersbyrole'),
     (9, 'cancel users with role 19', 'administerusersbyrole'),
     (9, 'cancel users with role 2', 'administerusersbyrole'),
-    (9, 'cancel users with role 5', 'administerusersbyrole'),
-    (9, 'cancel users with role 6', 'administerusersbyrole'),
-    (9, 'cancel users with role 8', 'administerusersbyrole'),
     (9, 'cancel users with role 9', 'administerusersbyrole'),
     (9, 'delete activities', 'civicrm'),
     (9, 'delete contacts', 'civicrm'),
@@ -360,9 +353,6 @@ sql="
     (9, 'edit users with role 17', 'administerusersbyrole'),
     (9, 'edit users with role 19', 'administerusersbyrole'),
     (9, 'edit users with role 2', 'administerusersbyrole'),
-    (9, 'edit users with role 5', 'administerusersbyrole'),
-    (9, 'edit users with role 6', 'administerusersbyrole'),
-    (9, 'edit users with role 8', 'administerusersbyrole'),
     (9, 'edit users with role 9', 'administerusersbyrole'),
     (9, 'manage tags', 'civicrm'),
     (9, 'merge duplicate contacts', 'civicrm'),
@@ -377,6 +367,7 @@ sql="
     (9, 'view all contacts', 'civicrm'),
     (9, 'view my contact', 'civicrm'),
     (9, 'view the administration theme', 'system'),
+    (9, 'edit message templates', 'civicrm'),
 
     (10, 'access all cases and activities', 'civicrm'),
     (10, 'access all custom data', 'civicrm'),
@@ -398,6 +389,8 @@ sql="
     (10, 'edit all contacts', 'civicrm'),
     (10, 'edit groups', 'civicrm'),
     (10, 'edit my contact', 'civicrm'),
+    (10, 'manage tags', 'civicrm'),
+    (10, 'merge duplicate contacts', 'civicrm'),
     (10, 'profile create', 'civicrm'),
     (10, 'profile edit', 'civicrm'),
     (10, 'profile listings', 'civicrm'),
@@ -407,6 +400,7 @@ sql="
     (10, 'view all activities', 'civicrm'),
     (10, 'view all contacts', 'civicrm'),
     (10, 'view my contact', 'civicrm'),
+    (10, 'edit message templates', 'civicrm'),
 
     (11, 'access all cases and activities', 'civicrm'),
     (11, 'access all custom data', 'civicrm'),
@@ -481,9 +475,6 @@ sql="
     (16, 'approve mailings', 'civicrm'),
     (16, 'delete in CiviMail', 'civicrm'),
     (16, 'use text format 1', 'filter'),
-
-    (17, 'use text format 1', 'filter'),
-    (17, 'view mass email', 'nyss_civihooks'),
 
     (18, 'access all custom data', 'civicrm'),
     (18, 'access CiviCRM', 'civicrm'),

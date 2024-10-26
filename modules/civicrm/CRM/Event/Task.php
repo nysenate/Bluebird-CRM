@@ -12,7 +12,6 @@
 /**
  * @package CRM
  * @copyright CiviCRM LLC https://civicrm.org/licensing
- *
  */
 
 /**
@@ -61,8 +60,8 @@ class CRM_Event_Task extends CRM_Core_Task {
         self::TASK_EXPORT => [
           'title' => ts('Export participants'),
           'class' => [
-            'CRM_Export_Form_Select',
-            'CRM_Export_Form_Map',
+            'CRM_Event_Export_Form_Select',
+            'CRM_Event_Export_Form_Map',
           ],
           'result' => FALSE,
         ],
@@ -152,13 +151,13 @@ class CRM_Event_Task extends CRM_Core_Task {
     }
     else {
       $tasks = [
-        self::TASK_EXPORT => self::$_tasks[self::TASK_EXPORT]['title'],
-        self::TASK_EMAIL => self::$_tasks[self::TASK_EMAIL]['title'],
+        self::TASK_EXPORT => self::tasks()[self::TASK_EXPORT]['title'],
+        self::TASK_EMAIL => self::tasks()[self::TASK_EMAIL]['title'],
       ];
 
       //CRM-4418,
       if (CRM_Core_Permission::check('delete in CiviEvent')) {
-        $tasks[self::TASK_DELETE] = self::$_tasks[self::TASK_DELETE]['title'];
+        $tasks[self::TASK_DELETE] = self::tasks()[self::TASK_DELETE]['title'];
       }
     }
 
@@ -177,7 +176,7 @@ class CRM_Event_Task extends CRM_Core_Task {
    */
   public static function getTask($value) {
     self::tasks();
-    if (!$value || !CRM_Utils_Array::value($value, self::$_tasks)) {
+    if (!$value || empty(self::$_tasks[$value])) {
       // make the print task by default
       $value = self::TASK_PRINT;
     }

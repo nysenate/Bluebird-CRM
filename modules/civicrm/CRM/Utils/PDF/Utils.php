@@ -28,7 +28,7 @@ class CRM_Utils_PDF_Utils {
    *   Ex: "HelloWorld.pdf".
    * @param bool $output
    *   FALSE to display PDF. TRUE to return as string.
-   * @param null $pdfFormat
+   * @param array|int|null $pdfFormat
    *   Unclear. Possibly PdfFormat or formValues.
    *
    * @return string|void
@@ -56,6 +56,22 @@ class CRM_Utils_PDF_Utils {
     // dompdf requires dimensions in points
     $paper_size = [0, 0, $paper_width, $paper_height];
     $orientation = CRM_Core_BAO_PdfFormat::getValue('orientation', $format);
+
+    if (\Civi::settings()->get('weasyprint_path')) {
+      if ($orientation == 'landscape') {
+        $css_pdf_width = $paperSize['height'];
+        $css_pdf_height = $paperSize['width'];
+      }
+      else {
+        $css_pdf_width = $paperSize['width'];
+        $css_pdf_height = $paperSize['height'];
+      }
+      $css_page_size = " size: {$css_pdf_width}{$paperSize['metric']} {$css_pdf_height}{$paperSize['metric']};";
+    }
+    else {
+      $css_page_size = "";
+    }
+
     $metric = CRM_Core_BAO_PdfFormat::getValue('metric', $format);
     $t = CRM_Core_BAO_PdfFormat::getValue('margin_top', $format);
     $r = CRM_Core_BAO_PdfFormat::getValue('margin_right', $format);
@@ -72,7 +88,7 @@ class CRM_Utils_PDF_Utils {
 <html>
   <head>
     <meta http-equiv=\"Content-Type\" content=\"text/html; charset=utf-8\"/>
-    <style>@page { margin: {$t}{$metric} {$r}{$metric} {$b}{$metric} {$l}{$metric}; }</style>
+    <style>@page { margin: {$t}{$metric} {$r}{$metric} {$b}{$metric} {$l}{$metric};$css_page_size }</style>
     <style type=\"text/css\">@import url(" . CRM_Core_Config::singleton()->userFrameworkResourceURL . "css/print.css);</style>
     {$htmlHeader}
   </head>
@@ -101,72 +117,15 @@ class CRM_Utils_PDF_Utils {
     </div>
   </body>
 </html>";
-    if (CRM_Core_Config::singleton()->wkhtmltopdfPath) {
+    if (\Civi::settings()->get('weasyprint_path')) {
+      return self::_html2pdf_weasyprint($html, $output, $fileName);
+    }
+    elseif (\Civi::settings()->get('wkhtmltopdfPath')) {
       return self::_html2pdf_wkhtmltopdf($paper_size, $orientation, $margins, $html, $output, $fileName);
     }
     else {
       return self::_html2pdf_dompdf($paper_size, $orientation, $html, $output, $fileName);
     }
-  }
-
-  /**
-   * Convert html to tcpdf.
-   *
-   * @deprecated
-   * @param $paper_size
-   * @param $orientation
-   * @param $margins
-   * @param $html
-   * @param $output
-   * @param $fileName
-   * @param $stationery_path
-   */
-  public static function _html2pdf_tcpdf($paper_size, $orientation, $margins, $html, $output, $fileName, $stationery_path) {
-    CRM_Core_Error::deprecatedFunctionWarning('CRM_Utils_PDF::_html2pdf_dompdf');
-    return self::_html2pdf_dompdf($paper_size, $orientation, $margins, $html, $output, $fileName);
-    // Documentation on the TCPDF library can be found at: http://www.tcpdf.org
-    // This function also uses the FPDI library documented at: http://www.setasign.com/products/fpdi/about/
-    // Syntax borrowed from https://github.com/jake-mw/CDNTaxReceipts/blob/master/cdntaxreceipts.functions.inc
-    require_once 'tcpdf/tcpdf.php';
-    // This library is only in the 'packages' area as of version 4.5
-    require_once 'FPDI/fpdi.php';
-
-    $paper_size_arr = [$paper_size[2], $paper_size[3]];
-
-    $pdf = new TCPDF($orientation, 'pt', $paper_size_arr);
-    $pdf->Open();
-
-    if (is_readable($stationery_path)) {
-      $pdf->SetStationery($stationery_path);
-    }
-
-    $pdf->SetAuthor('');
-    $pdf->SetKeywords('CiviCRM.org');
-    $pdf->setPageUnit($margins[0]);
-    $pdf->SetMargins($margins[4], $margins[1], $margins[2], TRUE);
-
-    $pdf->setJPEGQuality('100');
-    $pdf->SetAutoPageBreak(TRUE, $margins[3]);
-
-    $pdf->AddPage();
-
-    $ln = TRUE;
-    $fill = FALSE;
-    $reset_parm = FALSE;
-    $cell = FALSE;
-    $align = '';
-
-    // output the HTML content
-    $pdf->writeHTML($html, $ln, $fill, $reset_parm, $cell, $align);
-
-    // reset pointer to the last page
-    $pdf->lastPage();
-
-    // close and output the PDF
-    $pdf->Close();
-    $pdf_file = 'CiviLetter' . '.pdf';
-    $pdf->Output($pdf_file, 'D');
-    CRM_Utils_System::civiExit();
   }
 
   /**
@@ -179,37 +138,57 @@ class CRM_Utils_PDF_Utils {
    * @return string
    */
   public static function _html2pdf_dompdf($paper_size, $orientation, $html, $output, $fileName) {
-    // CRM-12165 - Remote file support required for image handling.
-    $options = new Options();
-    $options->set('isRemoteEnabled', TRUE);
-
+    $options = self::getDompdfOptions();
     $dompdf = new DOMPDF($options);
-    $dompdf->set_paper($paper_size, $orientation);
-    $dompdf->load_html($html);
+    $dompdf->setPaper($paper_size, $orientation);
+    $dompdf->loadHtml($html);
     $dompdf->render();
 
     if ($output) {
       return $dompdf->output();
     }
+    // CRM-19183 remove .pdf extension from filename
+    $fileName = basename($fileName, ".pdf");
+    if (CIVICRM_UF === 'UnitTests') {
+      // Streaming content will 'die' in unit tests unless ob_start()
+      // has been called.
+      throw new CRM_Core_Exception_PrematureExitException('_html2pdf_dompdf called', [
+        'html' => $html,
+        'fileName' => $fileName,
+        'output' => 'pdf',
+      ]);
+    }
+    $dompdf->stream($fileName);
+  }
+
+  /**
+   * @param string $html
+   * @param bool $output
+   * @param string $fileName
+   */
+  public static function _html2pdf_weasyprint($html, $output, $fileName) {
+    $weasyprint = new Pontedilana\PhpWeasyPrint\Pdf(\Civi::settings()->get('weasyprint_path'));
+    $pdf = $weasyprint->getOutputFromHtml($html);
+    if ($output) {
+      return $pdf;
+    }
     else {
-      // CRM-19183 remove .pdf extension from filename
-      $fileName = basename($fileName, ".pdf");
-      $dompdf->stream($fileName);
+      CRM_Utils_System::setHttpHeader('Content-Type', 'application/pdf');
+      CRM_Utils_System::setHttpHeader('Content-Disposition', 'attachment; filename="' . $fileName . '"');
+      echo $pdf;
     }
   }
 
   /**
-   * @param $paper_size
-   * @param $orientation
-   * @param $margins
-   * @param $html
-   * @param $output
+   * @param float|int[] $paper_size
+   * @param string $orientation
+   * @param array $margins
+   * @param string $html
+   * @param bool $output
    * @param string $fileName
    */
   public static function _html2pdf_wkhtmltopdf($paper_size, $orientation, $margins, $html, $output, $fileName) {
-    require_once 'packages/snappy/src/autoload.php';
-    $config = CRM_Core_Config::singleton();
-    $snappy = new Knp\Snappy\Pdf($config->wkhtmltopdfPath);
+    $snappy = new Knp\Snappy\Pdf(\Civi::settings()->get('wkhtmltopdfPath'));
     $snappy->setOption("page-width", $paper_size[2] . "pt");
     $snappy->setOption("page-height", $paper_size[3] . "pt");
     $snappy->setOption("orientation", $orientation);
@@ -231,10 +210,10 @@ class CRM_Utils_PDF_Utils {
   /**
    * convert value from one metric to another.
    *
-   * @param $value
-   * @param $from
-   * @param $to
-   * @param null $precision
+   * @param int $value
+   * @param string $from
+   * @param string $to
+   * @param int|null $precision
    *
    * @return float|int
    */
@@ -292,6 +271,57 @@ class CRM_Utils_PDF_Utils {
       $value = round($value, $precision);
     }
     return $value;
+  }
+
+  /**
+   * Allow setting some dompdf options.
+   *
+   * We don't support all the available dompdf options.
+   *
+   * @return \Dompdf\Options
+   */
+  private static function getDompdfOptions(): Options {
+    $options = new Options();
+    $settings = [
+      // CRM-12165 - Remote file support required for image handling so default to TRUE
+      'enable_remote' => \Civi::settings()->get('dompdf_enable_remote') ?? TRUE,
+    ];
+    // only set these ones if a setting exists for them
+    foreach (['font_dir', 'chroot', 'log_output_file'] as $setting) {
+      $value = \Civi::settings()->get("dompdf_$setting");
+      if (isset($value)) {
+        $settings[$setting] = $value;
+      }
+    }
+
+    // core#4791 - Set cache dir to prevent files being generated in font dir
+    $cacheDir = self::getCacheDir($settings);
+    if ($cacheDir !== "") {
+      $settings['font_cache'] = $cacheDir;
+    }
+    $options->set($settings);
+    return $options;
+  }
+
+  /**
+   * Get location of cache folder.
+   *
+   * @param array $settings
+   * @return string
+   */
+  private static function getCacheDir(array $settings): string {
+    // Use subfolder of custom font dir if it is writable
+    if (isset($settings['font_dir']) && is_writable($settings['font_dir'])) {
+      $cacheDir = $settings['font_dir'] . DIRECTORY_SEPARATOR . 'font_cache';
+    }
+    else {
+      $cacheDir = Civi::paths()->getPath('[civicrm.files]/upload/font_cache');
+    }
+    // Try to create dir if it doesn't exist or return empty string
+    if ((!is_dir($cacheDir)) && (!mkdir($cacheDir))) {
+      $cacheDir = "";
+    }
+    return $cacheDir;
   }
 
 }

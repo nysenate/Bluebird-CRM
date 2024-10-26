@@ -21,6 +21,7 @@ class CRM_Contribute_Form_ContributionPage_Settings extends CRM_Contribute_Form_
    */
   public function preProcess() {
     parent::preProcess();
+    $this->setSelectedChild('settings');
   }
 
   /**
@@ -40,7 +41,7 @@ class CRM_Contribute_Form_ContributionPage_Settings extends CRM_Contribute_Form_
         $this->_id,
         'title'
       );
-      CRM_Utils_System::setTitle(ts('Title and Settings') . " ($title)");
+      $this->setTitle(ts('Title and Settings') . " ($title)");
 
       foreach (['on_behalf', 'soft_credit'] as $module) {
         $ufJoinDAO = new CRM_Core_DAO_UFJoin();
@@ -68,8 +69,8 @@ class CRM_Contribute_Form_ContributionPage_Settings extends CRM_Contribute_Form_
               $defaults['honoree_profile'] = $ufGroupDAO->id;
             }
             $defaults['soft_credit_types'] = [
-              CRM_Utils_Array::value('in_honor_of', $soft_credit_types),
-              CRM_Utils_Array::value('in_memory_of', $soft_credit_types),
+              $soft_credit_types['in_honor_of'] ?? NULL,
+              $soft_credit_types['in_memory_of'] ?? NULL,
             ];
           }
           else {
@@ -91,8 +92,8 @@ class CRM_Contribute_Form_ContributionPage_Settings extends CRM_Contribute_Form_
         $defaults['honoree_profile'] = $ufGroupDAO->id;
       }
       $defaults['soft_credit_types'] = [
-        CRM_Utils_Array::value('in_honor_of', $soft_credit_types),
-        CRM_Utils_Array::value('in_memory_of', $soft_credit_types),
+        $soft_credit_types['in_honor_of'] ?? NULL,
+        $soft_credit_types['in_memory_of'] ?? NULL,
       ];
     }
 
@@ -119,10 +120,10 @@ class CRM_Contribute_Form_ContributionPage_Settings extends CRM_Contribute_Form_
 
     // name
     $this->add('text', 'title', ts('Title'), $attributes['title'], TRUE);
-    $this->addField('contribution_page_frontend_title', ['entity' => 'ContributionPage']);
+    $this->addField('frontend_title', ['entity' => 'ContributionPage'], TRUE);
 
     //CRM-7362 --add campaigns.
-    CRM_Campaign_BAO_Campaign::addCampaign($this, CRM_Utils_Array::value('campaign_id', $this->_values));
+    CRM_Campaign_BAO_Campaign::addCampaign($this, $this->_values['campaign_id'] ?? NULL);
 
     $this->add('wysiwyg', 'intro_text', ts('Introductory Message'), $attributes['intro_text']);
 
@@ -156,21 +157,18 @@ class CRM_Contribute_Form_ContributionPage_Settings extends CRM_Contribute_Form_
 
     $this->addProfileSelector('onbehalf_profile_id', ts('Organization Profile'), $allowCoreTypes, $allowSubTypes, $entities);
 
-    $options = [];
-    $options[] = $this->createElement('radio', NULL, NULL, ts('Optional'), 1);
-    $options[] = $this->createElement('radio', NULL, NULL, ts('Required'), 2);
-    $this->addGroup($options, 'is_for_organization', '');
+    $this->addRadio('is_for_organization', '', [1 => ts('Optional'), 2 => ts('Required')]);
     $this->add('textarea', 'for_organization', ts('On behalf of Label'), ['rows' => 2, 'cols' => 50]);
 
     // collect goal amount
     $this->add('text', 'goal_amount', ts('Goal Amount'), ['size' => 8, 'maxlength' => 12]);
-    $this->addRule('goal_amount', ts('Please enter a valid money value (e.g. %1).', [1 => CRM_Utils_Money::format('99.99', ' ')]), 'money');
+    $this->addRule('goal_amount', ts('Please enter a valid money value (e.g. %1).', [1 => CRM_Utils_Money::formatLocaleNumericRoundedForDefaultCurrency('99.99')]), 'money');
 
     // is confirmation page enabled?
     $this->addElement('checkbox', 'is_confirm_enabled', ts('Use a confirmation page?'));
 
     // is this page shareable through social media ?
-    $this->addElement('checkbox', 'is_share', ts('Allow sharing through social media?'));
+    $this->addElement('checkbox', 'is_share', ts('Add footer region with Twitter, Facebook and LinkedIn share buttons and scripts?'));
 
     // is this page active ?
     $this->addElement('checkbox', 'is_active', ts('Is this Online Contribution Page Active?'));
@@ -228,7 +226,7 @@ class CRM_Contribute_Form_ContributionPage_Settings extends CRM_Contribute_Form_
    *   Posted values of the form.
    *
    * @param $files
-   * @param $self
+   * @param self $self
    *
    * @return array
    *   list of errors to be posted back to the form
@@ -236,10 +234,6 @@ class CRM_Contribute_Form_ContributionPage_Settings extends CRM_Contribute_Form_
   public static function formRule($values, $files, $self) {
     $errors = [];
     $contributionPageId = $self->_id;
-    //CRM-4286
-    if (strstr($values['title'], '/')) {
-      $errors['title'] = ts("Please do not use '/' in Title");
-    }
 
     // ensure on-behalf-of profile meets minimum requirements
     if (!empty($values['is_organization'])) {
@@ -254,11 +248,10 @@ class CRM_Contribute_Form_ContributionPage_Settings extends CRM_Contribute_Form_
       }
     }
 
-    //CRM-11494
-    $start = CRM_Utils_Date::processDate($values['start_date']);
-    $end = CRM_Utils_Date::processDate($values['end_date']);
-    if (($end < $start) && ($end != 0)) {
-      $errors['end_date'] = ts('End date should be after Start date.');
+    // Validate start/end date inputs
+    $validateDates = \CRM_Utils_Date::validateStartEndDatepickerInputs('start_date', $values['start_date'], 'end_date', $values['end_date']);
+    if ($validateDates !== TRUE) {
+      $errors[$validateDates['key']] = $validateDates['message'];
     }
 
     if (!empty($self->_values['payment_processor']) && $financialType = CRM_Contribute_BAO_Contribution::validateFinancialType($values['financial_type_id'])) {
@@ -318,11 +311,11 @@ class CRM_Contribute_Form_ContributionPage_Settings extends CRM_Contribute_Form_
       $params['currency'] = $config->defaultCurrency;
     }
 
-    $params['is_confirm_enabled'] = CRM_Utils_Array::value('is_confirm_enabled', $params, FALSE);
-    $params['is_share'] = CRM_Utils_Array::value('is_share', $params, FALSE);
-    $params['is_active'] = CRM_Utils_Array::value('is_active', $params, FALSE);
-    $params['is_credit_card_only'] = CRM_Utils_Array::value('is_credit_card_only', $params, FALSE);
-    $params['honor_block_is_active'] = CRM_Utils_Array::value('honor_block_is_active', $params, FALSE);
+    $params['is_confirm_enabled'] ??= FALSE;
+    $params['is_share'] ??= FALSE;
+    $params['is_active'] ??= FALSE;
+    $params['is_credit_card_only'] ??= FALSE;
+    $params['honor_block_is_active'] ??= FALSE;
     $params['is_for_organization'] = !empty($params['is_organization']) ? CRM_Utils_Array::value('is_for_organization', $params, FALSE) : 0;
     $params['goal_amount'] = CRM_Utils_Rule::cleanMoney($params['goal_amount']);
 
@@ -348,8 +341,17 @@ class CRM_Contribute_Form_ContributionPage_Settings extends CRM_Contribute_Form_
 
     foreach ($ufJoinParams as $index => $ufJoinParam) {
       if (!empty($params[$index])) {
-        // first delete all past entries
-        CRM_Core_BAO_UFJoin::deleteAll($ufJoinParam);
+        // Look for an existing entry
+        $ufJoinDAO = new CRM_Core_DAO_UFJoin();
+        $ufJoinDAO->module = $ufJoinParam['module'];
+        $ufJoinDAO->entity_table = 'civicrm_contribution_page';
+        $ufJoinDAO->entity_id = $ufJoinParam['entity_id'];
+        $ufJoinDAO->find(TRUE);
+
+        if (!empty($ufJoinDAO->id)) {
+          $ufJoinParam['id'] = $ufJoinDAO->id;
+        }
+
         $ufJoinParam['uf_group_id'] = $params[$index];
         $ufJoinParam['weight'] = 1;
         $ufJoinParam['is_active'] = 1;
@@ -374,8 +376,8 @@ class CRM_Contribute_Form_ContributionPage_Settings extends CRM_Contribute_Form_
 
         //On subsequent honor_block_is_active uncheck, disable(don't delete)
         //that particular honoree profile entry in UFjoin table, CRM-13981
-        $ufId = CRM_Core_BAO_UFJoin::findJoinEntryId($ufJoinParam);
-        if ($ufId) {
+        $ufID = CRM_Core_BAO_UFJoin::findJoinEntryId($ufJoinParam);
+        if ($ufID) {
           $ufJoinParam['uf_group_id'] = CRM_Core_BAO_UFJoin::findUFGroupId($ufJoinParam);
           $ufJoinParam['is_active'] = 0;
           CRM_Core_BAO_UFJoin::create($ufJoinParam);
@@ -387,15 +389,6 @@ class CRM_Contribute_Form_ContributionPage_Settings extends CRM_Contribute_Form_
     if ($this->_action & CRM_Core_Action::ADD) {
       $url = 'civicrm/admin/contribute/amount';
       $urlParams = "action=update&reset=1&id={$dao->id}";
-      // special case for 'Save and Done' consistency.
-      if ($this->controller->getButtonName('submit') == '_qf_Amount_upload_done') {
-        $url = 'civicrm/admin/contribute';
-        $urlParams = 'reset=1';
-        CRM_Core_Session::setStatus(ts("'%1' information has been saved.",
-          [1 => $this->getTitle()]
-        ), ts('Saved'), 'success');
-      }
-
       CRM_Utils_System::redirect(CRM_Utils_System::url($url, $urlParams));
     }
     parent::endPostProcess();

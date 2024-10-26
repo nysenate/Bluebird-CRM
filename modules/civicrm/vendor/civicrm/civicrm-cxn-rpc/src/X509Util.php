@@ -11,19 +11,19 @@
 
 namespace Civi\Cxn\Rpc;
 
-use Civi\Cxn\Rpc\Exception\ExpiredCertException;
 use Civi\Cxn\Rpc\Exception\InvalidCertException;
 
 class X509Util {
+
   /**
    * @param string $certPem
    * @param array $keyPairPems
    *   Pair of PEM-encoded keys.
    * @param string $caCertPem
-   * @return \File_X509
+   * @return \phpseclib\File\X509
    */
   public static function loadCert($certPem, $keyPairPems = NULL, $caCertPem = NULL) {
-    $certObj = new \File_X509();
+    $certObj = new \phpseclib\File\X509();
 
     if (isset($caCertPem)) {
       $certObj->loadCA($caCertPem);
@@ -34,13 +34,13 @@ class X509Util {
     }
 
     if (isset($keyPairPems['privatekey'])) {
-      $privKey = new \Crypt_RSA();
+      $privKey = new \phpseclib\Crypt\RSA();
       $privKey->loadKey($keyPairPems['privatekey']);
       $certObj->setPrivateKey($privKey);
     }
 
     if (isset($keyPairPems['publickey'])) {
-      $pubKey = new \Crypt_RSA();
+      $pubKey = new \phpseclib\Crypt\RSA();
       $pubKey->loadKey($keyPairPems['publickey']);
       $pubKey->setPublicKey();
       $certObj->setPublicKey($pubKey);
@@ -54,7 +54,7 @@ class X509Util {
    *   PEM-encoded.
    * @param array $keyPair
    *   Pair of PEM-encoded keys.
-   * @return \File_X509
+   * @return \phpseclib\File\X509
    * @throws InvalidCertException
    */
   public static function loadCACert($caCertPem, $keyPair = NULL) {
@@ -73,7 +73,7 @@ class X509Util {
    *   Pair of PEM-encoded keys.
    * @param string $caCertPem
    *   PEM-encoded.
-   * @return \File_X509
+   * @return \phpseclib\File\X509
    * @throws InvalidCertException
    */
   public static function loadCrlDistCert($crlCertPem, $keyPair = NULL, $caCertPem = NULL) {

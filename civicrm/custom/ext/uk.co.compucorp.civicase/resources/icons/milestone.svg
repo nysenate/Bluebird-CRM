@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="32px" height="48px" viewBox="0 0 32 48" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+    <!-- Generator: Sketch 51.1 (57501) - http://www.bohemiancoding.com/sketch -->
+    <title>milestone</title>
+    <desc>Created with Sketch.</desc>
+    <defs></defs>
+    <g id="Find-Cases" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
+        <g id="Caselist---Individual-Case---Summary---empty-state" transform="translate(-659.000000, -681.000000)">
+            <g id="Group-28-Copy" transform="translate(359.000000, 597.000000)">
+                <g id="milestone" transform="translate(300.000000, 84.000000)">
+                    <path d="M1,0 L31,-5.55111512e-16 C31.5522847,-2.61867416e-15 32,0.44771525 32,1 L32,46.9124688 C32,47.4647535 31.5522847,47.9124688 31,47.9124688 C30.878138,47.9124688 30.7573022,47.8901948 30.6434494,47.8467448 L16.3565506,42.3943929 C16.1269269,42.3067609 15.8730731,42.3067609 15.6434494,42.3943929 L1.35655055,47.8467448 C0.840564148,48.0436622 0.262641401,47.7850057 0.0657239681,47.2690193 C0.0222739984,47.1551666 -1.62166291e-14,47.0343308 -1.70974346e-14,46.9124688 L-1.77635684e-14,1 C-1.78312038e-14,0.44771525 0.44771525,1.01453063e-16 1,0 Z" id="Rectangle-17-Copy" fill="#CDE1ED"></path>
+                    <polygon id="Fill-1" fill="#FFFFFF" points="16 26.27 22.18 30 20.54 22.97 26 18.24 18.81 17.63 16 11 13.19 17.63 6 18.24 11.46 22.97 9.82 30"></polygon>
+                </g>
+            </g>
+        </g>
+    </g>
+</svg>

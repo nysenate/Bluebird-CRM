@@ -97,7 +97,7 @@ class CRM_Utils_PagerAToZ {
 
     $dynamicAlphabets = [];
     while ($result->fetch()) {
-      $dynamicAlphabets[] = strtoupper($result->sort_name);
+      $dynamicAlphabets[] = strtoupper($result->sort_name ?? '');
     }
     return $dynamicAlphabets;
   }
@@ -114,6 +114,7 @@ class CRM_Utils_PagerAToZ {
    *
    * @return array
    *   with links
+   * @throws \CRM_Core_Exception
    */
   public static function createLinks(&$query, $sortByCharacter, $isDAO) {
     $AToZBar = self::getStaticCharacters();
@@ -135,9 +136,7 @@ class CRM_Utils_PagerAToZ {
       $qfKey = $query->_formValues['qfKey'] ?? NULL;
     }
     if (empty($qfKey)) {
-      // CRM-20943 Can only pass variables by reference and also cannot use $this so using $empty setting to NULL which is default.
-      $emptyVariable = NULL;
-      $qfKey = CRM_Utils_Request::retrieve('qfKey', 'String', $emptyVariable, FALSE, NULL, $_REQUEST);
+      $qfKey = CRM_Utils_Request::retrieve('qfKey', 'String');
     }
 
     $aToZBar = [];
@@ -146,14 +145,24 @@ class CRM_Utils_PagerAToZ {
         continue;
       }
 
-      $element = [];
+      $element = ['class' => ''];
       if (in_array($link, $dynamicAlphabets)) {
         $klass = '';
         if ($link == $sortByCharacter) {
           $element['class'] = "active";
           $klass = 'class="active"';
         }
-        $url = CRM_Utils_System::url($path, "force=1&qfKey=$qfKey&sortByCharacter=");
+        $urlParams = [
+          'force' => 1,
+          'qfKey' => $qfKey,
+        ];
+        if (($query->_context ?? '') === 'amtg') {
+          // See https://lab.civicrm.org/dev/core/-/issues/2333
+          // Seems to be needed in add to group flow.
+          $urlParams['_qf_Basic_display'] = 1;
+        }
+        $urlParams['sortByCharacter'] = '';
+        $url = CRM_Utils_System::url($path, $urlParams);
         // we do it this way since we want the url to be encoded but not the link character
         // since that seems to mess up drupal utf-8 encoding etc
         $url .= urlencode($link);
@@ -177,7 +186,7 @@ class CRM_Utils_PagerAToZ {
       ),
       ts('All')
     );
-    $aToZBar[] = ['item' => $url];
+    $aToZBar[] = ['item' => $url, 'class' => ''];
     return $aToZBar;
   }
 

@@ -1,0 +1,40 @@
+<div class="panel panel-default civicase__summary-tab__other-cases">
+  <div class="panel-heading">
+    <h3 class="panel-title">
+      <span role="button" data-toggle="collapse" href="#collapse-one">
+        {{ ts("Other Cases") }} ({{item.relatedCases.length}})
+      </span>
+    </h3>
+  </div>
+  <div id="collapse-one" class="panel-collapse collapse in">
+    <div class="panel-body">
+      <civicase-case-card
+        ng-if="isCurrentRelatedCaseVisible($index)"
+        ng-click="gotoCase(relCase, $event)" mode="other-case"
+        ng-repeat="relCase in item.relatedCases" case="relCase">
+      </civicase-case-card>
+    </div>
+    <div class="panel-footer">
+      <div class="center-block civicase__pager">
+        <paging
+          class="pull-right"
+          ng-show="item.relatedCases.length > 1"
+          page="relatedCasesPager.num"
+          page-size="relatedCasesPager.size"
+          total="item.relatedCases.length"
+          adjacent="1"
+          dots="..."
+          show-prev-next="true"
+          show-first-last="true"
+          text-first="&laquo;"
+          text-last="&raquo;"
+          text-next="&rsaquo;"
+          text-prev="&lsaquo;"
+        ></paging>
+        <div>Showing {{relatedCasesPager.range.from}} to {{relatedCasesPager.range.to}} of {{item.relatedCases.length}}
+          {{ ts("cases") }}
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

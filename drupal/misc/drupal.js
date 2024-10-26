@@ -425,6 +425,23 @@ Drupal.urlIsLocal = function (url) {
 };
 
 /**
+ * Sanitizes a URL for use with jQuery.ajax().
+ *
+ * @param url
+ *   The URL string to be sanitized.
+ *
+ * @return
+ *   The sanitized URL.
+ */
+Drupal.sanitizeAjaxUrl = function (url) {
+  var regex = /\=\?(&|$)/;
+  while (url.match(regex)) {
+    url = url.replace(regex, '');
+  }
+  return url;
+}
+
+/**
  * Generate the themed representation of a Drupal object.
  *
  * All requests for themed output must go through this function. It examines
@@ -571,8 +588,12 @@ Drupal.ajaxError = function (xmlhttp, uri, customMessage) {
 // Class indicating that JS is enabled; used for styling purpose.
 $('html').addClass('js');
 
-// 'js enabled' cookie.
-document.cookie = 'has_js=1; path=/';
+$(function () {
+  if (Drupal.settings.setHasJsCookie === 1) {
+    // 'js enabled' cookie.
+    document.cookie = 'has_js=1; path=/; SameSite=Lax';
+  }
+});
 
 /**
  * Additions to jQuery.support.

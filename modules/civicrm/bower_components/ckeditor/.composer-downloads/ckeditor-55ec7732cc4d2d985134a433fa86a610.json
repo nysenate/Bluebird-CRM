@@ -1,6 +1,6 @@
 {
     "name": "civicrm/civicrm-core:ckeditor",
-    "url": "https://github.com/ckeditor/ckeditor-releases/archive/4.14.0.zip",
-    "checksum": "97a5c24a1e123698cc8838ffff905189df8210f7a25cf4417db0c92faad6782a",
+    "url": "https://github.com/ckeditor/ckeditor-releases/archive/4.18.0.zip",
+    "checksum": "3d5a939fa2611389bb6aabfbe1d1e18f4b7f7acf44b2d18c5c9514b19369f3f1",
     "ignore": null
 }

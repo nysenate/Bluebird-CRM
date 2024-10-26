@@ -74,6 +74,13 @@ class IDS_Log_Email implements IDS_Log_Interface
     protected $headers = null;
 
     /**
+     * Optional envelope string
+     *
+     * @var string
+     */
+    protected $envelope = null;
+
+    /**
      * Safemode switch
      *
      * Using this switch it is possible to enable safemode, which is a spam
@@ -160,7 +167,6 @@ class IDS_Log_Email implements IDS_Log_Interface
         } elseif (is_array($config)) {
             $this->recipients[]      = $config['recipients'];
             $this->subject           = $config['subject'];
-            $this->additionalHeaders = $config['header'];
         }
 
         // determine correct IP address and concat them if necessary

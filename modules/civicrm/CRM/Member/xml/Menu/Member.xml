@@ -24,7 +24,6 @@
      <page_callback>CRM_Member_Page_MembershipType</page_callback>
      <desc>Define the types of memberships you want to offer. For each type, you can specify a 'name' (Gold Member, Honor Society Member...), a description, duration, and a minimum fee.</desc>
      <adminGroup>CiviMember</adminGroup>
-     <icon>admin/small/membership_type.png</icon>
      <weight>370</weight>
   </item>
   <item>
@@ -33,7 +32,6 @@
      <page_callback>CRM_Member_Page_MembershipStatus</page_callback>
      <desc>Status 'rules' define the current status for a membership based on that membership's start and end dates. You can adjust the default status options and rules as needed to meet your needs.</desc>
      <adminGroup>CiviMember</adminGroup>
-     <icon>admin/small/membership_status.png</icon>
      <weight>380</weight>
   </item>
   <item>
@@ -68,10 +66,11 @@
      <weight>710</weight>
   </item>
   <item>
-     <path>civicrm/member/import</path>
+     <path>civicrm/import/membership</path>
      <title>Import Memberships</title>
-     <page_callback>CRM_Member_Import_Controller</page_callback>
+     <page_callback>CRM_Import_Controller</page_callback>
      <access_arguments>access CiviMember,edit memberships</access_arguments>
+     <page_arguments>entity_prefix=Member</page_arguments>
      <page_type>1</page_type>
      <weight>720</weight>
   </item>

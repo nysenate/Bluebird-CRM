@@ -22,13 +22,6 @@ class CRM_Core_Form_Search extends CRM_Core_Form {
   protected $_force;
 
   /**
-   * Name of action button
-   *
-   * @var string
-   */
-  protected $_actionButtonName;
-
-  /**
    * Form values that we will be using
    *
    * @var array
@@ -102,6 +95,15 @@ class CRM_Core_Form_Search extends CRM_Core_Form {
    */
   protected $searchFieldMetadata = ['Contact' => []];
 
+  protected $_reset;
+
+  /**
+   * Saved Search ID retrieved from the GET vars.
+   *
+   * @var int
+   */
+  protected $_ssID;
+
   /**
    * @return array
    */
@@ -120,7 +122,6 @@ class CRM_Core_Form_Search extends CRM_Core_Form {
    * Prepare for search by loading options from the url, handling force searches, retrieving form values.
    *
    * @throws \CRM_Core_Exception
-   * @throws \CiviCRM_API3_Exception
    */
   public function preProcess() {
     $this->loadStandardSearchOptionsFromUrl();
@@ -128,6 +129,8 @@ class CRM_Core_Form_Search extends CRM_Core_Form {
       $this->handleForcedSearch();
     }
     $this->_formValues = $this->getFormValues();
+    // For searchResultsTasks.tpl & displaySearchCriteria.tpl
+    $this->addExpectedSmartyVariables(['savedSearch', 'selectorLabel', 'operator']);
   }
 
   /**
@@ -189,7 +192,7 @@ class CRM_Core_Form_Search extends CRM_Core_Form {
    * The goal is to describe all fields in metadata and handle from metadata rather
    * than existing ad hoc handling.
    *
-   * @throws \CiviCRM_API3_Exception
+   * @throws \CRM_Core_Exception
    */
   public function addFormFieldsFromMetadata() {
     $this->addFormRule(['CRM_Core_Form_Search', 'formRule'], $this);
@@ -338,7 +341,11 @@ class CRM_Core_Form_Search extends CRM_Core_Form {
       foreach ($fields as $fieldName => $field) {
         if (!empty($this->_formValues[$fieldName]) && empty($field['options']) && empty($field['pseudoconstant'])) {
           if (in_array($field['type'], [CRM_Utils_Type::T_STRING, CRM_Utils_Type::T_TEXT])) {
-            $this->_formValues[$fieldName] = ['LIKE' => CRM_Contact_BAO_Query::getWildCardedValue(TRUE, 'LIKE', trim($this->_formValues[$fieldName]))];
+            $val = $this->_formValues[$fieldName];
+            if (is_array($val)) {
+              $val = $val['LIKE'];
+            }
+            $this->_formValues[$fieldName] = ['LIKE' => CRM_Contact_BAO_Query::getWildCardedValue(TRUE, 'LIKE', trim($val))];
           }
         }
       }
@@ -383,7 +390,7 @@ class CRM_Core_Form_Search extends CRM_Core_Form {
    * Note that for translation purposes the full string works better than using 'prefix' hence we use override-able functions
    * to define the string.
    *
-   * @throws \CiviCRM_API3_Exception
+   * @throws \CRM_Core_Exception
    */
   protected function addSortNameField() {
     $title = civicrm_api3('setting', 'getvalue', ['name' => 'includeEmailInName', 'group' => 'Search Preferences']) ? $this->getSortNameLabelWithEmail() : $this->getSortNameLabelWithOutEmail();
@@ -428,7 +435,7 @@ class CRM_Core_Form_Search extends CRM_Core_Form {
   /**
    * Add generic fields that specify the contact.
    *
-   * @throws \CiviCRM_API3_Exception
+   * @throws \CRM_Core_Exception
    */
   protected function addContactSearchFields() {
     if (!$this->isFormInViewOrEditMode()) {
@@ -439,9 +446,9 @@ class CRM_Core_Form_Search extends CRM_Core_Form {
       return;
     }
 
-    $this->_group = CRM_Core_PseudoConstant::nestedGroup();
-    if ($this->_group) {
-      $this->add('select', 'group', $this->getGroupLabel(), $this->_group, FALSE,
+    $nestedGroup = CRM_Core_PseudoConstant::nestedGroup();
+    if ($nestedGroup) {
+      $this->add('select', 'group', $this->getGroupLabel(), $nestedGroup, FALSE,
         [
           'id' => 'group',
           'multiple' => 'multiple',
@@ -596,7 +603,7 @@ class CRM_Core_Form_Search extends CRM_Core_Form {
   /**
    * Set the metadata for the form.
    *
-   * @throws \CiviCRM_API3_Exception
+   * @throws \CRM_Core_Exception
    */
   protected function setSearchMetadata() {}
 
@@ -606,7 +613,7 @@ class CRM_Core_Form_Search extends CRM_Core_Form {
    * Search field metadata is normally added in buildForm but we are bypassing that in this flow
    * (I've always found the flow kinda confusing & perhaps that is the problem but this mitigates)
    *
-   * @throws \CiviCRM_API3_Exception
+   * @throws \CRM_Core_Exception
    */
   protected function handleForcedSearch() {
     $this->setSearchMetadata();

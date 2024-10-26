@@ -10,12 +10,6 @@
  */
 
 /**
- *
- * @package CRM
- * @copyright CiviCRM LLC https://civicrm.org/licensing
- */
-
-/**
  * This class generates form components for OpenCase Activity.
  */
 class CRM_Case_Form_Activity_OpenCase {
@@ -28,16 +22,17 @@ class CRM_Case_Form_Activity_OpenCase {
   public $_contactID;
 
   /**
+   * @var int
+   */
+  public $_caseStatusId;
+
+  /**
    * @param CRM_Case_Form_Case $form
    *
    * @throws \CRM_Core_Exception
    */
-  public static function preProcess(&$form) {
-    //get multi client case configuration
-    $xmlProcessorProcess = new CRM_Case_XMLProcessor_Process();
-    $form->_allowMultiClient = (bool) $xmlProcessorProcess->getAllowMultipleCaseClients();
-
-    if ($form->_context == 'caseActivity') {
+  public static function preProcess(&$form): void {
+    if ($form->_context === 'caseActivity') {
       $contactID = CRM_Utils_Request::retrieve('cid', 'Positive', $form);
       $atype = CRM_Core_PseudoConstant::getKey('CRM_Activity_BAO_Activity', 'activity_type_id', 'Change Case Start Date');
       $caseId = CRM_Utils_Array::first($form->_caseId);
@@ -75,10 +70,11 @@ class CRM_Case_Form_Activity_OpenCase {
    * @param CRM_Case_Form_Case $form
    *
    * @return array $defaults
+   * @throws \CRM_Core_Exception
    */
   public static function setDefaultValues(&$form) {
     $defaults = [];
-    if ($form->_context == 'caseActivity') {
+    if ($form->_context === 'caseActivity') {
       return $defaults;
     }
 
@@ -131,15 +127,21 @@ class CRM_Case_Form_Activity_OpenCase {
 
   /**
    * @param CRM_Case_Form_Case $form
+   *
+   * @throws \CRM_Core_Exception
+   * @throws \Exception
    */
   public static function buildQuickForm(&$form) {
     if ($form->_context == 'caseActivity') {
       return;
     }
     if ($form->_context == 'standalone') {
+      //get multi client case configuration
+      $xmlProcessorProcess = new CRM_Case_XMLProcessor_Process();
+
       $form->addEntityRef('client_id', ts('Client'), [
         'create' => TRUE,
-        'multiple' => $form->_allowMultiClient,
+        'multiple' => (bool) $xmlProcessorProcess->getAllowMultipleCaseClients(),
       ], TRUE);
     }
 
@@ -165,8 +167,8 @@ class CRM_Case_Form_Activity_OpenCase {
 
     if ($form->_currentlyViewedContactId) {
       list($displayName) = CRM_Contact_BAO_Contact::getDisplayAndImage($form->_currentlyViewedContactId);
-      $form->assign('clientName', $displayName);
     }
+    $form->assign('clientName', $displayName ?? NULL);
 
     $form->add('datepicker', 'start_date', ts('Case Start Date'), [], TRUE);
 
@@ -215,23 +217,19 @@ class CRM_Case_Form_Activity_OpenCase {
     $params['location'] = $params['activity_location'] ?? NULL;
 
     // Add attachments
-    CRM_Core_BAO_File::formatAttachment(
-      $params,
-      $params,
-      'civicrm_activity',
-      $form->_activityId
-    );
-
+    CRM_Core_BAO_File::formatAttachment($params, $params, 'civicrm_activity', $form->_activityId);
   }
 
   /**
    * Global validation rules for the form.
    *
-   * @param $fields
-   * @param $files
+   * @param array $fields
+   *   The input form values.
+   * @param array $files
+   *   The uploaded files if any.
    * @param CRM_Case_Form_Case $form
    *
-   * @return array
+   * @return array|bool
    *   list of errors to be posted back to the form
    */
   public static function formRule($fields, $files, $form) {
@@ -251,8 +249,8 @@ class CRM_Case_Form_Activity_OpenCase {
    *
    * @throws \Exception
    */
-  public static function endPostProcess(&$form, &$params) {
-    if ($form->_context == 'caseActivity') {
+  public static function endPostProcess($form, &$params): void {
+    if ($form->_context === 'caseActivity') {
       return;
     }
 
@@ -260,27 +258,24 @@ class CRM_Case_Form_Activity_OpenCase {
     $isMultiClient = $xmlProcessorProcess->getAllowMultipleCaseClients();
 
     if (!$isMultiClient && !$form->_currentlyViewedContactId) {
-      CRM_Core_Error::fatal('Required parameter missing for OpenCase - end post processing');
+      CRM_Core_Error::statusBounce(ts('Required parameter missing for OpenCase - end post processing'));
     }
 
-    if (!$form->_currentUserId ||
-      !$params['case_id'] ||
-      !$params['case_type']
-    ) {
-      CRM_Core_Error::fatal('Required parameter missing for OpenCase - end post processing');
+    if (!$form->_currentUserId || !$params['case_id'] || !$params['case_type']) {
+      CRM_Core_Error::statusBounce(ts('Required parameter missing for OpenCase - end post processing'));
     }
 
     // 1. create case-contact
     if ($isMultiClient && $form->_context == 'standalone') {
       foreach ($params['client_id'] as $cliId) {
         if (empty($cliId)) {
-          CRM_Core_Error::fatal('client_id cannot be empty');
+          CRM_Core_Error::statusBounce(ts('client_id cannot be empty for OpenCase - end post processing'));
         }
         $contactParams = [
           'case_id' => $params['case_id'],
           'contact_id' => $cliId,
         ];
-        CRM_Case_BAO_CaseContact::create($contactParams);
+        CRM_Case_BAO_CaseContact::writeRecord($contactParams);
       }
     }
     else {
@@ -288,7 +283,7 @@ class CRM_Case_Form_Activity_OpenCase {
         'case_id' => $params['case_id'],
         'contact_id' => $form->_currentlyViewedContactId,
       ];
-      CRM_Case_BAO_CaseContact::create($contactParams);
+      CRM_Case_BAO_CaseContact::writeRecord($contactParams);
     }
 
     // 2. initiate xml processor

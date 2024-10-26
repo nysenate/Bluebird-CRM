@@ -1,0 +1,20 @@
+{
+  "scenarios": [
+    {
+      "label": "Contact - Case Tab",
+      "url": "{url}/civicrm/contact/view?cid={contactName:Arnold Backstop}&selectedChild=case",
+      "readySelector": ".civicase__contact-cases-tab-details .civicase__contact-name"
+    },
+    {
+      "label": "Contact - Case Tab - Action Dropdown",
+      "url": "{url}/civicrm/contact/view?cid={contactName:Arnold Backstop}&selectedChild=case",
+      "readySelector": ".civicase__contact-cases-tab-details .civicase__contact-name",
+      "clickSelector": ".civicase__case-header__action-icon"
+    },
+    {
+      "label": "Contact - Case Tab - Status Dropdown",
+      "url": "{url}/civicrm/contact/view?cid={contactName:Arnold Backstop}&selectedChild=case",
+      "onReadyScript": "contacts/contact-case-tab-status-dropdown.js"
+    }
+  ]
+}

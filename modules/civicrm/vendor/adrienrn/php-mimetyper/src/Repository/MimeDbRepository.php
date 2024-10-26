@@ -16,6 +16,14 @@ namespace MimeTyper\Repository;
  */
 class MimeDbRepository extends AbstractRepository
 {
+
+    /**
+     * minetype db file name
+     *
+     * @var string
+     */
+    protected $filename;
+
     /**
      * {@inheritdoc}
      */

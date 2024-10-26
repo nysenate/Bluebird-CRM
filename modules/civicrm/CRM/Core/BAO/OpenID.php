@@ -13,34 +13,45 @@
  *
  * @package CRM
  * @copyright CiviCRM LLC https://civicrm.org/licensing
- * $Id$
- *
  */
 
 /**
  * This class contains function for Open Id
  */
-class CRM_Core_BAO_OpenID extends CRM_Core_DAO_OpenID {
+class CRM_Core_BAO_OpenID extends CRM_Core_DAO_OpenID implements Civi\Core\HookInterface {
+  use CRM_Contact_AccessTrait;
 
   /**
-   * Takes an associative array and adds OpenID.
+   * @deprecated
    *
    * @param array $params
-   *   (reference ) an assoc array of name/value pairs.
-   *
-   * @return object
-   *   CRM_Core_BAO_OpenID object on success, null otherwise
+   * @return CRM_Core_DAO_OpenID
+   * @throws CRM_Core_Exception
    */
-  public static function add(&$params) {
-    $hook = empty($params['id']) ? 'create' : 'edit';
-    CRM_Utils_Hook::pre($hook, 'OpenID', CRM_Utils_Array::value('id', $params), $params);
+  public static function create($params) {
+    CRM_Core_Error::deprecatedFunctionWarning('writeRecord');
+    return self::writeRecord($params);
+  }
 
-    $openId = new CRM_Core_DAO_OpenID();
-    $openId->copyValues($params);
-    $openId->save();
+  /**
+   * Event fired before modifying an OpenID.
+   * @param \Civi\Core\Event\PreEvent $event
+   */
+  public static function self_hook_civicrm_pre(\Civi\Core\Event\PreEvent $event) {
+    if (in_array($event->action, ['create', 'edit'])) {
+      CRM_Core_BAO_Block::handlePrimary($event->params, __CLASS__);
+    }
+  }
 
-    CRM_Utils_Hook::post($hook, 'OpenID', $openId->id, $openId);
-    return $openId;
+  /**
+   * @deprecated
+   *
+   * @param array $params
+   * @return CRM_Core_DAO_OpenID
+   * @throws CRM_Core_Exception
+   */
+  public static function add($params) {
+    return self::create($params);
   }
 
   /**
@@ -51,26 +62,10 @@ class CRM_Core_BAO_OpenID extends CRM_Core_DAO_OpenID {
    *   Input parameters to find object.
    *
    * @return mixed
+   * @throws \CRM_Core_Exception
    */
   public static function &getValues($entityBlock) {
     return CRM_Core_BAO_Block::getValues('openid', $entityBlock);
-  }
-
-  /**
-   * Returns whether or not this OpenID is allowed to login.
-   *
-   * @param string $identity_url
-   *   The OpenID to check.
-   *
-   * @return bool
-   */
-  public static function isAllowedToLogin($identity_url) {
-    $openId = new CRM_Core_DAO_OpenID();
-    $openId->openid = $identity_url;
-    if ($openId->find(TRUE)) {
-      return $openId->allowed_to_login == 1;
-    }
-    return FALSE;
   }
 
   /**
@@ -128,12 +123,15 @@ ORDER BY
   /**
    * Call common delete function.
    *
-   * @param int $id
+   * @see \CRM_Contact_BAO_Contact::on_hook_civicrm_post
    *
+   * @param int $id
+   * @deprecated
    * @return bool
    */
   public static function del($id) {
-    return CRM_Contact_BAO_Contact::deleteObjectWithPrimary('OpenID', $id);
+    CRM_Core_Error::deprecatedFunctionWarning('deleteRecord');
+    return (bool) self::deleteRecord(['id' => $id]);
   }
 
 }

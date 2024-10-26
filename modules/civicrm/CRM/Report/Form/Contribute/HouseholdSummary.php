@@ -21,6 +21,30 @@ class CRM_Report_Form_Contribute_HouseholdSummary extends CRM_Report_Form {
   protected $_summary = NULL;
 
   /**
+   * @var array
+   * @internal
+   */
+  public $relationTypes;
+
+  /**
+   * @var int
+   * @internal
+   */
+  public $relationshipId;
+
+  /**
+   * @var string
+   * @internal
+   */
+  public $householdContact;
+
+  /**
+   * @var string
+   * @internal
+   */
+  public $otherContact;
+
+  /**
    * Class constructor.
    */
   public function __construct() {
@@ -122,6 +146,7 @@ class CRM_Report_Form_Contribute_HouseholdSummary extends CRM_Report_Form {
         ],
         'filters' => [
           'receive_date' => ['operatorType' => CRM_Report_Form::OP_DATE],
+          'receipt_date' => ['operatorType' => CRM_Report_Form::OP_DATE],
           'total_amount' => ['title' => ts('Amount Between')],
           'currency' => [
             'title' => ts('Currency'),
@@ -182,6 +207,14 @@ class CRM_Report_Form_Contribute_HouseholdSummary extends CRM_Report_Form {
         'fields' => [
           'email' => NULL,
         ],
+        'filters' => [
+          'on_hold' => [
+            'title' => ts('On Hold'),
+            'type' => CRM_Utils_Type::T_INT,
+            'operatorType' => CRM_Report_Form::OP_MULTISELECT,
+            'options' => ['' => ts('Any')] + CRM_Core_PseudoConstant::emailOnHoldOptions(),
+          ],
+        ],
         'grouping' => 'contact-fields',
       ],
     ];
@@ -234,7 +267,7 @@ class CRM_Report_Form_Contribute_HouseholdSummary extends CRM_Report_Form {
                       ({$this->_aliases['civicrm_contact']}.id = {$this->_aliases['civicrm_relationship']}.$this->otherContact )
             {$this->_aclFrom}
             INNER JOIN civicrm_contribution {$this->_aliases['civicrm_contribution']} ON
-                      ({$this->_aliases['civicrm_contribution']}.contact_id = {$this->_aliases['civicrm_relationship']}.$this->otherContact ) AND {$this->_aliases['civicrm_contribution']}.is_test = 0 ";
+                      ({$this->_aliases['civicrm_contribution']}.contact_id = {$this->_aliases['civicrm_relationship']}.$this->otherContact ) AND {$this->_aliases['civicrm_contribution']}.is_test = 0 AND {$this->_aliases['civicrm_contribution']}.is_template = 0 ";
 
     $this->joinAddressFromContact();
     $this->joinEmailFromContact();
@@ -249,7 +282,7 @@ class CRM_Report_Form_Contribute_HouseholdSummary extends CRM_Report_Form {
       if (array_key_exists('filters', $table)) {
         foreach ($table['filters'] as $fieldName => $field) {
           $clause = NULL;
-          if (CRM_Utils_Array::value('type', $field) & CRM_Utils_Type::T_DATE) {
+          if (($field['type'] ?? 0) & CRM_Utils_Type::T_DATE) {
             $relative = $this->_params["{$fieldName}_relative"] ?? NULL;
             $from = $this->_params["{$fieldName}_from"] ?? NULL;
             $to = $this->_params["{$fieldName}_to"] ?? NULL;
@@ -264,9 +297,9 @@ class CRM_Report_Form_Contribute_HouseholdSummary extends CRM_Report_Form {
               else {
                 $clause = $this->whereClause($field,
                   $op,
-                  CRM_Utils_Array::value("{$fieldName}_value", $this->_params),
-                  CRM_Utils_Array::value("{$fieldName}_min", $this->_params),
-                  CRM_Utils_Array::value("{$fieldName}_max", $this->_params)
+                  $this->_params["{$fieldName}_value"] ?? NULL,
+                  $this->_params["{$fieldName}_min"] ?? NULL,
+                  $this->_params["{$fieldName}_max"] ?? NULL
                 );
               }
             }
@@ -306,7 +339,7 @@ class CRM_Report_Form_Contribute_HouseholdSummary extends CRM_Report_Form {
   }
 
   /**
-   * @param $rows
+   * @param array $rows
    *
    * @return array
    */
@@ -398,6 +431,8 @@ class CRM_Report_Form_Contribute_HouseholdSummary extends CRM_Report_Form {
    */
   public function alterDisplay(&$rows) {
     $type = substr($this->_params['relationship_type_id_value'], -3);
+    $previousHousehold = NULL;
+    $previousContact = NULL;
 
     $entryFound = FALSE;
     $flagHousehold = $flagContact = 0;
@@ -417,16 +452,16 @@ class CRM_Report_Form_Contribute_HouseholdSummary extends CRM_Report_Form {
       ) {
         if ($value = $row['civicrm_contact_household_household_name']) {
           if ($rowNum == 0) {
-            $priviousHousehold = $value;
+            $previousHousehold = $value;
           }
           else {
-            if ($priviousHousehold == $value) {
+            if ($previousHousehold == $value) {
               $flagHousehold = 1;
-              $priviousHousehold = $value;
+              $previousHousehold = $value;
             }
             else {
               $flagHousehold = 0;
-              $priviousHousehold = $value;
+              $previousHousehold = $value;
             }
           }
 
@@ -439,7 +474,7 @@ class CRM_Report_Form_Contribute_HouseholdSummary extends CRM_Report_Form {
               $this->_absoluteUrl
             );
 
-            $rows[$rowNum]['civicrm_contact_household_household_name'] = "<a href='$url' title='" . ts('View contact summary for this househould') . "'>" . $value . '</a>';
+            $rows[$rowNum]['civicrm_contact_household_household_name'] = "<a href='$url' title='" . ts('View contact summary for this househould', ['escape' => 'htmlattribute']) . "'>" . $value . '</a>';
           }
           $entryFound = TRUE;
         }
@@ -451,16 +486,16 @@ class CRM_Report_Form_Contribute_HouseholdSummary extends CRM_Report_Form {
       ) {
         if ($value = $row['civicrm_contact_id']) {
           if ($rowNum == 0) {
-            $priviousContact = $value;
+            $previousContact = $value;
           }
           else {
-            if ($priviousContact == $value) {
+            if ($previousContact == $value) {
               $flagContact = 1;
-              $priviousContact = $value;
+              $previousContact = $value;
             }
             else {
               $flagContact = 0;
-              $priviousContact = $value;
+              $previousContact = $value;
             }
           }
 

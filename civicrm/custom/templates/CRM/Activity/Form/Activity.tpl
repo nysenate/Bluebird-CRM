@@ -11,15 +11,11 @@
   {if $action eq 4}
     <div class="crm-block crm-content-block crm-activity-view-block">
   {else}
-    {if $activityTypeDescription }
-      <div class="help">{$activityTypeDescription}</div>
+    {if $activityTypeDescription}
+      <div class="help">{$activityTypeDescription|purify}</div>
     {/if}
     <div class="crm-block crm-form-block crm-activity-form-block">
   {/if}
-  {if !$action or ( $action eq 1 ) or ( $action eq 2 ) }
-  <div class="crm-submit-buttons">{include file="CRM/common/formButtons.tpl" location="top"}</div>
-  {/if}
-
   {if $action eq 8} {* Delete action. *}
   <table class="form-layout">
   <tr>
@@ -80,21 +76,21 @@
       <td>
         {$form.assignee_contact_id.html}
         {if $action neq 4}
-          {if !$form.target_contact_id.frozen}
+          {if empty($disable_swap_button)}
             <a href="#" class="crm-hover-button" id="swap_target_assignee" title="{ts}Swap Target and Assignee Contacts{/ts}" style="position:relative; bottom: 1em;">
-              <i class="crm-i fa-random"></i>
+              <i class="crm-i fa-random" aria-hidden="true"></i>
             </a>
           {/if}
           {if $activityAssigneeNotification}
             <br />
-            <span id="notify_assignee_msg" class="description"><i class="crm-i fa-paper-plane"></i> {ts}A copy of this activity will be emailed to each Assignee.{/ts} {help id="sent_copy_email"}</span>
+            <span id="notify_assignee_msg" class="description"><i class="crm-i fa-paper-plane" aria-hidden="true"></i> {ts}A copy of this activity will be emailed to each Assignee.{/ts} {help id="sent_copy_email"}</span>
           {/if}
         {/if}
       </td>
   </tr>
 
   {if $activityTypeFile}
-  {include file="CRM/$crmDir/Form/Activity/$activityTypeFile.tpl"}
+    {include file="CRM/$crmDir/Form/Activity/$activityTypeFile.tpl"}
   {/if}
 
   <tr class="crm-activity-form-block-subject">
@@ -106,7 +102,7 @@
   campaignTrClass="crm-activity-form-block-campaign_id"}
 
   {* build engagement level CRM-7775 *}
-  {if $buildEngagementLevel}
+  {if !empty($buildEngagementLevel)}
   <tr class="crm-activity-form-block-engagement_level">
     <td class="label">{$form.engagement_level.label}</td>
     <td class="view-value">{$form.engagement_level.html}</td>
@@ -140,7 +136,7 @@
       <td class="view-value">
       {$form.details.html}
       </td>
-    {elseif $activityTypeNameAndLabel.machineName eq "Inbound Email"}
+    {elseif $activityTypeNameAndLabel.machineName eq "Inbound Email" && $form.details.value|crmStripAlternatives|strip_tags eq $form.details.value|crmStripAlternatives}
       <td class="view-value">
        {$form.details.html|crmStripAlternatives|nl2br}
       </td>
@@ -153,13 +149,13 @@
   <tr class="crm-activity-form-block-priority_id">
     <td class="label">{$form.priority_id.label}</td><td class="view-value">{$form.priority_id.html}</td>
   </tr>
-  {if $surveyActivity }
+  {if !empty($surveyActivity)}
   <tr class="crm-activity-form-block-result">
     <td class="label">{$form.result.label}</td><td class="view-value">{$form.result.html}</td>
   </tr>
   {/if}
   {*NYSS 12439*}
-  {if $form.tag.html}
+  {if $form.tag}
   <tr class="crm-activity-form-block-tag">
     <td class="label">Issue Codes</td>
     <td class="view-value">
@@ -168,7 +164,7 @@
   </tr>
   {/if}
 
-  {if $tagsetInfo.activity}
+  {if $isTagset}
     <tr class="crm-activity-form-block-tag_set">
       {include file="CRM/common/Tagset.tpl" tagsetType='activity' tableLayout=true}
     </tr>
@@ -180,7 +176,7 @@
       {if $action eq 4}
         {include file="CRM/Custom/Page/CustomDataView.tpl"}
       {else}
-        {include file="CRM/common/customDataBlock.tpl"}
+        {include file="CRM/common/customDataBlock.tpl" groupID='' customDataType='Activity'}
       {/if}
     </td>
   </tr>
@@ -215,7 +211,7 @@
             $('.crm-accordion-body', $form).each( function() {
               //open tab if form rule throws error
               if ( $(this).children( ).find('span.crm-error').text( ).length > 0 ) {
-                $(this).parent('.collapsed').crmAccordionToggle();
+                $(this).parent('details').prop('open', true);
               }
             });
             function toggleMultiActivityCheckbox() {
@@ -239,7 +235,7 @@
   </table>
   <div class="crm-submit-buttons">
   {if $action eq 4 && ($activityTypeNameAndLabel.machineName neq 'Inbound Email' || $allow_edit_inbound_emails == 1)}
-    {if !$context }
+    {if !$context}
       {assign var="context" value='activity'}
     {/if}
     {if $permission EQ 'edit'}
@@ -247,19 +243,19 @@
       {if ($context eq 'fulltext' || $context eq 'search') && $searchKey}
         {assign var='urlParams' value="reset=1&atype=$atype&action=update&reset=1&id=$entityID&cid=$contactId&context=$context&key=$searchKey"}
       {/if}
-      <a href="{crmURL p='civicrm/activity/add' q=$urlParams}" class="edit button" title="{ts}Edit{/ts}"><span><i class="crm-i fa-pencil"></i> {ts}Edit{/ts}</span></a>
+      <a href="{crmURL p='civicrm/activity/add' q=$urlParams}" class="edit button" title="{ts}Edit{/ts}"><span><i class="crm-i fa-pencil" aria-hidden="true"></i> {ts}Edit{/ts}</span></a>
     {/if}
 
-    {if call_user_func(array('CRM_Core_Permission','check'), 'delete activities')}
+    {crmPermission has='delete activities'}
       {assign var='urlParams' value="reset=1&atype=$atype&action=delete&reset=1&id=$entityID&cid=$contactId&context=$context"}
       {if ($context eq 'fulltext' || $context eq 'search') && $searchKey}
         {assign var='urlParams' value="reset=1&atype=$atype&action=delete&reset=1&id=$entityID&cid=$contactId&context=$context&key=$searchKey"}
       {/if}
-      <a href="{crmURL p='civicrm/contact/view/activity' q=$urlParams}" class="delete button" title="{ts}Delete{/ts}"><span><i class="crm-i fa-trash"></i> {ts}Delete{/ts}</span></a>
-    {/if}
+      <a href="{crmURL p='civicrm/contact/view/activity' q=$urlParams}" class="delete button" title="{ts}Delete{/ts}"><span><i class="crm-i fa-trash" aria-hidden="true"></i> {ts}Delete{/ts}</span></a>
+    {/crmPermission}
   {/if}
   {if $action eq 4 and $context != 'case' and call_user_func(array('CRM_Case_BAO_Case','checkPermission'), $activityId, 'File On Case', $atype)}
-    <a href="#" onclick="fileOnCase('file', {$activityId}, null, this); return false;" class="cancel button" title="{ts}File On Case{/ts}"><span><i class="crm-i fa-clipboard"></i> {ts}File on Case{/ts}</span></a>
+    <a href="#" onclick="fileOnCase('file', {$activityId}, null, this); return false;" class="cancel button" title="{ts}File On Case{/ts}"><span><i class="crm-i fa-clipboard" aria-hidden="true"></i> {ts}File on Case{/ts}</span></a>
     {include file="CRM/Case/Form/ActivityToCase.tpl"}
   {/if}
   {include file="CRM/common/formButtons.tpl" location="bottom"}
@@ -285,4 +281,4 @@
   {/if}
   </div>{* end of form block*}
 
-{include file="CRM/Event/Form/ManageEvent/ConfirmRepeatMode.tpl" entityID=$activityId entityTable="civicrm_activity"}
+{include file="CRM/Event/Form/ManageEvent/ConfirmRepeatMode.tpl" entityID=$activityId entityTable="civicrm_activity" isRepeatingEntity=false}

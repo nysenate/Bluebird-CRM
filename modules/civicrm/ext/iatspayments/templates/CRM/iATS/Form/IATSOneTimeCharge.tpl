@@ -11,11 +11,6 @@
   </div>
 {/foreach}
 
-  <div>
-    <span>{$form.favorite_color.label}</span>
-    <span>{$form.favorite_color.html}</span>
-  </div>
-
 {* FOOTER *}
 <div class="crm-submit-buttons">
 {include file="CRM/common/formButtons.tpl" location="bottom"}

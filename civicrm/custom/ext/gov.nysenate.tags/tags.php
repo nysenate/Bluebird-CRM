@@ -10,6 +10,9 @@ require_once 'tags.civix.php';
  */
 function tags_civicrm_config(&$config) {
   _tags_civix_civicrm_config($config);
+
+  //14336
+  Civi::dispatcher()->addListener('civi.api.prepare', ['CRM_Tags_APIWrapper', 'PREPARE'], -100);
 }
 
 
@@ -473,10 +476,10 @@ function tags_civicrm_pageRun(&$page) {
 } //tags_civicrm_pageRun()
 
 function tags_civicrm_alterEntityRefParams(&$params, $formName) {
-  /*Civi::log()->debug('tags_civicrm_alterEntityRefParams', array(
+  /*Civi::log()->debug('tags_civicrm_alterEntityRefParams', [
     'params' => $params,
     'formName' => $formName,
-  ));*/
+  ]);*/
 
   //use custom api for legislative positions; exclude search forms
   if (strtolower($params['entity']) == 'tag' &&

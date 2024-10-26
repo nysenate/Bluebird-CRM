@@ -1,0 +1,12 @@
+{
+    "name": "civicrm/mosaicoextras",
+    "description": "Includes new features for Mosaico CiviCRM Integration",
+    "type": "civicrm-extension",
+    "license": "AGPL-3.0-only",
+    "authors": [
+        {
+            "name": "iXiam Global Solutions",
+            "email": "info@ixiam.com"
+        }
+    ]
+}

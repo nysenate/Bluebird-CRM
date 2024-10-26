@@ -124,7 +124,7 @@ class File extends BinaryStream {
   }
 
   function utf8toUnicode($str) {
-    $len = strlen($str);
+    $len = mb_strlen($str, '8bit');
     $out = array();
 
     for ($i = 0; $i < $len; $i++) {
@@ -305,7 +305,7 @@ class File extends BinaryStream {
 
       $class = "FontLib\\Table\\Type\\$name_canon";
 
-      if (!isset($this->directory[$tag]) || !class_exists($class)) {
+      if (!isset($this->directory[$tag]) || !@class_exists($class)) {
         return;
       }
     }

@@ -48,7 +48,8 @@ class CRM_Utils_HttpClient {
   }
 
   /**
-   * @param null $connectionTimeout
+   * @param int|null $connectionTimeout
+   *   seconds; or NULL to use system default
    */
   public function __construct($connectionTimeout = NULL) {
     $this->connectionTimeout = $connectionTimeout;
@@ -117,7 +118,6 @@ class CRM_Utils_HttpClient {
     list($ch, $caConfig) = $this->createCurl($remoteFile);
 
     if (preg_match('/^https:/', $remoteFile) && !$caConfig->isEnableSSL()) {
-      // CRM_Core_Error::fatal('Cannot install this extension - does not support SSL');
       return [self::STATUS_DL_ERROR, NULL];
     }
 
@@ -146,14 +146,12 @@ class CRM_Utils_HttpClient {
   public function post($remoteFile, $params) {
     // Download extension zip file ...
     if (!function_exists('curl_init')) {
-      //CRM_Core_Error::fatal('Cannot install this extension - curl is not installed!');
       return [self::STATUS_DL_ERROR, NULL];
     }
 
     list($ch, $caConfig) = $this->createCurl($remoteFile);
 
     if (preg_match('/^https:/', $remoteFile) && !$caConfig->isEnableSSL()) {
-      // CRM_Core_Error::fatal('Cannot install this extension - does not support SSL');
       return [self::STATUS_DL_ERROR, NULL];
     }
 
@@ -204,7 +202,7 @@ class CRM_Utils_HttpClient {
    * @return bool
    */
   public function isRedirectSupported() {
-    return (ini_get('open_basedir') == '') && (ini_get('safe_mode') == 'Off' || ini_get('safe_mode') == '' || ini_get('safe_mode') === FALSE);
+    return (ini_get('open_basedir') == '');
   }
 
 }

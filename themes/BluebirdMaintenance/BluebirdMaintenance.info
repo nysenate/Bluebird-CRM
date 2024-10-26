@@ -1,0 +1,26 @@
+; $Id: page.tpl.php,v 1.15.4.1 2008/08/27 04:47:37 m3avrck Exp $
+name = BluebirdMaintenance
+project = Bluebird
+description = Drupal maintenance theme
+core = 7.x
+engine = phptemplate
+
+regions[left]    = Left sidebar
+regions[content] = Content
+regions[header]  = Header
+regions[footer]  = Footer
+regions[help]    = Help
+
+; Let's enable some features
+; Logo is not supported in Blueprint
+; See the http://drupal.org/node/317153
+; features[] = logo
+features[] = name
+features[] = slogan
+features[] = mission
+features[] = node_user_picture
+features[] = comment_user_picture
+features[] = search
+features[] = favicon
+features[] = main_menu
+features[] = secondary_menu

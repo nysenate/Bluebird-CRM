@@ -23,7 +23,7 @@ require_once 'HTML/QuickForm/Rule/Email.php';
 class CRM_Utils_Rule {
 
   /**
-   * @param $str
+   * @param string|null $str
    * @param int $maxLength
    *
    * @return bool
@@ -36,15 +36,11 @@ class CRM_Utils_Rule {
     }
 
     // Make sure it include valid characters, alpha numeric and underscores
-    if (!preg_match('/^\w[\w\s\'\&\,\$\#\-\.\"\?\!]+$/i', $str)) {
-      return FALSE;
-    }
-
-    return TRUE;
+    return (bool) preg_match('/^\w[\w\s\'\&\,\$\#\-\.\"\?\!]+$/i', $str);
   }
 
   /**
-   * @param $str
+   * @param string|null $str
    *
    * @return bool
    */
@@ -53,7 +49,7 @@ class CRM_Utils_Rule {
   }
 
   /**
-   * @param $str
+   * @param string|null $str
    *
    * @return bool
    */
@@ -64,17 +60,13 @@ class CRM_Utils_Rule {
     }
 
     // make sure it includes valid characters, alpha numeric and underscores
-    if (!preg_match('/^[\w]+$/i', $str)) {
-      return FALSE;
-    }
-
-    return TRUE;
+    return (bool) preg_match('/^[\w]+$/i', $str);
   }
 
   /**
    * Validate that a string is a valid MySQL column name or alias.
    *
-   * @param $str
+   * @param string|null $str
    *
    * @return bool
    */
@@ -92,11 +84,8 @@ class CRM_Utils_Rule {
     //   * Composed of alphanumeric chars, underscore and hyphens.
     //   * Maximum length of 64 chars.
     //   * Optionally surrounded by backticks, in which case spaces also OK.
-    if (!preg_match('/^((`[-\w ]{1,64}`|[-\w]{1,64})\.)?(`[-\w ]{1,64}`|[-\w]{1,64})$/i', $str)) {
-      return FALSE;
-    }
+    return (bool) preg_match('/^((`[-\w ]{1,64}`|[-\w]{1,64})\.)?(`[-\w ]{1,64}`|[-\w]{1,64})$/i', $str);
 
-    return TRUE;
   }
 
   /**
@@ -104,21 +93,17 @@ class CRM_Utils_Rule {
    *
    * Empty string should be treated as invalid and ignored => default = ASC.
    *
-   * @param $str
+   * @param string $str
    * @return bool
    */
   public static function mysqlOrderByDirection($str) {
-    if (!preg_match('/^(asc|desc)$/i', $str)) {
-      return FALSE;
-    }
-
-    return TRUE;
+    return (bool) preg_match('/^(asc|desc)$/i', $str);
   }
 
   /**
    * Validate that a string is valid order by clause.
    *
-   * @param $str
+   * @param string $str
    * @return bool
    */
   public static function mysqlOrderBy($str) {
@@ -150,7 +135,7 @@ class CRM_Utils_Rule {
   }
 
   /**
-   * @param $str
+   * @param string $str
    *
    * @return bool
    */
@@ -163,15 +148,11 @@ class CRM_Utils_Rule {
 
     // make sure it includes valid characters, alpha numeric and underscores
     // added (. and ,) option (CRM-1336)
-    if (!preg_match('/^[\w\s\.\,]+$/i', $str)) {
-      return FALSE;
-    }
-
-    return TRUE;
+    return (bool) preg_match('/^[\w\s\.\,]+$/i', $str);
   }
 
   /**
-   * @param $phone
+   * @param string|null $phone
    *
    * @return bool
    */
@@ -189,7 +170,7 @@ class CRM_Utils_Rule {
   }
 
   /**
-   * @param $query
+   * @param string|null $query
    *
    * @return bool
    */
@@ -200,15 +181,11 @@ class CRM_Utils_Rule {
     }
 
     // make sure it includes valid characters, alpha numeric and underscores
-    if (!preg_match('/^[\w\s\%\'\&\,\$\#]+$/i', $query)) {
-      return FALSE;
-    }
-
-    return TRUE;
+    return (bool) preg_match('/^[\w\s\%\'\&\,\$\#]+$/i', $query);
   }
 
   /**
-   * @param $url
+   * @param string|null $url
    *
    * @return bool
    */
@@ -221,11 +198,15 @@ class CRM_Utils_Rule {
       // allow relative URL's (CRM-15598)
       $url = 'http://' . $_SERVER['HTTP_HOST'] . $url;
     }
+    // Convert URLs with Unicode to ASCII
+    if (strlen($url) != mb_strlen($url)) {
+      $url = self::idnToAsci($url);
+    }
     return (bool) filter_var($url, FILTER_VALIDATE_URL);
   }
 
   /**
-   * @param $url
+   * @param string|null $url
    *
    * @return bool
    */
@@ -238,7 +219,7 @@ class CRM_Utils_Rule {
   }
 
   /**
-   * @param $string
+   * @param string $string
    *
    * @return bool
    */
@@ -248,7 +229,7 @@ class CRM_Utils_Rule {
   }
 
   /**
-   * @param $domain
+   * @param string $domain
    *
    * @return bool
    */
@@ -261,10 +242,10 @@ class CRM_Utils_Rule {
   }
 
   /**
-   * @param $value
-   * @param null $default
+   * @param string $value
+   * @param string|null $default
    *
-   * @return null
+   * @return string|null
    */
   public static function date($value, $default = NULL) {
     if (is_string($value) &&
@@ -276,10 +257,10 @@ class CRM_Utils_Rule {
   }
 
   /**
-   * @param $value
-   * @param null $default
+   * @param string $value
+   * @param string|null $default
    *
-   * @return null|string
+   * @return string|null
    */
   public static function dateTime($value, $default = NULL) {
     $result = $default;
@@ -410,7 +391,7 @@ class CRM_Utils_Rule {
   }
 
   /**
-   * @param $value
+   * @param mixed $value
    *
    * @return bool
    */
@@ -443,7 +424,7 @@ class CRM_Utils_Rule {
   }
 
   /**
-   * @param $value
+   * @param mixed $value
    *
    * @return bool
    */
@@ -462,7 +443,7 @@ class CRM_Utils_Rule {
   }
 
   /**
-   * @param $value
+   * @param mixed $value
    *
    * @return bool
    */
@@ -478,7 +459,7 @@ class CRM_Utils_Rule {
   }
 
   /**
-   * @param $value
+   * @param mixed $value
    *
    * @return bool
    */
@@ -504,7 +485,7 @@ class CRM_Utils_Rule {
    * @see \CRM_Utils_RuleTest::alphanumericData
    *   for examples of vales that give TRUE/FALSE here
    *
-   * @param $value
+   * @param string $value
    *
    * @return bool
    */
@@ -513,8 +494,8 @@ class CRM_Utils_Rule {
   }
 
   /**
-   * @param $value
-   * @param $noOfDigit
+   * @param string $value
+   * @param int $noOfDigit
    *
    * @return bool
    */
@@ -525,7 +506,7 @@ class CRM_Utils_Rule {
   /**
    * Strict validation of 6-digit hex color notation per html5 <input type="color">
    *
-   * @param $value
+   * @param string $value
    * @return bool
    */
   public static function color($value) {
@@ -545,7 +526,7 @@ class CRM_Utils_Rule {
    */
   public static function cleanMoney($value) {
     // first remove all white space
-    $value = str_replace([' ', "\t", "\n"], '', $value);
+    $value = str_replace([' ', "\t", "\n"], '', ($value ?? ''));
 
     $config = CRM_Core_Config::singleton();
 
@@ -587,11 +568,25 @@ class CRM_Utils_Rule {
   }
 
   /**
-   * @param $value
+   * @param string $value
+   * @param bool $checkSeparatorOrder
+   *   Should the order of the separators be checked. ie if the thousand
+   *   separator is , then it should never be after the decimal separator .
+   *   so 1.300,23 would be invalid in that case. Honestly I'm amazed this
+   *   check wasn't being done but in the interest of caution adding as opt in.
+   *   Note clean money would convert this to 1.30023....
    *
    * @return bool
    */
-  public static function money($value) {
+  public static function money($value, $checkSeparatorOrder = FALSE) {
+    // We can't rely on only one var being passed so can't type-hint to a bool.
+    if ($checkSeparatorOrder === TRUE) {
+      $thousandSeparatorPosition = strpos((string) $value, \Civi::settings()->get('monetaryThousandSeparator'));
+      $decimalSeparatorPosition = strpos((string) $value, \Civi::settings()->get('monetaryDecimalPoint'));
+      if ($thousandSeparatorPosition && $decimalSeparatorPosition && $thousandSeparatorPosition > $decimalSeparatorPosition) {
+        return FALSE;
+      }
+    }
     $value = self::cleanMoney($value);
 
     if (self::integer($value)) {
@@ -605,7 +600,7 @@ class CRM_Utils_Rule {
   }
 
   /**
-   * @param $value
+   * @param mixed $value
    * @param int $maxLength
    *
    * @return bool
@@ -620,27 +615,69 @@ class CRM_Utils_Rule {
   }
 
   /**
-   * @param $value
+   * @param bool|string $value
    *
    * @return bool
    */
   public static function boolean($value) {
+    if ($value === TRUE || $value === FALSE) {
+      return TRUE;
+    }
+    // This is intentionally not using === comparison - but will fail on FALSE.
     return preg_match(
       '/(^(1|0)$)|(^(Y(es)?|N(o)?)$)|(^(T(rue)?|F(alse)?)$)/i', $value
     ) ? TRUE : FALSE;
   }
 
   /**
-   * @param $value
+   * @param mixed $value
    *
    * @return bool
    */
-  public static function email($value) {
+  public static function email($value): bool {
+    if ($value === '' || is_null($value)) {
+      // Nothing to check
+      return TRUE;
+    }
+    if (function_exists('idn_to_ascii')) {
+      $parts = explode('@', $value);
+      foreach ($parts as &$part) {
+        // if the function returns FALSE then let filter_var have at it.
+        $part = self::idnToAsci($part) ?: $part;
+        if ($part === 'localhost') {
+          // if we are in a dev environment add .com to trick it into accepting localhost.
+          // this is a bit best-effort - ie we don't really care that it's in a bigger if.
+          $part .= '.com';
+        }
+      }
+      $value = implode('@', $parts);
+    }
     return (bool) filter_var($value, FILTER_VALIDATE_EMAIL);
   }
 
   /**
-   * @param $list
+   * Convert domain string to ascii.
+   *
+   * See https://lab.civicrm.org/dev/core/-/issues/2769
+   * and also discussion over in guzzle land
+   * https://github.com/guzzle/guzzle/pull/2454
+   *
+   * @param string $string
+   *
+   * @return string|false
+   */
+  private static function idnToAsci(string $string) {
+    if (!\extension_loaded('intl')) {
+      return $string;
+    }
+    if (defined('INTL_IDNA_VARIANT_UTS46')) {
+      return idn_to_ascii($string, 0, INTL_IDNA_VARIANT_UTS46);
+    }
+    return idn_to_ascii($string);
+  }
+
+  /**
+   * @param string $list
    *
    * @return bool
    */
@@ -659,7 +696,7 @@ class CRM_Utils_Rule {
    * allow between 4-6 digits as postal code since india needs 6 and US needs 5 (or
    * if u disregard the first 0, 4 (thanx excel!)
    * FIXME: we need to figure out how to localize such rules
-   * @param $value
+   * @param string $value
    *
    * @return bool
    */
@@ -718,24 +755,6 @@ class CRM_Utils_Rule {
   }
 
   /**
-   * See how file rules are written in HTML/QuickForm/file.php
-   * Checks to make sure the uploaded file is html
-   *
-   * @param array $elementValue
-   *
-   * @return bool
-   *   True if file has been uploaded, false otherwise
-   */
-  public static function htmlFile($elementValue) {
-    if ((isset($elementValue['error']) && $elementValue['error'] == 0) ||
-      (!empty($elementValue['tmp_name']) && $elementValue['tmp_name'] != 'none')
-    ) {
-      return CRM_Utils_File::isHtmlFile($elementValue['tmp_name']);
-    }
-    return FALSE;
-  }
-
-  /**
    * Check if there is a record with the same name in the db.
    *
    * @param string $value
@@ -766,8 +785,8 @@ class CRM_Utils_Rule {
   }
 
   /**
-   * @param $value
-   * @param $type
+   * @param string $value
+   * @param string $type
    *
    * @return bool
    */
@@ -776,8 +795,8 @@ class CRM_Utils_Rule {
   }
 
   /**
-   * @param $value
-   * @param $type
+   * @param string $value
+   * @param string $type
    *
    * @return bool
    */
@@ -786,7 +805,7 @@ class CRM_Utils_Rule {
   }
 
   /**
-   * @param $value
+   * @param mixed $value
    *
    * @return bool
    */
@@ -802,22 +821,6 @@ class CRM_Utils_Rule {
   }
 
   /**
-   * @param $value
-   *
-   * @return bool
-   */
-  public static function xssString($value) {
-    if (is_string($value)) {
-      return preg_match('!<(vb)?script[^>]*>.*</(vb)?script.*>!ims',
-        $value
-      ) ? FALSE : TRUE;
-    }
-    else {
-      return TRUE;
-    }
-  }
-
-  /**
    * Validate json string for xss
    *
    * @param string $value
@@ -826,9 +829,6 @@ class CRM_Utils_Rule {
    *   False if invalid, true if valid / safe.
    */
   public static function json($value) {
-    if (!self::xssString($value)) {
-      return FALSE;
-    }
     $array = json_decode($value, TRUE);
     if (!$array || !is_array($array)) {
       return FALSE;
@@ -837,7 +837,7 @@ class CRM_Utils_Rule {
   }
 
   /**
-   * @param $path
+   * @param string $path
    *
    * @return bool
    */
@@ -859,12 +859,15 @@ class CRM_Utils_Rule {
   }
 
   /**
-   * @param $value
-   * @param null $actualElementValue
+   * @deprecated
+   * @param mixed $value
+   * @param mixed $actualElementValue
    *
    * @return bool
    */
   public static function validContact($value, $actualElementValue = NULL) {
+    // @todo When this function is removed (deprecated April 2023), it should also be removed from CRM_Core_Form: https://github.com/civicrm/civicrm-core/blob/0148b09115eeb941cde8e9f6f9484d205750f144/CRM/Core/Form.php#L429
+    CRM_Core_Error::deprecatedFunctionWarning('positiveInteger');
     if ($actualElementValue) {
       $value = $actualElementValue;
     }
@@ -925,7 +928,7 @@ class CRM_Utils_Rule {
   }
 
   /**
-   * @param $key
+   * @param mixed $key
    *
    * @return bool
    */
@@ -974,12 +977,9 @@ class CRM_Utils_Rule {
   protected static function arrayValue($array) {
     foreach ($array as $key => $item) {
       if (is_array($item)) {
-        if (!self::xssString($key) || !self::arrayValue($item)) {
+        if (!self::arrayValue($item)) {
           return FALSE;
         }
-      }
-      if (!self::xssString($key) || !self::xssString($item)) {
-        return FALSE;
       }
     }
     return TRUE;

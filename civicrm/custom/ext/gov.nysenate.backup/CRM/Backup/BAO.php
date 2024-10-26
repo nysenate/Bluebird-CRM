@@ -83,7 +83,18 @@ class CRM_Backup_BAO {
 
     $fullFileName = $config['bkupdir'].$fileName;
 
+    //disable logging
+    Civi::settings()->set('logging', FALSE);
+    $logging = new CRM_Logging_Schema;
+    $logging->disableLogging();
+
     passthru("$approot/scripts/restoreInstance.sh $instance --archive-file $fullFileName --ok >/dev/null", $err);
+
+    //re-enable logging
+    Civi::settings()->set('logging', TRUE);
+    $logging = new CRM_Logging_Schema;
+    $logging->fixSchemaDifferences(TRUE);
+    Civi::service('sql_triggers')->rebuild(NULL, TRUE);
 
     if ($err == 0) {
       return TRUE;

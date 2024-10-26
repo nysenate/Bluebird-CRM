@@ -56,10 +56,13 @@ $button-border-radius: 2px;
     }
   }
 
-  input.crm-form-submit {
+  button.crm-form-xbutton,
+  button.crm-form-submit {
     background: $brand-primary;
     border-color: $brand-primary;
     border-radius: $border-radius-base;
+    box-sizing: content-box;
+    color: $crm-white;
     font-family: $font-family-base;
     margin-right: 0;
     padding: 8px 12px;
@@ -102,7 +105,7 @@ $button-border-radius: 2px;
       }
     }
 
-    input.crm-form-submit {
+    button.crm-form-submit {
       color: $crm-cancel-color !important;
 
       &:hover {
@@ -111,6 +114,13 @@ $button-border-radius: 2px;
     }
   }
 
+  .crm-form-select {
+    + .crm-button {
+      float: none;
+    }
+  }
+
+  .crm-form-xbutton,
   .crm-submit-buttons {
     height: auto;
     margin: 0;
@@ -151,15 +161,12 @@ $button-border-radius: 2px;
 
       .crm-button-type-cancel,
       .crm-button-type-back {
-        input {
-          border: solid 1px $gray-dark;
-          ///The default theme uses "!important"
-          color: $crm-cancel-color !important;
+        border: solid 1px $gray-dark;
+        color: $crm-cancel-color !important; // The default theme uses "!important"
 
-          &:hover {
-            background: darken($crm-copy, $crm-darken-percentage);
-            color: $crm-white !important;
-          }
+        &:hover {
+          background: darken($crm-copy, $crm-darken-percentage);
+          color: $crm-white !important;
         }
       }
     }
@@ -178,8 +185,8 @@ $button-border-radius: 2px;
     line-height: 35px;
   }
 
-  #crm-submit-buttons input.crm-form-submit,
-  .crm-button input.crm-form-submit,
+  #crm-submit-buttons button.crm-form-submit,
+  button.crm-button.crm-form-submit,
   .crm-hover-button,
   .ui-dialog-buttonset .ui-button,
   a.button,
@@ -254,15 +261,13 @@ $button-border-radius: 2px;
     .crm-i {
       background-color: transparent !important;
       color: $crm-white;
-      padding: 2px 3px;
-      top: 0;
+      padding: 0 2px;
     }
   }
 
   .crm-i {
     line-height: inherit;
     text-shadow: none;
-    vertical-align: middle;
   }
 
   .crm-button-type-refresh {
@@ -381,8 +386,9 @@ button {
   border: 0;
   border-radius: $border-radius-base;
   color: $crm-white;
+  cursor: pointer;
   font-family: $font-family-base;
-  line-height: 1;
+  line-height: $line-height-base;
   padding: 11px 12px;
   text-shadow: none;
   text-transform: uppercase;
@@ -429,4 +435,15 @@ button {
   > .crm-i {
     margin-top: 7px;
   }
+}
+
+// Ensure these components look well in conjunction with Bootstrap:
+#bootstrap-theme .crm-form-submit,
+#bootstrap-theme .crm-button {
+  color: $crm-white;
+  text-transform: uppercase;
+}
+
+#bootstrap-theme .crm-button:not(:last-child) {
+  margin-right: $crm-gap-small * 2;
 }

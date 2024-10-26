@@ -1,6 +1,6 @@
 {
     "name": "civicrm/civicrm-core:angular-route",
-    "url": "https://github.com/angular/bower-angular-route/archive/v1.5.11.zip",
-    "checksum": "b8e307b6a1a650f09b2c1856e7c39047f6a09c4ef22158f75e77f9874bf213c0",
+    "url": "https://github.com/angular/bower-angular-route/archive/v1.8.0.zip",
+    "checksum": "d984acd9c97144b3337bac3043cc430f3967dae477225ea057474b524575602a",
     "ignore": null
 }

@@ -20,20 +20,12 @@
 
     {if $invalidRowCount}
         <p class="error">
-        {ts 1=$invalidRowCount 2=$downloadErrorRecordsUrl}CiviCRM has detected invalid data or formatting errors in %1 records. If you continue, these records will be skipped. OR, you can download a file with just these problem records - <a href='%2'>Download Errors</a>. Then correct them in the original import file, cancel this import and begin again at step 1.{/ts}
-        </p>
-    {/if}
-
-    {if $conflictRowCount}
-        <p class="error">
-        {ts 1=$conflictRowCount 2=$downloadConflictRecordsUrl}CiviCRM has detected %1 records with conflicting email addresses within this data file. If you continue, these records will be skipped. OR, you can download a file with just these problem records - <a href='%2'>Download Conflicts</a>. Then correct them in the original import file, cancel this import and begin again at step 1.{/ts}
+        {ts 1=$invalidRowCount 2=$downloadErrorRecordsUrl|smarty:nodefaults}CiviCRM has detected invalid data or formatting errors in %1 records. If you continue, these records will be skipped. OR, you can download a file with just these problem records - <a href='%2'>Download Errors</a>. Then correct them in the original import file, cancel this import and begin again at step 1.{/ts}
         </p>
     {/if}
 
     <p>{ts}Click 'Import Now' if you are ready to proceed.{/ts}</p>
 </div>
-<div class="crm-submit-buttons">{include file="CRM/common/formButtons.tpl" location="top"}</div>
-{include file="CRM/common/importProgress.tpl"}
 
 <div id="preview-info">
  {* Summary Preview (record counts) *}
@@ -44,25 +36,12 @@
     </tr>
 
     {if $invalidRowCount}
-    <tr class="error"><td class="label crm-grid-cell">{ts}Rows with Errors{/ts}</td>
+      <tr class="error"><td class="label crm-grid-cell">{ts}Rows with Errors{/ts}</td>
         <td class="data">{$invalidRowCount}</td>
         <td class="explanation">{ts}Rows with invalid data in one or more fields (for example, invalid email address formatting). These rows will be skipped (not imported).{/ts}
-            {if $invalidRowCount}
-                <div class="action-link"><a href="{$downloadErrorRecordsUrl}">&raquo; {ts}Download Errors{/ts}</a></div>
-            {/if}
+          <div class="action-link"><a href="{$downloadErrorRecordsUrl|smarty:nodefaults}"><i class="crm-i fa-download" aria-hidden="true"></i> {ts}Download Errors{/ts}</a></div>
         </td>
-    </tr>
-    {/if}
-
-    {if $conflictRowCount}
-    <tr class="error"><td class="label crm-grid-cell">{ts}Conflicting Rows{/ts}</td>
-        <td class="data">{$conflictRowCount}</td>
-        <td class="explanation">{ts}Rows with conflicting email addresses within this file. These rows will be skipped (not imported).{/ts}
-            {if $conflictRowCount}
-                <div class="action-link"><a href="{$downloadConflictRecordsUrl}">&raquo; {ts}Download Conflicts{/ts}</a></div>
-            {/if}
-        </td>
-    </tr>
+      </tr>
     {/if}
 
     <tr>
@@ -77,10 +56,10 @@
 
  {* Group options *}
  {* New Group *}
-<div id="new-group" class="crm-accordion-wrapper collapsed">
- <div class="crm-accordion-header">
+<details id="new-group" class="crm-accordion-bold">
+ <summary>
     {ts}Add imported records to a new group{/ts}
- </div><!-- /.crm-accordion-header -->
+ </summary>
  <div class="crm-accordion-body">
             <table class="form-layout-compressed">
              <tr>
@@ -96,30 +75,30 @@
                <td>{$form.newGroupType.html}</td>
              </tr>
             </table>
- </div><!-- /.crm-accordion-body -->
-</div><!-- /.crm-accordion-wrapper -->
+ </div>
+</details>
 
 
       {* Existing Group *}
 
-<div id="existing-groups" class="crm-accordion-wrapper crm-existing_group-accordion {if $form.groups} {else}collapsed{/if}">
- <div class="crm-accordion-header">
+<details id="existing-groups" class="crm-accordion-bold crm-existing_group-accordion" {if !empty($form.groups)}open{/if}>
+ <summary>
   {$form.groups.label}
- </div><!-- /.crm-accordion-header -->
+ </summary>
  <div class="crm-accordion-body">
 
         <div class="form-item">
         <table><tr><td style="width: 14em;"></td><td>{$form.groups.html}</td></tr></table>
         </div>
- </div><!-- /.crm-accordion-body -->
-</div><!-- /.crm-accordion-wrapper -->
+ </div>
+</details>
 
     {* Tag options *}
     {* New Tag *}
-<div id="new-tag" class="crm-accordion-wrapper collapsed">
- <div class="crm-accordion-header">
+<details id="new-tag" class="crm-accordion-bold">
+ <summary>
   {ts}Create a new tag and assign it to imported records{/ts}
- </div><!-- /.crm-accordion-header -->
+ </summary>
  <div class="crm-accordion-body">
 
   <div class="form-item">
@@ -134,44 +113,28 @@
            </tr>
         </table>
     </div>
- </div><!-- /.crm-accordion-body -->
-</div><!-- /.crm-accordion-wrapper -->
+ </div>
+</details>
     {* Existing Tag Imported Contact *}
 
-<div id="existing-tags" class="crm-accordion-wrapper collapsed">
- <div class="crm-accordion-header">
+<details id="existing-tags" class="crm-accordion-bold">
+ <summary>
   {ts}Tag imported records{/ts}
-</div><!-- /.crm-accordion-header -->
+</summary>
  <div class="crm-accordion-body">
 
         <table class="form-layout-compressed">
             <tr><td style="width: 14em;"></td>
              <td class="listing-box" style="margin-bottom: 0em; width: 15em;">
-        {foreach from=$form.tag item="tag_val"}
-          <div>{$tag_val.html}</div>
-        {/foreach}
+               {$form.tag.html}
             </td>
           </tr>
         </table>
- </div><!-- /.crm-accordion-body -->
-</div><!-- /.crm-accordion-wrapper -->
+ </div>
+</details>
 </div> {* End of preview-info div. We hide this on form submit. *}
 
 <div class="crm-submit-buttons">
    {include file="CRM/common/formButtons.tpl" location="bottom"}
 </div>
 </div>
-
-{literal}
-<script type="text/javascript">
-
-{/literal}{if $invalidGroupName}{literal}
-cj("#new-group.collapsed").crmAccordionToggle();
-{/literal}{/if}{literal}
-
-{/literal}{if $invalidTagName}{literal}
-cj("#new-tag.collapsed").crmAccordionToggle();
-{/literal}{/if}{literal}
-
-</script>
-{/literal}

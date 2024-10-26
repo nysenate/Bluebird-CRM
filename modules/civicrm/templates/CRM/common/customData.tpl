@@ -13,7 +13,7 @@
     CRM.buildCustomData = function (type, subType, subName, cgCount, groupID, isMultiple, onlySubtype, cid) {
       var dataUrl = CRM.url('civicrm/custom', {type: type}),
         prevCount = 1,
-        fname = '#customData',
+        fname = '#customData_' + type,
         storage = {};
 
       if (subType) {
@@ -26,26 +26,26 @@
 
       if (subName) {
         dataUrl += '&subName=' + subName;
-        $('#customData' + subName).show();
+        $('#customData_' + type + subName).show();
       }
       else {
-        $('#customData').show();
+        $('#customData_' + type).show();
       }
       if (groupID) {
         dataUrl += '&groupID=' + groupID;
       }
 
       {/literal}
-      {if $groupID}
+      {if !empty($groupID)}
         dataUrl += '&groupID=' + '{$groupID}';
       {/if}
-      {if $entityID}
+      {if !empty($entityID)}
         dataUrl += '&entityID=' + '{$entityID}';
       {/if}
-      {if $qfKey}
+      {if !empty($qfKey)}
         dataUrl += '&qf=' + '{$qfKey}';
       {/if}
-      {if $action}
+      {if !empty($action)}
         dataUrl += '&action=' + '{$action}';
       {/if}
       {literal}

@@ -1,0 +1,48 @@
+.civicase__activity-month-nav {
+  overflow: hidden;
+  width: 105px;
+
+  &.affix {
+    position: fixed !important;
+  }
+}
+
+.civicase__activity-month-nav__group {
+  border-left: 2px solid $activity-month-nav-divider;
+}
+
+.civicase__activity-month-nav__group-title,
+.civicase__activity-month-nav__group-year,
+.civicase__activity-month-nav__group-month {
+  padding-left: 15px;
+}
+
+.civicase__activity-month-nav__group-title {
+  color: $gray-darker;
+  font-weight: $crm-font-weight-h5;
+  text-transform: uppercase;
+}
+
+.civicase__activity-month-nav__group-year {
+  color: $gray-darker;
+}
+
+.civicase__activity-month-nav__group-gap {
+  height: 10px;
+}
+
+.civicase__activity-month-nav__group-month {
+  color: $crm-gray-matte;
+  cursor: pointer;
+  font-weight: $font-weight-heading;
+
+  &.active {
+    border-left: 2px solid $brand-primary;
+    color: $brand-primary;
+    margin-left: -2px;
+  }
+
+  &:hover {
+    color: $brand-primary;
+  }
+}

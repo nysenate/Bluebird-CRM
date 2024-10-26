@@ -1,0 +1,14 @@
+#!/bin/bash
+set -e
+
+# Download PHPCS if it already does not exist
+if [ ! -f phpcs.phar ]; then
+  curl -OL https://squizlabs.github.io/PHP_CodeSniffer/phpcs.phar
+fi
+# Give executable permission to PHPCS
+chmod +x phpcs.phar
+
+# Clone Drupal Coder repo
+if [ ! -d drupal/coder ]; then
+  git clone --depth 1 https://git.drupalcode.org/project/coder.git drupal/coder
+fi

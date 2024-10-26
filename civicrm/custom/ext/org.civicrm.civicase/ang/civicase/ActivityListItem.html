@@ -1,9 +1,0 @@
-<div
-   style="border-left-color: {{ activity.color }}; border-right-color: {{ activity.color }};"
-   class="act-feed-item act-category-{{ activity.category.join(' act-category-') || 'none' }} {{ activity.status_css }}"
-   ng-class="{'is-completed': activity.is_completed,  'is-incomplete': !activity.is_completed, 'activity-overdue': activity.is_overdue}">
-  <div class="act-feed-inner">
-    <div class="pull-right" ng-include="'~/civicase/ActivityItemMenu.html'" ng-if="bulkAllowed"></div>
-    <div ng-include="'~/civicase/ActivityItemInnerWrapper.html'"></div>
-  </div>
-</div>

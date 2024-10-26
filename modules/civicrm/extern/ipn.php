@@ -12,8 +12,6 @@
 /**
  * @package CRM
  * @copyright CiviCRM LLC https://civicrm.org/licensing
- * $Id$
- *
  * This script processes "Instant Payment Notifications" (IPNs).  Modern
  * Payment Processors use the /civicrm/payment/ipn/123 endpoint instead (where
  * 123 is the payment processor ID), however a quirk in the way PayPal works
@@ -48,16 +46,6 @@ require_once '../civicrm.config.php';
 /* Cache the real UF, override it with the SOAP environment */
 
 CRM_Core_Config::singleton();
-$log = new CRM_Utils_SystemLogger();
-if (empty($_GET)) {
-  $log->alert('payment_notification processor_name=PayPal', $_REQUEST);
-  $paypalIPN = new CRM_Core_Payment_PayPalProIPN($_REQUEST);
-}
-else {
-  $log->alert('payment_notification PayPal_Standard', $_REQUEST);
-  $paypalIPN = new CRM_Core_Payment_PayPalIPN($_REQUEST);
-  // @todo upgrade standard per Pro
-}
 try {
   switch ($config->userFramework) {
     case 'Joomla':
@@ -70,6 +58,16 @@ try {
       CRM_Utils_System::loadBootStrap([], FALSE);
       break;
 
+  }
+  $log = new CRM_Utils_SystemLogger();
+  if (empty($_GET)) {
+    $log->alert('payment_notification processor_name=PayPal', $_REQUEST);
+    $paypalIPN = new CRM_Core_Payment_PayPalProIPN($_REQUEST);
+  }
+  else {
+    $log->alert('payment_notification PayPal_Standard', $_REQUEST);
+    $paypalIPN = new CRM_Core_Payment_PayPalIPN($_REQUEST);
+    // @todo upgrade standard per Pro
   }
   $paypalIPN->main();
 }

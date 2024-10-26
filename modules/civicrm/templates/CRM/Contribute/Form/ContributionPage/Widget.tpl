@@ -11,7 +11,7 @@
 <h3>{ts}Configure Widget{/ts}</h3>
 {if $showStatus}
 <div class="messages status no-popup">
-    <div class="icon inform-icon"></div>
+    {icon icon="fa-info-circle"}{/icon}
     {ts}It looks like you may have posted and / or distributed the flash version of the Contribution widget. We won't be supporting the flash version in next release. You should try and get all sites using the flash widget to update to the improved HTML widget code below as soon as possible.{/ts}
 </div>
 {/if}
@@ -19,7 +19,6 @@
     <div class="help">
         {ts}CiviContribute widgets allow you and your supporters to easily promote this fund-raising campaign. Widget code can be added to any web page.  It will provide a real-time display of current contribution results and a direct link to this contribution page.{/ts} {help id="id-intro"}
     </div>
-<div class="crm-submit-buttons">{include file="CRM/common/formButtons.tpl" location="top"}</div>
     <table class="form-layout-compressed">
       <tr class="crm-contribution-contributionpage-widget-form-block-is_active"><td style="width: 12em;">&nbsp;</td><td style="font-size: 10pt;">{$form.is_active.html}&nbsp;{$form.is_active.label}</td></tr>
     </table>
@@ -27,13 +26,22 @@
 
     <div id="widgetFields">
         <table class="form-layout-compressed">
-            <tr class="crm-contribution-contributionpage-widget-form-block-title"><td class="label">{$form.title.label}<span class="crm-marker"> *</span></td><td>{$form.title.html}</td></tr>
-            <tr class="crm-contribution-form-block-url_logo"><td class="label">{$form.url_logo.label}</span></td><td>{$form.url_logo.html}</td></tr>
-            <tr class="crm-contribution-contributionpage-widget-form-block-button_title"><td class="label">{$form.button_title.label}</td><td>{$form.button_title.html}</td></tr>
-            <tr class="crm-contribution-contributionpage-widget-form-block-about"><td class="label">{$form.about.label}<span class="crm-marker"> *</span></td><td>{$form.about.html}
-<br /><span class="description">{ts}Enter content for the about message. You may include HTML formatting tags. You can also include images, as long as they are already uploaded to a server&mdash;reference them using complete URLs.{/ts}</span>
-</td></tr>
-
+            <tr class="crm-contribution-contributionpage-widget-form-block-title">
+                <td class="label">{$form.title.label}<span class="crm-marker"> *</span></td>
+                <td>{$form.title.html}</td>
+            </tr>
+            <tr class="crm-contribution-form-block-url_logo">
+                <td class="label">{$form.url_logo.label}</span></td>
+                <td>{$form.url_logo.html}</td>
+            </tr>
+            <tr class="crm-contribution-contributionpage-widget-form-block-button_title">
+                <td class="label">{$form.button_title.label}</td>
+                <td>{$form.button_title.html}</td>
+            </tr>
+            <tr class="crm-contribution-contributionpage-widget-form-block-about">
+                <td class="label">{$form.about.label}<span class="crm-marker"> *</span></td>
+                <td>{$form.about.html}</td>
+            </tr>
         </table>
 
         <div id="id-get_code">
@@ -60,7 +68,7 @@
                     </div>
                     <textarea rows="8" cols="50" name="widget_code" id="widget_code">{include file="CRM/Contribute/Page/Widget.tpl" widgetId=$widget_id cpageId=$cpageId}</textarea>
                     <br />
-                    <strong><a href="#" onclick="Widget.widget_code.select(); return false;">&raquo; {ts}Select Code{/ts}</a></strong>
+                    <strong><a href="#" onclick="Widget.widget_code.select(); return false;"><i class="crm-i fa-code" aria-hidden="true"></i> {ts}Select Code{/ts}</a></strong>
                 {else}
                     <div class="description">
                         {ts}The code for adding this widget to web pages will be displayed here after you click <strong>Save and Preview</strong>.{/ts}
@@ -71,18 +79,18 @@
         </div>
 
 
-        <div class="crm-accordion-wrapper collapsed crm-case-roles-block">
-         <div class="crm-accordion-header">
+        <details class="crm-accordion-bold crm-case-roles-block">
+         <summary>
           {ts}Edit Widget Colors{/ts}
-         </div><!-- /.crm-accordion-header -->
+         </summary>
          <div class="crm-accordion-body">
             <table class="form-layout-compressed">
             {foreach from=$colorFields item=field key=fieldName}
               <tr><td class="label">{$form.$fieldName.label}<span class="crm-marker"> *</span></td><td>{$form.$fieldName.html}</td></tr>
             {/foreach}
             </table>
-         </div><!-- /.crm-accordion-body -->
-        </div><!-- /.crm-accordion-wrapper -->
+         </div>
+        </details>
 
     </div>
 

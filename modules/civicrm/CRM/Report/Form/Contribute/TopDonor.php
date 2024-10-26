@@ -30,19 +30,22 @@ class CRM_Report_Form_Contribute_TopDonor extends CRM_Report_Form {
    * all reports have been adjusted to take care of it. This report has not
    * and will run an inefficient query until fixed.
    *
-   * CRM-19170
-   *
    * @var bool
+   * @see https://issues.civicrm.org/jira/browse/CRM-19170
    */
   protected $groupFilterNotOptimised = TRUE;
 
   public $_drilldownReport = ['contribute/detail' => 'Link to Detail Report'];
 
-  protected $_charts = [
-    '' => 'Tabular',
-    'barChart' => 'Bar Chart',
-    'pieChart' => 'Pie Chart',
-  ];
+  /**
+   * @var string
+   */
+  protected $_outerCluase = '';
+
+  /**
+   * @var string
+   */
+  protected $_groupLimit = '';
 
   /**
    */
@@ -118,6 +121,7 @@ class CRM_Report_Form_Contribute_TopDonor extends CRM_Report_Form {
             'default' => 'this.year',
             'operatorType' => CRM_Report_Form::OP_DATE,
           ],
+          'receipt_date' => ['operatorType' => CRM_Report_Form::OP_DATE],
           'currency' => [
             'title' => ts('Currency'),
             'operatorType' => CRM_Report_Form::OP_MULTISELECT,
@@ -135,7 +139,7 @@ class CRM_Report_Form_Contribute_TopDonor extends CRM_Report_Form {
             'title' => ts('Financial Type'),
             'type' => CRM_Utils_Type::T_INT,
             'operatorType' => CRM_Report_Form::OP_MULTISELECT,
-            'options' => CRM_Financial_BAO_FinancialType::getAvailableFinancialTypes(),
+            'options' => CRM_Contribute_BAO_Contribution::buildOptions('financial_type_id', 'search'),
           ],
           'contribution_status_id' => [
             'title' => ts('Contribution Status'),
@@ -173,6 +177,14 @@ class CRM_Report_Form_Contribute_TopDonor extends CRM_Report_Form {
             'no_repeat' => TRUE,
           ],
         ],
+        'filters' => [
+          'on_hold' => [
+            'title' => ts('On Hold'),
+            'type' => CRM_Utils_Type::T_INT,
+            'operatorType' => CRM_Report_Form::OP_MULTISELECT,
+            'options' => ['' => ts('Any')] + CRM_Core_PseudoConstant::emailOnHoldOptions(),
+          ],
+        ],
         'grouping' => 'email-fields',
       ],
       'civicrm_phone' => [
@@ -188,6 +200,13 @@ class CRM_Report_Form_Contribute_TopDonor extends CRM_Report_Form {
       ],
     ];
 
+    // Add charts support
+    $this->_charts = [
+      '' => ts('Tabular'),
+      'barChart' => ts('Bar Chart'),
+      'pieChart' => ts('Pie Chart'),
+    ];
+
     $this->_groupFilter = TRUE;
     $this->_tagFilter = TRUE;
     $this->_currencyColumn = 'civicrm_contribution_currency';
@@ -197,7 +216,7 @@ class CRM_Report_Form_Contribute_TopDonor extends CRM_Report_Form {
   /**
    * @param $fields
    * @param $files
-   * @param $self
+   * @param self $self
    *
    * @return array
    */
@@ -207,11 +226,7 @@ class CRM_Report_Form_Contribute_TopDonor extends CRM_Report_Form {
     $op = $fields['total_range_op'] ?? NULL;
     $val = $fields['total_range_value'] ?? NULL;
 
-    if (!in_array($op, [
-      'eq',
-      'lte',
-    ])
-    ) {
+    if (!in_array($op, ['eq', 'lte'])) {
       $errors['total_range_op'] = ts("Please select 'Is equal to' OR 'Is Less than or equal to' operator");
     }
 
@@ -225,7 +240,7 @@ class CRM_Report_Form_Contribute_TopDonor extends CRM_Report_Form {
     $this->_from = "
         FROM civicrm_contact {$this->_aliases['civicrm_contact']} {$this->_aclFrom}
             INNER JOIN civicrm_contribution {$this->_aliases['civicrm_contribution']}
-                ON {$this->_aliases['civicrm_contact']}.id = {$this->_aliases['civicrm_contribution']}.contact_id AND {$this->_aliases['civicrm_contribution']}.is_test = 0
+                ON {$this->_aliases['civicrm_contact']}.id = {$this->_aliases['civicrm_contribution']}.contact_id AND {$this->_aliases['civicrm_contribution']}.is_test = 0 AND {$this->_aliases['civicrm_contribution']}.is_template = 0
        ";
 
     // for credit card type
@@ -238,12 +253,12 @@ class CRM_Report_Form_Contribute_TopDonor extends CRM_Report_Form {
 
   public function where() {
     $clauses = [];
-    $this->_tempClause = $this->_outerCluase = $this->_groupLimit = '';
+    $this->_outerCluase = $this->_groupLimit = '';
     foreach ($this->_columns as $tableName => $table) {
       if (array_key_exists('filters', $table)) {
         foreach ($table['filters'] as $fieldName => $field) {
           $clause = NULL;
-          if (CRM_Utils_Array::value('type', $field) & CRM_Utils_Type::T_DATE) {
+          if (($field['type'] ?? 0) & CRM_Utils_Type::T_DATE) {
             $relative = $this->_params["{$fieldName}_relative"] ?? NULL;
             $from = $this->_params["{$fieldName}_from"] ?? NULL;
             $to = $this->_params["{$fieldName}_to"] ?? NULL;
@@ -257,9 +272,9 @@ class CRM_Report_Form_Contribute_TopDonor extends CRM_Report_Form {
             if ($op) {
               $clause = $this->whereClause($field,
                 $op,
-                CRM_Utils_Array::value("{$fieldName}_value", $this->_params),
-                CRM_Utils_Array::value("{$fieldName}_min", $this->_params),
-                CRM_Utils_Array::value("{$fieldName}_max", $this->_params)
+                $this->_params["{$fieldName}_value"] ?? NULL,
+                $this->_params["{$fieldName}_min"] ?? NULL,
+                $this->_params["{$fieldName}_max"] ?? NULL
               );
             }
           }
@@ -330,7 +345,8 @@ class CRM_Report_Form_Contribute_TopDonor extends CRM_Report_Form {
   /**
    * @param int $rowCount
    */
-  public function limit($rowCount = CRM_Report_Form::ROW_COUNT_LIMIT) {
+  public function limit($rowCount = NULL) {
+    $rowCount ??= $this->getRowCount();
     // lets do the pager if in html mode
     $this->_limit = NULL;
 
@@ -352,7 +368,7 @@ class CRM_Report_Form_Contribute_TopDonor extends CRM_Report_Form {
         }
       }
 
-      $pageId = $pageId ? $pageId : 1;
+      $pageId = $pageId ?: 1;
       $this->set(CRM_Utils_Pager::PAGE_ID, $pageId);
       $offset = ($pageId - 1) * $rowCount;
 

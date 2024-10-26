@@ -8,7 +8,7 @@
 ** merge duplicate contacts safely
 **
 */
-  
+
 require_once 'script_utils.php';
 
 error_reporting(E_ERROR | E_PARSE | E_WARNING);
@@ -16,11 +16,11 @@ error_reporting(E_ERROR | E_PARSE | E_WARNING);
 function run()
 {
   $prog = basename(__FILE__);
-  $shortopts = 'd';
-  $longopts = array('dryrun');
+  $shortopts = 'd:l';
+  $longopts = ['dryrun', 'log='];
   $stdusage = civicrm_script_usage();
   $usage = "";
-  $contactOpts = array();
+  $contactOpts = [];
 
   $optlist = civicrm_script_init($shortopts, $longopts);
   if ($optlist === null) {
@@ -30,6 +30,9 @@ function run()
     exit(1);
   }
 
+  //use the log level passed to params or existing level via parent script
+  set_bbscript_log_level($optlist['log'] ?? get_bbscript_log_level());
+
   require_once 'CRM/Core/Config.php';
   $config = CRM_Core_Config::singleton();
 
@@ -38,68 +41,66 @@ function run()
   require_once 'api/api.php';
   require_once 'CRM/Core/Error.php';
   require_once 'CRM/Core/DAO.php';
-  
+
   //log the execution of script
-  CRM_Core_Error::debug_log_message('dedupeSubRecords.php');
+  bbscript_log(LL::INFO, 'begin processing dedupeSubRecords.php...');
 
   $sTime = microtime(true);
 
   //record types to process
-  $types = array(
-    'phone' => array(
-      'groupBys' => array(
+  $types = [
+    'phone' => [
+      'groupBys' => [
         'contact_id',
         'location_type_id',
         'phone',
         'phone_type_id',
         'phone_ext'
-      ),
-      'orderBys' => array(
+      ],
+      'orderBys' => [
         'is_primary ASC',
         'id DESC',
-      ),
-    ),
-    'email' => array(
-      'groupBys' => array(
+      ],
+    ],
+    'email' => [
+      'groupBys' => [
         'contact_id',
         'location_type_id',
         'email',
         'signature_text',
         'signature_html',
-      ),
-      'orderBys' => array(
+      ],
+      'orderBys' => [
         'is_primary ASC',
         'on_hold DESC',
         'id DESC',
-      )
-    ),
-    'im' => array(
-      'groupBys' => array(
+      ]
+    ],
+    'im' => [
+      'groupBys' => [
         'contact_id',
         'name',
         'location_type_id',
         'provider_id',
-      ),
-      'orderBys' => array(
+      ],
+      'orderBys' => [
         'is_primary ASC',
         'id DESC',
-      ),
-    ),
-    'website' => array(
-      'groupBys' => array(
+      ],
+    ],
+    'website' => [
+      'groupBys' => [
         'contact_id',
         'url',
         'website_type_id',
-      ),
-      'orderBys' => array(
+      ],
+      'orderBys' => [
         'id DESC',
-      ),
-    ),
-  );
+      ],
+    ],
+  ];
 
-  echo "\nbegin processing dedupeSubRecords.php...\n\n";
-
-  foreach ( $types as $type => $details ) {
+  foreach ($types as $type => $details) {
     $tmpTbl = 'nyss_temp_dedupe_'.$type;
     //get order and group bys
     $orderByList = implode(', ', $details['orderBys']);
@@ -107,32 +108,39 @@ function run()
 
     //remove duplicate records; prefer removing record with larger id (newer)
     CRM_Core_DAO::executeQuery("DROP TABLE IF EXISTS $tmpTbl;");
-    $sql = "CREATE TABLE $tmpTbl ( id INT(10), PRIMARY KEY (id) )
-            SELECT id
-            FROM (
-              SELECT *
-              FROM civicrm_{$type}
-              ORDER BY {$orderByList} ) as rec1
-            GROUP BY {$groupByList}
-            HAVING count(id) > 1;";
+
+    $sql = "
+      CREATE TABLE $tmpTbl (id INT(10), PRIMARY KEY (id))
+      IGNORE SELECT ANY_VALUE(id)
+      FROM (
+        SELECT *
+        FROM civicrm_{$type}
+        ORDER BY {$orderByList}
+      ) as rec1
+      GROUP BY {$groupByList}
+      HAVING count(id) > 1;
+    ";
+    bbscript_log(LL::TRACE, '$sql', $sql);
     CRM_Core_DAO::executeQuery($sql);
 
     $count = CRM_Core_DAO::singleValueQuery("SELECT count(id) FROM $tmpTbl");
+    bbscript_log(LL::TRACE, '$count', $count);
 
-    if ( $optDry ) {
+    if ($optDry) {
       CRM_Core_DAO::executeQuery('SET group_concat_max_len = 100000');
       $sql = "SELECT GROUP_CONCAT(id) FROM $tmpTbl";
       $recs = CRM_Core_DAO::singleValueQuery($sql);
-      if ( $recs ) {
-        echo "The following {$count} {$type} records would be removed:\n{$recs}\n\n";
+      if ($recs) {
+        bbscript_log(LL::TRACE, "The following {$count} {$type} records would be removed:\n{$recs}");
       }
     }
     else {
-      echo "Removing {$count} duplicate {$type} records from {$optlist['site']}\n";
+      bbscript_log(LL::TRACE, "Removing {$count} duplicate {$type} records from {$optlist['site']}");
       $sql = "
         DELETE FROM civicrm_{$type}
-        WHERE id IN ( SELECT id FROM $tmpTbl );
+        WHERE id IN (SELECT id FROM $tmpTbl);
       ";
+      bbscript_log(LL::TRACE, '$sql', $sql);
       CRM_Core_DAO::executeQuery($sql);
     }
 
@@ -141,7 +149,7 @@ function run()
 
   $eTime = microtime(true);
   $diffTime = $eTime - $sTime;
-  echo "Time taken to complete: {$diffTime} secs.\n\n";
+  bbscript_log(LL::TRACE, "Time taken to complete: {$diffTime} secs.");
 }
 
 run();

@@ -10,9 +10,12 @@ use CRM_Mosaico_ExtensionUtil as E;
  */
 class CRM_Mosaico_Utils {
 
-  public static function isBootstrap() {
-    return strpos(CRM_Mosaico_Utils::getLayoutPath(), '/crmstar-') === FALSE;
-  }
+  /**
+   * Maximum image size, in total pixels, allowed for on-the-fly generation.
+   *
+   * @var int
+   */
+  const MAX_IMAGE_PIXELS = 36000000;
 
   /**
    * Get a list of layout options.
@@ -21,12 +24,11 @@ class CRM_Mosaico_Utils {
    *   Array (string $machineName => string $label).
    */
   public static function getLayoutOptions() {
-    return array(
+    return [
       'auto' => E::ts('Automatically select a layout'),
-      'crmstar-single' => E::ts('Single Page (crm-*)'),
       'bootstrap-single' => E::ts('Single Page (Bootstrap CSS)'),
       'bootstrap-wizard' => E::ts('Wizard (Bootstrap CSS)'),
-    );
+    ];
   }
 
   /**
@@ -45,6 +47,79 @@ class CRM_Mosaico_Utils {
   }
 
   /**
+   * Get a list of image resize scale factors
+   *
+   * @return array
+   *   Array (int $machineName => string $label).
+   */
+  public static function getResizeScaleFactor() {
+    return [
+      '' => E::ts('None'),
+      3 => E::ts('3x'),
+      2 => E::ts('2x'),
+    ];
+  }
+
+  /**
+   * Get a list of image resize scale width limits
+   *
+   * @return array
+   *   Array (int $machineName => string $label).
+   */
+  public static function getResizeScaleWidthLimit() {
+    return [
+      ''   => E::ts('None'),
+      190  => E::ts('Upto 190 pixels (e.g 3 column blocks)'),
+      285  => E::ts('Upto 285 pixels (e.g 2 column blocks)'),
+      999  => E::ts('Upto 570 pixels (e.g 1 column blocks)'),
+      9999 => E::ts('All (other) sizes'),
+    ];
+  }
+
+  /**
+   * Get the list of templates directly from the disk.
+   */
+  public static function findBaseTemplatesFromDisk() {
+    $templates = CRM_Mosaico_BAO_MosaicoTemplate::findBaseTemplates(TRUE, FALSE);
+    return array_column($templates, 'name', 'name');
+  }
+
+  /**
+   * Get a list of token options.
+   *
+   * @param boolean $hotlist
+   *   return only hotlist tokens if TRUE
+   *
+   * @return array
+   *   Array (string $machineName => string $label).
+   */
+  public static function getMailingTokens($hotlist = FALSE) {
+    $mailTokens = civicrm_api3('Mailing', 'gettokens', [
+      'entity' => ['contact', 'mailing'],
+      'sequential' => 1,
+    ])['values'];
+    $hotlistTokens = Civi::settings()->get('mosaico_hotlist_tokens');
+    $tokens = [];
+    foreach ($mailTokens as $token) {
+      if (!empty($token['children'])) {
+        foreach ($token['children'] as $child) {
+          if (!empty($child['id'])) {
+            if ($hotlist) {
+              if (in_array($child['id'], $hotlistTokens)) {
+                $tokens[$child['text']] = $child['id'];
+              }
+            }
+            else {
+              $tokens[$child['id']] = $child['text'];
+            }
+          }
+        }
+      }
+    }
+    return $tokens;
+  }
+
+  /**
    * Get the path to the Mosaico layout file.
    *
    * @return string
@@ -55,15 +130,14 @@ class CRM_Mosaico_Utils {
     $layout = CRM_Core_BAO_Setting::getItem('Mosaico Preferences', 'mosaico_layout');
     $prefix = '~/crmMosaico/EditMailingCtrl';
 
-    $paths = array(
-      'crmstar-single' => "$prefix/crmstar-single.html",
+    $paths = [
       'bootstrap-single' => "$prefix/bootstrap-single.html",
       'bootstrap-wizard' => "$prefix/bootstrap-wizard.html",
-    );
+    ];
 
-    if (empty($layout) || $layout === 'auto') {
-      return CRM_Extension_System::singleton()->getMapper()->isActiveModule('shoreditch')
-        ? $paths['bootstrap-wizard'] : $paths['crmstar-single'];
+    // Legacy handling for 'crmstar-single' - treat as 'auto'
+    if (empty($layout) || $layout === 'auto' || $layout === 'crmstar-single') {
+      return $paths['bootstrap-wizard'];
     }
     elseif (isset($paths[$layout])) {
       return $paths[$layout];
@@ -87,7 +161,7 @@ class CRM_Mosaico_Utils {
   public static function getMosaicoDistUrl($preferFormat, $file = NULL) {
     $key = "distUrl";
     if (!isset(Civi::$statics[__CLASS__][$key])) {
-      Civi::$statics[__CLASS__][$key] = CRM_Core_Resources::singleton()->getUrl('uk.co.vedaconsulting.mosaico', 'packages/mosaico/dist');
+      Civi::$statics[__CLASS__][$key] = CRM_Core_Resources::singleton()->getUrl('uk.co.vedaconsulting.mosaico', 'packages/mosaico/dist/rs');
     }
     return self::filterAbsoluteRelative($preferFormat, Civi::$statics[__CLASS__][$key] . ($file ? "/$file" : ''));
   }
@@ -130,12 +204,12 @@ class CRM_Mosaico_Utils {
   }
 
   public static function getConfig() {
-    static $mConfig = array();
+    static $mConfig = [];
 
     if (empty($mConfig)) {
       $civiConfig = CRM_Core_Config::singleton();
 
-      $mConfig = array(
+      $mConfig = [
         /* base url for image folders */
         'BASE_URL' => $civiConfig->imageUploadURL,
 
@@ -165,12 +239,11 @@ class CRM_Mosaico_Utils {
         'THUMBNAIL_HEIGHT' => 90,
 
         'MOBILE_MIN_WIDTH' => 246,
-      );
+      ];
     }
 
     return $mConfig;
   }
-
 
   /**
    * handler for upload requests
@@ -180,7 +253,7 @@ class CRM_Mosaico_Utils {
 
     global $http_return_code;
 
-    $messages = array();
+    $messages = [];
     _mosaico_civicrm_check_dirs($messages);
     if (!empty($messages)) {
       CRM_Core_Error::debug_log_message('Mosaico uploader failed. Check system status for directory errors.');
@@ -188,7 +261,7 @@ class CRM_Mosaico_Utils {
       return;
     }
 
-    $files = array();
+    $files = [];
 
     if ($_SERVER["REQUEST_METHOD"] == "GET") {
       $dir = scandir($config['BASE_DIR'] . $config['UPLOADS_DIR']);
@@ -199,11 +272,11 @@ class CRM_Mosaico_Utils {
         if (is_file($file_path)) {
           $size = filesize($file_path);
 
-          $file = array(
+          $file = [
             "name" => $file_name,
             "url" => $config['BASE_URL'] . $config['UPLOADS_DIR'] . $file_name,
             "size" => $size,
-          );
+          ];
 
           if (file_exists($config['BASE_DIR'] . $config['THUMBNAILS_DIR'] . $file_name)) {
             $file["thumbnailUrl"] = $config['BASE_URL'] . $config['THUMBNAILS_URL'] . $file_name;
@@ -228,21 +301,22 @@ class CRM_Mosaico_Utils {
           if (move_uploaded_file($tmp_name, $file_path) === TRUE) {
             $size = filesize($file_path);
 
-            $image = new Imagick($file_path);
-
-            $image->resizeImage($config['THUMBNAIL_WIDTH'], $config['THUMBNAIL_HEIGHT'], Imagick::FILTER_LANCZOS, 1.0, TRUE);
-            // $image->writeImage( $config['BASE_DIR'] . $config[ THUMBNAILS_DIR ] . $file_name );
-            if ($f = fopen($config['BASE_DIR'] . $config['THUMBNAILS_DIR'] . $file_name, "w")) {
-              $image->writeImageFile($f);
+            $thumbnail_path = $config['BASE_DIR'] . $config['THUMBNAILS_DIR'] . $file_name;
+            try {
+              Civi::service('mosaico_graphics')->createResizedImage($file_path, $thumbnail_path, $config['THUMBNAIL_WIDTH'], $config['THUMBNAIL_HEIGHT']);
+              $file = [
+                "name" => $file_name,
+                "url" => $config['BASE_URL'] . $config['UPLOADS_DIR'] . $file_name,
+                "size" => $size,
+                "thumbnailUrl" => $config['BASE_URL'] . $config['THUMBNAILS_URL'] . $file_name,
+              ];
             }
-            $image->destroy();
-
-            $file = array(
-              "name" => $file_name,
-              "url" => $config['BASE_URL'] . $config['UPLOADS_DIR'] . $file_name,
-              "size" => $size,
-              "thumbnailUrl" => $config['BASE_URL'] . $config['THUMBNAILS_URL'] . $file_name,
-            );
+            catch (\Exception $e) {
+              CRM_Core_Error::debug_log_message($e->getMessage());
+              $file = [
+                'error' => $e->getMessage(),
+              ];
+            }
 
             $files[] = $file;
           }
@@ -261,7 +335,7 @@ class CRM_Mosaico_Utils {
     header("Content-Type: application/json; charset=utf-8");
     header("Connection: close");
 
-    echo json_encode(array("files" => $files));
+    echo json_encode(["files" => $files]);
     CRM_Utils_System::civiExit();
   }
 
@@ -271,44 +345,68 @@ class CRM_Mosaico_Utils {
   public static function processImg() {
     $config = self::getConfig();
     $methods = ['placeholder', 'resize', 'cover'];
-    if ($_SERVER["REQUEST_METHOD"] == "GET") {
-      $method = CRM_Utils_Array::value('method', $_GET, 'cover');
-      if (!in_array($method, $methods)) {
-        $method = 'cover'; // Old behavior. Seems silly. Being cautious.
-      }
-
-      $params = explode(",", $_GET["params"]);
-      $width = (int) $params[0];
-      $height = (int) $params[1];
-
-      switch ($method) {
-        case 'placeholder':
-          Civi::service('mosaico_graphics')->sendPlaceholder($width, $height);
-          break;
-
-        case 'resize':
-        case 'cover':
-          $func = ($method === 'resize') ? 'createResizedImage' : 'createCoveredImage';
-
-          $path_parts = pathinfo($_GET["src"]);
-          $src_file = $config['BASE_DIR'] . $config['UPLOADS_DIR'] . $path_parts["basename"];
-          $cache_file = $config['BASE_DIR'] . $config['STATIC_DIR'] . $path_parts["basename"];
-          // $cache_file = $config['BASE_DIR'] . $config['STATIC_DIR'] . $method . '-' . $width . "x" . $height . '-' . $path_parts["basename"];
-          // The current naming convention for cache-files is buggy because it means that all variants
-          // of the basename *must* have the same size, which breaks scenarios for re-using images
-          // from the gallery. However, to fix it, one must also fix CRM_Mosaico_ImageFilter.
-
-          if (!file_exists($src_file)) {
-            throw new \Exception("Failed to locate source file: " . $path_parts["basename"]);
-          }
-          if (!file_exists($cache_file)) {
-            Civi::service('mosaico_graphics')->$func($src_file, $cache_file, $width, $height);
-          }
-          self::sendImage($cache_file);
-          break;
-
-      }
+    if ($_SERVER['REQUEST_METHOD'] !== 'GET') {
+      CRM_Utils_System::civiExit();
     }
+
+    $method = CRM_Utils_Request::retrieveValue('method', 'String', 'cover', FALSE, 'GET');
+    if (!in_array($method, $methods)) {
+      self::returnBadRequest('Invalid method for processImg: ' . $method);
+    }
+
+    $rawParams = CRM_Utils_Request::retrieveValue('params', 'String', NULL, FALSE, 'GET');
+    if (empty($rawParams)) {
+      self::returnBadRequest('Invalid params for processImg: ' . $rawParams);
+    }
+    $params = explode(',', $rawParams);
+    $width = (int) $params[0];
+    $height = (int) $params[1];
+
+    // Apply a sensible maximum size for images in an email
+    if ($width * $height > self::MAX_IMAGE_PIXELS) {
+      self::returnBadRequest('The requested image size is too large');
+    }
+
+    // Sometimes output buffer started by another module or plugin causes problem with
+    // image rendering. Let's clean any such buffers.
+    $levels = ob_get_level();
+    for ($i = 0; $i < $levels; $i++) {
+      ob_end_clean();
+    }
+
+    switch ($method) {
+      case 'placeholder':
+        Civi::service('mosaico_graphics')->sendPlaceholder($width, $height);
+        break;
+
+      case 'resize':
+      case 'cover':
+        $func = ($method === 'resize') ? 'createResizedImage' : 'createCoveredImage';
+
+        $path_parts = pathinfo(CRM_Utils_String::purifyHTML(urldecode(str_replace('%25', '%', CRM_Utils_Request::retrieveValue('src', 'String', NULL, TRUE, 'GET')))));
+        $src_file = $config['BASE_DIR'] . $config['UPLOADS_DIR'] . $path_parts["basename"];
+        $cache_file = $config['BASE_DIR'] . $config['STATIC_DIR'] . $path_parts["basename"];
+        // $cache_file = $config['BASE_DIR'] . $config['STATIC_DIR'] . $method . '-' . $width . "x" . $height . '-' . $path_parts["basename"];
+        // The current naming convention for cache-files is buggy because it means that all variants
+        // of the basename *must* have the same size, which breaks scenarios for re-using images
+        // from the gallery. However, to fix it, one must also fix CRM_Mosaico_ImageFilter.
+
+        if (!file_exists($src_file)) {
+          self::returnBadRequest("Failed to locate source file: {$path_parts['basename']}");
+        }
+        if (!file_exists($cache_file)) {
+          Civi::service('mosaico_graphics')->$func($src_file, $cache_file, $width, $height);
+        }
+        self::sendImage($cache_file);
+        break;
+
+    }
+    CRM_Utils_System::civiExit();
+  }
+
+  private static function returnBadRequest($message) {
+    \Civi::log('mosaico')->error($message);
+    http_response_code(400);
     CRM_Utils_System::civiExit();
   }
 
@@ -316,30 +414,40 @@ class CRM_Mosaico_Utils {
    * @param string $file
    *   Full path to the image file.
    */
-  public static function sendImage($file) {
+  public static function sendImage(string $file) {
     $mimeMap = [
       'gif' => 'image/gif',
       'jpg' => 'image/jpeg',
       'jpeg' => 'image/jpeg',
       'png' => 'image/png',
     ];
-    $mime_type = CRM_Utils_Array::value(
-      pathinfo($file, PATHINFO_EXTENSION), $mimeMap, 'image/jpeg');
+    $mime_type = $mimeMap[pathinfo($file, PATHINFO_EXTENSION)] ?? 'image/jpeg';
 
-    $expiry_time = 2592000;  //30days (60sec * 60min * 24hours * 30days)
-    header("Pragma: cache");
+    // 30days (60sec * 60min * 24hours * 30days)
+    $expiry_time = 2592000;
+    header("Pragma: public");
     header("Cache-Control: max-age=" . $expiry_time . ", public");
     header('Expires: ' . gmdate('D, d M Y H:i:s', time() + $expiry_time) . ' GMT');
     header("Content-type:" . $mime_type);
 
-    $fh = fopen($file, 'r');
-    if ($fh === FALSE) {
-      throw new \Exception("Failed to read image file: $file");
+    readfile($file);
+    if (ob_get_length()) {
+      ob_flush();
     }
-    while (!feof($fh)) {
-      echo fread($fh, 2048);
-    }
-    fclose($fh);
+    flush();
+  }
+
+  public static function getAngularSettings(): array {
+    return [
+      'canDelete' => Civi::service('civi_api_kernel')->runAuthorize('MosaicoTemplate', 'delete', ['version' => 3, 'check_permissions' => 1]),
+      // If there are any navbars that we should try to avoid, include them
+      // in these jQuery selectors.
+      'topNav' => '#civicrm-menu',
+      'drupalNav' => '#toolbar',
+      'joomlaNav' => '.com_civicrm > .navbar',
+      'leftNav' => '.wp-admin #adminmenu',
+      'variantsPct' => CRM_Mosaico_AbDemux::DEFAULT_AB_PERCENTAGE,
+    ];
   }
 
 }

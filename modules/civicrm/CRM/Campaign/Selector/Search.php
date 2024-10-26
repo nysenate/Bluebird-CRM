@@ -103,7 +103,7 @@ class CRM_Campaign_Selector_Search extends CRM_Core_Selector_Base implements CRM
   /**
    * The query object.
    *
-   * @var string
+   * @var CRM_Contact_BAO_Query
    */
   protected $_query;
 
@@ -146,10 +146,31 @@ class CRM_Campaign_Selector_Search extends CRM_Core_Selector_Base implements CRM
     // type of selector
     $this->_action = $action;
 
-    $this->_query = new CRM_Contact_BAO_Query($this->_queryParams,
-      NULL, NULL, FALSE, FALSE,
-      CRM_Contact_BAO_Query::MODE_CAMPAIGN,
-      TRUE
+    $params = $this->_queryParams;
+    $returnProperties = NULL;
+    $fields = NULL;
+    $includeContactIds = FALSE;
+    $strict = FALSE;
+    $mode = CRM_Contact_BAO_Query::MODE_CAMPAIGN;
+    $skipPermission = TRUE;
+    $searchDescendentGroups = TRUE;
+    $smartGroupCache = TRUE;
+    $displayRelationshipType = NULL;
+    $operator = 'AND';
+    $apiEntity = NULL;
+    // This is flipped from the default of NULL. When primaryLocationOnly is NULL
+    // it will be based on the value of the 'searchPrimaryDetailsOnly' setting, which is often
+    // set to FALSE so you can search for non-primary location fields in advanced search. But,
+    // when reserving people for a survey, we only want each person listed once, not once for
+    // every combination of location types they have for email, phone, and address.
+    $primaryLocationOnly = TRUE;
+
+    $this->_query = new CRM_Contact_BAO_Query(
+      $params, $returnProperties, $fields,
+      $includeContactIds, $strict, $mode,
+      $skipPermission, $searchDescendentGroups,
+      $smartGroupCache, $displayRelationshipType,
+      $operator, $apiEntity, $primaryLocationOnly
     );
   }
 
@@ -175,7 +196,7 @@ class CRM_Campaign_Selector_Search extends CRM_Core_Selector_Base implements CRM
   public function getPagerParams($action, &$params) {
     $params['csvString'] = NULL;
     $params['status'] = ts('Respondents') . ' %%StatusMessage%%';
-    $params['rowCount'] = ($this->_limit) ? $this->_limit : CRM_Utils_Pager::ROWCOUNT;
+    $params['rowCount'] = ($this->_limit) ? $this->_limit : Civi::settings()->get('default_pager_size');
     $params['buttonTop'] = 'PagerTopButton';
     $params['buttonBottom'] = 'PagerBottomButton';
   }
@@ -249,7 +270,7 @@ class CRM_Campaign_Selector_Search extends CRM_Core_Selector_Base implements CRM
   /**
    * @param $sort
    */
-  public function buildPrevNextCache($sort) {
+  private function buildPrevNextCache($sort) {
     //for prev/next pagination
     $crmPID = CRM_Utils_Request::retrieve('crmPID', 'Integer');
 
@@ -267,7 +288,7 @@ class CRM_Campaign_Selector_Search extends CRM_Core_Selector_Base implements CRM
 
       $selectSQL = "
       SELECT %1, contact_a.id, contact_a.display_name
-FROM {$sql['from']}
+{$sql['from']} {$sql['where']}
 ";
 
       try {
@@ -348,7 +369,7 @@ FROM {$sql['from']}
   }
 
   /**
-   * @return string
+   * @return CRM_Contact_BAO_Query
    */
   public function &getQuery() {
     return $this->_query;

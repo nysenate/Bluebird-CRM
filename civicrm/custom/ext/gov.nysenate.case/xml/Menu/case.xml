@@ -1,0 +1,9 @@
+<?xml version="1.0"?>
+<menu>
+  <item>
+    <path>civicrm/fileoncase/create</path>
+    <page_callback>CRM_NYSS_Case_Form_CreateCase</page_callback>
+    <title>Create Case</title>
+    <access_arguments>add cases</access_arguments>
+  </item>
+</menu>

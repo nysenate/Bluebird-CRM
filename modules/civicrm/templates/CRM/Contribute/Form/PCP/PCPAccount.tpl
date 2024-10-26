@@ -16,16 +16,13 @@
 
 {if $profileDisplay}
 <div class="messages status no-popup">
-  <i class="crm-i fa-exclamation-triangle"></i>
+  <i class="crm-i fa-exclamation-triangle" aria-hidden="true"></i>
   <strong>{ts}Profile is not configured with Email address.{/ts}</strong>
 </div>
 {else}
 <div class="form-item">
 {include file="CRM/common/CMSUser.tpl"}
-{include file="CRM/UF/Form/Block.tpl" fields=$fields}
-{if $isCaptcha}
-{include file='CRM/common/ReCAPTCHA.tpl'}
-{/if}
+{include file="CRM/UF/Form/Block.tpl" fields=$fields prefix=false hideFieldset=false}
 </div>
 <div class="crm-submit-buttons">
 {include file="CRM/common/formButtons.tpl" location="bottom"}

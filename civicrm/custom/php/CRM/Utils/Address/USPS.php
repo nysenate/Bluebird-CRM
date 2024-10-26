@@ -70,19 +70,18 @@ class CRM_Utils_Address_USPS {
     //altered to pass street_unit; http://senatedev.senate.state.ny.us/issues/show/2388
     $XMLQuery = '<AddressValidateRequest USERID="'.$userID.'"><Address ID="0"><Address1>'.$values['street_unit'].'</Address1><Address2>'.$address2.'</Address2><City>'.$values['city'].'</City><State>'.$values['state_province'].'</State><Zip5>'.$values['postal_code'].'</Zip5><Zip4>'.$values['postal_code_suffix'].'</Zip4></Address></AddressValidateRequest>';
 
-    require_once 'HTTP/Request.php';
-    $request = new HTTP_Request();
-
-    $request->setURL($url);
-
-    $request->addQueryString('API', 'Verify');
-    $request->addQueryString('XML', $XMLQuery);
-
-    $response = $request->sendRequest();
+    $client = new GuzzleHttp\Client();
+    $request = $client->request('GET', $url, [
+      'query' => [
+        'API' => 'Verify',
+        'XML' => $XMLQuery,
+      ],
+      'timeout' => \Civi::settings()->get('http_timeout'),
+    ]);
 
     $session = CRM_Core_Session::singleton();
 
-    $code = $request->getResponseCode();
+    $code = $request->getStatusCode();
     if ($code != 200) {
       $session->setStatus(ts('USPS Address Lookup Failed with HTTP status code: %1',
         [1 => $code]
@@ -90,7 +89,7 @@ class CRM_Utils_Address_USPS {
       return FALSE;
     }
 
-    $responseBody = $request->getResponseBody();
+    $responseBody = $request->getBody();
 
     $xml = simplexml_load_string($responseBody);
 
@@ -104,7 +103,7 @@ class CRM_Utils_Address_USPS {
       return FALSE;
     }
 
-    if (array_key_exists('Error', $xml->Address)) {
+    if (property_exists($xml->Address, 'Error')) {
       $session->setStatus(ts('Address not found in USPS database.'));
       return FALSE;
     }
@@ -115,7 +114,7 @@ class CRM_Utils_Address_USPS {
     $values['postal_code'] = (string) $xml->Address->Zip5;
     $values['postal_code_suffix'] = (string) $xml->Address->Zip4;
 
-    if (array_key_exists('Address1', $xml->Address)) {
+    if (property_exists($xml->Address, 'Address1')) {
       //NYSS modified per above
       $values['street_unit'] = (string)$xml->Address->Address1;
     }

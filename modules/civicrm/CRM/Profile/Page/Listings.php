@@ -13,12 +13,11 @@
  *
  * @package CRM
  * @copyright CiviCRM LLC https://civicrm.org/licensing
- *
  */
 
 /**
  * This implements the profile page for all contacts. It uses a selector
- * object to do the actual dispay. The fields displayd are controlled by
+ * object to do the actual display. The fields displayed are controlled by
  * the admin.
  */
 class CRM_Profile_Page_Listings extends CRM_Core_Page {
@@ -100,7 +99,7 @@ class CRM_Profile_Page_Listings extends CRM_Core_Page {
 
       // check if we are rendering mixed profiles
       if (CRM_Core_BAO_UFGroup::checkForMixProfiles($this->_profileIds)) {
-        CRM_Core_Error::fatal(ts('You cannot combine profiles of multiple types.'));
+        CRM_Core_Error::statusBounce(ts('You cannot combine profiles of multiple types.'));
       }
 
       $this->_gid = $this->_profileIds[0];
@@ -172,8 +171,8 @@ class CRM_Profile_Page_Listings extends CRM_Core_Page {
           $value = '%' . $value . '%';
         }
       }
-      elseif (CRM_Utils_Array::value('html_type', $field) == 'Multi-Select State/Province'
-        || CRM_Utils_Array::value('html_type', $field) == 'Multi-Select Country'
+      elseif (($field['html_type'] ?? NULL) == 'Multi-Select State/Province'
+        || ($field['html_type'] ?? NULL) == 'Multi-Select Country'
       ) {
         $value = CRM_Utils_Request::retrieve($name, 'String', $this, FALSE, NULL, 'REQUEST');
         if (!is_array($value)) {
@@ -282,7 +281,7 @@ class CRM_Profile_Page_Listings extends CRM_Core_Page {
       $ufgroupDAO = new CRM_Core_DAO_UFGroup();
       $ufgroupDAO->id = $this->_gid;
       if (!$ufgroupDAO->find(TRUE)) {
-        CRM_Core_Error::fatal();
+        CRM_Core_Error::statusBounce(ts('Unable to find matching UF Group'));
       }
     }
 
@@ -450,11 +449,14 @@ class CRM_Profile_Page_Listings extends CRM_Core_Page {
   }
 
   /**
-   * @param string $suffix
+   * Check template file exists.
    *
-   * @return null|string
+   * @param string|null $suffix
+   *
+   * @return string|null
+   *   Template file path, else null
    */
-  public function checkTemplateFileExists($suffix = '') {
+  public function checkTemplateFileExists($suffix = NULL) {
     if ($this->_gid) {
       $templateFile = "CRM/Profile/Page/{$this->_gid}/Listings.{$suffix}tpl";
       $template = CRM_Core_Page::getTemplate();
@@ -481,7 +483,7 @@ class CRM_Profile_Page_Listings extends CRM_Core_Page {
    */
   public function getTemplateFileName() {
     $fileName = $this->checkTemplateFileExists();
-    return $fileName ? $fileName : parent::getTemplateFileName();
+    return $fileName ?: parent::getTemplateFileName();
   }
 
   /**
@@ -492,7 +494,7 @@ class CRM_Profile_Page_Listings extends CRM_Core_Page {
    */
   public function overrideExtraTemplateFileName() {
     $fileName = $this->checkTemplateFileExists('extra.');
-    return $fileName ? $fileName : parent::overrideExtraTemplateFileName();
+    return $fileName ?: parent::overrideExtraTemplateFileName();
   }
 
 }

@@ -1,0 +1,17 @@
+.___outside-namespace {
+  .civicase__tooltip-popup-list {
+    border: 1px solid $gray-light;
+    border-radius: 2px;
+    box-shadow: $box-shadow-tooltip;
+    color: $gray-darker;
+    padding: 8px 12px;
+
+    .popover-content {
+      padding: 0;
+    }
+
+    .arrow {
+      border-bottom-color: $gray-light;
+    }
+  }
+}

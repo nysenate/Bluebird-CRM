@@ -1,7 +1,7 @@
 <?php
 
 /**
- * @file Copyright iATS Payments (c) 2014.
+ * @file Copyright iATS Payments (c) 2020.
  * @author Alan Dixon
  *
  * This file is a part of CiviCRM published extension.
@@ -20,6 +20,8 @@
  *
  * This code provides glue between CiviCRM payment model and the iATS Payment model encapsulated in the CRM_Iats_iATSServiceRequest object
  */
+
+use Civi\Payment\Exception\PaymentProcessorException;
 
 /**
  *
@@ -45,7 +47,6 @@ class CRM_Core_Payment_iATSServiceSWIPE extends CRM_Core_Payment_iATSService {
    */
   public function __construct($mode, &$paymentProcessor) {
     $this->_paymentProcessor = $paymentProcessor;
-    $this->_processorName = ts('iATS Payments SWIPE');
 
     // Get merchant data from config.
     $config = CRM_Core_Config::singleton();

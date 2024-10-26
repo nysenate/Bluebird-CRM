@@ -1,5 +1,4 @@
 <?php
-
 /*
  +--------------------------------------------------------------------+
  | Copyright CiviCRM LLC. All rights reserved.                        |
@@ -9,16 +8,6 @@
  | and copyright information, see https://civicrm.org/licensing       |
  +--------------------------------------------------------------------+
  */
-
-/**
- *
- * @package CRM
- * @copyright CiviCRM LLC https://civicrm.org/licensing
- * $Id$
- *
- */
-
-
 namespace Civi\Api4;
 
 /**
@@ -30,29 +19,116 @@ namespace Civi\Api4;
  * Creating a new contact requires at minimum a name or email address.
  *
  * @see https://docs.civicrm.org/user/en/latest/organising-your-data/contacts/
+ * @searchable primary
+ * @orderBy sort_name
+ * @searchFields sort_name
+ * @iconField contact_sub_type:icon,contact_type:icon
+ * @since 5.19
  * @package Civi\Api4
  */
 class Contact extends Generic\DAOEntity {
 
   /**
-   * @return \Civi\Api4\Action\Contact\GetFields|Generic\DAOGetFieldsAction
+   * @param bool $checkPermissions
+   * @return Action\Contact\Create
    */
-  public static function getFields() {
-    return new Action\Contact\GetFields(__CLASS__, __FUNCTION__);
+  public static function create($checkPermissions = TRUE) {
+    return (new Action\Contact\Create(self::getEntityName(), __FUNCTION__))
+      ->setCheckPermissions($checkPermissions);
   }
 
   /**
-   * @return \Civi\Api4\Action\Contact\GetChecksum
+   * @param bool $checkPermissions
+   * @return Action\Contact\Update
    */
-  public static function getChecksum() {
-    return new Action\Contact\GetChecksum(__CLASS__, __FUNCTION__);
+  public static function update($checkPermissions = TRUE) {
+    return (new Action\Contact\Update(self::getEntityName(), __FUNCTION__))
+      ->setCheckPermissions($checkPermissions);
   }
 
   /**
-   * @return \Civi\Api4\Action\Contact\ValidateChecksum
+   * @param bool $checkPermissions
+   * @return Action\Contact\Save
    */
-  public static function validateChecksum() {
-    return new Action\Contact\ValidateChecksum(__CLASS__, __FUNCTION__);
+  public static function save($checkPermissions = TRUE) {
+    return (new Action\Contact\Save(self::getEntityName(), __FUNCTION__))
+      ->setCheckPermissions($checkPermissions);
+  }
+
+  /**
+   * @param bool $checkPermissions
+   * @return Action\Contact\Delete
+   */
+  public static function delete($checkPermissions = TRUE) {
+    return (new Action\Contact\Delete(self::getEntityName(), __FUNCTION__))
+      ->setCheckPermissions($checkPermissions);
+  }
+
+  /**
+   * @param bool $checkPermissions
+   * @return Action\Contact\GetChecksum
+   */
+  public static function getChecksum($checkPermissions = TRUE) {
+    return (new Action\Contact\GetChecksum(self::getEntityName(), __FUNCTION__))
+      ->setCheckPermissions($checkPermissions);
+  }
+
+  /**
+   * @param bool $checkPermissions
+   * @return Action\Contact\ValidateChecksum
+   */
+  public static function validateChecksum($checkPermissions = TRUE) {
+    return (new Action\Contact\ValidateChecksum(self::getEntityName(), __FUNCTION__))
+      ->setCheckPermissions($checkPermissions);
+  }
+
+  /**
+   * @param bool $checkPermissions
+   * @return Action\Contact\GetDuplicates
+   */
+  public static function getDuplicates($checkPermissions = TRUE) {
+    return (new Action\Contact\GetDuplicates(self::getEntityName(), __FUNCTION__))
+      ->setCheckPermissions($checkPermissions);
+  }
+
+  /**
+   * @param bool $checkPermissions
+   * @return Action\Contact\MergeDuplicates
+   */
+  public static function mergeDuplicates($checkPermissions = TRUE) {
+    return (new Action\Contact\MergeDuplicates(self::getEntityName(), __FUNCTION__))
+      ->setCheckPermissions($checkPermissions);
+  }
+
+  protected static function getDaoName(): string {
+    // Child classes (Individual, Organization, Household) need this.
+    return 'CRM_Contact_DAO_Contact';
+  }
+
+  /**
+   * @inheritDoc
+   */
+  public static function getInfo(): array {
+    $info = parent::getInfo();
+    $contactType = static::getEntityName();
+    // Adjust info for child classes (Individual, Organization, Household)
+    if ($contactType !== 'Contact') {
+      $contactTypeInfo = \CRM_Contact_BAO_ContactType::getContactType($contactType);
+      $info['icon'] = $contactTypeInfo['icon'] ?? $info['icon'];
+      $info['type'] = ['DAOEntity', 'ContactType'];
+      $info['description'] = ts('Contacts of type %1.', [1 => $contactTypeInfo['label']]);
+      // This forces the value into get and create api actions
+      $info['where'] = ['contact_type' => $contactType];
+    }
+    return $info;
+  }
+
+  /**
+   * @inheritDoc
+   */
+  public static function permissions() {
+    $permissions = \CRM_Core_Permission::getEntityActionPermissions();
+    return ($permissions['contact'] ?? []) + $permissions['default'];
   }
 
 }

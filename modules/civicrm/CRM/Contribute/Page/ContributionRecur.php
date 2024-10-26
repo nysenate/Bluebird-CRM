@@ -20,31 +20,38 @@
  */
 class CRM_Contribute_Page_ContributionRecur extends CRM_Core_Page {
 
-  public static $_links = NULL;
-  public $_permission = NULL;
-  public $_contactId = NULL;
-  public $_id = NULL;
-  public $_action = NULL;
+  use CRM_Core_Page_EntityPageTrait;
+
+  /**
+   * @return string
+   */
+  public function getDefaultEntity() {
+    return 'ContributionRecur';
+  }
+
+  protected function getDefaultAction() {
+    return 'view';
+  }
 
   /**
    * View details of a recurring contribution.
    */
   public function view() {
-    if (empty($this->_id)) {
-      CRM_Core_Error::statusBounce('Recurring contribution not found');
+    if (empty($this->getEntityId())) {
+      CRM_Core_Error::statusBounce(ts('Recurring contribution not found'));
     }
 
     try {
       $contributionRecur = civicrm_api3('ContributionRecur', 'getsingle', [
-        'id' => $this->_id,
+        'id' => $this->getEntityId(),
       ]);
     }
     catch (Exception $e) {
-      CRM_Core_Error::statusBounce('Recurring contribution not found (ID: ' . $this->_id);
+      CRM_Core_Error::statusBounce(ts('Recurring contribution not found (ID: %1)', [1 => $this->getEntityId()]));
     }
 
     $contributionRecur['payment_processor'] = CRM_Financial_BAO_PaymentProcessor::getPaymentProcessorName(
-      CRM_Utils_Array::value('payment_processor_id', $contributionRecur)
+      $contributionRecur['payment_processor_id'] ?? NULL
     );
     $idFields = ['contribution_status_id', 'campaign_id', 'financial_type_id'];
     foreach ($idFields as $idField) {
@@ -63,10 +70,25 @@ class CRM_Contribute_Page_ContributionRecur extends CRM_Core_Page {
       $contributionRecur['membership_name'] = $membershipDetails['membership_name'];
     }
 
-    $groupTree = CRM_Core_BAO_CustomGroup::getTree('ContributionRecur', NULL, $contributionRecur['id']);
+    $groupTree = CRM_Core_BAO_CustomGroup::getTree('ContributionRecur', NULL, $contributionRecur['id'], NULL, [],
+      NULL, TRUE, NULL, FALSE, CRM_Core_Permission::VIEW);
     CRM_Core_BAO_CustomGroup::buildCustomDataView($this, $groupTree, FALSE, NULL, NULL, NULL, $contributionRecur['id']);
 
+    if (isset($contributionRecur['trxn_id']) && ($contributionRecur['processor_id'] === $contributionRecur['trxn_id'])) {
+      unset($contributionRecur['trxn_id']);
+    }
     $this->assign('recur', $contributionRecur);
+
+    $templateContribution = CRM_Contribute_BAO_ContributionRecur::getTemplateContribution($this->getEntityId());
+
+    $lineItems = [];
+    $displayLineItems = FALSE;
+    if (!empty($templateContribution['id'])) {
+      $lineItems = [CRM_Price_BAO_LineItem::getLineItemsByContributionID(($templateContribution['id']))];
+      $displayLineItems = TRUE;
+    }
+    $this->assign('lineItem', $lineItems);
+    $this->assign('displayLineItems', $displayLineItems);
 
     $displayName = CRM_Contact_BAO_Contact::displayName($contributionRecur['contact_id']);
     $this->assign('displayName', $displayName);
@@ -81,21 +103,7 @@ class CRM_Contribute_Page_ContributionRecur extends CRM_Core_Page {
   }
 
   public function preProcess() {
-    $this->_action = CRM_Utils_Request::retrieve('action', 'String', $this, FALSE, 'view');
-    $this->_id = CRM_Utils_Request::retrieve('id', 'Positive', $this);
-    $this->_contactId = CRM_Utils_Request::retrieve('cid', 'Positive', $this, TRUE);
-    $this->assign('contactId', $this->_contactId);
-
-    // check logged in url permission
-    CRM_Contact_Page_View::checkUserPermission($this);
-
-    $this->assign('action', $this->_action);
-
-    if ($this->_permission == CRM_Core_Permission::EDIT && !CRM_Core_Permission::check('edit contributions')) {
-      // demote to view since user does not have edit contrib rights
-      $this->_permission = CRM_Core_Permission::VIEW;
-      $this->assign('permission', 'view');
-    }
+    $this->preProcessQuickEntityPage();
   }
 
   /**
@@ -106,8 +114,8 @@ class CRM_Contribute_Page_ContributionRecur extends CRM_Core_Page {
    */
   public function run() {
     $this->preProcess();
-
-    if ($this->_action & CRM_Core_Action::VIEW) {
+    $this->assign('hasAccessCiviContributePermission', CRM_Core_Permission::check('access CiviContribute'));
+    if ($this->isViewContext()) {
       $this->view();
     }
 

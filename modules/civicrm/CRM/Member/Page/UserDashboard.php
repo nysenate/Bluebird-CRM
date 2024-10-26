@@ -13,8 +13,6 @@
  *
  * @package CRM
  * @copyright CiviCRM LLC https://civicrm.org/licensing
- * $Id$
- *
  */
 
 /**
@@ -31,6 +29,7 @@ class CRM_Member_Page_UserDashboard extends CRM_Contact_Page_View_UserDashBoard 
     $dao = new CRM_Member_DAO_Membership();
     $dao->contact_id = $this->_contactId;
     $dao->is_test = 0;
+    $dao->orderBy('end_date DESC');
     $dao->find();
 
     while ($dao->fetch()) {
@@ -39,10 +38,7 @@ class CRM_Member_Page_UserDashboard extends CRM_Contact_Page_View_UserDashBoard 
 
       //get the membership status and type values.
       $statusANDType = CRM_Member_BAO_Membership::getStatusANDTypeValues($dao->id);
-      foreach ([
-        'status',
-        'membership_type',
-      ] as $fld) {
+      foreach (['status', 'membership_type'] as $fld) {
         $membership[$dao->id][$fld] = $statusANDType[$dao->id][$fld] ?? NULL;
       }
       if (!empty($statusANDType[$dao->id]['is_current_member'])) {

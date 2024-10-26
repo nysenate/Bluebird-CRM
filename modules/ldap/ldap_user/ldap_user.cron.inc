@@ -52,6 +52,7 @@ function _ldap_user_orphans($ldap_user_conf) {
    *  signifying if corresponding LDAP Entry exists.
    */
   if (!(isset($result['user']) && count($result['user']) > 0)) {
+    variable_set('ldap_user_cron_last_uid_checked', 1);
     return TRUE;
   }
 

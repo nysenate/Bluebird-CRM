@@ -1,0 +1,32 @@
+/* stylelint-disable selector-max-id  */
+/* stylelint-disable selector-max-compound-selectors */
+#{$outside-namespace-marker} {
+  #civicaseActivitiesTab {
+    // to maximise area for activity feed
+    margin-left: -10px;
+    margin-right: -10px;
+
+    .civicase__activity-feed {
+      > .panel-body {
+        padding-left: 0;
+        padding-right: 0;
+      }
+    }
+
+    .civicase__activity-filter {
+      padding: 16px 0;
+
+      &.affix {
+        width: calc(100% - 240px);
+      }
+    }
+  }
+
+  .page-civicrm-contact-view:not([class*='page-civicrm-contact-view-']) #crm-container {
+    .civicase__activity-panel__core_container {
+      .crm-submit-buttons {
+        margin-bottom: 0 !important;
+      }
+    }
+  }
+}

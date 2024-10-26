@@ -2,18 +2,30 @@
   // example: <div crm-mailing-block-preview crm-mailing="myMailing" on-preview="openPreview(myMailing, preview.mode)" on-send="sendEmail(myMailing,preview.recipient)">
   // note: the directive defines a variable called "preview" with any inputs supplied by the user (e.g. the target recipient for an example mailing)
 
-  angular.module('crmMosaico').directive('crmMosaicoBlockPreview', function(crmUiHelp) {
+  angular.module('crmMosaico').directive('crmMosaicoBlockPreview', function(crmUiHelp, crmMosaicoVariants) {
     return {
       templateUrl: '~/crmMosaico/BlockPreview.html',
       link: function(scope, elm, attr) {
         scope.$watch(attr.crmMailing, function(newValue) {
           scope.mailing = newValue;
         });
-        scope.groupNames = CRM.crmMailing.testGroupNames || CRM.crmMailing.groupNames;
         scope.ts = CRM.ts(null);
         scope.hs = crmUiHelp({file: 'CRM/Mailing/MailingUI'});
         scope.testContact = {email: CRM.crmMailing.defaultTestEmail};
         scope.testGroup = {gid: null};
+        scope.validateMultipleEmail = function(email) {
+          email = email.split(',');
+
+          // a regex pattern for single email
+          var emailRegex = /\S+@\S+\.\S+/;
+
+          var validityArr = email.map(function(str){
+            return emailRegex.test(str.trim());
+          });
+
+          return ($.inArray(false, validityArr) == -1);
+        };
+        scope.isSplit = crmMosaicoVariants.isSplit;
 
         scope.doPreview = function(mode) {
           scope.$eval(attr.onPreview, {

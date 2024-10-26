@@ -1,7 +1,14 @@
 *~
 .*~
 
+*.tgz
+
 # composer related
 composer.lock
 composer.phar
 vendor
+
+# Eclipse
+.buildpath
+.project
+.settings/

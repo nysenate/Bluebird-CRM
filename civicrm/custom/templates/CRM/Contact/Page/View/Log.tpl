@@ -13,7 +13,7 @@
      <div class='instance_data'><div class="crm-loading-element"></div></div>
    {else}
     <div class="form-item">
-     {if $logCount > 0 }
+     {if $logCount > 0}
        <table>
        <tr class="columnheader"><th>{ts}Changed By{/ts}</th><th>{ts}Change Date{/ts}</th><th>Description</th></tr>{*NYSS*}
        {foreach from=$log item=row}
@@ -26,7 +26,7 @@
        </table>
      {else}
      <div class="messages status no-popup">
-      <div class="icon inform-icon"></div> &nbsp;
+      {icon icon="fa-info-circle"}{/icon}
       {ts}None found.{/ts}
      </div>
      {/if}

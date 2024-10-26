@@ -22,7 +22,7 @@ abstract class CRM_SMS_Provider {
    *
    * @var object
    */
-  static private $_singleton = array();
+  static private $_singleton = [];
   const MAX_SMS_CHAR = 460;
 
   /**
@@ -34,7 +34,7 @@ abstract class CRM_SMS_Provider {
    * @return object
    * @throws CRM_Core_Exception
    */
-  public static function &singleton($providerParams = array(), $force = FALSE) {
+  public static function &singleton($providerParams = [], $force = FALSE) {
     $mailingID = $providerParams['mailing_id'] ?? NULL;
     $providerID = $providerParams['provider_id'] ?? NULL;
     $providerName = $providerParams['provider'] ?? NULL;
@@ -44,7 +44,7 @@ abstract class CRM_SMS_Provider {
       $providerParams['provider_id'] = $providerID;
     }
     if ($providerID) {
-      $providerName = CRM_SMS_BAO_Provider::getProviderInfo($providerID, 'name');
+      $providerName = CRM_SMS_BAO_SmsProvider::getProviderInfo($providerID, 'name');
     }
 
     if (!$providerName) {
@@ -84,38 +84,6 @@ abstract class CRM_SMS_Provider {
   abstract public function send($recipients, $header, $message, $dncID = NULL);
 
   /**
-   * Return message text.
-   *
-   * Child class could override this function to have better control over the message being sent.
-   *
-   * @param string $message
-   * @param int $contactID
-   * @param array $contactDetails
-   *
-   * @return string
-   */
-  public function getMessage($message, $contactID, $contactDetails) {
-    $html = $message->getHTMLBody();
-    $text = $message->getTXTBody();
-
-    return $html ? $html : $text;
-  }
-
-  /**
-   * Get recipient details.
-   *
-   * @param array $fields
-   * @param array $additionalDetails
-   *
-   * @return mixed
-   */
-  public function getRecipientDetails($fields, $additionalDetails) {
-    // we could do more altering here
-    $fields['To'] = $fields['phone'];
-    return $fields;
-  }
-
-  /**
    * @param int $apiMsgID
    * @param $message
    * @param array $headers
@@ -125,12 +93,12 @@ abstract class CRM_SMS_Provider {
    * @return self|null|object
    * @throws CRM_Core_Exception
    */
-  public function createActivity($apiMsgID, $message, $headers = array(), $jobID = NULL, $userID = NULL) {
+  public function createActivity($apiMsgID, $message, $headers = [], $jobID = NULL, $userID = NULL) {
     if ($jobID) {
       $sql = "
 SELECT scheduled_id FROM civicrm_mailing m
 INNER JOIN civicrm_mailing_job mj ON mj.mailing_id = m.id AND mj.id = %1";
-      $sourceContactID = CRM_Core_DAO::singleValueQuery($sql, array(1 => array($jobID, 'Integer')));
+      $sourceContactID = CRM_Core_DAO::singleValueQuery($sql, [1 => [$jobID, 'Integer']]);
     }
     elseif ($userID) {
       $sourceContactID = $userID;
@@ -148,14 +116,14 @@ INNER JOIN civicrm_mailing_job mj ON mj.mailing_id = m.id AND mj.id = %1";
     }
 
     // note: lets not pass status here, assuming status will be updated by callback
-    $activityParams = array(
+    $activityParams = [
       'source_contact_id' => $sourceContactID,
       'target_contact_id' => $headers['contact_id'],
       'activity_type_id' => CRM_Core_PseudoConstant::getKey('CRM_Activity_BAO_Activity', 'activity_type_id', 'SMS delivery'),
       'activity_date_time' => date('YmdHis'),
       'details' => $message,
       'result' => $apiMsgID,
-    );
+    ];
     return CRM_Activity_BAO_Activity::create($activityParams);
   }
 
@@ -201,10 +169,10 @@ INNER JOIN civicrm_mailing_job mj ON mj.mailing_id = m.id AND mj.id = %1";
 
     if (!$message->fromContactID) {
       // find sender by phone number if $fromContactID not set by hook
-      $formatFrom = '%' . $this->formatPhone($this->stripPhone($message->from), $like, "like");
-      $message->fromContactID = CRM_Core_DAO::singleValueQuery("SELECT contact_id FROM civicrm_phone JOIN civicrm_contact ON civicrm_contact.id = civicrm_phone.contact_id WHERE !civicrm_contact.is_deleted AND phone LIKE %1", array(
-        1 => array($formatFrom, 'String'),
-      ));
+      $formatFrom = '%' . $this->formatPhoneNumber($this->stripPhone($message->from));
+      $message->fromContactID = CRM_Core_DAO::singleValueQuery("SELECT contact_id FROM civicrm_phone JOIN civicrm_contact ON civicrm_contact.id = civicrm_phone.contact_id WHERE !civicrm_contact.is_deleted AND phone_numeric LIKE %1", [
+        1 => [$formatFrom, 'String'],
+      ]);
     }
 
     if (!$message->fromContactID) {
@@ -216,22 +184,22 @@ INNER JOIN civicrm_mailing_job mj ON mj.mailing_id = m.id AND mj.id = %1";
       $phoneloc = array_search('Home', $locationTypes);
       $phonetype = array_search('Mobile', $phoneTypes);
       $stripFrom = $this->stripPhone($message->from);
-      $contactparams = array(
+      $contactparams = [
         'contact_type' => 'Individual',
-        'email' => array(
-          1 => array(
+        'email' => [
+          1 => [
             'location_type_id' => $phoneloc,
             'email' => $stripFrom . '@mobile.sms',
-          ),
-        ),
-        'phone' => array(
-          1 => array(
+          ],
+        ],
+        'phone' => [
+          1 => [
             'phone_type_id' => $phonetype,
             'location_type_id' => $phoneloc,
             'phone' => $stripFrom,
-          ),
-        ),
-      );
+          ],
+        ],
+      ];
       $fromContact = CRM_Contact_BAO_Contact::create($contactparams, FALSE, TRUE, FALSE);
       $message->fromContactID = $fromContact->id;
     }
@@ -239,9 +207,9 @@ INNER JOIN civicrm_mailing_job mj ON mj.mailing_id = m.id AND mj.id = %1";
     if (!$message->toContactID) {
       // find recipient if $toContactID not set by hook
       if ($message->to) {
-        $message->toContactID = CRM_Core_DAO::singleValueQuery("SELECT contact_id FROM civicrm_phone JOIN civicrm_contact ON civicrm_contact.id = civicrm_phone.contact_id WHERE !civicrm_contact.is_deleted AND phone LIKE %1", array(
-          1 => array('%' . $message->to, 'String'),
-        ));
+        $message->toContactID = CRM_Core_DAO::singleValueQuery("SELECT contact_id FROM civicrm_phone JOIN civicrm_contact ON civicrm_contact.id = civicrm_phone.contact_id WHERE !civicrm_contact.is_deleted AND phone LIKE %1", [
+          1 => ['%' . $message->to, 'String'],
+        ]);
       }
       else {
         $message->toContactID = $message->fromContactID;
@@ -250,7 +218,7 @@ INNER JOIN civicrm_mailing_job mj ON mj.mailing_id = m.id AND mj.id = %1";
 
     if ($message->fromContactID) {
       // note: lets not pass status here, assuming status will be updated by callback
-      $activityParams = array(
+      $activityParams = [
         'source_contact_id' => $message->toContactID,
         'target_contact_id' => $message->fromContactID,
         'activity_type_id' => CRM_Core_PseudoConstant::getKey('CRM_Activity_BAO_Activity', 'activity_type_id', 'Inbound SMS'),
@@ -258,7 +226,7 @@ INNER JOIN civicrm_mailing_job mj ON mj.mailing_id = m.id AND mj.id = %1";
         'status_id' => CRM_Core_PseudoConstant::getKey('CRM_Activity_BAO_Activity', 'activity_status_id', 'Completed'),
         'details' => $message->body,
         'phone_number' => $message->from,
-      );
+      ];
       if ($message->trackID) {
         $activityParams['result'] = CRM_Utils_Type::escape($message->trackID, 'String');
       }
@@ -274,7 +242,7 @@ INNER JOIN civicrm_mailing_job mj ON mj.mailing_id = m.id AND mj.id = %1";
    *
    * @return mixed|string
    */
-  public function stripPhone($phone) {
+  public function stripPhone($phone): string {
     $newphone = preg_replace('/[^0-9x]/', '', $phone);
     while (substr($newphone, 0, 1) == "1") {
       $newphone = substr($newphone, 1);
@@ -285,7 +253,49 @@ INNER JOIN civicrm_mailing_job mj ON mj.mailing_id = m.id AND mj.id = %1";
     while (substr($newphone, -1) == "x") {
       $newphone = substr($newphone, 0, -1);
     }
-    return $newphone;
+    return (string) $newphone;
+  }
+
+  /**
+   * Format phone number with % - this may no longer make sense as we
+   * now compare with phone_numeric.
+   *
+   * @param string $phone
+   *
+   * @return string
+   */
+  private function formatPhoneNumber(string $phone): string {
+    $phoneA = explode("x", $phone);
+    switch (strlen($phoneA[0])) {
+      case 0:
+        $area = "";
+        $exch = "";
+        $uniq = "";
+        $ext = $phoneA[1];
+        break;
+
+      case 7:
+        $area = "";
+        $exch = substr($phone, 0, 3);
+        $uniq = substr($phone, 3, 4);
+        $ext = $phoneA[1];
+        break;
+
+      case 10:
+        $area = substr($phone, 0, 3);
+        $exch = substr($phone, 3, 3);
+        $uniq = substr($phone, 6, 4);
+        $ext = $phoneA[1];
+        break;
+
+      default:
+        return $phone;
+    }
+
+    $newphone = '%' . $area . '%' . $exch . '%' . $uniq . '%' . $ext . '%';
+    $newphone = str_replace('%%', '%', $newphone);
+    $newphone = str_replace('%%', '%', $newphone);
+    return (string) $newphone;
   }
 
   /**
@@ -293,9 +303,12 @@ INNER JOIN civicrm_mailing_job mj ON mj.mailing_id = m.id AND mj.id = %1";
    * @param $kind
    * @param string $format
    *
+   * @deprecated since 5.73 will be removed around 5.95
+   *
    * @return mixed|string
    */
   public function formatPhone($phone, &$kind, $format = "dash") {
+    CRM_Core_Error::deprecatedFunctionWarning('unused');
     $phoneA = explode("x", $phone);
     switch (strlen($phoneA[0])) {
       case 0:

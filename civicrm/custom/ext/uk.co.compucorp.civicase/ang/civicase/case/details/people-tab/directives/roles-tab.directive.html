@@ -1,0 +1,269 @@
+<div class="civicase__people-tab__sub-tab" ng-show="tab == 'roles'">
+  <div class="civicase__people-tab__search">
+    <div class="btn-group btn-group-md pull-right">
+      <button
+        class="btn btn-primary dropdown-toggle"
+        data-toggle="dropdown"
+        aria-haspopup="true"
+        aria-expanded="false"
+        ng-disabled="item['case_type_id.is_active'] === '0'"
+      >
+        <i class="material-icons">add_circle</i>{{ ts('Add Case Role') }}
+      </button>
+      <ul class="dropdown-menu dropdown-menu-right">
+        <li ng-if="allowMultipleCaseClients">
+          <a href ng-click="assignRoleOrClient()">{{ ts('Client') }}</a>
+        </li>
+        <li ng-repeat="role in roles.caseTypeRoles" class="civicase__people-tab__add-role-dropdown">
+          <a href
+            ng-disabled="checkIfRoleIsDisabled(role)"
+            ng-click="!checkIfRoleIsDisabled(role) && assignRoleOrClient(role)">
+            {{ role.role }}
+          </a>
+        </li>
+      </ul>
+    </div>
+    <h3>{{ ts('%1 Contacts', {1: roles.getCountOfAssignedRoles()}) }}</h3>
+    <div class="civicase__people-tab__selection">
+      <span> {{ ts('Select Records:') }} </span>
+      <input type="radio" value="all" ng-model="rolesSelectionMode" id="rolesSelectionMode-all" />
+      <label for="rolesSelectionMode-all" class="people-selection-radio">{{ ts('All %1 records', {1: roles.getCountOfAssignedRoles()}) }}</label>
+      <input type="radio" value="checked" ng-model="rolesSelectionMode" id="rolesSelectionMode-checked"/>
+      <label for="rolesSelectionMode-checked" class="people-selection-radio">Selected records only</label>
+    </div>
+    <div class="civicase__bulkactions-actions-dropdown">
+      <div class="btn-group">
+        <button
+          type="button" class="btn btn-default"
+          ng-disabled="!getSelectedContacts('roles').length"
+          data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+          {{ ts('Actions') }}
+        </button>
+        <button
+          type="button" class="btn btn-default dropdown-toggle"
+          ng-disabled="!getSelectedContacts('roles').length"
+          data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+          <span class="caret"></span>
+        </button>
+        <ul class="dropdown-menu">
+          <li ng-repeat="(key, opt) in contactTasks">
+            <a href ng-click="doBulkAction(key, opt)">
+              {{ ts(opt.title) }}
+            </a>
+          </li>
+        </ul>
+      </div>
+    </div>
+  </div>
+  <div class="civicase__people-tab__filter">
+    <paging
+      class="paging-top"
+      page="$parent.rolesPage"
+      page-size="roles.ROLES_PER_PAGE"
+      total="roles.totalCount"
+      ng-show="roles.totalCount > roles.ROLES_PER_PAGE"
+      show-prev-next="true"
+      show-first-last="true"
+      text-first="{{ ts('<< First') }}"
+      text-last="{{ ts('Last >>') }}"
+      text-next="{{ ts('Next >') }}"
+      text-prev="{{ ts('< Prev') }}"
+    >
+    </paging>
+    <div>
+      <a
+        ng-repeat="letter in letters"
+        class="civicase__people-tab__filter-alpha-pager"
+        ng-class="{active: letter === rolesAlphaFilter}"
+        ng-click="setLetterFilter(letter, 'roles')">
+        {{ letter }}
+      </a>
+      <a href class="all" ng-click="setLetterFilter('', 'roles')">All</a>
+    </div>
+    <div class="civicase__people-tab__inactive-filter">
+      <span
+        class="civicase__checkbox" role="checkbox" tabindex="0"
+        aria-checked="{{showInactiveRoles}}" aria-labelledby="Deleted Cases"
+        ng-click="toggleInactiveRoles($event)" ng-keydown="toggleInactiveRoles($event)">
+        <i
+          ng-if="showInactiveRoles"
+          class="civicase__checkbox--checked material-icons">
+          check_box
+        </i>
+      </span>
+      <label
+        ng-click="toggleInactiveRoles($event)" for="case_search_field_is_deleted"
+        class="control-label">
+        {{ ts('Display previous case role assignments') }}
+      </label>
+    </div>
+
+    <div class="civicase__people-tab__filter-role">
+      <select
+        class="form-control"
+        ng-model="rolesFilter"
+        crm-ui-select
+        ng-change="roles.filterRoles(rolesAlphaFilter, rolesFilter)"
+      >
+        <option value="">{{ ts('All Roles') }}</option>
+        <option value="{{ts('Client')}}">{{ ts('Client') }}</option>
+        <option ng-repeat="role in roles.caseTypeRoles" value="{{ role.role }}">
+          {{ role.role }}
+        </option>
+      </select>
+    </div>
+  </div>
+  <div>
+  </div>
+  <table class="civicase__people-tab__table table">
+    <thead class="civicase__people-tab__table-body">
+      <tr>
+        <th class="civicase__people-tab__table-column">{{ ts('Role') }}</th>
+        <th class="civicase__people-tab__table-column">{{ ts('Name') }}</th>
+        <th class="civicase__people-tab__table-column">{{ ts('Start date') }}</th>
+        <th class="civicase__people-tab__table-column">{{ ts('End date') }}</th>
+        <th class="civicase__people-tab__table-column">{{ ts('Phone') }}</th>
+        <th class="civicase__people-tab__table-column">{{ ts('Email') }}</th>
+        <th class="civicase__people-tab__table-column civicase__people-tab__table-column--last"></th>
+      </tr>
+    </thead>
+    <tbody class="civicase__people-tab__table-body">
+      <tr
+        class="contact--{{role.contact_id}}"
+        ng-class="{unassigned: !role.contact_id}"
+        ng-form="roleForm"
+        ng-if="!roles.isLoading"
+        ng-repeat="role in roles.list track by $index"
+      >
+        <td class="civicase__people-tab__table-column civicase__people-tab__table-column--first">
+          <span ng-if="role.contact_id" class="civicase__checkbox" >
+            <input id="select-role-{{ $index }}" class="civicase__people-tab__table-checkbox" type="checkbox" ng-model="role.checked" ng-click="setSelectionMode('checked', 'roles')" />
+            <i ng-if="role.checked" class="civicase__checkbox--checked material-icons">check_box</i>
+          </span>
+          <label for="select-role-{{ $index }}">
+            <div>
+              <strong>{{ role.role }}</strong>
+              <span class="badge" ng-if="role.is_active === '0'">
+                Past
+              </span>
+            </div>
+            <div><em>{{ role.description }}</em></div>
+            <div>{{ role.desc }}</div>
+          </label>
+        </td>
+        <td class="civicase__people-tab__table-column">
+          <a ng-if="role.contact_id" ng-href="{{ 'civicrm/contact/view' | civicaseCrmUrl:{ cid: role.contact_id } }}">{{ role.display_name }}</a>
+          <span ng-if="!role.contact_id">{{ ts('Unassigned')  }}</span>
+        </td>
+        <td class="civicase__people-tab__table-column">
+          <input
+            class="form-control"
+            civicase-inline-datepicker
+            data-max-date="{{role.relationship.end_date}}"
+            ng-change="refresh(roleDatesUpdater.getApiCallsForStartDate(role, item.id))"
+            name="role_start_date"
+            ng-disabled="roleForm.role_start_date.isSaving"
+            ng-if="!!role.relationship"
+            ng-model="role.relationship.start_date"
+            type="text"
+          />
+        </td>
+        <td class="civicase__people-tab__table-column">
+          <input
+            class="form-control"
+            civicase-inline-datepicker
+            data-min-date="{{role.relationship.start_date}}"
+            ng-change="refresh(roleDatesUpdater.getApiCallsForEndDate(role, item.id))"
+            name="role_end_date"
+            ng-disabled="roleForm.role_end_date.isSaving"
+            ng-if="!!role.relationship"
+            ng-model="role.relationship.end_date"
+            type="text"
+          />
+        </td>
+        <td class="civicase__people-tab__table-column">{{ role.phone }}</td>
+        <td class="civicase__people-tab__table-column">
+          <a
+            class="crm-popup"
+            ng-href="{{ 'civicrm/activity/email/add' | civicaseCrmUrl:{ action: 'add', caseid: item.id, reset: 1, cid: role.contact_id } }}"
+          >
+            {{ role.email }}
+          </a>
+        </td>
+        <td class="civicase__people-tab__table-column civicase__people-tab__table-column--last">
+          <button
+            class="civicase__people-tab__table-assign-icon btn btn-default"
+            ng-if="!role.contact_id"
+            ng-click="assignRoleOrClient(role)"
+            ng-disabled="item['case_type_id.is_active'] === '0'"
+          >
+            <i class="fa fa-user-plus"></i>
+          </button>
+          <div
+            ng-if="(role.is_active === '1' || role.is_client === '1') && role.contact_id"
+            class="btn-group btn-group-sm">
+            <button
+              type="button"
+              class="btn btn-default dropdown-toggle"
+              data-toggle="dropdown"
+              aria-haspopup="true"
+              aria-expanded="false"
+              ng-disabled="item['case_type_id.is_active'] === '0'"
+            >
+              <i class="material-icons">more_vert</i>
+            </button>
+            <ul class="dropdown-menu dropdown-menu-right">
+              <li>
+                <a href ng-click="replaceRoleOrClient(role)">{{ ts('Reassign %1', {1: role.role}) }}</a>
+              </li>
+              <li ng-if="(role.relationship_type_id && !civicaseSingleCaseRolePerType) || (!role.relationship_type_id && allowMultipleCaseClients)">
+                <a href ng-click="assignRoleOrClient(role)">{{ ts('Add Another %1', {1: role.role}) }}</a>
+              </li>
+              <li ng-if="role.relationship_type_id || item.client.length > 1">
+                <a href ng-click="unassignRole(role)">{{ ts('Remove %1', {1: role.role}) }}</a>
+              </li>
+              <li role="separator" class="divider"></li>
+              <li ng-if="role.email">
+                <a class="crm-popup" ng-href="{{ 'civicrm/activity/email/add' | civicaseCrmUrl:{ action: 'add', caseid: item.id, reset: 1, cid: role.contact_id } }}">{{ ts('Send Email') }}</a>
+              </li>
+              <li>
+                <a class="crm-popup" ng-href="{{ 'civicrm/activity/pdf/add' | civicaseCrmUrl:{ action: 'add', caseid: item.id, reset: 1, cid: role.contact_id, context: 'standalone' } }}">{{ ts('Print/Merge Document') }}</a>
+              </li>
+            </ul>
+          </div>
+        </td>
+      </tr>
+      <tr
+        ng-repeat="i in [1, 2, 3]"
+        ng-if="roles.isLoading"
+        ng-include="'~/civicase/case/details/people-tab/directives/case-details-people-tab-placeholder.html'"
+      ></tr>
+      <tr ng-if="!roles.list.length && !roles.isLoading">
+        <td colspan="9" class="text-center">
+          <button class="btn btn-default" disabled>
+            {{ ts('None Found') }}
+          </button>
+        </td>
+      </tr>
+    </tbody>
+  </table>
+  <div class="civicase__people-tab-counter clearfix">
+    <div class="pull-right">
+      {{ ts('Page %1 of %2', {1: rolesPage, 2: ceil(roles.totalCount / roles.ROLES_PER_PAGE)}) }}
+    </div>
+    <paging
+      class="center-block"
+      page="$parent.rolesPage"
+      page-size="roles.ROLES_PER_PAGE"
+      total="roles.totalCount"
+      ng-show="roles.totalCount > roles.ROLES_PER_PAGE"
+      show-prev-next="true"
+      show-first-last="true"
+      text-first="{{ ts('<< First') }}"
+      text-last="{{ ts('Last >>') }}"
+      text-next="{{ ts('Next >') }}"
+      text-prev="{{ ts('< Prev') }}"
+    >
+    </paging>
+  </div>
+</div>

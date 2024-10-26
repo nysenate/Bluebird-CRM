@@ -13,9 +13,9 @@
  *
  * @package CRM
  * @copyright CiviCRM LLC https://civicrm.org/licensing
- * $Id$
- *
  */
+
+use Civi\Api4\Membership;
 
 /**
  * This class generates form components for Payment-Instrument
@@ -92,6 +92,8 @@ class CRM_Member_Form_MembershipView extends CRM_Core_Form {
    *   Create or delete.
    * @param array $owner
    *   Primary membership info (membership_id, contact_id, membership_type ...).
+   *
+   * @throws \CRM_Core_Exception
    */
   public function relAction($action, $owner) {
     switch ($action) {
@@ -119,16 +121,14 @@ class CRM_Member_Form_MembershipView extends CRM_Core_Form {
           'skipStatusCal' => TRUE,
           'createActivity' => TRUE,
         ];
-        // @todo stop passing $ids here (we are only doing so because of passbyreference)
-        $ids = [];
-        CRM_Member_BAO_Membership::create($params, $ids);
+        CRM_Member_BAO_Membership::create($params);
         $relatedDisplayName = CRM_Contact_BAO_Contact::displayName($params['contact_id']);
         CRM_Core_Session::setStatus(ts('Related membership for %1 has been created.', [1 => $relatedDisplayName]),
           ts('Membership Added'), 'success');
         break;
 
       default:
-        CRM_Core_Error::fatal(ts("Invalid action specified in URL"));
+        throw new CRM_Core_Exception(ts('Invalid action specified in URL'));
     }
 
     // Redirect back to membership view page for the owner, without the relAction parameters
@@ -155,18 +155,30 @@ class CRM_Member_Form_MembershipView extends CRM_Core_Form {
     $this->assign('context', $context);
 
     if ($this->membershipID) {
-      $params = ['id' => $this->membershipID];
-      CRM_Member_BAO_Membership::retrieve($params, $values);
-      if (CRM_Financial_BAO_FinancialType::isACLFinancialTypeStatus()) {
-        $finTypeId = CRM_Core_DAO::getFieldValue('CRM_Member_DAO_MembershipType', $values['membership_type_id'], 'financial_type_id');
-        $finType = CRM_Contribute_PseudoConstant::financialType($finTypeId);
-        if (!CRM_Core_Permission::check('view contributions of type ' . $finType)) {
-          CRM_Core_Error::statusBounce(ts('You do not have permission to access this page.'));
-        }
+      $memberships = Membership::get()
+        ->addSelect('*', 'status_id:label', 'membership_type_id:label', 'membership_type_id.financial_type_id', 'status_id.is_current_member')
+        ->addWhere('id', '=', $this->membershipID)
+        ->execute();
+      if (!count($memberships)) {
+        CRM_Core_Error::statusBounce(ts('You do not have permission to access this page.'));
       }
-      else {
-        $this->assign('noACL', TRUE);
-      }
+      $values = $memberships->first();
+
+      // Ensure keys expected by MembershipView.tpl are set correctly
+      // Some of these defaults are overwritten dependant on context below
+      $values['financialTypeId'] = $values['membership_type_id.financial_type_id'];
+      $values['membership_type'] = $values['membership_type_id:label'];
+      $values['status'] = $values['status_id:label'];
+      $values['active'] = $values['status_id.is_current_member'];
+      $values['owner_contact_id'] = FALSE;
+      $values['owner_display_name'] = FALSE;
+      $values['campaign'] = FALSE;
+
+      // This tells the template not to check financial acls when determining
+      // whether to show edit & delete links. Link decisions
+      // should be moved to the php layer - with financialacls using hooks.
+      $this->assign('noACL', !CRM_Financial_BAO_FinancialType::isACLFinancialTypeStatus());
+
       $membershipType = CRM_Member_BAO_MembershipType::getMembershipTypeDetails($values['membership_type_id']);
 
       // Do the action on related Membership if needed
@@ -235,12 +247,12 @@ END AS 'relType'
       if (!empty($membershipType['relationship_type_id']) && empty($values['owner_membership_id'])) {
         // display related contacts/membership block
         $this->assign('has_related', TRUE);
-        $this->assign('max_related', CRM_Utils_Array::value('max_related', $values, ts('Unlimited')));
+        $this->assign('max_related', $values['max_related'] ?? ts('Unlimited'));
         // split the relations in 2 arrays based on direction
         $relTypeId = explode(CRM_Core_DAO::VALUE_SEPARATOR, $membershipType['relationship_type_id']);
         $relDirection = explode(CRM_Core_DAO::VALUE_SEPARATOR, $membershipType['relationship_direction']);
-        foreach ($relTypeId as $rid) {
-          $relTypeDir[substr($relDirection[0], 0, 1)][] = $rid;
+        foreach ($relTypeId as $x => $rid) {
+          $relTypeDir[substr($relDirection[$x], 0, 1)][] = $rid;
         }
         // build query in 2 parts with a UNION if necessary
         // _x and _y are replaced with _a and _b first, then vice-versa
@@ -342,7 +354,7 @@ SELECT r.id, c.id as cid, c.display_name as name, c.job_title as comment,
       }
 
       // omitting contactImage from title for now since the summary overlay css doesn't work outside crm-container
-      CRM_Utils_System::setTitle(ts('View Membership for') . ' ' . $displayName);
+      $this->setTitle(ts('View Membership for') . ' ' . $displayName);
 
       // add viewed membership to recent items list
       $recentTitle = $displayName . ' - ' . ts('Membership Type:') . ' ' . $values['membership_type'];
@@ -374,7 +386,8 @@ SELECT r.id, c.id as cid, c.display_name as name, c.job_title as comment,
 
       $memType = CRM_Core_DAO::getFieldValue("CRM_Member_DAO_Membership", $this->membershipID, "membership_type_id");
 
-      $groupTree = CRM_Core_BAO_CustomGroup::getTree('Membership', NULL, $this->membershipID, 0, $memType);
+      $groupTree = CRM_Core_BAO_CustomGroup::getTree('Membership', NULL, $this->membershipID, 0, $memType, NULL,
+        TRUE, NULL, FALSE, CRM_Core_Permission::VIEW);
       CRM_Core_BAO_CustomGroup::buildCustomDataView($this, $groupTree, FALSE, NULL, NULL, NULL, $this->membershipID);
 
       $isRecur = CRM_Core_DAO::getFieldValue('CRM_Member_DAO_Membership', $this->membershipID, 'contribution_recur_id');
@@ -386,11 +399,12 @@ SELECT r.id, c.id as cid, c.display_name as name, c.job_title as comment,
       $values['membership_type'] = CRM_Core_TestEntity::appendTestText($values['membership_type']);
     }
 
-    $subscriptionCancelled = CRM_Member_BAO_Membership::isSubscriptionCancelled($this->membershipID);
+    $subscriptionCancelled = CRM_Member_BAO_Membership::isSubscriptionCancelled((int) $this->membershipID);
     $values['auto_renew'] = ($autoRenew && !$subscriptionCancelled) ? 'Yes' : 'No';
 
     //do check for campaigns
-    if ($campaignId = CRM_Utils_Array::value('campaign_id', $values)) {
+    $campaignId = $values['campaign_id'] ?? NULL;
+    if ($campaignId) {
       $campaigns = CRM_Campaign_BAO_Campaign::getCampaigns($campaignId);
       $values['campaign'] = $campaigns[$campaignId];
     }

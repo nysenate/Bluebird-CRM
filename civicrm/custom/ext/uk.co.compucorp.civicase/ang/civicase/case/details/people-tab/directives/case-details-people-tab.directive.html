@@ -1,0 +1,13 @@
+<div class="civicase__people-tab civicase__case-tab-container">
+  <div crm-ui-debug="allRoles"></div>
+  <!-- Nav tabs -->
+  <ul class="nav nav-tabs">
+    <li role="presentation" ng-class="{active: tab == 'roles'}"><a href class="civicase__people-tab-link" ng-click="setTab('roles')">{{ ts('Case Roles') }}</a></li>
+    <li role="presentation" ng-class="{active: tab == 'relations'}"><a href class="civicase__people-tab-link" ng-click="setTab('relations')">{{ ts('Other Relationships') }}</a></li>
+  </ul>
+  <!-- End Nav Tabs -->
+  <!-- Tabs -->
+  <div ng-include="'~/civicase/case/details/people-tab/directives/roles-tab.directive.html'"></div>
+  <div ng-include="'~/civicase/case/details/people-tab/directives/relationships-tab.directive.html'"></div>
+  <!-- End Tabs -->
+</div>

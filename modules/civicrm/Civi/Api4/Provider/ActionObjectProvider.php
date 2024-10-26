@@ -16,12 +16,16 @@ use Civi\API\Provider\ProviderInterface;
 use Civi\Api4\Generic\AbstractAction;
 use Civi\API\Events;
 use Civi\Api4\Utils\ReflectionUtils;
+use Civi\Core\Event\GenericHookEvent;
+use Civi\Core\Service\AutoService;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 
 /**
  * Accept $apiRequests based on \Civi\API\Action
+ *
+ * @service action_object_provider
  */
-class ActionObjectProvider implements EventSubscriberInterface, ProviderInterface {
+class ActionObjectProvider extends AutoService implements EventSubscriberInterface, ProviderInterface {
 
   /**
    * @return array
@@ -31,7 +35,7 @@ class ActionObjectProvider implements EventSubscriberInterface, ProviderInterfac
     // to override standard implementations -- which is
     // handy for testing/mocking.
     return [
-      Events::RESOLVE => [
+      'civi.api.resolve' => [
         ['onApiResolve', Events::W_EARLY],
       ],
     ];
@@ -59,15 +63,23 @@ class ActionObjectProvider implements EventSubscriberInterface, ProviderInterfac
    */
   public function invoke($action) {
     // Load result class based on @return annotation in the execute() method.
-    $reflection = new \ReflectionClass($action);
-    $doc = ReflectionUtils::getCodeDocs($reflection->getMethod('execute'), 'Method');
-    $resultClass = $doc['return'][0] ?? '\\Civi\\Api4\\Generic\\Result';
+    $resultClass = $this->getResultClass($action);
     $result = new $resultClass();
     $result->action = $action->getActionName();
     $result->entity = $action->getEntityName();
     $action->_run($result);
     $this->handleChains($action, $result);
     return $result;
+  }
+
+  private function getResultClass($action): string {
+    $actionClassName = get_class($action);
+    if (!isset(\Civi::$statics[__CLASS__][__FUNCTION__][$actionClassName])) {
+      $reflection = new \ReflectionClass($action);
+      $doc = ReflectionUtils::getCodeDocs($reflection->getMethod('execute'), 'Method');
+      \Civi::$statics[__CLASS__][__FUNCTION__][$actionClassName] = $doc['return'][0] ?? '\Civi\Api4\Generic\Result';
+    }
+    return \Civi::$statics[__CLASS__][__FUNCTION__][$actionClassName];
   }
 
   /**
@@ -92,10 +104,10 @@ class ActionObjectProvider implements EventSubscriberInterface, ProviderInterfac
    * @param $request
    * @param $row
    * @return array|\Civi\Api4\Generic\Result|null
-   * @throws \API_Exception
+   * @throws \CRM_Core_Exception
    */
   protected function runChain($request, $row) {
-    list($entity, $action, $params, $index) = $request;
+    [$entity, $action, $params, $index] = $request;
     // Swap out variables in $entity, $action & $params
     $this->resolveChainLinks($entity, $row);
     $this->resolveChainLinks($action, $row);
@@ -116,7 +128,8 @@ class ActionObjectProvider implements EventSubscriberInterface, ProviderInterfac
       }
     }
     elseif (is_string($val) && strlen($val) > 1 && substr($val, 0, 1) === '$') {
-      $val = \CRM_Utils_Array::pathGet($result, explode('.', substr($val, 1)));
+      $key = substr($val, 1);
+      $val = $result[$key] ?? \CRM_Utils_Array::pathGet($result, explode('.', $key)) ?? $val;
     }
   }
 
@@ -126,8 +139,7 @@ class ActionObjectProvider implements EventSubscriberInterface, ProviderInterfac
    * @return array
    */
   public function getEntityNames($version) {
-    /** FIXME */
-    return [];
+    return $version === 4 ? array_keys($this->getEntities()) : [];
   }
 
   /**
@@ -139,6 +151,61 @@ class ActionObjectProvider implements EventSubscriberInterface, ProviderInterfac
   public function getActionNames($version, $entity) {
     /** FIXME Civi\API\V4\Action\GetActions */
     return [];
+  }
+
+  /**
+   * Get all APIv4 entities
+   */
+  public function getEntities() {
+    $cache = \Civi::cache('metadata');
+    $entities = $cache->get('api4.entities.info', []);
+
+    if (!$entities) {
+      // Load entities declared in API files
+      foreach ($this->getAllApiClasses() as $className) {
+        $info = $className::getInfo();
+        $entities[$info['name']] = $info;
+      }
+      // Allow extensions to modify the list of entities
+      $event = GenericHookEvent::create(['entities' => &$entities]);
+      \Civi::dispatcher()->dispatch('civi.api4.entityTypes', $event);
+      $this->fillEntityDefaults($entities);
+      ksort($entities);
+      $cache->set('api4.entities.info', $entities);
+    }
+
+    return $entities;
+  }
+
+  public function fillEntityDefaults(array &$entities) {
+    foreach ($entities as &$entity) {
+      if (!isset($entity['search_fields'])) {
+        $entity['search_fields'] = (array) ($entity['label_field'] ?? NULL);
+      }
+    }
+  }
+
+  /**
+   * Scan all api directories to discover entities
+   * @return \Civi\Api4\Generic\AbstractEntity[]
+   */
+  public function getAllApiClasses(): array {
+    $classNames = [];
+    $locations = array_merge([\Civi::paths()->getPath('[civicrm.root]/Civi.php')],
+      array_column(\CRM_Extension_System::singleton()->getMapper()->getActiveModuleFiles(), 'filePath')
+    );
+    foreach ($locations as $location) {
+      $dir = \CRM_Utils_File::addTrailingSlash(dirname($location ?? '')) . 'Civi/Api4';
+      if (is_dir($dir)) {
+        foreach (glob("$dir/*.php") as $file) {
+          $className = 'Civi\Api4\\' . basename($file, '.php');
+          if (is_a($className, 'Civi\Api4\Generic\AbstractEntity', TRUE)) {
+            $classNames[] = $className;
+          }
+        }
+      }
+    }
+    return $classNames;
   }
 
 }

@@ -31,7 +31,7 @@
                   {assign var="index" value="1"}
                   {foreach name=outer key=key item=item from=$form.$n}
                   {if $index < 10}
-                  {assign var="index" value=`$index+1`}
+                  {assign var="index" value=$index+1}
                   {else}
                   <td class="labels font-light">{$form.$n.$key.html}</td>
                   {if $count == $field.options_per_line}
@@ -39,7 +39,7 @@
                 <tr>
                   {assign var="count" value="1"}
                   {else}
-                  {assign var="count" value=`$count+1`}
+                  {assign var="count" value=$count+1}
                   {/if}
                   {/if}
                   {/foreach}
@@ -55,7 +55,7 @@
             {$form.$n.label}
           </div>
           <div class="crm-content">
-            {if $n|substr:0:3 eq 'im-'}
+            {if $n|str_starts_with:'im-'}
               {assign var="provider" value=$n|cat:"-provider_id"}
               {$form.$provider.html}&nbsp;
             {/if}
@@ -72,7 +72,7 @@
                   </div>
                 </div>
               {/if}
-            {elseif $n|substr:0:5 eq 'phone'}
+            {elseif $n|str_starts_with:'phone'}
               {assign var="phone_ext_field" value=$n|replace:'phone':'phone_ext'}
               {$form.$n.html}
               {if $form.$phone_ext_field.html}

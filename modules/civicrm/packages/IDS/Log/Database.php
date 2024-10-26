@@ -115,7 +115,7 @@ class IDS_Log_Database implements IDS_Log_Interface
     /**
      * Prepared SQL statement
      *
-     * @var string
+     * @var PDOStatement
      */
     private $statement = null;
 
@@ -125,6 +125,13 @@ class IDS_Log_Database implements IDS_Log_Interface
      * @var string
      */
     private $ip = 'local/unknown';
+
+    /**
+     * Holds current HTTP_X_FORWARDED_FOR address
+     *
+     * @var string
+     */
+    private $ip2 = '';
 
     /**
      * Instance container

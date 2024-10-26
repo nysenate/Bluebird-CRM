@@ -10,29 +10,24 @@
  +--------------------------------------------------------------------+
  */
 
-/**
- *
- * @package CRM
- * @copyright CiviCRM LLC https://civicrm.org/licensing
- * $Id$
- *
- */
-
-
 namespace Civi\Api4\Service\Schema;
 
 use Civi\Api4\Entity;
-use Civi\Api4\Event\Events;
 use Civi\Api4\Event\SchemaMapBuildEvent;
 use Civi\Api4\Service\Schema\Joinable\CustomGroupJoinable;
 use Civi\Api4\Service\Schema\Joinable\Joinable;
-use Symfony\Component\EventDispatcher\EventDispatcherInterface;
-use Civi\Api4\Service\Schema\Joinable\OptionValueJoinable;
+use Civi\Api4\Utils\CoreUtil;
+use Civi\Core\Service\AutoService;
+use Civi\Core\CiviEventDispatcherInterface;
 use CRM_Core_DAO_AllCoreTables as AllCoreTables;
 
-class SchemaMapBuilder {
+/**
+ * @service schema_map_builder
+ */
+class SchemaMapBuilder extends AutoService {
+
   /**
-   * @var \Symfony\Component\EventDispatcher\EventDispatcherInterface
+   * @var \Civi\Core\CiviEventDispatcherInterface
    */
   protected $dispatcher;
   /**
@@ -41,22 +36,23 @@ class SchemaMapBuilder {
   protected $apiEntities;
 
   /**
-   * @param \Symfony\Component\EventDispatcher\EventDispatcherInterface $dispatcher
+   * @inject dispatcher
+   * @param \Civi\Core\CiviEventDispatcherInterface $dispatcher
    */
-  public function __construct(EventDispatcherInterface $dispatcher) {
+  public function __construct(CiviEventDispatcherInterface $dispatcher) {
     $this->dispatcher = $dispatcher;
-    $this->apiEntities = array_keys((array) Entity::get()->setCheckPermissions(FALSE)->addSelect('name')->execute()->indexBy('name'));
+    $this->apiEntities = Entity::get(FALSE)->addSelect('name')->execute()->column('name');
   }
 
   /**
    * @return SchemaMap
    */
-  public function build() {
+  public function build(): SchemaMap {
     $map = new SchemaMap();
     $this->loadTables($map);
 
     $event = new SchemaMapBuildEvent($map);
-    $this->dispatcher->dispatch(Events::SCHEMA_MAP_BUILD, $event);
+    $this->dispatcher->dispatch('api.schema_map.build', $event);
 
     return $map;
   }
@@ -68,18 +64,16 @@ class SchemaMapBuilder {
    */
   private function loadTables(SchemaMap $map) {
     /** @var \CRM_Core_DAO $daoName */
-    foreach (AllCoreTables::get() as $daoName => $data) {
+    foreach (AllCoreTables::getEntities() as $name => $data) {
       $table = new Table($data['table']);
-      foreach ($daoName::fields() as $field => $fieldData) {
-        $this->addJoins($table, $field, $fieldData);
+      foreach ($data['class']::fields() as $fieldData) {
+        $this->addJoins($table, $fieldData['name'], $fieldData);
       }
       $map->addTable($table);
-      if (in_array($data['name'], $this->apiEntities)) {
-        $this->addCustomFields($map, $table, $data['name']);
+      if (in_array($name, $this->apiEntities)) {
+        $this->addCustomFields($map, $table, $name);
       }
     }
-
-    $this->addBackReferences($map);
   }
 
   /**
@@ -94,142 +88,74 @@ class SchemaMapBuilder {
     if ($fkClass) {
       $tableName = AllCoreTables::getTableForClass($fkClass);
       $fkKey = $data['FKKeyColumn'] ?? 'id';
-      $alias = str_replace('_id', '', $field);
-      $joinable = new Joinable($tableName, $fkKey, $alias);
+      $joinable = new Joinable($tableName, $fkKey, $field);
       $joinable->setJoinType($joinable::JOIN_TYPE_MANY_TO_ONE);
       $table->addTableLink($field, $joinable);
-    }
-    elseif (!empty($data['pseudoconstant'])) {
-      $this->addPseudoConstantJoin($table, $field, $data);
-    }
-  }
-
-  /**
-   * @param Table $table
-   * @param string $field
-   * @param array $data
-   */
-  private function addPseudoConstantJoin(Table $table, $field, array $data) {
-    $pseudoConstant = $data['pseudoconstant'] ?? NULL;
-    $tableName = $pseudoConstant['table'] ?? NULL;
-    $optionGroupName = $pseudoConstant['optionGroupName'] ?? NULL;
-    $keyColumn = $pseudoConstant['keyColumn'] ?? 'id';
-
-    if ($tableName) {
-      $alias = str_replace('civicrm_', '', $tableName);
-      $joinable = new Joinable($tableName, $keyColumn, $alias);
-      $condition = $pseudoConstant['condition'] ?? NULL;
-      if ($condition) {
-        $joinable->addCondition($condition);
-      }
-      $table->addTableLink($field, $joinable);
-    }
-    elseif ($optionGroupName) {
-      $keyColumn = $pseudoConstant['keyColumn'] ?? 'value';
-      $joinable = new OptionValueJoinable($optionGroupName, NULL, $keyColumn);
-
-      if (!empty($data['serialize'])) {
-        $joinable->setJoinType($joinable::JOIN_TYPE_ONE_TO_MANY);
-      }
-
-      $table->addTableLink($field, $joinable);
-    }
-  }
-
-  /**
-   * Loop through existing links and provide link from the other side
-   *
-   * @param SchemaMap $map
-   */
-  private function addBackReferences(SchemaMap $map) {
-    foreach ($map->getTables() as $table) {
-      foreach ($table->getTableLinks() as $link) {
-        // there are too many possible joins from option value so skip
-        if ($link instanceof OptionValueJoinable) {
-          continue;
-        }
-
-        $target = $map->getTableByName($link->getTargetTable());
-        $tableName = $link->getBaseTable();
-        $plural = str_replace('civicrm_', '', $this->getPlural($tableName));
-        $joinable = new Joinable($tableName, $link->getBaseColumn(), $plural);
-        $joinable->setJoinType($joinable::JOIN_TYPE_ONE_TO_MANY);
-        $target->addTableLink($link->getTargetColumn(), $joinable);
-      }
-    }
-  }
-
-  /**
-   * Simple implementation of pluralization.
-   * Could be replaced with symfony/inflector
-   *
-   * @param string $singular
-   *
-   * @return string
-   */
-  private function getPlural($singular) {
-    $last_letter = substr($singular, -1);
-    switch ($last_letter) {
-      case 'y':
-        return substr($singular, 0, -1) . 'ies';
-
-      case 's':
-        return $singular . 'es';
-
-      default:
-        return $singular . 's';
     }
   }
 
   /**
    * @param \Civi\Api4\Service\Schema\SchemaMap $map
    * @param \Civi\Api4\Service\Schema\Table $baseTable
-   * @param string $entity
+   * @param string $entityName
    */
-  private function addCustomFields(SchemaMap $map, Table $baseTable, $entity) {
+  private function addCustomFields(SchemaMap $map, Table $baseTable, string $entityName) {
+    $customInfo = \Civi\Api4\Utils\CoreUtil::getCustomGroupExtends($entityName);
     // Don't be silly
-    if (!array_key_exists($entity, \CRM_Core_SelectValues::customGroupExtends())) {
+    if (!$customInfo) {
       return;
     }
-    $queryEntity = (array) $entity;
-    if ($entity == 'Contact') {
-      $queryEntity = ['Contact', 'Individual', 'Organization', 'Household'];
-    }
-    $fieldData = \CRM_Utils_SQL_Select::from('civicrm_custom_field f')
-      ->join('custom_group', 'INNER JOIN civicrm_custom_group g ON g.id = f.custom_group_id')
-      ->select(['g.name as custom_group_name', 'g.table_name', 'g.is_multiple', 'f.name', 'label', 'column_name', 'option_group_id'])
-      ->where('g.extends IN (@entity)', ['@entity' => $queryEntity])
-      ->where('g.is_active')
-      ->where('f.is_active')
-      ->execute();
+    $filters = [
+      'extends' => $customInfo['extends'],
+      'is_active' => TRUE,
+      'fields' => TRUE,
+    ];
+    foreach (\CRM_Core_BAO_CustomGroup::getAll($filters) as $customGroup) {
+      $customTable = new Table($customGroup['table_name']);
 
-    $links = [];
-
-    while ($fieldData->fetch()) {
-      $tableName = $fieldData->table_name;
-
-      $customTable = $map->getTableByName($tableName);
-      if (!$customTable) {
-        $customTable = new Table($tableName);
+      // Add entity_id join from multi-record custom group to the base entity
+      if (!empty($customGroup['is_multiple'])) {
+        $newJoin = new Joinable($baseTable->getName(), $customInfo['column'], 'entity_id');
+        $customTable->addTableLink('entity_id', $newJoin);
+        // Deprecated "contact" join name
+        $oldJoin = new Joinable($baseTable->getName(), $customInfo['column'], AllCoreTables::convertEntityNameToLower($entityName));
+        $oldJoin->setDeprecatedBy('entity_id');
+        $customTable->addTableLink('entity_id', $oldJoin);
       }
 
-      if (!empty($fieldData->option_group_id)) {
-        $optionValueJoinable = new OptionValueJoinable($fieldData->option_group_id, $fieldData->label);
-        $customTable->addTableLink($fieldData->column_name, $optionValueJoinable);
-      }
+      // Add joins for entityReference fields
+      foreach ($customGroup['fields'] as $field) {
+        if ($field['data_type'] === 'EntityReference' && isset($field['fk_entity'])) {
+          $targetTable = self::getTableName($field['fk_entity']);
+          $joinable = new Joinable($targetTable, 'id', $field['name']);
+          $customTable->addTableLink($field['column_name'], $joinable);
+        }
 
+        if ($field['data_type'] === 'ContactReference') {
+          $joinable = new Joinable('civicrm_contact', 'id', $field['name']);
+          if ($field['serialize']) {
+            $joinable->setSerialize((int) $field['serialize']);
+          }
+          $customTable->addTableLink($field['column_name'], $joinable);
+        }
+      }
       $map->addTable($customTable);
 
-      $alias = $fieldData->custom_group_name;
-      $links[$alias]['tableName'] = $tableName;
-      $links[$alias]['isMultiple'] = !empty($fieldData->is_multiple);
-      $links[$alias]['columns'][$fieldData->name] = $fieldData->column_name;
+      // Add custom join
+      $joinable = new CustomGroupJoinable($customGroup['table_name'], $customGroup['name'], $customGroup['is_multiple'], $entityName);
+      $baseTable->addTableLink($customInfo['column'], $joinable);
     }
+  }
 
-    foreach ($links as $alias => $link) {
-      $joinable = new CustomGroupJoinable($link['tableName'], $alias, $link['isMultiple'], $entity, $link['columns']);
-      $baseTable->addTableLink('id', $joinable);
+  /**
+   * @param string $entityName
+   * @return string
+   */
+  private static function getTableName(string $entityName) {
+    if (CoreUtil::isContact($entityName)) {
+      return 'civicrm_contact';
     }
+    return AllCoreTables::getTableForEntityName($entityName);
   }
 
 }

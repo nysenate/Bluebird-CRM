@@ -33,29 +33,14 @@ use const STREAM_FILTER_WRITE;
  *
  * DEPRECATION WARNING! This class will be removed in the next major point release
  *
- * @deprecated deprecated since version 9.2.0
+ * @deprecated since version 9.2.0
  * @see AbstractCsv::setEscape
  *
  * @see https://tools.ietf.org/html/rfc4180#section-2
  */
 class RFC4180Field extends php_user_filter
 {
-    const FILTERNAME = 'convert.league.csv.rfc4180';
-
-    /**
-     * the filter name used to instantiate the class with.
-     *
-     * @var string
-     */
-    public $filtername;
-
-    /**
-     * Contents of the params parameter passed to stream_filter_append
-     * or stream_filter_prepend functions.
-     *
-     * @var mixed
-     */
-    public $params;
+    public const FILTERNAME = 'convert.league.csv.rfc4180';
 
     /**
      * The value being search for.
@@ -127,7 +112,7 @@ class RFC4180Field extends php_user_filter
     /**
      * Static method to register the class as a stream filter.
      */
-    public static function register()
+    public static function register(): void
     {
         if (!in_array(self::FILTERNAME, stream_get_filters(), true)) {
             stream_filter_register(self::FILTERNAME, self::class);
@@ -143,9 +128,12 @@ class RFC4180Field extends php_user_filter
     }
 
     /**
-     * {@inheritdoc}
+     * @param resource $in
+     * @param resource $out
+     * @param int      $consumed
+     * @param bool     $closing
      */
-    public function filter($in, $out, &$consumed, $closing)
+    public function filter($in, $out, &$consumed, $closing): int
     {
         while ($bucket = stream_bucket_make_writeable($in)) {
             $bucket->data = str_replace($this->search, $this->replace, $bucket->data);
@@ -159,7 +147,7 @@ class RFC4180Field extends php_user_filter
     /**
      * {@inheritdoc}
      */
-    public function onCreate()
+    public function onCreate(): bool
     {
         if (!$this->isValidParams($this->params)) {
             return false;

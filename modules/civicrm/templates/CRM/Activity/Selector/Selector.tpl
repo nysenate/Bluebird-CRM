@@ -8,10 +8,10 @@
  +--------------------------------------------------------------------+
 *}
 <div class="crm-activity-selector-{$context}">
-  <div class="crm-accordion-wrapper crm-search_filters-accordion">
-    <div class="crm-accordion-header">
-    {ts}Filter by Activity{/ts}</a>
-    </div><!-- /.crm-accordion-header -->
+  <details class="crm-accordion-bold crm-search_filters-accordion" open>
+    <summary>
+    {ts}Filter by Activity{/ts}
+    </summary>
     <div class="crm-accordion-body">
       <form><!-- form element is here to fool the datepicker widget -->
       <table class="no-border form-layout-compressed activity-search-options">
@@ -22,17 +22,15 @@
           <td class="crm-contact-form-block-activity_type_exclude_filter_id crm-inline-edit-field">
             {$form.activity_type_exclude_filter_id.label}<br /> {$form.activity_type_exclude_filter_id.html|crmAddClass:medium}
           </td>
-          <td>
-            {include file="CRM/Core/DatePickerRange.tpl" fieldName="activity_date_time"}
-          </td>
+          {include file="CRM/Core/DatePickerRangeWrapper.tpl" fieldName="activity_date_time" hideRelativeLabel=false}
           <td class="crm-contact-form-block-activity_status_filter_id crm-inline-edit-field">
             <label>{ts}Status{/ts}</label><br /> {$form.status_id.html|crmAddClass:medium}
           </td>
         </tr>
       </table>
       </form>
-    </div><!-- /.crm-accordion-body -->
-  </div><!-- /.crm-accordion-wrapper -->
+    </div>
+  </details>
   <table class="contact-activity-selector-{$context} crm-ajax-table" style="width: 100%;">
     <thead>
     <tr>
@@ -50,7 +48,7 @@
 
   {literal}
     <script type="text/javascript">
-      (function($) {
+      (function($, _) {
         var context = {/literal}"{$context}"{literal};
         CRM.$('table.contact-activity-selector-' + context).data({
           "ajax": {
@@ -67,11 +65,16 @@
           }
         });
         $(function($) {
+          $('table.contact-activity-selector-' + context).on('xhr.dt', function(e, settings, json, xhr) {
+            for (var i=0, ien=json.data.length; i<ien; i++) {
+              json.data[i].subject = _.escape(json.data[i].subject);
+            }
+          });
           $('.activity-search-options :input').change(function(){
-            CRM.$('table.contact-activity-selector-' + context).DataTable().draw();
+            $('table.contact-activity-selector-' + context).DataTable().draw();
           });
         });
-      })(CRM.$);
+      })(CRM.$, CRM._);
     </script>
   {/literal}
   <style type="text/css">

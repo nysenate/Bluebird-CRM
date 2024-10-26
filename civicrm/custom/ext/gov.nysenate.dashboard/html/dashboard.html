@@ -1,0 +1,8 @@
+<div class="crm-flex-box" ng-if="!$ctrl.fullscreenDashlet">
+  <!--NYSS add limit filter-->
+  <div ng-repeat="column in $ctrl.columns | limitTo:1" class="crm-flex-{{2 + $index}} crm-dashboard-droppable" ng-model="column" ui-sortable="$ctrl.sortableOptions">
+    <div ng-repeat="dashlet in column" class="crm-dashlet">
+      <crm-dashlet dashlet="dashlet" remove="$ctrl.removeDashlet($parent.$index, $index)" fullscreen="$ctrl.showFullscreen(dashlet)" ></crm-dashlet>
+    </div>
+  </div>
+</div>

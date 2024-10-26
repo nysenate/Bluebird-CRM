@@ -1,0 +1,99 @@
+<?xml version="1.0" encoding="iso-8859-1" ?>
+
+<table>
+  <base>CRM/NYSS/Inbox</base>
+  <class>InboxAttachments</class>
+  <name>nyss_inbox_attachments</name>
+  <comment>Store metadata re: email attachments.</comment>
+  <log>true</log>
+
+  <field>
+    <name>id</name>
+    <type>int unsigned</type>
+    <required>true</required>
+    <comment>Unique InboxAttachments ID</comment>
+    <html>
+      <type>Number</type>
+    </html>
+  </field>
+  <primaryKey>
+    <name>id</name>
+    <autoincrement>true</autoincrement>
+  </primaryKey>
+
+  <field>
+    <name>email_id</name>
+    <type>int unsigned</type>
+    <comment>FK to InboxMessages</comment>
+  </field>
+  <foreignKey>
+    <name>email_id</name>
+    <table>nyss_inbox_messages</table>
+    <key>id</key>
+    <onDelete>CASCADE</onDelete>
+  </foreignKey>
+
+  <field>
+    <name>file_name</name>
+    <title>File Name</title>
+    <type>varchar</type>
+    <length>255</length>
+    <comment>File name</comment>
+    <html>
+        <type>Text</type>
+    </html>
+  </field>
+
+  <field>
+    <name>file_full</name>
+    <title>File Full Path</title>
+    <type>varchar</type>
+    <length>512</length>
+    <comment>Full path to file</comment>
+    <html>
+        <type>Text</type>
+    </html>
+  </field>
+
+  <field>
+    <name>rejection</name>
+    <title>Rejection Details</title>
+    <type>varchar</type>
+    <length>255</length>
+    <comment>Details if attachment cannot be processed.</comment>
+    <default>NULL</default>
+    <html>
+        <type>Text</type>
+    </html>
+  </field>
+
+  <field>
+    <name>mime_type</name>
+    <title>Mime Type</title>
+    <type>varchar</type>
+    <length>128</length>
+    <html>
+        <type>Text</type>
+    </html>
+  </field>
+
+  <field>
+    <name>size</name>
+    <title>File Size</title>
+    <type>int</type>
+    <length>11</length>
+    <html>
+        <type>Text</type>
+    </html>
+  </field>
+
+  <field>
+    <name>ext</name>
+    <title>File Extension</title>
+    <type>varchar</type>
+    <length>10</length>
+    <html>
+        <type>Text</type>
+    </html>
+  </field>
+</table>

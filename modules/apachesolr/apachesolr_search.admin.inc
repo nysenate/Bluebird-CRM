@@ -84,8 +84,10 @@ function apachesolr_search_page_list_pages() {
     );
 
     // Add the search environment
-    $environment = apachesolr_environment_load($search_page['env_id']);
-    $row[] = $environment ? check_plain($environment['name']) : check_plain(t('<Disabled>'));
+    $env_id = $search_page['env_id'] == -1 ? variable_get('apachesolr_default_environment', '') : $search_page['env_id'];
+    $environment = apachesolr_environment_load($env_id);
+
+    $row[] = $environment ? check_plain($environment['name']).($search_page['env_id'] == -1 ? ' - '.t('Default') : '') : check_plain(t('<Disabled>'));
     // Operations
     $row[] = array('data' => l(t('Edit'), 'admin/config/search/apachesolr/search-pages/' . $search_page['page_id'] . '/edit'));
     $row[] = array('data' => l(t('Clone'), 'admin/config/search/apachesolr/search-pages/' . $search_page['page_id'] . '/clone'));
@@ -182,11 +184,14 @@ function apachesolr_search_page_list_blocks() {
 function apachesolr_search_page_settings_form($form, &$form_state, $search_page = NULL) {
   $environments = apachesolr_load_all_environments();
   $options = array('' => t('<Disabled>'));
+  if(variable_get('apachesolr_default_environment', false)){
+    $options[-1] = t('<Default>');
+  }
   foreach ($environments as $id => $environment) {
     $options[$id] = $environment['name'];
   }
   // Validate the env_id.
-  if (!empty($search_page['env_id']) && !apachesolr_environment_load($search_page['env_id'])) {
+  if (!empty($search_page['env_id']) && $search_page['env_id'] != -1 && !apachesolr_environment_load($search_page['env_id'])) {
     $search_page['env_id'] = '';
   }
 
@@ -517,7 +522,9 @@ function apachesolr_search_page_settings_form_submit($form, &$form_state) {
   apachesolr_search_page_save($search_page);
 
   // Menu rebuild needed to pick up search path.
-  variable_set('menu_rebuild_needed', TRUE);
+  if ($form_state['values']['search_page']['search_path'] != $search_page['search_path']) {
+    variable_set('menu_rebuild_needed', TRUE);
+  }
 
   // Saves our values in the database, sets redirect path on success.
   drupal_set_message(t('The configuration options have been saved for %page.', array('%page' => $form_state['values']['label'])));

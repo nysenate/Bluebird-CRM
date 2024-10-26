@@ -32,7 +32,7 @@ class CRM_Cxn_ApiRouter {
     // FIXME: Shouldn't the X-Forwarded-Proto check be part of CRM_Utils_System::isSSL()?
     if (Civi::settings()->get('enableSSL') &&
       !CRM_Utils_System::isSSL() &&
-      strtolower(CRM_Utils_Array::value('X_FORWARDED_PROTO', CRM_Utils_System::getRequestHeaders())) != 'https'
+      strtolower(CRM_Utils_System::getRequestHeaders()['X_FORWARDED_PROTO'] ?? '') != 'https'
     ) {
       return civicrm_api3_create_error('System policy requires HTTPS.');
     }
@@ -59,7 +59,7 @@ class CRM_Cxn_ApiRouter {
     }
 
     $whitelist = \Civi\API\WhitelistRule::createAll($cxn['perm']['api']);
-    \Civi::service('dispatcher')
+    \Civi::dispatcher()
       ->addSubscriber(new \Civi\API\Subscriber\WhitelistSubscriber($whitelist));
     CRM_Core_Config::singleton()->userPermissionTemp = new CRM_Core_Permission_Temp();
     if ($cxn['perm']['grant'] === '*') {

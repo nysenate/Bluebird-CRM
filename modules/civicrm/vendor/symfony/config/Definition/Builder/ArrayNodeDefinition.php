@@ -25,7 +25,7 @@ class ArrayNodeDefinition extends NodeDefinition implements ParentNodeDefinition
     protected $performDeepMerging = true;
     protected $ignoreExtraKeys = false;
     protected $removeExtraKeys = true;
-    protected $children = array();
+    protected $children = [];
     protected $prototype;
     protected $atLeastOne = false;
     protected $allowNewKeys = true;
@@ -39,12 +39,12 @@ class ArrayNodeDefinition extends NodeDefinition implements ParentNodeDefinition
     /**
      * {@inheritdoc}
      */
-    public function __construct($name, NodeParentInterface $parent = null)
+    public function __construct(?string $name, NodeParentInterface $parent = null)
     {
         parent::__construct($name, $parent);
 
-        $this->nullEquivalent = array();
-        $this->trueEquivalent = array();
+        $this->nullEquivalent = [];
+        $this->trueEquivalent = [];
     }
 
     /**
@@ -73,6 +73,62 @@ class ArrayNodeDefinition extends NodeDefinition implements ParentNodeDefinition
     public function prototype($type)
     {
         return $this->prototype = $this->getNodeBuilder()->node(null, $type)->setParent($this);
+    }
+
+    /**
+     * @return VariableNodeDefinition
+     */
+    public function variablePrototype()
+    {
+        return $this->prototype('variable');
+    }
+
+    /**
+     * @return ScalarNodeDefinition
+     */
+    public function scalarPrototype()
+    {
+        return $this->prototype('scalar');
+    }
+
+    /**
+     * @return BooleanNodeDefinition
+     */
+    public function booleanPrototype()
+    {
+        return $this->prototype('boolean');
+    }
+
+    /**
+     * @return IntegerNodeDefinition
+     */
+    public function integerPrototype()
+    {
+        return $this->prototype('integer');
+    }
+
+    /**
+     * @return FloatNodeDefinition
+     */
+    public function floatPrototype()
+    {
+        return $this->prototype('float');
+    }
+
+    /**
+     * @return ArrayNodeDefinition
+     */
+    public function arrayPrototype()
+    {
+        return $this->prototype('array');
+    }
+
+    /**
+     * @return EnumNodeDefinition
+     */
+    public function enumPrototype()
+    {
+        return $this->prototype('enum');
     }
 
     /**
@@ -158,15 +214,15 @@ class ArrayNodeDefinition extends NodeDefinition implements ParentNodeDefinition
      * to be the key of the particular item. For example, if "id" is the
      * "key", then:
      *
-     *     array(
-     *         array('id' => 'my_name', 'foo' => 'bar'),
-     *     );
+     *     [
+     *         ['id' => 'my_name', 'foo' => 'bar'],
+     *     ];
      *
      *   becomes
      *
-     *     array(
-     *         'my_name' => array('foo' => 'bar'),
-     *     );
+     *     [
+     *         'my_name' => ['foo' => 'bar'],
+     *     ];
      *
      * If you'd like "'id' => 'my_name'" to still be present in the resulting
      * array, then you can set the second argument of this method to false.
@@ -219,13 +275,13 @@ class ArrayNodeDefinition extends NodeDefinition implements ParentNodeDefinition
     {
         $this
             ->addDefaultsIfNotSet()
-            ->treatFalseLike(array('enabled' => false))
-            ->treatTrueLike(array('enabled' => true))
-            ->treatNullLike(array('enabled' => true))
+            ->treatFalseLike(['enabled' => false])
+            ->treatTrueLike(['enabled' => true])
+            ->treatNullLike(['enabled' => true])
             ->beforeNormalization()
                 ->ifArray()
-                ->then(function ($v) {
-                    $v['enabled'] = isset($v['enabled']) ? $v['enabled'] : true;
+                ->then(function (array $v) {
+                    $v['enabled'] = $v['enabled'] ?? true;
 
                     return $v;
                 })
@@ -249,9 +305,9 @@ class ArrayNodeDefinition extends NodeDefinition implements ParentNodeDefinition
     {
         $this
             ->addDefaultsIfNotSet()
-            ->treatFalseLike(array('enabled' => false))
-            ->treatTrueLike(array('enabled' => true))
-            ->treatNullLike(array('enabled' => true))
+            ->treatFalseLike(['enabled' => false])
+            ->treatTrueLike(['enabled' => true])
+            ->treatNullLike(['enabled' => true])
             ->children()
                 ->booleanNode('enabled')
                     ->defaultTrue()
@@ -276,10 +332,10 @@ class ArrayNodeDefinition extends NodeDefinition implements ParentNodeDefinition
      * Allows extra config keys to be specified under an array without
      * throwing an exception.
      *
-     * Those config values are simply ignored and removed from the
-     * resulting array. This should be used only in special cases where
-     * you want to send an entire configuration array through a special
-     * tree that processes only part of the array.
+     * Those config values are ignored and removed from the resulting
+     * array. This should be used only in special cases where you want
+     * to send an entire configuration array through a special tree that
+     * processes only part of the array.
      *
      * @param bool $remove Whether to remove the extra keys
      *
@@ -337,7 +393,7 @@ class ArrayNodeDefinition extends NodeDefinition implements ParentNodeDefinition
     protected function createNode()
     {
         if (null === $this->prototype) {
-            $node = new ArrayNode($this->name, $this->parent);
+            $node = new ArrayNode($this->name, $this->parent, $this->pathSeparator);
 
             $this->validateConcreteNode($node);
 
@@ -348,7 +404,7 @@ class ArrayNodeDefinition extends NodeDefinition implements ParentNodeDefinition
                 $node->addChild($child->getNode());
             }
         } else {
-            $node = new PrototypedArrayNode($this->name, $this->parent);
+            $node = new PrototypedArrayNode($this->name, $this->parent, $this->pathSeparator);
 
             $this->validatePrototypeNode($node);
 
@@ -356,7 +412,7 @@ class ArrayNodeDefinition extends NodeDefinition implements ParentNodeDefinition
                 $node->setKeyAttribute($this->key, $this->removeKeyItem);
             }
 
-            if (true === $this->atLeastOne) {
+            if (true === $this->atLeastOne || false === $this->allowEmptyValue) {
                 $node->setMinNumberOfElements(1);
             }
 
@@ -381,6 +437,7 @@ class ArrayNodeDefinition extends NodeDefinition implements ParentNodeDefinition
         $node->addEquivalentValue(false, $this->falseEquivalent);
         $node->setPerformDeepMerging($this->performDeepMerging);
         $node->setRequired($this->required);
+        $node->setDeprecated($this->deprecationMessage);
         $node->setIgnoreExtraKeys($this->ignoreExtraKeys, $this->removeExtraKeys);
         $node->setNormalizeKeys($this->normalizeKeys);
 
@@ -411,19 +468,23 @@ class ArrayNodeDefinition extends NodeDefinition implements ParentNodeDefinition
         $path = $node->getPath();
 
         if (null !== $this->key) {
-            throw new InvalidDefinitionException(sprintf('->useAttributeAsKey() is not applicable to concrete nodes at path "%s"', $path));
+            throw new InvalidDefinitionException(sprintf('->useAttributeAsKey() is not applicable to concrete nodes at path "%s".', $path));
+        }
+
+        if (false === $this->allowEmptyValue) {
+            throw new InvalidDefinitionException(sprintf('->cannotBeEmpty() is not applicable to concrete nodes at path "%s".', $path));
         }
 
         if (true === $this->atLeastOne) {
-            throw new InvalidDefinitionException(sprintf('->requiresAtLeastOneElement() is not applicable to concrete nodes at path "%s"', $path));
+            throw new InvalidDefinitionException(sprintf('->requiresAtLeastOneElement() is not applicable to concrete nodes at path "%s".', $path));
         }
 
         if ($this->default) {
-            throw new InvalidDefinitionException(sprintf('->defaultValue() is not applicable to concrete nodes at path "%s"', $path));
+            throw new InvalidDefinitionException(sprintf('->defaultValue() is not applicable to concrete nodes at path "%s".', $path));
         }
 
         if (false !== $this->addDefaultChildren) {
-            throw new InvalidDefinitionException(sprintf('->addDefaultChildrenIfNoneSet() is not applicable to concrete nodes at path "%s"', $path));
+            throw new InvalidDefinitionException(sprintf('->addDefaultChildrenIfNoneSet() is not applicable to concrete nodes at path "%s".', $path));
         }
     }
 
@@ -437,21 +498,51 @@ class ArrayNodeDefinition extends NodeDefinition implements ParentNodeDefinition
         $path = $node->getPath();
 
         if ($this->addDefaults) {
-            throw new InvalidDefinitionException(sprintf('->addDefaultsIfNotSet() is not applicable to prototype nodes at path "%s"', $path));
+            throw new InvalidDefinitionException(sprintf('->addDefaultsIfNotSet() is not applicable to prototype nodes at path "%s".', $path));
         }
 
         if (false !== $this->addDefaultChildren) {
             if ($this->default) {
-                throw new InvalidDefinitionException(sprintf('A default value and default children might not be used together at path "%s"', $path));
+                throw new InvalidDefinitionException(sprintf('A default value and default children might not be used together at path "%s".', $path));
             }
 
             if (null !== $this->key && (null === $this->addDefaultChildren || \is_int($this->addDefaultChildren) && $this->addDefaultChildren > 0)) {
-                throw new InvalidDefinitionException(sprintf('->addDefaultChildrenIfNoneSet() should set default children names as ->useAttributeAsKey() is used at path "%s"', $path));
+                throw new InvalidDefinitionException(sprintf('->addDefaultChildrenIfNoneSet() should set default children names as ->useAttributeAsKey() is used at path "%s".', $path));
             }
 
             if (null === $this->key && (\is_string($this->addDefaultChildren) || \is_array($this->addDefaultChildren))) {
-                throw new InvalidDefinitionException(sprintf('->addDefaultChildrenIfNoneSet() might not set default children names as ->useAttributeAsKey() is not used at path "%s"', $path));
+                throw new InvalidDefinitionException(sprintf('->addDefaultChildrenIfNoneSet() might not set default children names as ->useAttributeAsKey() is not used at path "%s".', $path));
             }
         }
+    }
+
+    /**
+     * @return NodeDefinition[]
+     */
+    public function getChildNodeDefinitions()
+    {
+        return $this->children;
+    }
+
+    /**
+     * Finds a node defined by the given $nodePath.
+     *
+     * @param string $nodePath The path of the node to find. e.g "doctrine.orm.mappings"
+     */
+    public function find(string $nodePath): NodeDefinition
+    {
+        $firstPathSegment = (false === $pathSeparatorPos = strpos($nodePath, $this->pathSeparator))
+            ? $nodePath
+            : substr($nodePath, 0, $pathSeparatorPos);
+
+        if (null === $node = ($this->children[$firstPathSegment] ?? null)) {
+            throw new \RuntimeException(sprintf('Node with name "%s" does not exist in the current node "%s".', $firstPathSegment, $this->name));
+        }
+
+        if (false === $pathSeparatorPos) {
+            return $node;
+        }
+
+        return $node->find(substr($nodePath, $pathSeparatorPos + \strlen($this->pathSeparator)));
     }
 }

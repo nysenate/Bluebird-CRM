@@ -1,0 +1,32 @@
+<div class="civicase__tags-selector">
+  <div class="form-group">
+    <label class="col-sm-5 control-label">
+      Tags
+    </label>
+    <div class="col-xs-7">
+      <input
+        placeholder="Select Tags"
+        class="form-control"
+        ng-model="tags.genericTags"
+        crm-ui-select="{
+          allowClear: true,
+          multiple: true,
+          data: genericTags,
+          formatResult: formatTags
+        }"/>
+    </div>
+  </div>
+
+  <div class="form-group" ng-repeat="tagSet in tagSets">
+    <label class="col-sm-5 control-label">
+      {{ tagSet.name }}
+    </label>
+    <div class="col-xs-7">
+      <input
+        placeholder="Select from {{ tagSet.name }}"
+        class="form-control "
+        ng-model="tags.tagSets[tagSet.id]"
+        crm-ui-select="{allowClear: true, multiple: true, data: tagSet.children}"/>
+    </div>
+  </div>
+</div>

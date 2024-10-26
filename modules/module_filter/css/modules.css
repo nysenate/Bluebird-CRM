@@ -27,8 +27,9 @@
 #system-modules .description {
   cursor: pointer;
 }
-#system-modules .description .inner {
-  overflow: hidden; /* truncates descriptions if too long */
+#system-modules .description .inner,
+#system-modules .path {
+  overflow: hidden; /* truncates text if too long */
   text-overflow: ellipsis;
   white-space: nowrap;
 }

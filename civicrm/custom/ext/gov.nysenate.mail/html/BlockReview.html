@@ -25,7 +25,7 @@ Required vars: mailing, attachments
         <span ng-show="mailing.body_html"><a crm-icon="fa-television" class="crm-hover-button action-item" ng-click="previewMailing(mailing, 'html')">{{ts('HTML')}}</a></span>
         <span ng-show="mailing.body_html || mailing.body_text"><a crm-icon="fa-file-text-o" class="crm-hover-button action-item" ng-click="previewMailing(mailing, 'text')">{{ts('Plain Text')}}</a></span>
       </div>
-      <!--<div crm-ui-field="{title: ts('Attachments')}">
+      <div crm-ui-field="{title: ts('Attachments')}">
         <div ng-repeat="file in attachments.files">
           <a ng-href="{{file.url}}" target="_blank">{{file.name}}</a>
         </div>
@@ -33,7 +33,7 @@ Required vars: mailing, attachments
           {{item.file.name}}
         </div>
         <div ng-show="!attachments.files.length && !attachments.uploader.queue.length"><em>{{ts('None')}}</em></div>
-      </div>-->
+      </div>
       <!--<div ng-if="crmMailingConst.isMultiLingual" crm-ui-field="{title: ts('Language')}">
         {{crmMailingConst.enabledLanguages[mailing.language]}}
       </div>-->

@@ -1,0 +1,31 @@
+.civicase__panel-transparent-header {
+  box-shadow: none;
+
+  >.panel-heading {
+    background: transparent;
+    padding: 0;
+
+    .panel-title {
+      font-size: 16px;
+      margin: 3px 0 12px;
+    }
+
+    h3::before {
+      box-shadow: none;
+    }
+
+    .civicase__pipe {
+      color: $crm-grayblue-darker;
+      font-weight: normal;
+      margin: 0 5px;
+    }
+  }
+
+  >.panel-body {
+    background: $crm-white;
+    border-radius: 2px;
+    box-shadow: $box-shadow-block;
+    padding: 24px;
+    position: relative;
+  }
+}

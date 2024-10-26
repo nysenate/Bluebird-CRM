@@ -21,9 +21,30 @@
 class CRM_Contact_Form_Search_Advanced extends CRM_Contact_Form_Search {
 
   /**
+   * @var string
+   * @internal
+   */
+  public $_searchPane;
+
+  /**
+   * @var array
+   * @internal
+   */
+  public $_searchOptions = [];
+
+  /**
+   * @var array
+   * @internal
+   */
+  public $_paneTemplatePath = [];
+
+  /**
    * Processing needed for buildForm and later.
    */
   public function preProcess() {
+    // SearchFormName is deprecated & to be removed - the replacement is for the task to
+    // call $this->form->getSearchFormValues()
+    // A couple of extensions use it.
     $this->set('searchFormName', 'Advanced');
 
     parent::preProcess();
@@ -60,12 +81,7 @@ class CRM_Contact_Form_Search_Advanced extends CRM_Contact_Form_Search {
     ];
 
     //check if there are any custom data searchable fields
-    $extends = array_merge(['Contact', 'Individual', 'Household', 'Organization'],
-      CRM_Contact_BAO_ContactType::subTypes()
-    );
-    $groupDetails = CRM_Core_BAO_CustomGroup::getGroupDetail(NULL, TRUE,
-      $extends
-    );
+    $groupDetails = CRM_Core_BAO_CustomGroup::getAll(['extends' => 'Contact']);
     // if no searchable fields unset panel
     if (empty($groupDetails)) {
       unset($paneNames[ts('Custom Fields')]);
@@ -81,7 +97,7 @@ class CRM_Contact_Form_Search_Advanced extends CRM_Contact_Form_Search {
 
     $componentPanes = [];
     foreach ($components as $name => $component) {
-      if (in_array($name, array_keys($this->_searchOptions)) &&
+      if (array_key_exists($name, $this->_searchOptions) &&
         $this->_searchOptions[$name] &&
         CRM_Core_Permission::access($component->name)
       ) {
@@ -116,7 +132,7 @@ class CRM_Contact_Form_Search_Advanced extends CRM_Contact_Form_Search {
 
       // see if we need to include this paneName in the current form
       if ($this->_searchPane == $type || !empty($_POST["hidden_{$type}"]) ||
-        CRM_Utils_Array::value("hidden_{$type}", $this->_formValues)
+        !empty($this->_formValues["hidden_{$type}"])
       ) {
         $allPanes[$name]['open'] = 'true';
 
@@ -127,6 +143,7 @@ class CRM_Contact_Form_Search_Advanced extends CRM_Contact_Form_Search {
           $this->_paneTemplatePath[$type] = $c->getAdvancedSearchPaneTemplatePath();
         }
         elseif (in_array($type, $hookPanes)) {
+          $this->add('hidden', "hidden_$type", 1);
           CRM_Contact_BAO_Query_Hook::singleton()->buildAdvancedSearchPaneForm($this, $type);
           CRM_Contact_BAO_Query_Hook::singleton()->setAdvancedSearchPaneTemplatePath($this->_paneTemplatePath, $type);
         }
@@ -189,7 +206,15 @@ class CRM_Contact_Form_Search_Advanced extends CRM_Contact_Form_Search {
       'privacy_toggle' => 1,
       'operator' => 'AND',
     ], $defaults);
-    $this->normalizeDefaultValues($defaults);
+    $defaults = $this->normalizeDefaultValues($defaults);
+
+    //991/Subtypes not respected when editing smart group criteria
+    if (!empty($defaults['contact_type']) && !empty($this->_formValues['contact_sub_type'])) {
+      foreach ($this->_formValues['contact_sub_type'] as $subtype) {
+        $basicType = CRM_Contact_BAO_ContactType::getBasicType($subtype);
+        $defaults['contact_type'][$subtype] = $basicType . '__' . $subtype;
+      }
+    }
 
     if ($this->_context === 'amtg') {
       $defaults['task'] = CRM_Contact_Task::GROUP_ADD;
@@ -213,6 +238,10 @@ class CRM_Contact_Form_Search_Advanced extends CRM_Contact_Form_Search {
     $this->set('isAdvanced', '1');
 
     $this->setFormValues();
+    if (is_numeric($_POST['id'] ?? NULL)) {
+      $this->_formValues['contact_id'] = (int) $_POST['id'];
+    }
+    $this->set('formValues', $this->_formValues);
     // get user submitted values
     // get it from controller only if form has been submitted, else preProcess has set this
     if (!empty($_POST)) {
@@ -225,13 +254,7 @@ class CRM_Contact_Form_Search_Advanced extends CRM_Contact_Form_Search {
         }
       }
 
-      // set the group if group is submitted
-      if (!empty($this->_formValues['uf_group_id'])) {
-        $this->set('id', $this->_formValues['uf_group_id']);
-      }
-      else {
-        $this->set('id', '');
-      }
+      $this->set('uf_group_id', $this->_formValues['uf_group_id'] ?? '');
     }
 
     // retrieve ssID values only if formValues is null, i.e. form has never been posted
@@ -289,8 +312,6 @@ class CRM_Contact_Form_Search_Advanced extends CRM_Contact_Form_Search {
       $this->_sortByCharacter = NULL;
     }
 
-    CRM_Core_BAO_CustomValue::fixCustomFieldValue($this->_formValues);
-
     $this->_params = CRM_Contact_BAO_Query::convertFormValues($this->_formValues, 0, FALSE, NULL, $this->entityReferenceFields);
     $this->_returnProperties = &$this->returnProperties();
     parent::postProcess();
@@ -340,7 +361,7 @@ class CRM_Contact_Form_Search_Advanced extends CRM_Contact_Form_Search {
       unset($this->_formValues['contact_taglist']);
       foreach ($taglist as $value) {
         if ($value) {
-          $value = explode(',', $value);
+          $value = !is_array($value) ? explode(',', $value) : $value;
           foreach ($value as $tId) {
             if (is_numeric($tId)) {
               $this->_formValues['contact_tags'][] = $tId;

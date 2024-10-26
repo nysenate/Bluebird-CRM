@@ -10,20 +10,18 @@
  +--------------------------------------------------------------------+
  */
 
-/**
- *
- * @package CRM
- * @copyright CiviCRM LLC https://civicrm.org/licensing
- * $Id$
- *
- */
-
-
 namespace Civi\Api4\Service\Spec\Provider;
 
 use Civi\Api4\Service\Spec\RequestSpec;
 
-class ContactTypeCreationSpecProvider implements Generic\SpecProviderInterface {
+/**
+ * Class ContactTypeCreationSpecProvider
+ *
+ * @package Civi\Api4\Service\Spec\Provider
+ * @service
+ * @internal
+ */
+class ContactTypeCreationSpecProvider extends \Civi\Core\Service\AutoService implements Generic\SpecProviderInterface {
 
   /**
    * @param \Civi\Api4\Service\Spec\RequestSpec $spec

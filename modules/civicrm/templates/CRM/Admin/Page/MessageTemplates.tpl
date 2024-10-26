@@ -28,7 +28,19 @@
       <textarea name="msg-subject" id="msg_subject" style="height: 6em; width: 45em;">{$form.msg_subject.value}</textarea>
       <div class='spacer'></div>
       <div class="section">
-        <a href='#' onclick='MessageTemplates.msg_subject.select(); return false;' class='button'><span>Select Subject</span></a>
+        <a href='#' onclick='MessageTemplates.msg_subject.select(); return false;' class='button'><span>{ts}Select Subject{/ts}</span></a>
+        <div class='spacer'></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="crm-section msg_html-section">
+    <h3 class="header-dark">{$form.msg_html.label}</h3>
+    <div class='text'>
+      <textarea class="huge" name='msg_html' id='msg_html'>{$form.msg_html.value|escape:'htmlall'}</textarea>
+      <div class='spacer'></div>
+      <div class="section">
+        <a href='#' onclick='MessageTemplates.msg_html.select(); return false;' class='button'><span>{ts}Select HTML Message{/ts}</span></a>
         <div class='spacer'></div>
       </div>
     </div>
@@ -37,22 +49,10 @@
   <div class="crm-section msg_txt-section">
   <h3 class="header-dark">{$form.msg_text.label}</h3>
     <div class="text">
-      <textarea class="huge" name='msg_text' id='msg_text'>{$form.msg_text.value|htmlentities}</textarea>
+      <textarea class="huge" name='msg_text' id='msg_text'>{$form.msg_text.value|escape:'htmlall'}</textarea>
       <div class='spacer'></div>
       <div class="section">
-        <a href='#' onclick='MessageTemplates.msg_text.select(); return false;' class='button'><span>Select Text Message</span></a>
-        <div class='spacer'></div>
-      </div>
-    </div>
-  </div>
-
-  <div class="crm-section msg_html-section">
-  <h3 class="header-dark">{$form.msg_html.label}</h3>
-    <div class='text'>
-      <textarea class="huge" name='msg_html' id='msg_html'>{$form.msg_html.value|htmlentities}</textarea>
-      <div class='spacer'></div>
-      <div class="section">
-        <a href='#' onclick='MessageTemplates.msg_html.select(); return false;' class='button'><span>Select HTML Message</span></a>
+        <a href='#' onclick='MessageTemplates.msg_text.select(); return false;' class='button'><span>{ts}Select Text Message{/ts}</span></a>
         <div class='spacer'></div>
       </div>
     </div>
@@ -86,16 +86,16 @@
     {include file="CRM/common/jsortable.tpl"}
     {foreach from=$rows item=template_row key=type}
       {if (
-        $type ne 'userTemplates' and ($canEditSystemTemplates or $canEditMessageTemplates)
+        $type ne 'userTemplates' && ($canEditSystemTemplates or $canEditMessageTemplates)
       ) or (
-        $type eq 'userTemplates'and ($canEditUserDrivenMessageTemplates or $canEditMessageTemplates)
+        $type eq 'userTemplates' && ($canEditUserDrivenMessageTemplates or $canEditMessageTemplates)
       )}
       <div id="{if $type eq 'userTemplates'}user{else}workflow{/if}" class='ui-tabs-panel ui-widget-content ui-corner-bottom'>
           <div class="help">
           {if $type eq 'userTemplates'}
             {capture assign=schedRemURL}{crmURL p='civicrm/admin/scheduleReminders' q="reset=1"}{/capture}
             {ts 1=$schedRemURL}Message templates allow you to easily create similar emails or letters on a recurring basis. Messages used for membership renewal reminders, as well as event and activity related reminders should be created via <a href="%1">Schedule Reminders</a>.{/ts}
-            {if array_search('CiviMail', $config->enableComponents)}
+            {if $isCiviMailEnabled}
               {capture assign=automatedMsgURL}{crmURL p='civicrm/admin/component' q="reset=1"}{/capture}
               {ts 1=$automatedMsgURL}You can also use message templates for CiviMail (bulk email) content. However, subscribe, unsubscribe and opt-out messages are configured at <a href="%1">Administer > CiviMail > Headers, Footers and Automated Messages</a>.{/ts}
             {/if}
@@ -111,7 +111,7 @@
             </div>
             <div class="spacer"></div>
           {/if}
-            {if !empty( $template_row) }
+            {if !empty( $template_row)}
               <table class="display">
                 <thead>
                   <tr>
@@ -131,7 +131,7 @@
                         <td>{$row.msg_subject}</td>
                         <td id="row_{$row.id}_status">{if $row.is_active eq 1} {ts}Yes{/ts} {else} {ts}No{/ts} {/if}</td>
                       {/if}
-                      <td>{$row.action|replace:'xx':$row.id}</td>
+                      <td>{$row.action|smarty:nodefaults|replace:'xx':$row.id}</td>
                     </tr>
                 {/foreach}
                 </tbody>
@@ -145,9 +145,9 @@
               <div class="spacer"></div>
             {/if}
 
-            {if empty( $template_row) }
+            {if empty( $template_row)}
                 <div class="messages status no-popup">
-                    <div class="icon inform-icon"></div>&nbsp;
+                    {icon icon="fa-info-circle"}{/icon}
                     {ts 1=$crmURL}There are no User-driven Message Templates entered. You can <a href='%1'>add one</a>.{/ts}
                 </div>
             {/if}
@@ -157,7 +157,6 @@
     {/foreach}
   </div>
 </div>
-{include file="CRM/common/TabSelected.tpl" defaultTab="user"}
 
 {elseif $action ne 1 and $action ne 2 and $action ne 4 and $action ne 8}
   <div class="messages status no-popup">

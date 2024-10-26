@@ -2,7 +2,7 @@
 <extension key="org.civicrm.contactlayout" type="module">
   <file>contactlayout</file>
   <name>Contact Layout Editor</name>
-  <description>Edit the contact summary screen. Create multiple layouts to display different types of contacts to different users.</description>
+  <description>Edit the contact summary screen tabs &amp; blocks. Create multiple layouts to display different types of contacts to different users.</description>
   <license>AGPL-3.0</license>
   <maintainer>
     <author>Coleman Watts</author>
@@ -14,21 +14,26 @@
     <url desc="Support">https://github.com/civicrm/org.civicrm.contactlayout/issues</url>
     <url desc="Licensing">http://www.gnu.org/licenses/agpl-3.0.html</url>
   </urls>
-  <releaseDate>2019-09-14</releaseDate>
-  <version>1.4.3</version>
+  <releaseDate>2024-02-09</releaseDate>
+  <version>2.2.3</version>
   <develStage>stable</develStage>
   <compatibility>
-    <ver>5.11</ver>
+    <ver>5.57</ver>
   </compatibility>
-  <comments>Looks best with a bootstrap theme such as Shoreditch.</comments>
-  <requires>
-    <ext>org.civicrm.api4</ext>
-    <ext>org.civicrm.angularprofiles</ext>
-  </requires>
   <civix>
     <namespace>CRM/Contactlayout</namespace>
+    <format>23.02.1</format>
   </civix>
   <classloader>
-    <psr4 prefix="Civi\" path="Civi" />
+    <psr4 prefix="Civi\" path="Civi"/>
+    <psr0 prefix="CRM_" path="."/>
   </classloader>
+  <mixins>
+    <mixin>ang-php@1.0.0</mixin>
+    <mixin>menu-xml@1.0.0</mixin>
+    <mixin>setting-php@1.0.0</mixin>
+    <mixin>smarty-v2@1.0.1</mixin>
+    <mixin>entity-types-php@1.0.0</mixin>
+  </mixins>
+  <upgrader>CRM_Contactlayout_Upgrader</upgrader>
 </extension>

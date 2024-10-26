@@ -15,12 +15,39 @@
  * @copyright CiviCRM LLC https://civicrm.org/licensing
  */
 class CRM_Contribute_Form_ContributionPage_Widget extends CRM_Contribute_Form_ContributionPage {
-  protected $_colors;
 
+  /**
+   * Configuration for each form field
+   *
+   * @var array
+   * @internal
+   */
+  public $_fields = [];
+
+  /**
+   * Configuration for each color field
+   *
+   * @var array
+   * @internal
+   */
+  public $_colorFields = [];
+
+  /**
+   * @var CRM_Contribute_DAO_Widget
+   */
   protected $_widget;
+
+  /**
+   * Name of the refresh button,
+   * used to display the widget preview
+   *
+   * @var string
+   */
+  protected $_refreshButtonName;
 
   public function preProcess() {
     parent::preProcess();
+    $this->setSelectedChild('widget');
 
     $this->_widget = new CRM_Contribute_DAO_Widget();
     $this->_widget->contribution_page_id = $this->_id;
@@ -39,7 +66,7 @@ class CRM_Contribute_Form_ContributionPage_Widget extends CRM_Contribute_Form_Co
 
     $this->assign('cpageId', $this->_id);
 
-    $this->assign('widgetExternUrl', CRM_Utils_System::externUrl('extern/widget', "cpageId={$this->_id}&widgetId={$this->_widget->id}&format=3"));
+    $this->assign('widgetExternUrl', CRM_Utils_System::externUrl('extern/widget', "cpageId={$this->_id}&widgetId=" . ($this->_widget->id ?? '') . "&format=3"));
 
     $config = CRM_Core_Config::singleton();
     $title = CRM_Core_DAO::getFieldValue('CRM_Contribute_DAO_ContributionPage',
@@ -183,13 +210,14 @@ class CRM_Contribute_Form_ContributionPage_Widget extends CRM_Contribute_Form_Co
       );
     }
 
-    $this->assign_by_ref('fields', $this->_fields);
-    $this->assign_by_ref('colorFields', $this->_colorFields);
+    $this->assign('fields', $this->_fields);
+    $this->assign('colorFields', $this->_colorFields);
 
     $this->_refreshButtonName = $this->getButtonName('refresh');
-    $this->addElement('submit',
+    $this->addElement('xbutton',
       $this->_refreshButtonName,
-      ts('Save and Preview')
+      ts('Save and Preview'),
+      ['type' => 'submit', 'class' => 'crm-button crm-form-submit crm-button-type-submit']
     );
     parent::buildQuickForm();
     $this->addFormRule(['CRM_Contribute_Form_ContributionPage_Widget', 'formRule'], $this);
@@ -202,7 +230,7 @@ class CRM_Contribute_Form_ContributionPage_Widget extends CRM_Contribute_Form_Co
    *   (ref.) an assoc array of name/value pairs.
    *
    * @param $files
-   * @param $self
+   * @param self $self
    *
    * @return bool|array
    *   mixed true or array of errors
@@ -239,7 +267,7 @@ class CRM_Contribute_Form_ContributionPage_Widget extends CRM_Contribute_Form_Co
       $params['id'] = $this->_widget->id;
     }
     $params['contribution_page_id'] = $this->_id;
-    $params['is_active'] = CRM_Utils_Array::value('is_active', $params, FALSE);
+    $params['is_active'] ??= FALSE;
     $params['url_homepage'] = 'null';
 
     $widget = new CRM_Contribute_DAO_Widget();

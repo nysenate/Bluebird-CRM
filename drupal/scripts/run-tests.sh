@@ -43,8 +43,8 @@ if ($args['clean']) {
   echo "\nEnvironment cleaned.\n";
 
   // Get the status messages and print them.
-  $messages = array_pop(drupal_get_messages('status'));
-  foreach ($messages as $text) {
+  $messages = drupal_get_messages('status');
+  foreach ($messages['status'] as $text) {
     echo " - " . $text . "\n";
   }
   exit(SIMPLETEST_SCRIPT_EXIT_SUCCESS);
@@ -142,6 +142,8 @@ All arguments are long options.
   --all       Run all available tests.
 
   --class     Run tests identified by specific class names, instead of group names.
+              A specific test method can be added, for example,
+              'UserAccountLinksUnitTests::testDisabledAccountLink'.
 
   --file      Run tests identified by specific file names, instead of group names.
               Specify the path and the extension (i.e. 'modules/user/user.test').
@@ -155,6 +157,31 @@ All arguments are long options.
   --color     Output text format results with color highlighting.
 
   --verbose   Output detailed assertion messages in addition to summary.
+
+  --fail-only When paired with --verbose, do not print the detailed messages
+              for passing tests.
+
+  --cache     (Experimental) Cache result of setUp per installation profile.
+              This will create one cache entry per profile and is generally safe
+              to use.
+              To clear all cache entries use --clean.
+
+  --cache-modules
+
+              (Experimental) Cache result of setUp per installation profile and
+              installed modules. This will create one copy of the database
+              tables per module-combination and therefore this option should not
+              be used when running all tests. This is most useful for local
+              development of individual test cases. This option implies --cache.
+              To clear all cache entries use --clean.
+
+  --ci-parallel-node-index
+
+              The index of the job in the job set.
+
+  --ci-parallel-node-total
+
+              The total number of instances of this job running in parallel.
 
   <test1>[,<test2>[,<test3> ...]]
 
@@ -199,11 +226,16 @@ function simpletest_script_parse_args() {
     'directory' => '',
     'color' => FALSE,
     'verbose' => FALSE,
+    'cache' => FALSE,
+    'cache-modules' => FALSE,
     'test_names' => array(),
+    'fail-only' => FALSE,
     // Used internally.
     'test-id' => 0,
     'execute-test' => '',
     'xml' => '',
+    'ci-parallel-node-index' => 1,
+    'ci-parallel-node-total' => 1,
   );
 
   // Override with set values.
@@ -264,6 +296,10 @@ function simpletest_script_init($server_software) {
     // '_' is an environment variable set by the shell. It contains the command that was executed.
     $php = $php_env;
   }
+  elseif (defined('PHP_BINARY') && $php_env = PHP_BINARY) {
+    // 'PHP_BINARY' specifies the PHP binary path during script execution. Available since PHP 5.4.
+    $php = $php_env;
+  }
   elseif ($sudo = getenv('SUDO_COMMAND')) {
     // 'SUDO_COMMAND' is an environment variable set by the sudo program.
     // Extract only the PHP interpreter, not the rest of the command.
@@ -302,7 +338,11 @@ function simpletest_script_init($server_software) {
   if (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] == 'on') {
     // Ensure that any and all environment variables are changed to https://.
     foreach ($_SERVER as $key => $value) {
-      $_SERVER[$key] = str_replace('http://', 'https://', $_SERVER[$key]);
+      // The first time this script runs $_SERVER['SERVER_SOFTWARE'] will be
+      // NULL, so avoid errors from str_replace().
+      if (!empty($_SERVER[$key])) {
+        $_SERVER[$key] = str_replace('http://', 'https://', $_SERVER[$key]);
+      }
     }
   }
 
@@ -376,14 +416,27 @@ function simpletest_script_execute_batch($test_id, $test_classes) {
  * Bootstrap Drupal and run a single test.
  */
 function simpletest_script_run_one_test($test_id, $test_class) {
+  global $args;
+
   try {
     // Bootstrap Drupal.
     drupal_bootstrap(DRUPAL_BOOTSTRAP_FULL);
 
     simpletest_classloader_register();
 
-    $test = new $test_class($test_id);
-    $test->run();
+    if (strpos($test_class, '::') > 0) {
+      list($class_name, $method) = explode('::', $test_class, 2);
+      $methods = array($method);
+    }
+    else {
+      $class_name = $test_class;
+      // Use empty array to run all the test methods.
+      $methods = array();
+    }
+    $test = new $class_name($test_id);
+    $test->useSetupInstallationCache = !empty($args['cache']);
+    $test->useSetupModulesCache = !empty($args['cache-modules']);
+    $test->run($methods);
     $info = $test->getInfo();
 
     $had_fails = (isset($test->results['#fail']) && $test->results['#fail'] > 0);
@@ -418,6 +471,13 @@ function simpletest_script_command($test_id, $test_class) {
   if ($args['color']) {
     $command .= ' --color';
   }
+  if ($args['cache-modules']) {
+    $command .= ' --cache --cache-modules';
+  }
+  elseif ($args['cache']) {
+    $command .= ' --cache';
+  }
+
   $command .= " --php " . escapeshellarg($php) . " --test-id $test_id --execute-test " . escapeshellarg($test_class);
   return $command;
 }
@@ -442,8 +502,16 @@ function simpletest_script_get_test_list() {
       // Check for valid class names.
       $test_list = array();
       foreach ($args['test_names'] as $test_class) {
-        if (class_exists($test_class)) {
-          $test_list[] = $test_class;
+        list($class_name, $method) = explode('::', $test_class, 2);
+        if (class_exists($class_name)) {
+          if (empty($method) || method_exists($class_name, $method)) {
+            $test_list[] = $test_class;
+          } else {
+            $all_methods = get_class_methods($class_name);
+            simpletest_script_print_error('Test method not found: ' . $test_class);
+            simpletest_script_print_alternatives($method, $all_methods, 6);
+            exit(1);
+          }
         }
         else {
           $groups = simpletest_test_get_all();
@@ -451,8 +519,8 @@ function simpletest_script_get_test_list() {
           foreach ($groups as $group) {
             $all_classes = array_merge($all_classes, array_keys($group));
           }
-          simpletest_script_print_error('Test class not found: ' . $test_class);
-          simpletest_script_print_alternatives($test_class, $all_classes, 6);
+          simpletest_script_print_error('Test class not found: ' . $class_name);
+          simpletest_script_print_alternatives($class_name, $all_classes, 6);
           exit(SIMPLETEST_SCRIPT_EXIT_FAILURE);
         }
       }
@@ -536,6 +604,12 @@ function simpletest_script_get_test_list() {
     simpletest_script_print_error('No valid tests were specified.');
     exit(SIMPLETEST_SCRIPT_EXIT_FAILURE);
   }
+
+  if ((int) $args['ci-parallel-node-total'] > 1) {
+    $tests_per_job = ceil(count($test_list) / $args['ci-parallel-node-total']);
+    $test_list = array_slice($test_list, ($args['ci-parallel-node-index'] - 1) * $tests_per_job, $tests_per_job);
+  }
+
   return $test_list;
 }
 
@@ -562,9 +636,14 @@ function simpletest_script_reporter_init() {
   }
   else {
     echo "Tests to be run:\n";
-    foreach ($test_list as $class_name) {
-      $info = call_user_func(array($class_name, 'getInfo'));
-      echo " - " . $info['name'] . ' (' . $class_name . ')' . "\n";
+    foreach ($test_list as $test_name) {
+      if (strpos($test_name, '::') > 0) {
+        list($test_class, $method) = explode('::', $test_name, 2);
+        $info = call_user_func(array($test_class, 'getInfo'));
+      } else {
+        $info = call_user_func(array($test_name, 'getInfo'));
+      }
+      echo " - " . $info['name'] . ' (' . $test_name . ')' . "\n";
     }
     echo "\n";
   }
@@ -673,7 +752,7 @@ function simpletest_script_reporter_display_results() {
     $results = db_query("SELECT * FROM {simpletest} WHERE test_id = :test_id ORDER BY test_class, message_id", array(':test_id' => $test_id));
     $test_class = '';
     foreach ($results as $result) {
-      if (isset($results_map[$result->status])) {
+      if (isset($results_map[$result->status]) && (!$args['fail-only'] || $result->status !== 'pass')) {
         if ($result->test_class != $test_class) {
           // Display test class every time results are for new test class.
           echo "\n\n---- $result->test_class ----\n\n\n";
@@ -729,7 +808,7 @@ function simpletest_script_print_error($message) {
  */
 function simpletest_script_print($message, $color_code) {
   global $args;
-  if ($args['color']) {
+  if (!empty($args['color'])) {
     echo "\033[" . $color_code . "m" . $message . "\033[0m";
   }
   else {

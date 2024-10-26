@@ -1,9 +1,9 @@
-/* 
- * custom js for direct post method 
+/*
+ * custom js for direct post method
  *
  * Intercept the normal submission of sensitive billing data,
  * submit it in the background via ajax
- * and include the results for parsing by the payment processor doDirectPayment script
+ * and include the results for parsing by the payment processor doPayment script
  * while masking out the credit card information
  */
 
@@ -16,7 +16,7 @@ cj(function ($) {
   // hide fields that are used for error display before validation
   $('#iats-dpm-continue .crm-error').hide();
   /* initiate an ajax submission of the billing dadta: check for required fields, then do a background POST */
-  $('#crm-submit-buttons .crm-button input').click(function( defaultSubmitEvent ) {
+  $('#crm-submit-buttons .crm-button input, #crm-submit-buttons .crm-button button').click(function( defaultSubmitEvent ) {
     var inputButton = $(this);
     inputButton.val('Processing ...').prop('disabled',true);
     // reset the list of errors
@@ -52,13 +52,13 @@ cj(function ($) {
       dpmPOST.IATS_DPM_ZipCode = $('input[name|="billing_postal_code"]').val();
       dpmPOST.IATS_DPM_Country = $('select[name|="billing_country_id"]').find('selected').text();
       dpmPOST.IATS_DPM_Email = $('input[name|="email"]').val();
-      
+
       dpmPOST.IATS_DPM_AccountNumber = $('#credit_card_number').val();
       var Month = $('#credit_card_exp_date_M').val();
       var Year = $('#credit_card_exp_date_Y').val();
       dpmPOST.IATS_DPM_ExpiryDate = Month+'/'+Year.substr(2);
       dpmPOST.IATS_DPM_CVV2 = $('#cvv2').val();
-      // todo: translate mop values 
+      // todo: translate mop values
       dpmPOST.IATS_DPM_MOP = $('#credit_card_type').val();
       dpmPOST.IATS_DPM_Amount = $('.contribution_amount-section input:checked').prop('data-amount');
       console.log(dpmPOST);
@@ -67,7 +67,7 @@ cj(function ($) {
         type: 'POST',
         url: dpmURL,
         data: dpmPOST,
-        dataType: 'json', 
+        dataType: 'json',
         async: false,
         success: function(result) {
           console.log(result);

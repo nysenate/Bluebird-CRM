@@ -1169,9 +1169,4 @@ class HTML_QuickForm_advmultiselect extends HTML_QuickForm_select
         return $options;
     }
 }
-
-if (class_exists('HTML_QuickForm')) {
-    HTML_QuickForm::registerElementType('advmultiselect',
-        'HTML/QuickForm/advmultiselect.php', 'HTML_QuickForm_advmultiselect');
-}
 ?>

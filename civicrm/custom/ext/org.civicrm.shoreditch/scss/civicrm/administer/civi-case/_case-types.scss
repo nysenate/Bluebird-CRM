@@ -1,5 +1,3 @@
-/* stylelint-disable max-nesting-depth, selector-max-compound-selectors, selector-no-qualifying-type, selector-max-id */
-
 &#{civi-page('a')} {
   @include civicrm-table;
 
@@ -38,6 +36,28 @@
 
         table:first-child {
           border-top: 0;
+        }
+      }
+    }
+
+    .crm-button {
+      @extend %btn-civi;
+
+      &[crm-icon=fa-check] {
+        @extend %btn-civi-primary;
+        padding: 8px 19px;
+      }
+
+      &[crm-icon=fa-times] {
+        @extend %btn-civi-secondary-outline;
+        border: solid 1px $gray-dark;
+        color: $gray;
+        margin: 0;
+        padding: 7px 19px;
+
+        &:hover {
+          background: $gray-dark;
+          color: $crm-white;
         }
       }
     }

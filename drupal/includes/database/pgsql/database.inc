@@ -66,11 +66,11 @@ class DatabaseConnection_pgsql extends DatabaseConnection {
     parent::__construct($dsn, $connection_options['username'], $connection_options['password'], $connection_options['pdo']);
 
     // Force PostgreSQL to use the UTF-8 character set by default.
-    $this->exec("SET NAMES 'UTF8'");
+    $this->connection->exec("SET NAMES 'UTF8'");
 
     // Execute PostgreSQL init_commands.
     if (isset($connection_options['init_commands'])) {
-      $this->exec(implode('; ', $connection_options['init_commands']));
+      $this->connection->exec(implode('; ', $connection_options['init_commands']));
     }
   }
 
@@ -117,7 +117,8 @@ class DatabaseConnection_pgsql extends DatabaseConnection {
         case Database::RETURN_AFFECTED:
           return $stmt->rowCount();
         case Database::RETURN_INSERT_ID:
-          return $this->lastInsertId($options['sequence_name']);
+          $sequence_name = isset($options['sequence_name']) ? $options['sequence_name'] : NULL;
+          return $this->connection->lastInsertId($sequence_name);
         case Database::RETURN_NULL:
           return;
         default:
@@ -128,12 +129,12 @@ class DatabaseConnection_pgsql extends DatabaseConnection {
       if ($options['throw_exception']) {
         // Add additional debug information.
         if ($query instanceof DatabaseStatementInterface) {
-          $e->query_string = $stmt->getQueryString();
+          $e->errorInfo['query_string'] = $stmt->getQueryString();
         }
         else {
-          $e->query_string = $query;
+          $e->errorInfo['query_string'] = $query;
         }
-        $e->args = $args;
+        $e->errorInfo['args'] = $args;
         throw $e;
       }
       return NULL;

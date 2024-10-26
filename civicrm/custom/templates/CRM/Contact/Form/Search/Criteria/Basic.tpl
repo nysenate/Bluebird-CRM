@@ -226,15 +226,5 @@
        {$form.external_identifier.label} {help id="id-external-id" file="CRM/Contact/Form/Contact"}<br />
        {$form.external_identifier.html}
     </td>
-    <td>
-      {if $form.uf_user}
-        {$form.uf_user.label} {$form.uf_user.html}
-        <div class="description font-italic">
-          {ts 1=$config->userFramework}Does the contact have a %1 Account?{/ts}
-        </div>
-      {else}
-        &nbsp;
-      {/if}
-    </td>
   </tr>
 </table>

@@ -1,0 +1,34 @@
+<?xml version="1.0"?>
+<extension key="greenwich" type="module">
+  <file>greenwich</file>
+  <name>Theme: Greenwich</name>
+  <description>Traditional CiviCRM look-and-feel</description>
+  <license>AGPL-3.0</license>
+  <maintainer>
+    <author>CiviCRM</author>
+    <email>info@civicrm.org</email>
+  </maintainer>
+  <urls>
+    <url desc="Main Extension Page">http://civicrm.org</url>
+    <url desc="Documentation">http://civicrm.org</url>
+    <url desc="Support">http://civicrm.org</url>
+    <url desc="Licensing">http://www.gnu.org/licenses/agpl-3.0.html</url>
+  </urls>
+  <releaseDate>2024-07-16</releaseDate>
+  <version>5.75.1</version>
+  <tags>
+    <tag>mgmt:hidden</tag>
+  </tags>
+  <develStage>stable</develStage>
+  <compatibility>
+    <ver>5.75</ver>
+  </compatibility>
+  <classloader>
+    <psr0 prefix="CRM_" path="."/>
+    <psr4 prefix="Civi\" path="Civi"/>
+  </classloader>
+  <civix>
+    <namespace>CRM/Greenwich</namespace>
+    <format>23.02.1</format>
+  </civix>
+</extension>

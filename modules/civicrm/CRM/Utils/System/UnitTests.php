@@ -13,8 +13,6 @@
  *
  * @package CRM
  * @copyright CiviCRM LLC https://civicrm.org/licensing
- * $Id$
- *
  */
 
 /**
@@ -27,6 +25,37 @@ class CRM_Utils_System_UnitTests extends CRM_Utils_System_Base {
   public function __construct() {
     $this->is_drupal = FALSE;
     $this->supports_form_extensions = FALSE;
+  }
+
+  public function initialize() {
+    parent::initialize();
+    $test = $GLOBALS['CIVICRM_TEST_CASE'] ?? NULL;
+    if ($test && $test instanceof \Civi\Test\HeadlessInterface) {
+      $listenerMap = \Civi\Core\Event\EventScanner::findListeners($test);
+      \Civi::dispatcher()->addListenerMap($test, $listenerMap);
+    }
+    \Civi\Test::eventChecker()->addListeners();
+  }
+
+  /**
+   * @internal
+   * @return bool
+   */
+  public function isLoaded(): bool {
+    return TRUE;
+  }
+
+  /**
+   * Send an HTTP Response base on PSR HTTP RespnseInterface response.
+   *
+   * @param \Psr\Http\Message\ResponseInterface $response
+   */
+  public function sendResponse(\Psr\Http\Message\ResponseInterface $response) {
+    // We'll if the simple version passes. If not, then we might need to enable `setHttpHeader()`.
+    // foreach ($response->getHeaders() as $name => $values) {
+    //   CRM_Utils_System::setHttpHeader($name, implode(', ', (array) $values));
+    // }
+    CRM_Utils_System::civiExit(0, ['response' => $response]);
   }
 
   /**
@@ -52,6 +81,27 @@ class CRM_Utils_System_UnitTests extends CRM_Utils_System_Base {
     return TRUE;
   }
 
+  public function cmsRootPath() {
+    // There's no particularly sensible value here. We just want to avoid crashes in some tests.
+    return sys_get_temp_dir() . '/UnitTests';
+  }
+
+  /**
+   * @inheritdoc
+   */
+  public function getCiviSourceStorage(): array {
+    global $civicrm_root;
+
+    if (!defined('CIVICRM_UF_BASEURL')) {
+      throw new RuntimeException('Undefined constant: CIVICRM_UF_BASEURL');
+    }
+
+    return [
+      'url' => CRM_Utils_File::addTrailingSlash('', '/'),
+      'path' => CRM_Utils_File::addTrailingSlash($civicrm_root),
+    ];
+  }
+
   /**
    * @inheritDoc
    */
@@ -75,7 +125,6 @@ class CRM_Utils_System_UnitTests extends CRM_Utils_System_Base {
     $query = NULL,
     $absolute = FALSE,
     $fragment = NULL,
-    $htmlize = TRUE,
     $frontend = FALSE,
     $forceBackend = FALSE
   ) {
@@ -92,19 +141,17 @@ class CRM_Utils_System_UnitTests extends CRM_Utils_System_Base {
     }
     $base = $absolute ? $config->userFrameworkBaseURL : $config->useFrameworkRelativeBase;
 
-    $separator = $htmlize ? '&amp;' : '&';
-
     if (!$config->cleanURL) {
-      if (isset($path)) {
-        if (isset($query)) {
-          return $base . $script . '?q=' . $path . $separator . $query . $fragment;
+      if ($path !== NULL && $path !== '' && $path !== FALSE) {
+        if ($query !== NULL && $query !== '' && $query !== FALSE) {
+          return $base . $script . '?q=' . $path . '&' . $query . $fragment;
         }
         else {
           return $base . $script . '?q=' . $path . $fragment;
         }
       }
       else {
-        if (isset($query)) {
+        if ($query !== NULL && $query !== '' && $query !== FALSE) {
           return $base . $script . '?' . $query . $fragment;
         }
         else {
@@ -156,6 +203,14 @@ class CRM_Utils_System_UnitTests extends CRM_Utils_System_Base {
    */
   public function getLoginURL($destination = '') {
     throw new Exception("Method not implemented: getLoginURL");
+  }
+
+  /**
+   * @inheritdoc
+   */
+  public function mailingWorkflowIsEnabled():bool {
+    $enableWorkflow = Civi::settings()->get('civimail_workflow');
+    return (bool) $enableWorkflow;
   }
 
 }

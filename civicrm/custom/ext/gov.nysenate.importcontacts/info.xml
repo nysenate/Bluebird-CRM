@@ -1,0 +1,32 @@
+<?xml version="1.0"?>
+<extension key="gov.nysenate.importcontacts" type="module">
+  <file>importcontacts</file>
+  <name>NYSS: Import Modifications</name>
+  <description></description>
+  <license>AGPL-3.0</license>
+  <maintainer>
+    <author>Lighthouse Consulting and Design, Inc.</author>
+    <email>FIXME</email>
+  </maintainer>
+  <urls>
+    <url desc="Licensing">http://www.gnu.org/licenses/agpl-3.0.html</url>
+  </urls>
+  <releaseDate>2022-08-23</releaseDate>
+  <version>1.0</version>
+  <develStage>alpha</develStage>
+  <compatibility>
+    <ver>5.0</ver>
+  </compatibility>
+  <comments></comments>
+  <classloader>
+    <psr4 prefix="Civi\" path="Civi"/>
+  </classloader>
+  <civix>
+    <namespace>CRM/Importcontacts</namespace>
+    <format>22.05.0</format>
+    <angularModule>crmImportcontacts</angularModule>
+  </civix>
+  <mixins>
+    <mixin>setting-php@1.0.0</mixin>
+  </mixins>
+</extension>

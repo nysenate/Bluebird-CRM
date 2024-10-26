@@ -16,17 +16,21 @@ use Civi\API\Provider\WrappingProvider;
 /**
  * Class PrepareEvent
  * @package Civi\API\Event
+ *
+ * Apply any pre-execution filtering to the API request.
+ *
+ * Event name: 'civi.api.prepare'
  */
 class PrepareEvent extends Event {
 
   /**
    * @param array $apiRequest
    *   The full description of the API request.
-   * @return PrepareEvent
+   * @return static
    */
   public function setApiRequest($apiRequest) {
-    $this->apiRequest = $apiRequest;
-    return $this;
+    // Elevate from 'protected' to 'public'.
+    return parent::setApiRequest($apiRequest);
   }
 
   /**

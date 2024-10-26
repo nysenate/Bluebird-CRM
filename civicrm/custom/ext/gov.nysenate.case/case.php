@@ -1,6 +1,7 @@
 <?php
 
 require_once 'case.civix.php';
+use CRM_NYSS_Case_ExtensionUtil as E;
 
 /**
  * Implements hook_civicrm_config().
@@ -9,17 +10,6 @@ require_once 'case.civix.php';
  */
 function case_civicrm_config(&$config) {
   _case_civix_civicrm_config($config);
-}
-
-/**
- * Implements hook_civicrm_xmlMenu().
- *
- * @param $files array(string)
- *
- * @link http://wiki.civicrm.org/confluence/display/CRMDOC/hook_civicrm_xmlMenu
- */
-function case_civicrm_xmlMenu(&$files) {
-  _case_civix_civicrm_xmlMenu($files);
 }
 
 /**
@@ -32,94 +22,12 @@ function case_civicrm_install() {
 }
 
 /**
- * Implements hook_civicrm_uninstall().
- *
- * @link http://wiki.civicrm.org/confluence/display/CRMDOC/hook_civicrm_uninstall
- */
-function case_civicrm_uninstall() {
-  _case_civix_civicrm_uninstall();
-}
-
-/**
  * Implements hook_civicrm_enable().
  *
  * @link http://wiki.civicrm.org/confluence/display/CRMDOC/hook_civicrm_enable
  */
 function case_civicrm_enable() {
   _case_civix_civicrm_enable();
-}
-
-/**
- * Implements hook_civicrm_disable().
- *
- * @link http://wiki.civicrm.org/confluence/display/CRMDOC/hook_civicrm_disable
- */
-function case_civicrm_disable() {
-  _case_civix_civicrm_disable();
-}
-
-/**
- * Implements hook_civicrm_upgrade().
- *
- * @param $op string, the type of operation being performed; 'check' or 'enqueue'
- * @param $queue CRM_Queue_Queue, (for 'enqueue') the modifiable list of pending up upgrade tasks
- *
- * @return mixed
- *   Based on op. for 'check', returns array(boolean) (TRUE if upgrades are pending)
- *                for 'enqueue', returns void
- *
- * @link http://wiki.civicrm.org/confluence/display/CRMDOC/hook_civicrm_upgrade
- */
-function case_civicrm_upgrade($op, CRM_Queue_Queue $queue = NULL) {
-  return _case_civix_civicrm_upgrade($op, $queue);
-}
-
-/**
- * Implements hook_civicrm_managed().
- *
- * Generate a list of entities to create/deactivate/delete when this module
- * is installed, disabled, uninstalled.
- *
- * @link http://wiki.civicrm.org/confluence/display/CRMDOC/hook_civicrm_managed
- */
-function case_civicrm_managed(&$entities) {
-  _case_civix_civicrm_managed($entities);
-}
-
-/**
- * Implements hook_civicrm_caseTypes().
- *
- * Generate a list of case-types
- *
- * Note: This hook only runs in CiviCRM 4.4+.
- *
- * @link http://wiki.civicrm.org/confluence/display/CRMDOC/hook_civicrm_caseTypes
- */
-function case_civicrm_caseTypes(&$caseTypes) {
-  _case_civix_civicrm_caseTypes($caseTypes);
-}
-
-/**
- * Implements hook_civicrm_angularModules().
- *
- * Generate a list of Angular modules.
- *
- * Note: This hook only runs in CiviCRM 4.5+. It may
- * use features only available in v4.6+.
- *
- * @link http://wiki.civicrm.org/confluence/display/CRMDOC/hook_civicrm_caseTypes
- */
-function case_civicrm_angularModules(&$angularModules) {
-_case_civix_civicrm_angularModules($angularModules);
-}
-
-/**
- * Implements hook_civicrm_alterSettingsFolders().
- *
- * @link http://wiki.civicrm.org/confluence/display/CRMDOC/hook_civicrm_alterSettingsFolders
- */
-function case_civicrm_alterSettingsFolders(&$metaDataFolders = NULL) {
-  _case_civix_civicrm_alterSettingsFolders($metaDataFolders);
 }
 
 function case_civicrm_buildForm($formName, &$form) {
@@ -129,6 +37,8 @@ function case_civicrm_buildForm($formName, &$form) {
   ));*/
 
   if ($formName=='CRM_Case_Form_CaseView') {
+    CRM_Core_Resources::singleton()->addScriptFile(E::LONG_NAME, 'js/CaseView.js');
+
     //11518 hide timeline/audit fields
     foreach (array('timeline_id', 'report_id') as $field) {
       if ($form->elementExists($field)) {
@@ -161,22 +71,52 @@ function case_civicrm_buildForm($formName, &$form) {
     if ($form->_formValues['contact_id']) {
       $form->assign('contact_id', $form->_formValues['contact_id']);
 
-      $dn = civicrm_api3('contact', 'getvalue', array(
+      $dn = civicrm_api3('contact', 'getvalue', [
         'id' => $form->_formValues['contact_id'],
         'return' => 'display_name'
-      ));
+      ]);
       $form->assign('display_name', $dn);
     }
+  }
+
+  if ($formName == 'CRM_Case_Form_ActivityToCase') {
+    //Civi::log()->debug(__FUNCTION__, ['form' => $form, 'REQUEST'=> $_REQUEST]);
+    CRM_Core_Resources::singleton()->addScriptFile('gov.nysenate.case', 'js/FileOnCase.js');
+
+    $cid = CRM_Utils_Request::retrieve('cid', 'Positive');
+    Civi::resources()->addVars('NYSS', [
+      'cid' => $cid,
+      'url' => CRM_Utils_System::url('civicrm/fileoncase/create', "reset=1&cid={$cid}")
+    ]);
+  }
+}
+
+function case_civicrm_pre($op, $objectName, $id, &$params) {
+  /*Civi::log()->debug(__FUNCTION__, [
+    '$op' => $op,
+    '$objectName' => $objectName,
+    '$id' => $id,
+    '$params' => $params,
+  ]);*/
+
+  //14527 don't set relationship end date when creating a case with resolved status
+  if ($objectName == 'Relationship' &&
+    $op == 'create' &&
+    !empty($params['case_id']) &&
+    CRM_Core_DAO::getFieldValue('CRM_Contact_DAO_RelationshipType', 'Case Manager is', 'id', 'name_a_b') == $params['relationship_type_id'] &&
+    !empty($params['end_date'])
+  ) {
+    $params['end_date'] = 'null';
   }
 }
 
 function case_civicrm_post($op, $objectName, $objectId, &$objectRef) {
-  /*Civi::log()->debug('case_civicrm_post', array(
+  /*Civi::log()->debug('case_civicrm_post', [
     '$op' => $op,
     '$objectName' => $objectName,
     '$objectId' => $objectId,
     '$objectRef' => $objectRef,
-  ));*/
+  ]);*/
 
   //2450 - notify case worker/coordinator when role created/changed
   if (in_array($op, ['edit', 'create']) &&
@@ -186,21 +126,22 @@ function case_civicrm_post($op, $objectName, $objectId, &$objectRef) {
     //notify case worker with an email
     $caseID = $objectRef->case_id;
     $caseDetails = civicrm_api3('case', 'getsingle', ['id' => $caseID]);
-    //Civi::log()->debug('case_civicrm_post', array('caseDetails' => $caseDetails));
+    //Civi::log()->debug('case_civicrm_post', ['caseDetails' => $caseDetails]);
 
-    //get client ID
+    //get client IDs
+    $clientIDs = $clientNames = [];
     foreach ($caseDetails['contacts'] as $contact) {
       if ($contact['role'] == 'Constituent') {
-        $clientID = $contact['contact_id'];
-        $clientName = $contact['display_name'];
+        $clientIDs[] = $contact['contact_id'];
+        $clientNames[] = $contact['display_name'];
       }
     }
 
     //get role contact ID (whichever id is NOT the clientID)
-    if ($objectRef->contact_id_a != $clientID) {
+    if (!in_array($objectRef->contact_id_a, $clientIDs)) {
       $roleContactId = $objectRef->contact_id_a;
     }
-    elseif ($objectRef->contact_id_b != $clientID) {
+    elseif (!in_array($objectRef->contact_id_b, $clientIDs)) {
       $roleContactId = $objectRef->contact_id_b;
     }
     else {
@@ -215,22 +156,23 @@ function case_civicrm_post($op, $objectName, $objectId, &$objectRef) {
     ]);
     //Civi::log()->debug('case_civicrm_post', array('$roleEmail' => $roleEmail));
 
-    if (!empty($clientID) && $clientID != $roleContactId) {
+    if (!empty($clientIDs) && !in_array($roleContactId, $clientIDs)) {
       $url = CRM_Utils_System::url(
         'civicrm/contact/view/case',
-        "reset=1&action=view&cid={$clientID}&id={$caseID}",
+        "reset=1&action=view&cid={$clientIDs[0]}&id={$caseID}",
         true
       );
 
       //prepare mail params
       $fromEmailAddress = CRM_Core_OptionGroup::values('from_email_address', NULL, NULL, NULL, ' AND is_default = 1');
-      $mailParams = array(
+      $clientNamesList = implode(', ', $clientNames);
+      $mailParams = [
         'toEmail' => $roleEmail,
-        'subject' => "Case Role Created/Changed for: $clientName (Case ID: {$caseID})",
-        'html' => "<p>You have been assigned a case for $clientName (Case ID: {$caseID})</p>
+        'subject' => "Case Role Created/Changed for: {$clientNamesList} (Case ID: {$caseID})",
+        'html' => "<p>You have been assigned a case for {$clientNamesList} (Case ID: {$caseID})</p>
           <p><a href='$url' target=_blank>$url</a></p>",
         'from' => reset($fromEmailAddress),
-      );
+      ];
       //Civi::log()->debug('case_civicrm_post', array('$mailParams' => $mailParams));
 
       $mailingBackend = Civi::settings()->get('mailing_backend');
@@ -241,5 +183,96 @@ function case_civicrm_post($op, $objectName, $objectId, &$objectRef) {
         CRM_Core_Error::debug_var('$mailParams - role', $mailParams);
       }
     }
-  }//end case role email
+  }
+
+  //15768 - notify case manager every time case activity is added/updated
+  if (in_array($op, ['edit', 'create']) &&
+    $objectName == 'Activity' &&
+    !empty($objectRef->case_id)
+  ) {
+    $bbcfg = get_bluebird_instance_config();
+    //Civi::log()->debug(__METHOD__, ['$bbcfg' => $bbcfg]);
+
+    if ($bbcfg['case.notify_case_manager']) {
+      $action = ($op == 'edit') ? 'Edited' : 'Created';
+
+      $case = \Civi\Api4\CiviCase::get(FALSE)
+        ->addSelect('case_type_id:label', 'subject', 'status_id:label', 'id')
+        ->addWhere('id', '=', $objectRef->case_id)
+        ->execute()
+        ->single();
+      //Civi::log()->debug(__METHOD__, ['case' => $case]);
+
+      $caseContacts = \Civi\Api4\CaseContact::get()
+        ->addSelect('contact_id.display_name', 'contact_id')
+        ->addWhere('case_id', '=', $objectRef->case_id)
+        ->execute();
+      $clients = [];
+      foreach ($caseContacts as $caseContact) {
+        $firstClientId = (empty($firstClientId)) ? $caseContact['contact_id'] : $firstClientId;
+        $clients[] = $caseContact['contact_id.display_name'];
+      }
+      $clientList = implode(', ', $clients);
+
+      //use the first client ID for the activity URL
+      $activityUrl = CRM_Utils_System::url('civicrm/case/activity/view',
+        "reset=1&cid={$firstClientId}&caseid={$objectRef->case_id}&aid={$objectRef->id}", TRUE);
+
+      $caseMgrs = \Civi\Api4\Relationship::get(FALSE)
+        ->addWhere('case_id', '=', $objectRef->case_id)
+        ->addWhere('relationship_type_id:name', '=', 'Case Manager is')
+        ->addWhere('is_active', '=', TRUE)
+        ->execute();
+      //Civi::log()->debug(__METHOD__, ['$caseMgrs' => $caseMgrs]);
+
+      foreach ($caseMgrs as $caseMgr) {
+        $contact = \Civi\Api4\Contact::get(FALSE)
+          ->addSelect('id', 'display_name', 'email_primary.email')
+          ->addWhere('id', '=', $caseMgr['contact_id_b'])
+          ->execute()
+          ->single();
+        //Civi::log()->debug(__METHOD__, ['$contact' => $contact]);
+
+        $msg = "
+          <p>A case you are assigned to manage has received updates:</p>
+          <ul>
+            <li>Case ID: {$objectRef->case_id}</li>
+            <li>Case Constituent(s): {$clientList}</li>
+            <li>{$action} Activity ID: {$objectRef->id}</li>
+            <li>Subject: {$objectRef->subject}</li>
+            <li><a href='{$activityUrl}' target='_blank'>View Activity</a></li>
+          </ul>
+        ";
+
+        $mailParams = [
+          'from' => "{$bbcfg['senator.name.formal']} <{$bbcfg['senator.email']}>",
+          'toName' => $contact['display_name'],
+          'toEmail' => $contact['email_primary.email'],
+          'subject' => 'Case Manager: Case Updated',
+          'html' => $msg,
+          'contactId' => $contact['id'],
+        ];
+        //Civi::log()->debug(__METHOD__, ['$mailParams' => $mailParams]);
+
+        CRM_Utils_Mail::send($mailParams);
+      }
+    }
+  }
+}
+
+function case_civicrm_searchColumns($objectName, &$headers, &$rows, &$selector) {
+  /*Civi::log()->debug(__FUNCTION__, [
+    'objectName' => $objectName,
+    'headers' => $headers,
+    'selector' => $selector,
+  ]);*/
+
+  if ($objectName == 'case' && is_a($selector, 'CRM_Core_Selector_Controller')) {
+    foreach ($headers as &$header) {
+      if (in_array($header['sort'], ['case_recent_activity_date', 'case_scheduled_activity_date'])) {
+        unset($header['sort']);
+        unset($header['direction']);
+      }
+    }
+  }
 }

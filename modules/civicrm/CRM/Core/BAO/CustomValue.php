@@ -15,10 +15,12 @@
  * @copyright CiviCRM LLC https://civicrm.org/licensing
  */
 
+use Civi\Api4\Event\AuthorizeRecordEvent;
+
 /**
  * Business objects for managing custom data values.
  */
-class CRM_Core_BAO_CustomValue extends CRM_Core_DAO {
+class CRM_Core_BAO_CustomValue extends CRM_Core_DAO implements \Civi\Core\HookInterface {
 
   /**
    * Validate a value against a CustomField type.
@@ -57,7 +59,8 @@ class CRM_Core_BAO_CustomValue extends CRM_Core_DAO {
         return CRM_Utils_Rule::boolean($value);
 
       case 'ContactReference':
-        return CRM_Utils_Rule::validContact($value);
+      case 'EntityReference':
+        return CRM_Utils_Rule::positiveInteger($value);
 
       case 'StateProvince':
 
@@ -171,9 +174,12 @@ class CRM_Core_BAO_CustomValue extends CRM_Core_DAO {
       }
       elseif (($htmlType == 'TextArea' ||
           ($htmlType == 'Text' && $dataType == 'String')
-        ) && strstr($formValues[$key], '%')
+        ) && str_contains($formValues[$key], '%')
       ) {
         $formValues[$key] = ['LIKE' => $formValues[$key]];
+      }
+      elseif ($htmlType == 'Autocomplete-Select' && !empty($formValues[$key]) && is_string($formValues[$key]) && (strpos($formValues[$key], ',') != FALSE)) {
+        $formValues[$key] = ['IN' => explode(',', $formValues[$key])];
       }
     }
   }
@@ -188,10 +194,10 @@ class CRM_Core_BAO_CustomValue extends CRM_Core_DAO {
    */
   public static function deleteCustomValue($customValueID, $customGroupID) {
     // first we need to find custom value table, from custom group ID
-    $tableName = CRM_Core_DAO::getFieldValue('CRM_Core_DAO_CustomGroup', $customGroupID, 'table_name');
+    $tableName = CRM_Core_BAO_CustomGroup::getGroup(['id' => $customGroupID])['table_name'];
 
     // Retrieve the $entityId so we can pass that to the hook.
-    $entityID = CRM_Core_DAO::singleValueQuery("SELECT entity_id FROM {$tableName} WHERE id = %1", [
+    $entityID = (int) CRM_Core_DAO::singleValueQuery("SELECT entity_id FROM {$tableName} WHERE id = %1", [
       1 => [$customValueID, 'Integer'],
     ]);
 
@@ -200,10 +206,65 @@ class CRM_Core_BAO_CustomValue extends CRM_Core_DAO {
     CRM_Core_DAO::executeQuery($sql);
 
     CRM_Utils_Hook::custom('delete',
-      $customGroupID,
+      (int) $customGroupID,
       $entityID,
       $customValueID
     );
+  }
+
+  /**
+   * ACL clause for an APIv4 custom pseudo-entity (aka multi-record custom group).
+   * @param string|null $entityName
+   * @param int|null $userId
+   * @param array $conditions
+   * @return array
+   */
+  public function addSelectWhereClause(string $entityName = NULL, int $userId = NULL, array $conditions = []): array {
+    // Some legacy code omits $entityName, in which case fall-back on 'Contact' which until 2023
+    // was the only type of entity that could be extended by multi-record custom groups.
+    $groupName = \Civi\Api4\Utils\CoreUtil::getCustomGroupName((string) $entityName);
+    $joinEntity = $groupName ? CRM_Core_BAO_CustomGroup::getEntityForGroup($groupName) : 'Contact';
+    $clauses = [
+      'entity_id' => CRM_Utils_SQL::mergeSubquery($joinEntity),
+    ];
+    CRM_Utils_Hook::selectWhereClause($entityName ?? $this, $clauses);
+    return $clauses;
+  }
+
+  /**
+   * Access check for multi-record custom pseudo-entities
+   * @see \Civi\Api4\Utils\CoreUtil::checkAccessRecord
+   */
+  public static function on_civi_api4_authorizeRecord(AuthorizeRecordEvent $e): void {
+    $groupName = \Civi\Api4\Utils\CoreUtil::getCustomGroupName($e->getEntityName());
+    if (!$groupName) {
+      return;
+    }
+
+    // This check implements two rules: you must have access to the specific custom-data-group - and to the underlying record (e.g. Contact).
+    $record = $e->getRecord();
+    $userID = $e->getUserID();
+    $action = $e->getActionName();
+
+    // Expecting APIv4-style entity name
+    $extends = \CRM_Core_BAO_CustomGroup::getEntityForGroup($groupName);
+    $id = CRM_Core_DAO::getFieldValue('CRM_Core_DAO_CustomGroup', $groupName, 'id', 'name');
+
+    $actionType = $action === 'get' ? CRM_Core_Permission::VIEW : CRM_Core_Permission::EDIT;
+    if (!\CRM_Core_BAO_CustomGroup::checkGroupAccess($id, $actionType, $userID)) {
+      $e->setAuthorized(FALSE);
+      return;
+    }
+
+    $eid = $record['entity_id'] ?? NULL;
+    if (!$eid) {
+      $tableName = CRM_Core_DAO::getFieldValue('CRM_Core_DAO_CustomGroup', $groupName, 'table_name', 'name');
+      $eid = CRM_Core_DAO::singleValueQuery("SELECT entity_id FROM `$tableName` WHERE id = " . (int) $record['id']);
+    }
+
+    // Do we have access to the target record?
+    $delegatedAction = $action === 'get' ? 'get' : 'update';
+    $e->setAuthorized(\Civi\Api4\Utils\CoreUtil::checkAccessDelegated($extends, $delegatedAction, ['id' => $eid], $userID));
   }
 
 }

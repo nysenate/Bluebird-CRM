@@ -1,13 +1,16 @@
 <?php
 
-/*
+/**
+ *
  * This file is part of the civicrm-cxn-rpc package.
  *
  * Copyright (c) CiviCRM LLC <info@civicrm.org>
  *
  * For the full copyright and license information, please view the LICENSE
  * file that was distributed with this package.
+ *
  */
+
 
 namespace Civi\Cxn\Rpc;
 
@@ -17,7 +20,9 @@ use Civi\Cxn\Rpc\Message\RegistrationMessage;
 use Civi\Cxn\Rpc\Message\StdMessage;
 
 class Messages {
-  protected $appId, $appPrivKey, $cxnStore;
+  protected $appId;
+  protected $appPrivKey;
+  protected $cxnStore;
 
   public function __construct($appId, $appPrivKey, $cxnStore) {
     $this->appId = $appId;

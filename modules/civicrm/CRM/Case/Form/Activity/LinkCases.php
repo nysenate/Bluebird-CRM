@@ -27,10 +27,10 @@ class CRM_Case_Form_Activity_LinkCases {
    */
   public static function preProcess(&$form) {
     if (empty($form->_caseId)) {
-      CRM_Core_Error::fatal(ts('Case Id not found.'));
+      CRM_Core_Error::statusBounce(ts('Case Id not found.'));
     }
     if (count($form->_caseId) != 1) {
-      CRM_Core_Resources::fatal(ts('Expected one case-type'));
+      CRM_Core_Error::statusBounce(ts('Expected one case-type'));
     }
 
     $caseId = CRM_Utils_Array::first($form->_caseId);
@@ -99,15 +99,22 @@ class CRM_Case_Form_Activity_LinkCases {
     $errors = [];
 
     $linkCaseId = $values['link_to_case_id'] ?? NULL;
-    assert('is_numeric($linkCaseId)');
+
+    if (!CRM_Utils_Rule::positiveInteger($linkCaseId) || $linkCaseId == 0) {
+      // We can't just return $errors because when the page reloads the
+      // entityref widget throws an error before the page can display the error.
+      // It seems ok with other invalid values, just not 0, but both are equally invalid.
+      CRM_Core_Error::statusBounce(ts('The linked case ID is invalid.'));
+    }
+
     if ($linkCaseId == CRM_Utils_Array::first($form->_caseId)) {
-      $errors['link_to_case'] = ts('Please select some other case to link.');
+      $errors['link_to_case_id'] = ts('Please select some other case to link.');
     }
 
     // do check for existing related cases.
     $relatedCases = $form->get('relatedCases');
     if (is_array($relatedCases) && array_key_exists($linkCaseId, $relatedCases)) {
-      $errors['link_to_case'] = ts('Selected case is already linked.');
+      $errors['link_to_case_id'] = ts('Selected case is already linked.');
     }
 
     return empty($errors) ? TRUE : $errors;

@@ -20,7 +20,6 @@ class CRM_Contact_Form_Search_Criteria {
    * @param CRM_Contact_Form_Search_Advanced $form
    *
    * @throws \CRM_Core_Exception
-   * @throws \CiviCRM_API3_Exception
    */
   public static function basic(&$form) {
     $form->addSearchFieldMetadata(['Contact' => self::getFilteredSearchFieldMetadata('basic')]);
@@ -42,11 +41,10 @@ class CRM_Contact_Form_Search_Criteria {
       // multiselect for groups
       if ($form->_group) {
         // Arrange groups into hierarchical listing (child groups follow their parents and have indentation spacing in title)
-        //NYSS 12137
-        $groupHierarchy = CRM_Contact_BAO_Group::getGroupsHierarchy($form->_group, NULL, '&nbsp;&nbsp;');
+        $groupHierarchy = CRM_Contact_BAO_Group::getGroupsHierarchy($form->_group, NULL, '- ', TRUE);
 
-        $form->add('select2', 'group', ts('Groups'), $groupHierarchy, FALSE,
-          ['placeholder' => '- select -', 'multiple' => TRUE, 'class' => 'twenty']
+        $form->add('select', 'group', ts('Groups'), $groupHierarchy, FALSE,
+         ['id' => 'group', 'multiple' => 'multiple', 'class' => 'crm-select2']
         );
         $groupOptions = CRM_Core_BAO_OptionValue::getOptionValuesAssocArrayFromName('group_type');
         $form->add('select', 'group_type', ts('Group Types'), $groupOptions, FALSE,
@@ -56,6 +54,10 @@ class CRM_Contact_Form_Search_Criteria {
       }
     }
 
+    // Suppress e-notices for tag fields if not set...
+    $form->addOptionalQuickFormElement('tag_types_text');
+    $form->addOptionalQuickFormElement('tag_set');
+    $form->addOptionalQuickFormElement('all_tag_types');
     if ($form->_searchOptions['tags']) {
       // multiselect for categories
       $contactTags = CRM_Core_BAO_Tag::getTags();
@@ -75,15 +77,14 @@ class CRM_Contact_Form_Search_Criteria {
       foreach ($used_for as $key => $value) {
         //check tags for every type and find if there are any defined
         $tags = CRM_Core_BAO_Tag::getTagsUsedFor($key, FALSE, TRUE, NULL);
-        // check if there are tags other than contact type, if no - keep checkbox hidden on adv search
-        // we will hide searching contact by attachments tags until it will be implemented in core
-        if (count($tags) && $key != 'civicrm_file' && $key != 'civicrm_contact') {
+        // check if there are tags for cases or activities, if no - keep checkbox hidden on adv search
+        if (count($tags) && ($key == 'civicrm_case' || $key == 'civicrm_activity')) {
           //if tags exists then add type to display in adv search form help text
           $tagsTypes[] = $value;
           $showAllTagTypes = TRUE;
         }
       }
-      $tagTypesText = implode(" or ", $tagsTypes);
+      $tagTypesText = implode(' or ', $tagsTypes);
       if ($showAllTagTypes) {
         $form->add('checkbox', 'all_tag_types', ts('Include tags used for %1', [1 => $tagTypesText]));
         $form->add('hidden', 'tag_types_text', $tagTypesText);
@@ -97,8 +98,8 @@ class CRM_Contact_Form_Search_Criteria {
     $form->addElement('text', 'job_title', ts('Job Title'), CRM_Core_DAO::getAttribute('CRM_Contact_DAO_Contact', 'job_title'));
 
     //added internal ID
-    $form->add('number', 'contact_id', ts('Contact ID'), CRM_Core_DAO::getAttribute('CRM_Contact_DAO_Contact', 'id') + ['min' => 1]);
-    $form->addRule('contact_id', ts('Please enter valid Contact ID'), 'positiveInteger');
+    $form->add('number', 'id', ts('Contact ID'), CRM_Core_DAO::getAttribute('CRM_Contact_DAO_Contact', 'id') + ['min' => 1]);
+    $form->addRule('id', ts('Please enter valid Contact ID'), 'positiveInteger');
 
     //added external ID
     $form->addElement('text', 'external_identifier', ts('External ID'), CRM_Core_DAO::getAttribute('CRM_Contact_DAO_Contact', 'external_identifier'));
@@ -241,12 +242,15 @@ class CRM_Contact_Form_Search_Criteria {
   /**
    * Get the metadata for fields to be included on the contact search form.
    *
-   * @throws \CiviCRM_API3_Exception
+   * @throws \CRM_Core_Exception
    */
   public static function getSearchFieldMetadata() {
-    //NYSS 13372
     $fields = [
-      'sort_name' => ['title' => ts('Complete OR Partial Name'), 'template_grouping' => 'basic'],
+      'sort_name' => [
+        'title' => ts('Complete OR Partial Name'),
+        'template_grouping' => 'basic',
+        'template' => 'CRM/Contact/Form/Search/Criteria/Fields/sort_name.tpl',
+      ],
       'first_name' => ['template_grouping' => 'basic'],
       'last_name' => ['template_grouping' => 'basic'],
       'email' => ['title' => ts('Complete OR Partial Email'), 'entity' => 'Email', 'template_grouping' => 'basic'],
@@ -285,7 +289,7 @@ class CRM_Contact_Form_Search_Criteria {
    * @param string $filter
    *
    * @return array
-   * @throws \CiviCRM_API3_Exception
+   * @throws \CRM_Core_Exception
    */
   public static function getFilteredSearchFieldMetadata($filter) {
     $fields = self::getSearchFieldMetadata();
@@ -302,26 +306,30 @@ class CRM_Contact_Form_Search_Criteria {
    *
    * @param CRM_Core_Form $form
    *
-   * @throws \CiviCRM_API3_Exception
+   * @throws \CRM_Core_Exception
    */
   protected static function setBasicSearchFields($form) {
     $searchFields = [];
     foreach (self::getFilteredSearchFieldMetadata('basic') as $fieldName => $field) {
       $searchFields[$fieldName] = $field;
     }
-    $form->assign('basicSearchFields', array_merge(self::getBasicSearchFields(), $searchFields));
+    $fields = array_merge(self::getBasicSearchFields(), $searchFields);
+    foreach ($fields as $index => $field) {
+      $fields[$index] = array_merge(['class' => '', 'is_custom' => FALSE, 'template' => '', 'help' => '', 'description' => ''], $field);
+    }
+    $form->assign('basicSearchFields', $fields);
   }
 
-  //NYSS 12133 throughout
   /**
    * Return list of basic contact fields that can be displayed for the basic search section.
    *
    */
   public static function getBasicSearchFields() {
-    $userFramework = CRM_Core_Config::singleton()->userFramework;
     return [
       // For now an empty array is still left in place for ordering.
       'sort_name' => [],
+      'first_name' => [],
+      'last_name' => [],
       'email' => ['name' => 'email'],
       'contact_type' => ['name' => 'contact_type'],
       'group' => [
@@ -332,7 +340,7 @@ class CRM_Contact_Form_Search_Criteria {
       'tag_types_text' => ['name' => 'tag_types_text'],
       'tag_search' => [
         'name' => 'tag_search',
-        'help' => ['id' => 'id-all-tags'],
+        'help' => ['id' => 'id-all-tags', 'file' => NULL],
       ],
       'tag_set' => [
         'name' => 'tag_set',
@@ -342,7 +350,7 @@ class CRM_Contact_Form_Search_Criteria {
       'all_tag_types' => [
         'name' => 'all_tag_types',
         'class' => 'search-field__span-3 search-field__checkbox',
-        'help' => ['id' => 'id-all-tag-types'],
+        'help' => ['id' => 'id-all-tag-types', 'file' => NULL],
       ],
       'phone_numeric' => [
         'name' => 'phone_numeric',
@@ -366,7 +374,7 @@ class CRM_Contact_Form_Search_Criteria {
       'job_title' => ['name' => 'job_title'],
       'preferred_language' => ['name' => 'preferred_language'],
       'contact_id' => [
-        'name' => 'contact_id',
+        'name' => 'id',
         'help' => ['id' => 'id-contact-id', 'file' => 'CRM/Contact/Form/Contact'],
       ],
       'external_identifier' => [
@@ -375,7 +383,6 @@ class CRM_Contact_Form_Search_Criteria {
       ],
       'uf_user' => [
         'name' => 'uf_user',
-        'description' => ts('Does the contact have a %1 Account?', [$userFramework]),
       ],
     ];
   }
@@ -470,39 +477,28 @@ class CRM_Contact_Form_Search_Criteria {
       'address_options', TRUE, NULL, TRUE
     );
 
-    //NYSS 12133
-    /*$attributes = CRM_Core_DAO::getAttribute('CRM_Core_DAO_Address');
+    $attributes = CRM_Core_DAO::getAttribute('CRM_Core_DAO_Address');
 
-    $elements = array(
-      'street_address' => array(ts('Street Address'), $attributes['street_address'], NULL, NULL),
-      'supplemental_address_1' => array(ts('Supplemental Address 1'), $attributes['supplemental_address_1'], NULL, NULL),
-      'supplemental_address_2' => array(ts('Supplemental Address 2'), $attributes['supplemental_address_2'], NULL, NULL),
-      'supplemental_address_3' => array(ts('Supplemental Address 3'), $attributes['supplemental_address_3'], NULL, NULL),
-      'city' => array(ts('City'), $attributes['city'], NULL, NULL),
-      'postal_code' => array(ts('Postal Code'), $attributes['postal_code'], NULL, NULL),
-      'country' => array(ts('Country'), $attributes['country_id'], 'country', FALSE),
-      'state_province' => array(ts('State/Province'), $attributes['state_province_id'], 'stateProvince', TRUE),
-      'county' => array(ts('County'), $attributes['county_id'], 'county', TRUE),
-      'address_name' => array(ts('Address Name'), $attributes['address_name'], NULL, NULL),
-      'street_number' => array(ts('Street Number'), $attributes['street_number'], NULL, NULL),
-      'street_name' => array(ts('Street Name'), $attributes['street_name'], NULL, NULL),
-      'street_unit' => array(ts('Apt/Unit/Suite'), $attributes['street_unit'], NULL, NULL),
-    );*/
+    $elements = [
+      'street_address' => [ts('Street Address'), $attributes['street_address'], NULL, NULL],
+      'supplemental_address_1' => [ts('Supplemental Address 1'), $attributes['supplemental_address_1'], NULL, NULL],
+      'supplemental_address_2' => [ts('Supplemental Address 2'), $attributes['supplemental_address_2'], NULL, NULL],
+      'supplemental_address_3' => [ts('Supplemental Address 3'), $attributes['supplemental_address_3'], NULL, NULL],
+      'city' => [ts('City'), $attributes['city'], NULL, NULL],
+      'postal_code' => [ts('Postal Code'), $attributes['postal_code'], NULL, NULL],
+      'country' => [ts('Country'), $attributes['country_id'], 'country', FALSE],
+      'state_province' => [ts('State/Province'), $attributes['state_province_id'], 'stateProvince', TRUE],
+      'county' => [ts('County'), $attributes['county_id'], 'county', TRUE],
+      'address_name' => [ts('Address Name'), $attributes['address_name'], NULL, NULL],
+      'street_number' => [ts('Street Number'), $attributes['street_number'], NULL, NULL],
+      'street_name' => [ts('Street Name'), $attributes['street_name'], NULL, NULL],
+      'street_unit' => [ts('Apt/Unit/Suite'), $attributes['street_unit'], NULL, NULL],
+    ];
 
-    $parseStreetAddress = CRM_Utils_Array::value('street_address_parsing', $addressOptions, 0);
+    $parseStreetAddress = $addressOptions['street_address_parsing'] ?? 0;
     $form->assign('parseStreetAddress', $parseStreetAddress);
-
-    //NYSS 12133
-    $addressAttributes = CRM_Core_DAO::getAttribute('CRM_Core_DAO_Address');
-    foreach (self::getLocationSearchFields() as $name => $v) {
-      if (in_array($name, ['state_province', 'country'])) {
-        $attributes = $addressAttributes[$name . '_id'];
-      }
-      else {
-        $attributes = $addressAttributes[$name];
-      }
-      $title = $v['title'];
-      $select = CRM_Utils_Array::value('select', $v);
+    foreach ($elements as $name => $v) {
+      [$title, $attributes, $select, $multiSelect] = $v;
 
       if (in_array($name,
         ['street_number', 'street_name', 'street_unit']
@@ -527,8 +523,7 @@ class CRM_Contact_Form_Search_Criteria {
           $selectElements = ['' => ts('- any -')] + CRM_Core_PseudoConstant::$select();
           $element = $form->add('select', $name, $title, $selectElements, FALSE, ['class' => 'crm-select2']);
         }
-        //NYSS 12133
-        if (in_array($name, ['state_province', 'county'])) {
+        if ($multiSelect) {
           $element->setMultiple(TRUE);
         }
       }
@@ -537,7 +532,7 @@ class CRM_Contact_Form_Search_Criteria {
       }
 
       if ($addressOptions['postal_code']) {
-        $attr = ['class' => 'six'] + (array) CRM_Utils_Array::value('postal_code', $attributes);
+        $attr = ['class' => 'six'] + ($attributes['postal_code'] ?? []);
         $form->addElement('text', 'postal_code_low', NULL, $attr + ['placeholder' => ts('From')]);
         $form->addElement('text', 'postal_code_high', NULL, $attr + ['placeholder' => ts('To')]);
       }
@@ -578,7 +573,7 @@ class CRM_Contact_Form_Search_Criteria {
   /**
    * @param CRM_Core_Form $form
    *
-   * @throws \CiviCRM_API3_Exception
+   * @throws \CRM_Core_Exception
    */
   public static function changeLog(&$form) {
     $form->add('hidden', 'hidden_changeLog', 1);
@@ -598,7 +593,7 @@ class CRM_Contact_Form_Search_Criteria {
   /**
    * @param CRM_Core_Form_Search $form
    *
-   * @throws \CiviCRM_API3_Exception
+   * @throws \CRM_Core_Exception
    */
   public static function relationship(&$form) {
     $form->add('hidden', 'hidden_relationship', 1);
@@ -631,22 +626,19 @@ class CRM_Contact_Form_Search_Criteria {
   /**
    * @param CRM_Core_Form_Search $form
    *
-   * @throws \CiviCRM_API3_Exception
+   * @throws \CRM_Core_Exception
    */
   public static function demographics(&$form) {
     $form->add('hidden', 'hidden_demographics', 1);
     $form->addSearchFieldMetadata(['Contact' => self::getFilteredSearchFieldMetadata('demographic')]);
     $form->addFormFieldsFromMetadata();
     // radio button for gender
-    $genderOptions = [];
+    $genderOptionsAttributes = [];
     $gender = CRM_Core_PseudoConstant::get('CRM_Contact_DAO_Contact', 'gender_id');
     foreach ($gender as $key => $var) {
-      $genderOptions[$key] = $form->createElement('radio', NULL,
-        ts('Gender'), $var, $key,
-        ['id' => "civicrm_gender_{$var}_{$key}"]
-      );
+      $genderOptionsAttributes[$key] = ['id' => "civicrm_gender_{$var}_{$key}"];
     }
-    $form->addGroup($genderOptions, 'gender_id', ts('Gender'))->setAttribute('allowClear', TRUE);
+    $form->addRadio('gender_id', ts('Gender'), $gender, ['allowClear' => TRUE], NULL, FALSE, $genderOptionsAttributes);
 
     $form->add('number', 'age_low', ts('Min Age'), ['class' => 'four', 'min' => 0]);
     $form->addRule('age_low', ts('Please enter a positive integer'), 'positiveInteger');
@@ -678,22 +670,15 @@ class CRM_Contact_Form_Search_Criteria {
    *
    * @param CRM_Contact_Form_Search $form
    *
-   * @throws \CiviCRM_API3_Exception
+   * @throws \CRM_Core_Exception
    */
   public static function custom(&$form) {
     $form->add('hidden', 'hidden_custom', 1);
-    $extends = array_merge(['Contact', 'Individual', 'Household', 'Organization'],
-      CRM_Contact_BAO_ContactType::subTypes()
-    );
-    $groupDetails = CRM_Core_BAO_CustomGroup::getGroupDetail(NULL, TRUE,
-      $extends
-    );
-
+    $groupDetails = CRM_Core_BAO_CustomGroup::getAll(['extends' => 'Contact']);
     $form->assign('groupTree', $groupDetails);
 
     foreach ($groupDetails as $key => $group) {
       $_groupTitle[$key] = $group['name'];
-      CRM_Core_ShowHideBlocks::links($form, $group['name'], '', '');
 
       foreach ($group['fields'] as $field) {
         $fieldId = $field['id'];

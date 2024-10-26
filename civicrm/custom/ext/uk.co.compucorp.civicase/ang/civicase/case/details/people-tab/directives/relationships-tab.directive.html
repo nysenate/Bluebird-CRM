@@ -1,0 +1,169 @@
+<div class="civicase__people-tab__sub-tab" ng-show="tab == 'relations'">
+  <div class="civicase__people-tab__search">
+    <div class="btn-group btn-group-md pull-right">
+      <a
+        ng-if="item.client.length === 1 && item['case_type_id.is_active'] !== '0'"
+        class="btn btn-primary crm-popup"
+        crm-popup-form-success="getRelations()"
+        ng-href="{{ 'civicrm/contact/view/rel' | civicaseCrmUrl:{ action: 'add', reset: 1, cid: item.client[0].contact_id } }}"
+      >
+        <i class="material-icons">add_circle</i>
+        {{ ts('Relationship') }}
+      </a>
+      <button
+        ng-if="item.client.length === 1 && item['case_type_id.is_active'] === '0'"
+        disabled
+        class="btn btn-primary"
+      >
+        <i class="material-icons">add_circle</i>
+        {{ ts('Relationship') }}
+      </button>
+      <button
+        ng-if="item.client.length > 1"
+        class="btn btn-primary dropdown-toggle"
+        data-toggle="dropdown"
+        aria-haspopup="true"
+        aria-expanded="false"
+        ng-disabled="item['case_type_id.is_active'] === '0'"
+      >
+       <i class="material-icons">add_circle</i>
+       {{ ts('Relationship') }}
+       <span class="caret"></span>
+      </button>
+      <ul ng-if="item.client.length > 1" class="dropdown-menu dropdown-menu-right" crm-popup-form-success="getRelations()">
+        <li ng-repeat="client in item.client">
+          <a class="crm-popup" ng-href="{{ 'civicrm/contact/view/rel' | civicaseCrmUrl:{ action: 'add', reset: 1, cid: client.contact_id } }}">
+            {{ client.display_name }}
+          </a>
+        </li>
+      </ul>
+    </div>
+    <h3>{{ ts('%1 Contacts', {1: relations.length}) }}</h3>
+    <div class="civicase__people-tab__selection">
+      <span> {{ ts('Select Records:') }} </span>
+      <input type="radio" value="all" ng-model="relationsSelectionMode" id="relationsSelectionMode-all"/>
+      <label for="relationsSelectionMode-all">{{ ts('All %1 Contacts', {1: relations.length}) }}</label>
+      <input type="radio" value="checked" ng-model="relationsSelectionMode" id="relationsSelectionMode-checked"/>
+      <label for="relationsSelectionMode-checked">{{ ts('%1 Selected', {1: getSelectedContacts('relations', true).length}) }}</label>
+      <div class="civicase__people-tab__select-box">
+        <select class="form-control " crm-ui-select ng-model="relationsSelectedTask" ng-change="doContactTask('relations')" ng-disabled="!getSelectedContacts('relations').length" >
+          <option value="">{{ ts('Actions') }}</option>
+          <option ng-repeat="(key, opt) in contactTasks" value="{{ key }}">{{ opt.title }}</option>
+        </select>
+      </div>
+    </div>
+  </div>
+  <div class="civicase__people-tab__filter">
+    <paging
+      class="center-block paging-top"
+      page="relationsPage"
+      page-size="25"
+      total="relationsCount"
+      ng-show="relationsCount > 25"
+      show-prev-next="true"
+      show-first-last="true"
+      text-first="{{ ts('<< First') }}"
+      text-last="{{ ts('Last >>') }}"
+      text-next="{{ ts('Next >') }}"
+      text-prev="{{ ts('< Prev') }}"
+    ></paging>
+    <div>
+      <a ng-repeat="letter in letters" class="civicase__people-tab__filter-alpha-pager" ng-class="{active: letter === relationsAlphaFilter}" ng-click="setLetterFilter(letter, 'relations')">{{ letter }}</a>
+      <a href class="all" ng-click="setLetterFilter('', 'relations')">All</a>
+    </div>
+  </div>
+  <table class="civicase__people-tab__table table">
+    <thead class="civicase__people-tab__table-body">
+      <tr>
+        <th class="civicase__people-tab__table-column">{{ ts('Name') }}</th>
+        <th class="civicase__people-tab__table-column">{{ ts('Relationship') }}</th>
+        <th class="civicase__people-tab__table-column">{{ ts('Description') }}</th>
+        <th class="civicase__people-tab__table-column">{{ ts('Client') }}</th>
+        <th class="civicase__people-tab__table-column">{{ ts('Phone') }}</th>
+        <th class="civicase__people-tab__table-column">{{ ts('Email') }}</th>
+        <th class="civicase__people-tab__table-column civicase__people-tab__table-column--last"></th>
+      </tr>
+    </thead>
+    <tbody class="civicase__people-tab__table-body">
+      <tr ng-repeat="contact in relations" ng-if="!isRelationshipLoading">
+        <td class="civicase__people-tab__table-column civicase__people-tab__table-column--first">
+          <span class="civicase__checkbox">
+            <input type="checkbox" id="select-relation-{{ $index }}" class="civicase__people-tab__table-checkbox" ng-model="contact.checked" ng-click="setSelectionMode('checked', 'relations')" />
+            <i ng-if="contact.checked" class="civicase__checkbox--checked material-icons">check_box</i>
+            <label for="select-relation-{{ $index }}"></label>
+          </span>
+          <label for="select-role-{{ $index }}">
+            <a ng-href="{{ 'civicrm/contact/view' | civicaseCrmUrl:{ cid: contact.contact_id } }}">{{ contact.display_name }}</a>
+          </label>
+        </td>
+        <td class="civicase__people-tab__table-column">{{ contact.relation }}</td>
+        <td class="civicase__people-tab__table-column">{{ contact.relationship_description }}</td>
+        <td class="civicase__people-tab__table-column">{{ contact.client }}</td>
+        <td class="civicase__people-tab__table-column">{{ contact.phone }}</td>
+        <td class="civicase__people-tab__table-column">
+          <a
+            class="crm-popup"
+            ng-href="{{ 'civicrm/activity/email/add' | civicaseCrmUrl:{ action: 'add', caseid: item.id, reset: 1, cid: contact.contact_id } }}"
+          >
+            {{ contact.email }}
+          </a>
+        </td>
+        <td class="civicase__people-tab__table-column civicase__people-tab__table-column--last">
+          <div class="btn-group btn-group-sm">
+            <button
+              type="button"
+              class="btn btn-default dropdown-toggle"
+              data-toggle="dropdown"
+              aria-haspopup="true"
+              aria-expanded="false"
+              ng-disabled="item['case_type_id.is_active'] === '0'"
+            >
+              <i class="material-icons">more_vert</i>
+            </button>
+            <ul class="dropdown-menu dropdown-menu-right" crm-popup-form-success="getRelations()">
+              <li>
+                <a class="crm-popup" ng-href="{{ 'civicrm/contact/view/rel' | civicaseCrmUrl:{ action: 'update', reset: 1, id: contact.relationship_id, cid: contact.id, rtype: contact.relationship_direction } }}">{{ ts('Edit Relationship') }}</a>
+              </li>
+              <li role="separator" class="divider"></li>
+              <li ng-if="contact.email">
+                <a class="crm-popup" ng-href="{{ 'civicrm/activity/email/add' | civicaseCrmUrl:{ action: 'add', caseid: item.id, reset: 1, cid: contact.id } }}">{{ ts('Send Email') }}</a>
+              </li>
+              <li>
+                <a class="crm-popup" ng-href="{{ 'civicrm/activity/pdf/add' | civicaseCrmUrl:{ action: 'add', caseid: item.id, reset: 1, cid: contact.id, context: 'standalone' } }}">{{ ts('Print/Merge Document') }}</a>
+              </li>
+            </ul>
+          </div>
+        </td>
+      </tr>
+      <tr
+        ng-repeat="i in [1, 2, 3]"
+        ng-if="isRelationshipLoading"
+        ng-include="'~/civicase/case/details/people-tab/directives/case-details-people-tab-placeholder.html'"
+      ></tr>
+      <tr ng-if="!relations.length && !isRelationshipLoading">
+        <td colspan="9" class="text-center">
+          <button class="btn btn-default" disabled>
+            {{ ts('None Found') }}
+          </button>
+        </td>
+      </tr>
+    </tbody>
+  </table>
+  <div class="civicase__people-tab-counter clearfix">
+    <div class="pull-right">{{ ts('Page %1 of %2', {1: relationsPage, 2: ceil(relationsCount / 25)}) }}</div>
+    <paging
+      class="center-block"
+      page="relationsPage"
+      page-size="25"
+      total="relationsCount"
+      ng-show="relationsCount > 25"
+      show-prev-next="true"
+      show-first-last="true"
+      text-first="{{ ts('<< First') }}"
+      text-last="{{ ts('Last >>') }}"
+      text-next="{{ ts('Next >') }}"
+      text-prev="{{ ts('< Prev') }}"
+    >
+    </paging>
+  </div>
+</div>

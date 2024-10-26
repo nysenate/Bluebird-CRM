@@ -15,6 +15,7 @@
  *   ctools_include('modal');
  *   ctools_modal_add_js();
  * }
+ * @endcode
  *
  * You can have links and buttons bound to use the modal by adding the
  * class ctools-use-modal.
@@ -74,7 +75,7 @@ function ctools_modal_add_js() {
 }
 
 /**
- * @todo this is deprecated
+ * @todo Deprecated this.
  */
 function ctools_modal_add_plugin_js($plugins) {
   $css = array();
@@ -85,7 +86,7 @@ function ctools_modal_add_plugin_js($plugins) {
         if (file_exists($file)) {
           $js[$file] = TRUE;
         }
-        elseif (file(exists($subtype['path'] . '/' . $file))) {
+        elseif (file_exists($subtype['path'] . '/' . $file)) {
           $js[$subtype['path'] . '/' . $file] = TRUE;
         }
       }
@@ -95,7 +96,7 @@ function ctools_modal_add_plugin_js($plugins) {
         if (file_exists($file)) {
           $css[$file] = TRUE;
         }
-        elseif (file(exists($subtype['path'] . '/' . $file))) {
+        elseif (file_exists($subtype['path'] . '/' . $file)) {
           $css[$subtype['path'] . '/' . $file] = TRUE;
         }
       }

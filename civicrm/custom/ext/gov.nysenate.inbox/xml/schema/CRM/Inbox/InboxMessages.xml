@@ -1,0 +1,170 @@
+<?xml version="1.0" encoding="iso-8859-1" ?>
+
+<table>
+  <base>CRM/NYSS/Inbox</base>
+  <class>InboxMessages</class>
+  <name>nyss_inbox_messages</name>
+  <comment>Metadata re: the inbound email</comment>
+  <log>true</log>
+
+  <field>
+    <name>id</name>
+    <type>int unsigned</type>
+    <required>true</required>
+    <comment>Unique InboxMessages ID</comment>
+    <html>
+      <type>Number</type>
+    </html>
+  </field>
+  <primaryKey>
+    <name>id</name>
+    <autoincrement>true</autoincrement>
+  </primaryKey>
+
+  <field>
+    <name>message_id</name>
+    <type>int</type>
+    <comment>Email message ID</comment>
+    <html>
+        <type>Number</type>
+    </html>
+  </field>
+
+  <field>
+    <name>imap_id</name>
+    <type>int</type>
+    <comment>IMAP message ID</comment>
+    <html>
+        <type>Number</type>
+    </html>
+  </field>
+
+  <field>
+    <name>sender_name</name>
+    <title>Sender Name</title>
+    <type>varchar</type>
+    <length>255</length>
+    <comment>Email from name</comment>
+    <html>
+        <type>Text</type>
+    </html>
+  </field>
+
+  <field>
+    <name>sender_email</name>
+    <title>Sender Email</title>
+    <type>varchar</type>
+    <length>255</length>
+    <comment>Email from email</comment>
+    <html>
+        <type>Text</type>
+    </html>
+  </field>
+  <index>
+    <name>idx_sender_email</name>
+    <fieldName>sender_email</fieldName>
+  </index>
+
+  <field>
+    <name>subject</name>
+    <title>Subject</title>
+    <type>varchar</type>
+    <length>255</length>
+    <html>
+        <type>Text</type>
+    </html>
+  </field>
+
+  <field>
+    <name>body</name>
+    <title>Email Body</title>
+    <type>longtext</type>
+    <html>
+        <type>TextArea</type>
+    </html>
+  </field>
+
+  <field>
+    <name>forwarder</name>
+    <title>Forwarder Email</title>
+    <type>varchar</type>
+    <length>255</length>
+    <comment>Individual who forwarded the email</comment>
+    <html>
+        <type>Text</type>
+    </html>
+  </field>
+
+  <field>
+    <name>status</name>
+    <title>Processing Status</title>
+    <type>int</type>
+    <comment>See constants in BAO</comment>
+    <html>
+        <type>Select</type>
+    </html>
+    <pseudoconstant>
+      <callback>CRM_NYSS_Inbox_BAO_InboxMessages::statusOptions</callback>
+    </pseudoconstant>
+  </field>
+  <index>
+    <name>idx_status</name>
+    <fieldName>status</fieldName>
+  </index>
+
+  <field>
+    <name>matcher</name>
+    <title>Contact ID of individual who matched the email</title>
+    <type>int</type>
+    <comment>See constants in BAO</comment>
+    <html>
+        <type>Number</type>
+    </html>
+  </field>
+  <foreignKey>
+    <name>matcher</name>
+    <table>civicrm_contact</table>
+    <key>id</key>
+    <onDelete>SET NULL</onDelete>
+  </foreignKey>
+
+  <field>
+    <name>format</name>
+    <title>Email Format</title>
+    <type>varchar</type>
+    <length>10</length>
+    <comment>plain/html</comment>
+    <html>
+        <type>Text</type>
+    </html>
+  </field>
+
+  <field>
+    <name>debug</name>
+    <title>Debugging Details</title>
+    <type>varchar</type>
+    <length>255</length>
+    <comment>Additional details useful for debugging.</comment>
+    <html>
+        <type>Text</type>
+    </html>
+  </field>
+
+  <field>
+    <name>updated_date</name>
+    <title>Updated Date</title>
+    <type>datetime</type>
+    <html>
+        <type>Select Date</type>
+    </html>
+  </field>
+
+  <field>
+    <name>email_date</name>
+    <title>Email Date</title>
+    <type>datetime</type>
+    <html>
+        <type>Select Date</type>
+    </html>
+  </field>
+</table>

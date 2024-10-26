@@ -3,8 +3,8 @@
 
 return [
   'js' => [
+    'ang/contactlayout.js',
     'ang/contactlayout/*.js',
-    'ang/contactlayout/*/*.js',
   ],
   'css' => [
     'ang/contactlayout.css',
@@ -12,5 +12,7 @@ return [
   'partials' => [
     'ang/contactlayout',
   ],
-  'requires' => ['crmUi', 'crmUtil', 'ngRoute', 'ui.sortable', 'api4'],
+  'bundles' => ['bootstrap3'],
+  'basePages' => [],
+  'requires' => ['crmUi', 'crmUtil', 'ui.sortable', 'api4', 'dialogService'],
 ];

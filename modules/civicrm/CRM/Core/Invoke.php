@@ -55,7 +55,7 @@ class CRM_Core_Invoke {
       return NULL;
     }
     // CRM-15901: Turn off PHP errors display for all ajax calls
-    if (CRM_Utils_Array::value(1, $args) == 'ajax' || CRM_Utils_Array::value('snippet', $_REQUEST)) {
+    if (($args[1] ?? NULL) == 'ajax' || !empty($_REQUEST['snippet'])) {
       ini_set('display_errors', 0);
     }
 
@@ -64,6 +64,7 @@ class CRM_Core_Invoke {
       // may exit
       self::hackMenuRebuild($args);
       self::init($args);
+      Civi::dispatcher()->dispatch('civi.invoke.auth', \Civi\Core\Event\GenericHookEvent::create(['args' => $args]));
       $item = self::getItem($args);
       return self::runItem($item);
     }
@@ -102,7 +103,7 @@ class CRM_Core_Invoke {
         return CRM_Utils_System::redirect();
       }
       else {
-        CRM_Core_Error::fatal('You do not have permission to execute this url');
+        CRM_Core_Error::statusBounce(ts('You do not have permission to execute this url'));
       }
     }
   }
@@ -119,15 +120,16 @@ class CRM_Core_Invoke {
     $config = CRM_Core_Config::singleton();
 
     // also initialize the i18n framework
-    require_once 'CRM/Core/I18n.php';
     $i18n = CRM_Core_I18n::singleton();
   }
 
   /**
    * Determine which menu $item corresponds to $args
    *
-   * @param array $args
-   *   List of path parts.
+   * @param string|string[] $args
+   *   Path to lookup
+   *   Ex: 'civicrm/foo/bar'
+   *   Ex: ['civicrm', 'foo', 'bar']
    * @return array; see CRM_Core_Menu
    */
   public static function getItem($args) {
@@ -184,7 +186,8 @@ class CRM_Core_Invoke {
           stream_wrapper_unregister('phar');
           stream_wrapper_register('phar', \TYPO3\PharStreamWrapper\PharStreamWrapper::class);
         }
-      } else {
+      }
+      else {
         // this is not an exception we can handle
         throw $e;
       }
@@ -196,7 +199,9 @@ class CRM_Core_Invoke {
    *
    * @param array $item
    *   See CRM_Core_Menu.
+   *
    * @return string, HTML
+   * @throws \CRM_Core_Exception
    */
   public static function runItem($item) {
     $ids = new CRM_Core_IDS();
@@ -205,6 +210,9 @@ class CRM_Core_Invoke {
     self::registerPharHandler();
 
     $config = CRM_Core_Config::singleton();
+
+    // WISHLIST: if $item is a web-service route, swap prepend to $civicrm_url_defaults
+
     if ($config->userFramework == 'Joomla' && $item) {
       $config->userFrameworkURLVar = 'task';
 
@@ -218,12 +226,19 @@ class CRM_Core_Invoke {
     $template = CRM_Core_Smarty::singleton();
     $template->assign('activeComponent', 'CiviCRM');
     $template->assign('formTpl', 'default');
+    // Ensure template variables have 'something' assigned for e-notice
+    // prevention. These are ones that are included very often
+    // and not tied to a specific form.
+    // jsortable.tpl (datatables)
+    $template->assign('sourceUrl');
+    $template->assign('useAjax', 0);
+    $template->assign('defaultOrderByDirection', 'asc');
 
     if ($item) {
 
       if (!array_key_exists('page_callback', $item)) {
         CRM_Core_Error::debug('Bad item', $item);
-        CRM_Core_Error::fatal(ts('Bad menu record in database'));
+        CRM_Core_Error::statusBounce(ts('Bad menu record in database'));
       }
 
       // check that we are permissioned to access this page
@@ -241,7 +256,7 @@ class CRM_Core_Invoke {
         CRM_Utils_System::setTitle($item['title']);
       }
 
-      if (isset($item['breadcrumb']) && !isset($item['is_public'])) {
+      if (!CRM_Core_Config::isUpgradeMode() && isset($item['breadcrumb']) && empty($item['is_public'])) {
         CRM_Utils_System::appendBreadCrumb($item['breadcrumb']);
       }
 
@@ -276,11 +291,11 @@ class CRM_Core_Invoke {
       if (is_array($item['page_callback']) || strpos($item['page_callback'], ':')) {
         $result = call_user_func(Civi\Core\Resolver::singleton()->get($item['page_callback']));
       }
-      elseif (strstr($item['page_callback'], '_Form')) {
+      elseif (strpos($item['page_callback'], '_Form') !== FALSE) {
         $wrapper = new CRM_Utils_Wrapper();
         $result = $wrapper->run(
-          CRM_Utils_Array::value('page_callback', $item),
-          CRM_Utils_Array::value('title', $item),
+          $item['page_callback'] ?? NULL,
+          $item['title'] ?? NULL,
           $pageArgs ?? NULL
         );
       }
@@ -292,21 +307,28 @@ class CRM_Core_Invoke {
           unset($pageArgs['mode']);
         }
         $title = $item['title'] ?? NULL;
-        if (strstr($item['page_callback'], '_Page') || strstr($item['page_callback'], '\\Page\\')) {
+        if (str_contains($item['page_callback'], '_Page') || str_contains($item['page_callback'], '\\Page\\')) {
           $object = new $item['page_callback']($title, $mode);
           $object->urlPath = explode('/', $_GET[$config->userFrameworkURLVar]);
         }
-        elseif (strstr($item['page_callback'], '_Controller') || strstr($item['page_callback'], '\\Controller\\')) {
+        elseif (str_contains($item['page_callback'], '_Controller') || str_contains($item['page_callback'], '\\Controller\\')) {
           $addSequence = 'false';
           if (isset($pageArgs['addSequence'])) {
             $addSequence = $pageArgs['addSequence'];
             $addSequence = $addSequence ? 'true' : 'false';
             unset($pageArgs['addSequence']);
           }
-          $object = new $item['page_callback']($title, TRUE, $mode, NULL, $addSequence);
+          if ($item['page_callback'] === 'CRM_Import_Controller') {
+            // Let the generic import controller have the page arguments.... so we don't need
+            // one class per import.
+            $object = new CRM_Import_Controller($title, $pageArgs ?? []);
+          }
+          else {
+            $object = new $item['page_callback']($title, TRUE, $mode, NULL, $addSequence);
+          }
         }
         else {
-          CRM_Core_Error::fatal();
+          throw new CRM_Core_Exception('Execute supplied menu action');
         }
         $result = $object->run($newArgs, $pageArgs);
       }
@@ -323,13 +345,17 @@ class CRM_Core_Invoke {
   /**
    * This function contains the default action.
    *
+   * Unused function.
+   *
    * @param $action
    *
    * @param $contact_type
    * @param $contact_sub_type
    *
+   * @Deprecated
    */
   public static function form($action, $contact_type, $contact_sub_type) {
+    CRM_Core_Error::deprecatedWarning('unused');
     CRM_Utils_System::setUserContext(['civicrm/contact/search/basic', 'civicrm/contact/view']);
     $wrapper = new CRM_Utils_Wrapper();
 
@@ -363,9 +389,13 @@ class CRM_Core_Invoke {
    *
    * @throws Exception
    */
-  public static function rebuildMenuAndCaches($triggerRebuild = FALSE, $sessionReset = FALSE) {
+  public static function rebuildMenuAndCaches(bool $triggerRebuild = FALSE, bool $sessionReset = FALSE): void {
     $config = CRM_Core_Config::singleton();
     $config->clearModuleList();
+
+    // dev/core#3660 - Activate any new classloaders/mixins/etc before re-hydrating any data-structures.
+    CRM_Extension_System::singleton()->getClassLoader()->refresh();
+    CRM_Extension_System::singleton()->getMixinLoader()->run(TRUE);
 
     // also cleanup all caches
     $config->cleanupCaches($sessionReset || CRM_Utils_Request::retrieve('sessionReset', 'Boolean', CRM_Core_DAO::$_nullObject, FALSE, 0, 'GET'));
@@ -391,9 +421,13 @@ class CRM_Core_Invoke {
       $triggerRebuild ||
       CRM_Utils_Request::retrieve('triggerRebuild', 'Boolean', CRM_Core_DAO::$_nullObject, FALSE, 0, 'GET')
     ) {
-      CRM_Core_DAO::triggerRebuild();
+      Civi::service('sql_triggers')->rebuild();
+      // Rebuild Drupal 8/9/10 route cache only if "triggerRebuild" is set to TRUE as it's
+      // computationally very expensive and only needs to be done when routes change on the Civi-side.
+      // For example - when uninstalling an extension. We already set "triggerRebuild" to true for these operations.
+      $config->userSystem->invalidateRouteCache();
     }
-    CRM_Core_DAO_AllCoreTables::reinitializeCache(TRUE);
+
     CRM_Core_ManagedEntities::singleton(TRUE)->reconcile();
   }
 

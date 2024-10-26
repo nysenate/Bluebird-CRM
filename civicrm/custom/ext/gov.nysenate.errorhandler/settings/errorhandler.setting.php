@@ -1,0 +1,73 @@
+<?php
+
+/*
+ * Settings metadata file
+ */
+return [
+  'errorhandler_endpoints' => [
+    'name' => 'errorhandler_endpoints',
+    'group' => 'errorhandler',
+    'group_name' => 'domain',
+    'type' => 'String',
+    'add' => '1.0',
+    'is_domain' => 1,
+    'is_contact' => 0,
+    'description' => 'Error Handler Endpoints',
+    'help_text' => 'Comma-separated list of endpoints (email, slack).',
+  ],
+  'errorhandler_slack_url' => [
+    'name' => 'errorhandler_slack_url',
+    'group' => 'errorhandler',
+    'group_name' => 'domain',
+    'type' => 'String',
+    'add' => '1.0',
+    'is_domain' => 1,
+    'is_contact' => 0,
+    'description' => 'Full URL to Slack',
+    'help_text' => '',
+  ],
+  'errorhandler_slack_channel' => [
+    'name' => 'errorhandler_slack_channel',
+    'group' => 'errorhandler',
+    'group_name' => 'domain',
+    'type' => 'String',
+    'add' => '1.0',
+    'is_domain' => 1,
+    'is_contact' => 0,
+    'description' => 'Default channel name',
+    'help_text' => '',
+  ],
+  'errorhandler_slack_title' => [
+    'name' => 'errorhandler_slack_title',
+    'group' => 'errorhandler',
+    'group_name' => 'domain',
+    'type' => 'String',
+    'add' => '1.0',
+    'is_domain' => 1,
+    'is_contact' => 0,
+    'description' => 'Default title',
+    'help_text' => '',
+  ],
+  'errorhandler_emailrecipients' => [
+    'name' => 'errorhandler_emailrecipients',
+    'group' => 'errorhandler',
+    'group_name' => 'domain',
+    'type' => 'String',
+    'add' => '1.0',
+    'is_domain' => 1,
+    'is_contact' => 0,
+    'description' => 'Comma separated list of email addresses.',
+    'help_text' => '',
+  ],
+  'errorhandler_fromemail' => [
+    'name' => 'errorhandler_fromemail',
+    'group' => 'errorhandler',
+    'group_name' => 'domain',
+    'type' => 'String',
+    'add' => '1.0',
+    'is_domain' => 1,
+    'is_contact' => 0,
+    'description' => 'From email address.',
+    'help_text' => '',
+  ],
+];

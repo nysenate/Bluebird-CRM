@@ -55,8 +55,8 @@ class CRM_Case_Task extends CRM_Core_Task {
         self::TASK_EXPORT => [
           'title' => ts('Export cases'),
           'class' => [
-            'CRM_Export_Form_Select_Case',
-            'CRM_Export_Form_Map',
+            'CRM_Case_Export_Form_Select',
+            'CRM_Case_Export_Form_Map',
           ],
           'result' => FALSE,
         ],
@@ -132,7 +132,7 @@ class CRM_Case_Task extends CRM_Core_Task {
    */
   public static function getTask($value) {
     self::tasks();
-    if (!$value || !CRM_Utils_Array::value($value, self::$_tasks)) {
+    if (!$value || empty(self::$_tasks[$value])) {
       // make the print task by default
       $value = self::TASK_PRINT;
     }

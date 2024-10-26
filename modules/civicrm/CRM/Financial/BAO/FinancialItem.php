@@ -9,6 +9,9 @@
  +--------------------------------------------------------------------+
  */
 
+use Civi\Api4\FinancialAccount;
+use Civi\Api4\FinancialItem;
+
 /**
  *
  * @package CRM
@@ -17,30 +20,14 @@
 class CRM_Financial_BAO_FinancialItem extends CRM_Financial_DAO_FinancialItem {
 
   /**
-   * Class constructor.
-   */
-  public function __construct() {
-    parent::__construct();
-  }
-
-  /**
-   * Fetch object based on array of properties.
-   *
+   * @deprecated
    * @param array $params
-   *   (reference ) an assoc array of name/value pairs.
    * @param array $defaults
-   *   (reference ) an assoc array to hold the flattened values.
-   *
-   * @return CRM_Financial_DAO_FinancialItem
+   * @return self|null
    */
-  public static function retrieve(&$params, &$defaults) {
-    $financialItem = new CRM_Financial_DAO_FinancialItem();
-    $financialItem->copyValues($params);
-    if ($financialItem->find(TRUE)) {
-      CRM_Core_DAO::storeValues($financialItem, $defaults);
-      return $financialItem;
-    }
-    return NULL;
+  public static function retrieve($params, &$defaults) {
+    CRM_Core_Error::deprecatedFunctionWarning('API');
+    return self::commonRetrieve(self::class, $params, $defaults);
   }
 
   /**
@@ -51,30 +38,28 @@ class CRM_Financial_BAO_FinancialItem extends CRM_Financial_DAO_FinancialItem {
    * @param object $contribution
    *   Contribution object.
    * @param bool $taxTrxnID
-   *
-   * @param int $trxnId
+   * @param array|null $trxnId
    *
    * @return CRM_Financial_DAO_FinancialItem
    */
   public static function add($lineItem, $contribution, $taxTrxnID = FALSE, $trxnId = NULL) {
-    $contributionStatuses = CRM_Contribute_PseudoConstant::contributionStatus(NULL, 'name');
     $financialItemStatus = CRM_Core_PseudoConstant::get('CRM_Financial_DAO_FinancialItem', 'status_id');
+    $contributionStatus = CRM_Core_PseudoConstant::getName('CRM_Contribute_BAO_Contribution', 'contribution_status_id', $contribution->contribution_status_id);
     $itemStatus = NULL;
-    if ($contribution->contribution_status_id == array_search('Completed', $contributionStatuses)
-      || $contribution->contribution_status_id == array_search('Pending refund', $contributionStatuses)
-    ) {
+    if ($contributionStatus === 'Completed' || $contributionStatus === 'Pending refund') {
       $itemStatus = array_search('Paid', $financialItemStatus);
     }
-    elseif ($contribution->contribution_status_id == array_search('Pending', $contributionStatuses)
-      || $contribution->contribution_status_id == array_search('In Progress', $contributionStatuses)
+    elseif ($contributionStatus === 'Pending'
+      // In progress is no longer present on new installs unless extensions add it.
+      || $contributionStatus === 'In Progress'
     ) {
       $itemStatus = array_search('Unpaid', $financialItemStatus);
     }
-    elseif ($contribution->contribution_status_id == array_search('Partially paid', $contributionStatuses)) {
+    elseif ($contributionStatus === 'Partially paid') {
       $itemStatus = array_search('Partially paid', $financialItemStatus);
     }
     $params = [
-      'transaction_date' => CRM_Utils_Date::isoToMysql($contribution->receive_date),
+      'transaction_date' => $contribution->receive_date,
       'contact_id' => $contribution->contact_id,
       'amount' => $lineItem->line_total,
       'currency' => $contribution->currency,
@@ -85,10 +70,8 @@ class CRM_Financial_BAO_FinancialItem extends CRM_Financial_DAO_FinancialItem {
     ];
 
     if ($taxTrxnID) {
-      $invoiceSettings = Civi::settings()->get('contribution_invoice_settings');
-      $taxTerm = $invoiceSettings['tax_term'] ?? NULL;
       $params['amount'] = $lineItem->tax_amount;
-      $params['description'] = $taxTerm;
+      $params['description'] = Civi::settings()->get('tax_term');
       $accountRelName = 'Sales Tax Account is';
     }
     else {
@@ -104,14 +87,12 @@ class CRM_Financial_BAO_FinancialItem extends CRM_Financial_DAO_FinancialItem {
       );
     }
     if (empty($trxnId)) {
-      $trxnId['id'] = CRM_Contribute_BAO_Contribution::$_trxnIDs;
       if (empty($trxnId['id'])) {
         $trxn = CRM_Core_BAO_FinancialTrxn::getFinancialTrxnId($contribution->id, 'ASC', TRUE);
         $trxnId['id'] = $trxn['financialTrxnId'];
       }
     }
-    $financialItem = self::create($params, NULL, $trxnId);
-    return $financialItem;
+    return self::create($params, NULL, $trxnId);
   }
 
   /**
@@ -185,16 +166,25 @@ class CRM_Financial_BAO_FinancialItem extends CRM_Financial_DAO_FinancialItem {
   }
 
   /**
-   * Retrive entity financial trxn details.
+   * Retrieve entity financial trxn details.
+   *
+   * @deprecated - only called by tests - to be replaced with
+   * $trxn = (array) EntityFinancialTrxn::get()
+   *  ->addWhere('id', '=', $contributionID)
+   *  ->addWhere('entity_table', '=', 'civicrm_contribution')
+   *  ->addSelect('*')->execute();
    *
    * @param array $params
    *   an assoc array of name/value pairs.
    * @param bool $maxId
    *   To retrieve max id.
    *
+   * @deprecated
+   *
    * @return array
    */
   public static function retrieveEntityFinancialTrxn($params, $maxId = FALSE) {
+    CRM_Core_Error::deprecatedFunctionWarning('api');
     $financialItem = new CRM_Financial_DAO_EntityFinancialTrxn();
     $financialItem->copyValues($params);
     // retrieve last entry from civicrm_entity_financial_trxn
@@ -223,7 +213,7 @@ class CRM_Financial_BAO_FinancialItem extends CRM_Financial_DAO_FinancialItem {
   /**
    * Check if contact is present in financial_item table.
    *
-   * CRM-12929
+   * @see https://issues.civicrm.org/jira/browse/CRM-12929
    *
    * @param array $contactIds
    *   An array contact id's.
@@ -273,16 +263,32 @@ WHERE cc.id IN (' . implode(',', $contactIds) . ') AND con.is_test = 0';
    * @return array
    */
   public static function getPreviousFinancialItem($entityId) {
-    $params = [
-      'entity_id' => $entityId,
-      'entity_table' => 'civicrm_line_item',
-      'options' => ['limit' => 1, 'sort' => 'id DESC'],
-    ];
-    $salesTaxFinancialAccounts = civicrm_api3('FinancialAccount', 'get', ['is_tax' => 1]);
-    if ($salesTaxFinancialAccounts['count']) {
-      $params['financial_account_id'] = ['NOT IN' => array_keys($salesTaxFinancialAccounts['values'])];
+    $financialItemAPI = FinancialItem::get(FALSE)
+      ->addWhere('entity_id', '=', $entityId)
+      ->addWhere('entity_table', '=', 'civicrm_line_item')
+      ->addOrderBy('id', 'DESC');
+
+    $salesTaxFinancialAccounts = FinancialAccount::get(FALSE)
+      ->addSelect('id')
+      ->addWhere('is_tax', '=', 1)
+      ->execute();
+    if ($salesTaxFinancialAccounts->count() > 0) {
+      $financialItemAPI->addWhere('financial_account_id', 'NOT IN', $salesTaxFinancialAccounts->column('id'));
     }
-    return civicrm_api3('FinancialItem', 'getsingle', $params);
+    return $financialItemAPI->execute()->first();
+  }
+
+  /**
+   * Whitelist of possible values for the entity_table field
+   *
+   * @return array
+   */
+  public static function entityTables(): array {
+    return [
+      'civicrm_line_item' => ts('Line Item'),
+      'civicrm_financial_trxn' => ts('Financial Trxn'),
+      'civicrm_campaign' => ts('Campaign'),
+    ];
   }
 
 }

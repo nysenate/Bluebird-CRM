@@ -30,7 +30,7 @@ class CRM_Utils_Cache_SqlGroup implements CRM_Utils_Cache_Interface {
   use CRM_Utils_Cache_NaiveMultipleTrait;
 
   /**
-   * The host name of the memcached server.
+   * Name of the cache group.
    *
    * @var string
    */
@@ -76,7 +76,7 @@ class CRM_Utils_Cache_SqlGroup implements CRM_Utils_Cache_Interface {
    * @return \CRM_Utils_Cache_SqlGroup
    */
   public function __construct($config) {
-    $this->table = CRM_Core_DAO_Cache::getTableName();
+    $this->table = 'civicrm_cache';
     if (isset($config['group'])) {
       $this->group = $config['group'];
     }
@@ -99,7 +99,12 @@ class CRM_Utils_Cache_SqlGroup implements CRM_Utils_Cache_Interface {
    * @param string $key
    * @param mixed $value
    * @param null|int|\DateInterval $ttl
+   *
    * @return bool
+   *
+   * @throws \CRM_Core_Exception
+   * @throws \CRM_Utils_Cache_CacheException
+   * @throws \CRM_Utils_Cache_InvalidArgumentException
    */
   public function set($key, $value, $ttl = NULL) {
     CRM_Utils_Cache::assertValidKey($key);
@@ -110,7 +115,9 @@ class CRM_Utils_Cache_SqlGroup implements CRM_Utils_Cache_Interface {
     }
 
     if (is_int($ttl) && $ttl <= 0) {
-      return $this->delete($key);
+      $result = $this->delete($key);
+      $lock->release();
+      return $result;
     }
 
     $dataExists = CRM_Core_DAO::singleValueQuery("SELECT COUNT(*) FROM {$this->table} WHERE {$this->where($key)}");
@@ -127,18 +134,18 @@ class CRM_Utils_Cache_SqlGroup implements CRM_Utils_Cache_Interface {
         2 => [time(), 'Positive'],
         3 => [$expires, 'Positive'],
       ];
-      $dao = CRM_Core_DAO::executeQuery($sql, $args, FALSE, NULL, FALSE, FALSE);
+      CRM_Core_DAO::executeQuery($sql, $args, TRUE, NULL, FALSE, FALSE);
     }
     else {
       $sql = "INSERT INTO {$this->table} (group_name,path,data,created_date,expired_date) VALUES (%1,%2,%3,FROM_UNIXTIME(%4),FROM_UNIXTIME(%5))";
       $args = [
-        1 => [$this->group, 'String'],
+        1 => [(string) $this->group, 'String'],
         2 => [$key, 'String'],
         3 => [$dataSerialized, 'String'],
         4 => [time(), 'Positive'],
         5 => [$expires, 'Positive'],
       ];
-      $dao = CRM_Core_DAO::executeQuery($sql, $args, FALSE, NULL, FALSE, FALSE);
+      CRM_Core_DAO::executeQuery($sql, $args, TRUE, NULL, FALSE, FALSE);
     }
 
     $lock->release();
@@ -153,6 +160,8 @@ class CRM_Utils_Cache_SqlGroup implements CRM_Utils_Cache_Interface {
    * @param mixed $default
    *
    * @return mixed
+   *
+   * @throws \CRM_Utils_Cache_InvalidArgumentException
    */
   public function get($key, $default = NULL) {
     CRM_Utils_Cache::assertValidKey($key);
@@ -167,13 +176,18 @@ class CRM_Utils_Cache_SqlGroup implements CRM_Utils_Cache_Interface {
     return (isset($this->expiresCache[$key]) && time() < $this->expiresCache[$key]) ? $this->reobjectify($this->valueCache[$key]) : $default;
   }
 
+  /**
+   * @param mixed $value
+   *
+   * @return object
+   */
   private function reobjectify($value) {
     return is_object($value) ? unserialize(serialize($value)) : $value;
   }
 
   /**
-   * @param $key
-   * @param null $default
+   * @param string $key
+   * @param mixed $default
    *
    * @return mixed
    */
@@ -193,7 +207,9 @@ class CRM_Utils_Cache_SqlGroup implements CRM_Utils_Cache_Interface {
 
   /**
    * @param string $key
+   *
    * @return bool
+   * @throws \CRM_Utils_Cache_InvalidArgumentException
    */
   public function delete($key) {
     CRM_Utils_Cache::assertValidKey($key);

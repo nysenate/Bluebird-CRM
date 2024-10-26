@@ -30,7 +30,10 @@ class Paths {
    * Class constructor.
    */
   public function __construct() {
-    $paths = $this;
+    // Below is a *default* set of functions to calculate paths/URLs.
+    // Some variables may be overridden as follow:
+    // - The global `$civicrm_paths` may be preset before Civi boots. (Ex: via `civicrm.settings.php`, `settings.php`, or `vendor/autoload.php`)
+    // - Variables may be re-registered. (Ex: via `CRM_Utils_System_WordPress`)
     $this
       ->register('civicrm.root', function () {
         return \CRM_Core_Config::singleton()->userSystem->getCiviSourceStorage();
@@ -82,24 +85,6 @@ class Paths {
         $dir = defined('CIVICRM_L10N_BASEDIR') ? CIVICRM_L10N_BASEDIR : \Civi::paths()->getPath('[civicrm.private]/l10n');
         return [
           'path' => is_dir($dir) ? $dir : \Civi::paths()->getPath('[civicrm.root]/l10n'),
-        ];
-      })
-      ->register('wp.frontend.base', function () {
-        return ['url' => rtrim(CIVICRM_UF_BASEURL, '/') . '/'];
-      })
-      ->register('wp.frontend', function () use ($paths) {
-        $config = \CRM_Core_Config::singleton();
-        $suffix = defined('CIVICRM_UF_WP_BASEPAGE') ? CIVICRM_UF_WP_BASEPAGE : $config->wpBasePage;
-        return [
-          'url' => $paths->getVariable('wp.frontend.base', 'url') . $suffix,
-        ];
-      })
-      ->register('wp.backend.base', function () {
-        return ['url' => rtrim(CIVICRM_UF_BASEURL, '/') . '/wp-admin/'];
-      })
-      ->register('wp.backend', function () use ($paths) {
-        return [
-          'url' => $paths->getVariable('wp.backend.base', 'url') . 'admin.php',
         ];
       })
       ->register('cms', function () {
@@ -215,7 +200,7 @@ class Paths {
     }
 
     $defaultContainer = self::DEFAULT_PATH;
-    if ($value && $value{0} == '[' && preg_match(';^\[([a-zA-Z0-9\._]+)\]/(.*);', $value, $matches)) {
+    if ($value && $value[0] == '[' && preg_match(';^\[([a-zA-Z0-9\._]+)\]/(.*);', $value, $matches)) {
       $defaultContainer = $matches[1];
       $value = $matches[2];
     }
@@ -247,7 +232,7 @@ class Paths {
    *   The result data may not meet the preference -- if the setting
    *   refers to an external domain, then the result will be
    *   absolute (regardless of preference).
-   * @param bool|NULL $ssl
+   * @param bool|null $ssl
    *   NULL to autodetect. TRUE to force to SSL.
    * @return FALSE|string
    *   The URL for $value (string), or FALSE if the $value is not specified.
@@ -258,7 +243,7 @@ class Paths {
     }
 
     $defaultContainer = self::DEFAULT_URL;
-    if ($value && $value{0} == '[' && preg_match(';^\[([a-zA-Z0-9\._]+)\](/(.*))$;', $value, $matches)) {
+    if ($value && $value[0] == '[' && preg_match(';^\[([a-zA-Z0-9\._]+)\](/(.*))$;', $value, $matches)) {
       $defaultContainer = $matches[1];
       $value = $matches[3];
     }
@@ -271,10 +256,7 @@ class Paths {
     $value = rtrim($this->getVariable($defaultContainer, 'url'), '/') . ($isDot ? '' : "/$value");
 
     if ($preferFormat === 'relative') {
-      $parsed = parse_url($value);
-      if (isset($_SERVER['HTTP_HOST']) && isset($parsed['host']) && $_SERVER['HTTP_HOST'] == $parsed['host']) {
-        $value = $parsed['path'];
-      }
+      $value = \CRM_Utils_Url::toRelative($value);
     }
 
     if ($ssl || ($ssl === NULL && \CRM_Utils_System::isSSL())) {

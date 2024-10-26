@@ -13,9 +13,11 @@ declare(strict_types=1);
 
 namespace League\Csv;
 
+use Exception as PhpException;
+
 /**
  * League Csv Base Exception.
  */
-class Exception extends \Exception
+class Exception extends PhpException implements UnableToProcessCsv
 {
 }

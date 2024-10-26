@@ -7,6 +7,11 @@ class CRM_Core_CodeGen_Util_Template {
   protected $filetype;
 
   protected $smarty;
+
+  public function getSmarty(): Smarty {
+    return $this->smarty;
+  }
+
   protected $beautifier;
 
   /**
@@ -78,6 +83,7 @@ class CRM_Core_CodeGen_Util_Template {
         '=> true,' => '=> TRUE,',
         '=> false,' => '=> FALSE,',
         'static ::' => 'static::',
+        'use\\' => 'use ',
       ];
       $contents = str_replace(array_keys($replacements), array_values($replacements), $contents);
       $contents = preg_replace('#(\s*)\\/\\*\\*#', "\n\$1/**", $contents);
@@ -127,7 +133,7 @@ class CRM_Core_CodeGen_Util_Template {
    * @param $value
    */
   public function assign($key, $value) {
-    $this->smarty->assign_by_ref($key, $value);
+    $this->smarty->assign($key, $value);
   }
 
 }

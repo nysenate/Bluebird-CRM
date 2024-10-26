@@ -116,7 +116,7 @@ class CRM_Utils_Address_BatchUpdate {
    */
   public function processContacts($processGeocode, $parseStreetAddress) {
     // build where clause.
-    $clause = ['( c.id = a.contact_id )'];
+    $clause = [];
     $params = [];
     if ($this->start) {
       $clause[] = "( c.id >= %1 )";
@@ -131,25 +131,33 @@ class CRM_Utils_Address_BatchUpdate {
     if ($processGeocode) {
       $clause[] = '( a.geo_code_1 is null OR a.geo_code_1 = 0 )';
       $clause[] = '( a.geo_code_2 is null OR a.geo_code_2 = 0 )';
+      // the scheduled job is ignoring trying to geocode addresses where manual_geocode is 1
+      $clause[] = '( a.manual_geo_code = 0 )';
       $clause[] = '( a.country_id is not null )';
     }
 
-    $whereClause = implode(' AND ', $clause);
+    $whereClause = '';
+    if (!empty($clause)) {
+      $whereClause = 'WHERE ' . implode(' AND ', $clause);
+    }
 
     $query = "
-    SELECT     c.id,
-               a.id as address_id,
-               a.street_address,
-               a.city,
-               a.postal_code,
-               a.country_id,
-               s.name as state,
-               o.name as country
-    FROM       civicrm_contact  c
-    INNER JOIN civicrm_address        a ON a.contact_id = c.id
-    LEFT  JOIN civicrm_country        o ON a.country_id = o.id
-    LEFT  JOIN civicrm_state_province s ON a.state_province_id = s.id
-    WHERE      {$whereClause}
+      SELECT c.id,
+        a.id as address_id,
+        a.street_address,
+        a.city,
+        a.postal_code,
+        a.country_id,
+        s.name as state,
+        o.name as country
+      FROM civicrm_address a
+      LEFT JOIN civicrm_contact c
+        ON a.contact_id = c.id
+      LEFT JOIN civicrm_country o
+        ON a.country_id = o.id
+      LEFT JOIN civicrm_state_province s
+        ON a.state_province_id = s.id
+      {$whereClause}
       ORDER BY a.id
     ";
 
@@ -204,6 +212,11 @@ class CRM_Utils_Address_BatchUpdate {
         if (isset($params['geo_code_1']) && $params['geo_code_1'] != 'null') {
           $totalGeocoded++;
           $addressParams = $params;
+        }
+        else {
+          // If an address has failed in the geocoding scheduled job i.e. no lat/long is fetched, we will update the manual_geocode field to 1.
+          $addressParams['manual_geo_code'] = TRUE;
+          $addressParams['geo_code_1'] = $addressParams['geo_code_2'] = 0;
         }
       }
 

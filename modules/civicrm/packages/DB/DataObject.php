@@ -210,7 +210,7 @@ if (!defined('DB_DATAOBJECT_NO_OVERLOAD')) {
  * @author   Alan Knowles <alan@akbkhome.com>
  * @since    PHP 4.0
  */
-
+#[AllowDynamicProperties]
 class DB_DataObject extends DB_DataObject_Overload
 {
    /**
@@ -691,7 +691,7 @@ class DB_DataObject extends DB_DataObject_Overload
         }
 
         if ($cond === false) {
-            $r = isset($this->_query['condition']) ? $this->_query['condition'] : null;
+            $r = isset($this->_query['condition']) ? $this->_query['condition'] : '';
             $_query['condition'] = '';
             $this->_query = $_query;
             return preg_replace('/^\s+WHERE\s+/','',$r);
@@ -1167,7 +1167,7 @@ class DB_DataObject extends DB_DataObject_Overload
             }
 
             // CRM-14986 starts
-            if (($v & DB_DATAOBJECT_DATE) || ($v & DB_DATAOBJECT_TIME) || $v & DB_DATAOBJECT_MYSQLTIMESTAMP) {
+            if (($v & DB_DATAOBJECT_DATE) || ($v & DB_DATAOBJECT_TIME) || ($v & DB_DATAOBJECT_MYSQLTIMESTAMP)) {
               if (strpos($this->$k, '-') !== FALSE) {
                 /*
                  * per CRM-14986 we have been having ongoing problems with the format returned from $dao->find(TRUE) NOT
@@ -1183,9 +1183,9 @@ class DB_DataObject extends DB_DataObject_Overload
             // CRM-14986 ends
 
             // DATE is empty... on a col. that can be null..
-            // note: this may be usefull for time as well..
+            // Also useful for MYSQLTIMESTAMP to stop NO_ZERO_DATE errors
             if (!$this->$k &&
-                    (($v & DB_DATAOBJECT_DATE) || ($v & DB_DATAOBJECT_TIME)) &&
+                    (($v & DB_DATAOBJECT_DATE) || ($v & DB_DATAOBJECT_TIME) || ($v & DB_DATAOBJECT_MYSQLTIMESTAMP)) &&
                     !($v & DB_DATAOBJECT_NOTNULL)) {
 
                 $rightq .= " NULL ";
@@ -1472,7 +1472,7 @@ class DB_DataObject extends DB_DataObject_Overload
             // DATE is empty... on a col. that can be null..
             // note: this may be usefull for time as well..
             if (!$this->$k &&
-                    (($v & DB_DATAOBJECT_DATE) || ($v & DB_DATAOBJECT_TIME)) &&
+                    (($v & DB_DATAOBJECT_DATE) || ($v & DB_DATAOBJECT_TIME) || ($v & DB_DATAOBJECT_MYSQLTIMESTAMP)) &&
                     !($v & DB_DATAOBJECT_NOTNULL)) {
 
                 $settings .= "$kSql = NULL ";
@@ -2717,7 +2717,8 @@ class DB_DataObject extends DB_DataObject_Overload
             continue;
           }
             } else {
-                switch (strtolower(substr(trim($string),0,6))) {
+                // civicrm-packages#324 Use mb function because if setlocale is set to tr_TR.utf8, INSERT would become Insert
+                switch (mb_strtolower(substr(trim($string),0,6))) {
 
                     case 'insert':
                     case 'update':
@@ -2754,11 +2755,12 @@ class DB_DataObject extends DB_DataObject_Overload
 
         // CRM-18093 starts.
         // CRM-20445 starts Strip any prepended comments
+        // civicrm-packages#324 Use mb function because if setlocale is set to tr_TR.utf8, INSERT would become Insert
         $queryString = (substr($string, 0, 2) === '/*') ? substr($string, strpos($string, '*/') + 2) : $string;
-        $action = strtolower(substr(trim($queryString),0,6));
+        $action = mb_strtolower(substr(trim($queryString),0,6));
         // CRM-20445 ends
 
-        if (!empty($_DB_DATAOBJECT['CONFIG']['debug']) || defined('CIVICRM_DEBUG_LOG_QUERY')) {
+        if (!empty($_DB_DATAOBJECT['CONFIG']['debug']) || (defined('CIVICRM_DEBUG_LOG_QUERY') && CIVICRM_DEBUG_LOG_QUERY)) {
           $timeTaken = sprintf("%0.6f", microtime(TRUE) - $time);
           $alertLevel = $this->getAlertLevel($timeTaken);
           $message = "$alertLevel QUERY DONE IN $timeTaken  seconds.";
@@ -2774,8 +2776,8 @@ class DB_DataObject extends DB_DataObject_Overload
           else {
             echo $message .= " not quite sure why this query does not have more info";
           }
-          if (defined('CIVICRM_DEBUG_LOG_QUERY')) {
-            CRM_Core_Error::debug_log_message($message, FALSE, 'sql_log');
+          if ((defined('CIVICRM_DEBUG_LOG_QUERY') && CIVICRM_DEBUG_LOG_QUERY)) {
+            CRM_Core_Error::debug_log_message($message, FALSE, 'sql_log' . CIVICRM_DEBUG_LOG_QUERY);
           }
           else {
             $this->debug($message, 'query', 1);
@@ -2804,7 +2806,7 @@ class DB_DataObject extends DB_DataObject_Overload
         if (!empty($_DB_DATAOBJECT['CONFIG']['debug'])) {
             $this->debug(serialize($result), 'RESULT',5);
         }
-        if (method_exists($result, 'numRows')) {
+        if (is_object($result) && method_exists($result, 'numRows')) {
             if ($_DB_driver == 'DB') {
                 $DB->expectError(DB_ERROR_UNSUPPORTED);
             } else {
@@ -4878,10 +4880,6 @@ class DB_DataObject extends DB_DataObject_Overload
         }
         // clear the staticGet cache as well.
         $this->_clear_cache();
-        // this is a huge bug in DB!
-        if (isset($_DB_DATAOBJECT['CONNECTIONS'][$this->_database_dsn_md5])) {
-            $_DB_DATAOBJECT['CONNECTIONS'][$this->_database_dsn_md5]->num_rows = array();
-        }
 
         if (is_array($this->_link_loaded)) {
             foreach ($this->_link_loaded as $do) {

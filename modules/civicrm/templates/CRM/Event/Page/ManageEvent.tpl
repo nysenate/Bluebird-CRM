@@ -8,23 +8,15 @@
  +--------------------------------------------------------------------+
 *}
 {capture assign=newEventURL}{crmURL p='civicrm/event/add' q="action=add&reset=1"}{/capture}
-{capture assign=icalFile}{crmURL p='civicrm/event/ical' q="reset=1" fe=1}{/capture}
-{capture assign=icalFeed}{crmURL p='civicrm/event/ical' q="reset=1&list=1" fe=1}{/capture}
-{capture assign=rssFeed}{crmURL p='civicrm/event/ical' q="reset=1&list=1&rss=1" fe=1}{/capture}
-{capture assign=htmlFeed}{crmURL p='civicrm/event/ical' q="reset=1&list=1&html=1" fe=1}{/capture}
 
 <div class="crm-block crm-content-block">
 <div class="float-right">
-  <a href="{$htmlFeed}"  target="_blank" title="{ts}HTML listing of current and future public events.{/ts}" class="crm-event-feed-link"><i class="crm-i fa-lg fa-calendar"></i></a>
-  <a href="{$rssFeed}"  target="_blank" title="{ts}Get RSS 2.0 feed for current and future public events.{/ts}" class="crm-event-feed-link"><i class="crm-i fa-lg fa-rss"></i></a>
-  <a href="{$icalFile}" title="{ts}Download iCalendar file for current and future public events.{/ts}" class="crm-event-feed-link"><i class="crm-i fa-lg fa-download"></i></a>
-  <a href="{$icalFeed}"  target="_blank" title="{ts}Get iCalendar feed for current and future public events.{/ts}" class="crm-event-feed-link"><i class="crm-i fa-lg fa-calendar-o"></i></a>
-  {help id='icalendar'}
+  {include file="CRM/Event/Page/iCalLinks.tpl"}
 </div>
 
 <div class="action-link">
   <a accesskey="N" href="{$newEventURL}" id="newManageEvent" class="button crm-popup">
-    <span><i class="crm-i fa-calendar-plus-o"></i> {ts}Add Event{/ts}</span>
+    <span><i class="crm-i fa-calendar-plus-o" aria-hidden="true"></i> {ts}Add Event{/ts}</span>
   </a>
   <div class="clear"></div>
 </div>
@@ -49,7 +41,7 @@
         <th>{ts}Public?{/ts}</th>
         <th>{ts}Starts{/ts}</th>
         <th>{ts}Ends{/ts}</th>
-        {if call_user_func(array('CRM_Campaign_BAO_Campaign','isCampaignEnable'))}
+        {if call_user_func(array('CRM_Campaign_BAO_Campaign','isComponentEnabled'))}
           <th>{ts}Campaign{/ts}</th>
         {/if}
         <th>{ts}Active?{/ts}</th>
@@ -63,7 +55,7 @@
           <tr id="event-{$row.id}" class="crm-entity {if NOT $row.is_active} disabled{/if}">
           <td class="crm-event_{$row.id}">
             <a href="{crmURL p='civicrm/event/info' q="id=`$row.id`&reset=1"}"
-               title="{ts}View event info page{/ts}" class="bold">{$row.title}</a>&nbsp;&nbsp;({ts}ID:{/ts} {$row.id})<br/>
+               title="{ts}View event info page{/ts}" class="bold">{$row.title|smarty:nodefaults|purify}</a>&nbsp;&nbsp;({ts}ID:{/ts} {$row.id})<br/>
                <span><b>{$row.repeat}</b></span>
           </td>
           <td class="crm-event-city">{$row.city}</td>
@@ -72,7 +64,7 @@
           <td class="crm-event-is_public">{if $row.is_public eq 1} {ts}Yes{/ts} {else} {ts}No{/ts} {/if}</td>
           <td class="crm-event-start_date" data-order="{$row.start_date|crmDate:'%Y-%m-%d'}">{$row.start_date|crmDate:"%b %d, %Y %l:%M %P"}</td>
           <td class="crm-event-end_date" data-order="{$row.end_date|crmDate:'%Y-%m-%d'}">{$row.end_date|crmDate:"%b %d, %Y %l:%M %P"}</td>
-          {if call_user_func(array('CRM_Campaign_BAO_Campaign','isCampaignEnable'))}
+          {if call_user_func(array('CRM_Campaign_BAO_Campaign','isComponentEnabled'))}
             <td class="crm-event-campaign">{$row.campaign}</td>
           {/if}
           <td class="crm-event_status" id="row_{$row.id}_status">
@@ -102,14 +94,14 @@
                 <ul class="panel" id="panel_participants_{$row.id}">
                   {if $findParticipants.statusCounted}
                     <li>
-                      <a title="Counted" class="action-item crm-hover-button" href="{crmURL p='civicrm/event/search'
+                      <a title="{ts}Counted Participants{/ts}" class="action-item crm-hover-button" href="{crmURL p='civicrm/event/search'
                       q="reset=1&force=1&status=true&event=`$row.id`"}">{$findParticipants.statusCounted}
                       </a>
                     </li>
                   {/if}
                   {if $findParticipants.statusNotCounted}
                     <li>
-                      <a title="Not Counted" class="action-item crm-hover-button"
+                      <a title="{ts}Participants Not Counted{/ts}" class="action-item crm-hover-button"
                            href="{crmURL p='civicrm/event/search'
                            q="reset=1&force=1&status=false&event=`$row.id`"}">{$findParticipants.statusNotCounted}
                       </a>
@@ -117,7 +109,7 @@
                   {/if}
                   {if $row.participant_listing_id}
                     <li>
-                      <a title="Public Participant Listing" class="action-item crm-hover-button"
+                      <a title="{ts}Public Participant Listing{/ts}" class="action-item crm-hover-button"
                          href="{crmURL p='civicrm/event/participant' q="reset=1&id=`$row.id`"
                          fe='true'}">{ts}Public Participant Listing{/ts}
                       </a>
@@ -127,10 +119,10 @@
               </span>
             </div>
             <div class="crm-event-links">
-              {$row.eventlinks|replace:'xx':$row.id}
+              {$row.eventlinks|smarty:nodefaults|replace:'xx':$row.id}
             </div>
             <div class="crm-event-more">
-              {$row.action|replace:'xx':$row.id}
+              {$row.action|smarty:nodefaults|replace:'xx':$row.id}
             </div>
           </td>
           <td class="crm-event-start_date hiddenElement">{$row.start_date|crmDate}</td>
@@ -145,7 +137,7 @@
 {else}
   {if $isSearch eq 1}
   <div class="status messages">
-    <div class="icon inform-icon"></div>
+    {icon icon="fa-info-circle"}{/icon}
     {capture assign=browseURL}{crmURL p='civicrm/event/manage' q="reset=1"}{/capture}
     {ts}No available Events match your search criteria. Suggestions:{/ts}
     <div class="spacer"></div>
@@ -159,7 +151,7 @@
   </div>
     {else}
   <div class="messages status no-popup">
-    <div class="icon inform-icon"></div>
+    {icon icon="fa-info-circle"}{/icon}
     {ts 1=$newEventURL}There are no events scheduled for the date range. You can <a href='%1'>add one</a>.{/ts}
   </div>
   {/if}

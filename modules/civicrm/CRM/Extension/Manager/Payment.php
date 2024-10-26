@@ -56,18 +56,18 @@ class CRM_Extension_Manager_Payment extends CRM_Extension_Manager_Base {
     $dao->name = trim($info->name);
     $dao->description = trim($info->description);
 
-    $dao->user_name_label = trim($info->typeInfo['userNameLabel']);
-    $dao->password_label = trim($info->typeInfo['passwordLabel']);
-    $dao->signature_label = trim($info->typeInfo['signatureLabel']);
-    $dao->subject_label = trim($info->typeInfo['subjectLabel']);
-    $dao->url_site_default = trim($info->typeInfo['urlSiteDefault']);
-    $dao->url_api_default = trim($info->typeInfo['urlApiDefault']);
-    $dao->url_recur_default = trim($info->typeInfo['urlRecurDefault']);
-    $dao->url_site_test_default = trim($info->typeInfo['urlSiteTestDefault']);
-    $dao->url_api_test_default = trim($info->typeInfo['urlApiTestDefault']);
-    $dao->url_recur_test_default = trim($info->typeInfo['urlRecurTestDefault']);
-    $dao->url_button_default = trim($info->typeInfo['urlButtonDefault']);
-    $dao->url_button_test_default = trim($info->typeInfo['urlButtonTestDefault']);
+    $dao->user_name_label = trim($info->typeInfo['userNameLabel'] ?? '');
+    $dao->password_label = trim($info->typeInfo['passwordLabel'] ?? '');
+    $dao->signature_label = trim($info->typeInfo['signatureLabel'] ?? '');
+    $dao->subject_label = trim($info->typeInfo['subjectLabel'] ?? '');
+    $dao->url_site_default = trim($info->typeInfo['urlSiteDefault'] ?? '');
+    $dao->url_api_default = trim($info->typeInfo['urlApiDefault'] ?? '');
+    $dao->url_recur_default = trim($info->typeInfo['urlRecurDefault'] ?? '');
+    $dao->url_site_test_default = trim($info->typeInfo['urlSiteTestDefault'] ?? '');
+    $dao->url_api_test_default = trim($info->typeInfo['urlApiTestDefault'] ?? '');
+    $dao->url_recur_test_default = trim($info->typeInfo['urlRecurTestDefault'] ?? '');
+    $dao->url_button_default = trim($info->typeInfo['urlButtonDefault'] ?? '');
+    $dao->url_button_test_default = trim($info->typeInfo['urlButtonTestDefault'] ?? '');
 
     switch (trim($info->typeInfo['billingMode'])) {
       case 'form':
@@ -86,8 +86,8 @@ class CRM_Extension_Manager_Payment extends CRM_Extension_Manager_Base {
         throw new CRM_Core_Exception(ts('Billing mode in info file has wrong value.'));
     }
 
-    $dao->is_recur = trim($info->typeInfo['isRecur']);
-    $dao->payment_type = trim($info->typeInfo['paymentType']);
+    $dao->is_recur = trim($info->typeInfo['isRecur'] ?? '');
+    $dao->payment_type = trim($info->typeInfo['paymentType'] ?? '');
 
     $dao->save();
   }
@@ -109,7 +109,7 @@ class CRM_Extension_Manager_Payment extends CRM_Extension_Manager_Base {
   public function onPreUninstall(CRM_Extension_Info $info) {
     $paymentProcessorTypes = $this->_getAllPaymentProcessorTypes('class_name');
     if (!array_key_exists($info->key, $paymentProcessorTypes)) {
-      CRM_Core_Error::fatal(ts('This payment processor type is not registered.'));
+      throw new CRM_Core_Exception(ts('This payment processor type is not registered.'));
     }
 
     $dao = new CRM_Financial_DAO_PaymentProcessor();
@@ -229,7 +229,7 @@ class CRM_Extension_Manager_Payment extends CRM_Extension_Manager_Base {
     }
 
     if (empty($class_name)) {
-      CRM_Core_Error::fatal("Unable to find payment processor in " . __CLASS__ . '::' . __METHOD__);
+      throw new CRM_Core_Exception('Unable to find payment processor in ' . __CLASS__ . '::' . __METHOD__);
     }
 
     // In the case of uninstall, check for instances of PP first.

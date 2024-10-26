@@ -9,29 +9,37 @@
 *}
 {* tpl for building Organization related fields *}
 <table class="form-layout-compressed">
-  <tr>
-    <td>{
-      $form.organization_name.label}<br/>
-      {$form.organization_name.html}
-    </td>
+  {crmRegion name="contact-form-edit-organization"}
+    <tr>
+      <td>
+        {$form.organization_name.label|smarty:nodefaults|purify}<br/>
+        {$form.organization_name.html}
+      </td>
+      <td>
+        {$form.legal_name.label|smarty:nodefaults|purify}<br/>
+        {$form.legal_name.html}
+      </td>
+      <td>
+        {$form.nick_name.label|smarty:nodefaults|purify}<br/>
+        {$form.nick_name.html}
+      </td>
 
-       <td>{$form.legal_name.label}<br/>
-       {$form.legal_name.html}</td>
-
-       <td>{$form.nick_name.label}<br/>
-       {$form.nick_name.html}</td>
-
-       {*NYSS*}{*
-       <td>{$form.sic_code.label}<br/>
-       {$form.sic_code.html}</td>
-       *}
+      {*NYSS*}{*
+      <td>
+        {$form.sic_code.label|smarty:nodefaults|purify}<br/>
+        {$form.sic_code.html}
+      </td>
+      *}
 
       {*NYSS*}
-       {*<td>{if $action == 1 and $contactSubType}&nbsp;{else}
-              {$form.contact_sub_type.label}<br />
-              {$form.contact_sub_type.html}
-           {/if}
-       </td>*}
+       {*
+      {if array_key_exists('contact_sub_type', $form)}
+        <td>
+          {$form.contact_sub_type.label|smarty:nodefaults|purify}<br />
+          {$form.contact_sub_type.html}
+        </td>
+      {/if}
+       *}
     
     <td>
       {assign var='custom_41' value=$groupTree.3.fields.41.element_name}
@@ -68,11 +76,12 @@
       {$contactId}
     </td>
   </tr>
+  {/crmRegion}
 </table>
 
 {literal}
 <script type="text/javascript">
-  //7303
+  //NYSS 7303
   cj('label[for=organization_name]').append(' <span class="crm-marker" title="This field is required.">*</span>');
 </script>
 {/literal}

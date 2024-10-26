@@ -17,8 +17,9 @@ use Civi;
  *
  * @package CiviCRM_Hook
  * @copyright CiviCRM LLC https://civicrm.org/licensing
+ * @service themes
  */
-class Themes {
+class Themes extends \Civi\Core\Service\AutoService {
 
   /**
    * The "default" theme adapts based on the latest recommendation from civicrm.org
@@ -56,7 +57,7 @@ class Themes {
    * @param \CRM_Utils_Cache_Interface $cache
    */
   public function __construct($cache = NULL) {
-    $this->cache = $cache ? $cache : Civi::cache('long');
+    $this->cache = $cache ?: Civi::cache('long');
   }
 
   /**
@@ -78,7 +79,7 @@ class Themes {
 
       \CRM_Utils_Hook::activeTheme($themeKey, [
         'themes' => $this,
-        'page' => \CRM_Utils_Array::value(\CRM_Core_Config::singleton()->userFrameworkURLVar, $_GET),
+        'page' => \CRM_Utils_System::currentPath(),
       ]);
 
       $themes = $this->getAll();
@@ -133,9 +134,9 @@ class Themes {
    * @see CRM_Utils_Hook::themes
    */
   public function getAvailable() {
-    $result = array();
+    $result = [];
     foreach ($this->getAll() as $key => $theme) {
-      if ($key{0} !== '_') {
+      if ($key[0] !== '_') {
         $result[$key] = $theme['title'];
       }
     }
@@ -164,18 +165,18 @@ class Themes {
   public function resolveUrls($active, $cssExt, $cssFile) {
     $all = $this->getAll();
     if (!isset($all[$active])) {
-      return array();
+      return [];
     }
 
     $cssId = $this->cssId($cssExt, $cssFile);
 
     foreach ($all[$active]['search_order'] as $themeKey) {
       if (isset($all[$themeKey]['excludes']) && in_array($cssId, $all[$themeKey]['excludes'])) {
-        $result = array();
+        $result = [];
       }
       else {
         $result = Civi\Core\Resolver::singleton()
-          ->call($all[$themeKey]['url_callback'], array($this, $themeKey, $cssExt, $cssFile));
+          ->call($all[$themeKey]['url_callback'], [$this, $themeKey, $cssExt, $cssFile]);
       }
 
       if ($result !== self::PASSTHRU) {
@@ -194,35 +195,35 @@ class Themes {
    * @see CRM_Utils_Hook::themes
    */
   protected function buildAll() {
-    $themes = array(
-      'default' => array(
+    $themes = [
+      'default' => [
         'ext' => 'civicrm',
         'title' => ts('Automatic'),
         'help' => ts('Determine a system default automatically'),
         // This is an alias. url_callback, search_order don't matter.
-      ),
-      'greenwich' => array(
+      ],
+      'greenwich' => [
         'ext' => 'civicrm',
         'title' => 'Greenwich',
         'help' => ts('CiviCRM 4.x look-and-feel'),
-      ),
-      'none' => array(
+      ],
+      'none' => [
         'ext' => 'civicrm',
         'title' => ts('None (Unstyled)'),
         'help' => ts('Disable CiviCRM\'s built-in CSS files.'),
-        'search_order' => array('none', self::FALLBACK_THEME),
-        'excludes' => array(
+        'search_order' => ['none', self::FALLBACK_THEME],
+        'excludes' => [
           "css/civicrm.css",
           "css/bootstrap.css",
-        ),
-      ),
-      self::FALLBACK_THEME => array(
+        ],
+      ],
+      self::FALLBACK_THEME => [
         'ext' => 'civicrm',
         'title' => 'Fallback (Abstract Base Theme)',
         'url_callback' => '\Civi\Core\Themes\Resolvers::fallback',
-        'search_order' => array(self::FALLBACK_THEME),
-      ),
-    );
+        'search_order' => [self::FALLBACK_THEME],
+      ],
+    ];
 
     \CRM_Utils_Hook::themes($themes);
 
@@ -245,11 +246,11 @@ class Themes {
    * @see CRM_Utils_Hook::themes
    */
   protected function build($themeKey, $theme) {
-    $defaults = array(
+    $defaults = [
       'name' => $themeKey,
       'url_callback' => '\Civi\Core\Themes\Resolvers::simple',
-      'search_order' => array($themeKey, self::FALLBACK_THEME),
-    );
+      'search_order' => [$themeKey, self::FALLBACK_THEME],
+    ];
     $theme = array_merge($defaults, $theme);
 
     return $theme;

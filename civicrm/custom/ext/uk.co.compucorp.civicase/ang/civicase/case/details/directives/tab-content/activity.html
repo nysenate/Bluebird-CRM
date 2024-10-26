@@ -1,0 +1,27 @@
+<div
+  ng-if="isMainContentVisible()"
+  class="civicase__case-tab--activities"
+  civicase-activity-feed="{case_id: item.id}"
+  hide-quick-nav-when-details-is-visible="true"
+  show-bulk-actions="true"
+  case-type-id="item.case_type_id"
+  refresh-callback="refresh">
+</div>
+
+<!-- Placeholder -->
+<div ng-if="isPlaceHolderVisible()" class="civicase__case-tab--activities">
+  <div class="panel panel-default civicase__activity-feed">
+    <div class="panel-header civicase__activity-filter">
+      <div class="civicase__loading-placeholder__oneline pull-left" style="width: 1em; font-size: 30px;"></div>
+      <div class="civicase__loading-placeholder__oneline pull-left" style="width: 1em; font-size: 30px; margin-left: 10px;"></div>
+      <div class="civicase__loading-placeholder__oneline pull-left" style="  width: 4em; font-size: 30px; margin-left: 10px;"></div>
+      <div class="civicase__loading-placeholder__oneline pull-right" style="width: 12em; font-size: 30px;"></div>
+    </div>
+
+    <div class="panel-body clearfix">
+      <div
+        ng-include="'~/civicase/activity/feed/directives/activity-feed-placeholder.html'">
+      </div>
+    </div>
+  </div>
+</div>

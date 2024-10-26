@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="iso-8859-1" ?>
+
+<table>
+  <base>CRM/Civicase</base>
+  <class>CaseCategoryInstance</class>
+  <name>civicrm_case_category_instance</name>
+  <comment>Stores Case Category Instance Details</comment>
+  <log>true</log>
+
+  <field>
+    <name>id</name>
+    <type>int unsigned</type>
+    <required>true</required>
+    <comment>Unique CaseCategoryInstance Id</comment>
+  </field>
+  <primaryKey>
+    <name>id</name>
+    <autoincrement>true</autoincrement>
+  </primaryKey>
+
+  <field>
+    <name>category_id</name>
+    <type>int unsigned</type>
+    <comment>One of the values of the case_type_categories option group</comment>
+    <required>true</required>
+    <pseudoconstant>
+      <optionGroupName>case_type_categories</optionGroupName>
+    </pseudoconstant>
+  </field>
+  <field>
+    <name>instance_id</name>
+    <type>int unsigned</type>
+    <comment>One of the values of the case_category_instance_type option group</comment>
+    <required>true</required>
+    <pseudoconstant>
+      <optionGroupName>case_category_instance_type</optionGroupName>
+    </pseudoconstant>
+  </field>
+  <index>
+    <name>unique_category</name>
+    <fieldName>category_id</fieldName>
+    <unique>true</unique>
+  </index>
+</table>

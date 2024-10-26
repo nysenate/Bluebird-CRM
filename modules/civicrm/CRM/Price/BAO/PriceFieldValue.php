@@ -26,34 +26,17 @@ class CRM_Price_BAO_PriceFieldValue extends CRM_Price_DAO_PriceFieldValue {
    *
    * @param array $params
    *
-   * @param array $ids
-   *  Deprecated variable.
-   *
    * @return CRM_Price_DAO_PriceFieldValue
    */
-  public static function add(&$params, $ids = []) {
-    $hook = empty($params['id']) ? 'create' : 'edit';
-    CRM_Utils_Hook::pre($hook, 'PriceFieldValue', CRM_Utils_Array::value('id', $params), $params);
+  public static function add($params) {
+    $fieldValueBAO = self::writeRecord($params);
 
-    $fieldValueBAO = new CRM_Price_BAO_PriceFieldValue();
-    $fieldValueBAO->copyValues($params);
-
-    // CRM-16189
-    $priceFieldID = $params['price_field_id'] ?? NULL;
-
-    $id = CRM_Utils_Array::value('id', $ids, CRM_Utils_Array::value('id', $params));
-
-    if (!$priceFieldID) {
-      $priceFieldID = CRM_Core_DAO::getFieldValue('CRM_Price_BAO_PriceFieldValue', $id, 'price_field_id');
-    }
     if (!empty($params['is_default'])) {
-      $query = 'UPDATE civicrm_price_field_value SET is_default = 0 WHERE  price_field_id = %1';
-      $p = [1 => [$params['price_field_id'], 'Integer']];
+      $priceFieldID = $params['price_field_id'] ?? CRM_Core_DAO::getFieldValue('CRM_Price_BAO_PriceFieldValue', $fieldValueBAO->id, 'price_field_id');
+      $query = 'UPDATE civicrm_price_field_value SET is_default = 0 WHERE price_field_id = %1 and id != %2';
+      $p = [1 => [$priceFieldID, 'Integer'], 2 => [$fieldValueBAO->id, 'Integer']];
       CRM_Core_DAO::executeQuery($query, $p);
     }
-
-    $fieldValueBAO->save();
-    CRM_Utils_Hook::post($hook, 'PriceFieldValue', $fieldValueBAO->id, $fieldValueBAO);
 
     // Reset the cached values in this function.
     CRM_Price_BAO_PriceField::getOptions(CRM_Utils_Array::value('price_field_id', $params), FALSE, TRUE);
@@ -78,7 +61,7 @@ class CRM_Price_BAO_PriceFieldValue extends CRM_Price_DAO_PriceFieldValue {
       return NULL;
     }
     if (!$id && empty($params['name'])) {
-      $params['name'] = strtolower(CRM_Utils_String::munge($params['label'], '_', 242));
+      $params['name'] = strtolower(CRM_Utils_String::munge(($params['label'] ?? '_'), '_', 242));
     }
 
     if ($id && !empty($params['weight'])) {
@@ -90,16 +73,11 @@ class CRM_Price_BAO_PriceFieldValue extends CRM_Price_DAO_PriceFieldValue {
       if ($id) {
         $oldWeight = CRM_Core_DAO::getFieldValue('CRM_Price_DAO_PriceFieldValue', $id, 'weight', 'id');
       }
-      $fieldValues = ['price_field_id' => CRM_Utils_Array::value('price_field_id', $params, 0)];
+      $fieldValues = ['price_field_id' => $params['price_field_id'] ?? 0];
       $params['weight'] = CRM_Utils_Weight::updateOtherWeights('CRM_Price_DAO_PriceFieldValue', $oldWeight, $params['weight'], $fieldValues);
     }
-    else {
-      if (!$id) {
-        CRM_Core_DAO::setCreateDefaults($params, self::getDefaults());
-        if (empty($params['name'])) {
-          $params['name'] = CRM_Utils_String::munge(CRM_Utils_Array::value('label', $params), '_', 64);
-        }
-      }
+    elseif (!$id) {
+      CRM_Core_DAO::setCreateDefaults($params, self::getDefaults());
     }
 
     $financialType = $params['financial_type_id'] ?? NULL;
@@ -110,7 +88,8 @@ class CRM_Price_BAO_PriceFieldValue extends CRM_Price_DAO_PriceFieldValue {
     if (!empty($financialType) && !array_key_exists($financialType, $financialTypes) && $params['is_active']) {
       throw new CRM_Core_Exception("Financial Type for Price Field Option is either disabled or does not exist");
     }
-    return self::add($params, $ids);
+    $params['id'] = $id;
+    return self::add($params);
   }
 
   /**
@@ -126,19 +105,13 @@ class CRM_Price_BAO_PriceFieldValue extends CRM_Price_DAO_PriceFieldValue {
   }
 
   /**
-   * Retrieve DB object based on input parameters.
-   *
-   * It also stores all the retrieved values in the default array.
-   *
+   * @deprecated
    * @param array $params
-   *   (reference ) an assoc array.
    * @param array $defaults
-   *   (reference ) an assoc array to hold the flattened values.
-   *
-   * @return CRM_Price_DAO_PriceFieldValue
+   * @return self|null
    */
-  public static function retrieve(&$params, &$defaults) {
-    return CRM_Core_DAO::commonRetrieve('CRM_Price_DAO_PriceFieldValue', $params, $defaults);
+  public static function retrieve($params, &$defaults) {
+    return self::commonRetrieve(self::class, $params, $defaults);
   }
 
   /**
@@ -202,15 +175,10 @@ class CRM_Price_BAO_PriceFieldValue extends CRM_Price_DAO_PriceFieldValue {
   }
 
   /**
-   * Update the is_active flag in the db.
-   *
+   * @deprecated - this bypasses hooks.
    * @param int $id
-   *   Id of the database record.
    * @param bool $is_active
-   *   Value we want to set the is_active field.
-   *
    * @return bool
-   *   true if we found and updated the object, else false
    */
   public static function setIsActive($id, $is_active) {
     return CRM_Core_DAO::setFieldValue('CRM_Price_DAO_PriceFieldValue', $id, 'is_active', $is_active);
@@ -238,19 +206,13 @@ class CRM_Price_BAO_PriceFieldValue extends CRM_Price_DAO_PriceFieldValue {
    * Delete the value.
    *
    * @param int $id
-   *   Id.
    *
+   * @deprecated
    * @return bool
-   *
    */
   public static function del($id) {
-    if (!$id) {
-      return FALSE;
-    }
-
-    $fieldValueDAO = new CRM_Price_DAO_PriceFieldValue();
-    $fieldValueDAO->id = $id;
-    return $fieldValueDAO->delete();
+    CRM_Core_Error::deprecatedFunctionWarning('deleteRecord');
+    return (bool) self::deleteRecord(['id' => $id]);
   }
 
   /**

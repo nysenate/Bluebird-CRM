@@ -123,7 +123,12 @@ class CRM_Contribute_Form_ContributionPage_AddProduct extends CRM_Contribute_For
     }
 
     if ($this->_action & CRM_Core_Action::PREVIEW) {
-      CRM_Contribute_BAO_Premium::buildPremiumPreviewBlock($this, NULL, $this->_pid);
+      $dao = new CRM_Contribute_DAO_PremiumsProduct();
+      $dao->id = $this->_pid;
+      $dao->find(TRUE);
+      $productID = $dao->product_id;
+
+      CRM_Contribute_BAO_Premium::buildPremiumPreviewBlock($this, $productID);
       $this->addButtons([
         [
           'type' => 'next',
@@ -182,23 +187,7 @@ class CRM_Contribute_Form_ContributionPage_AddProduct extends CRM_Contribute_For
     $this->addRule('weight', ts('Please enter integer value for weight'), 'integer');
     $session->pushUserContext(CRM_Utils_System::url($urlParams, 'action=update&reset=1&id=' . $this->_id));
 
-    if ($this->_single) {
-      $this->addButtons([
-        [
-          'type' => 'next',
-          'name' => ts('Save'),
-          'spacing' => '&nbsp;&nbsp;&nbsp;&nbsp;',
-          'isDefault' => TRUE,
-        ],
-        [
-          'type' => 'cancel',
-          'name' => ts('Cancel'),
-        ],
-      ]);
-    }
-    else {
-      parent::buildQuickForm();
-    }
+    parent::buildQuickForm();
   }
 
   /**

@@ -25,7 +25,7 @@ class CRM_Invoicing_Utils {
    * @param bool $newValue
    * @param array $metadata
    *
-   * @throws \CiviCRM_API3_Exception
+   * @throws \CRM_Core_Exception
    */
   public static function onToggle($oldValue, $newValue, $metadata) {
     if ($oldValue == $newValue) {
@@ -48,29 +48,23 @@ class CRM_Invoicing_Utils {
   /**
    * Function to call to determine if invoicing is enabled.
    *
-   * Historically the invoicing was declared as a setting but actually
-   * set within contribution_invoice_settings (which stores multiple settings
-   * as an array in a non-standard way).
+   * Use Civi::settings()->get('invoicing') instead.
    *
-   * We check both here. But will deprecate the latter in time.
+   * @deprecated since 5.68 expected removal time to be added when we add noisy deprecation.
    */
   public static function isInvoicingEnabled() {
-    if (Civi::settings()->get('invoicing')) {
-      return TRUE;
-    }
-    $invoiceSettings = Civi::settings()->get('contribution_invoice_settings');
-    return $invoiceSettings['invoicing'] ?? NULL;
+    return Civi::settings()->get('invoicing');
   }
 
   /**
    * Function to get the tax term.
    *
-   * The value is nested in the contribution_invoice_settings setting - which
-   * is unsupported. Here we have a wrapper function to make later cleanup easier.
+   * Use Civi::settings()->get('tax_term') instead.
+   *
+   * @deprecated since 5.68 expected removal time to be added when we add noisy deprecation.
    */
   public static function getTaxTerm() {
-    $invoiceSettings = Civi::settings()->get('contribution_invoice_settings');
-    return $invoiceSettings['tax_term'] ?? NULL;
+    return Civi::settings()->get('tax_term');
   }
 
 }

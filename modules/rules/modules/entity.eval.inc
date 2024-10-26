@@ -23,7 +23,10 @@ function rules_action_entity_fetch($type, $id, $revision) {
   $return = entity_load($type, array($id), isset($conditions) ? $conditions : array());
   $entity = reset($return);
   if (!$entity) {
-    throw new RulesEvaluationException('Unable to load @entity with id "@id"', array('@id' => $id, '@entity' => $type));
+    throw new RulesEvaluationException('Unable to load @entity with id "@id"', array(
+      '@id' => $id,
+      '@entity' => $type,
+    ));
   }
   return array('entity_fetched' => $entity);
 }
@@ -98,7 +101,10 @@ function rules_action_entity_create($args, $element) {
     return array('entity_created' => $data);
   }
   catch (EntityMetadataWrapperException $e) {
-    throw new RulesEvaluationException('Unable to create entity @type": ' . $e->getMessage(), array('@type' => $args['type']), $element);
+    throw new RulesEvaluationException('Unable to create entity @type: @message', array(
+      '@type' => $args['type'],
+      '@message' => $e->getMessage(),
+    ), $element);
   }
 }
 
@@ -129,7 +135,7 @@ function rules_action_entity_create_info_alter(&$element_info, RulesAbstractPlug
 /**
  * Action: Save entities.
  */
-function rules_action_entity_save($wrapper, $immediate = FALSE, $settings, $state, $element) {
+function rules_action_entity_save($wrapper, $immediate, $settings, $state, $element) {
   $state->saveChanges($settings['data:select'], $wrapper, $immediate);
 }
 
@@ -141,7 +147,9 @@ function rules_action_entity_delete($wrapper, $settings, $state, $element) {
     $wrapper->delete();
   }
   catch (EntityMetadataWrapperException $e) {
-    throw new RulesEvaluationException($e->getMessage(), array(), $element);
+    throw new RulesEvaluationException('Error deleting entity: @message', array(
+      '@message' => $e->getMessage(),
+    ), $element);
   }
 }
 
@@ -182,5 +190,5 @@ function rules_condition_entity_field_access(EntityDrupalWrapper $wrapper, $fiel
 }
 
 /**
- * @}
+ * @} End of "addtogroup rules"
  */

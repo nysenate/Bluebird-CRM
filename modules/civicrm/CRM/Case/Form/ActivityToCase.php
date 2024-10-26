@@ -21,12 +21,27 @@
 class CRM_Case_Form_ActivityToCase extends CRM_Core_Form {
 
   /**
+   * Case Activity being copied or moved
+   * @var int
+   */
+  public $_activityId;
+
+
+  /**
+   * Current CiviCase ID associated with the activity
+   * @var int
+   */
+  public $_currentCaseId;
+
+  /**
    * Build all the data structures needed to build the form.
+   *
+   * @throws \CRM_Core_Exception
    */
   public function preProcess() {
     $this->_activityId = CRM_Utils_Request::retrieve('activityId', 'Positive');
     if (!$this->_activityId) {
-      CRM_Core_Error::fatal('required activity id is missing.');
+      throw new CRM_Core_Exception('required activity id is missing.');
     }
 
     $this->_currentCaseId = CRM_Utils_Request::retrieve('caseId', 'Positive');
@@ -35,29 +50,29 @@ class CRM_Case_Form_ActivityToCase extends CRM_Core_Form {
 
     switch (CRM_Utils_Request::retrieve('fileOnCaseAction', 'String')) {
       case 'move':
-        CRM_Utils_System::setTitle(ts('Move to Case'));
+        $this->setTitle(ts('Move to Case'));
         break;
 
       case 'copy':
-        CRM_Utils_System::setTitle(ts('Copy to Case'));
+        $this->setTitle(ts('Copy to Case'));
         break;
 
     }
   }
 
   /**
-   * Set default values for the form. For edit/view mode
-   * the default values are retrieved from the database
-   *
+   * Set default values for the form. For edit/view mode.
    *
    * @return array
+   *
+   * @throws \CRM_Core_Exception
    */
   public function setDefaultValues() {
     $defaults = [];
     $params = ['id' => $this->_activityId];
 
     CRM_Activity_BAO_Activity::retrieve($params, $defaults);
-    $defaults['file_on_case_activity_subject'] = $defaults['subject'];
+    $defaults['file_on_case_activity_subject'] = $defaults['subject'] ?? '';
     $defaults['file_on_case_target_contact_id'] = $defaults['target_contact'];
 
     // If this contact has an open case, supply it as a default
@@ -96,7 +111,6 @@ class CRM_Case_Form_ActivityToCase extends CRM_Core_Form {
         'extra' => ['contact_id'],
         'params' => [
           'case_id' => ['!=' => $this->_currentCaseId],
-          'case_id.is_deleted' => 0,
           'case_id.status_id' => ['!=' => "Closed"],
           'case_id.end_date' => ['IS NULL' => 1],
         ],

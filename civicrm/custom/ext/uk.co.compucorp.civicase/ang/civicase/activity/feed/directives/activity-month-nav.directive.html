@@ -1,0 +1,21 @@
+<div class="civicase__activity-month-nav">
+  <div
+    class="civicase__activity-month-nav__group"
+    ng-repeat="group in groups">
+    <div class="civicase__activity-month-nav__group-title">{{group.groupName}}</div>
+    <div ng-repeat="yearObj in group.records">
+      <div class="civicase__activity-month-nav__group-gap"></div>
+      <div class="civicase__activity-month-nav__group-year">{{yearObj.year}}</div>
+      <div class="civicase__activity-month-nav__group-gap"></div>
+      <div ng-repeat="monthObj in yearObj.months">
+        <div
+          class="civicase__activity-month-nav__group-month"
+          ng-class="{'active': monthObj.active}"
+          ng-click="navigateToMonth(monthObj)">
+          {{monthObj.monthName}}
+        </div>
+      </div>
+      <div ng-if="!$parent.$last" class="civicase__activity-month-nav__group-gap"></div>
+    </div>
+  </div>
+</div>

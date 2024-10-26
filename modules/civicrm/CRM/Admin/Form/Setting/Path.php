@@ -20,20 +20,13 @@
  */
 class CRM_Admin_Form_Setting_Path extends CRM_Admin_Form_Setting {
 
-  protected $_settings = [
-    'uploadDir' => CRM_Core_BAO_Setting::DIRECTORY_PREFERENCES_NAME,
-    'imageUploadDir' => CRM_Core_BAO_Setting::DIRECTORY_PREFERENCES_NAME,
-    'customFileUploadDir' => CRM_Core_BAO_Setting::DIRECTORY_PREFERENCES_NAME,
-    'customTemplateDir' => CRM_Core_BAO_Setting::DIRECTORY_PREFERENCES_NAME,
-    'customPHPPathDir' => CRM_Core_BAO_Setting::DIRECTORY_PREFERENCES_NAME,
-    'extensionsDir' => CRM_Core_BAO_Setting::DIRECTORY_PREFERENCES_NAME,
-  ];
-
   /**
    * Build the form object.
+   *
+   * @throws \CRM_Core_Exception
    */
   public function buildQuickForm() {
-    CRM_Utils_System::setTitle(ts('Settings - Upload Directories'));
+    $this->setTitle(ts('Settings - Upload Directories'));
     parent::buildQuickForm();
 
     $directories = [
@@ -54,12 +47,6 @@ class CRM_Admin_Form_Setting_Path extends CRM_Admin_Form_Setting {
       );
     }
 
-  }
-
-  public function postProcess() {
-    parent::postProcess();
-
-    parent::rebuildMenu();
   }
 
 }

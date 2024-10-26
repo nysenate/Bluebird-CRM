@@ -53,6 +53,7 @@ class CRM_Contribute_Selector_Search extends CRM_Core_Selector_Base implements C
     'contribution_cancel_date',
     'product_name',
     'is_test',
+    'is_template',
     'contribution_recur_id',
     'receipt_date',
     'membership_id',
@@ -117,7 +118,7 @@ class CRM_Contribute_Selector_Search extends CRM_Core_Selector_Base implements C
   /**
    * The query object
    *
-   * @var string
+   * @var CRM_Contact_BAO_Query
    */
   protected $_query;
 
@@ -139,7 +140,7 @@ class CRM_Contribute_Selector_Search extends CRM_Core_Selector_Base implements C
    * @param string $context
    * @param null $compContext
    *
-   * @return \CRM_Contribute_Selector_Search
+   * @return CRM_Contribute_Selector_Search
    */
   public function __construct(
     &$queryParams,
@@ -217,18 +218,21 @@ class CRM_Contribute_Selector_Search extends CRM_Core_Selector_Base implements C
           'url' => 'civicrm/contact/view/contribution',
           'qs' => "reset=1&id=%%id%%&cid=%%cid%%&action=view&context=%%cxt%%&selectedChild=contribute{$extraParams}",
           'title' => ts('View Contribution'),
+          'weight' => -20,
         ],
         CRM_Core_Action::UPDATE => [
           'name' => ts('Edit'),
           'url' => 'civicrm/contact/view/contribution',
           'qs' => "reset=1&action=update&id=%%id%%&cid=%%cid%%&context=%%cxt%%{$extraParams}",
           'title' => ts('Edit Contribution'),
+          'weight' => -10,
         ],
         CRM_Core_Action::DELETE => [
           'name' => ts('Delete'),
           'url' => 'civicrm/contact/view/contribution',
           'qs' => "reset=1&action=delete&id=%%id%%&cid=%%cid%%&context=%%cxt%%{$extraParams}",
           'title' => ts('Delete Contribution'),
+          'weight' => 100,
         ],
       ];
     }
@@ -248,7 +252,7 @@ class CRM_Contribute_Selector_Search extends CRM_Core_Selector_Base implements C
       $params['rowCount'] = $this->_limit;
     }
     else {
-      $params['rowCount'] = CRM_Utils_Pager::ROWCOUNT;
+      $params['rowCount'] = Civi::settings()->get('default_pager_size');
     }
 
     $params['buttonTop'] = 'PagerTopButton';
@@ -353,33 +357,8 @@ class CRM_Contribute_Selector_Search extends CRM_Core_Selector_Base implements C
           $qfKey,
           $componentContext
       );
-      $checkLineItem = FALSE;
-      $row = [];
-      // Now check for lineItems
-      if (CRM_Financial_BAO_FinancialType::isACLFinancialTypeStatus()) {
-        $lineItems = CRM_Price_BAO_LineItem::getLineItemsByContributionID($result->id);
-        foreach ($lineItems as $items) {
-          if (!CRM_Core_Permission::check('view contributions of type ' . CRM_Contribute_PseudoConstant::financialType($items['financial_type_id']))) {
-            $checkLineItem = TRUE;
-            break;
-          }
-          if (!CRM_Core_Permission::check('edit contributions of type ' . CRM_Contribute_PseudoConstant::financialType($items['financial_type_id']))) {
-            unset($links[CRM_Core_Action::UPDATE]);
-          }
-          if (!CRM_Core_Permission::check('delete contributions of type ' . CRM_Contribute_PseudoConstant::financialType($items['financial_type_id']))) {
-            unset($links[CRM_Core_Action::DELETE]);
-          }
-        }
-        if ($checkLineItem) {
-          continue;
-        }
-        if (!CRM_Core_Permission::check('edit contributions of type ' . CRM_Contribute_PseudoConstant::financialType($result->financial_type_id))) {
-          unset($links[CRM_Core_Action::UPDATE]);
-        }
-        if (!CRM_Core_Permission::check('delete contributions of type ' . CRM_Contribute_PseudoConstant::financialType($result->financial_type_id))) {
-          unset($links[CRM_Core_Action::DELETE]);
-        }
-      }
+      // Set defaults to empty to prevent e-notices.
+      $row = ['amount_level' => ''];
       // the columns we are interested in
       foreach (self::$_properties as $property) {
         if (property_exists($result, $property)) {
@@ -394,12 +373,10 @@ class CRM_Contribute_Selector_Search extends CRM_Core_Selector_Base implements C
       $row['campaign_id'] = $result->contribution_campaign_id;
 
       // add contribution status name
-      $row['contribution_status_name'] = CRM_Utils_Array::value($row['contribution_status_id'],
-        $contributionStatuses
-      );
+      $row['contribution_status_name'] = $contributionStatuses[$row['contribution_status_id']] ?? NULL;
 
       $isPayLater = FALSE;
-      if ($result->is_pay_later && CRM_Utils_Array::value('contribution_status_name', $row) == 'Pending') {
+      if ($result->is_pay_later && ($row['contribution_status_name'] ?? NULL) === 'Pending') {
         $isPayLater = TRUE;
         $row['contribution_status'] .= ' (' . ts('Pay Later') . ')';
         $links[CRM_Core_Action::ADD] = [
@@ -407,9 +384,10 @@ class CRM_Contribute_Selector_Search extends CRM_Core_Selector_Base implements C
           'url' => 'civicrm/contact/view/contribution',
           'qs' => 'reset=1&action=update&id=%%id%%&cid=%%cid%%&context=%%cxt%%&mode=live',
           'title' => ts('Pay with Credit Card'),
+          'weight' => CRM_Core_Action::getWeight(CRM_Core_Action::ADD),
         ];
       }
-      elseif (CRM_Utils_Array::value('contribution_status_name', $row) == 'Pending') {
+      elseif (($row['contribution_status_name'] ?? NULL) === 'Pending') {
         $row['contribution_status'] .= ' (' . ts('Incomplete Transaction') . ')';
       }
 
@@ -420,14 +398,15 @@ class CRM_Contribute_Selector_Search extends CRM_Core_Selector_Base implements C
       $row['checkbox'] = CRM_Core_Form::CB_PREFIX . $result->contribution_id;
 
       $actions = [
-        'id' => $result->contribution_id,
-        'cid' => $result->contact_id,
+        'id' => (int) $result->contribution_id,
+        'cid' => (int) $result->contact_id,
         'cxt' => $this->_context,
+        'financial_type_id' => $result->financial_type_id ? (int) $result->financial_type_id : NULL,
       ];
 
       if (in_array($row['contribution_status_name'], ['Partially paid', 'Pending refund']) || $isPayLater) {
         $buttonName = ts('Record Payment');
-        if ($row['contribution_status_name'] == 'Pending refund') {
+        if ($row['contribution_status_name'] === 'Pending refund') {
           $buttonName = ts('Record Refund');
         }
         elseif (CRM_Core_Config::isEnabledBackOfficeCreditCardPayments()) {
@@ -436,6 +415,7 @@ class CRM_Contribute_Selector_Search extends CRM_Core_Selector_Base implements C
             'url' => 'civicrm/payment/add',
             'qs' => 'reset=1&id=%%id%%&cid=%%cid%%&action=add&component=contribution&mode=live',
             'title' => ts('Submit Credit Card payment'),
+            'weight' => 30,
           ];
         }
         $links[CRM_Core_Action::ADD] = [
@@ -443,8 +423,10 @@ class CRM_Contribute_Selector_Search extends CRM_Core_Selector_Base implements C
           'url' => 'civicrm/payment',
           'qs' => 'reset=1&id=%%id%%&cid=%%cid%%&action=add&component=contribution',
           'title' => $buttonName,
+          'weight' => CRM_Core_Action::getWeight(CRM_Core_Action::ADD),
         ];
       }
+      $links = $links + CRM_Contribute_Task::getContextualLinks($row);
 
       $row['action'] = CRM_Core_Action::formLink(
         $links,
@@ -453,10 +435,10 @@ class CRM_Contribute_Selector_Search extends CRM_Core_Selector_Base implements C
         FALSE,
         'contribution.selector.row',
         'Contribution',
-        $result->contribution_id
+        (int) $result->contribution_id
       );
 
-      $row['contact_type'] = CRM_Contact_BAO_Contact_Utils::getImage($result->contact_sub_type ? $result->contact_sub_type : $result->contact_type, FALSE, $result->contact_id
+      $row['contact_type'] = CRM_Contact_BAO_Contact_Utils::getImage($result->contact_sub_type ?: $result->contact_type, FALSE, $result->contact_id
       );
 
       if (!empty($row['amount_level'])) {
@@ -496,6 +478,7 @@ class CRM_Contribute_Selector_Search extends CRM_Core_Selector_Base implements C
         'sort' => 'total_amount',
         'direction' => CRM_Utils_Sort::DONTCARE,
         'field_name' => 'total_amount',
+        'type' => '',
       ],
     ];
     if ($this->_includeSoftCredits) {
@@ -508,6 +491,7 @@ class CRM_Contribute_Selector_Search extends CRM_Core_Selector_Base implements C
               'sort' => 'contribution_soft_credit_amount',
               'field_name' => 'contribution_soft_credit_amount',
               'direction' => CRM_Utils_Sort::DONTCARE,
+              'type' => '',
             ],
           ]
         );
@@ -521,15 +505,17 @@ class CRM_Contribute_Selector_Search extends CRM_Core_Selector_Base implements C
             'sort' => 'financial_type',
             'field_name' => 'financial_type',
             'direction' => CRM_Utils_Sort::DONTCARE,
+            'type' => '',
           ],
           [
-            'name' => ts('Source'),
+            'name' => ts('Contribution Source'),
             'sort' => 'contribution_source',
             'field_name' => 'contribution_source',
             'direction' => CRM_Utils_Sort::DONTCARE,
+            'type' => '',
           ],
           [
-            'name' => ts('Received'),
+            'name' => ts('Contribution Date'),
             'sort' => 'receive_date',
             'field_name' => 'receive_date',
             'type' => 'date',
@@ -547,6 +533,7 @@ class CRM_Contribute_Selector_Search extends CRM_Core_Selector_Base implements C
             'sort' => 'contribution_status',
             'field_name' => 'contribution_status',
             'direction' => CRM_Utils_Sort::DONTCARE,
+            'type' => '',
           ],
         ]
       );
@@ -556,6 +543,7 @@ class CRM_Contribute_Selector_Search extends CRM_Core_Selector_Base implements C
         'sort' => 'product_name',
         'field_name' => 'product_name',
         'direction' => CRM_Utils_Sort::DONTCARE,
+        'type' => '',
       ];
     }
     if (!$this->_single) {
@@ -563,7 +551,9 @@ class CRM_Contribute_Selector_Search extends CRM_Core_Selector_Base implements C
         [
           'name' => ts('Name'),
           'sort' => 'sort_name',
+          'field_name' => '',
           'direction' => CRM_Utils_Sort::DONTCARE,
+          'type' => '',
         ],
       ];
     }
@@ -576,11 +566,13 @@ class CRM_Contribute_Selector_Search extends CRM_Core_Selector_Base implements C
             'name' => ts('Soft Credit For'),
             'sort' => 'contribution_soft_credit_name',
             'direction' => CRM_Utils_Sort::DONTCARE,
+            'field_name' => '',
           ],
           [
             'name' => ts('Soft Credit Type'),
             'sort' => 'contribution_soft_credit_type',
             'direction' => CRM_Utils_Sort::ASCENDING,
+            'field_name' => '',
           ],
         ]
       );
@@ -588,7 +580,7 @@ class CRM_Contribute_Selector_Search extends CRM_Core_Selector_Base implements C
     self::$_columnHeaders
       = array_merge(
         self::$_columnHeaders, [
-          ['desc' => ts('Actions'), 'type' => 'actions'],
+          ['desc' => ts('Actions'), 'type' => 'actions', 'field_name' => ''],
         ]
       );
     foreach (array_keys(self::$_columnHeaders) as $index) {
@@ -608,7 +600,7 @@ class CRM_Contribute_Selector_Search extends CRM_Core_Selector_Base implements C
   }
 
   /**
-   * @return \CRM_Contact_BAO_Query
+   * @return CRM_Contact_BAO_Query
    */
   public function &getQuery() {
     return $this->_query;

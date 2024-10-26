@@ -45,10 +45,10 @@ class CRM_Contact_Page_View_Vcard extends CRM_Contact_Page_View {
 
     if ($defaults['contact_type'] == 'Individual') {
       $vcard->setName(CRM_Utils_Array::value('last_name', $defaults),
-        CRM_Utils_Array::value('first_name', $defaults),
-        CRM_Utils_Array::value('middle_name', $defaults),
-        CRM_Utils_Array::value('prefix', $defaults),
-        CRM_Utils_Array::value('suffix', $defaults)
+        $defaults['first_name'] ?? NULL,
+        $defaults['middle_name'] ?? NULL,
+        $defaults['prefix'] ?? NULL,
+        $defaults['suffix'] ?? NULL
       );
       $organizationName = $defaults['organization_name'] ?? NULL;
       if ($organizationName !== NULL) {
@@ -73,7 +73,7 @@ class CRM_Contact_Page_View_Vcard extends CRM_Contact_Page_View {
     }
 
     if (!empty($defaults['birth_date'])) {
-      $vcard->setBirthday(CRM_Utils_Array::value('birth_date', $defaults));
+      $vcard->setBirthday($defaults['birth_date']);
     }
 
     if (!empty($defaults['home_URL'])) {
@@ -98,11 +98,11 @@ class CRM_Contact_Page_View_Vcard extends CRM_Contact_Page_View {
         $locality = $location['city'] ?? NULL;
         $region = NULL;
         if (!empty($location['state_province_id'])) {
-          $region = $stateProvices[CRM_Utils_Array::value('state_province_id', $location)];
+          $region = $stateProvices[$location['state_province_id']];
         }
         $country = NULL;
         if (!empty($location['country_id'])) {
-          $country = $countries[CRM_Utils_Array::value('country_id', $location)];
+          $country = $countries[$location['country_id']];
         }
 
         $postcode = $location['postal_code'] ?? NULL;
@@ -127,7 +127,7 @@ class CRM_Contact_Page_View_Vcard extends CRM_Contact_Page_View {
         if ($vcardName) {
           $vcard->addParam('TYPE', $vcardName);
         }
-        if ($phone['is_primary']) {
+        if (!empty($phone['is_primary'])) {
           $vcard->addParam('TYPE', 'PREF');
         }
       }
@@ -140,7 +140,7 @@ class CRM_Contact_Page_View_Vcard extends CRM_Contact_Page_View {
         if ($vcardName) {
           $vcard->addParam('TYPE', $vcardName);
         }
-        if ($email['is_primary']) {
+        if (!empty($email['is_primary'])) {
           $vcard->addParam('TYPE', 'PREF');
         }
       }

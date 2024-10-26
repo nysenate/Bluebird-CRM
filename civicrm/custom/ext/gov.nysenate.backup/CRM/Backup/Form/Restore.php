@@ -51,7 +51,7 @@ class CRM_Backup_Form_Restore extends CRM_Core_Form {
       $type = 'error';
     }
 
-    CRM_Core_Session::setStatus(E::ts($msg), 'Delete File', $type);
+    CRM_Core_Session::setStatus(E::ts($msg), 'Database Restored', $type);
 
     parent::postProcess();
   }

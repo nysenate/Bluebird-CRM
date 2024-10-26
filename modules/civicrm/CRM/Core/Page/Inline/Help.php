@@ -12,8 +12,6 @@
 /**
  * @package CRM
  * @copyright CiviCRM LLC https://civicrm.org/licensing
- * $Id$
- *
  */
 
 /**
@@ -23,9 +21,12 @@ class CRM_Core_Page_Inline_Help {
 
   public function run() {
     $args = $_REQUEST;
-    if (!empty($args['file']) && strpos($args['file'], '..') === FALSE) {
-      $file = $args['file'] . '.hlp';
-      $additionalTPLFile = $args['file'] . '.extra.hlp';
+    $file = (string) ($args['file'] ?? '');
+    // windows - just replace so the regex can match
+    $file = str_replace('\\', '/', $file);
+    if (preg_match('@^[a-zA-Z0-9_-]+(/[a-zA-Z0-9_-]+)*$@', $file)) {
+      $additionalTPLFile = "$file.extra.hlp";
+      $file .= '.hlp';
       $smarty = CRM_Core_Smarty::singleton();
       $smarty->assign('id', $args['id']);
       CRM_Utils_Array::remove($args, 'file', 'class_name', 'type', 'q', 'id');
@@ -39,11 +40,15 @@ class CRM_Core_Page_Inline_Help {
       if ($smarty->template_exists($additionalTPLFile)) {
         $extraoutput .= trim($smarty->fetch($additionalTPLFile));
         // Allow override param to replace default text e.g. {hlp id='foo' override=1}
-        if ($smarty->get_template_vars('override_help_text')) {
+        if ($smarty->getTemplateVars('override_help_text')) {
           $output = '';
         }
       }
-      exit($output . $extraoutput);
+      echo trim($output . $extraoutput);
+      CRM_Utils_System::civiExit();
+    }
+    else {
+      throw new CRM_Core_Exception('File name is not valid');
     }
   }
 

@@ -11,7 +11,6 @@
 
 namespace Civi\Cxn\Rpc\Message;
 
-use Civi\Cxn\Rpc\Exception\InvalidMessageException;
 use Civi\Cxn\Rpc\Message;
 
 /**

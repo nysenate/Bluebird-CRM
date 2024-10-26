@@ -25,7 +25,10 @@ define('PEAR_LOG_TYPE_MAIL',    1); /* Use PHP's mail() function */
 define('PEAR_LOG_TYPE_DEBUG',   2); /* Use PHP's debugging connection */
 define('PEAR_LOG_TYPE_FILE',    3); /* Append to a file */
 define('PEAR_LOG_TYPE_SAPI',    4); /* Use the SAPI logging handler */
-
+if (!function_exists('PHP81_BC\strftime')) {
+  require_once 'php-8.1-strftime.php';
+}
+use function PHP81_BC\strftime;
 /**
  * The Log:: class implements both an abstraction for various logging
  * mechanisms and the Subject end of a Subject-Observer pattern.
@@ -110,6 +113,14 @@ class Log
                             '%{function}'   => '%7$s',
                             '%{class}'      => '%8$s',
                             '%\{'           => '%%{');
+
+    /**
+     * Locale to be passed to strftime when formatting
+     *
+     * @var string
+     * @access protected
+     */
+    var $_locale = 'en_US';
 
     public function __construct()
     {
@@ -868,5 +879,43 @@ class Log
     function getIdent()
     {
         return $this->_ident;
+    }
+
+    /**
+     * Set the current locale
+     * @param string    $locale   The new locale
+     *
+     * @access public
+     * @since
+     */
+    function setLocale($locale)
+    {
+        $this->_locale = $locale;
+    }
+
+    /**
+     * Returns the current locale
+     * @return string
+     *
+     * @access public
+     * @since
+     */
+    function getLocale()
+    {
+        return $this->_locale;
+    }
+
+    /**
+     * Returns formatted time string using the PHP81_BC\strftime function to avoid deprecation errors
+     * @param string $format the format of the string to return
+     *
+     * @return string
+     *
+     * @access public
+     * @since 1.13.4
+     */
+    public function formatTime($format)
+    {
+        return strftime($format, NULL, $this->_locale);
     }
 }

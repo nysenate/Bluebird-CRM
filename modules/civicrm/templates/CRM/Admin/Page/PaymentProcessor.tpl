@@ -34,7 +34,7 @@
             <th></th>
         </tr>
         {foreach from=$rows item=row}
-        <tr id="payment_processor-{$row.id}" class="crm-entity {cycle values="odd-row,even-row"} {$row.class}{if NOT $row.is_active} disabled{/if}">
+        <tr id="payment_processor-{$row.id}" class="crm-entity {cycle values="odd-row,even-row"} {if NOT $row.is_active} disabled{/if}">
             <td class="crmf-id center">{$row.id}</td>
             <td class="crmf-test_id center">{$row.test_id}</td>
             <td class="crmf-name">{$row.name}</td>
@@ -42,10 +42,9 @@
             <td class="crmf-description">{$row.description}</td>
             <td class="crmf-financial_account_id">{$row.financialAccount}</td>
             <td class="crmf-is_active center">{if $row.is_active eq 1} {ts}Yes{/ts} {else} {ts}No{/ts} {/if}</td>
-            <td class="crmf-is_default center">
-              {if $row.is_default eq 1}<img src="{$config->resourceBase}i/check.gif" alt="{ts}Default{/ts}"/>{/if}&nbsp;
+            <td class="crmf-is_default center">{icon condition=$row.is_default}{ts}Default{/ts}{/icon}&nbsp;
             </td>
-            <td>{$row.action|replace:'xx':$row.id}</td>
+            <td>{$row.action|smarty:nodefaults|replace:'xx':$row.id}</td>
         </tr>
         {/foreach}
         </table>
@@ -53,17 +52,17 @@
 
         {if $action ne 1 and $action ne 2}
         <div class="action-link">
-          {crmButton q="action=add&reset=1&pp=$defaultPaymentProcessorType" id="newPaymentProcessor"  icon="plus-circle"}{ts}Add Payment Processor{/ts}{/crmButton}
+          {crmButton p='civicrm/admin/paymentProcessor/edit' q="action=add&reset=1" id="newPaymentProcessor"  icon="plus-circle"}{ts}Add Payment Processor{/ts}{/crmButton}
         </div>
         {/if}
 </div>
 {elseif $action ne 1}
     <div class="messages status no-popup">
-      <div class="icon inform-icon"></div>
+      {icon icon="fa-info-circle"}{/icon}
         {ts}There are no Payment Processors entered.{/ts}
      </div>
      <div class="action-link">
-       {crmButton p='civicrm/admin/paymentProcessor' q="action=add&reset=1&pp=$defaultPaymentProcessorType" id="newPaymentProcessor"  icon="plus-circle"}{ts}Add Payment Processor{/ts}{/crmButton}
+       {crmButton p='civicrm/admin/paymentProcessor/edit' q="action=add&reset=1" id="newPaymentProcessor"  icon="plus-circle"}{ts}Add Payment Processor{/ts}{/crmButton}
      </div>
 {/if}
 </div>

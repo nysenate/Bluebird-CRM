@@ -17,17 +17,35 @@ define('DEFAULT_REPLYTO', 'bluebird.admin@nysenate.gov');
  */
 function mail_civicrm_config(&$config) {
   _mail_civix_civicrm_config($config);
+
+  //16724
+  Civi::dispatcher()->addListener('civi.search.autocompleteDefault', [
+    'CRM_NYSS_Mail_APIWrapperRecipient', 'autocompleteDefault'], -100);
 }
 
-/**
- * Implements hook_civicrm_xmlMenu().
- *
- * @param $files array(string)
- *
- * @link http://wiki.civicrm.org/confluence/display/CRMDOC/hook_civicrm_xmlMenu
- */
-function mail_civicrm_xmlMenu(&$files) {
-  _mail_civix_civicrm_xmlMenu($files);
+function mail_civicrm_alterMenu(&$items) {
+  //https://github.com/veda-consulting/uk.co.vedaconsulting.mosaico/issues/347
+  $items['civicrm/mosaico/iframe'] = [
+    'page_callback' => 'CRM_NYSS_Page_MosaicoEditor',
+    'title' => 'Integration with Mosaico',
+    'access_arguments' => [
+      [
+        'access CiviMail',
+        'create mailings',
+        'edit message templates'
+      ],
+      'or'
+    ],
+  ];
+
+  //14556
+  $items['civicrm/admin/options/mailing_template_category']['access_arguments'] = [
+    [
+      'access CiviMail',
+      'create mailings',
+    ],
+    'or'
+  ];
 }
 
 /**
@@ -40,71 +58,12 @@ function mail_civicrm_install() {
 }
 
 /**
- * Implements hook_civicrm_uninstall().
- *
- * @link http://wiki.civicrm.org/confluence/display/CRMDOC/hook_civicrm_uninstall
- */
-function mail_civicrm_uninstall() {
-  _mail_civix_civicrm_uninstall();
-}
-
-/**
  * Implements hook_civicrm_enable().
  *
  * @link http://wiki.civicrm.org/confluence/display/CRMDOC/hook_civicrm_enable
  */
 function mail_civicrm_enable() {
   _mail_civix_civicrm_enable();
-}
-
-/**
- * Implements hook_civicrm_disable().
- *
- * @link http://wiki.civicrm.org/confluence/display/CRMDOC/hook_civicrm_disable
- */
-function mail_civicrm_disable() {
-  _mail_civix_civicrm_disable();
-}
-
-/**
- * Implements hook_civicrm_upgrade().
- *
- * @param $op string, the type of operation being performed; 'check' or 'enqueue'
- * @param $queue CRM_Queue_Queue, (for 'enqueue') the modifiable list of pending up upgrade tasks
- *
- * @return mixed
- *   Based on op. for 'check', returns array(boolean) (TRUE if upgrades are pending)
- *                for 'enqueue', returns void
- *
- * @link http://wiki.civicrm.org/confluence/display/CRMDOC/hook_civicrm_upgrade
- */
-function mail_civicrm_upgrade($op, CRM_Queue_Queue $queue = NULL) {
-  return _mail_civix_civicrm_upgrade($op, $queue);
-}
-
-/**
- * Implements hook_civicrm_managed().
- *
- * Generate a list of entities to create/deactivate/delete when this module
- * is installed, disabled, uninstalled.
- *
- * @link http://wiki.civicrm.org/confluence/display/CRMDOC/hook_civicrm_managed
- */
-function mail_civicrm_managed(&$entities) {
-  _mail_civix_civicrm_managed($entities);
-}
-
-/**
- * Implements hook_civicrm_caseTypes().
- *
- * Generate a list of case-types
- *
- * Note: This hook only runs in CiviCRM 4.4+.
- *
- * @link http://wiki.civicrm.org/confluence/display/CRMDOC/hook_civicrm_caseTypes
- */
-function mail_civicrm_caseTypes(&$caseTypes) {
-  _mail_civix_civicrm_caseTypes($caseTypes);
 }
 
 /**
@@ -118,16 +77,16 @@ function mail_civicrm_caseTypes(&$caseTypes) {
  * @link http://wiki.civicrm.org/confluence/display/CRMDOC/hook_civicrm_caseTypes
  */
 function mail_civicrm_angularModules(&$angularModules) {
-_mail_civix_civicrm_angularModules($angularModules);
-}
+  //13780 office admins and managers can delete mailing templates
+  if (!empty($angularModules['crmMosaico'])) {
+    //Civi::log()->debug(__FUNCTION__, ['angularModules[crmMosaico]' => $angularModules['crmMosaico']]);
 
-/**
- * Implements hook_civicrm_alterSettingsFolders().
- *
- * @link http://wiki.civicrm.org/confluence/display/CRMDOC/hook_civicrm_alterSettingsFolders
- */
-function mail_civicrm_alterSettingsFolders(&$metaDataFolders = NULL) {
-  _mail_civix_civicrm_alterSettingsFolders($metaDataFolders);
+    if (CRM_NYSS_BAO_NYSS::checkUserRole('Office Administrator') ||
+      CRM_NYSS_BAO_NYSS::checkUserRole('Office Manager')
+    ) {
+      $angularModules['crmMosaico']['settings']['canDelete'] = 1;
+    }
+  }
 }
 
 function mail_civicrm_alterAngular(\Civi\Angular\Manager $angular) {
@@ -146,10 +105,47 @@ function mail_civicrm_alterAngular(\Civi\Angular\Manager $angular) {
     ->alterHtml('~/crmMailing/BlockReview.html', '_mail_alterMailingReview');
   $angular->add($changeSet);
 
+  //13402 adjust Mosaico mailing schedule
+  CRM_Core_Resources::singleton()->addScriptFile('gov.nysenate.mail', 'js/MosaicoReview.js');
+  $changeSet = \Civi\Angular\ChangeSet::create('modify_schedule')
+    ->alterHtml('~/crmMosaico/BlockSchedule.html', '_mail_alterMailingSchedule');
+  $angular->add($changeSet);
+
+  //14402 adjust Mosaico advanced settings
+  $changeSet = \Civi\Angular\ChangeSet::create('modify_advanced')
+    ->alterHtml('~/crmMosaico/AdvancedDialogCtrl.html', '_mail_alterMailingAdvancedSettings');
+  $angular->add($changeSet);
+
+  //13305 add Senate custom fields
+  $changeSet = \Civi\Angular\ChangeSet::create('inject_options_mosaico')
+    ->alterHtml('~/crmMosaico/BlockMailing.html', '_mail_alterMailingBlockMosaico');
+  $angular->add($changeSet);
+
   //12136 mailing test group
   $changeSet = \Civi\Angular\ChangeSet::create('modify_preview')
     ->alterHtml('~/crmMailing/BlockPreview.html', '_mail_alterMailingPreview');
   $angular->add($changeSet);
+}
+
+//https://github.com/veda-consulting-company/uk.co.vedaconsulting.mosaico/issues/347#issuecomment-555785659
+function mail_civicrm_mosaicoScripts(&$scripts) {
+  $extUrl = CRM_Core_Resources::singleton()->getUrl('gov.nysenate.mail');
+  $scripts[] = $extUrl.'js/Mosaico.js';
+}
+
+function mail_civicrm_mosaicoStyles(&$styles) {
+  $extUrl = CRM_Core_Resources::singleton()->getUrl('gov.nysenate.mail');
+  $styles[] = $extUrl.'css/Mosaico.css';
+}
+
+function mail_civicrm_mosaicoConfig(&$config) {
+  //13618
+  $config['tinymceConfigFull']['browser_spellcheck'] = TRUE;
+
+  //Mosaico 3.5 removes toolbar plugins; store locally from v2.11
+  $config['tinymceConfig']['external_plugins']['anchor'] = E::url('js/tinymce-plugins/anchor/plugin.js');
+  $config['tinymceConfig']['external_plugins']['charmap'] = E::url('js/tinymce-plugins/charmap/plugin.js');
+  $config['tinymceConfig']['external_plugins']['table'] = E::url('js/tinymce-plugins/table/plugin.js');
 }
 
 function mail_civicrm_pageRun(&$page) {
@@ -162,6 +158,35 @@ function mail_civicrm_pageRun(&$page) {
   if (is_a($page, 'Civi\Angular\Page\Main')) {
     CRM_Core_Resources::singleton()->addStyleFile('gov.nysenate.mail', 'css/mail.css');
     CRM_Core_Resources::singleton()->addScriptFile('gov.nysenate.mail', 'js/mail.js');
+
+    $bbconfig = get_bluebird_instance_config();
+
+    //14402
+    if (empty($bbconfig['email.allow_attachments'])) {
+      Civi::resources()->addStyle('
+        li[aria-controls=tab-attachments] { display: none; }
+
+        /*13304 hide advance mailing options*/
+        div.crmb-wizard-step button {
+          display: none !important;
+        }
+      ');
+      Civi::resources()->addVars('NYSS', ['displayAttachments' => FALSE]);
+    }
+    else {
+      Civi::resources()->addVars('NYSS', ['displayAttachments' => TRUE]);
+    }
+
+    //13627 - if only a scheduler, jump to schedule tab
+    $schedulerOnly = FALSE;
+    if (CRM_Core_Permission::check('schedule mailings') &&
+      !CRM_Core_Permission::check('create mailings') &&
+      !CRM_Core_Permission::check('approve mailings') &&
+      !CRM_Core_Permission::check('access CiviMail')
+    ) {
+      $schedulerOnly = TRUE;
+    }
+    CRM_Core_Resources::singleton()->addVars('NYSS', ['schedulerOnly' => $schedulerOnly]);
   }
 
   //expose url/open tracking to mailing report
@@ -217,14 +242,14 @@ function mail_civicrm_pageRun(&$page) {
       $cid = $page->getVar('_id');
 
       //get contact display name
-      $displayName = civicrm_api('contact', 'getvalue', array('version'=>3, 'id'=>$cid, 'return'=>'display_name'));
+      $displayName = civicrm_api3('contact', 'getvalue', ['id'=>$cid, 'return'=>'display_name']);
       $page->assign('display_name', $displayName);
 
       //get senator name
       $bbconfig = get_bluebird_instance_config();
       $page->assign('senatorFormal', $bbconfig['senator.name.formal']);
 
-      $contactEmails = array();
+      $contactEmails = [];
       $sql = "
         SELECT *
         FROM civicrm_email
@@ -232,9 +257,9 @@ function mail_civicrm_pageRun(&$page) {
       ";
       $email = CRM_Core_DAO::executeQuery($sql);
 
-      $locTypes = civicrm_api('location_type', 'get', array('version' => 3));
+      $locTypes = civicrm_api3('location_type', 'get', []);
       //CRM_Core_Error::debug_var('$locTypes', $locTypes);
-      $lt = array();
+      $lt = [];
       foreach ($locTypes['values'] as $lt_id => $lt_val) {
         if ($lt_val['is_active']) {
           $lt[$lt_id] = $lt_val['display_name'];
@@ -242,13 +267,13 @@ function mail_civicrm_pageRun(&$page) {
       }
       //CRM_Core_Error::debug_var('$lt', $lt);
 
-      $holdOptions = array(
+      $holdOptions = [
         1 => ts('On Hold Bounce'),
         2 => ts('On Hold Opt Out'),
-      );
+      ];
 
       //get category options
-      $mCats = array();
+      $mCats = [];
       $opts = CRM_Core_DAO::executeQuery("
         SELECT ov.label, ov.value
         FROM civicrm_option_value ov
@@ -262,15 +287,15 @@ function mail_civicrm_pageRun(&$page) {
       }
 
       while ($email->fetch()) {
-        $contactEmails[$email->id] = array(
+        $contactEmails[$email->id] = [
           'location_type_id' => $lt[$email->location_type_id],
           'email' => $email->email,
           'is_primary' => $email->is_primary,
           'on_hold' => CRM_Utils_Array::value($email->on_hold, $holdOptions, ''),
           'hold_date' => $email->hold_date,
-        );
+        ];
         $cats = explode(',', $email->mailing_categories);
-        $catsLabel = array();
+        $catsLabel = [];
         foreach ($cats as $cat) {
           $catsLabel[] = $mCats[$cat];
         }
@@ -278,43 +303,50 @@ function mail_civicrm_pageRun(&$page) {
       }
       $page->assign('emails', $contactEmails);
     }
-  } // NYSS 5581
+  }
+
+  if (is_a($page, 'CRM_Afform_Page_AfformBase')) {
+    $urlPath = $page->getVar('urlPath');
+    if ($urlPath[1] == 'mosaico-template-list') {
+      CRM_Core_Resources::singleton()->addStyleFile(E::LONG_NAME, 'css/MosaicoTemplateList.css');
+    }
+  }
 }
 
 function mail_civicrm_entityTypes(&$entityTypes) {
   //Civi::log()->debug('mail_civicrm_entityTypes', array('entityTypes' => $entityTypes));
 
   //formally declare our additions to the mailing table as entity fields
-  $entityTypes['CRM_Mailing_DAO_Mailing']['fields_callback'][] = function($class, &$fields) {
+  $entityTypes['Mailing']['fields_callback'][] = function($class, &$fields) {
     //Civi::log()->debug('mail_civicrm_entityTypes', array('$class' => $class, 'fields' => $fields));
 
-    $fields['all_emails'] = array(
+    $fields['all_emails'] = [
       'name' => 'all_emails',
       'type' => CRM_Utils_Type::T_INT,
       'title' => 'All Emails',
-    );
+    ];
 
-    $fields['exclude_ood'] = array(
+    $fields['exclude_ood'] = [
       'name' => 'exclude_ood',
       'type' => CRM_Utils_Type::T_INT,
       'title' => 'Exclude Out of District Emails',
-    );
+    ];
 
-    $fields['category'] = array(
+    $fields['category'] = [
       'name' => 'category',
       'type' => CRM_Utils_Type::T_STRING,
       'title' => 'Category',
       'maxlength' => 255,
-    );
+    ];
   };
 }
 
 function mail_civicrm_alterMailingRecipients(&$mailing, &$params, $context) {
-  /*Civi::log()->debug('mail_civicrm_alterMailingRecipients', array(
+  /*Civi::log()->debug('mail_civicrm_alterMailingRecipients', [
     '$mailing' => $mailing,
     '$params' => $params,
     '$context' => $context,
-  ));*/
+  ]);*/
 
   if ($context == 'pre') {
     unset($params['filters']['on_hold']);
@@ -408,15 +440,23 @@ function mail_civicrm_pre($op, $objectName, $id, &$params) {
   if ($op == 'create' && $objectName == 'Mailing') {
     $params['open_tracking'] = $params['url_tracking'] = FALSE;
   }
-}
+
+  if ($objectName === 'Mailing' && in_array($op, ['create', 'edit'])) {
+    if (!empty($params['template_type']) && $params['template_type'] === 'mosaico') {
+      $params['header_id'] = 'null';
+      $params['footer_id'] = 'null';
+    }
+  }
+} // mail_civicrm_pre()
+
 
 function mail_civicrm_post($op, $objectName, $objectId, &$objectRef) {
-  /*Civi::log()->debug('mail_civicrm_post', array(
+  /*Civi::log()->debug('mail_civicrm_post', [
     '$op' => $op,
     '$objectName' => $objectName,
     '$objectId' => $objectId,
     '$objectRef' => $objectRef,
-  ));*/
+  ]);*/
 
   if ($objectName == 'MailingJob') {
     //check if existing non-test parent job exists for same mailing
@@ -440,7 +480,8 @@ function mail_civicrm_post($op, $objectName, $objectId, &$objectRef) {
       }
     }
   }
-}
+} // mail_civicrm_post()
+
 
 function mail_civicrm_links($op, $objectName, $objectId, &$links, &$mask, &$values) {
   /*Civi::log()->debug('mail_civicrm_links', array(
@@ -460,13 +501,17 @@ function mail_civicrm_links($op, $objectName, $objectId, &$links, &$mask, &$valu
       if ($link['name'] == 'Public View') {
         unset($links[$key]);
       }
+      // 16659 "Continue" should be prioritized over "Copy"
+      // for unscheduled mass emails
+      if ($op == 'view.mailing.browse.unscheduled' && $link['name'] == 'Continue') {
+        $links[$key]['weight'] = "-50";
+      }
     }
   }
 
   if ($op == 'mailing.contact.action' && $objectName == 'Mailing') {
     $viewPerm = FALSE;
     $allowedPerms = [
-      'view mass email',
       'access CiviMail',
       'create mailings',
       'approve mailings',
@@ -488,12 +533,25 @@ function mail_civicrm_links($op, $objectName, $objectId, &$links, &$mask, &$valu
       }
     }
   }
+
+  //15622/16512
+  if ($op == 'view.mailing.browse.scheduled' &&
+    $objectName == 'Mailing' &&
+    !(CRM_Core_Permission::check('access CiviMail') || CRM_Core_Permission::check('approve mailings'))
+  ) {
+    foreach ($links as $k => $link) {
+      if (in_array($link['name'], ['Resume', 'Pause'])) {
+        unset($links[$k]);
+      }
+    }
+  }
 }
 
 function mail_civicrm_mosaicoBaseTemplates(&$templates) {
   //Civi::log()->debug('', array('templates' => $templates));
   unset($templates['tedc15']);
   unset($templates['tutorial']);
+  unset($templates['versafix-1']);
 }
 
 function mail_civicrm_apiWrappers(&$wrappers, $apiRequest) {
@@ -524,7 +582,28 @@ function mail_civicrm_apiWrappers(&$wrappers, $apiRequest) {
   }
 }
 
+function mail_civicrm_alterAPIPermissions($entity, $action, &$params, &$permissions) {
+  /*Civi::log()->debug(__FUNCTION__, [
+    'entity' => $entity,
+    'action' => $action,
+    'params' => $params,
+    'permissions' => $permissions,
+  ]);*/
+
+  if ($entity == 'mosaico_template' && $action == 'delete' &&
+    (CRM_NYSS_BAO_NYSS::checkUserRole('Office Administrator') ||
+      CRM_NYSS_BAO_NYSS::checkUserRole('Office Manager'))
+  ) {
+    $params['check_permissions'] = FALSE;
+  }
+}
+
 function mail_civicrm_buildForm($formName, &$form) {
+  /*Civi::log()->debug(__FUNCTION__, [
+    'formName' => $formName,
+    'form' => $form,
+  ]);*/
+
   if ($formName == 'CRM_Mailing_Form_Group' && $form->_searchBasedMailing) {
     //get base mailing group, add to option list, set as default, freeze field
     $params = ['name' => BASE_SUBSCRIPTION_GROUP];
@@ -546,14 +625,15 @@ function mail_civicrm_buildForm($formName, &$form) {
 
     // NYSS 4879
     $form->add('select', 'exclude_ood', ts('Send only to emails matched with in-district postal addresses'),
-      array(
+      [
         FILTER_ALL => 'No District Filtering',
         FILTER_IN_SD_ONLY => 'In-District Only',
-        FILTER_IN_SD_OR_NO_SD => 'In-District and Unknowns'),
+        FILTER_IN_SD_OR_NO_SD => 'In-District and Unknowns'
+      ],
       false);
 
     //NYSS 5581 - mailing category options
-    $mCats = array('' => '- select -');
+    $mCats = ['' => '- select -'];
     $opts = CRM_Core_DAO::executeQuery("
       SELECT ov.label, ov.value
       FROM civicrm_option_value ov
@@ -570,12 +650,12 @@ function mail_civicrm_buildForm($formName, &$form) {
     if ($mailingID) {
       $m = CRM_Core_DAO::executeQuery("SELECT * FROM civicrm_mailing WHERE id = {$mailingID}");
       while ($m->fetch()) {
-        $defaults = array(
+        $defaults = [
           'all_emails' => $m->all_emails,
           'dedupe_email' => $m->dedupe_email,
           'exclude_ood' => $m->exclude_ood,
           'category' => $m->category,
-        );
+        ];
       }
     }
     else {
@@ -626,6 +706,9 @@ function mail_civicrm_buildForm($formName, &$form) {
   }
 
   if ($formName == 'CRM_Mailing_Form_Search') {
+    CRM_Core_Resources::singleton()->addStyleFile(E::LONG_NAME, 'css/MailingSearch.css');
+    CRM_Core_Resources::singleton()->addScriptFile(E::LONG_NAME, 'js/MailingSearch.js');
+
     $parent = $form->controller->getParent();
     $title  = $parent->getVar('_title');
 
@@ -648,14 +731,14 @@ function mail_civicrm_buildForm($formName, &$form) {
     $cid = $form->getVar('_id');
 
     //get contact display name
-    $displayName = civicrm_api('contact', 'getvalue', array('version'=>3, 'id'=>$cid, 'return'=>'display_name'));
+    $displayName = civicrm_api3('contact', 'getvalue', ['id'=>$cid, 'return'=>'display_name']);
     $form->assign('display_name', $displayName);
 
     //get senator name
     $bbconfig = get_bluebird_instance_config();
     $form->assign('senatorFormal', $bbconfig['senator.name.formal']);
 
-    $contactEmails = array();
+    $contactEmails = [];
     $sql = "
       SELECT *
       FROM civicrm_email
@@ -663,9 +746,9 @@ function mail_civicrm_buildForm($formName, &$form) {
     ";
     $email = CRM_Core_DAO::executeQuery($sql);
 
-    $locTypes = civicrm_api('location_type', 'get', array('version' => 3));
+    $locTypes = civicrm_api3('location_type', 'get', []);
     //CRM_Core_Error::debug_var('$locTypes', $locTypes);
-    $lt = array();
+    $lt = [];
     foreach ($locTypes['values'] as $lt_id => $lt_val) {
       if ($lt_val['is_active']) {
         $lt[$lt_id] = $lt_val['display_name'];
@@ -673,14 +756,14 @@ function mail_civicrm_buildForm($formName, &$form) {
     }
     //CRM_Core_Error::debug_var('$lt', $lt);
 
-    $holdOptions = array(
+    $holdOptions = [
       1 => ts('On Hold Bounce'),
       2 => ts('On Hold Opt Out'),
-    );
+    ];
     $blockId = 0;
 
     //get category options
-    $mCats = array();
+    $mCats = [];
     $opts = CRM_Core_DAO::executeQuery("
       SELECT ov.label, ov.value
       FROM civicrm_option_value ov
@@ -693,16 +776,16 @@ function mail_civicrm_buildForm($formName, &$form) {
       $mCats[$opts->value] = $opts->label;
     }
 
-    $defaults = array();
+    $defaults = [];
     while ($email->fetch()) {
-      $contactEmails[$email->id] = array(
+      $contactEmails[$email->id] = [
         'location_type_id' => $lt[$email->location_type_id],
         'email' => $email->email,
         'is_primary' => $email->is_primary,
         'on_hold' => CRM_Utils_Array::value($email->on_hold, $holdOptions, ''),
         'hold_date' => $email->hold_date,
         'mailing_categories' => $email->mailing_categories,
-      );
+      ];
 
       /*$form->addElement('text', "email[$blockId][email]", ts('Email'),
         CRM_Core_DAO::getAttribute('CRM_Core_DAO_Email', 'email'));
@@ -716,11 +799,11 @@ function mail_civicrm_buildForm($formName, &$form) {
         ts('Subscription Opt-Outs'),
         $mCats,
         false,
-        array(
+        [
           'id' => 'subscription-optout-'.$email->id,
           'multiple' => 'multiple',
           'title' => ts('- select -')
-        )
+        ]
       );
 
       //set defaults
@@ -753,7 +836,8 @@ function mail_civicrm_buildForm($formName, &$form) {
 
   //CRM_Core_Error::debug_var('formName', $formName);
   //CRM_Core_Error::debug_var('form', $form);
-} // nyss_mail_civicrm_buildForm()
+} // mail_civicrm_buildForm()
+
 
 function mail_civicrm_postProcess($formName, &$form) {
   // NYSS 5581
@@ -787,20 +871,22 @@ function mail_civicrm_postProcess($formName, &$form) {
     }
   }
   //CRM_Core_Error::debug($form); exit();
-}
+} // mail_civicrm_postProcess()
+
 
 function mail_civicrm_alterMailParams(&$params, $context) {
-  //CRM_Core_Error::debug_var('params', $params);
+  //Civi::log()->debug(__FUNCTION__, ['context' => $context, 'params' => $params]);
 
   $path = CRM_Core_Resources::singleton()->getPath('gov.nysenate.mail');
   require_once $path.'/libs/SmtpApiHeader.php';
 
+  $bbconfig = get_bluebird_instance_config();
   $contentTypes = ['text', 'html'];
 
-  // Rewrite the public URLs to use pubfiles.nysenate.gov
+  // Rewrite the public URLs to use the ${public.url.base} parameter
   foreach ($contentTypes as $ctype) {
     if (isset($params[$ctype])) {
-      $params[$ctype] = _mail_rewrite_public_urls($params[$ctype]);
+      $params[$ctype] = _mail_rewrite_public_urls($params[$ctype], $bbconfig['public.url.base']);
     }
   }
 
@@ -809,7 +895,6 @@ function mail_civicrm_alterMailParams(&$params, $context) {
   $params['html'] = _mail_fixup_html_message($params['html']);
 
   $hdr = new SmtpApiHeader();
-  $bbconfig = get_bluebird_instance_config();
 
   if (isset($bbconfig['senator.email'])) {
     $senator_email = $bbconfig['senator.email'];
@@ -828,18 +913,36 @@ function mail_civicrm_alterMailParams(&$params, $context) {
     $replyto = DEFAULT_REPLYTO;
   }
 
-  // A context of "civimail" indicates a mass email job, which requires
+  // A context of "civimail" or "flexmailer" indicates a mass email job, which requires
   // much more setup than a non-civimail message.
-  if ($context == 'civimail') {
+  if ($context == 'civimail' || $context == 'flexmailer') {
     $eventQueueID = $contactID = 0;
     $jobInfo = null;
-    $extraContent = array_fill_keys($contentTypes, array());
+    $extraContent = array_fill_keys($contentTypes, []);
+
+    //contact_id and event_queue_id are not included via flexmailer
+    if ((empty($params['event_queue_id']) || empty($params['contact_id'])) &&
+      $xCiviMail = CRM_Utils_Array::value('X-CiviMail-Bounce', $params)
+    ) {
+      $emailParts = explode('@', $xCiviMail);
+      $idParts = explode('.', $emailParts[0]);
+      $params['event_queue_id'] = $idParts[2];
+
+      if (!empty($params['event_queue_id'])) {
+        try {
+          $eventQueue = civicrm_api3('MailingEventQueue', 'getsingle', ['id' => $params['event_queue_id']]);
+          $params['contact_id'] = CRM_Utils_Array::value('contact_id', $eventQueue);
+        } catch (CiviCRM_API3_Exception $e) {
+          Civi::log()->debug(__FUNCTION__, ['e' => $e]);
+        }
+      }
+    }
 
     if (isset($params['event_queue_id'])) {
       $eventQueueID = $params['event_queue_id'];
       unset($params['event_queue_id']);
     }
-    else if (empty($params['is_test'])) {
+    elseif (empty($params['is_test'])) {
       CRM_Core_Error::debug_var('params: event_queue_id not found', $params);
     }
 
@@ -935,27 +1038,35 @@ function mail_civicrm_alterMailParams(&$params, $context) {
       $view_url = _mail_get_view_url($bbconfig, $view_id);
     }
 
-    $token_replacements = array(
+    //15998 append a UTF-8 specific character to force Sendgrid to set the correct content encoding
+    $extraContent['text']['post_body'][] = '…';
+    $extraContent['html']['post_body'][] = '<!-- … -->';
+
+    $token_replacements = [
       '%SENATOR_EMAIL%' => $senator_email,
       '%SHAREON_FACEBOOK_URL%' => "https://www.facebook.com/sharer/sharer.php?u=$view_url",
       '%SHAREON_TWITTER_URL%' => "https://twitter.com/intent/tweet?url=$view_url&text=New York State Senate",
       '%SHAREON_REDDIT_URL%' => "https://www.reddit.com/submit?url=$view_url",
       '%VIEWIN_BROWSER_URL%' => $view_url,
       '%MANAGE_SUBSCRIPTIONS_URL%' => ''
-    );
+    ];
 
     // Add extra content (OpenGraph, whitelist, browser-view, opt-out, share-on)
     // and replace any tokens.
     foreach ($contentTypes as $ctype) {
       if (isset($params[$ctype])) {
-        $params[$ctype] = _mail_add_extra_content($params[$ctype], $extraContent[$ctype], $ctype);
+        $params[$ctype] = _mail_add_extra_content($params[$ctype], $extraContent[$ctype], $ctype, $context);
         $params[$ctype] = _mail_replace_tokens($params[$ctype], $token_replacements);
       }
     }
 
+    //13617 fix text alignment styles
+    //TODO this is fixed in a future Mosaico release
+    _mail_alterEmailContent($params);
+
     //Sendgrid headers
     $hdr->setCategory("BluebirdMail: {$jobInfo['mailing_name']} (ID: {$jobInfo['mailing_id']})");
-    $hdr->setUniqueArgs(array(
+    $hdr->setUniqueArgs([
       'instance' => $bbconfig['shortname'],
       'install_class' => $bbconfig['install_class'],
       'servername' => $bbconfig['servername'],
@@ -963,17 +1074,17 @@ function mail_civicrm_alterMailParams(&$params, $context) {
       'job_id' => $jobInfo['job_id'],
       'queue_id' => $eventQueueID,
       'is_test' => $jobInfo['is_test']
-    ));
+    ]);
   }
   else {
     // For non-Civimail messages, disable subscription/click/open tracking
     // Sendgrid SMTP-API
     $hdr->setCategory('Bluebird Activity');
-    $hdr->setUniqueArgs(array(
+    $hdr->setUniqueArgs([
       'instance' => $bbconfig['shortname'],
       'install_class' => $bbconfig['install_class'],
       'servername' => $bbconfig['servername']
-    ));
+    ]);
     $hdr->addFilterSetting('subscriptiontrack', 'enable', 0);
     $hdr->addFilterSetting('clicktrack', 'enable', 0);
     $hdr->addFilterSetting('opentrack', 'enable', 0);
@@ -985,9 +1096,19 @@ function mail_civicrm_alterMailParams(&$params, $context) {
 
   $params['headers']['X-SMTPAPI'] = $hdr->asJSON();
 
+  //13827 suppress draft text in subject when viewing via report;add some normalizing css;
+  if (function_exists('current_path') && current_path() == 'civicrm/mailing/view') {
+    $params['Subject'] = str_replace('[BluebirdMail Draft] ', '', $params['Subject']);
+
+    //CRM_Core_Error::debug_var('params[html]', $params['html']);
+    $params['html'] = _mail_mailingViewCss($params['html']);
+  }
+
   //CRM_Core_Error::debug('session', $_SESSION);
   //CRM_Core_Error::debug_var('params', $params);
-}
+  //CRM_Core_Error::debug_var('$_REQUEST', $_REQUEST);
+} // mail_civicrm_alterMailParams()
+
 
 function mail_civicrm_alterTemplateFile($formName, &$form, $context, &$tplName) {
   //CRM_Core_Error::debug_var('$formName', $formName);
@@ -1012,13 +1133,14 @@ function mail_civicrm_alterTemplateFile($formName, &$form, $context, &$tplName) 
       $tplName = 'CRM/NYSS/SubscriptionView.tpl';
     }
   }
-} // nyss_mail_civicrm_alterTemplateFile()
+}
 
 function mail_civicrm_permission_check($permission, &$granted) {
   /*Civi::log()->debug('mail_civicrm_permission_check', [
     '$permission' => $permission,
     '$granted' => $granted,
     'current_path' => current_path(),
+    '$_REQUEST' => $_REQUEST,
   ]);*/
 
   //current_path() is not available via the CLI; we don't need the permission checks
@@ -1056,10 +1178,11 @@ function _mail_removeOnHold($mailingID) {
       AND civicrm_email.on_hold > 0
     WHERE civicrm_mailing_recipients.mailing_id = %1
  ";
-  $params = array(1 => array($mailingID, 'Integer'));
+  $params = [1 => [$mailingID, 'Integer']];
 
   CRM_Core_DAO::executeQuery($sql, $params);
-}
+} // _mail_removeOnHold()
+
 
 /**
  * @param phpQueryObject $doc
@@ -1071,6 +1194,7 @@ function _mail_alterMailingWizard(phpQueryObject $doc) {
   $html = file_get_contents($extDir.'/html/workflow.html');
   $doc->find('div[ng-form=crmMailingSubform]')->html($html);
 }
+
 
 /**
  * @param phpQueryObject $doc
@@ -1112,12 +1236,89 @@ function _mail_alterMailingBlock(phpQueryObject $doc) {
       >
     </div>
   ');
+} // _mail_alterMailingBlock()
+
+
+/**
+ * @param phpQueryObject $doc
+ *
+ * inject custom fields
+ * #13305
+ */
+function _mail_alterMailingBlockMosaico(phpQueryObject $doc) {
+  //Civi::log()->debug(__FUNCTION__, ['doc' => $doc]);
+
+  //sync thumbnails whenever we open a Mosaico mailing
+  //moved to API with 16329
+  //CRM_NYSS_Mail_Utils::createMosaicoThumbnails();
+
+  //NYSS 5581 - mailing category options
+  $catOptions = "<option value=''>- select -</option>";
+  $opts = CRM_Core_DAO::executeQuery("
+    SELECT ov.label, ov.value
+    FROM civicrm_option_value ov
+    JOIN civicrm_option_group og
+      ON ov.option_group_id = og.id
+      AND og.name = 'mailing_categories'
+    ORDER BY ov.label
+  ");
+  while ($opts->fetch()) {
+    $catOptions .= "<option value='{$opts->value}'>{$opts->label}</option>";
+  }
+  //Civi::log()->debug(__FUNCTION__, ['doc->html()' => $doc->html()]);
+
+  $doc->find('div:first')->append('
+    <div class="form-group">
+      <label for="category" class="control-label">{{ts("Mailing Category")}}
+        <a crm-ui-help="hs({id: \'category\', title: ts(\'Mailing Category\')})"></a></label>
+      <div ng-controller="EmailAddrCtrl" crm-mailing="mailing">
+        <select
+          id="category"
+          class="form-control"
+          crm-ui-id="subform.nyss"
+          crm-ui-select="{dropdownAutoWidth : true, allowClear: true, placeholder: ts(\'Category\')}"
+          name="category"
+          ng-model="mailing.category"
+        >
+        '.$catOptions.'
+        </select>
+      </div>
+    </div>
+
+    <div class="form-group">
+      <label for="all_emails" class="control-label">{{ts(\'Send to all contact emails?\')}}
+        <a crm-ui-help="hs({id: \'all-emails\', title: ts(\'Send to all contact emails\')})"></a></label>
+      <div>
+        <input
+          id="all_emails"
+          name="all_emails"
+          type="checkbox"
+          crm-ui-id="subform.nyss"
+          ng-model="mailing.all_emails"
+          ng-true-value="\'1\'"
+          ng-false-value="\'0\'"
+        />
+      </div>
+    </div>
+  ');
 }
 
 function _mail_alterMailingReview(phpQueryObject $doc) {
   $extDir = CRM_Core_Resources::singleton()->getPath('gov.nysenate.mail');
   $html = file_get_contents($extDir.'/html/BlockReview.html');
   $doc->find('.crm-group')->html($html);
+}
+
+function _mail_alterMailingSchedule(phpQueryObject $doc) {
+  $extDir = CRM_Core_Resources::singleton()->getPath('gov.nysenate.mail');
+  $html = file_get_contents($extDir.'/html/BlockSchedule.html');
+  $doc->find('.crmMosaico-schedule-outer')->prepend($html);
+}
+
+function _mail_alterMailingAdvancedSettings(phpQueryObject $doc) {
+  $extDir = CRM_Core_Resources::singleton()->getPath('gov.nysenate.mail');
+  $html = file_get_contents($extDir.'/html/AdvancedDialogCtrl.html');
+  $doc->find('#bootstrap-theme')->html($html);
 }
 
 function _mail_alterMailingPreview(phpQueryObject $doc) {
@@ -1141,9 +1342,10 @@ function _mail_addAllEmails($mailingID, $excludeOOD = FILTER_ALL) {
       WHERE mailing_id = %1
     )
   ";
-  $params = array(1 => array($mailingID, 'Integer'));
+  $params = [1 => [$mailingID, 'Integer']];
   CRM_Core_DAO::executeQuery($sql, $params);
-} // _addAllEmails()
+} // _mail_addAllEmails()
+
 
 // NYSS 4879
 function _mail_excludeOOD($mailingID, $excludeOOD) {
@@ -1203,7 +1405,8 @@ function _mail_excludeOOD($mailingID, $excludeOOD) {
 
   //cleanup
   CRM_Core_DAO::executeQuery("DROP TABLE $tempTbl");
-} // _excludeOOD()
+} // _mail_excludeOOD()
+
 
 // NYSS 5581
 function _mail_excludeCategoryOptOut($mailingID, $mailingCat) {
@@ -1217,7 +1420,8 @@ function _mail_excludeCategoryOptOut($mailingID, $mailingCat) {
   ";
   //CRM_Core_Error::debug_var('sql', $sql);
   CRM_Core_DAO::executeQuery($sql);
-} // _excludeCategoryOptOut()
+} // _mail_excludeCategoryOptOut()
+
 
 function _mail_addEmailSeeds($mailingID) {
   $gid = CRM_Core_DAO::singleValueQuery("SELECT id FROM civicrm_group WHERE name LIKE 'Email_Seeds';");
@@ -1245,9 +1449,13 @@ function _mail_addEmailSeeds($mailingID) {
       AND c.is_deleted = 0;
   ";
   CRM_Core_DAO::executeQuery($sql);
-} // _addEmailSeeds()
+} // _mail_addEmailSeeds()
+
 
 function _mail_dedupeEmail($mailingID) {
+  //CRM_Core_Error::debug_var(__FUNCTION__.': $mailingID', $mailingID, TRUE, TRUE, 'veq');
+  //CRM_Core_Error::backtrace(__FUNCTION__, TRUE);
+
   //if dedupeEmails, handle that now, as it was skipped earlier in the process
   $tempTbl = "nyss_temp_dedupe_emails_{$mailingID}";
   $sql = "CREATE TEMPORARY TABLE $tempTbl (email_id INT NOT NULL, PRIMARY KEY(email_id)) ENGINE=MyISAM;";
@@ -1262,7 +1470,7 @@ function _mail_dedupeEmail($mailingID) {
     WHERE mailing_id = %1
     GROUP BY e.email;
   ";
-  CRM_Core_DAO::executeQuery($sql, array(1 => array($mailingID, 'Positive')));
+  CRM_Core_DAO::executeQuery($sql, [1 => [$mailingID, 'Positive']]);
 
   //now remove contacts from the recipients table that are not found in the deduped table
   $sql = "
@@ -1273,11 +1481,12 @@ function _mail_dedupeEmail($mailingID) {
     WHERE civicrm_mailing_recipients.mailing_id = %1
       AND $tempTbl.email_id IS NULL;
   ";
-  CRM_Core_DAO::executeQuery($sql, array(1 => array($mailingID, 'Positive')));
+  CRM_Core_DAO::executeQuery($sql, [1 => [$mailingID, 'Positive']]);
 
   //cleanup
   CRM_Core_DAO::executeQuery("DROP TABLE $tempTbl");
-}
+} // _mail_dedupeEmail()
+
 
 /**
  * @param $mailingId
@@ -1294,10 +1503,11 @@ function _mail_dedupeContacts($mailingId) {
       AND a.contact_id <=> b.contact_id
       AND a.email_id <=> b.email_id
       AND a.mailing_id = %1
-  ", array(
-    1 => array($mailingId, 'Positive')
-  ));
-}
+  ", [
+    1 => [$mailingId, 'Positive']
+  ]);
+} // _mail_dedupeContacts()
+
 
 /**
  * @param $mailingID
@@ -1316,14 +1526,15 @@ function _mail_logRecipients($note, $mailingID) {
       ORDER BY mr.email_id
     ");
 
-    $rows = array();
+    $rows = [];
     while ($dao->fetch()) {
       $rows[] = "EID: {$dao->email_id} | CID: {$dao->contact_id} | Email: {$dao->email}";
     }
 
     Civi::log()->debug('_mail_logRecipients: '.$note, $rows);
   }
-}
+} // _mail_logRecipients()
+
 
 function _mail_fixup_html_message($m) {
   $added_tags = '';
@@ -1344,7 +1555,7 @@ function _mail_fixup_html_message($m) {
     $m = "<head>\n<title>New York State Senate</title>\n</head>\n$m";
     $added_tags .= ' HEAD TITLE /TITLE /HEAD';
   }
-  else if (stripos($m, '</head>') === false) {
+  elseif (stripos($m, '</head>') === false) {
     $m = str_ireplace('<body', "</head>\n<body", $m);
     $added_tags .= ' /HEAD';
   }
@@ -1367,26 +1578,34 @@ function _mail_fixup_html_message($m) {
 
 
 /* Re-write any URLs in the message body of the form:
- *   <sitename>/sites/<sitename>/pubfiles [old format]
+ *
+ *   <sitename>/data/<shortname>/pubfiles
  * or
- *   <sitename>/data/<shortname>/pubfiles [new format]
- *   (where <shortname> is typically the senator's last name and
- *          <envname> is "crm", "crmdev", "crmtest", etc. and
- *          <sitename> is <shortname>.<envname>.nysenate.gov)
+ *   <sitename>/sites/all/mosaico/nyssbase/img
+ *
+ * where <sitename> is <shortname>.<envname>.nysenate.gov
+ *   and <shortname> is typically the senator's last name
+ *   and <envname> is "crm", "crmdev", "crmtest", etc.
+ *
  * into:
- *   pubfiles.nysenate.gov/<envname>/<shortname>/
+ *   <public_url_base>/<envname>/<shortname>/
+ * or
+ *   <public_url_base>/<envname>/<shortname>/common/images/mosaico/
 */
-function _mail_rewrite_public_urls($s) {
-  $patterns = array(
-    // Legacy "/sites/" URLs
-    '#[\w-]+\.(crm[\w]*)\.nysenate\.gov/sites/([\w-]+)\.crm[\w]*\.nysenate\.gov/pubfiles/#i',
+function _mail_rewrite_public_urls($s, $urlbase) {
+  $patterns = [
     // Standard "/data/" URLs
-    '#[\w-]+\.(crm[\w]*)\.nysenate\.gov/data/([\w-]+)/pubfiles/#i',
-  );
-  $replacement = 'pubfiles.nysenate.gov/$1/$2/';
+    '#https?://([\w-]+)\.(crm[\w]*)\.nysenate\.gov/data/[\w-]+/pubfiles/#i',
+    // Mosaico URLs
+    '#https?://([\w-]+)\.(crm[\w]*)\.nysenate\.gov/sites/all/mosaico/nyssbase/img/#i'
+  ];
+  $replacements = [
+    $urlbase.'/$2/$1/',
+    $urlbase.'/$2/$1/common/images/mosaico/'
+  ];
 
-  // Two patterns.  One replacement.  One call to preg_replace().
-  return preg_replace($patterns, $replacement, $s);
+  // Replace the "/data/" and Mosaico URLs with pubfiles URLs
+  return preg_replace($patterns, $replacements, $s);
 } // _mail_rewrite_public_urls()
 
 
@@ -1404,8 +1623,10 @@ function _mail_get_job_info($jid) {
     $hash = $m->hash;
   }
 
-  return array('job_id'=>$jid, 'mailing_id'=>$mid, 'is_test'=>$test,
-    'mailing_name'=>$mname, 'mailing_hash'=>$hash);
+  return [
+    'job_id'=>$jid, 'mailing_id'=>$mid, 'is_test'=>$test,
+    'mailing_name'=>$mname, 'mailing_hash'=>$hash
+  ];
 } // _mail_get_job_info()
 
 
@@ -1414,7 +1635,7 @@ function _mail_get_whitelist_clause($bbcfg) {
     $html = $bbcfg['email.extras.whitelist_html'];
   }
   else {
-    $html = 'To ensure delivery of emails to your inbox, please add <a href="mailto:%SENATOR_EMAIL%">%SENATOR_EMAIL%</a> to your email address book.';
+    $html = '<br />To ensure delivery of emails to your inbox, please add <a href="mailto:%SENATOR_EMAIL%">%SENATOR_EMAIL%</a> to your email address book.';
   }
 
   if (!empty($bbcfg['email.extras.whitelist_text'])) {
@@ -1424,12 +1645,12 @@ function _mail_get_whitelist_clause($bbcfg) {
     $text = 'To ensure delivery of emails to your inbox, please add %SENATOR_EMAIL% to your email address book.';
   }
 
-  return array('text' => $text, 'html' => $html);
+  return ['text' => $text, 'html' => $html];
 } // _mail_get_whitelist_clause()
 
 
 function _mail_get_view_url($bbcfg, $viewId) {
-  $url = "http://pubfiles.nysenate.gov/{$bbcfg['envname']}/{$bbcfg['shortname']}/view/$viewId";
+  $url = "{$bbcfg['public.url.base']}/{$bbcfg['envname']}/{$bbcfg['shortname']}/view/$viewId";
   //$url = CRM_Utils_System::url('civicrm/mailing/view', 'reset=1&id='.$viewId, true);
   return $url;
 } // _mail_get_view_url()
@@ -1437,24 +1658,24 @@ function _mail_get_view_url($bbcfg, $viewId) {
 
 function _mail_get_browserview_clause($bbcfg) {
   $text = 'To view this email in your browser, go to %VIEWIN_BROWSER_URL%';
-  $html = '<a href="%VIEWIN_BROWSER_URL%" target="_blank">Click here</a> to view this email in your browser.';
-  return array('text' => $text, 'html' => $html);
+  $html = "<a href='%VIEWIN_BROWSER_URL%' target='_blank' style='color: #386eff'>Click here</a> to view this email in your browser.";
+  return ['text' => $text, 'html' => $html];
 } // _mail_get_browserview_clause()
 
 
 function _mail_get_optout_clause($bbcfg, $cid, $qid) {
   $cs = CRM_Contact_BAO_Contact_Utils::generateChecksum($cid);
-  $url = "http://pubfiles.nysenate.gov/{$bbcfg['envname']}/{$bbcfg['shortname']}/subscription/manage/$qid/$cs";
+  $url = "{$bbcfg['public.url.base']}/{$bbcfg['envname']}/{$bbcfg['shortname']}/subscription/manage/$qid/$cs";
 
   $text = "To manage your email subscription settings or to unsubscribe, go to $url";
-  $html = '<a href="'.$url.'" target="_blank">Click here</a> to manage your email subscription settings or to unsubscribe.';
+  $html = "<a href='{$url}' target='_blank' style='color: #386eff'>Click here</a> to manage your email subscription settings or to unsubscribe.";
 
-  return array('text' => $text, 'html' => $html);
+  return ['text' => $text, 'html' => $html];
 } // _mail_get_optout_clause()
 
 
 function _mail_get_shareon_clause($bbcfg) {
-  $fbimg = "http://pubfiles.nysenate.gov/{$bbcfg['envname']}/{$bbcfg['shortname']}/common/images/social_media/facebook_share_68x25.png";
+  $fbimg = "{$bbcfg['public.url.base']}/{$bbcfg['envname']}/{$bbcfg['shortname']}/common/images/social_media/facebook_share_68x25.png";
 
   $text = 'To share this on Facebook, go to %SHAREON_FACEBOOK_URL%';
   $html = '<a style="color:#386eff; text-decoration:underline;" href="%SHAREON_FACEBOOK_URL%" target="_blank">Share&nbsp;on&nbsp;Facebook.</a>';
@@ -1464,9 +1685,9 @@ function _mail_get_shareon_clause($bbcfg) {
 
 function _mail_get_opengraph_clause($bbcfg, $subj) {
   $senator_name = $bbcfg['senator.name.formal'];
-  $url = "http://pubfiles.nysenate.gov/{$bbcfg['envname']}/{$bbcfg['shortname']}/common/images/nysenate_logo_200.png";
+  $url = "{$bbcfg['public.url.base']}/{$bbcfg['envname']}/{$bbcfg['shortname']}/common/images/nysenate_logo_200.png";
   $text = '';
-  $metas = array(
+  $metas = [
     '<meta property="og:type" content="article" />',
     '<meta property="og:title" content="'.$subj.'" />',
     '<meta property="og:description" content="From the desk of '.$senator_name.'" />',
@@ -1475,35 +1696,35 @@ function _mail_get_opengraph_clause($bbcfg, $subj) {
     '<meta name="twitter:description" content="From the desk of '.$senator_name.'" />',
     '<meta name="twitter:image" content="'.$url.'" />',
     '<link rel="image_src" type="image/png" href="'.$url.'" />'
-  );
+  ];
   $html = implode("\n", $metas);
-  return array('text' => $text, 'html' => $html);
+  return ['text' => $text, 'html' => $html];
 } // _mail_get_opengraph_clause()
 
 
-function _mail_add_extra_content($msg, $extra, $ctype) {
+function _mail_add_extra_content($msg, $extra, $ctype, $context) {
   $sep = ($ctype == 'text') ? "\n" : "\n<br/>\n";
 
   // Each of the three "extra" variables is an array of items.
-  $extraHead = implode($sep, $extra['head']);
-  $extraPreBody = implode($sep, $extra['pre_body']);
-  $extraPostBody = implode($sep, $extra['post_body']);
+  $extraHead = isset($extra['head']) ? implode($sep, $extra['head']) : '';
+  $extraPreBody = isset($extra['pre_body']) ? implode($sep, $extra['pre_body']) : '';
+  $extraPostBody = isset($extra['post_body']) ? implode($sep, $extra['post_body']) : '';
 
   if ($ctype == 'text') {
     $msg = "$extraHead\n$extraPreBody\n$msg\n$extraPostBody";
   }
   else {
-    $patterns = array(
+    $patterns = [
       '#(\s*</head>)#',
       '/(<body( [^>]*)?>\s*)/',
       '#(\s*</body>)#'
-    );
-    $attr = 'style="text-align:center; font:10px/12px Helvetica, Arial, sans-serif; color:#3f3f3f; padding:0 10px 30px;"';
-    $replacements = array(
+    ];
+    $attr = "style='text-align:center; font:10px/12px Helvetica, Arial, sans-serif; color: #3f3f3f; padding:0 10px 30px; background-color: #FFFFFF;'";
+    $replacements = [
       "\n<!-- Extra HEAD content -->\n$extraHead\$1",
       "\$1<div id=\"extra_prebody_content\" $attr>\n$extraPreBody\n</div>\n",
       "\n<div id=\"extra_postbody_content\" $attr>\n$extraPostBody\n</div>\$1"
-    );
+    ];
     $msg = preg_replace($patterns, $replacements, $msg);
   }
   return $msg;
@@ -1515,3 +1736,56 @@ function _mail_replace_tokens($msg, $token_map) {
   $replacements = array_values($token_map);
   return str_replace($patterns, $replacements, $msg);
 } // _mail_replace_tokens()
+
+
+function _mail_alterEmailContent(&$params) {
+  //Civi::log()->debug(__FUNCTION__, ['$params' => $params]);
+
+  $html = $params['html'];
+  $doc = phpQuery::newDocument($html);
+
+  foreach ($doc['p'] as $p) {
+    $dStyle = pq($p)->attr('data-mce-style');
+    //Civi::log()->debug(__FUNCTION__, ['$dStyle' => $dStyle]);
+
+    if (!empty($dStyle)) {
+      $style = pq($p)->attr('style');
+      //Civi::log()->debug(__FUNCTION__, ['$style' => $style]);
+
+      if (substr($style, -1) != ';') {
+        $style .= ';';
+      }
+
+      pq($p)->attr('style', $style.$dStyle);
+      pq($p)->attr('data-mce-style', '');
+    }
+  }
+
+  $params['html'] = $doc->html();
+} // _mail_alterEmailContent()
+
+
+function _mail_mailingViewCss($html) {
+  $doc = phpQuery::newDocument($html);
+  $doc->find('head')->append('
+    <style type="text/css">
+      .crm-container td {
+        padding: 0;
+      }
+      .crm-container.ui-dialog table tr td {
+        line-height: normal;
+      }
+      .crm-container.ui-dialog table tr td.vb-outer {
+        background-color: #bfbfbf;
+      }
+      .crm-container.ui-dialog td:first-child {
+        font-weight: normal !important;
+      }
+    </style>
+  ');
+
+  $html = $doc->html();
+  //Civi::log()->debug(__FUNCTION__, ['$html' => $html]);
+
+  return $html;
+} // _mail_mailingViewCss()

@@ -91,6 +91,26 @@ class CommonURLUnitTest extends DrupalWebTestCase {
     $link = l($text, $path);
     $sanitized_path = check_url(url($path));
     $this->assertTrue(strpos($link, $sanitized_path) !== FALSE, format_string('XSS attack @path was filtered', array('@path' => $path)));
+
+    // Verify that a dangerous protocol is sanitized.
+    $text = $this->randomName();
+    $path = "javascript:alert('XSS')";
+    $link = l($text, $path, array('external' => TRUE));
+    $this->assertTrue(strpos($link, 'javascript:') === FALSE, 'Dangerous protocol javascript: was sanitized.');
+
+    // Verify that these harmless javascript paths are left intact for BC.
+    $special_case_js_paths = array(
+      'javascript:void()',
+      'javascript:void();',
+      'javascript:void(0)',
+      'javascript:void(0);',
+      'JavaScript:Void(0)'
+    );
+    foreach ($special_case_js_paths as $path) {
+      $text = $this->randomName();
+      $link = l($text, $path, array('external' => TRUE));
+      $this->assertTrue(strpos($link, $path) !== FALSE, format_string('Harmless @path was not sanitized.', array('@path' => $path)));
+    }
   }
 
   /*
@@ -480,6 +500,15 @@ class CommonXssUnitTest extends DrupalUnitTestCase {
    * Check that invalid multi-byte sequences are rejected.
    */
   function testInvalidMultiByte() {
+     // Ignore PHP 8.0+ null deprecations.
+     $text = check_plain(NULL);
+     $this->assertEqual($text, '', 'check_plain() casts null to string');
+     $text = check_plain(FALSE);
+     $this->assertEqual($text, '', 'check_plain() casts boolean to string');
+     $text = filter_xss(NULL);
+     $this->assertEqual($text, '', 'filter_xss() casts null to string');
+     $text = filter_xss(FALSE);
+     $this->assertEqual($text, '', 'filter_xss() casts boolean to string');
      // Ignore PHP 5.3+ invalid multibyte sequence warning.
      $text = @check_plain("Foo\xC0barbaz");
      $this->assertEqual($text, '', 'check_plain() rejects invalid sequence "Foo\xC0barbaz"');
@@ -525,13 +554,34 @@ class CommonXssUnitTest extends DrupalUnitTestCase {
    */
   function testBadProtocolStripping() {
     // Ensure that check_url() strips out harmful protocols, and encodes for
-    // HTML. Ensure drupal_strip_dangerous_protocols() can be used to return a
-    // plain-text string stripped of harmful protocols.
+    // HTML.
     $url = 'javascript:http://www.example.com/?x=1&y=2';
-    $expected_plain = 'http://www.example.com/?x=1&y=2';
     $expected_html = 'http://www.example.com/?x=1&amp;y=2';
     $this->assertIdentical(check_url($url), $expected_html, 'check_url() filters a URL and encodes it for HTML.');
-    $this->assertIdentical(drupal_strip_dangerous_protocols($url), $expected_plain, 'drupal_strip_dangerous_protocols() filters a URL and returns plain text.');
+
+    // Ensure that drupal_strip_dangerous_protocols() can be used to return a
+    // plain-text string stripped of harmful protocols.
+    $data = array(
+      'javascript:http://www.example.com/?x=1&y=2' => 'http://www.example.com/?x=1&y=2',
+      'foo://disallowed.com' => '//disallowed.com',
+      'http://example.com' => 'http://example.com',
+      'https://example.com' => 'https://example.com',
+      'www.example.com' => 'www.example.com',
+      'mailto:person2@example.com' => 'mailto:person2@example.com',
+      'person2@example.com' => 'person2@example.com',
+      'ftp://example.com' => 'ftp://example.com',
+      'sftp://secure.host' => 'sftp://secure.host',
+      'ssh://odd.geek' => 'ssh://odd.geek',
+      'news://example.net' => 'news://example.net',
+      'telnet://example' => 'telnet://example',
+      'irc://example.host' => 'irc://example.host',
+      'webcal://calendar' => 'webcal://calendar',
+      'rtsp://127.0.0.1' => 'rtsp://127.0.0.1',
+      'tel:111111111' => 'tel:111111111',
+    );
+    foreach ($data as $url => $expected_plain) {
+      $this->assertIdentical(drupal_strip_dangerous_protocols($url), $expected_plain, 'drupal_strip_dangerous_protocols() filters a URL and returns plain text.');
+    }
   }
 }
 
@@ -1069,7 +1119,8 @@ class CascadingStylesheetsUnitTest extends DrupalUnitTestCase {
       'css_input_without_import.css',
       'css_input_with_import.css',
       'css_subfolder/css_input_with_import.css',
-      'comment_hacks.css'
+      'comment_hacks.css',
+      'quotes.css',
     );
     $path = drupal_get_path('module', 'simpletest') . '/files/css_test_files';
     foreach ($testfiles as $file) {
@@ -1181,6 +1232,10 @@ class DrupalHTTPRequestTestCase extends DrupalWebTestCase {
     $redirect_301 = drupal_http_request(url('system-test/redirect/301', array('absolute' => TRUE)), array('max_redirects' => 0));
     $this->assertFalse(isset($redirect_301->redirect_code), 'drupal_http_request does not follow 301 redirect if max_redirects = 0.');
 
+    $redirect_invalid = drupal_http_request(url('system-test/redirect-protocol-relative', array('absolute' => TRUE)), array('max_redirects' => 1));
+    $this->assertEqual($redirect_invalid->code, -1002, format_string('301 redirect to protocol-relative URL returned with error code !error.', array('!error' => $redirect_invalid->error)));
+    $this->assertEqual($redirect_invalid->error, 'missing schema', format_string('301 redirect to protocol-relative URL returned with error message "!error".', array('!error' => $redirect_invalid->error)));
+
     $redirect_invalid = drupal_http_request(url('system-test/redirect-noscheme', array('absolute' => TRUE)), array('max_redirects' => 1));
     $this->assertEqual($redirect_invalid->code, -1002, format_string('301 redirect to invalid URL returned with error code !error.', array('!error' => $redirect_invalid->error)));
     $this->assertEqual($redirect_invalid->error, 'missing schema', format_string('301 redirect to invalid URL returned with error message "!error".', array('!error' => $redirect_invalid->error)));
@@ -1227,6 +1282,44 @@ class DrupalHTTPRequestTestCase extends DrupalWebTestCase {
     // Request front page and check for matching Content-Language.
     $request = drupal_http_request(url('<front>', array('absolute' => TRUE)));
     $this->assertEqual($request->headers['content-language'], 'de', 'Content-Language HTTP header is German.');
+  }
+}
+
+/**
+ * Unit tests for processing of http redirects.
+ */
+class DrupalHTTPRedirectTest extends DrupalUnitTestCase {
+
+  public static function getInfo() {
+    return array(
+      'name' => 'Drupal HTTP redirect processing',
+      'description' => 'Perform unit tests on processing of http redirects.',
+      'group' => 'System',
+    );
+  }
+
+  public function testHttpsDowngrade() {
+    $url = 'https://example.com/foo';
+    $location = 'http://example.com/bar';
+    $this->assertTrue(_drupal_should_strip_sensitive_headers_on_http_redirect($url, $location), 'Sensitive headers are stripped on HTTPS downgrade.');
+  }
+
+  public function testNoHttpsDowngrade() {
+    $url = 'https://example.com/foo';
+    $location = 'https://example.com/bar';
+    $this->assertFalse(_drupal_should_strip_sensitive_headers_on_http_redirect($url, $location), 'Sensitive headers are not stripped without HTTPS downgrade.');
+  }
+
+  public function testHostChange() {
+    $url = 'https://example.com/foo';
+    $location = 'https://www.example.com/bar';
+    $this->assertTrue(_drupal_should_strip_sensitive_headers_on_http_redirect($url, $location), 'Sensitive headers are stripped on change of host.');
+  }
+
+  public function testNoHostChange() {
+    $url = 'http://example.com/foo';
+    $location = 'http://example.com/bar';
+    $this->assertFalse(_drupal_should_strip_sensitive_headers_on_http_redirect($url, $location), 'Sensitive headers are not stripped without change of host.');
   }
 }
 
@@ -1483,8 +1576,8 @@ class JavaScriptTestCase extends DrupalWebTestCase {
    */
   function testAddSetting() {
     $javascript = drupal_add_js(array('drupal' => 'rocks', 'dries' => 280342800), 'setting');
-    $this->assertEqual(280342800, $javascript['settings']['data'][2]['dries'], 'JavaScript setting is set correctly.');
-    $this->assertEqual('rocks', $javascript['settings']['data'][2]['drupal'], 'The other JavaScript setting is set correctly.');
+    $this->assertEqual(280342800, $javascript['settings']['data'][3]['dries'], 'JavaScript setting is set correctly.');
+    $this->assertEqual('rocks', $javascript['settings']['data'][3]['drupal'], 'The other JavaScript setting is set correctly.');
   }
 
   /**
@@ -1691,6 +1784,29 @@ class JavaScriptTestCase extends DrupalWebTestCase {
     $this->assertTrue(strpos($javascript, 'misc/collapse.js') !== FALSE, 'When "javascript_always_use_jquery" is FALSE: The JavaScript returned by drupal_get_js() when at least one custom JavaScript file that requires jQuery has been added includes the first custom file.');
     $this->assertTrue(strpos($javascript, 'misc/ajax.js') !== FALSE, 'When "javascript_always_use_jquery" is FALSE: The JavaScript returned by drupal_get_js() when at least one custom JavaScript file that requires jQuery has been added includes the second custom file.');
     variable_del('javascript_always_use_jquery');
+  }
+
+  /**
+   * Tests the double submit form protection and
+   * 'javascript_use_double_submit_protection' variable.
+   */
+  function testDoubleSubmitFormProtection() {
+    // The default front page of the site should have the double submit
+    // protection enabled as there is a login block.
+    $this->drupalGet('');
+    $this->assertRaw('misc/form-single-submit.js', 'Default behavior: Double submit protection is enabled.');
+
+    // The default front page should have the double submit protection disabled
+    // when the 'javascript_always_use_jquery' variable is set to FALSE or the
+    // 'javascript_use_double_submit_protection' variable is set to FALSE.
+    variable_set('javascript_always_use_jquery', FALSE);
+    $this->drupalGet('');
+    $this->assertNoRaw('misc/form-single-submit.js', 'When "javascript_always_use_jquery" is FALSE: Double submit protection is disabled.');
+    variable_del('javascript_always_use_jquery');
+    variable_set('javascript_use_double_submit_protection', FALSE);
+    $this->drupalGet('');
+    $this->assertNoRaw('misc/form-single-submit.js', 'When "javascript_use_double_submit_protection" is FALSE: Double submit protection is disabled.');
+    variable_del('javascript_use_double_submit_protection');
   }
 
   /**
@@ -1923,6 +2039,18 @@ class JavaScriptTestCase extends DrupalWebTestCase {
   }
 
   /**
+   * Tests that the set_has_js_cookie variable is reflected in Drupal.settings.
+   */
+  function testSetHasJsCookie() {
+    $this->drupalGet('');
+    $this->assertRaw('"setHasJsCookie":0', 'setHasJsCookie set to 0 by default.');
+
+    variable_set('set_has_js_cookie', TRUE);
+    $this->drupalGet('');
+    $this->assertRaw('"setHasJsCookie":1', 'setHasJsCookie set to 1 when set_has_js_cookie is set to TRUE.');
+  }
+
+  /**
    * Resets static variables related to adding JavaScript to a page.
    */
   function resetStaticVariables() {
@@ -1965,6 +2093,11 @@ class DrupalRenderTestCase extends DrupalWebTestCase {
       array(
         'name' => 'empty string',
         'value' => '',
+        'expected' => '',
+      ),
+      array(
+        'name' => 'not a render array',
+        'value' => 'this is not an array',
         'expected' => '',
       ),
       array(
@@ -2051,6 +2184,32 @@ class DrupalRenderTestCase extends DrupalWebTestCase {
 
     // The elements should appear in output in the same order as the array.
     $this->assertTrue(strpos($output, $second) < strpos($output, $first), 'Elements were not sorted.');
+
+    // The order of children with same weight should be preserved.
+    $element_mixed_weight = array(
+      'child5' => array('#weight' => 10),
+      'child3' => array('#weight' => -10),
+      'child1' => array(),
+      'child4' => array('#weight' => 10),
+      'child2' => array(),
+      'child6' => array('#weight' => 10),
+      'child9' => array(),
+      'child8' => array('#weight' => 10),
+      'child7' => array(),
+    );
+
+    $expected = array(
+      'child3',
+      'child1',
+      'child2',
+      'child9',
+      'child7',
+      'child5',
+      'child4',
+      'child6',
+      'child8',
+      );
+    $this->assertEqual($expected, element_children($element_mixed_weight, TRUE), 'Order of elements with the same weight is preserved.');
   }
 
   /**
@@ -2567,6 +2726,12 @@ class DrupalDataApiTest extends DrupalWebTestCase {
     // Update the record.
     $update_result = drupal_write_record('node_access', $node_access, array('nid', 'gid', 'realm'));
     $this->assertTrue($update_result == SAVED_UPDATED, 'Correct value returned when a record is updated with drupal_write_record() for a table with a multi-field primary key.');
+
+    // Insert a new record to the table with a database specific data type.
+    $person = new stdClass();
+    $person->age = 25;
+    $insert_result = drupal_write_record('test_db_specific_datatype', $person);
+    $this->assertTrue($insert_result == SAVED_NEW, 'Correct value returned when a record is inserted with drupal_write_record() for a table with a database specific data type.');
   }
 
 }
@@ -2607,8 +2772,8 @@ class DrupalErrorCollectionUnitTest extends DrupalWebTestCase {
     $this->assertEqual(count($this->collectedErrors), 3, 'Three errors were collected');
 
     if (count($this->collectedErrors) == 3) {
-      $this->assertError($this->collectedErrors[0], 'Notice', 'error_test_generate_warnings()', 'error_test.module', 'Undefined variable: bananas');
-      $this->assertError($this->collectedErrors[1], 'Warning', 'error_test_generate_warnings()', 'error_test.module', 'Division by zero');
+      $this->assertError($this->collectedErrors[0], 'Notice', 'error_test_generate_warnings()', 'error_test.module', 'Object of class stdClass could not be converted to int');
+      $this->assertError($this->collectedErrors[1], 'Warning', 'error_test_generate_warnings()', 'error_test.module', \PHP_VERSION_ID < 80000 ? 'Invalid argument supplied for foreach()' : 'foreach() argument must be of type array|object, string given');
       $this->assertError($this->collectedErrors[2], 'User warning', 'error_test_generate_warnings()', 'error_test.module', 'Drupal is awesome');
     }
     else {
@@ -2749,6 +2914,7 @@ class DrupalSystemListingTestCase extends DrupalWebTestCase {
  * Tests for the format_date() function.
  */
 class FormatDateUnitTest extends DrupalWebTestCase {
+  protected $admin_user;
 
   /**
    * Arbitrary langcode for a custom language.
@@ -3215,6 +3381,51 @@ class DrupalGetQueryArrayTestCase extends DrupalWebTestCase {
     $parsed = parse_url($url);
     $result = drupal_get_query_array($parsed['query']);
     $this->assertEqual($result['foo'], "/content/folder[@name='foo']/folder[@name='bar']", 'drupal_get_query_array() should only explode parameters on the first equals sign.');
+  }
+
+}
+
+/**
+ * Test for drupal_add_html_head_link().
+ */
+class DrupalAddHtmlHeadLinkTest extends DrupalWebTestCase {
+
+  /**
+   * {@inheritdoc}
+   */
+  public static function getInfo() {
+    return array(
+      'name' => 'Add HTML head link',
+      'description' => 'Test for drupal_add_html_head_link().',
+      'group' => 'System',
+    );
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  function setUp() {
+    parent::setUp('common_test');
+  }
+
+  /**
+   * Tests drupal_add_html_head_link().
+   */
+  function testDrupalAddHtmlHeadLink() {
+    $this->drupalGet('common-test/html_head_link');
+    $expected_link_header = implode(',', array(
+      '</foo?bar=baz>; rel="alternate"',
+      '</foo/bar>; hreflang="nl"; rel="alternate"',
+      '</foo/bar>; hreflang="de"; rel="alternate"',
+      '</foo?bar=baz&baz=false>; hreflang="en"; rel="alternate"',
+    ));
+    $this->assertEqual($this->drupalGetHeader('Link'), $expected_link_header);
+
+    // Check that duplicate alternate URLs with different hreflangs are allowed.
+    $test_link = $this->xpath('//head/link[@rel="alternate"][@href="/foo/bar"]');
+    $this->assertEqual(count($test_link), 2, 'Duplicate alternate URLs are allowed.');
+    // Check that link element attributes are HTML-encoded.
+    $this->assertRaw('<link href="/foo?bar=baz&amp;baz=false" hreflang="en" rel="alternate" />');
   }
 
 }

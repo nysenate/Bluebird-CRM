@@ -10,18 +10,10 @@
  +--------------------------------------------------------------------+
  */
 
-/**
- *
- * @package CRM
- * @copyright CiviCRM LLC https://civicrm.org/licensing
- * $Id$
- *
- */
-
-
 namespace Civi\Api4\Generic;
 
 use Civi\API\Exception\NotImplementedException;
+use Civi\Api4\Utils\FormattingUtil;
 
 /**
  * Retrieve $ENTITIES based on criteria specified in the `where` parameter.
@@ -33,8 +25,7 @@ class BasicGetAction extends AbstractGetAction {
 
   /**
    * @var callable
-   *
-   * Function(BasicGetAction $thisAction) => array<array>
+   *   Function(BasicGetAction $thisAction): array[]
    */
   private $getter;
 
@@ -56,21 +47,22 @@ class BasicGetAction extends AbstractGetAction {
    * @param \Civi\Api4\Generic\Result $result
    */
   public function _run(Result $result) {
-    $this->setDefaultWhereClause();
     $this->expandSelectClauseWildcards();
     $values = $this->getRecords();
-    $result->exchangeArray($this->queryArray($values));
+    $this->formatRawValues($values);
+    $this->queryArray($values, $result);
   }
 
   /**
-   * This Basic Get class is a general-purpose api for non-DAO-based entities.
+   * BasicGet is a general-purpose get action for non-DAO-based entities.
    *
    * Useful for fetching records from files or other places.
-   * You can specify any php function to retrieve the records, and this class will
-   * automatically filter, sort, select & limit the raw data from your callback.
+   * Specify any php function to retrieve the records, and this class will
+   * automatically filter, sort, select & limit the raw data from the callback.
    *
-   * You can implement this action in one of two ways:
-   * 1. Use this class directly by passing a callable ($getter) to the constructor.
+   * This action is implemented in one of two ways:
+   * 1. Invoke this class directly by passing a callable ($getter) to the constructor. BasicEntity does this by default.
+   *    The function is passed a copy of $this action as it's first argument.
    * 2. Extend this class and override this function.
    *
    * Either way, this function should return an array of arrays, each representing one retrieved object.
@@ -100,6 +92,32 @@ class BasicGetAction extends AbstractGetAction {
       return call_user_func($this->getter, $this);
     }
     throw new NotImplementedException('Getter function not found for api4 ' . $this->getEntityName() . '::' . $this->getActionName());
+  }
+
+  /**
+   * Evaluate :pseudoconstant suffix expressions and replace raw values with option values
+   *
+   * @param $records
+   * @throws \CRM_Core_Exception
+   */
+  protected function formatRawValues(&$records) {
+    // Pad $records and $fields with pseudofields
+    $fields = $this->entityFields();
+    foreach ($records as &$values) {
+      foreach ($this->entityFields() as $field) {
+        $values += [$field['name'] => $field['default_value'] ?? NULL];
+        if (!empty($field['options'])) {
+          foreach ($field['suffixes'] ?? FormattingUtil::$pseudoConstantSuffixes as $suffix) {
+            $pseudofield = $field['name'] . ':' . $suffix;
+            if (!isset($values[$pseudofield]) && isset($values[$field['name']]) && $this->_isFieldSelected($pseudofield)) {
+              $values[$pseudofield] = $values[$field['name']];
+            }
+          }
+        }
+      }
+      // Swap raw values with pseudoconstants
+      FormattingUtil::formatOutputValues($values, $fields, $this->getActionName());
+    }
   }
 
 }

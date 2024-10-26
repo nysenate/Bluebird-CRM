@@ -24,7 +24,6 @@
  * @return array
  *   API result array
  *
- * @throws \CiviCRM_API3_Exception
  * @throws \CRM_Core_Exception
  */
 function civicrm_api3_participant_create($params) {
@@ -56,9 +55,9 @@ function civicrm_api3_participant_create($params) {
  * @todo this should be done in the BAO not the api
  *
  * @param array $params
- * @param $participant
+ * @param CRM_Event_BAO_Participant $participant
  *
- * @throws \CiviCRM_API3_Exception
+ * @throws \CRM_Core_Exception
  */
 function _civicrm_api3_participant_createlineitem(&$params, $participant) {
   // it is possible that a fee level contains information about multiple
@@ -152,7 +151,7 @@ function civicrm_api3_participant_get($params) {
     $query->convertToPseudoNames($dao, FALSE, TRUE);
     $participant[$dao->participant_id] = $query->store($dao);
     //@todo - is this required - contribution & pledge use the same query but don't self-retrieve custom data
-    _civicrm_api3_custom_data_get($participant[$dao->participant_id], CRM_Utils_Array::value('check_permissions', $params), 'Participant', $dao->participant_id, NULL);
+    _civicrm_api3_custom_data_get($participant[$dao->participant_id], $params['check_permissions'] ?? FALSE, 'Participant', $dao->participant_id, NULL);
   }
 
   return civicrm_api3_create_success($participant, $params, 'Participant', 'get', $dao);

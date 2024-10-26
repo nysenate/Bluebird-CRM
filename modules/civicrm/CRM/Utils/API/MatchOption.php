@@ -21,7 +21,7 @@
  *   - "match-mandatory" will generate an error
  *   - "match" will allow action to proceed -- thus inserting a new record
  *
- * @code
+ * ```
  * $result = civicrm_api('contact', 'create', array(
  *   'options' => array(
  *     'match' => array('last_name', 'first_name')
@@ -30,7 +30,7 @@
  *   'last_name' => 'Lebowski',
  *   'nick_name' => 'The Dude',
  * ));
- * @endcode
+ * ```
  *
  * @package CRM
  * @copyright CiviCRM LLC https://civicrm.org/licensing
@@ -128,14 +128,14 @@ class CRM_Utils_API_MatchOption implements API_Wrapper {
    *
    * @return array
    *   revised $createParams, including 'id' if known
-   * @throws API_Exception
+   * @throws CRM_Core_Exception
    */
   public function match($entity, $createParams, $keys, $isMandatory) {
     $getParams = $this->createGetParams($createParams, $keys);
     $getResult = civicrm_api3($entity, 'get', $getParams);
     if ($getResult['count'] == 0) {
       if ($isMandatory) {
-        throw new API_Exception("Failed to match existing record");
+        throw new CRM_Core_Exception("Failed to match existing record");
       }
       // OK, don't care
       return $createParams;
@@ -146,7 +146,7 @@ class CRM_Utils_API_MatchOption implements API_Wrapper {
       return $createParams;
     }
     else {
-      throw new API_Exception("Ambiguous match criteria");
+      throw new CRM_Core_Exception("Ambiguous match criteria");
     }
   }
 

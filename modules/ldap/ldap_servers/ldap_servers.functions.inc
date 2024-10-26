@@ -8,14 +8,15 @@
 /**
  * Modify an LDAP Entry.
  *
- * This has been depracated in favor or $ldap_server->modifyLdapEntry($dn, $attributes)
- * which handles empty attributes better.
+ * @deprecated This has been deprecated in favor of
+ * `$ldap_server->modifyLdapEntry($dn, $attributes)` which handles empty
+ * attributes better.
  */
 function ldap_user_modify($dn, $attributes, $ldap_server) {
   $result = ldap_modify($ldap_server->connection, $dn, $attributes);
   if (!$result) {
-    $error = "LDAP Server ldap_modify(%dn) in ldap_user_modify() Error Server ID = %sid, LDAP Err No: %ldap_errno LDAP Err Message: %ldap_err2str ";
-    $tokens = ['%dn' => $dn, '%sid' => $this->sid, '%ldap_errno' => ldap_errno($this->connection), '%ldap_err2str' => ldap_err2str(ldap_errno($this->connection))];
+    $error = "LDAP Server ldap_modify(%dn) in ldap_user_modify(), LDAP Err No: %ldap_errno LDAP Err Message: %ldap_err2str ";
+    $tokens = ['%dn' => $dn, '%ldap_errno' => ldap_errno($ldap_server->connection), '%ldap_err2str' => ldap_err2str(ldap_errno($ldap_server->connection))];
     watchdog('ldap_servers', $error, $tokens, WATCHDOG_ERROR);
   }
   return $result;
@@ -30,7 +31,7 @@ function ldap_password_modify($userdn, $new_password, $ldap_server) {
   $len = drupal_strlen($new_password);
   $new_pass = NULL;
   for ($i = 0; $i < $len; $i++) {
-    $new_pass .= "{$new_password{$i}}\000";
+    $new_pass .= "{$new_password[$i]}\000";
   }
 
   $status = ldap_mod_replace($ldap_server->connection, $userdn, ['unicodePwd' => $new_pass]);
@@ -416,19 +417,13 @@ function ldap_pear_unescape_dn_value($values = []) {
  * @return string
  */
 function ldap_pear_hex2asc($string) {
-
-  if (version_compare(PHP_VERSION, '5.3.0') >= 0) {
-    $string = preg_replace_callback(
+  $string = preg_replace_callback(
     "/\\\([0-9A-Fa-f]{2})/",
     function ($m) {
       return chr(hexdec($m[1]));
     },
-        $string);
-  }
-  else {
-    $string = preg_replace("/\\\([0-9A-Fa-f]{2})/e", "''.chr(hexdec('\\1')).''", $string);
-  }
-
+    $string
+  );
   return $string;
 }
 

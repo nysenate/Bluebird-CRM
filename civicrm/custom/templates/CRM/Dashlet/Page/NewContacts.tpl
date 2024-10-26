@@ -1,32 +1,15 @@
 {*
  +--------------------------------------------------------------------+
- | CiviCRM version 4.4                                                |
- +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2013                                |
- +--------------------------------------------------------------------+
- | This file is a part of CiviCRM.                                    |
+ | Copyright CiviCRM LLC. All rights reserved.                        |
  |                                                                    |
- | CiviCRM is free software; you can copy, modify, and distribute it  |
- | under the terms of the GNU Affero General Public License           |
- | Version 3, 19 November 2007 and the CiviCRM Licensing Exception.   |
- |                                                                    |
- | CiviCRM is distributed in the hope that it will be useful, but     |
- | WITHOUT ANY WARRANTY; without even the implied warranty of         |
- | MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.               |
- | See the GNU Affero General Public License for more details.        |
- |                                                                    |
- | You should have received a copy of the GNU Affero General Public   |
- | License and the CiviCRM Licensing Exception along                  |
- | with this program; if not, contact CiviCRM LLC                     |
- | at info[AT]civicrm[DOT]org. If you have questions about the        |
- | GNU Affero General Public License or the licensing of CiviCRM,     |
- | see the CiviCRM license FAQ at http://civicrm.org/licensing        |
+ | This work is published under the GNU AGPLv3 license with some      |
+ | permitted exceptions and without any warranty. For full license    |
+ | and copyright information, see https://civicrm.org/licensing       |
  +--------------------------------------------------------------------+
 *}
-{*<pre>{$form|@print_r}</pre>*}
 
 {literal}
-<style type="text/css">
+<style>
   div.crm-contact-form-block-activity_type_filter_id {
     vertical-align: top;
   }
@@ -34,22 +17,25 @@
 {/literal}
 
 <div class="crm-newcontacts">
-  <div class="crm-accordion-wrapper crm-search_filters-accordion">
-    <div class="crm-accordion-header">
-      {ts}Report Filters{/ts}</a>
-    </div><!-- /.crm-accordion-header -->
+  <details class="crm-accordion-bold crm-search_filters-accordion" open>
+    <summary>
+      {ts}Report Filters{/ts}
+    </summary>
+
     <div class="crm-accordion-body">
-      <div class="no-border form-layout-compressed" id="searchOptions">
-        <div class="crm-contact-form-block-source_filter_id crm-inline-edit-field">
-          {$form.newcontact_source_filter.label} {$form.newcontact_source_filter.html}
-        </div>
-        <div class="crm-contact-form-block-date_filter_id crm-inline-edit-field">
-          <label>Created Date</label> {include file="CRM/Core/DateRange.tpl" fieldName="newcontact_date" from='_low' to='_high'}
-        </div>
-      </div>
-    </div><!-- /.crm-accordion-body -->
-  </div><!-- /.crm-accordion-wrapper -->
-  <table id="newcontacts-selector">
+      <form><!-- form element is here to fool the datepicker widget -->
+        <table class="no-border form-layout-compressed newcontacts-search-options">
+          <tr>
+            <td class="crm-contact-form-block-activity_type_filter_id crm-inline-edit-field">
+                {$form.newcontact_source_filter.label}<br /> {$form.newcontact_source_filter.html|crmAddClass:medium}
+            </td>
+            {include file="CRM/Core/DatePickerRangeWrapper.tpl" fieldName="newcontact_date" hideRelativeLabel=false}
+          </tr>
+        </table>
+      </form>
+    </div>
+  </details>
+  <table id="newcontacts-selector" class="contact-activity-selector-{$context}" style="width: 100%;">
     <thead>
     <tr>
       <th class='crm-contact-newcontacts_contact'>{ts}Contact{/ts}</th>
@@ -65,9 +51,6 @@
 
 {literal}
 <script type="text/javascript">
-  //bump activity date filter to next line
-  cj('span.crm-absolute-date-range').before('<br />');
-
   var oTable;
 
   cj(function() {

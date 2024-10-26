@@ -1,0 +1,44 @@
+.civicase__overdue-activity-icon {
+  color: $brand-danger !important;
+  display: inline-block;
+  font-weight: $font-weight-heading;
+  padding-right: 20px;
+  position: relative;
+
+  &::before {
+    background-color: $brand-danger;
+    content: '';
+  }
+
+  &::after {
+    color: $crm-white;
+    content: '!';
+    top: 1px;
+  }
+
+  &::before,
+  &::after {
+    border-radius: 50% !important;
+    font-size: 11px;
+    height: 13px;
+    line-height: 1em;
+    position: absolute;
+    right: 0;
+    text-align: center;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 13px;
+    z-index: 0 !important;
+  }
+
+  &.civicase__overdue-activity-icon--before {
+    padding-left: 20px;
+    padding-right: 0;
+
+    &::before,
+    &::after {
+      left: 2px;
+      right: auto;
+    }
+  }
+}

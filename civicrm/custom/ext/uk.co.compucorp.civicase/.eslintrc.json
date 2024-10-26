@@ -1,0 +1,11 @@
+{
+  "extends": ["semistandard", "plugin:jsdoc/recommended"],
+  "ignorePatterns": ["packages/*.js"],
+  "globals": {
+    "CRM": "writable",
+    "angular": "readonly",
+    "inject": "readonly",
+    "moment": "readonly",
+    "ts": "readonly"
+  }
+}

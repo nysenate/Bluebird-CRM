@@ -318,6 +318,9 @@ function _text_sanitize($instance, $langcode, $item, $column) {
   if (isset($item["safe_$column"])) {
     return $item["safe_$column"];
   }
+  if ($item[$column] === '') {
+    return '';
+  }
   return $instance['settings']['text_processing'] ? check_markup($item[$column], $item['format'], $langcode) : check_plain($item[$column]);
 }
 
@@ -347,6 +350,11 @@ function _text_sanitize($instance, $langcode, $item, $column) {
  *   The generated summary.
  */
 function text_summary($text, $format = NULL, $size = NULL) {
+
+  // If the input text is NULL, return unchanged.
+  if (is_null($text)) {
+    return NULL;
+  }
 
   if (!isset($size)) {
     // What used to be called 'teaser' is now called 'summary', but

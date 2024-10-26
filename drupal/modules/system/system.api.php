@@ -2927,7 +2927,7 @@ function hook_file_update($file) {
     $file->filename = $file_user->name . '_' . $file->filename;
     $file->save();
 
-    watchdog('file', t('%source has been renamed to %destination', array('%source' => $old_filename, '%destination' => $file->filename)));
+    watchdog('file', '%source has been renamed to %destination', array('%source' => $old_filename, '%destination' => $file->filename));
   }
 }
 
@@ -2948,7 +2948,7 @@ function hook_file_copy($file, $source) {
     $file->filename = $file_user->name . '_' . $file->filename;
     $file->save();
 
-    watchdog('file', t('Copied file %source has been renamed to %destination', array('%source' => $source->filename, '%destination' => $file->filename)));
+    watchdog('file', 'Copied file %source has been renamed to %destination', array('%source' => $source->filename, '%destination' => $file->filename));
   }
 }
 
@@ -2969,7 +2969,7 @@ function hook_file_move($file, $source) {
     $file->filename = $file_user->name . '_' . $file->filename;
     $file->save();
 
-    watchdog('file', t('Moved file %source has been renamed to %destination', array('%source' => $source->filename, '%destination' => $file->filename)));
+    watchdog('file', 'Moved file %source has been renamed to %destination', array('%source' => $source->filename, '%destination' => $file->filename));
   }
 }
 
@@ -3175,7 +3175,7 @@ function hook_requirements($phase) {
       );
     }
 
-    $requirements['cron']['description'] .= ' ' . $t('You can <a href="@cron">run cron manually</a>.', array('@cron' => url('admin/reports/status/run-cron')));
+    $requirements['cron']['description'] .= ' ' . $t('You can <a href="@cron">run cron manually</a>.', array('@cron' => url('admin/reports/status/run-cron', array('query' => array('token' => drupal_get_token('run-cron'))))));
 
     $requirements['cron']['title'] = $t('Cron maintenance tasks');
   }
@@ -4815,6 +4815,33 @@ function hook_filetransfer_info_alter(&$filetransfer_info) {
     // Make sure the SSH option is listed first.
     $filetransfer_info['ssh']['weight'] = -10;
   }
+}
+
+/**
+ * Alter core e-mail validation.
+ *
+ * This hook is called immediately after core e-mail validation takes place and
+ * gives other modules a chance to override it. This is useful in cases where
+ * you want to have stricter or looser validation standards than that provided
+ * by Drupal core.
+ *
+ * @param $valid
+ *   Boolean value referencing the validation result.
+ *
+ * @param $mail
+ *   E-mail address being validated.
+ *
+ * @see valid_email_address()
+ */
+function hook_valid_email_address_alter(&$valid, $mail) {
+  if (preg_match("/^([a-zA-Z0-9])+([a-zA-Z0-9\._-])*@([a-zA-Z0-9_-])+([a-zA-Z0-9\._-]+)+$/", $mail)) {
+    list($username, $domain) = explode('@', $mail);
+    // Check DNS records.
+    if (checkdnsrr($domain, 'MX')) {
+      $valid = TRUE;
+    }
+  }
+  $valid = FALSE;
 }
 
 /**

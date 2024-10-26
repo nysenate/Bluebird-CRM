@@ -7,12 +7,11 @@
  | and copyright information, see https://civicrm.org/licensing       |
  +--------------------------------------------------------------------+
 *}
-<div class="crm-block crm-form-block crm-{$formName}-block">
-  <div class="crm-submit-buttons">{include file="CRM/common/formButtons.tpl" location="top"}</div>
+<div class="crm-block crm-form-block crm--block">
   {include file="CRM/Form/basicFormFields.tpl"}
 
   <table class="form-layout" id="invoicing_blocks">
-    {foreach from=$htmlFields item=fieldSpec key=htmlField}
+    {foreach from=$invoiceDependentFields item=fieldSpec key=htmlField}
       {if $form.$htmlField}
         {assign var=n value=$htmlField|cat:'_description'}
         <tr class="crm-preferences-form-block-{$htmlField}">
@@ -20,7 +19,7 @@
             <td class="label"></td>
             <td>
               {$form.$htmlField.html} {$form.$htmlField.label}
-              {if $desc}
+              {if $fieldSpec.description}
                 <br /><span class="description">{$fieldSpec.description}</span>
               {/if}
             </td>
@@ -57,6 +56,7 @@
         }
         else {
           cj("#invoicing_blocks").hide();
+          cj('#invoice_is_email_pdf_invoice_is_email_pdf').prop('checked', false);
         }
       });
     });

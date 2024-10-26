@@ -199,7 +199,7 @@ function ldap_help_encodePassword($password) {
   $password = "\"" . $password . "\"";
   $encoded = "";
   for ($i = 0; $i < strlen($password); $i++) {
-    $encoded .= "{$password{$i}}\000";
+    $encoded .= "{$password[$i]}\000";
   }
   return $encoded;
 }

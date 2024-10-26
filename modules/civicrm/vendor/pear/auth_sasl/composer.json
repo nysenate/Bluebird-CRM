@@ -22,19 +22,17 @@
         }
     },
     "description": "Abstraction of various SASL mechanism responses",
+    "homepage": "http://pear.php.net/package/Auth_SASL",
     "include-path": [
         "./"
     ],
-    "license": "BSD",
+    "license": "BSD-3-Clause",
     "name": "pear/auth_sasl",
     "support": {
         "issues": "http://pear.php.net/bugs/search.php?cmd=display&package_name[]=Auth_SASL",
         "source": "https://github.com/pear/Auth_SASL"
     },
     "type": "library",
-    "require": {
-        "pear/pear_exception": "@stable"
-    },
     "require-dev": {
         "phpunit/phpunit": "@stable"
     }

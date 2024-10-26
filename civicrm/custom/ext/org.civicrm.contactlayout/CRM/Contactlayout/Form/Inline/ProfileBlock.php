@@ -13,15 +13,19 @@ class CRM_Contactlayout_Form_Inline_ProfileBlock extends CRM_Profile_Form_Edit {
    * Form for editing profile blocks
    */
   public function preProcess() {
-    if (!empty($_GET['cid'])) {
-      $this->set('id', $_GET['cid']);
+    $relatedContactId = CRM_Utils_Request::retrieveValue('rel_cid', 'Positive', NULL, FALSE);
+    $viewedContactId = CRM_Utils_Request::retrieveValue('cid', 'Positive', NULL, TRUE);
+    $contactId = $relatedContactId ? $relatedContactId : $viewedContactId;
+
+    if (!empty($contactId)) {
+      $this->set('id', $contactId);
     }
     parent::preProcess();
     // Suppress profile status messages like the double-opt-in warning
     CRM_Core_Session::singleton()->getStatus(TRUE);
   }
 
-  public function buildQuickForm() {
+  public function buildQuickForm(): void {
     parent::buildQuickForm();
     $buttons = array(
       array(
@@ -35,8 +39,8 @@ class CRM_Contactlayout_Form_Inline_ProfileBlock extends CRM_Profile_Form_Edit {
       ),
     );
     $this->addButtons($buttons);
-    $this->assign('help_pre', CRM_Utils_Array::value('help_pre', $this->_ufGroup));
-    $this->assign('help_post', CRM_Utils_Array::value('help_post', $this->_ufGroup));
+    $this->assign('help_pre', $this->_ufGroup['help_pre'] ?? NULL);
+    $this->assign('help_post', $this->_ufGroup['help_post'] ?? NULL);
 
     // Special handling for contact id element
     if ($this->elementExists('id')) {
@@ -106,6 +110,8 @@ class CRM_Contactlayout_Form_Inline_ProfileBlock extends CRM_Profile_Form_Edit {
     // Action is needed for tag postprocess
     $this->_action = CRM_Core_Action::UPDATE;
 
+    $fields = civicrm_api3('Contact', 'getfields')['values'];
+
     $this->processEmployer($values);
     if (isset($values['group'])) {
       $this->processGroups($values);
@@ -114,6 +120,13 @@ class CRM_Contactlayout_Form_Inline_ProfileBlock extends CRM_Profile_Form_Edit {
     if (!empty($values['image_URL'])) {
       CRM_Contact_BAO_Contact::processImageParams($values);
     }
+    // Reformat checkbox values
+    foreach ($fields as $name => $info) {
+      if (($info['html_type'] ?? NULL) === 'CheckBox' && !empty($values[$name]) && is_array($values[$name])) {
+        $values[$name] = array_keys(array_filter($values[$name]));
+      }
+    }
+
     civicrm_api3('Profile', 'submit', $values);
 
     // Save tagsets (not handled by profile api)
@@ -147,21 +160,19 @@ class CRM_Contactlayout_Form_Inline_ProfileBlock extends CRM_Profile_Form_Edit {
    */
   public static function getEmployers($cid) {
     $relationships = Civi\Api4\Relationship::get()
-      ->setSelect(['contact_id_b', 'contact_b.display_name'])
+      ->setSelect(['contact_id_b', 'contact_id_b.display_name'])
       ->setCheckPermissions(FALSE)
       ->addWhere('is_active', '=', '1')
       ->addWhere('contact_id_a', '=', $cid)
-      ->addWhere('relationship_type.name_a_b', '=', 'Employee of')
-      ->addClause('OR', ['start_date', 'IS NULL'], ['start_date', '<=', 'now'])
-      ->addClause('OR', ['end_date', 'IS NULL'], ['end_date', '>', 'now'])
+      ->addWhere('relationship_type_id.name_a_b', '=', 'Employee of')
+      ->addWhere('is_current', '=', TRUE)
       ->execute();
     $results = [];
     foreach ($relationships as $relationship) {
       $results[] = [
         'id' => $relationship['id'],
         'contact_id' => $relationship['contact_id_b'],
-        // Api4 output changed for custom fields circa apiv4.6
-        'display_name' => $relationship['contact_b.display_name'] ?? $relationship['contact_b']['display_name'],
+        'display_name' => $relationship['contact_id_b.display_name'],
       ];
     }
     return $results;

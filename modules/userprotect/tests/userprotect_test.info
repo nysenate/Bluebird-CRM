@@ -3,7 +3,6 @@ description = "Testing module for User protect."
 package = Testing
 core = "7.x"
 dependencies[] = userprotect
-test_dependencies[] = views_bulk_operations
 hidden = TRUE
 
 ; Test cases
@@ -14,9 +13,8 @@ files[] = UserProtectPermissionsWebTest.test
 files[] = UserProtectProtectionWebTest.test
 files[] = UserProtectViewsBulkOperationsWebTest.test
 
-; Information added by Drupal.org packaging script on 2015-08-22
-version = "7.x-1.2"
+; Information added by Drupal.org packaging script on 2020-06-22
+version = "7.x-1.3"
 core = "7.x"
 project = "userprotect"
-datestamp = "1440225540"
-
+datestamp = "1592813093"

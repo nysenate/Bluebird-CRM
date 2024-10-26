@@ -3,11 +3,10 @@
 /**
  * get a mysqli connection from the db string
  */
-function nyss_getConnection($bbconfig) {
-  //Civi::log()->debug('getConnection', array('bbconfig' => $bbconfig));
+function nyss_getConnection($bbcfg) {
+  //Civi::log()->debug('getConnection', array('bbcfg' => $bbcfg));
 
-  $conn = mysqli_connect($bbconfig['db.host'], $bbconfig['db.user'], $bbconfig['db.pass'],
-    $bbconfig['db.civicrm.prefix'].$bbconfig['shortname']);
+  $conn = mysqli_connect($bbcfg['db.host'], $bbcfg['db.user'], $bbcfg['db.pass'], $bbcfg['civicrm_db_name']);
 
   if (mysqli_connect_errno()) {
     echo "Failed to connect to MySQL: " . mysqli_connect_error();
@@ -18,9 +17,9 @@ function nyss_getConnection($bbconfig) {
   }
 }
 
-function nyss_out($type, $v, $toscreen = false)
-{
-  global $nyss_ioline, $nyss_iototallines;
+function nyss_out($type, $v, $toscreen = false) {
+  global $nyss_ioline;
+  global $nyss_iototallines;
 
   if (!empty($v) && (($type == 'debug' && NYSSIODEBUG) || $type !='debug')) {
     $v = print_r($v, true);
@@ -33,6 +32,9 @@ function nyss_out($type, $v, $toscreen = false)
       echo "<pre>$v (line: $nyss_ioline of $nyss_iototallines memory: ".(round(memory_get_usage()/1048576,4))." MB".")</pre>";
       flush();
       ob_flush();
+    }
+    elseif ($type == 'debug' && defined('NYSSIODEBUG') && NYSSIODEBUG) {
+      CRM_Core_Error::debug_var("$type", $v, TRUE, TRUE, 'nyssio');
     }
 
     unset($v);

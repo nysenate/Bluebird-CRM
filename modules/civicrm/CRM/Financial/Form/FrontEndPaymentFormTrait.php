@@ -21,11 +21,70 @@
 trait CRM_Financial_Form_FrontEndPaymentFormTrait {
 
   /**
+   * Is pay later enabled on this form?
+   *
+   * @var bool
+   */
+  protected $isPayLater = FALSE;
+
+  /**
    * The label for the pay later pseudoprocessor option.
    *
    * @var string
    */
   protected $payLaterLabel;
+
+  /**
+   * Is this a back office form
+   *
+   * @var bool
+   */
+  public $isBackOffice = FALSE;
+
+  /**
+   * The payment mode that we are in ("live" or "test")
+   * This should be protected and retrieved via getPaymentMode() but it's accessed all over the place so we have to leave it public for now.
+   *
+   * @var string
+   */
+  public $_mode;
+
+  /**
+   * @return bool
+   */
+  public function isPayLater() {
+    return $this->isPayLater;
+  }
+
+  /**
+   * @param bool $isPayLater
+   */
+  public function setIsPayLater($isPayLater) {
+    $this->isPayLater = $isPayLater;
+  }
+
+  /**
+   * @return bool
+   */
+  public function getIsBackOffice() {
+    return $this->isBackOffice;
+  }
+
+  /**
+   * Get the payment mode ('live' or 'test')
+   *
+   * @return string
+   */
+  public function getPaymentMode() {
+    return $this->_mode;
+  }
+
+  /**
+   * Set the payment mode ('live' or 'test')
+   */
+  public function setPaymentMode() {
+    $this->_mode = ($this->_action === CRM_Core_Action::PREVIEW) ? 'test' : 'live';
+  }
 
   /**
    * @return string
@@ -51,10 +110,10 @@ trait CRM_Financial_Form_FrontEndPaymentFormTrait {
    * This is an early cut of what will ideally eventually be a hooklike call to the
    * CRM_Invoicing_Utils class with a potential end goal of moving this handling to an extension.
    *
-   * @param $tplLineItems
+   * @param array $tplLineItems
    */
   protected function alterLineItemsForTemplate(&$tplLineItems) {
-    if (!CRM_Invoicing_Utils::isInvoicingEnabled()) {
+    if (!\Civi::settings()->get('invoicing')) {
       return;
     }
     // @todo this should really be the first time we are determining
@@ -69,7 +128,7 @@ trait CRM_Financial_Form_FrontEndPaymentFormTrait {
         if (isset($v['tax_rate']) && $v['tax_rate'] != '') {
           // These only need assigning once, but code is more readable with them here
           $this->assign('getTaxDetails', TRUE);
-          $this->assign('taxTerm', CRM_Invoicing_Utils::getTaxTerm());
+          $this->assign('taxTerm', \Civi::settings()->get('tax_term'));
           // Cast to float to display without trailing zero decimals
           $tplLineItems[$key][$k]['tax_rate'] = (float) $v['tax_rate'];
         }
@@ -80,7 +139,7 @@ trait CRM_Financial_Form_FrontEndPaymentFormTrait {
   /**
    * Assign line items to the template.
    *
-   * @param $tplLineItems
+   * @param array $tplLineItems
    */
   protected function assignLineItemsToTemplate($tplLineItems) {
     // @todo this should be a hook that invoicing code hooks into rather than a call to it.
@@ -115,7 +174,7 @@ trait CRM_Financial_Form_FrontEndPaymentFormTrait {
    * @return string
    */
   protected function getPaymentProcessorTitle($processor) {
-    return $processor['title'] ?? $processor['name'];
+    return $processor['frontend_title'];
   }
 
   /**
@@ -126,7 +185,7 @@ trait CRM_Financial_Form_FrontEndPaymentFormTrait {
     $optAttributes = [];
     foreach ($paymentProcessors as $ppKey => $ppval) {
       if ($ppKey > 0) {
-        $optAttributes[$ppKey]['class'] = 'payment_processor_' . strtolower($this->_paymentProcessors[$ppKey]['payment_processor_type']);
+        $optAttributes[$ppKey]['class'] = 'payment_processor_' . strtolower(CRM_Utils_String::munge($this->_paymentProcessors[$ppKey]['payment_processor_type'], '-'));
       }
       else {
         $optAttributes[$ppKey]['class'] = 'payment_processor_paylater';

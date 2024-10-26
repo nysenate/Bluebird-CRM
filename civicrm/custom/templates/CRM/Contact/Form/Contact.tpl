@@ -15,145 +15,155 @@
     {include file="CRM/Contact/Form/Edit/Lock.tpl"}
   {/if}
   <div class="crm-form-block crm-search-form-block">
-    {*NYSS - remove
-    {if call_user_func(array('CRM_Core_Permission','check'), 'administer CiviCRM') }
-      <a href='{crmURL p="civicrm/admin/setting/preferences/display" q="reset=1"}' title="{ts}Click here to configure the panes.{/ts}"><i class="crm-i fa-wrench"></i></a>
-    {/if}
-    *}
+      {*NYSS - remove
+      {if call_user_func(array('CRM_Core_Permission','check'), 'administer CiviCRM') }
+        <a href='{crmURL p="civicrm/admin/setting/preferences/display" q="reset=1"}' title="{ts}Click here to configure the panes.{/ts}"><i class="crm-i fa-wrench" aria-hidden="true"></i></a>
+      {/if}
+      *}
     <span style="float:right;"><a href="#expand" id="expand">{ts}Expand all tabs{/ts}</a></span>
     <div class="crm-submit-buttons">
     {include file="CRM/common/formButtons.tpl" location="top"}
     </div>
 
-    <div class="crm-accordion-wrapper crm-contactDetails-accordion">
-      <div class="crm-accordion-header">
+    <details class="crm-accordion-bold crm-contactDetails-accordion" open>
+      <summary>
         {ts}Contact Details{/ts}
-      </div><!-- /.crm-accordion-header -->
+      </summary>
       <div class="crm-accordion-body" id="contactDetails">
-    <table>
-      <tr>
-        <td>
-        {include file="CRM/Contact/Form/Edit/$contactType.tpl"}
-        <span class="crm-button crm-button_qf_Contact_refresh_dedupe">
-            {$form._qf_Contact_refresh_dedupe.html}
-        </span>
-        </td>
-      </tr>
-      <tr>
-        <td>
-        {foreach from = $editOptions item ="title" key="name"}
-        {if $name eq "Address"}
-                {include file="CRM/Contact/Form/Edit/$name.tpl"}
-        {/if}
-        {/foreach}
-        </td>
-      </tr>
-       
-      <tr>
-        <td>
-          <div class="subHeader">Communication Details</div>
-        </td>
-      </tr>
-      <tr>
-        <td>
-          <table class="crm-section contact_information-section form-layout-compressed">
-            {foreach from=$blocks item="label" key="block"}
-              {include file="CRM/Contact/Form/Edit/$block.tpl"}
-            {/foreach}
-          </table>
-        </td>
-      </tr>
-        
-      {if $contactType eq "Individual"}
-      <tr>
-        <td>
-            <div class="subHeader">Employment</div>
-        </td>
-      </tr>
-      <tr>
-        <td>
-          <table class="form-layout-compressed individual-contact-details">
+        <div id="contactDetails">
+        <table>
           <tr>
             <td>
-              {$form.employer_id.label}&nbsp;{help id="id-current-employer" file="CRM/Contact/Form/Contact.hlp"}<br />
-              {$form.employer_id.html}
-            </td>
-            <td>
-              {$form.job_title.label}<br />
-              {$form.job_title.html}
+              {*add dupe buttons *}
+          {$form._qf_Contact_refresh_dedupe.html}
+          {help id="id-check-matching-contacts" file="CRM/Contact/Form/Contact.hlp"}
+          {if !empty($isDuplicate)}
+            &nbsp;&nbsp;
+            {$form._qf_Contact_upload_duplicate.html}
+          {/if}
+
+          <div class="spacer"></div>
+
+              {include file="CRM/Contact/Form/Edit/$contactType.tpl"}
             </td>
           </tr>
-          </table>
-        </td>
-      </tr>
-    {/if}
-    </table>
- </div><!-- /.crm-accordion-body -->
-</div><!-- /.crm-accordion-wrapper -->
+          <tr>
+            <td>
+                {foreach from = $editOptions item ="title" key="name"}
+                  {if $name eq "Address"}
+                    {include file="CRM/Contact/Form/Edit/$name.tpl"}
+                  {/if}
+                {/foreach}
+            </td>
+          </tr>
 
-{*NYSS manually insert indiv custom fields so we can control layout/eliminate dups*}
-{if $contactType eq "Individual"}
-<div class="crm-accordion-wrapper crm-address-accordion crm-accordion-open">
-  <div class="crm-accordion-header">
-      Additional Constituent Information
-  </div><!-- /.crm-accordion-header -->
+          <tr>
+            <td>
+              <div class="subHeader">Communication Details</div>
+            </td>
+          </tr>
+          <tr>
+            <td>
+              <table class="crm-section contact_information-section form-layout-compressed">
+                  {foreach from=$blocks item="label" key="block"}
+                      {include file="CRM/Contact/Form/Edit/$block.tpl"}
+                  {/foreach}
+              </table>
+            </td>
+          </tr>
 
-  <div id="customData1" class="crm-accordion-body">
-    <table class="form-layout-compressed">
-      <tr class="custom_field-row">
-        <td class="html-adjust" width="20%">
-          {assign var='custom_18' value=$groupTree.1.fields.18.element_name}
-          {$form.$custom_18.label}<br />
-          {$form.$custom_18.html}<span class="crm-clear-link">(<a href="#" title="unselect" onclick="unselectRadio('{$custom_18}', '{$form.formName}'); return false;" >{ts}clear{/ts}</a>)</span>
-        </td>
-        <td class="html-adjust" width="20%">
-          {assign var='custom_17' value=$groupTree.1.fields.17.element_name}
-          {$form.$custom_17.label}<br />
-          {$form.$custom_17.html}<span class="crm-clear-link">(<a href="#" title="unselect" onclick="unselectRadio('{$custom_17}', '{$form.formName}'); return false;" >{ts}clear{/ts}</a>)</span>
-        </td>
-        <td class="html-adjust" width="60%">
-          {assign var='custom_19' value=$groupTree.1.fields.19.element_name}
-          {$form.$custom_19.label}<br />
-          {$form.$custom_19.html}<span class="crm-clear-link">(<a href="#" title="unselect" onclick="unselectRadio('{$custom_19}', '{$form.formName}'); return false;" >{ts}clear{/ts}</a>)</span>
-        </td>
-      </tr>
-      <tr class="custom_field-row">
-        <td class="html-adjust">
-          {assign var='custom_16' value=$groupTree.1.fields.16.element_name}
-          {$form.$custom_16.label}<br />
-          {$form.$custom_16.html}
-        </td>
-        <td class="html-adjust">
-          {assign var='custom_21' value=$groupTree.1.fields.21.element_name}
-          {$form.$custom_21.label}<br />
-          {$form.$custom_21.html}
-        </td>
-        <td class="html-adjust" rowspan="2">
-          {assign var='custom_20' value=$groupTree.1.fields.20.element_name}
-          {$form.$custom_20.label}<br />
-          {$form.$custom_20.html}
-        </td>
-      </tr>
-      <tr class="custom_field-row">
-        <td class="html-adjust">
-          {assign var='custom_23' value=$groupTree.1.fields.23.element_name}
-          {$form.$custom_23.label}<br />
-          {$form.$custom_23.html}
-        </td>
-        <td class="html-adjust">
-          {assign var='custom_24' value=$groupTree.1.fields.24.element_name}
-          {$form.$custom_24.label}<br />
-          {$form.$custom_24.html}
-        </td>
-      </tr>
-    </table>
-  </div>
-</div>
-{/if}
+            {if $contactType eq "Individual"}
+              <tr>
+                <td>
+                  <div class="subHeader">Employment</div>
+                </td>
+              </tr>
+              <tr>
+                <td>
+                  <table class="form-layout-compressed individual-contact-details">
+                    <tr>
+                      <td>
+                          {$form.employer_id.label}&nbsp;{help id="id-current-employer" file="CRM/Contact/Form/Contact.hlp"}<br />
+                          {$form.employer_id.html}
+                      </td>
+                      <td>
+                          {$form.job_title.label}<br />
+                          {$form.job_title.html}
+                      </td>
+                    </tr>
+                  </table>
+                </td>
+              </tr>
+            {/if}
+        </table>
+      </div><!-- /.crm-accordion-body -->
+    </div><!-- /.crm-accordion-wrapper -->
+
+      {*NYSS manually insert indiv custom fields so we can control layout/eliminate dups*}
+      {if $contactType eq "Individual"}
+        <div class="crm-accordion-wrapper crm-address-accordion crm-accordion-open">
+          <div class="crm-accordion-header">
+            Additional Constituent Information
+          </div><!-- /.crm-accordion-header -->
+
+          <div id="customData1" class="crm-accordion-body">
+            <table class="form-layout-compressed">
+              <tr class="custom_field-row">
+                <td class="html-adjust" style='width=20%;'>
+                    {assign var='custom_18' value=$groupTree.1.fields.18.element_name}
+                    {$form.$custom_18.label}<br />
+                    {$form.$custom_18.html}<span class="crm-clear-link">(<a href="#" title="unselect" onclick="unselectRadio('{$custom_18}', '{$form.formName}'); return false;" >{ts}clear{/ts}</a>)</span>
+                </td>
+                <td class="html-adjust" style='width=20%;'>
+                    {assign var='custom_17' value=$groupTree.1.fields.17.element_name}
+                    {$form.$custom_17.label}<br />
+                    {$form.$custom_17.html}<span class="crm-clear-link">(<a href="#" title="unselect" onclick="unselectRadio('{$custom_17}', '{$form.formName}'); return false;" >{ts}clear{/ts}</a>)</span>
+                </td>
+                <td class="html-adjust" style='width=60%;'>
+                    {assign var='custom_19' value=$groupTree.1.fields.19.element_name}
+                    {$form.$custom_19.label}<br />
+                    {$form.$custom_19.html}<span class="crm-clear-link">(<a href="#" title="unselect" onclick="unselectRadio('{$custom_19}', '{$form.formName}'); return false;" >{ts}clear{/ts}</a>)</span>
+                </td>
+              </tr>
+              <tr class="custom_field-row">
+                <td class="html-adjust">
+                    {assign var='custom_16' value=$groupTree.1.fields.16.element_name}
+                    {$form.$custom_16.label}<br />
+                    {$form.$custom_16.html}
+                </td>
+                <td class="html-adjust">
+                    {assign var='custom_21' value=$groupTree.1.fields.21.element_name}
+                    {$form.$custom_21.label}<br />
+                    {$form.$custom_21.html}
+                </td>
+                <td class="html-adjust" rowspan="2">
+                    {assign var='custom_20' value=$groupTree.1.fields.20.element_name}
+                    {$form.$custom_20.label}<br />
+                    {$form.$custom_20.html}
+                </td>
+              </tr>
+              <tr class="custom_field-row">
+                <td class="html-adjust">
+                    {assign var='custom_23' value=$groupTree.1.fields.23.element_name}
+                    {$form.$custom_23.label}<br />
+                    {$form.$custom_23.html}
+                </td>
+                <td class="html-adjust">
+                    {assign var='custom_24' value=$groupTree.1.fields.24.element_name}
+                    {$form.$custom_24.label}<br />
+                    {$form.$custom_24.html}
+                </td>
+              </tr>
+            </table>
+          </div>
+        </div>
+      {/if}
+      </div>
+    </details>
 
     {foreach from = $editOptions item = "title" key="name"}
-      {if $name eq 'CustomData' }
-        <div id='customData'>{include file="CRM/Contact/Form/Edit/CustomData.tpl"}</div>
+      {if $name eq 'CustomData'}
+        <div id='customData_{$contactType}'>{include file="CRM/Contact/Form/Edit/CustomData.tpl" isSingleRecordEdit=false skipTitle=false}</div>
       {elseif $name neq "Address"}
         {include file="CRM/Contact/Form/Edit/$name.tpl"}
       {/if}
@@ -165,10 +175,11 @@
   {literal}
 
   <script type="text/javascript" >
+
   CRM.$(function($) {
     var $form = $("form.{/literal}{$form.formClass}{literal}"),
-      action = {/literal}{$action|intval}{literal},
-      cid = {/literal}{$contactId|intval}{literal},
+      action = {/literal}{$action|string_format:"%d"}{literal},
+      cid = {/literal}{$contactId|string_format:"%d"}{literal},
       _ = CRM._;
 
     $('.crm-accordion-body').each( function() {
@@ -181,18 +192,18 @@
       }
       //open tab if form rule throws error
       if ( $(this).children().find('span.crm-error').text().length > 0 ) {
-        $(this).parents('.collapsed').crmAccordionToggle();
+        $(this).parents('details').prop('open', true);
       }
     });
     if (action === 2) {
-      $('.crm-accordion-wrapper').not('.crm-accordion-wrapper .crm-accordion-wrapper').each(function() {
+      $('details').not('details details').each(function() {
         highlightTabs(this);
 
         //NYSS 1748 call validate plugin
-        cj("#Contact").validate();
+        $("#Contact").validate();
       });
       $('#crm-container').on('change click', '.crm-accordion-body :input, .crm-accordion-body a', function() {
-        highlightTabs($(this).parents('.crm-accordion-wrapper'));
+        highlightTabs($(this).parents('details'));
       });
     }
     function highlightTabs(tab) {
@@ -203,7 +214,7 @@
             case 'checkbox':
             case 'radio':
               if($(this).is(':checked') && !$(this).is('[id$=IsPrimary],[id$=IsBilling]')) {
-                $('.crm-accordion-header:first', tab).addClass('active');
+                $('summary:first', tab).addClass('active');
                 return false;
               }
               break;
@@ -211,7 +222,7 @@
             case 'text':
             case 'textarea':
               if($(this).val()) {
-                $('.crm-accordion-header:first', tab).addClass('active');
+                $('summary:first', tab).addClass('active');
                 return false;
               }
               break;
@@ -219,19 +230,19 @@
             case 'select-one':
             case 'select-multiple':
               if($(this).val() && $('option[value=""]', this).length > 0) {
-                $('.crm-accordion-header:first', tab).addClass('active');
+                $('summary:first', tab).addClass('active');
                 return false;
               }
               break;
 
             case 'file':
               if($(this).next().html()) {
-                $('.crm-accordion-header:first', tab).addClass('active');
+                $('summary:first', tab).addClass('active');
                 return false;
               }
               break;
           }
-          $('.crm-accordion-header:first', tab).removeClass('active');
+          $('summary:first', tab).removeClass('active');
       });
     }
 
@@ -239,11 +250,11 @@
       if( $(this).attr('href') == '#expand') {
         var message = {/literal}"{ts escape='js'}Collapse all tabs{/ts}"{literal};
         $(this).attr('href', '#collapse');
-        $('.crm-accordion-wrapper.collapsed').crmAccordionToggle();
+        $('.crm-form-block details').prop('open', true);
       }
       else {
         var message = {/literal}"{ts escape='js'}Expand all tabs{/ts}"{literal};
-        $('.crm-accordion-wrapper:not(.collapsed)').crmAccordionToggle();
+        $('.crm-form-block details').prop('open', false);
         $(this).attr('href', '#expand');
       }
       $(this).html(message);
@@ -286,7 +297,7 @@
     loadMultiRecordFields();
 
     {/literal}{if $oldSubtypes}{literal}
-    $('input[name=_qf_Contact_upload_view], input[name=_qf_Contact_upload_new]').click(function() {
+    $('button[name=_qf_Contact_upload_view], button[name=_qf_Contact_upload_new]').click(function() {
       var submittedSubtypes = $('#contact_sub_type').val();
       var oldSubtypes = {/literal}{$oldSubtypes}{literal};
 
@@ -297,7 +308,7 @@
         }
       });
       if ( warning ) {
-        return confirm({/literal}'{ts escape="js"}One or more contact subtypes have been de-selected from the list for this contact. Any custom data associated with de-selected subtype will be removed. Click OK to proceed, or Cancel to review your changes before saving.{/ts}'{literal});
+        return confirm({/literal}'{ts escape="js"}One or more contact subtypes have been de-selected from the list for this contact. Any custom data associated with de-selected subtype will be removed as long as the contact does not have a contact subtype still selected. Click OK to proceed, or Cancel to review your changes before saving.{/ts}'{literal});
       }
       return true;
     });
@@ -322,14 +333,7 @@
     {/literal}{* Ajax check for matching contacts *}
     {if $checkSimilar == 1}
     var contactType = {$contactType|@json_encode},
-      rules = {*$ruleFields|@json_encode*}{literal}[
-        'first_name',
-        'last_name',
-        'nick_name',
-        'household_name',
-        'organization_name',
-        'email'
-      ],
+      rules = {$ruleFields}{literal},
       ruleFields = {},
       $ruleElements = $(),
       matchMessage,
@@ -338,7 +342,6 @@
     $.each(rules, function(i, field) {
       // Match regular fields
       var $el = $('#' + field + ', #' + field + '_1_' + field, $form).filter(':input');
-
       // Match custom fields
       if (!$el.length && field.lastIndexOf('_') > 0) {
         var pieces = field.split('_');
@@ -353,7 +356,8 @@
     // Check for matches on input when action == ADD
     if (action === 1) {
       $ruleElements.on('change', function () {
-        if ($(this).is('input[type=text]') && $(this).val().length < 3) {
+        //NYSS 16668
+        if (($(this).is('input[type=text]') || $(this).is('input[type=email]')) && $(this).val().length < 3) {
           return;
         }
         checkMatches().done(function (data) {
@@ -458,36 +462,6 @@
     });
     {/literal}{/if}{literal}
   });
-
-  //NYSS 3527 - set comm preferences
-  var storeExisting = {};
-  function processDeceased( ) {
-    if ( cj("#is_deceased").is(':checked') ) {
-
-      //privacy fields
-      cj('input[id^=privacy]').each(function(){
-        storeExisting[cj(this).prop('id')] = cj(this).prop('checked');
-        cj(this).prop('checked', 'checked').prop('onclick', 'return false');
-      });
-
-      //opt out
-      storeExisting['is_opt_out'] = cj('#is_opt_out').prop('checked')
-      cj('#is_opt_out').prop('checked', 'checked').prop('onclick', 'return false');
-
-      //preferred fields
-      cj('input[id^=preferred]').each(function(){
-        storeExisting[cj(this).prop('id')] = cj(this).prop('checked');
-        cj(this).removeAttr('checked').prop('onclick', 'return false');
-      });
-    }
-    else {
-      //cycle through stored array when unchecking and restore to previous values
-      cj.each(storeExisting, function(id, setting) {
-        cj('#' + id).prop('checked', setting).removeAttr('onclick');
-      });
-    }
-  }
-  processDeceased();
 </script>
 
 <script type="text/template" id="duplicates-msg-tpl">

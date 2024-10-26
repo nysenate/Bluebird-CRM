@@ -78,8 +78,12 @@ input[type=color] {
 }
 
 /*dashboard*/
-.crm-container #civicrm-dashboard .column .widget-wrapper .widget-controls {
+.crm-container #civicrm-dashboard .column .widget-wrapper .widget-controls,
+.crm-container #civicrm-dashboard .crm-dashlet-header {
   padding: 10px;
+}
+.crm-container #civicrm-dashboard .crm-dashlet-header h3 {
+  font-size: 15px;
 }
 .crm-container .crm-dashboard-controls {
   margin-top: 0;
@@ -89,6 +93,49 @@ input[type=color] {
 /*groups*/
 .crm-container.ui-dialog .ui-dialog-content .crm-submit-buttons {
   display: block !important;
+}
+
+/*case: case extension new UI*/
+#bootstrap-theme .civicase__activity-feed__body {
+  max-width: none;
+}
+#bootstrap-theme .civicase__activity-feed__body__list {
+  max-width: calc(100% - 200px) !important;
+}
+
+/*16009 date picker*/
+.ui-datepicker {
+  z-index: 100000 !important;
+}
+
+/*mosaico*/
+#bootstrap-theme .crm_wizard__body .form-group, #bootstrap-theme .crm_wizard__body .form-group-lg {
+  max-width: 650px !important;
+}
+#bootstrap-theme .crm_wizard__body .form-group div[crm-mailing-block-recipients] .select2-container-multi {
+  width: 300px !important;
+}
+
+/* loosely related to 16695 */
+#bootstrap-theme .crm_wizard__body textarea[name="approval_note"] {
+  min-width: 30%;
+  height: 10em;
+}
+/* loosely related to 16695 */
+#bootstrap-theme .crm_wizard__body div[ng-form="approveForm"] .label {
+  text-align: left;
+  padding-left: 0;
+}
+
+
+input#schedule-test-email {
+  width: auto !important;
+}
+a#send-test {
+  vertical-align: top !important;
+}
+#bootstrap-theme .crm-mosaico-template-item.thumbnail {
+  display: block;
 }
 
 /*********** BELOW SHOULD BE TEMPORARY! *************/

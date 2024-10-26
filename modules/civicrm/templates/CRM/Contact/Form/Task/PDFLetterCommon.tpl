@@ -8,7 +8,7 @@
  +--------------------------------------------------------------------+
 *}
 {*common template for compose PDF letters*}
-{if $form.template.html}
+{if !empty($form.template.html)}
 <table class="form-layout-compressed">
     <tr>
       <td class="label-left">
@@ -23,7 +23,7 @@
       <td class="label-left">{$form.subject.label}</td>
       <td>{$form.subject.html}</td>
     </tr>
-    {if $form.campaign_id}
+    {if !empty($form.campaign_id)}
     <tr>
       <td class="label-left">{$form.campaign_id.label}</td>
       <td>{$form.campaign_id.html}</td>
@@ -32,10 +32,10 @@
 </table>
 {/if}
 
-<div class="crm-accordion-wrapper collapsed crm-pdf-format-accordion">
-    <div class="crm-accordion-header">
-        {$form.pdf_format_header.html}
-    </div>
+<details class="crm-accordion-bold crm-pdf-format-accordion">
+    <summary>
+      {ts}Page Format:{/ts} <span class="pdf-format-header-label"></span>
+    </summary>
     <div class="crm-accordion-body">
       <div class="crm-block crm-form-block">
     <table class="form-layout-compressed">
@@ -52,7 +52,7 @@
         <td colspan="2">&nbsp;</td>
       </tr>
       <tr>
-        <td>{$form.paper_dimensions.html}</td><td id="paper_dimensions">&nbsp;</td>
+        <td>{ts}Width x Height{/ts}</td><td id="paper_dimensions">&nbsp;</td>
         <td colspan="2">&nbsp;</td>
       </tr>
       <tr>
@@ -74,25 +74,25 @@
         <div id="updateFormat" style="display: none">{$form.update_format.html}&nbsp;{$form.update_format.label}</div>
       </div>
   </div>
-</div>
+</details>
 
-<div class="crm-accordion-wrapper crm-document-accordion ">
-  <div class="crm-accordion-header">
+<details class="crm-accordion-bold crm-document-accordion " open>
+  <summary>
     {ts}Preview Document{/ts}
-  </div><!-- /.crm-accordion-header -->
+  </summary>
   <div class="crm-accordion-body">
     <div id='document-preview'></div>
-  </div><!-- /.crm-accordion-body -->
-</div><!-- /.crm-accordion-wrapper -->
+  </div>
+</details>
 
-<div class="crm-accordion-wrapper crm-html_email-accordion ">
-<div class="crm-accordion-header">
+<details class="crm-accordion-bold crm-html_email-accordion " open>
+<summary>
     {$form.html_message.label}
-</div><!-- /.crm-accordion-header -->
+</summary>
  <div class="crm-accordion-body">
    <div class="helpIcon" id="helphtml">
      <input class="crm-token-selector big" data-field="html_message" />
-     {help id="id-token-html" tplFile=$tplFile isAdmin=$isAdmin file="CRM/Contact/Form/Task/Email.hlp"}
+     {help id="id-token-html" file="CRM/Contact/Form/Task/Email.hlp"}
    </div>
     <div class="clear"></div>
     <div class='html'>
@@ -101,20 +101,22 @@
 
 <div id="editMessageDetails">
     <div id="updateDetails" >
-        {$form.updateTemplate.html}&nbsp;{$form.updateTemplate.label}
+      {if array_key_exists('updateTemplate', $form)}{$form.updateTemplate.html}&nbsp;{$form.updateTemplate.label}{/if}
     </div>
     <div>
-        {$form.saveTemplate.html}&nbsp;{$form.saveTemplate.label}
+      {if array_key_exists('saveTemplate', $form)}{$form.saveTemplate.html}&nbsp;{$form.saveTemplate.label}{/if}
     </div>
 </div>
 
 <div id="saveDetails" class="section">
+  {if array_key_exists('saveTemplateName', $form)}
     <div class="label">{$form.saveTemplateName.label}</div>
     <div class="content">{$form.saveTemplateName.html|crmAddClass:huge}</div>
+  {/if}
 </div>
 
-  </div><!-- /.crm-accordion-body -->
-</div><!-- /.crm-accordion-wrapper -->
+  </div>
+</details>
 
 <table class="form-layout-compressed">
   <tr>
@@ -233,7 +235,7 @@ function selectFormat( val, bind ) {
     bind = false;
   }
 
-  var dataUrl = {/literal}"{crmURL p='civicrm/ajax/pdfFormat' h=0 }"{literal};
+  var dataUrl = {/literal}"{crmURL p='civicrm/ajax/pdfFormat' h=0}"{literal};
   cj.post( dataUrl, {formatId: val}, function( data ) {
     fillFormatInfo(data, bind);
   }, 'json');
@@ -241,7 +243,7 @@ function selectFormat( val, bind ) {
 
 function selectPaper( val )
 {
-    dataUrl = {/literal}"{crmURL p='civicrm/ajax/paperSize' h=0 }"{literal};
+    dataUrl = {/literal}"{crmURL p='civicrm/ajax/paperSize' h=0}"{literal};
     cj.post( dataUrl, {paperSizeName: val}, function( data ) {
         cj("#paper_size").val( data.name );
         metric = document.getElementById('metric').value;

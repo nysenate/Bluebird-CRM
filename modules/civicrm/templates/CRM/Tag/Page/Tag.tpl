@@ -10,35 +10,35 @@
 <div class="crm-content-block">
   <div class="help">
     {ts 1=', '|implode:$usedFor}Tags are a convenient way to categorize data (%1).{/ts}
-    {if call_user_func(array('CRM_Core_Permission','check'), 'administer Tagsets')}
+    {crmPermission has='administer Tagsets'}
       <br />
       {ts}Create predefined tags in the main tree, or click the <strong>+</strong> to add a set for free tagging.{/ts}
-    {/if}
+    {/crmPermission}
     {docURL page="user/organising-your-data/groups-and-tags"}
   </div>
 
   <div id="mainTabContainer">
     <ul>
       <li class="ui-corner-all crm-tab-button" title="{ts}Main Tag List{/ts}">
-        <a href="#tree"><i class="crm-i fa-tags"></i> {ts}Tag Tree{/ts}</a>
+        <a href="#tree"><i class="crm-i fa-tags" aria-hidden="true"></i> {ts}Tag Tree{/ts}</a>
       </li>
       {foreach from=$tagsets item=set}
         <li class="ui-corner-all crm-tab-button {if ($set.is_reserved)}is-reserved{/if}" title="{ts 1=', '|implode:$set.used_for_label}Tag Set for %1{/ts}">
-          <a href="#tagset-{$set.id}">{$set.name}</a>
+          <a href="#tagset-{$set.id}">{$set.label}</a>
         </li>
       {/foreach}
-      {if call_user_func(array('CRM_Core_Permission','check'), 'administer Tagsets')}
+      {crmPermission has='administer Tagsets'}
         <li class="ui-corner-all crm-tab-button" title="{ts}Add Tag Set{/ts}">
-          <a href="#new-tagset"><i class="crm-i fa-plus"></i></a>
+          <a href="#new-tagset"><i class="crm-i fa-plus" aria-hidden="true"></i></a>
         </li>
-      {/if}
+      {/crmPermission}
     </ul>
     <div id="tree">
       <div class="help">
         {ts}Organize the tag hierarchy by clicking and dragging. Shift-click to select multiple tags to merge/move/delete.{/ts}
       </div>
       <input class="crm-form-text big" name="filter_tag_tree" placeholder="{ts}Filter List{/ts}" allowclear="1"/>
-      <a class="crm-hover-button crm-clear-link" style="visibility:hidden;" title="{ts}Clear{/ts}"><i class="crm-i fa-times"></i></a>
+      <a class="crm-hover-button crm-clear-link" style="visibility:hidden;" title="{ts}Clear{/ts}"><i class="crm-i fa-times" aria-hidden="true"></i></a>
     </div>
     {foreach from=$tagsets item=set}
       <div id="tagset-{$set.id}">
@@ -164,7 +164,7 @@
 
         function updateTagset(info) {
           tagSets[tagset].description = info.description;
-          tagSets[tagset].name = info.name;
+          tagSets[tagset].label = info.label;
           tagSets[tagset].used_for = info.used_for;
           tagSets[tagset].is_reserved = info.is_reserved;
           formatTagSet(tagSets[tagset]);
@@ -175,7 +175,7 @@
         function addTagsetHeader() {
           $('.tagset-header', $panel).remove();
           $panel.prepend(tagsetHeaderTpl(tagSets[tagset]));
-          $("a[href='#tagset-" + tagset + "']").text(tagSets[tagset].name)
+          $("a[href='#tagset-" + tagset + "']").text(tagSets[tagset].label)
             .parent().toggleClass('is-reserved', tagSets[tagset].is_reserved == 1)
             .attr('title', ts('{/literal}{ts escape='js' 1='%1'}Tag Set for %1{/ts}{literal}', {'1': tagSets[tagset].used_for_label.join(', ')}));
         }
@@ -188,7 +188,7 @@
           e.preventDefault();
           var sets = [{key: '0', value: '{/literal}{ts escape='js'}Main Tag Tree{/ts}{literal}'}];
           _.each(tagSets, function(tagSet) {
-            sets.push({key: tagSet.id, value: tagSet.name});
+            sets.push({key: tagSet.id, value: tagSet.label});
           });
           CRM.confirm({
             title: '{/literal}{ts escape='js'}Move to Tagset{/ts}{literal}',
@@ -321,7 +321,7 @@
             tagSets[data.tag.id].display_name = user.display_name;
             formatTagSet(tagSets[data.tag.id]);
             $("#new-tagset").before('<div id="tagset-' + data.tag.id + '">');
-            $("a[href='#new-tagset']").parent().before('<li class="ui-corner-all crm-tab-button"><a href="#tagset-' + data.tag.id + '">' + data.tag.name + '</a></li>');
+            $("a[href='#new-tagset']").parent().before('<li class="ui-corner-all crm-tab-button"><a href="#tagset-' + data.tag.id + '">' + data.tag.label + '</a></li>');
             $('#mainTabContainer').tabs('refresh');
             $('#mainTabContainer').tabs('option', 'active', -2);
           });
@@ -410,14 +410,14 @@
   li.is-reserved > a:after {
     content: ' *';
   }
-  {/literal}{if !call_user_func(array('CRM_Core_Permission', 'check'), 'administer reserved tags')}{literal}
+  {/literal}{crmPermission not='administer reserved tags'}{literal}
     #tree li.is-reserved > a.crm-tag-item {
       cursor: not-allowed;
     }
     li.is-reserved > a:after {
       color: #8A1F11;
     }
-  {/literal}{/if}{literal}
+  {/literal}{/crmPermission}{literal}
   .tag-tree-wrapper ul {
     margin: 0;
     padding: 0;
@@ -463,16 +463,16 @@
   <% {rdelim} %>
   <div class="crm-submit-buttons">
     <a href="{crmURL p="civicrm/tag/edit" q="action=add&parent_id="}<%= tagset || '' %>" class="button crm-popup">
-      <span><i class="crm-i fa-plus"></i>&nbsp; {ts}Add Tag{/ts}</span>
+      <span><i class="crm-i fa-plus" aria-hidden="true"></i> {ts}Add Tag{/ts}</span>
     </a>
     <% if(tagset && adminTagsets) {ldelim} %>
       <a href="{crmURL p="civicrm/tag/edit" q="action=update&id="}<%= tagset %>" class="button crm-popup tagset-action-update">
-        <span><i class="crm-i fa-pencil"></i>&nbsp; {ts}Edit Set{/ts}</span>
+        <span><i class="crm-i fa-pencil" aria-hidden="true"></i> {ts}Edit Set{/ts}</span>
       </a>
     <% {rdelim} %>
     <% if(tagset && !length && adminTagsets && (!is_reserved || adminReserved)) {ldelim} %>
       <a href="{crmURL p="civicrm/tag/edit" q="action=delete&id="}<%= tagset %>" class="button crm-popup small-popup tagset-action-delete">
-        <span><i class="crm-i fa-trash"></i>&nbsp; {ts}Delete Set{/ts}</span>
+        <span><i class="crm-i fa-trash" aria-hidden="true"></i> {ts}Delete Set{/ts}</span>
       </a>
     <% {rdelim} %>
   </div>
@@ -482,7 +482,7 @@
   <div class="crm-entity" data-entity="Tag" data-id="<%= id %>">
     <h4>
       <input type="color" value="<%= data.color %>" <% if (!data.is_reserved || adminReserved) {ldelim} %>title="{ts}Select color{/ts}" <% {rdelim} else {ldelim} %>disabled<% {rdelim} %> />
-      <span class="<% if (!data.is_reserved || adminReserved) {ldelim} %>crm-editable<% {rdelim} %>" data-field="name"><%- text %></span>
+      <span class="<% if (!data.is_reserved || adminReserved) {ldelim} %>crm-editable<% {rdelim} %>" data-field="label"><%- text %></span>
     </h4>
     <hr />
     <div><span class="tdl">{ts}Description:{/ts}</span>
@@ -499,7 +499,7 @@
         <span class="tdl">{ts}Used For:{/ts}</span>
         {literal}
           <span class="<% if (!data.is_reserved || adminReserved) { %>crm-editable-enabled used-for-toggle<% } %>">
-            <% if (!data.used_for.length) { %><i class="crm-i fa-pencil crm-editable-placeholder"></i><% } %>
+            <% if (!data.used_for.length) { %><i class="crm-i fa-pencil crm-editable-placeholder" aria-hidden="true"></i><% } %>
             <% _.forEach(data.used_for, function(key, i) { %><%- (i ? ', ' : '') + usedFor[key] %><% }) %>
           </span>
           <span style="display: none">
@@ -514,26 +514,26 @@
       </div>
     <% {rdelim} %>
     <div><span class="tdl">{ts}Usage Count:{/ts}</span> <%= data.usages %></div>
-    <a class="clear-tag-selection" href="#" title="{ts}Clear selection{/ts}"><i class="crm-i fa-ban"></i></a>
+    <a class="clear-tag-selection" href="#" title="{ts}Clear selection{/ts}"><i class="crm-i fa-ban" aria-hidden="true"></i></a>
   </div>
   <div class="crm-submit-buttons">
     <% if(!tagset) {ldelim} %>
       <a href="{crmURL p="civicrm/tag/edit" q="action=add&parent_id="}<%= id %>" class="button crm-popup" title="{ts}Create new tag under this one{/ts}">
-        <span><i class="crm-i fa-plus"></i>&nbsp; {ts}Add Child{/ts}</span>
+        <span><i class="crm-i fa-plus" aria-hidden="true"></i> {ts}Add Child{/ts}</span>
       </a>
     <% {rdelim} %>
     <a href="{crmURL p="civicrm/tag/edit" q="action=add&clone_from="}<%= id %>" class="button crm-popup" title="{ts}Duplicate this tag{/ts}">
-      <span><i class="crm-i fa-copy"></i>&nbsp; {ts}Clone Tag{/ts}</span>
+      <span><i class="crm-i fa-copy" aria-hidden="true"></i> {ts}Clone Tag{/ts}</span>
     </a>
     <% if(!data.is_reserved || adminReserved) {ldelim} %>
       <% if(tagsetCount) {ldelim} %>
         <a href="#move" class="button move-tag-button" title="{ts}Move to a different tagset{/ts}">
-          <span><i class="crm-i fa-share-square-o"></i>&nbsp; {ts}Move Tag{/ts}</span>
+          <span><i class="crm-i fa-share-square-o" aria-hidden="true"></i> {ts}Move Tag{/ts}</span>
         </a>
       <% {rdelim} %>
       <% if(!hasChildren) {ldelim} %>
         <a href="{crmURL p="civicrm/tag/edit" q="action=delete&id="}<%= id %>" class="button crm-popup small-popup">
-          <span><i class="crm-i fa-trash"></i>&nbsp; {ts}Delete{/ts}</span>
+          <span><i class="crm-i fa-trash" aria-hidden="true"></i> {ts}Delete{/ts}</span>
         </a>
       <% {rdelim} %>
     <% {rdelim} %>
@@ -547,20 +547,20 @@
       <p>* {ts 1="<%= reserved %>"}%1 reserved.{/ts}</p>
     <% {rdelim} %>
   <p><span class="tdl">{ts}Total Usage:{/ts}</span> <%= usages %></p>
-  <a class="clear-tag-selection" href="#" title="{ts}Clear selection{/ts}"><i class="crm-i fa-ban"></i></a>
+  <a class="clear-tag-selection" href="#" title="{ts}Clear selection{/ts}"><i class="crm-i fa-ban" aria-hidden="true"></i></a>
   <div class="crm-submit-buttons">
     <% if(!reserved || adminReserved) {ldelim} %>
       <a href="{crmURL p="civicrm/tag/merge" q="id="}<%= items.join() %>" class="button crm-popup small-popup" title="{ts}Combine tags into one{/ts}">
-        <span><i class="crm-i fa-compress"></i>&nbsp; {ts}Merge Tags{/ts}</span>
+        <span><i class="crm-i fa-compress" aria-hidden="true"></i> {ts}Merge Tags{/ts}</span>
       </a>
       <% if(tagsetCount) {ldelim} %>
         <a href="#move" class="button move-tag-button" title="{ts}Move to a different tagset{/ts}">
-          <span><i class="crm-i fa-share-square-o"></i>&nbsp; {ts}Move Tags{/ts}</span>
+          <span><i class="crm-i fa-share-square-o" aria-hidden="true"></i> {ts}Move Tags{/ts}</span>
         </a>
       <% {rdelim} %>
       <% if(!hasChildren) {ldelim} %>
         <a href="{crmURL p="civicrm/tag/edit" q="action=delete&id="}<%= items.join() %>" class="button crm-popup small-popup">
-          <span><i class="crm-i fa-trash"></i>&nbsp; {ts}Delete All{/ts}</span>
+          <span><i class="crm-i fa-trash" aria-hidden="true"></i> {ts}Delete All{/ts}</span>
         </a>
       <% {rdelim} %>
     <% {rdelim} %>
@@ -573,9 +573,9 @@
       <% if(is_reserved == 1) {ldelim} %><strong>{ts}Reserved{/ts}</strong><% {rdelim} %>
       <% if(undefined === display_name) {ldelim} var display_name = null; {rdelim} %>
       {ts 1="<%= used_for_label.join(', ') %>" 2="<%= date %>" 3="<%= display_name %>"}Tag Set for %1 (created %2 by %3).{/ts}
-      <% if(typeof description === 'string' && description.length) {ldelim} %><p><em><%- description %></em></p><% {rdelim} %>
+      <% if(typeof description === 'string' && description.length && description !== 'null') {ldelim} %><p><em><%- description %></em></p><% {rdelim} %>
     </div>
     <input class="crm-form-text big" name="filter_tag_tree" placeholder="{ts}Filter List{/ts}" allowclear="1"/>
-    <a class="crm-hover-button crm-clear-link" style="visibility:hidden;" title="{ts}Clear{/ts}"><i class="crm-i fa-times"></i></a>
+    <a class="crm-hover-button crm-clear-link" style="visibility:hidden;" title="{ts}Clear{/ts}"><i class="crm-i fa-times" aria-hidden="true"></i></a>
   </div>
 </script>

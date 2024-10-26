@@ -41,9 +41,10 @@ class CRM_Contact_Form_Edit_TagsAndGroups {
    *   If used for building tag block.
    * @param string $fieldName
    *   This is used in batch profile(i.e to build multiple blocks).
-   *
    * @param string $groupElementType
-   *
+   *   The html type of the element we are adding e.g. checkbox, select
+   * @param bool $public
+   *   Is this being used in a public form e.g. Profile.
    */
   public static function buildQuickForm(
     &$form,
@@ -54,14 +55,14 @@ class CRM_Contact_Form_Edit_TagsAndGroups {
     $groupName = 'Group(s)',
     $tagName = 'Tag(s)',
     $fieldName = NULL,
-    $groupElementType = 'checkbox'
+    $groupElementType = 'checkbox',
+    $public = FALSE
   ) {
-    if (!isset($form->_tagGroup)) {
-      $form->_tagGroup = [];
-    }
-
+    $form->addExpectedSmartyVariable('type');
+    $form->addOptionalQuickFormElement('group');
     // NYSS 5670
     if (!$contactId && !empty($form->_contactId)) {
+      CRM_Core_Error::deprecatedWarning('this is thought to be unreachable, should be passed in');
       $contactId = $form->_contactId;
     }
 
@@ -72,8 +73,10 @@ class CRM_Contact_Form_Edit_TagsAndGroups {
       if ($fieldName) {
         $fName = $fieldName;
       }
+      // The optional url parameter grid is refers to Group ID.
+      // If it set the group options on the page are limited to that group
+      $groupID = is_numeric(CRM_Utils_Request::retrieve('grid', 'Integer', $form)) ? (int) CRM_Utils_Request::retrieve('grid', 'Integer', $form) : NULL;
 
-      $groupID = $form->_grid ?? NULL;
       if ($groupID && $visibility) {
         $ids = [$groupID => $groupID];
       }
@@ -88,58 +91,60 @@ class CRM_Contact_Form_Edit_TagsAndGroups {
       }
 
       if ($groupID || !empty($group)) {
-        $groups = CRM_Contact_BAO_Group::getGroupsHierarchy($ids);
+        $groups = CRM_Contact_BAO_Group::getGroupsHierarchy($ids, NULL, '- ', FALSE, $public);
 
         $attributes['skiplabel'] = TRUE;
         $elements = [];
         $groupsOptions = [];
-        foreach ($groups as $id => $group) {
+        foreach ($groups as $key => $group) {
+          $id = $group['id'];
           // make sure that this group has public visibility
           if ($visibility &&
-            $group['visibility'] == 'User and User Admin Only'
+            $group['visibility'] === 'User and User Admin Only'
           ) {
             continue;
           }
 
-          if ($groupElementType == 'select') {
-            $groupsOptions[$id] = $group['title'];
+          if ($groupElementType === 'select') {
+            $groupsOptions[$key] = $group;
           }
           else {
-            $form->_tagGroup[$fName][$id]['description'] = $group['description'];
-            $elements[] = &$form->addElement('advcheckbox', $id, NULL, $group['title'], $attributes);
+            $tagGroup[$fName][$id]['description'] = $group['description'];
+            $elements[] = &$form->addElement('advcheckbox', $id, NULL, $group['text'], $attributes);
           }
         }
 
-        if ($groupElementType == 'select' && !empty($groupsOptions)) {
-          $form->add('select', $fName, $groupName, $groupsOptions, FALSE,
-            ['id' => $fName, 'multiple' => 'multiple', 'class' => 'crm-select2 twenty']
+        if ($groupElementType === 'select' && !empty($groupsOptions)) {
+          $form->add('select2', $fName, $groupName, $groupsOptions, FALSE,
+            ['placeholder' => ts('- select -'), 'multiple' => TRUE, 'class' => 'twenty']
           );
           $form->assign('groupCount', count($groupsOptions));
         }
 
-        if ($groupElementType == 'checkbox' && !empty($elements)) {
+        if ($groupElementType === 'checkbox' && !empty($elements)) {
           $form->addGroup($elements, $fName, $groupName, '&nbsp;<br />');
           $form->assign('groupCount', count($elements));
           if ($isRequired) {
             $form->addRule($fName, ts('%1 is a required field.', [1 => $groupName]), 'required');
           }
         }
-        $form->assign('groupElementType', $groupElementType);
       }
     }
+    $form->assign('groupElementType', $groupElementType ?? NULL);
 
     if ($type & self::TAG) {
+      $tagGroup = [];
       $tags = CRM_Core_BAO_Tag::getColorTags('civicrm_contact');
 
       if (!empty($tags)) {
-        $form->add('select2', 'tag', ts('Tag(s)'), $tags, FALSE, ['class' => 'huge', 'placeholder' => ts('- select -'), 'multiple' => TRUE]);
+        $form->add('select2', 'tag', ts('Tag(s)'), $tags, $isRequired, ['class' => 'huge', 'placeholder' => ts('- select -'), 'multiple' => TRUE]);
       }
 
       // build tag widget
       $parentNames = CRM_Core_BAO_Tag::getTagSet('civicrm_contact');
       CRM_Core_Form_Tag::buildQuickForm($form, $parentNames, 'civicrm_contact', $contactId, FALSE, TRUE);
     }
-    $form->assign('tagGroup', $form->_tagGroup);
+    $form->assign('tagGroup', $tagGroup ?? NULL);
   }
 
   /**
@@ -164,13 +169,13 @@ class CRM_Contact_Form_Edit_TagsAndGroups {
         $fName = $fieldName;
       }
 
-      $contactGroup = CRM_Contact_BAO_GroupContact::getContactGroup($id, 'Added', NULL, FALSE, TRUE);
+      $contactGroup = CRM_Contact_BAO_GroupContact::getContactGroup($id, 'Added', NULL, FALSE, TRUE, FALSE, TRUE, NULL, TRUE);
       if ($contactGroup) {
-        foreach ($contactGroup as $group) {
-          if ($groupElementType == 'select') {
-            $defaults[$fName][] = $group['group_id'];
-          }
-          else {
+        if ($groupElementType == 'select') {
+          $defaults[$fName] = implode(',', array_column($contactGroup, 'group_id'));
+        }
+        else {
+          foreach ($contactGroup as $group) {
             $defaults[$fName . '[' . $group['group_id'] . ']'] = 1;
           }
         }

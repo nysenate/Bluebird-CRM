@@ -9,65 +9,6 @@
 *}
 {* this template is used for adding/editing/viewing relationships  *}
 
-  {if $action eq 4 } {* action = view *}
-    <div class="crm-block crm-content-block crm-relationship-view-block">
-      <table class="crm-info-panel">
-        {foreach from=$viewRelationship item="row"}
-          <tr>
-            <td class="label">{$row.relation}</td>
-            <td><a class="no-popup" href="{crmURL p='civicrm/contact/view' q="reset=1&cid=`$row.cid`"}">{$row.name}</a></td>
-          </tr>
-          {if $isCurrentEmployer}
-            <tr><td class="label">{ts}Current Employee?{/ts}</td><td>{ts}Yes{/ts}</td></tr>
-          {/if}
-          {if $row.start_date}
-            <tr><td class="label">{ts}Start Date{/ts}</td><td>{$row.start_date|crmDate}</td></tr>
-          {/if}
-          {if $row.end_date}
-            <tr><td class="label">{ts}End Date{/ts}</td><td>{$row.end_date|crmDate}</td></tr>
-          {/if}
-          {if $row.description}
-            <tr><td class="label">{ts}Description{/ts}</td><td>{$row.description}</td></tr>
-          {/if}
-          {foreach from=$viewNote item="rec"}
-            {if $rec }
-              <tr><td class="label">{ts}Note{/ts}</td><td>{$rec}</td></tr>
-            {/if}
-          {/foreach}
-          <tr>
-            <td class="label"><label>{ts}Permissions{/ts}</label></td>
-            <td>
-              {if $row.is_permission_a_b or $row.is_permission_b_a}
-                {if $row.is_permission_a_b}
-                  <div>
-                  {if $row.rtype EQ 'a_b' AND $is_contact_id_a}
-                    {include file="CRM/Contact/Page/View/RelationshipPerm.tpl" permType=$row.is_permission_a_b permDisplayName=$displayName otherDisplayName=$row.display_name displayText=true}
-                  {else}
-                    {include file="CRM/Contact/Page/View/RelationshipPerm.tpl" permType=$row.is_permission_a_b otherDisplayName=$displayName permDisplayName=$row.display_name displayText=true}
-                  {/if}
-                  </div>
-                {/if}
-                {if $row.is_permission_b_a}
-                  <div>
-                  {if $row.rtype EQ 'a_b' AND $is_contact_id_a}
-                    {include file="CRM/Contact/Page/View/RelationshipPerm.tpl" permType=$row.is_permission_b_a otherDisplayName=$displayName permDisplayName=$row.display_name displayText=true}
-                  {else}
-                    {include file="CRM/Contact/Page/View/RelationshipPerm.tpl" permType=$row.is_permission_b_a permDisplayName=$displayName otherDisplayName=$row.display_name displayText=true}
-                  {/if}
-                  </div>
-                {/if}
-              {else}
-                {ts}None{/ts}
-              {/if}
-            </td>
-          </tr>
-          <tr><td class="label">{ts}Status{/ts}</td><td>{if $row.is_active}{ts}Enabled{/ts}{else}{ts}Disabled{/ts}{/if}</td></tr>
-        {/foreach}
-      </table>
-      {include file="CRM/Custom/Page/CustomDataView.tpl"}
-    </div>
-  {/if}
-
   {if $action eq 2 or $action eq 1} {* add and update actions *}
     <div class="crm-block crm-form-block crm-relationship-form-block">
       <table class="form-layout-compressed">
@@ -106,7 +47,7 @@
         <tr class="crm-relationship-form-block-is_permission_b_a">
           <td class="label"> </td>
           <td>
-            {ts 1=$contact_b|ucfirst 2=$display_name_a}Permission for <strong>%1</strong> to access information about <strong>%2</strong>{/ts}<br />
+            {ts 1=$contact_b|capitalize 2=$display_name_a}Permission for <strong>%1</strong> to access information about <strong>%2</strong>{/ts}<br />
             {$form.is_permission_b_a.html}
           </td>
         </tr>
@@ -115,13 +56,13 @@
           <td>{$form.is_active.html}</td>
         </tr>
       </table>
-      <div id="customData"></div>
+      <div id="customData_Relationship" class="crm-customData-block"></div>
       <div class="spacer"></div>
     </div>
   {/if}
-  {if ($action EQ 1) OR ($action EQ 2) }
+  {if ($action EQ 1) OR ($action EQ 2)}
     {*include custom data js file *}
-    {include file="CRM/common/customData.tpl"}
+    {include file="CRM/common/customDataBlock.tpl" groupID='' customDataType='Relationship' cid=false}
     <script type="text/javascript">
       {literal}
       CRM.$(function($) {

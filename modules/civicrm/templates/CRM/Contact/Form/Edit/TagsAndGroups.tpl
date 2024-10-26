@@ -8,24 +8,25 @@
  +--------------------------------------------------------------------+
 *}
 {if $title}
-<div class="crm-accordion-wrapper crm-tagGroup-accordion collapsed">
-  <div class="crm-accordion-header">{$title}</div>
+<details class="crm-accordion-bold crm-tagGroup-accordion">
+  <summary>{$title}</summary>
   <div class="crm-accordion-body" id="tagGroup">
 {/if}
     <table class="form-layout-compressed{if $context EQ 'profile'} crm-profile-tagsandgroups{/if}">
       <tr>
-        {if !$type || $type eq 'tag'}
-          <td>
+        <td>
+          {if $form.tag}
             <div class="crm-section tag-section">
-              {if $title}{$form.tag.label}<br>{/if}
+              {if !empty($title)}{$form.tag.label}<br>{/if}
               {$form.tag.html}
             </div>
-            {if $context NEQ 'profile'}
-              {include file="CRM/common/Tagset.tpl"}
-            {/if}
-          </td>
-        {/if}
-        {if !$type || $type eq 'group'}
+          {/if}
+          {if $context NEQ 'profile'}
+            {include file="CRM/common/Tagset.tpl"}
+          {/if}
+        </td>
+
+        {if $form.group}
           <td>
             {if $groupElementType eq 'select'}
               <div class="crm-section group-section">
@@ -36,7 +37,7 @@
               {foreach key=key item=item from=$tagGroup.group}
                 <div class="group-wrapper">
                   {$form.group.$key.html}
-                  {if $item.description}
+                    {if $item.description}
                     <div class="description">{$item.description}</div>
                   {/if}
                 </div>
@@ -48,5 +49,5 @@
     </table>
 {if $title}
   </div>
-</div><!-- /.crm-accordion-wrapper -->
+</details>
 {/if}

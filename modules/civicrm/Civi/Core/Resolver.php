@@ -95,7 +95,7 @@ class Resolver {
       // Callback: Constant value.
       return new ResolverConstantCallback((int) $id);
     }
-    elseif ($id{0} >= 'A' && $id{0} <= 'Z') {
+    elseif ($id[0] >= 'A' && $id[0] <= 'Z') {
       // Object: New/default instance.
       return new $id();
     }
@@ -222,11 +222,11 @@ class ResolverApi {
   /**
    * Recursively interpolate values.
    *
-   * @code
+   * ```
    * $params = array('foo' => '@1');
    * $this->interpolate($params, array('@1'=> $object))
    * assert $data['foo'] == $object;
-   * @endcode
+   * ```
    *
    * @param array $array
    *   Array which may or many not contain a mix of tokens.
@@ -251,7 +251,8 @@ class ResolverApi {
 
 class ResolverGlobalCallback {
   private $mode;
-  private $path;
+  private $basePath;
+  private $subPath;
 
   /**
    * Class constructor.
@@ -259,10 +260,13 @@ class ResolverGlobalCallback {
    * @param string $mode
    *   'getter' or 'setter'.
    * @param string $path
+   *   Ex: 'dbLocale' <=> $GLOBALS['dbLocale']
+   *   Ex: 'civicrm_setting/domain/debug_enabled' <=> $GLOBALS['civicrm_setting']['domain']['debug_enabled']
    */
   public function __construct($mode, $path) {
     $this->mode = $mode;
-    $this->path = $path;
+    $this->subPath = explode('/', $path);
+    $this->basePath = array_shift($this->subPath);
   }
 
   /**
@@ -273,11 +277,12 @@ class ResolverGlobalCallback {
    * @return mixed
    */
   public function __invoke($arg1 = NULL) {
+    // For PHP 8.1+ compatibility, we resolve the first path-item before doing any array operations.
     if ($this->mode === 'getter') {
-      return \CRM_Utils_Array::pathGet($GLOBALS, explode('/', $this->path));
+      return \CRM_Utils_Array::pathGet($GLOBALS[$this->basePath], $this->subPath);
     }
     elseif ($this->mode === 'setter') {
-      \CRM_Utils_Array::pathSet($GLOBALS, explode('/', $this->path), $arg1);
+      \CRM_Utils_Array::pathSet($GLOBALS[$this->basePath], $this->subPath, $arg1);
       return NULL;
     }
     else {

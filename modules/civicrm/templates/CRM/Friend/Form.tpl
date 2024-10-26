@@ -8,7 +8,7 @@
  +--------------------------------------------------------------------+
 *}
 {* Enduser Tell-a-Friend form. *}
-{if $status eq 'thankyou' } {* Form has been submitted. *}
+{if $status eq 'thankyou'} {* Form has been submitted. *}
     <div class="crm-section tell_friend_thankyou-section">
         {$thankYouText}
     </div>
@@ -16,7 +16,7 @@
     {* Add button for donor to create their own Personal Campaign page *}
     {if $linkText}
    <div class="crm-section create_pcp_link-section">
-        <a href="{$linkTextUrl}" title="{$linkText|escape}" class="button"><span>&raquo; {$linkText}</span></a>
+        <a href="{$linkTextUrl}" title="{$linkText|escape}" class="button"><span><i class="crm-i fa-chevron-right" aria-hidden="true"></i> {$linkText}</span></a>
     </div><br /><br />
     {/if}
 
@@ -36,11 +36,11 @@
   </tr>
 
   <tr>
-    <td class="right font-size12pt">{$form.from_name.label}&nbsp;&nbsp;</td>
-    <td class="font-size12pt">{$form.from_name.html} &lt;{$form.from_email.html}&gt;</td>
+    <td class="right">{$form.from_name.label}&nbsp;&nbsp;</td>
+    <td>{$form.from_name.html} &lt;{$form.from_email.html}&gt;</td>
   </tr>
   <tr>
-    <td class="label font-size12pt">{$form.suggested_message.label}</td>
+    <td class="label">{$form.suggested_message.label}</td>
     <td>{$form.suggested_message.html}</td>
   </tr>
 
@@ -81,5 +81,5 @@
   {else}
     {capture assign=pageURL}{crmURL p='civicrm/contribute/transact' q="reset=1&amp;id=`$entityID`" a=1 fe=1 h=1}{/capture}
   {/if}
-  {include file="CRM/common/SocialNetwork.tpl" url=$pageURL title=$title pageURL=$pageURL}
+  {include file="CRM/common/SocialNetwork.tpl" url=$pageURL title=$title pageURL=$pageURL emailMode=false}
 {/if}

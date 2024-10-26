@@ -1,0 +1,35 @@
+<div>
+  <civicase-case-card
+    mode="contact-record"
+    case="case"
+    show-contact-role="casesList.showContactRole"
+    ng-click="viewCase(case)"
+    ng-repeat="case in casesList.cases">
+    </civicase-case-card>
+  <div
+    class="panel panel-default panel-strip-primary civicase__case-card civicase__case-card--detached"
+    ng-repeat="placeholder in loadingPlaceholders"
+    ng-if="!casesList.isLoaded">
+    <div class="panel-body">
+      <div class="civicase__case-card__row civicase__case-card__row--primary clearfix">
+        <div class="pull-left civicase__case-card-subject">
+          <div class="civicase__loading-placeholder__oneline" style="width: 16em; font-size: 18px;"></div>
+        </div>
+        <div class="pull-right">
+          <div class="civicase__loading-placeholder__oneline" style="width: 12em; font-size: 18px;"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="text-center civicase__contact-case-tab__case-list__footer">
+    <div ng-if="casesList.showSpinner" class="civicase__spinner"></div>
+    <button
+      class="btn btn-default"
+      ng-if="casesList.isLoadMoreAvailable && casesList.isLoaded && !casesList.showSpinner  && !casesList.disableLoadMore"
+      ng-click="loadMore()"> {{ ts('Load More Cases') }} </button>
+    <div ng-if="!casesList.isLoadMoreAvailable">
+      <span ng-if="casesList.cases.length > 0"> Showing all {{ casesList.cases.length }}</span>
+    </div>
+    <p ng-if="casesList.cases.length == 0 && casesList.isLoaded" class="text-left"> None Found </p>
+  </div>
+</div>

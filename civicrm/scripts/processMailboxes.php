@@ -15,20 +15,29 @@
 //                     - added more default value constants
 // Revised: 2019-04-17 - changed mangleHTML() to renderAsHtml()
 // Revised: 2020-01-30 - must bootstrap Drupal now
+// Revised: 2021-08-12 - change 'server' to 'host'
+//                     - end support for multiple IMAP accounts per CRM
+//                     - add --deny-unauthorized to reject any emails from
+//                       a sender that is not in the forwarder whitelist
+// Revised: 2023-08-21 - implement https://www.php-imap.com/ and OAuth
+//                       connection support
+// Revised: 2024-02-14 - add --no-auto-create option; auto-create by default
 //
 
 // Version number, used for debugging
-define('VERSION_NUMBER', 2.1);
+define('VERSION_NUMBER', 3.0);
 
 // Mailbox settings common to all CRM instances
-define('DEFAULT_IMAP_SERVER', 'senmail.nysenate.gov');
+define('DEFAULT_IMAP_HOST', 'imap.example.com');
 define('DEFAULT_IMAP_PORT', 143);
 define('DEFAULT_IMAP_FLAGS', '/imap/notls');
 define('DEFAULT_IMAP_MAILBOX', 'INBOX');
 define('DEFAULT_IMAP_ARCHIVEBOX', 'Archive');
 define('DEFAULT_IMAP_VALID_SENDERS', false);
+define('DEFAULT_IMAP_DENY_UNAUTH', false);
 define('DEFAULT_IMAP_ACTIVITY_STATUS', 'Completed');
 define('DEFAULT_IMAP_NO_ARCHIVE', false);
+define('DEFAULT_IMAP_NO_CREATE', false);
 define('DEFAULT_IMAP_NO_EMAIL', false);
 define('DEFAULT_IMAP_RECHECK', false);
 
@@ -66,17 +75,22 @@ if (!ini_get('date.timezone')) {
 
 //no limit
 set_time_limit(0);
+ini_set('memory_limit', '2G');
 
 $prog = basename(__FILE__);
 
 require_once 'script_utils.php';
 $stdusage = civicrm_script_usage();
-$usage = "[--imap-user|-u username]  [--imap-pass|-P password]  [--cmd|-c <poll|list|delarchive>]  [--log-level|-l LEVEL]  [--server|-s imap_server]  [--port|-p imap_port]  [--imap-flags|-f imap_flags]  [--mailbox|-m name]  [--archivebox|-a name]  [--valid-senders|-v EMAILS]  [--default-activity-status|-d <Completed|Scheduled|Cancelled>]  [--no-archive|-n]  [--no-email|-e]  [--recheck-unmatched|-r]";
-$shortopts = "u:P:c:l:s:p:f:m:a:v:d:ner";
-$longopts = array("imap-user=", "imap-pass=", "cmd=", "log-level=",
-                  "server=", "port=", "imap-flags=", "mailbox=", "archivebox=",
-                  "valid-senders=", "default-activity-status=",
-                  "no-archive", "no-email", "recheck-unmatched");
+$usage = "[--imap-user|-u username]  [--imap-pass|-s password]  [--cmd|-c <poll|list|delarchive>]  [--log-level|-l LEVEL]  [--host|-h imap_host]  [--port|-p imap_port]  [--imap-flags|-f imap_flags]  [--mailbox|-m name]  [--archivebox|-a name]  [--valid-senders|-v EMAILS]  [--deny-unauthorized|-x]  [--default-activity-status|-d <Completed|Scheduled|Cancelled>]  [--no-archive|-A]  [--no-auto-create|-C]  [--no-email|-E]  [--recheck-unmatched|-r]";
+$shortopts = "u:s:c:l:h:p:f:m:a:v:xd:ACEr";
+$longopts = [
+  "imap-user=", "imap-pass=", "cmd=", "log-level=",
+  "host=", "port=", "imap-flags=", "mailbox=", "archivebox=",
+  "valid-senders=", "deny-unauthorized",
+  "default-activity-status=",
+  "no-archive", "no-auto-create", "no-email",
+  "recheck-unmatched"
+];
 
 $optlist = civicrm_script_init($shortopts, $longopts);
 
@@ -85,16 +99,16 @@ if ($optlist === null) {
   exit(1);
 }
 
+drupal_script_init();
+
 if (!empty($optlist['log-level'])) {
   set_bbscript_log_level($optlist['log-level']);
 }
 
-/* More than one IMAP account can be checked per CRM instance.
-** The username and password for each account is specified in the Bluebird
-** config file.
-**
-** The user= and pass= command line args can be used to override the IMAP
-** accounts from the config file.
+/*
+** All IMAP parameters for a CRM instance can be specified in the Bluebird
+** configuration file.  Each parameter can also be overridden by command
+** line options.
 */
 
 $bbconfig = get_bluebird_instance_config();
@@ -105,17 +119,21 @@ $g_crm_instance = $site;
 
 $all_params = [
   // Each element is: paramName, optName, bbcfgName, defaultVal
-  array('site', 'site', null, null),
-  array('server', 'server', 'imap.server', DEFAULT_IMAP_SERVER),
-  array('port', 'port', 'imap.port', DEFAULT_IMAP_PORT),
-  array('flags', 'imap-flags', 'imap.flags', DEFAULT_IMAP_FLAGS),
-  array('mailbox', 'mailbox', 'imap.mailbox', DEFAULT_IMAP_MAILBOX),
-  array('archivebox', 'archivebox', 'imap.archivebox', DEFAULT_IMAP_ARCHIVEBOX),
-  array('validsenders', 'valid-senders', 'imap.validsenders', DEFAULT_IMAP_VALID_SENDERS),
-  array('actstatus', 'default-activity-status', 'imap.activity.status.default', DEFAULT_IMAP_ACTIVITY_STATUS),
-  array('noarchive', 'no-archive', null, DEFAULT_IMAP_NO_ARCHIVE),
-  array('noemail', 'no-email', null, DEFAULT_IMAP_NO_EMAIL),
-  array('recheck', 'recheck-unmatched', null, DEFAULT_IMAP_RECHECK)
+  ['site', 'site', null, null],
+  ['host', 'host', 'imap.host', DEFAULT_IMAP_HOST],
+  ['port', 'port', 'imap.port', DEFAULT_IMAP_PORT],
+  ['user', 'imap-user', 'imap.user', null],
+  ['password', 'imap-pass', 'imap.pass', null],
+  ['flags', 'imap-flags', 'imap.flags', DEFAULT_IMAP_FLAGS],
+  ['mailbox', 'mailbox', 'imap.mailbox', DEFAULT_IMAP_MAILBOX],
+  ['archivebox', 'archivebox', 'imap.archivebox', DEFAULT_IMAP_ARCHIVEBOX],
+  ['validsenders', 'valid-senders', 'imap.validsenders', DEFAULT_IMAP_VALID_SENDERS],
+  ['denyunauth', 'deny-unauthorized', 'imap.deny.unauth', DEFAULT_IMAP_DENY_UNAUTH],
+  ['actstatus', 'default-activity-status', 'imap.activity.status.default', DEFAULT_IMAP_ACTIVITY_STATUS],
+  ['noarchive', 'no-archive', null, DEFAULT_IMAP_NO_ARCHIVE],
+  ['nocreate', 'no-auto-create', null, DEFAULT_IMAP_NO_CREATE],
+  ['noemail', 'no-email', null, DEFAULT_IMAP_NO_EMAIL],
+  ['recheck', 'recheck-unmatched', null, DEFAULT_IMAP_RECHECK]
 ];
 
 $imap_params = [];
@@ -127,28 +145,22 @@ foreach ($all_params as $param) {
   }
 }
 
-if (!empty($optlist['imap-user']) && !empty($optlist['imap-pass'])) {
-  $imap_accounts = $optlist['imap-user'].'|'.$optlist['imap-pass'];
+if (empty($imap_params['user'])) {
+  echo "$prog: No IMAP username was specified for CRM instance [$site]\n";
+  exit(1);
 }
-else if (isset($bbconfig['imap.accounts'])) {
-  $imap_accounts = $bbconfig['imap.accounts'];
-}
-else {
-  $imap_accounts = '';
-}
-
-if (empty($imap_accounts)) {
-  echo "$prog: No IMAP accounts to process for CRM instance [$site]\n";
+elseif (empty($imap_params['password'])) {
+  echo "$prog: No IMAP password was specified for CRM instance [$site]\n";
   exit(1);
 }
 
 if ($cmd == 'list') {
   $cmd = IMAP_CMD_LIST;
 }
-else if ($cmd == 'delarchive') {
+elseif ($cmd == 'delarchive') {
   $cmd = IMAP_CMD_DELETE;
 }
-else if ($cmd == 'poll' || !$cmd) {
+elseif ($cmd == 'poll' || !$cmd) {
   $cmd = IMAP_CMD_POLL;
 }
 else {
@@ -185,10 +197,10 @@ if (!is_dir($uploadInbox)) {
   chmod($uploadInbox, 0777);
 }
 
-$authForwarders = array(
+$authForwarders = [
   'emails' => getAuthorizedForwarders(),
-  'patterns' => array()
-);
+  'patterns' => []
+];
 
 if ($imap_params['validsenders']) {
   // If imap.validsenders was specified (via cli or config file), then add
@@ -219,25 +231,21 @@ $imap_params['uploadDir'] = $uploadDir;
 $imap_params['uploadInbox'] = $uploadInbox;
 $imap_params['authForwarders'] = $authForwarders;
 
-bbscript_log(LL::DEBUG, "imap_params before account loop:", $imap_params);
+bbscript_log(LL::DEBUG, "imap_params before processing mailbox:", $imap_params);
 
-
-// Iterate over all IMAP accounts associated with the current CRM instance.
-
-foreach (explode(',', $imap_accounts) as $imap_account) {
-  list($imapUser, $imapPass) = explode("|", $imap_account);
-  $imap_params['user'] = $imapUser;
-  $imap_params['password'] = $imapPass;
+//we now support multiple users processing, provided as a comma-separated list in the config file
+$users = explode(',', $imap_params['user']);
+foreach ($users as $user) {
+  //reset user param to preserve downstream handling
+  $imap_params['user'] = trim($user);
   $rc = processMailboxCommand($cmd, $imap_params);
-  if ($rc == false) {
-    bbscript_log(LL::ERROR, "Failed to process IMAP account $imapUser@{$imap_params['server']}\n".print_r(imap_errors(), true));
+  if (!$rc) {
+    bbscript_log(LL::ERROR, "Failed to process IMAP account {$imap_params['user']}@{$imap_params['host']}");
   }
 }
 
 bbscript_log(LL::NOTICE, "Finished processing all mailboxes for CRM instance [$site]");
 exit(0);
-
-
 
 /*
  * getAuthorizedForwarders()
@@ -249,7 +257,7 @@ exit(0);
  */
 function getAuthorizedForwarders()
 {
-  $res = array();
+  $res = [];
   $q = "
     SELECT e.email, e.contact_id
     FROM civicrm_group_contact gc, civicrm_group g, civicrm_email e,
@@ -260,7 +268,8 @@ function getAuthorizedForwarders()
       AND gc.contact_id=e.contact_id
       AND e.contact_id = c.id
       AND c.is_deleted = 0
-    ORDER BY gc.contact_id ASC";
+    ORDER BY gc.contact_id ASC
+  ";
 
   $dao = CRM_Core_DAO::executeQuery($q);
 
@@ -280,8 +289,10 @@ function getAuthorizedForwarders()
 
 
 
-function isAuthForwarder($email, $fwders)
-{
+function isAuthForwarder($email, $fwders) {
+  bbscript_log(LL::TRACE, '$email: '.$email);
+  bbscript_log(LL::TRACE, '$fwders: ', $fwders);
+
   if (isset($fwders['emails'][$email])) {
     // Exact match on email address
     bbscript_log(LL::TRACE, "Found exact match on forwarder address [$email]");
@@ -303,118 +314,186 @@ function isAuthForwarder($email, $fwders)
 
 
 
-function processMailboxCommand($cmd, $params)
-{
+function processMailboxCommand($cmd, $params) {
   try {
     $imap_session = new CRM_NYSS_IMAP_Session($params);
+    bbscript_log(LL::TRACE, '$imap_session', $imap_session);
   }
   catch (Exception $ex) {
     bbscript_log(LL::ERROR, "Failed to create IMAP session: ".$ex->getMessage());
-    $imap_session = null;
+    $imap_session = NULL;
     return false;
   }
 
   if ($cmd == IMAP_CMD_POLL) {
     $rc = checkImapAccount($imap_session, $params);
   }
-  else if ($cmd == IMAP_CMD_LIST) {
-    $rc = listMailboxes($imap_session, $params);
+  elseif ($cmd == IMAP_CMD_LIST) {
+    $rc = listMailboxes($imap_session);
   }
-  else if ($cmd == IMAP_CMD_DELETE) {
+  elseif ($cmd == IMAP_CMD_DELETE) {
     $rc = deleteArchiveBox($imap_session, $params);
   }
   else {
-    bbscript_log(LL::ERROR, "Invalid command [$cmd], params=".print_r($params, true));
+    bbscript_log(LL::ERROR, "Invalid command [$cmd], params=", $params);
     $rc = false;
   }
 
-  // Changes to the IMAP mailbox do not take effect unless the CL_EXPUNGE
-  // flag is provided to the imap_close() call, or if imap_expunge() is
-  // explicitly called.  Also note that if the connection was opened with
-  // the readonly flag set, then no changes will be made to the mailbox.
-  // The destructor handles all of this.
-  $imap_session = null;
-
   return $rc;
-} // processMailboxCommand()
+}
 
+/**
+ * @param $imapSess
+ * @param $params
+ * @return bool
+ *
+ * Check the given IMAP account for new messages and process them.
+ */
+function checkImapAccount($imap, $params) {
+  bbscript_log(LL::NOTICE, "Polling CRM [".$params['site']."] using IMAP account ".$params['user']);
 
+  $imap_conn = $imap->getConnection();
 
-// Check the given IMAP account for new messages, and process them.
+  //get folder listing to determine if we need to create any
+  $folders = $imap_conn->getFolders(FALSE);
+  bbscript_log(LL::TRACE, '$folders', $folders);
 
-function checkImapAccount($imapSess, $params)
-{
-  bbscript_log(LL::NOTICE, "Polling CRM [".$params['site']."] using IMAP account ".$params['user'].'@'.$params['server'].$params['flags']);
+  $folderList = [];
+  foreach ($folders as $folder) {
+    $folderList[] = $folder->path;
+  }
+  bbscript_log(LL::TRACE, '$folderList: ', $folderList);
 
-  $imap_conn = $imapSess->getConnection();
-  $crm_archivebox = '{'.$params['server'].'}'.$params['archivebox'];
-
-  //create archive box in case it doesn't exist
-  //don't report errors since it will almost always fail
-  if ($params['noarchive'] == false) {
-    $rc = imap_createmailbox($imap_conn, imap_utf7_encode($crm_archivebox));
-    if ($rc) {
-      bbscript_log(LL::DEBUG, "Created new archive mailbox: $crm_archivebox");
+  // Check to make sure the main mailbox exists.  If it does not exist,
+  // then create it, unless --no-auto-create was specified.
+  if (!in_array($params['mailbox'], $folderList)) {
+    if ($params['nocreate']) {
+      bbscript_log(LL::ERROR, "Inbound mailbox [{$params['mailbox']}] does not currently exist; it must be created first");
+      return FALSE;
     }
     else {
-      bbscript_log(LL::DEBUG, "Archive mailbox $crm_archivebox already exists");
+      bbscript_log(LL::WARN, "Inbound mailbox [{$params['mailbox']}] does not currently exist; creating it automatically");
+      $imap_conn->createFolder($params['mailbox']);
+      bbscript_log(LL::DEBUG, "Created new inbound mailbox: {$params['mailbox']}");
+    }
+  }
+  else {
+    bbscript_log(LL::DEBUG, "Inbound mailbox [{$params['mailbox']}] already exists");
+  }
+
+  //create archive folder if missing
+  if (!$params['noarchive']) {
+    if (!in_array($params['archivebox'], $folderList)) {
+      if ($params['nocreate']) {
+        bbscript_log(LL::ERROR, "Archive mailbox [{$params['archivebox']}] does not currently exist; it must be created first");
+        return FALSE;
+      }
+      else {
+        bbscript_log(LL::WARN, "Archive mailbox [{$params['archivebox']}] does not currently exist; creating it automatically");
+        $imap_conn->createFolder($params['archivebox']);
+        bbscript_log(LL::DEBUG, "Created new archive mailbox: {$params['archivebox']}");
+      }
+    }
+    else {
+      bbscript_log(LL::DEBUG, "Archive mailbox [{$params['archivebox']}] already exists");
     }
   }
   else {
     bbscript_log(LL::WARN, "Messages will not be archived since --no-archive was specified");
   }
 
-  // start db connection
-  $nyss_conn = new CRM_Core_DAO();
-  $nyss_conn = $nyss_conn->getDatabaseConnection();
-  $dbconn = $nyss_conn->connection;
+  //get mailbox folder
+  $mailbox = $imap_conn->getFolderByPath($params['mailbox']);
+  bbscript_log(LL::TRACE, '$mailbox: ', $mailbox);
 
-  $msg_count = $imapSess->fetchMessageCount();
-  $invalid_fwders = array();
+  if (empty($mailbox)) {
+    return TRUE;
+  }
+
+  //get messages in batches of 500
+  $messages = $mailbox->query()->all()->limit($limit = 500)->get();
+  bbscript_log(LL::TRACE, '$messages: ', $messages);
+
+  $msg_count = count($messages);
   bbscript_log(LL::NOTICE, "Number of messages in IMAP inbox: $msg_count");
 
-  for ($msg_num = 1; $msg_num <= $msg_count; $msg_num++) {
-    bbscript_log(LL::INFO, "Retrieving message $msg_num / $msg_count");
-    $imap_message = new CRM_NYSS_IMAP_Message($imapSess, $msg_num);
-    $msgMetaData = $imap_message->getMetaData();
-    bbscript_log(LL::DEBUG, "metadata", $msgMetaData);
-    $fwder = strtolower($msgMetaData->fromEmail);
+  //see https://github.com/Webklex/php-imap/issues/131 for why we collect msgs separately for moving
+  $invalid_fwders = $moveMsgs = [];
 
-    // check whether or not the forwarder is valid
-    if (isAuthForwarder($fwder, $params['authForwarders'])) {
-      bbscript_log(LL::DEBUG, "Forwarder [$fwder] is allowed to send to this mailbox");
+  //cycle through messages
+  foreach ($messages as $message) {
+    bbscript_log(LL::INFO, "Retrieving message {$message->getMsgn()} of $msg_count");
+    bbscript_log(LL::TRACE, '$message: ', $message);
 
-      // retrieved msg, now store to Civi and if successful move to archive
-      if (storeMessage($imap_message, $dbconn, $params) == true) {
+    $imap_message = new CRM_NYSS_IMAP_Message($message);
+    bbscript_log(LL::TRACE, '$imap_message: ', $imap_message);
+
+    $fwder = $message->getFrom()->first()->toArray();
+    bbscript_log(LL::TRACE, '$fwder: ', $fwder);
+
+    $isAuth = isAuthForwarder(strtolower($fwder['mail']), $params['authForwarders']);
+
+    /*
+     * If the top-level sender is in the authForwarders list, then the message
+     * is assumed to be forwarded from a constituent by a staff member.
+     * Otherwise, the message is assumed to have originated directly
+     * from a constituent, UNLESS --deny-unauthorized was specified, in
+     * which case, the message is not processed.
+    */
+    if ($isAuth === TRUE || $params['denyunauth'] === FALSE) {
+      if ($isAuth) {
+        bbscript_log(LL::DEBUG, "Sender [{$fwder['full']}] is an authorized forwarder; message is assumed to be forwarded");
+      }
+      else {
+        bbscript_log(LL::DEBUG, "Sender [{$fwder['full']}] is not in the forwarder whitelist; message is assumed to be sent directly from a constituent");
+      }
+
+      //store in CiviCRM and archive
+      if (storeMessage($imap_message, $message, $params)) {
         //mark as read
-        imap_setflag_full($imap_conn, $msgMetaData->uid, '\\Seen', ST_UID);
-        // move to folder if necessary
-        if ($params['noarchive'] == false) {
-          $abox = $params['archivebox'];
-          if (imap_mail_move($imap_conn, $msg_num, $abox)) {
-            bbscript_log(LL::DEBUG, "Messsage $msg_num moved to $abox");
-          }
-          else {
-            bbscript_log(LL::ERROR, "Failed to move message $msg_num to $abox");
-          }
+        $message->setFlag('Seen');
+
+        //queue to move to archive folder
+        if (!$params['noarchive']) {
+          array_unshift($moveMsgs, $message);
         }
       }
     }
     else {
-      bbscript_log(LL::WARN, "Forwarder [$fwder] is not allowed to forward/send messages to this CRM; deleting message");
-      $invalid_fwders[$fwder] = true;
-      if (imap_delete($imap_conn, $msg_num) === true) {
-        bbscript_log(LL::DEBUG, "Message $msg_num has been deleted");
+      bbscript_log(LL::WARN, "Forwarder [{{$fwder['full']}}] is not allowed to forward/send messages to this CRM; deleting message");
+      $invalid_fwders[] = $fwder;
+
+      //delete message
+      if ($message->delete()) {
+        bbscript_log(LL::DEBUG, "Message {$message->getMsgn()} has been deleted");
       }
       else {
-        bbscript_log(LL::WARN, "Unable to delete message $msg_num from mailbox");
+        bbscript_log(LL::WARN, "Unable to delete message {$message->getMsgn()} from mailbox");
       }
+    }
+  }
+
+  //move messages if optioned and queued
+  if (!$params['noarchive'] && !empty($moveMsgs)) {
+    foreach ($moveMsgs as $moveMsg) {
+      bbscript_log(LL::TRACE, '$moveMsg', $moveMsg);
+      $moveMsg->setSequence(3); //IMAP::ST_MSGN
+
+      try {
+        if ($moveMsg->move($params['archivebox'])) {
+          bbscript_log(LL::DEBUG, "Messsage {$moveMsg->getMsgn()} moved to {$params['archivebox']}");
+        }
+        else {
+          bbscript_log(LL::ERROR, "Failed to move message {$moveMsg->getMsgn()} to {$params['archivebox']}");
+        }
+      }
+      catch (Exception $e) {}
     }
   }
 
   $invalid_fwder_count = count($invalid_fwders);
   if ($invalid_fwder_count > 0) {
-    if ($params['noemail'] == false) {
+    if (!$params['noemail']) {
       bbscript_log(LL::NOTICE, "Sending denial e-mails to $invalid_fwder_count e-mail address(es)");
       foreach ($invalid_fwders as $invalid_fwder => $dummy) {
         sendDenialEmail($params['site'], $invalid_fwder);
@@ -425,134 +504,136 @@ function checkImapAccount($imapSess, $params)
     }
   }
 
-  bbscript_log(LL::NOTICE, "Finished checking IMAP account ".$params['user'].'@'.$params['server'].$params['flags']);
+  bbscript_log(LL::NOTICE, "Finished checking IMAP account ".$params['user'].'@'.$params['host'].$params['flags']);
 
   bbscript_log(LL::NOTICE, "Searching for matches between message senders and contact records");
-  searchForMatches($dbconn, $params);
+  searchForMatches($params);
 
-  return true;
-} // checkImapAccount()
+  return TRUE;
+}
 
-
-
-// Store the attachments for the given message in the database and local
-// file system.  Meta data about each attachment is stored in the database,
-// while the actual content is stored in the file system.
-// $rowId is the primary key that was generated when the message was stored.
-function storeAttachments($imapMsg, $db, $params, $rowId)
-{
-  $bSuccess = true;
+/*
+ * Store the attachments for the given message in the database and local
+ * file system. Metadata about each attachment is stored in the database,
+ * while the actual content is stored in the file system.
+ * $rowId is the primary key that was generated when the message was stored.
+*/
+function storeAttachments($message, $params, $rowId) {
   $pattern = '/^('.ATTACHMENT_FILE_EXT_REGEX.')$/';
-  $uploadInbox = $params['uploadInbox'];
+  $uploadInbox = $params['uploadInbox'].'/'; //note: must have tailing /
 
   // Load attachment data and save to database and local filesystem.
+  $success = 0;
 
   // Prepare the SQL statement first, so it can be reused in the loop.
-  $q = "INSERT INTO nyss_inbox_attachments
-        (email_id, file_name, file_full, size, mime_type, ext, rejection)
-        VALUES (?, ?, ?, ?, ?, ?, ?)";
-  $sql_stmt = mysqli_prepare($db, $q);
-  if ($sql_stmt === false) {
-    bbscript_log(LL::ERROR, "Unable to prepare SQL statement [$q]");
-    return false;
-  }
+  $sql = "
+    INSERT INTO nyss_inbox_attachments
+    (email_id, file_name, file_full, size, mime_type, ext, rejection)
+    VALUES (%1, %2, %3, %4, %5, %6, %7)
+  ";
 
-  foreach ($imapMsg->fetchAttachments() as $attachment) {
-    $fname = $attachment->name;
-    $size = $attachment->size;
-    $type = $attachment->type;
-    $content = $attachment->data;
-    $fileExt = substr(strrchr($fname, '.'), 1);
-    $civiFilename = CRM_Utils_File::makeFileName($fname);
-    $rej_reason = null;
+  foreach ($message->getAttachments() as $attachment) {
+    bbscript_log(LL::TRACE, '$attachment', $attachment);
 
-    // Allow body type 3 (application) with certain file extensions,
-    // and allow body types 4 (audio), 5 (image), 6 (video).
-    if (($type == TYPEAPPLICATION && preg_match($pattern, $fileExt))
-        || $type == TYPEAUDIO || $type == TYPEIMAGE || $type == TYPEVIDEO) {
-      if ($size > MAX_ATTACHMENT_SIZE) {
+    $attributes = $attachment->getAttributes();
+    bbscript_log(LL::TRACE, '$attributes', $attributes);
+
+    $civiFilename = CRM_Utils_File::makeFileName($attributes['name']);
+    $type = explode('/', $attachment->getContentType())[0];
+    $mime = $attachment->getMimeType();
+    $rej_reason = '';
+    bbscript_log(LL::TRACE, '$type', $type);
+    bbscript_log(LL::TRACE, '$mime', $mime);
+
+    if (empty($fileExt = $attachment->getExtension())) {
+      $fileExt = substr(strrchr($attributes['name'], '.'), 1);
+    }
+    bbscript_log(LL::TRACE, '$fileExt', $fileExt);
+
+    // Allow mime type application with certain file extensions,
+    // and allow audio/image/video
+    if (($type == 'application' && preg_match($pattern, $fileExt))
+      || in_array($type, ['audio', 'image', 'video', 'text'])
+    ) {
+      if ($attributes['size'] > MAX_ATTACHMENT_SIZE) {
         $rej_reason = "File is larger than ".MAX_ATTACHMENT_SIZE." bytes";
       }
     }
     else {
-      $label = $imapMsg->getBodyTypeLabel($type);
-      $rej_reason = "File type [$label/$fileExt] not allowed";
+      $rej_reason = "File type [{$attachment->getContentType()}] not allowed";
     }
+    bbscript_log(LL::TRACE, '$rej_reason', $rej_reason ?? 'NONE');
 
-    if ($rej_reason == null) {
-      $fileFull = $uploadInbox.'/'.$civiFilename;
-      bbscript_log(LL::INFO, "Writing attachment data to $fileFull");
-      $fp = fopen("$fileFull", "w+");
-      fwrite($fp, $content);
-      fclose($fp);
-      bbscript_log(LL::DEBUG, "Getting mime type of file $fileFull");
-      $finfo = finfo_open(FILEINFO_MIME_TYPE);
-      $mime = finfo_file($finfo, $fileFull);
-      finfo_close($finfo);
-    }
-    else {
-      $fileFull = '';
-      $mime = '';
-    }
+    if (!$rej_reason) {
+      bbscript_log(LL::INFO, 'Writing attachment data to '.$uploadInbox.$civiFilename);
 
-    if (mysqli_stmt_bind_param($sql_stmt, 'ississs', $rowId, $fname, $fileFull,
-                               $size, $mime, $fileExt, $rej_reason) == false) {
-      bbscript_log(LL::ERROR, "Unable to bind params for attachment [$fname]");
-      $bSuccess = false;
-      continue;
-    }
+      //save attachment to disk
+      $status = $attachment->save($uploadInbox, $civiFilename);
+      bbscript_log(LL::DEBUG, '$status', $status);
 
-    if (mysqli_stmt_execute($sql_stmt) == false) {
-      bbscript_log(LL::ERROR, "Unable to insert attachment [$fileFull] for msgid=$rowId");
-      $errorDetails = print_r(mysqli_stmt_error($sql_stmt), true);
-      bbscript_log(LL::ERROR, "<pre>{$errorDetails}</pre>");
-      $bSuccess = false;
+      if ($status) {
+        //store record of attachment
+        CRM_Core_DAO::executeQuery($sql, [
+          1 => [$rowId, 'Positive'],
+          2 => [$attributes['name'], 'String'],
+          3 => [$uploadInbox.$civiFilename, 'String'],
+          4 => [$attributes['size'], 'Positive'],
+          5 => [$mime, 'String'],
+          6 => [$fileExt, 'String'],
+          7 => [$rej_reason, 'String'],
+        ]);
+
+        $success++;
+      }
+      else {
+        bbscript_log(LL::ERROR, 'Unable to store attachment to disk.', $attachment);
+      }
     }
   }
 
-  mysqli_stmt_close($sql_stmt);
+  bbscript_log(LL::TRACE, "Inserted $success attachments successfully.");
 
-  $q = "SELECT id FROM nyss_inbox_attachments WHERE email_id=$rowId";
-  $res = mysqli_query($db, $q);
-  $dbAttachmentCount = mysqli_num_rows($res);
-  mysqli_free_result($res);
-
-  if ($dbAttachmentCount > 0) {
-    bbscript_log(LL::DEBUG, "Inserted $dbAttachmentCount attachments");
-  }
-  return $bSuccess;
+  return (!empty($success) && count($message->getAttachments()));
 } // storeAttachments()
 
 
-
-// Store the various metadata of the given message, plus its content.
-// This calls storeAttachments() to download and store the attachments.
-// Returns true/false to move the email to archive or not.
-function storeMessage($imapMsg, $db, $params)
-{
+/**
+ * @param $imapMsg object constructed object in our custom class
+ * @param $message object message object passed from php-imap
+ * @param $params array
+ * @return boolean
+ *
+ * Store the various metadata of the given message, plus its content.
+ * This calls storeAttachments() to download and store the attachments.
+ * Returns true/false to move the email to archive or not.
+ */
+function storeMessage($imapMsg, $message, $params) {
   $authForwarders = $params['authForwarders'];
   $msgMeta = $imapMsg->getMetaData();
-  $all_addr = $imapMsg->findFromAddresses();
+  $all_addr = $imapMsg->findFromAddresses($message);
 
   // check for plain/html body text
-  $msgStruct = $imapMsg->getStructure();
-  bbscript_log(LL::DEBUG, "all_addr", $all_addr);
+  bbscript_log(LL::TRACE, 'all_addr', $all_addr);
 
   // formatting headers
-  $fromEmail = substr($msgMeta->fromEmail, 0, 200);
-  $fromName = substr($msgMeta->fromName, 0, 200);  // appears to be unused
+  $fromEmail = $message->getFrom()->first()->toArray()['mail'];
+  $fromName = $message->getFrom()->first()->toArray()['personal'];
+
   // the subject could be UTF-8
   // CiviCRM will force '<' and '>' to htmlentities, so handle it here
-  $fwdSubject = mb_strcut(htmlspecialchars($msgMeta->subject, ENT_QUOTES), 0, 255);
-  $fwdDate = $msgMeta->date;
-  $fwdBody = $imapMsg->renderAsHtml();
-  $msgUid = $msgMeta->uid;
+  $msgSubject = mb_strcut(htmlspecialchars($message->getSubject(), ENT_QUOTES), 0, 255);
+  $msgDate = $message->getDate()->first()->toArray()['formatted'];
+  $msgBody = (!empty($message->getHTMLBody())) ? $message->getHTMLBody() : nl2br($message->getTextBody());
+  $msgUid = $message->getUid();
+  bbscript_log(LL::TRACE, 'getHTMLBody', $message->getHTMLBody());
+  bbscript_log(LL::TRACE, 'getTextBody', $message->getTextBody());
 
-  /** If there is at least one secondary address, we WILL use an address from
-   *  this array.  If any address is not an authorized sender, use it,
-   *  otherwise, use the first one.
+  /**
+   * If there is at least one secondary address, we WILL use an address from
+   * this array.  If any address is not an authorized sender, use it,
+   * otherwise, use the first one.
    */
-  if (is_array($all_addr['secondary']) && count($all_addr['secondary']) > 0) {
+  if (is_array($all_addr['secondary']) && !empty($all_addr['secondary'])) {
     $foundIndex = 0;
     foreach ($all_addr['secondary'] as $k => $v) {
       // if this address is NOT an authorized forwarder
@@ -561,87 +642,90 @@ function storeMessage($imapMsg, $db, $params)
         break;
       }
     }
-    $fwdEmail = $all_addr['secondary'][$foundIndex]['address'];
-    $fwdName = $all_addr['secondary'][$foundIndex]['name'];
+    $senderEmail = $all_addr['secondary'][$foundIndex]['address'];
+    $senderName = $all_addr['secondary'][$foundIndex]['name'];
+    $fwderEmail = $fromEmail;
   }
   elseif (!isAuthForwarder($all_addr['primary']['address'], $authForwarders)) {
-    // if secondary addresses were not populated, we can use the primary if
-    // it is not an authorized forwarder
-    $fwdEmail = $all_addr['primary']['address'];
-    $fwdName  = $all_addr['primary']['name'];
+    // If secondary addresses were not populated, we can use the primary if
+    // it is not an authorized forwarder.  This is a direct (non-forwarded)
+    // message.
+    $senderEmail = $all_addr['primary']['address'];
+    $senderName  = $all_addr['primary']['name'];
+    $fwderEmail = '';
   }
   else {
     // final failure - no addresses found
-    $fwdEmail = $fwdName = null;
+    $senderEmail = $senderName = NULL;
+    $fwderEmail = $fromEmail;
   }
 
-  if ($fwdEmail === null) {
-    $fwdEmail = '';
-  }
-  if ($fwdName === null) {
-    $fwdName = '';
+  if ($senderEmail === NULL) {
+    $senderEmail = '';
   }
 
-  // The default status for newly saved messages is UNPROCESSED.
-  $status = STATUS_UNPROCESSED;
-
-  $q = "INSERT INTO nyss_inbox_messages
-        (message_id, sender_name, sender_email, subject, body,
-         forwarder, status, updated_date, email_date)
-        VALUES (?, ?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP, ?)";
-
-  $sql_stmt = mysqli_prepare($db, $q);
-  if ($sql_stmt == false) {
-    bbscript_log(LL::ERROR, "Unable to prepare SQL statement [$q]");
-    return false;
+  if ($senderName === NULL) {
+    $senderName = '';
   }
 
-  if (mysqli_stmt_bind_param($sql_stmt, 'isssssis', $msgUid, $fwdName,
-                             $fwdEmail, $fwdSubject, $fwdBody, $fromEmail,
-                             $status, $fwdDate) == false) {
-    bbscript_log(LL::ERROR, "Unable to bind params for msgUid=$msgUid");
-    mysqli_stmt_close($sql_stmt);
-    return false;
+  $sql = "
+    INSERT IGNORE INTO nyss_inbox_messages
+    (message_id, sender_name, sender_email, subject, body,
+     forwarder, status, updated_date, email_date)
+    VALUES (%1, %2, %3, %4, %5, %6, %7, CURRENT_TIMESTAMP, %8)
+  ";
+
+  try {
+    CRM_Core_DAO::executeQuery($sql, [
+      1 => [$msgUid, 'Positive'],
+      2 => [$senderName, 'String'],
+      3 => [$senderEmail, 'String'],
+      4 => [$msgSubject, 'String'],
+      5 => [$msgBody ?? '', 'String'],
+      6 => [$fwderEmail ?? '', 'String'],
+      7 => [STATUS_UNPROCESSED, 'Positive'],
+      8 => [$msgDate, 'String'],
+    ]);
+  }
+  catch (CRM_Core_Exception $e) {
+    bbscript_log(LL::ERROR, '$e', $e);
+    return FALSE;
   }
 
-  if (mysqli_stmt_execute($sql_stmt) == false) {
-    bbscript_log(LL::ERROR, "Unable to insert msgid=$msgUid; ".mysqli_error($db)."; query:", $q);
-    mysqli_stmt_close($sql_stmt);
-    return false;
-  }
+  $rowId = CRM_Core_DAO::singleValueQuery("SELECT LAST_INSERT_ID()");
+  bbscript_log(LL::DEBUG, "Inserted message with rowId = $rowId");
 
-  mysqli_stmt_close($sql_stmt);
-  $rowId = mysqli_insert_id($db);
-  bbscript_log(LL::DEBUG, "Inserted message with id=$rowId");
-
-  if ($imapMsg->hasAttachments()) {
+  if ($message->hasAttachments()) {
     bbscript_log(LL::INFO, "Fetching and storing attachments");
+
     $timeStart = microtime(true);
-    if (storeAttachments($imapMsg, $db, $params, $rowId) == false) {
-      bbscript_log(LL::WARN, "Unable to store attachments");
+    if (!storeAttachments($message, $params, $rowId)) {
+      bbscript_log(LL::WARN, "Unable to store attachments for rowId = {$rowId}.");
+      //bbscript_log(LL::DEBUG, "Message", $message);
     }
     $totalTime = microtime(true) - $timeStart;
     bbscript_log(LL::DEBUG, "Attachment processing time: $totalTime");
   }
-  return true;
-} // storeMessage()
+
+  return TRUE;
+}
 
 
 // Process each message, looking for a match between the sender's email
 // address in the message and a contact record with the same email address.
 // If there is a single match on a contact record, an inbound email activity
 // is created and associated with the contact.
-function searchForMatches($db, $params)
-{
+function searchForMatches($params) {
   $authForwarders = $params['authForwarders'];
   $uploadDir = $params['uploadDir'];
   $recheck = $params['recheck'];
 
   // Check the unprocessed messages (status=99)
-  $q = 'SELECT id, message_id, sender_email,
-               subject, body, forwarder, updated_date
-        FROM nyss_inbox_messages
-        WHERE status='.STATUS_UNPROCESSED;
+  $q = '
+    SELECT id, message_id, sender_email, subject, body, forwarder, updated_date
+    FROM nyss_inbox_messages
+    WHERE status='.STATUS_UNPROCESSED.'
+  ';
   $status_str = 'Unprocessed';
 
   // If "recheck" was specified, then also check unmatched messages (status=0)
@@ -652,25 +736,21 @@ function searchForMatches($db, $params)
 
   bbscript_log(LL::NOTICE, "Obtaining list of $status_str messages to be checked");
 
-  $mres = mysqli_query($db, $q);
-  if ($mres === false) {
-    bbscript_log(LL::ERROR, "Unable to retrieve $status_str messages; ".mysqli_error($db));
-    return false;
-  }
+  $mres = CRM_Core_DAO::executeQuery($q);
 
-  bbscript_log(LL::DEBUG, "$status_str records: ".mysqli_num_rows($mres));
+  bbscript_log(LL::DEBUG, "$status_str records: ".$mres->N);
 
-  $q = "SELECT DISTINCT c.id FROM civicrm_contact c, civicrm_email e
-        WHERE c.id = e.contact_id AND c.is_deleted=0 AND e.email LIKE ?
-        ORDER BY c.id ASC";
-  $sql_stmt = mysqli_prepare($db, $q);
-  if ($sql_stmt == false) {
-    bbscript_log(LL::ERROR, "Unable to prepare SQL query [$q]");
-    mysqli_free_result($mres);
-    return false;
-  }
+  $sql_stmt = "
+    SELECT DISTINCT c.id
+    FROM civicrm_contact c, civicrm_email e
+    WHERE c.id = e.contact_id
+      AND c.is_deleted = 0
+      AND e.email LIKE %1
+    ORDER BY c.id ASC
+  ";
+  $rows = $mres->fetchAll();
 
-  while ($row = mysqli_fetch_assoc($mres)) {
+  foreach ($rows as $row) {
     $msg_row_id = $row['id'];
     $message_id = $row['message_id'];
     $sender_email = $row['sender_email'];
@@ -685,31 +765,30 @@ function searchForMatches($db, $params)
     // find target contact
     bbscript_log(LL::INFO, "Looking for the original sender ($sender_email) in Civi");
 
-    mysqli_stmt_bind_param($sql_stmt, 's', $sender_email);
-    mysqli_stmt_execute($sql_stmt);
-    $result = mysqli_stmt_get_result($sql_stmt);
-    if ($result === false) {
-      bbscript_log(LL::ERROR, "Query for match on [$sender_email] failed; ".mysqli_error($db));
-      continue;
-    }
+    $results = CRM_Core_DAO::executeQuery($sql_stmt, [1 => [$sender_email, 'String']])->fetchAll();
 
     $contactID = 0;
     $matched_count = 0;
-    while ($row = mysqli_fetch_assoc($result)) {
-      $contactID = $row['id'];
+    foreach ($results as $result) {
+      $contactID = $result['id'];
       $matched_count++;
     }
-    mysqli_free_result($result);
 
-    // No matches, or more than one match, marks message as UNMATCHED.
+    // No matches, or more than one match, mark message as UNMATCHED.
     if ($matched_count != 1) {
       bbscript_log(LL::DEBUG, "Original sender $sender_email matches [$matched_count] records in this instance; leaving for manual addition");
+
       // mark it to show up on unmatched screen
       $status = STATUS_UNMATCHED;
-      $q = "UPDATE nyss_inbox_messages SET status=$status WHERE id=$msg_row_id";
-      if (mysqli_query($db, $q) == false) {
-        bbscript_log(LL::ERROR, "Unable to update status of message id=$msg_row_id");
-      }
+
+      CRM_Core_DAO::executeQuery("
+        UPDATE nyss_inbox_messages
+        SET status = %1
+        WHERE id = %2
+      ", [
+        1 => [$status, 'String'],
+        2 => [$msg_row_id, 'Positive'],
+      ]);
     }
     else {
       // Matched on a single contact.  Success!
@@ -727,7 +806,7 @@ function searchForMatches($db, $params)
 
       // create the activity
       $activityDefaults = $params['activityDefaults'];
-      $activityParams = array(
+      $activityParams = [
         "source_contact_id" => $forwarderId,
         "subject" => $subject,
         "details" =>  $body,
@@ -739,7 +818,7 @@ function searchForMatches($db, $params)
         "is_auto" => 1,
         "target_contact_id" => $contactID,
         "version" => 3
-      );
+      ];
 
       $activityResult = civicrm_api('activity', 'create', $activityParams);
 
@@ -758,95 +837,85 @@ function searchForMatches($db, $params)
           VALUES
           ({$msg_row_id}, {$message_id}, {$contactID}, {$activityId})
         ";
-        if (mysqli_query($db, $q) == false) {
-          bbscript_log(LL::ERROR,
-            "Unable to store matched_id and activity_id for message id=$msg_row_id");
-        }
-        else {
-          //update status to matched
-          $q = "
-            UPDATE nyss_inbox_messages
-            SET status = $status, matcher = 1
-            WHERE id = $msg_row_id
-          ";
-          if (mysqli_query($db, $q) == false) {
-            bbscript_log(LL::ERROR,
-              "Unable to update status for message id=$msg_row_id");
-          }
-        }
+        CRM_Core_DAO::executeQuery($q);
+
+        //update status to matched
+        $q = "
+          UPDATE nyss_inbox_messages
+          SET status = $status, matcher = 1
+          WHERE id = $msg_row_id
+        ";
+        CRM_Core_DAO::executeQuery($q);
 
         $q = "
           SELECT file_name, file_full, rejection, mime_type
           FROM nyss_inbox_attachments
-          WHERE email_id = $msg_row_id";
-        $ares = mysqli_query($db, $q);
+          WHERE email_id = $msg_row_id
+        ";
+        $aresResult = CRM_Core_DAO::executeQuery($q)->fetchAll();
 
-        while ($row = mysqli_fetch_assoc($ares)) {
-          if ((!isset($row['rejection']) || $row['rejection'] == '')
-              && file_exists($row['file_full'])) {
+        foreach ($aresResult as $ares) {
+          if ((!isset($ares['rejection']) || $ares['rejection'] == '')
+              && file_exists($ares['file_full'])
+          ) {
             bbscript_log(LL::INFO,
-              "Adding attachment ".$row['file_full']." to activity id=$activityId");
+              "Adding attachment ".$ares['file_full']." to activity id=$activityId");
             $date = date("Y-m-d H:i:s");
-            $newName = CRM_Utils_File::makeFileName($row['file_name']);
+            $newName = CRM_Utils_File::makeFileName($ares['file_name']);
             $file = "$uploadDir/$newName";
             // Move file to the CiviCRM custom upload directory
-            rename($row['file_full'], $file);
+            rename($ares['file_full'], $file);
 
             $q = "
               INSERT INTO civicrm_file
               (mime_type, uri, upload_date)
-              VALUES ('{$row['mime_type']}', '$newName', '$date')
+              VALUES ('{$ares['mime_type']}', '$newName', '$date')
             ";
-            if (mysqli_query($db, $q) == false) {
-              bbscript_log(LL::ERROR,
-                "Unable to insert attachment file info for [$newName]");
-            }
+            CRM_Core_DAO::executeQuery($q);
 
-            $q = "SELECT id FROM civicrm_file WHERE uri='{$newName}'";
-            $res = mysqli_query($db, $q);
-            while ($row = mysqli_fetch_assoc($res)) {
-              $fileId = $row['id'];
-            }
-            mysqli_free_result($res);
+            $q = "SELECT id FROM civicrm_file WHERE uri='{$newName}' LIMIT 1";
+            $fileId = CRM_Core_DAO::singleValueQuery($q);
 
             $q = "
               INSERT INTO civicrm_entity_file
               (entity_table, entity_id, file_id)
               VALUES ('civicrm_activity', $activityId, $fileId)
             ";
-            if (mysqli_query($db, $q) == false) {
-              bbscript_log(LL::ERROR,
-                "Unable to insert attachment mapping from activity id=$activityId to file id=$fileId");
-            }
+            CRM_Core_DAO::executeQuery($q);
           }
         } // while rows in nyss_inbox_attachments
-        mysqli_free_result($ares);
       } // if activity created
     } // if single match on e-mail address
   } // while rows in nyss_inbox_messages
 
-  mysqli_stmt_close($sql_stmt);
-  mysqli_free_result($mres);
   bbscript_log(LL::DEBUG, "Finished processing unprocessed/unmatched messages");
-
-  return;
-} // searchForMatches()
+}
 
 
-function listMailboxes($imapSess, $params) {
-  $inboxes = $imapSess->listFolders('*', true);
-  foreach ($inboxes as $inbox) {
-    echo "$inbox\n";
+function listMailboxes($imap) {
+  $imap_conn = $imap->getConnection();
+
+  //get folder listing to determine if we need to create any
+  $folders = $imap_conn->getFolders(FALSE);
+  bbscript_log(LL::TRACE, '$folders: ', $folders);
+
+  $folderList = [];
+  foreach ($folders as $folder) {
+    $folderList[] = $folder->path;
+    echo "{$folder->path}\n";
   }
-  return true;
-} // listMailboxes()
+  bbscript_log(LL::TRACE, '$folderList', $folderList);
 
+  return $folderList;
+}
 
-function deleteArchiveBox($imapSess, $params) {
-  $crm_archivebox = '{'.$params['server'].'}'.$params['archivebox'];
-  bbscript_log(LL::NOTICE, "Deleting archive mailbox: $crm_archivebox");
-  return imap_deletemailbox($imapSess->getConnection(), $crm_archivebox);
-} // deleteArchiveBox()
+function deleteArchiveBox($imap, $params) {
+  $imap_conn = $imap->getConnection();
+  $archive = $imap_conn->getFolderByPath($params['archivebox']);
+  bbscript_log(LL::NOTICE, "Deleting archive mailbox: {$params['archivebox']}");
+
+  return $archive->delete();
+}
 
 
 function sendDenialEmail($site, $email) {
@@ -867,6 +936,7 @@ function sendDenialEmail($site, $email) {
   else {
     bbscript_log(LL::WARN, "Unable to send a denial e-mail to $email");
   }
+
   return $rc;
 } // sendDenialEmail()
 
@@ -875,7 +945,7 @@ function getImapParam($optlist, $optname, $bbcfg, $cfgname, $defval) {
   if (!empty($optlist[$optname])) {
     return $optlist[$optname];
   }
-  else if ($cfgname && isset($bbcfg[$cfgname])) {
+  elseif ($cfgname && isset($bbcfg[$cfgname])) {
     return $bbcfg[$cfgname];
   }
   else {

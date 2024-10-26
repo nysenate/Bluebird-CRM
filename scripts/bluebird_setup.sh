@@ -8,12 +8,15 @@
 # Date: 2010-09-01
 # Revised: 2011-04-12
 # Revised: 2017-01-04 - enable v2 changelog; miscellaneous cleanup
+# Revised; 2021-01-26 - add setup of Mosaico "Standard Office Template"
 #
 
 prog=`basename $0`
 script_dir=`dirname $0`
 script_dir=`cd "$script_dir"; echo $PWD`
 readConfig="$script_dir/readConfig.sh"
+drush="$script_dir/drush.sh"
+
 app_rootdir=`$readConfig --global app.rootdir` || app_rootdir="$DEFAULT_APP_ROOTDIR"
 data_rootdir=`$readConfig --global data.rootdir` || data_rootdir="$DEFAULT_DATA_ROOTDIR"
 import_rootdir=`$readConfig --global import.rootdir` || data_rootdir="$DEFAULT_IMPORT_ROOTDIR"
@@ -28,7 +31,7 @@ iscript_dir="$cscript_dir/importData"
 tempdir=/tmp/bluebird_imports
 
 usage() {
-  echo "Usage: $prog [--no-init] [--no-unzip] [--no-import] [--no-ldapconfig] [--no-cc] [--no-fixperms] [--geocode] [--force-unzip] [--keep] [--temp-dir tempdir] [--use-importdir] instance_name" >&2
+  echo "Usage: $prog [--no-init] [--no-unzip] [--no-import] [--no-ldapconfig] [--no-cc] [--no-fixperms] [--no-template-setup] [--geocode] [--force-unzip] [--keep] [--temp-dir tempdir] [--use-importdir] instance_name" >&2
 }
 
 create_instance() {
@@ -104,6 +107,7 @@ no_import=0
 no_ldapcfg=0
 no_clearcache=0
 no_fixperms=0
+no_tplsetup=0
 geocode=0
 force_unzip=0
 keep_tempdir=0
@@ -117,6 +121,7 @@ while [ $# -gt 0 ]; do
     --no-ldap*) no_ldapcfg=1 ;;
     --no-clear-cache|--no-cc) no_clearcache=1 ;;
     --no-fixperm*) no_fixperms=1 ;;
+    --no-template*|--no-tpl*) no_tplsetup=1 ;;
     --geocode) geocode=1 ;;
     --force-unzip) force_unzip=1 ;;
     --keep|-k) keep_tempdir=1 ;;
@@ -201,6 +206,13 @@ if [ $no_fixperms -eq 1 ]; then
 else
   echo "==> About to fix permissions for CRM instance [$instance]"
   $script_dir/fixPermissions.sh
+fi
+
+if [ $no_tplsetup -eq 1 ]; then
+  echo "==> Skipping Mosaico template setup for instance [$instance]"
+else
+  echo "==> About to setup Mosaico template for CRM instance [$instance]"
+  $drush $instance cvapi nyss.generatemailtemplate addupdate="Update" --quiet
 fi
 
 if [ $geocode -eq 1 ]; then

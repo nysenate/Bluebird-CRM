@@ -13,13 +13,10 @@
  *
  * @package CRM
  * @copyright CiviCRM LLC https://civicrm.org/licensing
- * $Id$
- *
  */
 class CRM_Report_Form_Member_Lapse extends CRM_Report_Form {
 
   protected $_summary = NULL;
-  protected $_charts = ['' => 'Tabular'];
   protected $_customGroupExtends = [
     'Membership',
   ];
@@ -32,9 +29,8 @@ class CRM_Report_Form_Member_Lapse extends CRM_Report_Form {
    * all reports have been adjusted to take care of it. This report has not
    * and will run an inefficient query until fixed.
    *
-   * CRM-19170
-   *
    * @var bool
+   * @see https://issues.civicrm.org/jira/browse/CRM-19170
    */
   protected $groupFilterNotOptimised = TRUE;
 
@@ -185,7 +181,7 @@ class CRM_Report_Form_Member_Lapse extends CRM_Report_Form {
   /**
    * @param $fields
    * @param $files
-   * @param $self
+   * @param self $self
    *
    * @return array
    */
@@ -236,9 +232,9 @@ class CRM_Report_Form_Member_Lapse extends CRM_Report_Form {
             if ($op) {
               $clause = $this->whereClause($field,
                 $op,
-                CRM_Utils_Array::value("{$fieldName}_value", $this->_params),
-                CRM_Utils_Array::value("{$fieldName}_min", $this->_params),
-                CRM_Utils_Array::value("{$fieldName}_max", $this->_params)
+                $this->_params["{$fieldName}_value"] ?? NULL,
+                $this->_params["{$fieldName}_min"] ?? NULL,
+                $this->_params["{$fieldName}_max"] ?? NULL
               );
             }
           }

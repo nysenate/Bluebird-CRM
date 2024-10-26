@@ -52,6 +52,45 @@ abstract class DrupalTestCase {
   protected $timeLimit = 500;
 
   /**
+   * Whether to cache the installation part of the setUp() method.
+   *
+   * @var bool
+   */
+  public $useSetupInstallationCache = FALSE;
+
+  /**
+   * Whether to cache the modules installation part of the setUp() method.
+   *
+   * @var bool
+   */
+  public $useSetupModulesCache = FALSE;
+
+  /**
+   * The original language.
+   */
+  protected $originalLanguage;
+
+  /**
+   * The original default language.
+   */
+  protected $originalLanguageDefault;
+
+  /**
+   * The original theme.
+   */
+   protected $originalTheme;
+
+   /**
+    * The original theme key.
+    */
+   protected $originalThemeKey;
+
+   /**
+    * The original theme path.
+    */
+   protected $originalThemePath;
+
+  /**
    * Current results of this test case.
    *
    * @var Array
@@ -527,7 +566,11 @@ abstract class DrupalTestCase {
             $this->$method();
             // Finish up.
           }
+          catch (Throwable $e) {
+            $this->exceptionHandler($e);
+          }
           catch (Exception $e) {
+            // Cater for older PHP versions.
             $this->exceptionHandler($e);
           }
           $this->tearDown();
@@ -933,6 +976,36 @@ class DrupalWebTestCase extends DrupalTestCase {
    * The number of redirects followed during the handling of a request.
    */
   protected $redirect_count;
+
+  /**
+   * The original language URL.
+   */
+  protected $originalLanguageUrl;
+
+  /**
+   * The original active installation profile.
+   */
+  protected $originalProfile;
+
+  /**
+   * The original clean_url variable value.
+   */
+  protected $originalCleanUrl;
+
+  /**
+   * The public files directory created for testing purposes.
+   */
+  protected $public_files_directory;
+
+  /**
+   * The private files directory created for testing purposes.
+   */
+  protected $private_files_directory;
+
+  /**
+   * The temporary files directory created for testing purposes.
+   */
+  protected $temp_files_directory;
 
   /**
    * Constructor for DrupalWebTestCase.
@@ -1397,7 +1470,7 @@ class DrupalWebTestCase extends DrupalTestCase {
    * @see DrupalWebTestCase::tearDown()
    */
   protected function prepareEnvironment() {
-    global $user, $language, $language_url, $conf;
+    global $user, $language, $language_url, $conf, $theme, $theme_key, $theme_path;
 
     // Store necessary current values before switching to prefixed database.
     $this->originalLanguage = $language;
@@ -1413,6 +1486,12 @@ class DrupalWebTestCase extends DrupalTestCase {
     // during install if the current language is not 'en'.
     // The following array/object conversion is copied from language_default().
     $language_url = $language = (object) array('language' => 'en', 'name' => 'English', 'native' => 'English', 'direction' => 0, 'enabled' => 1, 'plurals' => 0, 'formula' => '', 'domain' => '', 'prefix' => '', 'weight' => 0, 'javascript' => '');
+
+    // Reset the theme globals.
+    $this->originalTheme = $theme;
+    $this->originalThemeKey = $theme_key;
+    $this->originalThemePath = $theme_path;
+    $theme = $theme_key = $theme_path = NULL;
 
     // Save and clean the shutdown callbacks array because it is static cached
     // and will be changed by the test run. Otherwise it will contain callbacks
@@ -1446,6 +1525,159 @@ class DrupalWebTestCase extends DrupalTestCase {
 
     // Indicate the environment was set up correctly.
     $this->setupEnvironment = TRUE;
+  }
+
+  /**
+   * Copies the cached tables and files for a cached installation setup.
+   *
+   * @param string $cache_key_prefix
+   *   (optional) Additional prefix for the cache key.
+   *
+   * @return bool
+   *   TRUE when the cache was usable and loaded, FALSE when cache was not
+   *   available.
+   *
+   * @see DrupalWebTestCase::setUp()
+   */
+  protected function loadSetupCache($cache_key_prefix = '') {
+    $cache_key = $this->getSetupCacheKey($cache_key_prefix);
+    $cache_file = $this->originalFileDirectory . '/simpletest/' . $cache_key . '/simpletest-cache-setup';
+
+    if (file_exists($cache_file)) {
+      return $this->copySetupCache($cache_key, substr($this->databasePrefix, 10));
+    }
+
+    return FALSE;
+  }
+
+  /**
+   * Returns the cache key used for the setup caching.
+   *
+   * @param string $cache_key_prefix
+   *   (optional) Additional prefix for the cache key.
+   *
+   * @return string
+   *   The cache key to use, by default only based on the profile used by the
+   *   test.
+   */
+  protected function getSetupCacheKey($cache_key_prefix = '') {
+    // The cache key needs to start with a numeric character, so that the cached
+    // installation gets cleaned up properly.
+    $cache_key_prefix = hash('crc32b', $cache_key_prefix . $this->profile);
+    return '1c' . $cache_key_prefix;
+  }
+
+  /**
+   * Store the installation setup to a cache.
+   *
+   * @param string $cache_key_prefix
+   *   (optional) Additional prefix for the cache key.
+   *
+   * @return bool
+   *   TRUE if the installation was stored in the cache, FALSE otherwise.
+   */
+  protected function storeSetupCache($cache_key_prefix = '') {
+    $cache_key = $this->getSetupCacheKey($cache_key_prefix);
+    $lock_key = 'simpletest_store_cache_' . $cache_key . '_' . $this->testId;
+
+    // All concurrent tests share the same test id. Therefore it is possible to
+    // use the lock to ensure that only one process will store the cache. This
+    // is important as else DB tables created by one process could be deleted
+    // by another as the cache copying is idempotent.
+    if (! lock_acquire($lock_key)) {
+      return FALSE;
+    }
+
+    // Try to copy the installation to the setup cache - now that we have a
+    // lock to do so.
+    if (!$this->copySetupCache(substr($this->databasePrefix, 10), $cache_key)) {
+      // It is non-fatal if the cache cannot be copied as the next test run
+      // will try it again.
+      $this->assert('debug', t('Storing cache with key @key failed', array('@key' => $cache_key)), 'storeSetupCache');
+
+      lock_release($lock_key);
+      return FALSE;
+    }
+
+    // Inform others that this cache is usable now.
+    $cache_file = $this->originalFileDirectory . '/simpletest/' . $cache_key . '/simpletest-cache-setup';
+    file_put_contents($cache_file, time());
+
+    lock_release($lock_key);
+    return TRUE;
+  }
+
+  /**
+   * Copy the setup cache from/to another table and files directory.
+   *
+   * @param string $from
+   *   The prefix_id / cache_key from where to copy.
+   * @param string $to
+   *   The prefix_id / cache_key to where to copy.
+   *
+   * @return bool
+   *   TRUE if the setup cache was copied to the current installation, FALSE
+   *   otherwise.
+   */
+  protected function copySetupCache($from, $to) {
+    $from_prefix = 'simpletest' . $from;
+    $to_prefix = 'simpletest' . $to;
+
+    try {
+       $tables = db_query("SHOW TABLES LIKE :prefix", array(':prefix' => db_like($from_prefix) . '%' ))->fetchCol();
+
+       if (count($tables) == 0) {
+         return FALSE;
+       }
+
+       foreach ($tables as $from_table) {
+         $table = substr($from_table, strlen($from_prefix));
+         $to_table = $to_prefix . $table;
+
+         // Remove the table in case the copying process was interrupted.
+         db_query('DROP TABLE IF EXISTS ' . $to_table);
+         db_query('CREATE TABLE ' . $to_table . ' LIKE ' . $from_table);
+         db_query('ALTER TABLE ' . $to_table . ' DISABLE KEYS');
+         db_query('INSERT ' . $to_table . ' SELECT * FROM ' . $from_table);
+         db_query('ALTER TABLE ' . $to_table . ' ENABLE KEYS');
+       }
+    }
+    catch (Exception $e) {
+      return FALSE;
+    }
+
+    $from_dir = $this->originalFileDirectory . '/simpletest/' . $from;
+    $to_dir = $this->originalFileDirectory . '/simpletest/' . $to;
+    $this->recursiveDirectoryCopy($from_dir, $to_dir);
+
+    return TRUE;
+  }
+
+  /**
+   * Recursively copy one directory to another.
+   *
+   * @param $src
+   *   The source directory.
+   * @param $dest
+   *   The destination directory.
+   */
+  protected function recursiveDirectoryCopy($src, $dst) {
+    $dir = opendir($src);
+
+    if (!file_exists($dst)){
+      mkdir($dst);
+    }
+    while (($file = readdir($dir)) !== FALSE) {
+      if ($file != '.' && $file != '..') {
+        if (is_dir($src . '/' . $file)) {
+          $this->recursiveDirectoryCopy($src . '/' . $file, $dst . '/' . $file);
+        }
+        else {
+          copy($src . '/' . $file, $dst . '/' . $file);
+        }
+      }
+    }
+    closedir($dir);
   }
 
   /**
@@ -1501,57 +1733,108 @@ class DrupalWebTestCase extends DrupalTestCase {
     // profile's hook_install() and other hook implementations are never invoked.
     $conf['install_profile'] = $this->profile;
 
-    // Perform the actual Drupal installation.
-    include_once DRUPAL_ROOT . '/includes/install.inc';
-    drupal_install_system();
+    $has_installation_cache = FALSE;
+    $has_modules_cache = FALSE;
 
-    $this->preloadRegistry();
+    if ($this->useSetupModulesCache) {
+      $modules = func_get_args();
+      // Modules can be either one parameter or multiple.
+      if (isset($modules[0]) && is_array($modules[0])) {
+        $modules = $modules[0];
+      }
+      $modules = array_unique($modules);
+      sort($modules);
 
-    // Set path variables.
-    variable_set('file_public_path', $this->public_files_directory);
-    variable_set('file_private_path', $this->private_files_directory);
-    variable_set('file_temporary_path', $this->temp_files_directory);
-
-    // Set the 'simpletest_parent_profile' variable to add the parent profile's
-    // search path to the child site's search paths.
-    // @see drupal_system_listing()
-    // @todo This may need to be primed like 'install_profile' above.
-    variable_set('simpletest_parent_profile', $this->originalProfile);
-
-    // Include the testing profile.
-    variable_set('install_profile', $this->profile);
-    $profile_details = install_profile_info($this->profile, 'en');
-
-    // Install the modules specified by the testing profile.
-    module_enable($profile_details['dependencies'], FALSE);
-
-    // Install modules needed for this test. This could have been passed in as
-    // either a single array argument or a variable number of string arguments.
-    // @todo Remove this compatibility layer in Drupal 8, and only accept
-    // $modules as a single array argument.
-    $modules = func_get_args();
-    if (isset($modules[0]) && is_array($modules[0])) {
-      $modules = $modules[0];
-    }
-    if ($modules) {
-      $success = module_enable($modules, TRUE);
-      $this->assertTrue($success, t('Enabled modules: %modules', array('%modules' => implode(', ', $modules))));
+      $modules_cache_key_prefix = hash('crc32b', serialize($modules)) . '_';
+      $has_modules_cache = $this->loadSetupCache($modules_cache_key_prefix);
     }
 
-    // Run the profile tasks.
-    $install_profile_module_exists = db_query("SELECT 1 FROM {system} WHERE type = 'module' AND name = :name", array(
-      ':name' => $this->profile,
-    ))->fetchField();
-    if ($install_profile_module_exists) {
-      module_enable(array($this->profile), FALSE);
+    if (!$has_modules_cache && $this->useSetupInstallationCache) {
+      $has_installation_cache = $this->loadSetupCache();
     }
 
-    // Reset/rebuild all data structures after enabling the modules.
-    $this->resetAll();
+    if ($has_modules_cache || $has_installation_cache) {
+      // Reset path variables.
+      variable_set('file_public_path', $this->public_files_directory);
+      variable_set('file_private_path', $this->private_files_directory);
+      variable_set('file_temporary_path', $this->temp_files_directory);
+      $this->refreshVariables();
 
-    // Run cron once in that environment, as install.php does at the end of
-    // the installation process.
-    drupal_cron_run();
+      // Load all enabled modules
+      module_load_all();
+
+      $this->pass(t('Using cache: @cache (@key)', array(
+        '@cache' => $has_modules_cache ? t('Modules Cache') : t('Installation Cache'),
+        '@key' => $this->getSetupCacheKey($has_modules_cache ? $modules_cache_key_prefix : ''),
+      )));
+    }
+    else {
+      // Perform the actual Drupal installation.
+      include_once DRUPAL_ROOT . '/includes/install.inc';
+      drupal_install_system();
+
+      $this->preloadRegistry();
+
+      // Set path variables.
+      variable_set('file_public_path', $this->public_files_directory);
+      variable_set('file_private_path', $this->private_files_directory);
+      variable_set('file_temporary_path', $this->temp_files_directory);
+
+      // Set the 'simpletest_parent_profile' variable to add the parent profile's
+      // search path to the child site's search paths.
+      // @see drupal_system_listing()
+      // @todo This may need to be primed like 'install_profile' above.
+      variable_set('simpletest_parent_profile', $this->originalProfile);
+
+      // Include the testing profile.
+      variable_set('install_profile', $this->profile);
+      $profile_details = install_profile_info($this->profile, 'en');
+
+      // Install the modules specified by the testing profile.
+      module_enable($profile_details['dependencies'], FALSE);
+
+      if ($this->useSetupInstallationCache) {
+        $this->storeSetupCache();
+      }
+    }
+
+    if (!$has_modules_cache) {
+      // Install modules needed for this test. This could have been passed in as
+      // either a single array argument or a variable number of string arguments.
+      // @todo Remove this compatibility layer in Drupal 8, and only accept
+      // $modules as a single array argument.
+      $modules = func_get_args();
+      if (isset($modules[0]) && is_array($modules[0])) {
+        $modules = $modules[0];
+      }
+      if ($modules) {
+        $success = module_enable($modules, TRUE);
+        $this->assertTrue($success, t('Enabled modules: %modules', array('%modules' => implode(', ', $modules))));
+      }
+
+      // Run the profile tasks.
+      $install_profile_module_exists = db_query("SELECT 1 FROM {system} WHERE type = 'module' AND name = :name", array(
+        ':name' => $this->profile,
+      ))->fetchField();
+      if ($install_profile_module_exists) {
+        module_enable(array($this->profile), FALSE);
+      }
+
+      // Reset/rebuild all data structures after enabling the modules.
+      $this->resetAll();
+
+      // Run cron once in that environment, as install.php does at the end of
+      // the installation process.
+      drupal_cron_run();
+
+      if ($this->useSetupModulesCache) {
+        $this->storeSetupCache($modules_cache_key_prefix);
+      }
+    }
+    else {
+      // Reset/rebuild all data structures after enabling the modules.
+      $this->resetAll();
+    }
 
     // Ensure that the session is not written to the new environment and replace
     // the global $user session with uid 1 from the new test site.
@@ -1661,7 +1944,7 @@ class DrupalWebTestCase extends DrupalTestCase {
    * and reset the database prefix.
    */
   protected function tearDown() {
-    global $user, $language, $language_url;
+    global $user, $language, $language_url, $theme, $theme_key, $theme_path;
 
     // In case a fatal error occurred that was not in the test process read the
     // log to pick up any fatal errors.
@@ -1677,15 +1960,12 @@ class DrupalWebTestCase extends DrupalTestCase {
     file_unmanaged_delete_recursive($this->originalFileDirectory . '/simpletest/' . substr($this->databasePrefix, 10));
 
     // Remove all prefixed tables.
-    $tables = db_find_tables($this->databasePrefix . '%');
-    $connection_info = Database::getConnectionInfo('default');
-    $tables = db_find_tables($connection_info['default']['prefix']['default'] . '%');
+    $tables = db_find_tables_d8('%');
     if (empty($tables)) {
       $this->fail('Failed to find test tables to drop.');
     }
-    $prefix_length = strlen($connection_info['default']['prefix']['default']);
     foreach ($tables as $table) {
-      if (db_drop_table(substr($table, $prefix_length))) {
+      if (db_drop_table($table)) {
         unset($tables[$table]);
       }
     }
@@ -1693,8 +1973,14 @@ class DrupalWebTestCase extends DrupalTestCase {
       $this->fail('Failed to drop all prefixed tables.');
     }
 
+    // In PHP 8 some tests encounter problems when shutdown code tries to
+    // access the database connection after it's been explicitly closed, for
+    // example the destructor of DrupalCacheArray. We avoid this by not fully
+    // destroying the test database connection.
+    $close = \PHP_VERSION_ID < 80000;
+
     // Get back to the original connection.
-    Database::removeConnection('default');
+    Database::removeConnection('default', $close);
     Database::renameConnection('simpletest_original_default', 'default');
 
     // Restore original shutdown callbacks array to prevent original
@@ -1730,6 +2016,11 @@ class DrupalWebTestCase extends DrupalTestCase {
     if ($this->originalLanguageDefault) {
       $GLOBALS['conf']['language_default'] = $this->originalLanguageDefault;
     }
+
+    // Reset theme.
+    $theme = $this->originalTheme;
+    $theme_key = $this->originalThemeKey;
+    $theme_path = $this->originalThemePath;
 
     // Close the CURL handler and reset the cookies array so test classes
     // containing multiple tests are not polluted.
@@ -1901,7 +2192,7 @@ class DrupalWebTestCase extends DrupalTestCase {
     // Errors are being sent via X-Drupal-Assertion-* headers,
     // generated by _drupal_log_error() in the exact form required
     // by DrupalWebTestCase::error().
-    if (preg_match('/^X-Drupal-Assertion-[0-9]+: (.*)$/', $header, $matches)) {
+    if (preg_match('/^X-Drupal-Assertion-[0-9]+: (.*)$/', trim($header), $matches)) {
       // Call DrupalWebTestCase::error() with the parameters from the header.
       call_user_func_array(array(&$this, 'error'), unserialize(urldecode($matches[1])));
     }
@@ -3087,7 +3378,7 @@ class DrupalWebTestCase extends DrupalTestCase {
    * @return
    *   TRUE on pass, FALSE on fail.
    */
-  protected function assertTextHelper($text, $message = '', $group, $not_exists) {
+  protected function assertTextHelper($text, $message, $group, $not_exists) {
     if ($this->plainTextContent === FALSE) {
       $this->plainTextContent = filter_xss($this->drupalGetContent(), array());
     }
@@ -3153,7 +3444,7 @@ class DrupalWebTestCase extends DrupalTestCase {
    * @return
    *   TRUE on pass, FALSE on fail.
    */
-  protected function assertUniqueTextHelper($text, $message = '', $group, $be_unique) {
+  protected function assertUniqueTextHelper($text, $message, $group, $be_unique) {
     if ($this->plainTextContent === FALSE) {
       $this->plainTextContent = filter_xss($this->drupalGetContent(), array());
     }
@@ -3259,7 +3550,7 @@ class DrupalWebTestCase extends DrupalTestCase {
    * @param $callback
    *   The name of the theme function to invoke; e.g. 'links' for theme_links().
    * @param $variables
-   *   (optional) An array of variables to pass to the theme function.
+   *   An array of variables to pass to the theme function.
    * @param $expected
    *   The expected themed output string.
    * @param $message
@@ -3275,7 +3566,7 @@ class DrupalWebTestCase extends DrupalTestCase {
    * @return
    *   TRUE on pass, FALSE on fail.
    */
-  protected function assertThemeOutput($callback, array $variables = array(), $expected, $message = '', $group = 'Other') {
+  protected function assertThemeOutput($callback, array $variables, $expected, $message = '', $group = 'Other') {
     $output = theme($callback, $variables);
     $this->verbose('Variables:' . '<pre>' .  check_plain(var_export($variables, TRUE)) . '</pre>'
       . '<hr />' . 'Result:' . '<pre>' .  check_plain(var_export($output, TRUE)) . '</pre>'

@@ -1,0 +1,31 @@
+<div class="civicase__activities-calendar" ng-class="{ 'is-loading-days': loadingDays }">
+  <div uib-datepicker
+    class="civicase__responsive-calendar"
+    template-url="~/civicase/activity/calendar/decorators/uib-datepicker.html"
+    ng-model="selectedDate"
+    ng-change="onDateSelected()"
+    datepicker-options="calendarOptions"></div>
+  <div class="popover bottom activities-calendar-popover">
+    <div class="arrow"></div>
+    <div class="popover-content" ng-switch="loadingActivities">
+      <civicase-activity-card-placeholder ng-switch-when="true"></civicase-activity-card-placeholder>
+      <div
+        ng-switch-when="false"
+        ng-repeat="activity in selectedActivites | orderBy: '-is_overdue' | limitTo:activitiesDisplayLimit"
+        case-activity-card="activity"
+        custom-dropdown-class="civicase__activities-calendar__dropdown"
+        refresh-on-checkbox-toggle="true"
+        refresh-callback="refresh">
+      </div>
+    </div>
+    <div
+      class="activities-calendar-popover__footer"
+      ng-if="selectedActivites.length > activitiesDisplayLimit">
+      <a
+        class="btn btn-block btn-link activities-calendar-popover__see-all"
+        ng-href="{{seeAllLinkUrl(selectedDate)}}">
+        See all
+      </a>
+    </div>
+  </div>
+</div>

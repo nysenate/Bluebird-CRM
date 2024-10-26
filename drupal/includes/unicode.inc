@@ -460,7 +460,7 @@ function _mime_header_decode($matches) {
  *   The input $text, with all HTML entities decoded once.
  */
 function decode_entities($text) {
-  return html_entity_decode($text, ENT_QUOTES, 'UTF-8');
+  return html_entity_decode((string) $text, ENT_QUOTES, 'UTF-8');
 }
 
 /**
@@ -589,6 +589,7 @@ function drupal_ucfirst($text) {
  */
 function drupal_substr($text, $start, $length = NULL) {
   global $multibyte;
+  $text = (string) $text;
   if ($multibyte == UNICODE_MULTIBYTE) {
     return $length === NULL ? mb_substr($text, $start) : mb_substr($text, $start, $length);
   }

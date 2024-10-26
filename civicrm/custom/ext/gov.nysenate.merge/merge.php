@@ -1,7 +1,7 @@
 <?php
 
 require_once 'merge.civix.php';
-use CRM_Merge_ExtensionUtil as E;
+use CRM_NYSS_Merge_ExtensionUtil as E;
 
 /**
  * Implements hook_civicrm_config().
@@ -134,28 +134,28 @@ function merge_civicrm_entityTypes(&$entityTypes) {
   _merge_civix_civicrm_entityTypes($entityTypes);
 }
 
-define('MERGE_LOG_DEBUG', 1);
+const MERGE_LOG_DEBUG = 1;
 
-function merge_civicrm_merge($type, &$data, $mainId = NULL, $otherId = NULL, $tables = NULL) {
-  //_merge_mD('merge_civicrm_merge $type', $type);
-  //_merge_mD('merge_civicrm_merge $data', $data);
-  //_merge_mD('merge_civicrm_merge $mainId', $mainId);
-  //_merge_mD('merge_civicrm_merge $otherId', $otherId);
-  //_merge_mD('merge_civicrm_merge $tables', $tables);
+function merge_civicrm_merge($type, &$data, $mainId, $otherId, $tables) {
+  _merge_mD('merge_civicrm_merge $type', $type, 2);
+  _merge_mD('merge_civicrm_merge $data', $data, 2);
+  _merge_mD('merge_civicrm_merge $mainId', $mainId, 2);
+  _merge_mD('merge_civicrm_merge $otherId', $otherId, 2);
+  _merge_mD('merge_civicrm_merge $tables', $tables, 2);
 
   switch ($type) {
     case 'batch':
       if (!empty($data['fields_in_conflict'])) {
         _merge_resolveConflicts($data, $mainId, $otherId);
       }
-      _merge_mD('post-processed batch data', $data);
+      _merge_mD('post-processed batch data', $data, 2);
       break;
 
     case 'sqls':
       //log the merge against the retained record
       _merge_logMerge($mainId, $otherId);
       break;
-      
+
     case 'form':
       if (!empty($data['migration_info']['move_custom_64'])) {
         if ($mergedPrivacyNote = _merge_fixPrivacyNote($mainId, $otherId)) {
@@ -172,7 +172,7 @@ function merge_civicrm_merge($type, &$data, $mainId = NULL, $otherId = NULL, $ta
 
 function merge_civicrm_buildForm($formName, &$form) {
   if ($formName == 'CRM_Contact_Form_Merge') {
-    CRM_Core_Resources::singleton()->addScriptFile(CRM_Merge_ExtensionUtil::LONG_NAME, 'js/Merge.js');
+    CRM_Core_Resources::singleton()->addScriptFile(CRM_NYSS_Merge_ExtensionUtil::LONG_NAME, 'js/Merge.js');
   }
 }
 
@@ -194,10 +194,13 @@ function merge_civicrm_buildForm($formName, &$form) {
  *    - remove conflict and fix value
  */
 function _merge_resolveConflicts(&$data, $mainId, $otherId) {
-  _merge_mD('data', $data);
+  _merge_mD('data', $data, 3);
 
   $conflicts =& $data['fields_in_conflict'];
+  _merge_mD('$conflicts', $conflicts, 2);
+
   $rows =& $data['migration_info']['rows'];
+  _merge_mD('$rows', $rows, 2);
 
   //if org names sans space/punctation are equal, merge
   if (array_key_exists('move_organization_name', $conflicts)) {
@@ -300,14 +303,37 @@ function _merge_resolveConflicts(&$data, $mainId, $otherId) {
 
   //11494 if move_location_address_0 sans space/punctation are equal, merge
   if (array_key_exists('move_location_address_0', $conflicts)) {
-    _merge_mD('move_location_address_0 rows', $rows);
+    _merge_mD('move_location_address_0 rows', $rows, 2);
     if (_merge_cleanVal($rows['move_location_address_0']['main']) ==
       _merge_cleanVal($rows['move_location_address_0']['other'])
     ) {
       unset($conflicts['move_location_address_0']);
     }
     else {
-      //TODO do more intelligent comparison of values; specifically postal +4
+      //14495 postal +4
+      //compare postal +4
+      $mainAddr = &$data['migration_info']['main_details']['location_blocks']['address'][0];
+      $otherAddr = $data['migration_info']['other_details']['location_blocks']['address'][0];
+      if ((!empty($mainAddr['postal_code_suffix']) || !empty($otherAddr['postal_code_suffix'])) &&
+        $mainAddr['postal_code_suffix'] != $otherAddr['postal_code_suffix']
+      ) {
+        //at this point we know that the postal code +4 is in conflict, but don't know if there are other
+        //points of conflict with the address blocks; so let's recreate the address string and compare them sans +4
+        $mainAddrStr = _merge_cleanVal($mainAddr['street_address'].$mainAddr['supplemental_address_1'].$mainAddr['city'].$mainAddr['state_province_id'].$mainAddr['postal_code']);
+        $otherAddrStr = _merge_cleanVal($otherAddr['street_address'].$otherAddr['supplemental_address_1'].$otherAddr['city'].$otherAddr['state_province_id'].$otherAddr['postal_code']);
+
+        //_merge_mD('move_location_address_0 $mainAddrStr', $mainAddrStr);
+        //_merge_mD('move_location_address_0 $otherAddrStr', $otherAddrStr);
+
+        if ($mainAddrStr == $otherAddrStr) {
+          //we now know the +4 was the only point of conflict
+          if (!empty($otherAddr['postal_code_suffix'])) {
+            $mainAddr['postal_code_suffix'] = $otherAddr['postal_code_suffix'];
+          }
+
+          unset($conflicts['move_location_address_0']);
+        }
+      }
     }
   }
 
@@ -315,8 +341,22 @@ function _merge_resolveConflicts(&$data, $mainId, $otherId) {
   if (array_key_exists('move_custom_60', $conflicts) &&
     ($rows['move_custom_60']['main'] == 'BOE' || $rows['move_custom_60']['other'] == 'BOE')
   ) {
-    $rows['move_custom_60']['main'] = $rows['move_custom_60']['other'] =
-    $conflicts['move_custom_60'] = 'BOE';
+    $rows['move_custom_60']['main'] = $rows['move_custom_60']['other'] = $conflicts['move_custom_60'] = 'boe';
+    $data['migration_info']['move_custom_60'] = 'boe';
+  }
+
+  //16053 voter registration status: prefer Registered, else retain main
+  $keyVRS = 'move_'.CRM_Core_BAO_CustomField::getCustomFieldID('Voter_Registration_Status', 'Additional_Constituent_Information', TRUE);
+  _merge_mD('$keyVRS', $keyVRS, 3);
+
+  if (array_key_exists($keyVRS, $conflicts)) {
+    if ($rows[$keyVRS]['main'] == 'Registered' || $rows[$keyVRS]['other'] == 'Registered') {
+      $rows[$keyVRS]['main'] = $rows[$keyVRS]['other'] = $conflicts[$keyVRS] = 'registered';
+      $data['migration_info'][$keyVRS] = 'registered';
+    }
+    else {
+      $rows[$keyVRS]['other'] = $conflicts[$keyVRS] = $rows[$keyVRS]['main'];
+    }
   }
 
   //phone blocks
@@ -339,6 +379,11 @@ function _merge_resolveConflicts(&$data, $mainId, $otherId) {
     }
   }
 
+  //14495 deceased
+  if (array_key_exists('move_is_deceased', $conflicts)) {
+    $conflicts['move_is_deceased'] = 1;
+  }
+
   //12878 combine privacy note values
   if (array_key_exists('move_custom_64', $conflicts)) {
     $conflicts['move_custom_64'] = trim(trim($rows['move_custom_64']['main'].'; '.$rows['move_custom_64']['other']), ';');
@@ -349,28 +394,29 @@ function _merge_resolveConflicts(&$data, $mainId, $otherId) {
     $conflictDetails = array();
     foreach ($conflicts as $fld => $value) {
       if ($value === null) {
-        $conflictDetails[$fld] = array(
+        $conflictDetails[$fld] = [
           'mainId' => $mainId,
           'mainId value' => $rows[$fld]['main'],
           'otherId' => $otherId,
           'otherId value' => $rows[$fld]['other'],
-        );
+        ];
       }
       else {
         $conflictDetails[$fld] = "Mergeable to: $value";
       }
     }
-    _merge_mD('merge conflict details', $conflictDetails);
+    _merge_mD('merge conflict details', $conflictDetails, 2);
   }
-
-  return;
-} //_merge_resolveConflicts()
+}
 
 
 //helper to strip spaces and punctuation so we normalize comparison
 function _merge_cleanVal($string) {
+  //14495 - convert # to Apt
+  $string = str_replace('#', 'apt', $string);
+
   return strtolower(preg_replace('/[\W]+/', '', $string));
-} //_merge_cleanVal()
+}
 
 
 //helper to work out greeting field custom vs formula
@@ -424,7 +470,7 @@ function _merge_fixGreeting($gType, &$rows, &$conflicts) {
       $conflicts[$gType] = $rows[$gType]['other'];
     }
 
-    _merge_mD("custom greeting conflicted. retained: ", $rows[$gType]['main']);
+    _merge_mD("custom greeting conflicted. retained: ", $rows[$gType]['main'], 2);
     return;
   }
 
@@ -439,7 +485,7 @@ function _merge_fixGreeting($gType, &$rows, &$conflicts) {
     ];
     $allGreetings = CRM_Core_PseudoConstant::greeting($filter);
     $defaultGreetingString = $greetingString = CRM_Utils_Array::value($defaultGreetingId, $allGreetings);
-    _merge_mD('setting default greeting string', $defaultGreetingString);
+    _merge_mD('setting default greeting string', $defaultGreetingString, 2);
 
     $conflicts[$gType] = $defaultGreetingString;
     return;
@@ -464,31 +510,31 @@ function _merge_fixName($name, &$rows, &$conflicts) {
   //determine if mixed case +1
   if ($nMain != strtolower($nMain) && $nMain != strtoupper($nMain)) {
     $mWeight++;
-    _merge_mD('nMain is mixed case', $nMain);
+    _merge_mD('nMain is mixed case', $nMain, 2);
   }
   if ($nOther != strtolower($nOther) && $nOther != strtoupper($nOther)) {
     $oWeight++;
-    _merge_mD('nOther is mixed case', $nOther);
+    _merge_mD('nOther is mixed case', $nOther, 2);
   }
 
   //determine if value has spaces -1
   if (!preg_match("/\s/", $nMain)) {
     $mWeight++;
-    _merge_mD('nMain has no spaces', $nMain);
+    _merge_mD('nMain has no spaces', $nMain, 2);
   }
   if (!preg_match("/\s/", $nOther)) {
     $oWeight++;
-    _merge_mD('nOther has no spaces', $nOther);
+    _merge_mD('nOther has no spaces', $nOther, 2);
   }
 
   //determine if value has punctuation +1
   if (preg_match("/\p{P}/", $nMain)) {
     $mWeight++;
-    _merge_mD('nMain has punctuation', $nMain);
+    _merge_mD('nMain has punctuation', $nMain, 2);
   }
   if (preg_match("/\p{P}/", $nOther)) {
     $oWeight++;
-    _merge_mD('nOther has punctuation', $nOther);
+    _merge_mD('nOther has punctuation', $nOther, 2);
   }
 
   //take value with greater weight and set other to match
@@ -497,7 +543,7 @@ function _merge_fixName($name, &$rows, &$conflicts) {
   }
 
   //update element in conflict array
-  _merge_mD("$name value retained:", $nMain);
+  _merge_mD("$name value retained:", $nMain, 2);
   $conflicts[$name] = $nMain;
 
   return;
@@ -508,8 +554,8 @@ function _merge_fixName($name, &$rows, &$conflicts) {
 function _merge_fixRT(&$data, &$rows, &$conflicts) {
   $rtMain = $rows['move_custom_61']['main'];
   $rtOther = $rows['move_custom_61']['other'];
-  _merge_mD("rtOther", $rtOther);
-  _merge_mD("rtMain", $rtMain);
+  _merge_mD("rtOther", $rtOther, 2);
+  _merge_mD("rtMain", $rtMain, 2);
 
   if ($rtMain == 'Board of Election' || $rtOther == 'Board of Election') {
     $conflicts['move_custom_61'] = 1; //value for BOE record type option
@@ -526,16 +572,16 @@ function _merge_fixRT(&$data, &$rows, &$conflicts) {
         'return' => 'modified_date',
       ]);
       $recordTypeOpts = civicrm_api3('contact', 'getoptions',
-        array('field' => 'custom_61'));
-      _merge_mD("mainModified: $mainModified", strtotime($mainModified));
-      _merge_mD("otherModified: $otherModified", strtotime($otherModified));
-      _merge_mD("recordTypeOpts", $recordTypeOpts);
+        ['field' => 'custom_61']);
+      _merge_mD("mainModified: $mainModified", strtotime($mainModified), 2);
+      _merge_mD("otherModified: $otherModified", strtotime($otherModified), 2);
+      _merge_mD("recordTypeOpts", $recordTypeOpts, 2);
 
       if (strtotime($otherModified) > strtotime($mainModified)) {
-        $conflicts['move_custom_61'] = array_search($rtOther, $recordTypeOpts['values']);
+        $conflicts['move_custom_61'] = array_search($rtOther, $recordTypeOpts['values'], 2);
       }
       else {
-        $conflicts['move_custom_61'] = array_search($rtMain, $recordTypeOpts['values']);
+        $conflicts['move_custom_61'] = array_search($rtMain, $recordTypeOpts['values'], 2);
       }
     }
     catch (CiviCRM_API3_Exception $e) {}
@@ -582,12 +628,12 @@ function _merge_fixPrivacyNote($mainId, $otherId) {
       'id' => $mainId,
       'return' => 'custom_64',
     ]);
-    
+
     $pnB = civicrm_api3('contact', 'getvalue', [
       'id' => $otherId,
       'return' => 'custom_64',
     ]);
-    
+
     if (!empty($pnA) && !empty($pnB)) {
       return "{$pnA}; {$pnB}";
     }
@@ -595,7 +641,7 @@ function _merge_fixPrivacyNote($mainId, $otherId) {
   catch (CiviCRM_API3_Exception $e) {
     _merge_mD('error retrieving privacy note: $e', $e);
   }
-  
+
   return NULL;
 }
 
@@ -621,5 +667,4 @@ function _merge_mD($msg, $var, $level = 1) {
   if ($level <= MERGE_LOG_DEBUG) {
     CRM_Core_Error::debug_var($msg, $var, true, true, 'merge');
   }
-  return;
-} //_merge_mD()
+}

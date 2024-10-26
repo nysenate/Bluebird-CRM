@@ -145,17 +145,6 @@ class PharStreamWrapper
         );
     }
 
-    /**
-     * @param int $cast_as
-     */
-    public function stream_cast($cast_as)
-    {
-        throw new Exception(
-            'Method stream_select() cannot be used',
-            1530103999
-        );
-    }
-
     public function stream_close()
     {
         $this->invokeInternalStreamWrapper(
@@ -476,7 +465,7 @@ class PharStreamWrapper
     {
         $arguments = func_get_args();
         array_shift($arguments);
-        $silentExecution = $functionName{0} === '@';
+        $silentExecution = $functionName[0] === '@';
         $functionName = ltrim($functionName, '@');
         $this->restoreInternalSteamWrapper();
 

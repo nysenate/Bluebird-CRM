@@ -1,5 +1,11 @@
 <div class="crmMosaico-schedule-outer" crm-mailing-radio-date="schedule" ng-model="mailing.scheduled_date">
 
+  <div class="form-group" ng-if="!!mailing.template_options.variants">
+    <label class="control-label">{{ts('Testing')}}</label>
+    <p><em>{{ts('You have enabled A/B testing. We will send each test message to a subset of your subscribers. Later, you can decide the final mailing.')}}</em></p>
+    <crm-mosaico-distribution crm-mailing="mailing" />
+  </div>
+
   <label class="crmMosaico-schedule-title">{{ts('Schedule email to:')}}</label>
 
   <div class="crmMosaico-schedule-inner form-inline form-inline-tabs" ng-init="selectedTab = 'sendNow'">

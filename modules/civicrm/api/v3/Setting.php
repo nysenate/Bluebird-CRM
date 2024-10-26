@@ -45,10 +45,10 @@ function civicrm_api3_setting_getfields($params) {
     $params['filters']['name'] = $params['name'];
   }
   $result = CRM_Core_BAO_Setting::getSettingSpecification(
-    CRM_Utils_Array::value('component_id', $params),
-    CRM_Utils_Array::value('filters', $params, []),
-    CRM_Utils_Array::value('domain_id', $params, NULL),
-    CRM_Utils_Array::value('profile', $params, NULL)
+    $params['component_id'] ?? NULL,
+    $params['filters'] ?? [],
+    $params['domain_id'] ?? NULL,
+    $params['profile'] ?? NULL
   );
   // find any supplemental information
   if (!empty($params['action'])) {
@@ -90,7 +90,7 @@ function _civicrm_api3_setting_getfields_spec(&$params) {
  * @param array $params
  *
  * @return array
- * @throws \CiviCRM_API3_Exception
+ * @throws \CRM_Core_Exception
  * @throws \Exception
  */
 function civicrm_api3_setting_getdefaults($params) {
@@ -129,14 +129,14 @@ function _civicrm_api3_setting_getdefaults_spec(&$params) {
  * @param array $params
  *
  * @return array
- * @throws \API_Exception
+ * @throws \CRM_Core_Exception
  */
 function civicrm_api3_setting_getoptions($params) {
   $domainId = $params['domain_id'] ?? NULL;
   $specs = \Civi\Core\SettingsMetadata::getMetadata(['name' => $params['field']], $domainId, TRUE);
 
   if (!isset($specs[$params['field']]['options']) || !is_array($specs[$params['field']]['options'])) {
-    throw new API_Exception("The field '" . $params['field'] . "' has no associated option list.");
+    throw new CRM_Core_Exception("The field '" . $params['field'] . "' has no associated option list.");
   }
 
   return civicrm_api3_create_success($specs[$params['field']]['options'], $params, 'Setting', 'getoptions');
@@ -195,9 +195,9 @@ function _civicrm_api3_setting_revert_spec(&$params) {
  * Revert settings to defaults.
  *
  * @param array $params
- *
+ * @deprecated
  * @return array
- * @throws \CiviCRM_API3_Exception
+ * @throws \CRM_Core_Exception
  * @throws \Exception
  */
 function civicrm_api3_setting_fill($params) {
@@ -241,6 +241,15 @@ function _civicrm_api3_setting_fill_spec(&$params) {
 }
 
 /**
+ * Declare deprecated api functions.
+ *
+ * @return array
+ */
+function _civicrm_api3_setting_deprecation() {
+  return ['fill' => 'Setting "fill" is no longer necessary.'];
+}
+
+/**
  * Create or update a setting.
  *
  * @param array $params
@@ -248,6 +257,8 @@ function _civicrm_api3_setting_fill_spec(&$params) {
  *
  * @return array
  *   api result array
+ *
+ * @throws \CRM_Core_Exception
  */
 function civicrm_api3_setting_create($params) {
   $domains = _civicrm_api3_setting_getDomainArray($params);
@@ -285,7 +296,11 @@ function _civicrm_api3_setting_create_spec(&$params) {
  */
 function civicrm_api3_setting_get($params) {
   $domains = _civicrm_api3_setting_getDomainArray($params);
-  $result = CRM_Core_BAO_Setting::getItems($params, $domains, CRM_Utils_Array::value('return', $params, []));
+  $returnSettings = (array) ($params['return'] ?? []);
+  if (in_array('contribution_invoice_settings', $returnSettings)) {
+    CRM_Core_Error::deprecatedWarning('contribution_invoice_settings is not a valid setting. Request the actual setting');
+  }
+  $result = CRM_Core_BAO_Setting::getItems($params, $domains, $returnSettings);
   return civicrm_api3_create_success($result, $params, 'Setting', 'get');
 }
 
@@ -327,11 +342,11 @@ function civicrm_api3_setting_getvalue($params) {
   //}
   return CRM_Core_BAO_Setting::getItem(
     NULL,
-    CRM_Utils_Array::value('name', $params),
-    CRM_Utils_Array::value('component_id', $params),
-    CRM_Utils_Array::value('default_value', $params),
-    CRM_Utils_Array::value('contact_id', $params),
-    CRM_Utils_Array::value('domain_id', $params)
+    $params['name'] ?? NULL,
+    $params['component_id'] ?? NULL,
+    $params['default_value'] ?? NULL,
+    $params['contact_id'] ?? NULL,
+    $params['domain_id'] ?? NULL
   );
 }
 
@@ -379,24 +394,24 @@ function _civicrm_api3_setting_getvalue_spec(&$params) {
  * @param array $params
  *
  * @return array
- * @throws \Exception
+ * @throws CRM_Core_Exception
  */
 function _civicrm_api3_setting_getDomainArray(&$params) {
   if (empty($params['domain_id']) && isset($params['id'])) {
     $params['domain_id'] = $params['id'];
   }
 
-  if ($params['domain_id'] == 'current_domain') {
+  if ($params['domain_id'] === 'current_domain') {
     $params['domain_id'] = CRM_Core_Config::domainID();
   }
 
-  if ($params['domain_id'] == 'all') {
+  if ($params['domain_id'] === 'all') {
     $domainAPIResult = civicrm_api('domain', 'get', ['version' => 3, 'return' => 'id']);
     if (isset($domainAPIResult['values'])) {
       $params['domain_id'] = array_keys($domainAPIResult['values']);
     }
     else {
-      throw new Exception('All domains not retrieved - problem with Domain Get api call ' . $domainAPIResult['error_message']);
+      throw new CRM_Core_Exception('All domains not retrieved - problem with Domain Get api call ' . $domainAPIResult['error_message']);
     }
   }
   if (is_array($params['domain_id'])) {

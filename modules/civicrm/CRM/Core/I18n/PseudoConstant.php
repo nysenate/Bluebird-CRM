@@ -13,8 +13,6 @@
  *
  * @package CRM
  * @copyright CiviCRM LLC https://civicrm.org/licensing
- * $Id$
- *
  */
 class CRM_Core_I18n_PseudoConstant {
 
@@ -49,12 +47,13 @@ class CRM_Core_I18n_PseudoConstant {
       $longForShortMapping['fr'] = defined("CIVICRM_LANGUAGE_MAPPING_FR") ? CIVICRM_LANGUAGE_MAPPING_FR : 'fr_FR';
       $longForShortMapping['pt'] = defined("CIVICRM_LANGUAGE_MAPPING_PT") ? CIVICRM_LANGUAGE_MAPPING_PT : 'pt_PT';
       $longForShortMapping['es'] = defined("CIVICRM_LANGUAGE_MAPPING_ES") ? CIVICRM_LANGUAGE_MAPPING_ES : 'es_ES';
+      $longForShortMapping['nl'] = defined("CIVICRM_LANGUAGE_MAPPING_NL") ? CIVICRM_LANGUAGE_MAPPING_NL : 'nl_NL';
     }
     return $longForShortMapping;
   }
 
   /**
-   * @param $long
+   * @param string $long
    *
    * @return string
    */

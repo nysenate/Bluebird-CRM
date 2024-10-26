@@ -1,0 +1,213 @@
+.civicase__activities-calendar {
+  transition: opacity 0.2s linear;
+
+  &.is-loading-days {
+    opacity: 0.7;
+  }
+
+  table,
+  th,
+  .btn-default {
+    background: none;
+    color: $gray-darker;
+  }
+
+  // this removes the box shadow border for the header:
+  thead th {
+    position: relative;
+    z-index: 1;
+  }
+
+  thead {
+    tr:nth-child(1) {
+      background-color: transparent;
+    }
+  }
+
+  thead .btn {
+    font-size: 16px;
+    text-transform: none;
+  }
+
+  thead .btn.uib-title {
+    font-weight: $font-weight-heading;
+    margin-top: -3px;
+    padding: 3px 0 8px;
+  }
+
+  // header arrow icons
+  thead .btn.uib-left,
+  thead .btn.uib-right {
+    margin-top: -3px;
+    max-width: 24px;
+    padding: 3px 0 8px;
+  }
+
+  thead .material-icons {
+    font-size: 24px;
+    line-height: 24px;
+  }
+
+  // header title
+  .uib-title strong,
+  .civicase__activities-calendar__title-word {
+    color: $gray-darker;
+    font-size: 16px;
+    font-weight: $crm-font-weight-h2;
+    line-height: 22px;
+  }
+
+  .uib-title span:nth-last-child(1) {
+    color: $crm-gray-matte;
+  }
+
+  [uib-daypicker] .uib-title strong { /* stylelint-disable selector-max-compound-selectors */
+    display: none;
+  }
+
+  [uib-monthpicker] .civicase__activities-calendar__title-word,
+  [uib-yearpicker] .civicase__activities-calendar__title-word {
+    display: none;
+  }
+
+  tr {
+    background-color: $crm-white;
+    padding: 0 5px;
+  }
+
+  tr:nth-child(0n+2) th,
+  tbody {
+    background: $crm-white;
+  }
+
+  // week days header
+  tr:nth-child(2n) {
+    border-top-left-radius: $card-border-radius;
+    border-top-right-radius: $card-border-radius;
+    margin-top: -3px;
+  }
+
+  tr:nth-child(2n) th {
+    color: $crm-gray-matte;
+    font-size: 10px;
+    padding: 21px 0;
+    text-transform: uppercase;
+  }
+
+  tr:nth-child(2n) .current-week-day {
+    color: $brand-primary;
+  }
+
+  thead th:nth-child(1) {
+    border-top-left-radius: 2px;
+  }
+
+  thead th:nth-last-child(1) {
+    border-top-right-radius: 2px;
+  }
+
+  tr:nth-last-child(1) td:nth-child(1) {
+    border-bottom-left-radius: 2px;
+  }
+
+  tr:nth-last-child(1) td:nth-last-child(1) {
+    border-bottom-right-radius: 2px;
+  }
+
+  tbody {
+    border-bottom-left-radius: $card-border-radius;
+    border-bottom-right-radius: $card-border-radius;
+    box-shadow: $box-shadow-block;
+    min-height: 205px;
+  }
+
+  [uib-monthpicker] thead,
+  [uib-yearpicker] thead {
+    padding-bottom: 7px;
+  }
+
+  [uib-monthpicker] tbody,
+  [uib-yearpicker] tbody {
+    margin-top: -3px;
+    min-height: 262px;
+  }
+
+  tbody .btn {
+    font-weight: $crm-font-weight-h3;
+    padding: 10px 0;
+    position: relative;
+    width: 100%;
+  }
+
+  .btn.active {
+    background-color: $activities-calendar-active-day-background;
+    color: $brand-primary;
+  }
+
+  .uib-day .btn.active {
+    height: 28px;
+    margin-top: 2px;
+    padding: 0;
+    width: 28px;
+  }
+
+  .uib-day .material-icons {
+    display: none;
+  }
+}
+
+.civicase__activities-calendar__day-status.uib-day {
+  .material-icons {
+    color: $crm-gray-matte;
+    display: block;
+    font-size: 6px;
+    left: 50%;
+    position: absolute;
+    transform: translateX(-50%) translateY(3px);
+    width: 6px;
+  }
+}
+
+.civicase__activities-calendar__day-status--completed.uib-day .material-icons {
+  color: $brand-success;
+}
+
+.civicase__activities-calendar__day-status--overdue.uib-day .material-icons {
+  color: $brand-danger;
+}
+
+.civicase__activities-calendar__day-status--scheduled.uib-day .material-icons {
+  color: $brand-info;
+}
+
+.activities-calendar-popover {
+  border-color: $gray-light;
+  border-radius: 2px;
+  box-shadow: 0 2px 4px 0 rgba(49, 40, 40, 0.13);
+  margin-top: 15px;
+  max-width: $activity-card-short-width;
+  padding: 0;
+
+  > .arrow {
+    border-bottom-color: $gray-light;
+  }
+
+  .popover-content {
+    max-height: 330px;
+    overflow-x: hidden;
+    overflow-y: auto;
+    padding: 0;
+  }
+}
+
+.activities-calendar-popover__footer {
+  border-top: 1px solid $gray-light;
+}
+
+.activities-calendar-popover__see-all {
+  padding: 10px;
+}
+
+.civicase__activities-calendar__dropdown {
+  transform: translateX(calc(-100% + #{$attachment-icon-width}));
+}

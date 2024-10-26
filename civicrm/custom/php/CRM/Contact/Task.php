@@ -45,173 +45,186 @@ class CRM_Contact_Task extends CRM_Core_Task {
 
   public static function tasks() {
     if (!self::$_tasks) {
-      self::$_tasks = array(
-        self::GROUP_ADD => array(
+      self::$_tasks = [
+        self::GROUP_ADD => [
           'title' => ts('Group - add contacts'),
           'class' => 'CRM_Contact_Form_Task_AddToGroup',
           'url' => 'civicrm/task/add-to-group',
-        ),
-        self::GROUP_REMOVE => array(
+          'icon' => 'fa-user-plus',
+        ],
+        self::GROUP_REMOVE => [
           'title' => ts('Group - remove contacts'),
           'class' => 'CRM_Contact_Form_Task_RemoveFromGroup',
           'url' => 'civicrm/task/remove-from-group',
-        ),
-        self::TAG_ADD => array(
+          'icon' => 'fa-user-plus',
+        ],
+        self::TAG_ADD => [
           'title' => ts('Tag - add to contacts'),
           'class' => 'CRM_Contact_Form_Task_AddToTag',
           'url' => 'civicrm/task/add-to-tag',
-        ),
-        self::TAG_REMOVE => array(
+          'icon' => 'fa-tags',
+        ],
+        self::TAG_REMOVE => [
           'title' => ts('Tag - remove from contacts'),
           'class' => 'CRM_Contact_Form_Task_RemoveFromTag',
           'url' => 'civicrm/task/remove-from-tag',
-        ),
-        self::TASK_EXPORT => array(
+          'icon' => 'fa-tag',
+        ],
+        self::TASK_EXPORT => [
           'title' => ts('Export contacts'),
-          'class' => array(
-            'CRM_Export_Form_Select',
-            'CRM_Export_Form_Map',
-          ),
+          'class' => [
+            'CRM_Contact_Export_Form_Select',
+            'CRM_Contact_Export_Form_Map',
+          ],
           'result' => FALSE,
-        ),
-        self::TASK_EMAIL => array(
-          'title' => ts('Email - send now (to %1 or less)', array(
+        ],
+        self::TASK_EMAIL => [
+          'title' => ts('Email - send now (to %1 or less)', [
             1 => Civi::settings()
               ->get('simple_mail_limit'),
-          )),
+          ]),
           'class' => 'CRM_Contact_Form_Task_Email',
           'result' => TRUE,
           'url' => 'civicrm/task/send-email',
-        ),
-        self::TASK_DELETE => array(
+          'icon' => 'fa-paper-plane-o',
+        ],
+        self::TASK_DELETE => [
           'title' => ts('Delete contacts'),
           'class' => 'CRM_Contact_Form_Task_Delete',
           'result' => FALSE,
           'url' => 'civicrm/task/delete-contact',
-        ),
-        self::RECORD_CONTACTS => array(
+          'icon' => 'fa-trash',
+        ],
+        self::RECORD_CONTACTS => [
           'title' => ts('Add activity'),
           'class' => 'CRM_Activity_Form_Activity',
-        ),
-        self::SAVE_SEARCH => array(
+          'icon' => 'fa-tasks',
+          'url' => 'civicrm/task/add-activity?action=add&context=search',
+        ],
+        self::SAVE_SEARCH => [
           'title' => ts('Group - create smart group'),
           'class' => 'CRM_Contact_Form_Task_SaveSearch',
           'result' => TRUE,
-        ),
-        self::SAVE_SEARCH_UPDATE => array(
+        ],
+        self::SAVE_SEARCH_UPDATE => [
           'title' => ts('Group - update smart group'),
           'class' => 'CRM_Contact_Form_Task_SaveSearch_Update',
           'result' => TRUE,
-        ),
-        self::TASK_PRINT => array(
+        ],
+        self::TASK_PRINT => [
           'title' => ts('Print selected rows'),
           'class' => 'CRM_Contact_Form_Task_Print',
           'result' => FALSE,
-        ),
-        self::LABEL_CONTACTS => array(
+        ],
+        self::LABEL_CONTACTS => [
           'title' => ts('Mailing labels - print'),
           'class' => 'CRM_Contact_Form_Task_Label',
           'result' => TRUE,
           'url' => 'civicrm/task/make-mailing-label',
-        ),
-        self::BATCH_UPDATE => array(
+          'icon' => 'fa-print',
+        ],
+        self::BATCH_UPDATE => [
           'title' => ts('Update multiple contacts'),
-          'class' => array(
+          'class' => [
             'CRM_Contact_Form_Task_PickProfile',
             'CRM_Contact_Form_Task_Batch',
-          ),
+          ],
           'result' => TRUE,
           'url' => 'civicrm/task/pick-profile',
-        ),
-        self::PDF_LETTER => array(
+          'icon' => 'fa-pencil',
+        ],
+        self::PDF_LETTER => [
           'title' => ts('Print/merge document'),
           'class' => 'CRM_Contact_Form_Task_PDF',
           'result' => TRUE,
           'url' => 'civicrm/task/print-document',
-        ),
-        self::EMAIL_UNHOLD => array(
+          'icon' => 'fa-file-pdf-o',
+        ],
+        self::EMAIL_UNHOLD => [
           'title' => ts('Email - unhold addresses'),
           'class' => 'CRM_Contact_Form_Task_Unhold',
           'url' => 'civicrm/task/unhold-email',
-        ),
-        self::COMMUNICATION_PREFS => array(
+          'icon' => 'fa-unlock',
+        ],
+        self::COMMUNICATION_PREFS => [
           'title' => ts('Communication preferences - alter'),
           'class' => 'CRM_Contact_Form_Task_AlterPreferences',
           'url' => 'civicrm/task/alter-contact-preference',
-        ),
+          'icon' => 'fa-check-square-o',
+        ],
         //NYSS - add print production export
-        1000 => array('title' => ts('Export for Print Production'),
-          'class' => array(
+        1000 => ['title' => ts('Export for Print Production'),
+          'class' => [
             'CRM_Contact_Form_Task_ExportPrintProduction',
             'CRM_Contact_Form_Task_ExportPrintProductionResult',
-          ),
-        ),
-        self::RESTORE => array(
+          ],
+        ],
+        self::RESTORE => [
           'title' => ts('Restore contacts from trash'),
           'class' => 'CRM_Contact_Form_Task_Delete',
           'result' => FALSE,
-        ),
-        self::DELETE_PERMANENTLY => array(
+        ],
+        self::DELETE_PERMANENTLY => [
           'title' => ts('Delete permanently'),
           'class' => 'CRM_Contact_Form_Task_Delete',
           'result' => FALSE,
-        ),
-      );
+        ],
+      ];
 
       //CRM-16329, if SMS provider is configured show sms action.
-      $providersCount = CRM_SMS_BAO_Provider::activeProviderCount();
+      $providersCount = CRM_SMS_BAO_SmsProvider::activeProviderCount();
       if ($providersCount && CRM_Core_Permission::check('send SMS')) {
-        self::$_tasks[self::TASK_SMS] = array(
+        self::$_tasks[self::TASK_SMS] = [
           'title' => ts('SMS - schedule/send'),
           'class' => 'CRM_Contact_Form_Task_SMS',
           'result' => TRUE,
-        );
+        ];
       }
 
       //NYSS - add district export for merge/perge
-      if ( CRM_Core_Permission::check( 'export print production files' ) ) {
-        self::$_tasks[1001] = array( 'title' => ts('Export District for Merge/Purge'),
+      if (CRM_Core_Permission::check('export print production files')) {
+        self::$_tasks[1001] = ['title' => ts('Export District for Merge/Purge'),
           'class' => 'CRM_Contact_Form_Task_ExportDistrict',
           'result' => true
-        );
+        ];
       }
 
       if (CRM_Contact_BAO_ContactType::isActive('Individual')) {
         $label = CRM_Contact_BAO_ContactType::getLabel('Individual');
-        self::$_tasks[self::INDIVIDUAL_CONTACTS] = array(
+        self::$_tasks[self::INDIVIDUAL_CONTACTS] = [
           'title' => ts('Add relationship - to %1',
-            array(1 => $label)
+            [1 => $label]
           ),
           'class' => 'CRM_Contact_Form_Task_AddToIndividual',
-        );
+        ];
       }
 
       if (CRM_Contact_BAO_ContactType::isActive('Household')) {
         $label = CRM_Contact_BAO_ContactType::getLabel('Household');
-        self::$_tasks[self::HOUSEHOLD_CONTACTS] = array(
+        self::$_tasks[self::HOUSEHOLD_CONTACTS] = [
           'title' => ts('Add relationship - to %1',
-            array(1 => $label)
+            [1 => $label]
           ),
           'class' => 'CRM_Contact_Form_Task_AddToHousehold',
-        );
+        ];
       }
 
       if (CRM_Contact_BAO_ContactType::isActive('Organization')) {
         $label = CRM_Contact_BAO_ContactType::getLabel('Organization');
-        self::$_tasks[self::ORGANIZATION_CONTACTS] = array(
+        self::$_tasks[self::ORGANIZATION_CONTACTS] = [
           'title' => ts('Add relationship - to %1',
-            array(1 => $label)
+            [1 => $label]
           ),
           'class' => 'CRM_Contact_Form_Task_AddToOrganization',
-        );
+        ];
       }
 
       if (CRM_Core_Permission::check('merge duplicate contacts')) {
-        self::$_tasks[self::MERGE_CONTACTS] = array(
+        self::$_tasks[self::MERGE_CONTACTS] = [
           'title' => ts('Merge contacts'),
           'class' => 'CRM_Contact_Form_Task_Merge',
           'result' => TRUE,
-        );
+        ];
       }
 
       //CRM-4418, check for delete
@@ -230,37 +243,39 @@ class CRM_Contact_Task extends CRM_Core_Task {
           )
         )
       ) {
-        self::$_tasks[self::MAP_CONTACTS] = array(
+        self::$_tasks[self::MAP_CONTACTS] = [
           'title' => ts('Map contacts'),
           'class' => 'CRM_Contact_Form_Task_Map',
           'result' => FALSE,
-        );
+          'url' => 'civicrm/contact/map',
+          'icon' => 'fa-map',
+        ];
       }
 
       if (CRM_Core_Permission::access('CiviEvent')) {
-        self::$_tasks[self::ADD_EVENT] = array(
+        self::$_tasks[self::ADD_EVENT] = [
           'title' => ts('Register participants for event'),
-          'class' => 'CRM_Event_Form_Participant',
-        );
+          'class' => 'CRM_Event_Form_Task_Register',
+        ];
       }
 
       //NYSS 6682
       /*if (CRM_Core_Permission::access('CiviMail')
         || (CRM_Mailing_Info::workflowEnabled() && CRM_Core_Permission::check('create mailings'))
       ) {
-        self::$_tasks[self::CREATE_MAILING] = array(
+        self::$_tasks[self::CREATE_MAILING] = [
           'title' => ts('Email - schedule/send via CiviMail'),
           'class' => 'CRM_Mailing_Form_Task_AdhocMailing',
           'result' => FALSE,
-        );
+        ];
       }*/
 
       if (CRM_Core_Permission::access('CiviCase')) {
-        self::$_tasks[self::ADD_TO_CASE] = array(
+        self::$_tasks[self::ADD_TO_CASE] = [
           'title' => ts('Add to case as role'),
           'class' => 'CRM_Case_Form_AddToCaseAsRole',
           'result' => FALSE,
-        );
+        ];
       }
 
       parent::tasks();
@@ -280,12 +295,12 @@ class CRM_Contact_Task extends CRM_Core_Task {
    * @return array
    *   set of tasks that are valid for the user
    */
-  public static function permissionedTaskTitles($permission, $params = array()) {
+  public static function permissionedTaskTitles($permission, $params = []) {
     if (!isset($params['deletedContacts'])) {
       $params['deletedContacts'] = FALSE;
     }
     self::tasks();
-    $tasks = array();
+    $tasks = [];
     if ($params['deletedContacts']) {
       if (CRM_Core_Permission::check('access deleted contacts')) {
         $tasks[self::RESTORE] = self::$_tasks[self::RESTORE]['title'];
@@ -300,15 +315,15 @@ class CRM_Contact_Task extends CRM_Core_Task {
       $tasks = self::taskTitles();
     }
     else {
-      $tasks = array(
+      $tasks = [
         self::TASK_EXPORT => self::$_tasks[self::TASK_EXPORT]['title'],
         self::TASK_EMAIL => self::$_tasks[self::TASK_EMAIL]['title'],
         self::LABEL_CONTACTS => self::$_tasks[self::LABEL_CONTACTS]['title'],
         1000 => self::$_tasks[1000]['title'], //NYSS
         1001 => self::$_tasks[1001]['title'], //NYSS
-      );
+      ];
       //NYSS 4809 - unset district export if not permissioned
-      if ( !self::$_tasks[1001]['title'] ) {
+      if (!self::$_tasks[1001]['title']) {
         unset( $tasks[101] );
       }
       if (isset(self::$_tasks[self::MAP_CONTACTS]) &&
@@ -317,11 +332,7 @@ class CRM_Contact_Task extends CRM_Core_Task {
         $tasks[self::MAP_CONTACTS] = self::$_tasks[self::MAP_CONTACTS]['title'];
       }
 
-      foreach ([
-        self::MAP_CONTACTS,
-        self::CREATE_MAILING,
-        self::TASK_SMS,
-      ] as $task) {
+      foreach ([self::MAP_CONTACTS, self::CREATE_MAILING, self::TASK_SMS] as $task) {
         if (isset(self::$_tasks[$task]) &&
           !empty(self::$_tasks[$task]['title'])
         ) {
@@ -330,7 +341,7 @@ class CRM_Contact_Task extends CRM_Core_Task {
       }
 
       //NYSS 3205 allow print prod to work with groups
-      if ( CRM_Core_Permission::check( 'export print production files' ) ) {
+      if (CRM_Core_Permission::check('export print production files')) {
         $tasks[1] = self::$_tasks[1]['title'];
         $tasks[2] = self::$_tasks[2]['title'];
         $tasks[3] = self::$_tasks[3]['title'];

@@ -82,7 +82,7 @@ class CRM_Core_OptionValue {
     if ($optionGroupID) {
       $dao->option_group_id = $optionGroupID;
 
-      if (in_array($groupName, CRM_Core_OptionGroup::$_domainIDGroups)) {
+      if (CRM_Core_OptionGroup::isDomainOptionGroup($groupName)) {
         $dao->domain_id = CRM_Core_Config::domainID();
       }
 
@@ -181,7 +181,7 @@ class CRM_Core_OptionValue {
    *
    */
   public static function addOptionValue(&$params, $optionGroupName, $action, $optionValueID) {
-    $params['is_active'] = CRM_Utils_Array::value('is_active', $params, FALSE);
+    $params['is_active'] ??= FALSE;
     // checking if the group name with the given id or name (in $groupParams) exists
     $groupParams = ['name' => $optionGroupName, 'is_active' => 1];
     $optionGroup = CRM_Core_BAO_OptionGroup::retrieve($groupParams, $defaults);
@@ -251,7 +251,7 @@ class CRM_Core_OptionValue {
    * @return bool
    *   true if object exists
    */
-  public static function optionExists($value, $daoName, $daoID, $optionGroupID, $fieldName = 'name', $domainSpecific) {
+  public static function optionExists($value, $daoName, $daoID, $optionGroupID, $fieldName, $domainSpecific) {
     $object = new $daoName();
     $object->$fieldName = $value;
     $object->option_group_id = $optionGroupID;
@@ -289,6 +289,8 @@ class CRM_Core_OptionValue {
 
       $nameTitle = [];
       if ($mode == 'contribute') {
+        // @todo - remove this - the only code place that calls
+        // this function in a way that would hit this is commented 'remove this'
         // This is part of a move towards standardising option values but we
         // should derive them from the fields array so am deprecating it again...
         // note that the reason this was needed was that payment_instrument_id was
@@ -304,12 +306,7 @@ class CRM_Core_OptionValue {
       elseif ($mode == '') {
         //the fields email greeting and postal greeting are meant only for Individual and Household
         //the field addressee is meant for all contact types, CRM-4575
-        if (in_array($contactType, [
-          'Individual',
-          'Household',
-          'Organization',
-          'All',
-        ])) {
+        if (in_array($contactType, ['Individual', 'Household', 'Organization', 'All'])) {
           $nameTitle = [
             'addressee' => [
               'name' => 'addressee',
@@ -336,7 +333,7 @@ class CRM_Core_OptionValue {
       if (is_array($nameTitle)) {
         foreach ($nameTitle as $name => $attribs) {
           self::$_fields[$key][$name] = $optionName;
-          list($tableName, $fieldName) = explode('.', $optionName['where']);
+          [$tableName, $fieldName] = explode('.', $optionName['where']);
           self::$_fields[$key][$name]['where'] = "{$name}.label";
           foreach ($attribs as $k => $val) {
             self::$_fields[$key][$name][$k] = $val;
@@ -351,7 +348,7 @@ class CRM_Core_OptionValue {
   /**
    * Build select query in case of option-values
    *
-   * @param $query
+   * @param CRM_Contact_BAO_Query $query
    */
   public static function select(&$query) {
     if (!empty($query->_params) || !empty($query->_returnProperties)) {
@@ -360,7 +357,7 @@ class CRM_Core_OptionValue {
         if (!empty($values['pseudoconstant'])) {
           continue;
         }
-        list($tableName, $fieldName) = explode('.', $values['where']);
+        [$tableName, $fieldName] = explode('.', $values['where']);
         if (!empty($query->_returnProperties[$name])) {
           $query->_select["{$name}_id"] = "{$name}.value as {$name}_id";
           $query->_element["{$name}_id"] = 1;
@@ -390,7 +387,7 @@ class CRM_Core_OptionValue {
    *   Array of option-values
    *
    */
-  public static function getValues($groupParams, &$values, $orderBy = 'weight', $isActive = FALSE) {
+  public static function getValues($groupParams, &$values = [], $orderBy = 'weight', $isActive = FALSE) {
     if (empty($groupParams)) {
       return NULL;
     }
@@ -403,6 +400,8 @@ SELECT
    option_value.description as description,
    option_value.weight      as weight,
    option_value.is_active   as is_active,
+   option_value.icon        as icon,
+   option_value.color       as color,
    option_value.is_default  as is_default";
 
     $from = "
@@ -436,7 +435,7 @@ FROM
       $params[2] = [$groupName, 'String'];
     }
 
-    if (in_array($groupName, CRM_Core_OptionGroup::$_domainIDGroups)) {
+    if (CRM_Core_OptionGroup::isDomainOptionGroup($groupName)) {
       $where .= " AND option_value.domain_id = " . CRM_Core_Config::domainID();
     }
 
@@ -454,8 +453,11 @@ FROM
         'weight' => $dao->weight,
         'is_active' => $dao->is_active,
         'is_default' => $dao->is_default,
+        'icon' => $dao->icon,
+        'color' => $dao->color,
       ];
     }
+    return $values;
   }
 
 }

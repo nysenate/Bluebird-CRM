@@ -21,6 +21,13 @@
 class CRM_Admin_Form_PreferencesDate extends CRM_Admin_Form {
 
   /**
+   * @return string
+   */
+  public function getDefaultEntity(): string {
+    return 'PreferencesDate';
+  }
+
+  /**
    * Build the form object.
    */
   public function buildQuickForm() {
@@ -108,9 +115,6 @@ class CRM_Admin_Form_PreferencesDate extends CRM_Admin_Form {
     $dao->time_format = $params['time_format'];
 
     $dao->save();
-
-    // Update dynamic js to reflect new date settings
-    CRM_Core_Resources::singleton()->resetCacheCode();
 
     CRM_Core_Session::setStatus(ts("The date type '%1' has been saved.",
       [1 => $params['name']]

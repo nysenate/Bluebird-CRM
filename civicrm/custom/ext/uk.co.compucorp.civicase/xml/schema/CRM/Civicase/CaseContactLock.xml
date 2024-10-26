@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="iso-8859-1" ?>
+
+<table>
+  <base>CRM/Civicase</base>
+  <class>CaseContactLock</class>
+  <name>civicase_contactlock</name>
+  <comment>This table implements a list of contacts that have been locked out of specific cases, to which they will only have basic view access.</comment>
+  <add>4.7</add>
+  <log>true</log>
+
+  <field>
+    <name>id</name>
+    <type>int unsigned</type>
+    <required>true</required>
+    <comment>Unique CaseContactLock ID</comment>
+    <add>4.4</add>
+  </field>
+  <primaryKey>
+    <name>id</name>
+    <autoincrement>true</autoincrement>
+  </primaryKey>
+
+  <field>
+    <name>case_id</name>
+    <type>int unsigned</type>
+    <comment>Case ID that is locked.</comment>
+    <add>4.7</add>
+  </field>
+  <foreignKey>
+    <name>case_id</name>
+    <table>civicrm_case</table>
+    <key>id</key>
+    <add>4.7</add>
+    <onDelete>CASCADE</onDelete>
+  </foreignKey>
+
+  <field>
+    <name>contact_id</name>
+    <type>int unsigned</type>
+    <comment>Contact for which the case is locked.</comment>
+    <add>4.7</add>
+  </field>
+  <foreignKey>
+    <name>contact_id</name>
+    <table>civicrm_contact</table>
+    <key>id</key>
+    <add>4.7</add>
+    <onDelete>CASCADE</onDelete>
+  </foreignKey>
+
+</table>

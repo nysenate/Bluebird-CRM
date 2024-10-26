@@ -41,7 +41,7 @@ define('CIVICRM_UF_HEAD', TRUE);
  * @see CRM_Upgrade_Incremental_General::MIN_INSTALL_PHP_VER
  * @see CiviDrupal\PhpVersionTest::testConstantMatch()
  */
-define('CIVICRM_DRUPAL_PHP_MINIMUM', '7.1.0');
+define('CIVICRM_DRUPAL_PHP_MINIMUM', '7.4.0');
 
 /**
  * Adds CiviCRM CSS and JS resources into the header.
@@ -72,14 +72,12 @@ function civicrm_permission() {
   CRM_Core_Config::singleton();
 
   $permissions = CRM_Core_Permission::basicPermissions(FALSE, TRUE);
-  $perms_array = array();
+  $perms_array = [];
   foreach ($permissions as $perm => $attr) {
-    $title = array_shift($attr);
-    $description = array_shift($attr);
     //order matters here, but we deal with that later
-    $perms_array[$perm] = array('title' => $title);
-    if ($description) {
-      $perms_array[$perm]['description'] = $description;
+    $perms_array[$perm] = ['title' => $attr['label']];
+    if (!empty($attr['description'])) {
+      $perms_array[$perm]['description'] = $attr['description'];
     }
   }
   return $perms_array;
@@ -90,7 +88,7 @@ function civicrm_permission() {
  */
 function civicrm_block_info() {
   if (!civicrm_initialize()) {
-    return;
+    return [];
   }
   $block = CRM_Core_Block::getInfo();
   return $block;
@@ -111,15 +109,19 @@ function civicrm_block_view($delta = '0') {
  * Implements hook_menu().
  */
 function civicrm_menu() {
-  if (!civicrm_initialize()) {
-    return;
-  }
-
   return array(
     'civicrm' => array(
       'title' => 'CiviCRM',
       'access callback' => TRUE,
       'page callback' => 'civicrm_invoke',
+      'type' => 4,
+      'weight' => 0,
+    ),
+    'civicrm/setup' => array(
+      'title' => 'CiviCRM Setup',
+      'access callback' => TRUE,
+      'page callback' => 'civicrm_setup_page',
+      'file' => 'civicrm.setup.inc',
       'type' => 4,
       'weight' => 0,
     ),
@@ -175,9 +177,10 @@ function civicrm_initialize() {
 
   if (!$initialized) {
     if (function_exists('conf_path')) {
-      $settingsFile = conf_path() . '/civicrm.settings.php';
+      $settingsFile = DRUPAL_ROOT . '/' . conf_path() . '/civicrm.settings.php';
     }
     else {
+      // @todo - ensure this is not providing a relative path
       $settingsFile = conf_init() . '/civicrm.settings.php';
     }
     if (!defined('CIVICRM_SETTINGS_PATH')) {
@@ -185,32 +188,30 @@ function civicrm_initialize() {
     }
 
     // get ready for problems
-    $docLinkInstall = "http://wiki.civicrm.org/confluence/display/CRMDOC/Drupal+Installation+Guide";
-    $docLinkTrouble = "http://wiki.civicrm.org/confluence/display/CRMDOC/Installation+and+Configuration+Trouble-shooting";
-    $forumLink      = "http://forum.civicrm.org/index.php/board,6.0.html";
+    $docLinkInstall = "https://docs.civicrm.org/installation/en/latest/drupal7/";
+    $docLinkTrouble = "https://docs.civicrm.org/installation/en/latest/general/troubleshooting/";
+    $seLink      = "https://civicrm.stackexchange.com";
 
-    $errorMsgAdd = t("Please review the <a href='!1'>Drupal Installation Guide</a> and the <a href='!2'>Trouble-shooting page</a> for assistance. If you still need help installing, you can often find solutions to your issue by searching for the error message in the <a href='!3'>installation support section of the community forum</a>.</strong></p>",
+    $errorMsgAdd = t("Please review the <a href='!1'>Drupal 7 Installation Guide</a> and the <a href='!2'>Trouble-shooting page</a> for assistance. If you still need help installing, you can often find solutions to your issue by searching for the error message on <a href='!3'>CiviCRM StackExchange</a>.</strong></p>",
       array(
         '!1' => $docLinkInstall,
         '!2' => $docLinkTrouble,
-        '!3' => $forumLink,
+        '!3' => $seLink,
       )
     );
 
-    if (!include_once $settingsFile) {
+    $loadedSettings = (bool) @include_once $settingsFile;
+    if (!$loadedSettings) {
+      // Note the failure variable is tied by reference to a static.
       $failure = TRUE;
-      $message = t("<strong><p class='error'> Oops! - The CiviCRM settings file (civicrm.settings.php) was not found in the expected location (!1) </p><p class='error'> !2 </p></strong>", array(
-        '!1' => $settingsFile,
-        '!2' => $errorMsgAdd,
-      ));
-      drupal_set_message($message);
       return FALSE;
     }
 
     // this does pretty much all of the civicrm initialization
     if (!include_once 'CRM/Core/Config.php') {
+      // Note the failure variable is tied by reference to a static.
       $failure = TRUE;
-      drupal_set_message(t("<strong><p class='error'>Oops! - The path for including CiviCRM code files is not set properly. Most likely there is an error in the <em>civicrm_root</em> setting in your CiviCRM settings file (!1). </p><p class='error'> &raquo; civicrm_root is currently set to: <em>!2</em></p><p class='error'>!3</p></strong>", array(
+      drupal_set_message(t("<strong><p class='error'>Oops! - Unable to load CRM/Core/Config.php. Most likely the file is missing or there is an error in your CiviCRM settings file (!1). </p><p class='error'> &raquo; civicrm_root is currently set to: <em>!2</em></p><p class='error'>!3</p></strong>", array(
         '!1' => $settingsFile,
         '!2' => $civicrm_root,
         '!3' => $errorMsgAdd,
@@ -227,6 +228,19 @@ function civicrm_initialize() {
     $header = civicrm_html_head();
     if (!empty($header)) {
       drupal_add_html_head($header);
+    }
+
+    // Prevent autoload conflicts if HTML_Purifier is already in Drupal libraries
+    if (
+      !class_exists('HTMLPurifier_Bootstrap', FALSE) &&
+      function_exists('libraries_get_path') &&
+      libraries_get_path('htmlpurifier')
+    ) {
+      $file = libraries_get_path('htmlpurifier') . '/library/HTMLPurifier/Bootstrap.php';
+      if (file_exists($file)) {
+        require_once $file;
+        spl_autoload_register(['HTMLPurifier_Bootstrap', 'autoload']);
+      }
     }
 
     CRM_Core_Config::singleton()->userSystem->setMySQLTimeZone();
@@ -386,7 +400,9 @@ function civicrm_invoke() {
 
   // make sure the system is initialized
   if (!civicrm_initialize()) {
-    return drupal_not_found();
+    require_once __DIR__ . '/civicrm.setup.inc';
+    // NOTE: The setup page has a built-in authorization check.
+    return civicrm_setup_page();
   }
 
   civicrm_cache_disable();
@@ -487,6 +503,10 @@ function _civicrm_categories_access($profile_id) {
  * Translating profile menu title dynamicaly to overide caching
  */
 function civicrm_menu_alter(&$items) {
+  if (!civicrm_initialize()) {
+    return;
+  }
+
   $categories = civicrm_user_categories();
   foreach ($categories as $cat) {
     $path = 'user/%user_category/edit/' . $cat['name'];
@@ -600,12 +620,7 @@ function civicrm_form_data($edit, &$user, $category, $reset, $doNotProcess = FAL
     }
   }
   $ctype = CRM_Core_DAO::getFieldValue('CRM_Contact_DAO_Contact', $userID, 'contact_type');
-  try {
-    $profileID = _civicrm_get_user_profile_id($category, $userID, $ctype);
-  }
-  catch (Exception $e) {
-    CRM_Core_Error::fatal($e->getMessage());
-  }
+  $profileID = _civicrm_get_user_profile_id($category, $userID, $ctype);
 
   $html = CRM_Core_BAO_UFGroup::getEditHTML($userID, $category, NULL, FALSE, $reset, $profileID, $doNotProcess, $ctype);
 
@@ -796,13 +811,7 @@ function civicrm_views_query_alter(&$view, &$query) {
   }
 
   // check if we are in multilingual mode, otherwise return
-  // TODO: should be a simple call - is_multiligual ?
-  $domain = new CRM_Core_DAO_Domain();
-  $domain->find(TRUE);
-
-  $multilingual = (bool) $domain->locales;
-
-  if ($multilingual) {
+  if (CRM_Core_I18n::isMultilingual()) {
     global $dbLocale;
     $columns = CRM_Core_I18n_SchemaStructure::columns();
 
@@ -892,7 +901,9 @@ function civicrm_user_admin_permissions_submit($form, &$form_state) {
   if ($rid === FALSE) {
     return;
   }
-  civicrm_initialize();
+  if (!civicrm_initialize()) {
+    return;
+  }
   $roles = user_roles();
   $permissions = array_filter($form_state['values'][$rid]);
   $warning_permissions = CRM_Core_Permission::validateForPermissionWarnings($permissions);
@@ -1030,7 +1041,10 @@ function _civicrm_filter_tips($filter, $format, $long = FALSE) {
  * @return bool|mixed|string
  */
 function _civicrm_filter_process($text, $filter, $format, $langcode, $cache, $cache_id) {
-  civicrm_initialize();
+  if (!civicrm_initialize()) {
+    return t('(Content unavailable. CiviCRM is not installed.)');
+  }
+
   $config = CRM_Core_Config::singleton();
   $smarty = CRM_Core_Smarty::singleton();
   // as this file is not a class (not sure why) we need the require once
@@ -1039,7 +1053,7 @@ function _civicrm_filter_process($text, $filter, $format, $langcode, $cache, $ca
 
   $was_secure       = $smarty->security;
   $smarty->security = TRUE;
-  $text             = $smarty->fetch("string:${text}");
+  $text             = $smarty->fetch("string:{$text}");
   $smarty->security = $was_secure;
 
   // In the use-case of embedding Smarty codes inside a Drupal page, one is likely
@@ -1223,7 +1237,9 @@ function civicrm_reviews() {
  * Implements hook_modules_installed().
  */
 function civicrm_modules_installed($modules) {
-  civicrm_initialize();
+  if (!civicrm_initialize()) {
+    return;
+  }
   CRM_Core_Invoke::rebuildMenuAndCaches(TRUE);
 }
 
@@ -1231,7 +1247,9 @@ function civicrm_modules_installed($modules) {
  * Implements hook_modules_enabled().
  */
 function civicrm_modules_enabled($modules) {
-  civicrm_initialize();
+  if (!civicrm_initialize()) {
+    return;
+  }
   CRM_Core_Invoke::rebuildMenuAndCaches(TRUE);
 }
 
@@ -1239,7 +1257,9 @@ function civicrm_modules_enabled($modules) {
  * Implements hook_modules_disabled().
  */
 function civicrm_modules_disabled($modules) {
-  civicrm_initialize();
+  if (!civicrm_initialize()) {
+    return;
+  }
   CRM_Core_Invoke::rebuildMenuAndCaches(TRUE);
 }
 
@@ -1247,7 +1267,9 @@ function civicrm_modules_disabled($modules) {
  * Implements hook_modules_uninstalled().
  */
 function civicrm_modules_uninstalled($modules) {
-  civicrm_initialize();
+  if (!civicrm_initialize()) {
+    return;
+  }
   CRM_Core_Invoke::rebuildMenuAndCaches(TRUE);
 }
 

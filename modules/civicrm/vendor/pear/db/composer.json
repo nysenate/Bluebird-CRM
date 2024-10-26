@@ -1,0 +1,48 @@
+{
+    "authors": [
+        {
+            "email": "danielc@php.net",
+            "name": "Daniel Convissor",
+            "role": "Lead"
+        },
+        {
+            "email": "aharvey@php.net",
+            "name": "Adam Harvey",
+            "role": "Lead"
+        },
+        {
+            "email": "schengawegga@gmail.com",
+            "name": "Armin Graefe",
+            "role": "Lead"
+        },
+        {
+            "email": "stig@php.net",
+            "name": "Stig Bakken",
+            "role": "Developer"
+        },
+        {
+            "email": "cox@idecnet.com",
+            "name": "Tomas V.V.Cox",
+            "role": "Developer"
+        }
+    ],
+    "autoload": {
+        "psr-0": {
+            "DB": "./"
+        }
+    },
+    "description": "More info available on: http://pear.php.net/package/DB",
+    "include-path": [
+        "./"
+    ],
+    "license": "PHP-3.01",
+    "name": "pear/db",
+    "support": {
+        "issues": "http://pear.php.net/bugs/search.php?cmd=display&package_name[]=DB",
+        "source": "https://github.com/pear/DB"
+    },
+    "type": "library",
+    "require": {
+        "pear/pear-core-minimal": "*"
+    }
+}

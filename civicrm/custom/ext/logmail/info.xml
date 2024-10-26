@@ -1,0 +1,24 @@
+<?xml version="1.0"?>
+<extension key="logmail" type="module">
+  <file>logmail</file>
+  <name>Log Email to File</name>
+  <description/>
+  <license>AGPL-3.0</license>
+  <maintainer>
+    <author>Lighthouse Consulting and Design</author>
+    <email>dev@lcdservices.biz</email>
+  </maintainer>
+  <urls>
+    <url desc="Licensing">http://www.gnu.org/licenses/agpl-3.0.html</url>
+  </urls>
+  <releaseDate>2018-01-24</releaseDate>
+  <version>1.0</version>
+  <develStage>stable</develStage>
+  <compatibility>
+    <ver>5.0</ver>
+  </compatibility>
+  <comments/>
+  <civix>
+    <namespace>CRM/Logmail</namespace>
+  </civix>
+</extension>

@@ -9,26 +9,30 @@
 *}
 {* tpl for building Organization related fields *}
 <table class="form-layout-compressed">
-  <tr>
-    <td>{
-      $form.organization_name.label}<br/>
-      {$form.organization_name.html}
-    </td>
-    <td>
-      {$form.legal_name.label}<br/>
-      {$form.legal_name.html}
-    </td>
-    <td>
-      {$form.nick_name.label}<br/>
-      {$form.nick_name.html}
-    </td>
-    <td>
-      {$form.sic_code.label}<br/>
-      {$form.sic_code.html}
-    </td>
-    <td>
-      {$form.contact_sub_type.label}<br />
-      {$form.contact_sub_type.html}
-    </td>
-  </tr>
+  {crmRegion name="contact-form-edit-organization"}
+    <tr>
+      <td>
+        {$form.organization_name.label|smarty:nodefaults|purify}<br/>
+        {$form.organization_name.html}
+      </td>
+      <td>
+        {$form.legal_name.label|smarty:nodefaults|purify}<br/>
+        {$form.legal_name.html}
+      </td>
+      <td>
+        {$form.nick_name.label|smarty:nodefaults|purify}<br/>
+        {$form.nick_name.html}
+      </td>
+      <td>
+        {$form.sic_code.label|smarty:nodefaults|purify}<br/>
+        {$form.sic_code.html}
+      </td>
+      {if array_key_exists('contact_sub_type', $form)}
+        <td>
+          {$form.contact_sub_type.label|smarty:nodefaults|purify}<br />
+          {$form.contact_sub_type.html}
+        </td>
+      {/if}
+    </tr>
+  {/crmRegion}
 </table>

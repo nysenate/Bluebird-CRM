@@ -13,8 +13,6 @@
  *
  * @package CRM
  * @copyright CiviCRM LLC https://civicrm.org/licensing
- * $Id$
- *
  */
 class CRM_Event_Page_Tab extends CRM_Core_Page {
 
@@ -41,13 +39,6 @@ class CRM_Event_Page_Tab extends CRM_Core_Page {
       $displayName = CRM_Contact_BAO_Contact::displayName($this->_contactId);
       $this->assign('displayName', $displayName);
       $this->ajaxResponse['tabCount'] = CRM_Contact_BAO_Contact::getCountComponent('participant', $this->_contactId);
-      // Refresh other tabs with related data
-      $this->ajaxResponse['updateTabs'] = [
-        '#tab_activity' => CRM_Contact_BAO_Contact::getCountComponent('activity', $this->_contactId),
-      ];
-      if (CRM_Core_Permission::access('CiviContribute')) {
-        $this->ajaxResponse['updateTabs']['#tab_contribute'] = CRM_Contact_BAO_Contact::getCountComponent('contribution', $this->_contactId);
-      }
     }
   }
 
@@ -103,16 +94,8 @@ class CRM_Event_Page_Tab extends CRM_Core_Page {
   }
 
   public function delete() {
-    $controller = new CRM_Core_Controller_Simple(
-      'CRM_Event_Form_Participant',
-      ts('Delete Participant'),
-      $this->_action
-    );
-
-    $controller->setEmbedded(TRUE);
-    $controller->set('id', $this->_id);
-    $controller->set('cid', $this->_contactId);
-    $controller->run();
+    CRM_Core_Error::deprecatedFunctionWarning('use civicrm/participant/delete / CRM_Event_Form_Participant_Delete');
+    CRM_Utils_System::redirect('civicrm/participant/delete', ['id' => CRM_Utils_Request::retrieveValue('id', NULL, TRUE), 'reset' => 1]);
   }
 
   public function preProcess() {
@@ -120,11 +103,11 @@ class CRM_Event_Page_Tab extends CRM_Core_Page {
     $this->_action = CRM_Utils_Request::retrieve('action', 'String', $this, FALSE, 'browse');
     $this->_id = CRM_Utils_Request::retrieve('id', 'Positive', $this);
 
-    if ($context == 'standalone') {
+    if (($context == 'standalone' || $context === 'search') && ($this->_action !== CRM_Core_Action::VIEW && $this->_action !== CRM_Core_Action::UPDATE)) {
       $this->_action = CRM_Core_Action::ADD;
     }
     else {
-      $this->_contactId = CRM_Utils_Request::retrieve('cid', 'Positive', $this, TRUE);
+      $this->_contactId = CRM_Utils_Request::retrieve('cid', 'Positive', $this);
       $this->assign('contactId', $this->_contactId);
 
       // check logged in url permission
@@ -289,7 +272,7 @@ class CRM_Event_Page_Tab extends CRM_Core_Page {
       );
       $controller->setEmbedded(TRUE);
       $controller->set('force', 1);
-      $controller->set('cid', $this->_contactId);
+      $controller->set('skip_cid', TRUE);
       $controller->set('participantId', $this->_id);
       $controller->set('context', 'contribution');
       $controller->process();

@@ -1,5 +1,3 @@
-/* stylelint-disable max-nesting-depth, selector-max-compound-selectors, selector-no-qualifying-type, selector-max-id */
-
 @mixin expandable-table {
   @extend %civihr-table;
   background: transparent;
@@ -126,6 +124,10 @@
     .crm-expand-row {
       background: none;
       position: relative;
+
+      &::before {
+        opacity: 0;
+      }
 
       &::after {
         @include fa-icon($font-size-base, $fa-var-chevron-right);

@@ -1,0 +1,53 @@
+.civicase-workflow-list {
+  > .panel-body {
+    padding: 0;
+  }
+}
+
+.civicase-workflow-list__new-button {
+  margin-bottom: #{$basic-gutter * 4};
+
+  .material-icons {
+    position: relative;
+    top: 2px;
+  }
+}
+
+.civicase-workflow-list_duplicate-form {
+  .ng-invalid:not(.ng-untouched) {
+    border-color: $brand-danger;
+  }
+
+  textarea {
+    width: 100%;
+  }
+}
+
+.civicase-workflow-list__filters {
+  .form-group {
+    margin-bottom: 0;
+
+    [type='checkbox'] {
+      margin: 0;
+    }
+
+    > div {
+      display: inline-block;
+      margin-bottom: #{$basic-gutter * 4};
+    }
+
+    > div:nth-child(odd) {
+      margin-right: #{$basic-gutter * 2};
+      width: calc(50% - #{$basic-gutter * 2});
+    }
+
+    > div:nth-child(even) {
+      margin-left: #{$basic-gutter * 2};
+      width: calc(50% - #{$basic-gutter * 2});
+    }
+
+    .select2-container {
+      width: 240px !important;
+    }
+  }
+}

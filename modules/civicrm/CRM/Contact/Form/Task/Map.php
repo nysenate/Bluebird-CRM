@@ -58,7 +58,7 @@ class CRM_Contact_Form_Task_Map extends CRM_Contact_Form_Task {
         // CRM-11766
         $profileIDs = CRM_Profile_Page_Listings::getProfileContact($profileGID);
         if (!in_array($cid, $profileIDs)) {
-          CRM_Core_Error::fatal();
+          CRM_Core_Error::statusBounce(ts('Contact not found when building list of contacts in the profile'));
         }
       }
       elseif ($context) {
@@ -118,14 +118,14 @@ class CRM_Contact_Form_Task_Map extends CRM_Contact_Form_Task {
    * @param array $ids
    * @param int $locationId
    *   Location_id.
-   * @param CRM_Core_Page $page
+   * @param CRM_Core_Form $page
    * @param bool $addBreadCrumb
    * @param string $type
    */
   public static function createMapXML($ids, $locationId, &$page, $addBreadCrumb, $type = 'Contact') {
     $config = CRM_Core_Config::singleton();
 
-    CRM_Utils_System::setTitle(ts('Map Location(s)'));
+    $page->setTitle(ts('Map Location(s)'));
     $page->assign('query', 'CiviCRM Search Query');
     $page->assign('mapProvider', $config->mapProvider);
     $page->assign('mapKey', urlencode($config->mapAPIKey));
@@ -168,10 +168,14 @@ class CRM_Contact_Form_Task_Map extends CRM_Contact_Form_Task {
         }
         $session->pushUserContext(CRM_Utils_System::url('civicrm/event/info', "{$args}{$ids}"));
       }
-      CRM_Utils_System::appendBreadCrumb($bcTitle, $redirect);
+      // dev/core#2307
+      // CRM_Utils_System::appendBreadCrumb only takes one argument, an array
+      // of breadcrumbs, not two.
+      $breadcrumbs = [0 => ['title' => $bcTitle, 'url' => $redirect]];
+      CRM_Utils_System::appendBreadCrumb($breadcrumbs);
     }
 
-    $page->assign_by_ref('locations', $locations);
+    $page->assign('locations', $locations);
 
     // only issue a javascript warning if we know we will not
     // mess the poor user with too many warnings
@@ -205,15 +209,15 @@ class CRM_Contact_Form_Task_Map extends CRM_Contact_Form_Task {
     }
 
     $center = [
-      'lat' => (float ) $sumLat / count($locations),
-      'lng' => (float ) $sumLng / count($locations),
+      'lat' => (float) $sumLat / count($locations),
+      'lng' => (float) $sumLng / count($locations),
     ];
     $span = [
-      'lat' => (float ) ($maxLat - $minLat),
-      'lng' => (float ) ($maxLng - $minLng),
+      'lat' => (float) ($maxLat - $minLat),
+      'lng' => (float) ($maxLng - $minLng),
     ];
-    $page->assign_by_ref('center', $center);
-    $page->assign_by_ref('span', $span);
+    $page->assign('center', $center);
+    $page->assign('span', $span);
   }
 
 }

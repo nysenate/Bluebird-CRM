@@ -4,18 +4,87 @@
 
 namespace Composer\Autoload;
 
-class ComposerStaticInit36ec71c631e397a60b32ad2c921d6a0e
+class ComposerStaticInit6e26f80b08a38b91fb27e64a36f1b18d
 {
     public static $files = array (
+        'a4a119a56e50fbb293281d9a48007e0e' => __DIR__ . '/..' . '/symfony/polyfill-php80/bootstrap.php',
+        '7b11c4dc42b3b3023073cb14e519683c' => __DIR__ . '/..' . '/ralouphie/getallheaders/src/getallheaders.php',
         '320cde22f66dd4f5d3fd621d3e88b98f' => __DIR__ . '/..' . '/symfony/polyfill-ctype/bootstrap.php',
-        'decc78cc4436b1292c6c0d151b19445c' => __DIR__ . '/..' . '/phpseclib/phpseclib/phpseclib/bootstrap.php',
-        '3919eeb97e98d4648304477f8ef734ba' => __DIR__ . '/..' . '/phpseclib/phpseclib/phpseclib/Crypt/Random.php',
-        'a0edc8309cc5e1d60e3047b5df6b7052' => __DIR__ . '/..' . '/guzzlehttp/psr7/src/functions_include.php',
         'c964ee0ededf28c96ebd9db5099ef910' => __DIR__ . '/..' . '/guzzlehttp/promises/src/functions_include.php',
+        'a0edc8309cc5e1d60e3047b5df6b7052' => __DIR__ . '/..' . '/guzzlehttp/psr7/src/functions_include.php',
+        '6e3fae29631ef280660b3cdad06f25a8' => __DIR__ . '/..' . '/symfony/deprecation-contracts/function.php',
+        '0e6d7bf4a5811bfa5cf40c5ccd6fae6a' => __DIR__ . '/..' . '/symfony/polyfill-mbstring/bootstrap.php',
         '37a3dc5111fe8f707ab4c132ef1dbc62' => __DIR__ . '/..' . '/guzzlehttp/guzzle/src/functions_include.php',
+        '7e9bd612cc444b3eed788ebbe46263a0' => __DIR__ . '/..' . '/laminas/laminas-zendframework-bridge/src/autoload.php',
+        '2cffec82183ee1cea088009cef9a6fc3' => __DIR__ . '/..' . '/ezyang/htmlpurifier/library/HTMLPurifier.composer.php',
+        'abede361264e2ae69ec1eee813a101af' => __DIR__ . '/..' . '/markbaker/complex/classes/src/functions/abs.php',
+        '21a5860fbef5be28db5ddfbc3cca67c4' => __DIR__ . '/..' . '/markbaker/complex/classes/src/functions/acos.php',
+        '1546e3f9d127f2a9bb2d1b6c31c26ef1' => __DIR__ . '/..' . '/markbaker/complex/classes/src/functions/acosh.php',
+        'd2516f7f4fba5ea5905f494b4a8262e0' => __DIR__ . '/..' . '/markbaker/complex/classes/src/functions/acot.php',
+        '4511163d560956219b96882c0980b65e' => __DIR__ . '/..' . '/markbaker/complex/classes/src/functions/acoth.php',
+        'c361f5616dc2a8da4fa3e137077cd4ea' => __DIR__ . '/..' . '/markbaker/complex/classes/src/functions/acsc.php',
+        '02d68920fc98da71991ce569c91df0f6' => __DIR__ . '/..' . '/markbaker/complex/classes/src/functions/acsch.php',
+        '88e19525eae308b4a6aa3419364875d3' => __DIR__ . '/..' . '/markbaker/complex/classes/src/functions/argument.php',
+        '60e8e2d0827b58bfc904f13957e51849' => __DIR__ . '/..' . '/markbaker/complex/classes/src/functions/asec.php',
+        '13d2f040713999eab66c359b4d79871d' => __DIR__ . '/..' . '/markbaker/complex/classes/src/functions/asech.php',
+        '838ab38beb32c68a79d3cd2c007d5a04' => __DIR__ . '/..' . '/markbaker/complex/classes/src/functions/asin.php',
+        'bb28eccd0f8f008333a1b3c163d604ac' => __DIR__ . '/..' . '/markbaker/complex/classes/src/functions/asinh.php',
+        '9e483de83558c98f7d3feaa402c78cb3' => __DIR__ . '/..' . '/markbaker/complex/classes/src/functions/atan.php',
+        '36b74b5b765ded91ee58c8ee3c0e85e3' => __DIR__ . '/..' . '/markbaker/complex/classes/src/functions/atanh.php',
+        '05c15ee9510da7fd6bf6136f436500c0' => __DIR__ . '/..' . '/markbaker/complex/classes/src/functions/conjugate.php',
+        'd3208dfbce2505e370788f9f22f6785f' => __DIR__ . '/..' . '/markbaker/complex/classes/src/functions/cos.php',
+        '141cf1fb3a3046f8b64534b0ebab33ca' => __DIR__ . '/..' . '/markbaker/complex/classes/src/functions/cosh.php',
+        'be660df75fd0dbe7fa7c03b7434b3294' => __DIR__ . '/..' . '/markbaker/complex/classes/src/functions/cot.php',
+        '01e31ea298a51bc9e91517e3ce6b9e76' => __DIR__ . '/..' . '/markbaker/complex/classes/src/functions/coth.php',
+        '803ddd97f7b1da68982a7b087c3476f6' => __DIR__ . '/..' . '/markbaker/complex/classes/src/functions/csc.php',
+        '3001cdfd101ec3c32da34ee43c2e149b' => __DIR__ . '/..' . '/markbaker/complex/classes/src/functions/csch.php',
+        '77b2d7629ef2a93fabb8c56754a91051' => __DIR__ . '/..' . '/markbaker/complex/classes/src/functions/exp.php',
+        '4a4471296dec796c21d4f4b6552396a9' => __DIR__ . '/..' . '/markbaker/complex/classes/src/functions/inverse.php',
+        'c3e9897e1744b88deb56fcdc39d34d85' => __DIR__ . '/..' . '/markbaker/complex/classes/src/functions/ln.php',
+        'a83cacf2de942cff288de15a83afd26d' => __DIR__ . '/..' . '/markbaker/complex/classes/src/functions/log2.php',
+        '6a861dacc9ee2f3061241d4c7772fa21' => __DIR__ . '/..' . '/markbaker/complex/classes/src/functions/log10.php',
+        '4d2522d968c8ba78d6c13548a1b4200e' => __DIR__ . '/..' . '/markbaker/complex/classes/src/functions/negative.php',
+        'fd587ca933fc0447fa5ab4843bdd97f7' => __DIR__ . '/..' . '/markbaker/complex/classes/src/functions/pow.php',
+        '383ef01c62028fc78cd4388082fce3c2' => __DIR__ . '/..' . '/markbaker/complex/classes/src/functions/rho.php',
+        '150fbd1b95029dc47292da97ecab9375' => __DIR__ . '/..' . '/markbaker/complex/classes/src/functions/sec.php',
+        '549abd9bae174286d660bdaa07407c68' => __DIR__ . '/..' . '/markbaker/complex/classes/src/functions/sech.php',
+        '6bfbf5eaea6b17a0ed85cb21ba80370c' => __DIR__ . '/..' . '/markbaker/complex/classes/src/functions/sin.php',
+        '22efe13f1a497b8e199540ae2d9dc59c' => __DIR__ . '/..' . '/markbaker/complex/classes/src/functions/sinh.php',
+        'e90135ab8e787795a509ed7147de207d' => __DIR__ . '/..' . '/markbaker/complex/classes/src/functions/sqrt.php',
+        'bb0a7923ffc6a90919cd64ec54ff06bc' => __DIR__ . '/..' . '/markbaker/complex/classes/src/functions/tan.php',
+        '2d302f32ce0fd4e433dd91c5bb404a28' => __DIR__ . '/..' . '/markbaker/complex/classes/src/functions/tanh.php',
+        '24dd4658a952171a4ee79218c4f9fd06' => __DIR__ . '/..' . '/markbaker/complex/classes/src/functions/theta.php',
+        'e49b7876281d6f5bc39536dde96d1f4a' => __DIR__ . '/..' . '/markbaker/complex/classes/src/operations/add.php',
+        '47596e02b43cd6da7700134fd08f88cf' => __DIR__ . '/..' . '/markbaker/complex/classes/src/operations/subtract.php',
+        '883af48563631547925fa4c3b48ead07' => __DIR__ . '/..' . '/markbaker/complex/classes/src/operations/multiply.php',
+        'f190e3308e6ca23234a2875edc985c03' => __DIR__ . '/..' . '/markbaker/complex/classes/src/operations/divideby.php',
+        'ac9e33ce6841aa5bf5d16d465a2f03a7' => __DIR__ . '/..' . '/markbaker/complex/classes/src/operations/divideinto.php',
+        '3af723442581d6c310bf44543f9f5c60' => __DIR__ . '/..' . '/markbaker/matrix/classes/src/Functions/adjoint.php',
+        'd803221834c8b57fec95debb5406a797' => __DIR__ . '/..' . '/markbaker/matrix/classes/src/Functions/antidiagonal.php',
+        '4714cafbd3be4c72c274a25eae9396bb' => __DIR__ . '/..' . '/markbaker/matrix/classes/src/Functions/cofactors.php',
+        '89719dc7c77436609d1c1c31f0797b8f' => __DIR__ . '/..' . '/markbaker/matrix/classes/src/Functions/determinant.php',
+        'c28af79ec7730859d83f2d4310b8dd0b' => __DIR__ . '/..' . '/markbaker/matrix/classes/src/Functions/diagonal.php',
+        'c5d82bf1ac485e445f911e55789ab4e6' => __DIR__ . '/..' . '/markbaker/matrix/classes/src/Functions/identity.php',
+        '0d2d594de24a247f7a33499e933aa21e' => __DIR__ . '/..' . '/markbaker/matrix/classes/src/Functions/inverse.php',
+        'f37c25880804a014ef40c8bffbab1b10' => __DIR__ . '/..' . '/markbaker/matrix/classes/src/Functions/minors.php',
+        'd6e4e42171df0dbea253b3067fefda38' => __DIR__ . '/..' . '/markbaker/matrix/classes/src/Functions/trace.php',
+        '2c9b19fa954fd3e6fcc7e7a1383caddd' => __DIR__ . '/..' . '/markbaker/matrix/classes/src/Functions/transpose.php',
+        '0a538fc9b897450ec362480ebbebe94f' => __DIR__ . '/..' . '/markbaker/matrix/classes/src/Operations/add.php',
+        'f0843f7f4089ec2343c7445544356385' => __DIR__ . '/..' . '/markbaker/matrix/classes/src/Operations/directsum.php',
+        'ad3e8c29aa16d134661a414265677b61' => __DIR__ . '/..' . '/markbaker/matrix/classes/src/Operations/subtract.php',
+        '8d37dad4703fab45bfec9dd0bbf3278e' => __DIR__ . '/..' . '/markbaker/matrix/classes/src/Operations/multiply.php',
+        '4888a6f58c08148ebe17682f9ce9b2a8' => __DIR__ . '/..' . '/markbaker/matrix/classes/src/Operations/divideby.php',
+        'eef6fa3879d3efa347cd24d5eb348f85' => __DIR__ . '/..' . '/markbaker/matrix/classes/src/Operations/divideinto.php',
+        'decc78cc4436b1292c6c0d151b19445c' => __DIR__ . '/..' . '/phpseclib/phpseclib/phpseclib/bootstrap.php',
+        '25072dd6e2470089de65ae7bf11d3109' => __DIR__ . '/..' . '/symfony/polyfill-php72/bootstrap.php',
+        '23c18046f52bef3eea034657bafda50f' => __DIR__ . '/..' . '/symfony/polyfill-php81/bootstrap.php',
         '9e4824c5afbdc1482b6025ce3d4dfde8' => __DIR__ . '/..' . '/league/csv/src/functions_include.php',
         'def43f6c87e4f8dfd0c9e1b1bab14fe8' => __DIR__ . '/..' . '/symfony/polyfill-iconv/bootstrap.php',
+        '5897ea0ac4cccf14d323035e65887801' => __DIR__ . '/..' . '/symfony/polyfill-php82/bootstrap.php',
+        '667aeda72477189d0494fecd327c3641' => __DIR__ . '/..' . '/symfony/var-dumper/Resources/functions/dump.php',
         'bad842bce63596a608e2623519fb382c' => __DIR__ . '/..' . '/xkerman/restricted-unserialize/src/function.php',
+        '23c7c9fb739a56c448f3bc838e8b186d' => __DIR__ . '/../..' . '/functions.php',
+        '59969633dcdb4ee3e2fec945065028d6' => __DIR__ . '/../..' . '/guzzle_php81_shim.php',
     );
 
     public static $prefixLengthsPsr4 = array (
@@ -23,13 +92,21 @@ class ComposerStaticInit36ec71c631e397a60b32ad2c921d6a0e
         array (
             'xKerman\\Restricted\\' => 19,
         ),
+        't' => 
+        array (
+            'tubalmartin\\CssMin\\' => 19,
+        ),
+        'p' => 
+        array (
+            'phpseclib\\' => 10,
+        ),
         'c' => 
         array (
             'cweagans\\Composer\\' => 18,
         ),
         'Z' => 
         array (
-            'Zend\\Escaper\\' => 13,
+            'ZipStream\\' => 10,
         ),
         'W' => 
         array (
@@ -41,8 +118,16 @@ class ComposerStaticInit36ec71c631e397a60b32ad2c921d6a0e
         ),
         'S' => 
         array (
+            'Symfony\\Polyfill\\Php82\\' => 23,
+            'Symfony\\Polyfill\\Php81\\' => 23,
+            'Symfony\\Polyfill\\Php80\\' => 23,
+            'Symfony\\Polyfill\\Php72\\' => 23,
+            'Symfony\\Polyfill\\Mbstring\\' => 26,
             'Symfony\\Polyfill\\Iconv\\' => 23,
             'Symfony\\Polyfill\\Ctype\\' => 23,
+            'Symfony\\Contracts\\Service\\' => 26,
+            'Symfony\\Contracts\\EventDispatcher\\' => 34,
+            'Symfony\\Component\\VarDumper\\' => 28,
             'Symfony\\Component\\Process\\' => 26,
             'Symfony\\Component\\Finder\\' => 25,
             'Symfony\\Component\\Filesystem\\' => 29,
@@ -50,26 +135,42 @@ class ComposerStaticInit36ec71c631e397a60b32ad2c921d6a0e
             'Symfony\\Component\\DependencyInjection\\' => 38,
             'Symfony\\Component\\Config\\' => 25,
             'Svg\\' => 4,
+            'Soundasleep\\' => 12,
+            'ScssPhp\\ScssPhp\\' => 16,
+            'Sabberworm\\CSS\\' => 15,
         ),
         'P' => 
         array (
             'Psr\\SimpleCache\\' => 16,
             'Psr\\Log\\' => 8,
             'Psr\\Http\\Message\\' => 17,
-            'Psr\\Cache\\' => 10,
+            'Psr\\Http\\Client\\' => 16,
+            'Psr\\Container\\' => 14,
+            'Pontedilana\\PhpWeasyPrint\\' => 26,
             'PhpOffice\\PhpWord\\' => 18,
-            'PhpOffice\\Common\\' => 17,
+            'PhpOffice\\PhpSpreadsheet\\' => 25,
+            'Padaliyajay\\PHPAutoprefixer\\' => 28,
         ),
         'M' => 
         array (
+            'MyCLabs\\Enum\\' => 13,
             'MimeTyper\\' => 10,
+            'Matrix\\' => 7,
+            'Masterminds\\' => 12,
             'MJS\\TopSort\\Tests\\' => 18,
             'MJS\\TopSort\\' => 12,
         ),
         'L' => 
         array (
+            'League\\OAuth2\\Client\\' => 21,
             'League\\Csv\\' => 11,
             'LastCall\\DownloadsPlugin\\' => 25,
+            'Laminas\\ZendFrameworkBridge\\' => 28,
+            'Laminas\\Escaper\\' => 16,
+        ),
+        'K' => 
+        array (
+            'Knp\\Snappy\\' => 11,
         ),
         'G' => 
         array (
@@ -80,6 +181,7 @@ class ComposerStaticInit36ec71c631e397a60b32ad2c921d6a0e
         'F' => 
         array (
             'FontLib\\' => 8,
+            'Firebase\\JWT\\' => 13,
         ),
         'D' => 
         array (
@@ -87,10 +189,16 @@ class ComposerStaticInit36ec71c631e397a60b32ad2c921d6a0e
         ),
         'C' => 
         array (
+            'Complex\\' => 8,
             'Civi\\Cxn\\Rpc\\' => 13,
+            'Civi\\CompilePlugin\\' => 19,
             'Civi\\' => 5,
-            'Cache\\TagInterop\\' => 17,
-            'Cache\\IntegrationTests\\' => 23,
+            'CCL\\' => 4,
+        ),
+        'B' => 
+        array (
+            'Brick\\Money\\' => 12,
+            'Brick\\Math\\' => 11,
         ),
     );
 
@@ -99,13 +207,21 @@ class ComposerStaticInit36ec71c631e397a60b32ad2c921d6a0e
         array (
             0 => __DIR__ . '/..' . '/xkerman/restricted-unserialize/src',
         ),
+        'tubalmartin\\CssMin\\' => 
+        array (
+            0 => __DIR__ . '/..' . '/tubalmartin/cssmin/src',
+        ),
+        'phpseclib\\' => 
+        array (
+            0 => __DIR__ . '/..' . '/phpseclib/phpseclib/phpseclib',
+        ),
         'cweagans\\Composer\\' => 
         array (
             0 => __DIR__ . '/..' . '/cweagans/composer-patches/src',
         ),
-        'Zend\\Escaper\\' => 
+        'ZipStream\\' => 
         array (
-            0 => __DIR__ . '/..' . '/zendframework/zend-escaper/src',
+            0 => __DIR__ . '/..' . '/maennchen/zipstream-php/src',
         ),
         'When\\' => 
         array (
@@ -115,6 +231,26 @@ class ComposerStaticInit36ec71c631e397a60b32ad2c921d6a0e
         array (
             0 => __DIR__ . '/..' . '/typo3/phar-stream-wrapper/src',
         ),
+        'Symfony\\Polyfill\\Php82\\' => 
+        array (
+            0 => __DIR__ . '/..' . '/symfony/polyfill-php82',
+        ),
+        'Symfony\\Polyfill\\Php81\\' => 
+        array (
+            0 => __DIR__ . '/..' . '/symfony/polyfill-php81',
+        ),
+        'Symfony\\Polyfill\\Php80\\' => 
+        array (
+            0 => __DIR__ . '/..' . '/symfony/polyfill-php80',
+        ),
+        'Symfony\\Polyfill\\Php72\\' => 
+        array (
+            0 => __DIR__ . '/..' . '/symfony/polyfill-php72',
+        ),
+        'Symfony\\Polyfill\\Mbstring\\' => 
+        array (
+            0 => __DIR__ . '/..' . '/symfony/polyfill-mbstring',
+        ),
         'Symfony\\Polyfill\\Iconv\\' => 
         array (
             0 => __DIR__ . '/..' . '/symfony/polyfill-iconv',
@@ -122,6 +258,18 @@ class ComposerStaticInit36ec71c631e397a60b32ad2c921d6a0e
         'Symfony\\Polyfill\\Ctype\\' => 
         array (
             0 => __DIR__ . '/..' . '/symfony/polyfill-ctype',
+        ),
+        'Symfony\\Contracts\\Service\\' => 
+        array (
+            0 => __DIR__ . '/..' . '/symfony/service-contracts',
+        ),
+        'Symfony\\Contracts\\EventDispatcher\\' => 
+        array (
+            0 => __DIR__ . '/..' . '/symfony/event-dispatcher-contracts',
+        ),
+        'Symfony\\Component\\VarDumper\\' => 
+        array (
+            0 => __DIR__ . '/..' . '/symfony/var-dumper',
         ),
         'Symfony\\Component\\Process\\' => 
         array (
@@ -151,6 +299,18 @@ class ComposerStaticInit36ec71c631e397a60b32ad2c921d6a0e
         array (
             0 => __DIR__ . '/..' . '/phenx/php-svg-lib/src/Svg',
         ),
+        'Soundasleep\\' => 
+        array (
+            0 => __DIR__ . '/..' . '/soundasleep/html2text/src',
+        ),
+        'ScssPhp\\ScssPhp\\' => 
+        array (
+            0 => __DIR__ . '/..' . '/scssphp/scssphp/src',
+        ),
+        'Sabberworm\\CSS\\' => 
+        array (
+            0 => __DIR__ . '/..' . '/sabberworm/php-css-parser/src',
+        ),
         'Psr\\SimpleCache\\' => 
         array (
             0 => __DIR__ . '/..' . '/psr/simple-cache/src',
@@ -162,22 +322,47 @@ class ComposerStaticInit36ec71c631e397a60b32ad2c921d6a0e
         'Psr\\Http\\Message\\' => 
         array (
             0 => __DIR__ . '/..' . '/psr/http-message/src',
+            1 => __DIR__ . '/..' . '/psr/http-factory/src',
         ),
-        'Psr\\Cache\\' => 
+        'Psr\\Http\\Client\\' => 
         array (
-            0 => __DIR__ . '/..' . '/psr/cache/src',
+            0 => __DIR__ . '/..' . '/psr/http-client/src',
+        ),
+        'Psr\\Container\\' => 
+        array (
+            0 => __DIR__ . '/..' . '/psr/container/src',
+        ),
+        'Pontedilana\\PhpWeasyPrint\\' => 
+        array (
+            0 => __DIR__ . '/..' . '/pontedilana/php-weasyprint/src',
         ),
         'PhpOffice\\PhpWord\\' => 
         array (
             0 => __DIR__ . '/..' . '/phpoffice/phpword/src/PhpWord',
         ),
-        'PhpOffice\\Common\\' => 
+        'PhpOffice\\PhpSpreadsheet\\' => 
         array (
-            0 => __DIR__ . '/..' . '/phpoffice/common/src/Common',
+            0 => __DIR__ . '/..' . '/phpoffice/phpspreadsheet/src/PhpSpreadsheet',
+        ),
+        'Padaliyajay\\PHPAutoprefixer\\' => 
+        array (
+            0 => __DIR__ . '/..' . '/padaliyajay/php-autoprefixer/src',
+        ),
+        'MyCLabs\\Enum\\' => 
+        array (
+            0 => __DIR__ . '/..' . '/myclabs/php-enum/src',
         ),
         'MimeTyper\\' => 
         array (
             0 => __DIR__ . '/..' . '/adrienrn/php-mimetyper/src',
+        ),
+        'Matrix\\' => 
+        array (
+            0 => __DIR__ . '/..' . '/markbaker/matrix/classes/src',
+        ),
+        'Masterminds\\' => 
+        array (
+            0 => __DIR__ . '/..' . '/masterminds/html5/src',
         ),
         'MJS\\TopSort\\Tests\\' => 
         array (
@@ -187,6 +372,11 @@ class ComposerStaticInit36ec71c631e397a60b32ad2c921d6a0e
         array (
             0 => __DIR__ . '/..' . '/marcj/topsort/src',
         ),
+        'League\\OAuth2\\Client\\' => 
+        array (
+            0 => __DIR__ . '/..' . '/league/oauth2-client/src',
+            1 => __DIR__ . '/..' . '/league/oauth2-google/src',
+        ),
         'League\\Csv\\' => 
         array (
             0 => __DIR__ . '/..' . '/league/csv/src',
@@ -194,6 +384,18 @@ class ComposerStaticInit36ec71c631e397a60b32ad2c921d6a0e
         'LastCall\\DownloadsPlugin\\' => 
         array (
             0 => __DIR__ . '/..' . '/civicrm/composer-downloads-plugin/src',
+        ),
+        'Laminas\\ZendFrameworkBridge\\' => 
+        array (
+            0 => __DIR__ . '/..' . '/laminas/laminas-zendframework-bridge/src',
+        ),
+        'Laminas\\Escaper\\' => 
+        array (
+            0 => __DIR__ . '/..' . '/laminas/laminas-escaper/src',
+        ),
+        'Knp\\Snappy\\' => 
+        array (
+            0 => __DIR__ . '/..' . '/knplabs/knp-snappy/src/Knp/Snappy',
         ),
         'GuzzleHttp\\Psr7\\' => 
         array (
@@ -211,25 +413,43 @@ class ComposerStaticInit36ec71c631e397a60b32ad2c921d6a0e
         array (
             0 => __DIR__ . '/..' . '/phenx/php-font-lib/src/FontLib',
         ),
+        'Firebase\\JWT\\' => 
+        array (
+            0 => __DIR__ . '/..' . '/firebase/php-jwt/src',
+        ),
         'Dompdf\\' => 
         array (
             0 => __DIR__ . '/..' . '/dompdf/dompdf/src',
+        ),
+        'Complex\\' => 
+        array (
+            0 => __DIR__ . '/..' . '/markbaker/complex/classes/src',
         ),
         'Civi\\Cxn\\Rpc\\' => 
         array (
             0 => __DIR__ . '/..' . '/civicrm/civicrm-cxn-rpc/src',
         ),
+        'Civi\\CompilePlugin\\' => 
+        array (
+            0 => __DIR__ . '/..' . '/civicrm/composer-compile-plugin/src',
+        ),
         'Civi\\' => 
         array (
-            0 => __DIR__ . '/../..' . '/setup/src',
+            0 => __DIR__ . '/../..' . '/',
+            1 => __DIR__ . '/../..' . '/Civi',
+            2 => __DIR__ . '/../..' . '/setup/src',
         ),
-        'Cache\\TagInterop\\' => 
+        'CCL\\' => 
         array (
-            0 => __DIR__ . '/..' . '/cache/tag-interop',
+            0 => __DIR__ . '/..' . '/civicrm/composer-compile-lib/src',
         ),
-        'Cache\\IntegrationTests\\' => 
+        'Brick\\Money\\' => 
         array (
-            0 => __DIR__ . '/..' . '/cache/integration-tests/src',
+            0 => __DIR__ . '/..' . '/brick/money/src',
+        ),
+        'Brick\\Math\\' => 
+        array (
+            0 => __DIR__ . '/..' . '/brick/math/src',
         ),
     );
 
@@ -245,18 +465,7 @@ class ComposerStaticInit36ec71c631e397a60b32ad2c921d6a0e
         array (
             'TOGoS_GitIgnore_' => 
             array (
-                0 => __DIR__ . '/..' . '/togos/gitignore/src/main/php',
-            ),
-        ),
-        'S' => 
-        array (
-            'System' => 
-            array (
-                0 => __DIR__ . '/..' . '/phpseclib/phpseclib/phpseclib',
-            ),
-            'Sabberworm\\CSS' => 
-            array (
-                0 => __DIR__ . '/..' . '/sabberworm/php-css-parser/lib',
+                0 => __DIR__ . '/..' . '/civicrm/gitignore/src/main/php',
             ),
         ),
         'P' => 
@@ -265,43 +474,39 @@ class ComposerStaticInit36ec71c631e397a60b32ad2c921d6a0e
             array (
                 0 => __DIR__ . '/../..' . '/packages',
             ),
-            'PEAR' => 
-            array (
-                0 => __DIR__ . '/..' . '/pear/pear_exception',
-            ),
         ),
         'N' => 
         array (
             'Net' => 
             array (
-                0 => __DIR__ . '/..' . '/phpseclib/phpseclib/phpseclib',
-                1 => __DIR__ . '/..' . '/pear/net_socket',
-                2 => __DIR__ . '/..' . '/pear/net_smtp',
+                0 => __DIR__ . '/..' . '/pear/net_socket',
+                1 => __DIR__ . '/..' . '/pear/net_smtp',
             ),
         ),
         'M' => 
         array (
-            'Math' => 
-            array (
-                0 => __DIR__ . '/..' . '/phpseclib/phpseclib/phpseclib',
-            ),
             'Mail' => 
             array (
                 0 => __DIR__ . '/..' . '/pear/mail',
+                1 => __DIR__ . '/..' . '/pear/mail_mime',
             ),
         ),
         'L' => 
         array (
+            'Lurker' => 
+            array (
+                0 => __DIR__ . '/..' . '/totten/lurkerlite/src',
+            ),
             'Log' => 
             array (
                 0 => __DIR__ . '/..' . '/pear/log',
             ),
         ),
-        'F' => 
+        'H' => 
         array (
-            'File' => 
+            'HTMLPurifier' => 
             array (
-                0 => __DIR__ . '/..' . '/phpseclib/phpseclib/phpseclib',
+                0 => __DIR__ . '/..' . '/ezyang/htmlpurifier/library',
             ),
         ),
         'D' => 
@@ -310,25 +515,28 @@ class ComposerStaticInit36ec71c631e397a60b32ad2c921d6a0e
             array (
                 0 => __DIR__ . '/..' . '/dflydev/apache-mime-types/src',
             ),
+            'DB' => 
+            array (
+                0 => __DIR__ . '/..' . '/pear/db',
+            ),
         ),
         'C' => 
         array (
-            'Crypt' => 
-            array (
-                0 => __DIR__ . '/..' . '/phpseclib/phpseclib/phpseclib',
-            ),
             'Console' => 
             array (
                 0 => __DIR__ . '/..' . '/pear/console_getopt',
             ),
             'Civi\\' => 
             array (
-                0 => __DIR__ . '/../..' . '/',
-                1 => __DIR__ . '/../..' . '/tests/phpunit',
+                0 => __DIR__ . '/../..' . '/tests/phpunit',
             ),
             'Civi' => 
             array (
                 0 => __DIR__ . '/../..' . '/',
+            ),
+            'CCL' => 
+            array (
+                0 => __DIR__ . '/..' . '/civicrm/composer-compile-lib',
             ),
             'CA_Config' => 
             array (
@@ -349,25 +557,34 @@ class ComposerStaticInit36ec71c631e397a60b32ad2c921d6a0e
     );
 
     public static $classMap = array (
-        'Callback' => __DIR__ . '/..' . '/electrolinux/phpquery/phpQuery/phpQuery/Callback.php',
-        'CallbackBody' => __DIR__ . '/..' . '/electrolinux/phpquery/phpQuery/phpQuery/Callback.php',
-        'CallbackParam' => __DIR__ . '/..' . '/electrolinux/phpquery/phpQuery/phpQuery/Callback.php',
-        'CallbackParameterToReference' => __DIR__ . '/..' . '/electrolinux/phpquery/phpQuery/phpQuery/Callback.php',
-        'CallbackReturnReference' => __DIR__ . '/..' . '/electrolinux/phpquery/phpQuery/phpQuery/Callback.php',
-        'CallbackReturnValue' => __DIR__ . '/..' . '/electrolinux/phpquery/phpQuery/phpQuery/Callback.php',
-        'Cpdf' => __DIR__ . '/..' . '/dompdf/dompdf/lib/Cpdf.php',
-        'DOMDocumentWrapper' => __DIR__ . '/..' . '/electrolinux/phpquery/phpQuery/phpQuery/DOMDocumentWrapper.php',
-        'DOMEvent' => __DIR__ . '/..' . '/electrolinux/phpquery/phpQuery/phpQuery/DOMEvent.php',
+        'AllowDynamicProperties' => __DIR__ . '/..' . '/symfony/polyfill-php82/Resources/stubs/AllowDynamicProperties.php',
+        'Attribute' => __DIR__ . '/..' . '/symfony/polyfill-php80/Resources/stubs/Attribute.php',
+        'Callback' => __DIR__ . '/..' . '/rubobaquero/phpquery/phpQuery/phpQuery/Callback.php',
+        'CallbackBody' => __DIR__ . '/..' . '/rubobaquero/phpquery/phpQuery/phpQuery/Callback.php',
+        'CallbackParam' => __DIR__ . '/..' . '/rubobaquero/phpquery/phpQuery/phpQuery/Callback.php',
+        'CallbackParameterToReference' => __DIR__ . '/..' . '/rubobaquero/phpquery/phpQuery/phpQuery/Callback.php',
+        'CallbackReturnReference' => __DIR__ . '/..' . '/rubobaquero/phpquery/phpQuery/phpQuery/Callback.php',
+        'CallbackReturnValue' => __DIR__ . '/..' . '/rubobaquero/phpquery/phpQuery/phpQuery/Callback.php',
+        'Composer\\InstalledVersions' => __DIR__ . '/..' . '/composer/InstalledVersions.php',
+        'DOMDocumentWrapper' => __DIR__ . '/..' . '/rubobaquero/phpquery/phpQuery/phpQuery/DOMDocumentWrapper.php',
+        'DOMEvent' => __DIR__ . '/..' . '/rubobaquero/phpquery/phpQuery/phpQuery/DOMEvent.php',
         'Datamatrix' => __DIR__ . '/..' . '/tecnickcom/tcpdf/include/barcodes/datamatrix.php',
-        'HTML5_Data' => __DIR__ . '/..' . '/dompdf/dompdf/lib/html5lib/Data.php',
-        'HTML5_InputStream' => __DIR__ . '/..' . '/dompdf/dompdf/lib/html5lib/InputStream.php',
-        'HTML5_Parser' => __DIR__ . '/..' . '/dompdf/dompdf/lib/html5lib/Parser.php',
-        'HTML5_Tokenizer' => __DIR__ . '/..' . '/dompdf/dompdf/lib/html5lib/Tokenizer.php',
-        'HTML5_TreeBuilder' => __DIR__ . '/..' . '/dompdf/dompdf/lib/html5lib/TreeBuilder.php',
-        'ICallbackNamed' => __DIR__ . '/..' . '/electrolinux/phpquery/phpQuery/phpQuery/Callback.php',
+        'Dompdf\\Cpdf' => __DIR__ . '/..' . '/dompdf/dompdf/lib/Cpdf.php',
+        'ICallbackNamed' => __DIR__ . '/..' . '/rubobaquero/phpquery/phpQuery/phpQuery/Callback.php',
         'PDF417' => __DIR__ . '/..' . '/tecnickcom/tcpdf/include/barcodes/pdf417.php',
-        'PclZip' => __DIR__ . '/..' . '/pclzip/pclzip/pclzip.lib.php',
+        'PEAR_Exception' => __DIR__ . '/..' . '/pear/pear_exception/PEAR/Exception.php',
+        'PhpToken' => __DIR__ . '/..' . '/symfony/polyfill-php80/Resources/stubs/PhpToken.php',
         'QRcode' => __DIR__ . '/..' . '/tecnickcom/tcpdf/include/barcodes/qrcode.php',
+        'Random\\BrokenRandomEngineError' => __DIR__ . '/..' . '/symfony/polyfill-php82/Resources/stubs/Random/BrokenRandomEngineError.php',
+        'Random\\CryptoSafeEngine' => __DIR__ . '/..' . '/symfony/polyfill-php82/Resources/stubs/Random/CryptoSafeEngine.php',
+        'Random\\Engine' => __DIR__ . '/..' . '/symfony/polyfill-php82/Resources/stubs/Random/Engine.php',
+        'Random\\Engine\\Secure' => __DIR__ . '/..' . '/symfony/polyfill-php82/Resources/stubs/Random/Engine/Secure.php',
+        'Random\\RandomError' => __DIR__ . '/..' . '/symfony/polyfill-php82/Resources/stubs/Random/RandomError.php',
+        'Random\\RandomException' => __DIR__ . '/..' . '/symfony/polyfill-php82/Resources/stubs/Random/RandomException.php',
+        'ReturnTypeWillChange' => __DIR__ . '/..' . '/symfony/polyfill-php81/Resources/stubs/ReturnTypeWillChange.php',
+        'SensitiveParameter' => __DIR__ . '/..' . '/symfony/polyfill-php82/Resources/stubs/SensitiveParameter.php',
+        'SensitiveParameterValue' => __DIR__ . '/..' . '/symfony/polyfill-php82/Resources/stubs/SensitiveParameterValue.php',
+        'Stringable' => __DIR__ . '/..' . '/symfony/polyfill-php80/Resources/stubs/Stringable.php',
         'TCPDF' => __DIR__ . '/..' . '/tecnickcom/tcpdf/tcpdf.php',
         'TCPDF2DBarcode' => __DIR__ . '/..' . '/tecnickcom/tcpdf/tcpdf_barcodes_2d.php',
         'TCPDFBarcode' => __DIR__ . '/..' . '/tecnickcom/tcpdf/tcpdf_barcodes_1d.php',
@@ -379,6 +596,8 @@ class ComposerStaticInit36ec71c631e397a60b32ad2c921d6a0e
         'TCPDF_IMPORT' => __DIR__ . '/..' . '/tecnickcom/tcpdf/tcpdf_import.php',
         'TCPDF_PARSER' => __DIR__ . '/..' . '/tecnickcom/tcpdf/tcpdf_parser.php',
         'TCPDF_STATIC' => __DIR__ . '/..' . '/tecnickcom/tcpdf/include/tcpdf_static.php',
+        'UnhandledMatchError' => __DIR__ . '/..' . '/symfony/polyfill-php80/Resources/stubs/UnhandledMatchError.php',
+        'ValueError' => __DIR__ . '/..' . '/symfony/polyfill-php80/Resources/stubs/ValueError.php',
         'ezcBase' => __DIR__ . '/..' . '/zetacomponents/base/src/base.php',
         'ezcBaseAutoloadException' => __DIR__ . '/..' . '/zetacomponents/base/src/exceptions/autoload.php',
         'ezcBaseAutoloadOptions' => __DIR__ . '/..' . '/zetacomponents/base/src/options/autoload.php',
@@ -480,26 +699,26 @@ class ComposerStaticInit36ec71c631e397a60b32ad2c921d6a0e
         'ezcMailTransportSmtpException' => __DIR__ . '/..' . '/zetacomponents/mail/src/exceptions/transport_smtp_exception.php',
         'ezcMailVariableSet' => __DIR__ . '/..' . '/zetacomponents/mail/src/transports/variable/var_set.php',
         'ezcMailVirtualFile' => __DIR__ . '/..' . '/zetacomponents/mail/src/parts/fileparts/virtual_file.php',
-        'phpQuery' => __DIR__ . '/..' . '/electrolinux/phpquery/phpQuery/phpQuery.php',
-        'phpQueryEvents' => __DIR__ . '/..' . '/electrolinux/phpquery/phpQuery/phpQuery/phpQueryEvents.php',
-        'phpQueryObject' => __DIR__ . '/..' . '/electrolinux/phpquery/phpQuery/phpQuery/phpQueryObject.php',
-        'phpQueryObjectPlugin_Scripts' => __DIR__ . '/..' . '/electrolinux/phpquery/phpQuery/phpQuery/plugins/Scripts.php',
-        'phpQueryObjectPlugin_WebBrowser' => __DIR__ . '/..' . '/electrolinux/phpquery/phpQuery/phpQuery/plugins/WebBrowser.php',
-        'phpQueryObjectPlugin_example' => __DIR__ . '/..' . '/electrolinux/phpquery/phpQuery/phpQuery/plugins/example.php',
-        'phpQueryPlugin_Scripts' => __DIR__ . '/..' . '/electrolinux/phpquery/phpQuery/phpQuery/plugins/Scripts.php',
-        'phpQueryPlugin_WebBrowser' => __DIR__ . '/..' . '/electrolinux/phpquery/phpQuery/phpQuery/plugins/WebBrowser.php',
-        'phpQueryPlugin_example' => __DIR__ . '/..' . '/electrolinux/phpquery/phpQuery/phpQuery/plugins/example.php',
-        'phpQueryPlugins' => __DIR__ . '/..' . '/electrolinux/phpquery/phpQuery/phpQuery.php',
+        'phpQuery' => __DIR__ . '/..' . '/rubobaquero/phpquery/phpQuery/phpQuery.php',
+        'phpQueryEvents' => __DIR__ . '/..' . '/rubobaquero/phpquery/phpQuery/phpQuery/phpQueryEvents.php',
+        'phpQueryObject' => __DIR__ . '/..' . '/rubobaquero/phpquery/phpQuery/phpQuery/phpQueryObject.php',
+        'phpQueryObjectPlugin_Scripts' => __DIR__ . '/..' . '/rubobaquero/phpquery/phpQuery/phpQuery/plugins/Scripts.php',
+        'phpQueryObjectPlugin_WebBrowser' => __DIR__ . '/..' . '/rubobaquero/phpquery/phpQuery/phpQuery/plugins/WebBrowser.php',
+        'phpQueryObjectPlugin_example' => __DIR__ . '/..' . '/rubobaquero/phpquery/phpQuery/phpQuery/plugins/example.php',
+        'phpQueryPlugin_Scripts' => __DIR__ . '/..' . '/rubobaquero/phpquery/phpQuery/phpQuery/plugins/Scripts.php',
+        'phpQueryPlugin_WebBrowser' => __DIR__ . '/..' . '/rubobaquero/phpquery/phpQuery/phpQuery/plugins/WebBrowser.php',
+        'phpQueryPlugin_example' => __DIR__ . '/..' . '/rubobaquero/phpquery/phpQuery/phpQuery/plugins/example.php',
+        'phpQueryPlugins' => __DIR__ . '/..' . '/rubobaquero/phpquery/phpQuery/phpQuery.php',
     );
 
     public static function getInitializer(ClassLoader $loader)
     {
         return \Closure::bind(function () use ($loader) {
-            $loader->prefixLengthsPsr4 = ComposerStaticInit36ec71c631e397a60b32ad2c921d6a0e::$prefixLengthsPsr4;
-            $loader->prefixDirsPsr4 = ComposerStaticInit36ec71c631e397a60b32ad2c921d6a0e::$prefixDirsPsr4;
-            $loader->prefixesPsr0 = ComposerStaticInit36ec71c631e397a60b32ad2c921d6a0e::$prefixesPsr0;
-            $loader->fallbackDirsPsr0 = ComposerStaticInit36ec71c631e397a60b32ad2c921d6a0e::$fallbackDirsPsr0;
-            $loader->classMap = ComposerStaticInit36ec71c631e397a60b32ad2c921d6a0e::$classMap;
+            $loader->prefixLengthsPsr4 = ComposerStaticInit6e26f80b08a38b91fb27e64a36f1b18d::$prefixLengthsPsr4;
+            $loader->prefixDirsPsr4 = ComposerStaticInit6e26f80b08a38b91fb27e64a36f1b18d::$prefixDirsPsr4;
+            $loader->prefixesPsr0 = ComposerStaticInit6e26f80b08a38b91fb27e64a36f1b18d::$prefixesPsr0;
+            $loader->fallbackDirsPsr0 = ComposerStaticInit6e26f80b08a38b91fb27e64a36f1b18d::$fallbackDirsPsr0;
+            $loader->classMap = ComposerStaticInit6e26f80b08a38b91fb27e64a36f1b18d::$classMap;
 
         }, null, ClassLoader::class);
     }

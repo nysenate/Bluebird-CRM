@@ -99,7 +99,7 @@ class CRM_Campaign_Form_Task_Reserve extends CRM_Campaign_Form_Task {
     }
 
     //set the title.
-    CRM_Utils_System::setTitle(ts('Reserve Respondents'));
+    $this->setTitle(ts('Reserve Respondents'));
   }
 
   public function validateSurvey() {
@@ -187,7 +187,7 @@ class CRM_Campaign_Form_Task_Reserve extends CRM_Campaign_Form_Task {
    *   Posted values of the form.
    *
    * @param $files
-   * @param $self
+   * @param self $self
    *
    * @return array
    *   list of errors to be posted back to the form
@@ -285,7 +285,7 @@ class CRM_Campaign_Form_Task_Reserve extends CRM_Campaign_Form_Task {
   }
 
   /**
-   * @param $contactIds
+   * @param array $contactIds
    *
    * @return array
    */
@@ -296,7 +296,7 @@ class CRM_Campaign_Form_Task_Reserve extends CRM_Campaign_Form_Task {
     }
 
     $params = $this->controller->exportValues($this->_name);
-    $groups = CRM_Utils_Array::value('groups', $params, []);
+    $groups = $params['groups'] ?? [];
     $newGroupName = $params['newGroupName'] ?? NULL;
     $newGroupDesc = $params['newGroupDesc'] ?? NULL;
 
@@ -320,11 +320,9 @@ class CRM_Campaign_Form_Task_Reserve extends CRM_Campaign_Form_Task {
         $totalCount = $addCount[1] ?? NULL;
         if ($groupId == $newGroupId) {
           $name = $newGroupName;
-          $new = TRUE;
         }
         else {
           $name = $existingGroups[$groupId];
-          $new = FALSE;
         }
         if ($totalCount) {
           $url = CRM_Utils_System::url('civicrm/group/search',

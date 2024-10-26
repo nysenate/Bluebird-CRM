@@ -139,15 +139,18 @@ function shoreditch_civicrm_coreResourceList(&$items, $region) {
   if ($region == 'html-header') {
     CRM_Core_Resources::singleton()->addStyleFile('org.civicrm.shoreditch', 'css/bootstrap.css', -50, 'html-header');
     CRM_Core_Resources::singleton()->addStyleFile('org.civicrm.shoreditch', 'css/custom-civicrm.css', 99, 'html-header');
-    CRM_Core_Resources::singleton()->addScriptFile('org.civicrm.shoreditch', 'base/js/transition.js', 1000, 'html-header');
-    CRM_Core_Resources::singleton()->addScriptFile('org.civicrm.shoreditch', 'base/js/scrollspy.js', 1000, 'html-header');
-    CRM_Core_Resources::singleton()->addScriptFile('org.civicrm.shoreditch', 'base/js/dropdown.js', 1000, 'html-header');
-    CRM_Core_Resources::singleton()->addScriptFile('org.civicrm.shoreditch', 'base/js/collapse.js', 1000, 'html-header');
-    CRM_Core_Resources::singleton()->addScriptFile('org.civicrm.shoreditch', 'base/js/modal.js', 1000, 'html-header');
-    CRM_Core_Resources::singleton()->addScriptFile('org.civicrm.shoreditch', 'base/js/tab.js', 1000, 'html-header');
-    CRM_Core_Resources::singleton()->addScriptFile('org.civicrm.shoreditch', 'base/js/button.js', 1000, 'html-header');
+    if (!Civi::settings()->get('shoreditch_disable_bootstrap_js')) {
+      CRM_Core_Resources::singleton()->addScriptFile('org.civicrm.shoreditch', 'base/js/transition.js', 1000, 'html-header');
+      CRM_Core_Resources::singleton()->addScriptFile('org.civicrm.shoreditch', 'base/js/scrollspy.js', 1000, 'html-header');
+      CRM_Core_Resources::singleton()->addScriptFile('org.civicrm.shoreditch', 'base/js/dropdown.js', 1000, 'html-header');
+      CRM_Core_Resources::singleton()->addScriptFile('org.civicrm.shoreditch', 'base/js/collapse.js', 1000, 'html-header');
+      CRM_Core_Resources::singleton()->addScriptFile('org.civicrm.shoreditch', 'base/js/modal.js', 1000, 'html-header');
+      CRM_Core_Resources::singleton()->addScriptFile('org.civicrm.shoreditch', 'base/js/tab.js', 1000, 'html-header');
+      CRM_Core_Resources::singleton()->addScriptFile('org.civicrm.shoreditch', 'base/js/button.js', 1000, 'html-header');
+    }
     CRM_Core_Resources::singleton()->addScriptFile('org.civicrm.shoreditch', 'js/noConflict.js', 1001, 'html-header');
     CRM_Core_Resources::singleton()->addScriptFile('org.civicrm.shoreditch', 'js/add-missing-date-addons.js');
+    CRM_Core_Resources::singleton()->addScriptFile('org.civicrm.shoreditch', 'js/jquery-ui-popup-overrides.js');
   }
 }
 
@@ -180,9 +183,29 @@ function shoreditch_civicrm_pageRun(&$page) {
 }
 
 /**
+ * Implements hook_civicrm_navigationMenu().
+ */
+function shoreditch_civicrm_navigationMenu(&$menu) {
+  _shoreditch_civix_insert_navigation_menu($menu, 'Administer/Customize Data and Screens', [
+    'label' => E::ts('Shoreditch Settings'),
+    'name' => 'shoreditch-settings',
+    'url' => 'civicrm/admin/setting/shoreditch',
+    'permission' => 'Administer CiviCRM',
+  ]);
+}
+
+/**
  * @return bool
  *   TRUE if Shoreditch is the active theme.
  */
 function _shoreditch_isActive() {
+  // The Job civicrm_api3_job_cleanup can clear the DB cache, causing the
+  // CiviCRM menu to be empty on the first load after the command ran.
+  // Without the menu, the getActiveThemeKey is unable to detect the current
+  // theme. This condition ensures the menu is filled.
+  if (!CRM_Core_DAO::checkTableHasData(CRM_Core_DAO_Menu::getTableName())) {
+    CRM_Core_Menu::store(FALSE);
+  }
+
   return Civi::service('themes')->getActiveThemeKey() === 'shoreditch';
 }

@@ -76,6 +76,20 @@ class CRM_NYSS_Inbox_BAO_Inbox {
     $string = $htmlFixer->getFixedHtml($string);
     $string = str_replace('&nbsp;', ' ', $string);
 
+    //prepare purifier config
+    $config = HTMLPurifier_Config::createDefault();
+    $config->set('Core.Encoding', 'UTF-8');
+    $config->set('Attr.AllowedFrameTargets', ['_blank', '_self', '_parent', '_top']);
+    $config->set('Cache.DefinitionImpl', NULL);
+    $config->set('HTML.TidyLevel', 'heavy');
+    $config->set('URI.AllowedSchemes', [
+      'http' => true,
+      'https' => true,
+    ]);
+    $purifier = new HTMLPurifier($config);
+    $string = $purifier->purify($string);
+    //Civi::log()->debug(__METHOD__, ['string' => $string]);
+
     //cludgy way to try to strip out text chunks with tons of line breaks...
     $string = str_replace('<br /><br /><br />', '<br /> <br />', $string);
     $string = str_replace('<br /><br /><br />', '<br /> <br />', $string);
@@ -170,7 +184,7 @@ class CRM_NYSS_Inbox_BAO_Inbox {
     while ($dao->fetch()) {
       $attachment = (!empty($dao->attachments)) ?
         "<div class='icon attachment-icon attachment' title='{$dao->attachments} Attachment(s)'></div>" : '';
-      $matched = self::getMatched($dao->matched_id);
+      $matched = self::getMatched($dao->matched_id) ?? [];
       $body = CRM_NYSS_Inbox_BAO_Inbox::cleanText($dao->body);
       $parsed = self::parseMessage($body);
       $details = [
@@ -399,9 +413,9 @@ class CRM_NYSS_Inbox_BAO_Inbox {
       LIMIT {$params['rowCount']}
       OFFSET {$params['offset']}
     ";
-    //Civi::log()->debug('getMessages', array('sql' => $sql));
+    //Civi::log()->debug('getMessages', ['sql' => $sql]);
     $dao = CRM_Core_DAO::executeQuery($sql);
-    //Civi::log()->debug('getMessages', array('$dao' => $dao));
+    //Civi::log()->debug('getMessages', ['$dao' => $dao]);
 
     // Add total.
     $params['total'] = CRM_Core_DAO::singleValueQuery('SELECT FOUND_ROWS();');
@@ -455,7 +469,8 @@ class CRM_NYSS_Inbox_BAO_Inbox {
             $msg['sender_name'] = $senderName;
         }
 
-        $msg['subject'] = CRM_NYSS_Inbox_BAO_Inbox::cleanText($dao->subject, 25) . $attachment;
+        $subject = CRM_NYSS_Inbox_BAO_Inbox::cleanText($dao->subject, 25) . $attachment;
+        $msg['subject'] = preg_replace("/[^A-Za-z0-9 ',.]/i", '', $subject);
         $msg['updated_date'] = date('M d, Y', strtotime($dao->updated_date));
         $msg['forwarder'] = $dao->forwarder;
 
@@ -623,7 +638,7 @@ class CRM_NYSS_Inbox_BAO_Inbox {
       WHERE id = %3
     ", [
       1 => [self::STATUS_MATCHED, 'Integer'],
-      2 => [$forwarder, 'Integer'],
+      2 => [CRM_Core_Session::getLoggedInContactID(), 'Integer'],
       3 => [$rowId, 'Integer'],
     ]);
 
@@ -649,7 +664,8 @@ class CRM_NYSS_Inbox_BAO_Inbox {
 
       $matchedContacts[] = $contactName;
     }
-    $matchedContactsList = implode(', ', $matchedContacts);
+
+    $matchedContactsList = isset($matchedContacts) ? implode(', ', $matchedContacts) : NULL;
 
     return [
       'is_error' => FALSE,
@@ -953,7 +969,7 @@ class CRM_NYSS_Inbox_BAO_Inbox {
     ]);
 
     if (empty($forwarderId)) {
-      $forwarderId = self::DEFAULT_CONTACT_ID;
+      $forwarderId = CRM_Core_Session::getLoggedInContactID() ?? self::DEFAULT_CONTACT_ID;
     }
 
     return $forwarderId;
@@ -1049,7 +1065,7 @@ class CRM_NYSS_Inbox_BAO_Inbox {
     $res = [];
 
     // Convert message body into tagless text.
-    $text = preg_replace('/<(p|br)[^>]*>|\r/', "\n", $msgBody);
+    $text = preg_replace('/<(div|p|br)[^>]*>|\r/', "\n", $msgBody);
     $text = strip_tags($text);
     $text = html_entity_decode($text, ENT_QUOTES | ENT_HTML401, 'ISO-8859-1');
 
@@ -1106,7 +1122,6 @@ class CRM_NYSS_Inbox_BAO_Inbox {
    * HTML to highlight those items.
    */
   private static function highlightItems($text, $items) {
-    //file_put_contents("/tmp/inbound_email/items", print_r($items, true));
     $itemMap = [
       'emails' => ['class' => 'email_address', 'text' => 'email'],
       'blacklist' => [

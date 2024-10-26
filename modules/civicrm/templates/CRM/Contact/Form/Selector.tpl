@@ -10,12 +10,12 @@
 {include file="CRM/common/pager.tpl" location="top"}
 
 {include file="CRM/common/pagerAToZ.tpl"}
-<a href="#" class="crm-selection-reset crm-hover-button"><i class="crm-i fa-times-circle-o"></i> {ts}Reset all selections{/ts}</a>
+<a href="#" class="crm-selection-reset crm-hover-button"><i class="crm-i fa-times-circle-o" aria-hidden="true"></i> {ts}Reset all selections{/ts}</a>
 
 <table summary="{ts}Search results listings.{/ts}" class="selector row-highlight">
   <thead class="sticky">
     <tr>
-      <th scope="col" title="Select All Rows">{$form.toggleSelect.html}</th>
+      <th scope="col" title="{ts}Select rows{/ts}">{$form.toggleSelect.html}</th>
       {if $context eq 'smog'}
           <th scope="col">
             {ts}Status{/ts}
@@ -23,10 +23,10 @@
       {/if}
       {foreach from=$columnHeaders item=header}
         <th scope="col">
-        {if $header.sort}
+        {if !empty($header.sort)}
           {assign var='key' value=$header.sort}
           {$sort->_response.$key.link}
-        {else}
+        {elseif !empty($header.name)}
           {$header.name}
         {/if}
         </th>
@@ -36,7 +36,7 @@
 
   {counter start=0 skip=1 print=false}
 
-  { if $id }
+  {if $id}
       {foreach from=$rows item=row}
         <tr id='rowid{$row.contact_id}' class="{cycle values='odd-row,even-row'}">
             {assign var=cbName value=$row.checkbox}
@@ -52,9 +52,9 @@
             {foreach from=$row item=value key=key}
                {if ($key neq "checkbox") and ($key neq "action") and ($key neq "contact_type") and ($key neq "contact_type_orig") and ($key neq "status") and ($key neq "sort_name") and ($key neq "contact_id")}
               <td>
-                {if $key EQ "household_income_total" }
+                {if $key EQ "household_income_total"}
                     {$value|crmMoney}
-                {elseif strpos( $key, '_date' ) !== false }
+                {elseif strpos( $key, '_date' ) !== false}
                     {$value|crmDate}
                 {else}
                     {$value}
@@ -78,10 +78,10 @@
                 {$row.status}</td>
             {/if}
             <td>{$row.contact_type}</td>
-            <td><a href="{crmURL p='civicrm/contact/view' q="reset=1&cid=`$row.contact_id`&key=`$qfKey`&context=`$context`"}">{if $row.is_deleted}<del>{/if}{$row.sort_name}{if $row.is_deleted}</del>{/if}</a></td>
+            <td><a href="{crmURL p='civicrm/contact/view' q="reset=1&cid=`$row.contact_id`&key=`$qfKey`&context=`$context`"}">{if $row.contact_is_deleted}<del>{/if}{$row.sort_name}{if $row.contact_is_deleted}</del>{/if}</a></td>
             {if $action eq 512 or $action eq 256}
               {if !empty($columnHeaders.street_address)}
-          <td><span title="{$row.street_address|escape}">{$row.street_address|mb_truncate:22:"...":true}{if $row.do_not_mail} <span class="icon privacy-flag do-not-mail"></span>{/if}</span></td>
+          <td><span title="{$row.street_address|escape}">{$row.street_address|mb_truncate:22:"...":true}{privacyFlag field=do_not_mail condition=$row.do_not_mail}</span></td>
         {/if}
         {if !empty($columnHeaders.city)}
                 <td>{$row.city}</td>
@@ -99,20 +99,16 @@
                 {if $row.email}
                     <span title="{$row.email|escape}">
                         {$row.email|mb_truncate:17:"...":true}
-                        {if $row.on_hold}
-                          (On Hold)<span class="status-hold" title="{ts}This email is on hold (probably due to bouncing).{/ts}"></span>
-                        {elseif $row.do_not_email}
-                          <span class="icon privacy-flag do-not-email" title="{ts}Do Not Email{/ts}"></span>
-                        {/if}
+                        {privacyFlag field=do_not_email condition=$row.do_not_email}
+                        {privacyFlag field=on_hold condition=$row.on_hold}
                     </span>
                 {/if}
               </td>
               <td>
                 {if $row.phone}
                   {$row.phone}
-                  {if $row.do_not_phone}
-                    <span class="icon privacy-flag do-not-phone" title="{ts}Do Not Phone{/ts}" ></span>
-                  {/if}
+                  {privacyFlag field=do_not_phone condition=$row.do_not_phone}
+                  {privacyFlag field=do_not_sms condition=$row.do_not_sms}
                 {/if}
               </td>
            {else}

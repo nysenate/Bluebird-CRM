@@ -918,7 +918,7 @@ class LdapUserIntegrationTests extends LdapTestCase {
       $email_body = $emails[count($emails) - 1]['body'];
       $result = [];
       preg_match_all('/(user\/reset\/.*)This link can only be/s', $email_body, $result, PREG_PATTERN_ORDER);
-      if (count($result == 2)) {
+      if (is_array($result) && count($result) === 2) {
         $login_path = trim($result[1][0]);
         // User login form.
         $this->drupalGet($login_path);

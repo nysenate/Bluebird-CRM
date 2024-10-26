@@ -37,13 +37,9 @@ class RecursiveDirectoryIterator extends \RecursiveDirectoryIterator
     private $directorySeparator = '/';
 
     /**
-     * @param string $path
-     * @param int    $flags
-     * @param bool   $ignoreUnreadableDirs
-     *
      * @throws \RuntimeException
      */
-    public function __construct($path, $flags, $ignoreUnreadableDirs = false)
+    public function __construct(string $path, int $flags, bool $ignoreUnreadableDirs = false)
     {
         if ($flags & (self::CURRENT_AS_PATHNAME | self::CURRENT_AS_SELF)) {
             throw new \RuntimeException('This iterator only support returning current as fileinfo.');
@@ -51,7 +47,7 @@ class RecursiveDirectoryIterator extends \RecursiveDirectoryIterator
 
         parent::__construct($path, $flags);
         $this->ignoreUnreadableDirs = $ignoreUnreadableDirs;
-        $this->rootPath = (string) $path;
+        $this->rootPath = $path;
         if ('/' !== \DIRECTORY_SEPARATOR && !($flags & self::UNIX_PATHS)) {
             $this->directorySeparator = \DIRECTORY_SEPARATOR;
         }
@@ -62,19 +58,24 @@ class RecursiveDirectoryIterator extends \RecursiveDirectoryIterator
      *
      * @return SplFileInfo File information
      */
+    #[\ReturnTypeWillChange]
     public function current()
     {
         // the logic here avoids redoing the same work in all iterations
 
         if (null === $subPathname = $this->subPath) {
-            $subPathname = $this->subPath = (string) $this->getSubPath();
+            $subPathname = $this->subPath = $this->getSubPath();
         }
         if ('' !== $subPathname) {
             $subPathname .= $this->directorySeparator;
         }
         $subPathname .= $this->getFilename();
 
-        return new SplFileInfo($this->rootPath.$this->directorySeparator.$subPathname, $this->subPath, $subPathname);
+        if ('/' !== $basePath = $this->rootPath) {
+            $basePath .= $this->directorySeparator;
+        }
+
+        return new SplFileInfo($basePath.$subPathname, $this->subPath, $subPathname);
     }
 
     /**
@@ -82,6 +83,7 @@ class RecursiveDirectoryIterator extends \RecursiveDirectoryIterator
      *
      * @throws AccessDeniedException
      */
+    #[\ReturnTypeWillChange]
     public function getChildren()
     {
         try {
@@ -100,7 +102,7 @@ class RecursiveDirectoryIterator extends \RecursiveDirectoryIterator
         } catch (\UnexpectedValueException $e) {
             if ($this->ignoreUnreadableDirs) {
                 // If directory is unreadable and finder is set to ignore it, a fake empty content is returned.
-                return new \RecursiveArrayIterator(array());
+                return new \RecursiveArrayIterator([]);
             } else {
                 throw new AccessDeniedException($e->getMessage(), $e->getCode(), $e);
             }
@@ -109,16 +111,14 @@ class RecursiveDirectoryIterator extends \RecursiveDirectoryIterator
 
     /**
      * Do nothing for non rewindable stream.
+     *
+     * @return void
      */
+    #[\ReturnTypeWillChange]
     public function rewind()
     {
         if (false === $this->isRewindable()) {
             return;
-        }
-
-        // @see https://bugs.php.net/68557
-        if (\PHP_VERSION_ID < 50523 || \PHP_VERSION_ID >= 50600 && \PHP_VERSION_ID < 50607) {
-            parent::next();
         }
 
         parent::rewind();
@@ -133,11 +133,6 @@ class RecursiveDirectoryIterator extends \RecursiveDirectoryIterator
     {
         if (null !== $this->rewindable) {
             return $this->rewindable;
-        }
-
-        // workaround for an HHVM bug, should be removed when https://github.com/facebook/hhvm/issues/7281 is fixed
-        if ('' === $this->getPath()) {
-            return $this->rewindable = false;
         }
 
         if (false !== $stream = @opendir($this->getPath())) {

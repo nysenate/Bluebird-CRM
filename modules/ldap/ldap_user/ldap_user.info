@@ -25,8 +25,8 @@ configure = admin/config/people/ldap/user
 
 test_dependencies[] = ldap_sso:ldap_sso
 
-; Information added by Drupal.org packaging script on 2019-04-20
-version = "7.x-2.5"
+; Information added by Drupal.org packaging script on 2021-03-29
+version = "7.x-2.6"
 core = "7.x"
 project = "ldap"
-datestamp = "1555751588"
+datestamp = "1617049660"

@@ -115,4 +115,189 @@ class CRM_NYSS_BAO_NYSS {
 
     return $mailDelivered;
   }
+
+  static function getProtectedProperty($prop, $obj) {
+    $reflection = new ReflectionClass($obj);
+    $property = $reflection->getProperty($prop);
+    $property->setAccessible(true);
+
+    return $property->getValue($obj);
+  }
+
+  static function checkUserRole($role) {
+    global $user;
+
+    if (in_array($role, $user->roles)) {
+      return TRUE;
+    }
+
+    return FALSE;
+  }
+
+  /**
+   * @return bool
+   *
+   * simple helper to determine if the logged in user is considered an admin user
+   */
+  static function isAdmin() {
+    global $user;
+
+    if ($user->uid == 1) {
+      return TRUE;
+    }
+
+    if (is_array($user->roles) && in_array('Administrator', $user->roles)) {
+      return TRUE;
+    }
+
+    return FALSE;
+  }
+
+  /**
+   * @return bool
+   *
+   * determine if the current page is a public page
+   */
+  static function isPublicUrl() {
+    global $theme;
+
+    return ($theme == 'BluebirdPublic');
+  }
+
+  /**
+   * @param $msg
+   *
+   * Simple mailing function that piggy-backs on the error reporting extension
+   */
+  static function notifyErrorReportRecipient($subject, $output) {
+    $to = Civi::settings()->get('reporterror_mailto');
+
+    if (!empty($to)) {
+      $destinations = explode(REPORTERROR_EMAIL_SEPARATOR, $to);
+
+      $bbconfig = get_bluebird_instance_config();
+      $subject = "Bluebird Error [{$bbconfig['shortname']}.{$bbconfig['envname']}] ".$subject;
+
+      foreach ($destinations as $dest) {
+        $dest = trim($dest);
+        reporterror_civicrm_send_mail($dest, $subject, $output, []);
+      }
+    }
+  }
+
+  /**
+   * @param $params
+   * @return array
+   *
+   * Callback for APIWrapper modification to support quicksearch by Case ID
+   * 14379
+   */
+  static function getQuickSearchCaseId($params) {
+    //Civi::log()->debug(__FUNCTION__, ['params' => $params]);
+    $result = [];
+
+    try {
+      $cases = civicrm_api3('Case', 'get', [
+        'sequential' => 1,
+        'id' => $params['name'],
+        'is_deleted' => 0,
+        'options' => ['limit' => 0],
+      ]);
+      //Civi::log()->debug(__FUNCTION__, ['$cases' => $cases]);
+
+      foreach ($cases['values'] as $idx => $case) {
+        $contact = civicrm_api3('Contact', 'getsingle', ['id' => $case['client_id'][1]]);
+        $result['values'][$idx]['id'] = $case['client_id'][1];
+        $result['values'][$idx]['data'] = "{$contact['sort_name']} [Case #{$case['id']} :: {$case['subject']}]";
+      }
+    }
+    catch (CiviCRM_API3_Exception $e) {}
+
+    //Civi::log()->debug(__FUNCTION__, ['$result' => $result]);
+    return $result;
+  }
+
+  //NYSS 5848
+  static function removeBuilderFields($key, &$value) {
+    //CRM_Core_Error::debug_var('key', $key);
+    //CRM_Core_Error::debug_var('value', $value);
+
+    $flds = [
+      'Activity' => [
+        'activity_campaign_id',
+        'activity_is_test',
+        'activity_engagement_level',
+        'activity_campaign',
+        'is_current_revision',
+      ],
+    ];
+
+    if (array_key_exists($key, $flds)) {
+      foreach ($flds[$key] as $fld) {
+        unset($value[$fld]);
+      }
+    }
+  }
+
+  /**
+   * @param $fh
+   * @param array $fields
+   * @param string $delimiter
+   * @param string $enclosure
+   * @param bool $mysql_null
+   * @param bool $blank_as_null
+   * @param bool $batch
+   * @param bool $batchCleanup
+   * @return void
+   *
+   * roughly patterned after php fputcsv
+   * provides null handling and batch options
+   */
+  static function fputcsv2 (
+    $fh,
+    array $fields,
+    string $delimiter = ',',
+    string $enclosure = '"',
+    bool $mysql_null = FALSE,
+    bool $blank_as_null = FALSE,
+    bool $batch = FALSE,
+    bool $batchCleanup = FALSE
+  ) {
+    static $batchOutput = '';
+    static $batchCount = 0;
+
+    $delimiter_esc = preg_quote($delimiter, '/');
+    $enclosure_esc = preg_quote($enclosure, '/');
+
+    $output = [];
+    foreach ($fields as $field) {
+      if ($mysql_null &&
+        ($field === NULL || ($blank_as_null && strlen($field) == 0))
+      ) {
+        $output[] = 'NULL';
+        continue;
+      }
+
+      $output[] = (!empty($field)) ? (
+      preg_match("/(?:{$delimiter_esc}|{$enclosure_esc}|\s)/", $field) ?
+        ($enclosure . str_replace($enclosure, $enclosure . $enclosure, $field) . $enclosure) :
+        $field
+      ) : (($mysql_null) ? 'NULL' : NULL);
+    }
+
+    if ($batch) {
+      if (!$batchCleanup) {
+        $batchOutput .= implode($delimiter, $output) . "\n";
+      }
+
+      if ($batchCount == BATCH || $batchCleanup) {
+        fwrite($fh, $batchOutput);
+        $batchOutput = '';
+        $batchCount = 0;
+      }
+    }
+    else {
+      fwrite($fh, implode($delimiter, $output) . "\n");
+    }
+  }
 }

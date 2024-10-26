@@ -33,12 +33,23 @@ class CRM_Core_Payment_AuthorizeNet extends CRM_Core_Payment {
   protected $_params = [];
 
   /**
-   * We only need one instance of this object. So we use the singleton
-   * pattern and cache the instance in this variable
-   *
-   * @var object
+   * @var GuzzleHttp\Client
    */
-  static private $_singleton = NULL;
+  protected $guzzleClient;
+
+  /**
+   * @return \GuzzleHttp\Client
+   */
+  public function getGuzzleClient(): \GuzzleHttp\Client {
+    return $this->guzzleClient ?? new \GuzzleHttp\Client();
+  }
+
+  /**
+   * @param \GuzzleHttp\Client $guzzleClient
+   */
+  public function setGuzzleClient(\GuzzleHttp\Client $guzzleClient) {
+    $this->guzzleClient = $guzzleClient;
+  }
 
   /**
    * Constructor.
@@ -53,16 +64,10 @@ class CRM_Core_Payment_AuthorizeNet extends CRM_Core_Payment {
   public function __construct($mode, &$paymentProcessor) {
     $this->_mode = $mode;
     $this->_paymentProcessor = $paymentProcessor;
-    $this->_processorName = ts('Authorize.net');
 
     $this->_setParam('apiLogin', $paymentProcessor['user_name']);
     $this->_setParam('paymentKey', $paymentProcessor['password']);
     $this->_setParam('paymentType', 'AIM');
-    $this->_setParam('md5Hash', CRM_Utils_Array::value('signature', $paymentProcessor));
-
-    $this->_setParam('timestamp', time());
-    srand(time());
-    $this->_setParam('sequence', rand(1, 1000));
   }
 
   /**
@@ -93,15 +98,33 @@ class CRM_Core_Payment_AuthorizeNet extends CRM_Core_Payment {
   /**
    * Submit a payment using Advanced Integration Method.
    *
-   * @param array $params
-   *   Assoc array of input parameters for this transaction.
+   * @param array|\Civi\Payment\PropertyBag $params
+   *
+   * @param string $component
    *
    * @return array
-   *   the result in a nice formatted array (or an error object)
+   *   Result array (containing at least the key payment_status_id)
+   *
+   * @throws \Civi\Payment\Exception\PaymentProcessorException
    */
-  public function doDirectPayment(&$params) {
+  public function doPayment(&$params, $component = 'contribute') {
+    $propertyBag = \Civi\Payment\PropertyBag::cast($params);
+    $this->_component = $component;
+    $statuses = CRM_Contribute_BAO_Contribution::buildOptions('contribution_status_id', 'validate');
+
+    // If we have a $0 amount, skip call to processor and set payment_status to Completed.
+    // Conceivably a processor might override this - perhaps for setting up a token - but we don't
+    // have an example of that at the moment.
+    if ($propertyBag->getAmount() == 0) {
+      $result['payment_status_id'] = array_search('Completed', $statuses);
+      $result['payment_status'] = 'Completed';
+      return $result;
+    }
+
     if (!defined('CURLOPT_SSLCERT')) {
-      return self::error(9001, 'Authorize.Net requires curl with SSL support');
+      // Note that guzzle doesn't necessarily require CURL, although it prefers it. But we should leave this error
+      // here unless someone suggests it is not required since it's likely helpful.
+      throw new PaymentProcessorException('Authorize.Net requires curl with SSL support', 9001);
     }
 
     /*
@@ -121,10 +144,9 @@ class CRM_Core_Payment_AuthorizeNet extends CRM_Core_Payment {
     }
 
     if (!empty($params['is_recur']) && !empty($params['contributionRecurID'])) {
-      $result = $this->doRecurPayment();
-      if (is_a($result, 'CRM_Core_Error')) {
-        return $result;
-      }
+      $this->doRecurPayment();
+      $params['payment_status_id'] = array_search('Pending', $statuses);
+      $params['payment_status'] = 'Pending';
       return $params;
     }
 
@@ -140,81 +162,50 @@ class CRM_Core_Payment_AuthorizeNet extends CRM_Core_Payment {
 
     foreach ($authorizeNetFields as $field => $value) {
       // CRM-7419, since double quote is used as enclosure while doing csv parsing
-      $value = ($field == 'x_description') ? str_replace('"', "'", $value) : $value;
+      $value = ($field === 'x_description') ? str_replace('"', "'", $value) : $value;
       $postFields[] = $field . '=' . urlencode($value);
     }
 
     // Authorize.Net will not refuse duplicates, so we should check if the user already submitted this transaction
-    if ($this->checkDupe($authorizeNetFields['x_invoice_num'], CRM_Utils_Array::value('contributionID', $params))) {
-      return self::error(9004, 'It appears that this transaction is a duplicate.  Have you already submitted the form once?  If so there may have been a connection problem.  Check your email for a receipt from Authorize.net.  If you do not receive a receipt within 2 hours you can try your transaction again.  If you continue to have problems please contact the site administrator.');
+    if ($this->checkDupe($authorizeNetFields['x_invoice_num'], $params['contributionID'] ?? NULL)) {
+      throw new PaymentProcessorException('It appears that this transaction is a duplicate.  Have you already submitted the form once?  If so there may have been a connection problem.  Check your email for a receipt from Authorize.net.  If you do not receive a receipt within 2 hours you can try your transaction again.  If you continue to have problems please contact the site administrator.', 9004);
     }
 
-    $submit = curl_init($this->_paymentProcessor['url_site']);
-
-    if (!$submit) {
-      return self::error(9002, 'Could not initiate connection to payment gateway');
-    }
-
-    curl_setopt($submit, CURLOPT_POST, TRUE);
-    curl_setopt($submit, CURLOPT_RETURNTRANSFER, TRUE);
-    curl_setopt($submit, CURLOPT_POSTFIELDS, implode('&', $postFields));
-    curl_setopt($submit, CURLOPT_SSL_VERIFYPEER, Civi::settings()->get('verifySSL'));
-
-    $response = curl_exec($submit);
-
-    if (!$response) {
-      return self::error(curl_errno($submit), curl_error($submit));
-    }
-
-    curl_close($submit);
+    $response = (string) $this->getGuzzleClient()->post($this->_paymentProcessor['url_site'], [
+      'body' => implode('&', $postFields),
+      'curl' => [
+        CURLOPT_RETURNTRANSFER => TRUE,
+        CURLOPT_SSL_VERIFYPEER => Civi::settings()->get('verifySSL'),
+      ],
+    ])->getBody();
 
     $response_fields = $this->explode_csv($response);
 
-    // fetch available contribution statuses
-    $contributionStatus = CRM_Contribute_PseudoConstant::contributionStatus(NULL, 'name');
-
+    $result = [];
     // check for application errors
     // TODO:
     // AVS, CVV2, CAVV, and other verification results
     switch ($response_fields[0]) {
       case self::AUTH_REVIEW:
-        $params['payment_status_id'] = array_search('Pending', $contributionStatus);
+        $result = $this->setStatusPaymentPending($result);
         break;
 
       case self::AUTH_ERROR:
-        $params['payment_status_id'] = array_search('Failed', $contributionStatus);
         $errormsg = $response_fields[2] . ' ' . $response_fields[3];
-        return self::error($response_fields[1], $errormsg);
+        throw new PaymentProcessorException($errormsg, $response_fields[1]);
 
       case self::AUTH_DECLINED:
         $errormsg = $response_fields[2] . ' ' . $response_fields[3];
-        return self::error($response_fields[1], $errormsg);
+        throw new PaymentProcessorException($errormsg, $response_fields[1]);
 
       default:
         // Success
-
-        // test mode always returns trxn_id = 0
-        // also live mode in CiviCRM with test mode set in
-        // Authorize.Net return $response_fields[6] = 0
-        // hence treat that also as test mode transaction
-        // fix for CRM-2566
-        if (($this->_mode == 'test') || $response_fields[6] == 0) {
-          $query = "SELECT MAX(trxn_id) FROM civicrm_contribution WHERE trxn_id RLIKE 'test[0-9]+'";
-          $p = [];
-          $trxn_id = strval(CRM_Core_DAO::singleValueQuery($query, $p));
-          $trxn_id = str_replace('test', '', $trxn_id);
-          $trxn_id = intval($trxn_id) + 1;
-          $params['trxn_id'] = sprintf('test%08d', $trxn_id);
-        }
-        else {
-          $params['trxn_id'] = $response_fields[6];
-        }
-        $params['gross_amount'] = $response_fields[9];
+        $result['trxn_id'] = !empty($response_fields[6]) ? $response_fields[6] : $this->getTestTrxnID();
+        $result = $this->setStatusPaymentCompleted($result);
         break;
     }
-    // TODO: include authorization code?
 
-    return $params;
+    return $result;
   }
 
   /**
@@ -225,36 +216,31 @@ class CRM_Core_Payment_AuthorizeNet extends CRM_Core_Payment {
 
     $intervalLength = $this->_getParam('frequency_interval');
     $intervalUnit = $this->_getParam('frequency_unit');
-    if ($intervalUnit == 'week') {
+    if ($intervalUnit === 'week') {
       $intervalLength *= 7;
       $intervalUnit = 'days';
     }
-    elseif ($intervalUnit == 'year') {
+    elseif ($intervalUnit === 'year') {
       $intervalLength *= 12;
       $intervalUnit = 'months';
     }
-    elseif ($intervalUnit == 'day') {
+    elseif ($intervalUnit === 'day') {
       $intervalUnit = 'days';
-    }
-    elseif ($intervalUnit == 'month') {
-      $intervalUnit = 'months';
-    }
-
-    // interval cannot be less than 7 days or more than 1 year
-    if ($intervalUnit == 'days') {
+      // interval cannot be less than 7 days or more than 1 year
       if ($intervalLength < 7) {
-        return self::error(9001, 'Payment interval must be at least one week');
+        throw new PaymentProcessorException('Payment interval must be at least one week', 9001);
       }
-      elseif ($intervalLength > 365) {
-        return self::error(9001, 'Payment interval may not be longer than one year');
+      if ($intervalLength > 365) {
+        throw new PaymentProcessorException('Payment interval may not be longer than one year', 9001);
       }
     }
-    elseif ($intervalUnit == 'months') {
+    elseif ($intervalUnit === 'month') {
+      $intervalUnit = 'months';
       if ($intervalLength < 1) {
-        return self::error(9001, 'Payment interval must be at least one week');
+        throw new PaymentProcessorException('Payment interval must be at least one week', 9001);
       }
-      elseif ($intervalLength > 12) {
-        return self::error(9001, 'Payment interval may not be longer than one year');
+      if ($intervalLength > 12) {
+        throw new PaymentProcessorException('Payment interval may not be longer than one year', 9001);
       }
     }
 
@@ -314,32 +300,25 @@ class CRM_Core_Payment_AuthorizeNet extends CRM_Core_Payment {
     $template->assign('billingState', $this->_getParam('state_province'));
     $template->assign('billingZip', $this->_getParam('postal_code', TRUE));
     $template->assign('billingCountry', $this->_getParam('country'));
-
+    // Required to be set for s
+    $template->ensureVariablesAreAssigned(['subscriptionType']);
     $arbXML = $template->fetch('CRM/Contribute/Form/Contribution/AuthorizeNetARB.tpl');
-    // submit to authorize.net
 
-    $submit = curl_init($this->_paymentProcessor['url_recur']);
-    if (!$submit) {
-      return self::error(9002, 'Could not initiate connection to payment gateway');
-    }
-    curl_setopt($submit, CURLOPT_RETURNTRANSFER, 1);
-    curl_setopt($submit, CURLOPT_HTTPHEADER, ["Content-Type: text/xml"]);
-    curl_setopt($submit, CURLOPT_HEADER, 1);
-    curl_setopt($submit, CURLOPT_POSTFIELDS, $arbXML);
-    curl_setopt($submit, CURLOPT_POST, 1);
-    curl_setopt($submit, CURLOPT_SSL_VERIFYPEER, Civi::settings()->get('verifySSL'));
+    // Submit to authorize.net
+    $response = $this->getGuzzleClient()->post($this->_paymentProcessor['url_recur'], [
+      'headers' => [
+        'Content-Type' => 'text/xml; charset=UTF8',
+      ],
+      'body' => $arbXML,
+      'curl' => [
+        CURLOPT_RETURNTRANSFER => TRUE,
+        CURLOPT_SSL_VERIFYPEER => Civi::settings()->get('verifySSL'),
+      ],
+    ]);
+    $responseFields = $this->_ParseArbReturn((string) $response->getBody());
 
-    $response = curl_exec($submit);
-
-    if (!$response) {
-      return self::error(curl_errno($submit), curl_error($submit));
-    }
-
-    curl_close($submit);
-    $responseFields = $this->_ParseArbReturn($response);
-
-    if ($responseFields['resultCode'] == 'Error') {
-      return self::error($responseFields['code'], $responseFields['text']);
+    if ($responseFields['resultCode'] === 'Error') {
+      throw new PaymentProcessorException($responseFields['text'], $responseFields['code']);
     }
 
     // update recur processor_id with subscriptionId
@@ -381,7 +360,7 @@ class CRM_Core_Payment_AuthorizeNet extends CRM_Core_Payment {
     $fields['x_currency_code'] = $this->_getParam('currencyID');
     $fields['x_description'] = $this->_getParam('description');
     $fields['x_cust_id'] = $this->_getParam('contactID');
-    if ($this->_getParam('paymentType') == 'AIM') {
+    if ($this->_getParam('paymentType') === 'AIM') {
       $fields['x_relay_response'] = 'FALSE';
       // request response in CSV format
       $fields['x_delim_data'] = 'TRUE';
@@ -395,61 +374,11 @@ class CRM_Core_Payment_AuthorizeNet extends CRM_Core_Payment {
       $fields['x_exp_date'] = "$exp_month/$exp_year";
     }
 
-    if ($this->_mode != 'live') {
+    if ($this->_mode !== 'live') {
       $fields['x_test_request'] = 'TRUE';
     }
 
     return $fields;
-  }
-
-  /**
-   * Generate HMAC_MD5
-   *
-   * @param string $key
-   * @param string $data
-   *
-   * @return string
-   *   the HMAC_MD5 encoding string
-   */
-  public function hmac($key, $data) {
-    if (function_exists('mhash')) {
-      // Use PHP mhash extension
-      return (bin2hex(mhash(MHASH_MD5, $data, $key)));
-    }
-    else {
-      // RFC 2104 HMAC implementation for php.
-      // Creates an md5 HMAC.
-      // Eliminates the need to install mhash to compute a HMAC
-      // Hacked by Lance Rushing
-      // byte length for md5
-      $b = 64;
-      if (strlen($key) > $b) {
-        $key = pack("H*", md5($key));
-      }
-      $key = str_pad($key, $b, chr(0x00));
-      $ipad = str_pad('', $b, chr(0x36));
-      $opad = str_pad('', $b, chr(0x5c));
-      $k_ipad = $key ^ $ipad;
-      $k_opad = $key ^ $opad;
-      return md5($k_opad . pack("H*", md5($k_ipad . $data)));
-    }
-  }
-
-  /**
-   * Calculate and return the transaction fingerprint.
-   *
-   * @return string
-   *   fingerprint
-   */
-  public function CalculateFP() {
-    $x_tran_key = $this->_getParam('paymentKey');
-    $loginid = $this->_getParam('apiLogin');
-    $sequence = $this->_getParam('sequence');
-    $timestamp = $this->_getParam('timestamp');
-    $amount = $this->_getParam('amount');
-    $currency = $this->_getParam('currencyID');
-    $transaction = "$loginid^$sequence^$timestamp^$amount^$currency";
-    return $this->hmac($x_tran_key, $transaction);
   }
 
   /**
@@ -557,23 +486,6 @@ class CRM_Core_Payment_AuthorizeNet extends CRM_Core_Payment {
   }
 
   /**
-   * @param null $errorCode
-   * @param null $errorMessage
-   *
-   * @return object
-   */
-  public function &error($errorCode = NULL, $errorMessage = NULL) {
-    $e = CRM_Core_Error::singleton();
-    if ($errorCode) {
-      $e->push($errorCode, 0, [], $errorMessage);
-    }
-    else {
-      $e->push(9001, 0, [], 'Unknown System Error.');
-    }
-    return $e;
-  }
-
-  /**
    * Set a field to the specified value.  Value must be a scalar (int,
    * float, string, or boolean)
    *
@@ -620,14 +532,15 @@ class CRM_Core_Payment_AuthorizeNet extends CRM_Core_Payment {
    * @return string
    */
   public function accountLoginURL() {
-    return ($this->_mode == 'test') ? 'https://test.authorize.net' : 'https://authorize.net';
+    return ($this->_mode === 'test') ? 'https://test.authorize.net' : 'https://authorize.net';
   }
 
   /**
    * @param string $message
-   * @param array $params
+   * @param \Civi\Payment\PropertyBag $params
    *
    * @return bool|object
+   * @throws \Civi\Payment\Exception\PaymentProcessorException
    */
   public function cancelSubscription(&$message = '', $params = []) {
     $template = CRM_Core_Smarty::singleton();
@@ -636,45 +549,39 @@ class CRM_Core_Payment_AuthorizeNet extends CRM_Core_Payment {
 
     $template->assign('apiLogin', $this->_getParam('apiLogin'));
     $template->assign('paymentKey', $this->_getParam('paymentKey'));
-    $template->assign('subscriptionId', CRM_Utils_Array::value('subscriptionId', $params));
+    $template->assign('subscriptionId', $params->getRecurProcessorID());
 
     $arbXML = $template->fetch('CRM/Contribute/Form/Contribution/AuthorizeNetARB.tpl');
 
-    // submit to authorize.net
-    $submit = curl_init($this->_paymentProcessor['url_recur']);
-    if (!$submit) {
-      return self::error(9002, 'Could not initiate connection to payment gateway');
-    }
-
-    curl_setopt($submit, CURLOPT_RETURNTRANSFER, 1);
-    curl_setopt($submit, CURLOPT_HTTPHEADER, ["Content-Type: text/xml"]);
-    curl_setopt($submit, CURLOPT_HEADER, 1);
-    curl_setopt($submit, CURLOPT_POSTFIELDS, $arbXML);
-    curl_setopt($submit, CURLOPT_POST, 1);
-    curl_setopt($submit, CURLOPT_SSL_VERIFYPEER, Civi::settings()->get('verifySSL'));
-
-    $response = curl_exec($submit);
-
-    if (!$response) {
-      return self::error(curl_errno($submit), curl_error($submit));
-    }
-
-    curl_close($submit);
+    $response = (string) $this->getGuzzleClient()->post($this->_paymentProcessor['url_recur'], [
+      'headers' => [
+        'Content-Type' => 'text/xml; charset=UTF8',
+      ],
+      'body' => $arbXML,
+      'curl' => [
+        CURLOPT_RETURNTRANSFER => TRUE,
+        CURLOPT_SSL_VERIFYPEER => Civi::settings()->get('verifySSL'),
+      ],
+    ])->getBody();
 
     $responseFields = $this->_ParseArbReturn($response);
     $message = "{$responseFields['code']}: {$responseFields['text']}";
 
-    if ($responseFields['resultCode'] == 'Error') {
-      return self::error($responseFields['code'], $responseFields['text']);
+    if ($responseFields['resultCode'] === 'Error') {
+      throw new PaymentProcessorException($responseFields['text'], $responseFields['code']);
     }
     return TRUE;
   }
 
   /**
+   * Update payment details at Authorize.net.
+   *
    * @param string $message
    * @param array $params
    *
    * @return bool|object
+   *
+   * @throws \Civi\Payment\Exception\PaymentProcessorException
    */
   public function updateSubscriptionBillingInfo(&$message = '', $params = []) {
     $template = CRM_Core_Smarty::singleton();
@@ -699,32 +606,23 @@ class CRM_Core_Payment_AuthorizeNet extends CRM_Core_Payment {
 
     $arbXML = $template->fetch('CRM/Contribute/Form/Contribution/AuthorizeNetARB.tpl');
 
+    $response = (string) $this->getGuzzleClient()->post($this->_paymentProcessor['url_recur'], [
+      'headers' => [
+        'Content-Type' => 'text/xml; charset=UTF8',
+      ],
+      'body' => $arbXML,
+      'curl' => [
+        CURLOPT_RETURNTRANSFER => TRUE,
+        CURLOPT_SSL_VERIFYPEER => Civi::settings()->get('verifySSL'),
+      ],
+    ])->getBody();
+
     // submit to authorize.net
-    $submit = curl_init($this->_paymentProcessor['url_recur']);
-    if (!$submit) {
-      return self::error(9002, 'Could not initiate connection to payment gateway');
-    }
-
-    curl_setopt($submit, CURLOPT_RETURNTRANSFER, 1);
-    curl_setopt($submit, CURLOPT_HTTPHEADER, ["Content-Type: text/xml"]);
-    curl_setopt($submit, CURLOPT_HEADER, 1);
-    curl_setopt($submit, CURLOPT_POSTFIELDS, $arbXML);
-    curl_setopt($submit, CURLOPT_POST, 1);
-    curl_setopt($submit, CURLOPT_SSL_VERIFYPEER, Civi::settings()->get('verifySSL'));
-
-    $response = curl_exec($submit);
-
-    if (!$response) {
-      return self::error(curl_errno($submit), curl_error($submit));
-    }
-
-    curl_close($submit);
-
     $responseFields = $this->_ParseArbReturn($response);
     $message = "{$responseFields['code']}: {$responseFields['text']}";
 
-    if ($responseFields['resultCode'] == 'Error') {
-      return self::error($responseFields['code'], $responseFields['text']);
+    if ($responseFields['resultCode'] === 'Error') {
+      throw new PaymentProcessorException($responseFields['text'], $responseFields['code']);
     }
     return TRUE;
   }
@@ -732,16 +630,20 @@ class CRM_Core_Payment_AuthorizeNet extends CRM_Core_Payment {
   /**
    * Process incoming notification.
    */
-  public static function handlePaymentNotification() {
+  public function handlePaymentNotification() {
     $ipnClass = new CRM_Core_Payment_AuthorizeNetIPN(array_merge($_GET, $_REQUEST));
     $ipnClass->main();
   }
 
   /**
+   * Change the amount of the recurring payment.
+   *
    * @param string $message
    * @param array $params
    *
    * @return bool|object
+   *
+   * @throws \Civi\Payment\Exception\PaymentProcessorException
    */
   public function changeSubscriptionAmount(&$message = '', $params = []) {
     $template = CRM_Core_Smarty::singleton();
@@ -761,34 +663,42 @@ class CRM_Core_Payment_AuthorizeNet extends CRM_Core_Payment {
 
     $arbXML = $template->fetch('CRM/Contribute/Form/Contribution/AuthorizeNetARB.tpl');
 
-    // submit to authorize.net
-    $submit = curl_init($this->_paymentProcessor['url_recur']);
-    if (!$submit) {
-      throw new PaymentProcessorException('Could not initiate connection to payment gateway', 9002);
-    }
-
-    curl_setopt($submit, CURLOPT_RETURNTRANSFER, 1);
-    curl_setopt($submit, CURLOPT_HTTPHEADER, ["Content-Type: text/xml"]);
-    curl_setopt($submit, CURLOPT_HEADER, 1);
-    curl_setopt($submit, CURLOPT_POSTFIELDS, $arbXML);
-    curl_setopt($submit, CURLOPT_POST, 1);
-    curl_setopt($submit, CURLOPT_SSL_VERIFYPEER, Civi::settings()->get('verifySSL'));
-
-    $response = curl_exec($submit);
-
-    if (!$response) {
-      return self::error(curl_errno($submit), curl_error($submit));
-    }
-
-    curl_close($submit);
+    $response = (string) $this->getGuzzleClient()->post($this->_paymentProcessor['url_recur'], [
+      'headers' => [
+        'Content-Type' => 'text/xml; charset=UTF8',
+      ],
+      'body' => $arbXML,
+      'curl' => [
+        CURLOPT_RETURNTRANSFER => TRUE,
+        CURLOPT_SSL_VERIFYPEER => Civi::settings()->get('verifySSL'),
+      ],
+    ])->getBody();
 
     $responseFields = $this->_parseArbReturn($response);
     $message = "{$responseFields['code']}: {$responseFields['text']}";
 
-    if ($responseFields['resultCode'] == 'Error') {
+    if ($responseFields['resultCode'] === 'Error') {
       throw new PaymentProcessorException($responseFields['text'], $responseFields['code']);
     }
     return TRUE;
+  }
+
+  /**
+   * Get an appropriate test trannsaction id.
+   *
+   * @return string
+   */
+  protected function getTestTrxnID() {
+    // test mode always returns trxn_id = 0
+    // also live mode in CiviCRM with test mode set in
+    // Authorize.Net return $response_fields[6] = 0
+    // hence treat that also as test mode transaction
+    // fix for CRM-2566
+    $query = "SELECT MAX(trxn_id) FROM civicrm_contribution WHERE trxn_id RLIKE 'test[0-9]+'";
+    $trxn_id = (string) (CRM_Core_DAO::singleValueQuery($query));
+    $trxn_id = str_replace('test', '', $trxn_id);
+    $trxn_id = (int) ($trxn_id) + 1;
+    return sprintf('test%08d', $trxn_id);
   }
 
 }

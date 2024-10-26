@@ -26,6 +26,7 @@
  * common, such as titles, data, keywords, etc. In particulare, the 'type'
  * of the context is important.
  */
+#[\AllowDynamicProperties]
 class ctools_context {
   /**
    * @var string|array
@@ -74,6 +75,16 @@ class ctools_context {
    * @var
    */
   public $original_argument;
+
+  /**
+   * @var
+   */
+  public $id;
+
+  /**
+   * @var
+   */
+  public $plugin;
 
   /**
    * @var array
@@ -204,6 +215,7 @@ class ctools_context {
  * Used to create a method of comparing if a list of contexts
  * match a required context type.
  */
+#[\AllowDynamicProperties]
 class ctools_context_required {
   /**
    * @var array
@@ -386,6 +398,7 @@ class ctools_context_required {
  * Used to compare to see if a list of contexts match an optional context. This
  * can produce empty contexts to use as placeholders.
  */
+#[\AllowDynamicProperties]
 class ctools_context_optional extends ctools_context_required {
 
   /**
@@ -1116,7 +1129,7 @@ function ctools_context_next_id($objects, $name) {
   foreach ($objects as $object) {
     if (isset($object['name']) && $object['name'] === $name) {
       if (isset($object['id']) && $object['id'] > $id) {
-        $id = $object['id'];
+        $id = (int) $object['id'];
       }
       // @todo If obj has no 'id', should we increment local id? $id = $id + 1;
     }
@@ -1416,16 +1429,12 @@ function ctools_context_get_context_from_relationships($relationships, &$context
     if (is_array($rdata['context'])) {
       $rcontexts = array();
       foreach ($rdata['context'] as $cid) {
-        if (empty($contexts[$cid])) {
-          continue 2;
+        if (!empty($contexts[$cid])) {
+          $rcontexts[] = $contexts[$cid];
         }
-        $rcontexts[] = $contexts[$cid];
       }
     }
-    else {
-      if (empty($contexts[$rdata['context']])) {
-        continue;
-      }
+    elseif (!empty($contexts[$rdata['context']])) {
       $rcontexts = $contexts[$rdata['context']];
     }
 
@@ -1677,7 +1686,9 @@ function ctools_context_load_contexts($object, $placeholders = TRUE, $contexts =
  *
  * This function is used to figure out which contexts represents 'the form'
  * from a list of contexts. Only one contexts can actually be 'the form' for
- * a given page, since the @code{<form>} tag can not be embedded within
+ * a given page, since the @code
+ * {<form>}
+ * @endcode tag can not be embedded within
  * itself.
  */
 function ctools_context_get_form($contexts) {

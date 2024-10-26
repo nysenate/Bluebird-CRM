@@ -17,7 +17,6 @@
   <meta name="ROBOTS" content="NOINDEX, NOFOLLOW">
   {crmRegion name='html-header' allowCmsOverride=0}{/crmRegion}
   <style type="text/css" media="print">@import url({$config->resourceBase}css/print.css);</style>
-  <style type="text/css" media="screen, print">@import url(/sites/default/themes/Bluebird/css/Bluebird.css);</style>{*NYSS 4854*}
 </head>
 
 <body>
@@ -30,7 +29,7 @@
 {include file="CRM/common/status.tpl"}
 
 {crmRegion name='page-body' allowCmsOverride=0}
-  {if $isForm and isset($formTpl)}
+  {if $isForm and $formTpl}
     {include file="CRM/Form/$formTpl.tpl"}
   {else}
     {include file=$tplFile}

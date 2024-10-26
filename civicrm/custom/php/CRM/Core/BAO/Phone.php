@@ -18,54 +18,40 @@
 /**
  * Class contains functions for phone.
  */
-class CRM_Core_BAO_Phone extends CRM_Core_DAO_Phone {
+class CRM_Core_BAO_Phone extends CRM_Core_DAO_Phone implements Civi\Core\HookInterface {
+  use CRM_Contact_AccessTrait;
 
   /**
-   * Create phone object - note that the create function calls 'add' but
-   * has more business logic
+   * @deprecated
    *
    * @param array $params
-   *
-   * @return object
-   * @throws API_Exception
+   * @return CRM_Core_DAO_Phone
+   * @throws CRM_Core_Exception
    */
   public static function create($params) {
-    // Ensure mysql phone function exists
-    CRM_Core_DAO::checkSqlFunctionsExist();
-
-    if (is_numeric(CRM_Utils_Array::value('is_primary', $params)) ||
-      // if id is set & is_primary isn't we can assume no change
-      empty($params['id'])
-    ) {
-      CRM_Core_BAO_Block::handlePrimary($params, get_class());
-    }
-    $phone = self::add($params);
-
-    return $phone;
+    CRM_Core_Error::deprecatedFunctionWarning('writeRecord');
+    return self::writeRecord($params);
   }
 
   /**
-   * Takes an associative array and adds phone.
+   * Event fired before modifying a Phone.
+   * @param \Civi\Core\Event\PreEvent $event
+   */
+  public static function self_hook_civicrm_pre(\Civi\Core\Event\PreEvent $event) {
+    if (in_array($event->action, ['create', 'edit'])) {
+      CRM_Core_BAO_Block::handlePrimary($event->params, __CLASS__);
+    }
+  }
+
+  /**
+   * @deprecated
    *
    * @param array $params
-   *   (reference ) an assoc array of name/value pairs.
-   *
-   * @return object
-   *   CRM_Core_BAO_Phone object on success, null otherwise
+   * @return CRM_Core_DAO_Phone
+   * @throws \CRM_Core_Exception
    */
-  public static function add(&$params) {
-    // Ensure mysql phone function exists
-    CRM_Core_DAO::checkSqlFunctionsExist();
-
-    $hook = empty($params['id']) ? 'create' : 'edit';
-    CRM_Utils_Hook::pre($hook, 'Phone', CRM_Utils_Array::value('id', $params), $params);
-
-    $phone = new CRM_Core_DAO_Phone();
-    $phone->copyValues($params);
-    $phone->save();
-
-    CRM_Utils_Hook::post($hook, 'Phone', $phone->id, $phone);
-    return $phone;
+  public static function add($params) {
+    return self::create($params);
   }
 
   /**
@@ -76,6 +62,7 @@ class CRM_Core_BAO_Phone extends CRM_Core_DAO_Phone {
    *
    * @return array
    *   array of phone objects
+   * @throws \CRM_Core_Exception
    */
   public static function &getValues($entityBlock) {
     $getValues = CRM_Core_BAO_Block::getValues('phone', $entityBlock);
@@ -87,9 +74,8 @@ class CRM_Core_BAO_Phone extends CRM_Core_DAO_Phone {
    *
    * @param int $id
    *   The contact id.
-   *
    * @param bool $updateBlankLocInfo
-   * @param null $type
+   * @param string|null $type
    * @param array $filters
    *
    * @return array
@@ -102,7 +88,7 @@ class CRM_Core_BAO_Phone extends CRM_Core_DAO_Phone {
 
     $cond = NULL;
     if ($type) {
-      $phoneTypeId = array_search($type, CRM_Core_PseudoConstant::get('CRM_Core_DAO_Phone', 'phone_type_id'));
+      $phoneTypeId = CRM_Core_PseudoConstant::getKey('CRM_Core_DAO_Phone', 'phone_type_id', $type);
       if ($phoneTypeId) {
         $cond = " AND civicrm_phone.phone_type_id = $phoneTypeId";
       }
@@ -161,10 +147,8 @@ ORDER BY civicrm_phone.is_primary DESC,  phone_id ASC ";
    * This is called from CRM_Core_BAO_Block as a calculated function.
    *
    * @param array $entityElements
-   *   The array containing entity_id and.
-   *   entity_table name
-   *
-   * @param null $type
+   *   The array containing entity_id and entity_table name
+   * @param string|null $type
    *
    * @return array
    *   the array of phone ids which are potential numbers
@@ -217,15 +201,13 @@ ORDER BY ph.is_primary DESC, phone_id ASC ";
   /**
    * Set NULL to phone, mapping, uffield
    *
-   * @param $optionId
+   * @param int $optionId
    *   Value of option to be deleted.
    */
   public static function setOptionToNull($optionId) {
     if (!$optionId) {
       return;
     }
-    // Ensure mysql phone function exists
-    CRM_Core_DAO::checkSqlFunctionsExist();
 
     $tables = [
       'civicrm_phone',
@@ -248,14 +230,48 @@ ORDER BY ph.is_primary DESC, phone_id ASC ";
   /**
    * Call common delete function.
    *
-   * @param int $id
+   * @see \CRM_Contact_BAO_Contact::on_hook_civicrm_post
    *
+   * @param int $id
+   * @deprecated
    * @return bool
    */
   public static function del($id) {
-    // Ensure mysql phone function exists
-    CRM_Core_DAO::checkSqlFunctionsExist();
-    return CRM_Contact_BAO_Contact::deleteObjectWithPrimary('Phone', $id);
+    CRM_Core_Error::deprecatedFunctionWarning('deleteRecord');
+    return (bool) self::deleteRecord(['id' => $id]);
+  }
+
+  /**
+   * Customize search criteria for SMS autocompletes
+   *
+   * @param \Civi\Core\Event\GenericHookEvent $e
+   */
+  public static function on_civi_search_autocompleteDefault(\Civi\Core\Event\GenericHookEvent $e) {
+    $formName = $e->formName ?? '';
+    if (!str_contains($formName, '_Form_Task_SMS') || !is_array($e->savedSearch) || $e->savedSearch['api_entity'] !== 'Phone') {
+      return;
+    }
+    $e->savedSearch['api_params'] = [
+      'version' => 4,
+      'select' => [
+        'id',
+        'phone',
+        'phone_numeric',
+        'phone_type_id:label',
+        'location_type_id:label',
+        'contact_id.sort_name',
+      ],
+      'orderBy' => [],
+      'where' => [
+        ['phone_type_id:name', '=', 'Mobile'],
+        ['contact_id.is_deleted', '=', FALSE],
+        ['contact_id.is_deceased', '=', FALSE],
+        ['contact_id.do_not_sms', '=', FALSE],
+      ],
+      'groupBy' => [],
+      'join' => [],
+      'having' => [],
+    ];
   }
 
 }

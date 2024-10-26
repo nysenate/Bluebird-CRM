@@ -14,7 +14,6 @@
  *
  * @package CRM
  * @copyright CiviCRM LLC https://civicrm.org/licensing
- *
  */
 class CRM_Member_StatusOverrideTypes {
   /**
@@ -66,35 +65,19 @@ class CRM_Member_StatusOverrideTypes {
    * @return bool
    */
   public static function isOverridden($overrideType) {
-    if ($overrideType == self::NO) {
-      return FALSE;
-    }
-
-    return TRUE;
+    return $overrideType != self::NO;
   }
 
   public static function isNo($overrideType) {
-    if ($overrideType != self::NO) {
-      return FALSE;
-    }
-
-    return TRUE;
+    return $overrideType == self::NO;
   }
 
   public static function isPermanent($overrideType) {
-    if ($overrideType != self::PERMANENT) {
-      return FALSE;
-    }
-
-    return TRUE;
+    return $overrideType == self::PERMANENT;
   }
 
   public static function isUntilDate($overrideType) {
-    if ($overrideType != self::UNTIL_DATE) {
-      return FALSE;
-    }
-
-    return TRUE;
+    return $overrideType == self::UNTIL_DATE;
   }
 
 }

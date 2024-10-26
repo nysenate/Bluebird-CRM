@@ -11,7 +11,6 @@
 
 namespace Civi\Cxn\Rpc;
 
-use Civi\Cxn\Rpc\Exception\CxnException;
 use Civi\Cxn\Rpc\Message\GarbledMessage;
 use Civi\Cxn\Rpc\Message\InsecureMessage;
 use Civi\Cxn\Rpc\Message\RegistrationMessage;
@@ -25,7 +24,7 @@ class RegistrationClient extends Agent {
   protected $siteUrl;
 
   /**
-   * @var string|NULL
+   * @var string|null
    *   Ex: "123.123.123.123:456".
    *   Ex: "proxy.example.com:789"
    *   Ex: "dhcp123.isp.example.net:456"
@@ -90,6 +89,7 @@ class RegistrationClient extends Agent {
 
   /**
    * @param array $appMeta
+   * @param bool $force
    * @return array
    *   Array($cxnId, $apiResult).
    */
@@ -187,7 +187,7 @@ class RegistrationClient extends Agent {
    * @throws Exception\InvalidMessageException
    */
   protected function doCall($appMeta, $entity, $action, $params, $cxn) {
-    $appCert = new \File_X509();
+    $appCert = new \phpseclib\File\X509();
     $appCert->loadX509($appMeta['appCert']);
 
     $req = new RegistrationMessage($cxn['appId'], $appCert->getPublicKey(), array(

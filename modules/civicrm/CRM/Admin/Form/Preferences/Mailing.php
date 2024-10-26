@@ -16,12 +16,13 @@
  */
 
 /**
- * This class generates form components for the maling component preferences.
+ * This class generates form components for the mailing component preferences.
  */
 class CRM_Admin_Form_Preferences_Mailing extends CRM_Admin_Form_Preferences {
 
   protected $_settings = [
     'profile_double_optin' => CRM_Core_BAO_Setting::MAILING_PREFERENCES_NAME,
+    'no_reply_email_address' => CRM_Core_BAO_Setting::MAILING_PREFERENCES_NAME,
     'profile_add_to_group_double_optin' => CRM_Core_BAO_Setting::MAILING_PREFERENCES_NAME,
     'track_civimail_replies' => CRM_Core_BAO_Setting::MAILING_PREFERENCES_NAME,
     'civimail_workflow' => CRM_Core_BAO_Setting::MAILING_PREFERENCES_NAME,
@@ -33,6 +34,9 @@ class CRM_Admin_Form_Preferences_Mailing extends CRM_Admin_Form_Preferences {
     'dedupe_email_default' => CRM_Core_BAO_Setting::MAILING_PREFERENCES_NAME,
     'hash_mailing_url' => CRM_Core_BAO_Setting::MAILING_PREFERENCES_NAME,
     'auto_recipient_rebuild' => CRM_Core_BAO_Setting::MAILING_PREFERENCES_NAME,
+    'url_tracking_default' => CRM_Core_BAO_Setting::MAILING_PREFERENCES_NAME,
+    'open_tracking_default' => CRM_Core_BAO_Setting::MAILING_PREFERENCES_NAME,
+    'scheduled_reminder_smarty' => CRM_Core_BAO_Setting::MAILING_PREFERENCES_NAME,
   ];
 
   public function postProcess() {

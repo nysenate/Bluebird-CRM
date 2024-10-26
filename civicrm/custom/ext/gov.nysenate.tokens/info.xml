@@ -2,7 +2,7 @@
 <extension key="gov.nysenate.tokens" type="module">
   <file>tokens</file>
   <name>NYSS: Tokens</name>
-  <description></description>
+  <description/>
   <license>AGPL-3.0</license>
   <maintainer>
     <author>Lighthouse Consulting and Design, Inc.</author>
@@ -17,7 +17,7 @@
   <compatibility>
     <ver>5.x</ver>
   </compatibility>
-  <comments></comments>
+  <comments/>
   <civix>
     <namespace>CRM/Tokens</namespace>
   </civix>

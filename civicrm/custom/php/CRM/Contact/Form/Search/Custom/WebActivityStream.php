@@ -1,39 +1,5 @@
 <?php
 
-/*
- +--------------------------------------------------------------------+
- | CiviCRM version 4.4                                                |
- +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2010                                |
- +--------------------------------------------------------------------+
- | This file is a part of CiviCRM.                                    |
- |                                                                    |
- | CiviCRM is free software; you can copy, modify, and distribute it  |
- | under the terms of the GNU Affero General Public License           |
- | Version 3, 19 November 2007 and the CiviCRM Licensing Exception.   |
- |                                                                    |
- | CiviCRM is distributed in the hope that it will be useful, but     |
- | WITHOUT ANY WARRANTY; without even the implied warranty of         |
- | MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.               |
- | See the GNU Affero General Public License for more details.        |
- |                                                                    |
- | You should have received a copy of the GNU Affero General Public   |
- | License and the CiviCRM Licensing Exception along                  |
- | with this program; if not, contact CiviCRM LLC                     |
- | at info[AT]civicrm[DOT]org. If you have questions about the        |
- | GNU Affero General Public License or the licensing of CiviCRM,     |
- | see the CiviCRM license FAQ at http://civicrm.org/licensing        |
- +--------------------------------------------------------------------+
-*/
-
-/**
- *
- * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2010
- * $Id$
- *
- */
-
 class CRM_Contact_Form_Search_Custom_WebActivityStream
   extends CRM_Contact_Form_Search_Custom_Base
   implements CRM_Contact_Form_Search_Interface {
@@ -41,26 +7,25 @@ class CRM_Contact_Form_Search_Custom_WebActivityStream
   protected $_formValues;
   protected $_columns;
 
-
   function __construct(&$formValues) {
     parent::__construct($formValues);
 
-    $this->_columns = array(
+    $this->_columns = [
       ts('&nbsp;') => 'contact_type',
       ts('Name') => 'sort_name' ,
       ts('Type') => 'type',
       ts('Date') => 'created_date',
       ts('Details') => 'details',
-    );
+    ];
   }
 
 
   function buildForm(&$form) {
     $this->setTitle('Website Activity Stream Search');
 
-    $form->add('text', 'sort_name', ts('Contact Name'), array('size' => 20));
+    $form->add('text', 'sort_name', ts('Contact Name'), ['size' => 20]);
 
-    $type = array(
+    $type = [
       '' => '- select -',
       'Bill' => ts('Bill'),
       'Issue' => ts('Issue'),
@@ -71,18 +36,17 @@ class CRM_Contact_Form_Search_Custom_WebActivityStream
       'Petition' => ts('Petition'),
       'Account' => ts('Account'),
       'Profile' => ts('Profile'),
-    );
+    ];
     $form->add('select', 'type', ts('Type'), $type, false);
     
-    $form->addDate('start_date', ts('Date from'), false, array('formatType' => 'birth'));
-    $form->addDate('end_date', ts('Date to'), false, array('formatType' => 'birth'));
+    $form->addDate('start_date', ts('Date from'), false, ['formatType' => 'birth']);
+    $form->addDate('end_date', ts('Date to'), false, ['formatType' => 'birth']);
 
     $form->setDefaults($this->setDefaultValues());
-    $form->addFormRule(array('CRM_Contact_Form_Search_Custom_WebActivityStream', 'formRule'), $this);
   }//buildForm
-  
 
-  function formRule($fields) {
+
+  public function formRule($fields, $files, $self): bool|array {
     $errors = [];
     return empty($errors) ? true : $errors;
   }//formRule
@@ -181,7 +145,7 @@ class CRM_Contact_Form_Search_Custom_WebActivityStream
 
   function count() {
     $sql = $this->all();
-    $dao = CRM_Core_DAO::executeQuery($sql, CRM_Core_DAO::$_nullArray);
+    $dao = CRM_Core_DAO::executeQuery($sql);
     return $dao->N;
   }
 
@@ -192,9 +156,9 @@ class CRM_Contact_Form_Search_Custom_WebActivityStream
 
 
   function setDefaultValues() {
-    $defaults = array(
+    $defaults = [
       'action_type' => 3,
-    );
+    ];
     return $defaults;
   }
 

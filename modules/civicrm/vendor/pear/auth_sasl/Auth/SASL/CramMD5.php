@@ -40,6 +40,7 @@
 * @author  Richard Heyes <richard@php.net>
 * @access  public
 * @version 1.0
+* @deprecated since 1.2.0
 * @package Auth_SASL
 */
 

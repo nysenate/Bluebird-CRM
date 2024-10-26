@@ -1,0 +1,21 @@
+.___outside-namespace {
+  .page-civicrm-dashboard,
+  // targets root `page-civicrm` page and doesn't target child `page-civicrm-event` pages (for example):
+  .page-civicrm:not([class*=' page-civicrm-']) {
+    @include case-page;
+
+    .civicase__tabs.affix {
+      position: fixed;
+      top: 0;
+      width: 100%;
+      z-index: 9999;
+    }
+  }
+
+  .civicase__crm-dashboard {
+    &.ui-tabs,
+    .tab-content {
+      background: none;
+    }
+  }
+}

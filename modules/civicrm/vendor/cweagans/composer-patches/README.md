@@ -66,7 +66,7 @@ Then your `composer.patches.json` should look like this:
 
 ## Allowing patches to be applied from dependencies
 
-If you want your project to accept patches from dependencies, you must have the following in your composer file:
+If your project doesn't supply any patches of its own, but you still want to accept patches from dependencies, you must have the following in your composer file:
 
 ```json
 {
@@ -78,6 +78,8 @@ If you want your project to accept patches from dependencies, you must have the 
   }
 }
 ```
+
+If you do have a `patches` section in your composer file that defines your own set of patches then the `enable-patching` setting will be ignored and patches from dependencies will always be applied.
 
 ## Ignoring patches
 
@@ -110,6 +112,21 @@ There may be situations in which you want to ignore a patch supplied by a depend
           "This patch has known conflicts with our Quick Edit integration": "https://www.drupal.org/files/issues/2664682-49.patch"
         }
       }
+    }
+  }
+}
+```
+
+## Allowing to force the patch level (-pX)
+
+Some situations require to force the patchLevel used to apply patches on a particular package.
+Its useful for packages like drupal/core which packages only a subdir of the original upstream project on which patches are based.
+
+```json
+{
+  "extra": {
+    "patchLevel": {
+      "drupal/core": "-p2"
     }
   }
 }
@@ -148,6 +165,33 @@ To enforce throwing an error and stopping package installation/update immediatel
 1. Export `COMPOSER_EXIT_ON_PATCH_FAILURE=1`
 
 By default, failed patches are skipped.
+
+## Patches reporting
+
+When a patch is applied, the plugin writes a report-file `PATCHES.txt` to a patching directory (e.g. `./patch-me/PATCHES.txt`),
+which contains a list of applied patches.
+
+If you want to avoid this behavior, add a specific key to the `extra` section:
+```json
+"extra": {
+    "composer-patches-skip-reporting": true
+}
+```
+
+Or provide an environment variable `COMPOSER_PATCHES_SKIP_REPORTING` with a config.
+
+## Patching composer.json in dependencies
+
+This doesn't work like you'd want. By the time you're running `composer install`,
+the metadata from your dependencies' composer.json has already been aggregated by
+packagist (or whatever metadata repo you're using). Unfortunately, this means that
+you cannot e.g. patch a dependency to be compatible with an earlier version of PHP
+or change the framework version that a plugin depends on.
+
+@anotherjames over at @computerminds wrote an article about how to work around
+that particular problem for a Drupal 8 -> Drupal 9 upgrade:
+
+[Apply Drupal 9 compatibility patches with Composer](https://www.computerminds.co.uk/articles/apply-drupal-9-compatibility-patches-composer) ([archive](https://web.archive.org/web/20210124171010/https://www.computerminds.co.uk/articles/apply-drupal-9-compatibility-patches-composer))
 
 ## Difference between this and netresearch/composer-patches-plugin
 

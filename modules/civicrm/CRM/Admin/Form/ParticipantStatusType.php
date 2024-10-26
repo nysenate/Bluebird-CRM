@@ -17,6 +17,18 @@
 class CRM_Admin_Form_ParticipantStatusType extends CRM_Admin_Form {
 
   /**
+   * @var bool
+   */
+  public $submitOnce = TRUE;
+
+  /**
+   * Used to make sure a malicious POST does not change is_reserved
+   *
+   * @var bool
+   */
+  protected $_isReserved = FALSE;
+
+  /**
    * Explicitly declare the entity api name.
    */
   public function getDefaultEntity() {
@@ -65,7 +77,7 @@ class CRM_Admin_Form_ParticipantStatusType extends CRM_Admin_Form {
     if (empty($defaults['weight'])) {
       $defaults['weight'] = CRM_Utils_Weight::getDefaultWeight('CRM_Event_DAO_ParticipantStatusType');
     }
-    $this->_isReserved = $defaults['is_reserved'] ?? NULL;
+    $this->_isReserved = $defaults['is_reserved'] ?? FALSE;
     if ($this->_isReserved) {
       $this->freeze(['name', 'class', 'is_active']);
     }
@@ -114,7 +126,7 @@ class CRM_Admin_Form_ParticipantStatusType extends CRM_Admin_Form {
     }
     $params['weight'] = CRM_Utils_Weight::updateOtherWeights('CRM_Event_DAO_ParticipantStatusType', $oldWeight, $params['weight']);
 
-    $participantStatus = CRM_Event_BAO_ParticipantStatusType::create($params);
+    $participantStatus = CRM_Event_BAO_ParticipantStatusType::writeRecord($params);
 
     if ($participantStatus->id) {
       if ($this->_action & CRM_Core_Action::UPDATE) {

@@ -1,0 +1,239 @@
+.civicase__activity-panel {
+  &.affix {
+    position: fixed !important;
+  }
+
+  .panel {
+    overflow: auto;
+    position: relative;
+  }
+
+  .panel-heading,
+  .panel-subheading {
+    position: absolute;
+    width: 100%;
+  }
+
+  .panel-subheading {
+    border-bottom: 1px solid $gray-light;
+    top: 63px; // height of activity panel header
+  }
+
+  .panel-body {
+    margin-bottom: 76px; // height of activity panel footer
+    margin-top: 120px; // height of activity panel header + subheader
+    overflow: auto;
+    padding: 0;
+  }
+
+  .panel-subtitle {
+    color: $gray-darker;
+    display: flex;
+    font-size: $font-size-h3;
+    font-weight: $font-weight-heading;
+    line-height: 25px;
+  }
+
+  .civicase__tooltip {
+    flex: 1;
+    min-width: 0;
+  }
+
+  .civicase__activity__right-container {
+    .civicase__activity-date {
+      font-size: $font-size-base;
+      font-weight: $font-weight-content;
+      position: relative;
+      top: 2px;
+    }
+
+    .civicase__activity-star {
+      position: relative;
+      top: 2px;
+    }
+
+    .civicase__contact-additional__container--avatar {
+      margin-top: 0;
+    }
+  }
+}
+
+.civicase__activity-panel__close,
+.civicase__activity-panel__maximise {
+  color: $gray-darker;
+  font-size: $font-size-h2;
+  padding: 0;
+}
+
+.civicase__activity-panel__maximise {
+  margin-right: 5px;
+  transform: rotate(45deg);
+}
+
+.civicase__activity-panel__status-dropdown {
+  margin-right: 5px;
+
+  .list-group-item-info {
+    color: $crm-gray-matte;
+    display: block;
+    padding: $crm-dropdown-item-padding;
+  }
+}
+
+.civicase__activity-panel__priority-dropdown {
+  margin-right: 10px;
+
+  .list-group-item-info {
+    color: $crm-gray-matte;
+    display: block;
+    padding: $crm-dropdown-item-padding;
+  }
+}
+
+.civicase__activity-panel__id {
+  line-height: 33px;
+}
+
+.civicase__activity-panel__resume-draft {
+  bottom: 20px;
+  height: 36px;
+  position: absolute;
+  right: 20px;
+}
+
+.civicase__activity-panel__core_container {
+  $civicase-activity-panel-form-item-width: 230px;
+  $civicase-activity-panel-form-date-item-width: 145px;
+
+  min-height: 200px;
+  position: static !important;
+
+  /* stylelint-disable max-nesting-depth, selector-max-compound-selectors */
+  .help {
+    display: none;
+  }
+
+  .crm-activity-form-block-separation {
+    display: none;
+  }
+
+  .crm-form-block {
+    overflow: auto;
+    padding-top: 20px;
+  }
+
+  .form-layout,
+  .crm-accordion-body {
+    tbody {
+      td:nth-child(2) {
+        > * {
+          margin-bottom: 10px !important;
+        }
+
+        .crm-form-checkbox,
+        .crm-form-radio {
+          margin-right: 5px;
+          position: relative;
+          top: 2px;
+        }
+      }
+    }
+  }
+
+  .crm-info-panel,
+  .form-layout,
+  .crm-accordion-body {
+    box-shadow: none;
+
+    tbody {
+      > tr {
+        border: 0;
+
+        .label {
+          padding-left: 15px !important;
+        }
+
+        .view-value {
+          padding-right: 15px !important;
+        }
+      }
+    }
+
+    .label {
+      &,
+      label {
+        color: $crm-gray-matte !important;
+        font-weight: $font-weight-content !important;
+      }
+    }
+
+    .section-shown {
+      padding: 0;
+    }
+  }
+
+  .crm-button_qf_Activity_cancel {
+    display: none;
+  }
+
+  .crm-submit-buttons {
+    border-bottom: 0 !important;
+    border-top: 1px solid $gray-light;
+    bottom: 0;
+    height: auto !important;
+    margin: 0;
+    padding: 20px !important;
+    position: absolute;
+    width: 100%;
+
+    .edit,
+    .cancel {
+      @include button-variant($btn-primary-color !important, $btn-primary-bg, $btn-primary-border);
+    }
+
+    .delete {
+      @include button-variant($btn-danger-color, $btn-danger-bg, $btn-danger-border);
+
+      background-color: $brand-danger !important;
+    }
+  }
+
+  .crm-form-date-wrapper {
+    display: inline-block;
+  }
+
+  // This special width is added to accomodate date picker icon
+  // Some how the final width applied is 153 - 42 to the input element
+  // and 34px to date picker icon = which counts to: 145px.
+  .crm-form-date {
+    width: $civicase-activity-panel-form-date-item-width + (42px - 34px);
+  }
+
+  // Remaining space (230 - 145px) = 70; - 10px of margin.
+  .crm-form-time {
+    margin-left: 10px;
+    width: $civicase-activity-panel-form-item-width - $civicase-activity-panel-form-date-item-width - 10px;
+  }
+
+  .crm-ajax-select {
+    width: $civicase-activity-panel-form-item-width;
+  }
+
+  // Specific fix for follow up activity subject div
+  // as civicrm doesn't proper classes to qualify for styles.
+  input[name='followup_activity_subject'] { /* stylelint-disable-line selector-no-qualifying-type */
+    width: $civicase-activity-panel-form-item-width;
+  }
+
+  .view-value {
+    > input,
+    > select {
+      width: $civicase-activity-panel-form-item-width;
+    }
+
+    .crm-form-date-wrapper {
+      margin-bottom: 10px;
+    }
+  }
+  /* stylelint-enable max-nesting-depth */
+}

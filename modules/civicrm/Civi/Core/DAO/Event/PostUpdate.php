@@ -15,7 +15,7 @@ namespace Civi\Core\DAO\Event;
  * Class PostUpdate
  * @package Civi\Core\DAO\Event
  */
-class PostUpdate extends \Symfony\Component\EventDispatcher\Event {
+class PostUpdate extends \Civi\Core\Event\GenericHookEvent {
 
   /**
    * @var \CRM_Core_DAO
@@ -23,10 +23,22 @@ class PostUpdate extends \Symfony\Component\EventDispatcher\Event {
   public $object;
 
   /**
-   * @param $object
+   * @var mixed
    */
-  public function __construct($object) {
+  public $result;
+
+  /**
+   * @var string
+   */
+  public $eventID;
+
+  /**
+   * @param $object
+   * @param $result
+   */
+  public function __construct($object, $result) {
     $this->object = $object;
+    $this->result = $result;
   }
 
 }

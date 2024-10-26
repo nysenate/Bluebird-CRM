@@ -1,28 +1,11 @@
 <?php
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 5                                                  |
- +--------------------------------------------------------------------+
- | Copyright (C) 2011 Marty Wright                                    |
- | Licensed to CiviCRM under the Academic Free License version 3.0.   |
- +--------------------------------------------------------------------+
- | This file is a part of CiviCRM.                                    |
+ | Copyright CiviCRM LLC. All rights reserved.                        |
  |                                                                    |
- | CiviCRM is free software; you can copy, modify, and distribute it  |
- | under the terms of the GNU Affero General Public License           |
- | Version 3, 19 November 2007 and the CiviCRM Licensing Exception.   |
- |                                                                    |
- | CiviCRM is distributed in the hope that it will be useful, but     |
- | WITHOUT ANY WARRANTY; without even the implied warranty of         |
- | MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.               |
- | See the GNU Affero General Public License for more details.        |
- |                                                                    |
- | You should have received a copy of the GNU Affero General Public   |
- | License and the CiviCRM Licensing Exception along                  |
- | with this program; if not, contact CiviCRM LLC                     |
- | at info[AT]civicrm[DOT]org. If you have questions about the        |
- | GNU Affero General Public License or the licensing of CiviCRM,     |
- | see the CiviCRM license FAQ at http://civicrm.org/licensing        |
+ | This work is published under the GNU AGPLv3 license with some      |
+ | permitted exceptions and without any warranty. For full license    |
+ | and copyright information, see https://civicrm.org/licensing       |
  +--------------------------------------------------------------------+
  */
 
@@ -72,12 +55,13 @@ class CRM_Core_BAO_PaperSize extends CRM_Core_DAO_OptionValue {
    *
    * @return int
    *   Group ID (null if Group ID doesn't exist)
+   * @throws CRM_Core_Exception
    */
   private static function _getGid() {
     if (!self::$_gid) {
       self::$_gid = CRM_Core_DAO::getFieldValue('CRM_Core_DAO_OptionGroup', 'paper_size', 'id', 'name');
       if (!self::$_gid) {
-        CRM_Core_Error::fatal(ts('Paper Size Option Group not found in database.'));
+        throw new CRM_Core_Exception(ts('Paper Size Option Group not found in database.'));
       }
     }
     return self::$_gid;
@@ -219,7 +203,7 @@ class CRM_Core_BAO_PaperSize extends CRM_Core_DAO_OptionValue {
           $f = rtrim($f, '.');
           return (float) (empty($f) ? '0' : $f);
       }
-      return CRM_Utils_Array::value($field, $values, $default);
+      return $values[$field] ?? $default;
     }
     return $default;
   }
@@ -268,6 +252,7 @@ class CRM_Core_BAO_PaperSize extends CRM_Core_DAO_OptionValue {
    * @param array $values associative array of name/value pairs
    * @param int $id
    *   Id of the database record (null = new record).
+   * @throws CRM_Core_Exception
    */
   public function savePaperSize(&$values, $id) {
     // get the Option Group ID for Paper Sizes (create one if it doesn't exist)
@@ -311,7 +296,7 @@ class CRM_Core_BAO_PaperSize extends CRM_Core_DAO_OptionValue {
     // make sure serialized array will fit in the 'value' column
     $attribute = CRM_Core_DAO::getAttribute('CRM_Core_BAO_PaperSize', 'value');
     if (strlen($this->value) > $attribute['maxlength']) {
-      CRM_Core_Error::fatal(ts('Paper Size does not fit in database.'));
+      throw new CRM_Core_Exception(ts('Paper Size does not fit in database.'));
     }
     $this->save();
 
@@ -325,7 +310,7 @@ class CRM_Core_BAO_PaperSize extends CRM_Core_DAO_OptionValue {
    *
    * @param int $id
    *   ID of the Paper Size to be deleted.
-   *
+   * @throws CRM_Core_Exception
    */
   public static function del($id) {
     if ($id) {
@@ -340,7 +325,7 @@ class CRM_Core_BAO_PaperSize extends CRM_Core_DAO_OptionValue {
         }
       }
     }
-    CRM_Core_Error::fatal(ts('Invalid value passed to delete function.'));
+    throw new CRM_Core_Exception(ts('Invalid value passed to delete function.'));
   }
 
 }

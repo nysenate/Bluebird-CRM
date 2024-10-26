@@ -1,0 +1,57 @@
+.civicase__dashboard__tab {
+  background: $gray-light;
+
+  > .civicase__dashboard__tab__top {
+    margin-bottom: $case-gutter-width;
+  }
+
+  .panel-secondary {
+    margin-bottom: $case-gutter-width;
+  }
+}
+
+.civicase__dashboard__tab__col {
+  padding: 0 $case-gutter-width / 2;
+}
+
+.civicase__dashboard__tab__col-wrapper {
+  display: flex;
+  flex-direction: column;
+  margin: 0 -#{$case-gutter-width / 2};
+
+  > .civicase__dashboard__tab__col {
+    margin-bottom: $case-gutter-width;
+  }
+}
+
+.civicase__dashboard__tab__main {
+  margin: auto;
+  max-width: $case-max-width;
+  padding: 0 $case-gutter-width;
+}
+
+@media (min-width: $screen-md-min) {
+  .civicase__dashboard__tab__col--left {
+    flex-basis: 300px + $case-gutter-width;
+    flex-grow: 0;
+    flex-shrink: 0;
+  }
+
+  .civicase__dashboard__tab__col--right {
+    flex-grow: 1;
+  }
+
+  .civicase__dashboard__tab__col-wrapper {
+    flex-direction: row;
+
+    > .civicase__dashboard__tab__col {
+      margin-bottom: 0;
+    }
+  }
+}
+
+@media (min-width: $screen-lg-min) {
+  .civicase__dashboard__tab__main {
+    padding: 0;
+  }
+}

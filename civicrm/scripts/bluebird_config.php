@@ -156,22 +156,24 @@ function get_bluebird_instance_config($instance = null, $filename = null)
     if (isset($bbini['globals'])) {
       $s_bbcfg = array_merge($s_bbcfg, $bbini['globals']);
     }
-    if (isset($bbini[$instance_key])) {
-      $s_bbcfg = array_merge($s_bbcfg, $bbini[$instance_key]);
-    }
+    $s_bbcfg = array_merge($s_bbcfg, $bbini[$instance_key]);
   }
   else {
     error_log(PROG.": CRM instance [$instance] could not be configured.");
     return null;
   }
 
+  $base_domain = isset($s_bbcfg['base.domain']) ? $s_bbcfg['base.domain'] : $default_base_domain;
+  $data_dirname = isset($s_bbcfg['data.dirname']) ? $s_bbcfg['data.dirname'] : $shortname;
+
   $db_url = 'mysql://'.$s_bbcfg['db.user'].':'.$s_bbcfg['db.pass'].'@'.$s_bbcfg['db.host'].'/';
   $db_basename = isset($s_bbcfg['db.basename']) ? $s_bbcfg['db.basename'] : $shortname;
-  $base_domain = isset($s_bbcfg['base.domain']) ? $s_bbcfg['base.domain'] : $default_base_domain;
-  $civicrm_db_url = $db_url.$s_bbcfg['db.civicrm.prefix'].$db_basename;
-  $drupal_db_url = $db_url.$s_bbcfg['db.drupal.prefix'].$db_basename;
-  $log_db_url = $db_url.$s_bbcfg['db.log.prefix'].$db_basename;
-  $data_dirname = isset($s_bbcfg['data.dirname']) ? $s_bbcfg['data.dirname'] : $shortname;
+  $civicrm_db_name = $s_bbcfg['db.civicrm.prefix'].$db_basename;
+  $drupal_db_name = $s_bbcfg['db.drupal.prefix'].$db_basename;
+  $log_db_name = $s_bbcfg['db.log.prefix'].$db_basename;
+  $civicrm_db_url = $db_url.$civicrm_db_name;
+  $drupal_db_url = $db_url.$drupal_db_name;
+  $log_db_url = $db_url.$log_db_name;
 
   // Prepend a period on the base_domain if it's not empty.
   if (!empty($base_domain) && $base_domain[0] != '.') {
@@ -179,6 +181,9 @@ function get_bluebird_instance_config($instance = null, $filename = null)
   }
 
   // Add some extra convenience parameters.
+  $s_bbcfg['civicrm_db_name'] = $civicrm_db_name;
+  $s_bbcfg['drupal_db_name'] = $drupal_db_name;
+  $s_bbcfg['log_db_name'] = $log_db_name;
   $s_bbcfg['civicrm_db_url'] = $civicrm_db_url;
   $s_bbcfg['drupal_db_url'] = $drupal_db_url;
   $s_bbcfg['log_db_url'] = $log_db_url;

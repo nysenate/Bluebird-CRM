@@ -9,10 +9,6 @@
 *}
 {* Links for scheduling/logging meetings and calls and Sending Email *}
 
-{if $contact_id }
-{assign var = "contactId" value= $contact_id }
-{/if}
-
 {if $as_select} {* on 3.2, the activities can be either a drop down select (on the activity tab) or a list (on the action menu) *}
 <select name="other_activity" class="crm-form-select crm-select2 crm-action-menu fa-plus">
   <option value="">{ts}New Activity{/ts}</option>
@@ -43,7 +39,7 @@
 {foreach from=$activityTypes key=k item=act}
 <li class="crm-activity-type_{$k}">
   <a href="{$act.url}" data-tab="activity">
-    <i class="crm-i {$act.icon}"></i> {$act.label}
+    <i class="crm-i {$act.icon}" aria-hidden="true"></i> {$act.label}
   </a>
 </li>
 {/foreach}

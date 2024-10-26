@@ -13,8 +13,6 @@
  *
  * @package CRM
  * @copyright CiviCRM LLC https://civicrm.org/licensing
- * $Id$
- *
  */
 
 /**
@@ -28,7 +26,7 @@ class CRM_Member_Form_Task_Label extends CRM_Member_Form_Task {
    *
    * @return void
    */
-  public function preProcess() {
+  public function preProcess(): void {
     parent::preProcess();
     $this->setContactIDs();
     CRM_Core_Resources::singleton()->addScriptFile('civicrm', 'templates/CRM/Member/Form/Task/Label.js');
@@ -40,7 +38,7 @@ class CRM_Member_Form_Task_Label extends CRM_Member_Form_Task {
    *
    * @return void
    */
-  public function buildQuickForm() {
+  public function buildQuickForm(): void {
     CRM_Contact_Form_Task_Label::buildLabelForm($this);
     $this->addElement('checkbox', 'per_membership', ts('Print one label per Membership (rather than per contact)'));
   }
@@ -51,7 +49,7 @@ class CRM_Member_Form_Task_Label extends CRM_Member_Form_Task {
    * @return array
    *   array of default values
    */
-  public function setDefaultValues() {
+  public function setDefaultValues(): array {
     $defaults = [];
     $format = CRM_Core_BAO_LabelFormat::getDefaultValues();
     $defaults['label_name'] = $format['name'] ?? NULL;
@@ -67,7 +65,7 @@ class CRM_Member_Form_Task_Label extends CRM_Member_Form_Task {
    *
    * @return void
    */
-  public function postProcess() {
+  public function postProcess(): void {
     $formValues = $this->controller->exportValues($this->_name);
     $locationTypeID = $formValues['location_type_id'];
     $respectDoNotMail = $formValues['do_not_mail'] ?? NULL;
@@ -83,20 +81,18 @@ class CRM_Member_Form_Task_Label extends CRM_Member_Form_Task {
     // so no-one is tempted to refer to this again after relevant values are extracted
     unset($formValues);
 
-    list($rows, $tokenFields) = CRM_Contact_Form_Task_LabelCommon::getRows($this->_contactIds, $locationTypeID, $respectDoNotMail, $mergeSameAddress, $mergeSameHousehold);
+    [$rows, $tokenFields] = CRM_Contact_Form_Task_LabelCommon::getRows($this->_contactIds, $locationTypeID, $respectDoNotMail, $mergeSameAddress, $mergeSameHousehold);
 
-    $individualFormat = FALSE;
     if ($mergeSameAddress) {
       CRM_Core_BAO_Address::mergeSameAddress($rows);
-      $individualFormat = TRUE;
     }
     if ($mergeSameHousehold) {
       $rows = CRM_Contact_Form_Task_LabelCommon::mergeSameHousehold($rows);
-      $individualFormat = TRUE;
     }
     // format the addresses according to CIVICRM_ADDRESS_FORMAT (CRM-1327)
     foreach ((array) $rows as $id => $row) {
-      if ($commMethods = CRM_Utils_Array::value('preferred_communication_method', $row)) {
+      $commMethods = $row['preferred_communication_method'] ?? NULL;
+      if ($commMethods) {
         $val = array_filter(explode(CRM_Core_DAO::VALUE_SEPARATOR, $commMethods));
         $comm = CRM_Core_PseudoConstant::get('CRM_Contact_DAO_Contact', 'preferred_communication_method');
         $temp = [];
@@ -106,7 +102,7 @@ class CRM_Member_Form_Task_Label extends CRM_Member_Form_Task {
         $row['preferred_communication_method'] = implode(', ', $temp);
       }
       $row['id'] = $id;
-      $formatted = CRM_Utils_Address::format($row, 'mailing_format', FALSE, TRUE, $tokenFields);
+      $formatted = CRM_Utils_Address::formatMailingLabel($row, 'mailing_format', FALSE, TRUE, $tokenFields);
       $rows[$id] = [$formatted];
     }
     if ($isPerMembership) {
@@ -114,6 +110,7 @@ class CRM_Member_Form_Task_Label extends CRM_Member_Form_Task {
       $memberships = civicrm_api3('membership', 'get', [
         'id' => ['IN' => $this->_memberIds],
         'return' => 'contact_id',
+        'options' => ['limit' => 0],
       ]);
       foreach ($memberships['values'] as $id => $membership) {
         if (isset($rows[$membership['contact_id']])) {

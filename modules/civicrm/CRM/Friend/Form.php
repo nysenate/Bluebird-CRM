@@ -10,14 +10,6 @@
  */
 
 /**
- *
- * @package CRM
- * @copyright CiviCRM LLC https://civicrm.org/licensing
- * $Id$
- *
- */
-
-/**
  * This class generates form components for Tell A Friend Form For End User
  *
  */
@@ -64,10 +56,7 @@ class CRM_Friend_Form extends CRM_Core_Form {
 
     $pcomponent = CRM_Utils_Request::retrieve('pcomponent', 'String', $this, TRUE);
 
-    if (in_array($pcomponent, [
-      'contribute',
-      'event',
-    ])) {
+    if (in_array($pcomponent, ['contribute', 'event'])) {
       $values = [];
       $params = ['id' => $this->_entityId];
       CRM_Core_DAO::commonRetrieve('CRM_Contribute_DAO_ContributionPage',
@@ -76,7 +65,7 @@ class CRM_Friend_Form extends CRM_Core_Form {
       $this->_title = $values['title'] ?? NULL;
       $this->_campaignId = $values['campaign_id'] ?? NULL;
       $this->_entityTable = 'civicrm_contribution_page';
-      if ($pcomponent == 'event') {
+      if ($pcomponent === 'event') {
         $this->_entityTable = 'civicrm_event';
         $isShare = CRM_Core_DAO::getFieldValue('CRM_Event_DAO_Event', $this->_entityId, 'is_share');
         $this->_title = CRM_Core_DAO::getFieldValue('CRM_Event_DAO_Event', $this->_entityId, 'title');
@@ -87,7 +76,7 @@ class CRM_Friend_Form extends CRM_Core_Form {
       // Tell Form.tpl whether to include SocialNetwork.tpl for social media sharing
       $this->assign('isShare', $isShare);
     }
-    elseif ($pcomponent == 'pcp') {
+    elseif ($pcomponent === 'pcp') {
       $this->_pcpBlockId = CRM_Utils_Request::retrieve('blockId', 'Positive', $this, TRUE);
 
       $values = [];
@@ -122,14 +111,13 @@ class CRM_Friend_Form extends CRM_Core_Form {
     }
     $this->assign('context', $pcomponent);
 
-    $session = CRM_Core_Session::singleton();
-    $this->_contactID = $session->get('userID');
+    $this->_contactID = CRM_Core_Session::getLoggedInContactID();
     if (!$this->_contactID) {
-      $this->_contactID = $session->get('transaction.userID');
+      $this->_contactID = CRM_Core_Session::singleton()->get('transaction.userID');
     }
 
     if (!$this->_contactID) {
-      CRM_Core_Error::fatal(ts('Could not get the contact ID'));
+      CRM_Core_Error::statusBounce(ts('Could not get the contact ID'));
     }
 
     // we do not want to display recently viewed items, so turn off
@@ -140,7 +128,7 @@ class CRM_Friend_Form extends CRM_Core_Form {
    * Set default values for the form.
    *
    *
-   * @return void
+   * @return array
    */
   public function setDefaultValues() {
     $defaults = [];
@@ -149,11 +137,11 @@ class CRM_Friend_Form extends CRM_Core_Form {
     $defaults['entity_table'] = $this->_entityTable;
 
     CRM_Friend_BAO_Friend::getValues($defaults);
-    CRM_Utils_System::setTitle(CRM_Utils_Array::value('title', $defaults));
+    $this->setTitle(CRM_Utils_Array::value('title', $defaults));
 
-    $this->assign('title', CRM_Utils_Array::value('title', $defaults));
-    $this->assign('intro', CRM_Utils_Array::value('intro', $defaults));
-    $this->assign('message', CRM_Utils_Array::value('suggested_message', $defaults));
+    $this->assign('title', $defaults['title'] ?? NULL);
+    $this->assign('intro', $defaults['intro'] ?? NULL);
+    $this->assign('message', $defaults['suggested_message'] ?? NULL);
     $this->assign('entityID', $this->_entityId);
 
     list($fromName, $fromEmail) = CRM_Contact_BAO_Contact::getContactDetails($this->_contactID);
@@ -190,7 +178,7 @@ class CRM_Friend_Form extends CRM_Core_Form {
     $this->add('wysiwyg', 'suggested_message', ts('Your Message'), CRM_Core_DAO::getAttribute('CRM_Friend_DAO_Friend', 'suggested_message'));
     $friend = [];
     $mailLimit = self::NUM_OPTION;
-    if ($this->_entityTable == 'civicrm_pcp') {
+    if ($this->_entityTable === 'civicrm_pcp') {
       $mailLimit = $this->_mailLimit;
     }
     $this->assign('mailLimit', $mailLimit + 1);
@@ -258,8 +246,8 @@ class CRM_Friend_Form extends CRM_Core_Form {
   /**
    * Process the form submission.
    *
-   *
    * @return void
+   * @throws \CRM_Core_Exception
    */
   public function postProcess() {
     // get the submitted form values.
@@ -281,11 +269,11 @@ class CRM_Friend_Form extends CRM_Core_Form {
     $defaults['entity_table'] = $this->_entityTable;
 
     CRM_Friend_BAO_Friend::getValues($defaults);
-    if ($this->_entityTable == 'civicrm_pcp') {
+    if ($this->_entityTable === 'civicrm_pcp') {
       $defaults['thankyou_text'] = $defaults['thankyou_title'] = ts('Thank you for your support');
       $defaults['thankyou_text'] = ts('Thanks for supporting this campaign by spreading the word to your friends.');
     }
-    elseif ($this->_entityTable == 'civicrm_contribution_page') {
+    elseif ($this->_entityTable === 'civicrm_contribution_page') {
       // If this is tell a friend after contributing, give donor link to create their own fundraising page
       if ($linkText = CRM_PCP_BAO_PCP::getPcpBlockStatus($defaults['entity_id'], $defaults['entity_table'])) {
 
@@ -294,11 +282,9 @@ class CRM_Friend_Form extends CRM_Core_Form {
           FALSE, NULL, TRUE,
           TRUE
         );
-        $this->assign('linkTextUrl', $linkTextUrl);
-        $this->assign('linkText', $linkText);
       }
     }
-    elseif ($this->_entityTable == 'civicrm_event') {
+    elseif ($this->_entityTable === 'civicrm_event') {
       // If this is tell a friend after registering for an event, give donor link to create their own fundraising page
       require_once 'CRM/PCP/BAO/PCP.php';
       if ($linkText = CRM_PCP_BAO_PCP::getPcpBlockStatus($defaults['entity_id'], $defaults['entity_table'])) {
@@ -306,12 +292,11 @@ class CRM_Friend_Form extends CRM_Core_Form {
           "action=add&reset=1&pageId={$defaults['entity_id']}&component=event",
           FALSE, NULL, TRUE,
           TRUE);
-        $this->assign('linkTextUrl', $linkTextUrl);
-        $this->assign('linkText', $linkText);
       }
     }
-
-    CRM_Utils_System::setTitle($defaults['thankyou_title']);
+    $this->assign('linkTextUrl', $linkTextUrl ?? NULL);
+    $this->assign('linkText', $linkText ?? NULL);
+    $this->setTitle($defaults['thankyou_title']);
     $this->assign('thankYouText', $defaults['thankyou_text']);
   }
 

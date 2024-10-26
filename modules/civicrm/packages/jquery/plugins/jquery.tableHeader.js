@@ -18,7 +18,7 @@ $(document).ready(function() {
       if (html == ' ') {
 	html = '&nbsp;';
       }
-      if ($(this).children().size() == 0) {
+      if ($(this).children().length == 0) {
 	html = '<span>'+ html +'</span>';
       }
       

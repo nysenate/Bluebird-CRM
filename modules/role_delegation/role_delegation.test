@@ -360,3 +360,82 @@ class RoleDelegationRoleEditingTestCase extends RoleDelegationTestCase {
     );
   }
 }
+
+
+/**
+ * Functional tests for integration with views bulk operations module.
+ */
+class RoleDelegationViewsBulkOperationsTestCase extends RoleDelegationTestCase {
+
+  public static function getInfo() {
+    return array(
+      'name' => t('Views Bulk Operations Integration'),
+      'description' => t('Check that role assignment work in combination with views bulk operations.'),
+      'group' => t('Role Delegation'),
+      'dependencies' => array(
+        'views_bulk_operations',
+        'admin_views'
+      ),
+    );
+  }
+
+  public function setUp(array $modules = array('role_delegation')) {
+    parent::setUp(array('role_delegation', 'admin_views', 'views_bulk_operations'));
+
+    $view = views_get_view('admin_views_user');
+    $item = $view->get_item('system_1', 'field', 'views_bulk_operations');
+
+    $item['vbo_operations']['action::role_delegation_delegate_roles_action'] = array(
+      'selected' => 1,
+      'skip_confirmation' => 0,
+      'override_label' => 0,
+      'postpone_processing' => 0,
+    );
+
+    $view->set_item('system_1', 'field', 'views_bulk_operations', $item);
+    views_save_view($view);
+  }
+
+  /**
+   * Check that the right combination of Add and Remove role
+   * operations is present in the vbo delegate role action.
+   */
+  public function testVboDelegateRoleAssignment() {
+    $this->drupalLogin($this->user_low);
+    $this->drupalGet('/admin/people');
+
+    $edit = array(
+      'views_bulk_operations[0]' => TRUE,
+      'operation' => 'action::role_delegation_delegate_roles_action',
+    );
+    $this->drupalPost('/admin/people', $edit, 'Execute');
+
+    $this->assertNoFieldByName('role_change[' . $this->rid_low . ']', NULL, t('!user user can\'t delegate the !role role.', array(
+      '!user' => 'low',
+      '!role' => 'low',
+    )));
+    $this->assertNoFieldByName('role_change[' . $this->rid_high . ']', NULL, t('!user user can\'t delegate the !role role.', array(
+      '!user' => 'low',
+      '!role' => 'high',
+    )));
+
+    $this->drupalLogin($this->user_high);
+    $this->drupalGet('/admin/people');
+
+    $edit = array(
+      'views_bulk_operations[0]' => TRUE,
+      'operation' => 'action::role_delegation_delegate_roles_action',
+    );
+    $this->drupalPost('/admin/people', $edit, 'Execute');
+
+    $this->assertFieldByName('role_change[' . $this->rid_low . ']', NULL, t('!user user can delegate the !role role.', array(
+      '!user' => 'high',
+      '!role' => 'low',
+    )));
+    $this->assertNoFieldByName('role_change[' . $this->rid_high . ']', NULL, t('!user user can\'t delegate the !role role.', array(
+      '!user' => 'high',
+      '!role' => 'high',
+    )));
+  }
+
+}

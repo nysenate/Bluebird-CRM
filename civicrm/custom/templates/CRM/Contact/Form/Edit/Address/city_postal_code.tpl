@@ -22,13 +22,14 @@
           {$form.address.$blockId.postal_code.label}<br />
           {$form.address.$blockId.postal_code.html}
        </td>
-      {if !empty($form.address.$blockId.postal_code_suffix)}
+      {if array_key_exists('postal_code_suffix', $form.address.$blockId)}
           <td>
             {$form.address.$blockId.postal_code_suffix.label} {help id="id-postal-code-suffix" file="CRM/Contact/Form/Contact.hlp"}<br/>
             {$form.address.$blockId.postal_code_suffix.html}
           </td>
       {/if}
     {/if}
+    <td colspan="2">&nbsp;&nbsp;</td>
 </tr>
 </table>
 </td></tr>

@@ -71,7 +71,7 @@ function checkAuthentication() {
       break;
     }
     if(!$auth_function($config)) {
-      CRM_Core_Error::fatal(ts("You must be logged in with proper permissions to edit, add, or delete uploaded images."));
+      throw new CRM_Core_Exception(ts("You must be logged in with proper permissions to edit, add, or delete uploaded images."));
     }
 
     $_SESSION['KCFINDER']['disabled'] = false;
@@ -98,12 +98,16 @@ function authenticate_drupal8($config) {
     $connection = \Drupal::database();
     $query = $connection->query("SELECT uid FROM {sessions} WHERE sid = :sid", array(":sid" => \Drupal\Component\Utility\Crypt::hashBase64($session)));
     if (($uid = $query->fetchField()) > 0) {
-      $username = \Drupal\user\Entity\User::load($uid)->getUsername();
+      $username = \Drupal\user\Entity\User::load($uid)->getAccountName();
       if ($username) {
         $config->userSystem->loadUser($username);
       }
     }
   }
+
+  // Start Drupal's own session now, so changes to $_SESSION won't get overwritten later
+  \Drupal::service('session')->start();
+
   // check if user has access permission...
   if (CRM_Core_Permission::check('access CiviCRM')) {
     return true;
@@ -196,10 +200,25 @@ function authenticate_joomla($config) {
   require_once ( JPATH_BASE .DS.'includes'.DS.'defines.php' );
   require_once ( JPATH_BASE .DS.'includes'.DS.'framework.php' );
 
-  $mainframe = JFactory::getApplication('administrator');
-  $mainframe->initialise();
+  if (version_compare(JVERSION, '4.0.0', 'lt')) {
+    $mainframe = JFactory::getApplication('administrator');
+    $mainframe->initialise();
+    
+    $user_id = JFactory::getUser()->id;
+  } else {
+    // Boot the DI container.
+    $container = \Joomla\CMS\Factory::getContainer();
 
-  if (JFactory::getUser()->id == 0) {
+    // Alias the session service key to the web session service.
+    $container->alias(\Joomla\Session\SessionInterface::class, 'session.web.site');
+
+    // Get the application.
+    $app = $container->get(\Joomla\CMS\Application\AdministratorApplication::class);
+    
+    $user_id = Joomla\CMS\Factory::getUser()->id;
+  }
+
+  if ($user_id == 0) {
     return false;
   }
   return true;

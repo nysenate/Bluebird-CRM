@@ -13,7 +13,6 @@
  *
  * @package CRM
  * @copyright CiviCRM LLC https://civicrm.org/licensing
- *
  */
 
 /**
@@ -34,7 +33,7 @@ class CRM_Profile_Page_Router extends CRM_Core_Page {
       return NULL;
     }
 
-    $secondArg = CRM_Utils_Array::value(2, $args, '');
+    $secondArg = $args[2] ?? '';
 
     if ($secondArg == 'map') {
       $controller = new CRM_Core_Controller_Simple(

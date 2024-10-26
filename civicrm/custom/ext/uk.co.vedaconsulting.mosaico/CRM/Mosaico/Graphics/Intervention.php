@@ -9,9 +9,9 @@ use Intervention\Image\ImageManagerStatic as Image;
  * @see https://github.com/voidlabs/mosaico/blob/master/backend/README.txt
  * @see http://image.intervention.io/getting_started/introduction
  */
-class CRM_Mosaico_Graphics_Intervention implements CRM_Mosaico_Graphics_Interface {
+class CRM_Mosaico_Graphics_Intervention extends CRM_Mosaico_Graphics_Interface {
 
-  const FONT_PATH = 'packages/mosaico/dist/vendor/notoregular/NotoSans-Regular-webfont.ttf';
+  const FONT_PATH = 'packages/mosaico/dist/rs/notoregular/noto-sans-400-normal.ttf';
 
   /**
    * CRM_Mosaico_Graphics_Intervention constructor.
@@ -41,20 +41,20 @@ class CRM_Mosaico_Graphics_Intervention implements CRM_Mosaico_Graphics_Interfac
     $y = 0;
     $size = 40;
     while ($y < $height) {
-      $points = array(
+      $points = [
         ["x" => $x, "y" => $y],
         ["x" => $x + $size, "y" => $y],
         ["x" => $x + $size * 2, "y" => $y + $size],
         ["x" => $x + $size * 2, "y" => $y + $size * 2],
-      );
+      ];
       $img->polygon(self::flattenPoints($points), function ($draw) {
         $draw->background("#808080");
       });
-      $points = array(
+      $points = [
         ["x" => $x, "y" => $y + $size],
         ["x" => $x + $size, "y" => $y + $size * 2],
         ["x" => $x, "y" => $y + $size * 2],
-      );
+      ];
       $img->polygon(self::flattenPoints($points), function ($draw) {
         $draw->background("#808080");
       });
@@ -72,7 +72,15 @@ class CRM_Mosaico_Graphics_Intervention implements CRM_Mosaico_Graphics_Interfac
       $font->color("#B0B0B0");
     });
 
-    echo $img->response('png');
+    // $img->response returns a \Symfony\Component\HttpFoundation\Response object which will call __toString unless we pass in the send() method in Drupal8.
+    $response = $img->response('png');
+    header("Content-type: image/png");
+    if (is_object($response)) {
+      echo $response->sendContent();
+    }
+    else {
+      echo $response;
+    }
   }
 
   /**
@@ -96,6 +104,7 @@ class CRM_Mosaico_Graphics_Intervention implements CRM_Mosaico_Graphics_Interfac
   public function createResizedImage($srcFile, $destFile, $width, $height) {
     $config = CRM_Mosaico_Utils::getConfig();
     $img = Image::make($srcFile);
+    $this->adjustResizeDimensions($img->width(), $img->height(), $width, $height);
 
     if ($width && $height) {
       $img->resize($width, $height);
@@ -114,6 +123,7 @@ class CRM_Mosaico_Graphics_Intervention implements CRM_Mosaico_Graphics_Interfac
 
   public function createCoveredImage($srcFile, $destFile, $width, $height) {
     $img = Image::make($srcFile);
+    $this->adjustResizeDimensions($img->width(), $img->height(), $width, $height);
 
     $ratios = [];
     if ($width) {

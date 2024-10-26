@@ -13,8 +13,6 @@
  *
  * @package CRM
  * @copyright CiviCRM LLC https://civicrm.org/licensing
- * $Id$
- *
  */
 class CRM_Event_Page_ParticipantListing_NameStatusAndDate extends CRM_Core_Page {
 
@@ -29,7 +27,7 @@ class CRM_Event_Page_ParticipantListing_NameStatusAndDate extends CRM_Core_Page 
   public function preProcess() {
     $this->_id = CRM_Utils_Request::retrieve('id', 'Integer', $this, TRUE);
 
-    // ensure that there is a particpant type for this
+    // ensure that there is a participant type for this
     $this->_participantListingID = CRM_Core_DAO::getFieldValue('CRM_Event_DAO_Event',
       $this->_id,
       'participant_listing_id'
@@ -96,7 +94,7 @@ LIMIT    $offset, $rowCount";
       ];
       $rows[] = $row;
     }
-    $this->assign_by_ref('rows', $rows);
+    $this->assign('rows', $rows);
 
     return parent::run();
   }
@@ -116,7 +114,7 @@ LIMIT    $offset, $rowCount";
     $params['buttonBottom'] = 'PagerBottomButton';
     $params['rowCount'] = $this->get(CRM_Utils_Pager::PAGE_ROWCOUNT);
     if (!$params['rowCount']) {
-      $params['rowCount'] = CRM_Utils_Pager::ROWCOUNT;
+      $params['rowCount'] = Civi::settings()->get('default_pager_size');
     }
 
     $query = "
@@ -126,7 +124,7 @@ SELECT count( civicrm_contact.id )
 
     $params['total'] = CRM_Core_DAO::singleValueQuery($query, $whereParams);
     $this->_pager = new CRM_Utils_Pager($params);
-    $this->assign_by_ref('pager', $this->_pager);
+    $this->assign('pager', $this->_pager);
   }
 
   /**
@@ -159,8 +157,8 @@ SELECT count( civicrm_contact.id )
       );
     }
     $sort = new CRM_Utils_Sort($headers, $sortID);
-    $this->assign_by_ref('headers', $headers);
-    $this->assign_by_ref('sort', $sort);
+    $this->assign('headers', $headers);
+    $this->assign('sort', $sort);
     $this->set(CRM_Utils_Sort::SORT_ID,
       $sort->getCurrentSortID()
     );

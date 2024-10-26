@@ -53,7 +53,9 @@ function rules_element_invoke_component($arguments, RulesPlugin $element) {
     return $return;
   }
   else {
-    throw new RulesEvaluationException('Unable to get the component %name', array('%name' => $info['#config_name']), $element, RulesLog::ERROR);
+    throw new RulesEvaluationException('Unable to get the component %name', array(
+      '%name' => $info['#config_name'],
+    ), $element, RulesLog::ERROR);
   }
 }
 
@@ -276,5 +278,5 @@ class RulesTaxonomyVocabularyWrapper extends EntityDrupalWrapper {
 }
 
 /**
- * @}
+ * @} End of "addtogroup rules"
  */

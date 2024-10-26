@@ -1,30 +1,30 @@
 <?php
 
-require_once 'CRM/Utils/Array.php';
-
+//https://www.php-imap.com/
+use Webklex\PHPIMAP\ClientManager;
+use Webklex\PHPIMAP\IMAP;
 
 class CRM_NYSS_IMAP_Session
 {
   public static $force_readonly = false;
   public static $auto_expunge = true;
 
-  private $_config = array();
+  private $_config = [];
   private $_serverRef = null;
   private $_conn = null;
 
-  private $_defaults = array(
-    'server'     => 'senmail.senate.state.ny.us',
-    'port'       => 143,
-    'flags'      => array('imap'),
-    'mailbox'    => 'INBOX',
-    'user'       => '',
-    'password'   => '',
+  private $_defaults = [
+    'host' => 'imap.example.com',
+    'port' => 143,
+    'flags' => ['imap'],
+    'mailbox' => 'INBOX',
+    'user' => '',
+    'password' => '',
     'log_errors' => false
-  );
+  ];
 
 
-  public function __construct($opts = array())
-  {
+  public function __construct($opts = []) {
     // Compute union of provided opts and default opts, with provided opts
     // taking precedence.
     $this->_config = $opts + $this->_defaults;
@@ -36,120 +36,96 @@ class CRM_NYSS_IMAP_Session
       $this->_config['flags'] = array_filter(explode('/', $flags), 'trim');
     }
 
-    $this->_serverRef = $this->_buildServerRef();
     $this->_openConnection();
+
     if ($this->_conn === null || $this->_conn === false) {
       throw new Exception('Unable to establish connection to IMAP server; serverRef='.$this->_config['user'].'@'.$this->_serverRef);
     }
-  } // __construct()
+  }
 
-
-  public function __destruct()
-  {
-    $this->_closeConnection();
-  } // __destruct()
-
-
-  public function getConnection()
-  {
+  public function getConnection() {
     return $this->_conn;
   } // getConnection()
 
 
-  public function getServerRef()
-  {
-    return $this->_serverRef;
-  } // getServerRef()
+  private function _openConnection() {
+    CRM_Core_DAO_AllCoreTables::flush();
+    CRM_Core_DAO_AllCoreTables::init();
 
+    require_once 'php-imap/vendor/autoload.php';
 
-  public function fetchBody($msgnum, $section = '')
-  {
-    return imap_fetchbody($this->_conn, (int)$msgnum, $section);
-  } // fetchBody()
+    //retrieve most recent access token
+    $oAuthSysToken = \Civi\Api4\OAuthSysToken::get(FALSE)
+      ->execute()
+      ->last();
+    //Civi::log()->debug(__METHOD__, ['$oAuthSysToken' => $oAuthSysToken]);
 
-
-  public function fetchHeaders($msgnum)
-  {
-    return imap_fetchheader($this->_conn, (int)$msgnum);
-  } // fetchHeaders()
-
-
-  public function fetchMessage($msgnum)
-  {
-    return imap_fetchstructure($this->_conn, (int)$msgnum);
-  } // fetchMessage()
-
-
-  public function fetchMessageCount()
-  {
-    return imap_num_msg($this->_conn);
-  } // fetchMessage()
-
-
-  public function getFolderStatus($folder = 'INBOX', $options = SA_ALL)
-  {
-    return imap_status($this->_conn, $this->_buildMailboxRef($folder), $options);
-  } // getFolderStatus()
-
-
-  public function listFolders($pattern = '*', $removeServerRef = true)
-  {
-    $boxes = imap_list($this->_conn, $this->_serverRef, $pattern);
-    if ($removeServerRef) {
-      return str_replace($this->_serverRef, '', $boxes);
-    }
-    else {
-      return $boxes;
-    }
-  } // listFolders()
-
-
-  public function selectFolder($folder = 'INBOX')
-  {
-    return imap_reopen($this->_conn, $this->_buildMailboxRef($folder));
-  } // selectFolder()
-
-
-  private function _buildMailboxRef($mailbox = null)
-  {
-    if (!$mailbox) {
-      $mailbox = $this->_config['mailbox'];
-    }
-    return $this->_serverRef.$mailbox;
-  } // _buildMailboxRef()
-
-
-  private function _buildServerRef()
-  {
-    $serverRef = $this->_config['server'].':'.$this->_config['port'];
-    $flags = $this->_config['flags'];
-    if (self::$force_readonly && !in_array('readonly', $flags)) {
-      $flags[] = 'readonly';
-    }
-    if (count($flags)) {
-      $serverRef .= '/'.implode('/', $flags);
-    }
-    return '{'.$serverRef.'}';
-  } // _buildServerRef()
-
-
-  private function _closeConnection()
-  {
-    // Changes (moves and deletions) to the IMAP mailbox will not be made
-    // unless CL_EXPUNGE is used when the connection is closed.
-    if ($this->_conn) {
-      $errors = imap_errors();
-      if ($errors && $this->_config['log_errors']) {
-        error_log("IMAP SESSION REPORTED ERRORS:\n".print_r($errors, true));
+    //if token expired or expires in next minute, delete and recreate
+    if (empty($oAuthSysToken) || $oAuthSysToken['expires'] + 60 < time()) {
+      if (!empty($oAuthSysToken['id'])) {
+        \Civi\Api4\OAuthSysToken::delete(FALSE)
+          ->addWhere('id', '=', $oAuthSysToken['id'])
+          ->execute();
       }
-      imap_close($this->_conn, (static::$auto_expunge ? CL_EXPUNGE : null));
+
+      //get an access token via client credential workflow
+      $bbcfg = get_bluebird_instance_config();
+      $clientCreds = \Civi\Api4\OAuthClient::clientCredential(FALSE)
+        ->addWhere('tenant', '=', $bbcfg['oauth.tenant_id'])
+        ->addWhere('provider', '=', 'ms-exchange')
+        ->addWhere('guid', '=', $bbcfg['oauth.client_id'])
+        ->addWhere('secret', '=', $bbcfg['oauth.client_secret']);
+      //throws errors if setScopes is chained to main API call, so breaking out
+      $clientCreds->setScopes([
+        'https://outlook.office.com/.default',
+      ]);
+
+      $clientCreds->execute();
+
+      $oAuthSysToken = \Civi\Api4\OAuthSysToken::get(FALSE)
+        ->execute()
+        ->last();
     }
-    $this->_conn = null;
-  } // _closeConnection()
+    //Civi::log()->debug(__METHOD__, ['$oAuthSysToken' => $oAuthSysToken]);
 
+    $cm = new ClientManager();
+    //Civi::log()->debug(__METHOD__, ['$cm' => $cm]);
 
-  private function _openConnection()
-  {
-    $this->_conn = imap_open($this->_buildMailboxRef(), $this->_config['user'], $this->_config['password']);
-  } // _openConnection()
+    $username = (str_contains($this->_config['user'], '@nysenate.gov')) ?
+      $this->_config['user'] :
+      $this->_config['user'].'@nysenate.gov';
+
+    $client = $cm->make([
+      'host' => $this->_config['host'],
+      'port' => $this->_config['port'],
+      'protocol' => 'imap',
+      'encryption' => 'ssl',
+      'validate_cert' => TRUE,
+      'username' => $username,
+      'password' => $oAuthSysToken['access_token'],
+      'authentication' => 'oauth',
+      'flags' => $this->_config['flags']
+    ]);
+    //Civi::log()->debug(__METHOD__, ['$client' => $client]);
+
+    //Connect to the IMAP Server
+    try {
+      $client->connect();
+      $this->_conn = $client;
+      //Civi::log()->debug(__METHOD__, ['$client->connect' => $client]);
+    }
+    catch (Exception $e) {
+      Civi::log()->debug(__METHOD__, ['$e' => $e]);
+    }
+
+    return $this->_conn ?? NULL;
+  }
+
+  function setSequenceType($msg, $type) {
+    $conn = $this->getConnection();
+
+    //$type = "IMAP::{$type}"
+
+    $msg->setSequence("IMAP::{$type}");
+  }
 }

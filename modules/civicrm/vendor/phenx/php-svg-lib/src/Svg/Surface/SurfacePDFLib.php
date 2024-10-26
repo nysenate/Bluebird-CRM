@@ -2,7 +2,7 @@
 /**
  * @package php-svg-lib
  * @link    http://github.com/PhenX/php-svg-lib
- * @author  Fabien M�nager <fabien.menager@gmail.com>
+ * @author  Fabien Ménager <fabien.menager@gmail.com>
  * @license GNU LGPLv3+ http://www.gnu.org/copyleft/lesser.html
  */
 
@@ -120,10 +120,14 @@ class SurfacePDFLib implements SurfaceInterface
         $this->canvas->closepath();
     }
 
-    public function fillStroke()
+    public function fillStroke(bool $close = false)
     {
         if (self::DEBUG) echo __FUNCTION__ . "\n";
-        $this->canvas->fill_stroke();
+        if ($close) {
+            $this->canvas->closepath_fill_stroke();
+        } else {
+            $this->canvas->fill_stroke();
+        }
     }
 
     public function clip()
@@ -159,7 +163,7 @@ class SurfacePDFLib implements SurfaceInterface
             $data = file_get_contents($image);
         }
 
-        $image = tempnam("", "svg");
+        $image = tempnam(sys_get_temp_dir(), "svg");
         file_put_contents($image, $data);
 
         $img = $this->canvas->load_image("auto", $image, "");
@@ -281,10 +285,14 @@ class SurfacePDFLib implements SurfaceInterface
         $this->stroke();
     }
 
-    public function stroke()
+    public function stroke(bool $close = false)
     {
         if (self::DEBUG) echo __FUNCTION__ . "\n";
-        $this->canvas->stroke();
+        if ($close) {
+            $this->canvas->closepath_stroke();
+        } else {
+            $this->canvas->stroke();
+        }
     }
 
     public function endPath()
@@ -315,7 +323,7 @@ class SurfacePDFLib implements SurfaceInterface
         $this->style = $style;
         $canvas = $this->canvas;
 
-        if ($stroke = $style->stroke && is_array($style->stroke)) {
+        if (is_array($style->stroke) && $stroke = $style->stroke) {
             $canvas->setcolor(
                 "stroke",
                 "rgb",
@@ -326,7 +334,7 @@ class SurfacePDFLib implements SurfaceInterface
             );
         }
 
-        if ($fill = $style->fill && is_array($style->fill)) {
+        if (is_array($style->fill) && $fill = $style->fill) {
             $canvas->setcolor(
                 "fill",
                 "rgb",

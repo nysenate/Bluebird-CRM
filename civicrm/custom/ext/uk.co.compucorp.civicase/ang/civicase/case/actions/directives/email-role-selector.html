@@ -1,0 +1,26 @@
+<div id="bootstrap-theme" class="civicase__email-role-selector">
+  <div class="alert alert-success" role="alert">
+    <span class="glyphicon glyphicon-exclamation-sign" aria-hidden="true"></span>
+    <span class="sr-only">Error:</span>
+    In the dropdown please select any case role you would like to receive this email.
+    Any contact that is selected which holds a role and has an email will be pre-populated into the TO field.
+    You are able to remove individual contacts from the list after they have been added.
+  </div>
+
+  <div class="form-group">
+    <label class="col-sm-3 control-label">
+      Select Case Role(s)
+    </label>
+    <div class="col-xs-9">
+      <input
+        placeholder="Select Case Role(s)"
+        class="form-control"
+        ng-model="model.selectedCaseRoles"
+        crm-ui-select="{
+          allowClear: true,
+          multiple: true,
+          data: model.caseRoles
+        }"/>
+    </div>
+  </div>
+</div>

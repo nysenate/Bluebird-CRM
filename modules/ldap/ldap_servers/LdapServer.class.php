@@ -3,14 +3,13 @@
 /**
  * @file
  * Defines server classes and related functions.
- *
  */
 
 /**
- * TODO check if this already exists or find a better place for this function
+ * TODO check if this already exists or find a better place for this function.
  *
  * Formats a ldap-entry ready to be printed on console.
- * TODO describe preconditions for ldap_entry
+ * TODO describe preconditions for ldap_entry.
  */
 function pretty_print_ldap_entry($ldap_entry) {
   $m = [];
@@ -793,7 +792,7 @@ class LdapServer {
    *   elements if search returns no results),
    *   or FALSE on error.
    */
-  public function search($base_dn = NULL,
+  public function search($base_dn,
   $filter,
   $attributes = [],
     $attrsonly = 0,

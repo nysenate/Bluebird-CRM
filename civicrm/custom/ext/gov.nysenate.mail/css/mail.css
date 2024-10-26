@@ -1,16 +1,10 @@
 div.crmMailing a.helpicon[title="From Help"] {
   display: none;
 }
-li[aria-controls=tab-attachment],
 li[aria-controls=tab-pub],
 li[aria-controls=tab-response],
 li[aria-controls=tab-tracking] {
   display: none;
-}
-
-/*13021*/
-.crm-container.ui-dialog .ui-dialog-content {
-  height: 90% !important;
 }
 
 /*13116*/
@@ -28,4 +22,46 @@ body.ui-dialog-open {
   max-height: -moz-calc(100vh - 100px) !important;
   max-height: -webkit-calc(100vh - 100px) !important;
   max-height: calc(100vh - 100px) !important;
+}
+
+/*13305*/
+a[title^="Preview a List of Recipients"] {
+  font-family: Roboto, Helvetica, sans-serif !important;
+}
+.select2-drop {
+  z-index: 100000 !important;
+}
+
+/*13556*/
+label[for=all_emails] {
+  float: left;
+  margin-right: 10px;
+}
+input[name=all_emails] {
+  margin-top: 0 !important;
+}
+
+/*13581*/
+ul#civicrm-menu {
+  z-index: 99999 !important;
+}
+
+/*13837 - ensure confirmation dialog box is on-screen*/
+div.ui-dialog.crm-confirm {
+  top: 200px !important;
+}
+
+/*14283*/
+.crm-mosaico-template-category {
+  line-height: 60px;
+  margin-top: -40px;
+}
+
+div.crmb-wizard-step button.schedule-test-email {
+  display: block !important;
+}
+
+/*14591*/
+div.crm-mosaico-template-category div.select2-container {
+  width: 370px !important;
 }

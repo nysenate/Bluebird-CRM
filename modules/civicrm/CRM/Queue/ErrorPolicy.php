@@ -13,12 +13,12 @@
  * To ensure that PHP errors or unhandled exceptions are reported in JSON
  * format, wrap this around your code. For example:
  *
- * @code
+ * ```
  * $errorContainer = new CRM_Queue_ErrorPolicy();
  * $errorContainer->call(function() {
  *    ...include some files, do some work, etc...
  * });
- * @endcode
+ * ```
  *
  * Note: Most of the code in this class is pretty generic vis-a-vis error
  * handling -- except for 'reportError', whose message format is only
@@ -26,7 +26,21 @@
  * will be necessary to get reuse from the other parts of this class.
  */
 class CRM_Queue_ErrorPolicy {
-  public $active;
+
+  /**
+   * @var bool
+   */
+  protected $active;
+
+  /**
+   * @var int
+   */
+  protected $level;
+
+  /**
+   * @var array
+   */
+  protected $backup;
 
   /**
    * @param null|int $level
@@ -43,33 +57,22 @@ class CRM_Queue_ErrorPolicy {
   /**
    * Enable the error policy.
    */
-  public function activate() {
+  protected function activate() {
     $this->active = TRUE;
     $this->backup = [];
-    foreach ([
-      'display_errors',
-      'html_errors',
-      'xmlrpc_errors',
-    ] as $key) {
+    foreach (['display_errors', 'html_errors', 'xmlrpc_errors'] as $key) {
       $this->backup[$key] = ini_get($key);
       ini_set($key, 0);
     }
     set_error_handler([$this, 'onError'], $this->level);
-    // FIXME make this temporary/reversible
-    $this->errorScope = CRM_Core_TemporaryErrorScope::useException();
   }
 
   /**
    * Disable the error policy.
    */
-  public function deactivate() {
-    $this->errorScope = NULL;
+  protected function deactivate() {
     restore_error_handler();
-    foreach ([
-      'display_errors',
-      'html_errors',
-      'xmlrpc_errors',
-    ] as $key) {
+    foreach (['display_errors', 'html_errors', 'xmlrpc_errors'] as $key) {
       ini_set($key, $this->backup[$key]);
     }
     $this->active = FALSE;
@@ -138,7 +141,7 @@ class CRM_Queue_ErrorPolicy {
    * @param array $error
    *   The PHP error (with "type", "message", etc).
    */
-  public function reportError($error) {
+  protected function reportError($error) {
     $response = [
       'is_error' => 1,
       'is_continue' => 0,
@@ -159,7 +162,7 @@ class CRM_Queue_ErrorPolicy {
    * @param Exception $e
    *   The unhandled exception.
    */
-  public function reportException(Exception $e) {
+  protected function reportException(Exception $e) {
     CRM_Core_Error::debug_var('CRM_Queue_ErrorPolicy_reportException', CRM_Core_Error::formatTextException($e));
 
     $response = [

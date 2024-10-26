@@ -50,7 +50,7 @@ function civicrm_api3_group_contact_get($params) {
     //ie. id passed in so we have to return something
     return _civicrm_api3_basic_get(_civicrm_api3_get_BAO(__FUNCTION__), $params);
   }
-  $status = CRM_Utils_Array::value('status', $params, 'Added');
+  $status = $params['status'] ?? 'Added';
 
   $groupId = $params['group_id'] ?? NULL;
   $values = CRM_Contact_BAO_GroupContact::getContactGroup($params['contact_id'], $status, NULL, FALSE, TRUE, FALSE, TRUE, $groupId);
@@ -72,7 +72,7 @@ function _civicrm_api3_group_contact_create_spec(&$params) {
  *
  * This api has a legacy/nonstandard signature.
  * On success, the return array will be structured as follows:
- * @code
+ * ```
  * array(
  *   "is_error" => 0,
  *   "version"  => 3,
@@ -83,16 +83,16 @@ function _civicrm_api3_group_contact_create_spec(&$params) {
  *     "total_count" => integer
  *   )
  * )
- * @endcode
+ * ```
  *
  * On failure, the return array will be structured as follows:
- * @code
+ * ```
  * array(
  *   'is_error' => 1,
  *   'error_message' = string,
  *   'error_data' = mixed or undefined
  * )
- * @endcode
+ * ```
  *
  * @param array $params
  *   Input parameters:
@@ -116,7 +116,7 @@ function civicrm_api3_group_contact_create($params) {
       $params['contact_id'] = $info['values'][$params['id']]['contact_id'];
     }
   }
-  $action = CRM_Utils_Array::value('status', $params, 'Added');
+  $action = $params['status'] ?? 'Added';
   return _civicrm_api3_group_contact_common($params, $action);
 }
 
@@ -125,8 +125,8 @@ function civicrm_api3_group_contact_create($params) {
  *
  * @param array $params
  * @return array
- * @throws API_Exception
- * @throws CiviCRM_API3_Exception
+ * @throws CRM_Core_Exception
+ * @throws CRM_Core_Exception
  * @deprecated
  */
 function civicrm_api3_group_contact_delete($params) {
@@ -146,7 +146,7 @@ function civicrm_api3_group_contact_delete($params) {
   }
   $groupContact2 = civicrm_api3('GroupContact', 'get', $checkParams);
   if ($groupContact['count'] == 0 && $groupContact2['count'] == 0) {
-    throw new API_Exception('Cannot Delete GroupContact');
+    throw new CRM_Core_Exception('Cannot Delete GroupContact');
   }
   $params['status'] = CRM_Utils_Array::value('status', $params, empty($params['skip_undelete']) ? 'Removed' : 'Deleted');
   // "Deleted" isn't a real option so skip the api wrapper to avoid pseudoconstant validation
@@ -217,8 +217,8 @@ function _civicrm_api3_group_contact_common($params, $op = 'Added') {
     }
   }
 
-  $method = CRM_Utils_Array::value('method', $params, 'API');
-  $status = CRM_Utils_Array::value('status', $params, $op);
+  $method = $params['method'] ?? 'API';
+  $status = $params['status'] ?? $op;
   $tracking = $params['tracking'] ?? NULL;
 
   if ($op == 'Added' || $op == 'Pending') {
@@ -265,7 +265,7 @@ function _civicrm_api3_group_contact_common($params, $op = 'Added') {
  * @param array $params
  *
  * @return bool
- * @throws \API_Exception
+ * @throws \CRM_Core_Exception
  */
 function civicrm_api3_group_contact_update_status($params) {
 
@@ -274,9 +274,9 @@ function civicrm_api3_group_contact_update_status($params) {
   CRM_Contact_BAO_GroupContact::addContactsToGroup(
     [$params['contact_id']],
     $params['group_id'],
-    CRM_Utils_Array::value('method', $params, 'API'),
+    $params['method'] ?? 'API',
     'Added',
-    CRM_Utils_Array::value('tracking', $params)
+    $params['tracking'] ?? NULL
   );
 
   return TRUE;

@@ -27,18 +27,27 @@ class CRM_Contact_Page_Inline_CustomData extends CRM_Core_Page {
    */
   public function run() {
     // get the emails for this contact
-    $contactId = CRM_Utils_Request::retrieve('cid', 'Positive', CRM_Core_DAO::$_nullObject, TRUE, NULL, $_REQUEST);
-    $cgId = CRM_Utils_Request::retrieve('groupID', 'Positive', CRM_Core_DAO::$_nullObject, TRUE, NULL, $_REQUEST);
-    $customRecId = CRM_Utils_Request::retrieve('customRecId', 'Positive', CRM_Core_DAO::$_nullObject, FALSE, 1, $_REQUEST);
-    $cgcount = CRM_Utils_Request::retrieve('cgcount', 'Positive', CRM_Core_DAO::$_nullObject, FALSE, 1, $_REQUEST);
+    $contactId = CRM_Utils_Request::retrieve('cid', 'Positive', CRM_Core_DAO::$_nullObject, TRUE);
+    $cgId = CRM_Utils_Request::retrieve('groupID', 'Positive', CRM_Core_DAO::$_nullObject, TRUE);
+    $customRecId = CRM_Utils_Request::retrieve('customRecId', 'Positive', CRM_Core_DAO::$_nullObject, FALSE, 1);
+    $cgcount = CRM_Utils_Request::retrieve('cgcount', 'Positive', CRM_Core_DAO::$_nullObject, FALSE, 1);
 
     //custom groups Inline
     $entityType = CRM_Contact_BAO_Contact::getContactType($contactId);
     $entitySubType = CRM_Contact_BAO_Contact::getContactSubType($contactId);
-    $groupTree = CRM_Core_BAO_CustomGroup::getTree($entityType, NULL, $contactId,
-      $cgId, $entitySubType
+    // Custom group with VIEW permission
+    $visibleGroups = CRM_Core_BAO_CustomGroup::getTree($entityType,
+      NULL,
+      $contactId,
+      NULL,
+      $entitySubType,
+      NULL,
+      TRUE,
+      NULL,
+      FALSE,
+      CRM_Core_Permission::VIEW
     );
-    $details = CRM_Core_BAO_CustomGroup::buildCustomDataView($this, $groupTree, FALSE, NULL, NULL, NULL, $contactId);
+    $details = CRM_Core_BAO_CustomGroup::buildCustomDataView($this, $visibleGroups, FALSE, NULL, NULL, NULL, $contactId, CRM_Core_Permission::EDIT);
     //get the fields of single custom group record
     if ($customRecId == 1) {
       $fields = reset($details[$cgId]);
@@ -50,7 +59,7 @@ class CRM_Contact_Page_Inline_CustomData extends CRM_Core_Page {
     $this->assign('customRecId', $customRecId);
     $this->assign('contactId', $contactId);
     $this->assign('customGroupId', $cgId);
-    $this->assign_by_ref('cd_edit', $fields);
+    $this->assign('cd_edit', $fields);
 
     // check logged in user permission
     CRM_Contact_Page_View::checkUserPermission($this, $contactId);

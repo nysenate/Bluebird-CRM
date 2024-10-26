@@ -43,66 +43,29 @@ class CRM_Case_Info extends CRM_Core_Component_Info {
   /**
    * @inheritDoc
    */
-  public function getAngularModules() {
-    global $civicrm_root;
-
-    $result = [];
-    $result['crmCaseType'] = include "$civicrm_root/ang/crmCaseType.ang.php";
-    return $result;
-  }
-
-  /**
-   * @inheritDoc
-   * @return array
-   * @throws CRM_Core_Exception
-   */
-  public function getManagedEntities() {
-    $entities = array_merge(
-      CRM_Case_ManagedEntities::createManagedCaseTypes(),
-      CRM_Case_ManagedEntities::createManagedActivityTypes(CRM_Case_XMLRepository::singleton(), CRM_Core_ManagedEntities::singleton()),
-      CRM_Case_ManagedEntities::createManagedRelationshipTypes(CRM_Case_XMLRepository::singleton(), CRM_Core_ManagedEntities::singleton())
-    );
-    return $entities;
-  }
-
-  /**
-   * @inheritDoc
-   * @param bool $getAllUnconditionally
-   * @param bool $descriptions
-   *   Whether to return permission descriptions
-   *
-   * @return array
-   */
-  public function getPermissions($getAllUnconditionally = FALSE, $descriptions = FALSE) {
+  public function getPermissions(): array {
     $permissions = [
       'delete in CiviCase' => [
-        ts('delete in CiviCase'),
-        ts('Delete cases'),
+        'label' => ts('delete in CiviCase'),
+        'description' => ts('Delete cases'),
       ],
       'administer CiviCase' => [
-        ts('administer CiviCase'),
-        ts('Define case types, access deleted cases'),
+        'label' => ts('administer CiviCase'),
+        'description' => ts('Define case types, access deleted cases'),
       ],
       'access my cases and activities' => [
-        ts('access my cases and activities'),
-        ts('View and edit only those cases managed by this user'),
+        'label' => ts('access my cases and activities'),
+        'description' => ts('View and edit only those cases managed by this user'),
       ],
       'access all cases and activities' => [
-        ts('access all cases and activities'),
-        ts('View and edit all cases (for visible contacts)'),
+        'label' => ts('access all cases and activities'),
+        'description' => ts('View and edit all cases (for visible contacts)'),
       ],
       'add cases' => [
-        ts('add cases'),
-        ts('Open a new case'),
+        'label' => ts('add cases'),
+        'description' => ts('Open a new case'),
       ],
     ];
-
-    if (!$descriptions) {
-      foreach ($permissions as $name => $attr) {
-        $permissions[$name] = array_shift($attr);
-      }
-    }
-
     return $permissions;
   }
 
@@ -112,7 +75,7 @@ class CRM_Case_Info extends CRM_Core_Component_Info {
   public function getReferenceCounts($dao) {
     $result = [];
     if ($dao instanceof CRM_Core_DAO_OptionValue) {
-      /** @var $dao CRM_Core_DAO_OptionValue */
+      /** @var CRM_Core_DAO_OptionValue $dao */
       $activity_type_gid = CRM_Core_DAO::getFieldValue('CRM_Core_DAO_OptionGroup', 'activity_type', 'id', 'name');
       if ($activity_type_gid == $dao->option_group_id) {
         $count = CRM_Case_XMLRepository::singleton()
@@ -127,7 +90,7 @@ class CRM_Case_Info extends CRM_Core_Component_Info {
       }
     }
     elseif ($dao instanceof CRM_Contact_DAO_RelationshipType) {
-      /** @var $dao CRM_Contact_DAO_RelationshipType */
+      /** @var CRM_Contact_DAO_RelationshipType $dao  */
 
       // Need to look both directions, but no need to translate case role
       // direction from XML perspective to client-based perspective
@@ -196,7 +159,7 @@ class CRM_Case_Info extends CRM_Core_Component_Info {
 
   /**
    * add shortcut to Create New.
-   * @param $shortCuts
+   * @param array $shortCuts
    */
   public function creatNewShortcut(&$shortCuts) {
     if (CRM_Core_Permission::check('access all cases and activities') ||
@@ -228,6 +191,8 @@ class CRM_Case_Info extends CRM_Core_Component_Info {
    *   List of component names.
    * @param array $metadata
    *   Specification of the setting (per *.settings.php).
+   *
+   * @throws \CRM_Core_Exception.
    */
   public static function onToggleComponents($oldValue, $newValue, $metadata) {
     if (
@@ -237,10 +202,6 @@ class CRM_Case_Info extends CRM_Core_Component_Info {
     ) {
       $pathToCaseSampleTpl = __DIR__ . '/xml/configuration.sample/';
       self::loadCaseSampleData($pathToCaseSampleTpl . 'case_sample.mysql.tpl');
-      if (!CRM_Case_BAO_Case::createCaseViews()) {
-        $msg = ts("Could not create the MySQL views for CiviCase. Your mysql user needs to have the 'CREATE VIEW' permission");
-        CRM_Core_Error::fatal($msg);
-      }
     }
   }
 
@@ -254,12 +215,10 @@ class CRM_Case_Info extends CRM_Core_Component_Info {
     $dao = new CRM_Core_DAO();
     $db = $dao->getDatabaseConnection();
 
-    $domain = new CRM_Core_DAO_Domain();
-    $domain->find(TRUE);
-    $multiLingual = (bool) $domain->locales;
+    $locales = CRM_Core_I18n::getMultilingual();
     $smarty = CRM_Core_Smarty::singleton();
-    $smarty->assign('multilingual', $multiLingual);
-    $smarty->assign('locales', explode(CRM_Core_DAO::VALUE_SEPARATOR, $domain->locales));
+    $smarty->assign('multilingual', (bool) $locales);
+    $smarty->assign('locales', $locales);
 
     if (!$lineMode) {
 
@@ -276,9 +235,11 @@ class CRM_Case_Info extends CRM_Core_Component_Info {
       foreach ($queries as $query) {
         $query = trim($query);
         if (!empty($query)) {
-          $res = &$db->query($query);
-          if (PEAR::isError($res)) {
-            die("Cannot execute $query: " . $res->getMessage());
+          try {
+            $res = &$db->query($query);
+          }
+          catch (Exception $e) {
+            die("Cannot execute $query: " . $e->getMessage());
           }
         }
       }
@@ -291,9 +252,11 @@ class CRM_Case_Info extends CRM_Core_Component_Info {
 
         $string = trim($string);
         if (!empty($string)) {
-          $res = &$db->query($string);
-          if (PEAR::isError($res)) {
-            die("Cannot execute $string: " . $res->getMessage());
+          try {
+            $res = &$db->query($string);
+          }
+          catch (Exception $e) {
+            die("Cannot execute $string: " . $e->getMessage());
           }
         }
       }

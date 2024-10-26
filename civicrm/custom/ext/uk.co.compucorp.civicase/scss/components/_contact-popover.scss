@@ -1,0 +1,73 @@
+.___outside-namespace {
+  .contact-popover-container {
+    border: 1px solid $gray-light;
+    border-radius: 2px;
+    box-shadow: $box-shadow-tooltip;
+    color: $gray-darker;
+    max-width: 90vw;
+    padding: 20px;
+    width: $contact-popover-width;
+
+    .popover-content {
+      padding: 0;
+    }
+
+    &.bottom > .arrow {
+      border-bottom-color: $gray-light;
+    }
+
+    &.top > .arrow {
+      border-top-color: $gray-light;
+    }
+  }
+
+  .civicase__contact-popover__header {
+    h2 {
+      line-height: 24px;
+      margin: 0;
+    }
+
+    // HRs outside of #bootstrap-theme don't have margins
+    hr {
+      background-color: $gray-light;
+      margin: 16px 0;
+    }
+  }
+
+  .civicase__contact-popover__column {
+    float: left;
+    width: 46%;
+  }
+
+  .civicase__contact-popover__column + .civicase__contact-popover__column {
+    width: 54%;
+  }
+
+  // floating is needed to give some margin between groups
+  .civicase__contact-popover__detail-group {
+    float: left;
+    margin-bottom: 10px;
+    width: 100%;
+  }
+
+  .civicase__contact-popover__detail-header,
+  .civicase__contact-popover__detail-value {
+    color: $gray-dark;
+    float: left;
+    line-height: 18px;
+    overflow-x: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    width: 55%;
+
+    strong {
+      color: $gray-darker;
+      font-weight: $font-weight-heading;
+    }
+  }
+
+  .civicase__contact-popover__detail-header {
+    clear: both;
+    width: 45%;
+  }
+}

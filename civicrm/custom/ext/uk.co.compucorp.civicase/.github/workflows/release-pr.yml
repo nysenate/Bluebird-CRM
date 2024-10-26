@@ -1,0 +1,23 @@
+name: Create Release Pull Request
+
+on:
+ workflow_dispatch:
+    inputs:
+      jira_ticket_number:
+        description: JIRA Ticket number for the release
+        required: true
+      version_to_be_released:
+        description: Version number to be released
+        required: true
+jobs:
+  Test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: compucorp/release-pr-action@1.0.0
+        with:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          VERSION_NAME: "${{ github.event.inputs.version_to_be_released }}"
+          IS_CIVICRM_EXTENSION: true
+          FILE_UPDATE_COMMIT_DESC: "${{ github.event.inputs.jira_ticket_number }}: Update info.xml"
+          RELEASE_PR_TITLE: "${{ github.event.inputs.jira_ticket_number }}: Release v${{ github.event.inputs.version_to_be_released }}"
+          RELEASE_PR_IDENTIFIER_LABEL: release

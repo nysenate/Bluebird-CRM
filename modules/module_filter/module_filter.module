@@ -12,6 +12,27 @@
  */
 
 /**
+ * Implements hook_help().
+ */
+function module_filter_help($path, $arg) {
+  switch ($path) {
+    // Main module help for the block module
+    case 'admin/help#module_filter':
+      $output = '<p>';
+      $output .= t('What this module aims to accomplish is the ability to quickly find the module you are looking for without having to rely on the browser\'s search feature which more times than not shows you the module name in the \'Required by\' or \'Depends on\' sections of the various modules or even some other location on the page like a menu item.');
+      $output .= '</p>';
+      $output .= '<p>';
+      $output .= t('When tabs is enabled via the Module Filter\'s settings page, a new module layout theme is implemented. This tab layout provides a tab for each package as well as a tab that will show every module alphabetically.');
+      $output .= '</p>';
+      $output .= '<p>';
+      $output .= t('The filter textfield is available on each tab but currently doesn\'t support autocomplete.');
+      $output .= '</p>';
+      $output .= '<p>' . t('For more information, please visit the <a href="https://www.drupal.org/project/module_filter">official project page on Drupal.org</a>') . '</p>';
+      return $output;
+  }
+}
+
+/**
  * Implements hook_perm().
  */
 function module_filter_permission() {
@@ -42,7 +63,7 @@ function module_filter_menu() {
  * Implements hook_menu_alter().
  */
 function module_filter_menu_alter(&$items) {
-  if (isset($items['admin/reports/updates'])) {
+  if (variable_get('module_filter_update_status_alter', 1) && isset($items['admin/reports/updates'])) {
     // We route the updates report page through us.
     $items['admin/reports/updates']['page callback'] = 'module_filter_update_status';
     $items['admin/reports/updates']['file'] = 'module_filter.pages.inc';

@@ -1,6 +1,6 @@
 {if $contributionsCount > 0}
-  <div class="crm-accordion-wrapper">
-    <div class="crm-accordion-header">{ts}Related Contributions{/ts}</div>
+  <details class="crm-accordion-bold" open>
+    <summary>{ts}Related Contributions{/ts}</summary>
     <div class="crm-accordion-body">
       <table class="crm-contact-contributions">
         <thead>
@@ -8,7 +8,7 @@
           <th class='crm-contact-total_amount'>{ts}Amount{/ts}</th>
           <th class='crm-contact-financial_type_id'>{ts}Type{/ts}</th>
           <th class='crm-contact-contribution_source'>{ts}Source{/ts}</th>
-          <th class='crm-contact-receive_date'>{ts}Received{/ts}</th>
+          <th class='crm-contact-receive_date'>{ts}Contribution Date{/ts}</th>
           <th class='crm-contact-thankyou_date'>{ts}Thank-you Sent{/ts}</th>
           <th class='crm-contact-contribution_status'>{ts}Status{/ts}</th>
           <th>&nbsp;</th>
@@ -33,10 +33,10 @@
         {/literal}
       </script>
     </div>
-  </div>
+  </details>
 {else}
   <div class="messages status no-popup">
-    <div class="icon inform-icon"></div>
+    {icon icon="fa-info-circle"}{/icon}
     {ts}No contributions have been recorded for this recurring contribution.{/ts}
   </div>
 {/if}

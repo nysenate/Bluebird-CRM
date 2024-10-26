@@ -1,0 +1,16 @@
+<paging
+  class="civicase__paging"
+  page="pagingData.page"
+  page-size="pagingData.pageSize"
+  total="pagingData.total"
+  adjacent="1"
+  dots="..."
+  disabled="{{ pagingData.isDisabled }}"
+  show-prev-next="true"
+  show-first-last="true"
+  text-first="&laquo;"
+  text-last="&raquo;"
+  text-next="&rsaquo;"
+  text-prev="&lsaquo;"
+  paging-action="pagingAction({ $page: page, $pageSize: pageSize, $total: total })"
+></paging>

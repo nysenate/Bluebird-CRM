@@ -107,7 +107,7 @@ class CRM_Mailing_Selector_Search extends CRM_Core_Selector_Base implements CRM_
   /**
    * The query object.
    *
-   * @var string
+   * @var CRM_Contact_BAO_Query
    */
   protected $_query;
 
@@ -213,7 +213,7 @@ class CRM_Mailing_Selector_Search extends CRM_Core_Selector_Base implements CRM_
       $params['rowCount'] = $this->_limit;
     }
     else {
-      $params['rowCount'] = CRM_Utils_Pager::ROWCOUNT;
+      $params['rowCount'] = Civi::settings()->get('default_pager_size');
     }
 
     $params['buttonTop'] = 'PagerTopButton';
@@ -297,7 +297,7 @@ class CRM_Mailing_Selector_Search extends CRM_Core_Selector_Base implements CRM_
         'Contact',
         $result->contact_id
       );
-      $row['contact_type'] = CRM_Contact_BAO_Contact_Utils::getImage($result->contact_sub_type ? $result->contact_sub_type : $result->contact_type, FALSE, $result->contact_id
+      $row['contact_type'] = CRM_Contact_BAO_Contact_Utils::getImage($result->contact_sub_type ?: $result->contact_type, FALSE, $result->contact_id
       );
 
       $rows[] = $row;

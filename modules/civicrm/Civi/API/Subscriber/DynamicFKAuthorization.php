@@ -12,9 +12,15 @@
 namespace Civi\API\Subscriber;
 
 use Civi\API\Events;
+use CRM_Core_DAO_AllCoreTables as AllCoreTables;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
+use Civi\Api4\Utils\CoreUtil;
 
 /**
+ * This is only used by the APIv3 "Attachment" entity.
+ *
+ * @deprecated APIv3 only.
+ *
  * Given an entity which dynamically attaches itself to another entity,
  * determine if one has permission to the other entity.
  *
@@ -36,7 +42,7 @@ class DynamicFKAuthorization implements EventSubscriberInterface {
    */
   public static function getSubscribedEvents() {
     return [
-      Events::AUTHORIZE => [
+      'civi.api.authorize' => [
         ['onApiAuthorize', Events::W_EARLY],
       ],
     ];
@@ -118,12 +124,12 @@ class DynamicFKAuthorization implements EventSubscriberInterface {
    *   See docblock in DynamicFKAuthorization::$lookupDelegateSql.
    * @param string $lookupCustomFieldSql
    *   See docblock in DynamicFKAuthorization::$lookupCustomFieldSql.
-   * @param array|NULL $allowedDelegates
+   * @param array|null $allowedDelegates
    *   e.g. "civicrm_mailing","civicrm_activity"; NULL to allow any.
    */
   public function __construct($kernel, $entityName, $actions, $lookupDelegateSql, $lookupCustomFieldSql, $allowedDelegates = NULL) {
     $this->kernel = $kernel;
-    $this->entityName = \CRM_Utils_String::convertStringToCamel($entityName);
+    $this->entityName = AllCoreTables::convertEntityNameToCamel($entityName, TRUE);
     $this->actions = $actions;
     $this->lookupDelegateSql = $lookupDelegateSql;
     $this->lookupCustomFieldSql = $lookupCustomFieldSql;
@@ -133,12 +139,12 @@ class DynamicFKAuthorization implements EventSubscriberInterface {
   /**
    * @param \Civi\API\Event\AuthorizeEvent $event
    *   API authorization event.
-   * @throws \API_Exception
+   * @throws \CRM_Core_Exception
    * @throws \Civi\API\Exception\UnauthorizedException
    */
   public function onApiAuthorize(\Civi\API\Event\AuthorizeEvent $event) {
     $apiRequest = $event->getApiRequest();
-    if ($apiRequest['version'] == 3 && \CRM_Utils_String::convertStringToCamel($apiRequest['entity']) == $this->entityName && in_array(strtolower($apiRequest['action']), $this->actions)) {
+    if ($apiRequest['version'] == 3 && AllCoreTables::convertEntityNameToCamel($apiRequest['entity'], TRUE) == $this->entityName && in_array(strtolower($apiRequest['action']), $this->actions)) {
       if (isset($apiRequest['params']['field_name'])) {
         $fldIdx = \CRM_Utils_Array::index(['field_name'], $this->getCustomFields());
         if (empty($fldIdx[$apiRequest['params']['field_name']])) {
@@ -151,18 +157,18 @@ class DynamicFKAuthorization implements EventSubscriberInterface {
       if (/*!$isTrusted */
         empty($apiRequest['params']['id']) && empty($apiRequest['params']['entity_table'])
       ) {
-        throw new \API_Exception("Mandatory key(s) missing from params array: 'id' or 'entity_table'");
+        throw new \CRM_Core_Exception("Mandatory key(s) missing from params array: 'id' or 'entity_table'");
       }
 
       if (isset($apiRequest['params']['id'])) {
-        list($isValidId, $entityTable, $entityId) = $this->getDelegate($apiRequest['params']['id']);
+        [$isValidId, $entityTable, $entityId] = $this->getDelegate($apiRequest['params']['id']);
         if ($isValidId && $entityTable && $entityId) {
           $this->authorizeDelegate($apiRequest['action'], $entityTable, $entityId, $apiRequest);
           $this->preventReassignment($apiRequest['params']['id'], $entityTable, $entityId, $apiRequest);
           return;
         }
         elseif ($isValidId) {
-          throw new \API_Exception("Failed to match record to related entity");
+          throw new \CRM_Core_Exception("Failed to match record to related entity");
         }
         elseif (!$isValidId && strtolower($apiRequest['action']) == 'get') {
           // The matches will be an empty set; doesn't make a difference if we
@@ -173,19 +179,16 @@ class DynamicFKAuthorization implements EventSubscriberInterface {
       }
 
       if (isset($apiRequest['params']['entity_table'])) {
-        if (!\CRM_Core_DAO_AllCoreTables::isCoreTable($apiRequest['params']['entity_table'])) {
-          throw new \API_Exception("Unrecognized target entity table {$apiRequest['params']['entity_table']}");
-        }
         $this->authorizeDelegate(
           $apiRequest['action'],
           $apiRequest['params']['entity_table'],
-          \CRM_Utils_Array::value('entity_id', $apiRequest['params'], NULL),
+          $apiRequest['params']['entity_id'] ?? NULL,
           $apiRequest
         );
         return;
       }
 
-      throw new \API_Exception("Failed to run permission check");
+      throw new \CRM_Core_Exception("Failed to run permission check");
     }
   }
 
@@ -199,7 +202,7 @@ class DynamicFKAuthorization implements EventSubscriberInterface {
    * @param array $apiRequest
    *   The full API request.
    * @throws \Exception
-   * @throws \API_Exception
+   * @throws \CRM_Core_Exception
    * @throws \Civi\API\Exception\UnauthorizedException
    */
   public function authorizeDelegate($action, $entityTable, $entityId, $apiRequest) {
@@ -209,7 +212,7 @@ class DynamicFKAuthorization implements EventSubscriberInterface {
 
     $entity = $this->getDelegatedEntityName($entityTable);
     if (!$entity) {
-      throw new \API_Exception("Failed to run permission check: Unrecognized target entity table ($entityTable)");
+      throw new \CRM_Core_Exception("Failed to run permission check: Unrecognized target entity table ($entityTable)");
     }
     if (!$entityId) {
       throw new \Civi\API\Exception\UnauthorizedException("Authorization failed on ($entity): Missing entity_id");
@@ -255,16 +258,16 @@ class DynamicFKAuthorization implements EventSubscriberInterface {
    *   The saved FK.
    * @param array $apiRequest
    *   The full API request.
-   * @throws \API_Exception
+   * @throws \CRM_Core_Exception
    */
   public function preventReassignment($fileId, $entityTable, $entityId, $apiRequest) {
     if (strtolower($apiRequest['action']) == 'create' && $fileId && !$this->isTrusted($apiRequest)) {
       // TODO: no change in field_name?
       if (isset($apiRequest['params']['entity_table']) && $entityTable != $apiRequest['params']['entity_table']) {
-        throw new \API_Exception("Cannot modify entity_table");
+        throw new \CRM_Core_Exception("Cannot modify entity_table");
       }
       if (isset($apiRequest['params']['entity_id']) && $entityId != $apiRequest['params']['entity_id']) {
-        throw new \API_Exception("Cannot modify entity_id");
+        throw new \CRM_Core_Exception("Cannot modify entity_id");
       }
     }
   }
@@ -279,7 +282,7 @@ class DynamicFKAuthorization implements EventSubscriberInterface {
     if ($this->allowedDelegates === NULL || in_array($entityTable, $this->allowedDelegates)) {
       $className = \CRM_Core_DAO_AllCoreTables::getClassForTable($entityTable);
       if ($className) {
-        $entityName = \CRM_Core_DAO_AllCoreTables::getBriefName($className);
+        $entityName = \CRM_Core_DAO_AllCoreTables::getEntityNameForClass($className);
         if ($entityName) {
           return $entityName;
         }
@@ -364,7 +367,7 @@ class DynamicFKAuthorization implements EventSubscriberInterface {
         'field_name' => $query->field_name,
         'table_name' => $query->table_name,
         'extends' => $query->extends,
-        'entity_table' => \CRM_Core_BAO_CustomGroup::getTableNameByEntityName($query->extends),
+        'entity_table' => CoreUtil::getTableName($query->extends),
       ];
     }
     return $rows;

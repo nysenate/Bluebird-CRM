@@ -1,0 +1,42 @@
+/**
+ * @file
+ * Contains font-face declerations for material-icons
+ */
+  
+@font-face {
+  font-family: $material-icon-font-name;
+  font-style: normal;
+  font-weight: $font-weight-content;
+  src: local('Material Icons'),
+    local('MaterialIcons-Regular'),
+    url(#{$material-icon-font-url}MaterialIcons-Regular.woff2) format('woff2'),
+    url(#{$material-icon-font-url}MaterialIcons-Regular.woff) format('woff');
+}
+
+/**
+ * Contains class rules for material icons
+ * The code is referenced from https://google.github.io/material-design-icons/#using-the-icons-in-html
+ *
+ * Usage
+ * To add a icon to the HTML document add a <i> tag with class `material-icons`
+ * e.g. <h2> <i class="material-icons">face</i> Title </h2>
+ * To know better refer - https://google.github.io/material-design-icons/#using-the-icons-in-html
+ * To see the list of all available icons - https://material.io/tools/icons/?style=baseline
+ */
+
+.material-icons {
+  direction: ltr;
+  display: inline-block;
+  font-family: 'Material Icons';
+  font-feature-settings: 'liga'; /* Support for IE. */
+  -webkit-font-smoothing: antialiased; /* Support for all WebKit browsers. */
+  -moz-osx-font-smoothing: grayscale; /* Support for Firefox. */
+  font-style: normal;
+  font-weight: normal;
+  letter-spacing: normal;
+  line-height: 1;
+  text-rendering: optimizeLegibility; /* Support for Safari and Chrome. */
+  text-transform: none;
+  white-space: nowrap;
+  word-wrap: normal;
+}

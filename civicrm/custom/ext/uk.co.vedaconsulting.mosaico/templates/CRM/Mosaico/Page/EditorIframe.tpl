@@ -4,26 +4,38 @@
 <head>
   <title>CiviCRM Mosaico</title>
   <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
-  <base href="{$baseUrl|htmlspecialchars}">
+  <base href="{$baseUrl|escape}">
 
   {foreach from=$scriptUrls item=scriptUrl}
-  <script type="text/javascript" src="{$scriptUrl|htmlspecialchars}">
+  <script type="text/javascript" src="{$scriptUrl|escape}">
   </script>
   {/foreach}
   {foreach from=$styleUrls item=styleUrl}
-  <link href="{$styleUrl|htmlspecialchars}" rel="stylesheet" type="text/css"/>
+  <link href="{$styleUrl|escape}" rel="stylesheet" type="text/css"/>
   {/foreach}
 
   {literal}
   <script type="text/javascript">
     $(function() {
       if (!Mosaico.isCompatible()) {
-        alert('Update your browser!');
+        alert('Your browser is out of date or you have incompatible plugins.  See https://civicrm.stackexchange.com/q/26118/225');
         return;
       }
 
-      var plugins = [];
+      var plugins = {/literal}{$mosaicoPlugins}{literal};
       var config = {/literal}{$mosaicoConfig}{literal};
+
+      window.addEventListener('beforeunload', function(e) {
+        if(window.parent.document.getElementById('crm-mosaico').style.display !== "none") {
+          e.preventDefault();
+          e.returnValue = "{/literal}{ts}Exit email composer without saving?{/ts}{literal}";
+        }
+      });
+
+      //NYSS 13567/13916
+      if (config.fileuploadConfig.acceptFileTypes) {
+        config.fileuploadConfig.acceptFileTypes = /(\.|\/)(|gif|p?jpe?g|png|x-png|webp)$/i;
+      }
       if (window.top.crmMosaicoIframe) {
         window.top.crmMosaicoIframe(window, Mosaico, config, plugins);
       }

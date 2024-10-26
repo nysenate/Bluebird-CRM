@@ -15,6 +15,8 @@
  * @copyright CiviCRM LLC https://civicrm.org/licensing
  */
 
+use Civi\Api4\Contribution;
+
 /**
  * This class provides the functionality to email a group of contacts.
  */
@@ -22,27 +24,44 @@ class CRM_Contribute_Form_Task_Email extends CRM_Contribute_Form_Task {
   use CRM_Contact_Form_Task_EmailTrait;
 
   /**
-   * Build all the data structures needed to build the form.
+   * Get selected contribution IDs.
+   *
+   * @return array
+   *
+   * @throws \CRM_Core_Exception
    */
-  public function preProcess() {
-    CRM_Contact_Form_Task_EmailCommon::preProcessFromAddress($this);
-    parent::preProcess();
-
-    // we have all the contribution ids, so now we get the contact ids
-    parent::setContactIDs();
-
-    $this->assign('single', $this->_single);
+  protected function getContributionIDs(): array {
+    return $this->getIDs();
   }
 
   /**
-   * List available tokens for this form.
+   * Get the result rows to email.
    *
    * @return array
+   *
+   * @throws \CRM_Core_Exception
    */
-  public function listTokens() {
-    $tokens = CRM_Core_SelectValues::contactTokens();
-    $tokens = array_merge(CRM_Core_SelectValues::contributionTokens(), $tokens);
-    return $tokens;
+  protected function getRows(): array {
+    $contributionDetails = Contribution::get(FALSE)
+      ->setSelect(['contact_id', 'id'])
+      ->addWhere('id', 'IN', $this->getContributionIDs())
+      ->execute()
+      // Note that this indexing means that only the last
+      // contribution per contact is resolved to tokens.
+      // this is long-standing functionality, albeit possibly
+      // not thought through.
+      ->indexBy('contact_id');
+
+    // format contact details array to handle multiple emails from same contact
+    $formattedContactDetails = [];
+    foreach ($this->getEmails() as $details) {
+      $formattedContactDetails[$details['contact_id'] . '::' . $details['email']] = $details;
+      if (!empty($contributionDetails[$details['contact_id']])) {
+        $formattedContactDetails[$details['contact_id'] . '::' . $details['email']]['schema'] = ['contributionId' => $contributionDetails[$details['contact_id']]['id']];
+      }
+
+    }
+    return $formattedContactDetails;
   }
 
 }

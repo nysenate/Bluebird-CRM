@@ -58,16 +58,16 @@ class CRM_Contact_Page_View_ContactSmartGroup extends CRM_Core_Page {
       }
 
       if (!empty($smart)) {
-        $this->assign_by_ref('groupSmart', $smart);
+        $this->assign('groupSmart', $smart);
       }
       if (!empty($parent)) {
-        $this->assign_by_ref('groupParent', $parent);
+        $this->assign('groupParent', $parent);
       }
     }
   }
 
   public function preProcess() {
-    $this->_contactId = CRM_Utils_Request::retrieve('cid', 'Positive', $this, TRUE);
+    $this->_contactId = (int) CRM_Utils_Request::retrieve('cid', 'Positive', $this, TRUE);
     $this->assign('contactId', $this->_contactId);
 
     $displayName = CRM_Contact_BAO_Contact::displayName($this->_contactId);

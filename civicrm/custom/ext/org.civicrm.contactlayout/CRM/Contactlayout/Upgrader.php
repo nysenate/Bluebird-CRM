@@ -6,7 +6,7 @@ use CRM_Contactlayout_ExtensionUtil as E;
 /**
  * Collection of upgrade steps.
  */
-class CRM_Contactlayout_Upgrader extends CRM_Contactlayout_Upgrader_Base {
+class CRM_Contactlayout_Upgrader extends CRM_Extension_Upgrader_Base {
 
   /**
    * Install script
@@ -31,7 +31,7 @@ class CRM_Contactlayout_Upgrader extends CRM_Contactlayout_Upgrader_Base {
         ->addValue('label', E::ts('Contact Summary Layouts'))
         ->addValue('name', 'contact_summary_editor')
         ->addValue('permission', 'administer CiviCRM')
-        ->addValue('url', 'civicrm/a/#/contact-summary-editor')
+        ->addValue('url', 'civicrm/admin/contactlayout')
         ->addValue('parent_id', $parent['id'])
         ->execute();
     }
@@ -53,20 +53,6 @@ class CRM_Contactlayout_Upgrader extends CRM_Contactlayout_Upgrader_Base {
     catch (Exception $e) {
       // Couldn't delete menu item.
     }
-  }
-
-  /**
-   * Example: Run a simple query when a module is enabled.
-   *
-  public function enable() {
-    CRM_Core_DAO::executeQuery('UPDATE foo SET is_active = 1 WHERE bar = "whiz"');
-  }
-
-  /**
-   * Example: Run a simple query when a module is disabled.
-   *
-  public function disable() {
-    CRM_Core_DAO::executeQuery('UPDATE foo SET is_active = 0 WHERE bar = "whiz"');
   }
 
   /**
@@ -95,71 +81,32 @@ class CRM_Contactlayout_Upgrader extends CRM_Contactlayout_Upgrader_Base {
    */
   public function upgrade_1001() {
     $this->ctx->log->info('Applying update 1001 - Add support for tabs.');
-    CRM_Core_DAO::executeQuery("ALTER TABLE `civicrm_contact_layout` ADD COLUMN `tabs` longtext NOT NULL COMMENT 'Contains json encoded layout tabs.'");
+    CRM_Core_DAO::executeQuery("ALTER TABLE `civicrm_contact_layout` ADD COLUMN `tabs` longtext COMMENT 'Contains json encoded layout tabs.'");
     return TRUE;
   }
 
-
   /**
-   * Example: Run an external SQL script.
+   * Point menu items to standalone base page.
    *
    * @return TRUE on success
    * @throws Exception
-  public function upgrade_4201() {
-    $this->ctx->log->info('Applying update 4201');
-    // this path is relative to the extension base dir
-    $this->executeSqlFile('sql/upgrade_4201.sql');
-    return TRUE;
-  } // */
-
-
-  /**
-   * Example: Run a slow upgrade process by breaking it up into smaller chunk.
-   *
-   * @return TRUE on success
-   * @throws Exception
-  public function upgrade_4202() {
-    $this->ctx->log->info('Planning update 4202'); // PEAR Log interface
-
-    $this->addTask(E::ts('Process first step'), 'processPart1', $arg1, $arg2);
-    $this->addTask(E::ts('Process second step'), 'processPart2', $arg3, $arg4);
-    $this->addTask(E::ts('Process second step'), 'processPart3', $arg5);
+   */
+  public function upgrade_1002() {
+    $this->ctx->log->info('Applying update 1002 - Point menu items to standalone base page.');
+    CRM_Core_DAO::executeQuery("UPDATE `civicrm_navigation` SET url = 'civicrm/admin/contactlayout' WHERE url LIKE '%contact-summary-editor'");
     return TRUE;
   }
-  public function processPart1($arg1, $arg2) { sleep(10); return TRUE; }
-  public function processPart2($arg3, $arg4) { sleep(10); return TRUE; }
-  public function processPart3($arg5) { sleep(10); return TRUE; }
-  // */
-
 
   /**
-   * Example: Run an upgrade with a query that touches many (potentially
-   * millions) of records by breaking it up into smaller chunks.
+   * Make tabs optional.
    *
    * @return TRUE on success
    * @throws Exception
-  public function upgrade_4203() {
-    $this->ctx->log->info('Planning update 4203'); // PEAR Log interface
-
-    $minId = CRM_Core_DAO::singleValueQuery('SELECT coalesce(min(id),0) FROM civicrm_contribution');
-    $maxId = CRM_Core_DAO::singleValueQuery('SELECT coalesce(max(id),0) FROM civicrm_contribution');
-    for ($startId = $minId; $startId <= $maxId; $startId += self::BATCH_SIZE) {
-      $endId = $startId + self::BATCH_SIZE - 1;
-      $title = E::ts('Upgrade Batch (%1 => %2)', array(
-        1 => $startId,
-        2 => $endId,
-      ));
-      $sql = '
-        UPDATE civicrm_contribution SET foobar = whiz(wonky()+wanker)
-        WHERE id BETWEEN %1 and %2
-      ';
-      $params = array(
-        1 => array($startId, 'Integer'),
-        2 => array($endId, 'Integer'),
-      );
-      $this->addTask($title, 'executeSql', $sql, $params);
-    }
+   */
+  public function upgrade_1003() {
+    $this->ctx->log->info('Applying update 1003 - Make tabs optional.');
+    CRM_Core_DAO::executeQuery("ALTER TABLE `civicrm_contact_layout` MODIFY COLUMN `tabs` longtext COMMENT 'Contains json encoded layout tabs.'");
     return TRUE;
-  } // */
+  }
 
 }

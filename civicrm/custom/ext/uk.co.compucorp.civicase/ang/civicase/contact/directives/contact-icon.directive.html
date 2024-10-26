@@ -1,0 +1,21 @@
+<civicase-popover
+  popover-class="contact-popover-container"
+  trigger-event="hover"
+  is-open="contactPopoverIsOpen"
+  auto-close-other-popovers="autoCloseOtherPopovers">
+  <civicase-popover-toggle-button
+    class="civicase__contact-icon"
+    ng-class="{ 'civicase__contact-icon--highlighted': contactPopoverIsOpen }">
+    <span ng-switch="contactIcon">
+      <i class="material-icons" ng-switch-when="Individual">person</i>
+      <i class="material-icons" ng-switch-when="Household">home</i>
+      <i class="material-icons" ng-switch-when="Organization">domain</i>
+    </span>
+  </civicase-popover-toggle-button>
+  <civicase-popover-content>
+    <civicase-contact-popover-content
+      case-id="caseId"
+      contact-id="contactId"
+    ></civicase-contact-popover-content>
+  </civicase-popover-content>
+</civicase-popover>

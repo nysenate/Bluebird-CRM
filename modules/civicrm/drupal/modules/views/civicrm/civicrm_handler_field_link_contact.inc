@@ -1,25 +1,11 @@
 <?php
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 5                                                  |
- +--------------------------------------------------------------------+
- | This file is a part of CiviCRM.                                    |
+ | Copyright CiviCRM LLC. All rights reserved.                        |
  |                                                                    |
- | CiviCRM is free software; you can copy, modify, and distribute it  |
- | under the terms of the GNU Affero General Public License           |
- | Version 3, 19 November 2007 and the CiviCRM Licensing Exception.   |
- |                                                                    |
- | CiviCRM is distributed in the hope that it will be useful, but     |
- | WITHOUT ANY WARRANTY; without even the implied warranty of         |
- | MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.               |
- | See the GNU Affero General Public License for more details.        |
- |                                                                    |
- | You should have received a copy of the GNU Affero General Public   |
- | License and the CiviCRM Licensing Exception along                  |
- | with this program; if not, contact CiviCRM LLC                     |
- | at info[AT]civicrm[DOT]org. If you have questions about the        |
- | GNU Affero General Public License or the licensing of CiviCRM,     |
- | see the CiviCRM license FAQ at http://civicrm.org/licensing        |
+ | This work is published under the GNU AGPLv3 license with some      |
+ | permitted exceptions and without any warranty. For full license    |
+ | and copyright information, see https://civicrm.org/licensing       |
  +--------------------------------------------------------------------+
  */
 
@@ -108,8 +94,9 @@ class civicrm_handler_field_link_contact extends views_handler_field {
             "reset=1&cid={$values->id}"
           );
         }
+        break;
 
-        // LINKING TO CONTACT EDIT PAGE
+      // LINKING TO CONTACT EDIT PAGE
       case 'edit':
         if (user_access('edit all contacts') && $link_text !== NULL && $link_text !== '') {
           return civicrm_views_href($link_text,
@@ -117,8 +104,9 @@ class civicrm_handler_field_link_contact extends views_handler_field {
             "reset=1&action=update&cid={$values->id}"
           );
         }
+        break;
 
-        // LINKING TO CONTACT DELETE PAGE
+      // LINKING TO CONTACT DELETE PAGE
       case 'delete':
         if (user_access('edit all contacts') && $link_text !== NULL && $link_text !== '') {
           return civicrm_views_href($link_text,
@@ -126,16 +114,17 @@ class civicrm_handler_field_link_contact extends views_handler_field {
             "reset=1&delete=1&cid={$values->id}"
           );
         }
+        break;
 
-        // CUSTOM NODE LINKAGE, GOOD FOR LINKING TO OTHER VIEWS WITH AN ARGUMENT
+      // CUSTOM NODE LINKAGE, GOOD FOR LINKING TO OTHER VIEWS WITH AN ARGUMENT
       case 'custom':
         if ($custom_link !== NULL && $custom_link !== '' && $link_text !== NULL && $link_text !== '') {
           return l($link_text, $custom_link . "{$values->id}");
         }
-        // IF THE OTHER CASES AREN'T IN PLAY, THEN JUST PRINT THE TEXT
-      default:
-        return $link_text;
+        break;
+
     }
+    return $link_text;
   }
 
   public function query() {

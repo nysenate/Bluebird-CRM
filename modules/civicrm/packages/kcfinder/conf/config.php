@@ -101,7 +101,7 @@ $_CONFIG = array(
 
     'mime_magic' => "",
 
-    'cookieDomain' => "",
+    'cookieDomain' => preg_replace(';:\d+$;', '', $_SERVER['HTTP_HOST']),
     'cookiePath' => "",
     'cookiePrefix' => 'KCFINDER_',
 

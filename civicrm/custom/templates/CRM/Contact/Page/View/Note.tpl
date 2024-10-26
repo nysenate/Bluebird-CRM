@@ -13,7 +13,8 @@
         <div class="crm-block crm-content-block crm-note-view-block">
           <table class="crm-info-panel">
             <tr><td class="label">{ts}Subject{/ts}</td><td>{$note.subject}</td></tr>
-            <tr><td class="label">{ts}Date:{/ts}</td><td>{$note.modified_date|crmDate}</td></tr>
+            <tr><td class="label">{ts}Date:{/ts}</td><td>{$note.note_date|crmDate}</td></tr>
+            <tr><td class="label">{ts}Modified Date:{/ts}</td><td>{$note.modified_date|crmDate}</td></tr>
             <tr><td class="label">{ts}Privacy:{/ts}</td><td>{$note.privacy}</td></tr>
             <tr><td class="label">{ts}Note:{/ts}</td><td>{$note.note|nl2br}</td></tr>
 
@@ -30,10 +31,10 @@
         <legend>{ts}Comments{/ts}</legend>
             <table class="display">
                 <thead>
-                    <tr><th>{ts}Comment{/ts}</th><th>{ts}Created By{/ts}</th><th>{ts}Date{/ts}</th></tr>
+                    <tr><th>{ts}Comment{/ts}</th><th>{ts}Created By{/ts}</th><th>{ts}Date{/ts}</th><th>{ts}Modified Date{/ts}</th></tr>
                 </thead>
                 {foreach from=$comments item=comment}
-                    <tr class="{cycle values='odd-row,even-row'}"><td>{$comment.note}</td><td>{$comment.createdBy}</td><td>{$comment.modified_date}</td></tr>
+                  <tr class="{cycle values='odd-row,even-row'}"><td>{$comment.note}</td><td>{$comment.createdBy}</td><td>{$comment.note_date}</td><td>{$comment.modified_date}</td></tr>
                 {/foreach}
             </table>
         </fieldset>
@@ -50,6 +51,10 @@
                 <td>
                     {$form.subject.html}
                 </td>
+            </tr>
+            <tr>
+              <td class="label">{$form.note_date.label}</td>
+              <td>{$form.note_date.html}</td>
             </tr>
             <tr>
                 <td class="label">{$form.privacy.label}</td>
@@ -84,7 +89,7 @@
 
 {if ($permission EQ 'edit' OR $canAddNotes) AND ($action eq 16)}
    <div class="action-link">
-   <a accesskey="N" href="{crmURL p='civicrm/contact/view/note' q="cid=`$contactId`&action=add"}" class="button medium-popup"><span><i class="crm-i fa-comment"></i> {ts}Add Note{/ts}</span></a>
+   <a accesskey="N" href="{crmURL p='civicrm/contact/view/note' q="cid=`$contactId`&action=add"}" class="button medium-popup"><span><i class="crm-i fa-comment" aria-hidden="true"></i> {ts}Add Note{/ts}</span></a>
    </div>
    <div class="clear"></div>
 {/if}
@@ -149,6 +154,8 @@
                         + '</td><td>'
                         + response['values'][i].subject
                         + '</td><td>'
+                        + response['values'][i].note_date
+                        + '</td><td>'
                         + response['values'][i].modified_date
                         + '</td><td>'
                         + '<a href="'+ urlTemplate + response['values'][i].createdById +'">'+ response['values'][i].createdBy +'</a>'
@@ -192,9 +199,10 @@
           {*NYSS 6016 shuffle column order*}
           <th data-orderable="false"></th>
           <th>{ts}Subject{/ts}</th>
-	      <th>{ts}Note{/ts}</th>
-	      <th>{ts}Date{/ts}</th>
-	      <th>{ts}Created By{/ts}</th>
+          <th>{ts}Note{/ts}</th>
+          <th>{ts}Date{/ts}</th>
+          <th>{ts}Modified Date{/ts}</th>
+          <th>{ts}Created By{/ts}</th>
           <th data-orderable="false">{ts}Attachment(s){/ts}</th>
           <th data-orderable="false"></th>
         </tr>
@@ -205,25 +213,26 @@
             <td class="crm-note-comment">
                 {if $note.comment_count}
                     <span id="{$note.id}_show" style="display:block" class="icon_comments_show">
-                        <a href="#" onclick="showHideComments({$note.id}); return false;" title="{ts}Show comments for this note.{/ts}"><i class="crm-i fa-caret-right"></i></span></a>
+                        <a href="#" onclick="showHideComments({$note.id}); return false;" title="{ts}Show comments for this note.{/ts}"><i class="crm-i fa-caret-right" aria-hidden="true"></i></span></a>
                     </span>
                     <span id="{$note.id}_hide" style="display:none" class="icon_comments_hide">
-                        <a href="#" onclick="showHideComments({$note.id}); return false;" title="{ts}Hide comments for this note.{/ts}"><i class="crm-i fa-caret-down"></i></span></a>
+                        <a href="#" onclick="showHideComments({$note.id}); return false;" title="{ts}Hide comments for this note.{/ts}"><i class="crm-i fa-caret-down" aria-hidden="true"></i></span></a>
                     </span>
                 {else}
-                    <span class="crm-i fa-caret-right" id="{$note.id}_hide" style="display:none"></span>
+                    <span class="crm-i fa-caret-right" id="{$note.id}_hide" style="display:none" aria-hidden="true"></span>
                 {/if}
             </td>
-          {*NYSS 6016 shuffle column order; implement inline editable - future core*}
+            {*NYSS 6016 shuffle column order; implement inline editable - future core*}
             <td class="crm-note-subject crmf-subject crm-editable">{$note.subject}</td>
             <td class="crm-note-note">
                 {$note.note|mb_truncate:80:"...":false|nl2br}
                 {* Include '(more)' link to view entire note if it has been truncated *}
-                {assign var="noteSize" value=$note.note|count_characters:true}
+                {assign var="noteSize" value=$note.note|crmCountCharacters:true}
                 {if $noteSize GT 80}
                   <a class="crm-popup" href="{crmURL p='civicrm/contact/view/note' q="action=view&selectedChild=note&reset=1&cid=`$contactId`&id=`$note.id`"}">{ts}(more){/ts}</a>
                 {/if}
             </td>
+            <td class="crm-note-note_date" data-order="{$note.note_date}">{$note.note_date|crmDate}</td>
             <td class="crm-note-modified_date" data-order="{$note.modified_date}">{$note.modified_date|crmDate}</td>
             <td class="crm-note-createdBy">
                 <a href="{crmURL p='civicrm/contact/view' q="reset=1&cid=`$note.contact_id`"}">{$note.createdBy}</a>
@@ -242,7 +251,7 @@
 </div>
 {elseif ($action eq 16)}
    <div class="messages status no-popup">
-      <div class="icon inform-icon"></div>
+      {icon icon="fa-info-circle"}{/icon}
       {ts}There are no Notes for this contact.{/ts}
    </div>
 {/if}

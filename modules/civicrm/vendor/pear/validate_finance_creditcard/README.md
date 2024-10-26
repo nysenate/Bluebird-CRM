@@ -1,3 +1,5 @@
+[![Build Status](https://travis-ci.org/pear/Validate_Finance_CreditCard.svg?branch=master)](https://travis-ci.org/pear/Validate_Finance_CreditCard)
+
 Validate_Finance_CreditCard
 ===========================
 

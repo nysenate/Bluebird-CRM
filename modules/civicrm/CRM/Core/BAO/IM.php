@@ -13,34 +13,45 @@
  *
  * @package CRM
  * @copyright CiviCRM LLC https://civicrm.org/licensing
- * $Id$
- *
  */
 
 /**
  * This class contain function for IM handling
  */
-class CRM_Core_BAO_IM extends CRM_Core_DAO_IM {
+class CRM_Core_BAO_IM extends CRM_Core_DAO_IM implements Civi\Core\HookInterface {
+  use CRM_Contact_AccessTrait;
 
   /**
-   * Takes an associative array and adds im.
+   * @deprecated
    *
    * @param array $params
-   *   (reference ) an assoc array of name/value pairs.
-   *
-   * @return object
-   *   CRM_Core_BAO_IM object on success, null otherwise
+   * @return CRM_Core_DAO_IM
+   * @throws CRM_Core_Exception
    */
-  public static function add(&$params) {
-    $hook = empty($params['id']) ? 'create' : 'edit';
-    CRM_Utils_Hook::pre($hook, 'IM', CRM_Utils_Array::value('id', $params), $params);
+  public static function create($params) {
+    CRM_Core_Error::deprecatedFunctionWarning('writeRecord');
+    return self::writeRecord($params);
+  }
 
-    $im = new CRM_Core_DAO_IM();
-    $im->copyValues($params);
-    $im->save();
+  /**
+   * Event fired before modifying an IM.
+   * @param \Civi\Core\Event\PreEvent $event
+   */
+  public static function self_hook_civicrm_pre(\Civi\Core\Event\PreEvent $event) {
+    if (in_array($event->action, ['create', 'edit'])) {
+      CRM_Core_BAO_Block::handlePrimary($event->params, __CLASS__);
+    }
+  }
 
-    CRM_Utils_Hook::post($hook, 'IM', $im->id, $im);
-    return $im;
+  /**
+   * @deprecated
+   *
+   * @param array $params
+   * @return CRM_Core_DAO_IM
+   * @throws CRM_Core_Exception
+   */
+  public static function add($params) {
+    return self::create($params);
   }
 
   /**
@@ -150,12 +161,15 @@ ORDER BY cim.is_primary DESC, im_id ASC ";
   /**
    * Call common delete function.
    *
-   * @param int $id
+   * @see \CRM_Contact_BAO_Contact::on_hook_civicrm_post
    *
+   * @param int $id
+   * @deprecated
    * @return bool
    */
   public static function del($id) {
-    return CRM_Contact_BAO_Contact::deleteObjectWithPrimary('IM', $id);
+    CRM_Core_Error::deprecatedFunctionWarning('deleteRecord');
+    return (bool) self::deleteRecord(['id' => $id]);
   }
 
 }

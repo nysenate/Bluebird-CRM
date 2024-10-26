@@ -25,55 +25,56 @@
 *}
 <div class="crm-block crm-form-block crm-printproductionexport-form-block">
 <fieldset>
-<legend>
-{ts}District Export for Merge/Purge{/ts}
-</legend>
-<dl>
+  <legend>
+    {ts}District Export for Merge/Purge{/ts}
+  </legend>
 
-<dt></dt>
-  <dd>{include file="CRM/Contact/Form/Task.tpl"}</dd>
+  <div class="crm-section">
+    <div class="content">{include file="CRM/Contact/Form/Task.tpl"}</div>
+  </div>
 
-{if $form.avanti_job_id}
-<dt>Avanti Job ID</dt>
-  <dd>{$form.avanti_job_id.html}</dd>
-{/if}
+  {if $form.avanti_job_id}
+    <div class="crm-section">
+      <div class="label">{$form.avanti_job_id.label}</div>
+      <div class="content">{$form.avanti_job_id.html}</div>
+    </div>
+  {/if}
 
-<dt>{$form.locType.label}</dt>
-  <dd>{$form.locType.html}</dd>
+  <div class="crm-section">
+    <div class="label">{$form.locType.label}</div>
+    <div class="content">{$form.locType.html}</div>
+  </div>
 
-<dt>{$form.includeLog.label}</dt>
-  <dd>{$form.includeLog.html}</dd>
+  <div class="crm-section">
+    <div class="label">{$form.includeLog.label}</div>
+    <div class="content">{$form.includeLog.html}</div>
+  </div>
 
-<dt>{$form.checkTouched.label}</dt>
-  <dd>{$form.checkTouched.html}
-    <span class="description"><br />Include two columns (untouched and privacy) to provide more details about contact history.
-    <br />
-    IF ( Contact Source = BOE AND Is Deceased = 0 AND Trashed = 0 )
-      <ul>
-        <li>IF there are no email, note, activity (non bulk email) or cases, untouched value = 1</li>
-        <li>IF Do Not Phone = true AND Do not Postal Mail = true AND ( Do Not Email = true OR No Bulk Emails = true OR On Hold Bounce = true OR On Hold Opt Out = true ), privacy value = 1</li>
-      </ul>
-    In both cases, we return 1 in the column if the "untouched" condition is met.
-    </span>
-  </dd>
+  <div class="crm-section">
+    <div class="label">{$form.checkTouched.label}</div>
+    <div class="content">{$form.checkTouched.html}
+      <div class="description"><br />Include two columns (untouched and privacy) to provide more details about contact history.
+      <br />
+      IF ( Contact Source = BOE AND Is Deceased = 0 AND Trashed = 0 )
+        <ul>
+          <li>IF there are no email, note, activity (non bulk email) or cases, untouched value = 1</li>
+          <li>IF Do Not Phone = true AND Do not Postal Mail = true AND ( Do Not Email = true OR No Bulk Emails = true OR On Hold Bounce = true OR On Hold Opt Out = true ), privacy value = 1</li>
+        </ul>
+      In both cases, we return 1 in the column if the "untouched" condition is met.
+      </div>
+    </div>
+  </div>
 
-<dt>{$form.excludeGroups.label}</dt>
-  <dd>{$form.excludeGroups.html}
-      {literal}
-      <script type="text/javascript">
-        cj("select#excludeGroups").crmasmSelect({
-            addItemTarget: 'bottom',
-            animate: false,
-            highlight: true,
-            sortable: true,
-            respectParents: true
-            });
-      </script>
-      {/literal}
-  </dd>
+  <div class="crm-section">
+    <div class="label">{$form.excludeGroups.label}</div>
+    <div class="content">{$form.excludeGroups.html}</div>
+  </div>
 
-<dt></dt>
-  <dd>{$form.buttons.html}</dd>
-</dl>
+  <div class="crm-section">
+    <div class="label"></div>
+    <div class="content">{$form.buttons.html}</div>
+  </div>
+
+  <br />
 </fieldset>
 </div>

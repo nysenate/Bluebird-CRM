@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="59px" height="50px" viewBox="0 0 59 50" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+    <!-- Generator: Sketch 51.3 (57544) - http://www.bohemiancoding.com/sketch -->
+    <title>tasks</title>
+    <desc>Created with Sketch.</desc>
+    <defs></defs>
+    <g id="Contacts" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
+        <g id="Contact---Cases---Empty-State" transform="translate(-694.000000, -351.000000)">
+            <g id="tasks" transform="translate(694.000000, 351.000000)">
+                <g id="Group-13">
+                    <rect id="Rectangle" fill="#BAD2DF" x="0" y="12.195122" width="59" height="25.6097561" rx="2"></rect>
+                    <path d="M2,42.6829268 L57,42.6829268 C58.1045695,42.6829268 59,43.5783573 59,44.6829268 L59,50 L0,50 L0,44.6829268 C-1.3527075e-16,43.5783573 0.8954305,42.6829268 2,42.6829268 Z" id="Rectangle-Copy" fill="#BAD2DF"></path>
+                    <path d="M0,0 L59,0 L59,5.31707317 C59,6.42164267 58.1045695,7.31707317 57,7.31707317 L2,7.31707317 C0.8954305,7.31707317 1.3527075e-16,6.42164267 0,5.31707317 L0,0 Z" id="Rectangle-Copy-5" fill="#BAD2DF"></path>
+                    <rect id="Rectangle-2" fill="#FFFFFF" x="9.83333333" y="17.0731707" width="44.25" height="6.09756098"></rect>
+                    <rect id="Rectangle-2-Copy" fill="#FFFFFF" x="9.83333333" y="26.8292683" width="22.125" height="6.09756098"></rect>
+                    <g id="Group-16" fill="#FFFFFF">
+                        <path d="M0,14.2046766 C0,13.0948302 0.901792447,12.195122 1.99979655,12.195122 L4.91666667,12.195122 L4.91666667,37.804878 L1.99979655,37.804878 C0.895339412,37.804878 0,36.9084296 0,35.7953234 L0,14.2046766 Z" id="Checkbox-Base-Copy"></path>
+                        <path d="M0,0 L4.91666667,0 L4.91666667,7.31707317 L1.99979655,7.31707317 C0.895339412,7.31707317 0,6.41985637 0,5.31765077 L0,0 Z" id="Checkbox-Base-Copy-3"></path>
+                        <path d="M0,44.6823492 C0,43.5780987 0.901792447,42.6829268 1.99979655,42.6829268 L4.91666667,42.6829268 L4.91666667,50 L0,50 L0,44.6823492 Z" id="Checkbox-Base-Copy-2"></path>
+                    </g>
+                </g>
+            </g>
+        </g>
+    </g>
+</svg>

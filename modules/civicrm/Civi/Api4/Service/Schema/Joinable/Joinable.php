@@ -10,19 +10,9 @@
  +--------------------------------------------------------------------+
  */
 
-/**
- *
- * @package CRM
- * @copyright CiviCRM LLC https://civicrm.org/licensing
- * $Id$
- *
- */
-
-
 namespace Civi\Api4\Service\Schema\Joinable;
 
 use Civi\Api4\Utils\CoreUtil;
-use CRM_Core_DAO_AllCoreTables as AllCoreTables;
 
 class Joinable {
 
@@ -61,7 +51,7 @@ class Joinable {
   protected $alias;
 
   /**
-   * @var array
+   * @var string[]
    */
   protected $conditions = [];
 
@@ -81,9 +71,14 @@ class Joinable {
   protected $entity;
 
   /**
-   * @var array
+   * @var int
    */
-  protected $entityFields;
+  protected $serialize;
+
+  /**
+   * @var bool
+   */
+  protected $deprecatedBy = FALSE;
 
   /**
    * @param $targetTable
@@ -102,21 +97,44 @@ class Joinable {
   /**
    * Gets conditions required when joining to a base table
    *
-   * @param string|null $baseTableAlias
-   *   Name of the base table, if aliased.
+   * @param string $baseTableAlias
+   * @param string $targetTableAlias
+   * @param array|null $openJoin
    *
    * @return array
    */
-  public function getConditionsForJoin($baseTableAlias = NULL) {
-    $baseCondition = sprintf(
-      '%s.%s =  %s.%s',
-      $baseTableAlias ?: $this->baseTable,
-      $this->baseColumn,
-      $this->getAlias(),
-      $this->targetColumn
-    );
+  public function getConditionsForJoin(string $baseTableAlias, string $targetTableAlias, ?array $openJoin) {
+    $conditions = [];
+    $baseColumn = $this->baseColumn;
+    // Joining within a bridge, use the bridge table key instead,
+    // because the custom fields are joined first and the base entity might not be added yet.
+    if (!empty($openJoin['bridgeKey']) && $baseTableAlias === $openJoin['alias']) {
+      $conditions = $openJoin['bridgeCondition'];
+      $baseTableAlias = $openJoin['bridgeAlias'];
+      $baseColumn = $openJoin['bridgeKey'];
+    }
+    if ($this->baseColumn && $this->targetColumn) {
+      $conditions[] = sprintf(
+        '`%s`.`%s` =  `%s`.`%s`',
+        $baseTableAlias,
+        $baseColumn,
+        $targetTableAlias,
+        $this->targetColumn
+      );
+    }
+    $this->addExtraJoinConditions($conditions, $baseTableAlias, $targetTableAlias);
+    return $conditions;
+  }
 
-    return array_merge([$baseCondition], $this->conditions);
+  /**
+   * @param $conditions
+   * @param string $baseTableAlias
+   * @param string $targetTableAlias
+   */
+  protected function addExtraJoinConditions(&$conditions, string $baseTableAlias, string $targetTableAlias):void {
+    foreach ($this->conditions as $condition) {
+      $conditions[] = str_replace(['{base_table}', '{target_table}'], [$baseTableAlias, $targetTableAlias], $condition);
+    }
   }
 
   /**
@@ -195,25 +213,18 @@ class Joinable {
   }
 
   /**
-   * @param $condition
+   * @param string $condition
    *
    * @return $this
    */
-  public function addCondition($condition) {
+  public function addCondition(string $condition) {
     $this->conditions[] = $condition;
 
     return $this;
   }
 
   /**
-   * @return array
-   */
-  public function getExtraJoinConditions() {
-    return $this->conditions;
-  }
-
-  /**
-   * @param array $conditions
+   * @param string[] $conditions
    *
    * @return $this
    */
@@ -242,6 +253,24 @@ class Joinable {
   }
 
   /**
+   * @return int|NULL
+   */
+  public function getSerialize():? int {
+    return $this->serialize;
+  }
+
+  /**
+   * @param int|null $serialize
+   *
+   * @return $this
+   */
+  public function setSerialize(?int $serialize) {
+    $this->serialize = $serialize;
+
+    return $this;
+  }
+
+  /**
    * @return int
    */
   public function getJoinType() {
@@ -260,48 +289,45 @@ class Joinable {
   }
 
   /**
+   * @return bool
+   */
+  public function isDeprecatedBy() {
+    return $this->deprecatedBy;
+  }
+
+  /**
+   * @param string|null $deprecatedBy
+   * @return $this
+   */
+  public function setDeprecatedBy(string $deprecatedBy = NULL) {
+    $this->deprecatedBy = $deprecatedBy ?? $this->alias . '_id';
+    return $this;
+  }
+
+  /**
    * @return array
    */
   public function toArray() {
     return get_object_vars($this);
   }
 
-  /**
-   * @return \Civi\Api4\Service\Spec\FieldSpec[]
-   */
-  public function getEntityFields() {
-    if (!$this->entityFields) {
-      $bao = AllCoreTables::getClassForTable($this->getTargetTable());
-      if ($bao) {
-        foreach ($bao::fields() as $field) {
-          $this->entityFields[] = \Civi\Api4\Service\Spec\SpecFormatter::arrayToField($field, $this->getEntity());
+  public function getEntityFields(): array {
+    $entityFields = [];
+    if (!empty($this->entity)) {
+      $gatherer = \Civi::container()->get('spec_gatherer');
+      $allFields = $gatherer->getAllFields($this->entity, 'get');
+      foreach ($allFields as $field) {
+        if ($field['table_name'] === $this->targetTable) {
+          // Serialized fields require a specialized join
+          if ($this->serialize) {
+            $field['serialize'] = \CRM_Core_DAO::SERIALIZE_SEPARATOR_TRIMMED;
+            $field['sql_renderer'] = ['Civi\Api4\Query\Api4SelectQuery', 'renderSerializedJoin'];
+          }
+          $entityFields[] = $field;
         }
       }
     }
-    return $this->entityFields;
-  }
-
-  /**
-   * @return array
-   */
-  public function getEntityFieldNames() {
-    $fieldNames = [];
-    foreach ($this->getEntityFields() as $fieldSpec) {
-      $fieldNames[] = $fieldSpec->getName();
-    }
-    return $fieldNames;
-  }
-
-  /**
-   * @return \Civi\Api4\Service\Spec\FieldSpec|NULL
-   */
-  public function getField($fieldName) {
-    foreach ($this->getEntityFields() as $field) {
-      if ($field->getName() === $fieldName) {
-        return $field;
-      }
-    }
-    return NULL;
+    return $entityFields;
   }
 
 }

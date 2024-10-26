@@ -28,7 +28,7 @@ class CRM_Financial_Form_FinancialBatch extends CRM_Contribute_Form {
     $this->set("context", $context);
     $this->_id = CRM_Utils_Request::retrieve('id', 'Positive', $this);
     parent::preProcess();
-    $session = CRM_Core_Session::singleton();
+
     if ($this->_id) {
       $permissions = [
         CRM_Core_Action::UPDATE => [
@@ -49,7 +49,7 @@ class CRM_Financial_Form_FinancialBatch extends CRM_Contribute_Form {
 
       $createdID = CRM_Core_DAO::getFieldValue('CRM_Batch_DAO_Batch', $this->_id, 'created_id');
       if (!empty($permissions[$this->_action])) {
-        $this->checkPermissions($this->_action, $permissions[$this->_action]['permission'], $createdID, $session->get('userID'), $permissions[$this->_action]['actionName']);
+        $this->checkPermissions($this->_action, $permissions[$this->_action]['permission'], $createdID, CRM_Core_Session::getLoggedInContactID(), $permissions[$this->_action]['actionName']);
       }
     }
   }
@@ -59,10 +59,9 @@ class CRM_Financial_Form_FinancialBatch extends CRM_Contribute_Form {
    */
   public function buildQuickForm() {
     parent::buildQuickForm();
-    $this->setPageTitle(ts('Financial Batch'));
     if (!empty($this->_id)) {
       $this->_title = CRM_Core_DAO::getFieldValue('CRM_Batch_DAO_Batch', $this->_id, 'title');
-      CRM_Utils_System::setTitle($this->_title . ' - ' . ts('Accounting Batch'));
+      $this->setTitle($this->_title . ' - ' . ts('Accounting Batch'));
       $this->assign('batchTitle', $this->_title);
       $contactID = CRM_Core_DAO::getFieldValue('CRM_Batch_DAO_Batch', $this->_id, 'created_id');
       $contactName = CRM_Contact_BAO_Contact::displayName($contactID);
@@ -77,11 +76,6 @@ class CRM_Financial_Form_FinancialBatch extends CRM_Contribute_Form {
           'type' => 'next',
           'name' => ts('Save'),
           'isDefault' => TRUE,
-        ],
-        [
-          'type' => 'next',
-          'name' => ts('Save and New'),
-          'subName' => 'new',
         ],
         [
           'type' => 'cancel',
@@ -141,7 +135,7 @@ class CRM_Financial_Form_FinancialBatch extends CRM_Contribute_Form {
    *
    * @param array $values
    * @param $files
-   * @param $self
+   * @param self $self
    *
    * @return array
    *   list of errors to be posted back to the form
@@ -169,6 +163,8 @@ class CRM_Financial_Form_FinancialBatch extends CRM_Contribute_Form {
 
   /**
    * Process the form submission.
+   *
+   * @throws \CRM_Core_Exception
    */
   public function postProcess() {
     $session = CRM_Core_Session::singleton();
@@ -180,7 +176,7 @@ class CRM_Financial_Form_FinancialBatch extends CRM_Contribute_Form {
 
     // store the submitted values in an array
     $params['modified_date'] = date('YmdHis');
-    $params['modified_id'] = $session->get('userID');
+    $params['modified_id'] = CRM_Core_Session::getLoggedInContactID();
     if (!empty($params['created_date'])) {
       $params['created_date'] = CRM_Utils_Date::processDate($params['created_date']);
     }
@@ -190,40 +186,14 @@ class CRM_Financial_Form_FinancialBatch extends CRM_Contribute_Form {
       $params['status_id'] = CRM_Core_PseudoConstant::getKey('CRM_Batch_BAO_Batch', 'status_id', 'Open');
       $params['created_date'] = date('YmdHis');
       if (empty($params['created_id'])) {
-        $params['created_id'] = $session->get('userID');
+        $params['created_id'] = CRM_Core_Session::getLoggedInContactID();
       }
-      $details = "{$params['title']} batch has been created by this contact.";
-      $activityTypeName = 'Create Batch';
-    }
-    elseif ($this->_action & CRM_Core_Action::UPDATE && $this->_id) {
-      $details = "{$params['title']} batch has been edited by this contact.";
-      if ($params['status_id'] === $closedStatusId) {
-        $details = "{$params['title']} batch has been closed by this contact.";
-      }
-      $activityTypeName = 'Edit Batch';
     }
 
-    // FIXME: What happens if we get to here and no activityType is defined?
+    $batch = CRM_Batch_BAO_Batch::writeRecord($params);
 
-    $batch = CRM_Batch_BAO_Batch::create($params);
-
-    //set batch id
+    // Required for postProcess hooks
     $this->_id = $batch->id;
-
-    // create activity.
-    $activityParams = [
-      // activityTypeName - dev/core#1116-unknown-if-ok
-      'activity_type_id' => CRM_Core_PseudoConstant::getKey('CRM_Activity_DAO_Activity', 'activity_type_id', $activityTypeName),
-      'subject' => $batch->title . "- Batch",
-      'status_id' => CRM_Core_PseudoConstant::getKey('CRM_Activity_DAO_Activity', 'activity_status_id', 'Completed'),
-      'priority_id' => CRM_Core_PseudoConstant::getKey('CRM_Activity_DAO_Activity', 'priority_id', 'Normal'),
-      'activity_date_time' => date('YmdHis'),
-      'source_contact_id' => $session->get('userID'),
-      'source_contact_qid' => $session->get('userID'),
-      'details' => $details,
-    ];
-
-    CRM_Activity_BAO_Activity::create($activityParams);
 
     $buttonName = $this->controller->getButtonName();
 

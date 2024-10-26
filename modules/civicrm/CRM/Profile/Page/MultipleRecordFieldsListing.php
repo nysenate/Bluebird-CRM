@@ -13,7 +13,6 @@
  *
  * @package CRM
  * @copyright CiviCRM LLC https://civicrm.org/licensing
- *
  */
 class CRM_Profile_Page_MultipleRecordFieldsListing extends CRM_Core_Page_Basic {
 
@@ -28,6 +27,13 @@ class CRM_Profile_Page_MultipleRecordFieldsListing extends CRM_Core_Page_Basic {
 
   protected $_profileId = NULL;
 
+  /**
+   * @param int $profileId
+   */
+  public function setProfileID(int $profileId): void {
+    $this->_profileId = $profileId;
+  }
+
   public $_contactId = NULL;
 
   public $_customGroupTitle = NULL;
@@ -35,6 +41,12 @@ class CRM_Profile_Page_MultipleRecordFieldsListing extends CRM_Core_Page_Basic {
   public $_pageViewType = NULL;
 
   public $_contactType = NULL;
+
+  public $_customGroupId = NULL;
+
+  public $_DTparams = [];
+
+  public $_total = NULL;
 
   /**
    * Get BAO Name.
@@ -53,7 +65,7 @@ class CRM_Profile_Page_MultipleRecordFieldsListing extends CRM_Core_Page_Basic {
    *   (reference) of action links
    */
   public function &links() {
-    if (!(self::$_links[$this->_pageViewType])) {
+    if (!isset(self::$_links[$this->_pageViewType])) {
       // helper variable for nicer formatting
       $links = [];
 
@@ -65,20 +77,23 @@ class CRM_Profile_Page_MultipleRecordFieldsListing extends CRM_Core_Page_Basic {
       $links[CRM_Core_Action::VIEW] = [
         'name' => ts('View'),
         'title' => ts('View %1', [1 => $this->_customGroupTitle . ' record']),
+        'weight' => CRM_Core_Action::getWeight(CRM_Core_Action::VIEW),
       ];
 
       $links[CRM_Core_Action::UPDATE] = [
         'name' => ts('Edit'),
         'title' => ts('Edit %1', [1 => $this->_customGroupTitle . ' record']),
+        'weight' => CRM_Core_Action::getWeight(CRM_Core_Action::UPDATE),
       ];
 
       $links[CRM_Core_Action::DELETE] = [
         'name' => ts('Delete'),
         'title' => ts('Delete %1', [1 => $this->_customGroupTitle . ' record']),
+        'weight' => CRM_Core_Action::getWeight(CRM_Core_Action::DELETE),
       ];
 
       // urls and queryStrings
-      if ($this->_pageViewType == 'profileDataView') {
+      if ($this->_pageViewType === 'profileDataView') {
         $links[CRM_Core_Action::VIEW]['url'] = 'civicrm/profile/view';
         $links[CRM_Core_Action::VIEW]['qs'] = "reset=1&id=%%id%%&recordId=%%recordId%%&gid=%%gid%%&multiRecord={$view}";
 
@@ -89,7 +104,7 @@ class CRM_Profile_Page_MultipleRecordFieldsListing extends CRM_Core_Page_Basic {
         $links[CRM_Core_Action::DELETE]['qs'] = "reset=1&id=%%id%%&recordId=%%recordId%%&gid=%%gid%%&multiRecord={$delete}";
 
       }
-      elseif ($this->_pageViewType == 'customDataView') {
+      elseif ($this->_pageViewType === 'customDataView') {
         // custom data specific view links
         $links[CRM_Core_Action::VIEW]['url'] = 'civicrm/contact/view/cd';
         $links[CRM_Core_Action::VIEW]['qs'] = 'reset=1&gid=%%gid%%&cid=%%cid%%&recId=%%recId%%&cgcount=%%cgcount%%&multiRecordDisplay=single&mode=view';
@@ -105,6 +120,7 @@ class CRM_Profile_Page_MultipleRecordFieldsListing extends CRM_Core_Page_Basic {
           'title' => ts('Copy %1', [1 => $this->_customGroupTitle . ' record']),
           'url' => 'civicrm/contact/view/cd/edit',
           'qs' => 'reset=1&type=%%type%%&groupID=%%groupID%%&entityID=%%entityID%%&cgcount=%%newCgCount%%&multiRecordDisplay=single&copyValueId=%%cgcount%%&mode=copy',
+          'weight' => CRM_Core_Action::getWeight(CRM_Core_Action::COPY),
         ];
       }
 
@@ -149,12 +165,12 @@ class CRM_Profile_Page_MultipleRecordFieldsListing extends CRM_Core_Page_Basic {
    * Browse the listing.
    *
    */
-  public function browse() {
+  public function browse(): array {
     $dateFields = NULL;
     $newCgCount = $cgcount = 0;
     $attributes = $result = $headerAttr = [];
     $dateFieldsVals = NULL;
-    if ($this->_pageViewType == 'profileDataView' && $this->_profileId) {
+    if ($this->_pageViewType === 'profileDataView' && $this->_profileId) {
       $fields = CRM_Core_BAO_UFGroup::getFields($this->_profileId, FALSE, NULL,
         NULL, NULL,
         FALSE, NULL,
@@ -191,7 +207,7 @@ class CRM_Profile_Page_MultipleRecordFieldsListing extends CRM_Core_Page_Basic {
       }
       $this->assign('reachedMax', $reached);
       // custom group info : this consists of the field title of group fields
-      $groupDetail = CRM_Core_BAO_CustomGroup::getGroupDetail($customGroupId, NULL, CRM_Core_DAO::$_nullObject, TRUE);
+      $groupDetail = CRM_Core_BAO_CustomGroup::getCustomGroupDetail($customGroupId, NULL, TRUE);
       // field ids of fields in_selector for the custom group id provided
       $fieldIDs = array_keys($groupDetail[$customGroupId]['fields']);
       // field labels for headers
@@ -219,7 +235,7 @@ class CRM_Profile_Page_MultipleRecordFieldsListing extends CRM_Core_Page_Basic {
         if ($returnValues['data_type'] == 'Date') {
           $dateFields[$fieldIDs[$key]] = 1;
           $actualPHPFormats = CRM_Utils_Date::datePluginToPHPFormats();
-          $dateFormat = (array) CRM_Utils_Array::value($returnValues['date_format'], $actualPHPFormats);
+          $dateFormat = (array) ($actualPHPFormats[$returnValues['date_format']] ?? []);
           $timeFormat = $returnValues['time_format'] ?? NULL;
         }
 
@@ -242,7 +258,15 @@ class CRM_Profile_Page_MultipleRecordFieldsListing extends CRM_Core_Page_Basic {
       }
       $linkAction = array_sum(array_keys($this->links()));
     }
-
+    // Check permissions to edit the contact and the custom fields
+    $editPermission = FALSE;
+    if ($this->_contactId) {
+      $editPermission = CRM_Core_BAO_CustomGroup::checkGroupAccess($customGroupId, CRM_Core_Permission::EDIT) &&
+        CRM_Contact_BAO_Contact_Permission::allow($this->_contactId, CRM_Core_Permission::EDIT);
+      if (!$editPermission) {
+        $linkAction -= (CRM_Core_Action::COPY + CRM_Core_Action::UPDATE + CRM_Core_Action::DELETE);
+      }
+    }
     if (!empty($fieldIDs) && $this->_contactId) {
       $DTparams = !empty($this->_DTparams) ? $this->_DTparams : NULL;
       // commonly used for both views i.e profile listing view (profileDataView) and custom data listing view (customDataView)
@@ -252,7 +276,7 @@ class CRM_Profile_Page_MultipleRecordFieldsListing extends CRM_Core_Page_Basic {
       unset($result['count']);
       unset($result['sortedResult']);
 
-      if ($this->_pageViewType == 'profileDataView') {
+      if ($this->_pageViewType === 'profileDataView') {
         if (!empty($fieldIDs)) {
           //get the group info of multi rec fields in listing view
           $fieldInput = $fieldIDs;
@@ -269,13 +293,16 @@ class CRM_Profile_Page_MultipleRecordFieldsListing extends CRM_Core_Page_Basic {
         $customGroupInfo = CRM_Core_BAO_CustomGroup::getGroupTitles($fieldInput);
         $this->_customGroupTitle = $customGroupInfo[$fieldIdInput]['groupTitle'];
       }
+      elseif ($this->_pageViewType == 'customDataView') {
+
+      }
       // $cgcount is defined before 'if' condition as entity may have no record
       // and $cgcount is used to build new record url
       $cgcount = 1;
       $newCgCount = (!$reached) ? $resultCount + 1 : NULL;
       if (!empty($result) && empty($this->_headersOnly)) {
-        $links = self::links();
-        if ($this->_pageViewType == 'profileDataView') {
+        $links = $this->links();
+        if ($this->_pageViewType === 'profileDataView') {
           $pageCheckSum = $this->get('pageCheckSum');
           if ($pageCheckSum) {
             foreach ($links as $key => $link) {
@@ -297,7 +324,12 @@ class CRM_Profile_Page_MultipleRecordFieldsListing extends CRM_Core_Page_Basic {
               $customValue = &$val;
               if (!empty($dateFields) && array_key_exists($fieldId, $dateFields)) {
                 // formatted date capture value capture
-                $dateFieldsVals[$fieldId][$recId] = CRM_Core_BAO_CustomField::displayValue($customValue, $fieldId);
+                if ($this->_pageViewType == 'profileDataView') {
+                  $dateFieldsVals[$fieldId][$recId] = CRM_Utils_Date::processDate($result[$recId][$fieldId], NULL, FALSE, 'YmdHis');
+                }
+                else {
+                  $dateFieldsVals[$fieldId][$recId] = CRM_Core_BAO_CustomField::displayValue($customValue, $fieldId);
+                }
 
                 //set date and time format
                 switch ($timeFormat) {
@@ -342,8 +374,6 @@ class CRM_Profile_Page_MultipleRecordFieldsListing extends CRM_Core_Page_Basic {
 
                   case 'Radio':
                   case 'Select':
-                  case 'Select Country':
-                  case 'Select State/Province':
                     $editable = TRUE;
                     $fieldAttributes['data-type'] = $spec['data_type'] == 'Boolean' ? 'boolean' : 'select';
                     if (!$spec['is_required']) {
@@ -385,6 +415,7 @@ class CRM_Profile_Page_MultipleRecordFieldsListing extends CRM_Core_Page_Basic {
                 $links[CRM_Core_Action::DELETE]['url'] = '#';
                 $links[CRM_Core_Action::DELETE]['extra'] = ' data-delete_params="' . htmlspecialchars(json_encode($deleteData)) . '"';
                 $links[CRM_Core_Action::DELETE]['class'] = 'delete-custom-row';
+                $links[CRM_Core_Action::DELETE]['weight'] = CRM_Core_Action::getWeight(CRM_Core_Action::DELETE);
               }
               if (!empty($pageCheckSum)) {
                 $actionParams['cs'] = $pageCheckSum;
@@ -409,7 +440,7 @@ class CRM_Profile_Page_MultipleRecordFieldsListing extends CRM_Core_Page_Basic {
 
     $headers = [];
     if (!empty($fieldIDs)) {
-      $fields = ['Radio', 'Select', 'Select Country', 'Select State/Province'];
+      $fields = ['Radio', 'Select'];
       foreach ($fieldIDs as $fieldID) {
         if ($this->_pageViewType == 'profileDataView') {
           $headers[$fieldID] = $customGroupInfo[$fieldID]['fieldLabel'];
@@ -433,6 +464,7 @@ class CRM_Profile_Page_MultipleRecordFieldsListing extends CRM_Core_Page_Basic {
         }
       }
     }
+    $this->assign('editPermission', $editPermission);
     $this->assign('dateFields', $dateFields);
     $this->assign('dateFieldsVals', $dateFieldsVals);
     $this->assign('cgcount', $cgcount);

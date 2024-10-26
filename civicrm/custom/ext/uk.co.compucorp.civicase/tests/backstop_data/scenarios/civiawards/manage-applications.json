@@ -1,0 +1,62 @@
+{
+  "scenarios": [
+    {
+      "label": "Manage Applications - Application Overview",
+      "url": "{url}/civicrm/case/a/?case_type_category=awards#/case/list?cf=%7B\"case_type_category\":\"awards\"%7D&caseId={applicationId}",
+      "waitForLoadingComplete": ".civicase__summary-tab",
+      "apiCalls": [
+        "setting.create civicaseAllowLinkedCasesTab=0"
+      ],
+      "viewports": [
+        {
+          "label": "Full Vertical Screen",
+          "width": 1680,
+          "height": 3000
+        }
+      ]
+    },
+    {
+      "label": "Manage Applications - Application Overview - Payments tab",
+      "url": "{url}/civicrm/case/a/?case_type_category=awards#/case/list?cf=%7B\"case_type_category\":\"awards\"%7D&caseId={applicationId}&tab=Payments"
+    },
+    {
+      "label": "Manage Applications - Application Overview - Payments tab - Add Payment Button",
+      "url": "{url}/civicrm/case/a/?case_type_category=awards#/case/list?cf=%7B\"case_type_category\":\"awards\"%7D&caseId={applicationId}&tab=Payments",
+      "onReadyScript": "manage-applications/click-payment-button.js"
+    },
+    {
+      "label": "Manage Applications - Application Overview - Payments tab - View Action",
+      "url": "{url}/civicrm/case/a/?case_type_category=awards#/case/list?cf=%7B\"case_type_category\":\"awards\"%7D&caseId={applicationId}&tab=Payments",
+      "onReadyScript": "manage-applications/view-payment-action.js"
+    },
+    {
+      "label": "Manage Applications - Application Overview - Payments tab - Edit Action",
+      "url": "{url}/civicrm/case/a/?case_type_category=awards#/case/list?cf=%7B\"case_type_category\":\"awards\"%7D&caseId={applicationId}&tab=Payments",
+      "onReadyScript": "manage-applications/edit-payment-action.js"
+    },
+    {
+      "label": "Manage Applications - Application Overview - Payments tab - Delete Action",
+      "url": "{url}/civicrm/case/a/?case_type_category=awards#/case/list?cf=%7B\"case_type_category\":\"awards\"%7D&caseId={applicationId}&tab=Payments",
+      "onReadyScript": "manage-applications/delete-payment-action.js"
+    },
+    {
+      "label": "Manage Applications - Application Overview - Activity tab",
+      "url": "{url}/civicrm/case/a/?case_type_category=awards#/case/list?cf=%7B\"case_type_category\":\"awards\"%7D&caseId={applicationId}&tab=Activities"
+    },
+    {
+      "label": "Manage Applications - Application Overview - Activity tab - Activity Panel - Payment Activity",
+      "url": "{url}/civicrm/case/a/?case_type_category=awards#/case/list?cf=%7B\"case_type_category\":\"awards\"%7D&caseId={applicationId}&tab=Activities",
+      "onReadyScript": "manage-applications/activity-detail.js"
+    },
+    {
+      "label": "Manage Applications - Application Overview - Activity tab - Activity Panel - Payment Activity - Edit",
+      "url": "{url}/civicrm/case/a/?case_type_category=awards#/case/list?cf=%7B\"case_type_category\":\"awards\"%7D&caseId={applicationId}&tab=Activities",
+      "onReadyScript": "manage-applications/edit-activity-detail.js"
+    },
+    {
+      "label": "Manage Applications - Application Overview - People tab",
+      "url": "{url}/civicrm/case/a/?case_type_category=awards#/case/list?cf=%7B\"case_type_category\":\"awards\"%7D&caseId={applicationId}&tab=People",
+      "waitForLoadingComplete": ".civicase__people-tab__sub-tab:not([ng-show=\"tab == 'relations'\"])"
+    }
+  ]
+}

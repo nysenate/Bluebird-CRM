@@ -41,6 +41,19 @@ abstract class CRM_Financial_BAO_ExportFormat {
   public $_isDownloadFile;
 
   /**
+   * BatchIds to be exported
+   * @var string
+   */
+  public $_batchIds;
+
+
+  /**
+   * Files to be downloaded
+   * @var array
+   */
+  public $_downloadFile;
+
+  /**
    * Class constructor.
    */
   public function __construct() {
@@ -73,7 +86,7 @@ abstract class CRM_Financial_BAO_ExportFormat {
   /**
    * Abstract function that generates exports, and downloads them as zip file.
    *
-   * @param $exportDaos array with DAO's for queries to be exported.
+   * @param array $exportDaos with DAO's for queries to be exported.
    */
   abstract public function makeExport($exportDaos);
 
@@ -214,7 +227,7 @@ abstract class CRM_Financial_BAO_ExportFormat {
 
   /**
    * @param array $files
-   * @param null $destination
+   * @param string $destination
    * @param bool $overwrite
    *
    * @return bool
@@ -224,7 +237,7 @@ abstract class CRM_Financial_BAO_ExportFormat {
     if (file_exists($destination) && !$overwrite) {
       return FALSE;
     }
-    $valid_files = [];
+
     if (is_array($files)) {
       foreach ($files as $file) {
         // make sure the file exists

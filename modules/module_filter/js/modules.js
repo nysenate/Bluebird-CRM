@@ -55,7 +55,7 @@ Drupal.behaviors.moduleFilter = {
         buildIndex: [
           function(moduleFilter, item) {
             var $checkbox = $('td.checkbox :checkbox', item.element);
-            if ($checkbox.size() > 0) {
+            if ($checkbox.length > 0) {
               item.status = $checkbox.is(':checked');
               item.disabled = $checkbox.is(':disabled');
             }

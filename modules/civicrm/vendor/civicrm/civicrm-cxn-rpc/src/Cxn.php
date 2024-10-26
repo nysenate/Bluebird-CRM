@@ -20,7 +20,7 @@ class Cxn {
    * @return string
    */
   public static function createId() {
-    return 'cxn:' . BinHex::bin2hex(crypt_random_string(Constants::CXN_ID_CHARS));
+    return 'cxn:' . BinHex::bin2hex(\phpseclib\Crypt\Random::string(Constants::CXN_ID_CHARS));
   }
 
   public static function validate($cxn) {

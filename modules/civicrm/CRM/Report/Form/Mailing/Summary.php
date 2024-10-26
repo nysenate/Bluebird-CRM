@@ -24,11 +24,6 @@ class CRM_Report_Form_Mailing_Summary extends CRM_Report_Form {
 
   public $_drilldownReport = ['mailing/detail' => 'Link to Detail Report'];
 
-  protected $_charts = [
-    '' => 'Tabular',
-    'barchart' => 'Bar Chart',
-  ];
-
   /**
    * Class constructor.
    */
@@ -53,6 +48,12 @@ class CRM_Report_Form_Mailing_Summary extends CRM_Report_Form {
         ],
         'subject' => [
           'title' => ts('Subject'),
+        ],
+        'from_name' => [
+          'title' => ts('Sender Name'),
+        ],
+        'from_email' => [
+          'title' => ts('Sender Email'),
         ],
       ],
       'filters' => [
@@ -80,6 +81,11 @@ class CRM_Report_Form_Mailing_Summary extends CRM_Report_Form {
           'title' => ts('Mailing Subject'),
           'type' => CRM_Utils_Type::T_STRING,
           'operator' => 'like',
+        ],
+        'is_archived' => [
+          'name' => 'is_archived',
+          'title' => ts('Is archived?'),
+          'type' => CRM_Utils_Type::T_BOOLEAN,
         ],
       ],
       'order_bys' => [
@@ -281,6 +287,13 @@ class CRM_Report_Form_Mailing_Summary extends CRM_Report_Form {
     ];
     // If we have campaigns enabled, add those elements to both the fields, filters.
     $this->addCampaignFields('civicrm_mailing');
+
+    // Add charts support
+    $this->_charts = [
+      '' => ts('Tabular'),
+      'barChart' => ts('Bar Chart'),
+    ];
+
     parent::__construct();
   }
 
@@ -326,9 +339,11 @@ class CRM_Report_Form_Mailing_Summary extends CRM_Report_Form {
     foreach ($this->_columns as $tableName => $table) {
       if (array_key_exists('fields', $table)) {
         foreach ($table['fields'] as $fieldName => $field) {
+          if (!empty($field['pseudofield'])) {
+            continue;
+          }
           if (!empty($field['required']) || !empty($this->_params['fields'][$fieldName])) {
-
-            # for statistics
+            // For statistics
             if (!empty($field['statistics'])) {
               switch ($field['statistics']['calc']) {
                 case 'PERCENTAGE':
@@ -409,7 +424,7 @@ class CRM_Report_Form_Mailing_Summary extends CRM_Report_Form {
       if (array_key_exists('filters', $table)) {
         foreach ($table['filters'] as $fieldName => $field) {
           $clause = NULL;
-          if (CRM_Utils_Array::value('type', $field) & CRM_Utils_Type::T_DATE) {
+          if (($field['type'] ?? 0) & CRM_Utils_Type::T_DATE) {
             $relative = $this->_params["{$fieldName}_relative"] ?? NULL;
             $from = $this->_params["{$fieldName}_from"] ?? NULL;
             $to = $this->_params["{$fieldName}_to"] ?? NULL;
@@ -426,9 +441,9 @@ class CRM_Report_Form_Mailing_Summary extends CRM_Report_Form {
               else {
                 $clause = $this->whereClause($field,
                   $op,
-                  CRM_Utils_Array::value("{$fieldName}_value", $this->_params),
-                  CRM_Utils_Array::value("{$fieldName}_min", $this->_params),
-                  CRM_Utils_Array::value("{$fieldName}_max", $this->_params)
+                  $this->_params["{$fieldName}_value"] ?? NULL,
+                  $this->_params["{$fieldName}_min"] ?? NULL,
+                  $this->_params["{$fieldName}_max"] ?? NULL
                 );
               }
             }
@@ -507,7 +522,7 @@ class CRM_Report_Form_Mailing_Summary extends CRM_Report_Form {
   /**
    * @param $fields
    * @param $files
-   * @param $self
+   * @param self $self
    *
    * @return array
    */
@@ -636,7 +651,7 @@ class CRM_Report_Form_Mailing_Summary extends CRM_Report_Form {
           $entryFound = TRUE;
         }
         if (array_key_exists('civicrm_mailing_event_opened_open_count', $row)) {
-          $rows[$rowNum]['civicrm_mailing_event_opened_open_count'] = CRM_Mailing_Event_BAO_Opened::getTotalCount($row['civicrm_mailing_id']);
+          $rows[$rowNum]['civicrm_mailing_event_opened_open_count'] = CRM_Mailing_Event_BAO_MailingEventOpened::getTotalCount($row['civicrm_mailing_id']);
           $entryFound = TRUE;
         }
       }

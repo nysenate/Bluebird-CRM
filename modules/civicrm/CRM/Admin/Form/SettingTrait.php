@@ -44,16 +44,35 @@ trait CRM_Admin_Form_SettingTrait {
   }
 
   /**
+   * Fields defined as read only.
+   *
+   * @var array
+   */
+  protected $readOnlyFields = [];
+
+  /**
+   * Have read only fields been defined on the form.
+   *
+   * @return bool
+   */
+  protected function hasReadOnlyFields(): bool {
+    return !empty($this->readOnlyFields);
+  }
+
+  /**
    * Get the metadata relating to the settings on the form, ordered by the keys in $this->_settings.
    *
    * @return array
    */
-  protected function getSettingsMetaData() {
+  protected function getSettingsMetaData(): array {
     if (empty($this->settingsMetadata)) {
       $this->settingsMetadata = \Civi\Core\SettingsMetadata::getMetadata(['name' => array_keys($this->_settings)], NULL, TRUE);
       // This array_merge re-orders to the key order of $this->_settings.
       $this->settingsMetadata = array_merge($this->_settings, $this->settingsMetadata);
     }
+    uasort($this->settingsMetadata, function ($a, $b) {
+      return $this->isWeightHigher($a, $b);
+    });
     return $this->settingsMetadata;
   }
 
@@ -69,8 +88,12 @@ trait CRM_Admin_Form_SettingTrait {
     // Handle quickform hateability just once, right here right now.
     $unsetValues = array_diff_key($this->_settings, $params);
     foreach ($unsetValues as $key => $unsetValue) {
-      if ($this->getQuickFormType($this->getSettingMetadata($key)) === 'CheckBox') {
+      $quickFormType = $this->getQuickFormType($this->getSettingMetadata($key));
+      if ($quickFormType === 'CheckBox') {
         $setValues[$key] = [$key => 0];
+      }
+      elseif ($quickFormType === 'CheckBoxes') {
+        $setValues[$key] = [];
       }
     }
     return $setValues;
@@ -130,21 +153,8 @@ trait CRM_Admin_Form_SettingTrait {
    */
   protected function getSettingsOrderedByWeight() {
     $settingMetaData = $this->getSettingsMetaData();
-    $filter = $this->getSettingPageFilter();
-
-    usort($settingMetaData, function ($a, $b) use ($filter) {
-      // Handle cases in which a comparison is impossible. Such will be considered ties.
-      if (
-        // A comparison can't be made unless both setting weights are declared.
-        !isset($a['settings_pages'][$filter]['weight'], $b['settings_pages'][$filter]['weight'])
-        // A pair of settings might actually have the same weight.
-        || $a['settings_pages'][$filter]['weight'] === $b['settings_pages'][$filter]['weight']
-      ) {
-        return 0;
-      }
-
-      return $a['settings_pages'][$filter]['weight'] > $b['settings_pages'][$filter]['weight'] ? 1 : -1;
-    });
+    // Probably unnessary to do this again.
+    $settingMetaData = $this->filterMetadataByWeight($settingMetaData);
 
     return $settingMetaData;
   }
@@ -153,7 +163,6 @@ trait CRM_Admin_Form_SettingTrait {
    * Add fields in the metadata to the template.
    *
    * @throws \CRM_Core_Exception
-   * @throws \CiviCRM_API3_Exception
    */
   protected function addFieldsDefinedInSettingsMetadata() {
     $this->addSettingsToFormFromMetadata();
@@ -164,7 +173,7 @@ trait CRM_Admin_Form_SettingTrait {
       if (isset($quickFormType)) {
         $options = $props['options'] ?? NULL;
         if ($options) {
-          if ($props['html_type'] === 'Select' && isset($props['is_required']) && $props['is_required'] === FALSE && !isset($options[''])) {
+          if ($quickFormType === 'Select' && isset($props['is_required']) && $props['is_required'] === FALSE && !isset($options[''])) {
             // If the spec specifies the field is not required add a null option.
             // Why not if empty($props['is_required']) - basically this has been added to the spec & might not be set to TRUE
             // when it is true.
@@ -178,7 +187,7 @@ trait CRM_Admin_Form_SettingTrait {
         //Load input as readonly whose values are overridden in civicrm.settings.php.
         if (Civi::settings()->getMandatory($setting) !== NULL) {
           $props['html_attributes']['readonly'] = TRUE;
-          $this->includesReadOnlyFields = TRUE;
+          $this->readOnlyFields[] = $setting;
         }
 
         $add = 'add' . $quickFormType;
@@ -213,9 +222,7 @@ trait CRM_Admin_Form_SettingTrait {
           );
         }
         elseif ($add === 'addChainSelect') {
-          $this->addChainSelect($setting, [
-            'label' => $props['title'],
-          ]);
+          $this->addChainSelect($setting, ['label' => $props['title']] + $props['chain_select_settings']);
         }
         elseif ($add === 'addMonthDay') {
           $this->add('date', $setting, $props['title'], CRM_Core_SelectValues::date(NULL, 'M d'));
@@ -227,7 +234,7 @@ trait CRM_Admin_Form_SettingTrait {
           $this->addRadio($setting, $props['title'], [1 => ts('Yes'), 0 => ts('No')], CRM_Utils_Array::value('html_attributes', $props), '&nbsp;&nbsp;');
         }
         elseif ($add === 'add') {
-          $this->add($props['html_type'], $setting, $props['title'], $options);
+          $this->add($props['html_type'], $setting, $props['title'], $options, FALSE, $props['html_extra'] ?? NULL);
         }
         else {
           $this->$add($setting, $props['title'], $options);
@@ -255,6 +262,11 @@ trait CRM_Admin_Form_SettingTrait {
     $this->assign('setting_descriptions', $descriptions);
     $this->assign('settings_fields', $settingMetaData);
     $this->assign('fields', $this->getSettingsOrderedByWeight());
+    // @todo look at sharing the code below in the settings trait.
+    if ($this->hasReadOnlyFields()) {
+      $this->freeze($this->readOnlyFields);
+      CRM_Core_Session::setStatus(ts("Some fields are loaded as 'readonly' as they have been set (overridden) in civicrm.settings.php."), '', 'info', ['expires' => 0]);
+    }
   }
 
   /**
@@ -288,9 +300,11 @@ trait CRM_Admin_Form_SettingTrait {
       'text' => 'Element',
       'entity_reference' => 'EntityRef',
       'advmultiselect' => 'Element',
+      'chainselect' => 'ChainSelect',
+      'yesno' => 'YesNo',
     ];
     $mapping += array_fill_keys(CRM_Core_Form::$html5Types, '');
-    return $mapping[$htmlType];
+    return $mapping[$htmlType] ?? '';
   }
 
   /**
@@ -298,7 +312,6 @@ trait CRM_Admin_Form_SettingTrait {
    *
    * All others are pending conversion.
    *
-   * @throws \CiviCRM_API3_Exception
    * @throws \CRM_Core_Exception
    */
   protected function setDefaultsForMetadataDefinedFields() {
@@ -306,8 +319,8 @@ trait CRM_Admin_Form_SettingTrait {
     foreach (array_keys($this->_settings) as $setting) {
       $this->_defaults[$setting] = civicrm_api3('setting', 'getvalue', ['name' => $setting]);
       $spec = $this->getSettingsMetaData()[$setting];
-      if (!empty($spec['serialize'])) {
-        $this->_defaults[$setting] = CRM_Core_DAO::unSerializeField($this->_defaults[$setting], $spec['serialize']);
+      if (!empty($spec['serialize']) && !is_array($this->_defaults[$setting])) {
+        $this->_defaults[$setting] = CRM_Core_DAO::unSerializeField((string) $this->_defaults[$setting], $spec['serialize']);
       }
       if ($this->getQuickFormType($spec) === 'CheckBoxes') {
         $this->_defaults[$setting] = array_fill_keys($this->_defaults[$setting], 1);
@@ -326,7 +339,7 @@ trait CRM_Admin_Form_SettingTrait {
    * @param array $params
    *   Form input.
    *
-   * @throws \CiviCRM_API3_Exception
+   * @throws \CRM_Core_Exception
    */
   protected function saveMetadataDefinedSettings($params) {
     $settings = $this->getSettingsToSetByMetadata($params);
@@ -340,7 +353,7 @@ trait CRM_Admin_Form_SettingTrait {
       }
       elseif ($this->getQuickFormType($settingMetaData) === 'CheckBox') {
         // This will be an array with one value.
-        $settings[$setting] = (int) reset($settings[$setting]);
+        $settings[$setting] = (bool) reset($settings[$setting]);
       }
     }
     civicrm_api3('setting', 'create', $settings);
@@ -377,7 +390,7 @@ trait CRM_Admin_Form_SettingTrait {
   /**
    * Add settings to form if the metadata designates they should be on the page.
    *
-   * @throws \CiviCRM_API3_Exception
+   * @throws \CRM_Core_Exception
    */
   protected function addSettingsToFormFromMetadata() {
     $filter = $this->getSettingPageFilter();
@@ -387,6 +400,41 @@ trait CRM_Admin_Form_SettingTrait {
         $this->_settings[$key] = $setting;
       }
     }
+  }
+
+  /**
+   * @param array $settingMetaData
+   *
+   * @return array
+   */
+  protected function filterMetadataByWeight(array $settingMetaData): array {
+    usort($settingMetaData, function ($a, $b) {
+      return $this->isWeightHigher($a, $b);
+    });
+    return $settingMetaData;
+  }
+
+  /**
+   * Is the relevant weight of b higher than a.
+   *
+   * @param array $a
+   * @param array $b
+   *
+   * @return int
+   */
+  protected function isWeightHigher(array $a, array $b): int {
+    $filter = $this->getSettingPageFilter();
+    // Handle cases in which a comparison is impossible. Such will be considered ties.
+    if (
+      // A comparison can't be made unless both setting weights are declared.
+      !isset($a['settings_pages'][$filter]['weight'], $b['settings_pages'][$filter]['weight'])
+      // A pair of settings might actually have the same weight.
+      || $a['settings_pages'][$filter]['weight'] === $b['settings_pages'][$filter]['weight']
+    ) {
+      return 0;
+    }
+
+    return $a['settings_pages'][$filter]['weight'] > $b['settings_pages'][$filter]['weight'] ? 1 : -1;
   }
 
 }
