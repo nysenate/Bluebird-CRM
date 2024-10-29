@@ -14,8 +14,6 @@ class CRM_NYSS_BAO_Integration_WebsiteEventFactory {
 
   final public const EVENT_TYPE_POLL = 'poll';
 
-  final public const EVENT_TYPE_PROFILE = 'profile';
-
   final public const EVENT_TYPE_ACCOUNT = 'account';
 
   final public const EVENT_TYPE_SURVEY = 'survey';
@@ -25,6 +23,8 @@ class CRM_NYSS_BAO_Integration_WebsiteEventFactory {
   final public const EVENT_ACTION_UNFOLLOW = 'unfollow';
 
   final public const EVENT_ACTION_WEBFORM = 'webform';
+
+  final public const EVENT_ACTION_EDITED = 'edited';
 
   public static function getClassName(CRM_NYSS_BAO_Integration_WebsiteEventData $data): string {
     $type = $data->getEventType();
