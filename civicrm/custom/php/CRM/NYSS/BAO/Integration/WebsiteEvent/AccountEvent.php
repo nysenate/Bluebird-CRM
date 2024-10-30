@@ -90,7 +90,11 @@ class CRM_NYSS_BAO_Integration_WebsiteEvent_AccountEvent extends \CRM_NYSS_BAO_I
   }
 
   public function getEventDetails(): string {
-    return $this->getEventAction();
+    if ($this->getEventInfo()->status == 'removed') {
+      return $this->getEventInfo()->status;
+    } else {
+      return $this->getEventAction();
+    }
   }
 
   public function getEventDescription(): string {
