@@ -10,7 +10,7 @@ class CRM_NYSS_BAO_Integration_WebsiteEvent_PetitionEvent extends CRM_NYSS_BAO_I
     parent::__construct($event_data);
 
     if (empty($this->getPetitionName())) {
-      throw new InvalidArgumentException("name must be in event info.");
+      throw new InvalidArgumentException("petition name must be in event info.");
     }
 
     // Archive Table Name

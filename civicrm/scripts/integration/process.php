@@ -100,9 +100,12 @@ class CRM_Integration_Process {
         WHERE target_shortname = '{$this->optlist['site']}' 
           AND user_id IS NOT NULL AND user_id != 0
           AND (target_shortname = user_shortname 
-          OR  (event_type = '" . WebsiteEventFactory::EVENT_TYPE_ACCOUNT . "'
-               AND event_action = '". WebsiteEventFactory::EVENT_ACTION_EDITED ."' )
-              ) 
+               OR 
+                  ( event_type = '" . WebsiteEventFactory::EVENT_TYPE_ACCOUNT . "'
+                    AND event_action = '". WebsiteEventFactory::EVENT_ACTION_EDITED ."' 
+                    AND target_district != user_district
+                  )
+               ) 
           $typeSql 
           $addSql
           ORDER BY id ASC
