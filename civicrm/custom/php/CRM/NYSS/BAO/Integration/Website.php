@@ -1256,7 +1256,7 @@ class CRM_NYSS_BAO_Integration_Website
   /*
    * archive the accumulator record and then delete from accumulator
    */
-  static function archiveRecord($db, CRM_NYSS_BAO_Integration_WebsiteEventInterface $event_type, $row, $params, $success = true)
+  static function archiveRecord($db, $row, ?CRM_NYSS_BAO_Integration_WebsiteEventInterface $event_type = null, $params = null, $success = true)
   {
     //CRM_Core_Error::debug_var('archiveRecord $event_type', $event_type);
     //CRM_Core_Error::debug_var('archiveRecord $row', $row);
@@ -1323,7 +1323,7 @@ class CRM_NYSS_BAO_Integration_Website
     CRM_Core_DAO::executeQuery($sql);
 
     // Save to Event Specific Archive Table
-    if ($event_type->hasArchiveTable()) {
+    if (!empty($event_type) && $event_type->hasArchiveTable()) {
         $sql = $event_type->getArchiveSQL($row->id, $db);
         CRM_Core_DAO::executeQuery($sql);
     }
@@ -1336,7 +1336,10 @@ class CRM_NYSS_BAO_Integration_Website
 
     //if errored, trigger notification email
     if (!$success) {
-      self::notifyError($db, $event_type->getEventDescription(), $row, $params, $date);
+      $err_description = (isset($event_type)) ?
+        $event_type->getEventDescription() :
+        $row->event_type;
+      self::notifyError($db, $err_description, $row, $params, $date);
     }
 
     $transaction->commit();
