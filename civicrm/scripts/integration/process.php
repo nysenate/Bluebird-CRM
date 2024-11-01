@@ -149,6 +149,17 @@ class CRM_Integration_Process {
         bbscript_log(LL::TRACE, 'Stack Trace:', $e->getTraceAsString());
         bbscript_log(LL::DEBUG, 'Exception: ' . $e->getMessage());
         bbscript_log(LL::NOTICE, 'Failed to instantiate event object for ' . $event_data->getWebUserId() . ':', $e->getMessage());
+
+        $stats['error'][] = [
+          'is_error' => 1,
+          'error_message' => 'Failed to instantiate event object for ' . $event_data->getWebUserId() . ':', $e->getMessage(),
+          'params' => $event_data->getEventInfo(),
+        ];
+
+        $this->archiveError($row, (isset($web_event)) ? $web_event : null, "Event processing error");
+        CRM_NYSS_Errorhandler_BAO::notifySlack('Website Event Processing Error:' . var_export($row, true));
+        CRM_NYSS_Errorhandler_BAO::notifyEmail('Website Event Processing Error:' . var_export($row, true), 'Website Event Processing Error');
+
         continue; // Move to the next record / event
       }
 
@@ -201,7 +212,7 @@ class CRM_Integration_Process {
 
         if (empty($contactParams)) {
           bbscript_log(LL::DEBUG, 'Unable to create user; not enough data provided.', $row);
-          $this->archiveError($web_event, $row, "unmatched / uncreated contact");
+          $this->archiveError($row, $web_event, "unmatched / uncreated contact");
           continue;
         }
 
@@ -220,7 +231,7 @@ class CRM_Integration_Process {
         ];
 
         //archive row with null date (null date??? I don't see that option -- question from nate)
-        $this->archiveError($web_event, $row, "Non-matched contact record");
+        $this->archiveError($row, $web_event, "Non-matched contact record");
         continue;
       }
 
@@ -269,7 +280,7 @@ class CRM_Integration_Process {
           //}
 
           //archive rows by ID
-          $this->archiveSuccess($web_event, $row, 'Record Successfully Processed');
+          $this->archiveSuccess($row, $web_event, 'Record Successfully Processed');
         }
       }
       catch (CRM_NYSS_BAO_Integration_TagNotFoundException $e) {
@@ -296,7 +307,7 @@ class CRM_Integration_Process {
           'params' => $web_event->getEventInfo(),
         ];
 
-        $this->archiveError($web_event, $row, "Event processing error");
+        $this->archiveError($row, $web_event, "Event processing error");
         CRM_NYSS_Errorhandler_BAO::notifySlack('Website Event Processing Error:' . var_export($row, true));
         CRM_NYSS_Errorhandler_BAO::notifyEmail('Website Event Processing Error:' . var_export($row, true), 'Website Event Processing Error');
         // Not sure if I should archiveError() this or leave it to process again???
@@ -417,15 +428,15 @@ class CRM_Integration_Process {
     }
   }
 
-  public function archiveError(CRM_NYSS_BAO_Integration_WebsiteEventInterface $web_event, $row, string $message = ''): void {
-    $this->archive($web_event, $row, $message, false);
+  public function archiveError($row, ?CRM_NYSS_BAO_Integration_WebsiteEventInterface $web_event = null, string $message = ''): void {
+    $this->archive($row, $web_event, $message, FALSE);
   }
 
-  public function archiveSuccess(CRM_NYSS_BAO_Integration_WebsiteEventInterface $web_event, $row, string $message = ''): void {
-    $this->archive($web_event, $row, $message);
+  public function archiveSuccess($row, ?CRM_NYSS_BAO_Integration_WebsiteEventInterface $web_event = null, string $message = ''): void {
+    $this->archive($row, $web_event, $message);
   }
 
-  public function archive(CRM_NYSS_BAO_Integration_WebsiteEventInterface $web_event, $row, string $message = '', $success = true): void {
+  public function archive($row, ?CRM_NYSS_BAO_Integration_WebsiteEventInterface $web_event = NULL, string $message = '', $success = true): void {
 
     if (!$this->optlist['archive']) {
       return;
@@ -434,9 +445,9 @@ class CRM_Integration_Process {
     $table = ($success) ? 'archive' : 'archive_error';
 
     try {
-      bbscript_log(LL::DEBUG, 'Archiving record to '.$table.' and ' . $web_event->getArchiveTableName() . ' table: ' . $message);
+      bbscript_log(LL::DEBUG, 'Archiving record to '.$table.' table: ' . $message);
       $this->doOrDry(function() use ($web_event, $row, $success) {
-        CRM_NYSS_BAO_Integration_Website::archiveRecord($this->intDB, $web_event, $row, $web_event->getEventInfo(), $success);
+        CRM_NYSS_BAO_Integration_Website::archiveRecord($this->intDB, $row, $web_event, (isset($web_event)) ? $web_event->getEventInfo() : null, $success);
       }, "CRM_NYSS_BAO_Integration_Website::archiveRecord");
     }
     catch (Exception $e) {
