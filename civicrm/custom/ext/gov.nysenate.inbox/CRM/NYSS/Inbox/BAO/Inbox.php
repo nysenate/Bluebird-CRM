@@ -114,22 +114,22 @@ class CRM_NYSS_Inbox_BAO_Inbox {
   }
 
   /**
-   * Reads the Bluebird config file for the list of blacklist addresses to
+   * Reads the Bluebird config file for the list of addresses to
    * ignore during automated matching.
    *
    * @return array[]|false|string[]
    */
-  static function getBlacklistAddresses() {
+  static function getAggregatorList() {
     $bbconfig = get_bluebird_instance_config();
-    $blacklist_cfg = [];
+    $cfg = [];
     if (isset($bbconfig['imap.sender.blacklist_file'])) {
       $fn = $bbconfig['imap.sender.blacklist_file'];
       if (file_exists($fn)) {
         $fn_read = file($fn, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES);
-        $blacklist_cfg = $fn_read ? $fn_read : [];
+        $cfg = $fn_read ? $fn_read : [];
       }
     }
-    return $blacklist_cfg;
+    return $cfg;
   }
 
   /**
@@ -186,6 +186,10 @@ class CRM_NYSS_Inbox_BAO_Inbox {
         "<div class='icon attachment-icon attachment' title='{$dao->attachments} Attachment(s)'></div>" : '';
       $matched = self::getMatched($dao->matched_id) ?? [];
       $body = CRM_NYSS_Inbox_BAO_Inbox::cleanText($dao->body);
+      $parser = Civi::service('inbox.parser');
+      $parser->setAggregatorList(self::getAggregatorList());
+      $parser->parse($body);
+
       $parsed = self::parseMessage($body);
       $details = [
         'id' => $dao->id,
@@ -195,7 +199,8 @@ class CRM_NYSS_Inbox_BAO_Inbox {
         'subject' => CRM_NYSS_Inbox_BAO_Inbox::cleanText($dao->subject),
         'subject_display' => CRM_NYSS_Inbox_BAO_Inbox::cleanText($dao->subject) . $attachment,
         'body_raw' => $body,
-        'body' => self::highlightItems($body, $parsed),
+        //'body' => self::highlightItems($body, $parsed),
+        'body' => $parser->highlight(),
         'forwarded_by' => $dao->forwarder,
         'status' => $dao->status,
         'matcher' => $dao->matcher,
@@ -1073,8 +1078,9 @@ class CRM_NYSS_Inbox_BAO_Inbox {
     preg_match_all('/[\w\.\-\+]+@[a-z\d\-]+(\.[a-z\d\-]+)*/i', $text, $emails);
     $res['emails'] = array_unique($emails[0]);
 
-    // Isolate blacklist senders.
-    $res['blacklist'] = self::getBlacklistAddresses();
+
+    // Isolate ignorable senders.
+    $res['blacklist'] = self::getAggregatorList();
     $res['emails'] = array_values(array_diff($res['emails'], $res['blacklist']));
 
     // Search for "City, STATE Zip5-Zip4"
