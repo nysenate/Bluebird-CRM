@@ -169,12 +169,12 @@ class CRM_NYSS_Inbox_BAO_MessageParserPreg implements CRM_NYSS_Inbox_BAO_Message
    * Judges tokens based on verbosity and the relevancy_score of the token.
    * When verbosity is high, will be less picky
    * When verbosity is low, will be more picky
-   * This is a simple yet opinionated algorithm that treats
+   * This is a simple, opinionated algorithm that treats
    * relevancy scores and verbosity levels as an inverse-ish relationship.
    * Where it will suggest excluding tokens whos relevancy is less than
    * the distance of verbosity level to 1. For example, a verbosity level
    * of .7 has a distance of .3 from 1. So, .3 is the hushing threshold.
-   * Any token with a relevancy score below .3 will be hushed.
+   * Any token with a relevancy score below .3 should be hushed.
    * It doesn't actually do any hushing, it just provides an opinion.
    * @param \CRM_NYSS_Inbox_BAO_MessageToken_Interface $token
    * @return bool
@@ -192,18 +192,18 @@ protected function getHighlightedToken(CRM_NYSS_Inbox_BAO_MessageToken_Interface
   $map = [
     CRM_NYSS_Inbox_BAO_MessageToken_Factory::TYPE_EMAIL => [
       'class' => 'found email_address',
-      'title' => 'Click to use this aggregator email',
+      'title' => 'Click to use this email',
       'data_attr' => 'data-search',
     ],
     CRM_NYSS_Inbox_BAO_MessageToken_Factory::TYPE_AGGREGATOR => [
       'class' => 'found aggregator_email',
-      'title' => 'Click to use this email',
+      'title' => 'Click to use this aggregator email',
       'data_attr' => 'data-search',
     ],
     CRM_NYSS_Inbox_BAO_MessageToken_Factory::TYPE_FULLNAME => [
       'class' => 'found name',
       'title' => 'Click to use this name',
-      'data-attr' => 'data-json',
+      'data_attr' => 'data-json',
       'data_field_map' => [
         CRM_NYSS_Inbox_BAO_MessageToken_Factory::TYPE_FNAME => 'first',
         CRM_NYSS_Inbox_BAO_MessageToken_Factory::TYPE_LNAME => 'last',
@@ -220,7 +220,7 @@ protected function getHighlightedToken(CRM_NYSS_Inbox_BAO_MessageToken_Interface
     CRM_NYSS_Inbox_BAO_MessageToken_Factory::TYPE_CSZ => [
       'class' => 'found zip',
       'title' => 'Click to use this city/state/zip',
-      'data-attr' => 'data-json',
+      'data_attr' => 'data-json',
       'data_field_map' => [
       ]
     ],
@@ -229,7 +229,7 @@ protected function getHighlightedToken(CRM_NYSS_Inbox_BAO_MessageToken_Interface
   $attrs = [
     'class' => $map[$token->getType()]['class'],
     'title' => $map[$token->getType()]['title'],
-    $map[$token->getType()]['data-attr'] => $token->getDataAsString($map[$token->getType()]['data_field_map'])
+    $map[$token->getType()]['data_attr'] => $token->getDataAsString($map[$token->getType()]['data_field_map'])
   ];
   return $token->getHighlightedHTML('span', $attrs);
 }
