@@ -217,6 +217,11 @@ protected function getHighlightedToken(CRM_NYSS_Inbox_BAO_MessageToken_Interface
       'title' => 'Click to use this phone number',
       'data_attr' => 'data-search',
     ],
+    CRM_NYSS_Inbox_BAO_MessageToken_Factory::TYPE_STREET => [
+      'class' => 'found street_address',
+      'title' => 'Click to use this street address',
+      'data_attr' => 'data-search',
+    ],
     CRM_NYSS_Inbox_BAO_MessageToken_Factory::TYPE_CSZ => [
       'class' => 'found zip',
       'title' => 'Click to use this city/state/zip',
@@ -318,12 +323,12 @@ protected function findPhone(string $text): array {
 
 protected function findStreetAddress(string $text): array {
   $results = [];
-  $addr_re = '(?<num>\d{1,4}[[:alnum:]]{1,3})\h+(?<street>[[:alnum:]-\.\h]{2,32})\h+(?i<suffix>St|Av|Ro|Rd|Dr|Bou|Blv|La|Ln|Co|Ct|Pl|Ter|Way|Cir|Pa|Pk|Hi|Hwy|Cre|Al|Tr|Pl|Sq|Ci|Cr[[:alpha:]]{0,10}}\.?)';
+  $addr_re = '(?:\d{1,4}([[:alnum:]]{0,3})?)\h+(?:[[:alnum:]\-\.\h]{2,32})\h+(?<suffix>(?i:St|Av|Ro|Rd|Dr|Bou|Blv|La|Ln|Co|Ct|Pl|Ter|Way|Cir|Pa|Pk|Hi|Hwy|Rt|Cre|Al|Tr|Pl|Sq|Ci|Cr){1}[[:alpha:]]{0,10}\.?)';
 
   if (preg_match("/^$addr_re$/", $text, $matches, PREG_OFFSET_CAPTURE)) {
     // matches first address line by itself, eg. 22 Main St., 3300F Queens Boulevard
     $mt = CRM_NYSS_Inbox_BAO_MessageToken_Factory::createFromPregMatch(
-      CRM_NYSS_Inbox_BAO_MessageToken_Factory::TYPE_CSZ,
+      CRM_NYSS_Inbox_BAO_MessageToken_Factory::TYPE_STREET,
       $matches);
 
     $mt->relevancy_score = .85;
@@ -331,8 +336,8 @@ protected function findStreetAddress(string $text): array {
   }
   elseif (preg_match("/^(?i:(?i:Street\h+)Address)\W*$addr_re$/i",$text, $matches, PREG_OFFSET_CAPTURE)) {
     // Street Address: 12 Maiden Lane
-    $mt = CRM_NYSS_Inbox_BAO_MessageToken_GenericToken::create($matches[0][0],
-      $matches[0][1]);
+    $mt = CRM_NYSS_Inbox_BAO_MessageToken_StreetAddressToken::create($matches[1][0],
+      $matches[1][1]);
     $mt->relevancy_score = 1;
     $results[] = $mt;
   }

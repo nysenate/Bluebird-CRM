@@ -200,7 +200,8 @@ div.description {
   color: #000000;
 }
 
-/*when viewing existing contacts, reset name/zip/phone*/
+/*when viewing existing contacts, reset name/zip/phone
+ * temporarily removing to see if it fixes some funky-ness for unmatched contacts
 .CRM_NYSS_Inbox_Form_AssignContact .found.name,
 .CRM_NYSS_Inbox_Form_AssignContact .found.name:hover,
 .CRM_NYSS_Inbox_Form_AssignContact .found.zip,
@@ -216,6 +217,8 @@ div.description {
   margin: 0;
   cursor: auto;
 }
+*/
+
 
 div.crm-section-trick_autofocus {
   visibility: hidden;
