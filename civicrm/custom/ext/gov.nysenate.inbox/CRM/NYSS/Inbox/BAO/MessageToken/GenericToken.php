@@ -11,7 +11,7 @@ class CRM_NYSS_Inbox_BAO_MessageToken_GenericToken
   /**
    * @var int|null the line number where the match was found in a multi-line message
    */
-  public int|null $line_num;
+  protected int|null $line_num;
 
   /**
    * @var int the position / offset of the match within the context of the line
@@ -21,7 +21,7 @@ class CRM_NYSS_Inbox_BAO_MessageToken_GenericToken
   /**
    * @var string the type of pattern that was matched (Email, Name, City, etc)
    */
-  protected string $type;
+  protected string $type = 'generic';
 
   /**
    * @var float|null a relevancy score between 0 and 1 that indicates the likelihood
@@ -29,19 +29,18 @@ class CRM_NYSS_Inbox_BAO_MessageToken_GenericToken
    */
   public float|null $relevancy_score; // 0 to 1
 
-  public function __construct(string $type, string $token, ?int $offset = null) {
+  public function __construct(string $token, ?int $offset = null) {
     $this->token = $token;
     $this->offset = $offset;
-    $this->type = $type;
     return $this;
   }
 
   /** Factory Method */
-  public static function create(string $type, string $token, ?int $offset = null) : CRM_NYSS_Inbox_BAO_MessageToken_Interface {
-    return new static($type, $token,$offset);
+  public static function create(string $token, ?int $offset = null) : CRM_NYSS_Inbox_BAO_MessageToken_Interface {
+    return new static($token,$offset);
   }
 
-  /** Factory Method */
+  /** Factory Method
   public static function createFromPregMatches(array $matches) : CRM_NYSS_Inbox_BAO_MessageToken_Interface {
     $parts = new CRM_NYSS_Inbox_BAO_MessageTokenArray();
 
@@ -55,6 +54,7 @@ class CRM_NYSS_Inbox_BAO_MessageToken_GenericToken
 
     return $me;
   }
+   */
 
   /**
    * Wraps a token in HTML
@@ -106,6 +106,20 @@ class CRM_NYSS_Inbox_BAO_MessageToken_GenericToken
 
   public function getRelevancyScore(): ?float {
     return $this->relevancy_score;
+  }
+
+  public function setRelevancyScore($score): static {
+    $this->relevancy_score = $score;
+    return $this;
+  }
+
+  public function getLineNumber(): ?int {
+    return $this->line_num ?? -1;
+  }
+
+  public function setLineNumber(int $line): static {
+    $this->line_num = $line;
+    return $this;
   }
 
 }

@@ -21,8 +21,8 @@ class CRM_NYSS_Inbox_BAO_MessageToken_StateToken
   ];
 
   public function __construct(string $token, ?int $offset = null) {
-    parent::__construct(CRM_NYSS_Inbox_BAO_MessageToken_Factory::TYPE_STATE,
-                        $token, $offset);
+    parent::__construct($token, $offset);
+    $this->setType(CRM_NYSS_Inbox_BAO_MessageToken_Factory::TYPE_STATE);
     return $this;
   }
 

@@ -25,25 +25,20 @@ class CRM_NYSS_Inbox_BAO_MessageToken_Factory {
       self::TYPE_STREET => '\CRM_NYSS_Inbox_BAO_MessageToken_StreetAddressToken',
       self::TYPE_EMAIL => '\CRM_NYSS_Inbox_BAO_MessageToken_EmailToken',
       self::TYPE_AGGREGATOR => '\CRM_NYSS_Inbox_BAO_MessageToken_AggregatorToken',
-      self::TYPE_PHONE => '\CRM_NYSS_Inbox_BAO_MessageToken_PHoneToken',
+      self::TYPE_PHONE => '\CRM_NYSS_Inbox_BAO_MessageToken_PhoneToken',
       default => '\CRM_NYSS_Inbox_BAO_MessageToken_GenericToken',
     };
   }
 
   public static function create(string $type, string $token, ?int $offset = null): CRM_NYSS_Inbox_BAO_MessageToken_Interface {
     $class = self::getClassName($type);
-    return $class::create($type, $token,$offset);
-  }
-
-  public static function createFromPregMatch(string $type, array $matches): CRM_NYSS_Inbox_BAO_MessageToken_Interface {
-    // I want to pass this function the results
-    // of preg_match and generate necessary token(s) here.
-    $class = self::getClassName($type);
-    try {
-      return $class::createFromPregMatches($matches);
-    } catch(Throwable $e) {
-     throw new Exception('$class is not an instance of MessageToken');
+    $obj = $class::create($token,$offset);
+    if ($obj instanceof CRM_NYSS_Inbox_BAO_MessageToken_GenericToken) {
+      // This is a shortcut to avoid defining a bunch more
+      // types of classes. But, type is a dependency. So, it must be set.
+      $obj->setType($type); //probably an anti-pattern
     }
+    return $obj;
   }
 
 }

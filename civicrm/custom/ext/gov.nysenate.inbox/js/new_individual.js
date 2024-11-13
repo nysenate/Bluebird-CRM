@@ -18,6 +18,12 @@ CRM.$(function($) {
       $('span.street_address').click(function(){
         $('input#street_address-Primary').val($(this).text());
       });
+      $('span.city').click(function(){
+        $('input#city-Primary').val($(this).text());
+      });
+      $('span.justzip').click(function(){
+        $('input#postal_code-Primary').val($(this).text());
+      });
       $('span.name').click(function(){
         var $e = $(this),
           j = $e.data('json'),

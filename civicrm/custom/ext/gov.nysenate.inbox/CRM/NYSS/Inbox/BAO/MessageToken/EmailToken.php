@@ -5,8 +5,8 @@ class CRM_NYSS_Inbox_BAO_MessageToken_EmailToken
   implements CRM_NYSS_Inbox_BAO_MessageToken_Interface {
 
   public function __construct(string $token, ?int $offset = null) {
-    parent::__construct(CRM_NYSS_Inbox_BAO_MessageToken_Factory::TYPE_EMAIL,
-                        $token, $offset);
+    parent::__construct($token, $offset);
+    $this->setType(CRM_NYSS_Inbox_BAO_MessageToken_Factory::TYPE_EMAIL);
     return $this;
   }
 

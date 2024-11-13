@@ -10,10 +10,8 @@ abstract class CRM_NYSS_Inbox_BAO_MessageToken_ComplexToken
    */
   public CRM_NYSS_Inbox_BAO_MessageTokenArray $parts;
 
-  /** Factory Method */
+  /** Factory Method
   public static function createFromPregMatches(array $matches) : CRM_NYSS_Inbox_BAO_MessageToken_ComplexToken {
-    $parts = new CRM_NYSS_Inbox_BAO_MessageTokenArray();
-
     if (isset($matches[0][0])) {
       $me = new static($matches[0][0],$matches[0][1]);
     } elseif (isset($matches[0])) {
@@ -36,6 +34,7 @@ abstract class CRM_NYSS_Inbox_BAO_MessageToken_ComplexToken
     }
     return $me;
   }
+*/
 
   public static function listValidParts(): array {
     return [];
@@ -45,9 +44,17 @@ abstract class CRM_NYSS_Inbox_BAO_MessageToken_ComplexToken
     if (empty($this->parts)) {
       $this->parts =  new CRM_NYSS_Inbox_BAO_MessageTokenArray();
     }
-
     $this->parts->append($token);
     return $this;
+  }
+
+  public function hasPart(string $type) : bool {
+    foreach($this->parts->getArrayCopy() as $part) {
+      if (isset($part->type) && $part->type == $type) {
+        return TRUE;
+      }
+    }
+    return false;
   }
 
   public function getData(array $field_map = []) {
