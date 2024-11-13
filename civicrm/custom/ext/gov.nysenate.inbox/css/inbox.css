@@ -200,7 +200,7 @@ div.description {
   color: #000000;
 }
 
-/*when viewing existing contacts, reset name/zip/phone
+/* when viewing existing contacts, reset name/zip/phone
  * temporarily removing to see if it fixes some funky-ness for unmatched contacts
 .CRM_NYSS_Inbox_Form_AssignContact .found.name,
 .CRM_NYSS_Inbox_Form_AssignContact .found.name:hover,

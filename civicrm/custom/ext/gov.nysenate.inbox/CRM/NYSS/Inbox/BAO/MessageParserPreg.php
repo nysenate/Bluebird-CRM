@@ -4,62 +4,187 @@ use CRM_NYSS_Inbox_BAO_MessageTokenArray as MessageTokenArray;
 
 class CRM_NYSS_Inbox_BAO_MessageParserPreg implements CRM_NYSS_Inbox_BAO_MessageParserInterface {
 
+  /**
+   * Verbosity setting for low (quiet)
+   */
   public const VL_QUIET = .1;
+
+  /**
+   * Verbosity setting for moderate
+   */
   public const VL_MODERATE = .4;
+
+  /**
+   * Verbosity setting for high (verbose)
+   */
   public const VL_VERBOSE = .7;
 
   /**
-   * Matches an E-mail address
-   * */
+   * Regular Expression that matches E-mail Addresses
+   */
   public const RE_EMAIL = '[\w\.\-\+\%]+@[\w-]+(?:\.[[:alpha:]]{2,})+';
 
-  // Expected to start with a number, but then allows for letters
-  public const RE_STREET_NUM = '\d{1,4}([[:alnum:]]{0,3})?';
+  /**
+   * Regular Expression that matches Street Number. Expects a street number
+   * to start with a numeric, but allows for letters and dashes
+   * Eg. 3 Pine Street, 3F Pine Street, 3-F Pine Street
+   */
+  public const RE_STREET_NUM = '\d{1,4}([[:alnum:]-]{0,3})?';
+
+  /**
+   * Regular Expression that defines a list of street type patterns.
+   * Not meant to be used by itself, but when included in RE_STREET_TYPES,
+   * should match: Ave, Avenue, Street, St, Road, Rd, etc
+   */
   public const RE_STREET_TYPES = 'St|Av|Ro|Rd|Dr|Bou|Blv|La|Ln|Co|Ct|Pl|Ter|Way|Cir|Pa|Pk|Hi|Hwy|Cre|Al|Tr|Pl|Sq|Ci|Cr';
-  // Tries to match the most common street types such as Street, Avenue, Road, St, St., Ave, Ave., etc
+
+  /**
+   * Regular Expression that works in conjunction with RE_STREET_TYPES to match
+   * the more common street types, Eg. Avenue, Street, Place, Terrace, Way,
+   * Circle, etc.
+   */
   public const RE_STREET_TYPE = '(?i:'.self::RE_STREET_TYPES.'){1}[[:alpha:]]{0,10}\.?';
+
+  /**
+   * Regular Expression that matches a Street name. Allows for "-", "." and
+   * spaces. Must be between 2 and 32 characters.
+   */
   public const RE_STREET_NAME = '[[:alnum:]\-\.\h]{2,32}';
-  // attempts to match first address line by itself, eg. 22 Main St., 3300F Queens Boulevard
+
+  /**
+   * Regular Expression that combines RE_STREET_NUM, RE_STREET_NAME and
+   * RE_STREET_TYPE to match a Street Address,
+   * Eg. 22 Main St., 3300F Queens Boulevard
+   */
   public const RE_STREET = '(?:'.self::RE_STREET_NUM.')\h+(?:'.self::RE_STREET_NAME.')\h+(?:'. self::RE_STREET_TYPE . ')?';
 
-  //'(?<'.$city.'>[[:alpha:]. ]+[[:alpha:]]+)'
+  /**
+   * Regular Expression that matches a City or Town name. Allows for 1 or 2
+   * space separated letter sequences, including "." in the first word.
+   * Eg. East Rockaway, Albany, N. Hempstead
+   * $c (or <$c>) is a named group designator and must be substituted or removed
+   * prior to use with str_replace() or strtr()
+   */
   public const RE_CITY = '(?<$c>[A-Z][[:alpha:].]+(?:\h+[[:alpha:]]+)?)';
+
+  /**
+   * Regular Expression that matches New York
+   * $s (or <$s>) is a named group designator and must be substituted or removed
+   * prior to use with str_replace() or strtr()
+   */
   public const RE_NY = '(?<$s>[Nn](ew\h)?[Yy](ork)?)';
-  // Should match any state in the US, but tries to narrow down the search by
-  // looking for specific first words and first letters.
+
+  /**
+   * Regular Expression that matches all 50 U.S. states. Tries to be very
+   * specific to prevent false positives.
+   * $s (or <$s>) is a named group designator and must be substituted or removed
+   * prior to use with str_replace() or strtr()
+   */
   public const RE_STATE = '(?<$s>((?i:New|North|South|Rhode|West|N|S|R|W)?\h+)?(?i:[ACDFGHIJKLMNOPTUVWY]([[:alpha:]]*)))';
+
+  /**
+   * Regular Expression that matches a zip code: 12201, 12201-0001
+   * $z (or <$z>) is a named group designator and must be substituted or removed
+   * prior to use with str_replace() or strtr()
+   */
   public const RE_ZIP = '(?<$z>\d{5}(?:-\d{4})?)';
+
+  /**
+   * Regular Expression that combines RE_CITY, RE_STATE and RE_ZIP to match
+   * the commonly used city, state zip format.
+   */
   public const RE_CSZ = self::RE_CITY.'\h*,?\h+'.self::RE_STATE.'\h+'.self::RE_ZIP;
-  // should match  +1       (  555  ) - or .    555    - or . 4444
+
+  /**
+   * Regular Expression that matches a phone number:
+   * Eg. +1 (555) 555-5555 or 555.555.5555 or (555) 555.5555
+   */
   public const RE_PHONE = '(?:[+]1\h*)?\(?\d{3}\)?[\-\.\ ]?\h*\d{3}[\-\.\ ]?\d{4}';
 
-
+  /**
+   * Regular Expression that matches common "honorifics". Not intended to
+   * be used alone. Intended to be included in RE_FULL_NAME
+   * Eg. Mr., Mrs., Dr., etc.
+   */
   public const RE_HONORIFIC = '(?:Mr|Mrs|Ms|Mx|Miss|Dr|Prof|Rev|Hon)\.?';
-  public const RE_FIRST_NAME = '[A-Z][a-z]+';
+
+  /**
+   * Regular Expression that matches a first name. First letter must be
+   * capitalized. As is, contracted names such as Mary-Ellen must be contracted
+   * with a hyphen. "Mary Ellen" would not match. Though, this is meant to be
+   * used as part of RE_FULL_NAME and within that context, "Ellen" should be
+   * matched as part of the middle name.
+   */
+  public const RE_FIRST_NAME = '[A-Z][a-z\-]+';
+
+  /**
+   * Regular Expression that matches a last name / surname. It will match
+   * contracted names either with "-" or whitespace.
+   */
   public const RE_LAST_NAME = "[A-Z][A-Za-z\-']+(?: [A-Z][a-z]+)?";
+
+  /**
+   * Regular Expression that matches someone's middle name. Intended for use
+   * with RE_FULL_NAME -- not by itself.
+   */
   public const RE_MIDDLE_NAME = '[A-Z][a-z]*\.?';
+
+  /**
+   * Regular Expression that matches common suffixes. Intended to be used
+   * as part of RE_FULL_NAME
+   * Eg. Sr, Jr, etc.
+   */
   public const RE_SUFFIX_NAME = '(?:Sr|Jr|II|III|IV|V|Ph\.D|M\.D|Esq)\.?';
+
+  /**
+   * Regular Expression for matching a person's name.
+   * $h (<$h>), $f (<$f>), $m (<$m>), $l (<$l>), $s (<$s>) are placeholders
+   * for named group designators and must all be replaced with
+   * with str_replace() or strtr() prior to use
+   */
   public const RE_FULL_NAME = '(?:(?<$h>'.self::RE_HONORIFIC.')\h*)?(?<$f>'.self::RE_FIRST_NAME.')(?:\h*(?<$m>'.self::RE_MIDDLE_NAME.'))?\h+(?<$l>'.self::RE_LAST_NAME.')(?:\h*(?<$s>'.self::RE_SUFFIX_NAME.'))?';
 
-  // Tries to match a professional or personal closing such as, Sincerely.
-  // Includes the possibility of some other words before the more common closers.
-  // eg... "With" in "With Regards"
+  // Regular Expression that matches a professional or personal closing
+  // Eg., Sincerely, Regards, etc.
+  // Allows for the possibility of some other words before the more common
+  // closers.
+  // Eg. "With" in "With Regards"
   // This is by no means exhaustive nor perfect.
   // public const RE_CLOSE = '[\w\h]*(?i:Sincerely|Regards|Best|Yours|Respectfully|Consideration|Gratitude)\h*,?';
 
+  /**
+   * @var string Raw, unchanged entire multi-line message to be matched
+   */
   protected string $raw_message = '';
+
+  /**
+   * @var array An array of lines after being trimmed
+   */
   protected array $lines = [];
+
+  /**
+   * @var \CRM_NYSS_Inbox_BAO_MessageTokenArray Stores all found matching tokens
+   * A token is essentially a match, but includes additional contextual information
+   */
   protected MessageTokenArray $tokens;
+
+  /**
+   * @var float Used to determine how aggressively the message should be searched
+   * and how many matches should be generated. The assumption is that a low
+   * verbosity setting VL_QUIET will return less matches, whereas a
+   * high verbosity setting VL_VERBOSE will include more.
+   */
   protected float $verbosity = self::VL_MODERATE;
 
-  // a hint that we can set if it looks like the
-  // message contains the results of a form fill.
-  // Tells us whether to run the Regexs that
-  // look for form-fills. For Example,
-  // First Name: John
-  // Last NameL: Smith
-  // Email Address: js@gmail.com
-  // etc...
+  /**
+   * @var bool Whether to attempt matching web form results
+   * Will be automatically set (or not) in parse()
+   * Eg.
+   * First Name: John
+   * Last NameL: Smith
+   * Email Address: js@gmail.com
+   * etc...
+   */
   protected bool $match_form_fill = false;
   //protected int $start_end_boundary = 20;
 
@@ -75,6 +200,13 @@ class CRM_NYSS_Inbox_BAO_MessageParserPreg implements CRM_NYSS_Inbox_BAO_Message
     $this->tokens = new MessageTokenArray();
   }
 
+  /**
+   * @param string $text
+   * The work-horse of this class. Reads through the entire message and
+   * pulls out matching tokens. Will attempt to match E-mail addresses,
+   * Phone Numbers, Proper Names, Street Addresses, City, State Zip
+   * @return void
+   */
   public function parse(string $text): void {
     $this->raw_message = $text;
     // Convert message body into tagless text.
@@ -90,30 +222,26 @@ class CRM_NYSS_Inbox_BAO_MessageParserPreg implements CRM_NYSS_Inbox_BAO_Message
       $this->match_form_fill = true;
     }
 
-
     // Take it line by line -- assume that none of the entities that we're
-    // looking for would span lines.
+    // looking for would span multiple lines.
     $this->lines = preg_split('/\r\n|\r|\n/', $text);
-    $line_count = count($this->lines);
-    $last_addr1_line = null;
-    $last_csz_line = null;
-    $last_closing_line = null;
-    $blank_lines = [];
+    //$line_count = count($this->lines);
+    //$blank_lines = []; // could possibly be used for decision making
+
     for ($i = 0; $i < count($this->lines); $i++) {
 
       $line = $this->lines[$i];
 
       $line = trim($line);
 
-      // track blank lines for the sake of decision-making.
-      // But don't process
+      // skip blank lines
       if (strlen($line) == 0) {
-        $blank_lines[] = $i;
+        //$blank_lines[] = $i;
         continue;
       }
 
-      // skip lines shorter than 3 (probably a reasonable cutoff point)
-      if (strlen($line) < 3) continue;
+      // skip lines shorter than 5 (probably a reasonable cutoff point)
+      if (strlen($line) < 5) continue;
 
       // only include search in lines longer than 80 if verbosity is high.
       // The theory is that the relevant contact information is more likely
@@ -123,34 +251,11 @@ class CRM_NYSS_Inbox_BAO_MessageParserPreg implements CRM_NYSS_Inbox_BAO_Message
         continue;
       }
 
-      /* Some rules for optimization
-       * ✅ Only search for email if @ in string
-       * ✅ Only search for city/state/zip if matches a zip \d{5}
-       * ✅ Only search for phone number if matches \d{4}
-       * Special considerations
-       * ✅ ^Repy-To:
-       * ✅ ^From:
-       * ✅ ^Name:
-       * ✅ ^First Name:
-       * ✅ ^Last Name:
-       * ✅ ^Email (Address):
-       * ✅ ^Phone (Number):
-       * ✅ ^City:
-       * ✅ ^State:
-       * ✅ ^ZIP|Postal (Code):
-       * ^Address:
-       * ✅ ^Street Address:
-       */
-      // we could do this contingent on whether we've already found a match
-      // with a high probability score and intensity level... but I won't.
-      // I just saved this comment to remember my train of thought.
-      //if ($this->isVerbose() && (!$this->foundLikelyEmail())) {
       if ($this->findEmail($line, $i) &&
         $this->tokens->fractionMatched($line, $i ) > .85) {
         // If a phone was found and the whole line was matched
         continue;
       }
-      //}
 
       if ($this->findPhone($line, $i) &&
         $this->tokens->fractionMatched($line, $i ) > .85) {
@@ -179,25 +284,19 @@ class CRM_NYSS_Inbox_BAO_MessageParserPreg implements CRM_NYSS_Inbox_BAO_Message
       */
       if ($this->findProperName($line, $i) &&
         ($this->tokens->fractionMatched($line, $i ) == 1)) {
-        // If a phone was found and the whole line was matched
+        // If the whole line was matched
         continue;
       }
 
       // Finding the complimentary close can help give us more certainty
-      // about a person's name
+      // about a person's name and signature
       /*
-      $close_token = $this->findClosing($line);
-      if ($close_token) {
-        $close_token->line_num = $i;
-        $last_closing_line = $i; // record the line number for reference later
-        $this->tokens->append($close_token);
-        continue; // Move on to next line
+      if ($this->findClosing($line, $i) &&
+        ($this->tokens->fractionMatched($line, $i ) == 1)) {
+        // If the whole line was matched
+        continue;
       }
       */
-
-      // Note for later. If nothing found in first pass, we could
-      // make the intensity level higher and try again.
-
     }
   }
 
@@ -205,6 +304,12 @@ class CRM_NYSS_Inbox_BAO_MessageParserPreg implements CRM_NYSS_Inbox_BAO_Message
     return $this->tokens;
   }
 
+  /**
+   * @return string
+   * Returns the original text with all matched tokens marked-up with
+   * the appropriate HTML. Would prefer to separate view specifics from
+   * the business logic, but I'll save that for another day.
+   */
   public function highlight() : string {
     $highlighted_text = '';
 
@@ -235,7 +340,7 @@ class CRM_NYSS_Inbox_BAO_MessageParserPreg implements CRM_NYSS_Inbox_BAO_Message
    * When verbosity is low, will be more picky
    * This is a simple, opinionated algorithm that treats
    * relevancy scores and verbosity levels as an inverse-ish relationship.
-   * Where it will suggest excluding tokens whos relevancy is less than
+   * Where it will suggest excluding tokens who's relevancy is less than
    * the distance of verbosity level to 1. For example, a verbosity level
    * of .7 has a distance of .3 from 1. So, .3 is the hushing threshold.
    * Any token with a relevancy score below .3 should be hushed.
@@ -315,9 +420,9 @@ class CRM_NYSS_Inbox_BAO_MessageParserPreg implements CRM_NYSS_Inbox_BAO_Message
 
   /**
    * rules for scoring:
-   * 1) if the entire string is an email message --> high
-   * 2) if the string matches something like Email: user@domain.com --> high
-   * 3) if the string is buried within other stuff --> low to medium
+   * 1) If it's web form results --> high
+   * 2) If matches the entire line --> high
+   * 3) if the string is buried within other stuff --> moderate
    * @param string $text string to be searched
    *
    * @return bool whether or not a token was found
@@ -503,18 +608,19 @@ class CRM_NYSS_Inbox_BAO_MessageParserPreg implements CRM_NYSS_Inbox_BAO_Message
   }
 
   /*
-  protected function findClosing(string $text): ?CRM_NYSS_Inbox_BAO_MessageToken_Interface {
+  protected function findClosing(string $text, int $line_num): bool {
     $type = CRM_NYSS_Inbox_BAO_MessageToken_Factory::TYPE_COMP_CLOSE;
     $close_re = self::RE_CLOSE;
     $flags = PREG_OFFSET_CAPTURE;
 
-    $search_1 = CRM_NYSS_Inbox_BAO_MessageRegexSearch::search(
-      $type, "^$close_re$", $text, $flags, 1);
-    if ($search_1->isMatch()) {
-      return $search_1->getToken();
+    $search = CRM_NYSS_Inbox_BAO_MessageRegexSearch::search(
+        $type, "^$close_re$", $text, $flags, 1);
+    if ($search->isMatch()) {
+      $this->tokens->append($search->getToken()->setLineNumber($line_num));
+      return true;
     }
 
-    return null;
+    return false;
   }
   */
 
@@ -602,6 +708,7 @@ class CRM_NYSS_Inbox_BAO_MessageParserPreg implements CRM_NYSS_Inbox_BAO_Message
     return $this->verbosity;
   }
 
+  /** For now, rounds  to constant values */
   public function setVerbosity(float $level): self {
     if ($level > self::VL_VERBOSE) {
       $this->verbosity = self::VL_VERBOSE;

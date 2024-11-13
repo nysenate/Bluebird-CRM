@@ -1,5 +1,14 @@
 <?php
 
+/**
+ * There are some cases where a token might be made up of parts. In this case,
+ * each part is another token. For example, CityStateZipToken is a complex
+ * token that can exist in and of itself, but also contains a city, a state
+ * and a zip. Each of these needs to be tracked separately for the sake of
+ * marking up / highlighting the match. This class facilitates these
+ * situations where we have tokens within tokens. A complex token must define
+ * its expected (valid) parts prior to creation.
+ */
 abstract class CRM_NYSS_Inbox_BAO_MessageToken_ComplexToken
   extends CRM_NYSS_Inbox_BAO_MessageToken_GenericToken
   implements CRM_NYSS_Inbox_BAO_MessageToken_Interface {
@@ -10,7 +19,7 @@ abstract class CRM_NYSS_Inbox_BAO_MessageToken_ComplexToken
    */
   public CRM_NYSS_Inbox_BAO_MessageTokenArray $parts;
 
-  /** Factory Method
+  /** Factory Method -- logic moved to MessageRegexSearch
   public static function createFromPregMatches(array $matches) : CRM_NYSS_Inbox_BAO_MessageToken_ComplexToken {
     if (isset($matches[0][0])) {
       $me = new static($matches[0][0],$matches[0][1]);

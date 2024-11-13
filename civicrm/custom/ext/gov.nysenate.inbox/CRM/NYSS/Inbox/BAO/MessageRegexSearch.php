@@ -2,15 +2,52 @@
 
 class CRM_NYSS_Inbox_BAO_MessageRegexSearch {
 
+  /**
+   * @var string The Regular Expression that will be used in the match
+   */
   protected string $regex;
+
+  /**
+   * @var string The subject that will be searched by $regex
+   */
   protected string $subject;
+
+  /**
+   * @var int Flags that will be passed int preg_match (See PHP Docs)
+   */
   protected int $flags;
+
+  /**
+   * @var string Type of match. Correlates to type of Token.
+   */
   protected string $type;
+
+  /**
+   * @var float|int A relevancy score to apply to that match, if found
+   */
   protected float $score = 1;
+
+  /**
+   * @var array Is populated by preg_match() (See Docs)
+   */
   protected array $matches = [];
+
+  /**
+   * @var bool Set by execute(). Indicates if any matches were found.
+   */
   protected bool $is_match = false;
+
+  /**
+   * @var \CRM_NYSS_Inbox_BAO_MessageToken_Interface The matched token that
+   * was created
+   */
   protected CRM_NYSS_Inbox_BAO_MessageToken_Interface $token;
-  protected mixed $on_match = ['self', 'onMatch']; // callable
+
+  /**
+   * @var mixed|callable|null Currently not really being used. The thought was
+   * that this could be used to do extra processing on a match if necessary.
+   */
+  protected mixed $on_match = null; // callable
 
   public function __construct(string $type, string $regex, string $subject, int $flags, float $score, callable $on_match = null) {
     $this->type = $type;
@@ -40,8 +77,6 @@ class CRM_NYSS_Inbox_BAO_MessageRegexSearch {
       if (is_callable($this->on_match)) {
         ($this->on_match)($this);
       }
-
-      //$this->onMatch($this->type, $this->matches);
     }
   }
 
