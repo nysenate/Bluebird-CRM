@@ -2,7 +2,7 @@
 
 use CRM_NYSS_Inbox_BAO_MessageTokenArray as MessageTokenArray;
 
-class CRM_NYSS_Inbox_BAO_MessageParserPreg implements CRM_NYSS_Inbox_BAO_MessageParserInterface {
+class CRM_NYSS_Inbox_BAO_MessageParserRegex implements CRM_NYSS_Inbox_BAO_MessageParserInterface {
 
   /**
    * Verbosity setting for low (quiet)
@@ -186,6 +186,7 @@ class CRM_NYSS_Inbox_BAO_MessageParserPreg implements CRM_NYSS_Inbox_BAO_Message
    * etc...
    */
   protected bool $match_form_fill = false;
+
   //protected int $start_end_boundary = 20;
 
   /**
@@ -198,6 +199,13 @@ class CRM_NYSS_Inbox_BAO_MessageParserPreg implements CRM_NYSS_Inbox_BAO_Message
   public function __construct(float $verbosity = self::VL_MODERATE) {
     $this->setVerbosity($verbosity);
     $this->tokens = new MessageTokenArray();
+  }
+
+  public function reinitialize() {
+    $this->raw_message = '';
+    $this->lines = [];
+    $this->tokens = new MessageTokenArray();
+    $this->match_form_fill = FALSE;
   }
 
   /**
@@ -218,7 +226,7 @@ class CRM_NYSS_Inbox_BAO_MessageParserPreg implements CRM_NYSS_Inbox_BAO_Message
     // The clues that it looks for are common web form field labels, each
     // on a line by itself, eg. First Name: John, Last Name: Smith, etc
     if (preg_match('/\v+(Name|First Name|Last Name)\W{1}\s+/', $text) &&
-      preg_match('/\v+(Address|City)\W{1}\s+/', $text)) {
+      preg_match('/\v+(Address|City|Street|Street Address)\W{1}\s+/', $text)) {
       $this->match_form_fill = true;
     }
 
@@ -638,9 +646,11 @@ class CRM_NYSS_Inbox_BAO_MessageParserPreg implements CRM_NYSS_Inbox_BAO_Message
       // Look for Web-Form results
       // pre-qualifier
       if (preg_match('/^First Name/', $text)){
+        // Going to provide a more flexible Regex for this scenario
+        $fname_re = '('.self::RE_FIRST_NAME.')(?:\h*('.self::RE_MIDDLE_NAME.'))?';
         $fn_search = CRM_NYSS_Inbox_BAO_MessageRegexSearch::search(
           CRM_NYSS_Inbox_BAO_MessageToken_Factory::TYPE_FNAME,
-          '^(?:First Name)\W*\K'.self::RE_FIRST_NAME.'$',
+          '^(?:First Name)\W*\K'.$fname_re.'$',
           $text, $flags, 1);
         if ($fn_search->isMatch()) {
           $this->tokens->append($fn_search->getToken()->setLineNumber($line_num));
@@ -728,7 +738,7 @@ class CRM_NYSS_Inbox_BAO_MessageParserPreg implements CRM_NYSS_Inbox_BAO_Message
     return $this->verbosity < self::VL_MODERATE;
   }
 
-  public function setAggregatorList(array $aggregator_list): CRM_NYSS_Inbox_BAO_MessageParserPreg {
+  public function setAggregatorList(array $aggregator_list): static {
     $this->aggregator_list = $aggregator_list;
     return $this;
   }
@@ -740,4 +750,14 @@ class CRM_NYSS_Inbox_BAO_MessageParserPreg implements CRM_NYSS_Inbox_BAO_Message
   public function inAggregatorList(string $str): bool {
     return in_array($str,$this->aggregator_list);
   }
+
+  public function isMatchFormFill(): bool {
+    return $this->match_form_fill;
+  }
+
+  public function setMatchFormFill(bool $match_form_fill): static {
+    $this->match_form_fill = $match_form_fill;
+    return $this;
+  }
+
 }
