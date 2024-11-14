@@ -35,12 +35,13 @@
           <tr>
             <td>
               {*add dupe buttons *}
-          {$form._qf_Contact_refresh_dedupe.html}
+          {*NYSS 16723 - hide button*}
+          {*$form._qf_Contact_refresh_dedupe.html}
           {help id="id-check-matching-contacts" file="CRM/Contact/Form/Contact.hlp"}
           {if !empty($isDuplicate)}
             &nbsp;&nbsp;
             {$form._qf_Contact_upload_duplicate.html}
-          {/if}
+          {/if*}
 
           <div class="spacer"></div>
 
