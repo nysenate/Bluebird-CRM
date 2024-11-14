@@ -190,7 +190,6 @@ class CRM_NYSS_Inbox_BAO_Inbox {
       $parser->setAggregatorList(self::getAggregatorList());
       $parser->parse($body);
 
-      $parsed = self::parseMessage($body);
       $details = [
         'id' => $dao->id,
         'message_id' => $dao->message_id,
@@ -199,7 +198,6 @@ class CRM_NYSS_Inbox_BAO_Inbox {
         'subject' => CRM_NYSS_Inbox_BAO_Inbox::cleanText($dao->subject),
         'subject_display' => CRM_NYSS_Inbox_BAO_Inbox::cleanText($dao->subject) . $attachment,
         'body_raw' => $body,
-        //'body' => self::highlightItems($body, $parsed),
         'body' => $parser->highlight(),
         'forwarded_by' => $dao->forwarder,
         'status' => $dao->status,
@@ -1065,6 +1063,7 @@ class CRM_NYSS_Inbox_BAO_Inbox {
   /**
    * Generate an array of e-mail addresses, phone numbers, city/state/zips,
    * and proper names that were found in the message body.
+   * @deprecated use MessageParserInterface instead
    */
   private static function parseMessage($msgBody) {
     $res = [];
@@ -1126,6 +1125,7 @@ class CRM_NYSS_Inbox_BAO_Inbox {
   /**
    * Given an array of items found in the body of the email, generate
    * HTML to highlight those items.
+   * @deprecated use MessageParserInterface instead
    */
   private static function highlightItems($text, $items) {
     $itemMap = [
@@ -1169,6 +1169,7 @@ class CRM_NYSS_Inbox_BAO_Inbox {
     return $text;
   } // highlightItems()
 
+  /** @depreacted */
   private static function getStateName($abbr) {
     static $stateNameMap = NULL;
 
@@ -1193,6 +1194,7 @@ class CRM_NYSS_Inbox_BAO_Inbox {
     }
   } // getStateName()
 
+  /** @deprecated */
   private static function reformulate_preg_array($preg_res) {
     $res = [];
     foreach ($preg_res as $item) {
