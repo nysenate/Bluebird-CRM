@@ -121,5 +121,5 @@ function inbox_civicrm_entityTypes(&$entityTypes) {
 }
 
 function inbox_civicrm_container(ContainerBuilder $container) {
-  $container->register('inbox.parser', '\CRM_NYSS_Inbox_BAO_MessageParserPreg')->setPublic(TRUE);
+  $container->register('inbox.parser', '\CRM_NYSS_Inbox_BAO_MessageParserRegex')->setPublic(TRUE);
 }
