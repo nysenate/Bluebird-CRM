@@ -649,36 +649,46 @@ class CRM_Utils_SAGE
     // Forced type cast required to convert the simplexml objects to strings
     if ($overwrite || empty($values["custom_46_$id"]) || !$values["custom_46_$id"]) {
       $values["custom_46_$id"] = (string)$xml->districts->congressional->district;
+      $values['custom'][46][$id]['value'] = (string)$xml->districts->congressional->district;
     }
     if ($overwrite || empty($values["custom_47_$id"]) || !$values["custom_47_$id"]) {
       $values["custom_47_$id"] = (string)$xml->districts->senate->district;
+      $values['custom'][47][$id]['value'] = (string)$xml->districts->senate->district;
     }
     if ($overwrite || empty($values["custom_48_$id"]) || !$values["custom_48_$id"]) {
       $values["custom_48_$id"] = (string)$xml->districts->assembly->district;
+      $values['custom'][48][$id]['value'] = (string)$xml->districts->assembly->district;
     }
     if ($overwrite || empty($values["custom_49_$id"]) || !$values["custom_49_$id"]) {
       $values["custom_49_$id"] = (string)$xml->districts->election->district;
+      $values['custom'][49][$id]['value'] = (string)$xml->districts->election->district;
     }
     if ($overwrite || empty($values["custom_50_$id"]) || !$values["custom_50_$id"]) {
       $values["custom_50_$id"] = (string)$xml->districts->county->district;
+      $values['custom'][50][$id]['value'] = (string)$xml->districts->county->district;
     }
     //County Legislative District
     if ($overwrite || empty($values["custom_51_$id"]) || !$values["custom_51_$id"]) {
       $values["custom_51_$id"] = (string)$xml->districts->cleg->district;
+      $values['custom'][51][$id]['value'] = (string)$xml->districts->cleg->district;
     }
     if ($overwrite || empty($values["custom_52_$id"]) || !$values["custom_52_$id"]) {
       $values["custom_52_$id"] = (string)$xml->districts->town->district;
+      $values['custom'][52][$id]['value'] = (string)$xml->districts->town->district;
     }
     //Ward
     if ($overwrite || empty($values["custom_53_$id"]) || !$values["custom_53_$id"]) {
       $values["custom_53_$id"] = (string)$xml->districts->ward->district;
+      $values['custom'][53][$id]['value'] = (string)$xml->districts->ward->district;
     }
     if ($overwrite || empty($values["custom_54_$id"]) || !$values["custom_54_$id"]) {
       $values["custom_54_$id"] = (string)$xml->districts->school->district;
+      $values['custom'][54][$id]['value'] = (string)$xml->districts->school->district;
     }
     //City Council District
     if ($overwrite || empty($values["custom_55_$id"]) || !$values["custom_55_$id"]) {
       $values["custom_55_$id"] = (string)$xml->districts->cityCouncil->district;
+      $values['custom'][55][$id]['value'] = (string)$xml->districts->cityCouncil->district;
     }
   }
 
