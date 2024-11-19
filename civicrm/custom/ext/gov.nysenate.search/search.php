@@ -9,6 +9,9 @@ require_once 'search.civix.php';
  */
 function search_civicrm_config(&$config) {
   _search_civix_civicrm_config($config);
+
+  //16774
+  Civi::dispatcher()->addListener('civi.api.respond', ['CRM_NYSS_QuickSearchAPIWrapper', 'RESPOND'], -100);
 }
 
 /**
@@ -183,17 +186,6 @@ function search_civicrm_coreResourceList(&$list, $region) {
     Civi::resources()
       ->addScriptFile('gov.nysenate.search', 'js/SearchResult.js', 0, 'html-header');
       //->addVars('searchresults', _get_searchresults_items());
-  }
-}
-
-function search_civicrm_apiWrappers(&$wrappers, $apiRequest) {
-  if ($apiRequest['entity'] == 'Contact' && $apiRequest['action'] == 'getquick') {
-    //Civi::log()->debug(__FUNCTION__, ['apiRequest' => $apiRequest]);
-
-    //14379 search by case_id
-    if ($apiRequest['params']['field_name'] == 'case_id') {
-      $wrappers[] = new CRM_NYSS_QuickSearchAPIWrapper();
-    }
   }
 }
 
