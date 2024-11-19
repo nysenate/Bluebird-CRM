@@ -154,6 +154,9 @@ function merge_civicrm_merge($type, &$data, $mainId, $otherId, $tables) {
     case 'sqls':
       //log the merge against the retained record
       _merge_logMerge($mainId, $otherId);
+
+      //16769 handle adjustment to inbox matched messages
+      _merge_inboxMessagesMatched($data);
       break;
 
     case 'form':
@@ -409,6 +412,19 @@ function _merge_resolveConflicts(&$data, $mainId, $otherId) {
   }
 }
 
+/**
+ * @param $data
+ * @return void
+ *
+ * 16769 - handle nyss_inbox_messages_matched index restrictions
+ */
+function _merge_inboxMessagesMatched(&$data) {
+  foreach ($data as &$sql) {
+    if (str_contains($sql, 'nyss_inbox_messages_matched')) {
+      $sql = str_replace('UPDATE', 'UPDATE IGNORE', $sql);
+    }
+  }
+}
 
 //helper to strip spaces and punctuation so we normalize comparison
 function _merge_cleanVal($string) {

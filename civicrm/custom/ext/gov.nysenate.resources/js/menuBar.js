@@ -36,15 +36,24 @@ CRM.$(function($) {
     //direct to either contact or case record
     $('#crm-qsearch-input').autocomplete({
       select: function (event, ui) {
+        //console.log('event: ', event);
+        //console.log('ui: ', ui);
+
         var selectedOpt = $('input[name=quickSearchField]:checked').val();
-        if (ui.item.value > 0) {
+        if (ui.item.value) {
           var linkUrl = CRM.url('civicrm/contact/view', {reset: 1, cid: ui.item.value});
           if (selectedOpt === 'case_id') {
-            linkUrl = CRM.url('civicrm/contact/view/case', {reset: 1, action: 'view', context: 'case', cid: ui.item.value, id: $(this).val()});
+            let val = ui.item.value;
+            const ids = val.split("|");
+            //console.log('ids: ', ids);
+
+            linkUrl = CRM.url('civicrm/contact/view/case', {reset: 1, action: 'view', context: 'case', cid: ids[0], id: ids[1]});
+            //console.log('linkURL: ', linkUrl);
           }
 
           document.location = linkUrl;
         }
+
         return false;
       }
     });
