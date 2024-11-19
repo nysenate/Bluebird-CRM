@@ -671,8 +671,8 @@ function storeMessage($imapMsg, $message, $params) {
   $sql = "
     INSERT IGNORE INTO nyss_inbox_messages
     (message_id, sender_name, sender_email, subject, body,
-     forwarder, status, updated_date, email_date)
-    VALUES (%1, %2, %3, %4, %5, %6, %7, CURRENT_TIMESTAMP, %8)
+     forwarder, status, updated_date, email_date, inbox_source)
+    VALUES (%1, %2, %3, %4, %5, %6, %7, CURRENT_TIMESTAMP, %8, %9)
   ";
 
   try {
@@ -685,6 +685,7 @@ function storeMessage($imapMsg, $message, $params) {
       6 => [$fwderEmail ?? '', 'String'],
       7 => [STATUS_UNPROCESSED, 'Positive'],
       8 => [$msgDate, 'String'],
+      9 => [$params['user'], 'String'],
     ]);
   }
   catch (CRM_Core_Exception $e) {
