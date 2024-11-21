@@ -381,7 +381,7 @@ class CRM_NYSS_Inbox_BAO_Inbox {
 
     $sql = "
       SELECT SQL_CALC_FOUND_ROWS im.id, TRIM(im.sender_name) sender_name,
-        im.sender_email, im.subject, im.forwarder, im.updated_date,
+        im.sender_email, im.subject, im.forwarder, im.updated_date, im.inbox_source,
         im.email_date, im.matcher, imm.matched_id, imm_contact.sort_name matched_sender_name, mc.display_name matcher_name,
         IFNULL(count(ia.file_name), '0') as attachments,
         count(e.id) AS email_count
@@ -471,6 +471,7 @@ class CRM_NYSS_Inbox_BAO_Inbox {
 
         $subject = CRM_NYSS_Inbox_BAO_Inbox::cleanText($dao->subject, 25) . $attachment;
         $msg['subject'] = preg_replace("/[^A-Za-z0-9 ',.]/i", '', $subject);
+        $msg['inbox_source'] = $dao->inbox_source;
         $msg['updated_date'] = date('M d, Y', strtotime($dao->updated_date));
         $msg['forwarder'] = $dao->forwarder;
 

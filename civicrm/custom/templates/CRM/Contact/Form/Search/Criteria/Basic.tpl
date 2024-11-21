@@ -219,8 +219,8 @@
   </tr>
   <tr>
     <td>
-       {$form.contact_id.label} {help id="id-internal-id" file="CRM/Contact/Form/Contact"}<br />
-       {$form.contact_id.html}
+       {$form.id.label} {help id="id-internal-id" file="CRM/Contact/Form/Contact"}<br />
+       {$form.id.html}
     </td>
     <td>
        {$form.external_identifier.label} {help id="id-external-id" file="CRM/Contact/Form/Contact"}<br />

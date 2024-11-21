@@ -167,6 +167,16 @@ class CRM_NYSS_Inbox_Upgrader extends CRM_Extension_Upgrader_Base {
     return TRUE;
   }
 
+  public function upgrade_3000(): bool {
+    $this->ctx->log->info('Applying update 3000 (v3.0)');
+
+    CRM_Core_DAO::executeQuery("
+      ALTER TABLE nyss_inbox_messages ADD inbox_source VARCHAR(64) NULL DEFAULT NULL AFTER email_date;
+    ");
+
+    return TRUE;
+  }
+
   /**
    * Example: Run an external SQL script.
    *

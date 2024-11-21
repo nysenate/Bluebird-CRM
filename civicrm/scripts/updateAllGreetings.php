@@ -19,8 +19,7 @@ define('BATCHSIZE', 250);
 
 error_reporting(E_ERROR | E_PARSE | E_WARNING);
 
-function run()
-{
+function run() {
   $prog = basename(__FILE__);
   $shortopts = 'c:nfq:t';
   $longopts = ['ct=', 'dry-run', 'force', 'quiet', 'idtbl='];
@@ -42,11 +41,18 @@ function run()
     echo "<pre>\n";
   }
 
-  //log the execution of script
-  CRM_Core_Error::debug_log_message('updateAllGreetings.php');
+  //temporarily disable watchdog
+  drupal_script_init();
+  $watchdogDisabled = FALSE;
+  if (module_exists('dblog')) {
+    module_disable(['dblog']);
+    $watchdogDisabled = TRUE;
+  }
 
-  require_once 'CRM/Core/Config.php';
   CRM_Core_Config::singleton();
+
+  //log the execution of script
+  Civi::log()->debug(__FUNCTION__, ['updateAllGreetings.php']);
 
   //Civi::log()->debug(__FUNCTION__, ['optlist' => $optlist]);
 
@@ -96,7 +102,7 @@ function run()
   //CRM_Core_Error::debug_var('$greetings', $greetings);
 
   //get prefixes/suffixes
-  $prefixes = \Civi\Api4\Contact::getFields()
+  $prefixes = \Civi\Api4\Contact::getFields(FALSE)
     ->setLoadOptions(TRUE)
     ->addWhere('name', '=', 'prefix_id')
     ->addSelect('options')
@@ -104,7 +110,7 @@ function run()
     ->single();
   $prefixes = $prefixes['options'];
 
-  $suffixes = \Civi\Api4\Contact::getFields()
+  $suffixes = \Civi\Api4\Contact::getFields(FALSE)
     ->setLoadOptions(TRUE)
     ->addWhere('name', '=', 'suffix_id')
     ->addSelect('options')
@@ -261,6 +267,10 @@ function run()
   if (!empty($idTbl)) {
     $sql = "DROP TABLE IF EXISTS {$idTbl};";
     CRM_Core_DAO::executeQuery($sql);
+  }
+
+  if ($watchdogDisabled) {
+    module_enable(['dblog']);
   }
 
   echo "[{$optlist['site']}] Finished processing greetings for $cnt contacts.\n";
