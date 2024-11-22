@@ -146,6 +146,9 @@ function mail_civicrm_mosaicoConfig(&$config) {
   $config['tinymceConfig']['external_plugins']['anchor'] = E::url('js/tinymce-plugins/anchor/plugin.js');
   $config['tinymceConfig']['external_plugins']['charmap'] = E::url('js/tinymce-plugins/charmap/plugin.js');
   $config['tinymceConfig']['external_plugins']['table'] = E::url('js/tinymce-plugins/table/plugin.js');
+  $config['tinymceConfigFull']['external_plugins']['anchor'] = E::url('js/tinymce-plugins/anchor/plugin.js');
+  $config['tinymceConfigFull']['external_plugins']['charmap'] = E::url('js/tinymce-plugins/charmap/plugin.js');
+  $config['tinymceConfigFull']['external_plugins']['table'] = E::url('js/tinymce-plugins/table/plugin.js');
 }
 
 function mail_civicrm_pageRun(&$page) {
