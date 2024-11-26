@@ -54,8 +54,8 @@ $execSql $instance -c "$sql" -q
 php $app_rootdir/civicrm/scripts/ftsIndexUpdate.php -S $instance
 
 echo "7949: rebuild shadow tables..."
-dedupe_dir=$script_dir/../modules/nyss_dedupe
-$execSql $instance -f $dedupe_dir/shadow_sync.sql
+dedupe_dir=$script_dir/../civicrm/custom/ext/gov.nysenate.dedupe
+$execSql $instance -f $dedupe_dir/sql/shadow_sync.sql
 
 echo "8005: cleanup addresses with null contact_id..."
 sql="

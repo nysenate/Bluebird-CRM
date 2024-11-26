@@ -182,7 +182,7 @@ echo "Rebuilding triggers"
 php $app_rootdir/civicrm/scripts/rebuildTriggers.php -S$destinst
 
 echo "Recreating shadow-table functions and triggers"
-$execSql --civicrm $destinst -f "$app_rootdir/modules/nyss_dedupe/shadow_func.sql"
+$execSql --civicrm $destinst -f "$app_rootdir/civicrm/custom/ext/gov.nysenate.dedupe/sql/shadow_func.sql"
 
 echo "Clearing cache"
 $script_dir/clearCache.sh $destinst --all

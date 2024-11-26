@@ -66,6 +66,6 @@ php $app_rootdir/civicrm/scripts/changeCollation.php -S $instance
 
 ## rebuild shadow table functions with explicit collation
 echo "$prog: rebuild shadow table functions"
-$execSql $instance -f $script_dir/../modules/nyss_dedupe/shadow_func.sql
+$execSql $instance -f $script_dir/../civicrm/custom/ext/gov.nysenate.dedupe/sql/shadow_func.sql
 
 exit 0
