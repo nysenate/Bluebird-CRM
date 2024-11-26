@@ -37,7 +37,7 @@ $drush $instance pm-uninstall nyss_403 -y
 
 $drush $instance pm-disable nyss_dedupe -y
 $drush $instance pm-uninstall nyss_dedupe -y
-$drush $instance cvapi extension.disable key=gov.nysenate.dedupe --quiet
+$drush $instance cvapi extension.enable key=gov.nysenate.dedupe --quiet
 
 ## record completion
 echo "$prog: upgrade process is complete."
