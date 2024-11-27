@@ -44,19 +44,56 @@ class CRM_NYSS_BAO_Integration_WebsiteEvent_SurveyEvent extends CRM_NYSS_BAO_Int
     return $this;
   }
 
+  /**
+   * @param int $contact_id
+   *
+   * @return void
+   * @throws \CRM_Core_Exception
+   * @throws \Civi\API\Exception\UnauthorizedException
+   */
   protected function processForm(int $contact_id): void {
     // form_id, form_values, form_title, detail??
-    $params = new stdClass();
-    $params->form_id = $this->getFormId();
-    $params->form_values = $this->getFormFields();
-    $params->form_title = $this->getFormTitle();
-    $params->detail = $this->getEventDetails();
-    $params->created_at = $this->getEventData()->getCreatedAtAsDateTime();
+    //$params = new stdClass();
+    //$params->form_id = $this->getFormId();
+    //$params->form_values = $this->getFormFields();
+    //$params->form_title = $this->getFormTitle();
+    //$params->detail = $this->getEventDetails();
+    //$params->created_at = $this->getEventData()->getCreatedAtAsDateTime();
 
-    $result = CRM_NYSS_BAO_Integration_Website::processSurvey($contact_id, $this->getEventAction(), $params);
-    if ($result['is_error'] == 1) {
-      throw new Exception("Error processing webform/survey: " . $result['error_message']);
-    }
+    // used to lean on CRM_NYSS_BAO_Integration_Website::processSurvey()
+    //$result = CRM_NYSS_BAO_Integration_Website::processSurvey($contact_id, $this->getEventAction(), $params);
+    //if ($result['is_error'] == 1) {
+      //throw new Exception("Error processing webform/survey: " . $result['error_message']);
+    //}
+
+    // create activity
+    $activity_type_id = CRM_Core_PseudoConstant::getKey('CRM_Activity_BAO_Activity', 'activity_type_id', 'Website Survey');
+    $form_fields = $this->getFormFields();
+    $fields_as_text = array_reduce($form_fields, function($carry, $item) {
+      return $carry . '<div class="survey-field survey-field--'.$item->field.'">' . ucwords(strtr($item->field,'_',' ')) . ': ' . $item->value . "</div>\n";
+    });
+
+    print_r($this->getEventInfo());
+    $results = \Civi\Api4\Activity::create($this->getCiviPermissionCheck())
+      ->addValue('activity_type_id', $activity_type_id)
+      ->addValue('target_contact_id', $contact_id)
+      ->addValue('activity_date_time', $this->getEventData()->getCreatedAtAsDateTime()->format('Y-m-d H:i:s'))
+      ->addValue('details', $fields_as_text)
+      ->addValue('subject', $this->getFormTitle())
+      // based on logic from CRM_NYSS_BAO_Integration_Website::processSurvey()
+      ->addValue('source_contact_id', civicrm_api3('uf_match', 'getvalue', [
+        'uf_id' => 1,
+        'return' => 'contact_id',
+      ]))
+      // create custom data
+      ->addValue('Website_Survey.Survey_Name', $this->getFormTitle())
+      ->addValue('Website_Survey.Survey_ID', $this->getFormId())
+      ->addValue('Website_Survey.survey_data', $this->getEventInfoJson())
+      //->addValue(Website_Survey.)
+      ->execute();
+
+    // verification check only. Throws Exception if there's not 1 result
+    $results->single();
   }
 
   public function getFormId(): ?string {
