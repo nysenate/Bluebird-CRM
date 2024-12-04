@@ -52,33 +52,24 @@ class CRM_NYSS_BAO_Integration_WebsiteEvent_SurveyEvent extends CRM_NYSS_BAO_Int
    * @throws \Civi\API\Exception\UnauthorizedException
    */
   protected function processForm(int $contact_id): void {
-    // form_id, form_values, form_title, detail??
-    //$params = new stdClass();
-    //$params->form_id = $this->getFormId();
-    //$params->form_values = $this->getFormFields();
-    //$params->form_title = $this->getFormTitle();
-    //$params->detail = $this->getEventDetails();
-    //$params->created_at = $this->getEventData()->getCreatedAtAsDateTime();
 
-    // used to lean on CRM_NYSS_BAO_Integration_Website::processSurvey()
-    //$result = CRM_NYSS_BAO_Integration_Website::processSurvey($contact_id, $this->getEventAction(), $params);
-    //if ($result['is_error'] == 1) {
-      //throw new Exception("Error processing webform/survey: " . $result['error_message']);
-    //}
+    // NYSS 16799 -- No more custom field groups for surveys. Now, we just add
+    // to Activity.details and Website_Survey.survey_data
+    // $result = CRM_NYSS_BAO_Integration_Website::processSurvey($contact_id, $this->getEventAction(), $params);
 
     // create activity
     $activity_type_id = CRM_Core_PseudoConstant::getKey('CRM_Activity_BAO_Activity', 'activity_type_id', 'Website Survey');
-    $form_fields = $this->getFormFields();
-    $fields_as_text = array_reduce($form_fields, function($carry, $item) {
-      return $carry . '<div class="survey-field survey-field--'.$item->field.'">' . ucwords(strtr($item->field,'_',' ')) . ': ' . $item->value . "</div>\n";
+    $event_info = $this->getEventInfo();
+    $form_fields = $event_info->form_values;
+    $fields_as_text = array_reduce($form_fields, function ($carry, $field) {
+      return $carry . self::formatFieldsAsText($field->field, $field->value);
     });
 
-    print_r($this->getEventInfo());
     $results = \Civi\Api4\Activity::create($this->getCiviPermissionCheck())
       ->addValue('activity_type_id', $activity_type_id)
       ->addValue('target_contact_id', $contact_id)
       ->addValue('activity_date_time', $this->getEventData()->getCreatedAtAsDateTime()->format('Y-m-d H:i:s'))
-      ->addValue('details', $fields_as_text)
+      ->addValue('details', '<pre>'.$fields_as_text.'</pre>')
       ->addValue('subject', $this->getFormTitle())
       // based on logic from CRM_NYSS_BAO_Integration_Website::processSurvey()
       ->addValue('source_contact_id', civicrm_api3('uf_match', 'getvalue', [
@@ -88,8 +79,7 @@ class CRM_NYSS_BAO_Integration_WebsiteEvent_SurveyEvent extends CRM_NYSS_BAO_Int
       // create custom data
       ->addValue('Website_Survey.Survey_Name', $this->getFormTitle())
       ->addValue('Website_Survey.Survey_ID', $this->getFormId())
-      ->addValue('Website_Survey.survey_data', $this->getEventInfoJson())
-      //->addValue(Website_Survey.)
+      ->addValue('Website_Survey.survey_data', json_encode($form_fields))
       ->execute();
 
     // verification check only. Throws Exception if there's not 1 result
@@ -116,6 +106,7 @@ class CRM_NYSS_BAO_Integration_WebsiteEvent_SurveyEvent extends CRM_NYSS_BAO_Int
    * CRM_NYSS_BAO_Integration_Website::processSurvey() and with CiviCRM's
    * custom_field structure.
    * @return array of objects (field name, field value)
+   * @deprecated
    */
   public function getFormFields() : array {
     $event_info = $this->getEventInfo();
@@ -134,6 +125,10 @@ class CRM_NYSS_BAO_Integration_WebsiteEvent_SurveyEvent extends CRM_NYSS_BAO_Int
    * field names/labels and adds each field to $field for the sake of
    * flattening a bigger data structure to accommodate
    * CRM_NYSS_BAO_Integration_Website::processSurvey()
+   * @deprecated This was previously used to flatten a multi-level data structure
+   * into a flat structure for the sake of saving to fields in a single database table.
+   * No longer necessary since data is now being saved as text
+   * @note formatFieldsAsText() is kind-of the replacement for this.
    */
   protected function inspectField(mixed $value, array &$fields, string $key = '', string $start_label = '') : void {
     // $used_labels tracks used labels to facilitate label uniqueness
@@ -168,6 +163,7 @@ class CRM_NYSS_BAO_Integration_WebsiteEvent_SurveyEvent extends CRM_NYSS_BAO_Int
    * Takes the given string ($str) and makes sure that it is unique among
    * ($existing) strings. If not unique, appends a number to make it unique.
    * @return string
+   * @deprecated Was previously needed for Civi Custom Fields.
    */
   public static function ensureUnique(string $str, array $existing, int $max_length = 1020) : string {
     $cnt = 1;
@@ -182,27 +178,81 @@ class CRM_NYSS_BAO_Integration_WebsiteEvent_SurveyEvent extends CRM_NYSS_BAO_Int
   }
 
   /**
+   * Turns a Survey field data structure into reasonably readable text that
+   * can be added to the Activity details field. It will return a simple
+   * label / value pair as:
+   * Label: Value
+   * or it recurses into a more complex data structure to come up with something
+   * reasonable.
+   * Address:
+   *   Address 1: 1 Main St
+   *   Address 2: Suite 12
+   *   City: Albany
+   *   etc...
+   * @param string $label The field label
+   * @param mixed $value The field value, which could contain a deeper structure
+   * @param int $level The current level in the structure. Mostly for indentation purposes.
+   * @param string $carry_text Allows recursive calls to add to the resulting string.
+   *
+   * @return string
+   */
+  public static function formatFieldsAsText(string $label, mixed $value, int $level = 0, string &$carry_text = '') : string {
+    if (is_scalar($value) or is_null($value)) {
+      // It's a "simple value" field. Just add the field
+      $carry_text .= str_repeat('  ', $level) . self::formatFieldForText($label, $value);
+      return $carry_text; // don't recurse
+    } else if (is_array($value)) {
+      if (array_reduce($value, fn($c, $v) => $c && (is_scalar($v) || is_null($v)),
+        TRUE)) {
+        // It's an array of "simple values"... join them into a single field
+        $carry_text .= str_repeat('  ', $level) .  self::formatFieldForText($label, join(', ', (array) $value));
+        return $carry_text; // don't recurse
+      }
+    }
+    // Complex values require some recursion to break them into additional fields.
+    if (is_array($value) or is_object($value)) {
+      $carry_text .= str_repeat('  ', $level) . self::formatFieldForText($label,'');
+      ++$level;
+      foreach($value as $child_key => $child_value) {
+        self::formatFieldsAsText($child_key, $child_value, $level, $carry_text);
+      }
+    }
+    return $carry_text;
+  }
+
+  /**
+   * For consistent formating of webform/survey fields to be added to Activity.details.
    * @param string $label
    * @param string $value
+   * @return string
+   */
+  public static function formatFieldForText(string $label,string $value) {
+    return ucwords(strtr($label,'_',' ')) . ': ' . self::cleanFieldValue($value) . "\n";
+  }
+
+  /**
    * Create a field in the proper format for
    * CRM_NYSS_BAO_Integration_Website::processSurvey()
+   * @param string $label
+   * @param string $value
    * @return object
+   * @deprecated No longer using processSurvey()
    */
   protected function getFieldDef(string $label, string $value) : object {
     return (object) [
       "field" => $label,
-      "value" => $this->cleanValue($value)
+      "value" => $this->cleanFieldValue($value)
     ];
   }
 
-  protected function cleanValue(string $string): string {
+  protected static function cleanFieldValue(string $string): string {
     // keep newlines
     $string = str_replace(array("<p>", "</p>", "<br>", "<br/>"), "\n", $string);
     // remove HTML (probably unnecessary, but also, civicrm will convert to character
     // entities, which makes the string longer than expected e.g. "<" becomes
     // &lt; (4 characters)
     $string = strip_tags($string);
-    return substr($string, 0, 255);
+    return $string;
   }
 
   function getParentTagName(): string {
