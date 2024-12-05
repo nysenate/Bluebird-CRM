@@ -227,7 +227,11 @@ class CRM_NYSS_BAO_Integration_WebsiteEvent_SurveyEvent extends CRM_NYSS_BAO_Int
    * @return string
    */
   public static function formatFieldForText(string $label,string $value) {
-    return ucwords(strtr($label,'_',' ')) . ': ' . self::cleanFieldValue($value) . "\n";
+    // preg_replace removes trailing : and whitespace
+    // strtr replaces _ with space
+    // ucwords will tranform each word to have a capital first letter
+    $clean_label = ucwords(preg_replace('/[\s:]*$/', '',strtr($label,['_'=>' '])));
+    return $clean_label . ': ' . self::cleanFieldValue($value ?? '') . "\n";
   }
 
   /**
