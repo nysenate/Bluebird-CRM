@@ -199,7 +199,7 @@ class CRM_NYSS_BAO_Integration_WebsiteEvent_SurveyEvent extends CRM_NYSS_BAO_Int
   public static function formatFieldsAsText(string $label, mixed $value, int $level = 0, string &$carry_text = '') : string {
     if (is_scalar($value) or is_null($value)) {
       // It's a "simple value" field. Just add the field
-      $carry_text .= str_repeat('  ', $level) . self::formatFieldForText($label, $value);
+      $carry_text .= str_repeat('  ', $level) . self::formatFieldForText($label, $value ?? '');
       return $carry_text; // don't recurse
     } else if (is_array($value)) {
       if (array_reduce($value, fn($c, $v) => $c && (is_scalar($v) || is_null($v)),
@@ -245,7 +245,7 @@ class CRM_NYSS_BAO_Integration_WebsiteEvent_SurveyEvent extends CRM_NYSS_BAO_Int
   protected function getFieldDef(string $label, string $value) : object {
     return (object) [
       "field" => $label,
-      "value" => $this->cleanFieldValue($value)
+      "value" => $this->cleanFieldValue($value ?? '')
     ];
   }
 
