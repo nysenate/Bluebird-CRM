@@ -23,7 +23,7 @@ class MigrateSurveyData extends AbstractAction {
    */
   public function _run(Result $result) {
     \Civi::log()->info('Running NYSS Migrate Survey Data', []);
-    
+
     // Get all custom "Survey" groups
     $customGroups = \Civi\Api4\CustomGroup::get($this->getCheckPermissions())
       ->addSelect('*')
@@ -68,11 +68,11 @@ class MigrateSurveyData extends AbstractAction {
         foreach(array_keys($activity) as $activity_key) {
           if (preg_match('/^'.$webform_name.'\.(.+)$/', $activity_key,$matches)) {
             $field_name = strtolower($matches[1]);
-            $data_fields[$field_name] = $activity[$activity_key];
+            // this format will mimic format used for future accumulator data.
+            $data_fields[] = (object)['field'=>$field_name, 'value'=>$activity[$activity_key]];
             $fields_as_text .= \CRM_NYSS_BAO_Integration_WebsiteEvent_SurveyEvent::formatFieldForText($field_name,$activity[$activity_key] ?? '');
           }
         }
-
         try {
           // Update Activity Details Field and Survey Data
           $update_results = \Civi\Api4\Activity::update($this->getCheckPermissions())
