@@ -388,7 +388,7 @@ function tags_civicrm_validateForm($formName, &$fields, &$files, &$form, &$error
     }
 
     //construct SQL clauses/params
-    $sqlParams = [1 => [$fields['name'], 'String']];
+    $sqlParams = [1 => [$fields['label'], 'String']];
     if (!empty($fields['parent_id'])) {
       $parentSql = "AND parent_id = %2";
       $sqlParams[2] = [$fields['parent_id'], 'Positive'];
@@ -406,7 +406,7 @@ function tags_civicrm_validateForm($formName, &$fields, &$files, &$form, &$error
     ", $sqlParams);
 
     if ($checkExistence) {
-      $errors['name'] = 'Tag names must be unique for a common parent tag.';
+      $errors['label'] = 'Tag names must be unique for a common parent tag.';
     }
   }
 } //tags_civicrm_validateForm()
