@@ -49,7 +49,7 @@ class MigrateSurveyData extends AbstractAction {
       $webform_name = 'Survey_'.$webform_id;
       $query = \Civi\Api4\Activity::get($this->getCheckPermissions())
         ->addSelect($webform_name.'.*', 'Website_Survey.*', '*')
-        ->addWhere('activity_type_id', '=', 90)
+        ->addWhere('activity_type_id:name', '=', 'Website Survey')
         ->addWhere('Website_Survey.Survey_ID', '=', $webform_id);
       if ($this->activity_id) {
         $query->addWhere('id', '=', $this->activity_id);

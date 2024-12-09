@@ -58,7 +58,6 @@ class CRM_NYSS_BAO_Integration_WebsiteEvent_SurveyEvent extends CRM_NYSS_BAO_Int
     // $result = CRM_NYSS_BAO_Integration_Website::processSurvey($contact_id, $this->getEventAction(), $params);
 
     // create activity
-    $activity_type_id = CRM_Core_PseudoConstant::getKey('CRM_Activity_BAO_Activity', 'activity_type_id', 'Website Survey');
     $event_info = $this->getEventInfo();
     $form_fields = $event_info->form_values;
     $fields_as_text = array_reduce($form_fields, function ($carry, $field) {
@@ -66,7 +65,7 @@ class CRM_NYSS_BAO_Integration_WebsiteEvent_SurveyEvent extends CRM_NYSS_BAO_Int
     });
 
     $results = \Civi\Api4\Activity::create($this->getCiviPermissionCheck())
-      ->addValue('activity_type_id', $activity_type_id)
+      ->addValue('activity_type_id:name', 'Website Survey')
       ->addValue('target_contact_id', $contact_id)
       ->addValue('activity_date_time', $this->getEventData()->getCreatedAtAsDateTime()->format('Y-m-d H:i:s'))
       ->addValue('details', '<pre>'.$fields_as_text.'</pre>')

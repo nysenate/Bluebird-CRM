@@ -57,7 +57,7 @@ class CRM_NYSS_WebIntegration_Upgrader extends CRM_NYSS_WebIntegration_Upgrader_
     $this->ctx->log->info('Applying upgrade step 1001 in CRM_NYSS_WebIntegration_Upgrader');
     // NYSS #16799 New field to store survey field data as JSON
     $results = \Civi\Api4\CustomField::create(FALSE)
-      ->addValue('custom_group_id', 10)
+      ->addValue('custom_group_id.name', 'Website_Survey')
       ->addValue('name', 'survey_data')
       ->addValue('data_type', 'Memo')
       ->addValue('is_searchable', FALSE)
