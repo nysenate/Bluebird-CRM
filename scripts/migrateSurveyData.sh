@@ -32,6 +32,10 @@ instance="$1"
 echo "migrating custom survey fields to Activity details field..."
 $drush $instance cvapi WebIntegration.migrateSurveyData version=4 checkPermissions=0
 
+MIGRATION_STATUS=$?
+
 # Deactivate Custom Survey Groups
-echo "deactivating survey custom data groups..."
-$drush $instance cvapi WebIntegration.updateSurveyGroups version=4 checkPermissions=0 active=0 public=0
+if [ $MIGRATION_STATUS = 0 ]; then
+  echo "deactivating survey custom data groups..."
+  $drush $instance cvapi WebIntegration.updateSurveyGroups version=4 checkPermissions=0 active=0 public=0
+fi

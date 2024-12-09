@@ -24,6 +24,25 @@ class MigrateSurveyData extends AbstractAction {
   public function _run(Result $result) {
     \Civi::log()->info('Running NYSS Migrate Survey Data', []);
 
+    // Verify that Website_Survey.survey_data field exists
+    $data_field = \Civi\Api4\CustomField::get($this->getCheckPermissions())
+      ->addWhere('custom_group_id:name', '=', 'Website_Survey')
+      ->addWhere('name', '=', 'survey_data')
+      ->setLimit(25)
+      ->execute();
+
+    if ($data_field->count() != 1) {
+      // Throwing Exception because it forces an error in calling shell
+      // command ($?)
+      throw new \CRM_Core_Exception('Missing required Website_Survey.survey_data field.');
+      /*
+      return [
+        'is_error' => 1,
+        'error_message' => 'Missing required Website_Survey.survey_data field.',
+      ];
+      */
+    }
+
     // Get all custom "Survey" groups
     $customGroups = \Civi\Api4\CustomGroup::get($this->getCheckPermissions())
       ->addSelect('*')
