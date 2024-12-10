@@ -21,6 +21,18 @@ function _civicrm_api3_nyss_purgeusers_spec(&$spec) {
     'description' => 'Username to delete. The user must meet the other requirements. This is primarily used for testing.'
   ];
 
+  $spec['purgetype'] = [
+    'title' => 'Purge Type',
+    'type' => CRM_Utils_Type::T_STRING,
+    'options' => [
+      'auth' => 'Authorization Only',
+      'time' => 'Time Period Only',
+      'both' => 'Both Authorization and Time Based'
+    ],
+    'api.required' => 1,
+    'api.default' => 'both',
+  ];
+
   $spec['dryrun'] = [
     'title' => 'Dry run',
     'type' => CRM_Utils_Type::T_BOOLEAN,
@@ -69,7 +81,10 @@ function _nyss_getUsers($params) {
     if ($user->uid != 0 && $user->uid != 1 && (empty($params['username']) || $user->name == $params['username'])) {
       $isAuthorized = _nyss_checkUserAuth($user, $auth_conf, $ldap_server);
 
-      if (!$isAuthorized || $user->access < $time) {
+      if (
+        (in_array($params['purgetype'], ['both', 'auth']) && !$isAuthorized) ||
+        (in_array($params['purgetype'], ['both', 'time']) && $user->access < $time)
+      ) {
         $usersPurge[$user->uid] = $user->name;
       }
     }

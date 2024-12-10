@@ -3,6 +3,7 @@
 require_once 'inbox.civix.php';
 
 use CRM_NYSS_Inbox_ExtensionUtil as E;
+use Symfony\Component\DependencyInjection\ContainerBuilder;
 
 /**
  * Implements hook_civicrm_config().
@@ -117,4 +118,8 @@ function inbox_civicrm_entityTypes(&$entityTypes) {
       'table' => 'civicrm_oauth_contact_token',
     ];
   }
+}
+
+function inbox_civicrm_container(ContainerBuilder $container) {
+  $container->register('inbox.parser', '\CRM_NYSS_Inbox_BAO_MessageParserRegex')->setPublic(TRUE);
 }
