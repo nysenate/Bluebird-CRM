@@ -50,6 +50,32 @@ class CRM_NYSS_WebIntegration_Upgrader extends CRM_NYSS_WebIntegration_Upgrader_
   }
 
   /**
+   * Upgrade from version 1.0 to 1.1
+   *
+   */
+  public function upgrade_1001() {
+    $this->ctx->log->info('Applying upgrade step 1001 in CRM_NYSS_WebIntegration_Upgrader');
+    // NYSS #16799 New field to store survey field data as JSON
+    $results = \Civi\Api4\CustomField::create(FALSE)
+      ->addValue('custom_group_id.name', 'Website_Survey')
+      ->addValue('name', 'survey_data')
+      ->addValue('data_type', 'Memo')
+      ->addValue('is_searchable', FALSE)
+      ->addValue('is_required', FALSE)
+      ->addValue('label', 'Survey Data')
+      ->addValue('html_type', 'TextArea')
+      ->addValue('is_active', TRUE)
+      ->addValue('is_view', TRUE)
+      ->execute();
+
+    $this->ctx->log->debug($results);
+    if ($results->first()) {
+      return TRUE;
+    }
+  }
+
+
+  /**
    * Example: Run an external SQL script when the module is uninstalled.
    *
   public function uninstall() {
