@@ -2,6 +2,9 @@
 
 require_once 'mail.civix.php';
 use CRM_NYSS_Mail_ExtensionUtil as E;
+use Civi\FlexMailer\FlexMailer as FM;
+use Civi\NYSS\Mail\Listener\NyssFlexmailListener;
+use Symfony\Component\DependencyInjection\ContainerBuilder;
 
 defined('FILTER_ALL') or define('FILTER_ALL', 0);
 defined('FILTER_IN_SD_ONLY') or define('FILTER_IN_SD_ONLY', 1);
@@ -21,6 +24,29 @@ function mail_civicrm_config(&$config) {
   //16724
   Civi::dispatcher()->addListener('civi.search.autocompleteDefault', [
     'CRM_NYSS_Mail_APIWrapperRecipient', 'autocompleteDefault'], -100);
+}
+
+function mail_civicrm_container(ContainerBuilder $container) {
+  // Optimize email processing by moving some logic from
+  // mail_civicrm_alterMailParams to a flexmailer listener.
+  $container->findDefinition('dispatcher')->addMethodCall('addListenerService',
+    [
+      FM::EVENT_COMPOSE,
+      [
+        Civi\NYSS\Mail\Listener\NyssFlexmailListener::$SERVICE_NAME,
+        'onComposePrepare',
+      ],
+      FM::WEIGHT_PREPARE,
+    ]);
+  $container->findDefinition('dispatcher')->addMethodCall('addListenerService',
+    [
+      FM::EVENT_COMPOSE,
+      [
+        Civi\NYSS\Mail\Listener\NyssFlexmailListener::$SERVICE_NAME,
+        'onComposeEnd',
+      ],
+      FM::WEIGHT_END,
+    ]);
 }
 
 function mail_civicrm_alterMenu(&$items) {
@@ -923,37 +949,43 @@ function mail_civicrm_alterMailParams(&$params, $context) {
     $jobInfo = null;
     $extraContent = array_fill_keys($contentTypes, []);
 
-    //contact_id and event_queue_id are not included via flexmailer
-    if ((empty($params['event_queue_id']) || empty($params['contact_id'])) &&
-      $xCiviMail = CRM_Utils_Array::value('X-CiviMail-Bounce', $params)
+    // This code block will likely no longer be called in flexmailer context.
+    // It was previously necessary to derive and lookup the contact_id
+    // and event_queue_id. Now, those 2 params are being set by
+    // NyssFlexmailListener. The code is still in place in case the
+    // civimail context ever needs it.
+    if ((empty($params[NyssFlexmailListener::$PARAM_EVENT_Q_ID]) ||
+         empty($params[NyssFlexmailListener::$PARAM_CONTACT_ID])) &&
+         $xCiviMail = CRM_Utils_Array::value('X-CiviMail-Bounce', $params)
     ) {
       $emailParts = explode('@', $xCiviMail);
       $idParts = explode('.', $emailParts[0]);
       $params['event_queue_id'] = $idParts[2];
 
-      if (!empty($params['event_queue_id'])) {
+      if (empty($params[NyssFlexmailListener::$PARAM_CONTACT_ID]) &&
+         !empty($params[NyssFlexmailListener::$PARAM_EVENT_Q_ID])) {
         try {
           $eventQueue = civicrm_api3('MailingEventQueue', 'getsingle', ['id' => $params['event_queue_id']]);
-          $params['contact_id'] = CRM_Utils_Array::value('contact_id', $eventQueue);
+          $params[NyssFlexmailListener::$PARAM_CONTACT_ID] = CRM_Utils_Array::value('contact_id', $eventQueue);
         } catch (CiviCRM_API3_Exception $e) {
           Civi::log()->debug(__FUNCTION__, ['e' => $e]);
         }
       }
     }
 
-    if (isset($params['event_queue_id'])) {
-      $eventQueueID = $params['event_queue_id'];
-      unset($params['event_queue_id']);
+    if (isset($params[NyssFlexmailListener::$PARAM_EVENT_Q_ID])) {
+      $eventQueueID = $params[NyssFlexmailListener::$PARAM_EVENT_Q_ID];
+      unset($params[NyssFlexmailListener::$PARAM_EVENT_Q_ID]);
     }
     elseif (empty($params['is_test'])) {
       CRM_Core_Error::debug_var('params: event_queue_id not found', $params);
     }
 
     // NYSS 5354 - set the "X-clientid" header
-    if (isset($params['contact_id'])) {
-      $contactID = $params['contact_id'];
+    if (isset($params[NyssFlexmailListener::$PARAM_CONTACT_ID])) {
+      $contactID = $params[NyssFlexmailListener::$PARAM_CONTACT_ID];
       $params['X-clientid'] = $contactID;
-      unset($params['contact_id']);
+      unset($params[NyssFlexmailListener::$PARAM_CONTACT_ID]);
     }
 
     $params['Return-Path'] = '';
@@ -961,7 +993,11 @@ function mail_civicrm_alterMailParams(&$params, $context) {
     $params['Reply-To'] = $replyto;
 
     if (isset($params['job_id'])) {
-      $jobInfo = _mail_get_job_info($params['job_id']);
+      // Information populated in NyssFlexmailListener where
+      // job and mailing info already exist.
+      // No need to call _mail_get_job_info() where 2 database queries happen.
+      $jobInfo = $params[NyssFlexmailListener::$PARAM_JOB_INFO];
+      //$jobInfo = _mail_get_job_info($params['job_id']);
       unset($params['job_id']);
     }
 
