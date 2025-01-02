@@ -135,7 +135,7 @@ if [ "$db_types" ]; then
   echo "Moving tables from [$srcinst] to [$destinst]"
   for db in $db_types; do
     destdbname=`$execSql --$db $destinst --get-db-name`
-    sql=`$execSql --$db $srcinst -c "show full tables where table_type != 'VIEW'" | cut -f1 | sed "s/^\(.*\)$/RENAME TABLE \1 TO $destdbname.\1;/"`
+    sql=$($execSql --$db $srcinst -c "show full tables where table_type != 'VIEW'" | cut -f1 | sed "s/^\(.*\)$/RENAME TABLE \`\1\` TO $destdbname.\1;/")
     $execSql --$db $srcinst -c "$sql"
   done
 else
