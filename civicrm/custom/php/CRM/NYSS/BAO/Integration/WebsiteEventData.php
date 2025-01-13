@@ -141,7 +141,13 @@ class CRM_NYSS_BAO_Integration_WebsiteEventData {
 
     // date of birth taken from user_info ... not dob field
     if (!empty($this->user_info->dob)) {
-      $this->setDob(new DateTime($this->user_info->dob));
+      $dob_dt = new DateTime($this->user_info->dob);
+      // include a check to avoid future edge-case issues where dob had been
+      // set to now() on the public website... dob must be older than 1 year
+      // NYS 16896
+      if ($dob_dt->getTimestamp() < strtotime('-1 year')) {
+        $this->setDob($dob_dt);
+      }
       // $dob->format('Y-m-d')
     }
 
