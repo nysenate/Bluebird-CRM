@@ -60,7 +60,6 @@ class CRM_Contact_Form_Task_ExportPrintProduction extends CRM_Contact_Form_Task
 
     CRM_Utils_System::setTitle(ts('Print Production Export'));
 
-    require_once 'CRM/Core/Permission.php';
     if (CRM_Core_Permission::check('export print production files')) {
       $this->addElement('text', 'avanti_job_id', ts('Avanti Job ID'));
     }
@@ -159,17 +158,17 @@ class CRM_Contact_Form_Task_ExportPrintProduction extends CRM_Contact_Form_Task
     );
 
     $this->addDefaultButtons( 'Export Print Production' );
-  } // buildQuickForm()
+  }
 
 
   function setDefaultValues() {
     $defaults = [
-      'orderBy' => 'male_eldest',
+      'orderBy' => 'female_eldest',
+      'restrict_state' => 1031, //NY
     ];
-    //$defaults['restrict_state'] = 1031; //NY
 
     return $defaults;
-  } // setDefaultValues()
+  }
 
 
   /**
@@ -708,8 +707,10 @@ class CRM_Contact_Form_Task_ExportPrintProduction extends CRM_Contact_Form_Task
 
     itime('final', TRUE);
     iexit(4);
-  } // postProcess()
-}//end class
+
+    return NULL;
+  }
+}
 
 function getIssueCodesRecursive(&$issueCodes, $parent_id = NULL) {
   if ($parent_id == NULL) {
