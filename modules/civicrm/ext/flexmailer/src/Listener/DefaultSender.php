@@ -77,13 +77,6 @@ class DefaultSender extends AutoService {
           $code = $result->getCode();
           \CRM_Core_Error::debug_log_message("SMTP Socket Error or failed to set sender error. Message: $message, Code: $code");
 
-          //NYSS
-          \CRM_Mailing_BAO_MailingJob::pause($mailing->id);
-          $msg = "A bulk mailing was paused (ID: {$mailing->id}) due to SMTP socket errors, suggesting a problem connecting with the SMTP provider.";
-          \CRM_NYSS_Errorhandler_BAO::notifySlack($msg, "Mailing {$mailing->id} Paused");
-          //NYSS 16512
-          \CRM_NYSS_BAO_Mailing::notify($mailing->id);
-
           // these are socket write errors which most likely means smtp connection errors
           // lets skip them and reconnect.
           $smtpConnectionErrors++;
@@ -92,6 +85,10 @@ class DefaultSender extends AutoService {
             $retryBatch = TRUE;
             continue;
           }
+
+          //NYSS
+          $msg = "A bulk mailing was deferred (ID: {$mailing->id}) due to excessive (more than 5) SMTP socket errors. This mailing will be retried.";
+          \CRM_NYSS_Errorhandler_BAO::notifySlack($msg, "<!channel> a mailing was deferred due to temporary SMTP errors");
 
           // seems like we have too many of them in a row, we should
           // write stuff to disk and abort the cron job
