@@ -191,6 +191,50 @@ class CRM_NYSS_Contact_Upgrader extends CRM_NYSS_Contact_Upgrader_Base {
     return TRUE;
   }
 
+  public function upgrade_1500(): bool {
+    $this->ctx->log->info('Contact extension update 1500: Ticket 16930');
+
+    $eg = \Civi\Api4\OptionValue::update(FALSE)
+      ->addValue('is_default', TRUE)
+      ->addWhere('option_group_id:name', '=', 'email_greeting')
+      ->addWhere('label', '=', 'Dear {contact.first_name}')
+      ->setReload(TRUE)
+      ->execute()
+      ->single();
+
+    $pg = \Civi\Api4\OptionValue::update(FALSE)
+      ->addValue('is_default', TRUE)
+      ->addWhere('option_group_id:name', '=', 'postal_greeting')
+      ->addWhere('label', '=', 'Dear {contact.first_name}')
+      ->setReload(TRUE)
+      ->execute()
+      ->single();
+
+    //Civi::log()->debug(__FUNCTION__, ['$eg' => $eg, '$pg' => $pg]);
+
+    CRM_Core_DAO::executeQuery("
+      UPDATE civicrm_contact
+      SET email_greeting_id = %1
+      WHERE is_deleted = 0
+        AND contact_type = 'Individual'
+        AND email_greeting_id = 3
+    ", [
+      1 => [$eg['value'], 'String'],
+    ]);
+
+    CRM_Core_DAO::executeQuery("
+      UPDATE civicrm_contact
+      SET postal_greeting_id = %1
+      WHERE is_deleted = 0
+        AND contact_type = 'Individual'
+        AND postal_greeting_id = 3
+    ", [
+      1 => [$pg['value'], 'String'],
+    ]);
+
+    return TRUE;
+  }
+
   /**
    * Example: Run an external SQL script.
    *
