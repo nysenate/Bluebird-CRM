@@ -300,6 +300,7 @@ class CRM_NYSS_Form_ProofingReport extends CRM_Core_Form {
       //CRM_Core_Error::debug_var('groups update query',$query);
       CRM_Core_DAO::executeQuery($query);
     }
+
     //get records from temp table
     $sql = "
       SELECT *
@@ -307,16 +308,21 @@ class CRM_NYSS_Form_ProofingReport extends CRM_Core_Form {
       ORDER BY logDateLong
     ";
     $dao = CRM_Core_DAO::executeQuery($sql);
+
+    //16882 impose 500 record limit
+    if ($dao->N > 500) {
+      CRM_Core_Error::statusBounce('Your search criteria would return too many records to effectively generate this report. Please adjust your criteria to reduce the number of records returned.', CRM_Utils_System::url('civicrm/nyss/proofingreport'));
+    }
+
     while ($dao->fetch()) {
       //CRM_Core_Error::debug_var('dao',$dao);
-      $params = array(
-        'version' => 3,
+      $params = [
         'id' => $dao->id,
-      );
-      $cDetails = civicrm_api('contact','getsingle',$params);
+      ];
+      $cDetails = civicrm_api3('contact','getsingle',$params);
       //CRM_Core_Error::debug_var('cDetails',$cDetails);
       //address block
-      $address = array();
+      $address = [];
       if (!empty($cDetails['street_address'])) {
         $address[] = $cDetails['street_address'];
       }
@@ -331,7 +337,7 @@ class CRM_NYSS_Form_ProofingReport extends CRM_Core_Form {
       }
       $addressHTML = implode('<br />', $address);
       //gender/dob/phone block
-      $gdp = array();
+      $gdp = [];
       if (!empty($cDetails['gender'])) {
         $gdp[] = $cDetails['gender'];
       }
@@ -368,7 +374,7 @@ class CRM_NYSS_Form_ProofingReport extends CRM_Core_Form {
           <td>{$tagList}&nbsp;</td>
           <td>{$groupList}&nbsp;</td>
         </tr>";
-      $rows[$dao->id] = array(
+      $rows[$dao->id] = [
         'id' => $dao->id,
         'sort_name' => CRM_Utils_Array::value('sort_name', $cDetails, ''),
         'display_name' => CRM_Utils_Array::value('display_name', $cDetails, ''),
@@ -394,7 +400,7 @@ class CRM_NYSS_Form_ProofingReport extends CRM_Core_Form {
         'taglist' => stripslashes(iconv('UTF-8', 'Windows-1252', $tagList)),
         'grouplist' => stripslashes(iconv('UTF-8', 'Windows-1252', $groupList)),
         'when' => $dao->logDate,
-      );
+      ];
       //check if household rel exists
       if ( !empty($formParams['merge_house']) ) {
         $sql = "

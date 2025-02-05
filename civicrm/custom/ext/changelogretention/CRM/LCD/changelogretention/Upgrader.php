@@ -3,7 +3,7 @@
 /**
  * Collection of upgrade steps.
  */
-class CRM_NYSS_WebIntegration_Upgrader extends CRM_NYSS_WebIntegration_Upgrader_Base {
+class CRM_LCD_changelogretention_Upgrader extends CRM_Extension_Upgrader_Base {
 
   // By convention, functions that look like "function upgrade_NNNN()" are
   // upgrade tasks. They are executed in order (like Drupal's hook_update_N).
@@ -12,68 +12,29 @@ class CRM_NYSS_WebIntegration_Upgrader extends CRM_NYSS_WebIntegration_Upgrader_
    * Example: Run an external SQL script when the module is installed.
    */
   public function install() {
-    $this->executeSqlFile('../sql/install.sql');
+    //$this->executeSqlFile('sql/myinstall.sql');
 
-    //create activity types: Website Direct/Contextual Message
-    try {
-      $at = civicrm_api3('option_value', 'get', array(
-        'option_group_name' => 'activity_type',
-        'name' => 'website_direct_message',
-      ));
-      if (empty($at['count'])) {
-        civicrm_api3('option_value', 'create', array(
-          'option_group_id' => 'activity_type',
-          'name' => 'website_direct_message',
-          'label' => 'Website Direct Message',
-          'is_reserved' => true,
-          'is_active' => true,
-        ));
-      }
+    $dsn = defined('CIVICRM_LOGGING_DSN') ? DB::parseDSN(CIVICRM_LOGGING_DSN) : DB::parseDSN(CIVICRM_DSN);
+    $loggingDB = $dsn['database']; //logging database
 
-      $at = civicrm_api3('option_value', 'get', array(
-        'option_group_name' => 'activity_type',
-        'name' => 'website_contextual_message',
-      ));
-      if (empty($at['count'])) {
-        civicrm_api3('option_value', 'create', array(
-          'option_group_id' => 'activity_type',
-          'name' => 'website_contextual_message',
-          'label' => 'Website Contextual Message',
-          'is_reserved' => true,
-          'is_active' => true,
-        ));
-      }
-    }
-    catch (CiviCRM_API3_Exception $e) {
-      Civi::log()->debug('install', array('$e' => $e));
-    }
+    $sql = "
+      CREATE TABLE `{$loggingDB}`.`civicrm_logretention_log` (
+      `id` int(11) NOT NULL AUTO_INCREMENT,
+      `log_date` timestamp NOT NULL DEFAULT current_timestamp(),
+      `log_table` varchar(128) NOT NULL,
+      `log_id` int(11) NOT NULL,
+      `log_completed` tinyint(1) NOT NULL DEFAULT 0,
+      PRIMARY KEY (`id`),
+      KEY `log_date` (`log_date`),
+      KEY `log_table` (`log_table`),
+      KEY `log_id` (`log_id`),
+      KEY `log_completed` (`log_completed`)
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+    ";
+    //Civi::log()->debug('install', ['$sql' => $sql]);
+
+    CRM_Core_DAO::executeQuery($sql);
   }
-
-  /**
-   * Upgrade from version 1.0 to 1.1
-   *
-   */
-  public function upgrade_1001() {
-    $this->ctx->log->info('Applying upgrade step 1001 in CRM_NYSS_WebIntegration_Upgrader');
-    // NYSS #16799 New field to store survey field data as JSON
-    $results = \Civi\Api4\CustomField::create(FALSE)
-      ->addValue('custom_group_id.name', 'Website_Survey')
-      ->addValue('name', 'survey_data')
-      ->addValue('data_type', 'Memo')
-      ->addValue('is_searchable', FALSE)
-      ->addValue('is_required', FALSE)
-      ->addValue('label', 'Survey Data')
-      ->addValue('html_type', 'TextArea')
-      ->addValue('is_active', TRUE)
-      ->addValue('is_view', TRUE)
-      ->execute();
-
-    $this->ctx->log->debug($results);
-    if ($results->first()) {
-      return TRUE;
-    }
-  }
-
 
   /**
    * Example: Run an external SQL script when the module is uninstalled.

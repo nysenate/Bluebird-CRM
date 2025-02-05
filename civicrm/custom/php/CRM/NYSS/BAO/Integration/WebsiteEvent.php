@@ -271,6 +271,10 @@ abstract class CRM_NYSS_BAO_Integration_WebsiteEvent implements CRM_NYSS_BAO_Int
     return $this->event_data->getEventInfo();
   }
 
+  public function getEventInfoJson(): string {
+    return json_encode($this->event_data->getEventInfo());
+  }
+
   public function getEventAction(): string {
     return $this->event_data->getEventAction();
   }
