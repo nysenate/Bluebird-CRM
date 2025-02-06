@@ -8,13 +8,27 @@
  * @see http://wiki.civicrm.org/confluence/display/CRM/API+Architecture+Standards
  */
 function _civicrm_api3_job_logretention_spec(&$params) {
+  $params['interval'] = [
+    'title' => 'Retention Interval',
+    'description' => 'How long to retain logged data, e.g. -7 years, 18 months ago. Interval must be compatible with PHP strtotime(), and must be in the past. Therefore, a minus sign (-) or "ago" is necessary for year or month intervals. Data OLDER than the retention period will be DELETED.'
+  ];
+  $params['force'] = [
+    'title' => 'Force',
+    'description' => ' Failsafe to avoid accidental deletion of data newer than 5 years.'
+  ];
+  $params['reportonly'] = [
+    'title' => 'Report Only',
+    'description' => 'Do not delete. Only report on what would be deleted.'
+  ];
+
   $params['limit'] = [
     'title' => 'Limit',
-    'description' => 'Limit how many rows per table are processed.',
+    'description' => 'Limit how many rows per table are deleted.',
   ];
+
   $params['logoutput'] = [
     'title' => 'Log Output',
-    'description' => 'If set to 1, details about the log purging process will be logged to a CiviCRM logging file with the logretention prefix. This can be useful for debugging and to track progress.',
+    'description' => 'If TRUE, details about the log purging process will be logged to a CiviCRM logging file with the logretention prefix. This can be useful for debugging and to track progress.',
   ];
 }
 
@@ -39,154 +53,156 @@ function civicrm_api3_job_logretention($params) {
 
   $dsn = defined('CIVICRM_LOGGING_DSN') ? DB::parseDSN(CIVICRM_LOGGING_DSN) : DB::parseDSN(CIVICRM_DSN);
   $loggingDB = $dsn['database']; //logging database
-  $retention_period = Civi::settings()->get('retention_period');
-  if(!isset($retention_period) || empty($retention_period)){
-    return civicrm_api3_create_error('Please set a retention period value in the Log Retention Settings before using this API.');
-  }
-  $retention_unit = 'month';
-  if($retention_period > 1){
-    $retention_unit = 'months';
-  }
-  $retentionPeriod = $retention_period .' '.$retention_unit;
-  $ages_ago = date('Y-m-d H:i:s', strtotime("today - $retentionPeriod"));
 
-  $schema = new CRM_Logging_Schema();
-  $tables = $schema->getLogTableSpec();
+  $retention_period_ts = _getRetentionThresholdTimestamp($params);
+  $formatted_period = _getFormattedRetentionDate($retention_period_ts);
+
+  if ((! $retention_period_ts) || (! is_numeric($retention_period_ts))) {
+    return civicrm_api3_create_error('Retention threshold is invalid.');
+  }
+  if ($retention_period_ts >= strtotime("today")) {
+    return civicrm_api3_create_error('Retention threshold must be in the past.');
+  }
+  if ($retention_period_ts >= strtotime('5 years ago') &&
+    (! $params['force'])) {
+    return civicrm_api3_create_error('Use force option with retention intervals less than 5 years ago.');
+  }
+
+  //$ages_ago = date('Y-m-d H:i:s', $retention_period_ts);
 
   // build _logTables for custom tables
-  $customTables = $schema->entityCustomDataLogTables('Contact');
-  $logTables = [];
-  $excludeLogTables = [];
-  foreach($tables as $key=>$value) {
-    if($value['engine'] == 'INNODB'){
-       $logTables[] = 'log_'.$key;
-    }
-    else{
-      $excludeLogTables[] = 'log_'.$key;
-    }
-  }
+  $logTables = _getIncludedTables();
+  /* saving this logic to ask Brian about...
+  $customTables = $schema->entityCustomDataLogTables('Contact'); ???
   $logTables = $logTables + $customTables;
-
-  $paramsCommon = [
-    1 => [$ages_ago, 'String'],
-  ];
-  //Civi::log()->debug('logretention', ['$paramsCommon' => $paramsCommon]);
-
-  //get tables excluded from log retention
-  $tables_excluded = Civi::settings()->get('tables_excluded');
-  if (empty($tables_excluded)){
-    $tables_excluded = [];
-  }
-
-  $endPremature = FALSE;
-  foreach($logTables as $table){
-    if (!in_array($table, $tables_excluded)){
-      _logOutput('table', $table);
-
-      $dateNow = date('Y-m-d H:i:s');
-      $dateYesterday = date('Y-m-d H:i:s', strtotime('-1 days'));
-
-      $tableCompleted = CRM_Core_DAO::singleValueQuery("
-        SELECT id
-        FROM `{$loggingDB}`.civicrm_logretention_log
-        WHERE log_date BETWEEN '{$dateYesterday}' AND '{$dateNow}'
-          AND log_table = '{$table}'
-          AND log_completed = 1
-        ORDER BY id DESC
-        LIMIT 1
-      ");
-      if ($tableCompleted) {
-        continue;
+  */
+  //$endPremature = FALSE;
+  $results = [];
+  foreach ($logTables as $table) {
+    if ($params['reportonly']) {
+      _logOutput("report_only flag is set. Reporting count to be purged from table: $table ", null);
+      try {
+        $count = _reportLogTable($table,$retention_period_ts,$params['limit'], $loggingDB);
+        $result[] = [ 'table' => $table, 'count' => $count,
+          'retention_threshold' => date('Y-m-d H:i:s', $retention_period_ts),
+          'limit' => $params['limit']];
+        $results[] = ['table' => $table, 'count_deleted' => $count];
+      } catch (Exception $e) {
+        return civicrm_api3_create_error($e->getMessage());
       }
-
-      //check logretention_log to see if we need to pick up where we left off
-      $lastLog = CRM_Core_DAO::singleValueQuery("
-        SELECT log_id
-        FROM `{$loggingDB}`.civicrm_logretention_log
-        WHERE log_date BETWEEN '{$dateYesterday}' AND '{$dateNow}'
-          AND log_table = '{$table}'
-          AND log_completed = 0
-        ORDER BY id DESC
-        LIMIT 1
-      ");
-      _logOutput('$dateNow', $dateNow);
-      _logOutput('$dateYesterday', $dateYesterday);
-      _logOutput('$lastLog', $lastLog);
-      $lastLogSql = (!empty($lastLog)) ? "AND id > {$lastLog}" : '';
-
-      //get log row IDs with at least one log outside the retention window
-      $limit = CRM_Utils_Array::value('limit', $params);
-      $entity_id = "
-        SELECT id
-        FROM `{$loggingDB}`.$table
-        WHERE log_date < %1
-          {$lastLogSql}
-        GROUP BY id
-      ";
-      _logOutput('entity_id', $entity_id);
-      $entity_data = CRM_Core_DAO::executeQuery($entity_id, $paramsCommon);
-
-      $i = $x = 0;
-      while ($entity_data->fetch()) {
-        $id = $entity_data->id;
-
-        $daoMaxDate = "
-          SELECT max(log_date) as max_log_date
-          FROM `{$loggingDB}`.$table
-          WHERE log_date < %1
-            AND id = $id
-          LIMIT 1
-        ";
-        $max_log_date = CRM_Core_DAO::singleValueQuery($daoMaxDate, $paramsCommon);
-
-        if ($max_log_date) {
-          $sql = "
-            DELETE FROM `{$loggingDB}`.$table 
-            WHERE log_date < %1 
-              AND log_date <> '$max_log_date' 
-              AND id = $id
-          ";
-          //Civi::log()->debug('logretention', ['max_log_date' => $max_log_date, 'sql' => $sql]);
-          CRM_Core_DAO::executeQuery($sql, $paramsCommon);
-
-          $sql = "
-            DELETE FROM civicrm_log
-            WHERE modified_date < %1
-              AND modified_date <> '$max_log_date'
-              AND entity_id = $id
-            ";
-          CRM_Core_DAO::executeQuery($sql, $paramsCommon);
-
-          $i++;
-          $x++;
-          if ($i % 250 == 0) {
-            _logOutput('i', $i);
-            _storeRetentionLog($loggingDB, $table, $id);
-          }
-        }
-
-        if (!empty($limit) && $x >= $limit) {
-          $endPremature = TRUE;
-          continue 2;
-        }
+      _logOutput("purge report results for table: $table ", ['count'=>$count]);
+    } else {
+      _logOutput("Start Purging Log Table: $table ", null);
+      try {
+        $count = _purgeLogTable($table,$retention_period_ts,$params['limit'], $loggingDB);
+        $result[] = [ 'table' => $table, 'count' => $count,
+          'retention_threshold' => date('Y-m-d H:i:s', $retention_period_ts),
+          'limit' => $params['limit']];
+        _storeRetentionLog($loggingDB,$table);
+        $results[] = ['table' => $table, 'count_deleted' => $count];
+      } catch (Exception $e) {
+        return civicrm_api3_create_error($e->getMessage());
       }
-
-      //if we didn't end prematurely due to limit, set completed
-      if (!$endPremature) {
-        _storeRetentionLog($loggingDB, $table, 0, 1);
-      }
+      _logOutput("Finished Purging Log Table: $table ", ['count'=>$count]);
+      //$details = ['count_deleted'=>$count];
+      //_logOutput("Finished Purging Log Table: $table ", ['details' => $details]);
     }
   }
-  return civicrm_api3_create_success("Deleted log entries that were older than {$retentionPeriod} months.");
+  return civicrm_api3_create_success($results);
 }
 
-function _logOutput($label, $var) {
+function _logOutput($label, $var = NULL) {
   if (defined('LOGOUTPUT') && LOGOUTPUT) {
     CRM_Core_Error::debug_var($label, $var, TRUE, TRUE, 'logretention');
   }
 }
 
-function _storeRetentionLog($db, $table, $id, $completed = 0) {
+function _getLimitClause($limit) {
+  if ($limit && $limit > 0) {
+    return "LIMIT ".$limit;
+  } else {
+    return '';
+  }
+}
+
+function _getFormattedRetentionDate(int $timestamp) {
+  return date('Y-m-d H:i:s',$timestamp);
+}
+
+function _getRetentionThresholdTimestamp($params = []) {
+  // if override is provided in API call, use that.
+  if (isset($params['interval'])) {
+    return strtotime($params['interval']);
+  }
+  // Otherwise, default to Civi Settings.
+  $retention_period_settings = \Civi::settings()->get('retention_period');
+  if (is_numeric($retention_period_settings) && $retention_period_settings > 0) {
+    _logOutput("Using Retention Period Setting: $retention_period_settings ");
+    return strtotime("$retention_period_settings months ago");
+  }
+  return false;
+}
+
+function _purgeLogTable($table_name, int $retention_period, $limit = 0, $db_name = '') {
+
+  if (! $db_name) {
+    throw new \CRM_Core_Exception('Logging database name is required to perform data purge');
+  }
+
+  $loggingDB = $db_name;
+  $limit_clause = _getLimitClause($limit);
+  $params = [
+    1 => [_getFormattedRetentionDate($retention_period), 'String' ]
+  ];
+
+  $sql = "
+    DELETE FROM `{$loggingDB}`.$table_name main 
+    WHERE main.log_date < %1 
+      AND (main.id, main.log_date) NOT IN 
+            (
+              SELECT sub_id, sub_log_date FROM
+                (
+                  SELECT sub.id as sub_id, max(sub.log_date) as sub_log_date
+                  FROM `{$loggingDB}`.$table_name sub
+                  WHERE sub.log_date < %1
+                  GROUP BY sub.id
+                ) xtra
+            ) 
+     ORDER BY main.log_date ASC
+     $limit_clause
+  ";
+  $dao = \CRM_Core_DAO::executeQuery($sql, $params);
+  return $dao->affectedRows();
+}
+
+function _reportLogTable($table_name, int $retention_period, $limit = 0, $db_name = '') {
+
+  if (! $db_name) {
+    throw new \CRM_Core_Exception('Logging database name is required to provide data purge report');
+  }
+  $loggingDB = $db_name;
+  $limit_clause = _getLimitClause($limit);
+  $params = [
+    1 => [_getFormattedRetentionDate($retention_period), 'String' ]
+  ];
+
+  $cnt = \CRM_Core_DAO::singleValueQuery("
+        SELECT COUNT(1) AS cnt FROM `{$loggingDB}`.$table_name main 
+         WHERE main.log_date < %1 
+           AND (main.id, main.log_date) NOT IN (
+              SELECT sub.id, max(sub.log_date)
+              FROM `{$loggingDB}`.$table_name sub
+              WHERE sub.log_date < %1
+              GROUP BY sub.id
+              ) 
+       ORDER BY main.log_date ASC
+       $limit_clause
+      ", $params);
+
+  return $cnt;
+}
+
+function _storeRetentionLog($db, $table, $id = 0, $completed = 1) {
   CRM_Core_DAO::executeQuery("
     INSERT INTO `{$db}`.civicrm_logretention_log
     (log_table, log_id, log_completed)
@@ -197,4 +213,25 @@ function _storeRetentionLog($db, $table, $id, $completed = 0) {
     2 => [$id, 'Positive'],
     3 => [$completed, 'Integer'],
   ]);
+}
+
+function _getExcludedTables() {
+  $tables_excluded = \Civi::settings()->get('tables_excluded');
+  if (empty($tables_excluded)) {
+    return [];
+  }
+  array_walk($tables_excluded, function (&$value, $key) {
+    $value = 'log_'.$value;
+  });
+  return $tables_excluded;
+}
+
+function _getIncludedTables() {
+  // Get List of excluded Tables
+  $tables_excluded = _getExcludedTables();
+  // Get List of all Tables
+  $schema = new \CRM_Logging_Schema();
+  $all_tables = $schema->getLogTableNames();
+  $tables_included = array_diff($all_tables, $tables_excluded);
+  return $tables_included;
 }

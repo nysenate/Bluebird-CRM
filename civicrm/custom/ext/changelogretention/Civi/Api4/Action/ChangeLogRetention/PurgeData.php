@@ -1,0 +1,249 @@
+<?php
+
+namespace Civi\Api4\Action\ChangeLogRetention;
+
+use Civi\Api4\Generic\AbstractAction;
+use Civi\Api4\Generic\Result;
+use \CRM_Core_Config;
+use PHPUnit\Exception;
+
+class PurgeData extends AbstractAction {
+
+  /**
+   * How far back to keep change log entries, e.g. -7 years, 18 months ago.
+   * Interval must be compatible with PHP strtotime(), and must be in the past.
+   * Therefore, a minus sign (-) or "ago" is necessary for year or month intervals.
+   * @var string
+   */
+  protected ?string $retention_interval = null;
+
+  /**
+   * Failsafe to avoid accidental deletion of data newer than 5 years.
+   * @var bool
+   */
+  protected bool $force;
+
+  /**
+   * Limit the number of rows deleted in each logging table
+   * @var int
+   */
+  protected ?int $limit = null;
+
+  /**
+   * Don't actually delete anything just report how many rows would be deleted
+   * from each table
+   * @var bool
+   */
+  protected bool $report_only;
+
+  /**
+   * Whether to write extra debugging info to log file
+   * @var bool
+   */
+  protected bool $log_output;
+
+  /** @var Todays Timestamp*/
+  private $_today_ts;
+  /** @var data older than this timestamp will be purged */
+  private int $_retention_threshold_ts;
+  /** @var string database name -- should be set to logging database */
+  private string $_db_name;
+
+  /**
+   * @inheritDoc
+   */
+  public function _run(Result $result) {
+
+    if (!\CRM_Core_Config::singleton()->logging) {
+      throw new \CRM_Core_Exception('Logging must be enabled in order to execute the purge data action.');
+    }
+
+    // Will also put message in special log file if log_output is set.
+    $this->_logOutput('Change Log Retention - Purge Data API action started', [
+      'retention_interval' => $this->retention_interval,
+      'force' => $this->force,
+      'report_only' => $this->report_only,
+      'limit' => $this->limit,
+      'log_output' => $this->log_output,
+    ], true);
+
+    $dsn = defined('CIVICRM_LOGGING_DSN') ? \DB::parseDSN(CIVICRM_LOGGING_DSN) : \DB::parseDSN(CIVICRM_DSN);
+    $this->_db_name = $dsn['database'];
+
+    $this->_today_ts = strtotime('today');
+    $this->_retention_threshold_ts = $this->_getRetentionThresholdTimestamp();
+
+    // Validate Retention Period
+    // Must be in the past and force must be specified if less than 5 years ago.
+    if ((! $this->_retention_threshold_ts) || (! is_numeric($this->_retention_threshold_ts))) {
+      throw new \CRM_Core_Exception('Retention threshold is invalid.');
+    }
+    if ($this->_retention_threshold_ts >= $this->_today_ts) {
+      throw new \CRM_Core_Exception('Retention threshold must be in the past.');
+    }
+    if ($this->_retention_threshold_ts >= strtotime('5 years ago') &&
+        (! $this->force)) {
+      throw new \CRM_Core_Exception('Use force option with retention intervals less than 5 years ago.');
+    }
+
+    // Get List of Excluded database tables
+    $tables_to_purge = $this->_getIncludedTables();
+    $excluded_tables = $this->_getExcludedTables();
+
+    $this->_logOutput("Processing Tables:", ['included' => $tables_to_purge, 'excluded' => $excluded_tables]);
+
+    foreach ($tables_to_purge as $table) {
+      if ($this->report_only) {
+        $this->_logOutput("report_only flag is set. Reporting count to be purged from table: $table ", null);
+        $count = $this->_reportLogTable($table);
+        $result[] = [ 'table' => $table, 'count' => $count,
+                      'retention_threshold' => date('Y-m-d H:i:s', $this->_retention_threshold_ts),
+                      'limit' => $this->limit];
+        $this->_logOutput("purge report results for table: $table ", ['count'=>$count]);
+      } else {
+        $this->_logOutput("Start Purging Log Table: $table ", null);
+        $count = $this->_purgeLogTable($table);
+        $result[] = [ 'table' => $table, 'count' => $count];
+        $details = ['count_deleted'=>$count];
+        $this->_storeRetentionLog($table,json_encode($details));
+        $this->_logOutput("Finished Purging Log Table: $table ", ['details' => $details]);
+      }
+    }
+    return $result;
+  }
+
+  private function _purgeLogTable($table_name) {
+
+    if (! $this->_db_name) {
+      throw new \CRM_Core_Exception('Logging database name is required to perform data purge');
+    }
+
+    $loggingDB = $this->_db_name;
+    $limit_clause = $this->_getLimitClause();
+    $params = [
+      1 => [$this->_getFormattedRetentionDate(), 'String' ]
+    ];
+
+    // Extra subquery is a work-around for MySQL's derived merge optimization
+    // which prevents updates on the table you're selecting from.
+    // https://stackoverflow.com/questions/45494/mysql-error-1093-cant-specify-target-table-for-update-in-from-clause
+    $sql = "
+    DELETE FROM `{$loggingDB}`.$table_name main 
+    WHERE main.log_date < %1 
+      AND (main.id, main.log_date) NOT IN 
+            (
+              SELECT sub_id, sub_log_date FROM
+                (
+                  SELECT sub.id as sub_id, max(sub.log_date) as sub_log_date
+                  FROM `{$loggingDB}`.$table_name sub
+                  WHERE sub.log_date < %1
+                  GROUP BY sub.id
+                ) xtra
+            ) 
+     ORDER BY main.log_date ASC
+     $limit_clause
+  ";
+    $dao = \CRM_Core_DAO::executeQuery($sql, $params);
+    return $dao->affectedRows();
+  }
+
+  private function _reportLogTable($table_name) {
+
+    if (! $this->_db_name) {
+      throw new \CRM_Core_Exception('Logging database name is required to provide data purge report');
+    }
+    $loggingDB = $this->_db_name;
+    $limit_clause = $this->_getLimitClause();
+    $params = [
+      1 => [$this->_getFormattedRetentionDate(), 'String' ]
+    ];
+
+    $cnt = \CRM_Core_DAO::singleValueQuery("
+        SELECT COUNT(1) AS cnt FROM `{$loggingDB}`.$table_name main 
+         WHERE main.log_date < %1 
+           AND (main.id, main.log_date) NOT IN (
+              SELECT sub.id, max(sub.log_date)
+              FROM `{$loggingDB}`.$table_name sub
+              WHERE sub.log_date < %1
+              GROUP BY sub.id
+              ) 
+       ORDER BY main.log_date ASC
+       $limit_clause
+      ", $params);
+
+    return $cnt;
+  }
+
+  private function _logOutput($label, $var = null, $also_standard_log = false) {
+    if ($this->log_output) {
+      \CRM_Core_Error::debug_var($label, $var, TRUE, TRUE, 'logretention');
+      if ($also_standard_log) {
+        \Civi::log()->debug($label, $var);
+      }
+    }
+  }
+
+  private function _getLimitClause() {
+    if ($this->limit && $this->limit > 0) {
+      return "LIMIT ".$this->limit;
+    } else {
+      return '';
+    }
+  }
+
+  private function _getFormattedRetentionDate() {
+    return date('Y-m-d H:i:s',$this->_retention_threshold_ts);
+  }
+
+  private function _getExcludedTables() {
+    $tables_excluded = \Civi::settings()->get('tables_excluded');
+    if (empty($tables_excluded)) {
+      return [];
+    }
+    array_walk($tables_excluded, function (&$value, $key) {
+      $value = 'log_'.$value;
+    });
+    return $tables_excluded;
+  }
+
+  private function _getIncludedTables() {
+    // Get List of excluded Tables
+    $tables_excluded = $this->_getExcludedTables();
+    // Get List of all Tables
+    $schema = new \CRM_Logging_Schema();
+    $all_tables = $schema->getLogTableNames();
+    $tables_included = array_diff($all_tables, $tables_excluded);
+    return $tables_included;
+  }
+
+  private function _getRetentionThresholdTimestamp() {
+    // if override is provided in API call, use that.
+    if (isset($this->retention_interval)) {
+      return strtotime($this->retention_interval);
+    }
+    // Otherwise, default to Civi Settings.
+    $retention_period_settings = \Civi::settings()->get('retention_period');
+    if (is_numeric($retention_period_settings) && $retention_period_settings > 0) {
+      $this->_logOutput("Using Retention Period Setting: $retention_period_settings ", []);
+      return strtotime("$retention_period_settings months ago");
+    }
+    return false;
+  }
+
+  private function _storeRetentionLog($table, $details) {
+    if (! $this->_db_name) {
+      throw new \CRM_Core_Exception('Logging database name is required to provide data purge report');
+    }
+    $loggingDB = $this->_db_name;
+
+    \CRM_Core_DAO::executeQuery("
+    INSERT INTO `{$loggingDB}`.civicrm_logretention_log
+    (log_table, log_id, log_completed)
+    VALUES
+    (%1, %2, %3)", [
+      1 => [$table, 'String'],
+      2 => [0, 'Positive'],
+      3 => [1, 'Integer'],
+    ]);
+  }
+}
