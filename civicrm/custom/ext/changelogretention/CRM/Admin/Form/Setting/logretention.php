@@ -59,11 +59,12 @@ class CRM_Admin_Form_Setting_logretention extends CRM_Admin_Form_Setting {
   public function buildQuickForm() {
     CRM_Utils_System::setTitle(ts('Log Retention Settings'));
     $this->add('text', 'retention_period', ts('Log retention periods in month'), '', TRUE);
-    
-    $tables = CRM_Core_DAO::getTableNames();
+
+    $schema = new \CRM_Logging_Schema();
+    $tables = $schema->getLogTableNames();
     $tableNames = array();
     foreach($tables as $table_name){
-      $tableNames[$table_name] = 'log_'.$table_name;
+      $tableNames[$table_name] = $table_name;
     }
     $this->addElement('advmultiselect', 'tables_excluded', ts('Select logging tables to exclude from purging process'), $tableNames, array('class' => 'crm-select', 'size' => 10, 'style' => 'width:300px'));
    
