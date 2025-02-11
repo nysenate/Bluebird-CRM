@@ -201,16 +201,18 @@ class PurgeData extends AbstractAction {
     ];
 
     $cnt = \CRM_Core_DAO::singleValueQuery("
-        SELECT COUNT(1) AS cnt FROM `{$loggingDB}`.$table_name main 
-         WHERE main.log_date < %1 
-           AND (main.id, main.log_date) NOT IN (
+        SELECT COUNT(1) AS cnt FROM (
+            SELECT 1 FROM `{$loggingDB}`.$table_name main 
+            WHERE main.log_date < %1 
+            AND (main.id, main.log_date) NOT IN (
               SELECT sub.id, max(sub.log_date)
               FROM `{$loggingDB}`.$table_name sub
               WHERE sub.log_date < %1
               GROUP BY sub.id
               ) 
-       ORDER BY main.log_date ASC
-       $limit_clause
+            ORDER BY main.log_date ASC
+            $limit_clause
+        ) as a
       ", $params);
 
     return $cnt;
