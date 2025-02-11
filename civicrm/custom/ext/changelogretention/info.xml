@@ -34,5 +34,5 @@
     <psr0 prefix="CRM_" path="."/>
     <psr4 prefix="Civi\" path="Civi"/>
   </classloader>
-  <upgrader>CiviMix\Schema\Changelogretention\AutomaticUpgrader</upgrader>
+  <upgrader>CRM_LCD_changelogretention_Upgrader</upgrader>
 </extension>
