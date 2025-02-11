@@ -103,15 +103,36 @@ class PurgeData extends AbstractAction {
       if ($this->report_only) {
         $this->_logOutput("report_only flag is set. Reporting count to be purged from table: $table ", null);
         $count = $this->_reportLogTable($table);
-        $result[] = [ 'table' => $table, 'count' => $count,
-                      'retention_threshold' => date('Y-m-d H:i:s', $this->_retention_threshold_ts),
-                      'limit' => $this->limit];
+        $table_result = [
+          'table' => $table,
+          'count' => $count,
+          'retention_threshold' => date('Y-m-d H:i:s', $this->_retention_threshold_ts),
+          'limit' => $this->limit
+        ];
+        // If include_civicrm_log_table flag is set, then purge civicrm_log
+        if ($this->include_civicrm_log_table) {
+          $count_civicrm_log = $this->_reportCivicrmLog($table);
+          $table_result['civicrm_log_count'] = $count_civicrm_log;
+        }
+        $result[] = $table_result;
         $this->_logOutput("purge report results for table: $table ", ['count'=>$count]);
       } else {
         $this->_logOutput("Start Purging Log Table: $table ", null);
         $count = $this->_purgeLogTable($table);
-        $result[] = [ 'table' => $table, 'count' => $count];
+        $table_result = [
+          'table' => $table,
+          'count' => $count,
+          'retention_threshold' => date('Y-m-d H:i:s', $this->_retention_threshold_ts),
+          'limit' => $this->limit
+        ];
         $details = ['count_deleted'=>$count];
+        // If include_civicrm_log_table flag is set, then purge civicrm_log
+        if ($this->include_civicrm_log_table) {
+          $count_civicrm_log = $this->_purgeCivicrmLog($table);
+          $table_result['civicrm_log_count'] = $count_civicrm_log;
+          $details["civicrm_log_count_deleted"] = $count_civicrm_log;
+        }
+        $result[] = $table_result;
         $this->_storeRetentionLog($table,json_encode($details));
         $this->_logOutput("Finished Purging Log Table: $table ", ['details' => $details]);
       }
@@ -154,8 +175,22 @@ class PurgeData extends AbstractAction {
     return $dao->affectedRows();
   }
 
-  private function _reportLogTable($table_name) {
+  private function _purgeCivicrmLog($table_name) {
+    $limit_clause = $this->_getLimitClause();
+    $params = [
+      1 => [$this->_getFormattedRetentionDate(), 'String' ],
+      2 => [preg_replace('/^log_/', '', $table_name), 'String']
+    ];
+    $sql = "DELETE FROM civicrm_log
+            WHERE modified_date < %1
+              AND entity_table = %2
+            $limit_clause";
+    $this->_logOutput("Purge civicrm_log SQL", ['sql' => $sql]);
+    $dao = \CRM_Core_DAO::executeQuery($sql, $params);
+    return $dao->affectedRows();
+  }
 
+  private function _reportLogTable($table_name) {
     if (! $this->_db_name) {
       throw new \CRM_Core_Exception('Logging database name is required to provide data purge report');
     }
@@ -178,6 +213,23 @@ class PurgeData extends AbstractAction {
        $limit_clause
       ", $params);
 
+    return $cnt;
+  }
+
+  private function _reportCivicrmLog($table) {
+    $limit_clause = $this->_getLimitClause();
+    $params = [
+      1 => [$this->_getFormattedRetentionDate(), 'String' ],
+      2 => [preg_replace('/^log_/', '', $table), 'String']
+    ];
+    $sql = "SELECT COUNT(1) FROM (
+                SELECT 1 FROM civicrm_log
+                WHERE modified_date < %1
+                AND entity_table = %2
+                $limit_clause
+            ) as a";
+    $cnt = \CRM_Core_DAO::singleValueQuery($sql, $params);
+    $this->_logOutput("Report civicrm_log SQL", ['sql' => $sql]);
     return $cnt;
   }
 
