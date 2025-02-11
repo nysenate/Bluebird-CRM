@@ -200,9 +200,6 @@ class PurgeData extends AbstractAction {
     if (empty($tables_excluded)) {
       return [];
     }
-    array_walk($tables_excluded, function (&$value, $key) {
-      $value = 'log_'.$value;
-    });
     return $tables_excluded;
   }
 
