@@ -21,7 +21,7 @@ class PurgeData extends AbstractAction {
    * Failsafe to avoid accidental deletion of data newer than 5 years.
    * @var bool
    */
-  protected bool $force;
+  protected bool $force = false;
 
   /**
    * Limit the number of rows deleted in each logging table
@@ -34,13 +34,20 @@ class PurgeData extends AbstractAction {
    * from each table
    * @var bool
    */
-  protected bool $report_only;
+  protected bool $report_only = false;
 
   /**
    * Whether to write extra debugging info to log file
    * @var bool
    */
-  protected bool $log_output;
+  protected bool $log_output = false;
+
+  /**
+   * When true, also attempts to purge records older than $retention_interval from
+   * processed tables.
+   * @var bool
+   */
+  protected bool $include_civicrm_log_table = false;
 
   /** @var Todays Timestamp*/
   private $_today_ts;
