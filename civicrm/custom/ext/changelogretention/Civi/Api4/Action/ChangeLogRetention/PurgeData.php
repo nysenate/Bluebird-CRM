@@ -7,6 +7,9 @@ use Civi\Api4\Generic\Result;
 use \CRM_Core_Config;
 use PHPUnit\Exception;
 
+/**
+ * purge change log entries older than specified retention interval
+ */
 class PurgeData extends AbstractAction {
 
   /**
@@ -141,7 +144,6 @@ class PurgeData extends AbstractAction {
   }
 
   private function _purgeLogTable($table_name) {
-
     if (! $this->_db_name) {
       throw new \CRM_Core_Exception('Logging database name is required to perform data purge');
     }
