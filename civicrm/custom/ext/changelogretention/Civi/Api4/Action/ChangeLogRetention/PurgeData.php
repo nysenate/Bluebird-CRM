@@ -298,12 +298,14 @@ class PurgeData extends AbstractAction {
 
     \CRM_Core_DAO::executeQuery("
     INSERT INTO `{$loggingDB}`.civicrm_logretention_log
-    (log_table, log_id, log_completed)
+    (action, log_table, details, action_date)
     VALUES
-    (%1, %2, %3)", [
-      1 => [$table, 'String'],
-      2 => [0, 'Positive'],
-      3 => [1, 'Integer'],
+    (%1, %2, %3, %4)
+  ", [
+      1 => ['purge', 'String'],
+      2 => [$table, 'String'],
+      3 => [$details, 'String'],
+      4 => [date('Y-m-d H:i:s',$this->_today_ts), 'String'],
     ]);
   }
 }
