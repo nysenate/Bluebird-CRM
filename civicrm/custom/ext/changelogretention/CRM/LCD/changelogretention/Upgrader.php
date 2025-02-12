@@ -18,7 +18,7 @@ class CRM_LCD_changelogretention_Upgrader extends CRM_Extension_Upgrader_Base {
     $loggingDB = $dsn['database']; //logging database
 
     $sql = "
-      CREATE TABLE `{$loggingDB}`.`civicrm_logretention_log` (
+      CREATE TABLE IF NOT EXISTS `{$loggingDB}`.`civicrm_logretention_log` (
       `id` int(11) NOT NULL AUTO_INCREMENT,
       `log_date` timestamp NOT NULL DEFAULT current_timestamp(),
       `log_table` varchar(128) NOT NULL,
@@ -34,6 +34,72 @@ class CRM_LCD_changelogretention_Upgrader extends CRM_Extension_Upgrader_Base {
     //Civi::log()->debug('install', ['$sql' => $sql]);
 
     CRM_Core_DAO::executeQuery($sql);
+  }
+
+  /**
+   * Upgrade to version 2
+   * - add action field
+   * - add details field
+   * - add action_date field
+   * - rename log_date to create_date
+   * - deprecate / modify log_id to allow null
+   * - drop index on log_id
+   * - deprecate / modify log_completed to all null
+   * - drop index on log_completed
+   */
+  public function upgrade_1001(): bool {
+
+    $this->ctx->log->info('Applying update 2000');
+
+    $this->ctx->log->info('Updating civicrm_logretention_log');
+
+    // change format of logretention_log table
+    $dsn = defined('CIVICRM_LOGGING_DSN') ? DB::parseDSN(CIVICRM_LOGGING_DSN) : DB::parseDSN(CIVICRM_DSN);
+    $loggingDB = $dsn['database']; //logging database
+
+    $result = CRM_Core_DAO::executeQuery( "
+        ALTER TABLE `{$loggingDB}`.`civicrm_logretention_log`
+         ADD COLUMN `action` ENUM('purge') NOT NULL COMMENT 'type of action taken' AFTER `id`,
+         ADD COLUMN `details` TEXT NULL COMMENT 'details/contextual data regarding the action.' AFTER `action`,
+         ADD COLUMN `action_date` datetime NULL DEFAULT NOW() COMMENT 'when the action occurred, which could be different than create_date' AFTER `details`,
+         RENAME COLUMN `log_date` TO `create_date`,
+         MODIFY COLUMN `log_table` varchar(128) NOT NULL AFTER `action`,
+         MODIFY COLUMN `log_id` int(11) NOT NULL DEFAULT 0 COMMENT 'deprecated' AFTER `create_date`,
+         MODIFY COLUMN `log_completed` tinyint(1) NULL DEFAULT 1 COMMENT 'deprecated' AFTER `log_id`,
+         DROP INDEX log_id,
+         DROP INDEX log_completed,
+         ADD INDEX idx_civicrm_logretention_log_action (action)
+      ");
+    if (is_a($result, 'DB_Error')) {
+      throw new Exception($result->getMessage());
+    }
+    // probably makes the most sense to use log_date for action_date in older
+    // records.
+    $result = CRM_Core_DAO::executeQuery( "
+        UPDATE `{$loggingDB}`.`civicrm_logretention_log`
+         SET action_date = create_date
+      ");
+    if (is_a($result, 'DB_Error')) {
+      throw new Exception($result->getMessage());
+    }
+
+    /* what the table should look like now
+    $sql = "
+      CREATE TABLE IF NOT EXISTS `{$loggingDB}`.`civicrm_logretention_log` (
+      `id` int(11) NOT NULL AUTO_INCREMENT PRIMARY KEY,
+      `action` enum('purge') NOT NULL default 'purge',
+      `log_table` varchar(128) NOT NULL,
+      `details` text,
+      `action_date` datetime NOT NULL,
+      `create_date` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+      `log_id` int(11) NULL,
+      `log_completed` tinyint(1) NOT DEFAULT 0,
+      KEY `action` (`action`),
+      KEY `log_table_name` (`log_table_name`)
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+    ";
+    */
+    return true;
   }
 
   /**
