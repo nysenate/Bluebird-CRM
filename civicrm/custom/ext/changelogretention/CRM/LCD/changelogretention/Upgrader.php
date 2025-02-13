@@ -47,7 +47,7 @@ class CRM_LCD_changelogretention_Upgrader extends CRM_Extension_Upgrader_Base {
    * - deprecate / modify log_completed to all null
    * - drop index on log_completed
    */
-  public function upgrade_1001(): bool {
+  public function upgrade_2000(): bool {
 
     $this->ctx->log->info('Applying update 2000');
 
