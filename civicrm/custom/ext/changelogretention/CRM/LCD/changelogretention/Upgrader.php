@@ -18,21 +18,18 @@ class CRM_LCD_changelogretention_Upgrader extends CRM_Extension_Upgrader_Base {
     $loggingDB = $dsn['database']; //logging database
 
     $sql = "
-      CREATE TABLE IF NOT EXISTS `{$loggingDB}`.`civicrm_logretention_log` (
-      `id` int(11) NOT NULL AUTO_INCREMENT,
-      `log_date` timestamp NOT NULL DEFAULT current_timestamp(),
+    CREATE TABLE IF NOT EXISTS `{$loggingDB}`.`civicrm_logretention_log` (
+      `id` int(11) NOT NULL AUTO_INCREMENT PRIMARY KEY,
+      `action` ENUM('purge') NOT NULL default 'purge' COMMENT 'type of action taken',
       `log_table` varchar(128) NOT NULL,
-      `log_id` int(11) NOT NULL,
-      `log_completed` tinyint(1) NOT NULL DEFAULT 0,
-      PRIMARY KEY (`id`),
-      KEY `log_date` (`log_date`),
-      KEY `log_table` (`log_table`),
-      KEY `log_id` (`log_id`),
-      KEY `log_completed` (`log_completed`)
+      `details` TEXT NULL COMMENT 'details/contextual data regarding the action.',
+      `action_date` datetime NOT NULL DEFAULT NOW() COMMENT 'when the action occurred, which could be different than create_date',
+      `create_date` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+      INDEX `idx_action` (`action`),
+      INDEX `log_table` (`log_table`)
     ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
     ";
     //Civi::log()->debug('install', ['$sql' => $sql]);
-
     CRM_Core_DAO::executeQuery($sql);
   }
 
@@ -59,9 +56,9 @@ class CRM_LCD_changelogretention_Upgrader extends CRM_Extension_Upgrader_Base {
 
     $result = CRM_Core_DAO::executeQuery( "
         ALTER TABLE `{$loggingDB}`.`civicrm_logretention_log`
-         ADD COLUMN `action` ENUM('purge') NOT NULL COMMENT 'type of action taken' AFTER `id`,
+         ADD COLUMN `action` ENUM('purge') NOT NULL default 'purge' COMMENT 'type of action taken' AFTER `id`,
          ADD COLUMN `details` TEXT NULL COMMENT 'details/contextual data regarding the action.' AFTER `action`,
-         ADD COLUMN `action_date` datetime NULL DEFAULT NOW() COMMENT 'when the action occurred, which could be different than create_date' AFTER `details`,
+         ADD COLUMN `action_date` datetime NOT NULL DEFAULT NOW() COMMENT 'when the action occurred, which could be different than create_date' AFTER `details`,
          RENAME COLUMN `log_date` TO `create_date`,
          MODIFY COLUMN `log_table` varchar(128) NOT NULL AFTER `action`,
          MODIFY COLUMN `log_id` int(11) NOT NULL DEFAULT 0 COMMENT 'deprecated' AFTER `create_date`,
@@ -82,23 +79,7 @@ class CRM_LCD_changelogretention_Upgrader extends CRM_Extension_Upgrader_Base {
     if (is_a($result, 'DB_Error')) {
       throw new Exception($result->getMessage());
     }
-
-    /* what the table should look like now
-    $sql = "
-      CREATE TABLE IF NOT EXISTS `{$loggingDB}`.`civicrm_logretention_log` (
-      `id` int(11) NOT NULL AUTO_INCREMENT PRIMARY KEY,
-      `action` enum('purge') NOT NULL default 'purge',
-      `log_table` varchar(128) NOT NULL,
-      `details` text,
-      `action_date` datetime NOT NULL,
-      `create_date` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
-      `log_id` int(11) NULL,
-      `log_completed` tinyint(1) NOT DEFAULT 0,
-      KEY `action` (`action`),
-      KEY `log_table_name` (`log_table_name`)
-    ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
-    ";
-    */
+    
     return true;
   }
 
