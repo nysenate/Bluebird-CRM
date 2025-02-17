@@ -7,6 +7,9 @@ use Civi\Api4\Generic\Result;
 use \CRM_Core_Config;
 use PHPUnit\Exception;
 
+/**
+ * purge change log entries older than specified retention interval
+ */
 class PurgeData extends AbstractAction {
 
   /**
@@ -21,7 +24,7 @@ class PurgeData extends AbstractAction {
    * Failsafe to avoid accidental deletion of data newer than 5 years.
    * @var bool
    */
-  protected bool $force;
+  protected bool $force = false;
 
   /**
    * Limit the number of rows deleted in each logging table
@@ -34,13 +37,20 @@ class PurgeData extends AbstractAction {
    * from each table
    * @var bool
    */
-  protected bool $report_only;
+  protected bool $report_only = false;
 
   /**
    * Whether to write extra debugging info to log file
    * @var bool
    */
-  protected bool $log_output;
+  protected bool $log_output = false;
+
+  /**
+   * When true, also attempts to purge records older than $retention_interval from
+   * processed tables.
+   * @var bool
+   */
+  protected bool $include_civicrm_log_table = false;
 
   /** @var Todays Timestamp*/
   private $_today_ts;
@@ -96,15 +106,36 @@ class PurgeData extends AbstractAction {
       if ($this->report_only) {
         $this->_logOutput("report_only flag is set. Reporting count to be purged from table: $table ", null);
         $count = $this->_reportLogTable($table);
-        $result[] = [ 'table' => $table, 'count' => $count,
-                      'retention_threshold' => date('Y-m-d H:i:s', $this->_retention_threshold_ts),
-                      'limit' => $this->limit];
+        $table_result = [
+          'table' => $table,
+          'count' => $count,
+          'retention_threshold' => date('Y-m-d H:i:s', $this->_retention_threshold_ts),
+          'limit' => $this->limit
+        ];
+        // If include_civicrm_log_table flag is set, then purge civicrm_log
+        if ($this->include_civicrm_log_table) {
+          $count_civicrm_log = $this->_reportCivicrmLog($table);
+          $table_result['civicrm_log_count'] = $count_civicrm_log;
+        }
+        $result[] = $table_result;
         $this->_logOutput("purge report results for table: $table ", ['count'=>$count]);
       } else {
         $this->_logOutput("Start Purging Log Table: $table ", null);
         $count = $this->_purgeLogTable($table);
-        $result[] = [ 'table' => $table, 'count' => $count];
+        $table_result = [
+          'table' => $table,
+          'count' => $count,
+          'retention_threshold' => date('Y-m-d H:i:s', $this->_retention_threshold_ts),
+          'limit' => $this->limit
+        ];
         $details = ['count_deleted'=>$count];
+        // If include_civicrm_log_table flag is set, then purge civicrm_log
+        if ($this->include_civicrm_log_table) {
+          $count_civicrm_log = $this->_purgeCivicrmLog($table);
+          $table_result['civicrm_log_count'] = $count_civicrm_log;
+          $details["civicrm_log_count_deleted"] = $count_civicrm_log;
+        }
+        $result[] = $table_result;
         $this->_storeRetentionLog($table,json_encode($details));
         $this->_logOutput("Finished Purging Log Table: $table ", ['details' => $details]);
       }
@@ -113,7 +144,6 @@ class PurgeData extends AbstractAction {
   }
 
   private function _purgeLogTable($table_name) {
-
     if (! $this->_db_name) {
       throw new \CRM_Core_Exception('Logging database name is required to perform data purge');
     }
@@ -147,8 +177,22 @@ class PurgeData extends AbstractAction {
     return $dao->affectedRows();
   }
 
-  private function _reportLogTable($table_name) {
+  private function _purgeCivicrmLog($table_name) {
+    $limit_clause = $this->_getLimitClause();
+    $params = [
+      1 => [$this->_getFormattedRetentionDate(), 'String' ],
+      2 => [preg_replace('/^log_/', '', $table_name), 'String']
+    ];
+    $sql = "DELETE FROM civicrm_log
+            WHERE modified_date < %1
+              AND entity_table = %2
+            $limit_clause";
+    $this->_logOutput("Purge civicrm_log SQL", ['sql' => $sql]);
+    $dao = \CRM_Core_DAO::executeQuery($sql, $params);
+    return $dao->affectedRows();
+  }
 
+  private function _reportLogTable($table_name) {
     if (! $this->_db_name) {
       throw new \CRM_Core_Exception('Logging database name is required to provide data purge report');
     }
@@ -159,18 +203,37 @@ class PurgeData extends AbstractAction {
     ];
 
     $cnt = \CRM_Core_DAO::singleValueQuery("
-        SELECT COUNT(1) AS cnt FROM `{$loggingDB}`.$table_name main 
-         WHERE main.log_date < %1 
-           AND (main.id, main.log_date) NOT IN (
+        SELECT COUNT(1) AS cnt FROM (
+            SELECT 1 FROM `{$loggingDB}`.$table_name main 
+            WHERE main.log_date < %1 
+            AND (main.id, main.log_date) NOT IN (
               SELECT sub.id, max(sub.log_date)
               FROM `{$loggingDB}`.$table_name sub
               WHERE sub.log_date < %1
               GROUP BY sub.id
               ) 
-       ORDER BY main.log_date ASC
-       $limit_clause
+            ORDER BY main.log_date ASC
+            $limit_clause
+        ) as a
       ", $params);
 
+    return $cnt;
+  }
+
+  private function _reportCivicrmLog($table) {
+    $limit_clause = $this->_getLimitClause();
+    $params = [
+      1 => [$this->_getFormattedRetentionDate(), 'String' ],
+      2 => [preg_replace('/^log_/', '', $table), 'String']
+    ];
+    $sql = "SELECT COUNT(1) FROM (
+                SELECT 1 FROM civicrm_log
+                WHERE modified_date < %1
+                AND entity_table = %2
+                $limit_clause
+            ) as a";
+    $cnt = \CRM_Core_DAO::singleValueQuery($sql, $params);
+    $this->_logOutput("Report civicrm_log SQL", ['sql' => $sql]);
     return $cnt;
   }
 
@@ -200,9 +263,6 @@ class PurgeData extends AbstractAction {
     if (empty($tables_excluded)) {
       return [];
     }
-    array_walk($tables_excluded, function (&$value, $key) {
-      $value = 'log_'.$value;
-    });
     return $tables_excluded;
   }
 
@@ -238,12 +298,14 @@ class PurgeData extends AbstractAction {
 
     \CRM_Core_DAO::executeQuery("
     INSERT INTO `{$loggingDB}`.civicrm_logretention_log
-    (log_table, log_id, log_completed)
+    (action, log_table, details, action_date)
     VALUES
-    (%1, %2, %3)", [
-      1 => [$table, 'String'],
-      2 => [0, 'Positive'],
-      3 => [1, 'Integer'],
+    (%1, %2, %3, %4)
+  ", [
+      1 => ['purge', 'String'],
+      2 => [$table, 'String'],
+      3 => [$details, 'String'],
+      4 => [date('Y-m-d H:i:s',$this->_today_ts), 'String'],
     ]);
   }
 }

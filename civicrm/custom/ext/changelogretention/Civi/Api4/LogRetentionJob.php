@@ -2,6 +2,9 @@
 
 namespace Civi\Api4;
 
+/**
+ * Change Log Retention
+ */
 class LogRetentionJob extends Generic\AbstractEntity {
   /**
    * @param bool $checkPermissions
