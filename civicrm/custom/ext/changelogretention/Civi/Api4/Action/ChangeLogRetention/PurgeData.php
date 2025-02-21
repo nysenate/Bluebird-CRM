@@ -150,29 +150,26 @@ class PurgeData extends AbstractAction {
 
     $loggingDB = $this->_db_name;
     $limit_clause = $this->_getLimitClause();
+    if (strlen($limit_clause)) {
+      $limit_clause = 'ORDER BY main.log_date ASC ' . $limit_clause;
+    }
     $params = [
       1 => [$this->_getFormattedRetentionDate(), 'String' ]
     ];
 
-    // Extra subquery is a work-around for MySQL's derived merge optimization
-    // which prevents updates on the table you're selecting from.
-    // https://stackoverflow.com/questions/45494/mysql-error-1093-cant-specify-target-table-for-update-in-from-clause
     $sql = "
-    DELETE FROM `{$loggingDB}`.$table_name main 
-    WHERE main.log_date < %1 
-      AND (main.id, main.log_date) NOT IN 
-            (
-              SELECT sub_id, sub_log_date FROM
-                (
-                  SELECT sub.id as sub_id, max(sub.log_date) as sub_log_date
-                  FROM `{$loggingDB}`.$table_name sub
-                  WHERE sub.log_date < %1
-                  GROUP BY sub.id
-                ) xtra
-            ) 
-     ORDER BY main.log_date ASC
-     $limit_clause
-  ";
+    DELETE main FROM `{$loggingDB}`.$table_name main
+    LEFT JOIN (
+      SELECT sub.id, MAX(sub.log_date) AS latest_log_date
+        FROM `{$loggingDB}`.$table_name sub
+       WHERE sub.log_date < %1
+    GROUP BY sub.id
+    ) AS latest
+    ON main.id = latest.id AND main.log_date = latest.latest_log_date
+    WHERE main.log_date < %1
+    AND latest.id IS NULL
+    $limit_clause
+    ";
     $dao = \CRM_Core_DAO::executeQuery($sql, $params);
     return $dao->affectedRows();
   }
@@ -204,14 +201,17 @@ class PurgeData extends AbstractAction {
 
     $cnt = \CRM_Core_DAO::singleValueQuery("
         SELECT COUNT(1) AS cnt FROM (
-            SELECT 1 FROM `{$loggingDB}`.$table_name main 
-            WHERE main.log_date < %1 
-            AND (main.id, main.log_date) NOT IN (
-              SELECT sub.id, max(sub.log_date)
+            SELECT main.id, main.log_date
+            FROM `{$loggingDB}`.$table_name main
+            LEFT JOIN (
+              SELECT sub.id, max(sub.log_date) AS latest_log_date
               FROM `{$loggingDB}`.$table_name sub
               WHERE sub.log_date < %1
               GROUP BY sub.id
-              ) 
+            ) AS latest
+            ON main.id = latest.id AND main.log_date = latest.latest_log_date
+            WHERE main.log_date < %1
+              AND latest.id IS NULL
             ORDER BY main.log_date ASC
             $limit_clause
         ) as a
