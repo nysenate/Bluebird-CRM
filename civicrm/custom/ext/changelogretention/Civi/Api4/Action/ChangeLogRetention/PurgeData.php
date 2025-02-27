@@ -27,10 +27,13 @@ class PurgeData extends AbstractAction {
   protected bool $force = false;
 
   /**
-   * Limit the number of rows deleted in each logging table
+   * Limit the number of rows deleted in each logging table. Non-deterministic. 
+   * Will unpredictably (in no particular order) choose rows for deletion.
    * @var int
+   * Note -- LIMIT and ORDER BY are not allowed in DELETE clauses using JOIN
+   * eliminating for now... if absolutely necessary can probably use WITH()
+   * protected ?int $limit = null;
    */
-  protected ?int $limit = null;
 
   /**
    * Don't actually delete anything just report how many rows would be deleted
@@ -73,7 +76,6 @@ class PurgeData extends AbstractAction {
       'retention_interval' => $this->retention_interval,
       'force' => $this->force,
       'report_only' => $this->report_only,
-      'limit' => $this->limit,
       'log_output' => $this->log_output,
     ], true);
 
@@ -110,7 +112,6 @@ class PurgeData extends AbstractAction {
           'table' => $table,
           'count' => $count,
           'retention_threshold' => date('Y-m-d H:i:s', $this->_retention_threshold_ts),
-          'limit' => $this->limit
         ];
         // If include_civicrm_log_table flag is set, then purge civicrm_log
         if ($this->include_civicrm_log_table) {
@@ -126,7 +127,6 @@ class PurgeData extends AbstractAction {
           'table' => $table,
           'count' => $count,
           'retention_threshold' => date('Y-m-d H:i:s', $this->_retention_threshold_ts),
-          'limit' => $this->limit
         ];
         $details = ['count_deleted'=>$count];
         // If include_civicrm_log_table flag is set, then purge civicrm_log
@@ -149,10 +149,6 @@ class PurgeData extends AbstractAction {
     }
 
     $loggingDB = $this->_db_name;
-    $limit_clause = $this->_getLimitClause();
-    if (strlen($limit_clause)) {
-      $limit_clause = 'ORDER BY main.log_date ASC ' . $limit_clause;
-    }
     $params = [
       1 => [$this->_getFormattedRetentionDate(), 'String' ]
     ];
@@ -167,23 +163,21 @@ class PurgeData extends AbstractAction {
     ) AS latest
     ON main.id = latest.id AND main.log_date = latest.latest_log_date
     WHERE main.log_date < %1
-    AND latest.id IS NULL
-    $limit_clause
-    ";
+    AND latest.id IS NULL ";
+
     $dao = \CRM_Core_DAO::executeQuery($sql, $params);
     return $dao->affectedRows();
   }
 
   private function _purgeCivicrmLog($table_name) {
-    $limit_clause = $this->_getLimitClause();
     $params = [
       1 => [$this->_getFormattedRetentionDate(), 'String' ],
       2 => [preg_replace('/^log_/', '', $table_name), 'String']
     ];
     $sql = "DELETE FROM civicrm_log
             WHERE modified_date < %1
-              AND entity_table = %2
-            $limit_clause";
+              AND entity_table = %2";
+
     $this->_logOutput("Purge civicrm_log SQL", ['sql' => $sql]);
     $dao = \CRM_Core_DAO::executeQuery($sql, $params);
     return $dao->affectedRows();
@@ -194,7 +188,6 @@ class PurgeData extends AbstractAction {
       throw new \CRM_Core_Exception('Logging database name is required to provide data purge report');
     }
     $loggingDB = $this->_db_name;
-    $limit_clause = $this->_getLimitClause();
     $params = [
       1 => [$this->_getFormattedRetentionDate(), 'String' ]
     ];
@@ -213,7 +206,6 @@ class PurgeData extends AbstractAction {
             WHERE main.log_date < %1
               AND latest.id IS NULL
             ORDER BY main.log_date ASC
-            $limit_clause
         ) as a
       ", $params);
 
@@ -221,7 +213,6 @@ class PurgeData extends AbstractAction {
   }
 
   private function _reportCivicrmLog($table) {
-    $limit_clause = $this->_getLimitClause();
     $params = [
       1 => [$this->_getFormattedRetentionDate(), 'String' ],
       2 => [preg_replace('/^log_/', '', $table), 'String']
@@ -230,7 +221,6 @@ class PurgeData extends AbstractAction {
                 SELECT 1 FROM civicrm_log
                 WHERE modified_date < %1
                 AND entity_table = %2
-                $limit_clause
             ) as a";
     $cnt = \CRM_Core_DAO::singleValueQuery($sql, $params);
     $this->_logOutput("Report civicrm_log SQL", ['sql' => $sql]);
@@ -243,14 +233,6 @@ class PurgeData extends AbstractAction {
       if ($also_standard_log) {
         \Civi::log()->debug($label, $var);
       }
-    }
-  }
-
-  private function _getLimitClause() {
-    if ($this->limit && $this->limit > 0) {
-      return "LIMIT ".$this->limit;
-    } else {
-      return '';
     }
   }
 
