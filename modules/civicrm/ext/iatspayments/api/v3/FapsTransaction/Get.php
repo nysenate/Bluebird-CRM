@@ -21,7 +21,7 @@ function _civicrm_api3_faps_transaction_Get_spec(&$spec) {
  * @return array API result descriptor
  * @see civicrm_api3_create_success
  * @see civicrm_api3_create_error
- * @throws API_Exception
+ * @throws CRM_Core_Exception
  */
 function civicrm_api3_faps_transaction_Get($params) {
   $paymentProcessor = civicrm_api3('PaymentProcessor', 'getsingle', ['return' => ['password','user_name','signature'], 'id' => $params['payment_processor_id'], 'is_test' => 0]);

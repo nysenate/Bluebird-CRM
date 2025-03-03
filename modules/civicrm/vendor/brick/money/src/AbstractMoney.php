@@ -10,20 +10,18 @@ use Brick\Math\BigNumber;
 use Brick\Math\RoundingMode;
 use Brick\Math\Exception\MathException;
 use Brick\Math\Exception\RoundingNecessaryException;
+use JsonSerializable;
 
 /**
  * Base class for Money and RationalMoney.
+ *
+ * Please consider this class sealed: extending this class yourself is not supported, and breaking changes (such as
+ * adding new abstract methods) can happen at any time, even in a minor version.
  */
-abstract class AbstractMoney implements MoneyContainer
+abstract class AbstractMoney implements MoneyContainer, JsonSerializable
 {
-    /**
-     * @return BigNumber
-     */
-    abstract public function getAmount();
+    abstract public function getAmount() : BigNumber;
 
-    /**
-     * @return Currency
-     */
     abstract public function getCurrency() : Currency;
 
     /**
@@ -245,5 +243,13 @@ abstract class AbstractMoney implements MoneyContainer
         }
 
         return $that;
+    }
+
+    final public function jsonSerialize(): array
+    {
+        return [
+            'amount' => (string) $this->getAmount(),
+            'currency' => (string) $this->getCurrency()
+        ];
     }
 }

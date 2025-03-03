@@ -42,7 +42,7 @@ function _civicrm_api3_iats_payments_get_journal_spec(&$params) {
  * @return array
  *   API result array.
  *
- * @throws CiviCRM_API3_Exception
+ * @throws CRM_Core_Exception
  */
 
 /**
@@ -116,7 +116,7 @@ function civicrm_api3_iats_payments_get_journal($params) {
   }
   catch (Exception $e) {
     CRM_Core_Error::debug_var('params', $params);
-    // throw API_Exception('iATS Payments journalling failed: '. $e->getMessage());
+    // throw CRM_Core_Exception('iATS Payments journalling failed: '. $e->getMessage());
   }
   return civicrm_api3_create_success($values);
 }

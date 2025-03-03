@@ -7,7 +7,7 @@ return [
   'getInfo' => fn() => [
     'title' => ts('Contribution Soft Credit'),
     'title_plural' => ts('Contribution Soft Credits'),
-    'description' => ts('FIXME'),
+    'description' => ts('Soft Credits for Contributions'),
     'log' => TRUE,
     'add' => '2.2',
   ],
@@ -100,6 +100,7 @@ return [
         'label_column' => 'full_name',
         'name_column' => 'name',
         'abbr_column' => 'symbol',
+        'description_column' => 'IFNULL(CONCAT(name, " (", symbol, ")"), name)',
       ],
     ],
     'pcp_id' => [

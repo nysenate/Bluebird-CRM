@@ -87,21 +87,24 @@
           settings.start_date_years = settings.start_date_years || 100;
           settings.end_date_years = settings.end_date_years || 100;
 
-          element
-            .crmDatepicker(settings)
-            .on('change', function() {
-              // Because change gets triggered from the $render function we could be either inside or outside the $digest cycle
-              $timeout(function() {
-                let requiredLength = 19;
-                if (settings.time === false) {
-                  requiredLength = 10;
-                }
-                if (settings.date === false) {
-                  requiredLength = 8;
-                }
-                ngModel.$setValidity('incompleteDateTime', !(element.val().length && element.val().length !== requiredLength));
+          // Wait for interpolated elements like {{placeholder}} to render
+          $timeout(function() {
+            element
+              .crmDatepicker(settings)
+              .on('change', function () {
+                // Because change gets triggered from the $render function we could be either inside or outside the $digest cycle
+                $timeout(function() {
+                  let requiredLength = 19;
+                  if (settings.time === false) {
+                    requiredLength = 10;
+                  }
+                  if (settings.date === false) {
+                    requiredLength = 8;
+                  }
+                  ngModel.$setValidity('incompleteDateTime', !(element.val().length && element.val().length !== requiredLength));
+                });
               });
-            });
+          });
         }
       };
     })
@@ -354,8 +357,7 @@
               iframe.setAttribute('src', scope.$parent.$eval(attrs.crmUiIframeSrc));
             }
             else {
-              //NYSS 12135
-              var iframeHtml = scope.$parent.$eval(attrs.crmUiIframe).replace(/<a /g, "<a target='_blank' ");
+              var iframeHtml = scope.$parent.$eval(attrs.crmUiIframe);
 
               var doc = iframe.document;
               if (iframe.contentDocument) {
@@ -659,7 +661,8 @@
               };
             });
           } else {
-            init();
+            // Wait for interpolated elements like {{placeholder}} to render
+            $timeout(init);
           }
         }
       };

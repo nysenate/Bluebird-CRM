@@ -24,7 +24,7 @@ class ServiceLocator extends BaseServiceLocator
     private $serviceMap;
     private $serviceTypes;
 
-    public function __construct(\Closure $factory, array $serviceMap, array $serviceTypes = null)
+    public function __construct(\Closure $factory, array $serviceMap, ?array $serviceTypes = null)
     {
         $this->factory = $factory;
         $this->serviceMap = $serviceMap;
@@ -37,7 +37,7 @@ class ServiceLocator extends BaseServiceLocator
      *
      * @return mixed
      */
-    public function get($id)
+    public function get(string $id)
     {
         return isset($this->serviceMap[$id]) ? ($this->factory)(...$this->serviceMap[$id]) : parent::get($id);
     }

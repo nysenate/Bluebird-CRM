@@ -90,6 +90,7 @@ class CRM_Iats_Transaction {
     $auth_code = $payment_result['auth_code'];
     $auth_response = empty($payment_result['auth_response']) ? '' : $payment_result['auth_response'];
     $trxn_id = empty($payment_result['trxn_id']) ? '' : $payment_result['trxn_id'];
+    $contribution['source'] = $contribution['source'] ?? '';
     // Handle any case of a failure of some kind, either the card failed, or the system failed.
     if (!$success) {
       $error_message = $payment_result['message'];

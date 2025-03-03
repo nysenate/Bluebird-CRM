@@ -86,10 +86,6 @@ class DefaultSender extends AutoService {
             continue;
           }
 
-          //NYSS
-          $msg = "A bulk mailing was deferred (ID: {$mailing->id}) due to excessive (more than 5) SMTP socket errors. This mailing will be retried.";
-          \CRM_NYSS_Errorhandler_BAO::notifySlack($msg, "<!channel> a mailing was deferred due to temporary SMTP errors");
-
           // seems like we have too many of them in a row, we should
           // write stuff to disk and abort the cron job
           $job->writeToDB($deliveredParams, $targetParams, $mailing, $job_date);
@@ -176,6 +172,14 @@ class DefaultSender extends AutoService {
     // Register 5xx SMTP response code (permanent failure) as bounce.
     if (isset($code[0]) && $code[0] === '5') {
       return FALSE;
+    }
+
+    // Consider SMTP Erorr 450, class 4.1.2 "Domain not found", as permanent failures if the corresponding setting is enabled
+    if ($code === '450' && \Civi::settings()->get('smtp_450_is_permanent')) {
+      $class = preg_match('/ \(code: (.+), response: ([0-9\.]+) /', $message, $matches) ? $matches[2] : '';
+      if ($class === '4.1.2') {
+        return FALSE;
+      }
     }
 
     if (str_contains($message, 'Failed to set sender')) {

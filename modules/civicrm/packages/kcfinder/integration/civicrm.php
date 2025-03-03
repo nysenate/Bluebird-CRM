@@ -36,13 +36,32 @@
  *
  */
 
+
 function checkAuthentication() {
   static $authenticated;
   if ( !isset( $authenticated ) ) {
-    $current_cwd   = getcwd();
-    $civicrm_root  = dirname(dirname(getcwd()));
     $authenticated = false;
-    require_once "{$civicrm_root}/civicrm.config.php";
+
+    // used to chdir at the end of this function - not sure if necessary?
+    $current_cwd = getcwd();
+
+    function findConfigFile(string $search_path): string {
+      while ($search_path) {
+        foreach(['civicrm.config.php', 'civicrm.standalone.php'] as $config_filename) {
+          $config_file_candidate = $search_path . DIRECTORY_SEPARATOR . $config_filename;
+
+          if (file_exists($config_file_candidate)) {
+            return $config_file_candidate;
+          }
+        }
+
+        $search_path = dirname($search_path);
+      }
+
+      throw new \Exception('KCFinder couldn\'t find civicrm.config.php or civicrm.standalone.php to check authentication');
+    }
+
+    require_once findConfigFile(__DIR__);
     require_once 'CRM/Core/Config.php';
 
     $config = CRM_Core_Config::singleton();
@@ -68,6 +87,9 @@ function checkAuthentication() {
       break;
     case 'Drupal8':
       $auth_function = 'authenticate_drupal8';
+      break;
+    case 'Standalone':
+      $auth_function = 'authenticate_standalone';
       break;
     }
     if(!$auth_function($config)) {
@@ -188,6 +210,10 @@ function authenticate_wordpress($config) {
     return true;
   }
   return false;
+}
+
+function authenticate_standalone($config) {
+  return CRM_Core_Permission::check('access CiviCRM');
 }
 
 function authenticate_joomla($config) {

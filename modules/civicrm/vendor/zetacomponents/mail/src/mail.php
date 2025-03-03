@@ -9,9 +9,9 @@
  * to you under the Apache License, Version 2.0 (the
  * "License"); you may not use this file except in compliance
  * with the License.  You may obtain a copy of the License at
- * 
+ *
  *   http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing,
  * software distributed under the License is distributed on an
  * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
@@ -93,7 +93,7 @@
  *                                             address embedded in the
  *                                             ezcMailAddress object may only
  *                                             contain letters from the
- *                                             RETURN_PATH_CHARS set.
+ *                                             function filter_var FILTER_VALIDATE_EMAIL.
  * @property ezcMailOptions $options
  *           Options for generating mail. See {@link ezcMailOptions}.
  *
@@ -131,11 +131,6 @@ class ezcMail extends ezcMailPart
     const BASE64 = "base64";
 
     /**
-     * Characters allowed in the returnPath address
-     */
-    const RETURN_PATH_CHARS = 'A-Za-z0-9_.@=/+{}#~\-\'';
-
-    /**
      * Holds the options for this class.
      *
      * @var ezcMailOptions
@@ -145,7 +140,7 @@ class ezcMail extends ezcMailPart
     /**
      * Constructs an empty ezcMail object.
      */
-    public function __construct( ezcMailOptions $options = null )
+    public function __construct( ?ezcMailOptions $options = null )
     {
         parent::__construct();
 
@@ -167,6 +162,15 @@ class ezcMail extends ezcMailPart
         $this->options = $options;
     }
 
+	private function validateReturnPath( $returnPath )
+	{
+		$regex = "/^(?!(?:(?:\\x22?\\x5C[\\x00-\\x7E]\\x22?)|(?:\\x22?[^\\x5C\\x22]\\x22?)){255,})(?!(?:(?:\\x22?\\x5C[\\x00-\\x7E]\\x22?)|(?:\\x22?[^\\x5C\\x22]\\x22?)){125,}@)(?:(?:[\\x21\\x23-\\x27\\x2A\\x2B\\x2D\\x2F-\\x39\\x3D\\x3F\\x5E-\\x7E]+)|(?:\\x22(?:[\\x01-\\x08\\x0B\\x0C\\x0E-\\x1F\\x21\\x23-\\x5B\\x5D-\\x7F]|(?:\\x5C[\\x00-\\x7F]))*\\x22))(?:\\.(?:(?:[\\x21\\x23-\\x27\\x2A\\x2B\\x2D\\x2F-\\x39\\x3D\\x3F\\x5E-\\x7E]+)|(?:\\x22(?:[\\x01-\\x08\\x0B\\x0C\\x0E-\\x1F\\x21\\x23-\\x5B\\x5D-\\x7F]|(?:\\x5C[\\x00-\\x7F]))*\\x22)))*@(?:(?:(?!.*[^.]{124,})(?:(?:(?:xn--)?[a-z0-9]+(?:-+[a-z0-9]+)*\\.){1,126}){1,}(?:(?:[a-z][a-z0-9]*)|(?:(?:xn--)[a-z0-9]+))(?:-+[a-z0-9]+)*)|(?:\\[(?:(?:IPv6:(?:(?:[a-f0-9]{1,4}(?::[a-f0-9]{1,4}){7})|(?:(?!(?:.*[a-f0-9][:\\]]){7,})(?:[a-f0-9]{1,4}(?::[a-f0-9]{1,4}){0,5})?::(?:[a-f0-9]{1,4}(?::[a-f0-9]{1,4}){0,5})?)))|(?:(?:IPv6:(?:(?:[a-f0-9]{1,4}(?::[a-f0-9]{1,4}){5}:)|(?:(?!(?:.*[a-f0-9]:){5,})(?:[a-f0-9]{1,4}(?::[a-f0-9]{1,4}){0,3})?::(?:[a-f0-9]{1,4}(?::[a-f0-9]{1,4}){0,3}:)?)))?(?:(?:25[0-5])|(?:2[0-4][0-9])|(?:1[0-9]{2})|(?:[1-9]?[0-9]))(?:\\.(?:(?:25[0-5])|(?:2[0-4][0-9])|(?:1[0-9]{2})|(?:[1-9]?[0-9]))){3}))\\]))$/i";
+
+		$res = preg_match( $regex, $returnPath );
+
+		return !!$res;
+	}
+
     /**
      * Sets the property $name to $value.
      *
@@ -187,9 +191,9 @@ class ezcMail extends ezcMailPart
                 {
                     throw new ezcBaseValueException( $name, $value, 'ezcMailAddress or null' );
                 }
-                if ( $value !== null && preg_replace( '([' . self::RETURN_PATH_CHARS . '])', '', $value->email ) != '' )
+                if ( $value !== null && !$this->validateReturnPath( $value->email ) )
                 {
-                    throw new ezcBaseValueException( $name, $value->email, 'the characters \'' . self::RETURN_PATH_CHARS . '\'' );
+                    throw new ezcBaseValueException( $name, $value->email, 'a valid email address or null' );
                 }
                 $this->properties[$name] = $value;
                 break;

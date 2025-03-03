@@ -1,3 +1,26 @@
+1.9.7 - Tuesday 20 August 2024
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+- Fixed #93: Define ezcMail{Pop3,Imap}Set::$connection property to avoid
+  deprecation notice.
+- Fixed #94: PHP 8.4: Fix the 'Implicitly marking parameter $ as nullable is
+  deprecated' warning. (Eileen McNaughton)
+
+
+1.9.6 - Thursday 14 September 2023
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+- Fixed #90: Allow longer email addresses than the SMTP spec allows for
+  Return-Path.
+
+
+1.9.5 - Wednesday 06 September 2023
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+- Fixed tests.
+- Fixed #87: Use filter_var(FILTER_VALIDATE_EMAIL) instead of homegrown
+  validation for email addresses.
+
 1.9.4 - Wednesday 14 September 2022
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 

@@ -9,9 +9,9 @@
  * to you under the Apache License, Version 2.0 (the
  * "License"); you may not use this file except in compliance
  * with the License.  You may obtain a copy of the License at
- * 
+ *
  *   http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing,
  * software distributed under the License is distributed on an
  * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
@@ -295,7 +295,7 @@ class ezcBase
         {
             $array = require( "$autoloadDir$fileName" );
 
-            if ( is_array( $array) && array_key_exists( $className, $array ) )
+            if ( is_array( $array ) && array_key_exists( $className, $array ) )
             {
                 // Add the array to the cache, and include the requested file.
                 ezcBase::$autoloadArray = array_merge( ezcBase::$autoloadArray, $array );
@@ -576,7 +576,6 @@ class ezcBase
         {
             $autoloadDirPath = $basePath . '/autoload';
         }
-
 
         // check if autoload dir exists
         if ( !is_dir( $autoloadDirPath ) )

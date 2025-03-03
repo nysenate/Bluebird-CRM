@@ -71,7 +71,7 @@ class civicrm_handler_filter_state_multi extends views_handler_filter_in_operato
         $c_object = json_encode($state_html);
       }
       if ($handler->definition['handler'] == 'civicrm_handler_filter_state_multi') {
-        $state = CRM_Utils_Array::value($handler->field, $_GET);
+        $state = $_GET[$handler->field] ?? NULL;
       }
     }
 

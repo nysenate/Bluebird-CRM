@@ -79,6 +79,8 @@
         }
       };
 
+      this.dateFormats = CRM.crmSearchAdmin.dateFormats;
+
       // Drag-n-drop settings for reordering columns
       this.sortableOptions = {
         connectWith: '.crm-search-admin-edit-columns',
@@ -123,21 +125,29 @@
         }
       };
 
+      this.getDataType = function(key) {
+        const expr = ctrl.getExprFromSelect(key);
+        const info = searchMeta.parseExpr(expr);
+        const field = (_.findWhere(info.args, {type: 'field'}) || {}).field || {};
+        return (info.fn && info.fn.data_type) || field.data_type;
+      };
+
+      this.isDate = function(key) {
+        return ['Date', 'Timestamp'].includes(this.getDataType(key));
+      };
+
       this.getExprFromSelect = function(key) {
-        var match;
-        _.each(ctrl.savedSearch.api_params.select, function(expr) {
-          var parts = expr.split(' AS ');
-          if (_.includes(parts, key)) {
-            match = parts[0];
-            return false;
-          }
+        let fieldKey = key.split(':')[0];
+        let match = ctrl.savedSearch.api_params.select.find((expr) => {
+          let parts = expr.split(' AS ');
+          return (parts[1] === fieldKey || parts[0].split(':')[0] === fieldKey);
         });
-        return match;
+        return match ? match.split(' AS ')[0] : null;
       };
 
       this.getFieldLabel = function(key) {
         var expr = ctrl.getExprFromSelect(selectToKey(key));
-        return searchMeta.getDefaultLabel(expr);
+        return searchMeta.getDefaultLabel(expr, ctrl.savedSearch);
       };
 
       this.getColLabel = function(col) {
@@ -188,6 +198,39 @@
         }
       };
 
+      // Because angular dropdowns must be a by-reference variable
+      const suffixOptionCache = {};
+
+      this.getSuffixOptions = function(col) {
+        let expr = ctrl.getExprFromSelect(col.key),
+          info = searchMeta.parseExpr(expr);
+        if (!info.fn && info.args[0] && info.args[0].field && info.args[0].field.suffixes) {
+          let cacheKey = info.args[0].field.suffixes.join();
+          if (!(cacheKey in suffixOptionCache)) {
+            suffixOptionCache[cacheKey] = Object.keys(CRM.crmSearchAdmin.optionAttributes)
+              .filter(key => info.args[0].field.suffixes.includes(key))
+              .reduce((filteredOptions, key) => {
+                filteredOptions[key] = CRM.crmSearchAdmin.optionAttributes[key];
+                return filteredOptions;
+              }, {});
+          }
+          return suffixOptionCache[cacheKey];
+        }
+      };
+
+      function getSetSuffix(index, val) {
+        let col = ctrl.display.settings.columns[index];
+        if (arguments.length > 1) {
+          col.key = col.key.split(':')[0] + (val ? ':' + val : '');
+        }
+        return col.key.split(':')[1] || '';
+      }
+
+      // Provides getter/setter for the pseudoconstant suffix selector
+      this.getSetSuffix = function(index) {
+        return _.wrap(index, getSetSuffix);
+      };
+
       this.canBeImage = function(col) {
         var expr = ctrl.getExprFromSelect(col.key),
           info = searchMeta.parseExpr(expr);
@@ -212,7 +255,7 @@
       // Must be a real sql expression (not a pseudo-field like `result_row_num`)
       this.canBeSortable = function(col) {
         // Column-header sorting is incompatible with draggable sorting
-        if (ctrl.display.settings.draggable) {
+        if (!col.key || ctrl.display.settings.draggable) {
           return false;
         }
         var expr = ctrl.getExprFromSelect(col.key),
@@ -229,7 +272,7 @@
         return !info.fn || info.fn.category !== 'aggregate' || info.fn.name === 'GROUP_CONCAT';
       }
 
-      var linkProps = ['path', 'entity', 'action', 'join', 'target'];
+      const LINK_PROPS = ['path', 'entity', 'action', 'join', 'target', 'task'];
 
       this.toggleLink = function(column) {
         if (column.link) {
@@ -243,8 +286,8 @@
 
       this.onChangeLink = function(column, afterLink) {
         column.link = column.link || {};
-        var beforeLink = column.link.action && _.findWhere(ctrl.getLinks(column.key), {action: column.link.action});
-        if (!afterLink.action && !afterLink.path) {
+        const beforeLink = column.link.action && _.findWhere(ctrl.getLinks(column.key), {action: column.link.action});
+        if (!afterLink.action && !afterLink.path && !afterLink.task) {
           if (beforeLink && beforeLink.text === column.title) {
             delete column.title;
           }
@@ -256,7 +299,7 @@
         } else if (!afterLink.text && (beforeLink && beforeLink.text === column.title)) {
           delete column.title;
         }
-        _.each(linkProps, function(prop) {
+        LINK_PROPS.forEach((prop) => {
           column.link[prop] = afterLink[prop] || '';
         });
       };
@@ -316,10 +359,9 @@
           });
         } else {
           let activeColumns = ctrl.display.settings.columns.map(col => col.key);
-          let selectAliases = ctrl.savedSearch.api_params.select.map(selectExpr => selectToKey(selectExpr));
-          // Delete any column that is no longer in the
+          // Delete any column that is no longer in the search
           activeColumns.reverse().forEach((key, index) => {
-            if (key && !selectAliases.includes(key)) {
+            if (key && !ctrl.getExprFromSelect(key)) {
               ctrl.removeCol(activeColumns.length - 1 - index);
             }
           });

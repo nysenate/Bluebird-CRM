@@ -688,7 +688,6 @@ class CRM_Core_I18n {
     // For self::getLocale()
     global $tsLocale;
     $tsLocale = $civicrmLocale->ts;
-
     CRM_Core_I18n::singleton()->reactivate();
   }
 

@@ -38,7 +38,7 @@ The content of the email is:
 ';
   $settings['from'] = (isset($defaultAddress[1])) ? $defaultAddress[1] : NULL;
 
-  if (!CRM_Utils_Array::value('subject', $settings)) {
+  if (empty($settings['subject'])) {
     $settings['subject'] = 'New Email: {mailing.subject}';
   }
 

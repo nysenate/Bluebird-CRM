@@ -24,7 +24,7 @@ class BooleanNodeDefinition extends ScalarNodeDefinition
     /**
      * {@inheritdoc}
      */
-    public function __construct(?string $name, NodeParentInterface $parent = null)
+    public function __construct(?string $name, ?NodeParentInterface $parent = null)
     {
         parent::__construct($name, $parent);
 
@@ -34,7 +34,7 @@ class BooleanNodeDefinition extends ScalarNodeDefinition
     /**
      * Instantiate a Node.
      *
-     * @return BooleanNode The node
+     * @return BooleanNode
      */
     protected function instantiateNode()
     {

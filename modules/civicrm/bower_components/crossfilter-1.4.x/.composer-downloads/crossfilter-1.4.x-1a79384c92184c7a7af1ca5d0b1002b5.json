@@ -1,0 +1,17 @@
+{
+    "name": "civicrm/civicrm-core:crossfilter-1.4.x",
+    "url": "https://github.com/crossfilter/crossfilter/archive/1.4.7.zip",
+    "checksum": "ed9378aa1d8232ac533da47ca50d62d0af51932a6cb778a668dcb5d0f2eae6b8",
+    "ignore": [
+        ".*",
+        "node_modules",
+        "bower_components",
+        "package.json",
+        "index.js",
+        "src",
+        "component.json",
+        "media",
+        "test",
+        "tests"
+    ]
+}

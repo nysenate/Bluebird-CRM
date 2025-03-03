@@ -1,8 +1,9 @@
 {
     "name": "civicrm/civicrm-core:ext-greenwich-bootstrap3",
     "url": "https://github.com/twbs/bootstrap-sass/archive/v3.4.1.zip",
-    "checksum": "e67f090e5e062d37cd31d3bcf9a885c96a43db187db11bf4ecb4ac487140f8d2",
+    "checksum": "7fef5cf87b6c870c9d0102a7f0562f311090b8c194b5c496c429a42ed6a6f856",
     "ignore": [
+        "fonts",
         "test",
         "tasks",
         "lib"

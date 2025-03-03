@@ -36,6 +36,11 @@ class CRM_Core_Payment_Faps extends CRM_Core_Payment {
   protected $disable_cryptogram = FALSE;
 
   /**
+   * @var int
+   */
+  protected $is_test;
+
+  /**
    * Constructor
    *
    * @param string $mode the mode of operation: live or test
@@ -92,7 +97,7 @@ class CRM_Core_Payment_Faps extends CRM_Core_Payment {
           $settings['days'] = array('-1');
         }
       }
-      catch (CiviCRM_API3_Exception $e) {
+      catch (CRM_Core_Exception $e) {
         // Assume no settings exist, use safest fallback.
         $settings = array('days' => array('-1'));
       }
@@ -480,7 +485,7 @@ class CRM_Core_Payment_Faps extends CRM_Core_Payment {
         ]);
 	$params['country'] = $result['values'][0]['name'];
       }
-      catch (CiviCRM_API3_Exception $e) {
+      catch (CRM_Core_Exception $e) {
         Civi::log()->info('Unexpected error from api3 looking up countries/states/provinces');
       }
     }
@@ -494,7 +499,7 @@ class CRM_Core_Payment_Faps extends CRM_Core_Payment {
         ]);
 	$params['state_province'] = $result['values'][0]['name'];
       }
-      catch (CiviCRM_API3_Exception $e) {
+      catch (CRM_Core_Exception $e) {
         Civi::log()->info('Unexpected error from api3 looking up countries/states/provinces');
       }
     }
@@ -613,7 +618,7 @@ class CRM_Core_Payment_Faps extends CRM_Core_Payment {
         $result = civicrm_api3('ContributionRecur', 'create', $recur_update);
         return $result;
       }
-      catch (CiviCRM_API3_Exception $e) {
+      catch (CRM_Core_Exception $e) {
         // Not a critical error, just log and continue.
         $error = $e->getMessage();
         Civi::log()->info('Unexpected error updating the next scheduled contribution date for id {id}: {error}', array('id' => $recur_id, 'error' => $error));
@@ -642,7 +647,7 @@ class CRM_Core_Payment_Faps extends CRM_Core_Payment {
         $result = civicrm_api3('Contribution', 'create', $update);
         return $result;
       }
-      catch (CiviCRM_API3_Exception $e) {
+      catch (CRM_Core_Exception $e) {
         // Not a critical error, just log and continue.
         $error = $e->getMessage();
         Civi::log()->info('Unexpected error updating the contribution date for id {id}: {error}', array('id' => $contribution_id, 'error' => $error));

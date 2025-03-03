@@ -23,7 +23,7 @@ function _civicrm_api3_faps_transaction_journal_spec(&$params) {
  * @return array
  *   API result array.
  *
- * @throws CiviCRM_API3_Exception
+ * @throws CRM_Core_Exception
  */
 
 /**
@@ -83,7 +83,7 @@ function civicrm_api3_faps_transaction_journal($params) {
     CRM_Core_Error::debug_var('query params', $query_params);
     CRM_Core_Error::debug_var('params', $params);
     CRM_Core_Error::debug_var('exceptions', $e);
-    // throw CiviCRM_API3_Exception('iATS 1stPay journalling failed: ' . $e->getMessage());
+    // throw CRM_Core_Exception('iATS 1stPay journalling failed: ' . $e->getMessage());
   }
   return civicrm_api3_create_success();
 }

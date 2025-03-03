@@ -126,7 +126,7 @@ trait CRM_Custom_Form_CustomDataTrait {
       // We can handle those here - although is that enough to handle blanking on
       // multiple field radios?
       $field = CRM_Core_BAO_CustomField::getField($id);
-      if ($field['html_type'] === 'Radio') {
+      if ($field['html_type'] === 'Radio' || $field['html_type'] === 'Select') {
         $group = CRM_Core_BAO_CustomGroup::getGroup(['id' => $field['custom_group_id']]);
         if (!$group['is_multiple']) {
           $instances[] = 'custom_' . $id;
@@ -163,6 +163,41 @@ trait CRM_Custom_Form_CustomDataTrait {
     // CustomDataByType form in it's setDefaultValues() function - otherwise it cannot reload the
     // values that were just entered if validation fails.
     return is_string($this->getSubmitValue($elementName)) ? CRM_Utils_String::purifyHTML($this->getSubmitValue($elementName)) : $this->getSubmitValue($elementName);
+  }
+
+  /**
+   * Get the submitted custom fields.
+   *
+   * This is returned apiv3 style.
+   * @see getSubmittedCustomFieldsForApi4()
+   *
+   * @return array
+   */
+  protected function getSubmittedCustomFields(): array {
+    $fields = [];
+    foreach ($this->getSubmittedValues() as $label => $field) {
+      if (CRM_Core_BAO_CustomField::getKeyID($label)) {
+        $fields[$label] = $field;
+      }
+    }
+    return $fields;
+  }
+
+  /**
+   * Get the submitted custom fields in Api4 format.
+   *
+   * @return array
+   */
+  protected function getSubmittedCustomFieldsForApi4(): array {
+    $fields = [];
+    foreach ($this->getSubmittedValues() as $label => $field) {
+      if (preg_match('/^custom_(\d+)_?(-?\d+)?$/', $label)) {
+        if ($new = CRM_Core_BAO_CustomField::getLongNameFromShortName($label)) {
+          $fields[$new] = $field;
+        }
+      }
+    }
+    return $fields;
   }
 
 }

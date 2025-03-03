@@ -40,7 +40,9 @@ class CRM_Iats_Utils {
     $settings = ['email_recurring_failure_report', 'bcc_email_recurring_failure_report', 'receipt_recurring', 'recurring_failure_threshhold', 'email_failure_contribution_receipt', 'disable_cryptogram', 'ach_category_text', 'no_edit_extra', 'enable_update_subscription_billing_info', 'enable_change_subscription_amount', 'enable_cancel_recurring', 'enable_cancel_recurring', 'days'];
     $currentSettingsValues = Civi::settings()->get('iats_settings');
     foreach ($settings as $setting) {
-      Civi::settings()->set('iats_' . $setting, $currentSettingsValues[$setting]);
+      if (isset($currentSettingsValues[$setting])) {
+        Civi::settings()->set('iats_' . $setting, $currentSettingsValues[$setting]);
+      }
     }
     CRM_Core_DAO::executeQuery("DELETE FROM civicrm_setting WHERE name = 'iats_settings'");
   }

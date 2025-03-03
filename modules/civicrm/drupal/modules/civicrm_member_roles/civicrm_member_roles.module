@@ -590,7 +590,7 @@ function _civicrm_member_roles_sync($ext_uid = NULL, $cid = NULL, $sync_type = N
       }
     }
 
-    $contactMemberships = CRM_Utils_Array::value('values', $memberships);
+    $contactMemberships = $memberships['values'] ?? NULL;
     $addRoles           = array();
     $expRoles           = array();
 

@@ -1,0 +1,48 @@
+{
+    "name": "dmore/chrome-mink-driver",
+    "description": "Mink driver for controlling chrome without selenium",
+    "license": "MIT",
+    "type": "library",
+    "authors": [
+        {
+            "name": "Dorian More",
+            "email": "doriancmore@gmail.com"
+        }
+    ],
+    "homepage": "https://gitlab.com/behat-chrome/chrome-mink-driver",
+    "support": {
+        "issues": "https://gitlab.com/behat-chrome/chrome-mink-driver/-/issues"
+    },
+    "require": {
+        "ext-curl": "*",
+        "ext-json": "*",
+        "ext-mbstring": "*",
+        "behat/mink": "^1.9",
+        "phrity/websocket": "^1.7.0"
+    },
+    "require-dev": {
+        "mink/driver-testsuite": "dev-master",
+        "phpunit/phpunit": "^8.5.22 || ^9.5.11",
+        "squizlabs/php_codesniffer": "^3.5"
+    },
+    "minimum-stability": "stable",
+    "autoload": {
+        "psr-4": {
+            "DMore\\ChromeDriver\\": "src/"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "DMore\\ChromeDriverTests\\": "tests/"
+        }
+    },
+    "config": {
+        "allow-plugins": {
+            "ergebnis/composer-normalize": true,
+            "phpro/grumphp-shim": true
+        }
+    },
+    "scripts": {
+        "coverage": "XDEBUG_MODE=coverage phpunit --log-junit phpunit-report.xml --coverage-cobertura phpunit-coverage.xml --coverage-text --colors=never"
+    }
+}

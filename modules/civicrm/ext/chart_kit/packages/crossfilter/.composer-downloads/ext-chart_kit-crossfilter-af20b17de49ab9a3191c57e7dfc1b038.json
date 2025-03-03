@@ -1,0 +1,18 @@
+{
+    "name": "civicrm/civicrm-core:ext-chart_kit-crossfilter",
+    "url": "https://github.com/crossfilter/crossfilter/archive/refs/tags/1.5.4.zip",
+    "checksum": "baaea04b9638b236a5bb618c8cccd23f3728c73d593879deb34fc081519d9a3f",
+    "ignore": [
+        ".*",
+        "node_modules",
+        "bower_components",
+        "src",
+        "lib",
+        "test",
+        "component.json",
+        "package.json",
+        "index.js",
+        "main.js",
+        "Makefile"
+    ]
+}

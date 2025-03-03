@@ -27,7 +27,7 @@ class civicrm_handler_relationship_location extends views_handler_relationship {
         return;
       }
       require_once 'CRM/Core/PseudoConstant.php';
-      self::$_locationTypes = CRM_Core_PseudoConstant::get('CRM_Core_DAO_Address', 'location_type_id');
+      self::$_locationTypes = CRM_Core_DAO_Address::buildOptions('location_type_id');
       self::$_locationOps = array(0 => 'AND', 1 => 'OR');
     }
   }
