@@ -42,5 +42,4 @@ $drush $instance civicrm-upgrade-db -y -q
 echo "upgrade extensions..."
 $drush $instance cvapi extension.upgrade --quiet
 
-## record completion
 echo "$prog: upgrade process is complete for $instance."
