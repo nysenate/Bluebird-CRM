@@ -1,4 +1,5 @@
 <?php
+require_once 'api/Wrapper.php';
 
 class CRM_NYSS_Mail_APIWrapper implements API_Wrapper {
   public function fromApiInput($apiRequest) {

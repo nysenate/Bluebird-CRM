@@ -334,8 +334,10 @@
       articleImageWrapBlock imagePos {label:Image Position;widget:select; options: left=Left|right=Right;
         buttonsetIconClasses: left=fa fa-fw fa-address-card-o|right=fa fa-fw fa-address-card-o fa-flip-horizontal
       }
-      articleImageWrapBlock imageWidth { label: Image Size; widget: select; options: 143=Mini|190=Small|285=Medium|380=Big; }
-      articleImageWrapBlock {label: Text Wrap Image Block; properties: backgroundColor titleVisible=true blockPaddingVisible=true buttonVisible=true imageWidth=285 imagePos=left titleTextStyle longTextStyle buttonStyle image longText buttonLink; theme: contentTheme}
+      articleImageWrapBlock imageWidth { label: Image Size; widget: select; options: 120=Small|166=Medium|258=Big;
+        renderHint: buttonset;
+      }
+      articleImageWrapBlock {label: Text Wrap Image Block; properties: backgroundColor titleVisible=true blockPaddingVisible=true buttonVisible=true imageWidth=166 imagePos=left titleTextStyle longTextStyle buttonStyle image longText buttonLink; theme: contentTheme}
 
       logoBlock longTextStyle { label: Alternative Text; }
       logoBlock imageWidth { label: Image Size; widget: select; options: 166=Small|258=Medium|350=Big;
@@ -1048,21 +1050,21 @@
                   <tr data-ko-display="titleVisible">
                     <td height="9" style="font-size:1px; line-height: 1px;">&nbsp;</td>
                   </tr>
-                  <tr data-ko-display="imagePos eq 'left'" style="display: block; float: left; margin-right: 10px; margin-bottom: 10px;">
-                    <td valign="top" align="left" class="links-color" style="-ko-attr-width: @[imageWidth]">
+                  <tr data-ko-display="imagePos eq 'left'" style="display: block; float: left; margin-right: 1em; margin-bottom: 1em;" class="mobile-full">
+                    <td valign="top" align="left" class="links-color" style="-ko-attr-width: @[imageWidth]; display: block; margin-left: auto; margin-right: auto;">
                       <a data-ko-link="image.url" href="">
                         <img
-                          data-ko-editable="image.src" width="285" data-ko-placeholder-height="150"
+                          data-ko-editable="image.src" width="166" data-ko-placeholder-height="150"
                           style="-ko-attr-alt: @image.alt; width: 100%; max-width: 380px; -ko-attr-width: @imageWidth; "
                           src="https://mosaico.io/srv/f-default/img?method=placeholder&amp;params=258%2C150" vspace="0" hspace="0" border="0" alt="" />
                       </a>
                     </td>
                   </tr>
-                  <tr data-ko-display="imagePos eq 'right'" style="display: block; float: right; margin-left: 10px; margin-bottom: 10px;">
-                    <td valign="top" align="left" class="links-color" style="-ko-attr-width: @[imageWidth]">
+                  <tr data-ko-display="imagePos eq 'right'" style="display: block; float: right; margin-left: 10px; margin-bottom: 10px;" class="mobile-full">
+                    <td valign="top" align="left" class="links-color" style="-ko-attr-width: @[imageWidth]; display: block; margin-left: auto; margin-right: auto;">
                       <a data-ko-link="image.url" href="">
                         <img
-                          data-ko-editable="image.src" width="285" data-ko-placeholder-height="150"
+                          data-ko-editable="image.src" width="166" data-ko-placeholder-height="150"
                           style="-ko-attr-alt: @image.alt; width: 100%; max-width: 380px; -ko-attr-width: @imageWidth; "
                           src="https://mosaico.io/srv/f-default/img?method=placeholder&amp;params=258%2C150" vspace="0" hspace="0" border="0" alt="" />
                       </a>
@@ -1070,7 +1072,7 @@
                   </tr>
 
                   <tr style="display: block;">
-                    <td align="left" style="text-align: left; font-size: 13px; font-family: Arial, Helvetica, sans-serif; color: #3f3f3f; display: block;
+                    <td align="left" style="text-align: left; font-size: 13px; font-family: Arial, Helvetica, sans-serif; color: #3f3f3f; display: block; line-height: normal;
                 -ko-font-size: @[longTextStyle.size]px; -ko-font-family: @longTextStyle.face; -ko-color: @longTextStyle.color"
                         data-ko-editable="longText" class="long-text links-color">
 
@@ -1081,7 +1083,7 @@
                   </tr>
                   <tr data-ko-display="buttonVisible">
                     <td valign="top">
-                      <table cellpadding="0" border="0" align="left" cellspacing="0" class="mobile-full" style="padding-top: 4px">
+                      <table cellpadding="0" border="0" align="left" cellspacing="0" style="padding-top: 4px">
                         <tr>
                           <td width="auto" valign="middle" bgcolor="#bfbfbf" align="center" height="26"
                               style="font-size: 13px; font-family: Arial, Helvetica, sans-serif; text-align:center; color: #3f3f3f; font-weight: normal;

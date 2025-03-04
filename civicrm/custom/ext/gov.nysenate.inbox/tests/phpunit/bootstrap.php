@@ -2,6 +2,11 @@
 
 ini_set('memory_limit', '2G');
 
+// Before running you'll need to set CIVICRM_SETTINGS and INSTANCE_NAME
+// in your environment. Eg...
+//putenv('CIVICRM_SETTINGS=../../../../../../Bluebird-CRM/drupal/sites/default/civicrm.settings.php');
+//putenv('INSTANCE_NAME=bluebird.dev');
+
 // phpcs:disable
 eval(cv('php:boot --level=classloader', 'phpcode'));
 // phpcs:enable

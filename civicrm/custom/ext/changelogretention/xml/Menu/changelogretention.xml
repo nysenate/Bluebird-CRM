@@ -1,0 +1,13 @@
+<?xml version="1.0"?>
+<menu>
+  <item>
+    <path>civicrm/admin/logretention</path>
+     <title>Manage Log Retention Settings</title>
+     <desc>Manage Log Retention Settings</desc>
+     <page_callback>CRM_Admin_Form_Setting_logretention</page_callback>
+     <adminGroup>System Settings</adminGroup>
+     <icon>admin/small/rela_type.png</icon>
+     <weight>36</weight>
+    <access_arguments>administer CiviCRM</access_arguments>
+  </item>
+</menu>

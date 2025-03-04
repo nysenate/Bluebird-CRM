@@ -763,8 +763,9 @@ class CRM_NYSS_BAO_Integration_Website
   } // processCommunication()
 
 
-  /*
+  /**
    * handle surveys (questionnaire response) with
+   * @deprecated See CRM_NYSS_BAO_Integration_WebsiteEvent_SurveyEvent
    */
   static function processSurvey($contactId, $action, $params)
   {
@@ -899,9 +900,10 @@ class CRM_NYSS_BAO_Integration_Website
   } // getMessages()
 
 
-  /*
+  /**
    * check if survey already exists; if so, return fields by label
    * else return false
+   * @deprecated See CRM_NYSS_BAO_Integration_WebsiteEvent_SurveyEvent
    */
   static function surveyExists($params)
   {
@@ -951,8 +953,9 @@ class CRM_NYSS_BAO_Integration_Website
   } //surveyExists()
 
 
-  /*
+  /**
    * create custom data set and fields for survey
+   * @deprecated See CRM_NYSS_BAO_Integration_WebsiteEvent_SurveyEvent
    */
   static function buildSurvey($data) {
     if (empty($data->form_id)) {
@@ -1075,6 +1078,7 @@ class CRM_NYSS_BAO_Integration_Website
     return $fields;
   } //buildSurvey()
 
+  /** @deprecated See CRM_NYSS_BAO_Integration_WebsiteEvent_BillEvent */
   static function buildBillName($params) {
     //get data pieces from possible locations
     $bill_number = (!empty($params->event_info->bill_number)) ?

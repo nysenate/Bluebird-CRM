@@ -50,7 +50,6 @@ class CRM_NYSS_IMAP_Session
 
   private function _openConnection() {
     CRM_Core_DAO_AllCoreTables::flush();
-    CRM_Core_DAO_AllCoreTables::init();
 
     require_once 'php-imap/vendor/autoload.php';
 
