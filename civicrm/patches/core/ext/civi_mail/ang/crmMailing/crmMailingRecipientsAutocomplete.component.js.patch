@@ -1,0 +1,16 @@
+diff --git a/modules/civicrm/ext/civi_mail/ang/crmMailing/crmMailingRecipientsAutocomplete.component.js b/modules/civicrm/ext/civi_mail/ang/crmMailing/crmMailingRecipientsAutocomplete.component.js
+index 5e7424a02..89e4170f1 100644
+--- a/modules/civicrm/ext/civi_mail/ang/crmMailing/crmMailingRecipientsAutocomplete.component.js
++++ b/modules/civicrm/ext/civi_mail/ang/crmMailing/crmMailingRecipientsAutocomplete.component.js
+@@ -6,9 +6,10 @@
+       mailingId: '<crmMailingId',
+       mode: '@crmMode',
+     },
++    //NYSS remove ng-required
+     template: '<input type="text" crm-autocomplete="\'EntitySet\'" ' +
+       'crm-autocomplete-params="$ctrl.autocompleteParams" ' +
+-      'ng-required="$ctrl.mode === \'include\'" ' +
++      /*'ng-required="$ctrl.mode === \'include\'" ' +*/
+       'ng-model="$ctrl.getSetValue" ' +
+       'ng-model-options="{getterSetter: true}" ' +
+       'multi="true" ' +
