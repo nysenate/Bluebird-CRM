@@ -248,7 +248,7 @@ function contact_civicrm_pageRun(&$page) {
     ");
   }
 
-  _fixTitles();
+  _contact_fixTitles();
 
   //4567 make admin breadcrumb unclickable if lacking permission
   if ($pagename == 'CRM_Admin_Page_Tag' ||
@@ -444,7 +444,7 @@ function contact_civicrm_buildForm($formName, &$form) {
     }
   }
 
-  _fixTitles();
+  _contact_fixTitles();
 
   //Limit import file size to 1MB
   if ($formName =='CRM_Import_Form_DataSource') {
@@ -485,7 +485,7 @@ function contact_civicrm_buildForm($formName, &$form) {
   }
 
   //3674 add limit submit js to all submit buttons
-  _nyss_preventDoubleSubmit($formName, $form);
+  _contact_preventDoubleSubmit($formName, $form);
 
   //add js popup msg to report pdf button
   if ($form->getVar('_instanceForm') && $pdfVar = $form->getVar('_pdfButtonName')) {
@@ -704,7 +704,7 @@ function contact_civicrm_postProcess($formName, &$form) {
   if ($formName == 'CRM_Contact_Form_Inline_Demographics') {
     $vals = $form->_submitValues;
 
-    _setCustomData('CRM_Contact_Form_Inline_Demographics', $vals);
+    _contact_setCustomData('CRM_Contact_Form_Inline_Demographics', $vals);
 
     //6803 set comm pref when deceased
     if (isset($vals['is_deceased']) && $vals['is_deceased']) {
@@ -748,7 +748,7 @@ function contact_civicrm_postProcess($formName, &$form) {
     'CRM_Contact_Form_Inline_CommunicationPreferences',
     'CRM_Contact_Form_Inline_ContactInfo'
   ])) {
-    _setCustomData($formName, $form->_submitValues);
+    _contact_setCustomData($formName, $form->_submitValues);
   }
 
   if ($formName == 'CRM_Contact_Form_Contact') {
@@ -982,7 +982,7 @@ function contact_civicrm_searchColumns($objectName, &$headers, &$rows, &$selecto
   ]);*/
 
   //12644 remove sort cols on search builder
-  if (_accessProtected(_accessProtected($selector, '_object'), '_searchContext') == 'builder') {
+  if (_contact_accessProtected(_contact_accessProtected($selector, '_object'), '_searchContext') == 'builder') {
     foreach ($headers as &$header) {
       if (!empty($header['sort']) && $header['sort'] != 'sort_name') {
         unset($header['sort']);
@@ -1062,7 +1062,7 @@ function contact_civicrm_check(&$messages) {
 //10887
 function contact_civicrm_alterContent(&$content, $context, $tplName, &$object) {
   if (!CRM_Core_Config::singleton()->debug) {
-    $content = _nyss_stripSpaces($content);
+    $content = _contact_stripSpaces($content);
   }
 
   /*Civi::log()->debug('nyss_civihooks_civicrm_alterContent', array(
@@ -1073,7 +1073,7 @@ function contact_civicrm_alterContent(&$content, $context, $tplName, &$object) {
   ));*/
 }
 
-function _setCustomData($formName, $vals) {
+function _contact_setCustomData($formName, $vals) {
   //CRM_Core_Error::debug_var('$vals',$vals);
 
   //construct map of form and custom field ids
@@ -1111,41 +1111,12 @@ function _setCustomData($formName, $vals) {
   }
 }
 
-function _getFldOpts($id) {
-  $params = [
-    'id' => $id,
-  ];
-  $fld = civicrm_api3('custom_field', 'get', $params);
-  //CRM_Core_Error::debug_var('$fld', $fld);
-
-  $params = [
-    'option_group_id' => $fld['values'][$id]['option_group_id'],
-  ];
-  $opts = civicrm_api3('option_value', 'get', $params);
-  //CRM_Core_Error::debug_var('$opts', $opts);
-
-  //if select list, prepend -select-
-  if ($fld['values'][$id]['html_type'] == 'Select') {
-    $optList = ['' => '- select -'];
-  }
-  else {
-    $optList = [];
-  }
-
-  foreach ($opts['values'] as $opt) {
-    $optList[$opt['value']] = $opt['label'];
-  }
-  //CRM_Core_Error::debug_var('$optList', $optList);
-
-  return $optList;
-}
-
-function _nyss_stripSpaces($text) {
+function _contact_stripSpaces($text) {
   return trim(preg_replace('~>\s*\n\s*<~', '><', $text));
 }
 
 //4808/2960 word replacement for titles
-function _fixTitles() {
+function _contact_fixTitles() {
   $currentTitle = drupal_get_title();
   //CRM_Core_Error::debug_var('currentTitle', $currentTitle);
 
@@ -1170,7 +1141,7 @@ function _fixTitles() {
  * #3674 - prevent users from submitting forms multiple times
  * see also themes/Bluebird/scripts/civi-header.js
  */
-function _nyss_preventDoubleSubmit($formName, &$form) {
+function _contact_preventDoubleSubmit($formName, &$form) {
   if (isset($form->_elementIndex['buttons']) &&
     strpos($formName, 'Inline') === false
   ) {
@@ -1246,7 +1217,7 @@ function _nyss_preventDoubleSubmit($formName, &$form) {
  * 12644
  * helper function to access protected object properties
  */
-function _accessProtected($obj, $prop) {
+function _contact_accessProtected($obj, $prop) {
   if (!empty($obj)) {
     $reflection = new ReflectionClass($obj);
     if ($reflection->hasProperty($prop)) {

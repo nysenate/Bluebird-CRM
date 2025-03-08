@@ -49,6 +49,9 @@ $drush $instance pm-uninstall nyss_contact -y
 $drush $instance pm-disable nyss_dashboards -y
 $drush $instance pm-uninstall nyss_dashboards -y
 
+$drush $instance pm-disable nyss_exportpermissions -y
+$drush $instance pm-uninstall nyss_exportpermissions -y
+
 $drush $instance pm-disable nyss_imapper -y
 $drush $instance pm-uninstall nyss_imapper -y
 

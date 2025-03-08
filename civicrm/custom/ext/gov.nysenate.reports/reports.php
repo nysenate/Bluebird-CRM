@@ -331,15 +331,20 @@ function reports_civicrm_alterLogTables(&$logTableSpec) {
 }
 
 function _reports_Base_cols(&$var, &$object) {
+  //Civi::log()->debug(__FUNCTION__, ['var' => $var]);
+
   if (isset($var['civicrm_address'])) {
+    unset($var['civicrm_address']['fields']['address_country_id']);
+    unset($var['civicrm_address']['fields']['address_county_id']);
     unset($var['civicrm_address']['fields']['country_id']);
     unset($var['civicrm_address']['fields']['county_id']);
 
+    unset($var['civicrm_address']['filters']['address_country_id']);
+    unset($var['civicrm_address']['filters']['address_county_id']);
     unset($var['civicrm_address']['filters']['country_id']);
     unset($var['civicrm_address']['filters']['county_id']);
 
     $var['civicrm_address']['order_bys']['street_number']['title'] = 'Street Number';
-    //$var['civicrm_address']['order_bys']['street_unit'] = NULL;
   }
 }
 
