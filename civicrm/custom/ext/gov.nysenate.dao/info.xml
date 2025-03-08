@@ -15,10 +15,17 @@
   <version>1.0</version>
   <develStage>stable</develStage>
   <compatibility>
-    <ver>4.7</ver>
+    <ver>5.27</ver>
   </compatibility>
   <comments/>
   <civix>
     <namespace>CRM/NYSS/DAO</namespace>
+    <format>24.09.1</format>
   </civix>
+  <classloader>
+    <psr4 prefix="Civi\" path="Civi"/>
+  </classloader>
+  <mixins>
+    <mixin>menu-xml@1.0.0</mixin>
+  </mixins>
 </extension>
