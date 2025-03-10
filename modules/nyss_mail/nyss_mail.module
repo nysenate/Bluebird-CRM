@@ -2,11 +2,11 @@
 
 // NYSS 5581
 function nyss_mail_custom_theme() {
-  $allowedPaths = array(
+  $allowedPaths = [
     'civicrm/nyss/subscription/manage',
     'civicrm/nyss/subscription/view',
     'civicrm/nyss/subscription/expired',
-  );
+  ];
 
   if (in_array($_GET['q'], $allowedPaths)) {
     return 'BluebirdPublic';
@@ -14,4 +14,4 @@ function nyss_mail_custom_theme() {
   else {
     return null;
   }
-} // nyss_mail_custom_theme()
+}

@@ -288,20 +288,6 @@ function _buildReportsMenu($navID, $reportNav) {
           'active' => 1,
         ],
       ],
-      //7260 add websignup reports
-      $navID + 12 => [
-        'attributes' => [
-          'label' => 'Web Signup Reports',
-          'name' => 'web_signup_reports',
-          'url' => 'signupreports',
-          'permission' => 'access CiviReport',
-          'operator'   => 'AND',
-          'separator'  => 0,
-          'parentID' => $navID,
-          'navID' => $navID + 12,
-          'active' => 1,
-        ],
-      ],
       //5260 add changelog proofing report
       $navID + 13 => [
         'attributes' => [
