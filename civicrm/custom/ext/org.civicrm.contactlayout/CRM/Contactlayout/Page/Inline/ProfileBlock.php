@@ -83,6 +83,10 @@ class CRM_Contactlayout_Page_Inline_ProfileBlock extends CRM_Core_Page {
       if ($name == 'deceased_date' && empty($details['deceased_date'])) {
         continue;
       }
+      // Hide the pseudo field phone extension that is included in phone
+      if (str_starts_with($name, 'phone_ext')) {
+        continue;
+      }
       // Show Is Deceased message if no deceased date
       if ($name == 'is_deceased') {
         if ((!isset($fields['deceased_date']) || empty($details['deceased_date'])) && !empty($details['is_deceased'])) {
@@ -115,7 +119,7 @@ class CRM_Contactlayout_Page_Inline_ProfileBlock extends CRM_Core_Page {
    * @param $contactId
    * @param $field
    * @return array
-   * @throws \API_Exception
+   * @throws \CRM_Core_Exception
    */
   public static function getNotes($contactId, $field) {
     $result = [];
