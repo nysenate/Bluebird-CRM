@@ -13,8 +13,8 @@
     <url desc="Documentation">https://lab.civicrm.org/extensions/mosaicoextras/-/blob/1.x/README.md</url>
     <url desc="Licensing">http://www.gnu.org/licenses/agpl-3.0.html</url>
   </urls>
-  <releaseDate>2024-05-13</releaseDate>
-  <version>1.0.0</version>
+  <releaseDate>2025-01-17</releaseDate>
+  <version>1.0.1</version>
   <develStage>stable</develStage>
   <compatibility>
     <ver>5.69</ver>
