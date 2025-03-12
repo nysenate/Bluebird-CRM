@@ -69,7 +69,6 @@ function run() {
     }
   }
 
-  require_once 'CRM/Contact/BAO/Contact.php';
   $dao = new CRM_Contact_BAO_Contact();
 
   //get greeting defaults
@@ -99,7 +98,7 @@ function run() {
         NULL, NULL, NULL, 'AND v.filter = 3 AND is_default = 1'),
     ],
   ];
-  //CRM_Core_Error::debug_var('$greetings', $greetings);
+  //Civi::log()->debug(__FUNCTION__, ['$greetings' => $greetings]);
 
   //get prefixes/suffixes
   $prefixes = \Civi\Api4\Contact::getFields(FALSE)
@@ -155,6 +154,9 @@ function run() {
     }
   }
 
+  //temporary testing
+  //$dao->id = 15075;
+
   $dao->find(FALSE);
   echo "[{$optlist['site']}] Executed query; about to update greetings for ".$dao->count()." matching contacts...\n";
   $cnt = 0;
@@ -163,8 +165,6 @@ function run() {
     echo "(The dry-run option is enabled. No contacts will be updated.)\n";
   }
   else {
-    require_once 'CRM/Core/Transaction.php';
-
     while ($dao->fetch()) {
       //Civi::log()->debug(__FUNCTION__, ['$dao' => $dao]);
 
@@ -252,8 +252,6 @@ function run() {
         WHERE id = %1
       ", $sqlParams);
 
-      //don't use the core function as it's too slow
-      //CRM_Contact_BAO_Contact::processGreetings($dao);
       $cnt++;
     }
 
