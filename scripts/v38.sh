@@ -42,12 +42,5 @@ $drush $instance civicrm-upgrade-db -y -q
 echo "upgrade extensions..."
 $drush $instance cvapi extension.upgrade --quiet
 
-## activity table cleanup
-echo "activity table cleanup"
-sql="DELETE FROM civicrm_activity WHERE is_current_revision = 0"
-$execSql -i $instance -c "$sql" -q
-
-php $script_dir/../civicrm/scripts/logUpdateSchema.php -S $instance
-
 ## record completion
-echo "$prog: upgrade process is complete."
+echo "$prog: upgrade process is complete for $instance."
