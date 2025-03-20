@@ -40,7 +40,6 @@ $contacts = \Civi\Api4\Contact::get(FALSE)
   ->addSelect('id', 'birth_date', 'Website_Profile.Birth_Date', 'first_name', 'last_name', 'Website_Profile.Email')
   ->addWhere('birth_date', '>', '2023-06-01')
   ->addWhere('Website_Profile.Birth_Date', '<', '2023-06-01')
-  ->setLimit(1) 
   ->execute();
 
 if ($dryrun) {
