@@ -1,0 +1,276 @@
+<?xml version="1.0" encoding="iso-8859-1" ?>
+<menu>
+  <item>
+    <path>civicrm/dashlet/myCases</path>
+    <title>Case Dashlet</title>
+    <page_callback>CRM_Dashlet_Page_MyCases</page_callback>
+  </item>
+  <item>
+    <path>civicrm/dashlet/twitter</path>
+    <title>Twitter</title>
+    <page_callback>CRM_Dashlet_Page_Twitter</page_callback>
+  </item>
+  <item>
+    <path>civicrm/dashlet/news</path>
+    <title>Bluebird News</title>
+    <page_callback>CRM_Dashlet_Page_News</page_callback>
+  </item>
+  <item>
+    <path>civicrm/dashlet/allCases</path>
+    <title>All Cases Dashlet</title>
+    <page_callback>CRM_Dashlet_Page_AllCases</page_callback>
+    <access_arguments>access all cases and activities</access_arguments>
+  </item>
+
+  <!--add so we override core perm and allow create mailings to access-->
+  <item>
+    <path>civicrm/mailing/browse/archived</path>
+    <title>Archived Mailings</title>
+    <page_callback>CRM_Mailing_Page_Browse</page_callback>
+    <access_arguments>access CiviMail;create mailings;schedule mailings</access_arguments>
+    <page_type>1</page_type>
+    <weight>625</weight>
+  </item>
+  <!--NYSS 4239/4933-->
+  <item>
+    <path>civicrm/mailing/view</path>
+    <title>View Mailing</title>
+    <page_callback>CRM_Mailing_Page_View</page_callback>
+    <access_arguments>view public CiviMail content;access CiviMail;create mailings;schedule mailings;approve mailings</access_arguments>
+    <is_public>true</is_public>
+    <weight>800</weight>
+  </item>
+  <!--4760-->
+  <item>
+    <path>civicrm/mailing/report/event</path>
+    <title>Mailing Event</title>
+    <page_callback>CRM_Mailing_Page_Event</page_callback>
+    <access_arguments>access CiviMail;access CiviReport</access_arguments>
+    <weight>695</weight>
+  </item>
+  <!--6765-->
+  <item>
+    <path>civicrm/mailing</path>
+    <title>CiviMail</title>
+    <page_callback>CRM_Mailing_Page_Browse</page_callback>
+    <access_arguments>access CiviMail;create mailings;approve mailings;schedule mailings</access_arguments>
+    <page_type>1</page_type>
+    <weight>600</weight>
+    <component>CiviMail</component>
+  </item>
+
+  <!--NYSS 6957-->
+  <item>
+    <path>civicrm/NYSS/AJAX/Mailing</path>
+    <page_callback>CRM_NYSS_AJAX_Mailing::checkTest</page_callback>
+    <access_arguments>access CiviCRM</access_arguments>
+  </item>
+
+
+  <!--JIRA 7734-->
+  <item>
+    <path>civicrm/admin/options/languages</path>
+    <title>Preferred Languages</title>
+    <desc>Options for contact languages.</desc>
+    <path_arguments>group=languages</path_arguments>
+    <page_callback>CRM_Admin_Page_Options</page_callback>
+    <adminGroup>Option Lists</adminGroup>
+    <weight>375</weight>
+  </item>
+
+  <!--NYSS 3750-->
+  <item>
+    <path>civicrm/ajax/dedupeRules</path>
+    <page_callback>CRM_Contact_Page_AJAX::buildDedupeRules</page_callback>
+    <access_arguments>access CiviCRM</access_arguments>
+  </item>
+
+  <!--NYSS 3852 allow office admins specific admin actions-->
+  <item>
+    <path>civicrm/admin/mapping</path>
+    <title>Import/Export Mappings</title>
+    <desc>Import and Export mappings allow you to easily run the same job multiple times. This option allows you to rename or delete existing mappings.</desc>
+    <page_callback>CRM_Admin_Page_Mapping</page_callback>
+    <adminGroup>Configure</adminGroup>
+    <icon>admin/small/import_export_map.png</icon>
+    <weight>250</weight>
+    <access_arguments>administer CiviCRM;administer district</access_arguments>
+  </item>
+
+  <!--NYSS 3808-->
+  <item>
+    <path>civicrm/tag/merge</path>
+    <page_callback>CRM_Tag_Form_Merge</page_callback>
+    <access_arguments>administer CiviCRM;administer district;manage tags</access_arguments>
+  </item>
+
+  <!--4887-->
+  <item>
+    <path>civicrm/ajax/grouplist</path>
+    <page_callback>CRM_Group_Page_AJAX::getGroupList</page_callback>
+    <access_arguments>access CiviCRM</access_arguments>
+  </item>
+
+  <!--4775-->
+  <item>
+    <path>civicrm/ajax/inline</path>
+    <page_callback>CRM_Core_Page_AJAX::run</page_callback>
+    <access_arguments>access CiviCRM</access_arguments>
+  </item>
+
+  <!--5230-->
+  <item>
+    <path>civicrm/dedupe/dupeaddress</path>
+    <page_callback>CRM_Dedupe_Form_RemoveDupeAddress</page_callback>
+    <access_arguments>export print production files</access_arguments>
+  </item>
+
+  <!--Retrieve tab counts via ajax-->
+  <item>
+    <path>civicrm/ajax/count/changelog</path>
+    <page_callback>CRM_NYSS_BAO_Log::getTabCount</page_callback>
+    <access_arguments>access CiviCRM</access_arguments>
+  </item>
+  <item>
+    <path>civicrm/ajax/count/activity</path>
+    <page_callback>CRM_NYSS_BAO_Activity::getTabCount</page_callback>
+    <access_arguments>access CiviCRM</access_arguments>
+  </item>
+
+  <!--3331-->
+  <item>
+    <path>civicrm/file/delete</path>
+    <title>Delete file</title>
+    <access_arguments>access CiviCRM</access_arguments>
+    <page_callback>CRM_Core_BAO_File::deleteAttachment</page_callback>
+  </item>
+
+  <!--6698-->
+  <item>
+    <path>civicrm/contact/view/mailing</path>
+    <page_callback>CRM_Mailing_Page_Tab</page_callback>
+  </item>
+  <item>
+    <path>civicrm/ajax/contactmailing</path>
+    <page_callback>CRM_Mailing_Page_AJAX::getContactMailings</page_callback>
+    <access_arguments>access CiviCRM</access_arguments>
+  </item>
+
+  <!--5340-->
+  <item>
+    <path>civicrm/ajax/getallcases</path>
+    <page_callback>CRM_NYSS_AJAX_Case::getAllCases</page_callback>
+    <access_arguments>access CiviCRM</access_arguments>
+  </item>
+
+  <!--5786-->
+  <item>
+    <path>civicrm/ajax/contactrelationships</path>
+    <page_callback>CRM_Contact_Page_AJAX::getContactRelationships</page_callback>
+    <access_arguments>access CiviCRM</access_arguments>
+  </item>
+
+  <!--7748-->
+  <item>
+    <path>civicrm/ajax/getsubjectlist</path>
+    <page_callback>CRM_NYSS_AJAX_Activity::getSubjectList</page_callback>
+    <access_arguments>access CiviCRM</access_arguments>
+  </item>
+
+  <!-- website integration -->
+  <item>
+    <path>civicrm/nyss/web/account</path>
+    <page_callback>CRM_NYSS_Page_Integration_Account</page_callback>
+    <access_arguments>view all contacts</access_arguments>
+  </item>
+  <item>
+    <path>civicrm/nyss/web/message</path>
+    <page_callback>CRM_NYSS_Page_Integration_Message</page_callback>
+    <access_arguments>view all contacts</access_arguments>
+  </item>
+  <item>
+    <path>civicrm/nyss/web/tags</path>
+    <page_callback>CRM_NYSS_Page_Integration_Tags</page_callback>
+    <access_arguments>view all contacts</access_arguments>
+  </item>
+  <item>
+    <path>civicrm/nyss/web/activitystream</path>
+    <page_callback>CRM_NYSS_Page_Integration_ActivityStream</page_callback>
+    <access_arguments>view all contacts</access_arguments>
+  </item>
+  <item>
+    <path>civicrm/nyss/web/getactivitystream</path>
+    <page_callback>CRM_NYSS_BAO_Integration_Website::getActivityStream</page_callback>
+    <access_arguments>view all contacts</access_arguments>
+  </item>
+  <item>
+    <path>civicrm/dashlet/webactivitystream</path>
+    <title>Website Activity Stream</title>
+    <page_callback>CRM_Dashlet_Page_WebsiteActivityStream</page_callback>
+  </item>
+  <item>
+    <path>civicrm/nyss/web/getnewcontacts</path>
+    <page_callback>CRM_NYSS_BAO_Integration_Website::getNewContacts</page_callback>
+    <access_arguments>view all contacts</access_arguments>
+  </item>
+  <item>
+    <path>civicrm/dashlet/newcontacts</path>
+    <title>Recently Created Contacts</title>
+    <page_callback>CRM_Dashlet_Page_NewContacts</page_callback>
+  </item>
+
+  <!-- #9990 -->
+  <item>
+    <path>civicrm/search/custom/taggroup/quickexport</path>
+    <title>Quick Export</title>
+    <page_callback>CRM_Contact_Form_Search_Custom_TagGroupLog::quickExport</page_callback>
+  </item>
+  <item>
+    <path>civicrm/search/custom/tagcontact/quickexport</path>
+    <title>Quick Export</title>
+    <page_callback>CRM_Contact_Form_Search_Custom_TagContactLog::quickExport</page_callback>
+  </item>
+
+  <item>
+    <path>civicrm/nyss/quicksearch</path>
+    <title>Quick Search</title>
+    <page_callback>CRM_NYSS_BAO_NYSS::getContactList</page_callback>
+  </item>
+
+  <!--11385-->
+  <item>
+    <path>civicrm/dashlet/allactivities</path>
+    <title>All Activities Dashlet</title>
+    <page_callback>CRM_Dashlet_Page_AllActivities</page_callback>
+  </item>
+  <item>
+    <path>civicrm/ajax/allactivities</path>
+    <page_callback>CRM_NYSS_AJAX_Activity::getDashletActivities</page_callback>
+    <access_arguments>access CiviCRM</access_arguments>
+  </item>
+
+  <item>
+    <title>Export CiviCRM Roles/Permissions</title>
+    <path>civicrm/nyss/exportpermissions</path>
+    <page_callback>CRM_NYSS_Form_ExportPermissions</page_callback>
+    <access_arguments>administer CiviCRM</access_arguments>
+  </item>
+
+  <!--load sample data-->
+  <item>
+    <title>Load Sample Data</title>
+    <path>civicrm/nyss/loadsampledata</path>
+    <page_callback>CRM_NYSS_Form_LoadSampleData</page_callback>
+    <access_arguments>administer CiviCRM</access_arguments>
+  </item>
+  <item>
+    <path>civicrm/nyss/loaddata</path>
+    <page_callback>CRM_NYSS_Form_LoadSampleData::loadData</page_callback>
+    <access_arguments>administer CiviCRM</access_arguments>
+  </item>
+  <item>
+    <path>civicrm/nyss/getoutput</path>
+    <page_callback>CRM_NYSS_Form_LoadSampleData::getOutput</page_callback>
+    <access_arguments>administer CiviCRM</access_arguments>
+  </item>
+</menu>

@@ -93,7 +93,7 @@ $execSql $instance -c "$sql" -q --log
 
 ## rebuild shadow table functions
 echo "$prog: rebuild shadow table functions"
-$execSql $instance -f $script_dir/../modules/nyss_dedupe/shadow_func.sql
+$execSql $instance -f $script_dir/../civicrm/custom/ext/gov.nysenate.dedupe/sql/shadow_func.sql
 
 ## update machine name for case types
 echo "$prog: update case type machine names"

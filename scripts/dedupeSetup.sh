@@ -13,7 +13,7 @@ prog=`basename $0`
 script_dir=`dirname $0`
 execSql=$script_dir/execSql.sh
 readConfig=$script_dir/readConfig.sh
-dedupe_dir=$script_dir/../modules/nyss_dedupe
+dedupe_dir=$script_dir/../civicrm/custom/ext/gov.nysenate.dedupe
 
 usage () {
   echo "Usage: $prog [--help|-h] [--rebuild-all|-a] [--rebuild-tables|-t] [--rebuild-rule-groups|-r] instance"
@@ -58,7 +58,7 @@ if [ $rebuildRuleGroups -eq 1 ]; then
       TRUNCATE TABLE civicrm_dedupe_rule_group;
       SET foreign_key_checks = 1;
     "
-    $execSql $instance -f $dedupe_dir/rules.sql
+    $execSql $instance -f $dedupe_dir/sql/rules.sql
 fi
 
 
