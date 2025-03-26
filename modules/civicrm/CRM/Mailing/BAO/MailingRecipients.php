@@ -77,7 +77,7 @@ WHERE  mailing_id = %1
     if ($limitString) {
       $sqlObject->limit($limit, $offset);
     }
-    $sqlObject->orderBy(['r.contact_id']);
+    $sqlObject->orderBy(['r.id']);
     $sql = $sqlObject->toSQL();
     return CRM_Core_DAO::executeQuery($sql);
   }
