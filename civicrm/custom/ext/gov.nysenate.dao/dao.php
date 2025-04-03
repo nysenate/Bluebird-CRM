@@ -95,10 +95,6 @@ function dao_civicrm_entityTypes(&$entityTypes) {
   //2729
   $entityTypes['Email']['fields_callback'][] = function($class, &$fields) {
     $fields['is_primary']['title'] = 'Is Email Primary?';
-    // fix related to DAOFieldsCallbackAdapterSpecProvider in 5.82 upgrade
-    // see https://chat.civicrm.org/civicrm/pl/m86q4kb7t7npzn8qy3tngrzu1a
-    $fields['is_primary']['default'] = null;
-    //
     $fields['signature_text']['export'] = FALSE;
     $fields['signature_html']['export'] = FALSE;
 
