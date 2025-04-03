@@ -54,12 +54,12 @@ class DAOFieldsCallbackAdapterSpecProvider extends \Civi\Core\Service\AutoServic
         $spec->addFieldSpec($newFieldSpec);
       }
       else {
-        self::updateFieldSpec($newFieldSpec, $oldFieldSpec);
+        self::updateFieldSpec($newFieldSpec, $oldFieldSpec, $spec);
       }
     }
   }
 
-  private static function updateFieldSpec(FieldSpec $newFieldSpec, FieldSpec $oldFieldSpec) {
+  private static function updateFieldSpec(FieldSpec $newFieldSpec, FieldSpec $oldFieldSpec, RequestSpec $spec) {
     // For the sake of sanity, just set the properties that might reasonably be changed by fields_callback.
     // We're purposely not dealing with 'options' because there's another hook for that.
     $oldFieldSpec->setRequired($newFieldSpec->isRequired());
@@ -71,7 +71,14 @@ class DAOFieldsCallbackAdapterSpecProvider extends \Civi\Core\Service\AutoServic
     $oldFieldSpec->setInputType($newFieldSpec->getInputType());
     $oldFieldSpec->setInputAttrs($newFieldSpec->getInputAttrs());
     $oldFieldSpec->setDataType($newFieldSpec->getDataType());
-    $oldFieldSpec->setDefaultValue($newFieldSpec->getDefaultValue());
+
+    // Per Civi\Api4\Service\Spec\SpecGatherer
+    // Default value only makes sense for create actions
+    if ($spec->getAction() == 'create') {
+      $oldFieldSpec->setDefaultValue($newFieldSpec->getDefaultValue());
+    } else {
+      $oldFieldSpec->setDefaultValue(NULL);
+    }
     $oldFieldSpec->setNullable($newFieldSpec->getNullable());
     $oldFieldSpec->setReadonly($newFieldSpec->getReadonly());
     $oldFieldSpec->setFkEntity($newFieldSpec->getEntity());
