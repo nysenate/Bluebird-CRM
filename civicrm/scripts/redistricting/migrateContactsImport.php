@@ -1126,7 +1126,7 @@ class CRM_migrateContactsImport {
     $o->params = $params;
     $o->noRules = false;
     $tableQueries = [];
-    nyss_dedupe_civicrm_dupeQuery($o, 'table', $tableQueries);
+    dedupe_civicrm_dupeQuery($o, 'table', $tableQueries);
     //bbscript_log(LL::TRACE, '$tableQueries', $tableQueries);
 
     $sql = $tableQueries['civicrm.custom.5'];
