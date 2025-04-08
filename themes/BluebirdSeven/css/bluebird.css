@@ -42,7 +42,7 @@ body.user-no-roles #userNoRoles {
 }
 
 #civicrm-menu.sm #crm-qsearch-input {
-  font-family: FontAwesome,"Open Sans","Helvetica Neue",Helvetica,Arial,sans-serif;
+  font-family: FontAwesomeSafe,"Open Sans","Helvetica Neue",Helvetica,Arial,sans-serif;
 }
 ul#civicrm-menu.sm {
   background: #DADAD2 url(../images/bluebirds_55x26.png) no-repeat scroll 92% bottom;
