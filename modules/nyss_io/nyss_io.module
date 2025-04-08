@@ -1433,7 +1433,7 @@ function _findContact(&$l, $nyss_conn, $ruleID = 1) {
   $o->params = $params;
   $o->noRules = false;
   $tableQueries = [];
-  nyss_dedupe_civicrm_dupeQuery($o, 'table', $tableQueries);
+  dedupe_civicrm_dupeQuery($o, 'table', $tableQueries);
 
   $sql = $tableQueries['civicrm.custom.5'];
   $sql = "
