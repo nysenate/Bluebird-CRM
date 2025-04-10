@@ -567,6 +567,27 @@ function system_requirements($phase) {
     }
   }
 
+  // See if trusted hostnames have been configured, and warn the user if they
+  // are not set.
+  if ($phase == 'runtime') {
+    $trusted_host_patterns = variable_get('trusted_host_patterns', array());
+    if (empty($trusted_host_patterns)) {
+      $requirements['trusted_host_patterns'] = array(
+        'title' => $t('Trusted Host Settings'),
+        'value' => $t('Not enabled'),
+        'description' => $t('The trusted_host_patterns setting is not configured in settings.php. This can lead to security vulnerabilities. It is <strong>highly recommended</strong> that you configure this. See <a href="@url">Protecting against HTTP HOST Header attacks</a> for more information.', array('@url' => 'https://www.drupal.org/node/1992030')),
+        'severity' => REQUIREMENT_ERROR,
+      );
+    }
+    else {
+      $requirements['trusted_host_patterns'] = array(
+        'title' => $t('Trusted Host Settings'),
+        'value' => $t('Enabled'),
+        'description' => $t('The trusted_host_patterns setting is set to allow %trusted_host_patterns', array('%trusted_host_patterns' => implode(', ', $trusted_host_patterns))),
+      );
+    }
+  }
+
   return $requirements;
 }
 
@@ -3409,6 +3430,22 @@ function system_update_7086() {
 
   // This variable indicates that the database is ready for hashed session ids.
   variable_set('hashed_session_ids_supported', TRUE);
+}
+
+/**
+ * Enable the Announcements module; see 7.100 Release Notes for opt-out details.
+ */
+function system_update_7087() {
+  if (!variable_get('announcements_feed_enable_by_default_opt_out', FALSE)) {
+    module_enable(array('announcements_feed'), FALSE);
+  }
+}
+
+/**
+ * Clear caches as registry has been altered.
+ */
+function system_update_7088() {
+  // Empty update to clear caches.
 }
 
 /**

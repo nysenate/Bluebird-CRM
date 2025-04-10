@@ -24,7 +24,7 @@ class civicrm_handler_relationship_phone extends civicrm_handler_relationship_lo
       if (!civicrm_initialize()) {
         return;
       }
-      self::$_phoneType = CRM_Core_PseudoConstant::get('CRM_Core_DAO_Phone', 'phone_type_id');
+      self::$_phoneType = CRM_Core_DAO_Phone::buildOptions('phone_type_id');
     }
   }
 

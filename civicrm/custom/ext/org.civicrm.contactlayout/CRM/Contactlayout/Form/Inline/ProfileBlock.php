@@ -98,7 +98,7 @@ class CRM_Contactlayout_Form_Inline_ProfileBlock extends CRM_Profile_Form_Edit {
   /**
    * Save profiles
    *
-   * @throws CiviCRM_API3_Exception
+   * @throws \CRM_Core_Exception
    */
   public function postProcess() {
     $values = $origValues = $this->controller->exportValues($this->_name);
@@ -156,7 +156,7 @@ class CRM_Contactlayout_Form_Inline_ProfileBlock extends CRM_Profile_Form_Edit {
   /**
    * @param int $cid
    * @return array
-   * @throws \API_Exception
+   * @throws \CRM_Core_Exception
    */
   public static function getEmployers($cid) {
     $relationships = Civi\Api4\Relationship::get()
@@ -182,7 +182,7 @@ class CRM_Contactlayout_Form_Inline_ProfileBlock extends CRM_Profile_Form_Edit {
    * Handles setting one or more employers for a contact.
    *
    * @param $values
-   * @throws \API_Exception
+   * @throws \CRM_Core_Exception
    */
   public function processEmployer(&$values) {
     if (isset($values['current_employer'])) {

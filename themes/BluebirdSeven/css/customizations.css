@@ -77,6 +77,11 @@ input[type=color] {
   color: white !important;
 }
 
+/*fix reset button on Advanced Contact Search Page*/
+.crm-container .crm-submit-buttons.reset-advanced-search {
+  padding: 1em;
+}
+
 /*dashboard*/
 .crm-container #civicrm-dashboard .column .widget-wrapper .widget-controls,
 .crm-container #civicrm-dashboard .crm-dashlet-header {

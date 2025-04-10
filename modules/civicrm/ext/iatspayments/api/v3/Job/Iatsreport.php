@@ -30,7 +30,7 @@ function _civicrm_api3_job_iatsreport_spec(&$spec) {
  * @return array API result descriptor
  * @see civicrm_api3_create_success
  * @see civicrm_api3_create_error
- * @throws API_Exception
+ * @throws CRM_Core_Exception
  */
 function civicrm_api3_job_iatsreport($params) {
 
@@ -44,8 +44,8 @@ function civicrm_api3_job_iatsreport($params) {
       'is_test' => 0,
     ));
   }
-  catch (CiviCRM_API3_Exception $e) {
-    throw new API_Exception('Unexpected error getting payment processors: ' . $e->getMessage()); //  . "\n" . $e->getTraceAsString());
+  catch (CRM_Core_Exception $e) {
+    throw new CRM_Core_Exception('Unexpected error getting payment processors: ' . $e->getMessage()); //  . "\n" . $e->getTraceAsString());
   }
   if (empty($result['values'])) {
     return;
@@ -177,7 +177,7 @@ function civicrm_api3_job_iatsreport($params) {
               civicrm_api3('IatsPayments', 'journal', $t);
               $processed[$user_name][$type][$method]++;
             }
-            catch (CiviCRM_API3_Exception $e) {
+            catch (CRM_Core_Exception $e) {
               $error_log[] = $e->getMessage();
             }
           }

@@ -125,15 +125,37 @@ input.crm-form-checkbox + label {
   vertical-align: top;
 }
 /* Styles for Sticky Header */
+.crm-sticky thead > tr > th,
 .crm-container table thead.sticky {
   background-color: #fff;
 }
 
 .crm-container thead div.sticky-header {
   height: 15px;
+}
+
+.crm-sticky thead,
+.crm-container thead div.sticky-header {
   border-bottom: 2px solid #cfcec3;
   background-color: #fff;
   z-index: 10;
+}
+
+.crm-sticky thead {
+  position: sticky;
+  top: var(--crm-menubar-bottom);
+  box-shadow: 0 2px 2px -1px #cfcec3;
+}
+
+@media (max-width: 782px) {
+  /** WP **/
+  .wp-admin .crm-sticky thead {
+    top: 48px;
+  }
+  /** Drupal **/
+  .path-civicrm.crm-menu-visible {
+    top: 39px;
+  }
 }
 
 /* Styles for Sorting Header */
@@ -413,6 +435,17 @@ input.crm-form-entityref {
 .crm-container .crm-section,
 .crm-container div.crm-field-wrapper {
   margin-bottom: 1em;
+}
+
+@media (min-width:1079px) {
+  .wp-toolbar {
+    --crm-sticky-top: 80px;
+  }
+  .wp-toolbar .crm-menubar-above-cms-menu,
+  .wp-toolbar .crm-menubar-below-cms-menu {
+    --crm-sticky-top: 112px;
+  }
+
 }
 
 /* todo: See PR#19968 to move towards configurable breakpoints */
@@ -2290,6 +2323,14 @@ div.crm-master-accordion-header a.helpicon {
   display: none;
 }
 
+/* Ex: Advanced Search (but not limited to) */
+.crm-container details.crm-accordion-settings summary {
+  text-align: right;
+}
+.crm-container details.crm-accordion-settings summary::before {
+  content: '\f013';
+}
+
 .crm-container details details {
   padding: 0 0.25rem; /* adds padding for nested accordions */
 }
@@ -2311,7 +2352,7 @@ div.crm-master-accordion-header a.helpicon {
 .crm-container details > summary:before {
   font-family: "FontAwesome";
   display: inline-block;
-  width: 1em;
+  padding-right: 0.5rem;
   content: "\f0da";
   font-size: 13px;
 }
@@ -2746,6 +2787,7 @@ div.crm-container form {
 
 /* tables */
 .crm-container table {
+  position: relative;
   border: 1px solid #efefef;
 }
 
@@ -2820,7 +2862,6 @@ tbody.scrollContent tr.alternateRow {
 .crm-container th.sorting .DataTables_sort_icon {
   display: none;
 }
-
 
 /*contact summary page */
 #crm-container div.contact_details {
@@ -3332,6 +3373,10 @@ span.crm-select-item-color {
   display: flex;
   flex-wrap: wrap;
   gap: var(--gap);
+}
+/* Reset checkbox width when its rendered as text '(x)' in confirmation screens /dev/core/-/issues/5550 */
+.crm-container.crm-public .crm-profile-view .crm-option-label-pair {
+  --checkbox-width: auto;
 }
 /* Override more general styling */
 .crm-container .crm-multiple-checkbox-radio-options :where(input.crm-form-radio,
@@ -4004,17 +4049,8 @@ span.crm-status-icon {
 
 /* Standalone-only styles. A minimal set to make it usable out-of-the-box. */
 html.crm-standalone body {
-  --sa-font-family: sans-serif;
-  --roundness: 3px;
-  --error-colour: #a00;
-  --warning-colour: #fbb862;
-  --success-colour: #86c66c;
-  --label-colour: #464354;
-  --background-colour: rgb(242,242,237);
-  --box-padding: 1.6rem;
-  --box-background: #fff;
   margin: 0;
   padding: 0;
-  font-family: var(--sa-font-family);
-  background-color: var(--background-colour);
+  font-family: var(--crm-font, sans-serif);
+  background-color: var(--crm-c-page-background, #f8f8f8);
 }

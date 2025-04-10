@@ -38,6 +38,14 @@ class CRM_Core_Payment_iATSService extends CRM_Core_Payment {
   static private $_singleton = NULL;
 
   /**
+   * @var array
+   * @todo Is the `mode` key is ever used? And it only seems to have one
+   * other key `iats_domain`, so maybe should remove mode and rename this.
+   * The parent core class doesn't seem to use `_profile`.
+   */
+  protected $_profile;
+
+  /**
    * Constructor.
    *
    * @param string $mode
@@ -81,7 +89,7 @@ class CRM_Core_Payment_iATSService extends CRM_Core_Payment {
           $settings['days'] = array('-1');
         }
       }
-      catch (CiviCRM_API3_Exception $e) {
+      catch (CRM_Core_Exception $e) {
         // Assume no settings exist, use safest fallback.
         $settings = array('days' => array('-1'));
       }
@@ -403,8 +411,8 @@ class CRM_Core_Payment_iATSService extends CRM_Core_Payment {
    * @return array
    */
   protected function convertParams($params, $method) {
-    $request = array();
-    $convert = array(
+    $request = [];
+    $convert = [
       'firstName' => 'billing_first_name',
       'lastName' => 'billing_last_name',
       'address' => 'street_address',
@@ -415,17 +423,23 @@ class CRM_Core_Payment_iATSService extends CRM_Core_Payment {
       'invoiceNum' => 'invoiceID',
       'creditCardNum' => 'credit_card_number',
       'cvv2' => 'cvv2',
-    );
+    ];
 
+    // for each of the 'convert' pairs, assign the param key value to the array
+    // that we're going to submit to the iATS server with it's new key
     foreach ($convert as $r => $p) {
       if (isset($params[$p])) {
-        $request[$r] = htmlspecialchars($params[$p]);
+        // The ";" character wouldn't normally be used in these fields, but paysafe
+        // will reject the submission if it appears, so we'll strip it
+        // out to be safe.
+        $request[$r] = str_replace(';', '', $params[$p]);
       }
     }
-    // The "&" character is badly handled by the processor,
-    // so we sanitize it to "and"
+    // The "&" character is (sometimes?) badly handled by the processor,
+    // so we convert it to "and" when it appears in first or last name
     $request['firstName'] = str_replace('&', 'and', $request['firstName']);
     $request['lastName'] = str_replace('&', 'and', $request['lastName']);
+
     $request['creditCardExpiry'] = sprintf('%02d/%02d', intval($params['month']), (intval($params['year']) % 100));
     $request['total'] = sprintf('%01.2f', CRM_Utils_Rule::cleanMoney($params['amount']));
     // Place for ugly hacks.
@@ -585,7 +599,7 @@ class CRM_Core_Payment_iATSService extends CRM_Core_Payment {
         $result = civicrm_api3('ContributionRecur', 'create', $recur_update);
         return $result;
       }
-      catch (CiviCRM_API3_Exception $e) {
+      catch (CRM_Core_Exception $e) {
         // Not a critical error, just log and continue.
         $error = $e->getMessage();
         Civi::log()->info('Unexpected error updating the next scheduled contribution date for id {id}: {error}', array('id' => $recur_id, 'error' => $error));
@@ -614,7 +628,7 @@ class CRM_Core_Payment_iATSService extends CRM_Core_Payment {
         $result = civicrm_api3('Contribution', 'create', $update);
         return $result;
       }
-      catch (CiviCRM_API3_Exception $e) {
+      catch (CRM_Core_Exception $e) {
         // Not a critical error, just log and continue.
         $error = $e->getMessage();
         Civi::log()->info('Unexpected error updating the contribution date for id {id}: {error}', array('id' => $contribution_id, 'error' => $error));

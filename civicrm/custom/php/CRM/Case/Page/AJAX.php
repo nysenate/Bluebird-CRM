@@ -24,6 +24,7 @@ class CRM_Case_Page_AJAX {
    * @throws \CRM_Core_Exception
    */
   public static function processCaseTags() {
+    CRM_Core_Page_AJAX::validateAjaxRequestMethod();
 
     $caseId = CRM_Utils_Type::escape($_POST['case_id'], 'Positive');
     $tags = CRM_Utils_Type::escape($_POST['tag'], 'String');
@@ -81,6 +82,7 @@ class CRM_Case_Page_AJAX {
    * @throws \CRM_Core_Exception
    */
   public static function caseDetails() {
+    CRM_Core_Page_AJAX::validateAjaxRequestMethod();
     $caseId = CRM_Utils_Type::escape($_GET['caseId'], 'Positive');
 
     $case = civicrm_api3('Case', 'getsingle', [
@@ -109,6 +111,7 @@ class CRM_Case_Page_AJAX {
    * @throws \CRM_Core_Exception
    */
   public static function addClient() {
+    CRM_Core_Page_AJAX::validateAjaxRequestMethod();
     $caseId = CRM_Utils_Type::escape($_POST['caseID'], 'Positive');
     $contactId = CRM_Utils_Type::escape($_POST['contactID'], 'Positive');
 
@@ -145,6 +148,7 @@ class CRM_Case_Page_AJAX {
    * Delete relationships specific to case and relationship type.
    */
   public static function deleteCaseRoles() {
+    CRM_Core_Page_AJAX::validateAjaxRequestMethod();
     $caseId = CRM_Utils_Type::escape($_POST['case_id'], 'Positive');
     $cid = CRM_Utils_Type::escape($_POST['cid'], 'Positive');
     $relType = CRM_Utils_Request::retrieve('rel_type', 'String', CRM_Core_DAO::$_nullObject, TRUE);
@@ -160,6 +164,7 @@ class CRM_Case_Page_AJAX {
   }
 
   public static function getCases() {
+    CRM_Core_Page_AJAX::validateAjaxRequestMethod();
     $requiredParameters = [
       'type' => 'String',
     ];

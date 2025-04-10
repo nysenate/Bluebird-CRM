@@ -94,20 +94,10 @@ class civicrm_handler_field_event_link extends views_handler_field {
         // LINKING TO EVENT REGISTRATION PAGE
       case 'registration':
         if (user_access('register for events') && $data !== NULL && $data !== '') {
-          require_once 'CRM/Core/Config.php';
-          $config = CRM_Core_Config::singleton();
-          if ($enable_cart = CRM_Core_BAO_Setting::getItem(CRM_Core_BAO_Setting::EVENT_PREFERENCES_NAME, 'enable_cart')) {
-            require_once 'CRM/Event/Cart/BAO/EventInCart.php';
-            //TODO don't call for every row
-            $link = CRM_Event_Cart_BAO_EventInCart::get_registration_link($values->{$this->aliases['id']});
-            return civicrm_views_href($link['label'], $link['path'], $link['query']);
-          }
-          else {
-            return civicrm_views_href($data,
-              'civicrm/event/register',
-              "reset=1&id={$values->{$this->aliases['id']}}"
-            );
-          }
+          return civicrm_views_href($data,
+            'civicrm/event/register',
+            "reset=1&id={$values->{$this->aliases['id']}}"
+          );
         }
 
         // LINKING TO EVENT CONFIG PAGE

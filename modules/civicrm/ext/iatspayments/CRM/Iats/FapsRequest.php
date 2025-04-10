@@ -36,7 +36,7 @@ class Faps_Transaction implements JsonSerializable {
   public function __construct(array $array) {
     $this->array = $array;
   }
-  public function jsonSerialize() {
+  public function jsonSerialize(): array {
     return $this->array;
   }
 }

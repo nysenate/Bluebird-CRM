@@ -34,7 +34,7 @@ class ParameterNotFoundException extends InvalidArgumentException implements Not
      * @param string[]        $alternatives         Some parameter name alternatives
      * @param string|null     $nonNestedAlternative The alternative parameter name when the user expected dot notation for nested parameters
      */
-    public function __construct(string $key, string $sourceId = null, string $sourceKey = null, \Throwable $previous = null, array $alternatives = [], string $nonNestedAlternative = null)
+    public function __construct(string $key, ?string $sourceId = null, ?string $sourceKey = null, ?\Throwable $previous = null, array $alternatives = [], ?string $nonNestedAlternative = null)
     {
         $this->key = $key;
         $this->sourceId = $sourceId;
@@ -84,14 +84,14 @@ class ParameterNotFoundException extends InvalidArgumentException implements Not
         return $this->sourceKey;
     }
 
-    public function setSourceId($sourceId)
+    public function setSourceId(?string $sourceId)
     {
         $this->sourceId = $sourceId;
 
         $this->updateRepr();
     }
 
-    public function setSourceKey($sourceKey)
+    public function setSourceKey(?string $sourceKey)
     {
         $this->sourceKey = $sourceKey;
 

@@ -106,7 +106,7 @@ class RegistrationServer extends Agent {
     $respData = $this->createError('Unrecognized entity or action');
 
     if ($reqData['entity'] == 'Cxn' && preg_match('/^[a-zA-Z]+$/', $reqData['action'])) {
-      $func = 'on' . $reqData['entity'] . strtoupper($reqData['action']{0}) . substr($reqData['action'], 1);
+      $func = 'on' . $reqData['entity'] . strtoupper($reqData['action'][0]) . substr($reqData['action'], 1);
       if (is_callable(array($this, $func))) {
         $respData = call_user_func(array($this, $func), $reqData['cxn'], $reqData['params']);
       }

@@ -5,6 +5,7 @@ return [
   'name' => 'Grant',
   'table' => 'civicrm_grant',
   'class' => 'CRM_Grant_DAO_Grant',
+  'token_class' => 'Civi\Token\GenericEntityTokens',
   'getInfo' => fn() => [
     'title' => E::ts('Grant'),
     'title_plural' => E::ts('Grants'),
@@ -45,7 +46,7 @@ return [
       'usage' => [
         'import',
         'export',
-        'duplicate_matching',
+        'token',
       ],
       'primary_key' => TRUE,
       'auto_increment' => TRUE,
@@ -60,6 +61,7 @@ return [
       'unique_name' => 'grant_contact_id',
       'usage' => [
         'export',
+        'import',
       ],
       'input_attrs' => [
         'label' => E::ts('Contact'),
@@ -80,7 +82,7 @@ return [
       'usage' => [
         'import',
         'export',
-        'duplicate_matching',
+        'token',
       ],
       'input_attrs' => [
         'format_type' => 'activityDate',
@@ -96,7 +98,7 @@ return [
       'usage' => [
         'import',
         'export',
-        'duplicate_matching',
+        'token',
       ],
       'input_attrs' => [
         'format_type' => 'activityDate',
@@ -112,7 +114,7 @@ return [
       'usage' => [
         'import',
         'export',
-        'duplicate_matching',
+        'token',
       ],
       'input_attrs' => [
         'format_type' => 'activityDate',
@@ -127,7 +129,7 @@ return [
       'usage' => [
         'import',
         'export',
-        'duplicate_matching',
+        'token',
       ],
       'input_attrs' => [
         'format_type' => 'activityDate',
@@ -144,7 +146,7 @@ return [
       'usage' => [
         'import',
         'export',
-        'duplicate_matching',
+        'token',
       ],
     ],
     'grant_type_id' => [
@@ -156,6 +158,7 @@ return [
       'add' => '1.8',
       'usage' => [
         'export',
+        'token',
       ],
       'pseudoconstant' => [
         'option_group_name' => 'grant_type',
@@ -171,7 +174,7 @@ return [
       'usage' => [
         'import',
         'export',
-        'duplicate_matching',
+        'token',
       ],
     ],
     'amount_requested' => [
@@ -180,6 +183,11 @@ return [
       'input_type' => 'Text',
       'description' => E::ts('Requested grant amount, in original currency (optional).'),
       'add' => '1.8',
+      'usage' => [
+        'import',
+        'export',
+        'token',
+      ],
     ],
     'amount_granted' => [
       'title' => E::ts('Amount granted'),
@@ -190,7 +198,7 @@ return [
       'usage' => [
         'import',
         'export',
-        'duplicate_matching',
+        'token',
       ],
     ],
     'currency' => [
@@ -198,6 +206,7 @@ return [
       'sql_type' => 'varchar(3)',
       'input_type' => 'Select',
       'required' => TRUE,
+      'unique_name' => 'grant_currency',
       'description' => E::ts('3 character string, value from config setting or input via user.'),
       'add' => '3.2',
       'input_attrs' => [
@@ -209,6 +218,12 @@ return [
         'label_column' => 'full_name',
         'name_column' => 'name',
         'abbr_column' => 'symbol',
+        'description_column' => 'IFNULL(CONCAT(name, " (", symbol, ")"), name)',
+      ],
+      'usage' => [
+        'import',
+        'export',
+        'token',
       ],
     ],
     'rationale' => [
@@ -220,7 +235,7 @@ return [
       'usage' => [
         'import',
         'export',
-        'duplicate_matching',
+        'token',
       ],
       'input_attrs' => [
         'rows' => 4,
@@ -237,7 +252,8 @@ return [
       'unique_name' => 'grant_status_id',
       'usage' => [
         'import',
-        'duplicate_matching',
+        'export',
+        'token',
       ],
       'pseudoconstant' => [
         'option_group_name' => 'grant_status',
@@ -249,9 +265,15 @@ return [
       'input_type' => 'Select',
       'description' => E::ts('FK to Financial Type.'),
       'add' => '4.3',
+      'unique_name' => 'grant_financial_type_id',
       'default' => NULL,
       'input_attrs' => [
         'label' => E::ts('Financial Type'),
+      ],
+      'usage' => [
+        'import',
+        'export',
+        'token',
       ],
       'pseudoconstant' => [
         'table' => 'civicrm_financial_type',

@@ -196,8 +196,8 @@ function civicrm_views_add_fields(&$fields, &$data, $tableName, &$skipFields = N
     $name = $value['name'];
     // Only add fields not in $data or $skipFields and has a ['title']
     if (isset($value['custom_field_id']) ||
-      CRM_Utils_Array::value($name, $skipFields) ||
-      CRM_Utils_Array::value($name, $data) ||
+      !empty($skipFields[$name]) ||
+      !empty($data[$name]) ||
       !isset($value['title']) ||
       (isset($value['where']) &&
         substr($value['where'], 0, strlen($tableName) + 1) != "{$tableName}."
@@ -213,7 +213,7 @@ function civicrm_views_add_fields(&$fields, &$data, $tableName, &$skipFields = N
       }
     }
 
-    $type = CRM_Utils_Array::value('type', $value, 'String');
+    $type = $value['type'] ?? 'String';
     $data[$value['name']] = array(
       'title' => $value['title'],
       'help' => $value['title'],

@@ -300,7 +300,7 @@ function civicrm_role_granted_by_other_group($contact_id, $rid, $group_id) {
       // check if group has been added by api or not.
       $groupIds = array();
       foreach ($result as $grpid => $grp) {
-        $groupIds[] = CRM_Utils_Array::value('group_id', $grp);
+        $groupIds[] = $grp['group_id'] ?? NULL;
       }
     }
 
@@ -403,7 +403,7 @@ function civicrm_group_roles_show_rules($action = NULL, $id = NULL) {
   // get civicrm groups
   $params = array('version' => 3, 'option.limit' => 0);
   $groups = civicrm_api('group', 'get', $params);
-  $groups = CRM_Utils_Array::value('values', $groups);
+  $groups = $groups['values'] ?? NULL;
 
   //Begin building main output table.
   $header = array('rid' => t('Rule ID'), 'name' => t("Rule Name ('CiviCRM Group' <--> 'Drupal Role')"), 'op' => t('Operations'));
@@ -411,10 +411,10 @@ function civicrm_group_roles_show_rules($action = NULL, $id = NULL) {
 
   $rules = db_query('SELECT * FROM {civicrm_group_roles_rules} ORDER BY id ASC')->fetchAll();
   foreach ($rules as $result) {
-    $gid = CRM_Utils_Array::value($result->group_id, $groups);
+    $gid = $groups[$result->group_id] ?? NULL;
     $data[] = array(
       'rid' => check_plain($result->id),
-      'name' => check_plain(CRM_Utils_Array::value('title', $gid) . " <--> " . $roles[$result->role_id]),
+      'name' => check_plain(($gid['title'] ?? '') . " <--> " . $roles[$result->role_id]),
       'op' => l(t('edit'), 'admin/config/civicrm/civicrm_group_roles/add_rule' . '/' . check_plain($result->id)) . '&nbsp;&nbsp;' . l(t('delete'), 'admin/config/civicrm/civicrm_group_roles/delete' . '/' . check_plain($result->id)),
     );
   }
@@ -596,8 +596,8 @@ function civicrm_group_roles_add_remove_groups($roles, $user, $op) {
     );
     $contact = civicrm_api('UFMatch', 'get', $params);
 
-    if (!empty($contact['values']) && !CRM_Utils_Array::value('is_error', $contact) && is_numeric($contact['values'][0]['contact_id'])) {
-      $contact_id = CRM_Utils_Array::value('contact_id', $contact['values'][0]);
+    if (!empty($contact['values']) && empty($contact['is_error']) && is_numeric($contact['values'][0]['contact_id'])) {
+      $contact_id = $contact['values'][0]['contact_id'] ?? NULL;
 
       //loop over user's roles
       foreach ($roles as $rid => $role) {
@@ -772,7 +772,7 @@ function _civicrm_group_roles_validate_groups(array $groups) {
     }
 
     // CRM-11161: Exclude smart groups as we don't want to add contacts statically to a smart group
-    if (CRM_Utils_Array::value('saved_search_id', $group_result['values'][0])) {
+    if (!empty($group_result['values'][0]['saved_search_id'])) {
       if (variable_get('civicrm_group_roles_debugging', 0)) {
         $msg = 'Group ID @groupId is a smart group, so the user was not added to it statically.';
         $variables = array('@groupId' => $groupId);

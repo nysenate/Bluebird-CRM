@@ -167,7 +167,7 @@ class CRM_Contactlayout_BAO_ContactLayout extends CRM_Contactlayout_DAO_ContactL
    * @return bool
    */
   protected static function checkBlockValidity($blockInfo, $blockRelation = NULL, $contactType = NULL) {
-    $blockContactType = $blockInfo['contact_type'] ?? NULL;
+    $blockContactType = $blockInfo['contact_type'] ?? [];
     if ($blockRelation) {
       try {
         $relationship = self::getRelationshipFromOption($blockRelation);
@@ -179,7 +179,7 @@ class CRM_Contactlayout_BAO_ContactLayout extends CRM_Contactlayout_DAO_ContactL
       return self::checkBlockRelation($relationship, $contactType, $blockContactType);
     }
     else {
-      return $blockInfo && (!$contactType || !$blockContactType || in_array($contactType, (array) $blockContactType, TRUE));
+      return $blockInfo && (!$contactType || !$blockContactType || in_array($contactType, $blockContactType, TRUE));
     }
   }
 
@@ -189,7 +189,7 @@ class CRM_Contactlayout_BAO_ContactLayout extends CRM_Contactlayout_DAO_ContactL
    * @param $blockContactType
    * @return bool
    */
-  private static function checkBlockRelation(array $relationship, $contactType, $blockContactType) {
+  private static function checkBlockRelation(array $relationship, $contactType, array $blockContactType) {
     // Reciprocal relationship - check both directions
     if ($relationship['direction'] === 'r') {
       return self::checkBlockRelation(['direction' => 'ab'] + $relationship, $contactType, $blockContactType) ||
@@ -520,17 +520,25 @@ class CRM_Contactlayout_BAO_ContactLayout extends CRM_Contactlayout_DAO_ContactL
       'caller' => 'ContactLayout',
     ];
     CRM_Utils_Hook::tabset('civicrm/contact/view', $tabs, $context);
-    $allTabs = [];
-    foreach ($tabs as $index => $tab) {
-      // Every tab OUGHT to have an 'id' but the documentation about this has been unclear.
-      // Proactively convert array key to id if missing.
-      $allTabs[] = $tab + [
-        'is_active' => TRUE,
-        'id' => $index,
-      ];
+
+    if (method_exists(\CRM_Core_Smarty::class, 'setRequiredTabTemplateKeys')) {
+      // use new core helper to avoid smarty notices
+      $tabs = \CRM_Core_Smarty::setRequiredTabTemplateKeys($tabs);
     }
-    usort($allTabs, ['CRM_Utils_Sort', 'cmpFunc']);
-    return $allTabs;
+
+    $keyedTabs = [];
+
+    foreach ($tabs as $key => $tab) {
+      // TODO why `is_active` here and `active` elsewhere?
+      $tab['is_active'] = $tab['is_active'] ?? TRUE;
+
+      // Ensure array keys match tab.id if provided
+      // (The contact template used to use tab.id but now uses the array key)
+      $finalKey = $tab['id'] ?? $key;
+      $keyedTabs[$finalKey] = $tab;
+    }
+    uasort($keyedTabs, ['CRM_Utils_Sort', 'cmpFunc']);
+    return $keyedTabs;
   }
 
 }

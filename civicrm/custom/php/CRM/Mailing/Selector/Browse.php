@@ -168,7 +168,7 @@ class CRM_Mailing_Selector_Browse extends CRM_Core_Selector_Base implements CRM_
         ]
       );
 
-      if (CRM_Campaign_BAO_Campaign::isComponentEnabled()) {
+      if (CRM_Core_Component::isEnabled('CiviCampaign')) {
         self::$_columnHeaders[] = [
           'name' => ts('Campaign'),
           'sort' => 'campaign_id',
@@ -372,9 +372,12 @@ LEFT JOIN  civicrm_contact scheduledContact ON ( $mailing.scheduled_id = schedul
         $actionMask = NULL;
         if ($row['sms_provider_id']) {
           $actionLinks[CRM_Core_Action::PREVIEW]['url'] = 'civicrm/sms/send';
+          $actionLinks[CRM_Core_Action::PREVIEW]['title'] = ts('Continue SMS');
+          $actionLinks[CRM_Core_Action::UPDATE]['url'] = 'civicrm/sms/send';
+          $actionLinks[CRM_Core_Action::UPDATE]['title'] = ts('Copy SMS');
+          $actionLinks[CRM_Core_Action::VIEW]['title'] = ts('View SMS Report');
         }
-
-        if (!($row['status'] === 'Not scheduled') && !$row['sms_provider_id']) {
+        if ($row['status'] !== 'Not scheduled') {
           if ($allAccess || $showCreateLinks) {
             $actionMask = CRM_Core_Action::VIEW;
           }
@@ -384,7 +387,6 @@ LEFT JOIN  civicrm_contact scheduledContact ON ( $mailing.scheduled_id = schedul
             $actionMask = CRM_Core_Action::PREVIEW;
           }
         }
-
         if (in_array($row['status'], ['Scheduled', 'Running', 'Paused'])) {
           if ($allAccess ||
             //NYSS 16512 allow pausing/resuming for approvers

@@ -23,7 +23,7 @@ function _civicrm_api3_iats_payments_journal_spec(&$params) {
  * @return array
  *   API result array.
  *
- * @throws CiviCRM_API3_Exception
+ * @throws CRM_Core_Exception
  */
 
 /**
@@ -54,7 +54,7 @@ function civicrm_api3_iats_payments_journal($params) {
       $sql_action = 'REPLACE INTO ';
     }
     if ($data['Result'] == 'REJ:TIMEOUT' && $data['Method of Payment'] == 'ACHEFT') {
-      throw new CiviCRM_API3_Exception('iATS Payments journal ignore ACHEFT REJ:TIMEOUT');
+      throw new CRM_Core_Exception('iATS Payments journal ignore ACHEFT REJ:TIMEOUT');
     } 
     $query_params = array(
       1 => array($data['Transaction ID'], 'String'),
@@ -73,7 +73,7 @@ function civicrm_api3_iats_payments_journal($params) {
   }
   catch (Exception $e) {
     CRM_Core_Error::debug_var('params', $params);
-    // throw CiviCRM_API3_Exception('iATS Payments journalling failed: ' . $e->getMessage());
+    // throw CRM_Core_Exception('iATS Payments journalling failed: ' . $e->getMessage());
   }
   return civicrm_api3_create_success();
 }

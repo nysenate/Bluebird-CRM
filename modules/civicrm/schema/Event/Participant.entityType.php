@@ -114,6 +114,7 @@ return [
         'table' => 'civicrm_participant_status_type',
         'key_column' => 'id',
         'label_column' => 'label',
+        'condition_provider' => ['CRM_Event_BAO_Participant', 'alterStatus'],
       ],
       'entity_reference' => [
         'entity' => 'ParticipantStatusType',
@@ -135,11 +136,12 @@ return [
         'duplicate_matching',
       ],
       'input_attrs' => [
-        'multiple' => '1',
+        'multiple' => TRUE,
         'label' => ts('Participant Role'),
       ],
       'pseudoconstant' => [
         'option_group_name' => 'participant_role',
+        'condition_provider' => ['CRM_Event_BAO_Participant', 'alterRole'],
       ],
     ],
     'register_date' => [
@@ -284,6 +286,7 @@ return [
         'label_column' => 'full_name',
         'name_column' => 'name',
         'abbr_column' => 'symbol',
+        'description_column' => 'IFNULL(CONCAT(name, " (", symbol, ")"), name)',
       ],
     ],
     'campaign_id' => [
@@ -320,21 +323,6 @@ return [
       'input_type' => 'Number',
       'description' => ts('Discount Amount'),
       'add' => '4.1',
-    ],
-    'cart_id' => [
-      'title' => ts('Event Cart ID'),
-      'sql_type' => 'int unsigned',
-      'input_type' => 'EntityRef',
-      'description' => ts('FK to civicrm_event_carts'),
-      'add' => '4.1',
-      'input_attrs' => [
-        'label' => ts('Event Cart'),
-      ],
-      'entity_reference' => [
-        'entity' => 'Cart',
-        'key' => 'id',
-        'on_delete' => 'SET NULL',
-      ],
     ],
     'must_wait' => [
       'title' => ts('Must Wait on List'),

@@ -244,7 +244,7 @@ class CRM_Core_Payment_iATSServiceACHEFT extends CRM_Core_Payment_iATSService {
           try {
             $result = civicrm_api3('Contribution', 'create', $contribution_update);
           }
-          catch (CiviCRM_API3_Exception $e) {
+          catch (CRM_Core_Exception $e) {
             // Not a critical error, just log and continue.
             $error = $e->getMessage();
             Civi::log()->info('Unexpected error adding the trxn_id for contribution id {id}: {error}', array('id' => $recur_id, 'error' => $error));
@@ -348,7 +348,7 @@ class CRM_Core_Payment_iATSServiceACHEFT extends CRM_Core_Payment_iATSService {
               try {
                 $result = civicrm_api3('Contribution', 'create', $contribution_update);
               }
-              catch (CiviCRM_API3_Exception $e) {
+              catch (CRM_Core_Exception $e) {
                 // Not a critical error, just log and continue.
                 $error = $e->getMessage();
                 Civi::log()->info('Unexpected error adding the trxn_id for contribution id {id}: {error}', array('id' => $recur_id, 'error' => $error));

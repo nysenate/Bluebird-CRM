@@ -24,7 +24,7 @@ class civicrm_handler_relationship_website extends civicrm_handler_relationship_
       if (!civicrm_initialize()) {
         return;
       }
-      self::$_websiteType = CRM_Core_PseudoConstant::get('CRM_Core_DAO_Website', 'website_type_id');
+      self::$_websiteType = CRM_Core_DAO_Website::buildOptions('website_type_id');
     }
   }
 

@@ -64,7 +64,7 @@ function _civicrm_api3_job_iatsverify_spec(&$spec) {
  * @see civicrm_api3_create_success
  * @see civicrm_api3_create_error
  *
- * @throws API_Exception
+ * @throws CRM_Core_Exception
  */
 function civicrm_api3_job_iatsverify($params) {
 
@@ -165,7 +165,7 @@ function civicrm_api3_job_iatsverify($params) {
                     'id' => $contribution['contribution_recur_id'],
                   ));
                 }
-                catch (CiviCRM_API3_Exception $e) {
+                catch (CRM_Core_Exception $e) {
                   $is_email_receipt = 0;
                   $error_log[] = $e->getMessage() . "\n";
                 }
@@ -175,7 +175,7 @@ function civicrm_api3_job_iatsverify($params) {
             try {
               $contributionResult = civicrm_api3('contribution', 'completetransaction', $complete);
             }
-            catch (CiviCRM_API3_Exception $e) {
+            catch (CRM_Core_Exception $e) {
               CRM_Core_Error::debug_var('Failed to complete transaction with', $complete);
               $error_log[] = 'Failed to complete transaction: ' . $e->getMessage() . "\n";
             }
@@ -183,7 +183,7 @@ function civicrm_api3_job_iatsverify($params) {
             // Restore source field and trxn_id that completetransaction overwrites
             civicrm_api3('contribution', 'create', array(
               'id' => $contribution['id'],
-              'source' => ($contribution['contribution_source'] ?? $contribution['source']),
+              'source' => ($contribution['contribution_source'] ?? $contribution['source'] ?? ''),
               'trxn_id' => $trxn_id,
             ));
             break;
@@ -216,7 +216,7 @@ function civicrm_api3_job_iatsverify($params) {
       }
     }
   }
-  catch (CiviCRM_API3_Exception $e) {
+  catch (CRM_Core_Exception $e) {
     $error_log[] = $e->getMessage() . "\n";
   }
   $message .= '<br />' . ts('Completed with %1 errors.',

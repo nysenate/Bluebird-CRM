@@ -20,7 +20,7 @@ final class MoneyBag implements MoneyContainer
      *
      * @var BigRational[]
      */
-    private $amounts = [];
+    private array $amounts = [];
 
     /**
      * Returns the amount in the given currency contained in the bag, as a rational number.
@@ -39,9 +39,7 @@ final class MoneyBag implements MoneyContainer
             $currencyCode = (string) $currency;
         }
 
-        return isset($this->amounts[$currencyCode])
-            ? $this->amounts[$currencyCode]
-            : BigRational::zero();
+        return $this->amounts[$currencyCode] ?? BigRational::zero();
     }
 
     /**
