@@ -21,7 +21,7 @@
  */
 $prog = basename(__FILE__);
 
-require_once '../civicrm/scripts/script_utils.php';
+require_once dirname(__FILE__).'/../civicrm/scripts/script_utils.php';
 $optlist = civicrm_script_init("s", array('since='), FALSE);
 
 if ($optlist === null) {
