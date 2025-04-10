@@ -77,6 +77,8 @@ WHERE  mailing_id = %1
     if ($limitString) {
       $sqlObject->limit($limit, $offset);
     }
+    // NYSS #17075 - temporary while waiting for CiviCore PR 32516
+    $sqlObject->orderBy(['r.id']);
     $sql = $sqlObject->toSQL();
     return CRM_Core_DAO::executeQuery($sql);
   }

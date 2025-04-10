@@ -131,7 +131,7 @@ class CRM_NYSS_BAO_Integration_Website
     $o->params = $dedupeParams;
     $o->noRules = FALSE;
     $tableQueries = [];
-    nyss_dedupe_civicrm_dupeQuery($o, 'table', $tableQueries);
+    dedupe_civicrm_dupeQuery($o, 'table', $tableQueries);
     $sql = $tableQueries['civicrm.custom.5'];
     $sql = "
       SELECT contact.id
