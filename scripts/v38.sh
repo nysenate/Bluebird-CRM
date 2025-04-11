@@ -31,15 +31,15 @@ if ! $readConfig --instance $instance --quiet; then
   exit 1
 fi
 
-## upgrade drupal db
-echo "running drupal db upgrade..."
-$drush $instance updb -y -q
-
 ## upgrade civicrm db
 echo "running civicrm db upgrade..."
 $drush $instance civicrm-upgrade-db -y -q
 
 echo "upgrade extensions..."
 $drush $instance cvapi extension.upgrade --quiet
+
+## upgrade drupal db
+echo "running drupal db upgrade..."
+$drush $instance updb -y -q
 
 echo "$prog: upgrade process is complete for $instance."
