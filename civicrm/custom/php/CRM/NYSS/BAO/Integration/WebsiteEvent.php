@@ -295,11 +295,7 @@ abstract class CRM_NYSS_BAO_Integration_WebsiteEvent implements CRM_NYSS_BAO_Int
   }
 
   protected function setTagName(string $tag_name, bool $clean=TRUE): static {
-    if ($clean) {
-      $this->tag_name = trim($tag_name);
-    } else {
-      $this->tag_name = $tag_name;
-    }
+    $this->tag_name = ($clean) ? trim($tag_name) : $tag_name;
     return $this;
   }
 
