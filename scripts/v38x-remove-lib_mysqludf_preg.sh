@@ -1,0 +1,44 @@
+#!/bin/sh
+#
+# v38x-remove-lib_mysqludf_preg.sh
+#
+# Project: BluebirdCRM
+# Authors: Nathan Frank
+# Organization: New York State Senate
+# Date: 2025-04-14
+#
+
+prog=`basename $0`
+script_dir=`dirname $0`
+execSql=$script_dir/execSql.sh
+readConfig=$script_dir/readConfig.sh
+drush=$script_dir/drush.sh
+
+. $script_dir/defaults.sh
+
+if [ $# -ne 1 ]; then
+  echo "Usage: $prog instanceName" >&2
+  exit 1
+fi
+
+instance="$1"
+
+if ! $readConfig --instance $instance --quiet; then
+  echo "$prog: $instance: Instance not found in config file" >&2
+  exit 1
+fi
+
+app_rootdir=`$readConfig --ig $instance app.rootdir` || app_rootdir="$DEFAULT_APP_ROOTDIR"
+
+## rebuild shadow table functions
+echo "$prog: rebuild shadow table functions"
+$execSql $instance -f $script_dir/../civicrm/custom/ext/gov.nysenate.dedupe/sql/shadow_func.sql
+
+## rebuild triggers
+echo "$prog: rebuild triggers"
+php $app_rootdir/civicrm/scripts/rebuildTriggers.php -S $instance
+
+$drush $instance cc all -y
+
+## record completion
+echo "$prog: upgrade process is complete."
