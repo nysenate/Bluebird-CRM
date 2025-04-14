@@ -294,8 +294,8 @@ abstract class CRM_NYSS_BAO_Integration_WebsiteEvent implements CRM_NYSS_BAO_Int
     return $this->parent_tag_id;
   }
 
-  protected function setTagName(string $tag_name): static {
-    $this->tag_name = $tag_name;
+  protected function setTagName(string $tag_name, bool $clean=TRUE): static {
+    $this->tag_name = ($clean) ? trim($tag_name) : $tag_name;
     return $this;
   }
 
