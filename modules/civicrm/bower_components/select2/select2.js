@@ -2289,6 +2289,9 @@ the specific language governing permissions and limitations under the Apache Lic
 
             this.focusser.attr("tabindex", this.elementTabIndex);
 
+            // use the accessible name in for the focusser label text if element label is not declared or empty
+            $("label[for='" + this.focusser.attr('id') + "']").text(originalTitle || elementLabel.text());
+
             // write label for search field using the label from the focusser element
             this.search.attr("id", this.focusser.attr('id') + '_search');
 

@@ -12,7 +12,7 @@
  * @return array
  *   API result array.
  *
- * @throws CiviCRM_API3_Exception
+ * @throws CRM_Core_Exception
  */
 
 /**
@@ -51,7 +51,7 @@ function civicrm_api3_iats_payments_verifylog($params) {
     }
   }
   catch (Exception $e) {
-    throw API_Exception('iATS Payments verification logging failed.');
+    throw CRM_Core_Exception('iATS Payments verification logging failed.');
   }
   return civicrm_api3_create_success(TRUE, $params);
 }

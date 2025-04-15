@@ -9,19 +9,19 @@
     <email>coleman@civicrm.org</email>
   </maintainer>
   <urls>
-    <url desc="Documentation">https://docs.civicrm.org/user/en/latest/the-user-interface/search-kit/</url>
+    <url desc="Documentation">https://docs.civicrm.org/user/en/latest/searching/searchkit/what-is-searchkit/</url>
     <url desc="Chat">https://chat.civicrm.org/civicrm/channels/search-improvements</url>
     <url desc="Issues">https://lab.civicrm.org/dev/report/-/issues</url>
     <url desc="Licensing">http://www.gnu.org/licenses/agpl-3.0.html</url>
   </urls>
-  <releaseDate>2024-07-16</releaseDate>
-  <version>5.75.1</version>
+  <releaseDate>[civicrm.releaseDate]</releaseDate>
+  <version>[civicrm.version]</version>
   <develStage>stable</develStage>
   <tags>
     <tag>mgmt:required</tag>
   </tags>
   <compatibility>
-    <ver>5.75</ver>
+    <ver>[civicrm.majorVersion]</ver>
   </compatibility>
   <comments>Click on the chat link above to discuss development, report problems or ask questions.</comments>
   <classloader>

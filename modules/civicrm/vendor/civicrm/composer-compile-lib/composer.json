@@ -18,7 +18,7 @@
     },
     "config": {
         "platform": {
-            "php": "7.2"
+            "php": "7.4"
         },
         "allow-plugins": {
             "civicrm/composer-compile-plugin": true
@@ -26,7 +26,7 @@
     },
     "require": {
         "civicrm/composer-compile-plugin": "~0.19 || ~1.0",
-        "symfony/filesystem": "~2.8 || ~3.4 || ~4.0 || ~5.0 || ~6.0",
+        "symfony/filesystem": "~2.8 || ~3.4 || ~4.0 || ~5.0 || ~6.0 || ~7.0",
         "scssphp/scssphp": "^1.8.1",
         "padaliyajay/php-autoprefixer": "~1.2",
         "tubalmartin/cssmin": "^4.1"

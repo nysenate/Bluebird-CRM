@@ -112,6 +112,9 @@ class CRM_Core_BAO_Note extends CRM_Core_DAO_Note implements \Civi\Core\HookInte
    * @throws \CRM_Core_Exception
    */
   public static function add(&$params, $ids = []) {
+    if (!empty($ids)) {
+      CRM_Core_Error::deprecatedWarning('ids is deprecated');
+    }
     $dataExists = self::dataExists($params);
     if (!$dataExists) {
       return NULL;
@@ -530,7 +533,7 @@ WHERE participant.contact_id = %1 AND  note.entity_table = 'civicrm_participant'
     }
   }
 
-  public function addSelectWhereClause(string $entityName = NULL, int $userId = NULL, array $conditions = []): array {
+  public function addSelectWhereClause(?string $entityName = NULL, ?int $userId = NULL, array $conditions = []): array {
     $clauses = [];
     $relatedClauses = self::getDynamicFkAclClauses('entity_table', 'entity_id', $conditions['entity_table'] ?? NULL);
     if ($relatedClauses) {

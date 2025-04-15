@@ -7,7 +7,7 @@ return [
   'getInfo' => fn() => [
     'title' => ts('Option Group'),
     'title_plural' => ts('Option Groups'),
-    'description' => ts('FIXME'),
+    'description' => ts('Table of option groups'),
     'log' => TRUE,
     'add' => '1.5',
     'label_field' => 'title',
@@ -67,7 +67,7 @@ return [
       'description' => ts('Type of data stored by this option group.'),
       'add' => '4.7',
       'pseudoconstant' => [
-        'callback' => 'CRM_Utils_Type::dataTypes',
+        'callback' => ['CRM_Utils_Type', 'dataTypes'],
       ],
     ],
     'is_reserved' => [
@@ -115,7 +115,7 @@ return [
       'default' => 'name,label,description',
       'serialize' => CRM_Core_DAO::SERIALIZE_COMMA,
       'pseudoconstant' => [
-        'callback' => 'CRM_Core_SelectValues::optionValueFields',
+        'callback' => ['CRM_Core_SelectValues', 'optionValueFields'],
       ],
     ],
   ],

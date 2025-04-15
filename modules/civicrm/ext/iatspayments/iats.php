@@ -139,7 +139,7 @@ function _iats_civicrm_domain_info($key) {
             return $setting;
           }
         }
-        catch (CiviCRM_API3_Exception $e) {
+        catch (CRM_Core_Exception $e) {
           // ignore errors
         }
         // This remaining code is now very legacy, from earlier Civi versions and should soon be retired.
@@ -323,7 +323,7 @@ function iats_civicrm_pageRun_CRM_Contribute_Page_ContributionRecur($page) {
   try {
     $recur = civicrm_api3('ContributionRecur', 'getsingle', array('id' => $crid));
   }
-  catch (CiviCRM_API3_Exception $e) {
+  catch (CRM_Core_Exception $e) {
     return;
   }
   $type = _iats_civicrm_is_iats($recur['payment_processor_id']);
@@ -350,7 +350,7 @@ function iats_civicrm_pageRun_CRM_Contribute_Page_ContributionRecur($page) {
       $extra['expiry'] = empty($expiry) ? 'N/A' : date('Y-m', strtotime($expiry));
     }
   }
-  catch (CiviCRM_API3_Exception $e) {
+  catch (CRM_Core_Exception $e) {
     return;
   }
   if (!count($extra)) {
@@ -435,7 +435,7 @@ function _iats_civicrm_get_payment_processor_id($contribution_recur_id) {
   try {
     $result = civicrm_api3('ContributionRecur', 'getsingle', $params);
   }
-  catch (CiviCRM_API3_Exception $e) {
+  catch (CRM_Core_Exception $e) {
     return FALSE;
   }
   if (empty($result['payment_processor_id'])) {
@@ -460,7 +460,7 @@ function _iats_civicrm_is_iats($payment_processor_id) {
   try {
     $result = civicrm_api3('PaymentProcessor', 'getsingle', $params);
   }
-  catch (CiviCRM_API3_Exception $e) {
+  catch (CRM_Core_Exception $e) {
     return FALSE;
     // TODO: log error?.
   }
@@ -598,7 +598,7 @@ function iats_civicrm_buildForm_CRM_Contribute_Form_CancelSubscription(&$form) {
   try {
     $recur = civicrm_api3('ContributionRecur', 'getsingle', array('id' => $crid));
   }
-  catch (CiviCRM_API3_Exception $e) {
+  catch (CRM_Core_Exception $e) {
     return;
   }
   if (_iats_civicrm_is_iats($recur['payment_processor_id'])) {
@@ -641,19 +641,19 @@ function iats_civicrm_buildForm_CRM_Contribute_Form_UpdateSubscription(&$form) {
   try {
     $recur = civicrm_api3('ContributionRecur', 'getsingle', array('id' => $crid));
   }
-  catch (CiviCRM_API3_Exception $e) {
+  catch (CRM_Core_Exception $e) {
     return;
   }
   try {
     $contact = civicrm_api3('Contact', 'getsingle', array('id' => $recur['contact_id']));
   }
-  catch (CiviCRM_API3_Exception $e) {
+  catch (CRM_Core_Exception $e) {
     return;
   }
   try {
     $pp = civicrm_api3('PaymentProcessor', 'getsingle', array('id' => $recur['payment_processor_id']));
   }
-  catch (CiviCRM_API3_Exception $e) {
+  catch (CRM_Core_Exception $e) {
     $pp = array();
   }
   // Turn off default notification checkbox, because that's a better default.
@@ -725,7 +725,7 @@ function iats_civicrm_buildForm_CRM_Contribute_Form_UpdateBilling(&$form) {
           'return' => 'contribution_recur_id',
         ));
       }
-      catch (CiviCRM_API3_Exception $e) {
+      catch (CRM_Core_Exception $e) {
         $crid = 0;
       }
     }

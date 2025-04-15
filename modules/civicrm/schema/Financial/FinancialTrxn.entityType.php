@@ -7,7 +7,7 @@ return [
   'getInfo' => fn() => [
     'title' => ts('Financial Trxn'),
     'title_plural' => ts('Financial Trxns'),
-    'description' => ts('FIXME'),
+    'description' => ts('Table containing Financial Transactions (including Payments)'),
     'log' => TRUE,
     'add' => '1.3',
   ],
@@ -130,6 +130,7 @@ return [
         'label_column' => 'full_name',
         'name_column' => 'name',
         'abbr_column' => 'symbol',
+        'description_column' => 'IFNULL(CONCAT(name, " (", symbol, ")"), name)',
       ],
     ],
     'is_payment' => [

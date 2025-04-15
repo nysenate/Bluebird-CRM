@@ -31,10 +31,6 @@ class CCL {
    * If the target file is newer, it is overwritten only when the
    * $overwriteNewerFiles option is set to true.
    *
-   * @param string $originFile          The original filename
-   * @param string $targetFile          The target filename
-   * @param bool   $overwriteNewerFiles If true, target files newer than origin files are overwritten
-   *
    * @throws FileNotFoundException When originFile doesn't exist
    * @throws IOException           When copy fails
    */
@@ -46,7 +42,6 @@ class CCL {
    * Creates a directory recursively.
    *
    * @param string|iterable $dirs The directory path
-   * @param int             $mode The directory mode
    *
    * @throws IOException On any directory creation failure
    */
@@ -59,7 +54,7 @@ class CCL {
    *
    * @param string|iterable $files A filename, an array of files, or a \Traversable instance to check
    *
-   * @return bool true if the file exists, false otherwise
+   * @return bool
    */
   public static function exists($files) {
     return self::_sym()->exists($files);
@@ -132,10 +127,6 @@ class CCL {
   /**
    * Renames a file or a directory.
    *
-   * @param string $origin    The origin filename or directory
-   * @param string $target    The new filename or directory
-   * @param bool   $overwrite Whether to overwrite the target if it already exists
-   *
    * @throws IOException When target file or directory already exists
    * @throws IOException When origin cannot be renamed
    */
@@ -146,10 +137,6 @@ class CCL {
   /**
    * Creates a symbolic link or copy a directory.
    *
-   * @param string $originDir     The origin directory path
-   * @param string $targetDir     The symbolic link name
-   * @param bool   $copyOnWindows Whether to copy files if on Windows
-   *
    * @throws IOException When symlink fails
    */
   public static function symlink($originDir, $targetDir, $copyOnWindows = FALSE) {
@@ -159,7 +146,6 @@ class CCL {
   /**
    * Creates a hard link, or several hard links to a file.
    *
-   * @param string          $originFile  The original file
    * @param string|string[] $targetFiles The target file(s)
    *
    * @throws FileNotFoundException When original file is missing or not a file
@@ -180,9 +166,6 @@ class CCL {
    *      - if $path does not exist, returns null
    *      - if $path exists, returns its absolute fully resolved final version
    *
-   * @param string $path         A filesystem path
-   * @param bool   $canonicalize Whether or not to return a canonicalized path
-   *
    * @return string|null
    */
   public static function readlink($path, $canonicalize = FALSE) {
@@ -192,10 +175,7 @@ class CCL {
   /**
    * Given an existing path, convert it to a path relative to a given starting path.
    *
-   * @param string $endPath   Absolute path of target
-   * @param string $startPath Absolute path where traversal begins
-   *
-   * @return string Path of target relative to starting path
+   * @return string
    */
   public static function makePathRelative($endPath, $startPath) {
     return self::_sym()->makePathRelative($endPath, $startPath);
@@ -209,14 +189,12 @@ class CCL {
    *  - existing files in the target directory will be overwritten, except if they are newer (see the `override` option)
    *  - files in the target directory that do not exist in the source directory will not be deleted (see the `delete` option)
    *
-   * @param string            $originDir The origin directory
-   * @param string            $targetDir The target directory
-   * @param \Traversable|null $iterator  Iterator that filters which files and directories to copy, if null a recursive iterator is created
-   * @param array             $options   An array of boolean options
-   *                                     Valid options are:
-   *                                     - $options['override'] If true, target files newer than origin files are overwritten (see copy(), defaults to false)
-   *                                     - $options['copy_on_windows'] Whether to copy files instead of links on Windows (see symlink(), defaults to false)
-   *                                     - $options['delete'] Whether to delete files that are not in the source directory (defaults to false)
+   * @param \Traversable|null $iterator Iterator that filters which files and directories to copy, if null a recursive iterator is created
+   * @param array             $options  An array of boolean options
+   *                                    Valid options are:
+   *                                    - $options['override'] If true, target files newer than origin files are overwritten (see copy(), defaults to false)
+   *                                    - $options['copy_on_windows'] Whether to copy files instead of links on Windows (see symlink(), defaults to false)
+   *                                    - $options['delete'] Whether to delete files that are not in the source directory (defaults to false)
    *
    * @throws IOException When file type is unknown
    */
@@ -227,8 +205,6 @@ class CCL {
   /**
    * Returns whether the file path is an absolute path.
    *
-   * @param string $file A file path
-   *
    * @return bool
    */
   public static function isAbsolutePath($file) {
@@ -238,9 +214,9 @@ class CCL {
   /**
    * Creates a temporary file with support for custom stream wrappers.
    *
-   * @param string $dir    The directory where the temporary filename will be created
    * @param string $prefix The prefix of the generated temporary filename
    *                       Note: Windows uses only the first three characters of prefix
+   * @param string $suffix The suffix of the generated temporary filename
    *
    * @return string The new temporary filename (with path), or throw an exception on failure
    */
@@ -251,8 +227,7 @@ class CCL {
   /**
    * Atomically dumps content into a file.
    *
-   * @param string          $filename The file to be written to
-   * @param string|resource $content  The data to write into the file
+   * @param string|resource $content The data to write into the file
    *
    * @throws IOException if the file cannot be written to
    */
@@ -263,8 +238,8 @@ class CCL {
   /**
    * Appends content to an existing file.
    *
-   * @param string          $filename The file to which to append content
-   * @param string|resource $content  The content to append
+   * @param string|resource $content The content to append
+   * @param bool            $lock    Whether the file should be locked when writing to it
    *
    * @throws IOException If the file is not writable
    */

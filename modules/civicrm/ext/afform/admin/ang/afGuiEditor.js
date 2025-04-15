@@ -14,14 +14,25 @@
             evaluate(item['#children']);
             _.each(item, function(prop, key) {
               if (_.isString(prop) && !_.includes(doNotEval, key)) {
-                var str = _.trim(prop);
-                if (str[0] === '{' || str[0] === '[' || str.slice(0, 3) === 'ts(') {
-                  item[key] = $parse(str)({ts: CRM.ts('afform')});
+                if (looksLikeJs(prop)) {
+                  try {
+                    item[key] = $parse(prop)({ts: CRM.ts('afform')});
+                  } catch (e) {
+                  }
                 }
               }
             });
           }
         });
+      }
+
+      function looksLikeJs(str) {
+        str = _.trim(str);
+        let firstChar = str.charAt(0);
+        let lastChar = str.slice(-1);
+        return (firstChar === '{' && lastChar === '}') ||
+          (firstChar === '[' && lastChar === ']') ||
+          str.slice(0, 3) === 'ts(';
       }
 
       function getStyles(node) {
@@ -154,7 +165,7 @@
           // Non-aggregated query will return the same search multiple times - once per display
           crmApi4('SavedSearch', 'get', {
             select: ['name', 'label', 'display.name', 'display.label', 'display.type:name', 'display.type:icon'],
-            where: [['api_entity', 'IS NOT NULL'], ['api_params', 'IS NOT NULL']],
+            where: [['api_entity', 'IS NOT NULL'], ['api_params', 'IS NOT NULL'], ['is_template', '=', false]],
             join: [['SearchDisplay AS display', 'LEFT', ['id', '=', 'display.saved_search_id']]],
             orderBy: {'label':'ASC'}
           }).then(function(searches) {

@@ -161,24 +161,6 @@ class CRM_Core_Smarty extends CRM_Core_SmartyCompatibility {
       $this->assign('langSwitch', CRM_Core_I18n::uiLanguages());
     }
 
-    if (CRM_Utils_Constant::value('CIVICRM_SMARTY_DEFAULT_ESCAPE')
-      && !CRM_Utils_Constant::value('CIVICRM_SMARTY3_AUTOLOAD_PATH')
-      && !CRM_Utils_Constant::value('CIVICRM_SMARTY_AUTOLOAD_PATH')
-    ) {
-      // Currently DEFAULT escape does not work with Smarty3
-      // dunno why - thought it would be the default with Smarty3 - but
-      // getting onto Smarty 3 is higher priority.
-      // The include below loads the v2 version which is why id doesn't work.
-      // When default escape is enabled if the core escape is called before
-      // any custom escaping is done the modifier_escape function is not
-      // found, so require_once straight away. Note this was hit on the basic
-      // contribution dashboard from RecentlyViewed.tpl
-      require_once 'Smarty/plugins/modifier.escape.php';
-      if (!isset($this->_plugins['modifier']['escape'])) {
-        $this->registerPlugin('modifier', 'escape', ['CRM_Core_Smarty', 'escape']);
-      }
-      $this->default_modifiers[] = 'escape:"htmlall"';
-    }
     $this->loadFilter('pre', 'resetExtScope');
     $this->loadFilter('pre', 'htxtFilter');
 
@@ -295,23 +277,42 @@ class CRM_Core_Smarty extends CRM_Core_SmartyCompatibility {
   }
 
   /**
-   * Avoid e-notices on pages with tabs,
-   * by ensuring tabHeader items contain the necessary keys
+   * @deprecated
+   * Directly apply self::setRequiredTemplateTabKeys to the tabHeader
+   * variable
    */
   public function addExpectedTabHeaderKeys(): void {
+    $tabs = $this->getTemplateVars('tabHeader');
+    $tabs = self::setRequiredTabTemplateKeys($tabs);
+    $this->assign('tabHeader', $tabs);
+  }
+
+  /**
+   * Ensure an array of tabs has the required keys to be passed
+   * to our Smarty tabs templates (TabHeader.tpl or Summary.tpl)
+   */
+  public static function setRequiredTabTemplateKeys(array $tabs): array {
     $defaults = [
       'class' => '',
       'extra' => '',
-      'icon' => FALSE,
-      'count' => FALSE,
-      'template' => FALSE,
+      'icon' => NULL,
+      'count' => NULL,
+      'hideCount' => FALSE,
+      'template' => NULL,
+      'active' => TRUE,
+      'valid' => TRUE,
+      // Afform tabs set the afform module and directive - NULL for non-afform tabs
+      'module' => NULL,
+      'directive' => NULL,
     ];
 
-    $tabs = $this->getTemplateVars('tabHeader');
-    foreach ((array) $tabs as $i => $tab) {
-      $tabs[$i] = array_merge($defaults, $tab);
+    foreach ($tabs as $i => $tab) {
+      if (empty($tab['url'])) {
+        $tab['url'] = $tab['link'] ?? '';
+      }
+      $tabs[$i] = array_merge($defaults, (array) $tab);
     }
-    $this->assign('tabHeader', $tabs);
+    return $tabs;
   }
 
   /**
@@ -482,7 +483,7 @@ class CRM_Core_Smarty extends CRM_Core_SmartyCompatibility {
    * anything coming in with this be happening because of the default modifier.
    *
    * Also note the right way to opt a field OUT of escaping is
-   * ``{$fieldName|smarty:nodefaults}``
+   * ``{$fieldName nofilter}``
    * This should be used for fields with known html AND for fields where
    * we are doing empty or isset checks - as otherwise the value is passed for
    * escaping first so you still get an enotice for 'empty' or a fatal for 'isset'
@@ -541,7 +542,8 @@ class CRM_Core_Smarty extends CRM_Core_SmartyCompatibility {
       }
     }
 
-    $value = smarty_modifier_escape($string, $esc_type, $char_set);
+    $string = mb_convert_encoding($string, 'UTF-8', $char_set);
+    $value = htmlentities($string, ENT_QUOTES, 'UTF-8');
     if ($value !== $string) {
       Civi::log('smarty')->debug('smarty escaping original {original}, escaped {escaped} type {type} charset {charset}', [
         'original' => $string,
@@ -554,6 +556,10 @@ class CRM_Core_Smarty extends CRM_Core_SmartyCompatibility {
   }
 
   public function getVersion (): int {
+    return static::findVersion();
+  }
+
+  public static function findVersion(): int {
     static $version;
     if ($version === NULL) {
       if (class_exists('Smarty\Smarty')) {

@@ -224,7 +224,7 @@ class CRM_Core_Payment_FapsACH extends CRM_Core_Payment_Faps {
         try {
           $result = civicrm_api3('Contribution', 'create', $contribution_update);
         }
-        catch (CiviCRM_API3_Exception $e) {
+        catch (CRM_Core_Exception $e) {
           // Not a critical error, just log and continue.
           $error = $e->getMessage();
           Civi::log()->info('Unexpected error adding the trxn_id for contribution id {id}: {error}', array('id' => $recur_id, 'error' => $error));

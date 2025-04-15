@@ -21,6 +21,7 @@
 class CRM_Activity_Page_AJAX {
 
   public static function getCaseActivity() {
+    CRM_Core_Page_AJAX::validateAjaxRequestMethod();
     // Should those params be passed through the validateParams method?
     $caseID = CRM_Utils_Type::validate($_GET['caseID'], 'Integer');
     $contactID = CRM_Utils_Type::validate($_GET['cid'], 'Integer');
@@ -47,6 +48,7 @@ class CRM_Activity_Page_AJAX {
   }
 
   public static function getCaseGlobalRelationships() {
+    CRM_Core_Page_AJAX::validateAjaxRequestMethod();
     $params = CRM_Core_Page_AJAX::defaultSortAndPagerParams();
 
     // get the activities related to given case
@@ -88,6 +90,7 @@ class CRM_Activity_Page_AJAX {
   }
 
   public static function getCaseClientRelationships() {
+    CRM_Core_Page_AJAX::validateAjaxRequestMethod();
     $caseID = CRM_Utils_Type::escape($_GET['caseID'], 'Integer');
     $contactID = CRM_Utils_Type::escape($_GET['cid'], 'Integer');
 
@@ -142,6 +145,7 @@ class CRM_Activity_Page_AJAX {
   }
 
   public static function getCaseRoles() {
+    CRM_Core_Page_AJAX::validateAjaxRequestMethod();
     $caseID = CRM_Utils_Type::escape($_GET['caseID'], 'Integer');
     $contactID = CRM_Utils_Type::escape($_GET['cid'], 'Integer');
 
@@ -287,6 +291,7 @@ class CRM_Activity_Page_AJAX {
   }
 
   public static function convertToCaseActivity() {
+    CRM_Core_Page_AJAX::validateAjaxRequestMethod();
     $params = ['caseID', 'activityID', 'contactID', 'newSubject', 'targetContactIds', 'mode'];
     $vals = [];
     foreach ($params as $param) {

@@ -258,7 +258,6 @@ class ezcBaseFile
         return $context->elements;
     }
 
-
     /**
      * Removes files and directories recursively from a file system
      *

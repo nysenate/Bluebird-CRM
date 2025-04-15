@@ -23,7 +23,7 @@ class civicrm_handler_field_im extends civicrm_handler_field_location {
       if (!civicrm_initialize()) {
         return;
       }
-      self::$_provider = CRM_Core_PseudoConstant::get('CRM_Core_DAO_IM', 'provider_id');
+      self::$_provider = CRM_Core_DAO_IM::buildOptions('provider_id');
     }
   }
 

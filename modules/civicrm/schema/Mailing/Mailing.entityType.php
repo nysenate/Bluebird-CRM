@@ -160,7 +160,7 @@ return [
       'description' => ts('differentiate between standalone mailings, A/B tests, and A/B final-winner'),
       'add' => '4.6',
       'pseudoconstant' => [
-        'callback' => 'CRM_Mailing_PseudoConstant::mailingTypes',
+        'callback' => ['CRM_Mailing_PseudoConstant', 'mailingTypes'],
       ],
     ],
     'from_name' => [
@@ -199,7 +199,7 @@ return [
       'add' => '4.7',
       'default' => 'traditional',
       'pseudoconstant' => [
-        'callback' => 'CRM_Mailing_BAO_Mailing::getTemplateTypeNames',
+        'callback' => ['CRM_Mailing_BAO_Mailing', 'getTemplateTypeNames'],
       ],
     ],
     'template_options' => [
@@ -380,6 +380,69 @@ return [
         'format_type' => 'activityDateTime',
       ],
     ],
+    'start_date' => [
+      'title' => ts('Mailing Start Date'),
+      'sql_type' => 'timestamp',
+      'description' => ts('When the mailing started to go out'),
+      'required' => FALSE,
+      'usage' => [
+        'import' => FALSE,
+        'export' => FALSE,
+        'duplicate_matching' => FALSE,
+        'token' => FALSE,
+      ],
+      'default' => NULL,
+      'localizable' => 0,
+      'html' => [
+        'type' => 'Select Date',
+        'formatType' => 'activityDateTime',
+      ],
+      'readonly' => TRUE,
+      'add' => 5.76,
+    ],
+    'end_date' => [
+      'sql_type' => 'timestamp',
+      'title' => ts('Mailing End Date'),
+      'description' => ts('When the mailing finished going out.'),
+      'required' => FALSE,
+      'usage' => [
+        'import' => FALSE,
+        'export' => FALSE,
+        'duplicate_matching' => FALSE,
+        'token' => FALSE,
+      ],
+      'default' => NULL,
+      'localizable' => 0,
+      'html' => [
+        'type' => 'Select Date',
+        'formatType' => 'activityDateTime',
+      ],
+      'readonly' => TRUE,
+      'add' => 5.76,
+    ],
+    'status' => [
+      'title' => ts('Mailing Status'),
+      'sql_type' => 'varchar(32)',
+      'description' => ts('The status of this mailing'),
+      'maxlength' => 32,
+      'size' => CRM_Utils_Type::TWELVE,
+      'usage' => [
+        'import' => FALSE,
+        'export' => FALSE,
+        'duplicate_matching' => FALSE,
+        'token' => FALSE,
+      ],
+      'default' => 'Draft',
+      'localizable' => 0,
+      'html' => [
+        'type' => 'Select',
+      ],
+      'pseudoconstant' => [
+        'callback' => ['CRM_Core_SelectValues', 'getMailingJobStatus'],
+      ],
+      'readonly' => TRUE,
+      'add' => 5.76,
+    ],
     'approver_id' => [
       'title' => ts('Approved By Contact ID'),
       'sql_type' => 'int unsigned',
@@ -442,7 +505,7 @@ return [
         'label' => ts('Visibility'),
       ],
       'pseudoconstant' => [
-        'callback' => 'CRM_Core_SelectValues::groupVisibility',
+        'callback' => ['CRM_Core_SelectValues', 'groupVisibility'],
       ],
     ],
     'campaign_id' => [
@@ -510,7 +573,10 @@ return [
       'pseudoconstant' => [
         'table' => 'civicrm_location_type',
         'key_column' => 'id',
+        'name_column' => 'name',
+        'description_column' => 'description',
         'label_column' => 'display_name',
+        'abbr_column' => 'vcard_name',
       ],
       'entity_reference' => [
         'entity' => 'LocationType',
@@ -529,7 +595,7 @@ return [
         'label' => ts('Email Selection Method'),
       ],
       'pseudoconstant' => [
-        'callback' => 'CRM_Core_SelectValues::emailSelectMethods',
+        'callback' => ['CRM_Core_SelectValues', 'emailSelectMethods'],
       ],
     ],
     'language' => [

@@ -23,7 +23,7 @@ class civicrm_handler_field_activity extends civicrm_handler_field {
       if (!civicrm_initialize()) {
         return;
       }
-      self::$_recordType = CRM_Core_PseudoConstant::get('CRM_Activity_DAO_ActivityContact', 'record_type_id');
+      self::$_recordType = CRM_Activity_DAO_ActivityContact::buildOptions('record_type_id');
     }
   }
 
