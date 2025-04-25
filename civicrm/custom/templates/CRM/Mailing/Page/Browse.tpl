@@ -80,9 +80,9 @@
         <td class="crm-mailing-start">{$row.start}</td>
         <td class="crm-mailing-end">{$row.end}</td>
         *}
-       {if call_user_func(array('CRM_Campaign_BAO_Campaign','isCampaignEnable'))}
-          <td class="crm-mailing-campaign">{$row.campaign}</td>
-      {/if}
+       {if call_user_func(array('CRM_Campaign_BAO_Campaign','isComponentEnabled'))}
+          <td class="crm-mailing-campaign crm-editable crmf-campaign_id" data-type="select" data-empty-option="{ts}- none -{/ts}">{$row.campaign}</td>
+       {/if}
         <td>{$row.action|smarty:nodefaults|replace:'xx':$row.id}</td>
       </tr>
       {/foreach}
