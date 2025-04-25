@@ -140,7 +140,7 @@ class CRM_NYSS_AJAX_Activity
     $params['sort'] = CRM_Utils_Array::value('sortBy', $params);
     $params['caseId'] = NULL;
     $context = CRM_Utils_Array::value('context', $params);
-    $showContactOverlay = !CRM_Utils_String::startsWith($context, "dashlet");
+    $showContactOverlay = !str_starts_with($context, "dashlet");
     $activityTypeInfo = civicrm_api3('OptionValue', 'get', array(
       'option_group_id' => "activity_type",
       'options' => array('limit' => 0),
