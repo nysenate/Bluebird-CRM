@@ -391,7 +391,7 @@ class CRM_Core_Action {
         //NYSS 5942
         $mainLinksLength = array_sum(array_map('strlen',array_map('strip_tags',array_slice($url, 0, 2))));
         if (count($extraLinks) > 1 ||
-          ($mainLinksLength > 10 && count($url) > 1 && strpos($url[0], 'contact/view/case') === FALSE) ) {
+          ($mainLinksLength > 10 && count($url) > 1 ) ) {
           if ($mainLinksLength > 10) {
             $mainLinks = array_slice($url, 0, 1);
             $extraLinks = array_splice($urlOrig, 1);
@@ -399,9 +399,10 @@ class CRM_Core_Action {
           else {
             $mainLinks = array_slice($url, 0, 2);
           }
+          CRM_Utils_String::append($extra, '</li><li>', $extraLinks);
+          $extra = "{$extraULName}<ul class='panel'><li>{$extra}</li></ul>";
         }
-        CRM_Utils_String::append($extra, '</li><li>', $extraLinks);
-        $extra = "{$extraULName}<ul class='panel'><li>{$extra}</li></ul>";
+
       }
       $resultLinks = '';
       CRM_Utils_String::append($resultLinks, '', $mainLinks);
