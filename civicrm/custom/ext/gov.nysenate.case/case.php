@@ -10,6 +10,7 @@ use CRM_NYSS_Case_ExtensionUtil as E;
  */
 function case_civicrm_config(&$config) {
   _case_civix_civicrm_config($config);
+  Civi::dispatcher()->addListener('civi.api.respond', ['CRM_NYSS_Case_APIWrapper', 'respond'], -100);
 }
 
 /**
