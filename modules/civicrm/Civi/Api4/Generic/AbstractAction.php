@@ -277,7 +277,7 @@ abstract class AbstractAction implements \ArrayAccess {
     $params = [];
     $magicProperties = $this->getMagicProperties();
     foreach ($magicProperties as $name => $bool) {
-      $params[$name] = $this->$name;
+      $params[$name] = $this->$name ?? NULL;
     }
     return $params;
   }
@@ -305,6 +305,10 @@ abstract class AbstractAction implements \ArrayAccess {
         if ($name != 'version' && $name[0] != '_') {
           $docs = ReflectionUtils::getCodeDocs($property, 'Property', $vars);
           $docs['default'] = $defaults[$name];
+          // Exclude `null` which is not a value type
+          if (!empty($docs['type']) && is_array($docs['type'])) {
+            $docs['type'] = array_diff($docs['type'], ['null']);
+          }
           if (!empty($docs['optionsCallback'])) {
             $docs['options'] = $this->{$docs['optionsCallback']}();
             unset($docs['optionsCallback']);
@@ -536,9 +540,11 @@ abstract class AbstractAction implements \ArrayAccess {
       $record[$info['name']] = FormattingUtil::replacePseudoconstant($options, $info['val'], TRUE);
     }
     // The DAO works better with ints than booleans. See https://github.com/civicrm/civicrm-core/pull/23970
-    foreach ($record as $key => $value) {
-      if (is_bool($value)) {
-        $record[$key] = (int) $value;
+    if (CoreUtil::getInfoItem($this->getEntityName(), 'table_name')) {
+      foreach ($record as $key => $value) {
+        if (is_bool($value)) {
+          $record[$key] = (int) $value;
+        }
       }
     }
   }

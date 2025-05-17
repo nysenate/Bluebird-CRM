@@ -7,7 +7,7 @@
         }
     },
     "require": {
-        "psr/log": "~1.1",
+        "psr/log": "~1.1 || ~2.0 || ~3.0",
         "phpseclib/phpseclib": "~2.0"
     },
     "autoload": {

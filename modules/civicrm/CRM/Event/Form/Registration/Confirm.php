@@ -993,7 +993,7 @@ class CRM_Event_Form_Registration_Confirm extends CRM_Event_Form_Registration {
    *
    * @param array $params
    * @param array $fields
-   * @param CRM_Core_Form $form
+   * @param CRM_Event_Form_Registration|CRM_Event_Form_Registration_Confirm $form
    */
   public static function fixLocationFields(&$params, &$fields, &$form) {
     if (!empty($form->_fields)) {
@@ -1047,7 +1047,7 @@ class CRM_Event_Form_Registration_Confirm extends CRM_Event_Form_Registration {
    * @param int $contactID
    * @param array $params
    * @param array $fields
-   * @param CRM_Core_Form $form
+   * @param CRM_Event_Form_Registration|CRM_Event_Form_Registration_Confirm $form
    *
    * @return int
    */
@@ -1376,19 +1376,6 @@ class CRM_Event_Form_Registration_Confirm extends CRM_Event_Form_Registration {
       }
     }
     return $amountArray;
-  }
-
-  /**
-   * Is this event configured to show the payment processors on the confirmation form?
-   *
-   * @return bool
-   */
-  private function isShowPaymentOnConfirm(): bool {
-    $showPaymentOnConfirm = (in_array(
-      $this->getEventID(),
-      \Civi::settings()->get('event_show_payment_on_confirm')) || in_array('all', \Civi::settings()->get('event_show_payment_on_confirm'))
-    );
-    return $showPaymentOnConfirm;
   }
 
 }

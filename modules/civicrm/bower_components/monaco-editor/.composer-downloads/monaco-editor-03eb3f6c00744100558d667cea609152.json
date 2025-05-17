@@ -1,9 +1,11 @@
 {
     "name": "civicrm/civicrm-core:monaco-editor",
     "url": "https://registry.npmjs.org/monaco-editor/-/monaco-editor-0.49.0.tgz",
-    "checksum": "75a14bcfc527268f97971bdb739d24163a7777b1d05c14de360fc5205b5c02c5",
+    "checksum": "9ecaefeeaa64512ec0c1fa3a1f282a69a211e08662fb2c1b940fde645f89b18f",
     "ignore": [
         "dev",
-        "esm"
+        "esm",
+        "min-maps",
+        "min/vs/language/typescript"
     ]
 }

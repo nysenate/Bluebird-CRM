@@ -54,7 +54,7 @@ function civicrm_rules_events_argument_civicrm_event($eventobj) {
     if (empty($event->created_id)) {
       require_once 'api/api.php';
       $result = civicrm_api('Event', 'get', array('version' => 3, 'id' => $event->id, 'sequential' => 1));
-      if (!CRM_Utils_Array::value('is_error', $result) && CRM_Utils_Array::value('created_id', $result['values'][0])) {
+      if (empty($result['is_error']) && !empty($result['values'][0]['created_id'])) {
         $contact = civicrm_api('UFMatch', 'get', array('version' => 3, 'contact_id' => $result['values'][0]['created_id'], 'sequential' => 1));
       }
     }
@@ -63,7 +63,7 @@ function civicrm_rules_events_argument_civicrm_event($eventobj) {
     }
   }
 
-  if (!empty($contact) && !CRM_Utils_Array::value('is_error', $result) && is_numeric($contact['values'][0]['uf_id'])) {
+  if (!empty($contact) && empty($result['is_error']) && is_numeric($contact['values'][0]['uf_id'])) {
     return $contact['values'][0]['uf_id'];
   }
   return NULL;

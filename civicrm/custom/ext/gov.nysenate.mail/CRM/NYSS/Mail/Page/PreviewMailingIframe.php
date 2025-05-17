@@ -9,7 +9,7 @@ class CRM_NYSS_Mail_Page_PreviewMailingIframe extends CRM_Core_Page {
       CRM_Core_Error::statusBounce('No Mailing ID was provided.');
     }
 
-    $previewUrl = CRM_Utils_System::url('civicrm/nyss/previewmailing', "id={$mailingId}&snippet=4");
+    $previewUrl = CRM_Utils_System::url('civicrm/nyss/previewmailing', "id={$mailingId}&snippet=5");
     $this->assign('previewUrl', $previewUrl);
 
     parent::run();

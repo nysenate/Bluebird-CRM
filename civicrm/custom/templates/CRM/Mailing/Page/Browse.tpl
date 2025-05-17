@@ -29,8 +29,6 @@
 <div class="crm-block crm-content-block"> {*NYSS*}
 {if $rows}
     {include file="CRM/common/pager.tpl" location="top"}
-    {include file="CRM/common/pagerAToZ.tpl"}
-
     {strip}
     {*NYSS 12029*}
     <div id="actionDialog" class="crm-container" style="display:none;"></div>
@@ -90,7 +88,7 @@
       {/foreach}
     </table>
     {/strip}
-
+    {include file="CRM/common/pagerAToZ.tpl"}
     {include file="CRM/common/pager.tpl" location="bottom"}
     {if $showLinks}
       <div class="action-link">

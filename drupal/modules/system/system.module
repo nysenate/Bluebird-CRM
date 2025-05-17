@@ -16,6 +16,11 @@ define('DRUPAL_MAXIMUM_TEMP_FILE_AGE', 21600);
 define('DRUPAL_CRON_DEFAULT_THRESHOLD', 10800);
 
 /**
+ * Detailed cron logging disabled by default.
+ */
+define('DRUPAL_CRON_DETAILED_LOGGING', 0);
+
+/**
  * New users will be set to the default time zone at registration.
  */
 define('DRUPAL_USER_TIMEZONE_DEFAULT', 0);
@@ -4133,4 +4138,12 @@ function system_file_download($uri) {
       );
     }
   }
+}
+
+/**
+ * Implements hook_registry_files_alter
+ */
+function system_registry_files_alter(&$files, $modules) {
+  // Database drivers that use DatabaseStatementPrefetch must include this file.
+  unset($files['includes/database/prefetch.inc']);
 }

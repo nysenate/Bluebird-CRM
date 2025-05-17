@@ -1,0 +1,21 @@
+{
+    "name": "civicrm/civicrm-core:ext-chart_kit-d3",
+    "url": "https://github.com/d3/d3/releases/download/v6.7.0/d3.zip",
+    "checksum": "499bea519c98045f7456b33c35acde921cf18eea23c2a908be5bc40785a9432f",
+    "ignore": [
+        ".DS_Store",
+        ".git",
+        ".gitignore",
+        ".npmignore",
+        ".travis.yml",
+        "Makefile",
+        "bin",
+        "component.json",
+        "index.js",
+        "lib",
+        "node_modules",
+        "package.json",
+        "src",
+        "test"
+    ]
+}

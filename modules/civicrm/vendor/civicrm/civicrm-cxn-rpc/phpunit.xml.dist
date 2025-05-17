@@ -6,7 +6,7 @@
          convertWarningsToExceptions="true"
          processIsolation="false"
          stopOnFailure="false"
-         syntaxCheck="false"
+         cacheResult="false"
          bootstrap="tests/bootstrap.php"
 >
   <testsuites>

@@ -70,7 +70,7 @@ function civicrm_engage_civicrm_alterReportVar($varType, &$var, &$form) {
     }
     elseif ($varType == 'sql') {
       $params = $form->getVar('_params');
-      if (CRM_Utils_Array::value('receive_date', $params['fields']) || CRM_Utils_Array::value('total_amount', $params['fields'])) {
+      if (!empty($params['fields']['receive_date']) || !empty($params['fields']['total_amount'])) {
         $var->_from .= "
           LEFT JOIN civicrm_contribution {$form->_aliases['civicrm_contribution']} ON ({$form->_aliases['civicrm_contribution']}.id = (select id from civicrm_contribution con where con.contact_id = {$form->_aliases['civicrm_contact']}.id ORDER BY con.receive_date DESC LIMIT 1 ))\n";
       }

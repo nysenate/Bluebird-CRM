@@ -234,7 +234,7 @@ class CRM_Contact_BAO_SavedSearch extends CRM_Contact_DAO_SavedSearch implements
    * @param array $params
    * @return CRM_Contact_DAO_SavedSearch
    */
-  public static function create(&$params) {
+  public static function create($params) {
     return self::writeRecord($params);
   }
 
@@ -247,15 +247,24 @@ class CRM_Contact_BAO_SavedSearch extends CRM_Contact_DAO_SavedSearch implements
    */
   public static function self_hook_civicrm_pre(\Civi\Core\Event\PreEvent $event): void {
     if ($event->action === 'create' || $event->action === 'edit') {
-      $loggedInContactID = CRM_Core_Session::getLoggedInContactID();
-      if ($loggedInContactID) {
-        if ($event->action === 'create') {
-          $event->params['created_id'] ??= $loggedInContactID;
-        }
-        $event->params['modified_id'] ??= $loggedInContactID;
-      }
+      $event->params['modified_id'] ??= CRM_Core_Session::getLoggedInContactID();
       // Set by mysql
       unset($event->params['modified_date']);
+
+      // Delete empty form values and save as null if completely empty
+      if (isset($event->params['form_values']) && is_array($event->params['form_values'])) {
+        // Exclude legacy smart groups by checking if api_entity is set
+        if (!empty($event->params['api_entity'])) {
+          foreach ($event->params['form_values'] as $key => $value) {
+            if (is_array($value) && !$value) {
+              unset($event->params['form_values'][$key]);
+            }
+          }
+          if (!$event->params['form_values']) {
+            $event->params['form_values'] = '';
+          }
+        }
+      }
 
       // Flush angular caches to refresh search displays
       if (isset($event->params['api_params'])) {
@@ -374,8 +383,7 @@ class CRM_Contact_BAO_SavedSearch extends CRM_Contact_DAO_SavedSearch implements
       ->addSelect('name', 'title_plural')
       ->addOrderBy('title_plural')
       ->execute()
-      ->indexBy('name')
-      ->column('title_plural');
+      ->column('title_plural', 'name');
   }
 
   /**
@@ -404,7 +412,7 @@ class CRM_Contact_BAO_SavedSearch extends CRM_Contact_DAO_SavedSearch implements
       // Check each group search for valid groups.
       foreach ($groupSearches as $groupSearch) {
         $groupFormValues = (array) ($groupSearch[2]['IN'] ?? $groupSearch[2] ?? []);
-        if (!empty($groupFormValues) && in_array($groupID, $groupFormValues)) {
+        if (!empty($groupFormValues) && in_array($groupID, (array) $groupFormValues)) {
           $smartGroups[$group['id']] = [
             'title' => $group['title'],
             'editSearchURL' => self::getEditSearchUrl($group['saved_search_id']),

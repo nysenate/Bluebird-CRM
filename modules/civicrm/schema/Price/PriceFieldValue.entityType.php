@@ -7,7 +7,7 @@ return [
   'getInfo' => fn() => [
     'title' => ts('Price Field Value'),
     'title_plural' => ts('Price Field Values'),
-    'description' => ts('FIXME'),
+    'description' => ts('Provides multiple options for a PriceField'),
     'add' => '3.3',
     'label_field' => 'label',
   ],
@@ -208,7 +208,7 @@ return [
       'pseudoconstant' => [
         'table' => 'civicrm_financial_type',
         'key_column' => 'id',
-        'label_column' => 'name',
+        'label_column' => 'label',
       ],
       'entity_reference' => [
         'entity' => 'FinancialType',

@@ -35,12 +35,43 @@ class CRM_Iats_iATSServiceRequest {
   const iATS_TXN_TRACE = TRUE;
   const iATS_TXN_SUCCESS = 'Success';
   const iATS_TXN_OK = 'OK';
+  const iATS_URL_NAMESPACE = 'https://www.iatspayments.com/NetGate/';
   const iATS_URL_PROCESSLINK = '/NetGate/ProcessLinkv2.asmx?WSDL';
   const iATS_URL_REPORTLINK = '/NetGate/ReportLinkv2.asmx?WSDL';
   const iATS_URL_CUSTOMERLINK = '/NetGate/CustomerLinkv2.asmx?WSDL';
   // TODO: confirm with Stephen if this needs a v2 as well:
   const iATS_URL_DPMPROCESS = '/NetGate/IATSDPMProcess.aspx';
   const iATS_USE_DPMPROCESS = FALSE;
+
+  /**
+   * @var string
+   */
+  private $type;
+
+  /**
+   * @var string
+   */
+  private $_wsdl_url;
+
+  /**
+   * @var array
+   */
+  private $_tag_order;
+
+  /**
+   * @var array
+   */
+  private $method;
+
+  /**
+   * @var array
+   */
+  private $options;
+
+  /**
+   * @var string
+   */
+  private $invoiceNum;
 
   /**
    *
@@ -68,10 +99,6 @@ class CRM_Iats_iATSServiceRequest {
     }
     // TODO: check that the method is allowed!
     $this->method = $this->methodInfo($this->type, $method);
-    // Initialize the request array.
-    $this->request = array();
-    // Name space url.
-    $this->_wsdl_url_ns = 'https://www.iatspayments.com/NetGate/';
     $this->options = $options;
     $this->options['debug'] = _iats_civicrm_domain_info('debug_enabled');
     // Check for valid currencies with domain/method combinations.
@@ -184,8 +211,8 @@ class CRM_Iats_iATSServiceRequest {
       /* until iATS fixes it's box verify, we need to have trace on to make the hack below work */
       $soapClient = new SoapClient($this->_wsdl_url, array('trace' => 1, 'soap_version' => SOAP_1_2));
       /* build the request manually as per the iATS docs */
-      $xml = '<' . $message . ' xmlns="' . $this->_wsdl_url_ns . '">';
-      $request = array_merge($this->request, $credentials, $request_params);
+      $xml = '<' . $message . ' xmlns="' . self::iATS_URL_NAMESPACE . '">';
+      $request = array_merge($credentials, $request_params);
       // Pass CiviCRM tag + version to iATS.
       $request['comment'] = 'CiviCRM: ' . CRM_Utils_System::version() . ' + ' . 'iATS Extension: ' . $this->iats_extension_version();
       $tags = (!empty($this->_tag_order)) ? $this->_tag_order : array_keys($request);

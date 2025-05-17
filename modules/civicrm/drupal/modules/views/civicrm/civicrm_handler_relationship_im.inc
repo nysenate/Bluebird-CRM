@@ -24,7 +24,7 @@ class civicrm_handler_relationship_im extends civicrm_handler_relationship_locat
       if (!civicrm_initialize()) {
         return;
       }
-      self::$_provider = CRM_Core_PseudoConstant::get('CRM_Core_DAO_IM', 'provider_id');
+      self::$_provider = CRM_Core_DAO_IM::buildOptions('provider_id');
     }
   }
 

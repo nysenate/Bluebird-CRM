@@ -54,7 +54,7 @@ class Smarty extends \Smarty\TemplateBase {
 	/**
 	 * smarty version
 	 */
-	const SMARTY_VERSION = '5.2.0';
+	const SMARTY_VERSION = '5.3.1';
 
 	/**
 	 * define caching modes
@@ -681,6 +681,21 @@ class Smarty extends \Smarty\TemplateBase {
 			$this->_processedTemplateDir = [];
 		}
 		$this->addTemplateDir($template_dir, null, $isConfig);
+		return $this;
+	}
+
+	/**
+	 * Adds a template directory before any existing directoires
+	 *
+	 * @param string $new_template_dir directory of template sources
+	 * @param bool $is_config true for config_dir
+	 *
+	 * @return static current Smarty instance for chaining
+	 */
+	public function prependTemplateDir($new_template_dir, $is_config = false) {
+		$current_template_dirs = $is_config ? $this->config_dir : $this->template_dir;
+		array_unshift($current_template_dirs, $new_template_dir);
+		$this->setTemplateDir($current_template_dirs, $is_config);
 		return $this;
 	}
 

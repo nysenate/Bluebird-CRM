@@ -46,7 +46,7 @@ function contactlayout_civicrm_pageRun(&$page) {
           ->execute()
           ->first()['value'] ?? NULL;
       }
-      catch (API_Exception $e) {
+      catch (CRM_Core_Exception $e) {
         Civi::log()->warning(E::ts("Exception retrieving default tabs setting: %1", ['1' => $e->getMessage()]));
         $defaultTabs = NULL;
       }
@@ -103,8 +103,8 @@ function contactlayout_civicrm_pageRun(&$page) {
             $tabs[$id]['icon'] = $tab['icon'] ?? $tabs[$id]['icon'] ?? NULL;
           }
         }
-        usort($tabs, ['CRM_Utils_Sort', 'cmpFunc']);
-        $page->assign('allTabs', array_values($tabs));
+        uasort($tabs, ['CRM_Utils_Sort', 'cmpFunc']);
+        $page->assign('allTabs', $tabs);
       }
       if (CRM_Core_Permission::check('administer CiviCRM')) {
         CRM_Core_Region::instance('contact-actions-ribbon')

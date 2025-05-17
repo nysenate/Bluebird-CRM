@@ -61,7 +61,12 @@
           var path = $rootScope.$eval(task.crmPopup.path, data),
             query = task.crmPopup.query && $rootScope.$eval(task.crmPopup.query, data);
           CRM.loadForm(CRM.url(path, query, 'back'), {post: task.crmPopup.data && $rootScope.$eval(task.crmPopup.data, data)})
-            .on('crmFormSuccess', mngr.refreshAfterTask);
+            .on('crmFormSuccess', (e) => {
+                // refreshAfterTask emits its own
+                // crmPopupFormSuccess event
+                e.stopPropagation();
+                mngr.refreshAfterTask();
+            });
         }
         else if (task.redirect) {
           var redirectPath = $rootScope.$eval(task.redirect.path, data),
@@ -229,6 +234,11 @@
         }
         else if (status === 'success' && !editedRow && apiResults.run && apiResults.run[0]) {
           const mngr = this.taskManager;
+          // If tasks are shown as buttons, they need to be loaded right away
+          if (this.settings.actions_display_mode === 'buttons') {
+            mngr.getMetadata();
+            return;
+          }
           // If results contain a link to a task, prefetch task info to prevent latency when clicking the link
           _.each(apiResults.run[0].columns, function(column) {
             if ((column.link && column.link.task) || _.find(column.links || [], 'task')) {

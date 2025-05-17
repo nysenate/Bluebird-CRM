@@ -24,7 +24,7 @@ class UserError {
   public static function adapt($class, $callable) {
     $errors = array();
 
-    set_error_handler(function ($errno, $errstr, $errfile, $errline, $errcontext) use (&$errors) {
+    set_error_handler(function ($errno, $errstr, $errfile, $errline) use (&$errors) {
       if (!(error_reporting() & $errno)) {
         return;
       }

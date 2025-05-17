@@ -1,0 +1,24 @@
+{
+    "name": "civicrm/civicrm-core:ext-chart_kit-dc",
+    "url": "https://registry.npmjs.org/dc/-/dc-4.2.7.tgz",
+    "checksum": "bd2119d918a2e11f923f9fa4918c31e6881bdbc7a5d3086117a7ff540d44c929",
+    "ignore": [
+        ".*",
+        "web",
+        "*.json",
+        "regression",
+        "scripts",
+        "spec",
+        "src",
+        "docs",
+        "grunt",
+        "Gruntfile.js",
+        "Changelog.md",
+        "welcome.md",
+        "class-hierarchy.dot",
+        "index.js",
+        "CONTRIBUTING.md",
+        "LICENSE_BANNER",
+        "AUTHORS"
+    ]
+}

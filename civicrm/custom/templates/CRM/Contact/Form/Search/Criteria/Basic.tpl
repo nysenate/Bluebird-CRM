@@ -226,5 +226,12 @@
        {$form.external_identifier.label} {help id="id-external-id" file="CRM/Contact/Form/Contact"}<br />
        {$form.external_identifier.html}
     </td>
+    <td>
+        {if !empty($form.deleted_contacts)}
+          <div class="search-field">
+              {$form.deleted_contacts.html} {$form.deleted_contacts.label}
+          </div>
+        {/if}
+    </td>
   </tr>
 </table>
