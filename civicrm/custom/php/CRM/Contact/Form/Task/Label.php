@@ -187,14 +187,13 @@ class CRM_Contact_Form_Task_Label extends CRM_Contact_Form_Task {
         }
       }
       else {
-
         if (!empty($contact['addressee_display'])) {
           $contact['addressee_display'] = trim($contact['addressee_display']);
         }
         if (!empty($contact['addressee'])) {
           $contact['addressee'] = $contact['addressee_display'];
         }
-
+      }
       // now create the rows for generating mailing labels
       foreach ($contact as $field => $fieldValue) {
         $rows[$value][$field] = $fieldValue;
