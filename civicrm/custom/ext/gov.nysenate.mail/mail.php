@@ -1801,6 +1801,8 @@ function _mail_alterEmailContent(&$params) {
   }
 
   $params['html'] = $doc->html();
+  // allow garbage collection
+  phpQuery::unloadDocuments($doc->getDocumentID());
 } // _mail_alterEmailContent()
 
 
@@ -1826,5 +1828,7 @@ function _mail_mailingViewCss($html) {
   $html = $doc->html();
   //Civi::log()->debug(__FUNCTION__, ['$html' => $html]);
 
+  // allow garbage collection
+  phpQuery::unloadDocuments($doc->getDocumentID());
   return $html;
 } // _mail_mailingViewCss()
