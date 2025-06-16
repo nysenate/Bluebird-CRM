@@ -69,6 +69,10 @@
           $('table.contact-allactivity-selector-' + context).on('xhr.dt', function(e, settings, json, xhr) {
             for (var i=0, ien=json.data.length; i<ien; i++) {
               json.data[i].subject = _.escape(json.data[i].subject);
+              // NY 17211 and NY 2423
+              if (json.data[i].attachment) {
+                json.data[i].subject += ' <i class="crm-i fa-paperclip"></i>';
+              }
             }
           });
           $('.all-activity-search-options :input').change(function(){

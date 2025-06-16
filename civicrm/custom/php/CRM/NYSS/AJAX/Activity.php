@@ -203,6 +203,8 @@ class CRM_NYSS_AJAX_Activity
         $activity['DT_RowAttr']['data-id'] = $activityId;
 
         $activity['activity_type'] = (!empty($activityIcons[$values['activity_type_id']]) ? '<span class="crm-i ' . $activityIcons[$values['activity_type_id']] . '"></span> ' : '') . $values['activity_type'];
+        //NYSS 2423 indicate if activity has attachments
+        $activity['attachment'] = $values['attachment'];
         $activity['subject'] = $values['subject'];
 
         if ($params['contact_id'] == $values['source_contact_id']) {
