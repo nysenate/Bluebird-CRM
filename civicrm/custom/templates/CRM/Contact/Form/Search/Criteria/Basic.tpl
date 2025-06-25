@@ -142,7 +142,7 @@
     {/if}
     {if $isTagset}
       {*NYSS 12559*}
-      {include file="CRM/common/Tagset.tpl"}
+      {include file="CRM/common/Tagset.tpl" tagsetType='contact'}
     {/if}
 
     {if ! $isTagset}

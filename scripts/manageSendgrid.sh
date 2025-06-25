@@ -109,6 +109,7 @@ where [options] are:
   --list-authenticated-domains|-lad  (get list of all authenticated domains)
   --get-default-auth-domain|-gdad  (retrieve default authentication for domain)
   --get-subuser-domains|-gsud  (retrieve authenticated domains for subuser)
+  --get-all-subuser-domains|-gasd  (retrieve all authenticated domains for subuser)
   --list-all-verified-senders|-lavs  (retrieve all Sender Identities for user)
   --get-verified-sender-domains|-gvsd  (return list of DMARC domains)
   --get-verified-sender-status|-gvss  (display verification status for account)
@@ -273,6 +274,7 @@ while [ $# -gt 0 ]; do
     --get-pools-for-ip|-gpfi) shift; cmd="ips/$1" ;;
     --list-authenticated-domains|-lad) cmd="whitelabel/domains" ;;
     --get-subuser-domains|-gsud) cmd="whitelabel/domains/subuser"; params="$params&username=%SUBUSERNAME%" ;;
+    --get-all-subuser-domains|-gasd) cmd="whitelabel/domains/subuser/all"; params="$params&username=%SUBUSERNAME%" ;;
     --get-default-auth-domain|-gdad) cmd="whitelabel/domains/default" ;;
     --list-all-verified-senders|-lavs) cmd="verified_senders" ;;
     --get-verified-sender-domains|-gvsd) cmd="verified_senders/domains" ;;

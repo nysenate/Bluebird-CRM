@@ -728,9 +728,10 @@ class CRM_Activity_BAO_Activity extends CRM_Activity_DAO_Activity {
       $activities[$id]['is_recurring_activity'] = CRM_Core_BAO_RecurringEntity::getParentFor($id, 'civicrm_activity');
 
       //NYSS 2423 indicate if activity has attachments
+      //fix NY 17211 and remove HTML from Business layer... see... ActivityDashletSelector.tpl
       $attachments = CRM_Core_BAO_File::getEntityFile('civicrm_activity', $id);
       if (!empty($attachments)) {
-        $activities[$id]['subject'] .= '<span class="icon attachment-icon"></span>';
+        $activities[$id]['attachment'] = TRUE;
       }
     }
 
