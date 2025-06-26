@@ -535,6 +535,11 @@ function mail_civicrm_links($op, $objectName, $objectId, &$links, &$mask, &$valu
       if ($op == 'view.mailing.browse.unscheduled' && $link['name'] == 'Continue') {
         $links[$key]['weight'] = "-50";
       }
+      // NYSS 17219 deprioritize / discourage use of "Copy".
+      if ($link['name'] == 'Copy') {
+          // This weight should put "Copy" just above "Archive"
+          $links[$key]['weight'] = "105";
+      }
     }
   }
 
