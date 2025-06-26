@@ -1,6 +1,6 @@
 #!/bin/sh
 #
-# v38x-remove-lib_mysqludf_preg.sh
+# v39-remove-lib_mysqludf_preg.sh
 #
 # Project: BluebirdCRM
 # Authors: Nathan Frank
@@ -39,6 +39,11 @@ echo "$prog: rebuild triggers"
 php $app_rootdir/civicrm/scripts/rebuildTriggers.php -S $instance
 
 $drush $instance cc all -y
+
+## verify that the SQL functions work
+echo "$prog: verifying BB_ADDR_REPLACE and BB_NORMALIZE_ADDR functions"
+$execSql $instance -c "SELECT IF(BB_ADDR_REPLACE('90 Main Parkway') = '90 main pkwy', 'BB_ADDR_REPLACE Verified','BB_ADDR_REPLACE Failed');"
+$execSql $instance -c "SELECT IF(BB_NORMALIZE_ADDR('90-b Main Avenue') = '90 b main ave', 'BB_NORMALIZE_ADDR Verified','BB_NORMALIZE_ADDR Failed');"
 
 ## record completion
 echo "$prog: upgrade process is complete."
