@@ -519,7 +519,6 @@ function process_batch_results($db, &$orig_batch, &$batch_results, &$cnts)
     delete_batch_notes($db, $addr_lo_id, $addr_hi_id);
   }
   else {
-    bbscript_log(LL::DEBUG, "Skipping delete_batch_notes() with address ID range ($addr_lo_id - $addr_hi_id)");
     bbscript_log(LL::INFO, "UPDATE_NOTES disabled - No notes were removed and none will be added");
   }
 
