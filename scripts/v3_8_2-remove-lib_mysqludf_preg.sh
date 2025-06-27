@@ -31,19 +31,19 @@ fi
 app_rootdir=`$readConfig --ig $instance app.rootdir` || app_rootdir="$DEFAULT_APP_ROOTDIR"
 
 ## rebuild shadow table functions
-echo "$prog: rebuild shadow table functions"
+echo "$prog: rebuild shadow table functions\n"
 $execSql $instance -f $script_dir/../civicrm/custom/ext/gov.nysenate.dedupe/sql/shadow_func.sql
 
 ## rebuild triggers
-echo "$prog: rebuild triggers"
+echo "$prog: rebuild triggers\n"
 php $app_rootdir/civicrm/scripts/rebuildTriggers.php -S $instance
 
 $drush $instance cc all -y
 
 ## verify that the SQL functions work
-echo "$prog: verifying BB_ADDR_REPLACE and BB_NORMALIZE_ADDR functions"
+echo "\n$prog: verifying BB_ADDR_REPLACE and BB_NORMALIZE_ADDR functions\n"
 $execSql $instance -c "SELECT IF(BB_ADDR_REPLACE('90 Main Parkway') = '90 main pkwy', 'BB_ADDR_REPLACE Verified','BB_ADDR_REPLACE Failed');"
 $execSql $instance -c "SELECT IF(BB_NORMALIZE_ADDR('90-b Main Avenue') = '90 b main ave', 'BB_NORMALIZE_ADDR Verified','BB_NORMALIZE_ADDR Failed');"
-
+echo "\n"
 ## record completion
-echo "$prog: upgrade process is complete."
+echo "$prog: upgrade process is complete.\n"
