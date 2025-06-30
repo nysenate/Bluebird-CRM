@@ -1,6 +1,7 @@
 #!/bin/sh
 #
-# v39-remove-lib_mysqludf_preg.sh
+# v3_8_2.sh
+# Replaces code dependent on lib_mysqludf_preg UDF libraries with built-in MySQL RegExp functions
 #
 # Project: BluebirdCRM
 # Authors: Nathan Frank
