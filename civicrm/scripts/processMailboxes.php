@@ -562,14 +562,14 @@ function storeAttachments($message, $params, $rowId) {
     else {
       $rej_reason = "File type [{$attachment->getContentType()}] not allowed";
     }
-    bbscript_log(LL::TRACE, '$rej_reason', $rej_reason ?? 'NONE');
 
+    // if it hasn't been rejected because of size or file type, then save
     if (!$rej_reason) {
       bbscript_log(LL::INFO, 'Writing attachment data to '.$uploadInbox.$civiFilename);
 
       //save attachment to disk
       $status = $attachment->save($uploadInbox, $civiFilename);
-      bbscript_log(LL::DEBUG, '$status', $status);
+      bbscript_log(LL::DEBUG, '$status', ($status) ? $status : "FALSE");
 
       if ($status) {
         //store record of attachment
@@ -586,8 +586,10 @@ function storeAttachments($message, $params, $rowId) {
         $success++;
       }
       else {
-        bbscript_log(LL::ERROR, 'Unable to store attachment to disk.', $attachment);
+        bbscript_log(LL::ERROR, "Unable to store attachment {$attachment->getName()} to disk.");
       }
+    } else {
+      bbscript_log(LL::WARN, "Attachment rejected -- {$rej_reason}");
     }
   }
 
