@@ -183,7 +183,7 @@ class CRM_NYSS_Inbox_BAO_Inbox {
 
     while ($dao->fetch()) {
       $attachment = (!empty($dao->attachments)) ?
-        "<div class='icon attachment-icon attachment' title='{$dao->attachments} Attachment(s)'></div>" : '';
+        "<i class='crm-i fa-paperclip' title='{$dao->attachments} Attachment(s)'></i>" : '';
       $matched = self::getMatched($dao->matched_id) ?? [];
       $body = CRM_NYSS_Inbox_BAO_Inbox::cleanText($dao->body);
       $parser = Civi::service('inbox.parser');
@@ -196,7 +196,7 @@ class CRM_NYSS_Inbox_BAO_Inbox {
         'sender_name' => CRM_NYSS_Inbox_BAO_Inbox::cleanText($dao->sender_name),
         'sender_email' => $dao->sender_email,
         'subject' => CRM_NYSS_Inbox_BAO_Inbox::cleanText($dao->subject),
-        'subject_display' => CRM_NYSS_Inbox_BAO_Inbox::cleanText($dao->subject) . $attachment,
+        'subject_display' => CRM_NYSS_Inbox_BAO_Inbox::cleanText($dao->subject) . ' ' . $attachment,
         'body_raw' => $body,
         'body' => $parser->highlight(),
         'forwarded_by' => $dao->forwarder,
@@ -429,7 +429,7 @@ class CRM_NYSS_Inbox_BAO_Inbox {
         $msg = [];
         $matchCount = (!empty($dao->email_count)) ? 'multi' : 'empty';
         $attachment = (!empty($dao->attachments)) ?
-          "<div class='icon attachment-icon attachment' title='{$dao->attachments} Attachment(s)'></div>" : '';
+          "<i class='crm-i fa-paperclip' title='{$dao->attachments} Attachment(s)'></i>" : '';
         $senderName = CRM_NYSS_Inbox_BAO_Inbox::cleanText($dao->sender_name, 15);
         $matchId = (!empty($dao->matched_id)) ? $dao->matched_id : 'unmatched';
 
@@ -472,8 +472,8 @@ class CRM_NYSS_Inbox_BAO_Inbox {
             $msg['sender_name'] = $senderName;
         }
 
-        $subject = CRM_NYSS_Inbox_BAO_Inbox::cleanText($dao->subject, 25) . $attachment;
-        $msg['subject'] = preg_replace("/[^A-Za-z0-9 ',.]/i", '', $subject);
+        $subject = CRM_NYSS_Inbox_BAO_Inbox::cleanText($dao->subject, 25);
+        $msg['subject'] = preg_replace("/[^A-Za-z0-9 ',.]/i", '', $subject) . ' ' . $attachment;
         $msg['inbox_source'] = $dao->inbox_source;
         $msg['updated_date'] = date('M d, Y', strtotime($dao->updated_date));
         $msg['forwarder'] = $dao->forwarder;
