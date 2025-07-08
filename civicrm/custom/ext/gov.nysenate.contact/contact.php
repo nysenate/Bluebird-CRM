@@ -222,6 +222,11 @@ function contact_civicrm_pageRun(&$page) {
               $modified = TRUE;
             }
 
+            // It's good practice to call unloadDocuments() when finished with
+            // phpQuery documents. Though, not the case here, big documents
+            // can consume a lot of memory. This releases the memory.
+            phpQuery::unloadDocuments($doc->getDocumentID());
+            
             /*Civi::log()->debug('', array(
               //'$doc' => $doc,
               'text' => $text,
