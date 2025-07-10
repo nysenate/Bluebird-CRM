@@ -16,33 +16,9 @@
         ctrl = this;
       $scope.hs = crmUiHelp({file: 'CRM/Search/Help/Display'});
 
-      this.tableClasses = [
-        {name: 'table', label: ts('Row Borders')},
-        {name: 'table-bordered', label: ts('Column Borders')},
-        {name: 'table-striped', label: ts('Even/Odd Stripes')},
-        {name: 'crm-sticky-header', label: ts('Sticky Header')}
-      ];
 
       // Check if array contains item
       this.includes = _.includes;
-
-      // Add or remove an item from an array
-      this.toggle = function(collection, item) {
-        if (_.includes(collection, item)) {
-          _.pull(collection, item);
-        } else {
-          collection.push(item);
-        }
-      };
-
-      this.toggleDraggable = function() {
-        if (ctrl.display.settings.draggable) {
-          delete ctrl.display.settings.draggable;
-        } else {
-          ctrl.display.settings.sort = [];
-          ctrl.display.settings.draggable = searchMeta.getEntity(ctrl.apiEntity).order_by;
-        }
-      };
 
       this.getColTypes = function() {
         return ctrl.parent.colTypes;
@@ -94,12 +70,10 @@
       this.toggleTally = function() {
         if (ctrl.display.settings.tally) {
           delete ctrl.display.settings.tally;
-          _.each(ctrl.display.settings.columns, function(col) {
-            delete col.tally;
-          });
+          ctrl.display.settings.columns.forEach((col) => delete col.tally);
         } else {
           ctrl.display.settings.tally = {label: ts('Total')};
-          _.each(ctrl.display.settings.columns, function(col) {
+          ctrl.display.settings.columns.forEach(function(col) {
             if (col.type === 'field') {
               col.tally = {
                 fn: searchMeta.getDefaultAggregateFn(searchMeta.parseExpr(ctrl.parent.getExprFromSelect(col.key)), ctrl.apiParams)

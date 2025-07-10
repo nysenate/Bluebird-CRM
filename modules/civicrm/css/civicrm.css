@@ -6,6 +6,15 @@
  * All styles should start with .crm-container unless they are specific to the main div only
  */
 
+/**
+ * CiviCRM themes do not generally have dark mode, so this declares we expect light mode
+ * for system components (and our responsive svg logo).
+ * In Riverlea, this is overridden depending on the dark mode setting.
+ */
+.crm-container {
+  color-scheme: only light;
+}
+
 /* Use this class to hide text that should only be there for screen readers */
 .sr-only {
   border: 0;
@@ -1015,30 +1024,30 @@ input.crm-form-entityref {
   border: 2px solid #999999;
 }
 
-#crm-container .float-left {
+.crm-container .float-left {
   float: left;
   padding: 4px 0;
   clear: none;
 }
 
-#crm-container .float-left + .float-left {
+.crm-container .float-left + .float-left {
   margin-left: 1em;
 }
 
-#crm-container .float-right {
+.crm-container .float-right {
   float: right;
   width: auto;
   padding: 4px 0;
   clear: none;
 }
 
-#crm-container .align-right {
+.crm-container .align-right {
   display: block;
   margin-right: 20px;
   text-align: right;
 }
 
-#crm-container .element-right {
+.crm-container .element-right {
   float: right;
   margin-right: 35px;
 }
@@ -1817,10 +1826,6 @@ input.crm-form-entityref {
   padding: 4px;
   border-bottom: 1px solid #cdcdc3;
   vertical-align: top;
-}
-
-#crm-container table.report-layout tr {
-  font-size: 0.95em;
 }
 
 #crm-container .report-label {
@@ -2923,7 +2928,10 @@ tbody.scrollContent tr.alternateRow {
 .crm-container .form-layout td.label,
 .crm-container form table.report .label,
 .crm-container form table label,
-.crm-container form table.report label {
+.crm-container form table.report label,
+.crm-container .form-layout-compressed tr[role="radiogroup"] td.label,
+.crm-container .form-layout tr[role="radiogroup"] td.label,
+.crm-container #customFields div.contact_panel tr[role="radiogroup"] td.label {
   color: #3e3e3e;
 }
 

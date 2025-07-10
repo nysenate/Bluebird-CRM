@@ -87,22 +87,15 @@ class CRM_Core_BAO_CustomValueTable {
               break;
 
             case 'File':
+              if (!empty($field['id'])) {
+                self::deleteFile($field);
+              }
               if (!$field['file_id']) {
                 $value = 'null';
                 break;
               }
-
-              // need to add/update civicrm_entity_file
-              $entityFileDAO = new CRM_Core_DAO_EntityFile();
-              $entityFileDAO->file_id = $field['file_id'];
-              $entityFileDAO->find(TRUE);
-
-              $entityFileDAO->entity_table = $field['table_name'];
-              $entityFileDAO->entity_id = $field['entity_id'];
-              $entityFileDAO->file_id = $field['file_id'];
-              $entityFileDAO->save();
               $value = $field['file_id'];
-              $type = 'String';
+              $type = 'Integer';
               break;
 
             case 'Date':
@@ -235,22 +228,21 @@ class CRM_Core_BAO_CustomValueTable {
    * Given a field return the mysql data type associated with it.
    *
    * @param string $type
-   * @param int $maxLength
+   * @param int|null $maxLength
    *
    * @return string
    *   the mysql data store placeholder
    */
-  public static function fieldToSQLType($type, $maxLength = 255) {
-    if (!isset($maxLength) ||
-      !is_numeric($maxLength) ||
-      $maxLength <= 0
-    ) {
-      $maxLength = 255;
-    }
-
+  public static function fieldToSQLType(string $type, $maxLength = NULL) {
     switch ($type) {
       case 'String':
+        $maxLength = $maxLength ?: 255;
+        return "varchar($maxLength)";
+
       case 'Link':
+        // URLs can be up to 2047 characters
+        // according to https://www.sitemaps.org/protocol.html#locdef
+        $maxLength = $maxLength ?: 2047;
         return "varchar($maxLength)";
 
       case 'Boolean':
@@ -709,6 +701,25 @@ AND    $cond
         $result["custom_{$id}"] = $value;
       }
       return $result;
+    }
+  }
+
+  /**
+   * Delete orphaned files from disk when updating custom file fields
+   */
+  private static function deleteFile(array $field) {
+    $sql = CRM_Utils_SQL_Select::from($field['table_name'])
+      ->select($field['column_name'])
+      ->where("id = #id", ['#id' => $field['id']])
+      ->toSQL();
+    $fileId = CRM_Core_DAO::singleValueQuery($sql);
+    if ($fileId && $fileId != ($field['file_id'] ?? NULL)) {
+      $refCount = \Civi\Api4\Utils\CoreUtil::getRefCountTotal('File', $fileId);
+      if ($refCount <= 1) {
+        \Civi\Api4\File::delete(FALSE)
+          ->addWhere('id', '=', $fileId)
+          ->execute();
+      }
     }
   }
 

@@ -456,7 +456,7 @@ class CRM_Activity_BAO_Query {
     $form->addRadio('activity_option', '', CRM_Core_SelectValues::activityTextOptions());
     $form->setDefaults(['activity_option' => 6]);
 
-    $form->addYesNo('activity_test', ts('Activity is a Test?'));
+    $form->addYesNo('activity_test', ts('Activity is a Test'));
     $activity_tags = CRM_Core_BAO_Tag::getColorTags('civicrm_activity');
 
     if ($activity_tags) {
@@ -617,11 +617,11 @@ class CRM_Activity_BAO_Query {
   public static function whereClauseSingleActivityText(&$values, &$query) {
     [$name, $op, $value, $grouping, $wildcard] = $values;
     $activityOptionValues = $query->getWhereValues('activity_option', $grouping);
-    $activityOption = CRM_Utils_Array::value(2, $activityOptionValues, 6);
+    $activityOption = $activityOptionValues[2] ?? 6;
 
     $query->_useDistinct = TRUE;
 
-    $label = ts('Activity Text (%1)', [1 => CRM_Utils_Array::value($activityOption, CRM_Core_SelectValues::activityTextOptions())]);
+    $label = ts('Activity Text (%1)', [1 => CRM_Core_SelectValues::activityTextOptions()[$activityOption] ?? '']);
     $clauses = [];
     if ($activityOption % 2 == 0) {
       $clauses[] = $query->buildClause('civicrm_activity.details', $op, $value, 'String');

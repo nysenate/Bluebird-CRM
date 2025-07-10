@@ -503,8 +503,8 @@ class CRM_Core_Payment_Faps extends CRM_Core_Payment {
         Civi::log()->info('Unexpected error from api3 looking up countries/states/provinces');
       }
     }
-    $request = array();
-    $convert = array(
+    $request = [];
+    $convert = [
       'ownerEmail' => 'email',
       'ownerStreet' => 'street_address',
       'ownerCity' => 'city',
@@ -516,10 +516,10 @@ class CRM_Core_Payment_Faps extends CRM_Core_Payment {
 //      'cardtype' => 'credit_card_type',
       'cVV' => 'cvv2',
       'creditCardCryptogram' => 'cryptogram',
-    );
+    ];
     foreach ($convert as $r => $p) {
       if (isset($params[$p])) {
-        $request[$r] = htmlspecialchars($params[$p]);
+        $request[$r] = str_replace(';','',$params[$p]);
       }
     }
     if (empty($params['email'])) {

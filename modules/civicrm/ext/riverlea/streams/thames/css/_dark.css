@@ -3,6 +3,7 @@
   --crm-c-dkblue-02: #0c191e;
   --crm-c-dkblue-03: #1a292f;
   --crm-c-dkblue-04: #1e323b;
+  --crm-c-dkblue-08: #2ea4ff;
   --crm-c-background: var(--crm-c-dkblue-02);
   --crm-dash-tabs-bg: var(--crm-c-dkblue-03);
   --crm-dash-tab-count-bg: var(--crm-c-blue-darker);
@@ -10,8 +11,8 @@
   --crm-c-code-background: var(--crm-c-dkblue-04);
   --crm-dashlet-bg: var(--crm-c-dkblue-02);
   --crm-c-green: #335417;
-  --crm-c-link: #2c98ed;
-  --crm-c-link-hover: color-mix(in srgb, white, var(--crm-c-blue-dark) 70%);
+  --crm-c-link: var(--crm-c-dkblue-08);
+  --crm-c-link-hover: color-mix(in srgb, white, var(--crm-c-dkblue-08) 70%);
   --crm-dash-header-col: var(--crm-c-blue-light);
   --crm-dash-tab-bg-hover: var(--crm-c-dkblue-02);
   --crm-dash-panel-bg: var(--crm-c-dkblue-02);
@@ -25,13 +26,11 @@
   --crm-tab-bg-active: var(--crm-c-dkblue-02);
   --crm-tab-bg-hover: var(--crm-c-dkblue-02);
   --crm-tab-bg: transparent;
-  --crm-alert-background-help: var(--crm-c-dkblue-03);
-  --crm-alert-background-warning: #383124;
+  --crm-alert-success-bg: var(--crm-c-dkblue-03);
+  --crm-alert-warning-bg: #383124;
   --crm-input-background: var(--crm-c-blue-darker);
   --crm-inline-edit-bg: var(--crm-c-dkblue-01);
   --crm-input-color: var(--crm-c-blue); /* text */
-  --crm-alert-background-info: var(--crm-c-blue-darker);
-  --crm-alert-text-info: var(--crm-c-blue-light);
   --crm-expand-body-bg: var(--crm-c-dkblue-03);
   --crm-expand-header-color: var(--crm-c-blue-light);
   --crm-expand-header-bg: var(--crm-c-dkblue-03);
@@ -47,6 +46,23 @@
   --crm-form-block-background: var(--crm-c-dkblue-02);
   --crm-notify-background: var(--crm-c-dkblue-02);
   --crm-expand-header-bg-active: var(--crm-c-dkblue-04);
+  --crm-checkbox-list-col: var(--crm-input-label-color);
+  --crm-checkbox-list-bg: var(--crm-c-dkblue-01);
+  --crm-checkbox-list-bg2: var(--crm-c-dkblue-02);
+  --crm-input-description: var(--crm-input-label-color);
+  --crm-filter-bg: var(--crm-c-dkblue-02);
+  /* Emphasis colours */
+  --crm-c-info-on-page-bg: var(--crm-c-secondary);
+  --crm-c-danger-on-page-bg: var(--crm-btn-danger-bg);
+  --crm-c-warning-on-page-bg: var(--crm-c-warning-light);
+  --crm-c-success-on-page-bg: var(--crm-c-success-light);
+  --crm-c-primary-on-page-bg: var(--crm-c-secondary);
+  --crm-c-secondary-on-page-bg: var(--crm-c-secondary);
+  --crm-alert-danger-bg: var(--crm-c-danger);
+  --crm-alert-danger-text: var(--crm-c-danger-text);
+  --crm-alert-info-bg: var(--crm-c-blue-darker);
+  --crm-alert-info-text: var(--crm-c-blue-light);
+  --crm-c-warning-text: black;
 }
 
 .crm-container div.crm-summary-row div.crm-label {
@@ -91,6 +107,7 @@
 }
 .crm-container summary {
   background: var(--crm-c-dkblue-03);
+  color: var(--crm-expand-header-color);
 }
 .crm-container details {
   background-color: var(--crm-c-dkblue-02);
@@ -100,10 +117,7 @@
 }
 /* .crm-container .crm-search-nav-tabs { border-color: var(--crm-c-dkblue-01); } */
 
-/* Override standalone.css */
-.standalone-auth-box {
-  background: var(--crm-c-dkblue-01) !important;
-}
+/* override standalone.css */
 #login-form {
   --crm-big-input: 100%;
 }
@@ -119,5 +133,15 @@
 .crm-container .status-past,
 .crm-contact-deceased,
 .crm-container .status-warning {
-  --crm-c-alert: var(--crm-c-red);
+  --crm-c-danger: var(--crm-c-red);
+}
+#civicrm-footer a,
+nav.breadcrumb a {
+  --crm-c-link: var(--crm-c-dkblue-08);
+  --crm-c-link-hover: var(--crm-c-blue);
+}
+
+/* eg. Frontend theme selection */
+.select2-drop.select2-drop-active.crm-container .select2-results > li {
+  --crm-c-blue-dark: var(--crm-c-blue);
 }

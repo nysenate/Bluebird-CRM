@@ -178,7 +178,7 @@ VALUES
     ( @domainID, 'civicrm/report/list?compid=4&reset=1', 'Mailing Reports', 'Mailing Reports', 'access CiviMail', '', @mailinglastID, '1', 1,    5 ),
     ( @domainID, 'civicrm/admin/component?reset=1',                         'Headers, Footers, and Automated Messages', 'Headers, Footers, and Automated Messages', 'access CiviMail,administer CiviCRM', 'AND', @mailinglastID, '1', NULL, 6 ),
     ( @domainID, 'civicrm/admin/messageTemplates?reset=1',                  'Message Templates', 'Message Templates',                 'edit message templates,edit user-driven message templates,edit system workflow message templates', 'OR', @mailinglastID, '1', NULL, 7 ),
-    ( @domainID, 'civicrm/admin/options/from_email_address?reset=1', 'From Email Addresses', 'From Email Addresses', 'administer CiviCRM', '', @mailinglastID, '1', 1, 8 ),
+    ( @domainID, 'civicrm/admin/options/site_email_address', 'Site Email Addresses', 'CiviMail Site Email Addresses', 'administer CiviCRM', '', @mailinglastID, '1', 1, 8 ),
     ( @domainID, 'civicrm/sms/send?reset=1',  'New SMS', 'New SMS', 'send SMS', NULL, @mailinglastID, '1', NULL, 9 ),
     ( @domainID, 'civicrm/mailing/browse?reset=1&sms=1', 'Find Mass SMS', 'Find Mass SMS', 'send SMS', NULL, @mailinglastID, '1', 1, 10 ),
     ( @domainID, 'civicrm/a/#/abtest/new',                                  'New A/B Test', 'New A/B Test',                                        'access CiviMail', '', @mailinglastID, '1', NULL, 15 ),
@@ -302,7 +302,7 @@ INSERT INTO civicrm_navigation
     ( domain_id, url, label, name, permission, permission_operator, parent_id, is_active, has_separator, weight )
 VALUES
     ( @domainID, 'civicrm/admin/domain?action=update&reset=1',         'Organization Address and Contact Info', 'Organization Address and Contact Info',                                      'administer CiviCRM', '', @communicationslastID, '1', NULL, 1 ),
-    ( @domainID, 'civicrm/admin/options/from_email_address?reset=1', 'FROM Email Addresses', 'FROM Email Addresses',                                                 'administer CiviCRM', '', @communicationslastID, '1', NULL, 2 ),
+    ( @domainID, 'civicrm/admin/options/site_email_address', 'Site Email Addresses', 'Site Email Addresses',                                                 'administer CiviCRM', '', @communicationslastID, '1', NULL, 2 ),
     ( @domainID, 'civicrm/admin/messageTemplates?reset=1',             'Message Templates',      'Message Templates',                                                                         'administer CiviCRM', '', @communicationslastID, '1', NULL, 3 ),
     ( @domainID, 'civicrm/admin/scheduleReminders?reset=1',              'Schedule Reminders',    'Schedule Reminders',                                                                       'administer CiviCRM', '', @communicationslastID, '1', NULL, 4 ),
     ( @domainID, 'civicrm/admin/options/preferred_communication_method?reset=1',  'Preferred Communication Methods', 'Preferred Communication Methods',  'administer CiviCRM', '', @communicationslastID, '1', NULL, 5 ),
@@ -349,10 +349,10 @@ INSERT INTO civicrm_navigation
     ( domain_id, url, label, name, permission, permission_operator, parent_id, is_active, has_separator, weight )
 VALUES
 
+    ( @domainID, 'civicrm/menu/rebuild?reset=1',                        'Clear Caches', 'cache_clear',                                        'administer CiviCRM', '', @systemSettingslastID, '1', 1, 0 ),
     ( @domainID, 'civicrm/admin/setting/component?reset=1',             'Components', 'Enable Components',                                    'administer CiviCRM', '', @systemSettingslastID, '1', NULL, 1 ),
     ( @domainID, 'civicrm/admin/extensions?reset=1',                    'Extensions', 'Manage Extensions',                                    'administer CiviCRM', '', @systemSettingslastID, '1', 1,    3 ),
 
-    ( @domainID, 'civicrm/admin/setting/updateConfigBackend?reset=1',   'Cleanup Caches and Update Paths', 'Cleanup Caches and Update Paths', 'administer CiviCRM', '', @systemSettingslastID, '1', NULL, 4 ),
     ( @domainID, 'civicrm/admin/setting/uf?reset=1',                    'CMS Database Integration',    'CMS Integration',                     'administer CiviCRM', '', @systemSettingslastID, '1', NULL, 5 ),
     ( @domainID, 'civicrm/admin/setting/debug?reset=1',                 'Debugging and Error Handling','Debugging and Error Handling',        'administer CiviCRM', '', @systemSettingslastID, '1', NULL, 6 ),
     ( @domainID, 'civicrm/admin/setting/path?reset=1',                  'Directories',        'Directories',                                  'administer CiviCRM', '', @systemSettingslastID, '1', NULL, 7 ),
@@ -457,7 +457,7 @@ INSERT INTO civicrm_navigation
 VALUES
     ( @domainID, 'civicrm/admin/component?reset=1',            'Headers, Footers, and Automated Messages', 'Headers, Footers, and Automated Messages', 'access CiviMail,administer CiviCRM', 'AND', @adminMailinglastID, '1', NULL, 1 ),
     ( @domainID, 'civicrm/admin/messageTemplates?reset=1',     'Message Templates', 'Message Templates', 'administer CiviCRM', '',   @adminMailinglastID, '1', NULL, 2 ),
-    ( @domainID, 'civicrm/admin/options/from_email_address?reset=1', 'From Email Addresses', 'From Email Addresses', 'administer CiviCRM', '', @adminMailinglastID, '1', NULL, 3 ),
+    ( @domainID, 'civicrm/admin/options/site_email_address', 'Site Email Addresses', 'CiviMail Admin Site Email Addresses', 'administer CiviCRM', '', @adminMailinglastID, '1', NULL, 3 ),
     ( @domainID, 'civicrm/admin/mailSettings?reset=1',         'Mail Accounts', 'Mail Accounts', 'access CiviMail,administer CiviCRM', 'AND',           @adminMailinglastID, '1', NULL, 4 ),
     ( @domainID, 'civicrm/admin/mail?reset=1',                 'Mailer Settings', 'Mailer Settings', 'access CiviMail,administer CiviCRM', 'AND',           @adminMailinglastID, '1', NULL, 5 ),
     ( @domainID, 'civicrm/admin/setting/preferences/mailing?reset=1', 'CiviMail Component Settings', 'CiviMail Component Settings','access CiviMail,administer CiviCRM', 'AND', @adminMailinglastID, '1', NULL, 6 );

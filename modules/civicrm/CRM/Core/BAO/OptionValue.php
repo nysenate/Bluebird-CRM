@@ -144,12 +144,6 @@ class CRM_Core_BAO_OptionValue extends CRM_Core_DAO_OptionValue implements \Civi
     $optionValue = new CRM_Core_DAO_OptionValue();
     $optionValue->copyValues($params);
 
-    $isDomainOptionGroup = CRM_Core_OptionGroup::isDomainOptionGroup($groupName);
-    // When creating a new option for a group that requires a domain, set default domain
-    if ($isDomainOptionGroup && empty($params['id']) && (empty($params['domain_id']) || CRM_Utils_System::isNull($params['domain_id']))) {
-      $optionValue->domain_id = CRM_Core_Config::domainID();
-    }
-
     $groupsSupportingDuplicateValues = ['languages'];
     if (!$id && !empty($params['value'])) {
       $dao = new CRM_Core_DAO_OptionValue();
@@ -159,9 +153,6 @@ class CRM_Core_BAO_OptionValue extends CRM_Core_DAO_OptionValue implements \Civi
       else {
         // CRM-21737 languages option group does not use unique values but unique names.
         $dao->name = $params['name'];
-      }
-      if (CRM_Core_OptionGroup::isDomainOptionGroup($groupName)) {
-        $dao->domain_id = $optionValue->domain_id;
       }
       $dao->option_group_id = $params['option_group_id'];
       if ($dao->find(TRUE)) {
@@ -551,11 +542,6 @@ class CRM_Core_BAO_OptionValue extends CRM_Core_DAO_OptionValue implements \Civi
     $query = 'UPDATE civicrm_option_value SET is_default = 0 WHERE option_group_id = %1 AND id <> %2';
     $queryParams = [1 => [$optionGroupID, 'Integer'], 2 => [$id, 'Integer']];
 
-    // Limit update by domain of option. This is loaded if it is a domain option group.
-    if (!empty($optionValue->domain_id)) {
-      $query .= ' AND domain_id = %3';
-      $queryParams[3] = [(int) $optionValue->domain_id, 'Integer'];
-    }
     if (in_array($groupName, ['email_greeting', 'postal_greeting', 'addressee'], TRUE)) {
       $variableNumber = count($queryParams) + 1;
       $query .= ' AND filter = %' . $variableNumber;

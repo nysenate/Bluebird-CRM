@@ -281,7 +281,7 @@ class CRM_Utils_System_Drupal extends CRM_Utils_System_DrupalBase {
    */
   public function mapConfigToSSL() {
     global $base_url;
-    $base_url = str_replace('http://', 'https://', $base_url);
+    $base_url = str_replace('http://', 'https://', (string) $base_url);
   }
 
   /**
@@ -313,9 +313,10 @@ class CRM_Utils_System_Drupal extends CRM_Utils_System_DrupalBase {
 
     $config = CRM_Core_Config::singleton();
 
-    $ufDSN = CRM_Utils_SQL::autoSwitchDSN($config->userFrameworkDSN);
+    $ufDSN = $config->userFrameworkDSN;
+
     try {
-      $dbDrupal = DB::connect($ufDSN);
+      $dbDrupal = CRM_Utils_SQL::connect($ufDSN);
     }
     catch (Exception $e) {
       throw new CRM_Core_Exception("Cannot connect to drupal db via $ufDSN, " . $e->getMessage());
@@ -435,14 +436,6 @@ AND    u.status = 1
   }
 
   /**
-   * @inheritDoc
-   */
-  public function logout() {
-    module_load_include('inc', 'user', 'user.pages');
-    return user_logout();
-  }
-
-  /**
    * Get the default location for CiviCRM blocks.
    *
    * @return string
@@ -479,7 +472,7 @@ AND    u.status = 1
     define('DRUPAL_ROOT', $cmsPath);
 
     // For drupal multi-site CRM-11313
-    if ($realPath && strpos($realPath, 'sites/all/modules/') === FALSE) {
+    if ($realPath && !str_contains($realPath, 'sites/all/modules/')) {
       preg_match('@sites/([^/]*)/modules@s', $realPath, $matches);
       if (!empty($matches[1])) {
         $_SERVER['HTTP_HOST'] = $matches[1];
@@ -897,16 +890,14 @@ AND    u.status = 1
    * @inheritdoc
    */
   public function theme(&$content, $print = FALSE, $maintenance = FALSE) {
+    if ($maintenance) {
+      \CRM_Core_Error::deprecatedWarning('Calling CRM_Utils_Base::theme with $maintenance is deprecated - use renderMaintenanceMessage instead');
+    }
     $ret = FALSE;
 
     if (!$print) {
       if ($maintenance) {
-        drupal_set_breadcrumb('');
-        drupal_maintenance_theme();
-        if ($region = CRM_Core_Region::instance('html-header', FALSE)) {
-          CRM_Utils_System::addHTMLHead($region->render(''));
-        }
-        print theme('maintenance_page', ['content' => $content]);
+        print $this->renderMaintenanceMessage($content);
         exit();
       }
       $ret = TRUE;
@@ -925,11 +916,27 @@ AND    u.status = 1
   /**
    * @inheritdoc
    */
+  public function renderMaintenanceMode(string $content): string {
+    drupal_set_breadcrumb('');
+    drupal_maintenance_theme();
+    if ($region = CRM_Core_Region::instance('html-header', FALSE)) {
+      $this->addHTMLHead($region->render(''));
+    }
+    return theme('maintenance_page', ['content' => $content]);
+  }
+
+  /**
+   * @inheritdoc
+   */
   public function ipAddress():?string {
     // Drupal function handles the server being behind a proxy securely. We
     // still have legacy ipn methods that reach this point without bootstrapping
     // hence the check that the fn exists.
     return function_exists('ip_address') ? ip_address() : ($_SERVER['REMOTE_ADDR'] ?? NULL);
+  }
+
+  public function isMaintenanceMode(): bool {
+    return variable_get('maintenance_mode', FALSE);
   }
 
 }

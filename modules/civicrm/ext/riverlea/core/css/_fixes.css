@@ -144,6 +144,7 @@ a.crm-expand-row:focus {
   padding: var(--crm-expand-body-padding);
   background-color: var(--crm-expand-body-bg);
   box-shadow: var(--crm-expand-body-box-shadow);
+  color: var(--crm-c-text); /* specified for Drupal Claro Darkmode */
 }
 .crm-container .widget-content .crm-accordion-body,
 .crm-container .crm-collapsible .crm-summary-block {
@@ -181,11 +182,11 @@ a.crm-expand-row:focus {
 .crm-container .status-past,
 .crm-contact-deceased,
 .crm-container .status-warning {
-  color: var(--crm-c-alert);
+  color: var(--crm-c-danger-on-page-bg);
 }
 .crm-container .alert.alert-info.font-red { /* for when an info alert wants to be a danger alert! */
-  background-color: var(--crm-alert-background-danger);
-  border-color: var(--crm-alert-border-danger);
+  background-color: var(--crm-alert-danger-bg);
+  border-color: var(--crm-alert-danger-border);
 }
 
 /******************
@@ -243,6 +244,7 @@ a.crm-expand-row:focus {
   gap: var(--crm-btn-icon-spacing);
   align-items: center;
   margin: var(--crm-btn-margin);
+  width: max-content; /* front-end width bug when inside a td */
 }
 .crm-container a.button span {
   display: flex;
@@ -358,12 +360,6 @@ body[class*="page-civicrm-report-"] #report-tab-order-by-elements #optionFieldLi
   border-radius: var(--crm-roundness) var(--crm-roundness) 0 0;
   margin-bottom: 0;
 }
-.crm-container .crm-search-nav-tabs { /* Fix for SK tabs border */
-  border-bottom-left-radius: 0;
-  border-bottom-right-radius: 0;
-  margin-bottom: 0;
-  border-bottom: 0;
-}
 .crm-container .panel-heading:has(.nav-tabs) {
   padding: 0;
   border-bottom: 0;
@@ -378,14 +374,6 @@ body[class*="page-civicrm-report-"] #report-tab-order-by-elements #optionFieldLi
   box-shadow: none;
   border-radius: 0 0 var(--crm-roundness) var(--crm-roundness);
   background: var(--crm-tab-bg-active);
-  overflow-x: auto;
-}
-.crm-search:has(.crm-search-nav-tabs) .crm-search-display.crm-search-display-table table {
-  border-width: 1px 0 0 0;
-  border-top-left-radius: 0;
-  border-top-right-radius: 0;
-  box-shadow: none;
-  margin-bottom: 0;
 }
 .crm-container .afadmin-list >  .form-inline,
 .crm-search > .ng-scope > .form-inline {
@@ -419,8 +407,8 @@ body[class*="page-civicrm-report-"] #report-tab-order-by-elements #optionFieldLi
 .CRM_Contact_Form_Contact > .crm-form-block > details,
 .CRM_Contact_Form_Contact > .crm-form-block > div > details {
   margin-inline: calc(-1 * var(--crm-form-block-padding));
-  padding-inline: var(--crm-expand-2-body-padding);
-  margin-bottom: var(--crm-expand-2-body-padding);
+  padding-inline: var(--crm-expand2-body-padding);
+  margin-bottom: var(--crm-expand2-body-padding);
 }
 .crm-container .crm-add-address-wrapper {
   height: auto;
@@ -467,7 +455,7 @@ body[class*="page-civicrm-report-"] #report-tab-order-by-elements #optionFieldLi
   padding: var(--crm-padding-small);
   border-radius: var(--crm-btn-radius);
 }
-@media (max-width: 768px) {
+@media (max-width: 767px) {
   .crm-container .tag-tree-wrapper {
     display: block;
   }
@@ -486,7 +474,6 @@ body[class*="page-civicrm-report-"] #report-tab-order-by-elements #optionFieldLi
   box-shadow: var(--crm-block-shadow);
 }
 .crm-container #ContributionCharts .ui-tabs-nav {
-  align-items: center;
   gap: 1px; /* to handle white space in markup */
 }
 .crm-container #ContributionCharts .ui-tabs-nav .float-right td {
@@ -516,6 +503,7 @@ body[class*="page-civicrm-report-"] #report-tab-order-by-elements #optionFieldLi
 }
 #ContributionCharts ul.ui-tabs-nav .float-right table a.button {
   max-height: 36px;
+  margin-block: 0;
 }
 #ContributionCharts #chartData {
   padding: var(--crm-padding-reg);
@@ -565,9 +553,6 @@ body[class*="page-civicrm-report-"] #report-tab-order-by-elements #optionFieldLi
   background: transparent;
   padding: 0;
 }
-.crm-case-activity-form-block-followup_activity_type_id .crm-form-date-wrapper {
-  display: inline-block;
-}
 .crm-case-activity-form-block table.form-layout-compressed {
   width: 100%;
 }
@@ -576,6 +561,11 @@ body[class*="page-civicrm-report-"] #report-tab-order-by-elements #optionFieldLi
 }
 /* API3 explorer */
 
+.crm-container .select2-highlighted .api-field-desc,
+.crm-container .select2-highlighted .crm-marker,
+.crm-container .api-field-desc {
+  color: inherit;
+}
 #api-generated caption {
   font-weight: var(--crm-bold-weight);
   font-family: var(--crm-font-bold);
@@ -583,6 +573,7 @@ body[class*="page-civicrm-report-"] #report-tab-order-by-elements #optionFieldLi
 #api-generated tr td:first-of-type {
   width: var(--crm-input-label-width);
 }
+
 /* Display Preferences */
 
 tr.crm-preferences-display-form-block-contact_edit_options td:has(table) {
@@ -754,7 +745,7 @@ details + .crm-content-block:has(.dataTables_wrapper) {
 
 /* Contact dashboard */
 
-@media (max-width: 768px) {
+@media (max-width: 767px) {
   .crm-container div.contact_panel {
     display: block;
   }
@@ -785,8 +776,12 @@ details + .crm-content-block:has(.dataTables_wrapper) {
     COMMON EXTENSIONS
 *******************/
 
-/* Contact Dashboard Editor */
+/* Style rules for Contact Layout Editor extension */
 
+#contact-summary .crm-contact-summary-layout-col {
+  flex: 1 1 250px;
+  padding: 0;
+}
 .crm-actions-ribbon ul#actions:has(.crm-contact-summary-edit-layout) {
   grid-template-columns: min-content min-content min-content auto min-content min-content;
 }

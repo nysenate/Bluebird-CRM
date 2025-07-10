@@ -12,7 +12,7 @@
     <url desc="Licensing">http://www.gnu.org/licenses/agpl-3.0.html</url>
   </urls>
   <releaseDate>[civicrm.releaseDate]</releaseDate>
-  <version>1.2.2-[civicrm.version]</version>
+  <version>1.4.6-[civicrm.version]</version>
   <develStage>stable</develStage>
   <compatibility>
     <ver>[civicrm.majorVersion]</ver>
@@ -23,7 +23,7 @@
   </classloader>
   <civix>
     <namespace>CRM/riverlea</namespace>
-    <format>23.02.1</format>
+    <format>25.01.1</format>
   </civix>
   <mixins>
     <mixin>theme-php@1.0.0</mixin>

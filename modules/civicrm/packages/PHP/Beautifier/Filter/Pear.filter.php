@@ -144,7 +144,7 @@ class PHP_Beautifier_Filter_Pear extends PHP_Beautifier_Filter
     }
     function t_comment($sTag) 
     {
-        if ($sTag{0} != '#') {
+        if ($sTag[0] != '#') {
             return PHP_Beautifier_Filter::BYPASS;
         }
         $oFilterDefault = new PHP_Beautifier_Filter_Default($this->oBeaut);

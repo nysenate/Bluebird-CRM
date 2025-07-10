@@ -778,9 +778,9 @@ class Validate
         } else {
             $date_len = strlen($format);
             for ($i = 0; $i < $date_len; $i++) {
-                $c = $format{$i};
+                $c = $format[$i];
                 if ($c == '%') {
-                    $next = $format{$i + 1};
+                    $next = $format[$i + 1];
                     switch ($next) {
                     case 'j':
                     case 'd':

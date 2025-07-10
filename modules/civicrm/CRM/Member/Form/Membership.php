@@ -157,7 +157,7 @@ class CRM_Member_Form_Membership extends CRM_Member_Form {
     $this->assign('priceSetId', $_GET['priceSetId'] ?? NULL);
 
     if ($this->_action & CRM_Core_Action::DELETE) {
-      $contributionID = CRM_Member_BAO_Membership::getMembershipContributionId($this->_id);
+      $contributionID = CRM_Member_BAO_MembershipPayment::getLatestContributionIDFromLineitemAndFallbackToMembershipPayment($this->_id);
       // check delete permission for contribution
       if ($this->_id && $contributionID && !CRM_Core_Permission::checkActionPermission('CiviContribute', $this->_action)) {
         CRM_Core_Error::statusBounce(ts("This Membership is linked to a contribution. You must have 'delete in CiviContribute' permission in order to delete this record."));
@@ -785,14 +785,10 @@ DESC limit 1");
         );
 
         if (!$startDate) {
-          $startDate = CRM_Utils_Array::value('start_date',
-            $defaultDates
-          );
+          $startDate = $defaultDates['start_date'] ?? NULL;
         }
         if (!$endDate) {
-          $endDate = CRM_Utils_Array::value('end_date',
-            $defaultDates
-          );
+          $endDate = $defaultDates['end_date'] ?? NULL;
         }
 
         //CRM-3724, check for availability of valid membership status.
@@ -912,7 +908,7 @@ DESC limit 1");
    * the selected override option is not 'until date'.
    */
   private function setOverrideDateValue() {
-    if (!CRM_Member_StatusOverrideTypes::isUntilDate(CRM_Utils_Array::value('is_override', $this->_params))) {
+    if (!CRM_Member_StatusOverrideTypes::isUntilDate($this->_params['is_override'] ?? NULL)) {
       $this->_params['status_override_end_date'] = '';
     }
   }
@@ -1284,7 +1280,7 @@ DESC limit 1");
         // Test cover in `CRM_Member_Form_MembershipTest::testOverrideSubmit()`.
         $isPaymentPending = FALSE;
         if ($this->getMembershipID()) {
-          $contributionId = CRM_Member_BAO_Membership::getMembershipContributionId($this->getMembershipID());
+          $contributionId = CRM_Member_BAO_MembershipPayment::getLatestContributionIDFromLineitemAndFallbackToMembershipPayment($this->getMembershipID());
           if ($contributionId) {
             $isPaymentPending = \Civi\Api4\Contribution::get(FALSE)
               ->addSelect('contribution_status_id:name')
@@ -1343,7 +1339,7 @@ DESC limit 1");
     }
     $this->assign('lineItem', !empty($lineItem) && !$isQuickConfig ? $lineItem : FALSE);
 
-    $contributionId = $this->ids['Contribution'] ?? CRM_Member_BAO_Membership::getMembershipContributionId($this->getMembershipID());
+    $contributionId = $this->ids['Contribution'] ?? CRM_Member_BAO_MembershipPayment::getLatestContributionIDFromLineitemAndFallbackToMembershipPayment($this->getMembershipID());
     $membershipIds = $this->_membershipIDs;
     if ($this->getSubmittedValue('send_receipt') && $contributionId && !empty($membershipIds)) {
       $contributionStatus = \Civi\Api4\Contribution::get(FALSE)
@@ -1398,12 +1394,8 @@ DESC limit 1");
       }
 
       // retrieve the related contribution ID
-      $contributionID = CRM_Core_DAO::getFieldValue(
-        'CRM_Member_DAO_MembershipPayment',
-        $this->getMembershipID(),
-        'contribution_id',
-        'membership_id'
-      );
+      $contributionID = CRM_Member_BAO_MembershipPayment::getLatestContributionIDFromLineitemAndFallbackToMembershipPayment($this->getMembershipID());
+
       // get price fields of chosen price-set
       $priceSetDetails = CRM_Utils_Array::value(
         $this->_priceSetId,
@@ -1787,7 +1779,7 @@ DESC limit 1");
    * @throws \CRM_Core_Exception
    */
   protected function getFormMembershipParams(): array {
-    return [
+    $params = [
       'status_id' => $this->getSubmittedValue('status_id'),
       'source' => $this->getSubmittedValue('source') ?? $this->getContributionSource(),
       'contact_id' => $this->getMembershipContactID(),
@@ -1804,6 +1796,8 @@ DESC limit 1");
       'exclude_is_admin' => !$this->getSubmittedValue('is_override'),
       'contribution_recur_id' => $this->getContributionRecurID(),
     ];
+    $params += $this->getSubmittedCustomFields(4);
+    return $params;
   }
 
   /**

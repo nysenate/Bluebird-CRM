@@ -38,7 +38,7 @@ return [
     'type' => 'String',
     'default' => '',
     'html_type' => 'select',
-    'title' => E::ts('Email Recurring Contribution failure reports to this Email address'),
+    'title' => E::ts('Email receipt for a Contribution in a Recurring Series'),
     'is_domain' => 1,
     'is_contact' => 0,
     'settings_pages' => ['iats' => ['weight' => 40]],

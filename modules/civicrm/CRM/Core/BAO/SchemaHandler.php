@@ -42,6 +42,14 @@ class CRM_Core_BAO_SchemaHandler {
   const DEFAULT_COLLATION = 'utf8mb4_unicode_ci';
 
   /**
+   * MySql allows a maximum of 3072 bytes per index.
+   * With the `utf8mb4` character set, each character can occupy up to 4 bytes,
+   * so the absolute limit would be 3072 / 4 = 768.
+   * This keeps a bit under that for extra safety.
+   */
+  const MAX_INDEX_LENGTH = 512;
+
+  /**
    * Create a CiviCRM-table
    *
    * @param array $params
@@ -198,10 +206,14 @@ class CRM_Core_BAO_SchemaHandler {
     // Add index if field is searchable if it does not reference a foreign key
     // (skip indexing FK fields because it would be redundant to have 2 indexes)
     if (!empty($params['searchable']) && empty($params['fk_table_name']) && !$searchIndexExists) {
+      $indexName = $params['name'];
+      if (self::getFieldLength($params['type']) > self::MAX_INDEX_LENGTH) {
+        $indexName .= '(' . self::MAX_INDEX_LENGTH . ')';
+      }
       $sql .= $separator;
       $sql .= str_repeat(' ', 8);
       $sql .= $prefix;
-      $sql .= "index_{$params['name']} ( {$params['name']} )";
+      $sql .= "index_{$params['name']} ( $indexName )";
     }
     // Drop search index if field is no longer searchable
     elseif (empty($params['searchable']) && $searchIndexExists) {
@@ -577,6 +589,10 @@ MODIFY      {$columnName} varchar( $length )
    * @return bool TRUE if FK is found
    */
   public static function checkFKExists(string $table_name, string $constraint_name): bool {
+    if (!isset(\Civi::$statics['CRM_Core_DAO']['init'])) {
+      // This could get called early during installation.
+      return FALSE;
+    }
     $query = "
       SELECT CONSTRAINT_NAME FROM INFORMATION_SCHEMA.TABLE_CONSTRAINTS
       WHERE TABLE_SCHEMA = DATABASE()
@@ -863,11 +879,11 @@ MODIFY      {$columnName} varchar( $length )
         if (!$dao->Collation || $dao->Collation === $newCollation || $dao->Collation === $newBinaryCollation) {
           continue;
         }
-        if (strpos($dao->Collation, 'utf8') !== 0) {
+        if (!str_starts_with($dao->Collation, 'utf8')) {
           continue;
         }
 
-        if (strpos($dao->Collation, '_bin') !== FALSE) {
+        if (str_contains($dao->Collation, '_bin')) {
           $tableCollation = $newBinaryCollation;
         }
         else {
@@ -998,6 +1014,34 @@ MODIFY      {$columnName} varchar( $length )
    */
   public static function getDBCharset() {
     return CRM_Core_DAO::singleValueQuery('SELECT @@character_set_database');
+  }
+
+  /**
+   * @param string $table
+   * @return string|null
+   *   Ex: 'BASE TABLE' or 'VIEW'
+   */
+  public static function getTableType(string $table): ?string {
+    return \CRM_Core_DAO::singleValueQuery(
+      'SELECT TABLE_TYPE  FROM information_schema.tables  WHERE TABLE_SCHEMA=database() AND TABLE_NAME LIKE %1',
+      [1 => [$table, 'String']]);
+  }
+
+  /**
+   * Extracts the length or size parameter from an SQL type definition if it exists.
+   *
+   * @param string $sqlType
+   *   E.g. "varchar(255)" or "decimal(20,2)" or "int".
+   *
+   * @return string|null
+   *   E.g. "255" or "20,2" or NULL
+   */
+  public static function getFieldLength($sqlType): ?string {
+    $open = strpos($sqlType, '(');
+    if ($open) {
+      return substr($sqlType, $open + 1, -1);
+    }
+    return NULL;
   }
 
 }

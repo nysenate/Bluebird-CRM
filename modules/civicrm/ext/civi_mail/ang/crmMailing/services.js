@@ -510,8 +510,7 @@
   });
 
   // The preview manager performs preview actions while putting up a visible UI (e.g. dialogs & status alerts)
-  //NYSS 13571
-  angular.module('crmMailing').factory('crmMailingPreviewMgr', function ($q, dialogService, crmMailingMgr, crmStatus) {
+  angular.module('crmMailing').factory('crmMailingPreviewMgr', function (dialogService, crmMailingMgr, crmStatus) {
     return {
       // @param mode string one of 'html', 'text', or 'full'
       // @return Promise
@@ -542,23 +541,15 @@
       // @param to Object with either key "email" (string) or "gid" (int)
       // @return Promise
       sendTest: function sendTest(mailing, recipient) {
-        //NYSS 13571
-        var d = $q.defer();
-        crmMailingMgr.sendTest(mailing, recipient)
-          .then(function (deliveryInfos) {
-            var count = Object.keys(deliveryInfos).length;
-            if (count === 0) {
-              //NYSS 11277/13571
-              CRM.alert(ts('Unable to send test email. Either there are no valid recipients or your outbound email settings are incorrect.'));
-              d.reject();
-            }
-            else {
-              d.resolve();
-            }
-          })
-        ;
-        //NYSS 13571
-        return crmStatus({start: ts('Sending...'), success: ts('Sent'), error: ts('Error')}, d.promise);
+        var promise = crmMailingMgr.sendTest(mailing, recipient)
+            .then(function (deliveryInfos) {
+              var count = Object.keys(deliveryInfos).length;
+              if (count === 0) {
+                CRM.alert(ts('Could not identify any recipients. Perhaps your test group is empty, all contacts are set to deceased/opt out/do_not_email, or you tried sending to contacts that do not exist and you have no permission to add contacts.'));
+              }
+            })
+          ;
+        return crmStatus({start: ts('Sending...'), success: ts('Sent')}, promise);
       }
     };
   });
@@ -569,7 +560,6 @@
       {name: 'Delivered',     title: ts('Successful Deliveries'),   searchFilter: '&mailing_delivery_status=Y', eventsFilter: '&event=delivered', reportType: 'detail', reportFilter: '&delivery_status_value=successful'},
       {name: 'Opened',        title: ts('Unique Opens'),           searchFilter: '&mailing_open_status=Y',     eventsFilter: '&event=opened', reportType: 'opened', reportFilter: ''},
       {name: 'Unique Clicks', title: ts('Unique Clicks'),          searchFilter: '&mailing_click_status=Y',    eventsFilter: '&event=click&distinct=1', reportType: 'clicks', reportFilter: ''},
-      // {name: 'Forward',    title: ts('Forwards'),                searchFilter: '&mailing_forward=1',         eventsFilter: '&event=forward', reportType: 'detail', reportFilter: '&is_forwarded_value=1'},
       // {name: 'Replies',    title: ts('Replies'),                 searchFilter: '&mailing_reply_status=Y',    eventsFilter: '&event=reply', reportType: 'detail', reportFilter: '&is_replied_value=1'},
       {name: 'Bounces',       title: ts('Bounces'),                 searchFilter: '&mailing_delivery_status=N', eventsFilter: '&event=bounce', reportType: 'bounce', reportFilter: ''},
       {name: 'Unsubscribers', title: ts('Unsubscribes & Opt-outs'), searchFilter: '&mailing_unsubscribe=1',     eventsFilter: '&event=unsubscribe', reportType: 'detail', reportFilter: '&is_unsubscribed_value=1'},

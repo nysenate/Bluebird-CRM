@@ -55,18 +55,13 @@ class CRM_Core_BAO_UFField extends CRM_Core_DAO_UFField implements \Civi\Core\Ho
       }
     }
 
-    // Validate field_name
-    if (strpos($params['field_name'], 'formatting') !== 0 && !CRM_Core_BAO_UFField::isValidFieldName($params['field_name'])) {
-      throw new CRM_Core_Exception('The field_name is not valid');
-    }
-
     // Supply default label if not set
     if (empty($id) && !isset($params['label'])) {
       $params['label'] = self::getAvailableFieldTitles()[$params['field_name']];
     }
 
     // Supply field_type if not set
-    if (empty($params['field_type']) && strpos($params['field_name'], 'formatting') !== 0) {
+    if (empty($params['field_type']) && !str_starts_with($params['field_name'], 'formatting')) {
       $params['field_type'] = CRM_Utils_Array::pathGet(self::getAvailableFieldsFlat(), [$params['field_name'], 'field_type']);
     }
     elseif (empty($params['field_type'])) {

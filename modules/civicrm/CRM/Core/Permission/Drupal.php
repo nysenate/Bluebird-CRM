@@ -58,6 +58,7 @@ class CRM_Core_Permission_Drupal extends CRM_Core_Permission_DrupalBase {
     $str = $this->translatePermission($str, 'Drupal', [
       'view user account' => 'access user profiles',
       'administer users' => 'administer users',
+      'bypass maintenance mode' => 'access site in maintenance mode',
     ]);
     if ($str == CRM_Core_Permission::ALWAYS_DENY_PERMISSION) {
       return FALSE;
@@ -159,7 +160,6 @@ class CRM_Core_Permission_Drupal extends CRM_Core_Permission_DrupalBase {
     }
 
     $uids = [];
-    //NYSS force exclusion of role 4 (Admin)
     $sql = "
       SELECT {users}.uid, {role_permission}.permission
       FROM {users}
@@ -169,7 +169,6 @@ class CRM_Core_Permission_Drupal extends CRM_Core_Permission_DrupalBase {
         ON {role_permission}.rid = {users_roles}.rid
       WHERE {role_permission}.permission = '{$permissionName}'
         AND {users}.status = 1
-        AND {users_roles}.rid != 4
     ";
 
     $result = db_query($sql);

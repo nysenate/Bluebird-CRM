@@ -94,11 +94,6 @@ class CRM_Batch_Form_Entry extends CRM_Core_Form {
   protected $currentRowExistingMembership;
 
   /**
-   * @var array
-   */
-  protected $_priceSet;
-
-  /**
    * Get the contribution id for the current row.
    *
    * @return int
@@ -106,7 +101,7 @@ class CRM_Batch_Form_Entry extends CRM_Core_Form {
    */
   public function getCurrentRowContributionID(): int {
     if (!isset($this->currentRowContributionID)) {
-      $this->currentRowContributionID = CRM_Core_DAO::getFieldValue('CRM_Member_DAO_MembershipPayment', $this->getCurrentRowMembershipID(), 'contribution_id', 'membership_id');
+      $this->currentRowContributionID = CRM_Member_BAO_MembershipPayment::getLatestContributionIDFromLineitemAndFallbackToMembershipPayment($this->getCurrentRowMembershipID());
     }
     return $this->currentRowContributionID;
   }
@@ -418,7 +413,7 @@ class CRM_Batch_Form_Entry extends CRM_Core_Form {
       if (!empty($params['soft_credit_contact_id'][$key]) && empty($params['soft_credit_amount'][$key])) {
         $errors["soft_credit_amount[$key]"] = ts('Please enter the soft credit amount.');
       }
-      if (!empty($params['soft_credit_amount']) && !empty($params['soft_credit_amount'][$key]) && CRM_Utils_Rule::cleanMoney(CRM_Utils_Array::value($key, $params['soft_credit_amount'])) > CRM_Utils_Rule::cleanMoney($value['total_amount'])) {
+      if (!empty($params['soft_credit_amount'][$key]) && CRM_Utils_Rule::cleanMoney($params['soft_credit_amount'][$key]) > CRM_Utils_Rule::cleanMoney($value['total_amount'])) {
         $errors["soft_credit_amount[$key]"] = ts('Soft credit amount should not be greater than the total amount');
       }
 
@@ -554,11 +549,6 @@ class CRM_Batch_Form_Entry extends CRM_Core_Form {
       }
     }
     $params['actualBatchTotal'] = CRM_Utils_Rule::cleanMoney($params['actualBatchTotal']);
-    // get the price set associated with offline contribution record.
-    $priceSetId = CRM_Core_DAO::getFieldValue('CRM_Price_DAO_PriceSet', 'default_contribution_amount', 'id', 'name');
-    $this->_priceSet = current(CRM_Price_BAO_PriceSet::getSetDetail($priceSetId));
-    $priceFieldID = CRM_Price_BAO_PriceSet::getOnlyPriceFieldID($this->_priceSet);
-    $priceFieldValueID = CRM_Price_BAO_PriceSet::getOnlyPriceFieldValueID($this->_priceSet);
 
     if (isset($params['field'])) {
       foreach ($params['field'] as $key => $value) {
@@ -626,29 +616,6 @@ class CRM_Batch_Form_Entry extends CRM_Core_Form {
         $value['batch_id'] = $this->_batchId;
         $value['skipRecentView'] = TRUE;
 
-        // build line item params
-        $this->_priceSet['fields'][$priceFieldID]['options'][$priceFieldValueID]['amount'] = $value['total_amount'];
-        $value['price_' . $priceFieldID] = 1;
-
-        $lineItem = [];
-        CRM_Price_BAO_PriceSet::processAmount($this->_priceSet['fields'], $value, $lineItem[$priceSetId]);
-
-        // @todo - stop setting amount level in this function - use $this->order->getAmountLevel()
-        unset($value['amount_level']);
-
-        //CRM-11529 for back office transactions
-        //when financial_type_id is passed in form, update the
-        //line items with the financial type selected in form
-        // @todo - create a price set or price field per financial type & simply choose the appropriate
-        // price field rather than working around the fact that each price_field is supposed to have a financial
-        // type & we are allowing that to be overridden.
-        if (!empty($value['financial_type_id']) && !empty($lineItem[$priceSetId])) {
-          foreach ($lineItem[$priceSetId] as &$values) {
-            $values['financial_type_id'] = $value['financial_type_id'];
-          }
-        }
-        $value['line_item'] = $lineItem;
-
         //finally call contribution create for all the magic
         $contribution = CRM_Contribute_BAO_Contribution::create($value);
         // This code to retrieve the contribution has been moved here from the contribution create
@@ -704,10 +671,7 @@ class CRM_Batch_Form_Entry extends CRM_Core_Form {
             [$products, $options] = CRM_Contribute_BAO_Premium::getPremiumProductInfo();
 
             $value['hidden_Premium'] = 1;
-            $value['product_option'] = CRM_Utils_Array::value(
-              $value['product_name'][1],
-              $options[$value['product_name'][0]]
-            );
+            $value['product_option'] = $options[$value['product_name'][0]][$value['product_name'][1]] ?? NULL;
 
             $premiumParams = [
               'product_id' => $value['product_name'][0],
@@ -747,9 +711,6 @@ class CRM_Batch_Form_Entry extends CRM_Core_Form {
    */
   private function processMembership(array $params) {
     $batchTotal = 0;
-    // get the price set associated with offline membership
-    $priceSetId = CRM_Core_DAO::getFieldValue('CRM_Price_DAO_PriceSet', 'default_membership_type_amount', 'id', 'name');
-    $this->_priceSet = current(CRM_Price_BAO_PriceSet::getSetDetail($priceSetId));
 
     if (isset($params['field'])) {
       // @todo - most of the wrangling in this function is because the api is not being used, especially date stuff.
@@ -1080,6 +1041,7 @@ class CRM_Batch_Form_Entry extends CRM_Core_Form {
     // Load all line items & process all in membership. Don't do in contribution.
     // Relevant tests in api_v3_ContributionPageTest.
     // @todo stop passing $ids (membership and userId may be set by this point)
+    // $ids['membership'] is the "current membership ID"
     $membership = CRM_Member_BAO_Membership::create($memParams, $ids);
 
     // not sure why this statement is here, seems quite odd :( - Lobo: 12/26/2010
@@ -1195,7 +1157,7 @@ class CRM_Batch_Form_Entry extends CRM_Core_Form {
   private function getCurrentRowCustomParams(): array {
     $return = [];
     foreach ($this->currentRow as $field => $value) {
-      if (strpos($field, 'custom_') === 0) {
+      if (str_starts_with($field, 'custom_')) {
         $return[$field] = $value;
       }
     }

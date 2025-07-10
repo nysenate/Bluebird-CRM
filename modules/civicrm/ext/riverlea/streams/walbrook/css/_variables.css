@@ -1,7 +1,7 @@
 /*
     Name: Walbrook;
     Description: Based on Shoreditch theme. Named after after River Walbrook, which runs under Shoreditch, London;
-    Riverlea version: 1.1.0;
+    Riverlea version: 1.3.8;
 */
 
 :root {
@@ -21,36 +21,46 @@
   --crm-c-gray-100: #ebeff0;
   --crm-c-gray-050: #f3f6f7;
   --crm-c-gray-025: #fcfcfc;
-  --crm-c-blue: #0071bd;
+  --crm-c-blue: #90c8f4;
+  --crm-c-blue-dark: #005893;
   --crm-c-blue-light: #dff0f4;
-  --crm-c-blue-dark: #66afe9;
-  --crm-c-blue-darker: #005c99;
-  --crm-c-green: #44cb7e;
-  --crm-c-green-light: #bcecd1;
-  --crm-c-green-dark: var(--crm-c-text);
-  --crm-c-red: #cf3458;
-  --crm-c-red-light: #ecb0be;
+  --crm-c-blue-darker: #043b60;
+  --crm-c-green: #7ed59f;
+  --crm-c-green-light: #ceebda;
+  --crm-c-green-dark: rgb(21, 76, 42);
+  --crm-c-red: #91223c;
+  --crm-c-red-light: #ecb1bc;
   --crm-c-red-dark: var(--crm-c-text);
-  --crm-c-amber: #e6ab5e;
+  --crm-c-amber: #eab876;
   --crm-c-yellow: #f8e80b;
   --crm-c-teal: #399389;
 /* Practical colours */
-  --crm-c-link: var(--crm-c-blue);
-  --crm-c-link-hover: var(--crm-c-blue-dark);
+  --crm-c-text: #34303b;
+  --crm-c-link: var(--crm-c-blue-darker);
+  --crm-c-link-hover: #004370;
   --crm-c-page-background: #e8eef0; /* background to page body */
   --crm-c-background: #fff; /* background to page header, often form block & dialog bg */
   --crm-c-drag-background: var(--crm-c-background4); /* background for drag/drop regions, select2 highlight */
   --crm-c-code-background: var(--crm-c-background3); /* background for code regions */
-  --crm-c-primary: var(--crm-c-blue);
-  --crm-c-primary-hover: var(--crm-c-blue-darker);
-  --crm-c-primary-text: var(--crm-c-light-text); /* text colour when on top of primary */
+/* Emphasis colours */
+  --crm-c-primary: var(--crm-c-blue-dark);
   --crm-c-secondary: var(--crm-c-purple);
-  --crm-c-secondary-hover: var(--crm-c-purple-dark);
   --crm-c-success: var(--crm-c-green);
-  --crm-c-success-text: var(--crm-c-dark-text);
-  --crm-c-alert: var(--crm-c-red);
-  --crm-c-warning-text: var(--crm-c-dark-text);
-  --crm-c-info-text: var(--crm-c-light-text);
+  --crm-c-success-text: var(--crm-c-text);
+  --crm-c-success-light: var(--crm-c-green-light);
+  --crm-c-success-on-page-bg: var(--crm-c-green-dark);
+  --crm-c-warning: var(--crm-c-amber);
+  --crm-c-warning-text: var(--crm-c-text);
+  --crm-c-warning-light: var(--crm-c-amber-light);
+  --crm-c-warning-on-page-bg: #873502;
+  --crm-c-danger: var(--crm-c-red);
+  --crm-c-danger-text: var(--crm-c-text-light);
+  --crm-c-danger-light: var(--crm-c-red-light);
+  --crm-c-danger-on-page-bg: var(--crm-c-danger);
+  --crm-c-info: var(--crm-c-blue);
+  --crm-c-info-text: var(--crm-c-text);
+  --crm-c-info-light: var(--crm-c-blue-light);
+  --crm-c-info-on-page-bg: var(--crm-c-blue-darker);
 /* Shadows */
   --crm-block-shadow: 0 3px 18px 0 rgba(48,40,40,.25);
   --crm-popup-shadow: var(--crm-block-shadow);
@@ -62,6 +72,7 @@
 /* Type */
   --crm-link-decoration-hover: none;
   --crm-heading-bg: var(--crm-c-background3);
+  --crm-heading-col: var(--crm-c-text-dark);
   --crm-heading-padding: var(--crm-m2) var(--crm-m);
   --crm-heading-margin: 0;
   --crm-heading-radius: 0;
@@ -86,6 +97,7 @@
   --crm-table-nested-border: 0 solid transparent;
 /* Panels */
   --crm-panel-head-margin: var(--crm-m2);
+  --crm-panel-head-height: 48px;
 /* Accordions */
   --crm-expand-icon: "\f105"; /* unicode value for FontAwesome icon */
   --crm-expand-icon-color: unset;
@@ -112,19 +124,15 @@
   --crm-expand2-body-padding: 0;
 /* Alerts */
   --crm-alert-padding: var(--crm-r) var(--crm-r2);
-  --crm-alert-text-help: var(--crm-c-text);
-  --crm-alert-background-warning: var(--crm-c-amber-light);
-  --crm-alert-border-warning: var(--crm-c-amber);
-  --crm-alert-background-info: var(--crm-c-primary);
-  --crm-alert-border-info: var(--crm-c-primary);
-  --crm-alert-text-info: var(--crm-c-primary-text);
-  --crm-alert-text-danger: var(--crm-c-text);
+  --crm-alert-success-text: var(--crm-c-success-on-page-bg);
+  --crm-alert-danger-text: var(--crm-c-text);
+  --crm-alert-info-text: var(--crm-c-info-on-page-bg);
 /* Form */
   --crm-form-block-padding: var(--crm-r);
   --crm-form-block-border-radius: 0;
   --crm-input-background: var(--crm-c-background);
   --crm-input-background-image: none;
-  --crm-input-color: #464354;
+  --crm-input-color: var(--crm-c-text);
   --crm-input-border-color: #c2cfd8;
   --crm-input-border-radius: var(--crm-roundness);
   --crm-input-box-shadow: inset 0 0 3px 0 rgba(0,0,0,.2);
@@ -165,7 +173,7 @@
   --crm-dash-tab-border-hover: unset;
   --crm-dash-tab-col: unset;
   --crm-dash-tab-count-bg: var(--crm-c-primary);
-  --crm-dash-tab-count-col: var(--crm-c-light-text);
+  --crm-dash-tab-count-col: var(--crm-c-text-light);
   --crm-dash-tab-hang: 0 0 -1px 0; /* lip to extend tab flush with active region - set to 0 for no lip */
   --crm-dash-icon-size: var(--crm-m2);
   --crm-dash-box-shadow: inset 0 3px 18px -5px rgba(0, 0, 0, 0.25);
@@ -176,7 +184,7 @@
   --crm-dash-label-bg: var(--crm-c-background);
   --crm-dash-header-bg: var(--crm-c-gray-900);
   --crm-dash-header-bg2: var(--crm-c-gray-800);
-  --crm-dash-header-col: var(--crm-c-light-text);
+  --crm-dash-header-col: var(--crm-c-text-light);
   --crm-dash-header-size: var(--crm-l);
   --crm-dash-header-padding: var(--crm-r) var(--crm-r1);
   --crm-dash-image-size: 100px;
@@ -195,24 +203,34 @@
   --crm-dashlet-bg: var(--crm-c-background);
   --crm-dashlet-padding: 0;
   --crm-dashlet-header-bg: var(--crm-c-secondary);
-  --crm-dashlet-header-col: var(--crm-c-light-text);
+  --crm-dashlet-header-col: var(--crm-c-text-light);
   --crm-dashlet-header-padding: var(--crm-padding-reg);
   --crm-dashlet-tabs-border: var(--crm-tabs-border);
 /* Notifications */
   --crm-notify-background: var(--crm-c-background);
   --crm-notify-col: var(--crm-c-text);
   --crm-notify-accent-border: 0 0 0 3px; /* adds a border to one/several sides of the notification - set to 0 for none */
-/* Wizard */
+  --crm-notify-danger: #d02e2e;
+  --crm-notify-warning: #c45008;
+  --crm-notify-success: #5a803c;
+  --crm-notify-info: #277fa5;
+  /* Wizard */
   --crm-wizard-width: auto;
   --crm-wizard-margin: calc(-1 * var(--crm-form-block-padding)) calc(-1 * var(--crm-form-block-padding)) 0;
   --crm-wizard-height: 62px;
   --crm-wizard-radius: 0;
   --crm-wizard-angle: 20px;
+  --crm-wizard-arrow-thickness: 2px;
   --crm-wizard-active-col: var(--crm-c-link);
   --crm-wizard-active-bg: var(--crm-c-page-background);
   --crm-wizard-border: 1px solid var(--crm-c-page-background);
   --crm-wizard-bg: var(--crm-c-background);
 /* Frontend */
+  --crm-f-fieldset-padding: var(--crm-padding-reg);
   --crm-f-legend-align: unset;
   --crm-f-legend-size: var(--crm-r2);
+  --crm-f-label-position: unset; /* 'unset' = stacked, 'left' = left align, in combination with width below */
+  --crm-f-label-align: left;
+  --crm-f-label-margin: var(--crm-s);
+  --crm-f-label-width: unset;
 }

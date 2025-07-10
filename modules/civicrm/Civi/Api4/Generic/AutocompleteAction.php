@@ -196,12 +196,7 @@ class AutocompleteAction extends AbstractAction {
       $this->addFilter(implode(',', array_unique($searchFields)), $this->input);
     }
 
-    $apiResult = \Civi\Api4\SearchDisplay::run(FALSE)
-      ->setSavedSearch($this->savedSearch)
-      ->setDisplay($this->display)
-      ->setFilters($this->filters)
-      ->setReturn($return)
-      ->execute();
+    $apiResult = $this->getApiResult($return);
 
     foreach ($apiResult as $row) {
       $item = [
@@ -218,10 +213,15 @@ class AutocompleteAction extends AbstractAction {
       }
       $result[] = $item;
     }
-    $result->setCountMatched($apiResult->count());
+    // Unlike a traditional pager, a scroll-type pager doesn't care about the total number of results,
+    // it just needs to know whether there are any more.
+    // If so, countMatched will include the 1 extra result fetched but not returned.
+    $countMatched = $apiResult->hasCountMatched() ? $apiResult->countMatched() : $apiResult->count();
+    $result->setCountMatched($countMatched);
+    $result->rowCount = $apiResult->count();
     if (!empty($initialSearchById)) {
       // Trigger "more results" after searching by exact id
-      $result->setCountMatched($apiResult->count() + 1);
+      $result->setCountMatched($countMatched + 1);
     }
   }
 
@@ -312,6 +312,20 @@ class AutocompleteAction extends AbstractAction {
   public function getPermissions() {
     // Permissions for this action are checked internally
     return [];
+  }
+
+  /**
+   * @param string|null $return
+   * @return \Civi\Api4\Result\SearchDisplayRunResult
+   */
+  private function getApiResult(?string $return): \Civi\Api4\Result\SearchDisplayRunResult {
+    $apiResult = \Civi\Api4\SearchDisplay::run(FALSE)
+      ->setSavedSearch($this->savedSearch)
+      ->setDisplay($this->display)
+      ->setFilters($this->filters)
+      ->setReturn($return)
+      ->execute();
+    return $apiResult;
   }
 
 }

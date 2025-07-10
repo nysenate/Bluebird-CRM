@@ -38,16 +38,10 @@ class Manager
      */
     private $collection;
 
-    /**
-     * @param Behavior $behaviour
-     * @param Resolvable $resolver
-     * @param Collectable $collection
-     * @return self
-     */
     public static function initialize(
         Behavior $behaviour,
-        Resolvable $resolver = null,
-        Collectable $collection = null
+        ?Resolvable $resolver = null,
+        ?Collectable $collection = null
     ): self {
         if (self::$instance === null) {
             self::$instance = new self($behaviour, $resolver, $collection);
@@ -59,9 +53,6 @@ class Manager
         );
     }
 
-    /**
-     * @return self
-     */
     public static function instance(): self
     {
         if (self::$instance !== null) {
@@ -73,9 +64,6 @@ class Manager
         );
     }
 
-    /**
-     * @return bool
-     */
     public static function destroy(): bool
     {
         if (self::$instance === null) {
@@ -85,44 +73,26 @@ class Manager
         return true;
     }
 
-    /**
-     * @param Behavior $behaviour
-     * @param Resolvable $resolver
-     * @param Collectable $collection
-     */
     private function __construct(
         Behavior $behaviour,
-        Resolvable $resolver = null,
-        Collectable $collection = null
+        ?Resolvable $resolver = null,
+        ?Collectable $collection = null
     ) {
         $this->collection = $collection ?? new PharInvocationCollection();
         $this->resolver = $resolver ?? new PharInvocationResolver();
         $this->behavior = $behaviour;
     }
 
-    /**
-     * @param string $path
-     * @param string $command
-     * @return bool
-     */
     public function assert(string $path, string $command): bool
     {
         return $this->behavior->assert($path, $command);
     }
 
-    /**
-     * @param string $path
-     * @param null|int $flags
-     * @return PharInvocation|null
-     */
-    public function resolve(string $path, int $flags = null)
+    public function resolve(string $path, ?int $flags = null): ?PharInvocation
     {
         return $this->resolver->resolve($path, $flags);
     }
 
-    /**
-     * @return Collectable
-     */
     public function getCollection(): Collectable
     {
         return $this->collection;

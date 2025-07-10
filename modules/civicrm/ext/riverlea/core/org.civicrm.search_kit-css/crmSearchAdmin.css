@@ -4,8 +4,19 @@
 
 /* Searchkit listing */
 
-.crm-search-nav-tabs {
+.crm-search:has(.crm-search-nav-tabs) {
+  min-width: fit-content;
+}
+.crm-search:has(.crm-search-nav-tabs) .crm-search-display-table table {
+  border-width: 1px 0 0 0;
+  box-shadow: none;
+  margin-bottom: 0;
+}
+.crm-container .crm-search-nav-tabs {
   position: relative;
+  border-radius: var(--crm-tabs-radius) var(--crm-tabs-radius) 0 0;
+  border: var(--crm-tabs-border);
+  border-bottom: 0;
 }
 #bootstrap-theme .crm-search-nav-tabs > div.btn-group {
   position: absolute;
@@ -79,9 +90,6 @@
 #bootstrap-theme.crm-search button.btn-xs:has(i.crm-i) {
   padding: 0;
 }
-.crm-search ul.nav-stacked li:last-of-type {
-  margin-top: var(--crm-r);
-}
 #bootstrap-theme.crm-search ul.nav-stacked li:has(.btn-xs) a {
   padding-right: 5ch;
 }
@@ -134,16 +142,17 @@
   border-top: var(--crm-c-divider);
   margin-block: var(--crm-s);
   border-radius: var(--crm-roundness);
+  position: relative;
 }
 .crm-search fieldset fieldset {
   padding-top: 0;
   border: var(--crm-c-divider);
   border-width: 0 1px 1px 1px;
 }
-.crm-search fieldset legend {
+#bootstrap-theme.crm-search fieldset legend {
   font-size: inherit;
   margin: 0;
-  width: auto;
+  width: 100%;
   border: 0;
   padding: 0;
   text-transform: none;
@@ -197,20 +206,23 @@
   padding: 0;
   border: 0 solid transparent;
 }
-.crm-search-admin-edit-columns fieldset.crm-draggable {
+.crm-search-admin-edit-columns fieldset.crm-draggable:has(> details) { /* targetted to cetaild because SK Tokens extension shares classname */
   display: grid;
   grid-template-columns: 2ch auto;
+  align-items: center;
+}
+.crm-search-admin-edit-columns fieldset.crm-draggable:has(details[open]) {
+  align-items: start;
 }
 #bootstrap-theme .crm-search-admin-edit-columns fieldset.crm-draggable .btn.btn-xs.pull-right {
   line-height: 1.45rem;
   display: block;
   z-index: 1;
   position: absolute;
-  right: 15px;
+  right: calc(4 * var(--crm-padding-small)); /* aligns button relative to stream padding */
 }
 i.crm-i.crm-search-move-icon {
   opacity: .5;
-  margin-top: 0.5rem;
 }
 .crm-draggable details > *,
 .crm-draggable details > .form-inline {
@@ -222,23 +234,24 @@ i.crm-i.crm-search-move-icon {
 .crm-draggable details > div:last-of-type {
   padding-bottom: var(--crm-expand-body-padding);
 }
-.crm-search-admin-edit-columns .input-group-btn {
+#bootstrap-theme .crm-search-admin-edit-columns .input-group-btn {
   display: flex;
   flex-direction: row;
 }
 .crm-search-admin-edit-columns .crm-draggable > td {
-  white-space: nowrap;
   vertical-align: middle;
 }
 .crm-search-admin-edit-columns .crm-draggable > td input {
   max-width: 125px;
 }
 .crm-search-admin-edit-columns .crm-draggable > td.form-inline {
-  font-size: 0;
   padding-right: var(--crm-s);
 }
 .crm-search-admin-edit-columns .crm-draggable tfoot td.form-inline {
   padding: var(--crm-padding-reg);
+}
+.crm-container crm-search-admin-link-select .input-group input {
+  height: var(--crm-btn-height); /* Button/Links - other */
 }
 .crm-search-admin-relative {
   position: relative;
@@ -417,5 +430,7 @@ crm-search-admin-import {
   position: absolute;
   top: 1px;
   right: 0;
-  background-color: white;
+}
+.crm-search-admin-relative .help-block { /* reduces help-block by width of crm-search-admin-right button */
+  width: calc(100% - 180px);
 }

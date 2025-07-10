@@ -42,7 +42,7 @@
                 <div class="crm-submit-buttons">
                   <a href="#" class="crm-hover-button crm-custom-value-del"
                      data-post='{ldelim}"valueID": "{$cvID}", "groupID": "{$customGroupId}", "contactId": "{$contactId}", "key": "{crmKey name='civicrm/ajax/customvalue'}"{rdelim}'
-                     title="{ts 1=$cd_edit.title|cat:" `$rowCount`"}Delete %1{/ts}">
+                     title="{ts escape='htmlattribute' 1=$cd_edit.title|cat:" `$rowCount`"}Delete %1{/ts}">
                     <i class="crm-i fa-trash" aria-hidden="true"></i> {ts}Delete{/ts}
                   </a>
                 </div>
@@ -52,7 +52,7 @@
                   {foreach from=$cd_edit.fields item=element key=field_id}
                     <tr>
                       <td class="label">{$element.field_title}</td>
-                      <td class="html-adjust">
+                      <td class="html-adjust crm-cf-datatype-{$element.field_data_type|lower} crm-cf-{$element.field_type|lower}">
                         {if $element.options_per_line != 0}
                           {* sort by fails for option per line. Added a variable to iterate through the element array*}
                           {foreach from=$element.field_value item=val}
@@ -68,7 +68,7 @@
                             {/if}
                           {else}
                             {if $element.field_data_type EQ 'ContactReference' && $element.contact_ref_links}
-                              {', '|implode:$element.contact_ref_links}
+                              {$element.contact_ref_links|join:', '}
                             {else}
                               {$element.field_value}
                             {/if}
@@ -120,7 +120,7 @@
                 {else}
                   <div class="content">
                     {if $element.field_data_type EQ 'ContactReference' && $element.contact_ref_links}
-                      {', '|implode:$element.contact_ref_links}
+                      {$element.contact_ref_links|join:', '}
                     {else}
                       {if $element.field_value}{$element.field_value} {else}<br/>{/if}
                     {/if}

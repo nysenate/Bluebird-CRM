@@ -16,11 +16,14 @@
   </urls>
   <releaseDate>[civicrm.releaseDate]</releaseDate>
   <version>[civicrm.version]</version>
-  <develStage>alpha</develStage>
+  <develStage>stable</develStage>
+  <tags>
+    <tag>mgmt:required</tag>
+  </tags>
   <compatibility>
     <ver>[civicrm.majorVersion]</ver>
   </compatibility>
-  <comments>This extension contains import functionality which was previously in CiviCRM Core. If you use the import functionality it is recommended to enable this extension.</comments>
+  <comments>CiviCRM import functionality</comments>
   <requires>
     <ext>org.civicrm.afform</ext>
     <ext>org.civicrm.search_kit</ext>
@@ -31,7 +34,7 @@
   </classloader>
   <civix>
     <namespace>CRM/Civiimport</namespace>
-    <format>23.02.1</format>
+    <format>25.01.1</format>
     <angularModule>crmCiviimport</angularModule>
   </civix>
   <mixins>
@@ -39,6 +42,6 @@
     <mixin>scan-classes@1.0.0</mixin>
     <mixin>setting-php@1.0.0</mixin>
     <mixin>ang-php@1.0.0</mixin>
-    <mixin>smarty@1.0.0</mixin>
+    <mixin>smarty@1.0.3</mixin>
   </mixins>
 </extension>
