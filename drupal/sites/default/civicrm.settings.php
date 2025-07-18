@@ -160,6 +160,7 @@ $prefs['civicaseRedactActivityEmail'] = 'default';
 $prefs['civicaseAllowMultipleClients'] = 1;
 $prefs['civicaseNaturalActivityTypeSort'] = 'default';
 $prefs['civicaseActivityRevisions'] = false;
+$prefs['civicaseShowCaseActivities'] = get_config_value($bbcfg, 'civicase.showCaseActivities', false);
 
 // Contribute settings, from Contribute.setting.php
 // cvv_backoffice_required
