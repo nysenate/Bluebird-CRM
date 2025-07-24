@@ -116,6 +116,7 @@ $prefs = &$civicrm_setting['domain'];
 // do_not_notify_assignees_for
 $prefs['advanced_search_options'] = SEP.implode(SEP, [1,2,3,4,5,6,10,13,16,17,18,19]).SEP;
 $prefs['contact_view_options'] = SEP.implode(SEP, [1,2,3,4,5,6,10,14,15]).SEP;
+$prefs['contact_edit_options'] = SEP.implode(SEP, [1,2,3,4,5,6,7,8,12,14,15,16,17]).SEP;
 $prefs['checksum_timeout'] = 7;
 $prefs['communityMessagesUrl'] = false;
 $prefs['contact_autocomplete_options'] = SEP.implode(SEP, [1,2,3,4,5,8,9]).SEP;
@@ -159,6 +160,7 @@ $prefs['civicaseRedactActivityEmail'] = 'default';
 $prefs['civicaseAllowMultipleClients'] = 1;
 $prefs['civicaseNaturalActivityTypeSort'] = 'default';
 $prefs['civicaseActivityRevisions'] = false;
+$prefs['civicaseShowCaseActivities'] = get_config_value($bbcfg, 'civicase.showCaseActivities', false);
 
 // Contribute settings, from Contribute.setting.php
 // cvv_backoffice_required

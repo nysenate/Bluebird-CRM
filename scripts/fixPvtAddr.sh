@@ -66,9 +66,8 @@ echo "Address records with 'Pvt' in street_name: $cnt1" >&2
 echo "Address records with 'Pvt' in street_unit: $cnt2" >&2
 echo "Total address records with 'Pvt': $pvtcnt" >&2
 
-newname="trim(preg_replace('/[,]?[ ]?(Apt[.]?)? Pvt$/', '', street_name))"
-newunit="nullif(trim(preg_replace('/[,]?[ ]?(Apt[.]?[ ]?)?Pvt.*/', '', street_unit)), '')"
-
+newname="trim(regexp_replace(street_name, '[,]?[ ]?(Apt[.]?)? Pvt$', ''))"
+newunit="nullif(trim(regexp_replace(street_unit, '[,]?[ ]?(Apt[.]?[ ]?)?Pvt.*', '')), '')"
 
 if [ $pvtcnt -gt 0 ]; then
   if [ $dry_run -eq 0 ]; then

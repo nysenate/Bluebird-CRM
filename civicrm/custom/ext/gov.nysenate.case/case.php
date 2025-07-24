@@ -274,6 +274,10 @@ function case_civicrm_searchColumns($objectName, &$headers, &$rows, &$selector) 
         unset($header['sort']);
         unset($header['direction']);
       }
+      // NYSS #17154 Include Case #/ID
+      if ($header['name'] == 'Subject') {
+        $header['name'] = E::ts('Case # &mdash; Subject');
+      }
     }
   }
 }
