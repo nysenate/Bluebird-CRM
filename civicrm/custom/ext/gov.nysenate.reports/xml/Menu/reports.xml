@@ -1,0 +1,9 @@
+<?xml version="1.0"?>
+<menu>
+  <item>
+    <path>civicrm/report/constituent_tag</path>
+    <page_callback>CRM_NYSS_Reports_Page_ContactTagReport</page_callback>
+    <title>Constituent Tag Report</title>
+    <access_arguments>access CiviCRM</access_arguments>
+  </item>
+</menu>
