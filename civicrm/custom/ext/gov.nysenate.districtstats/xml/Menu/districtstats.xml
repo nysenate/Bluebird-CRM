@@ -6,4 +6,9 @@
     <title>District Stats</title>
     <access_arguments>access CiviReport</access_arguments>
   </item>
+  <item>
+    <path>civicrm/admin/setting/districtstats</path>
+    <title>District Stats Extension Settings</title>
+    <page_callback>CRM_Admin_Form_Generic</page_callback>
+  </item>
 </menu>
