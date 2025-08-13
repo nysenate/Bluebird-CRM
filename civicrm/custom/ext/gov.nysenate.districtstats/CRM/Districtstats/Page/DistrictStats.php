@@ -482,7 +482,23 @@ class CRM_Districtstats_Page_DistrictStats extends CRM_Core_Page {
     }
     $this->assign('contactZip', $contactZip);
 
+    // contact tag report is now using a different report page -- not advanced search
+    $tag_report_route = Civi::settings()->get('districtstats_tag_report_route');
+    $tag_report_url = (isset($tag_report_route)) ?
+      CRM_Utils_System::url($tag_report_route, 'reset=1') : $baseUrl;
+
     //get contact issue codes
+
+    // "Issue Codes" are tags whose parent is NOT a tagset. (I think)
+    $tagsets = \Civi\Api4\Tag::get(TRUE)
+      ->addSelect('id')
+      ->addWhere('is_tagset', '=', TRUE)
+      ->execute();
+
+    $excluded_parents = implode(',',array_map(function($ts) {
+      return $ts['id'];
+    }, (array) $tagsets));
+
     $sql_ic = "
       SELECT civicrm_tag.name, COUNT(civicrm_entity_tag.id) as ic_count, civicrm_tag.id tag_id
       FROM civicrm_entity_tag
@@ -491,16 +507,16 @@ class CRM_Districtstats_Page_DistrictStats extends CRM_Core_Page {
       INNER JOIN civicrm_contact
         ON civicrm_contact.id = civicrm_entity_tag.entity_id
       WHERE civicrm_entity_tag.entity_table LIKE '%civicrm_contact%'
-        AND civicrm_tag.parent_id != 292
-        AND civicrm_tag.parent_id != 296
+        AND civicrm_tag.parent_id NOT IN ({$excluded_parents})
         AND civicrm_tag.is_tagset != 1
         AND civicrm_contact.is_deleted != 1
       GROUP BY civicrm_tag.id, name
       ORDER BY ic_count DESC;
     ";
+
     $dao = CRM_Core_DAO::executeQuery($sql_ic);
     while ($dao->fetch()) {
-      $issueCodes[$dao->name] = $dao->ic_count."<a href='{$baseUrl}&contact_tags={$dao->tag_id}' target='_blank'>{$linkIcon}</a>";
+      $issueCodes[$dao->name] = $dao->ic_count."<a href='{$tag_report_url}&tag={$dao->tag_id}' target='_blank'>{$linkIcon}</a>";
     }
     $this->assign('issueCodes', $issueCodes);
 
@@ -521,7 +537,7 @@ class CRM_Districtstats_Page_DistrictStats extends CRM_Core_Page {
     ";
     $dao = CRM_Core_DAO::executeQuery($sql_kword);
     while ($dao->fetch()) {
-      $keywords[$dao->name] = $dao->kword_count."<a href='{$baseUrl}&contact_tags={$dao->tag_id}' target='_blank'>{$linkIcon}</a>";
+      $keywords[$dao->name] = $dao->kword_count."<a href='{$tag_report_url}&tag={$dao->tag_id}' target='_blank'>{$linkIcon}</a>";
     }
     $this->assign('keywords', $keywords);
 
@@ -542,7 +558,7 @@ class CRM_Districtstats_Page_DistrictStats extends CRM_Core_Page {
     ";
     $dao = CRM_Core_DAO::executeQuery( $sql_pos );
     while ($dao->fetch()) {
-      $positions[$dao->name] = $dao->pos_count."<a href='{$baseUrl}&contact_tags={$dao->tag_id}' target='_blank'>{$linkIcon}</a>";
+      $positions[$dao->name] = $dao->pos_count."<a href='{$tag_report_url}&tag={$dao->tag_id}' target='_blank'>{$linkIcon}</a>";
     }
     $this->assign('positions', $positions);
 
