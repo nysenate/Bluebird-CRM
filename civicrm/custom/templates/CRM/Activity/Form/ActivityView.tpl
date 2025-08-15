@@ -26,7 +26,7 @@
                 {*NYSS 4933*}
                 {if call_user_func(array('CRM_Core_Permission','check'), 'access CiviMail') or
                     call_user_func(array('CRM_Core_Permission','check'), 'create mailings')}
-                  <a href="{$values.mailingId}" title="{ts}View Mailing Report{/ts}">&raquo;{ts}Mailing Report{/ts}</a>
+                  <a href="{$values.mailingId}" title="{ts escape='htmlattribute'}View Mailing Report{/ts}"><i class="crm-i fa-chevron-right" aria-hidden="true"></i>{ts}Mailing Report{/ts}</a>
                 {else}
                   Mass Email Recipients
                 {/if}

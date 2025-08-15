@@ -43,7 +43,7 @@
         {if $contactId == $row.source_contact_id}
           {$row.source_contact_name|regex_replace:$pattern:$repl}
         {elseif $row.source_contact_id}
-          <a href="{crmURL p='civicrm/contact/view' q="reset=1&cid=`$row.source_contact_id`"}" title="{ts}View contact{/ts}">{$row.source_contact_name|regex_replace:$pattern:$repl}</a>
+          <a href="{crmURL p='civicrm/contact/view' q="reset=1&cid=`$row.source_contact_id`"}" title="{ts escape='htmlattribute'}View contact{/ts}">{$row.source_contact_name|regex_replace:$pattern:$repl}</a>
         {else}
           <em>n/a</em>
         {/if}
@@ -51,7 +51,7 @@
 
         <td class="crm-activity-target_contact_name">
         {if $row.mailingId}
-          <a href="{$row.mailingId}" title="{ts}View Mailing Report{/ts}">{$row.recipients|truncate:26:"...":true}</a>
+          <a href="{$row.mailingId}" title="{ts  escape='htmlattribute'}View Mailing Report{/ts}">{$row.recipients|truncate:26:"...":true}</a>
         {elseif $row.recipients}
           {$row.recipients|regex_replace:$pattern:$repl}
         {elseif !$row.target_contact_name}
@@ -60,7 +60,7 @@
             {assign var="showTarget" value=0}
             {foreach from=$row.target_contact_name item=targetName key=targetID}
                 {if $showTarget < 5}
-                    {if $showTarget};&nbsp;{/if}<a href="{crmURL p='civicrm/contact/view' q="reset=1&cid=`$targetID`"}" title="{ts}View contact{/ts}">{$targetName|regex_replace:$pattern:$repl}</a>
+                    {if $showTarget};&nbsp;{/if}<a href="{crmURL p='civicrm/contact/view' q="reset=1&cid=`$targetID`"}" title="{ts escape='htmlattribute'}View contact{/ts}">{$targetName|regex_replace:$pattern:$repl}</a>
                     {assign var="showTarget" value=$showTarget+1}
                 {/if}
             {/foreach}
@@ -75,7 +75,7 @@
             {assign var="showAssignee" value=0}
             {foreach from=$row.assignee_contact_name item=assigneeName key=assigneeID}
                 {if $showAssignee < 5}
-                    {if $showAssignee};&nbsp;{/if}<a href="{crmURL p='civicrm/contact/view' q="reset=1&cid=`$assigneeID`"}" title="{ts}View contact{/ts}">{$assigneeName}</a>
+                    {if $showAssignee};&nbsp;{/if}<a href="{crmURL p='civicrm/contact/view' q="reset=1&cid=`$assigneeID`"}" title="{ts escape='htmlattribute'}View contact{/ts}">{$assigneeName}</a>
                     {assign var="showAssignee" value=$showAssignee+1}
                 {/if}
             {/foreach}
