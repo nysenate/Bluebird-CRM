@@ -1,0 +1,44 @@
+diff --git a/civicrm/custom/ext/biz.jmaconsulting.ode/ode.php b/civicrm/custom/ext/biz.jmaconsulting.ode/ode.php
+index a8d5efc6c..447775572 100644
+--- a/civicrm/custom/ext/biz.jmaconsulting.ode/ode.php
++++ b/civicrm/custom/ext/biz.jmaconsulting.ode/ode.php
+@@ -138,6 +138,9 @@ function toCheckEmail($email, $field, $returnHostName = FALSE) {
+   }
+   $domains = getWhiteListedDomains();
+ 
++  //NYSS force this host as we don't set a value in the system org record
++  $domains[] = 'nysenate.gov';
++
+   if ($returnHostName) {
+     return $domains;
+   }
+@@ -282,6 +285,9 @@ function ode_suppressEmails(&$fromEmailAddress, $showNotice): array {
+   $domainEmails = $invalidEmails = [];
+   $domains = getWhiteListedDomains();
+ 
++  // NYSS force this as the only host as we don't set a value in the system org record
++  $domains = ['nysenate.gov'];
++
+   if (ode_get_settings_value()) {
+     // Allow domains configured in 'From' admin settings.
+     // The main objective of this setting is to bypass emails that have been whitelisted and have SPF in place.
+@@ -334,7 +340,8 @@ function ode_suppressEmails(&$fromEmailAddress, $showNotice): array {
+     if ($showNotice === 'returnMessage') {
+       return ['msg' => $status];
+     }
+-    $session->setStatus($status, ts('Notice'));
++    // NYSS disable all messages
++    // $session->setStatus($status, ts('Notice'));
+   }
+   return $fromEmailAddress;
+ }
+@@ -558,7 +565,8 @@ function checkValidEmails() {
+       $errorMessage .= '</ul></li>';
+     }
+     $errorMessage .= '</ul>';
+-    CRM_Core_Session::singleton()->setStatus($errorMessage, ts('Notice'));
++    // NYSS disable all messages
++    // CRM_Core_Session::singleton()->setStatus($errorMessage, ts('Notice'));
+   }
+ }
+ 
