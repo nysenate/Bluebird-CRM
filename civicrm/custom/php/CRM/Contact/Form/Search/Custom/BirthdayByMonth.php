@@ -49,8 +49,8 @@ class CRM_Contact_Form_Search_Custom_BirthdayByMonth
     $form->add('text', 'age_start', ts('Age greater than'), ['size' => 3, 'maxlength' => 3]);
     $form->add('text', 'age_end', ts('Age less than'), ['size' => 3, 'maxlength' => 3]);
 
-    $form->add('datepicker', 'start_date', ts('Birthday after (date)'), [], FALSE, ['time' => FALSE]);
-    $form->add('datepicker', 'end_date', ts('Birthday before (date)'), [], FALSE, ['time' => FALSE]);
+    $form->add('datepicker', 'start_date', ts('Birthday after (date)'), [], FALSE, ['time' => FALSE, 'yearRange' => 'c-120:c+0']);
+    $form->add('datepicker', 'end_date', ts('Birthday before (date)'), [], FALSE, ['time' => FALSE, 'yearRange' => 'c-120:c+0']);
     
     $formfields = [
       'start_date',
