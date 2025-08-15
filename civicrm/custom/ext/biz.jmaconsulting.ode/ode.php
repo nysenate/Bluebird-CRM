@@ -8,6 +8,8 @@ use CRM_Ode_ExtensionUtil as E;
  */
 function ode_civicrm_config(&$config) {
   _ode_civix_civicrm_config($config);
+  // Bind our wrapper for API Events
+  Civi::dispatcher()->addListener('civi.api.respond', ['CRM_Ode_OdeAPIWrapper', 'RESPOND'], -100);
 }
 
 /**
@@ -20,14 +22,7 @@ function ode_civicrm_install() {
 }
 
 function ode_civicrm_postInstall() {
-  return _ode_civix_civicrm_postInstall();
-}
-
-/**
- * Implements hook_civicrm_uninstall().
- */
-function ode_civicrm_uninstall() {
-  return _ode_civix_civicrm_uninstall();
+  return;
 }
 
 /**
@@ -36,21 +31,6 @@ function ode_civicrm_uninstall() {
 function ode_civicrm_enable() {
   checkValidEmails();
   return _ode_civix_civicrm_enable();
-}
-
-/**
- * Implements hook_civicrm_disable().
- */
-function ode_civicrm_disable() {
-  return _ode_civix_civicrm_disable();
-}
-
-/**
- * Implements hook_civicrm_upgrade().
- *
- */
-function ode_civicrm_upgrade($op, CRM_Queue_Queue $queue = NULL) {
-  return _ode_civix_civicrm_upgrade($op, $queue);
 }
 
 function createOptionGroup() {
@@ -82,30 +62,30 @@ function ode_civicrm_validateForm($formName, &$fields, &$files, &$form, &$errors
         'CRM_Pledge_Form_Pledge' => 'is_acknowledge',
       );
 
-      if (CRM_Utils_Array::value($isReceiptField[$formName], $fields) && !CRM_Utils_Array::value('from_email_address', $fields)) {
-        $errors['from_email_address'] = ts('Receipt From is a required field.');
+      if (!empty($fields[$isReceiptField[$formName]]) && empty($fields['from_email_address'])) {
+        $errors['from_email_address'] = E::ts('Receipt From is a required field.');
       }
       break;
 
     case 'CRM_Contribute_Form_ContributionPage_ThankYou':
     case 'CRM_Event_Form_ManageEvent_Registration':
     case 'CRM_Grant_Form_GrantPage_ThankYou':
-      $isReceiptField = array(
-        'CRM_Contribute_Form_ContributionPage_ThankYou' => array('is_email_receipt', 'receipt_from_email'),
-        'CRM_Grant_Form_GrantPage_ThankYou' => array('is_email_receipt', 'receipt_from_email'),
-        'CRM_Event_Form_ManageEvent_Registration' => array('is_email_confirm', 'confirm_from_email'),
-      );
+      $isReceiptField = [
+        'CRM_Contribute_Form_ContributionPage_ThankYou' => ['is_email_receipt', 'receipt_from_email'],
+        'CRM_Grant_Form_GrantPage_ThankYou' => ['is_email_receipt', 'receipt_from_email'],
+        'CRM_Event_Form_ManageEvent_Registration' => ['is_email_confirm', 'confirm_from_email'],
+      ];
 
-      if (CRM_Utils_Array::value($isReceiptField[$formName][0], $fields)) {
-        $errors += toCheckEmail(CRM_Utils_Array::value($isReceiptField[$formName][1], $fields), $isReceiptField[$formName][1]);
+      if (!empty($fields[$isReceiptField[$formName][0]])) {
+        $errors += toCheckEmail($fields[$isReceiptField[$formName][1]] ?? '', $isReceiptField[$formName][1]);
         if (!empty($errors)) {
-          $errors[$isReceiptField[$formName][1]] = ts('The Outbound Domain Enforcement extension has prevented this From Email Address from being used as it uses a different domain.');
+          $errors[$isReceiptField[$formName][1]] = E::ts('The Outbound Domain Enforcement extension has prevented this From Email Address from being used as it uses a different domain.');
         }
       }
       break;
 
     case 'CRM_Admin_Form_ScheduleReminders':
-      $email = CRM_Utils_Array::value('from_email', $fields);
+      $email = $fields['from_email'] ?? '';
       if (!$email) {
         list($ignore, $email) = CRM_Core_BAO_Domain::getNameAndEmail();
       }
@@ -113,7 +93,7 @@ function ode_civicrm_validateForm($formName, &$fields, &$files, &$form, &$errors
       break;
 
     case 'CRM_UF_Form_Group':
-      if (CRM_Utils_Array::value('notify', $fields)) {
+      if ($fields['notify'] ?? '') {
         list($ignore, $email) = CRM_Core_BAO_Domain::getNameAndEmail();
         $errors += toCheckEmail($email, 'notify');
       }
@@ -121,7 +101,7 @@ function ode_civicrm_validateForm($formName, &$fields, &$files, &$form, &$errors
 
     case 'CRM_Batch_Form_Entry':
       foreach ($fields['field'] as $key => $value) {
-        if (CRM_Utils_Array::value('send_receipt', $value)) {
+        if ($value['send_receipt'] ?? 0) {
           list($ignore, $email) = CRM_Core_BAO_Domain::getNameAndEmail();
           $errors += toCheckEmail($email, "field[$key][send_receipt]");
           break;
@@ -130,11 +110,11 @@ function ode_civicrm_validateForm($formName, &$fields, &$files, &$form, &$errors
       break;
 
     case 'CRM_Contact_Form_Domain':
-      $errors += toCheckEmail(CRM_Utils_Array::value('email_address', $fields), 'email_address');
+      $errors += toCheckEmail($fields['email_address'] ?? '', 'email_address');
       break;
 
     case (substr($formName, 0, 16) == 'CRM_Report_Form_' ? TRUE : FALSE):
-      if (CRM_Utils_Array::value('email_to', $fields) || CRM_Utils_Array::value('email_cc', $fields)) {
+      if (!empty($fields['email_to']) || !empty($fields['email_cc'])) {
         list($ignore, $email) = CRM_Core_BAO_Domain::getNameAndEmail();
         $errors += toCheckEmail($email, 'email_to');
       }
@@ -158,8 +138,6 @@ function toCheckEmail($email, $field, $returnHostName = FALSE) {
   }
   $domains = getWhiteListedDomains();
 
-  //NYSS force this host as we don't set a value in the system org record
-  $domains[] = 'nysenate.gov';
   if ($returnHostName) {
     return $domains;
   }
@@ -297,25 +275,21 @@ function getWhiteListedDomains(): array {
  * @param array $fromEmailAddress
  * @param bool $showNotice
  *
- * @return array|NULL
+ * @return array
  */
-function ode_suppressEmails(&$fromEmailAddress, $showNotice) {
+function ode_suppressEmails(&$fromEmailAddress, $showNotice): array {
 
   $domainEmails = $invalidEmails = [];
   $domains = getWhiteListedDomains();
 
-  //NYSS force this as the only host as we don't set a value in the system org record
-  $domains = ['nysenate.gov'];
-
   if (ode_get_settings_value()) {
     // Allow domains configured in 'From' admin settings.
     // The main objective of this setting is to bypass emails that have been whitelisted and have SPF in place.
-    $fromAdminEmails = CRM_Core_OptionGroup::values('from_email_address');
-
-    foreach ($fromAdminEmails as $key => $val) {
-      if (preg_match('/<([^>]+)>/', $val, $matches)) {
-        $domainEmails[] = $matches[1];
-      }
+    $siteFromEmails = CRM_Core_DAO::executeQuery("SELECT email FROM civicrm_site_email_address WHERE domain_id = %1 AND is_active = 1", [
+      1 => [CRM_Core_Config::domainID(), 'Positive'],
+    ]);
+    while ($siteFromEmails->fetch()) {
+      $domainEmails[] = $siteFromEmails->email;
     }
   }
 
@@ -328,14 +302,13 @@ function ode_suppressEmails(&$fromEmailAddress, $showNotice) {
       if ($emailNotValidated) {
         $host = '@' . $domain;
         $hostLength = strlen($host);
-        $email = pluckEmailFromHeader(html_entity_decode($headers['text']));
+        $email = CRM_Utils_Mail::pluckEmailFromHeader(html_entity_decode($headers['text']));
         if (empty($domainEmails)) {
           if (substr($email, -$hostLength) == $host) {
             $emailNotValidated = FALSE;
           }
         }
         else {
-          //NYSS 15529 this had faulty logic
           if (in_array($email, $domainEmails) || (substr($email, -$hostLength) == $host)) {
             $emailNotValidated = FALSE;
           }
@@ -355,32 +328,15 @@ function ode_suppressEmails(&$fromEmailAddress, $showNotice) {
     $url = NULL;
     if (empty($fromEmailAddress)) {
       $message = " You can add another one <a href='%2'>here.</a>";
-      $url = CRM_Utils_System::url('civicrm/admin/options/from_email_address', 'group=from_email_address&action=add&reset=1');
+      $url = CRM_Utils_System::url('civicrm/admin/options/site_email_address', 'action=add&reset=1');
     }
     $status = ts('The Outbound Domain Enforcement extension has prevented the following From Email Address option(s) from being used as it uses a different domain than the System-generated Mail Settings From Email Address configured at Administer > Communications > Organization Address and Contact Info: %1' . $message, array(1 => implode(', ', $invalidEmails), 2 => $url));
     if ($showNotice === 'returnMessage') {
       return ['msg' => $status];
     }
-    //NYSS disable all messages
-    //$session->setStatus($status, ts('Notice'));
+    $session->setStatus($status, ts('Notice'));
   }
-  return NULL;
-}
-
-/**
- * Function to pluck email address from header.
- *
- * @param array $header
- *
- * @return string|NULL
- */
-function pluckEmailFromHeader($header) {
-  preg_match('/<([^<]*)>/', $header, $matches);
-
-  if (isset($matches[1])) {
-    return $matches[1];
-  }
-  return NULL;
+  return $fromEmailAddress;
 }
 
 /**
@@ -602,8 +558,7 @@ function checkValidEmails() {
       $errorMessage .= '</ul></li>';
     }
     $errorMessage .= '</ul>';
-    //NYSS disable all messages
-    //CRM_Core_Session::singleton()->setStatus($errorMessage, ts('Notice'));
+    CRM_Core_Session::singleton()->setStatus($errorMessage, ts('Notice'));
   }
 }
 
@@ -615,33 +570,4 @@ function checkValidEmails() {
 function ode_get_settings_value() {
   $value = Civi::settings()->get('ode_from_allowed');
   return $value;
-}
-
-/**
- * Implements hook_civicrm_apiWrappers().
- *
- */
-function ode_civicrm_apiWrappers(&$wrappers, $apiRequest) {
-  if ($apiRequest['entity'] == 'OptionValue' && $apiRequest['action'] == 'get') {
-    $optionGroupId = civicrm_api3('OptionGroup', 'getvalue', array(
-      'return' => "id",
-      'name' => "from_email_address",
-    ));
-    $optionGroup = CRM_Utils_Array::value(
-      'option_group_id',
-      CRM_Utils_Array::value('params', $apiRequest)
-    );
-    if (in_array($optionGroup, array($optionGroupId, 'from_email_address'))) {
-      $wrappers[] = new CRM_Ode_OdeAPIWrapper();
-    }
-  }
-}
-
-/**
- * Implements hook_civicrm_entityTypes().
- *
- * @link https://docs.civicrm.org/dev/en/latest/hooks/hook_civicrm_entityTypes
- */
-function ode_civicrm_entityTypes(&$entityTypes) {
-  _ode_civix_civicrm_entityTypes($entityTypes);
 }
