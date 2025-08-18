@@ -1,0 +1,15 @@
+diff --git a/civicrm/custom/ext/uk.co.vedaconsulting.mosaico/templates/CRM/Mosaico/Page/EditorIframe.tpl b/civicrm/custom/ext/uk.co.vedaconsulting.mosaico/templates/CRM/Mosaico/Page/EditorIframe.tpl
+index 4f0b0efde..fe5ed2ff3 100644
+--- a/civicrm/custom/ext/uk.co.vedaconsulting.mosaico/templates/CRM/Mosaico/Page/EditorIframe.tpl
++++ b/civicrm/custom/ext/uk.co.vedaconsulting.mosaico/templates/CRM/Mosaico/Page/EditorIframe.tpl
+@@ -32,8 +32,9 @@
+         }
+       });
+ 
++      //NYSS 13567/13916
+       if (config.fileuploadConfig.acceptFileTypes) {
+-        config.fileuploadConfig.acceptFileTypes = /(\.|\/)(|gif|p?jpe?g|png|x-png)$/i;
++        config.fileuploadConfig.acceptFileTypes = /(\.|\/)(|gif|p?jpe?g|png|x-png|webp)$/i;
+       }
+       if (window.top.crmMosaicoIframe) {
+         window.top.crmMosaicoIframe(window, Mosaico, config, plugins);
