@@ -111,14 +111,13 @@ function mosaico_civicrm_check(&$messages) {
     );
   }
   if (CRM_Mailing_Info::workflowEnabled()) {
-    //NYSS
-    /*$messages[] = new CRM_Utils_Check_Message(
+    $messages[] = new CRM_Utils_Check_Message(
       'mosaico_workflow',
       E::ts('CiviMail is configured to support advanced workflows. This is currently incompatible with the Mosaico mailer. Navigate to "Administer => CiviMail => CiviMail Component Settings" to disable it.'),
       E::ts('Advanced CiviMail workflows unsupported'),
       \Psr\Log\LogLevel::CRITICAL,
       'fa-chain-broken'
-    );*/
+    );
   }
   if (!CRM_Extension_System::singleton()->getMapper()->isActiveModule('flexmailer')) {
     $messages[] = new CRM_Utils_Check_Message(
@@ -156,19 +155,6 @@ function mosaico_civicrm_check(&$messages) {
     if ($httpCode == 404) {
       $messages[] = new CRM_Utils_Check_Message('mosaico_base_url', E::ts('BASE_URL seems incorrect - %1. Images when uploaded, may not appear correctly as thumbnails. Make sure "Image Upload URL" is configured correctly with Administer » System Settings » Resouce URLs.', [1 => $mConfig['BASE_URL']]), E::ts('Incorrect image upload url'));
     }
-  }
-
-  $oldTplCount = CRM_Core_DAO::singleValueQuery('SELECT count(*) FROM civicrm_mosaico_msg_template');
-  if ($oldTplCount > 0) {
-    $messages[] = new CRM_Utils_Check_Message(
-      'mosaico_migrate_1x',
-      E::ts('Found %1 template(s) from CiviCRM-Mosaico v1.x. Use the <a href="%2">Migration Assistant</a> to load them in v2.x.', [
-        1 => $oldTplCount,
-        2 => CRM_Utils_System::url('civicrm/admin/mosaico/migrate', 'reset=1'),
-      ]),
-      E::ts('Mosaico: Migrate templates (1.x => 2.x)'),
-      \Psr\Log\LogLevel::WARNING
-    );
   }
 
   _mosaico_civicrm_check_dirs($messages);
@@ -254,6 +240,8 @@ function mosaico_civicrm_mailingTemplateTypes(&$types) {
 
   $types[] = [
     'name' => 'mosaico',
+    'label' => E::ts('Mosaico'),
+    'description' => E::ts('Drag and drop template-based editor creates responsive emails that look great on all devices.'),
     'editorUrl' => $editorUrl,
     'weight' => -10,
   ];
@@ -262,14 +250,7 @@ function mosaico_civicrm_mailingTemplateTypes(&$types) {
 /**
  * Implements hook_civicrm_entityTypes().
  */
-function mosaico_civicrm_entityTypes(&$entityTypes) {
-  // _mosaico_civix_civicrm_entityTypes($entityTypes);
-  $entityTypes[] = [
-    'name' => 'MosaicoTemplate',
-    'class' => 'CRM_Mosaico_DAO_MosaicoTemplate',
-    'table' => 'civicrm_mosaico_template',
-  ];
-}
+
 
 /**
  * Implements hook_civicrm_pre().

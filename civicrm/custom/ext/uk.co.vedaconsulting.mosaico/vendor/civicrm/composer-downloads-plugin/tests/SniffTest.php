@@ -47,10 +47,15 @@ class SniffTest extends IntegrationTestCase
                     ],
                 ],
             ],
+            'config' => [
+                'allow-plugins' => [
+                    'civicrm/composer-downloads-plugin' => true,
+                ],
+            ],
         ];
     }
 
-    public static function setUpBeforeClass() {
+    public static function setUpBeforeClass(): void {
         parent::setUpBeforeClass();
         self::initTestProject(static::getComposerJson());
         $composer_path = self::getComposerPath();

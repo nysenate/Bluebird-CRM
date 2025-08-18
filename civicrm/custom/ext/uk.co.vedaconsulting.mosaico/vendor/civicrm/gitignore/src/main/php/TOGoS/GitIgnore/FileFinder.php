@@ -2,6 +2,11 @@
 
 class TOGoS_GitIgnore_FileFinder
 {
+  protected $ruleset;
+  protected $invertRulesetResult;
+  protected $defaultResult;
+  protected $includeDirectories;
+  protected $callback;
 	public function __construct(array $options) {
 		// TODO: Validate options
 		$this->ruleset = $options['ruleset'];

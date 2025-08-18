@@ -11,3 +11,6 @@ vendor: composer.lock
 
 run-unit-tests: vendor
 	vendor/bin/phpsimplertest --bootstrap vendor/autoload.php src/test/ --colorful-output
+
+clean:
+	rm -rf composer.lock vendor
