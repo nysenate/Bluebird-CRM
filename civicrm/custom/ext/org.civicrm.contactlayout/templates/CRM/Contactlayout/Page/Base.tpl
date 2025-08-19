@@ -3,7 +3,7 @@
   <contact-layout-editor></contact-layout-editor>
 
   <div style="display:none;">
-    <input id="cse-icon-picker" title="{ts}Choose Icon{/ts}"/>
+    <input id="cse-icon-picker" title="{ts escape='htmlattribute'}Choose Icon{/ts}"/>
   </div>
 </div>
 {* Since css files don't support translatable strings *}

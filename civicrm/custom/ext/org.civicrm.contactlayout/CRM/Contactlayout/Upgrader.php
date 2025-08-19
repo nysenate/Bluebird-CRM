@@ -109,4 +109,16 @@ class CRM_Contactlayout_Upgrader extends CRM_Extension_Upgrader_Base {
     return TRUE;
   }
 
+  /**
+   * Add settings column.
+   *
+   * @return TRUE on success
+   * @throws Exception
+   */
+  public function upgrade_1004() {
+    $this->ctx->log->info('Applying update 1004 - Add settings column.');
+    CRM_Core_DAO::executeQuery("ALTER TABLE `civicrm_contact_layout` ADD COLUMN `settings` text COMMENT 'Extra configuration data for the layout.'");
+    return TRUE;
+  }
+
 }

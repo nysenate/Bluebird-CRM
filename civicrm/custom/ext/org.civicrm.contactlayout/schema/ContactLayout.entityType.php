@@ -1,5 +1,6 @@
 <?php
 use CRM_Contactlayout_ExtensionUtil as E;
+
 return [
   'name' => 'ContactLayout',
   'table' => 'civicrm_contact_layout',
@@ -99,6 +100,14 @@ return [
       'input_type' => 'TextArea',
       'description' => E::ts('Contains json encoded layout tabs.'),
       'add' => '1.2',
+      'serialize' => constant('CRM_Core_DAO::SERIALIZE_JSON'),
+    ],
+    'settings' => [
+      'title' => E::ts('Layout Settings'),
+      'sql_type' => 'text',
+      'input_type' => 'TextArea',
+      'description' => E::ts('Extra configuration data for the layout.'),
+      'add' => '2.5',
       'serialize' => constant('CRM_Core_DAO::SERIALIZE_JSON'),
     ],
   ],
