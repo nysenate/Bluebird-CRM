@@ -193,23 +193,6 @@ class CRM_Contact_Page_View_Summary extends CRM_Contact_Page_View {
     $mailingBackend = Civi::settings()->get('mailing_backend');
     $this->assign('mailingOutboundOption', $mailingBackend['outBound_option']);
 
-    //NYSS 3603
-    foreach ($contact->email as $key => $email) {
-      if ($email['on_hold']) { //email on hold, let's look up the bounce record
-        $emailID = $email['id'];
-        $sql = "SELECT max(mj.mailing_id) as mid
-                FROM civicrm_mailing_job mj
-                JOIN civicrm_mailing_event_queue meq ON mj.id = meq.job_id
-                JOIN civicrm_mailing_event_bounce meb ON meq.id = meb.event_queue_id
-                WHERE meq.email_id = $emailID;";
-        $mid = CRM_Core_DAO::singleValueQuery($sql);
-        if ($mid) {
-          $emailMailing = array($key => array('mailingID' => $mid));
-          $this->assign('emailMailing', $emailMailing);
-        }
-      }
-    }
-
     // This microformat magic is still required...
     $addresses = (array) CRM_Core_BAO_Address::getValues(['contact_id' => $this->_contactId], TRUE);
     foreach ($addresses as $blockId => &$blockVal) {
