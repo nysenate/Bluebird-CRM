@@ -322,11 +322,6 @@ class CRM_Contact_Selector extends CRM_Core_Selector_Base implements CRM_Core_Se
             $url = 'civicrm/note';
             $qs = "reset=1&action=add&entity_table=civicrm_contact&entity_id='%%id%%{$extraParams}";
           }
-          //NYSS 3329
-          elseif ($value['key'] == 'tag') {
-            $url = "civicrm/contact/view";
-            $qs = "selectedChild=tag&reset=1&cid=%%id%%{$extraParams}";
-          }
 
           self::$_links[$counter++] = [
             'name' => $value['title'],
