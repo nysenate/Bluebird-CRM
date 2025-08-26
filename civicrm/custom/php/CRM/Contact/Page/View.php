@@ -117,8 +117,6 @@ class CRM_Contact_Page_View extends CRM_Core_Page {
 
     $path = CRM_Utils_System::url('civicrm/contact/view', 'reset=1&cid=' . $this->_contactId);
     CRM_Utils_System::appendBreadCrumb([['title' => ts('View Contact'), 'url' => $path]]);
-    //NYSS 7337
-    CRM_Utils_System::appendBreadCrumb([['title' => ts('Search Results'), 'url' => self::getSearchURL()]]);
 
     $image_URL = CRM_Core_DAO::getFieldValue('CRM_Contact_DAO_Contact', $this->_contactId, 'image_URL');
     $this->assign('imageURL', $image_URL ? CRM_Utils_File::getImageURL($image_URL) : '');
@@ -345,63 +343,6 @@ class CRM_Contact_Page_View extends CRM_Core_Page {
       return '';
     }
     return CRM_Utils_System::url('civicrm/group', "reset=1&oid={$this->_contactId}");
-  }
-
-  //NYSS 7337 restore https://github.com/civicrm/civicrm-core/pull/746/files
-  function getSearchURL() {
-    $qfKey = CRM_Utils_Request::retrieve('key', 'String', $this);
-    $context = CRM_Utils_Request::retrieve('context', 'String', $this, FALSE, 'search');
-    $this->assign('context', $context);
-
-    //validate the qfKey
-    if (!CRM_Utils_Rule::qfKey($qfKey)) {
-      $qfKey = NULL;
-    }
-
-    $urlString = NULL;
-    $urlParams = 'force=1';
-
-    switch ($context) {
-      case 'custom':
-        $urlString = 'civicrm/contact/search/custom';
-        break;
-
-      case 'fulltext':
-        $urlString = 'civicrm/contact/search/custom';
-        if ( $qfKey ) {
-          $urlParams = '_qf_Custom_display=true';
-        }
-        break;
-
-      case 'advanced':
-        $urlString = 'civicrm/contact/search/advanced';
-        break;
-
-      case 'builder':
-        $urlString = 'civicrm/contact/search/builder';
-        break;
-
-      case 'basic':
-        $urlString = 'civicrm/contact/search/basic';
-        break;
-
-      case 'search':
-        $urlString = 'civicrm/contact/search';
-        break;
-
-      case 'smog':
-      case 'amtg':
-        $urlString = 'civicrm/group/search';
-        break;
-    }
-    if ($qfKey) {
-      $urlParams .= "&qfKey=$qfKey";
-    }
-    if (!$urlString) {
-      $urlString = 'civicrm/contact/search/basic';
-    }
-
-    return CRM_Utils_System::url($urlString, $urlParams);
   }
 
   /**
