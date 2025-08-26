@@ -531,7 +531,11 @@ class CRM_Core_Form_Search extends CRM_Core_Form {
   //NYSS 12133
   /**
    * This function call setSearchParamFromUrl() of respective component's Search form and
-   *  is responsible to set search params found as url arguments
+   *  is responsible to set search filters based on
+   *   URL parameters. So, for example, if first_name is passed as a URL
+   *   param to the Advanced Search page, then results will be filtered based
+   *   on the given first_name.
+   * @note NYSS 12133 -- The whole function
    */
   protected function loadSearchParamsFromUrl() {
     if (!$this->_force && (!empty($_POST) || !empty($this->_ssID))) {
@@ -540,8 +544,21 @@ class CRM_Core_Form_Search extends CRM_Core_Form {
 
     $enabledComponents = CRM_Core_Component::getEnabledComponents();
     if (!$this->_component) {
-      if (method_exists('CRM_Contact_Form_Search', 'setSearchParamFromUrl')) {
-        CRM_Contact_Form_Search::setSearchParamFromUrl($this);
+      if (Civi::container()->has(CRM_NYSS_Search_UrlParamHelper::$SERVICE_NAME)) {
+        if (!CRM_Utils_Request::retrieve('force', 'Boolean', $this, FALSE) && empty($this->_ssID)) {
+          return;
+        }
+        $searchFields = Civi::service(CRM_NYSS_Search_UrlParamHelper::$SERVICE_NAME)->contactParams();
+        foreach ($searchFields as $name => $type) {
+          //NYSS 14073 set type to string if unset
+          $type = (!empty($type)) ? $type : 'String';
+          if ($value = CRM_Utils_Request::retrieve($name, $type)) {
+            $this->_formValues[$name] = $value;
+          }
+        }
+        $this->_params = CRM_Contact_BAO_Query::convertFormValues($this->_formValues);
+        $this->set('formValues', $this->_formValues);
+        $this->set('queryParams', $this->_params);
       }
       foreach ($enabledComponents as $component) {
         $searchClass = $component->namespace . '_Form_Search';
