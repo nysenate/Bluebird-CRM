@@ -2333,7 +2333,7 @@ class CRM_Contact_BAO_Query {
         $setTables = FALSE;
 
         //NYSS 5494/8104/15166 support multiple values
-        if (strpos($value, ',') !== FALSE && $locType[0] == 'postal_code') {
+        if (str_contains($value,',') && $locType[0] == 'postal_code') {
           if ($op == '=') {
             $op = 'IN';
           }
@@ -3745,7 +3745,7 @@ WHERE  $smartGroupClause
       $value = $n;
 
       //NYSS 9037
-      if (strpos($value, ',') !== false && $op == '=') {
+      if (str_contains($value, ',') && $op == '=') {
         $op = 'IN';
         $value = explode(',', $value);
 
@@ -3753,7 +3753,7 @@ WHERE  $smartGroupClause
         $this->_qill[$grouping][] = ts('Street Number') . " $op '$n'";
       }
       //NYSS 9304
-      elseif (strpos($n, '-') !== false && $op == '=') {
+      elseif (str_contains($n, '-') && $op == '=') {
         $value = explode('-', $value);
 
         $this->_where[$grouping][] = "
@@ -3820,7 +3820,7 @@ WHERE  $smartGroupClause
     [$name, $op, $value, $grouping, $wildcard] = $values;
 
     //NYSS 5494/8104/15166 support multiple values
-    if (strpos($value, ',') !== FALSE && $name == 'postal_code') {
+    if (str_contains($value, ',') && $name == 'postal_code') {
       if ($op == '=') {
         $op = 'IN';
       }
@@ -5741,7 +5741,7 @@ civicrm_relationship.start_date > {$today}
     $clause = "$field $op";
 
     //NYSS ugly hack for group search in advanced search
-    if (strpos($field, 'group_contact') != FALSE && is_array($value) && $op == 'LIKE') {
+    if (str_contains($field, 'group_contact') && is_array($value) && $op == 'LIKE') {
       $op = 'IN';
     }
 
@@ -5772,7 +5772,7 @@ civicrm_relationship.start_date > {$today}
             $value = CRM_Utils_Type::escape($value, 'String');
             $values = explode('[:comma:]', $value);
             //NYSS - type is passed as nyss_String or nyss_Integer
-            if (strpos($dataType, 'nyss_') !== FALSE ) {
+            if (str_contains($dataType, 'nyss_')) {
               $value = str_replace(['(', ')'], '', $value); //4969 make sure no parens were added (search bldr)
               $values = array_map('trim', explode(',', $value));
               $dataType = str_replace('nyss_', '', $dataType); //return to expected format
