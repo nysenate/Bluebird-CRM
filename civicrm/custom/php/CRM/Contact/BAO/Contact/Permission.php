@@ -286,23 +286,21 @@ AND domain_id = %2
     $permission = CRM_ACL_API::whereClause($type, $tables, $whereTables, $userID, FALSE, FALSE, TRUE);
 
     $from = CRM_Contact_BAO_Query::fromClause($whereTables);
-    //NYSS
-    $count = CRM_Core_DAO::singleValueQuery("SELECT count(*) $from WHERE $permission GROUP BY contact_a.id");
-    for($i=0; $i < $count; $i+=CRM_Core_DAO::BULK_INSERT_COUNT) {
-      CRM_Core_DAO::executeQuery( "
-        INSERT INTO civicrm_acl_contact_cache ( user_id, contact_id, operation )
-SELECT DISTINCT $userID as user_id, contact_a.id as contact_id, '{$operation}' as operation
-        $from
-         LEFT JOIN civicrm_acl_contact_cache ac ON ac.user_id = $userID AND ac.contact_id = contact_a.id AND ac.operation = '{$operation}'
-        WHERE $permission
-AND ac.user_id IS NULL
-        LIMIT ".CRM_Core_DAO::BULK_INSERT_COUNT." OFFSET $i
-        ON DUPLICATE KEY UPDATE
-          user_id=VALUES(user_id),
-          contact_id=VALUES(contact_id),
-          operation=VALUES(operation)"
-      );
-    }
+    /* Ends up something like this:
+    CREATE TEMPORARY TABLE civicrm_temp_acl_contact_cache1310 (SELECT DISTINCT 2960 as user_id, contact_a.id as contact_id, 'View' as operation
+    FROM civicrm_contact contact_a  LEFT JOIN civicrm_group_contact_cache `civicrm_group_contact_cache-ACL` ON contact_a.id = `civicrm_group_contact_cache-ACL`.contact_id
+    LEFT JOIN civicrm_acl_contact_cache ac ON ac.user_id = 2960 AND ac.contact_id = contact_a.id AND ac.operation = 'View'
+    WHERE     ( `civicrm_group_contact_cache-ACL`.group_id IN (14, 25, 46, 47, 48, 49, 50, 51) )  AND (contact_a.is_deleted = 0)
+    AND ac.user_id IS NULL*/
+    /*$sql = "SELECT DISTINCT $userID as user_id, contact_a.id as contact_id, '{$operation}' as operation
+    $from
+    LEFT JOIN civicrm_acl_contact_cache ac ON ac.user_id = $userID AND ac.contact_id = contact_a.id AND ac.operation = '{$operation}'
+    WHERE    $permission
+    AND ac.user_id IS NULL
+    ";*/
+    $sql = " $from WHERE    $permission";
+    $sql = "SELECT $userID as user_id, contact_a.id as contact_id, '{$operation}' as operation, '{$currentDomainID}' as domain_id" . $sql . ' GROUP BY contact_a.id';
+    CRM_Core_DAO::executeQuery("INSERT INTO civicrm_acl_contact_cache (user_id, contact_id, operation, domain_id) {$sql}");
 
     // Add in a row for the logged in contact. Do not try to combine with the above query or an ugly OR will appear in
     // the permission clause.
