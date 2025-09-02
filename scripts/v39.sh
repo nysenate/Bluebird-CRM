@@ -11,8 +11,8 @@
 
 prog=`basename $0`
 script_dir=`dirname $0`
-execSql=$script_dir/execSql.sh
 drush=$script_dir/drush.sh
+clearCache=$script_dir/clearCache.sh
 readConfig=$script_dir/readConfig.sh
 
 . $script_dir/defaults.sh
@@ -38,5 +38,7 @@ $drush $instance civicrm-upgrade-db -y -q
 
 echo "upgrade extensions..."
 $drush $instance cvapi extension.upgrade --quiet
+
+$clearCache $instance
 
 echo "$prog: upgrade process is complete for $instance."
