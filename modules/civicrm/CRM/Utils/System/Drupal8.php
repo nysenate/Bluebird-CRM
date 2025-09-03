@@ -15,6 +15,8 @@
  * @copyright CiviCRM LLC https://civicrm.org/licensing
  */
 
+use Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException;
+
 /**
  * Drupal specific stuff goes here.
  */
@@ -381,14 +383,7 @@ class CRM_Utils_System_Drupal8 extends CRM_Utils_System_DrupalBase {
    */
   public function permissionDenied() {
     \Drupal::service('civicrm.page_state')->setAccessDenied();
-  }
-
-  /**
-   * In previous versions, this function was the controller for logging out. In Drupal 8, we rewrite the route
-   * to hand off logout to the standard Drupal logout controller. This function should therefore never be called.
-   */
-  public function logout() {
-    // Pass
+    throw new AccessDeniedHttpException();
   }
 
   /**
@@ -960,12 +955,10 @@ class CRM_Utils_System_Drupal8 extends CRM_Utils_System_DrupalBase {
 
   /**
    * @inheritdoc
+   * @todo use Drupal "maintenance page" template and theme during installation
    */
-  public function theme(&$content, $print = FALSE, $maintenance = FALSE) {
-    // @todo use Drupal "maintenance page" template and theme during installation
-    // or upgrade.
-    print $content;
-    return NULL;
+  public function renderMaintenanceMessage(string $content): string {
+    return $content;
   }
 
   /**
@@ -1013,6 +1006,33 @@ class CRM_Utils_System_Drupal8 extends CRM_Utils_System_DrupalBase {
     if (!$cleared && function_exists('_drupal_flush_css_js')) {
       _drupal_flush_css_js();
     }
+  }
+
+  /**
+   * @inheritdoc
+   */
+  public function isMaintenanceMode(): bool {
+    try {
+      return \Drupal::state()->get('system.maintenance_mode') ?: FALSE;
+    }
+    catch (\Exception $e) {
+      // catch in case Drupal isn't fully booted and can't answer
+      //
+      // we assume we are *NOT* in maintenance mode
+      //
+      // TODO: this may not be a good assumption for e.g. cv cron job
+      // which could be exactly the sort of thing we would want to
+      // prevent running in maintenance mode... maybe we should check
+      // try to check the drupal database directly here?
+      return FALSE;
+    }
+  }
+
+  public function handleUnhandledException(\Throwable $e) {
+    if ($e instanceof AccessDeniedHttpException) {
+      throw $e;
+    }
+    CRM_Core_Error::handleUnhandledException($e);
   }
 
 }

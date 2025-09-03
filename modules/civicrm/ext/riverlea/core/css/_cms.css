@@ -157,8 +157,7 @@ body.wp-admin .crm-container input:not([type=checkbox]):not([type=radio]):not(.c
 }
 body.wp-admin .crm-container p,
 body.wp-admin .crm-container li {
-  margin: 0; /* resets WP li bottom margin */
-  list-style: none;
+  margin-bottom: 0; /* resets WP li bottom margin */
   white-space: inherit;
 }
 body.wp-admin .crm-container div.ui-notify-message .notify-content li {
@@ -193,6 +192,9 @@ body.wp-admin .crm-container input[type="radio"] {
 body.wp-admin .crm-container input[type="radio"] {
   border-radius: 50%;
 }
+body.wp-admin .crm-sticky thead {
+  --crm-menubar-bottom: 48px;
+}
 
 /******************
    STANDALONE
@@ -208,4 +210,7 @@ html.crm-standalone body {
 }
 html.crm-standalone #crm-container:has(.standalone-auth-form) {
   background: var(--crm-c-background);
+}
+html.crm-standalone .standalone-auth-box {
+  background: var(--crm-c-page-background);
 }

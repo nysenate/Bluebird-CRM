@@ -217,7 +217,7 @@ class CRM_Event_Form_SelfSvcTransfer extends CRM_Core_Form {
   public static function checkProfileComplete($fields, &$errors): ?int {
     $email = '';
     foreach ($fields as $fieldname => $fieldvalue) {
-      if (strpos($fieldname, 'email') === 0 && $fieldvalue) {
+      if (str_starts_with($fieldname, 'email') && $fieldvalue) {
         $email = $fieldvalue;
       }
     }
@@ -354,17 +354,11 @@ class CRM_Event_Form_SelfSvcTransfer extends CRM_Core_Form {
 
     //get default participant role.
     $eventDetails['participant_role'] = $participantRoles[$eventDetails['default_role_id']] ?? NULL;
-    //get the location info
-    $locParams = [
-      'entity_id' => $participant->event_id,
-      'entity_table' => 'civicrm_event',
-    ];
-    $eventDetails['location'] = CRM_Core_BAO_Location::getValues($locParams, TRUE);
+
     $toEmail = $contactDetails['email'] ?? NULL;
     if ($toEmail) {
       //take a receipt from as event else domain.
-      $receiptFrom = CRM_Core_BAO_Domain::getNameAndEmail(FALSE, TRUE);
-      $receiptFrom = reset($receiptFrom);
+      $receiptFrom = CRM_Core_BAO_Domain::getFromEmail();
       if (!empty($eventDetails['confirm_from_name']) && !empty($eventDetails['confirm_from_email'])) {
         $receiptFrom = $eventDetails['confirm_from_name'] . ' <' . $eventDetails['confirm_from_email'] . '>';
       }
@@ -424,9 +418,6 @@ class CRM_Event_Form_SelfSvcTransfer extends CRM_Core_Form {
     CRM_Event_BAO_Event::retrieve($eventParams, $eventDetails[$this->_event_id]);
     //get default participant role.
     $eventDetails[$this->_event_id]['participant_role'] = $participantRoles[$eventDetails[$this->_event_id]['default_role_id']] ?? NULL;
-    //get the location info
-    $locParams = ['entity_id' => $this->_event_id, 'entity_table' => 'civicrm_event'];
-    $eventDetails[$this->_event_id]['location'] = CRM_Core_BAO_Location::getValues($locParams, TRUE);
     //send a 'cancelled' email to user, and cc the event's cc_confirm email
     CRM_Event_BAO_Participant::sendTransitionParticipantMail($this->_from_participant_id,
       $participantDetails[$this->_from_participant_id],

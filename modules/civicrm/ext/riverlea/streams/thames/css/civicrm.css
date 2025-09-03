@@ -14,27 +14,18 @@ html.cms-standalone body {
 }
 
 .crm-container details {
-  background-color: #bad0df45; /* @todo fix this to a var. */
+  background-color: var(--crm-expand-body-bg);
   border: var(--crm-c-divider);
 }
 
 .crm-container summary {
-  background-color: var(--crm-c-green-dark); /* novar */
   color: var(--crm-c-blue-darker); /* novar */
   cursor: pointer; /* show it's clickable */
   position: relative; /* so our animated triangle doesn't go walkies */
 }
-.crm-container :where(summary:hover,
-summary:focus) {
-  background-color: #b8daf4; /* novar */
-}
-
-/* RL introduces a border on focus which causes layout shift
- * https://lab.civicrm.org/extensions/riverlea/-/issues/49
- */
-.crm-container :focus,
-.crm-container .ui-dialog :focus {
-  border: none;
+.crm-container summary:hover,
+.crm-container summary:focus {
+  background-color: var(--crm-c-blue-overlay2);
 }
 
 /* Replace Riverlea's FontAwesome icon with our own shape. */
@@ -90,7 +81,7 @@ summary:focus) {
   animation: crm-details-show 240ms ease-in-out;
 }
 /* We don't want a different colour header bg on 'active' (open) but we do on hover
- * This does't work yet.*/
+ * This doesn't work yet.*/
 .crm-container .crm-accordion-bold>summary:is(:hover,
 :focus) {
   background-color: var(--crm-c-blue-overlay2);
@@ -117,7 +108,6 @@ summary:focus) {
   color: #fff;
   content: "\f0eb";
   display: inline-block;
-  font-size: 2rem;
   font: normal normal normal 14px/1 FontAwesome;
   font-size: inherit;
   margin-left: -2.3rem;
@@ -251,6 +241,10 @@ summary:focus) {
 
 .crm-contact-page #mainTabContainer .ui-tabs-nav li .ui-tabs-anchor .crm-i:first-child {
   justify-self: center;
+}
+
+.crm-summary-contactname-block:not(.crm-edit-ready) #crm-contactname-content {
+  box-shadow: 0 0 50px rgba(0, 0, 0, 0.2);
 }
 
 /* make count badges more readable */
@@ -602,17 +596,52 @@ html.crm-standalone  nav.breadcrumb>ol {
 .crm-container th.crm-search-result-select {
   --crm-btn-margin: 0;
 }
+/* Searchkit accordions */
+.crm-search-admin-edit-columns details,
+.crm-search .crm-search-admin-relative details {
+  /*issue https://lab.civicrm.org/extensions/riverlea/-/issues/102 */
+  margin-left: 1rem;
+  /* crmSearchAdmin applies this var as the bg here and it does not suit us. */
+  --crm-c-page-background: transparent;
+}
 
 /* Override _dropdowns.css */
 #afGuiEditor .af-gui-bar .dropdown-menu {
-  --crm-c-alert-text: var(--crm-c-red-dark);
+  --crm-c-danger-text: var(--crm-c-red-dark);
 }
 /* Override contactSummary.css */
 #crm-contact-actions-list a.delete {
-  --crm-c-alert-text: var(--crm-c-red-dark);
+  --crm-c-danger-text: var(--crm-c-red-dark);
 }
 #crm-contact-actions-list a.delete:hover,
 #crm-contact-actions-list a.delete:focus {
   /* the hover state gives crm-c-red-dark to the background */
-  --crm-c-alert-text: var(--crm-c-red-light);
+  --crm-c-danger-text: var(--crm-c-red-light);
+}
+
+/* Fix Mosaico wizard */
+.crm_wizard__tille {
+  --crm-panel-background: transparent;
+}
+.crmb-wizard-button-right {
+  gap: 1rem;
+}
+
+/* Support contact dashboard image float */
+.contactCardRight:has(#crm-contact-thumbnail) .float-left {
+  width: calc(100% - var(--crm-flex-gap) - var(--crm-dash-image-size));
+}
+
+/* Quicksearch */
+ul.crm-quickSearch-results a {
+  padding: 0.25rem 1rem;
+  text-decoration: none;
+  color: var(--crm-c-link);
+}
+ul.crm-quickSearch-results .ui-state-active a /* mouse,keyboard nav */ {
+  background: var(--crm-c-blue);
+  color: var(--crm-c-link-hover);
+}
+ul.crm-quickSearch-results a:active {
+  background: white;
 }

@@ -2,6 +2,7 @@
 
 namespace Civi\AfformAdmin;
 
+use Civi\Afform\Placement\PlacementUtils;
 use Civi\Api4\Entity;
 use Civi\Api4\Utils\CoreUtil;
 use Civi\Core\Event\GenericHookEvent;
@@ -12,13 +13,9 @@ class AfformAdminMeta {
   /**
    * @return array
    */
-  public static function getAdminSettings() {
-    $afformPlacement = \CRM_Utils_Array::formatForSelect2((array) \Civi\Api4\OptionValue::get(FALSE)
-      ->addSelect('value', 'label', 'icon', 'description')
-      ->addWhere('is_active', '=', TRUE)
-      ->addWhere('option_group_id:name', '=', 'afform_placement')
-      ->addOrderBy('weight')
-      ->execute(), 'label', 'value');
+  public static function getAdminSettings(): array {
+    $afformPlacement = \CRM_Utils_Array::formatForSelect2(PlacementUtils::getPlacements(), 'label', 'value');
+    $afformTags = \CRM_Utils_Array::formatForSelect2((array) \Civi\Api4\Utils\AfformTags::getTagOptions());
     $afformTypes = (array) \Civi\Api4\OptionValue::get(FALSE)
       ->addSelect('name', 'label', 'icon')
       ->addWhere('is_active', '=', TRUE)
@@ -38,8 +35,28 @@ class AfformAdminMeta {
     return [
       'afform_type' => $afformTypes,
       'afform_placement' => $afformPlacement,
+      'placement_entities' => array_column(PlacementUtils::getPlacements(), 'entities', 'value'),
+      'placement_filters' => self::getPlacementFilterOptions(),
+      'afform_tags' => $afformTags,
       'search_operators' => \Civi\Afform\Utils::getSearchOperators(),
+      'confirmation_types' => self::getConfirmationTypes(),
     ];
+  }
+
+  /**
+   * Get confirmation types
+   *
+   * @return array
+   */
+  public static function getConfirmationTypes(): array {
+    $confirmationTypes = (array) \Civi\Api4\OptionValue::get(FALSE)
+      ->addSelect('label', 'name', 'value')
+      ->addWhere('is_active', '=', TRUE)
+      ->addWhere('option_group_id:name', '=', 'afform_confirmation_type')
+      ->addOrderBy('weight', 'ASC')
+      ->execute();
+
+    return $confirmationTypes;
   }
 
   /**
@@ -252,6 +269,16 @@ class AfformAdminMeta {
             '#markup' => FALSE,
           ],
         ],
+        'tabset' => [
+          'title' => E::ts('Tab Set'),
+          'element' => [
+            '#tag' => 'af-tabset',
+            '#children' => [
+              ['#tag' => 'af-tab', 'title' => E::ts('Tab 1'), '#children' => []],
+              ['#tag' => 'af-tab', 'title' => E::ts('Tab 2'), '#children' => []],
+            ],
+          ],
+        ],
         'submit' => [
           'title' => E::ts('Submit Button'),
           'afform_type' => ['form'],
@@ -263,6 +290,20 @@ class AfformAdminMeta {
             'ng-if' => 'afform.showSubmitButton',
             '#children' => [
               ['#text' => E::ts('Submit')],
+            ],
+          ],
+        ],
+        'save_draft' => [
+          'title' => E::ts('Save Draft Button'),
+          'afform_type' => ['form'],
+          'element' => [
+            '#tag' => 'button',
+            'class' => 'af-button btn btn-primary',
+            'crm-icon' => 'fa-floppy-disk',
+            'ng-click' => 'afform.submitDraft()',
+            'ng-if' => 'afform.showSubmitButton',
+            '#children' => [
+              ['#text' => E::ts('Save Draft')],
             ],
           ],
         ],
@@ -334,6 +375,24 @@ class AfformAdminMeta {
     }
 
     return $data;
+  }
+
+  private static function getPlacementFilterOptions(): array {
+    $entities = $entityFilterOptions = [];
+    foreach (PlacementUtils::getPlacements() as $placement) {
+      $entities += $placement['entities'];
+    }
+    foreach ($entities as $entityName) {
+      $filterOptions = PlacementUtils::getEntityTypeFilterOptions($entityName);
+      if ($filterOptions) {
+        $entityFilterOptions[$entityName] = [
+          'name' => PlacementUtils::getEntityTypeFilterName($entityName),
+          'label' => PlacementUtils::getEntityTypeFilterLabel($entityName),
+          'options' => $filterOptions,
+        ];
+      }
+    }
+    return $entityFilterOptions;
   }
 
 }

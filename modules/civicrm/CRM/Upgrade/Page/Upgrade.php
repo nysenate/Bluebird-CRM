@@ -41,7 +41,7 @@ class CRM_Upgrade_Page_Upgrade extends CRM_Core_Page {
       CRM_Utils_System::url('civicrm/dashboard', 'reset=1')
     );
 
-    $action = CRM_Utils_Array::value('action', $_REQUEST, 'intro');
+    $action = $_REQUEST['action'] ?? 'intro';
     switch ($action) {
       case 'intro':
         $this->runIntro();
@@ -107,13 +107,18 @@ class CRM_Upgrade_Page_Upgrade extends CRM_Core_Page {
       $template->assign('upgraded', FALSE);
     }
 
-    // Render page header
-    if (!defined('CIVICRM_UF_HEAD') && $region = CRM_Core_Region::instance('html-header', FALSE)) {
-      CRM_Utils_System::addHTMLHead($region->render(''));
-    }
-
     $content = $template->fetch('CRM/common/success.tpl');
-    echo CRM_Utils_System::theme($content, $this->_print, TRUE);
+
+    if ($this->_print) {
+      // unexpected - trying to print the output of the upgrader?
+      // @todo remove this case and just ignore $this->_print entirely
+      // for now we use the original call, to maintain preexisting behaviour (however strange that is)
+      \CRM_Core_Error::deprecatedWarning('Calling CRM_Utils_System::theme with $print and $maintenance is unexpected and may behave strangely. This codepath will be removed in a future release. If you need it, please comment on https://lab.civicrm.org/dev/core/-/issues/5803');
+      echo CRM_Utils_System::theme($content, $this->_print, TRUE);
+    }
+    else {
+      echo CRM_Utils_System::renderMaintenanceMessage($content);
+    }
   }
 
   /**
@@ -185,13 +190,18 @@ class CRM_Upgrade_Page_Upgrade extends CRM_Core_Page {
     $template->assign('newVersion', $latestVer);
     $template->assign('sid', CRM_Utils_System::getSiteID());
 
-    // Render page header
-    if (!defined('CIVICRM_UF_HEAD') && $region = CRM_Core_Region::instance('html-header', FALSE)) {
-      CRM_Utils_System::addHTMLHead($region->render(''));
-    }
-
     $content = $template->fetch('CRM/common/success.tpl');
-    echo CRM_Utils_System::theme($content, $this->_print, TRUE);
+
+    if ($this->_print) {
+      // unexpected - trying to print the output of the upgrader?
+      // @todo remove this case and just ignore $this->_print entirely
+      // for now we use the original call, to maintain preexisting behaviour (however strange that is)
+      \CRM_Core_Error::deprecatedWarning('Calling CRM_Utils_System::theme with $print and $maintenance is unexpected and may behave strangely. This codepath will be removed in a future release. If you need it, please comment on https://lab.civicrm.org/dev/core/-/issues/5803');
+      echo CRM_Utils_System::theme($content, $this->_print, TRUE);
+    }
+    else {
+      echo CRM_Utils_System::renderMaintenanceMessage($content);
+    }
   }
 
 }

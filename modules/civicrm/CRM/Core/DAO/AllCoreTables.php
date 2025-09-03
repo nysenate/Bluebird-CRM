@@ -223,7 +223,7 @@ class CRM_Core_DAO_AllCoreTables {
 
   /**
    * Convert possibly underscore separated words to camel case with special handling for 'UF'
-   * e.g membership_payment returns MembershipPayment
+   * e.g custom_field returns CustomField
    *
    * @param string $name
    * @param bool $legacyV3
@@ -244,7 +244,7 @@ class CRM_Core_DAO_AllCoreTables {
     foreach ($fragments as & $fragment) {
       $fragment = ucfirst($fragment);
       // Special case: UFGroup, UFJoin, UFMatch, UFField (if passed in without underscores)
-      if (strpos($fragment, 'Uf') === 0 && strlen($name) > 2) {
+      if (str_starts_with($fragment, 'Uf') && strlen($name) > 2) {
         $fragment = 'UF' . ucfirst(substr($fragment, 2));
       }
     }
@@ -379,11 +379,11 @@ class CRM_Core_DAO_AllCoreTables {
    * @param string $entityName
    *   e.g. 'Activity'
    *
-   * @return string
+   * @return string|null
    *   e.g. 'civicrm_activity'
    */
-  public static function getTableForEntityName($entityName): string {
-    return self::getEntities()[$entityName]['table'];
+  public static function getTableForEntityName($entityName): ?string {
+    return self::getEntities()[$entityName]['table'] ?? NULL;
   }
 
   /**

@@ -66,10 +66,6 @@
         {$form.mailing_optout.html}&nbsp;
         {$form.mailing_optout.label}
         </td>
-        <td>
-        {$form.mailing_forward.html}&nbsp;
-        {$form.mailing_forward.label}
-        </td>
       </tr>
     </table>
   </td>

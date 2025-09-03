@@ -303,6 +303,8 @@ class DB_mysqli extends DB_common
         {
             mysqli_report(MYSQLI_REPORT_OFF);
         }
+
+        $phpWarnings = '';
         if (((int) $this->getOption('ssl')) === 1) {
             $init = mysqli_init();
             mysqli_ssl_set(
@@ -313,7 +315,7 @@ class DB_mysqli extends DB_common
                 empty($dsn['capath']) ? null : $dsn['capath'],
                 empty($dsn['cipher']) ? null : $dsn['cipher']
             );
-            if ($this->connection = @mysqli_real_connect(
+            if ($this->connection = $this->_mysqliRealConnect($phpWarnings,
                     $init,
                     $dsn['hostspec'],
                     $dsn['username'],
@@ -341,11 +343,11 @@ class DB_mysqli extends DB_common
         if (!$this->connection) {
             if (($err = @mysqli_connect_error()) != '') {
                 return $this->raiseError(DB_ERROR_CONNECT_FAILED,
-                                         null, null, null,
+                                         null, null, $phpWarnings,
                                          $err);
             } else {
                 return $this->raiseError(DB_ERROR_CONNECT_FAILED,
-                                         null, null, null,
+                                         null, null, $phpWarnings,
                                          $php_errormsg);
             }
         }
@@ -357,6 +359,32 @@ class DB_mysqli extends DB_common
         return DB_OK;
     }
 
+    // }}}
+    // {{{ _mysqliRealConnect()
+    /**
+     * Wrapper for mysqli_real_connect() which captures and returns any PHP warnings.
+     *
+     * @see \mysqli_real_connect()
+     */
+    function _mysqliRealConnect(&$warnings, $mysql, ?string $hostname, ?string $username, ?string $password, ?string $database, ?int $port, ?string $socket, int $flags = 0): bool {
+        set_error_handler(function ($errno, $errstr, $errfile, $errline) use (&$warnings) {
+            if ($errno & (E_WARNING|E_NOTICE|E_USER_WARNING)) {
+              if ($warnings === NULL) {
+                $warnings = '';
+              }
+              $warnings .= "\n$errstr";
+              return TRUE;
+            }
+            return FALSE;
+        });
+
+        try {
+            return mysqli_real_connect($mysql, $hostname, $username, $password, $database, $port, $socket, $flags);
+        }
+        finally {
+            restore_error_handler();
+        }
+    }
     // }}}
     // {{{ disconnect()
 

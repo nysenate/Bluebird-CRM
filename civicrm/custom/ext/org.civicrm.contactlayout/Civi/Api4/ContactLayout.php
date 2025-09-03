@@ -8,6 +8,7 @@ namespace Civi\Api4;
  * @see https://civicrm.org/extensions/contact-layout-editor
  */
 class ContactLayout extends Generic\DAOEntity {
+  use Generic\Traits\ManagedEntity;
 
   /**
    * @param bool $checkPermissions

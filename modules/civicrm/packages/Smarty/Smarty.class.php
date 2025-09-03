@@ -1879,6 +1879,15 @@ class Smarty
         [$_func_name, $_tpl_file, $_tpl_line] =
             $this->_plugins['modifier'][$_modifier_name];
 
+        // Patch so we can use join without deprecations in smarty5 while still
+        // supporting smarty2.
+        // Note that smarty2 only officially accepts the "backwards" (by smarty5
+        // standards) order, and so if it's already backwards, then we never
+        // even get here since it's handled elsewhere.
+        if ($_func_name === 'join' && is_string($_args[1])) {
+          return join($_args[1], $_args[0]);
+        }
+
         $_var = $_args[0];
         foreach ($_var as $_key => $_val) {
             $_args[0] = $_val;

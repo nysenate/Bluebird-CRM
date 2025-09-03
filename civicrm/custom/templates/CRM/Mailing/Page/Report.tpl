@@ -52,9 +52,6 @@
 {/if}
   {*NYSS 3895*}
   {if $report.mailing.forward_replies}
-  <tr><td class="label"><a href="{$report.event_totals.links.forward}">{ts}Forwards{/ts}</a></td>
-      <td>{$report.event_totals.forward}</td>
-      <td>{$report.event_totals.actionlinks.forward}</td></tr>
   <tr><td class="label"><a href="{$report.event_totals.links.reply}">{ts}Replies{/ts}</a></td>
       <td>{$report.event_totals.reply}</td>
       <td>{$report.event_totals.actionlinks.reply}</td></tr>

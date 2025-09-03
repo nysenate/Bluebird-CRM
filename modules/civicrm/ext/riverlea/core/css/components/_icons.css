@@ -3,7 +3,6 @@
   float: left;
 }
 .crm-container div:not(.crm-search-display-editable-buttons) > button.btn-xs:has(.fa-times),
-#bootstrap-theme button.btn-xs:has(.fa-times),
 .crm-container .crm-hover-button:has(.crm-i),
 .crm-container .crm-hover-button:has(.crm-i):hover,
 .crm-container .crm-hover-button:has(.crm-i):focus {
@@ -40,18 +39,23 @@ div.civicrm-community-messages a.civicrm-community-message-dismiss::before,
 }
 .crm-container #crm-notification-container div.ui-notify-message.error h1::before,
 .crm-container span.batch-invalid::before {
-  content: var(--crm-icon-alert);
-  color: var(--crm-c-alert);
+  content: var(--crm-icon-danger);
+  color: var(--crm-notify-danger);
 }
 .crm-container #crm-notification-container div.ui-notify-message.success h1::before,
 .crm-container span.batch-valid::before {
   content: var(--crm-icon-success);
-  color: var(--crm-c-success);
+  color: var(--crm-notify-success);
 }
 .crm-container #crm-notification-container div.ui-notify-message.info h1::before,
 .crm-container .messages.crm-empty-table::before {
   content: var(--crm-icon-info);
-  color: var(--crm-c-info);
+  color: var(--crm-notify-info);
+}
+.crm-container #crm-notification-container div.ui-notify-message.alert h1::before,
+.crm-container #crm-notification-container div.ui-notify-message.warning h1::before {
+  content: var(--crm-icon-danger);
+  color: var(--crm-notify-warning);
 }
 .crm-container .messages.crm-empty-table > i.crm-i {
   display: none; /* removes double icon when markup uses both */
@@ -76,7 +80,7 @@ div.civicrm-community-messages a.civicrm-community-message-dismiss::before,
 
 /* Close icon */
 #crm-notification-container .ui-notify-message a.ui-notify-cross,
-div.civicrm-community-messages a.civicrm-community-message-dismiss,
+.crm-container div.civicrm-community-messages a.civicrm-community-message-dismiss,
 .crm-container .ui-icon-circle-close {
   font-size: 0;
   float: right;
@@ -105,7 +109,7 @@ div.civicrm-community-messages a.civicrm-community-message-dismiss::before,
 .crm-container .crm-i.fa-times,
 .crm-container .btn-danger .crm-i,
 .crm-container button .fa-times {
-  color: var(--crm-icon-alert-color);
+  color: var(--crm-icon-danger-color);
 }
 .crm-container .crm-dashlet-header a.fa-times {
   color: var(--crm-dashlet-header-col);
@@ -207,16 +211,19 @@ div.civicrm-community-messages a.civicrm-community-message-dismiss::before,
 /* Trash icons */
 .crm-container .delete-icon {
   background-image: none;
-  color: var(--crm-alert-text-danger);
+  color: var(--crm-alert-danger-text);
+}
+.crm-container .delete-button > .delete-icon {
+  color: inherit;
 }
 .crm-container .delete-icon::before,
 .crm-container .crm-i.fa-trash::before {
   content: "\f1f8";
-  color: var(--crm-icon-alert-color);
+  color: var(--crm-icon-danger-color);
 }
 .crm-container .delete-icon:hover::before,
 .crm-container .delete-icon:focus::before {
-  color: var(--crm-icon-alert-color);
+  color: var(--crm-icon-danger-color);
 }
 
 /* Jqueery UI icons (tags) */
@@ -243,7 +250,7 @@ div.civicrm-community-messages a.civicrm-community-message-dismiss::before,
 .crm-container .jstree-default.jstree-checkbox-selection .jstree-clicked > .jstree-checkbox::before,
 .crm-container .jstree-default .jstree-checked > .jstree-checkbox::before {
   content: '\f046';
-  color: var(--crm-c-success);
+  color: var(--crm-c-success-on-page-bg);
 }
 .jstree-default > .jstree-no-dots .jstree-closed > .jstree-ocl::before,
 .jstree .jstree-closed > .jstree-ocl::before {
@@ -258,7 +265,7 @@ div.civicrm-community-messages a.civicrm-community-message-dismiss::before,
   color: var(--crm-c-text);
 }
 .crm-container .jstree-default .jstree-search {
-  color: var(--crm-c-alert);
+  color: var(--crm-c-danger);
   font-weight: normal;
 }
 .crm-container #navigation-tree li.jstree-node {
@@ -286,25 +293,25 @@ div.civicrm-community-messages a.civicrm-community-message-dismiss::before,
 }
 
 /* Icon picker - vs crm-iconPicker.css */
-#crmIconPicker .icon-ctrls {
+.crm-container #crmIconPicker .icon-ctrls {
   display: flex;
 }
-#crmIconPicker .icon-ctrls > button {
+.crm-container #crmIconPicker .icon-ctrls > button {
   float: none;
   margin-left: auto;
   display: flex;
 }
-#crmIconPicker a.ui-button .ui-icon {
+.crm-container #crmIconPicker a.ui-button .ui-icon {
   margin-top: 0;
   font-size: var(--crm-r2);
 }
-#crmIconPicker .icons {
+.crm-container #crmIconPicker .icons {
   display: flex;
   flex-wrap: wrap;
   gap: var(--crm-m2);
   margin-top: 1rem;
 }
-#crmIconPicker a.ui-button {
+.crm-container #crmIconPicker a.ui-button {
   color: var(--crm-c-text) !important;
   background: transparent;
   width: var(--crm-r2);

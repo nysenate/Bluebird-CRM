@@ -122,7 +122,17 @@ class CRM_Utils_System_WordPress extends CRM_Utils_System_Base {
         elseif ($oldExists && $newExists) {
           // situation ambiguous. encourage admin to set value explicitly.
           if (!isset($GLOBALS['civicrm_paths']['civicrm.files'])) {
-            \Civi::log()->warning("The system has data from both old+new conventions. Please use civicrm.settings.php to set civicrm.files explicitly.");
+            // Let's ensure these are different paths before issuing a warning.
+            // Because WordPress uses __DIR__ to calculate paths, symlinks get
+            // resolved with the new path, but not the old path. Replace
+            // backslash with forward slash (in case we are on Windows) and
+            // remove trailing slashes to normalize each path.
+            $oldNormalizedPath = rtrim(str_replace('\\', '/', realpath($old['path'])), '/');
+            $newNormalizedPath = rtrim(str_replace('\\', '/', $new['path']), '/');
+            if ($oldNormalizedPath != $newNormalizedPath) {
+              // If these paths really are different, display a warning.
+              \Civi::log()->warning("The system has data from both old+new conventions. Please use civicrm.settings.php to set civicrm.files explicitly.");
+            }
           }
           return $new;
         }
@@ -264,6 +274,7 @@ class CRM_Utils_System_WordPress extends CRM_Utils_System_Base {
    * @inheritDoc
    */
   public function addHTMLHead($head) {
+    \CRM_Core_Error::deprecatedFunctionWarning("addHTMLHead is deprecated in WordPress and will be removed in a future version");
     static $registered = FALSE;
     if (!$registered) {
       // front-end view
@@ -602,13 +613,8 @@ class CRM_Utils_System_WordPress extends CRM_Utils_System_Base {
   /**
    * @inheritDoc
    */
-  public function logout() {
-    // destroy session
-    if (session_id()) {
-      session_destroy();
-    }
-    wp_logout();
-    wp_redirect(wp_login_url());
+  public function postLogoutUrl(): string {
+    return wp_login_url();
   }
 
   /**
@@ -933,13 +939,17 @@ class CRM_Utils_System_WordPress extends CRM_Utils_System_Base {
         $creds['user_password'] = $user_data['user_pass'];
         $creds['remember'] = TRUE;
 
-        // Authenticate and log the user in.
-        $user = wp_signon($creds, FALSE);
-        if (is_wp_error($user)) {
-          Civi::log()->error("Could not log the user in. WordPress returned: " . $user->get_error_message());
-        }
-        else {
-          $logged_in = TRUE;
+        $should_login_user = boolval(get_option('civicrm_automatically_sign_in_user', TRUE));
+        if (TRUE === $should_login_user) {
+          // Authenticate and log the user in.
+          $user = wp_signon($creds, FALSE);
+          if (is_wp_error($user)) {
+            Civi::log()
+              ->error("Could not log the user in. WordPress returned: " . $user->get_error_message());
+          }
+          else {
+            $logged_in = TRUE;
+          }
         }
       }
 
@@ -1207,7 +1217,7 @@ class CRM_Utils_System_WordPress extends CRM_Utils_System_Base {
     if (CRM_Core_Session::singleton()
       ->get('userID') == $contactID || CRM_Core_Permission::checkAnyPerm(['cms:administer users'])
     ) {
-      return CRM_Core_Config::singleton()->userFrameworkBaseURL . "wp-admin/user-edit.php?user_id=" . $uid;
+      return Civi::paths()->getVariable('wp.backend.base', 'url') . 'user-edit.php?user_id=' . $uid;
     }
   }
 
@@ -1350,7 +1360,7 @@ class CRM_Utils_System_WordPress extends CRM_Utils_System_Base {
    */
   public function prePostRedirect() {
     // Get User Agent string.
-    $rawUserAgent = isset($_SERVER['HTTP_USER_AGENT']) ? $_SERVER['HTTP_USER_AGENT'] : '';
+    $rawUserAgent = $_SERVER['HTTP_USER_AGENT'] ?? '';
     $userAgent = mb_convert_encoding($rawUserAgent, 'UTF-8');
 
     // Bail early if User Agent does not support `SameSite=None`.
@@ -1676,8 +1686,12 @@ class CRM_Utils_System_WordPress extends CRM_Utils_System_Base {
 
   /**
    * @inheritdoc
+   * @todo why are the environment checks here? could they be removed
    */
   public function theme(&$content, $print = FALSE, $maintenance = FALSE) {
+    if ($maintenance) {
+      \CRM_Core_Error::deprecatedWarning('Calling CRM_Utils_Base::theme with $maintenance is deprecated - use renderMaintenanceMessage instead');
+    }
     if (!$print) {
       if (!function_exists('is_admin')) {
         throw new \Exception('Function "is_admin()" is missing, even though WordPress is the user framework.');
@@ -1695,6 +1709,28 @@ class CRM_Utils_System_WordPress extends CRM_Utils_System_Base {
 
     print $content;
     return NULL;
+  }
+
+  /**
+   * @inheritdoc
+   * @todo environment checks are copied from the original implementation of `theme` above and should probably
+   * be removed
+   */
+  public function renderMaintenanceMessage(string $content): string {
+    if (!function_exists('is_admin')) {
+      throw new \Exception('Function "is_admin()" is missing, even though WordPress is the user framework.');
+    }
+    if (!defined('ABSPATH')) {
+      throw new \Exception('Constant "ABSPATH" is not defined, even though WordPress is the user framework.');
+    }
+    if (is_admin()) {
+      require_once ABSPATH . 'wp-admin/admin-header.php';
+    }
+    else {
+      // FIXME: we need to figure out to replace civicrm content on the frontend pages
+    }
+
+    return $content;
   }
 
   /**

@@ -189,7 +189,7 @@ class FormDataModel {
             }
           }
         }
-        $this->entities[$entity]['joins'][$node['af-join']] = $joinProps;
+        $this->entities[$entity]['joins'][$node['af-join']] = $joinProps + $existingJoin;
         $this->parseFields($node['#children'] ?? [], $entity, $node['af-join'], NULL, $afIfConditions);
       }
       elseif (!empty($node['#children'])) {
@@ -227,7 +227,7 @@ class FormDataModel {
     if ($action === 'get' && strpos($fieldName, '.')) {
       $namesToMatch[] = substr($fieldName, 0, strrpos($fieldName, '.'));
     }
-    $select = ['name', 'label', 'input_type', 'data_type', 'input_attrs', 'help_pre', 'help_post', 'options', 'fk_entity', 'required'];
+    $select = ['name', 'label', 'input_type', 'data_type', 'input_attrs', 'help_pre', 'help_post', 'options', 'fk_entity', 'required', 'dfk_entities'];
     if ($action === 'get') {
       $select[] = 'operators';
     }
@@ -269,6 +269,52 @@ class FormDataModel {
       }
     }
     return $field;
+  }
+
+  /**
+   * Retrieves the main search entity plus join entities & their aliases.
+   *
+   * @param array $savedSearch
+   * @return array
+   *   e.g.
+   *   ```
+   *   ['Contact', 'Activity AS Contact_Activity_01']
+   *   ```
+   */
+  public static function getSearchEntities(array $savedSearch): array {
+    $entityList = [$savedSearch['api_entity']];
+    foreach ($savedSearch['api_params']['join'] ?? [] as $join) {
+      $entityList[] = $join[0];
+      if (is_string($join[2] ?? NULL)) {
+        $entityList[] = $join[2] . ' AS ' . (explode(' AS ', $join[0])[1]);
+      }
+    }
+    return $entityList;
+  }
+
+  /**
+   * Determines name of the api entit(ies) based on the field name prefix
+   *
+   * Note: Normally will return a single entity name, but
+   * Will return 2 entity names in the case of Bridge joins e.g. RelationshipCache
+   *
+   * @param string $fieldName
+   * @param string[] $entityList
+   * @return array
+   */
+  public static function getSearchFieldEntityType($fieldName, $entityList): array {
+    $prefix = strpos($fieldName, '.') ? explode('.', $fieldName)[0] : NULL;
+    $joinEntities = [];
+    $baseEntity = array_shift($entityList);
+    if ($prefix) {
+      foreach ($entityList as $entityAndAlias) {
+        [$entity, $alias] = explode(' AS ', $entityAndAlias);
+        if ($alias === $prefix) {
+          $joinEntities[] = $entityAndAlias;
+        }
+      }
+    }
+    return $joinEntities ?: [$baseEntity];
   }
 
   /**

@@ -7,6 +7,10 @@ namespace Composer\Autoload;
 class ComposerStaticInite358e00eab491ffb98725c35dadd8bfb
 {
     public static $prefixLengthsPsr4 = array (
+        'c' => 
+        array (
+            'cweagans\\Composer\\' => 18,
+        ),
         'L' => 
         array (
             'LastCall\\DownloadsPlugin\\' => 25,
@@ -18,6 +22,10 @@ class ComposerStaticInite358e00eab491ffb98725c35dadd8bfb
     );
 
     public static $prefixDirsPsr4 = array (
+        'cweagans\\Composer\\' => 
+        array (
+            0 => __DIR__ . '/..' . '/cweagans/composer-patches/src',
+        ),
         'LastCall\\DownloadsPlugin\\' => 
         array (
             0 => __DIR__ . '/..' . '/civicrm/composer-downloads-plugin/src',
@@ -33,7 +41,7 @@ class ComposerStaticInite358e00eab491ffb98725c35dadd8bfb
         array (
             'TOGoS_GitIgnore_' => 
             array (
-                0 => __DIR__ . '/..' . '/togos/gitignore/src/main/php',
+                0 => __DIR__ . '/..' . '/civicrm/gitignore/src/main/php',
             ),
         ),
     );

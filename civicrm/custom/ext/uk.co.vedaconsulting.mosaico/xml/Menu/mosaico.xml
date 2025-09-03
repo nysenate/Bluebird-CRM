@@ -9,12 +9,6 @@
     <access_arguments>administer CiviCRM</access_arguments>
   </item>
   <item>
-    <path>civicrm/admin/mosaico/migrate</path>
-    <page_callback>CRM_Mosaico_Form_Migrate</page_callback>
-    <title>Mosaico Migration Assistant</title>
-    <access_arguments>administer CiviCRM</access_arguments>
-  </item>
-  <item>
     <path>civicrm/mosaico/iframe</path>
     <page_callback>CRM_Mosaico_Page_EditorIframe</page_callback>
     <title>Integration with Mosaico</title>

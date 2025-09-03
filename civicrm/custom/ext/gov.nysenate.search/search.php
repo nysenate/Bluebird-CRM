@@ -2,6 +2,8 @@
 
 require_once 'search.civix.php';
 
+use Symfony\Component\DependencyInjection\ContainerBuilder;
+
 /**
  * Implements hook_civicrm_config().
  *
@@ -30,6 +32,11 @@ function search_civicrm_install() {
  */
 function search_civicrm_enable() {
   _search_civix_civicrm_enable();
+}
+
+function search_civicrm_container(ContainerBuilder $container) {
+  $container->register(CRM_NYSS_Search_UrlParamHelper::$SERVICE_NAME, 'CRM_NYSS_Search_UrlParamHelper')
+    ->setPublic(TRUE);
 }
 
 function search_civicrm_buildForm($formName, &$form) {

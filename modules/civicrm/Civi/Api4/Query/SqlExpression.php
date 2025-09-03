@@ -234,12 +234,12 @@ abstract class SqlExpression {
    * @param array $keywords
    *   Whitelist of keywords
    * @param string $arg
-   * @return mixed|null
+   * @return string|null
    */
-  protected function captureKeyword($keywords, &$arg) {
+  protected function captureKeyword(array $keywords, string &$arg): ?string {
     foreach (array_filter($keywords, 'strlen') as $key) {
-      // Match keyword followed by a space or eol
-      if (strpos($arg, $key . ' ') === 0 || rtrim($arg) === $key) {
+      // Match keyword followed by a space or comma or eol
+      if (str_starts_with($arg, $key . ' ') || str_starts_with($arg, $key . ',') || rtrim($arg) === $key) {
         $arg = ltrim(substr($arg, strlen($key)));
         return $key;
       }

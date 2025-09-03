@@ -3,6 +3,7 @@
 namespace Civi\Api4\Action\SearchDisplay;
 
 use Civi\Api4\Generic\Traits\SavedSearchInspectorTrait;
+use Civi\Api4\Utils\CoreUtil;
 use CRM_Search_ExtensionUtil as E;
 use Civi\Api4\Entity;
 
@@ -49,7 +50,7 @@ class GetSearchTasks extends \Civi\Api4\Generic\AbstractAction {
 
     $tasks = [$entity['name'] => []];
 
-    if (array_key_exists($entity['name'], \CRM_Export_BAO_Export::getComponents())) {
+    if (CoreUtil::isContact($entity['name']) || array_key_exists($entity['name'], \CRM_Export_BAO_Export::getComponents())) {
       $key = \CRM_Core_Key::get('CRM_Export_Controller_Standalone', TRUE);
       $tasks[$entity['name']]['export'] = [
         'title' => E::ts('Export %1', [1 => $entity['title_plural']]),
@@ -84,10 +85,12 @@ class GetSearchTasks extends \Civi\Api4\Generic\AbstractAction {
         $tasks[$entity['name']]['enable'] = [
           'title' => E::ts('Enable %1', [1 => $entity['title_plural']]),
           'icon' => 'fa-toggle-on',
-          'conditions' => [['is_active', '=', FALSE]],
           'apiBatch' => [
             'action' => 'update',
-            'params' => ['values' => ['is_active' => TRUE]],
+            'params' => [
+              'values' => ['is_active' => TRUE],
+              'where' => [['is_active', '=', FALSE]],
+            ],
             'runMsg' => E::ts('Enabling %1 %2...'),
             'successMsg' => E::ts('Successfully enabled %1 %2.'),
             'errorMsg' => E::ts('An error occurred while attempting to enable %1 %2.'),
@@ -96,10 +99,12 @@ class GetSearchTasks extends \Civi\Api4\Generic\AbstractAction {
         $tasks[$entity['name']]['disable'] = [
           'title' => E::ts('Disable %1', [1 => $entity['title_plural']]),
           'icon' => 'fa-toggle-off',
-          'conditions' => [['is_active', '=', TRUE]],
           'apiBatch' => [
             'action' => 'update',
-            'params' => ['values' => ['is_active' => FALSE]],
+            'params' => [
+              'values' => ['is_active' => FALSE],
+              'where' => [['is_active', '=', TRUE]],
+            ],
             'confirmMsg' => E::ts('Are you sure you want to disable %1 %2?'),
             'runMsg' => E::ts('Disabling %1 %2...'),
             'successMsg' => E::ts('Successfully disabled %1 %2.'),
@@ -109,7 +114,7 @@ class GetSearchTasks extends \Civi\Api4\Generic\AbstractAction {
       }
 
       $taggable = \CRM_Core_OptionGroup::values('tag_used_for', FALSE, FALSE, FALSE, NULL, 'name');
-      if (in_array($entity['name'], $taggable, TRUE)) {
+      if (CoreUtil::isContact($entity['name']) || in_array($entity['name'], $taggable, TRUE)) {
         $tasks[$entity['name']]['tag'] = [
           'module' => 'crmSearchTasks',
           'title' => E::ts('Tag - Add/Remove Tags'),
@@ -153,7 +158,7 @@ class GetSearchTasks extends \Civi\Api4\Generic\AbstractAction {
       ];
     }
 
-    if ($entity['name'] === 'Contact') {
+    if (CoreUtil::isContact($entity['name'])) {
       // Add contact tasks which support standalone mode
       $contactTasks = $this->checkPermissions ? \CRM_Contact_Task::permissionedTaskTitles(\CRM_Core_Permission::getPermission()) : NULL;
       // These tasks are redundant with the new api-based ones in SearchKit
@@ -214,6 +219,11 @@ class GetSearchTasks extends \Civi\Api4\Generic\AbstractAction {
       $this->savedSearch, $this->display, $null, 'civicrm_searchKitTasks'
     );
 
+    // If the entity is Individual, Organization, or Household, add the "Contact" actions
+    if (CoreUtil::isContact($entity['name'])) {
+      $tasks[$entity['name']] = array_merge($tasks[$entity['name']], $tasks['Contact']);
+    }
+
     foreach ($tasks[$entity['name']] as $name => &$task) {
       $task['name'] = $name;
       $task['entity'] = $entity['name'];
@@ -221,6 +231,10 @@ class GetSearchTasks extends \Civi\Api4\Generic\AbstractAction {
       $task += ['number' => '> 0'];
       if (!empty($task['apiBatch']['fields'])) {
         $this->getApiBatchFields($task);
+      }
+      // If action includes a WHERE clause, add it to the conditions (see e.g. the enable/disable actions)
+      if (!empty($task['apiBatch']['params']['where'])) {
+        $task['conditions'] = array_merge($task['conditions'] ?? [], $task['apiBatch']['params']['where']);
       }
     }
 

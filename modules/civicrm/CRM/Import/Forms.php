@@ -25,22 +25,12 @@ use League\Csv\Writer;
  * This class helps the forms within the import flow access submitted & parsed values.
  */
 class CRM_Import_Forms extends CRM_Core_Form {
-
+  use \Civi\UserJob\UserJobTrait;
 
   /**
    * @var int
    */
   protected $templateID;
-
-  /**
-   * User job id.
-   *
-   * This is the primary key of the civicrm_user_job table which is used to
-   * track the import.
-   *
-   * @var int
-   */
-  protected $userJobID;
 
   /**
    * Name of the import mapping (civicrm_mapping).
@@ -87,36 +77,6 @@ class CRM_Import_Forms extends CRM_Core_Form {
   }
 
   /**
-   * @return int|null
-   */
-  public function getUserJobID(): ?int {
-    if (!$this->userJobID && $this->get('user_job_id')) {
-      $this->userJobID = $this->get('user_job_id');
-    }
-    return $this->userJobID;
-  }
-
-  /**
-   * Set user job ID.
-   *
-   * @param int $userJobID
-   */
-  public function setUserJobID(int $userJobID): void {
-    $this->userJobID = $userJobID;
-    // This set allows other forms in the flow ot use $this->get('user_job_id').
-    $this->set('user_job_id', $userJobID);
-  }
-
-  /**
-   * User job details.
-   *
-   * This is the relevant row from civicrm_user_job.
-   *
-   * @var array
-   */
-  protected $userJob;
-
-  /**
    * @var \CRM_Import_Parser
    */
   protected $parser;
@@ -132,32 +92,13 @@ class CRM_Import_Forms extends CRM_Core_Form {
   protected $isQuickFormMode = TRUE;
 
   /**
-   * Get User Job.
-   *
-   * API call to retrieve the userJob row.
-   *
-   * @return array
-   *
-   * @throws \CRM_Core_Exception
-   */
-  protected function getUserJob(): array {
-    if (!$this->userJob) {
-      $this->userJob = UserJob::get()
-        ->addWhere('id', '=', $this->getUserJobID())
-        ->execute()
-        ->first();
-    }
-    return $this->userJob;
-  }
-
-  /**
    * Get submitted values stored in the user job.
    *
    * @return array
    * @throws \CRM_Core_Exception
    */
   protected function getUserJobSubmittedValues(): array {
-    return $this->getUserJob()['metadata']['submitted_values'];
+    return $this->getUserJob()['metadata']['submitted_values'] ?? [];
   }
 
   /**
@@ -254,7 +195,7 @@ class CRM_Import_Forms extends CRM_Core_Form {
         $this->mappingName = Mapping::get(FALSE)
           ->addWhere('id', '=', $savedMappingID)
           ->execute()
-          ->first()['name'];
+          ->first()['name'] ?? '';
       }
     }
     return $this->mappingName ?? '';
@@ -759,21 +700,11 @@ class CRM_Import_Forms extends CRM_Core_Form {
   protected function getAvailableFields(): array {
     $return = [];
     foreach ($this->getFields() as $name => $field) {
-      if ($name === 'id' && $this->isSkipDuplicates()) {
-        // Duplicates are being skipped so id matching is not available.
-        continue;
-      }
       if (($field['entity'] ?? '') === 'Contact' && $this->isFilterContactFields() && empty($field['match_rule'])) {
         // Filter out metadata that is intended for create & update - this is not available in the quick-form
         // but is now loaded in the Parser for the LexIM variant.
         continue;
       }
-      // Swap out dots for double underscores so as not to break the quick form js.
-      // We swap this back on postProcess.
-      // Arg - we need to swap out _. first as it seems some groups end in a trailing underscore.
-      // https://lab.civicrm.org/dev/core/-/issues/4317#note_91322
-      $name = str_replace('_.', '~~', $name);
-      $name = str_replace('.', '__', $name);
       $return[$name] = $field['title'];
     }
     return $return;

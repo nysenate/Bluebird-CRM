@@ -20,7 +20,12 @@
 
 #afGuiEditor {
   gap: var(--crm-r);
-  height: 100% !important /* vs inline fixed height */;
+}
+#afGuiEditor-canvas,
+#afGuiEditor-palette,
+#afGuiEditor-canvas > .panel,
+#afGuiEditor-palette > .panel {
+  height: 100%; /* for scrolling panels */
 }
 #afGuiEditor .af-gui-columns {
   display: grid;
@@ -93,6 +98,7 @@
 #afGuiEditor .panel-heading ul.nav-tabs li.fluid-width-tab {
   white-space: nowrap;
   overflow: hidden;
+  max-width: unset !important; /* vs inline max-width set by Form Builder UI */
 }
 #afGuiEditor .panel-heading .form-inline.pull-right button {
   max-height: 32px;
@@ -102,8 +108,9 @@
   padding: var(--crm-padding-reg);
   position: relative;
   border-top: none !important;
-  height: 100%;
+  height: calc(100% - var(--crm-panel-head-height));
   background: var(--crm-tab-bg-active);
+  overflow-y: scroll;
 }
 
 /* Edit palette (left side) */
@@ -149,12 +156,16 @@
   position: absolute;
   top: var(--crm-padding-reg);
   right: var(--crm-padding-reg);
+  padding: 0 !important /* vs buttons.css */;
+  background: transparent;
+  color: var(--crm-c-text);
 }
 #afGuiEditor-palette .af-gui-entity-values .form-inline {
   margin-bottom: var(--crm-m);
   display: flex;
   align-items: center;
   gap: var(--crm-flex-gap);
+  flex-wrap: wrap;
 }
 #afGuiEditor-palette .af-gui-entity-values .select2-container {
   width: 100% !important /* vs inline */;
@@ -264,7 +275,6 @@
 #afGuiEditor .af-gui-node-title {
   position: absolute;
   top: 1px;
-  width: calc(100% - var(--crm-r4));
 }
 #afGuiEditor-canvas:not(.af-gui-menu-open) .af-gui-bar,
 #afGuiEditor-canvas:not(.af-gui-menu-open) .af-gui-container-title span:empty {
@@ -379,6 +389,12 @@ af-gui-container > .af-gui-bar,
   width: 100%;
   height: 100%;
 }
+#afGuiEditor .af-gui-markup-content {
+  /* stop markup-content-overlay growing too big and obscuring af-gui-bar */
+  position: relative;
+  /* stop editor click target shrinking too small */
+  min-height: 2rem;
+}
 #afGuiEditor .af-gui-markup-content:hover .af-gui-markup-content-overlay {
   background-color: rgba(255, 255, 255, .2);
 }
@@ -401,13 +417,13 @@ af-gui-container > .af-gui-bar,
 #afGuiEditor #afGuiEditor-canvas .af-entity-selected > .af-gui-bar > .form-inline > .btn-group > .btn-group > button:hover > span,
 #afGuiEditor #afGuiEditor-canvas .af-entity-selected > .af-gui-bar > .form-inline > .btn-group > .btn-group > button[aria-expanded=true] > span,
 #afGuiEditor #afGuiEditor-canvas .af-entity-selected > .af-gui-bar > .form-inline > .btn-group > .btn-group > button:focus > span {
-  color: var(--crm-c-info);
+  color: var(--crm-c-link);
 }
 #afGuiEditor .af-gui-add-element-button span {
   display: inline-block;
   width: 18px;
   height: 18px;
-  color: var(--crm-c-info);
+  color: var(--crm-c-link);
 }
 #bootstrap-theme #afGuiEditor .af-gui-button > .btn.disabled .crm-editable-enabled:hover:not(:focus) {
   border-color: var(--crm-c-background2) !important;
@@ -420,13 +436,13 @@ af-gui-container > .af-gui-bar,
 }
 #afGuiEditor .af-gui-field-required:after {
   content: '*';
-  color: var(--crm-c-alert);
+  color: var(--crm-c-danger);
   position: relative;
   left: -4px;
 }
 /* For editing field placeholder text */
 #afGuiEditor .af-gui-field-input input[type=text].form-control {
-  color: var(--crm-c-background5);
+  color: var(--crm-c-text);
 }
 #afGuiEditor .af-gui-field-input-type-number input[type=text].form-control {
   background-image: url('../images/number.png');
@@ -662,7 +678,7 @@ i.crm-i.af-gui-conditional-dialog-move-icon {
   background-color: var(--crm-c-background5);
 }
 #afGuiEditor .af-gui-bar > .form-inline > span {
-  color: var(--crm-c-background5);
+  color: var(--crm-c-text);
   font-style: italic;
 }
 #afGuiEditor .ui-sortable-helper .af-gui-palette-item {

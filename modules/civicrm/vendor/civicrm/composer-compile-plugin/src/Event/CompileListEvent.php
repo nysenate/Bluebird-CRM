@@ -50,7 +50,7 @@ class CompileListEvent extends \Composer\EventDispatcher\Event
         \Composer\IO\IOInterface $io,
         \Composer\Package\PackageInterface $package,
         array $tasksSpecs,
-        array $tasks = null
+        ?array $tasks = null
     ) {
         parent::__construct($eventName);
         $this->io = $io;

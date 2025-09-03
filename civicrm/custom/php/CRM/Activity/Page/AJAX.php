@@ -26,7 +26,7 @@ class CRM_Activity_Page_AJAX {
     $caseID = CRM_Utils_Type::validate($_GET['caseID'], 'Integer');
     $contactID = CRM_Utils_Type::validate($_GET['cid'], 'Integer');
     $userID = CRM_Utils_Type::validate($_GET['userID'], 'Integer');
-    $context = CRM_Utils_Type::validate(CRM_Utils_Array::value('context', $_GET), 'String');
+    $context = CRM_Utils_Type::validate($_GET['context'] ?? NULL, 'String');
 
     $optionalParameters = [
       'source_contact_id' => 'Integer',
@@ -68,6 +68,10 @@ class CRM_Activity_Page_AJAX {
       $relationship['email'] = $value['email'];
 
       //NYSS 12990 - expose org
+      // note from Nate Jul 20205 -- It's likely that we can start using searchkit
+      // for this customization instead of using an override file. This note is
+      // intended as a future reminder that we might be able to remove this
+      // if/when we move to searchkit
       try {
         $relationship['organization'] = civicrm_api3('contact', 'getvalue', [
           'id' => $value['contact_id'],
@@ -352,8 +356,6 @@ class CRM_Activity_Page_AJAX {
         $otherActivity->subject = ts('(Filed on case %1)', [
           1 => $params['caseID'],
         ]) . ' ' . $otherActivity->subject;
-        //NYSS 12989 keep current when filing
-        $otherActivity->is_current_revision = TRUE;
       }
       $otherActivity->save();
 

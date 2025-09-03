@@ -14,3 +14,9 @@ You only need to download from here if you want to contribute to its development
 ## Documentation
 
 See: https://docs.civicrm.org/mosaico/en/latest
+
+## Legacy 1.x
+
+If you are running a 1.x version of Mosaico you need to migrate the templates using a version
+of this extension 3.6 or older. In 3.7 we removed the migration scripts and DAO for MosaicoMsgTemplate.
+
