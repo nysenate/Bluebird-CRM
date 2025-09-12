@@ -881,9 +881,20 @@ function contact_civicrm_tabset($tabsetName, &$tabs, $context) {
           'weight' => 500
         ];
       }
+
+      // NYSS #17217
+      _replace_contact_tab_relationships($tabs);
+
+      CRM_Core_Error::debug_var('nyss rel', $tabs['n_y_s_s_contact_summary_relationships']);
     }
     catch (CiviCRM_API3_Exception $e) {}
   }
+}
+
+// NYSS #17217
+function _replace_contact_tab_relationships (&$tabs) {
+  unset($tabs['rel']);
+  $tabs['n_y_s_s_contact_tab_relationships']['weight'] = 5;
 }
 
 function contact_civicrm_alterTemplateFile($formName, &$form, $context, &$tplName) {
