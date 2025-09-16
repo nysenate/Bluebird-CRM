@@ -192,7 +192,7 @@ function contact_civicrm_pageRun(&$page) {
             // phpQuery documents. Though, not the case here, big documents
             // can consume a lot of memory. This releases the memory.
             phpQuery::unloadDocuments($doc->getDocumentID());
-            
+
             /*Civi::log()->debug('', array(
               //'$doc' => $doc,
               'text' => $text,
@@ -883,7 +883,7 @@ function contact_civicrm_tabset($tabsetName, &$tabs, $context) {
       }
 
       // NYSS #17217
-      _replace_contact_tab_relationships($tabs);
+      _contact_replace_contact_tab_relationships($tabs);
 
       CRM_Core_Error::debug_var('nyss rel', $tabs['n_y_s_s_contact_summary_relationships']);
     }
@@ -892,7 +892,8 @@ function contact_civicrm_tabset($tabsetName, &$tabs, $context) {
 }
 
 // NYSS #17217
-function _replace_contact_tab_relationships (&$tabs) {
+#[CRM_NYSS_Attribute_IssueRef(17217, 'https://dev.nysenate.gov/issues/17217')]
+function _contact_replace_contact_tab_relationships (&$tabs) {
   unset($tabs['rel']);
   $tabs['n_y_s_s_contact_tab_relationships']['weight'] = 5;
 }
