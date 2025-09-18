@@ -32,46 +32,12 @@ function contact_civicrm_install() {
 }
 
 /**
- * Implements hook_civicrm_uninstall().
- *
- * @link http://wiki.civicrm.org/confluence/display/CRMDOC/hook_civicrm_uninstall
- */
-function contact_civicrm_uninstall() {
-  _contact_civix_civicrm_uninstall();
-}
-
-/**
  * Implements hook_civicrm_enable().
  *
  * @link http://wiki.civicrm.org/confluence/display/CRMDOC/hook_civicrm_enable
  */
 function contact_civicrm_enable() {
   _contact_civix_civicrm_enable();
-}
-
-/**
- * Implements hook_civicrm_disable().
- *
- * @link http://wiki.civicrm.org/confluence/display/CRMDOC/hook_civicrm_disable
- */
-function contact_civicrm_disable() {
-  _contact_civix_civicrm_disable();
-}
-
-/**
- * Implements hook_civicrm_upgrade().
- *
- * @param $op string, the type of operation being performed; 'check' or 'enqueue'
- * @param $queue CRM_Queue_Queue, (for 'enqueue') the modifiable list of pending up upgrade tasks
- *
- * @return mixed
- *   Based on op. for 'check', returns array(boolean) (TRUE if upgrades are pending)
- *                for 'enqueue', returns void
- *
- * @link http://wiki.civicrm.org/confluence/display/CRMDOC/hook_civicrm_upgrade
- */
-function contact_civicrm_upgrade($op, CRM_Queue_Queue $queue = NULL) {
-  return _contact_civix_civicrm_upgrade($op, $queue);
 }
 
 function contact_civicrm_pageRun(&$page) {
@@ -226,7 +192,7 @@ function contact_civicrm_pageRun(&$page) {
             // phpQuery documents. Though, not the case here, big documents
             // can consume a lot of memory. This releases the memory.
             phpQuery::unloadDocuments($doc->getDocumentID());
-            
+
             /*Civi::log()->debug('', array(
               //'$doc' => $doc,
               'text' => $text,
@@ -871,24 +837,6 @@ function contact_civicrm_postProcess($formName, &$form) {
   }
 }
 
-/**
- * Implements hook_civicrm_postInstall().
- *
- * @link https://docs.civicrm.org/dev/en/latest/hooks/hook_civicrm_postInstall
- */
-function contact_civicrm_postInstall() {
-  _contact_civix_civicrm_postInstall();
-}
-
-/**
- * Implements hook_civicrm_entityTypes().
- *
- * @link https://docs.civicrm.org/dev/en/latest/hooks/hook_civicrm_entityTypes
- */
-function contact_civicrm_entityTypes(&$entityTypes) {
-  _contact_civix_civicrm_entityTypes($entityTypes);
-}
-
 function contact_civicrm_alterEntityRefParams(&$params, $formName) {
   /*Civi::log()->debug(__FUNCTION__, [
     'params' => $params,
@@ -933,9 +881,21 @@ function contact_civicrm_tabset($tabsetName, &$tabs, $context) {
           'weight' => 500
         ];
       }
+
+      // NYSS #17217
+      _contact_replace_contact_tab_relationships($tabs);
+
+      CRM_Core_Error::debug_var('nyss rel', $tabs['n_y_s_s_contact_summary_relationships']);
     }
     catch (CiviCRM_API3_Exception $e) {}
   }
+}
+
+// NYSS #17217
+#[CRM_NYSS_Attribute_IssueRef(17217, 'https://dev.nysenate.gov/issues/17217')]
+function _contact_replace_contact_tab_relationships (&$tabs) {
+  unset($tabs['rel']);
+  $tabs['n_y_s_s_contact_tab_relationships']['weight'] = 5;
 }
 
 function contact_civicrm_alterTemplateFile($formName, &$form, $context, &$tplName) {
