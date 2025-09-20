@@ -3,13 +3,19 @@
     <form class="navbar-form navbar-left">
       <div class="form-group">
         <label for="selected_layout_contact_type">{{:: ts('Show:') }}</label>
-        <select id="selected_layout_contact_type" class="form-control" ng-model="selectedLayout.contact_type" crm-ui-select ng-change="changeContactType(selectedLayout)">
+        <select id="selected_layout_contact_type" class="form-control crm-auto-width" ng-model="selectedLayout.contact_type" crm-ui-select ng-change="changeContactType(selectedLayout)">
           <option value="">{{:: ts('Contact type') }}</option>
           <option ng-repeat="ct in contactTypes" value="{{ ct.name }}" ng-if="!ct.parent_id">{{ ct.label }}</option>
         </select>
         <span ng-if="selectedLayout.contact_type && selectableSubTypes(selectedLayout.contact_type).length">
           <select multiple placeholder="{{:: ts('Any subtype') }}" class="form-control" ng-model="selectedLayout.contact_sub_type" crm-ui-select>
             <option ng-repeat="ct in selectableSubTypes(selectedLayout.contact_type)" value="{{ ct.name }}">{{ ct.label }}</option>
+          </select>
+        </span>
+        <span ng-if="selectedLayout.contact_sub_type.length > 1">
+          <select ng-model="selectedLayout.settings.sub_type_operator" class="form-control crm-auto-width">
+            <option value="OR">{{:: ts('Any') }}</option>
+            <option value="AND">{{:: ts('All') }}</option>
           </select>
         </span>
         <label for="selected_layout_groups">{{:: ts('To:') }}</label>

@@ -310,8 +310,8 @@ class CRM_Core_Payment_FapsACH extends CRM_Core_Payment_Faps {
    * @return array
    */
   protected function convertParams($params, $method) {
-    $request = array();
-    $convert = array(
+    $request = [];
+    $convert = [
       'ownerEmail' => 'email',
       'ownerStreet' => 'street_address',
       'ownerCity' => 'city',
@@ -320,10 +320,10 @@ class CRM_Core_Payment_FapsACH extends CRM_Core_Payment_Faps {
       'ownerCountry' => 'country',
       'orderId' => 'invoiceID',
       'achCryptogram' => 'cryptogram',
-    );
+    ];
     foreach ($convert as $r => $p) {
       if (isset($params[$p])) {
-        $request[$r] = htmlspecialchars($params[$p]);
+        $request[$r] = str_replace(';','',$params[$p]);
       }
     }
     if (empty($params['email'])) {

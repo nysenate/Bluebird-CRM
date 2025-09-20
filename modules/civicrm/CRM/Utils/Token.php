@@ -25,7 +25,6 @@ class CRM_Utils_Token {
 
   public static $_tokens = [
     'action' => [
-      'forward',
       'optOut',
       'optOutUrl',
       'reply',
@@ -493,7 +492,7 @@ class CRM_Utils_Token {
 
       if ($value && $html) {
         // fix for CRM-2318
-        if ((substr($token, -3) != 'Url') && ($token != 'forward')) {
+        if (substr($token, -3) != 'Url') {
           $value = "mailto:$value";
         }
       }
@@ -1007,134 +1006,6 @@ class CRM_Utils_Token {
   }
 
   /**
-   * Do not use this function.
-   *
-   * Gives required details of contacts in an indexed array format so we
-   * can iterate in a nice loop and do token evaluation
-   *
-   * @param array $contactIDs
-   * @param array $returnProperties
-   *   Of required properties.
-   * @param bool $skipOnHold Don't return on_hold contact info also.
-   *   Don't return on_hold contact info also.
-   * @param bool $skipDeceased Don't return deceased contact info.
-   *   Don't return deceased contact info.
-   * @param array $extraParams
-   *   Extra params - DEPRECATED
-   * @param array $tokens
-   *   The list of tokens we've extracted from the content.
-   * @param string|null $className
-   * @param int|null $jobID
-   *   The mailing list jobID - this is a legacy param.
-   *
-   * @deprecated
-   *
-   * @return array - e.g [[1 => ['first_name' => 'bob'...], 34 => ['first_name' => 'fred'...]]]
-   */
-  public static function getTokenDetails(
-    $contactIDs,
-    $returnProperties = NULL,
-    $skipOnHold = TRUE,
-    $skipDeceased = TRUE,
-    $extraParams = NULL,
-    $tokens = [],
-    $className = NULL,
-    $jobID = NULL
-  ) {
-    CRM_Core_Error::deprecatedFunctionWarning('If you hit this in mailing code you should use flexmailer - otherwise use the token processor');
-    $params = [];
-    foreach ($contactIDs as $contactID) {
-      $params[] = [
-        CRM_Core_Form::CB_PREFIX . $contactID,
-        '=',
-        1,
-        0,
-        0,
-      ];
-    }
-
-    // fix for CRM-2613
-    if ($skipDeceased) {
-      $params[] = ['is_deceased', '=', 0, 0, 0];
-    }
-
-    //fix for CRM-3798
-    if ($skipOnHold) {
-      $params[] = ['on_hold', '=', 0, 0, 0];
-    }
-
-    if ($extraParams) {
-      CRM_Core_Error::deprecatedWarning('Passing $extraParams to getTokenDetails() is not supported and will be removed in a future version');
-      $params = array_merge($params, $extraParams);
-    }
-
-    // if return properties are not passed then get all return properties
-    if (empty($returnProperties)) {
-      $fields = array_merge(array_keys(CRM_Contact_BAO_Contact::exportableFields()),
-        ['display_name', 'checksum', 'contact_id']
-      );
-      foreach ($fields as $val) {
-        // The unavailable fields are not available as tokens, do not have a one-2-one relationship
-        // with contacts and are expensive to resolve.
-        // @todo see CRM-17253 - there are some other fields (e.g note) that should be excluded
-        // and upstream calls to this should populate return properties.
-        $unavailableFields = ['group', 'tag'];
-        if (!in_array($val, $unavailableFields)) {
-          $returnProperties[$val] = 1;
-        }
-      }
-    }
-
-    $custom = [];
-    foreach ($returnProperties as $name => $dontCare) {
-      $cfID = CRM_Core_BAO_CustomField::getKeyID($name);
-      if ($cfID) {
-        $custom[] = $cfID;
-      }
-    }
-
-    [$contactDetails] = CRM_Contact_BAO_Query::apiQuery($params, $returnProperties, NULL, NULL, 0, count($contactIDs), TRUE, FALSE, TRUE, CRM_Contact_BAO_Query::MODE_CONTACTS, NULL, TRUE);
-
-    foreach ($contactIDs as $contactID) {
-      if (array_key_exists($contactID, $contactDetails)) {
-        if (!empty($contactDetails[$contactID]['preferred_communication_method'])
-        ) {
-          $communicationPreferences = [];
-          foreach ((array) $contactDetails[$contactID]['preferred_communication_method'] as $val) {
-            if ($val) {
-              $communicationPreferences[$val] = CRM_Core_PseudoConstant::getLabel('CRM_Contact_DAO_Contact', 'preferred_communication_method', $val);
-            }
-          }
-          $contactDetails[$contactID]['preferred_communication_method'] = implode(', ', $communicationPreferences);
-        }
-
-        foreach ($custom as $cfID) {
-          if (isset($contactDetails[$contactID]["custom_{$cfID}"])) {
-            $contactDetails[$contactID]["custom_{$cfID}"] = CRM_Core_BAO_CustomField::displayValue($contactDetails[$contactID]["custom_{$cfID}"], $cfID);
-          }
-        }
-
-        // special case for greeting replacement
-        foreach (['email_greeting', 'postal_greeting', 'addressee'] as $val) {
-          if (!empty($contactDetails[$contactID][$val])) {
-            $contactDetails[$contactID][$val] = $contactDetails[$contactID]["{$val}_display"];
-          }
-        }
-      }
-    }
-
-    // $contactDetails = &$details[0] = is an array of [ contactID => contactDetails ]
-    // also call a hook and get token details
-    CRM_Utils_Hook::tokenValues($contactDetails,
-      $contactIDs,
-      $jobID,
-      $tokens,
-      $className
-    );
-    return [$contactDetails];
-  }
-
-  /**
    * Call hooks on tokens for anonymous users - contact id is set to 0 - this allows non-contact
    * specific tokens to be rendered
    *
@@ -1263,8 +1134,11 @@ class CRM_Utils_Token {
    *
    * @return string
    *   The processed string
+   *
+   * @deprecated since 6.3 will be removed around 6.15
    */
-  public static function &replaceUserTokens($str, $knownTokens = NULL, $escapeSmarty = FALSE) {
+  public static function replaceUserTokens($str, $knownTokens = NULL, $escapeSmarty = FALSE) {
+    CRM_Core_Error::deprecatedFunctionWarning('no alternative');
     $key = 'user';
     if (!$knownTokens ||
       !isset($knownTokens[$key])
@@ -1290,6 +1164,7 @@ class CRM_Utils_Token {
    */
   public static function getUserTokenReplacement($token, $escapeSmarty = FALSE) {
     $value = '';
+    CRM_Core_Error::deprecatedFunctionWarning('no alternative');
 
     [$objectName, $objectValue] = explode('-', $token, 2);
 
@@ -1344,7 +1219,7 @@ class CRM_Utils_Token {
         if (!empty($token['name'])) {
           $tokens[$token['name']] = [];
         }
-        elseif (is_string($token) && strpos($token, ':') !== FALSE) {
+        elseif (is_string($token) && str_contains($token, ':')) {
           $tokens[$token] = [];
         }
       }
@@ -1689,6 +1564,8 @@ class CRM_Utils_Token {
         'membership_offline_receipt' => [
           // receipt_text_renewal appears to be long gone.
           'receipt_text_renewal' => 'receipt_text',
+          '$totalTaxAmount' => 'contribution.tax_amount',
+          '$getTaxDetails' => ts('no longer available / relevant'),
           '$isAmountZero' => ts('no longer available / relevant'),
           '$dataArray' => ts('see default template for how to show this'),
           '$mem_start_date' => 'membership.start_date',
@@ -1714,8 +1591,13 @@ class CRM_Utils_Token {
           '$receive_date' => 'contribution.receive_date',
           '$currency' => 'contribution.currency',
         ],
+        'contribution_offline_receipt' => [
+          '$totalTaxAmount' => 'contribution.tax_amount',
+          '$getTaxDetails' => ts('no longer available / relevant'),
+        ],
         'event_offline_receipt' => [
           '$contributeMode' => ts('no longer available / relevant'),
+          '$getTaxDetails' => ts('no longer available / relevant'),
           '$isAmountZero' => ts('no longer available / relevant'),
           '$dataArray' => ts('see default template for how to show this'),
           '$paidBy' => 'contribution.payment_instrument_id:label',
@@ -1736,12 +1618,44 @@ class CRM_Utils_Token {
           '$contributionTypeName' => 'contribution.financial_type_id:label',
           '$trxn_id' => 'contribution.trxn_id',
           '$participant_status_id' => 'participant.status_id',
-
+          '$participant.role' => 'participant.role_id:label',
         ],
         'event_online_receipt' => [
           '`$participant.id`' => 'participant.id',
           '$dataArray' => ts('see default template for how to show this'),
           '$individual' => ts('see default template for how to show this'),
+          '$amount' => ts('see default template for how to show this'),
+          '$location' => 'event.location',
+          '$register_date' => 'participant.register_date',
+          '$participant.role' => 'participant.role_id:label',
+          '$event.participant_role' => 'participant.role_id:label',
+          '$paidBy' => 'contribution.payment_instrument_id:label',
+          '$title' => 'event.title',
+        ],
+        'participant_transferred' => [
+          '$location' => 'event.location',
+          '$participant.role' => 'participant.role_id:label',
+          '$event.participant_role' => 'participant.role_id:label',
+        ],
+        'participant_cancelled' => [
+          '$location' => 'event.location',
+          '$participant.role' => 'participant.role_id:label',
+          '$event.participant_role' => 'participant.role_id:label',
+        ],
+        'participant_expired' => [
+          '$location' => 'event.location',
+          '$participant.role' => 'participant.role_id:label',
+          '$event.participant_role' => 'participant.role_id:label',
+        ],
+        'participant_confirm' => [
+          '$location' => 'event.location',
+          '$participant.role' => 'participant.role_id:label',
+          '$event.participant_role' => 'participant.role_id:label',
+        ],
+        'payment_or_refund_notification' => [
+          '$location' => 'event.location',
+          '$participant.role' => 'participant.role_id:label',
+          '$event.participant_role' => 'participant.role_id:label',
         ],
         'pledge_acknowledgement' => [
           '$domain' => ts('no longer available / relevant'),

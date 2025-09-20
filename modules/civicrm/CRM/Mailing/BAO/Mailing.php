@@ -880,7 +880,7 @@ ORDER BY   civicrm_email.is_bulkmail DESC
     $emailDomain = CRM_Core_BAO_MailSettings::defaultDomain();
     // Make sure the user configured the site correctly, otherwise you just get "Could not identify any recipients. Perhaps the group is empty?" from the mailing UI
     if (empty($emailDomain)) {
-      CRM_Core_Error::debug_log_message('Error setting verp parameters, defaultDomain is NULL.  Did you configure the bounce processing account for this domain?');
+      Civi::log()->error('Error setting verp parameters, defaultDomain is NULL.  Did you configure the bounce processing account for this domain?');
     }
 
     foreach ($verpTokens as $key => $value) {
@@ -906,7 +906,6 @@ ORDER BY   civicrm_email.is_bulkmail DESC
     // Generating URLs is expensive, so we only call it once for each of these 5 URLs.
     $genericURL = CRM_Utils_System::url('civicrm/mailing/genericUrlPath', "reset=1&jid={$job_id}&qid={$event_queue_id}&h={$hash}", TRUE, NULL, TRUE, TRUE);
     $urls = [
-      'forward' => str_replace('genericUrlPath', 'forward', $genericURL),
       'unsubscribeUrl' => str_replace('genericUrlPath', 'unsubscribe', $genericURL),
       'resubscribeUrl' => str_replace('genericUrlPath', 'resubscribe', $genericURL),
       'optOutUrl' => str_replace('genericUrlPath', 'optout', $genericURL),
@@ -920,7 +919,7 @@ ORDER BY   civicrm_email.is_bulkmail DESC
       'Subject' => $this->subject,
       'List-Unsubscribe' => "<mailto:{$verp['unsubscribe']}>",
     ];
-    self::addMessageIdHeader($headers, 'm', $job_id, $event_queue_id, $hash);
+    self::addMessageIdHeader($headers, 'm', NULL, $event_queue_id, $hash);
     return [&$verp, &$urls, &$headers];
   }
 
@@ -1090,13 +1089,9 @@ ORDER BY   civicrm_email.is_bulkmail DESC
 
       // Get the default from email address, if not provided.
       if (empty($defaults['from_email'])) {
-        $defaultAddress = CRM_Core_BAO_Domain::getNameAndEmail(TRUE, TRUE);
-        foreach ($defaultAddress as $id => $value) {
-          if (preg_match('/"(.*)" <(.*)>/', ($value ?? ''), $match)) {
-            $defaults['from_email'] = $match[2];
-            $defaults['from_name'] = $match[1];
-          }
-        }
+        $defaultAddress = CRM_Core_BAO_Domain::getNameAndEmail(TRUE);
+        $defaults['from_email'] = $defaultAddress[1];
+        $defaults['from_name'] = $defaultAddress[0];
       }
 
       $params = array_merge($defaults, $params);
@@ -1257,18 +1252,15 @@ ORDER BY   civicrm_email.is_bulkmail DESC
       'mailing' => self::getTableName(),
       'mailing_group' => CRM_Mailing_DAO_MailingGroup::getTableName(),
       'group' => CRM_Contact_BAO_Group::getTableName(),
-      'job' => CRM_Mailing_BAO_MailingJob::getTableName(),
       'queue' => CRM_Mailing_Event_BAO_MailingEventQueue::getTableName(),
       'delivered' => CRM_Mailing_Event_BAO_MailingEventDelivered::getTableName(),
       'opened' => CRM_Mailing_Event_BAO_MailingEventOpened::getTableName(),
       'reply' => CRM_Mailing_Event_BAO_MailingEventReply::getTableName(),
       'unsubscribe' => CRM_Mailing_Event_BAO_MailingEventUnsubscribe::getTableName(),
       'bounce' => CRM_Mailing_Event_BAO_MailingEventBounce::getTableName(),
-      'forward' => CRM_Mailing_Event_BAO_MailingEventForward::getTableName(),
       'url' => CRM_Mailing_BAO_MailingTrackableURL::getTableName(),
       'urlopen' => CRM_Mailing_Event_BAO_MailingEventTrackableURLOpen::getTableName(),
       'component' => CRM_Mailing_BAO_MailingComponent::getTableName(),
-      'spool' => CRM_Mailing_BAO_Spool::getTableName(),
     ];
 
     // Get the mailing info
@@ -1359,6 +1351,7 @@ ORDER BY   civicrm_email.is_bulkmail DESC
       if (isset($mailing->group_id)) {
         $row['id'] = $mailing->group_id;
         $row['name'] = $mailing->group_title;
+        $row['mailing'] = FALSE;
         $row['link'] = CRM_Utils_System::url('civicrm/group/search',
           "reset=1&force=1&context=smog&gid={$row['id']}"
         );
@@ -1390,21 +1383,18 @@ ORDER BY   civicrm_email.is_bulkmail DESC
 
     // Get the event totals, grouped by job (retries)
     $mailing->query("
-            SELECT          {$t['job']}.*,
+            SELECT          civicrm_mailing_job.*,
                             COUNT(DISTINCT {$t['queue']}.id) as queue,
                             COUNT(DISTINCT {$t['delivered']}.id) as delivered,
                             COUNT(DISTINCT {$t['reply']}.id) as reply,
-                            COUNT(DISTINCT {$t['forward']}.id) as forward,
                             COUNT(DISTINCT {$t['bounce']}.id) as bounce,
                             COUNT(DISTINCT {$t['urlopen']}.id) as url,
-                            COUNT(DISTINCT {$t['spool']}.id) as spool
-            FROM            {$t['job']}
+                            COUNT(DISTINCT civicrm_mailing_spool.id) as spool
+            FROM            civicrm_mailing_job
             LEFT JOIN       {$t['queue']}
-                    ON      {$t['queue']}.job_id = {$t['job']}.id
+                    ON      {$t['queue']}.job_id = civicrm_mailing_job.id
             LEFT JOIN       {$t['reply']}
                     ON      {$t['reply']}.event_queue_id = {$t['queue']}.id
-            LEFT JOIN       {$t['forward']}
-                    ON      {$t['forward']}.event_queue_id = {$t['queue']}.id
             LEFT JOIN       {$t['bounce']}
                     ON      {$t['bounce']}.event_queue_id = {$t['queue']}.id
             LEFT JOIN       {$t['delivered']}
@@ -1412,11 +1402,11 @@ ORDER BY   civicrm_email.is_bulkmail DESC
                     AND     {$t['bounce']}.id IS null
             LEFT JOIN       {$t['urlopen']}
                     ON      {$t['urlopen']}.event_queue_id = {$t['queue']}.id
-            LEFT JOIN       {$t['spool']}
-                    ON      {$t['spool']}.job_id = {$t['job']}.id
-            WHERE           {$t['job']}.mailing_id = $mailing_id
-                    AND     {$t['job']}.is_test = 0
-            GROUP BY        {$t['job']}.id");
+            LEFT JOIN       civicrm_mailing_spool
+                    ON      civicrm_mailing_spool.job_id = civicrm_mailing_job.id
+            WHERE           civicrm_mailing_job.mailing_id = $mailing_id
+                    AND     civicrm_mailing_job.is_test = 0
+            GROUP BY        civicrm_mailing_job.id");
 
     $report['jobs'] = [];
     $report['event_totals'] = [];
@@ -1425,7 +1415,6 @@ ORDER BY   civicrm_email.is_bulkmail DESC
       'queue',
       'delivered',
       'url',
-      'forward',
       'reply',
       'unsubscribe',
       'optout',
@@ -1495,7 +1484,6 @@ ORDER BY   civicrm_email.is_bulkmail DESC
         'delivered' => CRM_Utils_System::url($path, "$arg&event=delivered"),
         'bounce' => CRM_Utils_System::url($path, "$arg&event=bounce"),
         'unsubscribe' => CRM_Utils_System::url($path, "$arg&event=unsubscribe"),
-        'forward' => CRM_Utils_System::url($path, "$arg&event=forward"),
         'reply' => CRM_Utils_System::url($path, "$arg&event=reply"),
         'opened' => CRM_Utils_System::url($path, "$arg&event=opened"),
       ];
@@ -1538,10 +1526,10 @@ ORDER BY   civicrm_email.is_bulkmail DESC
                     ON  {$t['urlopen']}.trackable_url_id = {$t['url']}.id
             LEFT JOIN  {$t['queue']}
                     ON  {$t['urlopen']}.event_queue_id = {$t['queue']}.id
-            LEFT JOIN  {$t['job']}
-                    ON  {$t['queue']}.job_id = {$t['job']}.id
+            LEFT JOIN  civicrm_mailing_job
+                    ON  {$t['queue']}.job_id = civicrm_mailing_job.id
             WHERE       {$t['url']}.mailing_id = $mailing_id
-                    AND {$t['job']}.is_test = 0
+                    AND civicrm_mailing_job.is_test = 0
             GROUP BY    {$t['url']}.id
             ORDER BY    unique_clicks DESC");
 
@@ -1568,7 +1556,6 @@ ORDER BY   civicrm_email.is_bulkmail DESC
       'bounce' => CRM_Utils_System::url($path, "$arg&event=bounce"),
       'unsubscribe' => CRM_Utils_System::url($path, "$arg&event=unsubscribe"),
       'optout' => CRM_Utils_System::url($path, "$arg&event=optout"),
-      'forward' => CRM_Utils_System::url($path, "$arg&event=forward"),
       'reply' => CRM_Utils_System::url($path, "$arg&event=reply"),
       'opened' => CRM_Utils_System::url($path, "$arg&event=opened"),
     ];
@@ -1581,7 +1568,7 @@ ORDER BY   civicrm_email.is_bulkmail DESC
     $action = array_sum(array_keys($actionLinks));
 
     $report['event_totals']['actionlinks'] = [];
-    foreach (['clicks', 'clicks_unique', 'queue', 'delivered', 'bounce', 'unsubscribe', 'forward', 'reply', 'opened', 'opened_unique', 'optout'] as $key) {
+    foreach (['clicks', 'clicks_unique', 'queue', 'delivered', 'bounce', 'unsubscribe', 'reply', 'opened', 'opened_unique', 'optout'] as $key) {
       $url = 'mailing/detail';
       $reportFilter = "reset=1&mailing_id_value={$mailing_id}";
       $searchFilter = "force=1&mailing_id=%%mid%%";
@@ -1594,11 +1581,6 @@ ORDER BY   civicrm_email.is_bulkmail DESC
         case 'bounce':
           $url = "mailing/bounce";
           $searchFilter .= "&mailing_delivery_status=N";
-          break;
-
-        case 'forward':
-          $reportFilter .= "&is_forwarded_value=1";
-          $searchFilter .= "&mailing_forward=1";
           break;
 
         case 'reply':
@@ -2508,6 +2490,8 @@ ORDER BY civicrm_mailing.id DESC";
       $types = [];
       $types[] = [
         'name' => 'traditional',
+        'label' => ts('Traditional'),
+        'description' => ts('Standard CiviMail interface with wysiwyg editor.'),
         'editorUrl' => CRM_Mailing_Info::workflowEnabled() ? '~/crmMailing/EditMailingCtrl/workflow.html' : '~/crmMailing/EditMailingCtrl/2step.html',
         'weight' => 0,
       ];
@@ -2532,17 +2516,21 @@ ORDER BY civicrm_mailing.id DESC";
   }
 
   /**
-   * Get a list of template types.
+   * Pseudoconstant callback for `template_type` field.
    *
    * @return array
-   *   Array(string $name => string $label).
    */
-  public static function getTemplateTypeNames() {
-    $r = [];
+  public static function getTemplateTypeNames(): array {
+    $types = [];
     foreach (self::getTemplateTypes() as $type) {
-      $r[$type['name']] = $type['name'];
+      $types[] = [
+        'id' => $type['name'],
+        'name' => $type['name'],
+        'label' => $type['label'] ?? ucfirst($type['name']),
+        'description' => $type['description'] ?? NULL,
+      ];
     }
-    return $r;
+    return $types;
   }
 
 }

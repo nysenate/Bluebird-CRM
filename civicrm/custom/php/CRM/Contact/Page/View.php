@@ -19,6 +19,7 @@
  * Main page for viewing contact.
  */
 class CRM_Contact_Page_View extends CRM_Core_Page {
+  use CRM_Contact_Form_ContactFormTrait;
 
   /**
    * The id of the object being viewed (note/relationship etc)
@@ -64,33 +65,7 @@ class CRM_Contact_Page_View extends CRM_Core_Page {
       $qfKey = NULL;
     }
     $this->assign('searchKey', $qfKey);
-
-    // retrieve the group contact id, so that we can get contact id
-    $gcid = CRM_Utils_Request::retrieve('gcid', 'Positive', $this);
-
-    if (!$gcid) {
-      $this->_contactId = CRM_Utils_Request::retrieve('cid', 'Positive', $this);
-    }
-    else {
-      $this->_contactId = CRM_Core_DAO::getFieldValue('CRM_Contact_DAO_GroupContact', $gcid, 'contact_id');
-    }
-
-    if (!$this->_contactId) {
-      CRM_Core_Error::statusBounce(
-        ts('We could not find a contact id.'),
-        CRM_Utils_System::url('civicrm/dashboard', 'reset=1')
-      );
-    }
-
-    // ensure that the id does exist
-    if (CRM_Core_DAO::getFieldValue('CRM_Contact_DAO_Contact', $this->_contactId, 'id') != $this->_contactId) {
-      CRM_Core_Error::statusBounce(
-        ts('A Contact with that ID does not exist: %1', [1 => $this->_contactId]),
-        CRM_Utils_System::url('civicrm/dashboard', 'reset=1')
-      );
-    }
-
-    $this->assign('contactId', $this->_contactId);
+    $this->assign('contactId', $this->getContactID());
 
     // see if we can get prev/next positions from qfKey
     $navContacts = [
@@ -142,8 +117,6 @@ class CRM_Contact_Page_View extends CRM_Core_Page {
 
     $path = CRM_Utils_System::url('civicrm/contact/view', 'reset=1&cid=' . $this->_contactId);
     CRM_Utils_System::appendBreadCrumb([['title' => ts('View Contact'), 'url' => $path]]);
-    //NYSS 7337
-    CRM_Utils_System::appendBreadCrumb([['title' => ts('Search Results'), 'url' => self::getSearchURL()]]);
 
     $image_URL = CRM_Core_DAO::getFieldValue('CRM_Contact_DAO_Contact', $this->_contactId, 'image_URL');
     $this->assign('imageURL', $image_URL ? CRM_Utils_File::getImageURL($image_URL) : '');
@@ -365,67 +338,47 @@ class CRM_Contact_Page_View extends CRM_Core_Page {
   protected function getGroupOrganizationUrl(string $contactType): string {
     if ($contactType !== 'Organization' || !CRM_Core_Permission::check('administer Multiple Organizations')
       || !CRM_Contact_BAO_GroupOrganization::hasGroupAssociated($this->_contactId)
-      || !Civi::settings()->get('is_enabled')
+      || !Civi::settings()->get('multisite_is_enabled')
     ) {
       return '';
     }
     return CRM_Utils_System::url('civicrm/group', "reset=1&oid={$this->_contactId}");
   }
 
-  //NYSS 7337 restore https://github.com/civicrm/civicrm-core/pull/746/files
-  function getSearchURL() {
-    $qfKey = CRM_Utils_Request::retrieve('key', 'String', $this);
-    $context = CRM_Utils_Request::retrieve('context', 'String', $this, FALSE, 'search');
-    $this->assign('context', $context);
+  /**
+   * @throws \CRM_Core_Exception
+   *
+   * @api This function will not change in a minor release and is supported for
+   *  use outside of core. This annotation / external support for properties
+   *  is only given where there is specific test cover.
+   */
+  public function getContactID(): int {
+    if (!isset($this->_contactId)) {
+      // retrieve the group contact id, so that we can get contact id
+      $gcid = CRM_Utils_Request::retrieve('gcid', 'Positive', $this);
 
-    //validate the qfKey
-    if (!CRM_Utils_Rule::qfKey($qfKey)) {
-      $qfKey = NULL;
+      if (!$gcid) {
+        $this->_contactId = CRM_Utils_Request::retrieve('cid', 'Positive', $this);
+      }
+      else {
+        $this->_contactId = CRM_Core_DAO::getFieldValue('CRM_Contact_DAO_GroupContact', $gcid, 'contact_id');
+      }
+
+      if (!$this->_contactId) {
+        CRM_Core_Error::statusBounce(
+          ts('We could not find a contact id.'),
+          CRM_Utils_System::url('civicrm/dashboard', 'reset=1')
+        );
+      }
+      // ensure that the id does exist
+      if (CRM_Core_DAO::getFieldValue('CRM_Contact_DAO_Contact', $this->_contactId, 'id') != $this->_contactId) {
+        CRM_Core_Error::statusBounce(
+          ts('A Contact with that ID does not exist: %1', [1 => $this->_contactId]),
+          CRM_Utils_System::url('civicrm/dashboard', 'reset=1')
+        );
+      }
     }
-
-    $urlString = NULL;
-    $urlParams = 'force=1';
-
-    switch ($context) {
-      case 'custom':
-        $urlString = 'civicrm/contact/search/custom';
-        break;
-
-      case 'fulltext':
-        $urlString = 'civicrm/contact/search/custom';
-        if ( $qfKey ) {
-          $urlParams = '_qf_Custom_display=true';
-        }
-        break;
-
-      case 'advanced':
-        $urlString = 'civicrm/contact/search/advanced';
-        break;
-
-      case 'builder':
-        $urlString = 'civicrm/contact/search/builder';
-        break;
-
-      case 'basic':
-        $urlString = 'civicrm/contact/search/basic';
-        break;
-
-      case 'search':
-        $urlString = 'civicrm/contact/search';
-        break;
-
-      case 'smog':
-      case 'amtg':
-        $urlString = 'civicrm/group/search';
-        break;
-    }
-    if ($qfKey) {
-      $urlParams .= "&qfKey=$qfKey";
-    }
-    if (!$urlString) {
-      $urlString = 'civicrm/contact/search/basic';
-    }
-
-    return CRM_Utils_System::url($urlString, $urlParams);
+    return $this->_contactId;
   }
+
 }

@@ -22,7 +22,7 @@ class CRM_Contactlayout_BAO_ContactLayout extends CRM_Contactlayout_DAO_ContactL
       ->first();
 
     $get = \Civi\Api4\ContactLayout::get()
-      ->addSelect('label', 'blocks', 'tabs', 'groups')
+      ->addSelect('label', 'blocks', 'tabs', 'groups', 'contact_sub_type', 'settings')
       ->addClause('OR', ['contact_type', 'IS NULL'], ['contact_type', '=', $contact['contact_type']])
       ->addOrderBy('weight');
 
@@ -35,13 +35,33 @@ class CRM_Contactlayout_BAO_ContactLayout extends CRM_Contactlayout_DAO_ContactL
     }
     $get->addClause('OR', $subClauses);
 
+    // Loop over candidate layouts to return the first match
     foreach ($get->execute() as $layout) {
-      if (self::checkGroupFilter($uid, $layout)) {
+      if (self::checkSubtypeFilter($contact, $layout) && self::checkGroupFilter($uid, $layout)) {
         self::loadBlocks($layout, $contact['contact_type']);
         return $layout;
       }
     }
     return NULL;
+  }
+
+  /**
+   * Check if the user matches the sub_type filter for a layout
+   *
+   * @param array $contact
+   * @param array $layout
+   *
+   * @return bool
+   */
+  private static function checkSubtypeFilter($contact, $layout) {
+    // AND operator, check if the contact matches all layout sub_type(s)
+    if (!empty($layout['contact_sub_type']) && ($layout['settings']['sub_type_operator'] ?? 'OR') === 'AND') {
+      if (array_diff($layout['contact_sub_type'], $contact['contact_sub_type'] ?? [])) {
+        return FALSE;
+      }
+    }
+    // OR operator, the layout was already selected based on contact sub_type(s)
+    return TRUE;
   }
 
   /**
@@ -463,7 +483,7 @@ class CRM_Contactlayout_BAO_ContactLayout extends CRM_Contactlayout_DAO_ContactL
       $block =& $blocks['profile']['blocks'][$profile['uf_group_id.name']];
       foreach ($profile['field_names'] as $fieldName) {
         $fieldName = strtolower($fieldName);
-        if (strpos($fieldName, 'custom_') === 0) {
+        if (str_starts_with($fieldName, 'custom_')) {
           list(, $customId) = explode('_', $fieldName);
           foreach ($customFields as $selector => $fields) {
             if (in_array($customId, $fields) && !in_array($selector, $block['refresh'])) {

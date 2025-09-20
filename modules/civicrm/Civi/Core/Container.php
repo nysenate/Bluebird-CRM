@@ -159,12 +159,6 @@ class Container {
     ))
       ->setFactory([new Reference(self::SELF), 'createApiKernel'])->setPublic(TRUE);
 
-    $container->setDefinition('cxn_reg_client', new Definition(
-      'Civi\Cxn\Rpc\RegistrationClient',
-      []
-    ))
-      ->setFactory('CRM_Cxn_BAO_Cxn::createRegistrationClient')->setPublic(TRUE);
-
     $container->setDefinition('psr_log', new Definition('CRM_Core_Error_Log', []))->setPublic(TRUE);
     $container->setDefinition('psr_log_manager', new Definition('Civi\Core\LogManager', []))->setPublic(TRUE);
     // With the default log-manager, you may overload a channel by defining a service, e.g.
@@ -179,13 +173,14 @@ class Container {
       // Putting session-cache in global scope means that QF form-state will endure across upgrades.
       // (*For better or worse -- mostly better.*)
       'session' => ['name' => 'CiviCRM Session', 'scope' => 'global'],
-      'long' => [],
+      'long' => ['withArray' => 'fast'],
       'groups' => ['name' => 'contact groups', 'withArray' => 'fast'],
       'navigation' => ['withArray' => 'fast'],
       'customData' => ['name' => 'custom data', 'withArray' => 'fast'],
       'fields' => ['name' => 'contact fields', 'withArray' => 'fast'],
       'contactTypes' => ['withArray' => 'fast'],
       'metadata' => ['withArray' => 'fast'],
+      'angular' => ['withArray' => 'fast'],
     ];
     // Use the FastArrayDecorator on caches where (1) we don't really care about TTL,
     // (2) they're accessed frequently, (3) there's not much risk of concurrency issues.
@@ -482,7 +477,7 @@ class Container {
 
     $dispatcher->addListener('civi.core.install', ['\Civi\Core\InstallationCanary', 'check']);
     $dispatcher->addListener('civi.core.install', ['\Civi\Core\DatabaseInitializer', 'initialize']);
-    $dispatcher->addListener('civi.core.install', ['\Civi\Core\LocalizationInitializer', 'initialize']);
+    $dispatcher->addListener('&civi.mailing.track', ['CRM_Mailing_BAO_MailingTrackableURL', 'on_civi_mailing_track'], -500);
     $dispatcher->addListener('hook_civicrm_post', ['\CRM_Core_Transaction', 'addPostCommit'], -1000);
     $dispatcher->addListener('hook_civicrm_pre', $aliasEvent('hook_civicrm_pre', 'entity'), 100);
     $dispatcher->addListener('civi.dao.preDelete', ['\CRM_Core_BAO_EntityTag', 'preDeleteOtherEntity']);
@@ -572,10 +567,11 @@ class Container {
          FROM civicrm_file cf
          LEFT JOIN civicrm_entity_file cef ON cf.id = cef.file_id
          WHERE cf.id = %1',
-      // Get a list of custom fields (field_name,table_name,extends)
+      // Get a list of custom fields (field_name,table_name,extends,column_name)
       'SELECT concat("custom_",fld.id) as field_name,
         grp.table_name as table_name,
-        grp.extends as extends
+        grp.extends as extends,
+        fld.column_name
        FROM civicrm_custom_field fld
        INNER JOIN civicrm_custom_group grp ON fld.custom_group_id = grp.id
        WHERE fld.data_type = "File"
@@ -697,6 +693,9 @@ class Container {
     $bootServices['lockManager'] = self::createLockManager();
 
     if ($loadFromDB && $runtime->dsn) {
+      if (defined('CIVICRM_BOOTSTRAP_FORBIDDEN')) {
+        throw new \LogicException("This process should not bootstrap CiviCRM. (CIVICRM_BOOTSTRAP_FORBIDDEN)");
+      }
       \CRM_Core_DAO::init($runtime->dsn);
       $bootServices['settings_manager']->dbAvailable();
       \CRM_Utils_Hook::singleton(TRUE);

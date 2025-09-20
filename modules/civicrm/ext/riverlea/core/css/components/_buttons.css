@@ -86,7 +86,8 @@
 }
 .crm-container .crm-button-type-cancel,
 .crm-form-submit .cancel.crm-button,
-.crm-container button.ui-button:has(.fa-times) {
+.crm-container button.ui-button:has(.fa-times),
+#bootstrap-theme button.btn-secondary-outline {
   background: var(--crm-c-secondary);
   color: var(--crm-c-secondary-text);
 }
@@ -105,7 +106,9 @@
 .crm-container .crm-button-type-cancel:hover,
 .crm-container .crm-button-type-cancel:focus,
 .crm-container button.ui-button:has(.fa-times):hover,
-.crm-container button.ui-button:has(.fa-times):focus {
+.crm-container button.ui-button:has(.fa-times):focus,
+#bootstrap-theme button.btn-secondary-outline:hover,
+#bootstrap-theme button.btn-secondary-outline:focus {
   background: var(--crm-c-secondary-hover);
   color: var(--crm-c-secondary-hover-text);
 }
@@ -150,13 +153,13 @@
   color: var(--crm-btn-success-text);
 }
 #bootstrap-theme .btn-danger {
-  background: var(--crm-btn-alert-bg);
-  color: var(--crm-btn-alert-text);
+  background: var(--crm-btn-danger-bg);
+  color: var(--crm-btn-danger-text);
 }
 #bootstrap-theme .btn.btn-danger:hover,
 #bootstrap-theme .btn.btn-danger:focus {
-  background: linear-gradient(to top,rgba(0, 0, 0, 0.125),rgba(0, 0, 0, 0.125)) var(--crm-btn-alert-bg);
-  color: var(--crm-btn-alert-text);
+  background: linear-gradient(to top,rgba(0, 0, 0, 0.125),rgba(0, 0, 0, 0.125)) var(--crm-btn-danger-bg);
+  color: var(--crm-btn-danger-text);
 }
 
 /* BS3 size options */
@@ -186,6 +189,7 @@
 #bootstrap-theme .btn-block {
   display: block;
   width: 100%;
+  max-width: 100%;
 }
 #bootstrap-theme .btn-block + .btn-block {
   margin-top: 5px;
@@ -294,10 +298,11 @@
 
 /* BS3 Button groups and dropdowns  */
 
-.crm-search-col-type-buttons,
-#bootstrap-theme td.text-right:has(.btn + .btn) {
+#bootstrap-theme td.text-right:has(.btn + .btn),
+.crm-container .crm-buttons {
   display: flex;
   gap: var(--crm-s);
+  flex-wrap: wrap;
 }
 #bootstrap-theme td.text-right:has(.btn + .btn) {
   justify-content: end;
@@ -317,6 +322,10 @@
   position: relative;
   display: inline-block;
   vertical-align: middle;
+}
+#bootstrap-theme > .btn-group.pull-right {
+  margin-block: var(--crm-padding-reg);
+  margin-left: var(--crm-flex-gap);
 }
 #bootstrap-theme .btn-group > .btn,
 #bootstrap-theme .btn-group-vertical > .btn {
@@ -561,6 +570,10 @@
 #bootstrap-theme .btn-group button.btn-xs .caret {
   margin: 0 8px 0 0;
 }
+/* #bootstrap-theme .btn-group-xs button:has(.crm-i) .caret,
+#bootstrap-theme .btn-group button.btn-xs:has(.crm-i) .caret {
+  margin: 0;
+} */
 .crm-container .button span i.crm-i {
   margin-right: var(--crm-btn-icon-spacing);
 }
@@ -576,13 +589,14 @@
   height: auto;
   padding: var(--crm-s2) var(--crm-btn-icon-spacing) var(--crm-s2) var(--crm-m1);
 }
-#bootstrap-theme .btn-group-xs > .btn:has(i.crm-i),
-#bootstrap-theme .btn-group-xs > .btn + .dropdown-toggle:has(i.crm-i),
-.crm-container button.dropdown-toggle.btn-xs:has(i.crm-i) {
-  padding: 0;
-}
 #bootstrap-theme .btn-group-xs button:has(i.crm-i) {
   padding: 0 var(--crm-s2) 0 0;
+}
+#bootstrap-theme .btn-xs:has(i.crm-i),
+#bootstrap-theme .btn-group > .btn-xs + .dropdown-toggle:has(i.crm-i),
+#bootstrap-theme .btn-group-xs > .btn + .dropdown-toggle:has(i.crm-i),
+.crm-container button.dropdown-toggle.btn-xs:has(i.crm-i) {
+  padding: var(--crm-btn-icon-padding) var(--crm-m) var(--crm-btn-icon-padding) 0
 }
 #bootstrap-theme .btn-xs i.crm-i,
 #bootstrap-theme .btn-group-xs > .btn i.crm-i {

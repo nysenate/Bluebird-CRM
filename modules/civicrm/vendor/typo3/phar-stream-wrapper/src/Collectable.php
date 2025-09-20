@@ -16,23 +16,9 @@ use TYPO3\PharStreamWrapper\Resolver\PharInvocation;
 
 interface Collectable
 {
-    /**
-     * @param PharInvocation $invocation
-     * @return bool
-     */
     public function has(PharInvocation $invocation): bool;
 
-    /**
-     * @param PharInvocation $invocation
-     * @param int|null $flags
-     * @return bool
-     */
-    public function collect(PharInvocation $invocation, int $flags = null): bool;
+    public function collect(PharInvocation $invocation, ?int $flags = null): bool;
 
-    /**
-     * @param callable $callback
-     * @param bool $reverse
-     * @return null|PharInvocation
-     */
-    public function findByCallback(callable $callback, $reverse = false);
+    public function findByCallback(callable $callback, bool $reverse = false): ?PharInvocation;
 }

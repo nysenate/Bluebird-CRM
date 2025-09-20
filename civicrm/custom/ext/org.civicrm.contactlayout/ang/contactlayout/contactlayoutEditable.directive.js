@@ -1,4 +1,5 @@
 (function(angular, $, _) {
+  "use strict";
 
   // Editable titles using ngModel & html5 contenteditable
   angular.module('contactlayout').directive("contactLayoutEditable", function() {
@@ -6,10 +7,10 @@
       restrict: "A",
       require: "ngModel",
       link: function(scope, element, attrs, ngModel) {
-        var ts = CRM.ts('contactlayout');
+        const ts = CRM.ts('contactlayout');
 
         function read() {
-          var htmlVal = element.html();
+          let htmlVal = element.html();
           if (!htmlVal) {
             htmlVal = ts('Untitled');
             element.html(htmlVal);

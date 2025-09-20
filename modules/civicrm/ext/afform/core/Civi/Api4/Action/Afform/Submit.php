@@ -66,11 +66,29 @@ class Submit extends AbstractProcessor {
         $status = 'Pending';
       }
 
-      $submission = AfformSubmission::create(FALSE)
-        ->addValue('contact_id', \CRM_Core_Session::getLoggedInContactID())
-        ->addValue('afform_name', $this->name)
-        ->addValue('data', $this->getValues())
-        ->addValue('status_id:name', $status)
+      $userId = \CRM_Core_Session::getLoggedInContactID();
+
+      $submissionRecord = [
+        'contact_id' => $userId,
+        'afform_name' => $this->name,
+        'data' => $this->getValues(),
+        'status_id:name' => $status,
+      ];
+      // Update draft if it exists
+      if ($userId) {
+        $draft = AfformSubmission::get(FALSE)
+          ->addWhere('contact_id', '=', $userId)
+          ->addWhere('status_id:name', '=', 'Draft')
+          ->addWhere('afform_name', '=', $this->name)
+          ->addSelect('id')
+          ->execute()->first();
+        if ($draft) {
+          $submissionRecord['id'] = $draft['id'];
+        }
+      }
+
+      $submission = AfformSubmission::save(FALSE)
+        ->addRecord($submissionRecord)
         ->execute()->first();
     }
 
@@ -245,8 +263,17 @@ class Submit extends AbstractProcessor {
     if (isset($attributes['defn']['required']) && !$attributes['defn']['required']) {
       return NULL;
     }
+    // InputType set to 'DisplayOnly' which skips validation
+    if (($attributes['defn']['input_type'] ?? NULL) === 'DisplayOnly') {
+      return NULL;
+    }
+    // Load full field definition, because $attributes['defn'] only has the form markup
     $fullDefn = FormDataModel::getField($apiEntity, $fieldName, 'create');
 
+    // With the full definition loaded, check input_type again
+    if (($attributes['defn']['input_type'] ?? $fullDefn['input_type']) === 'DisplayOnly') {
+      return NULL;
+    }
     // we don't need to validate the file fields as it's handled separately
     if ($fullDefn['input_type'] === 'File') {
       return NULL;
@@ -286,8 +313,8 @@ class Submit extends AbstractProcessor {
       $fullDefn = FormDataModel::getField($apiEntity, $fieldName, 'create');
       $maxlength = $fullDefn['input_attrs']['maxlength'] ?? NULL;
     }
-
-    if ($maxlength && strlen($value) > $maxlength) {
+    // Use mb_strlen() which better matches the behavior of javascript's String.length
+    if ($maxlength && mb_strlen($value) > $maxlength) {
       $fullDefn ??= FormDataModel::getField($apiEntity, $fieldName, 'create');
       $label = $attributes['defn']['label'] ?? $fullDefn['label'] ?? $fieldName;
       return E::ts('%1 has a max length of %2.', [1 => $label, 2 => $maxlength]);

@@ -14,6 +14,11 @@
         status,
         args,
         submissionResponse,
+        autoSave = _.noop,
+        saveDraftButtons = [],
+        draftStatus = 'pristine',
+        cancelDraftWatcher,
+        uploadingDraftFiles = false,
         ts = CRM.ts('org.civicrm.afform'),
         ctrl = this;
 
@@ -21,7 +26,12 @@
         // This component has no template. It makes its controller available within it by adding it to the parent scope.
         $scope.$parent[this.ctrl] = this;
 
-        $timeout(ctrl.loadData);
+        $timeout(function() {
+          ctrl.loadData()
+            .then(setupDraftWatcher);
+
+          ctrl.showSubmitButton = displaySubmitButton(args);
+        });
       };
 
       this.registerEntity = function registerEntity(entity) {
@@ -39,6 +49,7 @@
         return schema[name];
       };
       // Returns the 'meta' record ('name', 'description', etc) of the active form.
+      // @see afform_civicrm_buildAsset() for whitelist of form metadata
       this.getFormMeta = function getFormMeta() {
         return $scope.$parent.meta;
       };
@@ -79,25 +90,32 @@
             }
           });
           params.args = args;
+          ctrl.showSubmitButton = displaySubmitButton(args);
         }
         if (toLoad) {
-          crmApi4('Afform', 'prefill', params)
+          if (params.fillMode === 'form') {
+            $element.block();
+          }
+          return crmApi4('Afform', 'prefill', params)
             .then((result) => {
               // In some cases (noticed on Wordpress) the response header incorrectly outputs success when there's an error.
               if (result.error_message) {
                 disableForm(result.error_message);
+                $element.unblock();
                 return;
               }
               result.forEach((item) => {
                 // Use _.each() because item.values could be cast as an object if array keys are not sequential
                 _.each(item.values, (values, index) => {
                   data[item.name][index] = data[item.name][index] || {};
-                  data[item.name][index].joins = {};
+                  data[item.name][index].joins = data[item.name][index].joins || {};
                   angular.merge(data[item.name][index], values, {fields: _.cloneDeep(schema[item.name].data || {})});
                 });
               });
+              $element.unblock();
             }, (error) => {
               disableForm(error.error_message);
+              $element.unblock();
             });
         }
         // Clear existing join selection
@@ -112,8 +130,6 @@
           angular.merge(data[selectedEntity][selectedIndex].fields, _.cloneDeep(schema[selectedEntity].data || {}));
           data[selectedEntity][selectedIndex].joins = {};
         }
-
-        ctrl.showSubmitButton = displaySubmitButton(args);
       };
 
       function displaySubmitButton(args) {
@@ -124,15 +140,82 @@
       }
 
       // Used when submitting file fields
+      var token = new URLSearchParams(window.location.search).get('_aff');
+      var headers = {'X-Requested-With': 'XMLHttpRequest'};
+      if (token) {
+        headers['X-Civi-Auth-Afform'] = token;
+      }
       this.fileUploader = new FileUploader({
         url: CRM.url('civicrm/ajax/api4/Afform/submitFile'),
-        headers: {'X-Requested-With': 'XMLHttpRequest'},
-        onCompleteAll: postProcess,
+        headers: headers,
+        onAfterAddingFile: function(item) {
+          setDraftStatus('unsaved');
+        },
+        onSuccessItem: onFileUploadSuccess,
+        onCompleteAll: onFileUploadsComplete,
         onBeforeUploadItem: function(item) {
           status.resolve();
           status = CRM.status({start: ts('Uploading %1', {1: item.file.name})});
         }
       });
+
+      function onFileUploadSuccess(item, response, status, headers) {
+        if (response.values && response.values[0] && response.values[0].id) {
+          var dataProvider = item.crmDataProvider;
+          dataProvider.getFieldData()[item.crmFieldName] = response.values[0];
+        }
+      }
+
+      function onFileUploadsComplete() {
+        if (uploadingDraftFiles) {
+          uploadingDraftFiles = false;
+          setDraftStatus('saved');
+          //
+          if (draftStatus === 'unsaved') {
+            autoSave();
+          }
+          status.resolve();
+        } else {
+          postProcess();
+        }
+      }
+
+      // Set up background tasks for saving draft
+      function setupDraftWatcher() {
+        const buttons = getDraftButtons();
+        const autoSaveEnabled = ctrl.getFormMeta().autosave_draft;
+
+        if ((!autoSaveEnabled && !buttons.length) || !ctrl.showSubmitButton || !CRM.config.cid) {
+          // No watchers needed
+          return;
+        }
+
+        // Store initial state of any save-draft buttons on the form
+        $.each(buttons, function(index, button) {
+          saveDraftButtons[index] = {
+            text: $(button).text(),
+            icon: $(button).attr('crm-icon'),
+          };
+        });
+
+        // If autosave enabled, save every ten seconds if changes have been made
+        if (autoSaveEnabled) {
+          autoSave = _.debounce(ctrl.submitDraft, 10000);
+        }
+
+        cancelDraftWatcher = $scope.$watch(() => data, function (newVal, oldVal) {
+            if (oldVal) {
+              if (draftStatus === 'pristine') {
+                setDraftStatus('saved');
+              } else {
+                setDraftStatus('unsaved');
+                autoSave(newVal);
+              }
+            }
+          },
+          true
+        );
+      }
 
       // Handle the logic for conditional fields
       this.checkConditions = function(conditions, op) {
@@ -252,7 +335,14 @@
           dialog.dialog('close');
         }
 
-        else if (metaData.redirect) {
+        else if (metaData.confirmation_type && metaData.confirmation_type === 'show_confirmation_message') {
+          $element.hide();
+          const $confirmation = $('<div class="afform-confirmation" />');
+          $confirmation.text(metaData.confirmation_message);
+          $confirmation.insertAfter($element);
+        }
+
+        else if ((!metaData.confirmation_type && metaData.redirect ) || (metaData.confirmation_type && metaData.confirmation_type === 'redirect_to_url' && metaData.redirect)) {
           var url = replaceTokens(metaData.redirect, submissionResponse[0]);
           if (url.indexOf('civicrm/') === 0) {
             url = CRM.url(url);
@@ -305,6 +395,9 @@
         }
         status = CRM.status({});
         $element.block();
+        if (cancelDraftWatcher) {
+          cancelDraftWatcher();
+        }
 
         crmApi4('Afform', 'submit', {
           name: ctrl.getFormMeta().name,
@@ -332,6 +425,79 @@
           CRM.alert(error.error_message || '', ts('Form Error'));
         });
       };
+
+      this.submitDraft = function() {
+        if (uploadingDraftFiles) {
+          return;
+        }
+        setDraftStatus('saving');
+        status = CRM.status({start: ts('Saving Draft'), success: ts('Draft saved')});
+        crmApi4('Afform', 'submitDraft', {
+          name: ctrl.getFormMeta().name,
+          args: args,
+          values: data,
+        }).then(function(response) {
+          status.resolve();
+          if (ctrl.fileUploader.getNotUploadedItems().length) {
+            uploadingDraftFiles = true;
+            _.each(ctrl.fileUploader.getNotUploadedItems(), function(file) {
+              file.formData.push({
+                params: JSON.stringify(_.extend({
+                  name: ctrl.getFormMeta().name
+                }, file.crmApiParams()))
+              });
+            });
+            ctrl.fileUploader.uploadAll();
+          } else {
+            setDraftStatus('saved');
+          }
+        });
+      };
+
+      function getDraftButtons() {
+        return $element.find('button[ng-click="afform.submitDraft()"]');
+      }
+
+      function setDraftStatus(newStatus) {
+        if (draftStatus === newStatus) {
+          return;
+        }
+        if (draftStatus === 'unsaved' && newStatus === 'saved') {
+          // If form was altered during a save operation, keep the 'unsaved' status
+          return;
+        }
+        // Setting to 'unsaved' - restore buttons to initial state
+        if (newStatus === 'unsaved' && !uploadingDraftFiles) {
+          restoreDraftButtons();
+        }
+        // Change icon, text & disable button for 'saving' or 'saved' status
+        else if (!uploadingDraftFiles) {
+          const newText = newStatus === 'saving' ? ts('Saving Draft') : ts('Draft Saved');
+          const newIcon = newStatus === 'saving' ? 'fa-spinner fa-spin' : 'fa-check';
+          disableDraftButtons(newText, newIcon);
+        }
+        draftStatus = newStatus;
+      }
+
+      function disableDraftButtons(text, icon) {
+        const buttons = getDraftButtons();
+        $.each(buttons, function(index, button) {
+          $(button).text(text).attr('disabled', true);
+          $(button).prepend('<i class="crm-i ' + icon + '" aria-hidden="true"></i> ');
+        });
+      }
+
+      function restoreDraftButtons() {
+        const buttons = getDraftButtons();
+        $.each(buttons, function(index, button) {
+          const initialState = saveDraftButtons[index] || saveDraftButtons[0];
+          $(button).text(initialState.text).attr('disabled', false);
+          if (initialState.icon) {
+            $(button).prepend('<i class="crm-i ' + saveDraftButtons[index].icon + '" aria-hidden="true"></i> ');
+          }
+        });
+      }
+
     }
   });
 })(angular, CRM.$, CRM._);

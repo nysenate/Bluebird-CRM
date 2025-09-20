@@ -32,7 +32,6 @@ function dao_civicrm_enable() {
 function dao_civicrm_entityTypes(&$entityTypes) {
   $entityTypes['Contact']['fields_callback'][] = function($class, &$fields) {
     $fields['do_not_trade']['title'] = 'Undeliverable: Do Not Mail';//4766
-    $fields['preferred_mail_format']['title'] = 'Preferred Email Format';
 
     //set fields that should not be exportable
     $fields['user_unique_id']['export'] = FALSE;//2719

@@ -6,7 +6,6 @@ $vendorDir = dirname(__DIR__);
 $baseDir = dirname($vendorDir);
 
 return array(
-    $vendorDir . '/tecnickcom',
     $vendorDir . '/pear/auth_sasl',
     $vendorDir . '/pear/pear_exception',
     $vendorDir . '/pear/console_getopt',

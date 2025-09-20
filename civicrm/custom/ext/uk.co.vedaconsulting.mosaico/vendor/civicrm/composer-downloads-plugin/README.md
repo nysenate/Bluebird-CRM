@@ -3,10 +3,6 @@ Composer Downloads Plugin
 
 The "Downloads" plugin allows you to download extra files (`*.zip` or `*.tar.gz`) and extract them within your package.
 
-This is an updated version of [lastcall/composer-extra-files](https://github.com/LastCallMedia/ComposerExtraFiles/).
-It adds integration tests, fixes some bugs, and makes a few other improvements. Some of the
-configuration options have changed, so it has been renamed to prevent it from conflicting in real-world usage.
-
 ## Example
 
 Suppose you publish a PHP package `foo/bar` which relies on an external artifact `examplelib-0.1.zip`. Place this configuration in the `composer.json` for `foo/bar`:
@@ -15,7 +11,7 @@ Suppose you publish a PHP package `foo/bar` which relies on an external artifact
 {
   "name": "foo/bar",
   "require": {
-    "civicrm/composer-downloads-plugin": "~2.1"
+    "civicrm/composer-downloads-plugin": "~3 || ~4"
   },
   "extra": {
     "downloads": {
@@ -30,6 +26,13 @@ Suppose you publish a PHP package `foo/bar` which relies on an external artifact
 ```
 
 When a downstream user of `foo/bar` runs `composer install`, it will fetch and extract the zip file, creating `vendor/foo/bar/extern/examplelib`. 
+
+## Release History
+
+* __v1.x__: Original release of [lastcall/composer-extra-files](https://github.com/LastCallMedia/ComposerExtraFiles/)
+* __v2.x__: Fork. Add test suite. Rename to `composer-downloads-plugin` (`extra.downloads`). Improve tracking/redownload behaviors. Add more download options. Expand docs.
+* __v3.x__: Add support for composer v2.
+* __v4.x__: Improve PHP 8.2+. Swap gitignore parser. Drop composer v1.
 
 ## Evaluation
 

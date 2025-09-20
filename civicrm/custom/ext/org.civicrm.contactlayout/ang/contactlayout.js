@@ -1,11 +1,13 @@
 (function(angular, $, _) {
+  "use strict";
+
   // Define module & autoload dependencies.
   angular.module('contactlayout', CRM.angRequires('contactlayout'))
 
     // Service for loading relationship type options and displaying loading state.
     .service('contactLayoutRelationshipOptions', function() {
-      var RELATIONSHIP_TYPES = CRM.vars.contactlayout.relationshipTypes;
-      var service = this;
+      const RELATIONSHIP_TYPES = CRM.vars.contactlayout.relationshipTypes;
+      const service = this;
 
       service.options = formatRelationshipOptions(RELATIONSHIP_TYPES);
       service.getRelationshipFromOption = getRelationshipFromOption;
@@ -15,7 +17,7 @@
       function formatRelationshipOptions (relationshipTypeResponse) {
         return _.chain(relationshipTypeResponse)
           .reduce(function (result, relationshipType) {
-            var isReciprocal = relationshipType.label_a_b === relationshipType.label_b_a;
+            const isReciprocal = relationshipType.label_a_b === relationshipType.label_b_a;
 
             if (isReciprocal) {
               result.push({ id: relationshipType.id + '_r', text: relationshipType.label_a_b });
@@ -32,9 +34,9 @@
 
       // Returns the relationship type data and direction for the given relationship option
       function getRelationshipFromOption (relationshipOption) {
-        var relationship = relationshipOption.split('_');
-        var relationshipTypeId = parseInt(relationship[0], 10);
-        var relationshipType = _.find(RELATIONSHIP_TYPES, { id: relationshipTypeId });
+        const relationship = relationshipOption.split('_');
+        const relationshipTypeId = parseInt(relationship[0], 10);
+        const relationshipType = _.find(RELATIONSHIP_TYPES, { id: relationshipTypeId });
 
         return {
           type: relationshipType,

@@ -60,15 +60,7 @@ class CRM_Utils_Mail {
        * Use the host name of the web server, falling back to the base URL
        * (eg when using the PHP CLI), and then falling back to localhost.
        */
-      $params['localhost'] = CRM_Utils_Array::value(
-        'SERVER_NAME',
-        $_SERVER,
-        CRM_Utils_Array::value(
-          'host',
-          parse_url(CIVICRM_UF_BASEURL),
-          'localhost'
-        )
-      );
+      $params['localhost'] = $_SERVER['SERVER_NAME'] ?? parse_url(CIVICRM_UF_BASEURL)['host'] ?? 'localhost';
 
       // also set the timeout value, lets set it to 30 seconds
       // CRM-7510
@@ -191,6 +183,14 @@ class CRM_Utils_Mail {
     // TODO: Refactor this quirk-handler as another filter in FilteredPearMailer. But that would merit review of impact on universe.
     $driver = ($mailer instanceof CRM_Utils_Mail_FilteredPearMailer) ? $mailer->getDriver() : NULL;
     $isPhpMail = (get_class($mailer) === "Mail_mail" || $driver === 'mail');
+    $originalValues = [
+      'html' => $params['html'] ?? NULL,
+      'text' => $params['text'] ?? NULL,
+      'attachments' => $params['attachments'] ?? [],
+      // bcc comes in as a comma-separated string of email addresses in $params['bcc'] and is copied to $headers['Bcc']
+      // Eg. testbcc@test.com,testanotherbcc@test.com
+      'bcc' => $headers['Bcc'] ?? NULL,
+    ];
     if (!$isPhpMail) {
       // get emails from headers, since these are
       // combination of name and email addresses.
@@ -205,7 +205,11 @@ class CRM_Utils_Mail {
 
     if (is_object($mailer)) {
       try {
-        $result = $mailer->send($to, $headers, $message ?? '');
+        // Note that we pass out `$originalValues` to make them available where the
+        // mailer has been replaced byt an alternate library - eg.
+        // https://github.com/eileenmcnaughton/symfony_mailer
+        // Also see https://github.com/civicrm/civicrm-core/pull/31842
+        $result = $mailer->send($to, $headers, $message ?? '', $originalValues);
       }
       catch (Exception $e) {
         \Civi::log()->error('Mailing error: ' . $e->getMessage());
@@ -239,7 +243,6 @@ class CRM_Utils_Mail {
    */
   public static function sendTest($mailer, array &$params): bool {
     CRM_Utils_Hook::alterMailParams($params, 'testEmail');
-    $message = $params['text'];
     $to = $params['toEmail'];
 
     list($headers, $message) = self::setEmailHeaders($params);
@@ -253,7 +256,15 @@ class CRM_Utils_Mail {
     $mailerName = $mailer->getDriver() ?? '';
 
     try {
-      $mailer->send($to, $headers, $message);
+      $originalValues = [
+        'html' => $params['html'] ?? NULL,
+        'text' => $params['text'] ?? NULL,
+        'attachments' => $params['attachments'] ?? [],
+        // bcc comes in as a comma-separated string of email addresses in $params['bcc'] and is copied to $headers['Bcc']
+        // Eg. testbcc@test.com,testanotherbcc@test.com
+        'bcc' => $headers['Bcc'] ?? NULL,
+      ];
+      $mailer->send($to, $headers, $message, $originalValues);
 
       if (defined('CIVICRM_MAIL_LOG') && defined('CIVICRM_MAIL_LOG_AND_SEND')) {
         $testMailStatusMsg .= '<br />' . ts('You have defined CIVICRM_MAIL_LOG_AND_SEND - mail will be logged.') . '<br /><br />';
@@ -345,12 +356,12 @@ class CRM_Utils_Mail {
     $headers['Return-Path'] = $params['returnPath'] ?? $defaultReturnPath;
 
     // CRM-11295: Omit reply-to headers if empty; this avoids issues with overzealous mailservers
-    // dev/core#5301: Allow Reply-To to be set directly.
-    $replyTo = $params['Reply-To'] ?? ($params['replyTo'] ?? ($params['from'] ?? NULL));
+    $replyTo = $params['Reply-To'] ?? ($params['replyTo'] ?? NULL);
 
     if (!empty($replyTo)) {
       $headers['Reply-To'] = $replyTo;
     }
+
     $headers['Date'] = date('r');
     if ($includeMessageId) {
       $headers['Message-ID'] = $params['messageId'] ?? '<' . uniqid('civicrm_', TRUE) . "@$emailDomain>";
@@ -367,13 +378,18 @@ class CRM_Utils_Mail {
     }
 
     // quote FROM, if comma is detected AND is not already quoted. CRM-7053
-    if (strpos($headers['From'], ',') !== FALSE) {
+    if (str_contains($headers['From'], ',')) {
       $from = explode(' <', $headers['From']);
       $headers['From'] = self::formatRFC822Email(
         $from[0],
         substr(trim($from[1]), 0, -1),
         TRUE
       );
+    }
+
+    // dev/core#5301: Allow Reply-To to be set directly.
+    if (empty($replyTo)) {
+      $headers['Reply-To'] = $headers['From'];
     }
 
     require_once 'Mail/mime.php';
@@ -395,7 +411,7 @@ class CRM_Utils_Mail {
           TRUE,
           'base64',
           'attachment',
-          (isset($attach['charset']) ? $attach['charset'] : ''),
+          ($attach['charset'] ?? ''),
           '',
           '',
           NULL,
@@ -430,7 +446,7 @@ class CRM_Utils_Mail {
       $message .= '<ul>' . '<li>' . ts('Your Sendmail path is incorrect.') . '</li>' . '<li>' . ts('Your Sendmail argument is incorrect.') . '</li>';
     }
 
-    $message .= '<li>' . ts('The FROM Email Address configured for this feature may not be a valid sender based on your email service provider rules.') . '</li>' . '</ul>' . '<p>' . ts('Check <a href="%1">this page</a> for more information.', [
+    $message .= '<li>' . ts('The Site Email Address configured for this feature may not be a valid sender based on your email service provider rules.') . '</li>' . '</ul>' . '<p>' . ts('Check <a href="%1">this page</a> for more information.', [
       1 => CRM_Utils_System::docURL2('user/advanced-configuration/email-system-configuration', TRUE),
     ]) . '</p>';
 
@@ -537,7 +553,7 @@ class CRM_Utils_Mail {
         ['\<', '\"', '\>'],
         $name
       );
-      if (strpos($name, ',') !== FALSE ||
+      if (str_contains($name, ',') ||
         $useQuote
       ) {
         // quote the string if it has a comma
@@ -649,12 +665,16 @@ class CRM_Utils_Mail {
    * If it's numeric, look up the display name and email of the corresponding
    * contact ID in RFC822 format.
    *
-   * @param string $from
+   * @param string|array $from
    *   civicrm_email.id or formatted "From address", eg. 12 or "Fred Bloggs" <fred@example.org>
+   *   or array containing 'display_name' and 'email' keys.
    * @return string
    *   The RFC822-formatted email header (display name + address)
    */
   public static function formatFromAddress($from) {
+    if (is_array($from)) {
+      return "\"{$from['display_name']}\" <{$from['email']}>";
+    }
     if (is_numeric($from)) {
       $result = civicrm_api3('Email', 'get', [
         'id' => $from,

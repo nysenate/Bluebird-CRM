@@ -1,7 +1,7 @@
 /*
     Name: Thames;
     Description: Aaaaah;
-    Riverlea version: 1.1.0;
+    Riverlea version: 1.3.8;
 
     I have added 'thames' to lines I changed.
     This means I can track changes to the core variables with diff.
@@ -41,9 +41,8 @@
   --crm-c-blue-overlay: #dce9ef; /* thames only */
   --crm-c-blue-light: #d8edfe; /* thames */
   --crm-c-blue: #c5e4fc; /* thames */
-/* non-WCAG-AA --crm-c-blue-dark:     #2c98ed ; /* thames */
-  --crm-c-blue-dark: #127aca; /* thames */
-  --crm-c-blue-darker: #02477d; /* thames */
+  --crm-c-blue-dark: #0d5790; /* thames. nb #127aca not AAA on #f8f8f8  */
+  --crm-c-blue-darker: #033b67; /* thames */
   --crm-c-purple: #4d4d69;
   --crm-c-purple-dark: #3e3e54;
   --crm-c-green: #d6e9c6;
@@ -61,9 +60,8 @@
   --crm-c-teal: #63c4b9;
   --crm-c-dark-teal: #3e8079;
 /* PRACTICAL COLOURS */
-  --crm-c-text: #000000dd; /* thames */
-  --crm-c-light-text: #fff;
-  --crm-c-dark-text: var(--crm-c-text);
+  --crm-c-text-light: #fff;
+  --crm-c-text-dark: #000000dd; /* thames */
   --crm-c-link: var(--crm-c-blue-dark);
   --crm-c-link-hover: var(--crm-c-blue-darker);
   --crm-c-divider: 1px solid var(--crm-c-blue-overlay); /* thames */
@@ -75,24 +73,26 @@
   --crm-c-background5: var(--crm-c-gray-700);
   --crm-c-drag-background: var(--crm-c-blue-overlay2); /* background for drag/drop regions, select2 highlight */
   --crm-c-code-background: var(--crm-c-blue-overlay2); /* background for code regions */
+  --crm-c-focus: var(--crm-c-blue-dark);
+  --crm-c-inactive: #696969;
+  /* Emphasis colours */
   --crm-c-primary: var(--crm-c-blue-dark); /* primary button bgs */ /* thames */
   --crm-c-primary-hover: var(--crm-c-blue-darker); /* thames */
-  --crm-c-primary-text: var(--crm-c-light-text);
+  --crm-c-primary-text: var(--crm-c-text-light);
   --crm-c-primary-hover-text: white; /* thames */
   --crm-c-secondary: #c9e1f1; /* buttons */ /* thames */
   --crm-c-secondary-hover: #a1cef3; /* thames */
   --crm-c-secondary-text: var(--crm-c-blue-darker); /* thames */
-  --crm-c-secondary-hover-text: var(--crm-c-light-text); /* thames todo */
+  --crm-c-secondary-hover-text: var(--crm-c-text-light); /* thames todo */
+  --crm-c-secondary-on-page-bg: var(--crm-c-blue-darker);
   --crm-c-success: var(--crm-c-green-dark);
-  --crm-c-success-text: var(--crm-c-light-text);
-  --crm-c-alert: var(--crm-c-red-dark); /* thames */
-  --crm-c-alert-text: var(--crm-c-light-text);
+  --crm-c-success-text: var(--crm-c-text-light);
+  --crm-c-danger: var(--crm-c-red-dark); /* thames */
+  --crm-c-danger-text: var(--crm-c-text-light);
   --crm-c-warning: var(--crm-c-amber); /* bg on .btn-warning, .label-warming but border on notification .alert */
   --crm-c-warning-text: var(--crm-c-text);
   --crm-c-info: var(--crm-c-blue-dark);
-  --crm-c-info-text: var(--crm-c-light-text);
-  --crm-c-focus: var(--crm-c-blue-dark);
-  --crm-c-inactive: #696969;
+  --crm-c-info-text: var(--crm-c-text-light);
 }
 :root {
 /* thames only radii */
@@ -127,7 +127,7 @@
   --crm-xl: 3rem;
   --crm-xxl: 4rem;
   --crm-big-input: 15em;
-  --crm-huge-input: 100%; /* thames */
+  --crm-huge-input: 25em;
   --crm-padding-reg: var(--crm-r);
   --crm-padding-small: var(--crm-s);
   --crm-padding-inset: var(--crm-m);
@@ -170,8 +170,8 @@
   --crm-btn-warning-text: var(--crm-c-warning-text);
   --crm-btn-success-bg: var(--crm-c-info); /* thames */
   --crm-btn-success-text: #fff; /* thames */
-  --crm-btn-alert-bg: var(--crm-c-red);
-  --crm-btn-alert-text: var(--crm-c-red-dark);
+  --crm-btn-danger-bg: var(--crm-c-red);
+  --crm-btn-danger-text: var(--crm-c-red-dark);
   --crm-btn-icon-bg: unset;
   --crm-btn-icon-border: unset;
   --crm-btn-margin: var(--crm-m) 0;
@@ -207,6 +207,7 @@
   --crm-panel-background: white;
   --crm-panel-border: var(--crm-c-divider);
   --crm-panel-head-margin: 0px;
+  --crm-panel-head-height: 42px;
 }
 :root {
 /* Accordions */
@@ -251,18 +252,17 @@
   --crm-alert-margin: 0 0 var(--crm-m);
   --crm-alert-border-width: 0; /* thames */
 /* Note 'help' suffix here is for the 'success' boxes. */
-  --crm-alert-background-help: var(--crm-c-blue-light); /* thames */
-  --crm-alert-border-help: unset; /* thames */
-  --crm-alert-text-help: unset; /* thames */
-  --crm-alert-background-warning: var(--crm-c-yellow-light);
-  --crm-alert-border-warning: var(--crm-c-yellow);
-  --crm-alert-text-warning: var(--crm-c-text);
-  --crm-alert-background-info: var(--crm-c-blue-light);
-  --crm-alert-border-info: var(--crm-c-blue);
-  --crm-alert-text-info: var(--crm-c-blue-darker);
-  --crm-alert-background-danger: var(--crm-c-red-light);
-  --crm-alert-border-danger: var(--crm-c-red);
-  --crm-alert-text-danger: var(--crm-c-red-dark);
+  --crm-alert-success-bg: var(--crm-c-blue-light); /* thames */
+  --crm-alert-success-border: unset; /* thames */
+  --crm-alert-success-text: unset; /* thames */
+  --crm-alert-warning-text: var(--crm-c-text);
+  --crm-alert-warning-border: var(--crm-c-yellow);
+  --crm-alert-info-bg: var(--crm-c-blue-light);
+  --crm-alert-info-border: var(--crm-c-blue);
+  --crm-alert-info-text: var(--crm-c-blue-darker);
+  --crm-alert-danger-bg: var(--crm-c-red-light);
+  --crm-alert-danger-border: var(--crm-c-red);
+  --crm-alert-danger-text: var(--crm-c-red-dark);
 }
 :root {
 /* Form */
@@ -295,7 +295,6 @@
   --crm-fieldset-border-color: var(--crm-c-gray-400);
   --crm-fieldset-border: 1px 0 0 0;
   --crm-fieldset-padding: var(--crm-padding-reg) var(--crm-padding-small);
-  --crm-checkbox-list-col: var(--crm-c-text);
 }
 :root {
 /* Tabs */
@@ -307,7 +306,6 @@
   --crm-tab-bg-hover: var(--crm-c-blue-overlay);
   --crm-tab-bg-active: white;
   --crm-tab-hang: 0 0 calc(-1 * var(--crm-s)) 0; /* lip to extend tab flush with active region - set to 0 for no lip */ /* thames todo check */
-  --crm-tab-padding: var(--crm-s3) var(--crm-m) var(--crm-s) var(--crm-m);
   --crm-tab-padding: var(--crm-m2) var(--crm-r1) var(--crm-m); /* thames todo check */
   --crm-tab-col: var(--crm-c-text);
   --crm-tab-weight: normal;
@@ -339,7 +337,7 @@
   --crm-dash-tab-border-width: 0; /* to remove border on one side for hanging tabs */
   --crm-dash-tab-col: unset; /* thames */
   --crm-dash-tab-count-bg: var(--crm-c-primary); /* thames */
-  --crm-dash-tab-count-col: var(--crm-c-light-text); /* thames */
+  --crm-dash-tab-count-col: var(--crm-c-text-light); /* thames */
   --crm-dash-tab-width: 100%;
   --crm-dash-tab-align: none;
   --crm-dash-tab-hang: 0 0 -1px 0; /* lip to extend tab flush with active region - set to 0 for no lip */ /* thames */
@@ -415,7 +413,7 @@
   --crm-dropdown-hover-bg: var(--crm-c-blue-light); /* thames */
   --crm-dropdown-border: 0;
   --crm-dropdown-width: 23ch; /* thames */
-  --crm-dropdown-alert-bg: transparent; /* thames */
+  --crm-dropdown-danger-bg: transparent; /* thames */
   --crm-dropdown-2-bg: var(--crm-c-secondary);
   --crm-dropdown-2-col: var(--crm-c-text);
   --crm-dropdown-2-padding: var(--crm-padding-small);
@@ -427,17 +425,21 @@
   --crm-notify-col: var(--crm-c-text); /* thames */
   --crm-notify-accent-border: 0.875rem 0 0 0; /* adds a border to one/several sides of the notification - set to 0 for none */ /* thames */
   --crm-notify-radius: 4px; /* thames */
+  --crm-notify-danger: var(--crm-c-danger);
+  --crm-notify-warning: var(--crm-c-warning);
+  --crm-notify-success: var(--crm-c-success);
+  --crm-notify-info: var(--crm-c-info);
 }
 :root {
 /* Icons */
-  --crm-icon-alert: "\f06a";
+  --crm-icon-danger: "\f06a";
   --crm-icon-success: "\f058";
   --crm-icon-info: "\f05a";
   --crm-icon-close: "\f00d";
   --crm-icon-sort: "\f0dc";
   --crm-icon-sort-desc: "\f0dd";
   --crm-icon-sort-asc: "\f0de";
-  --crm-icon-alert-color: inherit;
+  --crm-icon-danger-color: inherit;
   --crm-icon-success-color: inherit;
   --crm-icon-warning-color: inherit;
   --crm-icon-info-color: inherit;
@@ -449,7 +451,7 @@
   --crm-wizard-height: 30px;
   --crm-wizard-radius: var(--crm-l);
   --crm-wizard-angle: 0px;
-  --crm-wizard-active-col: var(--crm-c-light-text);
+  --crm-wizard-active-col: var(--crm-c-text-light);
   --crm-wizard-active-bg: var(--crm-c-link);
   --crm-wizard-border: var(--crm-c-divider);
   --crm-wizard-bg: var(--crm-c-page-background);
@@ -476,8 +478,9 @@
   --crm-f-form-layout: block; /* 'grid' = inline, 'block' = stacked */
   --crm-f-label-position: unset;
   --crm-f-label-align: left;
-  --crm-f-label-width: 200px;
   --crm-f-label-weight: bold;
+  --crm-f-label-margin: var(--crm-s);
+  --crm-f-label-width: unset;
   --crm-f-input-radius: var(--crm-roundness);
   --crm-f-input-padding: var(--crm-r2) var(--crm-m2);
   --crm-f-input-font-size: var(--crm-r1);

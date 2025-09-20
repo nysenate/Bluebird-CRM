@@ -1,4 +1,5 @@
 (function(angular, $, _) {
+  "use strict";
 
   angular.module('contactlayout').component('contactLayoutEditTabs', {
     bindings:  {
@@ -9,10 +10,11 @@
     },
     templateUrl: '~/contactlayout/contactLayoutEditTabs.html',
     controller: function($scope) {
-      var ts = $scope.ts = CRM.ts('contactlayout'),
-        ctrl = this,
-        editingTabIcon,
-        allTabs = _.indexBy(CRM.vars.contactlayout.tabs, 'id');
+      const ts = $scope.ts = CRM.ts('contactlayout');
+      const ctrl = this;
+      const allTabs = _.indexBy(CRM.vars.contactlayout.tabs, 'id');
+
+      let editingTabIcon;
 
       // Settings for ui-sortable
       this.sortableOptions = {
@@ -24,10 +26,10 @@
         // Check default & active tabsets for any missing tabs (e.g. from a newly-enabled extension)
         this.defaultTabs = angular.copy(this.defaults);
         CRM.vars.contactlayout.tabs.forEach((tab) => {
-          if (!_.findWhere(ctrl.defaultTabs, {id: tab.id})) {
+          if (!ctrl.defaultTabs.find(t => t.id === tab.id)) {
             ctrl.defaultTabs.push(angular.copy(tab));
           }
-          if (ctrl.layout.tabs && !_.findWhere(ctrl.layout.tabs, {id: tab.id})) {
+          if (ctrl.layout.tabs && !ctrl.layout.tabs.find(t => t.id === tab.id)) {
             ctrl.layout.tabs.push(angular.copy(tab));
           }
         });

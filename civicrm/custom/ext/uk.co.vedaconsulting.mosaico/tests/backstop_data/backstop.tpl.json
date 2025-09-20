@@ -31,10 +31,6 @@
       "onReadyScript": "mosaico/editor.js"
     },
     {
-      "label": "Mosaico - Migrate",
-      "url": "{url}/civicrm/admin/mosaico/migrate"
-    },
-    {
       "label": "Mosaico - Settings",
       "url": "{url}/civicrm/admin/mosaico"
     },

@@ -13,63 +13,77 @@
         this.cancelEditing();
       }],
 
+      startEditing: function(row, colIndex) {
+        if (this.editing === false && row.columns[colIndex].edit) {
+          this.editValues = {};
+          this.editing = row.key;
+          row.columns.forEach((col, index) => {
+            col.editing = (index === colIndex || (this.settings.editableRow && this.settings.editableRow.full));
+            col.focused = index === colIndex;
+          });
+        }
+      },
+
       startCreating: function() {
-        this.editing = [-1];
+        this.editing = -1;
         this.editValues = {};
       },
 
-      cancelEditing: function() {
+      cancelEditing: function(row) {
         this.editing = false;
         this.editValues = {};
+        if (row && row.columns) {
+          row.columns.forEach((col) => col.editing = false);
+        }
       },
 
-      saveEditing: function(rowIndex, colKey) {
+      saveEditing: function(row, colKey) {
         const ctrl = this;
         const apiParams = this.getApiParams(null);
-        let rowKey = null;
-        // Edit mode
-        if (rowIndex >= 0) {
-          rowKey = this.results[rowIndex].key;
+        // Edit mode (with no row given it's create mode)
+        if (row) {
           if (colKey) {
             const colIndex = this.settings.columns.findIndex(column => column.key === colKey);
-            this.results[rowIndex].columns[colIndex].loading = true;
+            row.columns[colIndex].loading = true;
           } else {
-            this.results[rowIndex].columns.forEach((col) => col.loading = true);
+            row.columns.forEach((col) => col.loading = true);
           }
-          apiParams.rowKey = rowKey;
+          apiParams.rowKey = row.key;
         }
         apiParams.values = this.editValues;
         this.cancelEditing();
 
         crmStatus({}, crmApi4('SearchDisplay', 'inlineEdit', apiParams))
           .then(function(result) {
-            // Create mode
-            if (rowIndex < 0 && result.length) {
-              ctrl.results.push(result[0]);
-              ctrl.rowCount++;
-            }
-            // Edit mode
-            else if (rowIndex >= 0) {
-              // Re-find rowIndex in case rows have shifted (possible race conditions with other editable rows)
-              const rowIndex = ctrl.results.findIndex(row => row.key === rowKey);
-              // If the api returned a refreshed row, replace the current row with it
-              if (result.length) {
-                angular.extend(ctrl.results[rowIndex], result[0]);
-              }
-              // Or it's possible that the update caused this row to no longer match filters, in which case remove it
-              else {
-                ctrl.results.splice(rowIndex, 1);
-                // Shift value of 'editing' if needed
-                if (ctrl.editing && ctrl.editing[0] > rowIndex) {
-                  ctrl.editing[0]--;
-                } else if (ctrl.editing && ctrl.editing[0] == rowIndex) {
-                  ctrl.cancelEditing();
-                }
-                ctrl.rowCount--;
-              }
-            }
+            ctrl.refreshAfterEditing(result, row ? row.key : null);
           });
       },
+
+      refreshAfterEditing: function(result, rowKey) {
+        // Create mode
+        if (!rowKey && result.length) {
+          this.results.push(result[0]);
+          this.rowCount++;
+          return;
+        }
+        const rowIndex = this.results.findIndex(result => result.key === rowKey);
+        // If the api returned a refreshed row, replace the current row with it
+        if (result.length && rowIndex >= 0) {
+          const row = this.results[rowIndex];
+          // Preserve hierarchical info like _descendents and _depth which isn't returned by the refresh
+          _.defaults(result[0].data, row.data);
+          // Note that extend() will preserve top-level items like 'collapsed' while replacing columns and data
+          angular.extend(row, result[0]);
+        }
+        // Or it's possible that the update caused this row to no longer match filters, in which case do a full refresh
+        else {
+          this.rowCount = null;
+          this.getResultsPronto();
+          // Trigger all other displays in the same form to update.
+          // This display won't update twice because of the debounce in getResultsPronto()
+          this.$element.trigger('crmPopupFormSuccess');
+        }
+      }
 
     };
   });

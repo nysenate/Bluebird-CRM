@@ -2,6 +2,8 @@
 
 require_once 'search.civix.php';
 
+use Symfony\Component\DependencyInjection\ContainerBuilder;
+
 /**
  * Implements hook_civicrm_config().
  *
@@ -30,6 +32,11 @@ function search_civicrm_install() {
  */
 function search_civicrm_enable() {
   _search_civix_civicrm_enable();
+}
+
+function search_civicrm_container(ContainerBuilder $container) {
+  $container->register(CRM_NYSS_Search_UrlParamHelper::$SERVICE_NAME, 'CRM_NYSS_Search_UrlParamHelper')
+    ->setPublic(TRUE);
 }
 
 function search_civicrm_buildForm($formName, &$form) {
@@ -145,6 +152,20 @@ function search_civicrm_validateForm($formName, &$fields, &$files, &$form, &$err
       $data['values']['Search']['activity_text'] = '%'.$data['values']['Search']['activity_text'].'%';
     }
     //Civi::log()->debug('post', ['data' => $data]);
+  }
+  if ($formName == 'CRM_Contact_Form_Search_Advanced') {
+    // NYSS #17488
+    _search_validate_prox_distance($fields, $errors);
+  }
+}
+
+// NYSS #17488
+#[CRM_NYSS_Attribute_IssueRef('17488', 'https://dev.nysenate.gov/issues/17488')]
+function _search_validate_prox_distance(&$fields, &$errors) {
+  if (($fields['prox_distance'] ?? '') !== '') {
+    if ((($fields['city'] ?? '') === '') && (($fields['postal_code'] ?? '') === '')) {
+      $errors['prox_distance'] = ts( 'For distance searches, please include a postal code or city' );
+    }
   }
 }
 

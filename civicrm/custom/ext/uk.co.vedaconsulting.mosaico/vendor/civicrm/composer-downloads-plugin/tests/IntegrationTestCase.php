@@ -71,7 +71,7 @@ class IntegrationTestCase extends \PHPUnit\Framework\TestCase
         return self::$testDir;
     }
 
-    public static function tearDownAfterClass()
+    public static function tearDownAfterClass(): void
     {
         parent::tearDownAfterClass();
 

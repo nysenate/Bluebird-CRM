@@ -35,7 +35,7 @@
  */
 class CRM_Iats_Form_Report_Recur extends CRM_Report_Form {
 
-  protected $_customGroupExtends = array('Contact');
+  protected $_customGroupExtends = array('Contact', 'Individual');
 
   static private $processors = array();
   static private $version = array();

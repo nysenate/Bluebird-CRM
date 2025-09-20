@@ -179,7 +179,7 @@ class IDS_Monitor
      *
      * @return void
      */
-    public function __construct(array $request, IDS_Init $init, array $tags = null)
+    public function __construct(array $request, IDS_Init $init, ?array $tags = null)
     {
         $version = isset($init->config['General']['min_php_version'])
             ? $init->config['General']['min_php_version'] : '5.1.6';

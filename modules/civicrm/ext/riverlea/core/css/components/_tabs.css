@@ -1,7 +1,6 @@
 /* JQuery UI tabs */
 
 .crm-container .ui-tabs,
-.crm-container .crm-search-nav-tabs,
 .crm-container .afadmin-list .nav.nav-tabs { /* entire tab region */
   border: var(--crm-tabs-border);
   border-radius: var(--crm-tabs-radius);
@@ -96,7 +95,7 @@
 .crm-container .ui-tabs ul.ui-tabs-nav .crm-count-0 a em,
 .crm-container #mainTabContainer ul.ui-tabs-nav .crm-count-0 a em {
   background: var(--crm-c-background5);
-  color: var(--crm-c-light-text);
+  color: var(--crm-c-text-light);
 }
 .crm-container .ui-tabs ul li em:empty,
 .crm-container .nav-tabs .badge:empty { /* this is to keep the height of tabs with empty badges */
@@ -109,6 +108,7 @@
   background: var(--crm-tab-bg-active);
   padding: var(--crm-tab-padding);
   container-type: inline-size;
+  min-height: 12rem;
 }
 
 /* Dashboard */

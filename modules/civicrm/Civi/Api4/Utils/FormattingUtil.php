@@ -44,7 +44,7 @@ class FormattingUtil {
         }
         self::formatInputValue($value, $name, $field);
         // Ensure we have an array for serialized fields
-        if (!empty($field['serialize'] && !is_array($value))) {
+        if (!empty($field['serialize']) && !is_array($value)) {
           $value = (array) $value;
         }
       }
@@ -84,7 +84,7 @@ class FormattingUtil {
    */
   public static function formatInputValue(&$value, ?string $fieldPath, array $fieldSpec, array $params = [], &$operator = NULL, $index = NULL) {
     // Evaluate pseudoconstant suffix
-    $suffix = str_replace(':', '', strstr(($fieldPath ?? ''), ':'));
+    $suffix = self::getSuffix($fieldPath);
     $fk = $fieldSpec['name'] == 'id' ? $fieldSpec['entity'] : $fieldSpec['fk_entity'] ?? NULL;
 
     // Handle special 'current_domain' option. See SpecFormatter::getOptions
@@ -216,71 +216,76 @@ class FormattingUtil {
   }
 
   /**
-   * Unserialize raw DAO values and convert to correct type
+   * Unserialize raw field values and convert to correct type
    *
-   * @param array $result
+   * @param array $records
    * @param array $fields
    * @param string $action
    * @param array $selectAliases
    * @throws \CRM_Core_Exception
    */
-  public static function formatOutputValues(&$result, $fields, $action = 'get', $selectAliases = []) {
-    $contactTypePaths = [];
-    // Save an array of unprocessed values which are useful when replacing pseudocontants
-    $rawValues = $result;
-    foreach ($rawValues as $key => $value) {
-      // Pseudoconstants haven't been replaced yet so strip suffixes from raw values
-      if (strpos($key, ':') > strrpos($key, ')')) {
-        [$fieldName] = explode(':', $key);
-        $rawValues[$fieldName] = $value;
-        unset($rawValues[$key]);
-      }
-    }
-    foreach ($result as $key => $value) {
-      // Skip null values or values that have already been unset by `formatOutputValue` functions
-      if (!isset($result[$key])) {
-        continue;
-      }
-      $fieldExpr = SqlExpression::convert($selectAliases[$key] ?? $key);
-      $fieldName = \CRM_Utils_Array::first($fieldExpr->getFields());
-      $baseName = $fieldName ? \CRM_Utils_Array::first(explode(':', $fieldName)) : NULL;
-      $field = $fields[$fieldName] ?? $fields[$baseName] ?? NULL;
-      $dataType = $field['data_type'] ?? ($fieldName == 'id' ? 'Integer' : NULL);
-      // Allow Sql Functions to alter the value and/or $dataType
-      if (method_exists($fieldExpr, 'formatOutputValue') && is_string($value)) {
-        $fieldExpr->formatOutputValue($dataType, $result, $key);
-        $value = $result[$key];
-      }
-      if (!empty($field['output_formatters'])) {
-        self::applyFormatters($result, $fieldExpr, $field, $value);
-        $dataType = NULL;
-      }
-      // Evaluate pseudoconstant suffixes
-      $suffix = strrpos(($fieldName ?? ''), ':');
-      $fieldOptions = NULL;
-      if (isset($value) && $suffix) {
-        $fieldOptions = self::getPseudoconstantList($field, $fieldName, $rawValues, $action);
-        $dataType = NULL;
-      }
-      // Store contact_type value before replacing pseudoconstant (e.g. transforming it to contact_type:label)
-      // Used by self::contactFieldsToRemove below
-      if ($value && isset($field['entity']) && $field['entity'] === 'Contact' && $field['name'] === 'contact_type') {
-        $prefix = strrpos($fieldName, '.');
-        $contactTypePaths[$prefix ? substr($fieldName, 0, $prefix + 1) : ''] = $value;
-      }
-      if ($fieldExpr->supportsExpansion) {
-        if (!empty($field['serialize']) && is_string($value)) {
-          $value = \CRM_Core_DAO::unSerializeField($value, $field['serialize']);
-        }
-        if (isset($fieldOptions)) {
-          $value = self::replacePseudoconstant($fieldOptions, $value);
+  public static function formatOutputValues(&$records, $fields, $action = 'get', $selectAliases = []) {
+    $fieldExprs = [];
+    foreach ($records as &$result) {
+      $contactTypePaths = [];
+      // Save an array of unprocessed values which are useful when replacing pseudocontants
+      $rawValues = $result;
+      foreach ($rawValues as $key => $value) {
+        // Pseudoconstants haven't been replaced yet so strip suffixes from raw values
+        if (strpos($key, ':') > strrpos($key, ')')) {
+          [$fieldName] = explode(':', $key);
+          $rawValues[$fieldName] = $value;
+          unset($rawValues[$key]);
         }
       }
-      $result[$key] = self::convertDataType($value, $dataType);
-    }
-    // Remove inapplicable contact fields
-    foreach ($contactTypePaths as $prefix => $contactType) {
-      \CRM_Utils_Array::remove($result, self::contactFieldsToRemove($contactType, $prefix));
+      foreach ($result as $key => $value) {
+        // Skip values that have already been unset by `formatOutputValue` functions
+        if (!array_key_exists($key, $result)) {
+          continue;
+        }
+        // Use ??= to only convert each column once
+        $fieldExprs[$key] ??= SqlExpression::convert($selectAliases[$key] ?? $key);
+        $fieldExpr = $fieldExprs[$key];
+        $fieldName = \CRM_Utils_Array::first($fieldExpr->getFields());
+        $baseName = $fieldName ? \CRM_Utils_Array::first(explode(':', $fieldName)) : NULL;
+        $field = $fields[$fieldName] ?? $fields[$baseName] ?? NULL;
+        $dataType = $field['data_type'] ?? ($fieldName == 'id' ? 'Integer' : NULL);
+        // Allow Sql Functions to alter the value and/or $dataType
+        if (method_exists($fieldExpr, 'formatOutputValue') && is_string($value)) {
+          $fieldExpr->formatOutputValue($dataType, $result, $key);
+          $value = $result[$key];
+        }
+        if (!empty($field['output_formatters'])) {
+          self::applyFormatters($result, $fieldExpr, $field, $value);
+          $dataType = NULL;
+        }
+        // Evaluate pseudoconstant suffixes
+        $suffix = self::getSuffix($fieldName);
+        $fieldOptions = NULL;
+        if (isset($value) && $suffix) {
+          $fieldOptions = self::getPseudoconstantList($field, $fieldName, $rawValues, $action);
+          $dataType = NULL;
+        }
+        // Store contact_type value before replacing pseudoconstant (e.g. transforming it to contact_type:label)
+        // Used by self::contactFieldsToRemove below
+        if ($value && isset($field['entity']) && $field['entity'] === 'Contact' && $field['name'] === 'contact_type') {
+          $prefix = strrpos($fieldName, '.');
+          $contactTypePaths[$prefix ? substr($fieldName, 0, $prefix + 1) : ''] = $value;
+        }
+        if ($fieldExpr->supportsExpansion) {
+          if (!empty($field['serialize']) && is_string($value)) {
+            $value = \CRM_Core_DAO::unSerializeField($value, $field['serialize']);
+          }
+          if (isset($fieldOptions)) {
+            $value = self::replacePseudoconstant($fieldOptions, $value);
+          }
+        }
+        $result[$key] = self::convertDataType($value, $dataType);
+      }
+      // Remove inapplicable contact fields
+      foreach ($contactTypePaths as $prefix => $contactType) {
+        \CRM_Utils_Array::remove($result, self::contactFieldsToRemove($contactType, $prefix));
+      }
     }
   }
 
@@ -320,13 +325,13 @@ class FormattingUtil {
    * @throws \CRM_Core_Exception
    */
   public static function getPseudoconstantList(array $field, string $fieldAlias, $values = [], $action = 'get') {
-    [$fieldPath, $valueType] = explode(':', $fieldAlias);
-    $context = self::$pseudoConstantContexts[$valueType] ?? NULL;
+    $valueType = FormattingUtil::getSuffix($fieldAlias);
     // For create actions, only unique identifiers can be used.
     // For get actions any valid suffix is ok.
-    if (($action === 'create' && !$context) || !array_key_exists($valueType, \CRM_Core_SelectValues::optionAttributes())) {
+    if (!$valueType || ($action === 'create' && !isset(self::$pseudoConstantContexts[$valueType]))) {
       throw new \CRM_Core_Exception('Illegal expression');
     }
+    $fieldPath = FormattingUtil::removeSuffix($fieldAlias);
 
     $entityValues = self::filterByPath($values, $fieldPath, $field['name']);
     try {
@@ -535,6 +540,42 @@ class FormattingUtil {
       }
     }
     return $fieldValue;
+  }
+
+  /**
+   * Returns the suffix from a given field name if it exists and matches known suffixes.
+   *
+   * @param string|null $fieldName
+   *   The name of the field, potentially containing a suffix in the format ":suffix".
+   * @return string|null
+   *   The extracted suffix if found and recognized; otherwise, NULL.
+   */
+  public static function getSuffix(?string $fieldName): ?string {
+    if (!$fieldName || !str_contains($fieldName, ':')) {
+      return NULL;
+    }
+
+    $allSuffixes = array_keys(\CRM_Core_SelectValues::optionAttributes());
+    foreach ($allSuffixes as $suffix) {
+      if (str_ends_with($fieldName, ":$suffix")) {
+        return $suffix;
+      }
+    }
+    return NULL;
+  }
+
+  /**
+   * Removes the suffix from a given field name, if a suffix is detected.
+   *
+   * @param string $fieldName The name of the field to process.
+   * @return string The field name without its suffix, or the original field name if no suffix exists.
+   */
+  public static function removeSuffix(string $fieldName): string {
+    $suffix = self::getSuffix($fieldName);
+    if ($suffix) {
+      return substr($fieldName, 0, -1 - strlen($suffix));
+    }
+    return $fieldName;
   }
 
 }

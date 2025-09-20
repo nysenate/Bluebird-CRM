@@ -20,7 +20,7 @@ class PharStreamWrapper
      * Internal stream constants that are not exposed to PHP, but used...
      * @see https://github.com/php/php-src/blob/e17fc0d73c611ad0207cac8a4a01ded38251a7dc/main/php_streams.h
      */
-    const STREAM_OPEN_FOR_INCLUDE = 128;
+    public const STREAM_OPEN_FOR_INCLUDE = 128;
 
     /**
      * @var resource
@@ -37,9 +37,6 @@ class PharStreamWrapper
      */
     protected $invocation;
 
-    /**
-     * @return bool
-     */
     public function dir_closedir(): bool
     {
         if (!is_resource($this->internalResource)) {
@@ -53,11 +50,6 @@ class PharStreamWrapper
         return !is_resource($this->internalResource);
     }
 
-    /**
-     * @param string $path
-     * @param int $options
-     * @return bool
-     */
     public function dir_opendir(string $path, int $options): bool
     {
         $this->assert($path, Behavior::COMMAND_DIR_OPENDIR);
@@ -80,9 +72,6 @@ class PharStreamWrapper
         );
     }
 
-    /**
-     * @return bool
-     */
     public function dir_rewinddir(): bool
     {
         if (!is_resource($this->internalResource)) {
@@ -96,12 +85,6 @@ class PharStreamWrapper
         return is_resource($this->internalResource);
     }
 
-    /**
-     * @param string $path
-     * @param int $mode
-     * @param int $options
-     * @return bool
-     */
     public function mkdir(string $path, int $mode, int $options): bool
     {
         $this->assert($path, Behavior::COMMAND_MKDIR);
@@ -114,11 +97,6 @@ class PharStreamWrapper
         );
     }
 
-    /**
-     * @param string $path_from
-     * @param string $path_to
-     * @return bool
-     */
     public function rename(string $path_from, string $path_to): bool
     {
         $this->assert($path_from, Behavior::COMMAND_RENAME);
@@ -131,11 +109,6 @@ class PharStreamWrapper
         );
     }
 
-    /**
-     * @param string $path
-     * @param int $options
-     * @return bool
-     */
     public function rmdir(string $path, int $options): bool
     {
         $this->assert($path, Behavior::COMMAND_RMDIR);
@@ -146,10 +119,7 @@ class PharStreamWrapper
         );
     }
 
-    /**
-     * @param int $cast_as
-     */
-    public function stream_cast(int $cast_as)
+    public function stream_cast(int $cast_as): void
     {
         throw new Exception(
             'Method stream_select() cannot be used',
@@ -157,7 +127,7 @@ class PharStreamWrapper
         );
     }
 
-    public function stream_close()
+    public function stream_close(): void
     {
         $this->invokeInternalStreamWrapper(
             'fclose',
@@ -165,9 +135,6 @@ class PharStreamWrapper
         );
     }
 
-    /**
-     * @return bool
-     */
     public function stream_eof(): bool
     {
         return $this->invokeInternalStreamWrapper(
@@ -176,9 +143,6 @@ class PharStreamWrapper
         );
     }
 
-    /**
-     * @return bool
-     */
     public function stream_flush(): bool
     {
         return $this->invokeInternalStreamWrapper(
@@ -187,10 +151,6 @@ class PharStreamWrapper
         );
     }
 
-    /**
-     * @param int $operation
-     * @return bool
-     */
     public function stream_lock(int $operation): bool
     {
         return $this->invokeInternalStreamWrapper(
@@ -201,10 +161,7 @@ class PharStreamWrapper
     }
 
     /**
-     * @param string $path
-     * @param int $option
      * @param string|int $value
-     * @return bool
      */
     public function stream_metadata(string $path, int $option, $value): bool
     {
@@ -241,17 +198,13 @@ class PharStreamWrapper
     }
 
     /**
-     * @param string $path
-     * @param string $mode
-     * @param int $options
      * @param string|null $opened_path
-     * @return bool
      */
     public function stream_open(
         string $path,
         string $mode,
         int $options,
-        string &$opened_path = null
+        ?string &$opened_path = null
     ): bool {
         $this->assert($path, Behavior::COMMAND_STREAM_OPEN);
         $arguments = [$path, $mode, (bool) ($options & STREAM_USE_PATH)];
@@ -277,10 +230,6 @@ class PharStreamWrapper
         return true;
     }
 
-    /**
-     * @param int $count
-     * @return string
-     */
     public function stream_read(int $count): string
     {
         return $this->invokeInternalStreamWrapper(
@@ -290,11 +239,6 @@ class PharStreamWrapper
         );
     }
 
-    /**
-     * @param int $offset
-     * @param int $whence
-     * @return bool
-     */
     public function stream_seek(int $offset, int $whence = SEEK_SET): bool
     {
         return $this->invokeInternalStreamWrapper(
@@ -305,12 +249,6 @@ class PharStreamWrapper
         ) !== -1;
     }
 
-    /**
-     * @param int $option
-     * @param int $arg1
-     * @param int $arg2
-     * @return bool
-     */
     public function stream_set_option(int $option, int $arg1, int $arg2): bool
     {
         if ($option === STREAM_OPTION_BLOCKING) {
@@ -338,9 +276,6 @@ class PharStreamWrapper
         return false;
     }
 
-    /**
-     * @return array
-     */
     public function stream_stat(): array
     {
         return $this->invokeInternalStreamWrapper(
@@ -349,9 +284,6 @@ class PharStreamWrapper
         );
     }
 
-    /**
-     * @return int
-     */
     public function stream_tell(): int
     {
         return $this->invokeInternalStreamWrapper(
@@ -360,10 +292,6 @@ class PharStreamWrapper
         );
     }
 
-    /**
-     * @param int $new_size
-     * @return bool
-     */
     public function stream_truncate(int $new_size): bool
     {
         return $this->invokeInternalStreamWrapper(
@@ -373,10 +301,6 @@ class PharStreamWrapper
         );
     }
 
-    /**
-     * @param string $data
-     * @return int
-     */
     public function stream_write(string $data): int
     {
         return $this->invokeInternalStreamWrapper(
@@ -386,10 +310,6 @@ class PharStreamWrapper
         );
     }
 
-    /**
-     * @param string $path
-     * @return bool
-     */
     public function unlink(string $path): bool
     {
         $this->assert($path, Behavior::COMMAND_UNLINK);
@@ -401,8 +321,6 @@ class PharStreamWrapper
     }
 
     /**
-     * @param string $path
-     * @param int $flags
      * @return array|false
      */
     public function url_stat(string $path, int $flags)
@@ -412,11 +330,7 @@ class PharStreamWrapper
         return $this->invokeInternalStreamWrapper($functionName, $path);
     }
 
-    /**
-     * @param string $path
-     * @param string $command
-     */
-    protected function assert(string $path, string $command)
+    protected function assert(string $path, string $command): void
     {
         if (Manager::instance()->assert($path, $command) === true) {
             $this->collectInvocation($path);
@@ -433,10 +347,7 @@ class PharStreamWrapper
         );
     }
 
-    /**
-     * @param string $path
-     */
-    protected function collectInvocation(string $path)
+    protected function collectInvocation(string $path): void
     {
         if (isset($this->invocation)) {
             return;
@@ -470,7 +381,6 @@ class PharStreamWrapper
     /**
      * Invokes commands on the native PHP Phar stream wrapper.
      *
-     * @param string $functionName
      * @param mixed ...$arguments
      * @return mixed
      */
@@ -493,12 +403,20 @@ class PharStreamWrapper
         return $result;
     }
 
-    private function restoreInternalSteamWrapper()
+    private function restoreInternalSteamWrapper(): void
     {
-        stream_wrapper_restore('phar');
+        if (PHP_VERSION_ID < 70324
+            || PHP_VERSION_ID >= 70400 && PHP_VERSION_ID < 70412) {
+            stream_wrapper_restore('phar');
+        } else {
+            // with https://github.com/php/php-src/pull/6183 (PHP #76943) the
+            // behavior of `stream_wrapper_restore()` did change for
+            // PHP 8.0-RC1, 7.4.12 and 7.3.24
+            @stream_wrapper_restore('phar');
+        }
     }
 
-    private function registerStreamWrapper()
+    private function registerStreamWrapper(): void
     {
         stream_wrapper_unregister('phar');
         stream_wrapper_register('phar', static::class);

@@ -14,16 +14,17 @@ html.crm-standalone  nav.breadcrumb>ol {
   height: 100vh;
 }
 .standalone-auth-box {
+  /* box sizing */
   grid-row: 2;
   box-sizing: border-box;
   width: clamp(280px, 68vw, 45rem);
   margin: 0;
-  background-color: white;
   border: none;
   border-radius: 3px;
   padding: clamp(1rem, 3vw, 2rem);
+  background-color: var(--crm-standalone-auth-box-bg, #fff);
 }
-.standalone-auth-form img.crm-logo {
+.standalone-auth-form .crm-logo {
   width: 100%;
   max-width: 400px;
   margin: 0 auto 2rem;

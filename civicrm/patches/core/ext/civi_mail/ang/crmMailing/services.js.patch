@@ -1,61 +1,14 @@
-diff --git a/modules/civicrm/ang/crmUi.js b/modules/civicrm/ang/crmUi.js
-index 3035d1756..d7f61b633 100644
---- a/modules/civicrm/ang/crmUi.js
-+++ b/modules/civicrm/ang/crmUi.js
-@@ -357,7 +357,8 @@
-               iframe.setAttribute('src', scope.$parent.$eval(attrs.crmUiIframeSrc));
-             }
-             else {
--              var iframeHtml = scope.$parent.$eval(attrs.crmUiIframe);
-+              //NYSS 12135
-+              var iframeHtml = scope.$parent.$eval(attrs.crmUiIframe).replace(/<a /g, "<a target='_blank' ");
- 
-               var doc = iframe.document;
-               if (iframe.contentDocument) {
 diff --git a/modules/civicrm/ext/civi_mail/ang/crmMailing/services.js b/modules/civicrm/ext/civi_mail/ang/crmMailing/services.js
-index 2fda7b7d6..5caa0f417 100644
+index 4d9d99ffc..c569c94bf 100644
 --- a/modules/civicrm/ext/civi_mail/ang/crmMailing/services.js
 +++ b/modules/civicrm/ext/civi_mail/ang/crmMailing/services.js
-@@ -510,7 +510,8 @@
-   });
- 
-   // The preview manager performs preview actions while putting up a visible UI (e.g. dialogs & status alerts)
--  angular.module('crmMailing').factory('crmMailingPreviewMgr', function (dialogService, crmMailingMgr, crmStatus) {
-+  //NYSS 13571
-+  angular.module('crmMailing').factory('crmMailingPreviewMgr', function ($q, dialogService, crmMailingMgr, crmStatus) {
-     return {
-       // @param mode string one of 'html', 'text', or 'full'
-       // @return Promise
-@@ -541,15 +542,23 @@
-       // @param to Object with either key "email" (string) or "gid" (int)
-       // @return Promise
-       sendTest: function sendTest(mailing, recipient) {
--        var promise = crmMailingMgr.sendTest(mailing, recipient)
--            .then(function (deliveryInfos) {
--              var count = Object.keys(deliveryInfos).length;
--              if (count === 0) {
--                CRM.alert(ts('Could not identify any recipients. Perhaps your test group is empty, all contacts are set to deceased/opt out/do_not_email, or you tried sending to contacts that do not exist and you have no permission to add contacts.'));
--              }
--            })
--          ;
+@@ -549,7 +549,8 @@
+               }
+             })
+           ;
 -        return crmStatus({start: ts('Sending...'), success: ts('Sent')}, promise);
 +        //NYSS 13571
-+        var d = $q.defer();
-+        crmMailingMgr.sendTest(mailing, recipient)
-+          .then(function (deliveryInfos) {
-+            var count = Object.keys(deliveryInfos).length;
-+            if (count === 0) {
-+              //NYSS 11277/13571
-+              CRM.alert(ts('Unable to send test email. Either there are no valid recipients or your outbound email settings are incorrect.'));
-+              d.reject();
-+            }
-+            else {
-+              d.resolve();
-+            }
-+          })
-+        ;
-+        //NYSS 13571
-+        return crmStatus({start: ts('Sending...'), success: ts('Sent'), error: ts('Error')}, d.promise);
++        return crmStatus({start: ts('Sending...'), success: ts('Sent'), error: ts('Error')}, promise);
        }
      };
    });

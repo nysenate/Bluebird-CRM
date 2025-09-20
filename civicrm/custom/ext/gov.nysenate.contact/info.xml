@@ -15,17 +15,21 @@
   <version>1.5</version>
   <develStage>stable</develStage>
   <compatibility>
-    <ver>5.1</ver>
+    <ver>5.38</ver>
   </compatibility>
   <comments/>
   <civix>
     <namespace>CRM/NYSS/Contact</namespace>
-    <format>22.10.0</format>
+    <format>25.01.1</format>
   </civix>
   <mixins>
     <mixin>menu-xml@1.0.0</mixin>
+    <mixin>smarty-v2@1.0.3</mixin>
+    <mixin>mgd-php@1.0.0</mixin>
   </mixins>
   <classloader>
     <psr0 prefix="CRM_" path="."/>
+    <psr4 prefix="Civi\" path="Civi"/>
   </classloader>
+  <upgrader>CiviMix\Schema\Contact\AutomaticUpgrader</upgrader>
 </extension>

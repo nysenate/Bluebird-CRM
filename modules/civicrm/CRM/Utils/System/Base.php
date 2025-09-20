@@ -38,13 +38,6 @@ abstract class CRM_Utils_System_Base {
   public $is_wordpress = FALSE;
 
   /**
-   * Does this CMS / UF support a CMS specific logging mechanism?
-   * @var bool
-   * @todo - we should think about offering up logging mechanisms in a way that is also extensible by extensions
-   */
-  public $supports_UF_Logging = FALSE;
-
-  /**
    * @var bool
    *   TRUE, if the CMS allows CMS forms to be extended by hooks.
    */
@@ -76,25 +69,32 @@ abstract class CRM_Utils_System_Base {
    * @var int|string $print
    *   Should match a CRM_Core_Smarty::PRINT_* constant,
    *   or equal 0 if not in print mode.
+   *
+   * @todo when php7.4 is no more, switch the `switch` to a `match`
    */
   public static function getContentTemplate($print = 0): string {
-    if ($print === CRM_Core_Smarty::PRINT_JSON) {
-      return 'CRM/common/snippet.tpl';
-    }
+    // I fear some callers of this function may still pass FALSE
+    // let's make sure any falsey value is exactly 0
+    $print = $print ?: 0;
 
-    switch ($print) {
-      case 0:
+    // switch uses lazy type comparison
+    // on php < 8 this causes strange results when comparing
+    // string like 'json' with integer 0
+    // so we use this workaround
+    switch (TRUE) {
+      case ($print === 0):
         // Not a print context.
         // Despite what the template is called
         return 'CRM/common/CMSPrint.tpl';
 
-      case CRM_Core_Smarty::PRINT_PAGE:
+      case ($print === CRM_Core_Smarty::PRINT_PAGE):
         return 'CRM/common/print.tpl';
 
-      case 'xls':
-      case 'doc':
+      case ($print === 'xls'):
+      case ($print === 'doc'):
         return 'CRM/Contact/Form/Task/Excel.tpl';
 
+      case ($print === CRM_Core_Smarty::PRINT_JSON):
       default:
         return 'CRM/common/snippet.tpl';
     }
@@ -122,6 +122,7 @@ abstract class CRM_Utils_System_Base {
    *   The new string to be appended.
    */
   public function addHTMLHead($head) {
+    \CRM_Core_Error::deprecatedFunctionWarning("addHTMLHead is deprecated in " . self::class);
   }
 
   /**
@@ -195,15 +196,15 @@ abstract class CRM_Utils_System_Base {
   public function getRouteUrl(string $scheme, string $path, ?string $query): ?string {
     switch ($scheme) {
       case 'frontend':
-        return $this->url($path, $query, TRUE, NULL, TRUE, FALSE, FALSE);
+        return $this->url($path, $query, TRUE, NULL, TRUE, FALSE);
 
       case 'service':
         // The original `url()` didn't have an analog for "service://". But "frontend" is probably the closer bet?
         // Or maybe getNotifyUrl() makes sense?
-        return $this->url($path, $query, TRUE, NULL, TRUE, FALSE, FALSE);
+        return $this->url($path, $query, TRUE, NULL, TRUE, FALSE);
 
       case 'backend':
-        return $this->url($path, $query, TRUE, NULL, FALSE, TRUE, FALSE);
+        return $this->url($path, $query, TRUE, NULL, FALSE, TRUE);
 
       // If the UF defines other major UI/URL conventions, then you might hypothetically handle
       // additional schemes.
@@ -309,12 +310,22 @@ abstract class CRM_Utils_System_Base {
   }
 
   /**
-   * Immediately stop script execution, log out the user and redirect to the home page.
+   * Logout the current user session
    *
-   * @deprecated
-   *   This function should be removed in favor of linking to the CMS's logout page
+   * Alias for _authx_uf()->logoutSession
    */
   public function logout() {
+    _authx_uf()->logoutSession();
+  }
+
+  /**
+   * Url to redirect users to after logging out, in the context of an HTTP session
+   *
+   * @see CRM_Core_Page_Logout
+   * @return string
+   */
+  public function postLogoutUrl(): string {
+    return '/';
   }
 
   /**
@@ -336,26 +347,42 @@ abstract class CRM_Utils_System_Base {
   }
 
   /**
+   * @see https://lab.civicrm.org/dev/core/-/issues/5803
+   *
    * If we are using a theming system, invoke theme, else just print the content.
    *
    * @param string $content
    *   The content that will be themed.
    * @param bool $print
-   *   Are we displaying to the screen or bypassing theming?.
    * @param bool $maintenance
-   *   For maintenance mode.
+   *   DEPRECATED - use renderMaintenanceMessage instead,
    *
    * @throws Exception
    * @return string|null
    *   NULL, If $print is FALSE, and some other criteria match up.
    *   The themed string, otherwise.
    *
+   * @todo Remove maintenance param
    * @todo The return value is inconsistent.
    * @todo Better to always return, and never print.
    */
   public function theme(&$content, $print = FALSE, $maintenance = FALSE) {
+    if ($maintenance) {
+      \CRM_Core_Error::deprecatedWarning('Calling CRM_Utils_System::theme with $maintenance is deprecated - use renderMaintenanceMessage instead');
+      $content = $this->renderMaintenanceMessage($content);
+    }
     print $content;
     return NULL;
+  }
+
+  /**
+   * Wrap content in maintenance template
+   *
+   * @param string $content
+   * @return string
+   */
+  public function renderMaintenanceMessage(string $content): string {
+    return $content;
   }
 
   /**
@@ -1256,6 +1283,34 @@ abstract class CRM_Utils_System_Base {
    * Container is up (only used in Standalone currently)
    */
   public function postContainerBoot(): void {
+  }
+
+  /**
+   * Does this CMS / UF support a CMS specific logging mechanism?
+   * @todo - we should think about offering up logging mechanisms in a way that is also extensible by extensions
+   * @todo - it would be nice to provide UF specific meta for the userFrameworkLogging setting
+   *
+   * @return bool
+   */
+  public function supportsUfLogging(): bool {
+    return FALSE;
+  }
+
+  /**
+   * Does the userSystem think we are in maintenance mode?
+   *
+   * @return bool
+   */
+  public function isMaintenanceMode(): bool {
+    // if not implemented at CMS level, we assume FALSE
+    return FALSE;
+  }
+
+  /**
+   * Handle any caught Exceptions.
+   */
+  public function handleUnhandledException(\Throwable $e) {
+    CRM_Core_Error::handleUnhandledException($e);
   }
 
 }

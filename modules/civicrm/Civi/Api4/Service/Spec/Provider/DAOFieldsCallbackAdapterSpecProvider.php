@@ -48,18 +48,18 @@ class DAOFieldsCallbackAdapterSpecProvider extends \Civi\Core\Service\AutoServic
       if (isset($unmodifiedFields[$fieldName]) && $fieldDefinition == $unmodifiedFields[$fieldName]) {
         continue;
       }
-      $newFieldSpec = self::legacyArrayToField($fieldDefinition, $spec->getEntity());
+      $newFieldSpec = self::legacyArrayToField($fieldDefinition, $spec->getEntity(), $spec);
       $oldFieldSpec = $spec->getFieldByName($fieldName);
       if (!$oldFieldSpec) {
         $spec->addFieldSpec($newFieldSpec);
       }
       else {
-        self::updateFieldSpec($newFieldSpec, $oldFieldSpec, $spec);
+        self::updateFieldSpec($newFieldSpec, $oldFieldSpec);
       }
     }
   }
 
-  private static function updateFieldSpec(FieldSpec $newFieldSpec, FieldSpec $oldFieldSpec, RequestSpec $spec) {
+  private static function updateFieldSpec(FieldSpec $newFieldSpec, FieldSpec $oldFieldSpec) {
     // For the sake of sanity, just set the properties that might reasonably be changed by fields_callback.
     // We're purposely not dealing with 'options' because there's another hook for that.
     $oldFieldSpec->setRequired($newFieldSpec->isRequired());
@@ -71,14 +71,7 @@ class DAOFieldsCallbackAdapterSpecProvider extends \Civi\Core\Service\AutoServic
     $oldFieldSpec->setInputType($newFieldSpec->getInputType());
     $oldFieldSpec->setInputAttrs($newFieldSpec->getInputAttrs());
     $oldFieldSpec->setDataType($newFieldSpec->getDataType());
-
-    // Per Civi\Api4\Service\Spec\SpecGatherer
-    // Default value only makes sense for create actions
-    if ($spec->getAction() == 'create') {
-      $oldFieldSpec->setDefaultValue($newFieldSpec->getDefaultValue());
-    } else {
-      $oldFieldSpec->setDefaultValue(NULL);
-    }
+    $oldFieldSpec->setDefaultValue($newFieldSpec->getDefaultValue());
     $oldFieldSpec->setNullable($newFieldSpec->getNullable());
     $oldFieldSpec->setReadonly($newFieldSpec->getReadonly());
     $oldFieldSpec->setFkEntity($newFieldSpec->getEntity());
@@ -87,7 +80,7 @@ class DAOFieldsCallbackAdapterSpecProvider extends \Civi\Core\Service\AutoServic
   /**
    * Legacy function to convert array from DAO::fields() to a FieldSpec
    */
-  private static function legacyArrayToField(array $data, string $entityName): FieldSpec {
+  private static function legacyArrayToField(array $data, string $entityName, RequestSpec $spec): FieldSpec {
     $dataTypeName = self::getDataType($data);
 
     $hasDefault = isset($data['default']) && $data['default'] !== '';
@@ -97,7 +90,10 @@ class DAOFieldsCallbackAdapterSpecProvider extends \Civi\Core\Service\AutoServic
     $field->setType('Field');
     $field->setColumnName($name);
     $field->setNullable(empty($data['required']));
-    $field->setRequired(!empty($data['required']) && !$hasDefault && $name !== 'id');
+    // Api4 only expects field to be 'required' if the action is create.
+    if ($spec->getAction() === 'create') {
+      $field->setRequired(!empty($data['required']) && !$hasDefault && $name !== 'id');
+    }
     $field->setTitle($data['title'] ?? NULL);
     $field->setLabel($data['html']['label'] ?? NULL);
     $field->setLocalizable($data['localizable'] ?? FALSE);
@@ -108,7 +104,8 @@ class DAOFieldsCallbackAdapterSpecProvider extends \Civi\Core\Service\AutoServic
     if (isset($data['usage'])) {
       $field->setUsage(array_keys(array_filter($data['usage'])));
     }
-    if ($hasDefault) {
+    // Per SpecGatherer::getSpec — default value only makes sense for create actions
+    if ($hasDefault && $spec->getAction() === 'create') {
       $field->setDefaultValue(FormattingUtil::convertDataType($data['default'], $dataTypeName));
     }
     $field->setSerialize($data['serialize'] ?? NULL);
