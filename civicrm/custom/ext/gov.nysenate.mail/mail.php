@@ -1639,9 +1639,9 @@ function _mail_fixup_html_message($m) {
 function _mail_rewrite_public_urls($s, $urlbase) {
   $patterns = [
     // Standard "/data/" URLs
-    '#https?://([\w-]+)\.(crm[\w]*)\.nysenate\.gov/data/[\w-]+/pubfiles/#i',
+    '#https?://([\w-]+)\.(crm[\w]*)\.nysenate\.gov/+data/+[\w-]+/+pubfiles/+#i',
     // Mosaico URLs
-    '#https?://([\w-]+)\.(crm[\w]*)\.nysenate\.gov/sites/all/mosaico/nyssbase/img/#i'
+    '#https?://([\w-]+)\.(crm[\w]*)\.nysenate\.gov/+sites/+all/+mosaico/+nyssbase/+img/+#i'
   ];
   $replacements = [
     $urlbase.'/$2/$1/',
