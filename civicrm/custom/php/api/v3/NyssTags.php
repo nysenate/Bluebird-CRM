@@ -129,7 +129,7 @@ function _civicrm_api3_nyss_tags_getLegPositions($input) {
    */
   require_once 'CRM/NYSS/BAO/Integration/OpenLegislation.php';
   $bills = CRM_NYSS_BAO_Integration_OpenLegislation::getBills($input);
-  $billcnt = count($bills);
+  $billcnt = is_iterable($bills) ? count($bills) : 0;
 
   if ($bills === null) {
     CRM_Core_Error::fatal("Unable to fetch bills from OpenLegislation");

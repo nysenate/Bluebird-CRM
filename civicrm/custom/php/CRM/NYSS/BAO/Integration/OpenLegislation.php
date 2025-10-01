@@ -54,7 +54,7 @@ class CRM_NYSS_BAO_Integration_OpenLegislation
     }
 
     if (empty($apiKey) || empty($apiBase)) {
-      return null;
+      throw new CRM_Core_Exception('Invalid OpenLeg API settings');
     }
 
     $billIdParts = explode('-', $billId);
@@ -82,12 +82,12 @@ class CRM_NYSS_BAO_Integration_OpenLegislation
     curl_close($ch);
 
     if ($json === false) {
-      return null;
+      throw new CRM_Core_Exception('Invalid Response from OpenLeg');
     }
 
     $json = json_decode($json, false);
     if ($json === null) {
-      return null;
+      throw new CRM_Core_Exception('Invalid Response from OpenLeg');
     }
 
     // Extract the billId (print#-year) and sponsor from each matching bill.
