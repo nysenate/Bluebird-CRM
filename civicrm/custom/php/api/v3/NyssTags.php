@@ -1,5 +1,6 @@
 <?php
 
+/** @deprecated See CRM/Tags/APIWrapper in gov.nysenate.tags extension */
 function civicrm_api3_nyss_tags_getlist($params) {
   //if input is passed, we are doing a lookup
   //if input is not passed and IDs are passed, we restructure into the appropriate format to pass back
@@ -113,7 +114,8 @@ function civicrm_api3_nyss_tags_savePosition($params) {
   }
 }
 
-/*
+/**
+ * @deprecated - See CRM/Tags/APIWrapper in gov.nysenate.tags extension
  * helper function to get leg positions
  * IDs are hardcoded as this is a very unique requirement and not
  * likely reusable in other contexts
