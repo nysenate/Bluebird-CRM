@@ -8,11 +8,13 @@ require_once 'tags.civix.php';
  *
  * @link http://wiki.civicrm.org/confluence/display/CRMDOC/hook_civicrm_config
  */
+#[CRM_NYSS_Attribute_IssueRefs('17149')]
 function tags_civicrm_config(&$config) {
   _tags_civix_civicrm_config($config);
 
   //14336
   Civi::dispatcher()->addListener('civi.api.prepare', ['CRM_Tags_APIWrapper', 'PREPARE'], -100);
+  Civi::dispatcher()->addListener('civi.api.respond', ['CRM_Tags_APIWrapper', 'RESPOND'], -100);
 }
 
 
@@ -481,7 +483,11 @@ function tags_civicrm_alterEntityRefParams(&$params, $formName) {
     'formName' => $formName,
   ]);*/
 
-  //use custom api for legislative positions; exclude search forms
+
+  // Update: NYSS #17149 - Eliminating custom entity type in favor of APIWrapper Event
+  // Code has been commented out for now in case I need to revert back.
+  /*
+  // use custom api for legislative positions; exclude search forms
   if (strtolower($params['entity']) == 'tag' &&
     !empty($params['api']['params']['parent_id']) &&
     $params['api']['params']['parent_id'] == 292 &&
@@ -494,6 +500,8 @@ function tags_civicrm_alterEntityRefParams(&$params, $formName) {
     $params['search_field'] = 'name';
     $params['label_field'] = 'name';
   }
+  */
+
 } //tags_civicrm_alterEntityRefParams()
 
 function tags_civicrm_alterAPIPermissions($entity, $action, &$params, &$permissions) {
