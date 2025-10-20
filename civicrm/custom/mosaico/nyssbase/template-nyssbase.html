@@ -210,6 +210,10 @@
       /*NYSS*/
       /*footerBlock { label: Unsubscribe Block; theme: frameTheme }*/
 
+      /* NYSS #17524 */
+      bskyVisible { label: Bluesky; extend: visible }
+      bskyUrl { label: Bluesky Link; extend: url }
+
       fbVisible { label: Facebook; extend: visible }
       twVisible { label: X / Twitter; extend: visible }
       ggVisible { label: Google+; extend: visible }
@@ -239,20 +243,26 @@
       ttUrl { label: TikTok Link; extend: url}
       tcUrl { label: Twitch Link; extend: url}
 
-      /*NYSS add externalBackgroundColor*/
+      /*NYSS add externalBackgroundColor
+        NYSS #17524 (Bluesky icon)*/
       socialBlock {
         label: Social Block;
-        properties: socialIconType=colors fbVisible=true fbUrl twVisible=true twUrl ggVisible=false ggUrl webVisible=false webUrl waVisible=false waUrl tgVisible=false tgUrl inVisible=false inUrl piVisible=false piUrl flVisible=false flUrl viVisible=false viUrl instVisible=true instUrl youVisible=false youUrl ttVisible=false ttUrl tcVisible=false tcUrl longTextStyle longText backgroundColor externalBackgroundColor;
+        properties: socialIconType=colors fbVisible=true fbUrl twVisible=true twUrl ggVisible=false ggUrl bskyVisible=true bskyUrl webVisible=false webUrl waVisible=false waUrl tgVisible=false tgUrl inVisible=false inUrl piVisible=false piUrl flVisible=false flUrl viVisible=false viUrl instVisible=true instUrl youVisible=false youUrl ttVisible=false ttUrl tcVisible=false tcUrl longTextStyle longText backgroundColor externalBackgroundColor;
         variant:socialIconType;
         theme: frameTheme
       }
 
+      /* NYSS #17524 (Bluesky icon)*/
       bigSocialBlock {
         label: Big Social Block;
-        properties: bigSocialIconType=rdcol bigSocialIconSize=48 fbVisible=true fbUrl twVisible=true twUrl ggVisible=false ggUrl webVisible=false webUrl waVisible=false waUrl tgVisible=false tgUrl inVisible=true inUrl piVisible=false piUrl flVisible=false flUrl viVisible=false viUrl instVisible=true instUrl youVisible=true youUrl ttVisible=false ttUrl longTextStyle tcVisible=false tcUrl longTextStyle longText;
+        properties: bigSocialIconType=rdcol bigSocialIconSize=48 fbVisible=true fbUrl twVisible=true twUrl ggVisible=true ggUrl bskyVisible=true bskyUrl webVisible=false webUrl waVisible=false waUrl tgVisible=false tgUrl inVisible=true inUrl piVisible=false piUrl flVisible=false flUrl viVisible=false viUrl instVisible=true instUrl youVisible=true youUrl ttVisible=false ttUrl longTextStyle tcVisible=false tcUrl longTextStyle longText;
         variant: bigSocialIconType;
         theme: contentTheme
       }
+
+      /* NYSS #17524 */
+      socialBlockSimple bskyVisible { label: Bluesky; }
+      socialBlockSimple bskyUrl { label: Bluesky Link; }
 
       socialBlockSimple fbVisible { label: Facebook; }
       socialBlockSimple twVisible { label: X }
@@ -274,7 +284,7 @@
       socialBlockSimple youUrl { label: YouTube Link}
       socialBlockSimple {
         label: Social Block Simple;
-        properties: socialIconAlign=center socialIconType=colors fbVisible=true fbUrl twVisible=true twUrl ggVisible=true ggUrl webVisible=false webUrl inVisible=false inUrl flVisible=false flUrl viVisible=false viUrl instVisible=false instUrl youVisible=false youUrl longTextStyle longText backgroundColor externalBackgroundColor;
+        properties: socialIconAlign=center socialIconType=colors fbVisible=true fbUrl twVisible=true twUrl ggVisible=true ggUrl bskyVisible=true bskyUrl webVisible=false webUrl inVisible=false inUrl flVisible=false flUrl viVisible=false viUrl instVisible=false instUrl youVisible=false youUrl longTextStyle longText backgroundColor externalBackgroundColor;
         variant:socialIconType;
         theme: frameTheme
       }
@@ -1387,6 +1397,7 @@
 
 
     <!-- bigSocialBlock -->
+    <!-- NYSS #17524 (bluesky icon) -->
     <table role="presentation" class="vb-outer" width="100%" cellpadding="0" border="0" cellspacing="0" bgcolor="#bfbfbf" style="background-color: #bfbfbf; -ko-background-color: @[externalBackgroundColor]; -ko-attr-bgcolor: @[externalBackgroundColor]" data-ko-block="bigSocialBlock">
       <tr><td class="vb-outer" align="center" valign="top" style="padding-left: 9px; padding-right: 9px; font-size: 0">
       <!--[if (gte mso 9)|(lte ie 8)]><table role="presentation" align="center" border="0" cellspacing="0" cellpadding="0" width="570"><tr><td align="center" valign="top"><![endif]--><!--
@@ -1403,6 +1414,8 @@
               <div data-ko-wrap="false" style="display: inline-block;" data-ko-display="twVisible">&nbsp;<a href="" data-ko-display="twVisible" style="border-radius: 50px; -ko-attr-href: @[twUrl]"><img border="0" style="display: inline-block; vertical-align: top; padding-bottom: 0px; -ko-attr-src: @[Url.templatePath('img/icons/tw-'+bigSocialIconType+'-96.png')]; -ko-attr-width: @[bigSocialIconSize]; -ko-attr-height: @[bigSocialIconSize]" src="img/icons/tw-rdcol-96.png" width="48" height="48" alt="X / Twitter"></a></div>
 
               <div data-ko-wrap="false" style="display: inline-block; display: none" data-ko-display="ggVisible">&nbsp;<a href="" data-ko-display="ggVisible" style="display: none; border-radius: 50px; -ko-attr-href: @[ggUrl]"><img border="0" style="display: inline-block; vertical-align: top; padding-bottom: 0px; -ko-attr-src: @[Url.templatePath('img/icons/gg-'+bigSocialIconType+'-96.png')]; -ko-attr-width: @[bigSocialIconSize]; -ko-attr-height: @[bigSocialIconSize]" src="img/icons/gg-rdcol-96.png" width="48" height="48" alt="Google"></a></div>
+
+              <div data-ko-wrap="false" style="display: inline-block;" data-ko-display="bskyVisible">&nbsp;<a href="" data-ko-display="bskyVisible" style="border-radius: 50px; -ko-attr-href: @[bskyUrl]"><img border="0" style="display: inline-block; vertical-align: top; padding-bottom: 0px; -ko-attr-src: @[Url.templatePath('img/icons/bsky-'+bigSocialIconType+'-96.png')]; -ko-attr-width: @[bigSocialIconSize]; -ko-attr-height: @[bigSocialIconSize]" src="img/icons/bsky-rdcol-96.png" width="48" height="48" alt="Bluesky"></a></div>
 
               <div data-ko-wrap="false" style="display: inline-block; display: none" data-ko-display="webVisible">&nbsp;<a href="" data-ko-display="webVisible" style="display: none; border-radius: 50px; -ko-attr-href: @[webUrl]"><img border="0" style="display: inline-block; vertical-align: top; padding-bottom: 0px; -ko-attr-src: @[Url.templatePath('img/icons/web-'+bigSocialIconType+'-96.png')]; -ko-attr-width: @[bigSocialIconSize]; -ko-attr-height: @[bigSocialIconSize]" src="img/icons/web-rdcol-96.png" width="48" height="48" alt="Web"></a></div>
 
@@ -1715,7 +1728,7 @@
     <!-- /spacerBlock -->
 
 
-
+    <!-- NYSS #17524 (bluesky icon) -->
     <!-- socialBlock -->
     <table role="presentation" class="vb-outer" width="100%" cellpadding="0" border="0" cellspacing="0" bgcolor="#3f3f3f" style="background-color: #3f3f3f; -ko-background-color: @[externalBackgroundColor]; -ko-attr-bgcolor: @[externalBackgroundColor]" data-ko-block="socialBlock">
       <tr><td class="vb-outer" align="center" valign="top" style="padding-left: 9px; padding-right: 9px; font-size: 0">
@@ -1745,6 +1758,8 @@
 
                 <div data-ko-wrap="false" style="display: inline-block; display: none" data-ko-display="ggVisible">&nbsp;<a href="" data-ko-display="ggVisible" style="display: none; background: url(data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7), #d34836; border-radius: 50px; -ko-attr-href: @[ggUrl]"><img border="0" style="display: inline-block; vertical-align: top; padding-bottom: 0px" src="img/icons/gg-colors-96.png" width="32" height="32" alt="Google"></a></div>
 
+                <div data-ko-wrap="false" style="display: inline-block;" data-ko-display="bskyVisible">&nbsp;<a href="" data-ko-display="bskyVisible" style="background: url(data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7), #3b5998; border-radius: 50px; -ko-attr-href: @[fbUrl]"><img border="0" style="display: inline-block; vertical-align: top; padding-bottom: 0px" src="img/icons/bsky-colors-96.png" width="32" height="32" alt="Bluesky"></a></div>
+
                 <div data-ko-wrap="false" style="display: inline-block; display: none" data-ko-display="webVisible">&nbsp;<a href="" data-ko-display="webVisible" style="display: none; background: url(data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7), #606060; border-radius: 50px; -ko-attr-href: @[webUrl]"><img border="0" style="display: inline-block; vertical-align: top; padding-bottom: 0px" src="img/icons/web-colors-96.png" width="32" height="32" alt="Web"></a></div>
 
                 <div data-ko-wrap="false" style="display: inline-block; display: none" data-ko-display="waVisible">&nbsp;<a href="" data-ko-display="waVisible" style="display: none; background: url(data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7), #25d366; border-radius: 50px; -ko-attr-href: @[waUrl]"><img border="0" style="display: inline-block; vertical-align: top; padding-bottom: 0px" src="img/icons/wa-colors-96.png" width="32" height="32" alt="Whatsapp"></a></div>
@@ -1770,13 +1785,15 @@
             </td></tr>
             <tr data-ko-display="socialIconType eq 'bw'" style="display: none"><td width="100%" valign="top" style="font-weight: normal; text-align: right; padding: 9px; padding-top: 5px; padding-bottom: 5px; padding: 9px; padding-top: 5px; padding-bottom: 5px; -ko-padding: @[blockSpacing.horizontalSpacing]px; -ko-padding-top: @[blockSpacing.verticalSpacing]px; -ko-padding-bottom: @[blockSpacing.verticalSpacing]px;" align="right" class="links-color socialLinks mobile-textcenter">
 
-                <div data-ko-wrap="false" style="display: inline-block;" data-ko-display="fbVisible">&nbsp;<a href="" data-ko-display="fbVisible" style="background: url(data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7), #818181; border-radius: 50px; -ko-attr-href: @[fbUrl]"><img border="0" style="display: inline-block; vertical-align: top; padding-bottom: 0px" src="img/icons/fb-bw-96.png" width="32" height="32" alt="Facebook"></a></div>
+                <div data-ko-wrap="false" style="display: inline-block;" data-ko-display="fbVisible">&nbsp;aaa<a href="" data-ko-display="fbVisible" style="background: url(data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7), #818181; border-radius: 50px; -ko-attr-href: @[fbUrl]"><img border="0" style="display: inline-block; vertical-align: top; padding-bottom: 0px" src="img/icons/fb-bw-96.png" width="32" height="32" alt="Facebook"></a></div>
 
                 <div data-ko-wrap="false" style="display: inline-block;" data-ko-display="twVisible">&nbsp;<a href="" data-ko-display="twVisible" style="background: url(data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7), #818181; border-radius: 50px; -ko-attr-href: @[twUrl]"><img border="0" style="display: inline-block; vertical-align: top; padding-bottom: 0px" src="img/icons/tw-bw-96.png" width="32" height="32" alt="X / Twitter"></a></div>
 
                 <div data-ko-wrap="false" style="display: inline-block; display: none" data-ko-display="ggVisible">&nbsp;<a href="" data-ko-display="ggVisible" style="display: none; background: url(data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7), #818181; border-radius: 50px; -ko-attr-href: @[ggUrl]"><img border="0" style="display: inline-block; vertical-align: top; padding-bottom: 0px" src="img/icons/gg-bw-96.png" width="32" height="32" alt="Google"></a></div>
 
-                <div data-ko-wrap="false" style="display: inline-block; display: none" data-ko-display="webVisible">&nbsp;<a href="" data-ko-display="webVisible" style="display: none; background: url(data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7), #818181; border-radius: 50px; -ko-attr-href: @[webUrl]"><img border="0" style="display: inline-block; vertical-align: top; padding-bottom: 0px" src="img/icons/web-bw-96.png" width="32" height="32" alt="Web"></a></div>
+                <div data-ko-wrap="false" style="display: inline-block;" data-ko-display="bskyVisible">&nbsp;<a href="" data-ko-display="bskyVisible" style="background: url(data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7), #818181; border-radius: 50px; -ko-attr-href: @[bskyUrl]"><img border="0" style="display: inline-block; vertical-align: top; padding-bottom: 0px" src="img/icons/bsky-bw-96.png" width="32" height="32" alt="Bluesky"></a></div>
+
+              <div data-ko-wrap="false" style="display: inline-block; display: none" data-ko-display="webVisible">&nbsp;<a href="" data-ko-display="webVisible" style="display: none; background: url(data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7), #818181; border-radius: 50px; -ko-attr-href: @[webUrl]"><img border="0" style="display: inline-block; vertical-align: top; padding-bottom: 0px" src="img/icons/web-bw-96.png" width="32" height="32" alt="Web"></a></div>
 
                 <div data-ko-wrap="false" style="display: inline-block; display: none" data-ko-display="waVisible">&nbsp;<a href="" data-ko-display="waVisible" style="display: none; background: url(data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7), #818181; border-radius: 50px; -ko-attr-href: @[waUrl]"><img border="0" style="display: inline-block; vertical-align: top; padding-bottom: 0px" src="img/icons/wa-bw-96.png" width="32" height="32" alt="Whatsapp"></a></div>
 
@@ -1806,6 +1823,8 @@
                 <div data-ko-wrap="false" style="display: inline-block;" data-ko-display="twVisible">&nbsp;<a href="" data-ko-display="twVisible" style="border-radius: 50px; -ko-attr-href: @[twUrl]"><img border="0" style="display: inline-block; vertical-align: top; padding-bottom: 0px; -ko-attr-src: @[Url.templatePath('img/icons/tw-'+socialIconType+'-96.png')]" src="img/icons/tw-rdcol-96.png" width="32" height="32" alt="X / Twitter"></a></div>
 
                 <div data-ko-wrap="false" style="display: inline-block; display: none" data-ko-display="ggVisible">&nbsp;<a href="" data-ko-display="ggVisible" style="display: none; border-radius: 50px; -ko-attr-href: @[ggUrl]"><img border="0" style="display: inline-block; vertical-align: top; padding-bottom: 0px; -ko-attr-src: @[Url.templatePath('img/icons/gg-'+socialIconType+'-96.png')]" src="img/icons/gg-rdcol-96.png" width="32" height="32" alt="Google"></a></div>
+
+                <div data-ko-wrap="false" style="display: inline-block;" data-ko-display="bskyVisible">&nbsp;<a href="" data-ko-display="bskyVisible" style="border-radius: 50px; -ko-attr-href: @[bskyUrl]"><img border="0" style="display: inline-block; vertical-align: top; padding-bottom: 0px; -ko-attr-src: @[Url.templatePath('img/icons/bsky-'+socialIconType+'-96.png')]" src="img/icons/bsky-rdcol-96.png" width="32" height="32" alt="Bluesky"></a></div>
 
                 <div data-ko-wrap="false" style="display: inline-block; display: none" data-ko-display="webVisible">&nbsp;<a href="" data-ko-display="webVisible" style="display: none; border-radius: 50px; -ko-attr-href: @[webUrl]"><img border="0" style="display: inline-block; vertical-align: top; padding-bottom: 0px; -ko-attr-src: @[Url.templatePath('img/icons/web-'+socialIconType+'-96.png')]" src="img/icons/web-rdcol-96.png" width="32" height="32" alt="Web"></a></div>
 
@@ -1845,6 +1864,7 @@
 
 
   <!-- NYSS socialBlockSimple -->
+    <!-- NYSS #17524 (bluesky icon) -->
   <table width="100%" cellpadding="0" border="0" cellspacing="0" bgcolor="#3f3f3f"
          style="background-color: #3f3f3f; -ko-background-color: @[externalBackgroundColor]; -ko-attr-bgcolor: @[externalBackgroundColor]"  data-ko-block="socialBlockSimple">
     <tr>
@@ -1876,6 +1896,10 @@
                       <span data-ko-display="ggVisible" data-ko-wrap="false">&nbsp;</span>
                       <a data-ko-display="ggVisible" href="" style="-ko-attr-href: @ggUrl">
                         <img src="img/social_def/google+_ok.png" alt="Google+" border="0" class="socialIcon" />
+                      </a>
+                      <span data-ko-display="bskyVisible" data-ko-wrap="false">&nbsp;</span>
+                      <a data-ko-display="bskyVisible" href="" style="-ko-attr-href: @bskyUrl">
+                        <img src="img/social_def/bluesky_ok.png" alt="Bluesky" border="0" class="socialIcon" />
                       </a>
                       <span data-ko-display="webVisible" data-ko-wrap="false" style="display: none">&nbsp;</span>
                       <a data-ko-display="webVisible" href="" style="-ko-attr-href: @webUrl; display: none">
@@ -1915,6 +1939,10 @@
                       <span data-ko-display="ggVisible" data-ko-wrap="false">&nbsp;</span>
                       <a data-ko-display="ggVisible" href="" style="-ko-attr-href: @ggUrl">
                         <img src="img/social_def/google+_bw_ok.png" alt="Google+" border="0" class="socialIcon" />
+                      </a>
+                      <span data-ko-display="bskyVisible" data-ko-wrap="false">&nbsp;</span>
+                      <a data-ko-display="bskyVisible" href="" style="-ko-attr-href: @bskyUrl">
+                        <img src="img/social_def/bluesky_bw_ok.png" alt="Bluesky" border="0" class="socialIcon" />
                       </a>
                       <span data-ko-display="webVisible" data-ko-wrap="false" style="display: none">&nbsp;</span>
                       <a data-ko-display="webVisible" href="" style="-ko-attr-href: @webUrl; display: none">
