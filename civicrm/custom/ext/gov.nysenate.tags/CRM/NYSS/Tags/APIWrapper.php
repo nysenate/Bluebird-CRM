@@ -1,7 +1,7 @@
 <?php
 
 /**
- * Class CRM_Tags_APIWrapper
+ * Class CRM_NYSS_Tags_APIWrapper
  *
  * Originally created to support leg position selection in contact record
  * Unused as we are handling the API configuration via the entityRef hook
@@ -13,7 +13,7 @@
  * NYSS #17149
  */
 #[CRM_NYSS_Attribute_IssueRefs('17149')]
-class CRM_Tags_APIWrapper {
+class CRM_NYSS_Tags_APIWrapper {
   /**
    * Callback to wrap completetransaction API calls.
    */
@@ -25,14 +25,13 @@ class CRM_Tags_APIWrapper {
       // Wrap completetransaction in the v3 API.
       // Doesn't exist yet in the v4 API.
       case '3.tag.get':
-        $event->wrapAPI(['CRM_Tags_APIWrapper', 'completeTransaction']);
+        $event->wrapAPI(['CRM_NYSS_Tags_APIWrapper', 'completeTransaction']);
         break;
       case '3.tag.getlist':
         $event->wrapAPI(function($apiRequest, $continue){
           $params = $apiRequest['params'] ?? [];
           $parent_id = self::getParentIdParam($apiRequest);
-          //Civi::log()->debug('just seeing if Im here', [$apiRequest['params']]);
-          if ($parent_id == 292) {
+          if ($parent_id == CRM_NYSS_Tags_Constants::POSITIONS_TAG_ID) {
             if (!empty($params['id'])) {
               // with an id parameter, we want to find those entries.
               // So, allow the API query to do a normal query.
@@ -58,7 +57,7 @@ class CRM_Tags_APIWrapper {
       case '3.tag.getlist':
         $params = $apiRequest['params'] ?? [];
         $parent_id = self::getParentIdParam($apiRequest);
-        if ($parent_id == 292) {
+        if ($parent_id == CRM_NYSS_Tags_Constants::POSITIONS_TAG_ID) {
           $result= $event->getResponse();
           self::positions_getlist($params,$result);
           //Civi::log()->debug('Result', [$result]);
@@ -151,7 +150,7 @@ class CRM_Tags_APIWrapper {
       throw new CRM_Core_Exception('Unable to fetch bills from OpenLegislation');
     }
 
-    $query = "SELECT id, name FROM civicrm_tag WHERE parent_id = 292";
+    $query = "SELECT id, name FROM civicrm_tag WHERE parent_id = ". CRM_NYSS_Tags_Constants::POSITIONS_TAG_ID;
     $tag_dao = CRM_Core_DAO::executeQuery($query);
     $existing_tags = $tag_dao->fetchAll();
 
@@ -190,9 +189,10 @@ class CRM_Tags_APIWrapper {
 
         // appends to $values parameter
         $values->append([
-          'label' => $billTag,
           'id' => $tagID,
-          'sponsor' => $billSponsor
+          'label' => $billTag,
+          'sponsor' => $billSponsor,
+          'description' => []
         ]);
       }//end foreach
     }

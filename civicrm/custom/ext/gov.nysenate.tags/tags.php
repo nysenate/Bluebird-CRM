@@ -13,8 +13,8 @@ function tags_civicrm_config(&$config) {
   _tags_civix_civicrm_config($config);
 
   //14336
-  Civi::dispatcher()->addListener('civi.api.prepare', ['CRM_Tags_APIWrapper', 'PREPARE'], -100);
-  Civi::dispatcher()->addListener('civi.api.respond', ['CRM_Tags_APIWrapper', 'RESPOND'], -100);
+  Civi::dispatcher()->addListener('civi.api.prepare', ['CRM_NYSS_Tags_APIWrapper', 'PREPARE'], -100);
+  Civi::dispatcher()->addListener('civi.api.respond', ['CRM_NYSS_Tags_APIWrapper', 'RESPOND'], -100);
 }
 
 
@@ -159,6 +159,7 @@ function tags_civicrm_merge($type, &$sqls, $fromId, $toId, $tables) {
   }
 } //tags_civicrm_merge()
 
+#[CRM_NYSS_Attribute_IssueRefs('17149')]
 function tags_civicrm_buildForm($formName, &$form) {
   /*Civi::log()->debug('buildForm', array(
     'formName' => $formName,
@@ -336,6 +337,11 @@ function tags_civicrm_buildForm($formName, &$form) {
     }
   }
 
+  // NYSS #17149
+  if ($formName == 'CRM_Case_Form_CaseView') {
+    CRM_Core_Resources::singleton()->addScriptFile('gov.nysenate.tags', 'js/case_tags.js');
+  }
+
   //13120 color field removed universally
   if ($form->elementExists('color')) {
     $form->removeElement('color');
@@ -477,6 +483,7 @@ function tags_civicrm_pageRun(&$page) {
   }
 } //tags_civicrm_pageRun()
 
+#[CRM_NYSS_Attribute_IssueRefs('17149')]
 function tags_civicrm_alterEntityRefParams(&$params, $formName) {
   /*Civi::log()->debug('tags_civicrm_alterEntityRefParams', [
     'params' => $params,
@@ -502,6 +509,12 @@ function tags_civicrm_alterEntityRefParams(&$params, $formName) {
   }
   */
 
+  // NYSS #17149 -- Should never be able to create new position tags.
+  if (strtolower($params['entity']) == 'tag' &&
+      $params['api']['params']['parent_id'] == CRM_NYSS_Tags_Constants::POSITIONS_TAG_ID) {
+    $params['create'] = FALSE;
+  }
+
 } //tags_civicrm_alterEntityRefParams()
 
 function tags_civicrm_alterAPIPermissions($entity, $action, &$params, &$permissions) {
@@ -516,4 +529,8 @@ function tags_civicrm_alterAPIPermissions($entity, $action, &$params, &$permissi
   if ($entity == 'nyss_tags' && in_array($action, array('getlist', 'saveposition'))) {
     $params['check_permissions'] = false;
   }
+
+  // NYSS #17149 -- moving API action from nyss_tags to tag entity
+  $permissions['tag']['save_position'] = array('access CiviCRM', 'edit all contacts');
+
 } //tags_civicrm_alterAPIPermissions()
