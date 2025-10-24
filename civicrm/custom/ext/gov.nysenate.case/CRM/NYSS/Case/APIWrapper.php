@@ -23,7 +23,7 @@ class CRM_NYSS_Case_APIWrapper {
    */
   public static function change_case_select_label($event) {
     $result = $event->getResponse();
-    for ($i=0; $i<sizeof($result['values']); $i++) {
+    for ($i=0; $i<sizeof($result['values']??[]); $i++) {
       $desc_1 = $result['values'][$i]['description'][1];
       $new_label = 'Case #' . $result['values'][$i]['id'] . " - $desc_1";
       $result['values'][$i]['description'][0] = preg_replace('/^#\d+\:\s+/','',$result['values'][$i]['description'][0]);
