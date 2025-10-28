@@ -8,7 +8,7 @@ CRM.$(function($) {
       if (typeof CRM.vars.NYSS !== 'undefined') {contactId = CRM.vars.NYSS.contactId;}
       //console.log('contactId: ', contactId);
 
-      CRM.api3('nyss_tags', 'savePosition', {value:e.val, contactId:contactId}, false)
+      CRM.api3('tag', 'save_position', {value:e.val, contactId:contactId}, false)
         .done(function(result) {
         });
     });
