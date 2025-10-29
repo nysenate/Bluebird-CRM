@@ -105,7 +105,7 @@ class CRM_NYSS_Inbox_Form_Process extends CRM_Core_Form {
       'entity' => 'nyss_tags',
       'multiple' => TRUE,
       'create' => FALSE,
-      'api' => array('params' => array('parent_id' => 292)),
+      'api' => array('params' => array('parent_id' => CRM_NYSS_Tags_Constants::POSITIONS_TAG_ID)),
       'class' => "crm-contact-tagset",
     ), FALSE);
 
@@ -130,7 +130,7 @@ class CRM_NYSS_Inbox_Form_Process extends CRM_Core_Form {
       'entity' => 'nyss_tags',
       'multiple' => TRUE,
       'create' => FALSE,
-      'api' => array('params' => array('parent_id' => 292)),
+      'api' => array('params' => array('parent_id' => CRM_NYSS_Tags_Constants::POSITIONS_TAG_ID)),
       'class' => "crm-activity-tagset",
     ), FALSE);
 
