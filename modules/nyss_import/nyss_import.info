@@ -1,6 +1,0 @@
-name = NYSS Standard Import
-description = Modifications to standard import
-dependencies[] = civicrm
-package = CiviCRM
-core = 7.x
-version = 4.2

@@ -1,6 +1,0 @@
-name = NYSS Mailing module
-description = Customizations related to CiviMail implementation
-dependencies[] = civicrm
-package = CiviCRM
-core = 7.x
-version = 5.x

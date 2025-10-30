@@ -78,6 +78,7 @@ function inbox_civicrm_entityRefFilters(&$filters) {
   ];
 }//entityRefFilters
 
+#[CRM_NYSS_Attribute_IssueRefs('17369')]
 function inbox_civicrm_buildForm($formName, &$form) {
   /*Civi::log()->debug('inbox_civicrm_buildForm', array(
     'formName' => $formName,
@@ -96,6 +97,18 @@ function inbox_civicrm_buildForm($formName, &$form) {
       CRM_Core_Resources::singleton()->addStyleFile('gov.nysenate.inbox', 'css/new_individual.css');
     }
   }
+
+  // NYSS #17369
+  // Set Activity Medium to Email when opening a new case from the Matched
+  // Messages EntityRef field, "File On Case"
+  if ($formName === 'CRM_Case_Form_Case') {
+    $medium_id = CRM_Utils_Request::retrieve('mediumId', 'Integer', NULL, FALSE, NULL);
+    $context = CRM_Utils_Request::retrieve('context', 'String', NULL, FALSE, NULL);
+    if ($medium_id && $context === 'inbox_entityref') {
+      $form->setDefaults(['medium_id' => $medium_id]);
+    }
+  }
+
 }
 
 function inbox_civicrm_entityTypes(&$entityTypes) {
@@ -117,6 +130,34 @@ function inbox_civicrm_entityTypes(&$entityTypes) {
       'class' => 'CRM_OAuth_DAO_OAuthContactToken',
       'table' => 'civicrm_oauth_contact_token',
     ];
+  }
+}
+
+/**
+ * @param $formName
+ * @param $form
+ * @note NYSS #17369
+ * @return void
+ * @throws \CRM_Core_Exception
+ * @throws \Civi\API\Exception\UnauthorizedException
+ */
+#[CRM_NYSS_Attribute_IssueRefs('17369')]
+function inbox_civicrm_postProcess($formName, $form) {
+  // NYSS #17369
+  // In this specific case, we are creating a case via an entityRef form field.
+  // So, we need to give the entityRef field some extra information to allow
+  // it to populate the field with the new case.
+  if ($formName === 'CRM_Case_Form_Case' && $form->_context === 'inbox_entityref' && isset($form->_caseId)) {
+
+    $case = \Civi\Api4\CiviCase::get(TRUE)
+      ->addSelect('id', 'subject')
+      ->addWhere('id', '=', $form->_caseId)
+      ->setLimit(1)
+      ->execute()->single();
+
+    $name = 'Case #' . $case['id'] . ' - ' . $case['subject'];
+    $form->ajaxResponse['extra'] = ['display_name'=> $name, 'sort_name'=> $name];
+    $form->ajaxResponse['id'] = $form->_caseId;
   }
 }
 
