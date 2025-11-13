@@ -115,6 +115,7 @@ function mail_civicrm_angularModules(&$angularModules) {
   }
 }
 
+#[CRM_NYSS_Attribute_IssueRefs('13402','11041','14402','13305','12136','17587')]
 function mail_civicrm_alterAngular(\Civi\Angular\Manager $angular) {
   //inject mailing form options
   $changeSet = \Civi\Angular\ChangeSet::create('inject_options')
@@ -151,6 +152,17 @@ function mail_civicrm_alterAngular(\Civi\Angular\Manager $angular) {
   $changeSet = \Civi\Angular\ChangeSet::create('modify_preview')
     ->alterHtml('~/crmMailing/BlockPreview.html', '_mail_alterMailingPreview');
   $angular->add($changeSet);
+
+  // NYSS 17587 -- inject bbMailingSizeWarning directive.
+  $changeSet = \Civi\Angular\ChangeSet::create('size_warning')
+    ->alterHtml('~/crmMosaico/EditMailingCtrl/bootstrap-wizard.html',
+      function (phpQueryObject $doc) {
+        $doc->find('.crm-mosaico-wizard')->prepend('
+        <bb-mailing-size-warning crm-mailing="mailing"></bb-mailing-size-warning>
+      ');
+      });
+  $angular->add($changeSet);
+
 }
 
 //https://github.com/veda-consulting-company/uk.co.vedaconsulting.mosaico/issues/347#issuecomment-555785659
