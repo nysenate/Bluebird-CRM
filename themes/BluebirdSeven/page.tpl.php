@@ -99,8 +99,8 @@ function _bbSetupHeader()
   }
 
   //setup header line
-  $rolesList = implode('', $user->roles);
-  $rolesList = str_replace('authenticated user', '', $rolesList);
+  $displayRoles = array_diff($user->roles, ['authenticated user']);
+  $rolesList = implode(' | ', $displayRoles);
 
   civicrm_initialize();
   $contact = civicrm_api3('contact', 'getsingle', array(
@@ -162,7 +162,7 @@ function bb_buildRecentItemsList()
   //Civi::log()->debug('bb_buildRecentItemsList', ['recent' => $recent]);
 
   $html = '
-    <div id="nyss-recentitems" title="Recent Items">Recent Items: 
+    <div id="nyss-recentitems" title="Recent Items">Recent Items:
       <ul id="nyss-recentitems-list">
   ';
 
