@@ -874,27 +874,35 @@ class CRM_NYSS_Inbox_BAO_Inbox {
           }
         }
 
+        // Update the Activity based on values in "Edit Activity" tab.
         if (!empty($values['activity_assignee']) ||
           !empty($values['activity_status']) ||
           !empty($values['case_id'])
         ) {
-          $params = ['id' => $row['activity_id']];
-
-          if (!empty($values['activity_assignee'])) {
-            $params['assignee_contact_id'] = $values['activity_assignee'];
-          }
-
-          if (!empty($values['activity_status'])) {
-            $params['status_id'] = $values['activity_status'];
-          }
-
-          if (!empty($values['case_id'])) {
-            $params['case_id'] = $values['case_id'];
-          }
-
           try {
-            civicrm_api3('activity', 'create', $params);
+            $params = ['id' => $row['activity_id']];
+            $activity_update = \Civi\Api4\Activity::update(TRUE);
+            $activity_update->addWhere('id', '=', $row['activity_id']);
+            if (!empty($values['activity_status'])) {
+              $activity_update->addValue('status_id', $values['activity_status']);
+              $params['status_id'] = $values['activity_status'];
+            }
+            if (!empty($values['case_id'])) {
+              $activity_update->addValue('case_id', $values['case_id']);
+              $params['case_id'] = $values['case_id'];
+            }
+            if (!empty($values['activity_assignee'])) {
+              $activity_update->addValue('assignee_contact_id', $values['activity_assignee']);
+              $params['assignee_contact_id'] = $values['activity_assignee'];
+            }
+            $au_result = $activity_update->execute();
 
+            //$create_activity_result = civicrm_api3('activity', 'create', $params);
+            if ($au_result['is_error'] == 1) {
+              throw new CRM_Core_Exception($au_result['error_code']);
+            }
+
+            // Send Mail to Assignee
             if (!empty($values['activity_assignee'])) {
               $sendEmail = self::sendActivityAssigneeEmail($params);
               if ($sendEmail['status']) {
@@ -903,7 +911,7 @@ class CRM_NYSS_Inbox_BAO_Inbox {
               }
             }
           }
-          catch (CiviCRM_API3_Exception $e) {
+          catch (CRM_Core_Exception $e) {
             Civi::log()->debug('processMessages create activity', ['e' => $e]);
             $msg[] = 'Unable to update activity record.';
           }

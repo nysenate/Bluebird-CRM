@@ -1,0 +1,40 @@
+<button class="af-button btn btn-warning" type="reset" crm-icon="fa-undo">Reset</button>
+<div af-fieldset="">
+  <details class="af-container af-container-style-pane" af-title="Search Criteria" open="">
+    <details class="af-container af-container-style-pane af-layout-inline" af-title="Specific Search">
+      <af-field name="id" defn="{label: 'Lookup up a single case by Case ID, Constituent or Case Subject', input_attrs: {}}" />
+    </details>
+    <details class="af-container af-container-style-pane" af-title="General Search" open="">
+      <div class="af-markup">
+        <div class="message help">Tip: Make sure that &quot;Specific Search&quot; is clear before searching here for multiple cases.</div>
+        <p>Search for multiple cases with the following filters.</p>
+        <br/>
+      </div>
+      <div class="af-container af-layout-inline" af-title="Case Information">
+        <af-field name="Case_CaseContact_Contact_01.id" defn="{label: 'Constituent', input_attrs: {}}" />
+        <af-field name="subject" />
+        <af-field name="status_id" defn="{input_attrs: {multiple: true}, required: false}" />
+        <af-field name="case_type_id" defn="{input_attrs: {multiple: true}, required: false}" />
+      </div>
+      <div class="af-container af-layout-inline" af-title="Date Range">
+        <af-field name="start_date" defn="{input_type: 'Select', search_range: true, input_attrs: {}}" />
+        <af-field name="end_date" defn="{input_type: 'Select', search_range: true, input_attrs: {}}" />
+      </div>
+      <div class="af-container af-layout-cols">
+        <div class="af-container af-layout-inline" af-title="Case Tags">
+          <af-field name="Case_EntityTag_Tag_01.id" defn="{label: 'Keywords', input_attrs: {}, expose_operator: true, search_operator: '='}" />
+          <af-field name="Case_EntityTag_Tag_02.id" defn="{label: 'Issue Codes', input_attrs: {}}" />
+        </div>
+        <div class="af-container af-layout-inline" af-title="Case Assignment">
+          <af-field name="Case_CaseContact_Contact_01_Contact_RelationshipCache_Contact_01.id" defn="{label: 'Case Manager', search_operator: '=', input_attrs: {}, saved_search: 'NYSS_Select_Case_Manager_Search'}" />
+        </div>
+        <div class="af-container" af-title="Misc">
+          <af-field name="is_deleted" />
+        </div>
+      </div>
+    </details>
+  </details>
+  <div class="af-container af-container-style-pane">
+    <crm-search-display-table search-name="NYSS_Case_Search" display-name="NYSS_Case_Search_Table_1"></crm-search-display-table>
+  </div>
+</div>

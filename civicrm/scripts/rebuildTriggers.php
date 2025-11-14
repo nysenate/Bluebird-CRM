@@ -36,6 +36,6 @@ if ($optList['check']) {
 }
 else {
   echo "Rebuilding triggers...\n";
-  CRM_Core_DAO::executeQuery("SET NAMES UTF8 COLLATE utf8_unicode_ci;");
+  CRM_Core_DAO::executeQuery("SET NAMES utf8mb4 COLLATE utf8mb4_unicode_ci;");
   Civi::service('sql_triggers')->rebuild(NULL, TRUE);
 }

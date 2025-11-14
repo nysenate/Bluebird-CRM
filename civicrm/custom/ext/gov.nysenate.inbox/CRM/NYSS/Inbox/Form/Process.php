@@ -105,7 +105,7 @@ class CRM_NYSS_Inbox_Form_Process extends CRM_Core_Form {
       'entity' => 'nyss_tags',
       'multiple' => TRUE,
       'create' => FALSE,
-      'api' => array('params' => array('parent_id' => 292)),
+      'api' => array('params' => array('parent_id' => CRM_NYSS_Tags_Constants::POSITIONS_TAG_ID)),
       'class' => "crm-contact-tagset",
     ), FALSE);
 
@@ -130,7 +130,7 @@ class CRM_NYSS_Inbox_Form_Process extends CRM_Core_Form {
       'entity' => 'nyss_tags',
       'multiple' => TRUE,
       'create' => FALSE,
-      'api' => array('params' => array('parent_id' => 292)),
+      'api' => array('params' => array('parent_id' => CRM_NYSS_Tags_Constants::POSITIONS_TAG_ID)),
       'class' => "crm-activity-tagset",
     ), FALSE);
 
@@ -163,7 +163,29 @@ class CRM_NYSS_Inbox_Form_Process extends CRM_Core_Form {
     $statusTypes = CRM_Core_PseudoConstant::activityStatus();
     $this->add('select', 'activity_status', 'Status',
       array('' => '- select status -') + $statusTypes, FALSE);
-    $this->addEntityRef('case_id', ts('File on Case'), ['entity' => 'Case']);
+
+    // NYSS #17369 -- Allow case creation if only one item selected
+    $create_case = FALSE;
+    if (sizeof($matchedIds ?? []) === 1) {
+      $medium_id = CRM_Core_PseudoConstant::getKey('CRM_Activity_BAO_Activity', 'medium_id', 'email');
+      $create_case = [[
+        'label' => 'Create Case',
+        'url' => CRM_Utils_System::url('civicrm/case/add', "reset=1&action=add&mediumId={$medium_id}&cid={$matchedIds[0]}&context=inbox_entityref",
+          TRUE, NULL, FALSE, FALSE, TRUE),
+        //'type' => ucfirst(str_replace('new_', '', $profile['name'])),
+        'icon' => 'fa-suitcase',
+      ]];
+    }
+    $this->addEntityRef('case_id', ts('File on Case'), [
+      'entity' => 'Case',
+      'create' => $create_case,
+      // NYSS #17369 -- See CRM_NYSS_Case_APIWrapper for magic
+      'api' => [
+        'params' => [
+          'search_field_fallback' => 'case_id.subject'
+        ]
+      ],
+    ]);
 
     //see if subject has [case #] hash and set as default case
     if (!empty($details['activity_id'])) {
