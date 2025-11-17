@@ -552,6 +552,12 @@ function mail_civicrm_links($op, $objectName, $objectId, &$links, &$mask, &$valu
           // This weight should put "Copy" just above "Archive"
           $links[$key]['weight'] = "105";
       }
+      // NYSS 15622/16512/17609
+      if (!CRM_Core_Permission::check('access CiviMail')) {
+        if (in_array($link['name'], ['Resume', 'Pause'])) {
+          unset($links[$key]);
+        }
+      }
     }
   }
 
@@ -576,18 +582,6 @@ function mail_civicrm_links($op, $objectName, $objectId, &$links, &$mask, &$valu
         if ($link['name'] == 'Mailing Report') {
           unset($links[$k]);
         }
-      }
-    }
-  }
-
-  //15622/16512
-  if ($op == 'view.mailing.browse.scheduled' &&
-    $objectName == 'Mailing' &&
-    !(CRM_Core_Permission::check('access CiviMail') || CRM_Core_Permission::check('approve mailings'))
-  ) {
-    foreach ($links as $k => $link) {
-      if (in_array($link['name'], ['Resume', 'Pause'])) {
-        unset($links[$k]);
       }
     }
   }
