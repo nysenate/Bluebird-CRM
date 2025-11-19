@@ -1545,17 +1545,29 @@ function _mail_dedupeEmail($mailingID) {
  * this is a failsafe to ensure it is properly deduped
  */
 function _mail_dedupeContacts($mailingId) {
-  CRM_Core_DAO::executeQuery("
-    DELETE a
+  $sql = "DELETE a
     FROM civicrm_mailing_recipients AS a, civicrm_mailing_recipients AS b
     WHERE a.id < b.id
       AND a.mailing_id <=> b.mailing_id
       AND a.contact_id <=> b.contact_id
       AND a.email_id <=> b.email_id
-      AND a.mailing_id = %1
-  ", [
-    1 => [$mailingId, 'Positive']
-  ]);
+      AND a.mailing_id = %1";
+
+  $result = CRM_Core_DAO::executeQuery($sql, [1 => [$mailingId, 'Positive']]);
+
+  // NYSS 17656 -- Temporary Monitor.
+  // Just trying to see if there's any correlation between
+  // when this function deletes records and when we get duplicates in the
+  // event queue. While this function might be deduping mailing_recipients,
+  // I wonder if it's inadvertently creating duplicates in the event queue.
+  $deletedCount = $result->affectedRows();
+  if ($deletedCount) {
+    Civi::log()->warning('_mail_dedupeContacts NYSS 17656', array(
+      '$deletedCount' => $deletedCount,
+      '$mailingId' => $mailingId
+    ));
+  }
+
 } // _mail_dedupeContacts()
 
 
