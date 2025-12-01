@@ -14,6 +14,7 @@ class CRM_NYSS_Scripts_UpdateMyActivitiesDashlet {
   private $short_opts = 'dvrf';
   private $long_opts = ['dryrun','verbose', 'restore', 'restore-file='];
   private $user_opts = NULL;
+  private ?string $site = NULL;
   private bool $dryrun = FALSE;
   private bool $verbose = FALSE;
   private bool $restore = FALSE;
@@ -85,7 +86,8 @@ class CRM_NYSS_Scripts_UpdateMyActivitiesDashlet {
     } else {
       if ($this->restore) {
         // look for latest restore file based on timestamp and filename pattern
-        $files = glob(getcwd().'/my-activities-dashlet-restore-*.txt');
+        $glob_pattern = "/my-activities-dashlet-restore-{$this->site}-*.txt";
+        $files = glob(getcwd().$glob_pattern);
         if (sizeof($files) < 1) {
           throw new Exception('No restore files found');
         }
@@ -96,7 +98,7 @@ class CRM_NYSS_Scripts_UpdateMyActivitiesDashlet {
         if (!is_writable(__DIR__)) {
           throw new Exception("Cannot write to " . __DIR__);
         }
-        return getcwd(). "/my-activities-dashlet-restore-{$timestamp}.txt";
+        return getcwd(). "/my-activities-dashlet-restore-{$this->site}-{$timestamp}.txt";
       }
     }
   }
@@ -222,7 +224,6 @@ class CRM_NYSS_Scripts_UpdateMyActivitiesDashlet {
 
     // Parse the options
     $this->user_opts = civicrm_script_init($this->short_opts, $this->long_opts);
-    //Civi::log()->debug(__FUNCTION__, ['$optlist' => $optlist]);
 
     echo "Bootstrapping My Activities Dashlet Update...\n";
 
@@ -251,6 +252,8 @@ class CRM_NYSS_Scripts_UpdateMyActivitiesDashlet {
     }
 
     $this->restore_file = $this->user_opts['restore-file'] ?? NULL;
+
+    $this->site = $this->user_opts['site'] ?? NULL;
 
     //get instance settings
     $this->bbcfg = get_bluebird_instance_config($this->user_opts['site']);
