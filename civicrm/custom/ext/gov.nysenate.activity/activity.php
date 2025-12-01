@@ -29,6 +29,19 @@ function activity_civicrm_enable() {
   _activity_civix_civicrm_enable();
 }
 
+function activity_civicrm_pageRun(&$page) {
+  // Added - NYSS 11385 / Removed (deprecated) - NYSS 17345
+  // See managed/SavedSearch_NYSS_My_Activities.mgd.php
+  /*
+  if ($pagename == 'CRM_Dashlet_Page_Activity') {
+    CRM_Core_Resources::singleton()->addScript("
+      CRM.$(function($) {
+        $('li.widget-activity h3.widget-header').text('My Activities');
+        $('th.crm-contact-activity-activity_date').html('Activity Date');
+      });
+    ");
+  }
+  */
 }
 
 function activity_civicrm_buildForm($formName, &$form) {

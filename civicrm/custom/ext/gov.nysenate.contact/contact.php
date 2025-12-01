@@ -209,16 +209,6 @@ function contact_civicrm_pageRun(&$page) {
     }
   }
 
-  //NYSS 11385
-  if ($pagename == 'CRM_Dashlet_Page_Activity') {
-    CRM_Core_Resources::singleton()->addScript("
-      CRM.$(function($) {
-        $('li.widget-activity h3.widget-header').text('My Activities');
-        $('th.crm-contact-activity-activity_date').html('Activity Date');
-      });
-    ");
-  }
-
   _contact_fixTitles();
 
   //4567 make admin breadcrumb unclickable if lacking permission
