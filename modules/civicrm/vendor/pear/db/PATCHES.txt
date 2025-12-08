@@ -6,6 +6,6 @@ Source: https://download.civicrm.org/patches/a6e31a769218801fb1fb3d679ff72d3d8a7
 
 
 Apply CiviCRM Customisations for the pear:db package
-Source: https://download.civicrm.org/patches/83a3d0dd9f8e555a474ee433c453ff741a4dedf1983bad8b3566136e90f9c46b/pear_db_civicrm_changes.patch
+Source: https://download.civicrm.org/patches/47e125fec0c789b095880fa65c6037210b01179290d5727b22b70fa77333496b/pear_db_civicrm_changes.patch
 
 

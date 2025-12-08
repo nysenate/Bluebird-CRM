@@ -44,6 +44,20 @@ class CreateBatch extends AbstractAction {
   protected $rowCount = 1;
 
   /**
+   * Set targets for tally totals
+   *
+   * @var array
+   */
+  protected $targets = [];
+
+  /**
+   * Label for the batch
+   *
+   * @var string
+   */
+  protected $label;
+
+  /**
    * @inheritDoc
    */
   public function _run(Result $result) {
@@ -57,6 +71,7 @@ class CreateBatch extends AbstractAction {
     \CRM_Core_DAO::executeQuery("DROP TABLE IF EXISTS `$tableName`");
 
     $userJob = [
+      'label' => $this->label,
       'job_type' => 'search_batch_import',
       'status_id:name' => 'draft',
       'is_template' => FALSE,
@@ -82,6 +97,7 @@ class CreateBatch extends AbstractAction {
       $fieldSpec['label'] = $column['label'];
       $userJob['metadata']['DataSource']['column_headers'][] = $column['label'];
       $userJob['metadata']['DataSource']['column_specs'][$fieldSpec['name']] = $fieldSpec;
+      $userJob['metadata']['DataSource']['targets'] = $this->targets;
     }
 
     $columnSql = implode(",\n", \CRM_Import_DataSource::getStandardTrackingFields());
@@ -95,16 +111,18 @@ class CreateBatch extends AbstractAction {
     $alterSql = "ALTER TABLE `$tableName` ADD INDEX(" . implode('), ADD INDEX(', \CRM_Import_DataSource::getStandardIndices()) . ')';
     \CRM_Core_DAO::executeQuery($alterSql, [], TRUE, NULL, FALSE, FALSE);
 
-    $result[] = UserJob::create(FALSE)
+    $userJob = UserJob::create(FALSE)
       ->setValues($userJob)
       ->execute()->single();
 
-    // Add empty rows per $this->rowCount
+    // Add rows per $this->rowCount (default values will be filled in by the API)
     if ($this->rowCount > 0) {
-      $values = rtrim(str_repeat("(),", $this->rowCount), ",");
-      $sql = "INSERT INTO `$tableName` () VALUES $values";
-      \CRM_Core_DAO::executeQuery($sql, [], TRUE, NULL, FALSE, FALSE);
+      $apiName = 'Import_' . $userJob['id'];
+      $values = array_fill(0, $this->rowCount, []);
+      civicrm_api4($apiName, 'save', ['records' => $values]);
     }
+
+    $result[] = $userJob;
   }
 
   private function getSqlType(array $fieldSpec) {

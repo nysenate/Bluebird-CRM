@@ -100,15 +100,6 @@ the specific language governing permissions and limitations under the Apache Lic
 
     nextUid=(function() { var counter=1; return function() { return counter++; }; }());
 
-
-    function reinsertElement(element) {
-        var placeholder = $(document.createTextNode(''));
-
-        element.before(placeholder);
-        placeholder.before(element);
-        placeholder.remove();
-    }
-
     function stripDiacritics(str) {
         // Used 'uni range + named function' from http://jsperf.com/diacritics/18
         function match(a) {
@@ -1557,10 +1548,7 @@ the specific language governing permissions and limitations under the Apache Lic
                 mask.attr("id","select2-drop-mask").attr("class","select2-drop-mask");
                 mask.hide();
                 mask.appendTo(this.body);
-                mask.on("mousedown touchstart click", function (e) {
-                    // Prevent IE from generating a click event on the body
-                    reinsertElement(mask);
-
+                mask.on("click", function (e) {
                     var dropdown = $("#select2-drop"), self;
                     if (dropdown.length > 0) {
                         self=dropdown.data("select2");
@@ -2384,7 +2372,7 @@ the specific language governing permissions and limitations under the Apache Lic
                 }
             }));
 
-            selection.on("mousedown touchstart", "abbr", this.bind(function (e) {
+            selection.on("click", "abbr", this.bind(function (e) {
                 if (!this.isInterfaceEnabled()) {
                     return;
                 }
@@ -2398,10 +2386,7 @@ the specific language governing permissions and limitations under the Apache Lic
                 }
             }));
 
-            selection.on("mousedown touchstart", this.bind(function (e) {
-                // Prevent IE from generating a click event on the body
-                reinsertElement(selection);
-
+            selection.on("click", this.bind(function (e) {
                 if (!this.container.hasClass("select2-container-active")) {
                     this.opts.element.trigger($.Event("select2-focus"));
                 }

@@ -52,7 +52,7 @@ return [
         'saved_search_id.name' => 'Administer_Membership_Status_Rules',
         'type' => 'table',
         'settings' => [
-          'description' => E::ts(''),
+          'description' => '',
           'sort' => [],
           'limit' => 50,
           'pager' => [
@@ -65,21 +65,18 @@ return [
             [
               'type' => 'field',
               'key' => 'label',
-              'dataType' => 'String',
               'label' => E::ts('Status'),
               'sortable' => TRUE,
             ],
             [
               'type' => 'field',
               'key' => 'start_event:label',
-              'dataType' => 'String',
               'label' => E::ts('Start Event'),
               'sortable' => TRUE,
             ],
             [
               'type' => 'field',
               'key' => 'start_event_adjust_interval',
-              'dataType' => 'Integer',
               'label' => E::ts('Start Adjustment'),
               'sortable' => TRUE,
               'rewrite' => '[start_event_adjust_interval] [start_event_adjust_unit:label]',
@@ -87,14 +84,12 @@ return [
             [
               'type' => 'field',
               'key' => 'end_event:label',
-              'dataType' => 'String',
               'label' => E::ts('End Event'),
               'sortable' => TRUE,
             ],
             [
               'type' => 'field',
               'key' => 'end_event_adjust_interval',
-              'dataType' => 'Integer',
               'label' => E::ts('End Adjustment'),
               'sortable' => TRUE,
               'rewrite' => '[end_event_adjust_interval] [end_event_adjust_unit:label]',
@@ -102,21 +97,18 @@ return [
             [
               'type' => 'field',
               'key' => 'is_current_member',
-              'dataType' => 'Boolean',
               'label' => E::ts('Current Member'),
               'sortable' => TRUE,
             ],
             [
               'type' => 'field',
               'key' => 'is_admin',
-              'dataType' => 'Boolean',
               'label' => E::ts('Administrator Only'),
               'sortable' => TRUE,
             ],
             [
               'type' => 'field',
               'key' => 'is_active',
-              'dataType' => 'Boolean',
               'label' => E::ts('Enabled'),
               'sortable' => TRUE,
               'cssRules' => [],
@@ -124,12 +116,11 @@ return [
             [
               'type' => 'field',
               'key' => 'is_reserved',
-              'dataType' => 'Boolean',
               'label' => E::ts('Reserved'),
               'sortable' => TRUE,
             ],
             [
-              'text' => E::ts(''),
+              'text' => '',
               'style' => 'default',
               'size' => 'btn-xs',
               'icon' => 'fa-bars',

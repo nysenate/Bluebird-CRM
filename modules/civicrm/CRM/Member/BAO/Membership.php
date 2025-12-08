@@ -148,11 +148,11 @@ class CRM_Member_BAO_Membership extends CRM_Member_DAO_Membership {
         }
       }
 
-      CRM_Utils_Hook::post('edit', 'Membership', $membership->id, $membership);
+      CRM_Utils_Hook::post('edit', 'Membership', $membership->id, $membership, $params);
     }
     else {
       CRM_Activity_BAO_Activity::addActivity($membership, 'Membership Signup', $targetContactID, $activityParams);
-      CRM_Utils_Hook::post('create', 'Membership', $membership->id, $membership);
+      CRM_Utils_Hook::post('create', 'Membership', $membership->id, $membership, $params);
     }
 
     return $membership;
@@ -631,7 +631,7 @@ INNER JOIN  civicrm_membership_type type ON ( type.id = membership.membership_ty
       $params['source_record_id'] = $membershipId;
       CRM_Activity_BAO_Activity::deleteActivity($params);
     }
-    self::deleteMembershipPayment($membershipId, $preserveContrib);
+    CRM_Member_BAO_MembershipPayment::deleteMembershipPayment($membershipId, $preserveContrib);
     CRM_Price_BAO_LineItem::deleteLineItems($membershipId, 'civicrm_membership');
 
     $results = $membership->delete();
@@ -849,13 +849,7 @@ INNER JOIN  civicrm_membership_type type ON ( type.id = membership.membership_ty
     // CRM-8141
     if ($onlySameParentOrg && $memType) {
       // see if there is a membership that has same parent as $memType but different parent than $membershipID
-      if ($dao->id && CRM_Core_Permission::check('edit memberships')) {
-        // CRM-10016, This is probably a backend renewal, and make sure we return the same membership thats being renewed.
-        $dao->whereAdd();
-      }
-      else {
-        unset($dao->id);
-      }
+      unset($dao->id);
 
       unset($dao->membership_type_id);
       if ($dao->find(TRUE)) {
@@ -1081,7 +1075,7 @@ AND civicrm_membership.is_test = %2";
       throw new CRM_Core_Exception(ts('Oops, it looks like there is no valid membership status corresponding to the membership start and end dates for this membership. Contact the site administrator for assistance.'));
     }
 
-    if ($status['id'] !== $currentMembership['status_id']) {
+    if ((int) $status['id'] !== (int) $currentMembership['status_id']) {
       $oldStatus = $currentMembership['status_id'];
       $memberDAO = new CRM_Member_DAO_Membership();
       $memberDAO->id = $currentMembership['id'];
@@ -1404,32 +1398,6 @@ WHERE  civicrm_membership.contact_id = civicrm_contact.id
         $numRelatedAvailable--;
       }
     }
-  }
-
-  /**
-   * Delete the record that are associated with this Membership Payment.
-   *
-   * @param int $membershipId
-   * @param bool $preserveContrib
-   *
-   * @return object
-   *   $membershipPayment deleted membership payment object
-   */
-  public static function deleteMembershipPayment($membershipId, $preserveContrib = FALSE) {
-
-    $membershipPayment = new CRM_Member_DAO_MembershipPayment();
-    $membershipPayment->membership_id = $membershipId;
-    $membershipPayment->find();
-
-    while ($membershipPayment->fetch()) {
-      if (!$preserveContrib) {
-        CRM_Contribute_BAO_Contribution::deleteContribution($membershipPayment->contribution_id);
-      }
-      CRM_Utils_Hook::pre('delete', 'MembershipPayment', $membershipPayment->id, $membershipPayment);
-      $membershipPayment->delete();
-      CRM_Utils_Hook::post('delete', 'MembershipPayment', $membershipPayment->id, $membershipPayment);
-    }
-    return $membershipPayment;
   }
 
   /**
@@ -2357,22 +2325,16 @@ WHERE {$whereClause}";
    *  - is_deceased
    *  - deceased_date
    *
-   * @param string $contactType
-   *
    * @return null|string
    *   $updateMembershipMsg string  status message for updated membership.
    */
-  public static function updateMembershipStatus($deceasedParams, $contactType) {
+  public static function updateMembershipStatus($deceasedParams) {
     $updateMembershipMsg = NULL;
     $contactId = $deceasedParams['contact_id'];
     $deceasedDate = $deceasedParams['deceased_date'];
 
     // process to set membership status to deceased for both active/inactive membership
-    if ($contactId &&
-      $contactType === 'Individual' &&
-      !empty($deceasedParams['is_deceased'])
-    ) {
-
+    if ($contactId && !empty($deceasedParams['is_deceased'])) {
       $userId = CRM_Core_Session::getLoggedInContactID() ?: $contactId;
 
       // get deceased status id

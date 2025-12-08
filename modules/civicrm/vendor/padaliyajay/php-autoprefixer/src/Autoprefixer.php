@@ -11,22 +11,27 @@ class Autoprefixer {
 
     /**
      * @param bool $prettyOutput
-     * @return bool
+     * @return string|false
+     * @throws \Sabberworm\CSS\Parsing\SourceException
      */
     public function compile($prettyOutput = true) {
-        if($this->css_parser){
-            $css_document = $this->css_parser->parse();
-
-            $this->compileCSSList($css_document);
-
-            $outputFormat = $prettyOutput ?
-                \Sabberworm\CSS\OutputFormat::createPretty() :
-                \Sabberworm\CSS\OutputFormat::createCompact();
-
-            return $css_document->render($outputFormat);
-        } else {
+        if (!$this->css_parser) {
             return false;
         }
+
+        $css_document = $this->css_parser->parse();
+
+        $this->compileCSSList($css_document);
+
+        $outputFormat = $prettyOutput ?
+            \Sabberworm\CSS\OutputFormat::createPretty() :
+            \Sabberworm\CSS\OutputFormat::createCompact();
+
+        return $css_document->render($outputFormat);
+    }
+
+    public function setVendors($vendors) {
+        Vendor::setVendors($vendors);
     }
 
     /**
@@ -47,9 +52,14 @@ class Autoprefixer {
             }
 
             // DeclarationBlock
-            if($content instanceof \Sabberworm\CSS\RuleSet\DeclarationBlock){
-                $compile_declarationBlock = new Compile\DeclarationBlock($content);
-                $compile_declarationBlock->compile();
+            if ($content instanceof \Sabberworm\CSS\RuleSet\DeclarationBlock){
+                 $compile_declarationBlock = new Compile\DeclarationBlock($content);
+                 $m_declarationBlock = $compile_declarationBlock->compile();
+
+                 if ($m_declarationBlock){
+                      // Pseudo selctors must have their own Declaration Block
+                      $vendor_contents = array_merge($vendor_contents, $m_declarationBlock);
+                 }
             }
 
             // AtRule

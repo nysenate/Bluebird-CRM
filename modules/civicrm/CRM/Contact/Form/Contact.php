@@ -18,10 +18,6 @@
 /**
  * This class generates form components generic to all the contact types.
  *
- * It delegates the work to lower level subclasses and integrates the changes
- * back in. It also uses a lot of functionality with the CRM API's, so any change
- * made here could potentially affect the API etc. Be careful, be aware, use unit tests.
- *
  */
 class CRM_Contact_Form_Contact extends CRM_Core_Form {
 
@@ -221,7 +217,9 @@ class CRM_Contact_Form_Contact extends CRM_Core_Form {
 
         $displayName = CRM_Contact_BAO_Contact::displayName($this->_contactId);
         if ($defaults['is_deceased']) {
-          $displayName .= '  <span class="crm-contact-deceased">(' . ts('deceased') . ')</span>';
+          $displayName .= '  <span class="crm-contact-deceased">(' .
+            ($this->_contactType === 'Individual' ? ts('deceased') : ts('closed')) .
+            ')</span>';
         }
         $displayName = ts('Edit %1', [1 => $displayName]);
 
@@ -331,11 +329,11 @@ class CRM_Contact_Form_Contact extends CRM_Core_Form {
       // However, if they are not present in the element index they will
       // not be available from `$this->getSubmittedValue()` in post process.
       // We do not have to set defaults or otherwise render - just add to the element index.
-      $this->addCustomDataFieldsToForm('Contact', array_filter([
+      $this->addCustomDataFieldsToForm('Contact', [
         'id' => $this->getContactID(),
         'contact_type' => $this->_contactType,
         'contact_sub_type' => $this->getSubmittedValue('contact_sub_type'),
-      ]));
+      ]);
     }
 
     // execute preProcess dynamically by js else execute normal preProcess
@@ -993,10 +991,11 @@ class CRM_Contact_Form_Contact extends CRM_Core_Form {
       $params['contact_id'] = $this->_contactId;
     }
 
-    //make deceased date null when is_deceased = false
-    if ($this->_contactType == 'Individual' && !empty($this->_editOptions['Demographics']) && empty($params['is_deceased'])) {
+    //make deceased date empty when is_deceased = false
+    if (($this->_contactType == 'Individual' && !empty($this->_editOptions['Demographics']) && empty($params['is_deceased']))
+      || ((($this->_contactType == 'Organization') || ($this->_contactType == 'Household')) && empty($params['is_deceased']))) {
       $params['is_deceased'] = FALSE;
-      $params['deceased_date'] = NULL;
+      $params['deceased_date'] = '';
     }
 
     // action is taken depending upon the mode

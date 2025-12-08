@@ -1,6 +1,6 @@
 {
     "name": "civicrm/civicrm-core:select2",
-    "url": "https://github.com/colemanw/select2/archive/v3.5-civicrm-1.2.zip",
-    "checksum": "270e591cc2be67f91d4daf093c2eb2f5e39c8018d3011117318f5265e8604e02",
+    "url": "https://github.com/colemanw/select2/archive/v3.5-civicrm-1.3.zip",
+    "checksum": "0c14140eb5593fc685df628da3221e4b67304a72198eac7647916cab64da1955",
     "ignore": null
 }
