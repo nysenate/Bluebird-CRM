@@ -561,11 +561,10 @@ class CRM_Activity_Form_Activity extends CRM_Contact_Form_Task {
       $defaults['target_contact_id'] = $this->_contactIds;
     }
 
-    // CRM-15472 - 50 is around the practical limit of how many items a select2 entityRef can handle
+    // CRM-15472 - there is a practical limit of how many items a select2 entityRef can handle
     if ($this->_action == CRM_Core_Action::UPDATE && !empty($defaults['target_contact_id'])) {
       $count = count(is_array($defaults['target_contact_id']) ? $defaults['target_contact_id'] : explode(',', $defaults['target_contact_id']));
-      //NYSS 11464
-      if ($count > 250) {
+      if ($count > 1000) {
         $this->freeze(['target_contact_id']);
         $this->assign('disable_swap_button', TRUE);
       }

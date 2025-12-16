@@ -659,7 +659,7 @@ class CRM_Report_Form_Contact_Relationship extends CRM_Report_Form {
     $this->endPostProcess($rows);
   }
 
-  /**
+  /**endPost
    * @param $rows
    */
   public function alterDisplay(&$rows) {

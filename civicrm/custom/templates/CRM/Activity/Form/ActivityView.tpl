@@ -26,7 +26,7 @@
                 {*NYSS 4933*}
                 {if call_user_func(array('CRM_Core_Permission','check'), 'access CiviMail') or
                     call_user_func(array('CRM_Core_Permission','check'), 'create mailings')}
-                  <a href="{$values.mailingId}" title="{ts escape='htmlattribute'}View Mailing Report{/ts}"><i class="crm-i fa-chevron-right" aria-hidden="true"></i>{ts}Mailing Report{/ts}</a>
+                  <a href="{$values.mailingId}" title="{ts escape='htmlattribute'}View Mailing Report{/ts}"><i class="crm-i fa-chevron-right" role="img" aria-hidden="true"></i>{ts}Mailing Report{/ts}</a>
                 {else}
                   Mass Email Recipients
                 {/if}
@@ -94,7 +94,7 @@
                               <td>
                                   {$mailingReport.mailing.body_text|mb_truncate:30|escape|nl2br}
                                   <br />
-                                    <strong><a class="crm-popup" href='{$textViewURL}'><i class="crm-i fa-chevron-right" aria-hidden="true"></i> {ts}View complete message{/ts}</a></strong>
+                                    <strong><a class="crm-popup" href='{$textViewURL}'><i class="crm-i fa-chevron-right" role="img"     aria-hidden="true"></i> {ts}View complete message{/ts}</a></strong>
                               </td>
                           </tr>
                       {/if}
@@ -108,7 +108,7 @@
                               <td>
                                   {$mailingReport.mailing.body_html|mb_truncate:30|escape|nl2br}
                                   <br/>
-                                    <strong><a class="crm-popup" href='{$htmlViewURL}'><i class="crm-i fa-chevron-right" aria-hidden="true"></i> {ts}View complete message{/ts}</a></strong>
+                                    <strong><a class="crm-popup" href='{$htmlViewURL}'><i class="crm-i fa-chevron-right" role="img" aria-hidden="true"></i> {ts}View complete message{/ts}</a></strong>
                               </td>
                           </tr>
                       {/if}
