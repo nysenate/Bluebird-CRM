@@ -46,6 +46,14 @@ class CRM_NYSS_Scripts_UpdateMyActivitiesDashlet {
 
     $this->new_id = $new_dashlet['id'];
 
+    if (! $this->new_id ?? NULL) {
+        throw new Exception('Failed: Can\'t find the ID of the New Dashlet');
+    }
+
+    if (! $this->old_id ?? NULL) {
+        throw new Exception('Failed: Can\'t find the ID of the Old Dashlet');
+    }
+
     if ($this->restore) {
       $this->run_restore();
     }
@@ -110,39 +118,70 @@ class CRM_NYSS_Scripts_UpdateMyActivitiesDashlet {
 
     // Get list of contacts with old dashlet enabled
     $dashboard_contacts = \Civi\Api4\DashboardContact::get(FALSE)
-      ->addSelect('contact_id')
+      ->addSelect('id','dashboard_id','contact_id','is_active')
       ->addWhere('dashboard_id', '=', $this->old_id)
-      ->addWhere('is_active', '=', TRUE)
       ->execute();
 
     // For each of these contacts, enable the new dashlet and disable the old
     if (! $this->dryrun) {
-      // create a restore file.
-      echo 'saving restore file to... ' . $restore_filename . "\n";
-      file_put_contents($restore_filename, serialize($dashboard_contacts));
+        // create a restore file.
+        echo 'saving restore file to... ' . $restore_filename . "\n";
+        file_put_contents($restore_filename, serialize($dashboard_contacts));
 
-      foreach ($dashboard_contacts as $c) {
+        $save_call = \Civi\Api4\DashboardContact::save(FALSE);
+        foreach ($dashboard_contacts as $dc) {
         //Civi::log()->debug(__FUNCTION__, ['$sql' => $sql,'dao' => $dao]);
-        bbscript_log(LL::INFO, "enable {$this->new_id} dashlet on contact {$c['contact_id']}\n");
-        $enable_results = \Civi\Api4\DashboardContact::update(FALSE)
-          ->addValue('is_active', TRUE)
-          ->addWhere('contact_id', '=', $c['contact_id'])
-          ->addWhere('dashboard_id', '=', $this->new_id)
-          ->execute();
-        echo "New dashlet enabled for " . $c['contact_id'] . "\n";
+            echo "Processing Contact Dashboard " . $dc['contact_id'] . "\n";
+            // de-activate the old dashlet
+            $save_call->addRecord(
+                [
+                    'id' => $dc['id'],
+                    'contact_id' => $dc['contact_id'],
+                    'dashboard_id' => $this->old_id,
+                    'is_active' => FALSE,
+                ]
+            );
 
-        bbscript_log(LL::INFO, "disable {$this->old_id} dashlet on contact {$c['contact_id']}\n");
-        $disable_results = \Civi\Api4\DashboardContact::update(FALSE)
-          ->addValue('is_active', FALSE)
-          ->addWhere('contact_id', '=', $c['contact_id'])
-          ->addWhere('dashboard_id', '=', $this->old_id)
-          ->execute();
-        echo "Old dashlet disabled for " . $c['contact_id'] . "\n";
+            // enable new dashlet for contacts that had an active old 'My Activities' dashlet
+            if ($dc['is_active']) {
+                echo "Contact " . $dc['contact_id'] . " has old 'My Activities' dashlet. Will Replace it with new\n";
+                // check if there's an entry for the new dashlet.
+                // (There shouldn't be on the first run, but just in case.)
+                $new_exists_check = \Civi\Api4\DashboardContact::get(FALSE)
+                    ->addSelect('id')
+                    ->addWhere('dashboard_id', '=', $this->new_id)
+                    ->addWhere('contact_id', '=', $dc['contact_id'])
+                    ->execute();
 
-        //foreach ($results as $result) {
-        // do something
-        //}
-      }
+                // if a record already exists, force an update by including id
+                if ($new_exists_check->count()) {
+                    echo "Update existing record for Contact " . $dc['contact_id'] ."\n";
+                    $save_call->addRecord(
+                        [
+                            'id' => $new_exists_check[0]['id'],
+                            'contact_id' => $dc['contact_id'],
+                            'dashboard_id' => $this->new_id,
+                            'is_active' => TRUE,
+                        ]
+                    );
+                    // otherwise, it should be an update
+                } else {
+                    echo "Insert new reord for Contact " . $dc['contact_id'] . "\n";
+                    $save_call->addRecord(
+                        [
+                            'contact_id' => $dc['contact_id'],
+                            'dashboard_id' => $this->new_id,
+                            'is_active' => TRUE,
+                        ]
+                    );
+                }
+            }
+        }
+        try {
+            $save_call->execute();
+        } catch(Exception $e) {
+            echo 'An Exception occurred while saving contact dashboards: ' . $e->getMessage() . "\n";
+        }
     } else {
       if ($this->verbose) {
         foreach ($dashboard_contacts as $c) {
@@ -152,6 +191,7 @@ class CRM_NYSS_Scripts_UpdateMyActivitiesDashlet {
       echo "found " . $dashboard_contacts->count() . " contacts who are using old dashlet\n";
     }
 
+
     // Now disable the entry in the dashboard table, so it no longer appears
     if (! $this->dryrun) {
       bbscript_log(LL::INFO, "disable {$this->old_id} dashlet.\n");
@@ -159,9 +199,14 @@ class CRM_NYSS_Scripts_UpdateMyActivitiesDashlet {
         ->addValue('is_active', FALSE)
         ->addWhere('id', '=', $this->old_id)
         ->execute();
-      if ($this->verbose) {
-        echo "disable ".self::OLD_DASHLET_NAME." dashlet.\n";
+      if ($results->count()) {
+          if ($this->verbose) {
+              echo "Disabled ".self::OLD_DASHLET_NAME." dashlet.\n";
+          }
+      } else {
+          echo "Failed to disable ".self::OLD_DASHLET_NAME." dashlet.\n";
       }
+
     } else {
       echo "dryrun: Not disabling old dashlet\n";
     }
@@ -174,14 +219,19 @@ class CRM_NYSS_Scripts_UpdateMyActivitiesDashlet {
 
     // First re-enable the entry in the dashboard table, so it no longer appears
     if (! $this->dryrun) {
-      bbscript_log(LL::INFO, "RESTORE - Re-enable {$this->old_id} dashlet.\n");
-      $results = \Civi\Api4\Dashboard::update(FALSE)
-        ->addValue('is_active', TRUE)
-        ->addWhere('id', '=', $this->old_id)
-        ->execute();
-      if ($this->verbose) {
-        echo "RESTORE - Re-enable ".self::OLD_DASHLET_NAME." dashlet.\n";
-      }
+        try {
+            bbscript_log(LL::INFO, "RESTORE - Re-enable {$this->old_id} dashlet.\n");
+            $results = \Civi\Api4\Dashboard::update(FALSE)
+                ->addValue('is_active', TRUE)
+                ->addWhere('id', '=', $this->old_id)
+                ->execute();
+
+            if ($this->verbose) {
+                echo "RESTORE - Re-enable ".self::OLD_DASHLET_NAME." dashlet.\n";
+            }
+        } catch(Exception $e) {
+            die($e->getMessage());
+        }
     } else {
       echo "dryrun: re-enable old dashlet in restore.\n";
     }
@@ -190,25 +240,29 @@ class CRM_NYSS_Scripts_UpdateMyActivitiesDashlet {
 
       foreach ($restore_data as $c) {
         //Civi::log()->debug(__FUNCTION__, ['$sql' => $sql,'dao' => $dao]);
-        bbscript_log(LL::INFO, "RESTORE - disable {$this->new_id} dashlet on contact {$c['contact_id']}\n");
-        $enable_results = \Civi\Api4\DashboardContact::update(FALSE)
-          ->addValue('is_active', FALSE)
-          ->addWhere('contact_id', '=', $c['contact_id'])
-          ->addWhere('dashboard_id', '=', $this->new_id)
-          ->execute();
-        echo "RESTORE - New dashlet disabled for " . $c['contact_id'] . "\n";
+          try {
+              bbscript_log(LL::INFO, "RESTORE - disable {$this->new_id} dashlet on contact {$c['contact_id']}\n");
+              $enable_results = \Civi\Api4\DashboardContact::update(FALSE)
+                  ->addValue('is_active', FALSE)
+                  ->addWhere('contact_id', '=', $c['contact_id'])
+                  ->addWhere('dashboard_id', '=', $this->new_id)
+                  ->execute();
 
-        bbscript_log(LL::INFO, "RESTORE enable {$this->old_id} dashlet on contact {$c['contact_id']}\n");
-        $disable_results = \Civi\Api4\DashboardContact::update(FALSE)
-          ->addValue('is_active', TRUE)
-          ->addWhere('contact_id', '=', $c['contact_id'])
-          ->addWhere('dashboard_id', '=', $this->old_id)
-          ->execute();
-        echo "RESTORE - Old dashlet enabled for " . $c['contact_id'] . "\n";
+              echo "RESTORE - New dashlet disabled for " . $c['contact_id'] . "\n";
 
-        //foreach ($results as $result) {
-        // do something
-        //}
+              bbscript_log(LL::INFO, "RESTORE enable {$this->old_id} dashlet on contact {$c['contact_id']}\n");
+
+              $disable_results = \Civi\Api4\DashboardContact::update(FALSE)
+                  ->addValue('is_active', $c['is_active'])
+                  ->addWhere('contact_id', '=', $c['contact_id'])
+                  ->addWhere('dashboard_id', '=', $this->old_id)
+                  ->execute();
+
+              echo "RESTORE - Old dashlet reset for " . $c['contact_id'] . "\n";
+
+          } catch (Exception $e) {
+              die($e->getMessage());
+          }
       }
     } else {
       if ($this->verbose) {
@@ -266,7 +320,6 @@ class CRM_NYSS_Scripts_UpdateMyActivitiesDashlet {
       CRM_Core_Error::debug_log_message('Failed to bootstrap CMS from  CRM_NYSS_Scripts_UpdateMyActivitiesDashlet.');
       throw new Exception('Failed to bootstrap CMS from CRM_NYSS_Scripts_UpdateMyActivitiesDashlet');
     }
-
     //$this->log_db = $this->bbcfg['db.log.prefix'].$this->bbcfg['db.basename'];
     //$this->civi_db = $this->bbcfg['db.civicrm.prefix'].$this->bbcfg['db.basename'];
   }
