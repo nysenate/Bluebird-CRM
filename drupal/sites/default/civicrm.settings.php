@@ -274,6 +274,7 @@ $prefs['fts_query_mode'] = 'wildwords-suffix';
 $prefs['includeWildCardInName'] = get_config_value($bbcfg, 'search.include_wildcard_in_name', false);
 $prefs['includeEmailInName'] = get_config_value($bbcfg, 'search.include_email_in_name', true);
 // includeNickNameInName
+$prefs['includeNickNameInName'] =  get_config_value($bbcfg, 'search.include_nickname_in_name', false);
 // includeAlphabeticalPager
 $prefs['smartGroupCacheTimeout'] = 10;
 //NYSS 16679 - no longer needed but leaving in place for reference
