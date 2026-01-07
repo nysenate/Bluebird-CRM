@@ -153,8 +153,6 @@ class CRM_Activity_Form_Activity extends CRM_Contact_Form_Task {
     // Remove print document activity type
     $unwanted = CRM_Core_OptionGroup::values('activity_type', FALSE, FALSE, FALSE, "AND v.name = 'Print PDF Letter'");
     $activityTypes = array_diff_key(CRM_Core_PseudoConstant::ActivityType(FALSE), $unwanted);
-    //NYSS 4921
-    asort($activityTypes);
 
     $this->_fields = [
       'subject' => [
@@ -399,10 +397,8 @@ class CRM_Activity_Form_Activity extends CRM_Contact_Form_Task {
       if ($qfKey) {
         $urlParams .= "&qfKey=$qfKey";
       }
-      //NYSS 2538
       $path = CRM_Utils_System::currentPath();
-      if ($this->_compContext === 'advanced' ||
-        $path == 'civicrm/contact/search/advanced') {
+      if ($this->_compContext === 'advanced') {
         $urlString = 'civicrm/contact/search/advanced';
       }
       elseif ($path === 'civicrm/group/search'
@@ -622,17 +618,8 @@ class CRM_Activity_Form_Activity extends CRM_Contact_Form_Task {
     // Enable form element (ActivityLinks sets this true).
     $this->assign('suppressForm', FALSE);
 
-    //NYSS 4921
-    $activityTypes = $this->_fields['followup_activity_type_id']['attributes']; 
-
-    //NYSS 6567 if inbound email, add to select list
-    if ( $this->_activityTypeName == 'Inbound Email' ) {
-      $activityTypes[$this->_activityTypeId] = $this->_activityTypeName;
-    }
-
-    asort($activityTypes);
-    $element = &$this->add('select', 'activity_type_id', ts('Activity Type'),
-      ['' => '- ' . ts('select') . ' -'] + $activityTypes, //NYSS 4921
+    $element = $this->add('select', 'activity_type_id', ts('Activity Type'),
+      $this->_fields['followup_activity_type_id']['attributes'],
       FALSE, [
         'onchange' => "CRM.buildCustomData( 'Activity', this.value, false, false, false, false, false, false, {$this->_currentlyViewedContactId});",
         'class' => 'crm-select2 required',
@@ -642,11 +629,7 @@ class CRM_Activity_Form_Activity extends CRM_Contact_Form_Task {
 
     // Freeze for update mode.
     if ($this->_action & CRM_Core_Action::UPDATE) {
-      //NYSS 3153 allow modification
-      //NYSS 6567 if inbound email, freeze
-      if ( $this->_activityTypeName == 'Inbound Email' ) {
-        $element->freeze();
-      }
+      $element->freeze();
     }
 
     // Call to RecurringEntity buildQuickForm for add/update mode.

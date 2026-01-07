@@ -147,7 +147,6 @@ function reports_civicrm_alterReportVar($varType, &$var, &$object) {
           break;
 
         case 'CRM_Report_Form_ActivitySummary':
-          _reports_ActivitySummary_cols($var, $object);
           break;
 
         case 'CRM_Report_Form_Case_Demographics':
@@ -845,13 +844,6 @@ function _reports_Activity_cols(&$var, &$object) {
     'title' => ts('Activity Status'),
     'dbAlias' => 'civicrm_activity_status_id',
   ];
-}
-
-function _reports_ActivitySummary_cols(&$var, &$object) {
-  //4921
-  $activityTypes = CRM_Core_PseudoConstant::activityType(true, true, false, 'label', true);
-  asort( $activityTypes );
-  $var['civicrm_activity']['filters']['activity_type_id']['options'] = $activityTypes;
 }
 
 function _reports_Activity_rows(&$var, &$object) {
