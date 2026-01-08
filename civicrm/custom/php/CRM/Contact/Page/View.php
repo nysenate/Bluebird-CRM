@@ -296,9 +296,7 @@ class CRM_Contact_Page_View extends CRM_Core_Page {
     }
 
     // Inline-edit places its own title on the page
-    //CRM_Utils_System::setTitle('CiviCRM', '<span id="crm-remove-title" style="display:none">CiviCRM</span>');
-    //NYSS 7337
-    CRM_Utils_System::setTitle($displayName, $title);
+    CRM_Utils_System::setTitle('CiviCRM', '<span id="crm-remove-title" style="display:none">CiviCRM</span>');
 
     return $title;
   }
