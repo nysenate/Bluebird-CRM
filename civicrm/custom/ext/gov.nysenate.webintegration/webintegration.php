@@ -19,7 +19,6 @@ function webintegration_civicrm_config(&$config) {
  * @link http://wiki.civicrm.org/confluence/display/CRMDOC/hook_civicrm_xmlMenu
  */
 function webintegration_civicrm_xmlMenu(&$files) {
-  _webintegration_civix_civicrm_xmlMenu($files);
 }
 
 /**
@@ -37,7 +36,6 @@ function webintegration_civicrm_install() {
  * @link http://wiki.civicrm.org/confluence/display/CRMDOC/hook_civicrm_uninstall
  */
 function webintegration_civicrm_uninstall() {
-  _webintegration_civix_civicrm_uninstall();
 }
 
 /**
@@ -55,7 +53,6 @@ function webintegration_civicrm_enable() {
  * @link http://wiki.civicrm.org/confluence/display/CRMDOC/hook_civicrm_disable
  */
 function webintegration_civicrm_disable() {
-  _webintegration_civix_civicrm_disable();
 }
 
 /**
@@ -71,7 +68,7 @@ function webintegration_civicrm_disable() {
  * @link http://wiki.civicrm.org/confluence/display/CRMDOC/hook_civicrm_upgrade
  */
 function webintegration_civicrm_upgrade($op, CRM_Queue_Queue $queue = NULL) {
-  return _webintegration_civix_civicrm_upgrade($op, $queue);
+  return;
 }
 
 /**
@@ -83,7 +80,6 @@ function webintegration_civicrm_upgrade($op, CRM_Queue_Queue $queue = NULL) {
  * @link http://wiki.civicrm.org/confluence/display/CRMDOC/hook_civicrm_managed
  */
 function webintegration_civicrm_managed(&$entities) {
-  _webintegration_civix_civicrm_managed($entities);
 }
 
 /**
@@ -96,7 +92,6 @@ function webintegration_civicrm_managed(&$entities) {
  * @link http://wiki.civicrm.org/confluence/display/CRMDOC/hook_civicrm_caseTypes
  */
 function webintegration_civicrm_caseTypes(&$caseTypes) {
-  _webintegration_civix_civicrm_caseTypes($caseTypes);
 }
 
 /**
@@ -110,7 +105,6 @@ function webintegration_civicrm_caseTypes(&$caseTypes) {
  * @link http://wiki.civicrm.org/confluence/display/CRMDOC/hook_civicrm_caseTypes
  */
 function webintegration_civicrm_angularModules(&$angularModules) {
-_webintegration_civix_civicrm_angularModules($angularModules);
 }
 
 /**
@@ -119,7 +113,6 @@ _webintegration_civix_civicrm_angularModules($angularModules);
  * @link http://wiki.civicrm.org/confluence/display/CRMDOC/hook_civicrm_alterSettingsFolders
  */
 function webintegration_civicrm_alterSettingsFolders(&$metaDataFolders = NULL) {
-  _webintegration_civix_civicrm_alterSettingsFolders($metaDataFolders);
 }
 
 /**
@@ -245,4 +238,12 @@ function _webintegration_extractSubject($msgNote) {
   ));*/
 
   return (!empty($matches[1])) ? $matches[1] : '';
+}
+
+/**
+ * Implements hook_civicrm_postInstall().
+ *
+ * @link https://docs.civicrm.org/dev/en/latest/hooks/hook_civicrm_postInstall
+ */
+function webintegration_civicrm_postInstall() {
 }

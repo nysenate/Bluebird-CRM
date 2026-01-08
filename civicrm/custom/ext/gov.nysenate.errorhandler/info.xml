@@ -15,14 +15,20 @@
   <version>1.0</version>
   <develStage>stable</develStage>
   <compatibility>
-    <ver>5.0</ver>
+    <ver>5.51</ver>
   </compatibility>
   <comments/>
   <classloader>
     <psr4 prefix="Civi\" path="Civi"/>
+    <psr0 prefix="CRM_" path="."/>
   </classloader>
   <civix>
     <namespace>CRM/NYSS/Errorhandler</namespace>
     <angularModule>crmErrorhandler</angularModule>
+    <format>25.10.2</format>
   </civix>
+  <mixins>
+    <mixin>setting-php@1.0.0</mixin>
+    <mixin>scan-classes@1.0.0</mixin>
+  </mixins>
 </extension>

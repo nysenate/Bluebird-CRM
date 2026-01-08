@@ -19,7 +19,6 @@ function tagdemographics_civicrm_config(&$config) {
  * @link http://wiki.civicrm.org/confluence/display/CRMDOC/hook_civicrm_xmlMenu
  */
 function tagdemographics_civicrm_xmlMenu(&$files) {
-  _tagdemographics_civix_civicrm_xmlMenu($files);
 }
 
 /**
@@ -37,7 +36,6 @@ function tagdemographics_civicrm_install() {
  * @link http://wiki.civicrm.org/confluence/display/CRMDOC/hook_civicrm_uninstall
  */
 function tagdemographics_civicrm_uninstall() {
-  _tagdemographics_civix_civicrm_uninstall();
 }
 
 /**
@@ -55,7 +53,6 @@ function tagdemographics_civicrm_enable() {
  * @link http://wiki.civicrm.org/confluence/display/CRMDOC/hook_civicrm_disable
  */
 function tagdemographics_civicrm_disable() {
-  _tagdemographics_civix_civicrm_disable();
 }
 
 /**
@@ -71,7 +68,7 @@ function tagdemographics_civicrm_disable() {
  * @link http://wiki.civicrm.org/confluence/display/CRMDOC/hook_civicrm_upgrade
  */
 function tagdemographics_civicrm_upgrade($op, CRM_Queue_Queue $queue = NULL) {
-  return _tagdemographics_civix_civicrm_upgrade($op, $queue);
+  return;
 }
 
 /**
@@ -83,7 +80,6 @@ function tagdemographics_civicrm_upgrade($op, CRM_Queue_Queue $queue = NULL) {
  * @link http://wiki.civicrm.org/confluence/display/CRMDOC/hook_civicrm_managed
  */
 function tagdemographics_civicrm_managed(&$entities) {
-  _tagdemographics_civix_civicrm_managed($entities);
 }
 
 /**
@@ -96,7 +92,6 @@ function tagdemographics_civicrm_managed(&$entities) {
  * @link http://wiki.civicrm.org/confluence/display/CRMDOC/hook_civicrm_caseTypes
  */
 function tagdemographics_civicrm_caseTypes(&$caseTypes) {
-  _tagdemographics_civix_civicrm_caseTypes($caseTypes);
 }
 
 /**
@@ -110,7 +105,6 @@ function tagdemographics_civicrm_caseTypes(&$caseTypes) {
  * @link http://wiki.civicrm.org/confluence/display/CRMDOC/hook_civicrm_caseTypes
  */
 function tagdemographics_civicrm_angularModules(&$angularModules) {
-_tagdemographics_civix_civicrm_angularModules($angularModules);
 }
 
 /**
@@ -119,7 +113,6 @@ _tagdemographics_civix_civicrm_angularModules($angularModules);
  * @link http://wiki.civicrm.org/confluence/display/CRMDOC/hook_civicrm_alterSettingsFolders
  */
 function tagdemographics_civicrm_alterSettingsFolders(&$metaDataFolders = NULL) {
-  _tagdemographics_civix_civicrm_alterSettingsFolders($metaDataFolders);
 }
 
 /**
@@ -151,3 +144,11 @@ function tagdemographics_civicrm_navigationMenu(&$menu) {
   ));
   _tagdemographics_civix_navigationMenu($menu);
 } // */
+
+/**
+ * Implements hook_civicrm_postInstall().
+ *
+ * @link https://docs.civicrm.org/dev/en/latest/hooks/hook_civicrm_postInstall
+ */
+function tagdemographics_civicrm_postInstall() {
+}

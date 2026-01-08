@@ -15,10 +15,17 @@
   <version>1.0</version>
   <develStage>stable</develStage>
   <compatibility>
-    <ver>5.x</ver>
+    <ver>5.51</ver>
   </compatibility>
   <comments/>
   <civix>
     <namespace>CRM/Tokens</namespace>
+    <format>25.10.2</format>
   </civix>
+  <classloader>
+    <psr4 prefix="Civi\" path="Civi"/>
+  </classloader>
+  <mixins>
+    <mixin>scan-classes@1.0.0</mixin>
+  </mixins>
 </extension>
