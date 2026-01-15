@@ -407,7 +407,7 @@ function nyss_dedupe_individual_default_strict_record($o) {
 
   if ($suffix_id)
     $where .= "
-      AND (contact1.suffix_id IS NULL or contact1.suffix_id = $suffix_id)";
+      AND (contact1.suffix_id IS NULL or contact1.suffix_id = '$suffix_id')";
 
   if ($middle_name)
     $where .= "
@@ -512,7 +512,7 @@ function nyss_dedupe_individual_default_fuzzy_record($o) {
 
   if ($suffix_id)
     $where .= "
-      AND (contact1.suffix_id IS NULL or contact1.suffix_id = $suffix_id)";
+      AND (contact1.suffix_id IS NULL or contact1.suffix_id = '$suffix_id')";
 
   if ($middle_name)
     $where .= "
