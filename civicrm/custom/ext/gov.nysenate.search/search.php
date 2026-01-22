@@ -9,10 +9,20 @@ use Symfony\Component\DependencyInjection\ContainerBuilder;
  *
  * @link http://wiki.civicrm.org/confluence/display/CRMDOC/hook_civicrm_config
  */
+#[CRM_NYSS_Attribute_IssueRef('6682','16774')]
 function search_civicrm_config(&$config) {
   _search_civix_civicrm_config($config);
 
-  //16774
+  //prevent multiple calls
+  if (isset(Civi::$statics[__FUNCTION__])) { return; }
+  Civi::$statics[__FUNCTION__] = 1;
+
+  // NYSS 6682
+  // By using Symfony dispatch style we can set a priority and execute after
+  // other extension's searchTasks hook
+  Civi::dispatcher()->addListener('hook_civicrm_searchTasks', ['CRM_NYSS_Search_HookSearchTasksListener', 'searchTasks'], -1000);
+
+  // NYSS 16774
   Civi::dispatcher()->addListener('civi.api.respond', ['CRM_NYSS_QuickSearchAPIWrapper', 'RESPOND'], -100);
 }
 

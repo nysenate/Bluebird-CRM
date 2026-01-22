@@ -34,9 +34,7 @@ class CRM_Contact_Task extends CRM_Core_Task {
     RESTORE = 108,
     COMMUNICATION_PREFS = 109,
     INDIVIDUAL_CONTACTS = 110,
-    ADD_TO_CASE = 111,
-    EXPORT_PRINTPROD = 1000, //NYSS export print production task
-    EXPORT_DISTRICT = 1001; //NYSS export district merger/purge task
+    ADD_TO_CASE = 111;
 
   /**
    * @var string
@@ -150,13 +148,6 @@ class CRM_Contact_Task extends CRM_Core_Task {
           'url' => 'civicrm/task/alter-contact-preference',
           'icon' => 'fa-check-square-o',
         ],
-        //NYSS - add print production export
-        1000 => ['title' => ts('Export for Print Production'),
-          'class' => [
-            'CRM_Contact_Form_Task_ExportPrintProduction',
-            'CRM_Contact_Form_Task_ExportPrintProductionResult',
-          ],
-        ],
         self::RESTORE => [
           'title' => ts('Restore contacts from trash'),
           'class' => 'CRM_Contact_Form_Task_Delete',
@@ -178,14 +169,6 @@ class CRM_Contact_Task extends CRM_Core_Task {
           'title' => ts('SMS - schedule/send'),
           'class' => 'CRM_Contact_Form_Task_SMS',
           'result' => TRUE,
-        ];
-      }
-
-      //NYSS - add district export for merge/perge
-      if (CRM_Core_Permission::check('export print production files')) {
-        self::$_tasks[1001] = ['title' => ts('Export District for Merge/Purge'),
-          'class' => 'CRM_Contact_Form_Task_ExportDistrict',
-          'result' => true
         ];
       }
 
@@ -259,8 +242,7 @@ class CRM_Contact_Task extends CRM_Core_Task {
         ];
       }
 
-      //NYSS 6682
-      /*if (CRM_Core_Permission::access('CiviMail')
+      if (CRM_Core_Permission::access('CiviMail')
         || (CRM_Mailing_Info::workflowEnabled() && CRM_Core_Permission::check('create mailings'))
       ) {
         self::$_tasks[self::CREATE_MAILING] = [
@@ -268,7 +250,7 @@ class CRM_Contact_Task extends CRM_Core_Task {
           'class' => 'CRM_Mailing_Form_Task_AdhocMailing',
           'result' => FALSE,
         ];
-      }*/
+      }
 
       if (CRM_Core_Permission::access('CiviCase')) {
         self::$_tasks[self::ADD_TO_CASE] = [
@@ -319,11 +301,11 @@ class CRM_Contact_Task extends CRM_Core_Task {
         self::TASK_EXPORT => self::$_tasks[self::TASK_EXPORT]['title'],
         self::TASK_EMAIL => self::$_tasks[self::TASK_EMAIL]['title'],
         self::LABEL_CONTACTS => self::$_tasks[self::LABEL_CONTACTS]['title'],
-        1000 => self::$_tasks[1000]['title'], //NYSS
-        1001 => self::$_tasks[1001]['title'], //NYSS
+        NYSS_PRINT_EXPORT_REPORT => self::$_tasks[NYSS_PRINT_EXPORT_REPORT]['title'], //NYSS
+        NYSS_DISTRICT_EXPORT_REPORT => self::$_tasks[NYSS_DISTRICT_EXPORT_REPORT]['title'], //NYSS
       ];
       //NYSS 4809 - unset district export if not permissioned
-      if (!self::$_tasks[1001]['title']) {
+      if (!self::$_tasks[NYSS_DISTRICT_EXPORT_REPORT]['title']) {
         unset( $tasks[101] );
       }
       if (isset(self::$_tasks[self::MAP_CONTACTS]) &&

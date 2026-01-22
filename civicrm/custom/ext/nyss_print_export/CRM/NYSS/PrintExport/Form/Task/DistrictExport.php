@@ -43,7 +43,7 @@ define('TEMP_TABLE_PREFIX', 'nyss_temp_');
 /**
  * This class provides the functionality to export large data sets for print production.
  */
-class CRM_Contact_Form_Task_ExportDistrict extends CRM_Contact_Form_Task
+class CRM_NYSS_PrintExport_Form_Task_DistrictExport extends CRM_Contact_Form_Task
 {
   /**
    * @var string
@@ -127,10 +127,10 @@ class CRM_Contact_Form_Task_ExportDistrict extends CRM_Contact_Form_Task
     $instance = substr( $_SERVER['HTTP_HOST'], 0, strpos( $_SERVER['HTTP_HOST'], '.' ) );
 
     //get option lists
-    $aGender = getOptions("gender");
-    $aSuffix = getOptions("individual_suffix");
-    $aPrefix = getOptions("individual_prefix");
-    $aStates = getStates();
+    $aGender = CRM_Contact_DAO_Contact::buildOptions('gender_id');
+    $aSuffix = CRM_Contact_DAO_Contact::buildOptions('suffix_id');
+    $aPrefix = CRM_Contact_DAO_Contact::buildOptions('prefix_id');
+    $aStates = $this->getStates();
 
     //determine address location type clause
     $addressClause = '';
@@ -160,17 +160,17 @@ class CRM_Contact_Form_Task_ExportDistrict extends CRM_Contact_Form_Task
     $dao = CRM_Core_DAO::executeQuery( $sql, CRM_Core_DAO::$_nullArray );
 
     if ( $excludeGroups ) {
-      excludeGroupContacts( $tmpExport, $excludeGroups );
+      $this->excludeGroupContacts( $tmpExport, $excludeGroups );
     }
 
     //4874
     if ( $include_log ) {
-      $logTable = createLogTable( $rnd );
+      $logTable = $this->createLogTable( $rnd );
     }
 
     //6032
     if ( $checkTouched ) {
-      $touchedTbl = buildTouched( $rnd );
+      $touchedTbl = $this->buildTouched( $rnd );
     }
 
     $sql = "SELECT c.id, c.first_name, c.middle_name, c.last_name, c.suffix_id, ";
@@ -317,86 +317,87 @@ class CRM_Contact_Form_Task_ExportDistrict extends CRM_Contact_Form_Task
 
     CRM_Core_Session::setStatus( $statusOutput, 'District Export Results', 'success' );
   } // postProcess()
-} //end class
 
-/*
- * retrieve option values for a given group
+    /*
+     * retrieve id and abbreviation for state/provinces
+     * return array of values
+     */
+    protected function getStates()
+    {
+        $dao = CRM_Core_DAO::executeQuery("SELECT id, abbreviation from civicrm_state_province",
+            CRM_Core_DAO::$_nullArray);
+
+        $options = array();
+        while ($dao->fetch()) {
+            $options[$dao->id] = $dao->abbreviation;
+        }
+
+        return $options;
+    } // getStates()
+
+
+    /*
+ * given one or more groups passed from the form,
+ * remove contacts who are in those groups from the export table
  */
-function getOptions($strGroup)
-{
-  $dao = CRM_Core_DAO::executeQuery("SELECT id from civicrm_option_group where name='".$strGroup."';",
-    CRM_Core_DAO::$_nullArray);
-  $dao->fetch();
-  $optionGroupID = $dao->id;
+    protected function excludeGroupContacts( $tbl, $groups )
+    {
+        require_once 'CRM/Contact/BAO/Group.php';
 
-  $dao = CRM_Core_DAO::executeQuery("
-    SELECT name, label, value from civicrm_option_value where option_group_id=$optionGroupID;
-    ", CRM_Core_DAO::$_nullArray);
+        //get group contacts
+        $excludeContacts = array();
+        foreach ( $groups as $group ) {
+            $groupContacts = CRM_Contact_BAO_Group::getMember( $group );
+            $excludeContacts = array_merge( $excludeContacts, array_keys($groupContacts) );
+        }
+        $contactList = implode( ',', $excludeContacts );
 
-  $options = array();
-  while ($dao->fetch()) {
-    $name = (strlen($dao->label) > 0) ? $dao->label : $dao->name;
-    $options[$dao->value] = $name;
-  }
+        //remove contacts from temp table
+        $sql = "
+    DELETE FROM $tbl
+    WHERE id IN ( $contactList )
+  ";
+        CRM_Core_DAO::executeQuery($sql);
 
-  return $options;
-} // getOptions()
+        return;
+    } // excludeGroupContacts()
 
-
-/*
- * retrieve id and abbreviation for state/provinces
- * return array of values
- */
-function getStates()
-{
-  $dao = CRM_Core_DAO::executeQuery("SELECT id, abbreviation from civicrm_state_province",
-    CRM_Core_DAO::$_nullArray);
-
-  $options = array();
-  while ($dao->fetch()) {
-    $options[$dao->id] = $dao->abbreviation;
-  }
-
-  return $options;
-} // getStates()
-
-
-/*
+    /*
  * create table with only the most recent log entry for each contact
  */
-function createLogTable( $rnd )
-{
-  $tblIDs = TEMP_TABLE_PREFIX."export_$rnd";
-  $tblLog = TEMP_TABLE_PREFIX."log_$rnd";
-  $tblLogDedupe = TEMP_TABLE_PREFIX."log_dedupe_$rnd";
+    protected function createLogTable( $rnd )
+    {
+        $tblIDs = TEMP_TABLE_PREFIX."export_$rnd";
+        $tblLog = TEMP_TABLE_PREFIX."log_$rnd";
+        $tblLogDedupe = TEMP_TABLE_PREFIX."log_dedupe_$rnd";
 
-  $sql = "CREATE TABLE $tblLog ( cid int not null, mod_date date, INDEX (cid) ) ENGINE=myisam;";
-  $dao = CRM_Core_DAO::executeQuery( $sql, CRM_Core_DAO::$_nullArray );
+        $sql = "CREATE TABLE $tblLog ( cid int not null, mod_date date, INDEX (cid) ) ENGINE=myisam;";
+        $dao = CRM_Core_DAO::executeQuery( $sql, CRM_Core_DAO::$_nullArray );
 
-  //first retrieve latest contact and activity log records for unique
-  //entity_table and entity_id and store in temp table
+        //first retrieve latest contact and activity log records for unique
+        //entity_table and entity_id and store in temp table
 
-  //insert contact log
-  $sql = "
+        //insert contact log
+        $sql = "
     INSERT INTO $tblLog (cid, mod_date)
     SELECT entity_id as cid, MAX(modified_date) as mod_date
     FROM civicrm_log
     WHERE entity_table = 'civicrm_contact'
     GROUP BY entity_id;
   ";
-  $dao = CRM_Core_DAO::executeQuery( $sql, CRM_Core_DAO::$_nullArray );
+        $dao = CRM_Core_DAO::executeQuery( $sql, CRM_Core_DAO::$_nullArray );
 
-  //insert activities
-  //skip source as that will only be staff
-  //only concerned with target contact
-  //5838 skip bulk email activity; do direct sql as activity type is now disabled
-  $actBulkEmail = CRM_Core_DAO::singleValueQuery('
+        //insert activities
+        //skip source as that will only be staff
+        //only concerned with target contact
+        //5838 skip bulk email activity; do direct sql as activity type is now disabled
+        $actBulkEmail = CRM_Core_DAO::singleValueQuery('
     SELECT value
     FROM civicrm_option_value
     WHERE option_group_id = 2
       AND name = "Bulk Email";
   ');
-  $sql = "
+        $sql = "
     INSERT INTO $tblLog (cid, mod_date)
     SELECT DISTINCT c.id as cid, cal.modified_date as mod_date
     FROM (
@@ -414,45 +415,45 @@ function createLogTable( $rnd )
     JOIN $tblIDs c
       ON cat.contact_id = c.id;
     ";
-  $dao = CRM_Core_DAO::executeQuery( $sql, CRM_Core_DAO::$_nullArray );
+        $dao = CRM_Core_DAO::executeQuery( $sql, CRM_Core_DAO::$_nullArray );
 
-  //collapse resulting data in a separate table
-  //this give us the latest mod date among both contact and activity logs
-  $sql = "CREATE TABLE $tblLogDedupe LIKE $tblLog;";
-  $dao = CRM_Core_DAO::executeQuery( $sql, CRM_Core_DAO::$_nullArray );
+        //collapse resulting data in a separate table
+        //this give us the latest mod date among both contact and activity logs
+        $sql = "CREATE TABLE $tblLogDedupe LIKE $tblLog;";
+        $dao = CRM_Core_DAO::executeQuery( $sql, CRM_Core_DAO::$_nullArray );
 
-  $sql = "ALTER TABLE $tblLogDedupe ADD UNIQUE ( cid );";
-  $dao = CRM_Core_DAO::executeQuery( $sql, CRM_Core_DAO::$_nullArray );
+        $sql = "ALTER TABLE $tblLogDedupe ADD UNIQUE ( cid );";
+        $dao = CRM_Core_DAO::executeQuery( $sql, CRM_Core_DAO::$_nullArray );
 
-  $sql = "
+        $sql = "
     INSERT INTO $tblLogDedupe
     SELECT cid, MAX(mod_date)
     FROM $tblLog
     GROUP BY cid
   ";
-  $dao = CRM_Core_DAO::executeQuery( $sql, CRM_Core_DAO::$_nullArray );
+        $dao = CRM_Core_DAO::executeQuery( $sql, CRM_Core_DAO::$_nullArray );
 
-  //now drop first temp table
-  CRM_Core_DAO::executeQuery("DROP TABLE $tblLog;");
+        //now drop first temp table
+        CRM_Core_DAO::executeQuery("DROP TABLE $tblLog;");
 
-  //CRM_Core_Error::debug('tblIDs',$tblIDs);
-  //CRM_Core_Error::debug('tblLog',$tblLog);
-  //exit();
+        //CRM_Core_Error::debug('tblIDs',$tblIDs);
+        //CRM_Core_Error::debug('tblLog',$tblLog);
+        //exit();
 
-  return $tblLogDedupe;
-} // createLogTable()
+        return $tblLogDedupe;
+    } // createLogTable()
 
 
-function buildTouched( $rnd )
-{
-  $tblIDs = TEMP_TABLE_PREFIX."export_$rnd";
-  $tblTouched = TEMP_TABLE_PREFIX."touched_$rnd";
+    protected function buildTouched( $rnd )
+    {
+        $tblIDs = TEMP_TABLE_PREFIX."export_$rnd";
+        $tblTouched = TEMP_TABLE_PREFIX."touched_$rnd";
 
-  $sql = "CREATE TABLE $tblTouched ( cid int not null, untouched int, privacy int, INDEX (cid) ) ENGINE=myisam;";
-  CRM_Core_DAO::executeQuery( $sql, CRM_Core_DAO::$_nullArray );
+        $sql = "CREATE TABLE $tblTouched ( cid int not null, untouched int, privacy int, INDEX (cid) ) ENGINE=myisam;";
+        CRM_Core_DAO::executeQuery( $sql, CRM_Core_DAO::$_nullArray );
 
-  //reduce how many records we are working with
-  $sql = "
+        //reduce how many records we are working with
+        $sql = "
     SELECT i.id
     FROM $tblIDs i
     JOIN civicrm_value_constituent_information_1 ci
@@ -463,159 +464,72 @@ function buildTouched( $rnd )
     WHERE c.is_deleted = 0
       AND c.is_deceased = 0
   ";
-  $dao = CRM_Core_DAO::executeQuery($sql);
-  //CRM_Core_Error::debug('sql',$sql);
-  //CRM_Core_Error::debug('dao',$dao);exit();
+        $dao = CRM_Core_DAO::executeQuery($sql);
+        //CRM_Core_Error::debug('sql',$sql);
+        //CRM_Core_Error::debug('dao',$dao);exit();
 
-  //if no records to work with, return now
-  if ( !$dao->N ) {
-    return $tblTouched;
-  }
+        //if no records to work with, return now
+        if ( !$dao->N ) {
+            return $tblTouched;
+        }
 
-  $insertVals = array();
+        $insertVals = array();
 
-  //cycle through ids and check for values
-  //for both fields, we return 1 if the condition is met
-  while ( $dao->fetch() ) {
-    $records = array('Email', 'Notes', 'Activities', 'Cases');
-    $untouched = 1;
-    $privacy = 0;
+        //cycle through ids and check for values
+        //for both fields, we return 1 if the condition is met
+        while ( $dao->fetch() ) {
+            $records = array('Email', 'Notes', 'Activities', 'Cases');
+            $untouched = 1;
+            $privacy = 0;
 
-    //check each record type; if a record is found, return 0 to indicate condition is not met
-    foreach ( $records as $type ) {
-      $fnc = "_check{$type}";
-      $untouched = $fnc($dao->id);
-      if ( $untouched != 1 ) {
-        break;
-      }
-    }
+            //check each record type; if a record is found, return 0 to indicate condition is not met
+            foreach ( $records as $type ) {
+                $fnc = "_check{$type}";
+                $untouched = $fnc($dao->id);
+                if ( $untouched != 1 ) {
+                    break;
+                }
+            }
 
-    //check privacy; assume condition not met and return 1 if otherwise
-    $privacy = _checkPrivacy($dao->id);
+            //check privacy; assume condition not met and return 1 if otherwise
+            $privacy = $this->_checkPrivacy($dao->id);
 
-    $insertVals[] = "({$dao->id}, {$untouched}, {$privacy})";
-  }
-  //CRM_Core_Error::debug('insertVals', $insertVals);exit();
+            $insertVals[] = "({$dao->id}, {$untouched}, {$privacy})";
+        }
+        //CRM_Core_Error::debug('insertVals', $insertVals);exit();
 
-  //insert into touched table
-  $insertValsSql = implode(', ', $insertVals);
-  $sql = "
+        //insert into touched table
+        $insertValsSql = implode(', ', $insertVals);
+        $sql = "
     INSERT INTO $tblTouched (cid, untouched, privacy)
     VALUES
     {$insertValsSql}
   ";
-  CRM_Core_DAO::executeQuery( $sql, CRM_Core_DAO::$_nullArray );
+        CRM_Core_DAO::executeQuery( $sql, CRM_Core_DAO::$_nullArray );
 
-  return $tblTouched;
-} // buildTouched()
-
-
-/*
- * given one or more groups passed from the form,
- * remove contacts who are in those groups from the export table
- */
-function excludeGroupContacts( $tbl, $groups )
-{
-  require_once 'CRM/Contact/BAO/Group.php';
-
-  //get group contacts
-  $excludeContacts = array();
-  foreach ( $groups as $group ) {
-    $groupContacts = CRM_Contact_BAO_Group::getMember( $group );
-    $excludeContacts = array_merge( $excludeContacts, array_keys($groupContacts) );
-  }
-  $contactList = implode( ',', $excludeContacts );
-
-  //remove contacts from temp table
-  $sql = "
-    DELETE FROM $tbl
-    WHERE id IN ( $contactList )
-  ";
-  CRM_Core_DAO::executeQuery($sql);
-
-  return;
-} // excludeGroupContacts()
+        return $tblTouched;
+    } // buildTouched()
 
 
-function _checkEmail($cid)
-{
-  $sql = "
-    SELECT CASE WHEN count(*) > 0 THEN 0 ELSE 1 END
-    FROM civicrm_email
-    WHERE contact_id = $cid
-      AND email IS NOT NULL
-      AND email != ''
-  ";
-  $exists = CRM_Core_DAO::singleValueQuery($sql);
-  return $exists;
-} // _checkEmail()
-
-
-function _checkNotes($cid)
-{
-  $sql = "
-    SELECT CASE WHEN count(*) > 0 THEN 0 ELSE 1 END
-    FROM civicrm_note
-    WHERE entity_id = $cid
-      AND entity_table = 'civicrm_contact'
-      AND note IS NOT NULL
-      AND note != ''
-  ";
-  $exists = CRM_Core_DAO::singleValueQuery($sql);
-  return $exists;
-} // _checkNotes()
-
-
-function _checkActivities($cid)
-{
-  //exclude bulk email activities
-  $sql = "
-    SELECT CASE WHEN count(at.id) > 0 THEN 0 ELSE 1 END
-    FROM civicrm_activity_contact at
-    JOIN civicrm_activity a
-      ON at.activity_id = a.id
-      AND at.record_type_id = 3
-    WHERE at.contact_id = $cid
-      AND a.activity_type_id != 19
-      AND a.is_deleted = 0
-  ";
-  $exists = CRM_Core_DAO::singleValueQuery($sql);
-  return $exists;
-} // _checkActivities()
-
-
-function _checkCases($cid)
-{
-  $sql = "
-    SELECT CASE WHEN count(cc.id) > 0 THEN 0 ELSE 1 END
-    FROM civicrm_case_contact cc
-    JOIN civicrm_case c
-      ON cc.case_id = c.id
-    WHERE cc.contact_id = $cid
-      AND c.is_deleted = 0
-  ";
-  $exists = CRM_Core_DAO::singleValueQuery($sql);
-  return $exists;
-} // _checkCases()
-
-
-function _checkPrivacy($cid)
-{
-  $sql = "
+    private function _checkPrivacy($cid)
+    {
+        $sql = "
     SELECT do_not_phone, do_not_mail, do_not_email, is_opt_out, on_hold
     FROM civicrm_contact c
     JOIN civicrm_email e
       ON c.id = e.contact_id
     WHERE c.id = {$cid}
   ";
-  $dao = CRM_Core_DAO::executeQuery($sql);
-  while ( $dao->fetch() ) {
-    if ( $dao->do_not_phone &&
-      $dao->do_not_mail &&
-      ($dao->do_not_email || $dao->is_opt_out || $dao->on_hold == 2)
-    ) {
-      return 1;
-    }
-  }
-  return 0;
-} // _checkPrivacy()
+        $dao = CRM_Core_DAO::executeQuery($sql);
+        while ( $dao->fetch() ) {
+            if ( $dao->do_not_phone &&
+                $dao->do_not_mail &&
+                ($dao->do_not_email || $dao->is_opt_out || $dao->on_hold == 2)
+            ) {
+                return 1;
+            }
+        }
+        return 0;
+    } // _checkPrivacy()
+
+} //end class

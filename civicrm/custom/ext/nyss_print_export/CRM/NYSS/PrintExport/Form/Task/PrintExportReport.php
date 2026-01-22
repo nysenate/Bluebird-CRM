@@ -1,39 +1,5 @@
 <?php
 
-/*
- +--------------------------------------------------------------------+
- | CiviCRM version 4.2                                                |
- +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2010                                |
- +--------------------------------------------------------------------+
- | This file is a part of CiviCRM.                                    |
- |                                                                    |
- | CiviCRM is free software; you can copy, modify, and distribute it  |
- | under the terms of the GNU Affero General Public License           |
- | Version 3, 19 November 2007 and the CiviCRM Licensing Exception.   |
- |                                                                    |
- | CiviCRM is distributed in the hope that it will be useful, but     |
- | WITHOUT ANY WARRANTY; without even the implied warranty of         |
- | MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.               |
- | See the GNU Affero General Public License for more details.        |
- |                                                                    |
- | You should have received a copy of the GNU Affero General Public   |
- | License and the CiviCRM Licensing Exception along                  |
- | with this program; if not, contact CiviCRM LLC                     |
- | at info[AT]civicrm[DOT]org. If you have questions about the        |
- | GNU Affero General Public License or the licensing of CiviCRM,     |
- | see the CiviCRM license FAQ at http://civicrm.org/licensing        |
- +--------------------------------------------------------------------+
-*/
-
-/**
- *
- * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2010
- * $Id$
- *
- */
-
 define('PPDEBUG', 0); //set debug mode status
 define('EXITLOC', 0); //define exit location in script
 define('TRACKTIME', 0); //track time at points in the script
@@ -41,9 +7,11 @@ define('BATCH', 5000); //when processing in batches, amount we do at a time
 
 /**
  * This class provides the functionality to export large data sets for print production.
+ * Moved to extension from custom/php/CRM/Contact/Form/Task/ExportPrintProductions.php
  */
-class CRM_Contact_Form_Task_ExportPrintProduction extends CRM_Contact_Form_Task
+class CRM_NYSS_PrintExport_Form_Task_PrintExportReport extends CRM_Contact_Form_Task
 {
+
   /**
    * @var string
    */
@@ -203,10 +171,10 @@ class CRM_Contact_Form_Task_ExportPrintProduction extends CRM_Contact_Form_Task
     $instance = substr($_SERVER['HTTP_HOST'], 0, strpos($_SERVER['HTTP_HOST'], '.'));
 
     //get option
-    $aGender = getOptions('gender');
-    $aSuffix = getOptions('individual_suffix');
-    $aPrefix = getOptions('individual_prefix');
-    $aStates = getStates();
+      $aGender = CRM_Contact_DAO_Contact::buildOptions('gender_id');
+      $aSuffix = CRM_Contact_DAO_Contact::buildOptions('suffix_id');
+      $aPrefix = CRM_Contact_DAO_Contact::buildOptions('prefix_id');
+      $aStates = $this->getStates();
 
     //generate random number for export and tables
     $rnd = date('Ymdhis');
@@ -254,12 +222,12 @@ class CRM_Contact_Form_Task_ExportPrintProduction extends CRM_Contact_Form_Task
     itime('after building ID table');
 
     if ($excludeGroups) {
-      excludeGroupContacts($tmpTblIds, $excludeGroups, $localSeedsList);
+      $this->excludeGroupContacts($tmpTblIds, $excludeGroups, $localSeedsList);
     }
 
     //now construct sql to retrieve fields and inject in a second tmp table
-    $cFlds = getColumns( 'columns' );
-    $sFlds = getColumns( 'select' );
+    $cFlds = $this->getColumns( 'columns' );
+    $sFlds = $this->getColumns( 'select' );
     idebug($cFlds, 'cFlds', 2);
 
     $sql = "
@@ -275,7 +243,7 @@ class CRM_Contact_Form_Task_ExportPrintProduction extends CRM_Contact_Form_Task
     $sql = "
       INSERT INTO $tmpTbl
       SELECT $sFlds FROM $tmpTblIds t
-      JOIN civicrm_contact c ON t.id = c.id 
+      JOIN civicrm_contact c ON t.id = c.id
     ";
 
     //address joins
@@ -455,13 +423,13 @@ class CRM_Contact_Form_Task_ExportPrintProduction extends CRM_Contact_Form_Task
 
     //merge Households
     if ( $merge_households ) {
-      mergeHouseholds( $tmpTbl );
+      $this->mergeHouseholds( $tmpTbl );
       itime('after merging households');
     }
 
     //5142 remove district exclusions
     if ( $districtExclude ) {
-      processDistrictExclude( $districtExclude, $tmpTbl, $localSeedsList );
+      $this->processDistrictExclude( $districtExclude, $tmpTbl, $localSeedsList );
     }
     itime('after removing district exclusions');
 
@@ -651,8 +619,8 @@ class CRM_Contact_Form_Task_ExportPrintProduction extends CRM_Contact_Form_Task
     itime('after fetching records and writing to file');
 
     //generate issue code and keyword stats
-    $ic_stats = statsIssueCodes($tmpTbl);
-    $key_stats = statsKeywords($tmpTbl);
+    $ic_stats = $this->statsIssueCodes($tmpTbl);
+    $key_stats = $this->statsKeywords($tmpTbl);
     $tag_stats = array_merge(['Issue Code'=>'Count'], $ic_stats, [''=>'','Keyword'=>'Count'], $key_stats);
 
     //set filename and full path
@@ -710,6 +678,506 @@ class CRM_Contact_Form_Task_ExportPrintProduction extends CRM_Contact_Form_Task
 
     return NULL;
   }
+
+    protected function getStates() {
+        $dao = CRM_Core_DAO::executeQuery("
+    SELECT id, abbreviation
+    FROM civicrm_state_province
+  ");
+
+        $options = [];
+        while ($dao->fetch()) {
+            $options[$dao->id] = $dao->abbreviation;
+        }
+        $dao->free();
+
+        return $options;
+    } //getStates()
+
+    protected function excludeGroupContacts( $tbl, $groups, $localSeedsList ) {
+        //get group contacts
+        $excludeContacts = [];
+        foreach ( $groups as $group ) {
+            $groupContacts = CRM_Contact_BAO_Group::getMember( $group );
+            $excludeContacts = array_merge( $excludeContacts, array_keys($groupContacts) );
+        }
+        $contactList = implode(',', $excludeContacts);
+
+        $localSeedsList = (!empty($localSeedsList)) ? $localSeedsList : 0;
+
+        //remove contacts from temp table
+        $sql = "
+    DELETE FROM $tbl
+    WHERE id IN ( $contactList )
+      AND id NOT IN ( $localSeedsList );";
+        CRM_Core_DAO::executeQuery($sql);
+
+        return;
+    } // excludeGroupContacts()
+
+    /**
+     *
+     * 5142
+     * given a district ID, collect district exclusions and remove from the import
+     *
+     */
+    protected function processDistrictExclude( $districtID, $tbl, $localSeedsList ) {
+        itime('processDistrictExclude start');
+
+        //retrieve the instance name using the district ID
+        $instance = $dbBase = '';
+        $bbFullConfig = get_bluebird_config();
+        foreach ($bbFullConfig as $group => $details) {
+            if (!empty($group) && strpos($group, 'instance:') !== false) {
+                if ($details['district'] == $districtID) {
+                    $instance = substr($group, 9);
+                    $dbBase = $details['db.basename'];
+                    break;
+                }
+            }
+        }
+
+        $localSeedsList = ( $localSeedsList ) ? $localSeedsList : 0;
+
+        //retrieve values using db basename and create temp table
+        $db = $bbFullConfig['globals']['db.civicrm.prefix'].$dbBase;
+        $dTbl = "{$tbl}_d{$districtID}";
+
+        //need to list sa columns to avoid naming conflicts
+        $sql = "
+    CREATE TABLE $dTbl
+    (INDEX match1 (first_name ( 50 ), middle_name ( 50 ), last_name ( 50 ), suffix_id (4), birth_date, gender_id))
+    ENGINE=myisam
+    SELECT c.id, sc.*, sa.address_id, sa.street_address, sa.country_id, sa.state_province_id, sa.supplemental_address_1, sa.supplemental_address_2, sa.postal_code, sa.city
+    FROM $db.civicrm_contact c
+    LEFT JOIN $db.shadow_contact sc
+      ON c.id = sc.contact_id
+    LEFT JOIN $db.shadow_address sa
+      ON c.id = sa.contact_id
+    WHERE c.is_deleted = 0
+      AND ( c.do_not_mail = 1 OR c.do_not_trade = 1 )";
+        CRM_Core_DAO::executeQuery($sql);
+        itime('processDistrictExclude after query execute');
+
+        //now compare the district exclude table ($dTbl) to the main export table ($tbl)
+        //and remove matches from the main table
+        //run with three separate queries as it's much faster than a single where clause with OR
+        $contactElements = [
+            "-- Individual check
+    ( contact_type = 'Individual'
+      AND BB_NORMALIZE(source.last_name) = district.last_name
+      AND BB_NORMALIZE(source.first_name) = district.first_name
+      AND (source.suffix_id IS NULL OR district.suffix_id IS NULL OR source.suffix_id = district.suffix_id)
+      AND (source.middle_name IS NULL OR district.middle_name IS NULL OR BB_NORMALIZE(source.middle_name) = district.middle_name)
+      AND (source.birth_date IS NULL OR district.birth_date IS NULL OR source.birth_date = district.birth_date)
+      AND (source.gender_id IS NULL OR district.gender_id IS NULL OR source.gender_id = district.gender_id) )",
+            "-- Organization checks
+    ( contact_type = 'Organization'
+      AND BB_NORMALIZE(source.organization_name) = district.organization_name )",
+            "-- Household checks
+    ( contact_type = 'Household'
+      AND BB_NORMALIZE(source.household_name) = district.household_name )",
+        ];
+        foreach ( $contactElements as $ele ) {
+            $sql = "
+      DELETE FROM $tbl
+      WHERE id IN ( SELECT id FROM (
+        SELECT source.id
+        FROM $tbl as source JOIN $dTbl as district USING (contact_type)
+        WHERE
+        -- contact specific checks
+        $ele
+        -- AND all of the address checks pass
+        AND source.postal_code=district.postal_code
+        AND BB_NORMALIZE_ADDR(source.street_address) = district.street_address
+        AND (source.city IS NULL OR district.city IS NULL OR BB_NORMALIZE_ADDR(source.city) = district.city)
+        AND (source.state_province_id IS NULL OR district.state_province_id IS NULL OR source.state_province_id = district.state_province_id)
+        ) AS tmpMatch
+      )
+      AND id NOT IN ($localSeedsList);";
+            idebug($sql, 'dedupe match sql');
+            $dao = CRM_Core_DAO::executeQuery($sql);
+        }
+        itime('processDistrictExclude after dedupe comparison');
+
+        //remove temp exclusion table
+        $sql = "DROP TABLE $dTbl;";
+        $dao = CRM_Core_DAO::executeQuery($sql);
+
+        //now retrieve district seeds and add them to the main temp table
+        $this->addExternalSeeds($tbl, $db);
+        itime('processDistrictExclude after addExternalSeeds');
+
+        return;
+    } // processDistrictExclude()
+
+
+    protected function statsIssueCodes( $tmpTbl ) {
+        $sql = "
+    SELECT civicrm_tag.name, COUNT( civicrm_entity_tag.id ) as ic_count
+    FROM civicrm_entity_tag
+    INNER JOIN civicrm_tag
+      ON ( civicrm_entity_tag.tag_id = civicrm_tag.id )
+    INNER JOIN $tmpTbl
+      ON ( $tmpTbl.id = civicrm_entity_tag.entity_id )
+    WHERE ( civicrm_entity_tag.entity_table LIKE '%civicrm_contact%' )
+      AND ( civicrm_tag.parent_id != 292 )
+      AND ( civicrm_tag.parent_id != 296 )
+      AND ( civicrm_tag.is_tagset != 1 )
+    GROUP BY name
+    ORDER BY ic_count DESC;";
+
+        $dao = CRM_Core_DAO::executeQuery($sql);
+        $ic_stats = [];
+        while ($dao->fetch()) {
+            $ic_stats[stripslashes(iconv('UTF-8', 'Windows-1252', $dao->name))] = $dao->ic_count;
+        }
+        $dao->free();
+
+        return $ic_stats;
+    } // statsIssueCodes()
+
+    protected function statsKeywords( $tmpTbl ) {
+        $sql = "
+    SELECT civicrm_tag.name, COUNT( civicrm_entity_tag.id ) as key_count
+    FROM civicrm_entity_tag
+    INNER JOIN civicrm_tag
+      ON ( civicrm_entity_tag.tag_id = civicrm_tag.id )
+    INNER JOIN $tmpTbl
+      ON ( $tmpTbl.id = civicrm_entity_tag.entity_id )
+    WHERE ( civicrm_entity_tag.entity_table LIKE '%civicrm_contact%' )
+      AND ( civicrm_tag.parent_id = 296 )
+    GROUP BY name
+    ORDER BY key_count DESC;";
+
+        $dao = CRM_Core_DAO::executeQuery($sql);
+        $key_stats = [];
+        while ($dao->fetch()) {
+            $key_stats[stripslashes(iconv('UTF-8', 'Windows-1252', $dao->name))] = $dao->key_count;
+        }
+        $dao->free();
+
+        return $key_stats;
+    } // statsKeywords()
+
+    protected function addExternalSeeds($tbl, $db) {
+        $sFlds = $this->getColumns( 'select' );
+        $sFlds = str_replace( 'c.id as id', "(c.id + 1000000000) as id", $sFlds ); //avoid conflicts with source db
+
+        $eogid = CRM_Core_DAO::singleValueQuery( "SELECT id FROM $db.civicrm_group WHERE name LIKE 'Mailing_Seeds';" );
+        if ( !$eogid ) $eogid = 0;
+
+        $sql = "
+    INSERT INTO {$tbl}
+    SELECT $sFlds
+    FROM $db.civicrm_contact c";
+        $sql .= "
+    LEFT JOIN $db.civicrm_address a
+      ON a.contact_id=c.id
+      AND a.id = IF((SELECT npm.id
+        FROM $db.civicrm_address npm
+        WHERE npm.contact_id = c.id
+           AND npm.location_type_id = 13
+           AND npm.is_primary = 0
+        LIMIT 1),
+        (SELECT npm.id
+        FROM $db.civicrm_address npm
+        WHERE npm.contact_id = c.id
+          AND npm.location_type_id = 13
+          AND npm.is_primary = 0
+        LIMIT 1),
+        (SELECT pm.id
+        FROM $db.civicrm_address pm
+        WHERE pm.contact_id = c.id
+          AND pm.is_primary = 1
+        LIMIT 1)) ";
+        $sql .= "
+    LEFT JOIN $db.civicrm_value_district_information_7 di
+      ON di.entity_id = a.id ";
+
+        //household joins
+        $sql .= "
+    LEFT JOIN $db.civicrm_relationship cr
+      ON cr.contact_id_a = c.id
+      AND ( cr.end_date IS NULL || cr.end_date > Now() )
+      AND ( cr.relationship_type_id = 6 OR cr.relationship_type_id = 7 )
+      AND cr.is_active = 1 ";
+        $sql .= "
+    LEFT JOIN $db.civicrm_contact ch
+      ON ch.id = cr.contact_id_b ";
+
+        //join with group to include Mailing_Exclusions
+        $sql .= "
+    JOIN $db.civicrm_group_contact cgc
+      ON cgc.contact_id = c.id
+      AND status = 'Added'
+      AND group_id = $eogid ";
+
+        //exclude deceased, trashed, do not mail, do not mail (undeliverable/trade)
+        $sql .= "
+    WHERE c.is_deceased = 0
+      AND c.is_deleted = 0
+      AND c.do_not_mail = 0
+      AND c.do_not_trade = 0 ";
+
+        //exclude empty last name, empty org name (if org type), and empty address
+        $sql .= " AND ( ( c.contact_type = 'Individual' AND c.last_name IS NOT NULL AND c.last_name != '' ) OR ( c.contact_type = 'Individual' AND c.organization_name IS NOT NULL AND c.organization_name != '' ) OR c.contact_type != 'Individual' ) ";
+        $sql .= " AND ( ( c.contact_type = 'Organization' AND c.organization_name IS NOT NULL AND c.organization_name != '' ) OR c.contact_type != 'Organization' ) ";
+        $sql .= " AND ( ( a.street_address IS NOT NULL AND a.street_address != '' ) OR ( a.supplemental_address_1 IS NOT NULL AND a.supplemental_address_1 != '' ) ) ";
+
+        //exclude impossibly old contacts
+        $sql .= " AND ( c.birth_date IS NULL OR c.birth_date > '1901-01-01' ) ";
+
+        //group by contact ID in case any joins with multiple records cause dupe primary in our temp table
+        $sql .= " GROUP BY c.id ";
+        //CRM_Core_Error::debug_var('sql',$sql);
+
+        $dao = CRM_Core_DAO::executeQuery($sql);
+        $dao->free();
+
+        return;
+    } // addExternalSeeds()
+
+
+//merge temp table down into households
+    protected function mergeHouseholds( $tbl ) {
+        //our resulting export could have actual household records OR
+        //individuals who are part of households OR both
+
+        //if a household record exists along with individuals,
+        //we can simply remove the individual records from the export
+        $sql = "
+    DELETE t1.*
+    FROM $tbl t1
+    JOIN $tbl t2
+      ON t1.household_id = t2.id
+    WHERE t1.contact_type = 'Individual';";
+        CRM_Core_DAO::executeQuery($sql);
+
+        //if we have multiple individuals from a single household
+        //we need to condense into a single record
+        $sql = "
+    CREATE TEMPORARY TABLE {$tbl}_hdupe
+    SELECT id
+    FROM $tbl
+    WHERE household_id IS NOT NULL
+    GROUP BY household_id
+    HAVING count(id) > 1 ";
+        CRM_Core_DAO::executeQuery($sql);
+
+        $sql = "
+    DELETE t1.*
+    FROM $tbl t1
+    JOIN {$tbl}_hdupe t2
+    ON t1.id = t2.id";
+        CRM_Core_DAO::executeQuery($sql);
+
+        //now we want to copy the household greeting/address to the primary fields
+        $sql = "
+    UPDATE $tbl
+    SET postal_greeting_display = household_postal_greeting_display,
+      addressee_display = household_addressee_display,
+      contact_type = 'Household-Individual'
+    WHERE household_id IS NOT NULL
+      AND contact_type = 'Individual';";
+        CRM_Core_DAO::executeQuery($sql);
+
+        //drop temp table
+        $sql = "DROP TEMPORARY TABLE {$tbl}_hdupe;";
+        CRM_Core_DAO::executeQuery($sql);
+
+        return;
+    } // mergeHouseholds()
+
+//defines the columns in our table and select statement
+    protected function getColumns( $output = 'select' ) {
+        $fields = [
+            'c.id' => [
+                'alias' => 'id',
+                'def'   => 'int not null primary key'
+            ],
+            'c.contact_type' => [
+                'alias' => 'contact_type',
+                'def'   => 'varchar(64)'
+            ],
+            'c.first_name' => [
+                'alias' => 'first_name',
+                'def'   => 'varchar(64)'
+            ],
+            'c.last_name' => [
+                'alias' => 'last_name',
+                'def'   => 'varchar(64)'
+            ],
+            'c.middle_name' => [
+                'alias' => 'middle_name',
+                'def'   => 'varchar(64)'
+            ],
+            'c.job_title' => [
+                'alias' => 'job_title',
+                'def'   => 'varchar(255)'
+            ],
+            'c.birth_date' => [
+                'alias' => 'birth_date',
+                'def'   => 'varchar(32)'
+            ],
+            'c.organization_name' => [
+                'alias' => 'organization_name',
+                'def'   => 'varchar(128)'
+            ],
+            'c.postal_greeting_display' => [
+                'alias' => 'postal_greeting_display',
+                'def'   => 'varchar(255)'
+            ],
+            'c.addressee_display' => [
+                'alias' => 'addressee_display',
+                'def'   => 'varchar(255)'
+            ],
+            'c.gender_id' => [
+                'alias' => 'gender_id',
+                'def'   => 'varchar(64)'
+            ],
+            'c.prefix_id' => [
+                'alias' => 'prefix_id',
+                'def'   => 'varchar(64)'
+            ],
+            'c.suffix_id' => [
+                'alias' => 'suffix_id',
+                'def'   => 'varchar(64)'
+            ],
+            'ch.id' => [
+                'alias' => 'household_id',
+                'def'   => 'varchar(64)'
+            ],
+            'cr.relationship_type_id' => [
+                'alias' => 'relationship_type_id',
+                'def'   => 'varchar(64)'
+            ],
+            'ch.household_name' => [
+                'alias' => 'household_name',
+                'def'   => 'varchar(128)'
+            ],
+            'ch.nick_name' => [
+                'alias' => 'household_nickname',
+                'def'   => 'varchar(128)'
+            ],
+            'ch.postal_greeting_display' => [
+                'alias' => 'household_postal_greeting_display',
+                'def'   => 'varchar(255)'
+            ],
+            'ch.addressee_display' => [
+                'alias' => 'household_addressee_display',
+                'def'   => 'varchar(255)'
+            ],
+            'LPAD(congressional_district_46,2,\'0\')'=> [
+                'alias' => 'congressional_district_46',
+                'def'   => 'varchar(64)'
+            ],
+            'LPAD(ny_senate_district_47,2,\'0\')' => [
+                'alias' => 'ny_senate_district_47',
+                'def'   => 'varchar(64)'
+            ],
+            'LPAD(ny_assembly_district_48,3,\'0\')' => [
+                'alias' => 'ny_assembly_district_48',
+                'def'   => 'varchar(64)'
+            ],
+            'LPAD(election_district_49,3,\'0\')' => [
+                'alias' => 'election_district_49',
+                'def'   => 'varchar(64)'
+            ],
+            'LPAD(county_50,2,\'0\')' => [
+                'alias' => 'county_50',
+                'def'   => 'varchar(64)'
+            ],
+            'LPAD(county_legislative_district_51,2,\'0\')' => [
+                'alias' => 'county_legislative_district_51',
+                'def'   => 'varchar(64)'
+            ],
+            'town_52' => [
+                'alias' => 'town_52',
+                'def'   => 'varchar(64)'
+            ],
+            'LPAD(ward_53,2,\'0\')' => [
+                'alias' => 'ward_53',
+                'def'   => 'varchar(64)'
+            ],
+            'LPAD(school_district_54,3,\'0\')' => [
+                'alias' => 'school_district_54',
+                'def'   => 'varchar(64)'
+            ],
+            'LPAD(new_york_city_council_55,2,\'0\')' => [
+                'alias' => 'new_york_city_council_55',
+                'def'   => 'varchar(64)'
+            ],
+            'street_address' => [
+                'alias' => 'street_address',
+                'def'   => 'varchar(96)'
+            ],
+            'supplemental_address_1' => [
+                'alias' => 'supplemental_address_1',
+                'def'   => 'varchar(96)'
+            ],
+            'supplemental_address_2' => [
+                'alias' => 'supplemental_address_2',
+                'def'   => 'varchar(96)'
+            ],
+            'street_number' => [
+                'alias' => 'street_number',
+                'def'   => 'varchar(16)'
+            ],
+            'street_number_suffix' => [
+                'alias' => 'street_number_suffix',
+                'def'   => 'varchar(8)'
+            ],
+            'street_name' => [
+                'alias' => 'street_name',
+                'def'   => 'varchar(64)'
+            ],
+            'street_unit' => [
+                'alias' => 'street_unit',
+                'def'   => 'varchar(16)'
+            ],
+            'city' => [
+                'alias' => 'city',
+                'def'   => 'varchar(64)'
+            ],
+            'postal_code' => [
+                'alias' => 'postal_code',
+                'def'   => 'varchar(12)'
+            ],
+            'postal_code_suffix' => [
+                'alias' => 'postal_code_suffix',
+                'def'   => 'varchar(12)'
+            ],
+            'state_province_id' => [
+                'alias' => 'state_province_id',
+                'def'   => 'varchar(12)'
+            ],
+        ];
+
+        switch ( $output ) {
+            case 'select':
+                $selectVals = [];
+
+                foreach ($fields as $field => $details) {
+                    $selectVals[] = $field.' as '.$details['alias'];
+                }
+
+                return implode(', ', $selectVals);
+
+            case 'columns':
+                $colVals = [];
+
+                foreach ($fields as $field => $details) {
+                    $colVals[] = $details['alias'].' '.$details['def'];
+                }
+
+                return implode( ', ', $colVals );
+
+            default:
+                return '';
+        }
+    } // getColumns()
+
 }
 
 function getIssueCodesRecursive(&$issueCodes, $parent_id = NULL) {
@@ -738,539 +1206,6 @@ function getIssueCodesRecursive(&$issueCodes, $parent_id = NULL) {
   }
   $dao->free();
 } // getIssueCodesRecursive()
-
-
-function getOptions($strGroup) {
-  $dao = CRM_Core_DAO::executeQuery("
-    SELECT id
-    FROM civicrm_option_group
-    WHERE name='".$strGroup."';
-  ");
-  $dao->fetch();
-  $optionGroupID = $dao->id;
-  $dao->free();
-
-  $dao = CRM_Core_DAO::executeQuery("
-    SELECT name, label, value
-    FROM civicrm_option_value
-    WHERE option_group_id=$optionGroupID;
-  ");
-
-  $options = [];
-  while ($dao->fetch()) {
-    $name = (strlen($dao->label) > 0) ? $dao->label : $dao->name;
-    $options[$dao->value] = $name;
-  }
-  $dao->free();
-
-  return $options;
-} //getOptions()
-
-
-function getStates() {
-  $dao = CRM_Core_DAO::executeQuery("
-    SELECT id, abbreviation
-    FROM civicrm_state_province
-  ");
-
-  $options = [];
-  while ($dao->fetch()) {
-    $options[$dao->id] = $dao->abbreviation;
-  }
-  $dao->free();
-
-  return $options;
-} //getStates()
-
-
-function statsIssueCodes( $tmpTbl ) {
-  $sql = "
-    SELECT civicrm_tag.name, COUNT( civicrm_entity_tag.id ) as ic_count
-    FROM civicrm_entity_tag
-    INNER JOIN civicrm_tag
-      ON ( civicrm_entity_tag.tag_id = civicrm_tag.id )
-    INNER JOIN $tmpTbl
-      ON ( $tmpTbl.id = civicrm_entity_tag.entity_id )
-    WHERE ( civicrm_entity_tag.entity_table LIKE '%civicrm_contact%' )
-      AND ( civicrm_tag.parent_id != 292 )
-      AND ( civicrm_tag.parent_id != 296 )
-      AND ( civicrm_tag.is_tagset != 1 )
-    GROUP BY name
-    ORDER BY ic_count DESC;";
-
-  $dao = CRM_Core_DAO::executeQuery($sql);
-  $ic_stats = [];
-  while ($dao->fetch()) {
-    $ic_stats[stripslashes(iconv('UTF-8', 'Windows-1252', $dao->name))] = $dao->ic_count;
-  }
-  $dao->free();
-
-  return $ic_stats;
-} // statsIssueCodes()
-
-
-function statsKeywords( $tmpTbl ) {
-  $sql = "
-    SELECT civicrm_tag.name, COUNT( civicrm_entity_tag.id ) as key_count
-    FROM civicrm_entity_tag
-    INNER JOIN civicrm_tag
-      ON ( civicrm_entity_tag.tag_id = civicrm_tag.id )
-    INNER JOIN $tmpTbl
-      ON ( $tmpTbl.id = civicrm_entity_tag.entity_id )
-    WHERE ( civicrm_entity_tag.entity_table LIKE '%civicrm_contact%' )
-      AND ( civicrm_tag.parent_id = 296 )
-    GROUP BY name
-    ORDER BY key_count DESC;";
-
-  $dao = CRM_Core_DAO::executeQuery($sql);
-  $key_stats = [];
-  while ($dao->fetch()) {
-    $key_stats[stripslashes(iconv('UTF-8', 'Windows-1252', $dao->name))] = $dao->key_count;
-  }
-  $dao->free();
-
-  return $key_stats;
-} // statsKeywords()
-
-
-//merge temp table down into households
-function mergeHouseholds( $tbl ) {
-  //our resulting export could have actual household records OR
-  //individuals who are part of households OR both
-
-  //if a household record exists along with individuals,
-  //we can simply remove the individual records from the export
-  $sql = "
-    DELETE t1.*
-    FROM $tbl t1
-    JOIN $tbl t2
-      ON t1.household_id = t2.id
-    WHERE t1.contact_type = 'Individual';";
-  CRM_Core_DAO::executeQuery($sql);
-
-  //if we have multiple individuals from a single household
-  //we need to condense into a single record
-  $sql = "
-    CREATE TEMPORARY TABLE {$tbl}_hdupe
-    SELECT id
-    FROM $tbl
-    WHERE household_id IS NOT NULL
-    GROUP BY household_id
-    HAVING count(id) > 1 ";
-  CRM_Core_DAO::executeQuery($sql);
-
-  $sql = "
-    DELETE t1.*
-    FROM $tbl t1
-    JOIN {$tbl}_hdupe t2
-    ON t1.id = t2.id";
-  CRM_Core_DAO::executeQuery($sql);
-
-  //now we want to copy the household greeting/address to the primary fields
-  $sql = "
-    UPDATE $tbl
-    SET postal_greeting_display = household_postal_greeting_display,
-      addressee_display = household_addressee_display,
-      contact_type = 'Household-Individual'
-    WHERE household_id IS NOT NULL
-      AND contact_type = 'Individual';";
-  CRM_Core_DAO::executeQuery($sql);
-
-  //drop temp table
-  $sql = "DROP TEMPORARY TABLE {$tbl}_hdupe;";
-  CRM_Core_DAO::executeQuery($sql);
-
-  return;
-} // mergeHouseholds()
-
-
-//defines the columns in our table and select statement
-function getColumns( $output = 'select' ) {
-  $fields = [
-    'c.id' => [
-      'alias' => 'id',
-      'def'   => 'int not null primary key'
-    ],
-    'c.contact_type' => [
-      'alias' => 'contact_type',
-      'def'   => 'varchar(64)'
-    ],
-    'c.first_name' => [
-      'alias' => 'first_name',
-      'def'   => 'varchar(64)'
-    ],
-    'c.last_name' => [
-      'alias' => 'last_name',
-      'def'   => 'varchar(64)'
-    ],
-    'c.middle_name' => [
-      'alias' => 'middle_name',
-      'def'   => 'varchar(64)'
-    ],
-    'c.job_title' => [
-      'alias' => 'job_title',
-      'def'   => 'varchar(255)'
-    ],
-    'c.birth_date' => [
-      'alias' => 'birth_date',
-      'def'   => 'varchar(32)'
-    ],
-    'c.organization_name' => [
-      'alias' => 'organization_name',
-      'def'   => 'varchar(128)'
-    ],
-    'c.postal_greeting_display' => [
-      'alias' => 'postal_greeting_display',
-      'def'   => 'varchar(255)'
-    ],
-    'c.addressee_display' => [
-      'alias' => 'addressee_display',
-      'def'   => 'varchar(255)'
-    ],
-    'c.gender_id' => [
-      'alias' => 'gender_id',
-      'def'   => 'varchar(64)'
-    ],
-    'c.prefix_id' => [
-      'alias' => 'prefix_id',
-      'def'   => 'varchar(64)'
-    ],
-    'c.suffix_id' => [
-      'alias' => 'suffix_id',
-      'def'   => 'varchar(64)'
-    ],
-    'ch.id' => [
-      'alias' => 'household_id',
-      'def'   => 'varchar(64)'
-    ],
-    'cr.relationship_type_id' => [
-      'alias' => 'relationship_type_id',
-      'def'   => 'varchar(64)'
-    ],
-    'ch.household_name' => [
-      'alias' => 'household_name',
-      'def'   => 'varchar(128)'
-    ],
-    'ch.nick_name' => [
-      'alias' => 'household_nickname',
-      'def'   => 'varchar(128)'
-    ],
-    'ch.postal_greeting_display' => [
-      'alias' => 'household_postal_greeting_display',
-      'def'   => 'varchar(255)'
-    ],
-    'ch.addressee_display' => [
-      'alias' => 'household_addressee_display',
-      'def'   => 'varchar(255)'
-    ],
-    'LPAD(congressional_district_46,2,\'0\')'=> [
-      'alias' => 'congressional_district_46',
-      'def'   => 'varchar(64)'
-    ],
-    'LPAD(ny_senate_district_47,2,\'0\')' => [
-      'alias' => 'ny_senate_district_47',
-      'def'   => 'varchar(64)'
-    ],
-    'LPAD(ny_assembly_district_48,3,\'0\')' => [
-      'alias' => 'ny_assembly_district_48',
-      'def'   => 'varchar(64)'
-    ],
-    'LPAD(election_district_49,3,\'0\')' => [
-      'alias' => 'election_district_49',
-      'def'   => 'varchar(64)'
-    ],
-    'LPAD(county_50,2,\'0\')' => [
-      'alias' => 'county_50',
-      'def'   => 'varchar(64)'
-    ],
-    'LPAD(county_legislative_district_51,2,\'0\')' => [
-      'alias' => 'county_legislative_district_51',
-      'def'   => 'varchar(64)'
-    ],
-    'town_52' => [
-      'alias' => 'town_52',
-      'def'   => 'varchar(64)'
-    ],
-    'LPAD(ward_53,2,\'0\')' => [
-      'alias' => 'ward_53',
-      'def'   => 'varchar(64)'
-    ],
-    'LPAD(school_district_54,3,\'0\')' => [
-      'alias' => 'school_district_54',
-      'def'   => 'varchar(64)'
-    ],
-    'LPAD(new_york_city_council_55,2,\'0\')' => [
-      'alias' => 'new_york_city_council_55',
-      'def'   => 'varchar(64)'
-    ],
-    'street_address' => [
-      'alias' => 'street_address',
-      'def'   => 'varchar(96)'
-    ],
-    'supplemental_address_1' => [
-      'alias' => 'supplemental_address_1',
-      'def'   => 'varchar(96)'
-    ],
-    'supplemental_address_2' => [
-      'alias' => 'supplemental_address_2',
-      'def'   => 'varchar(96)'
-    ],
-    'street_number' => [
-      'alias' => 'street_number',
-      'def'   => 'varchar(16)'
-    ],
-    'street_number_suffix' => [
-      'alias' => 'street_number_suffix',
-      'def'   => 'varchar(8)'
-    ],
-    'street_name' => [
-      'alias' => 'street_name',
-      'def'   => 'varchar(64)'
-    ],
-    'street_unit' => [
-      'alias' => 'street_unit',
-      'def'   => 'varchar(16)'
-    ],
-    'city' => [
-      'alias' => 'city',
-      'def'   => 'varchar(64)'
-    ],
-    'postal_code' => [
-      'alias' => 'postal_code',
-      'def'   => 'varchar(12)'
-    ],
-    'postal_code_suffix' => [
-      'alias' => 'postal_code_suffix',
-      'def'   => 'varchar(12)'
-    ],
-    'state_province_id' => [
-      'alias' => 'state_province_id',
-      'def'   => 'varchar(12)'
-    ],
-  ];
-
-  switch ( $output ) {
-    case 'select':
-      $selectVals = [];
-
-      foreach ($fields as $field => $details) {
-        $selectVals[] = $field.' as '.$details['alias'];
-      }
-
-      return implode(', ', $selectVals);
-
-    case 'columns':
-      $colVals = [];
-
-      foreach ($fields as $field => $details) {
-        $colVals[] = $details['alias'].' '.$details['def'];
-      }
-
-      return implode( ', ', $colVals );
-
-    default:
-      return '';
-  }
-} // getColumns()
-
-
-function excludeGroupContacts( $tbl, $groups, $localSeedsList ) {
-  //get group contacts
-  $excludeContacts = [];
-  foreach ( $groups as $group ) {
-    $groupContacts = CRM_Contact_BAO_Group::getMember( $group );
-    $excludeContacts = array_merge( $excludeContacts, array_keys($groupContacts) );
-  }
-  $contactList = implode(',', $excludeContacts);
-
-  $localSeedsList = (!empty($localSeedsList)) ? $localSeedsList : 0;
-
-  //remove contacts from temp table
-  $sql = "
-    DELETE FROM $tbl
-    WHERE id IN ( $contactList )
-      AND id NOT IN ( $localSeedsList );";
-  CRM_Core_DAO::executeQuery($sql);
-
-  return;
-} // excludeGroupContacts()
-
-
-/**
-*
-* 5142
-* given a district ID, collect district exclusions and remove from the import
-*
-*/
-function processDistrictExclude( $districtID, $tbl, $localSeedsList ) {
-  itime('processDistrictExclude start');
-
-  //retrieve the instance name using the district ID
-  $instance = $dbBase = '';
-  $bbFullConfig = get_bluebird_config();
-  foreach ($bbFullConfig as $group => $details) {
-    if (!empty($group) && strpos($group, 'instance:') !== false) {
-      if ($details['district'] == $districtID) {
-        $instance = substr($group, 9);
-        $dbBase = $details['db.basename'];
-        break;
-      }
-    }
-  }
-
-  $localSeedsList = ( $localSeedsList ) ? $localSeedsList : 0;
-
-  //retrieve values using db basename and create temp table
-  $db = $bbFullConfig['globals']['db.civicrm.prefix'].$dbBase;
-  $dTbl = "{$tbl}_d{$districtID}";
-
-  //need to list sa columns to avoid naming conflicts
-  $sql = "
-    CREATE TABLE $dTbl
-    (INDEX match1 (first_name ( 50 ), middle_name ( 50 ), last_name ( 50 ), suffix_id (4), birth_date, gender_id))
-    ENGINE=myisam
-    SELECT c.id, sc.*, sa.address_id, sa.street_address, sa.country_id, sa.state_province_id, sa.supplemental_address_1, sa.supplemental_address_2, sa.postal_code, sa.city
-    FROM $db.civicrm_contact c
-    LEFT JOIN $db.shadow_contact sc
-      ON c.id = sc.contact_id
-    LEFT JOIN $db.shadow_address sa
-      ON c.id = sa.contact_id
-    WHERE c.is_deleted = 0
-      AND ( c.do_not_mail = 1 OR c.do_not_trade = 1 )";
-  CRM_Core_DAO::executeQuery($sql);
-  itime('processDistrictExclude after query execute');
-
-  //now compare the district exclude table ($dTbl) to the main export table ($tbl)
-  //and remove matches from the main table
-  //run with three separate queries as it's much faster than a single where clause with OR
-  $contactElements = [
-    "-- Individual check
-    ( contact_type = 'Individual'
-      AND BB_NORMALIZE(source.last_name) = district.last_name
-      AND BB_NORMALIZE(source.first_name) = district.first_name
-      AND (source.suffix_id IS NULL OR district.suffix_id IS NULL OR source.suffix_id = district.suffix_id)
-      AND (source.middle_name IS NULL OR district.middle_name IS NULL OR BB_NORMALIZE(source.middle_name) = district.middle_name)
-      AND (source.birth_date IS NULL OR district.birth_date IS NULL OR source.birth_date = district.birth_date)
-      AND (source.gender_id IS NULL OR district.gender_id IS NULL OR source.gender_id = district.gender_id) )",
-    "-- Organization checks
-    ( contact_type = 'Organization'
-      AND BB_NORMALIZE(source.organization_name) = district.organization_name )",
-    "-- Household checks
-    ( contact_type = 'Household'
-      AND BB_NORMALIZE(source.household_name) = district.household_name )",
-  ];
-  foreach ( $contactElements as $ele ) {
-    $sql = "
-      DELETE FROM $tbl
-      WHERE id IN ( SELECT id FROM (
-        SELECT source.id
-        FROM $tbl as source JOIN $dTbl as district USING (contact_type)
-        WHERE
-        -- contact specific checks
-        $ele
-        -- AND all of the address checks pass
-        AND source.postal_code=district.postal_code
-        AND BB_NORMALIZE_ADDR(source.street_address) = district.street_address
-        AND (source.city IS NULL OR district.city IS NULL OR BB_NORMALIZE_ADDR(source.city) = district.city)
-        AND (source.state_province_id IS NULL OR district.state_province_id IS NULL OR source.state_province_id = district.state_province_id)
-        ) AS tmpMatch
-      )
-      AND id NOT IN ($localSeedsList);";
-    idebug($sql, 'dedupe match sql');
-    $dao = CRM_Core_DAO::executeQuery($sql);
-  }
-  itime('processDistrictExclude after dedupe comparison');
-
-  //remove temp exclusion table
-  $sql = "DROP TABLE $dTbl;";
-  $dao = CRM_Core_DAO::executeQuery($sql);
-
-  //now retrieve district seeds and add them to the main temp table
-  addExternalSeeds($tbl, $db);
-  itime('processDistrictExclude after addExternalSeeds');
-
-  return;
-} // processDistrictExclude()
-
-
-function addExternalSeeds($tbl, $db) {
-  $sFlds = getColumns( 'select' );
-  $sFlds = str_replace( 'c.id as id', "(c.id + 1000000000) as id", $sFlds ); //avoid conflicts with source db
-
-  $eogid = CRM_Core_DAO::singleValueQuery( "SELECT id FROM $db.civicrm_group WHERE name LIKE 'Mailing_Seeds';" );
-  if ( !$eogid ) $eogid = 0;
-
-  $sql = "
-    INSERT INTO {$tbl}
-    SELECT $sFlds
-    FROM $db.civicrm_contact c";
-  $sql .= "
-    LEFT JOIN $db.civicrm_address a
-      ON a.contact_id=c.id
-      AND a.id = IF((SELECT npm.id
-        FROM $db.civicrm_address npm
-        WHERE npm.contact_id = c.id
-           AND npm.location_type_id = 13
-           AND npm.is_primary = 0
-        LIMIT 1),
-        (SELECT npm.id
-        FROM $db.civicrm_address npm
-        WHERE npm.contact_id = c.id
-          AND npm.location_type_id = 13
-          AND npm.is_primary = 0
-        LIMIT 1),
-        (SELECT pm.id
-        FROM $db.civicrm_address pm
-        WHERE pm.contact_id = c.id
-          AND pm.is_primary = 1
-        LIMIT 1)) ";
-  $sql .= "
-    LEFT JOIN $db.civicrm_value_district_information_7 di
-      ON di.entity_id = a.id ";
-
-  //household joins
-  $sql .= "
-    LEFT JOIN $db.civicrm_relationship cr
-      ON cr.contact_id_a = c.id
-      AND ( cr.end_date IS NULL || cr.end_date > Now() )
-      AND ( cr.relationship_type_id = 6 OR cr.relationship_type_id = 7 )
-      AND cr.is_active = 1 ";
-  $sql .= "
-    LEFT JOIN $db.civicrm_contact ch
-      ON ch.id = cr.contact_id_b ";
-
-  //join with group to include Mailing_Exclusions
-  $sql .= "
-    JOIN $db.civicrm_group_contact cgc
-      ON cgc.contact_id = c.id
-      AND status = 'Added'
-      AND group_id = $eogid ";
-
-  //exclude deceased, trashed, do not mail, do not mail (undeliverable/trade)
-  $sql .= "
-    WHERE c.is_deceased = 0
-      AND c.is_deleted = 0
-      AND c.do_not_mail = 0
-      AND c.do_not_trade = 0 ";
-
-  //exclude empty last name, empty org name (if org type), and empty address
-  $sql .= " AND ( ( c.contact_type = 'Individual' AND c.last_name IS NOT NULL AND c.last_name != '' ) OR ( c.contact_type = 'Individual' AND c.organization_name IS NOT NULL AND c.organization_name != '' ) OR c.contact_type != 'Individual' ) ";
-  $sql .= " AND ( ( c.contact_type = 'Organization' AND c.organization_name IS NOT NULL AND c.organization_name != '' ) OR c.contact_type != 'Organization' ) ";
-  $sql .= " AND ( ( a.street_address IS NOT NULL AND a.street_address != '' ) OR ( a.supplemental_address_1 IS NOT NULL AND a.supplemental_address_1 != '' ) ) ";
-
-  //exclude impossibly old contacts
-  $sql .= " AND ( c.birth_date IS NULL OR c.birth_date > '1901-01-01' ) ";
-
-  //group by contact ID in case any joins with multiple records cause dupe primary in our temp table
-  $sql .= " GROUP BY c.id ";
-  //CRM_Core_Error::debug_var('sql',$sql);
-
-  $dao = CRM_Core_DAO::executeQuery($sql);
-  $dao->free();
-
-  return;
-} // addExternalSeeds()
-
 
 //display debug based on constant
 function idebug( $var, $varName = '', $level = 1 ) {
