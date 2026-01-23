@@ -12,32 +12,12 @@ function activity_civicrm_config(&$config) {
 }
 
 /**
- * Implements hook_civicrm_xmlMenu().
- *
- * @param $files array(string)
- *
- * @link http://wiki.civicrm.org/confluence/display/CRMDOC/hook_civicrm_xmlMenu
- */
-function activity_civicrm_xmlMenu(&$files) {
-  _activity_civix_civicrm_xmlMenu($files);
-}
-
-/**
  * Implements hook_civicrm_install().
  *
  * @link http://wiki.civicrm.org/confluence/display/CRMDOC/hook_civicrm_install
  */
 function activity_civicrm_install() {
   _activity_civix_civicrm_install();
-}
-
-/**
- * Implements hook_civicrm_uninstall().
- *
- * @link http://wiki.civicrm.org/confluence/display/CRMDOC/hook_civicrm_uninstall
- */
-function activity_civicrm_uninstall() {
-  _activity_civix_civicrm_uninstall();
 }
 
 /**
@@ -49,77 +29,19 @@ function activity_civicrm_enable() {
   _activity_civix_civicrm_enable();
 }
 
-/**
- * Implements hook_civicrm_disable().
- *
- * @link http://wiki.civicrm.org/confluence/display/CRMDOC/hook_civicrm_disable
- */
-function activity_civicrm_disable() {
-  _activity_civix_civicrm_disable();
-}
-
-/**
- * Implements hook_civicrm_upgrade().
- *
- * @param $op string, the type of operation being performed; 'check' or 'enqueue'
- * @param $queue CRM_Queue_Queue, (for 'enqueue') the modifiable list of pending up upgrade tasks
- *
- * @return mixed
- *   Based on op. for 'check', returns array(boolean) (TRUE if upgrades are pending)
- *                for 'enqueue', returns void
- *
- * @link http://wiki.civicrm.org/confluence/display/CRMDOC/hook_civicrm_upgrade
- */
-function activity_civicrm_upgrade($op, CRM_Queue_Queue $queue = NULL) {
-  return _activity_civix_civicrm_upgrade($op, $queue);
-}
-
-/**
- * Implements hook_civicrm_managed().
- *
- * Generate a list of entities to create/deactivate/delete when this module
- * is installed, disabled, uninstalled.
- *
- * @link http://wiki.civicrm.org/confluence/display/CRMDOC/hook_civicrm_managed
- */
-function activity_civicrm_managed(&$entities) {
-  _activity_civix_civicrm_managed($entities);
-}
-
-/**
- * Implements hook_civicrm_caseTypes().
- *
- * Generate a list of case-types
- *
- * Note: This hook only runs in CiviCRM 4.4+.
- *
- * @link http://wiki.civicrm.org/confluence/display/CRMDOC/hook_civicrm_caseTypes
- */
-function activity_civicrm_caseTypes(&$caseTypes) {
-  _activity_civix_civicrm_caseTypes($caseTypes);
-}
-
-/**
- * Implements hook_civicrm_angularModules().
- *
- * Generate a list of Angular modules.
- *
- * Note: This hook only runs in CiviCRM 4.5+. It may
- * use features only available in v4.6+.
- *
- * @link http://wiki.civicrm.org/confluence/display/CRMDOC/hook_civicrm_caseTypes
- */
-function activity_civicrm_angularModules(&$angularModules) {
-_activity_civix_civicrm_angularModules($angularModules);
-}
-
-/**
- * Implements hook_civicrm_alterSettingsFolders().
- *
- * @link http://wiki.civicrm.org/confluence/display/CRMDOC/hook_civicrm_alterSettingsFolders
- */
-function activity_civicrm_alterSettingsFolders(&$metaDataFolders = NULL) {
-  _activity_civix_civicrm_alterSettingsFolders($metaDataFolders);
+function activity_civicrm_pageRun(&$page) {
+  // Added - NYSS 11385 / Removed (deprecated) - NYSS 17345
+  // See managed/SavedSearch_NYSS_My_Activities.mgd.php
+  /*
+  if ($pagename == 'CRM_Dashlet_Page_Activity') {
+    CRM_Core_Resources::singleton()->addScript("
+      CRM.$(function($) {
+        $('li.widget-activity h3.widget-header').text('My Activities');
+        $('th.crm-contact-activity-activity_date').html('Activity Date');
+      });
+    ");
+  }
+  */
 }
 
 function activity_civicrm_buildForm($formName, &$form) {
