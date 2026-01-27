@@ -275,7 +275,10 @@ function nyss_dedupe_individual_default_fuzzy_internal($o) {
 }
 
 function nyss_dedupe_individual_default_strict_record($o) {
-  // Fetch and clean all input data
+
+    $normalizer = Civi::service('nyssdedupe.normalizer');
+
+    // Fetch and clean all input data
   $civicrm_contact = $o->params['civicrm_contact'] ?? [];
   $civicrm_address = $o->params['civicrm_address'] ?? [];
   $civicrm_email = $o->params['civicrm_email'] ?? [];
@@ -287,9 +290,11 @@ function nyss_dedupe_individual_default_strict_record($o) {
   $suffix_id = nyss_dedupe_get_safe('suffix_id', $civicrm_contact,'');
   $middle_name = nyss_dedupe_get_safe('middle_name', $civicrm_contact,'');
   $gender_id = nyss_dedupe_get_safe('gender_id', $civicrm_contact,'');
-  $city = nyss_dedupe_get_safe('city', $civicrm_address,'');
+  //$city = nyss_dedupe_get_safe('city', $civicrm_address,'');
+  $city = CRM_Core_DAO::escapeString($normalizer->normalize_addr($civicrm_address['city'] ?? ''));
   $postal_code = nyss_dedupe_get_safe('postal_code', $civicrm_address,'');
-  $street_address = nyss_dedupe_get_safe('street_address', $civicrm_address,'');
+  //$street_address = nyss_dedupe_get_safe('street_address', $civicrm_address,'');
+  $street_address = CRM_Core_DAO::escapeString($normalizer->normalize_addr($civicrm_address['street_address'] ?? ''));
   $state_id = nyss_dedupe_get_safe('state_province_id', $civicrm_address,'');
   $country_id = nyss_dedupe_get_safe('country_id', $civicrm_address,'');
 
@@ -337,7 +342,7 @@ function nyss_dedupe_individual_default_strict_record($o) {
 
     if ($city)
       $where .= "
-        AND (address1.city IS NULL or address1.city = BB_NORMALIZE_ADDR('$city'))";
+        AND (address1.city IS NULL or address1.city = '$city')";
 
     if ($state_id)
       $where .= "
@@ -358,12 +363,12 @@ function nyss_dedupe_individual_default_strict_record($o) {
   if ($street_address && $postal_code && $email)
     $where .= "
       AND (
-        (address1.street_address = BB_NORMALIZE_ADDR('$street_address') AND address1.postal_code = '$postal_code') OR
+        (address1.street_address = '$street_address' AND address1.postal_code = '$postal_code') OR
         (email1.email = '$email')
       )";
   elseif ($street_address && $postal_code)
     $where .= "
-      AND address1.street_address = BB_NORMALIZE_ADDR('$street_address')
+      AND address1.street_address = '$street_address'
       AND address1.postal_code = '$postal_code'";
   elseif ($email)
     $where .= "
@@ -373,6 +378,9 @@ function nyss_dedupe_individual_default_strict_record($o) {
 }
 
 function nyss_dedupe_individual_default_fuzzy_record($o) {
+
+    $normalizer = Civi::service('nyssdedupe.normalizer');
+
   // Fetch and clean all input data
   $civicrm_contact = $o->params['civicrm_contact'] ?? [];
   $civicrm_address = $o->params['civicrm_address'] ?? [];
@@ -385,13 +393,17 @@ function nyss_dedupe_individual_default_fuzzy_record($o) {
   $suffix_id = nyss_dedupe_get_safe('suffix_id', $civicrm_contact,'');
   $middle_name = nyss_dedupe_get_safe('middle_name',$civicrm_contact,'');
   $gender_id = nyss_dedupe_get_safe('gender_id', $civicrm_contact,'');
-  $city = nyss_dedupe_get_safe('city', $civicrm_address,'');
+  //$city = nyss_dedupe_get_safe('city', $civicrm_address,'');
+  $city = CRM_Core_DAO::escapeString($normalizer->normalize_addr($civicrm_address['city'] ?? ''));
   $postal_code = nyss_dedupe_get_safe('postal_code', $civicrm_address,'');
-  $street_address = nyss_dedupe_get_safe('street_address', $civicrm_address,'');
+  //$street_address = nyss_dedupe_get_safe('street_address', $civicrm_address,'');
+  $street_address = CRM_Core_DAO::escapeString($normalizer->normalize_addr($civicrm_address['street_address'] ?? ''));
   $state_id = nyss_dedupe_get_safe('state_province_id', $civicrm_address,'');
   $country_id = nyss_dedupe_get_safe('country_id', $civicrm_address,'');
-  $supp_address_1 = nyss_dedupe_get_safe('supplemental_address_1', $civicrm_address,'');
-  $supp_address_2 = nyss_dedupe_get_safe('supplemental_address_2', $civicrm_address,'');
+  //$supp_address_1 = nyss_dedupe_get_safe('supplemental_address_1', $civicrm_address,'');
+  $supp_address_1 = CRM_Core_DAO::escapeString($normalizer->normalize_addr($civicrm_address['supplemental_address_1'] ?? ''));
+  //$supp_address_2 = nyss_dedupe_get_safe('supplemental_address_2', $civicrm_address,'');
+  $supp_address_2 = CRM_Core_DAO::escapeString($normalizer->normalize_addr($civicrm_address['supplemental_address_2'] ?? ''));
 
   // If we don't have a first and last name, do nothing
   if (!$first_name || !$last_name)
@@ -445,7 +457,7 @@ function nyss_dedupe_individual_default_fuzzy_record($o) {
 
     if ($city)
       $where .= "
-        AND (address1.city IS NULL or address1.city = BB_NORMALIZE_ADDR('$city'))";
+        AND (address1.city IS NULL or address1.city = '$city')";
 
     if ($state_id)
       $where .= "
@@ -464,10 +476,10 @@ function nyss_dedupe_individual_default_fuzzy_record($o) {
 
   // Add on the primary inclusion rules
   $emailClause = "(email1.email IS NULL OR email1.email = '$email')";
-  $supp1Clause = "(address1.supplemental_address_1 IS NULL OR address1.supplemental_address_1 = BB_NORMALIZE_ADDR('$supp_address_1'))";
-  $supp2Clause = "(address1.supplemental_address_2 IS NULL OR address1.supplemental_address_2 = BB_NORMALIZE_ADDR('$supp_address_2'))";
-  $streetClause = "(address1.street_address IS NULL OR address1.street_address = BB_NORMALIZE_ADDR('$street_address') )";
-  $crossClause = "(address1.street_address = BB_NORMALIZE_ADDR('$supp_address_1') OR address1.supplemental_address_1 = BB_NORMALIZE_ADDR('$street_address'))";
+  $supp1Clause = "(address1.supplemental_address_1 IS NULL OR address1.supplemental_address_1 = '$supp_address_1')";
+  $supp2Clause = "(address1.supplemental_address_2 IS NULL OR address1.supplemental_address_2 = '$supp_address_2')";
+  $streetClause = "(address1.street_address IS NULL OR address1.street_address = '$street_address' )";
+  $crossClause = "(address1.street_address = '$supp_address_1' OR address1.supplemental_address_1 = '$street_address')";
 
   $clauses = [];
   if ($email)
@@ -487,7 +499,6 @@ function nyss_dedupe_individual_default_fuzzy_record($o) {
 
   return $select.$from.$where;
 }
-
 
 /*
  * organization rules
@@ -570,6 +581,8 @@ function nyss_dedupe_org3_internal($o) {
 function nyss_dedupe_org1_record($o) {
   //name + street + city + email
 
+    $normalizer = Civi::service('nyssdedupe.normalizer');
+
   //fetch and clean all input data
   $civicrm_contact = $o->params['civicrm_contact'] ?? [];
   $civicrm_address = $o->params['civicrm_address'] ?? [];
@@ -579,7 +592,8 @@ function nyss_dedupe_org1_record($o) {
   $organization_name = nyss_dedupe_get_safe('organization_name', $civicrm_contact, '');
   $city = nyss_dedupe_get_safe('city', $civicrm_address, '');
   $postal_code = nyss_dedupe_get_safe('postal_code', $civicrm_address, '');
-  $street_address = nyss_dedupe_get_safe('street_address', $civicrm_address, '');
+  //$street_address = nyss_dedupe_get_safe('street_address', $civicrm_address, '');
+  $street_address = CRM_Core_DAO::escapeString($normalizer->normalize_addr($civicrm_address['street_address'] ?? ''));
   $state_id = nyss_dedupe_get_safe('state_province_id', $civicrm_address, '');
   $country_id = nyss_dedupe_get_safe('country_id', $civicrm_address, '');
 
@@ -631,12 +645,12 @@ function nyss_dedupe_org1_record($o) {
   if ($street_address && $postal_code && $email)
     $where .= "
       AND (
-        (address1.street_address = BB_NORMALIZE_ADDR('$street_address') AND address1.postal_code = '$postal_code')
+        (address1.street_address = '$street_address' AND address1.postal_code = '$postal_code')
         OR (email1.email = '$email')
       )";
   elseif ($street_address && $postal_code)
     $where .= "
-      AND address1.street_address = BB_NORMALIZE_ADDR('$street_address')
+      AND address1.street_address = '$street_address'
       AND address1.postal_code = '$postal_code'";
   elseif ($email)
     $where .= "
@@ -724,6 +738,8 @@ function nyss_dedupe_house3_internal($o) {
 function nyss_dedupe_house1_record($o) {
   //name + street + city + email
 
+    $normalizer = Civi::service('nyssdedupe.normalizer');
+
   //fetch and clean all input data
   $civicrm_contact = $o->params['civicrm_contact'] ?? [];
   $civicrm_address = $o->params['civicrm_address'] ?? [];
@@ -733,7 +749,8 @@ function nyss_dedupe_house1_record($o) {
   $household_name = nyss_dedupe_get_safe('household_name', $civicrm_contact, '');
   $city = nyss_dedupe_get_safe('city', $civicrm_address, '');
   $postal_code = nyss_dedupe_get_safe('postal_code', $civicrm_address, '');
-  $street_address = nyss_dedupe_get_safe('street_address', $civicrm_address, '');
+  //$street_address = nyss_dedupe_get_safe('street_address', $civicrm_address, '');
+  $street_address = CRM_Core_DAO::escapeString($normalizer->normalize_addr($civicrm_address['street_address'] ?? ''));
   $state_id = nyss_dedupe_get_safe('state_province_id', $civicrm_address, '');
   $country_id = nyss_dedupe_get_safe('country_id', $civicrm_address, '');
 
@@ -785,13 +802,13 @@ function nyss_dedupe_house1_record($o) {
   if ($street_address && $postal_code && $email) {
     $where .= "
       AND (
-        (address1.street_address = BB_NORMALIZE_ADDR('$street_address') AND address1.postal_code = '$postal_code')
+        (address1.street_address = '$street_address' AND address1.postal_code = '$postal_code')
         OR (email1.email = '$email')
       )";
   }
   elseif ($street_address && $postal_code) {
     $where .= "
-      AND address1.street_address = BB_NORMALIZE_ADDR('$street_address')
+      AND address1.street_address = '$street_address'
       AND address1.postal_code = '$postal_code'";
   }
   elseif ($email) {
