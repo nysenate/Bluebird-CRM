@@ -3711,8 +3711,7 @@ class CRM_Report_Form extends CRM_Core_Form {
 
       // @todo all http vars should be extracted in the preProcess
       // - not randomly in the class
-      //NYSS 8974 - allow POST to override value passed in URL, else bottom pager lags
-      if (/*!$pageId &&*/ !empty($_POST)) {
+      if (!$pageId && !empty($_POST)) {
         if (isset($_POST['PagerBottomButton']) && isset($_POST['crmPID_B'])) {
           $pageId = max((int) $_POST['crmPID_B'], 1);
         }
