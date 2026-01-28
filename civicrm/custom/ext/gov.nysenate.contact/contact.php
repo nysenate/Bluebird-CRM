@@ -20,6 +20,13 @@ function contact_civicrm_config(&$config) {
       [1 => [$jobID, 'String']]
     );
   }
+
+  //prevent multiple calls
+  if (isset(Civi::$statics[__FUNCTION__])) { return; }
+  Civi::$statics[__FUNCTION__] = 1;
+
+  // NYSS 14192, 17702
+  Civi::dispatcher()->addListener('civi.token.eval', ['CRM_NYSS_Contact_TokenEvalListener', 'evalToken'], -1000);
 }
 
 /**
