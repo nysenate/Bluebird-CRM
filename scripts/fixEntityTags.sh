@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 #
 # fixEntityTags.sh - Analyze the civicrm_entity_tag table and fix problems.
 #

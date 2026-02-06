@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 #
 # fixSpaces.sh - Remove extraneous spaces from various databases fields.
 #

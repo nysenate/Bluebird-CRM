@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 #
 # drush.sh - A Bluebird-aware wrapper around the "drush" utility.
 #

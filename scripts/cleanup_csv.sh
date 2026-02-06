@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 #
 # cleanup_csv.sh - Convert non-printable characters to printable equivalents,
 #                  and eliminate all pipes, backslashes, and tildes.

@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 #
 # convertUtf8mb4.sh
 #

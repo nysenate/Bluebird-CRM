@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 #
 # deleteOrphanedTags.sh - Delete Bluebird tags that are not associated with
 #                         any entities (contacts, cases, or activities),

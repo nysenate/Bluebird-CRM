@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 #
 # deleteExports.sh - Delete print production export files
 #

@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 # uppercase any filenames with lowercase chars
 for file in $*
  do

@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 #
 # fixPermissions.sh - Set Bluebird directory permissions appropriately.
 #

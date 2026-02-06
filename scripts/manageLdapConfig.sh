@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 #
 # manageLdapConfig.sh - Wrapper around manageLdapConfig.php
 #

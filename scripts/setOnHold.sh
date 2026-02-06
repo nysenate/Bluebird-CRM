@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 #
 # setOnHold.sh - Given a file of undeliverable e-mail addresses, set the
 #                on_hold field for all matching e-mails in the CRM.

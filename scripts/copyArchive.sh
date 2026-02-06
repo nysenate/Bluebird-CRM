@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 #
 # copyArchive.sh - Copy an instance archive file (zip file containing two
 #                  SQL dump files) to a new file, prevserving proper naming.

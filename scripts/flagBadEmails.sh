@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 #
 # flagBadEmails.sh - Analyze email addresses for validity
 #

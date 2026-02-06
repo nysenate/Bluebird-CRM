@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 #
 # resetRolePerms.sh - Reset all roles and permissions for a CRM instance
 #

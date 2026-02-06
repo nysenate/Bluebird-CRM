@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 #
 # dedupeSetup.sh - All-in-one dedupe setup script.
 #

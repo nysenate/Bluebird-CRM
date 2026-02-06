@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 #
 # convert_nonprintables.sh - Convert all non-printable characters to
 #                            printable equivalents.

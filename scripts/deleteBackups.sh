@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 #
 # deleteBackups.sh - Delete instance backup files (data dumps)
 #

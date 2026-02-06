@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 #
 # cv.sh - A Bluebird-aware wrapper around the CiviCRM "cv" utility.
 #

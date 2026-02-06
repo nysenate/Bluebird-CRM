@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 #
 # bluebird_setup.sh - Initialize ("spin up") a Bluebird CRM instance.
 #
