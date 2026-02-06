@@ -21,6 +21,7 @@ require_once dirname(__FILE__).'/../../../civicrm/scripts/bluebird_config.php';
 // Both of these globals must be here.
 global $civicrm_setting;
 global $civicrm_root;
+global $civicrm_paths;
 
 $bbcfg = get_bluebird_instance_config();
 
@@ -75,6 +76,8 @@ define('SAGE_API_BASE', get_config_value($bbcfg, 'sage.api.base', 'NO_API'));
 //reference value separator explicitly as class constant not yet available
 define('SEP', "");
 
+// There are various symlinks in the build, so path/URL-detection doesn't always work. Be explicit.
+$civicrm_paths['civicrm.root']['url'] = CIVICRM_UF_BASEURL . 'sites/all/modules/civicrm';
 
 //temporary debugging statements
 //CRM_Core_Error::debug_var('bbcfg', $bbcfg);
