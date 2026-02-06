@@ -166,7 +166,11 @@ function get_bluebird_instance_config($instance = null, $filename = null)
   $base_domain = isset($s_bbcfg['base.domain']) ? $s_bbcfg['base.domain'] : $default_base_domain;
   $data_dirname = isset($s_bbcfg['data.dirname']) ? $s_bbcfg['data.dirname'] : $shortname;
 
-  $db_url = 'mysql://'.$s_bbcfg['db.user'].':'.$s_bbcfg['db.pass'].'@'.$s_bbcfg['db.host'].'/';
+  $db_url = 'mysql://'.$s_bbcfg['db.user'].':'.$s_bbcfg['db.pass'].'@'.$s_bbcfg['db.host'];
+  if (!empty($s_bbcfg['db.port'])) {
+    $db_url .= ':'.$s_bbcfg['db.port'];
+  }
+  $db_url .= '/';
   $db_basename = isset($s_bbcfg['db.basename']) ? $s_bbcfg['db.basename'] : $shortname;
   $civicrm_db_name = $s_bbcfg['db.civicrm.prefix'].$db_basename;
   $drupal_db_name = $s_bbcfg['db.drupal.prefix'].$db_basename;
