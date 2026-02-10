@@ -15,14 +15,20 @@
   <version>1.0</version>
   <develStage>stable</develStage>
   <compatibility>
-    <ver>4.7</ver>
+    <ver>5.51</ver>
   </compatibility>
   <comments/>
   <civix>
     <namespace>CRM/NYSS/Testing</namespace>
-    <format>22.05.0</format>
+    <format>25.10.2</format>
   </civix>
   <mixins>
     <mixin>menu-xml@1.0.0</mixin>
+    <mixin>smarty-v2@1.0.3</mixin>
+    <mixin>scan-classes@1.0.0</mixin>
   </mixins>
+  <classloader>
+    <psr0 prefix="CRM_" path="."/>
+    <psr4 prefix="Civi\" path="Civi"/>
+  </classloader>
 </extension>
