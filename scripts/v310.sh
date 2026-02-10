@@ -33,14 +33,18 @@ if ! $readConfig --instance $instance --quiet; then
   exit 1
 fi
 
+## clear cache first
+$clearCache $instance
+
 ## upgrade civicrm db
 echo "running civicrm db upgrade and extension upgrades..."
-$cv $instance upgrade:db
+$cv $instance upgrade:db -n -q
 
 # NYSS 17368
 echo "enable Admin UI extension..."
 $drush $instance cvapi extension.enable key=civicrm_admin_ui --quiet
 
+## clear cache again
 $clearCache $instance
 
 echo "$prog: upgrade process is complete for $instance."
