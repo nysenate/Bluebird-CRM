@@ -1,8 +1,8 @@
 diff --git a/modules/civicrm/js/crm.menubar.js b/modules/civicrm/js/crm.menubar.js
-index 50308cd36..3246d9f6c 100644
+index f251df62c..c78a3f10b 100644
 --- a/modules/civicrm/js/crm.menubar.js
 +++ b/modules/civicrm/js/crm.menubar.js
-@@ -486,9 +486,10 @@
+@@ -500,9 +500,10 @@
          '<ul></ul>' +
        '</li>',
      branchTpl:
@@ -12,5 +12,5 @@ index 50308cd36..3246d9f6c 100644
 -          '<a <%= attr("a", item) %>>' +
 +          '<a <%= attr("a", item) %> <% if (item.target) { %>target=<%- item.target %><% } %>>' +
              '<% if (item.icon) { %>' +
-               '<i class="<%- item.icon %>"></i>' +
+               '<i class="<%- item.icon %>" role="img" aria-hidden="true"></i>' +
              '<% } %>' +

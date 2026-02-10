@@ -1,0 +1,46 @@
+name: CI
+
+on: [push, pull_request]
+
+jobs:
+  build:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ubuntu-latest, macos-latest]
+        php-version: ['7.3', '8.4']
+        composer-version: ['2.3.10', '--snapshot']
+        exclude:
+          - os: macos-latest
+            composer-version: '--snapshot'
+
+    name: PHP ${{ matrix.php-version }}, Composer ${{ matrix.composer-version }}, OS ${{ matrix.os }}
+
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v2
+
+    - name: Setup PHP
+      uses: shivammathur/setup-php@v2
+      with:
+        php-version: ${{ matrix.php-version }}
+        extensions: mbstring, fileinfo
+        tools: composer:v1
+
+    - name: Cache Composer dependencies
+      uses: actions/cache@v4
+      with:
+        path: ~/.composer/cache
+        key: ${{ runner.os }}-composer-${{ hashFiles('**/composer.lock') }}
+        restore-keys: |
+          ${{ runner.os }}-composer-
+
+    - name: Install dependencies
+      run: |
+        composer self-update ${{ matrix.composer-version }}
+        composer install --no-progress --no-interaction
+        ## We need dev's phpunit but not dev's composer.
+        rm -rf vendor/composer/composer
+
+    - name: Run tests
+      run: vendor/bin/phpunit

@@ -17,23 +17,23 @@
     <author>Alan Dixon</author>
     <email>iats@blackflysolutions.ca</email>
   </maintainer>
-  <releaseDate>2025-05-08</releaseDate>
-  <version>1.10.3</version>
+  <releaseDate>2025-09-04</releaseDate>
+  <version>1.11.0</version>
   <develStage>stable</develStage>
   <compatibility>
-    <ver>5.70</ver>
+    <ver>5.81</ver>
   </compatibility>
-  <comments>A recommended maintenance + bugfixes release, see release notes for 1.10.0 above for details.</comments>
+  <comments>A recommended maintenance + bugfixes release, see release notes for 1.11.0 above for details.</comments>
   <civix>
     <namespace>CRM/Iats</namespace>
-    <format>24.09.1</format>
+    <format>25.01.1</format>
   </civix>
   <mixins>
     <mixin>menu-xml@1.0.0</mixin>
     <mixin>mgd-php@1.0.0</mixin>
-    <mixin>smarty-v2@1.0.3</mixin>
     <mixin>setting-php@1.0.0</mixin>
     <mixin>entity-types-php@2.0.0</mixin>
+    <mixin>smarty@1.0.3</mixin>
   </mixins>
   <classloader>
     <psr0 prefix="CRM_" path="."/>

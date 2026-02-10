@@ -310,29 +310,30 @@
         },
         {
             "name": "civicrm/composer-compile-plugin",
-            "version": "v0.21",
-            "version_normalized": "0.21.0.0",
+            "version": "v0.22",
+            "version_normalized": "0.22.0.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/civicrm/composer-compile-plugin.git",
-                "reference": "9129c3588e15e7744be2d740d3aff6b3215dff09"
+                "reference": "608f4d69d88f9759f33d2f237381c485f9649ea0"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/civicrm/composer-compile-plugin/zipball/9129c3588e15e7744be2d740d3aff6b3215dff09",
-                "reference": "9129c3588e15e7744be2d740d3aff6b3215dff09",
+                "url": "https://api.github.com/repos/civicrm/composer-compile-plugin/zipball/608f4d69d88f9759f33d2f237381c485f9649ea0",
+                "reference": "608f4d69d88f9759f33d2f237381c485f9649ea0",
                 "shasum": ""
             },
             "require": {
-                "composer-plugin-api": "^1.1 || ^2.0",
-                "php": ">=7.2",
+                "composer-plugin-api": "^2.3",
+                "php": ">=7.3",
                 "totten/lurkerlite": "^1.3"
             },
             "require-dev": {
-                "composer/composer": "~1.0",
+                "composer/composer": "~2.3",
+                "phpunit/phpunit": "^8.5 || ^9.5",
                 "totten/process-helper": "^1.0.1"
             },
-            "time": "2025-05-05T07:08:54+00:00",
+            "time": "2025-11-01T14:24:14+00:00",
             "type": "composer-plugin",
             "extra": {
                 "class": "Civi\\CompilePlugin\\CompilePlugin"
@@ -356,7 +357,7 @@
             "description": "Define a 'compile' event for all packages in the dependency-graph",
             "support": {
                 "issues": "https://github.com/civicrm/composer-compile-plugin/issues",
-                "source": "https://github.com/civicrm/composer-compile-plugin/tree/v0.21"
+                "source": "https://github.com/civicrm/composer-compile-plugin/tree/v0.22"
             },
             "install-path": "../civicrm/composer-compile-plugin"
         },
@@ -937,17 +938,17 @@
         },
         {
             "name": "firebase/php-jwt",
-            "version": "v6.11.0",
-            "version_normalized": "6.11.0.0",
+            "version": "v6.11.1",
+            "version_normalized": "6.11.1.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/firebase/php-jwt.git",
-                "reference": "8f718f4dfc9c5d5f0c994cdfd103921b43592712"
+                "reference": "d1e91ecf8c598d073d0995afa8cd5c75c6e19e66"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/firebase/php-jwt/zipball/8f718f4dfc9c5d5f0c994cdfd103921b43592712",
-                "reference": "8f718f4dfc9c5d5f0c994cdfd103921b43592712",
+                "url": "https://api.github.com/repos/firebase/php-jwt/zipball/d1e91ecf8c598d073d0995afa8cd5c75c6e19e66",
+                "reference": "d1e91ecf8c598d073d0995afa8cd5c75c6e19e66",
                 "shasum": ""
             },
             "require": {
@@ -965,7 +966,7 @@
                 "ext-sodium": "Support EdDSA (Ed25519) signatures",
                 "paragonie/sodium_compat": "Support EdDSA (Ed25519) signatures when libsodium is not present"
             },
-            "time": "2025-01-23T05:11:06+00:00",
+            "time": "2025-04-09T20:32:01+00:00",
             "type": "library",
             "installation-source": "dist",
             "autoload": {
@@ -997,7 +998,7 @@
             ],
             "support": {
                 "issues": "https://github.com/firebase/php-jwt/issues",
-                "source": "https://github.com/firebase/php-jwt/tree/v6.11.0"
+                "source": "https://github.com/firebase/php-jwt/tree/v6.11.1"
             },
             "install-path": "../firebase/php-jwt"
         },
@@ -2075,23 +2076,23 @@
         },
         {
             "name": "padaliyajay/php-autoprefixer",
-            "version": "1.3",
-            "version_normalized": "1.3.0.0",
+            "version": "1.4",
+            "version_normalized": "1.4.0.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/padaliyajay/php-autoprefixer.git",
-                "reference": "f05f374f0c1e463db62209613f52b38bf4b52430"
+                "reference": "17ac9d20c0e4521163a061d4f99f3d31f88e797e"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/padaliyajay/php-autoprefixer/zipball/f05f374f0c1e463db62209613f52b38bf4b52430",
-                "reference": "f05f374f0c1e463db62209613f52b38bf4b52430",
+                "url": "https://api.github.com/repos/padaliyajay/php-autoprefixer/zipball/17ac9d20c0e4521163a061d4f99f3d31f88e797e",
+                "reference": "17ac9d20c0e4521163a061d4f99f3d31f88e797e",
                 "shasum": ""
             },
             "require": {
                 "sabberworm/php-css-parser": "*"
             },
-            "time": "2019-11-26T09:55:37+00:00",
+            "time": "2022-08-02T02:37:28+00:00",
             "type": "library",
             "installation-source": "dist",
             "autoload": {
@@ -2111,7 +2112,7 @@
             "description": "CSS Autoprefixer written in pure PHP.",
             "support": {
                 "issues": "https://github.com/padaliyajay/php-autoprefixer/issues",
-                "source": "https://github.com/padaliyajay/php-autoprefixer/tree/1.3"
+                "source": "https://github.com/padaliyajay/php-autoprefixer/tree/1.4"
             },
             "install-path": "../padaliyajay/php-autoprefixer"
         },
@@ -2229,28 +2230,28 @@
         },
         {
             "name": "pear/db",
-            "version": "v1.12.1",
-            "version_normalized": "1.12.1.0",
+            "version": "v1.12.2",
+            "version_normalized": "1.12.2.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/pear/DB.git",
-                "reference": "403775906ed8bb25505cefdee49885de181862da"
+                "reference": "f6cf9399683e1bdc408bdeeaf12fec2f78140896"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/pear/DB/zipball/403775906ed8bb25505cefdee49885de181862da",
-                "reference": "403775906ed8bb25505cefdee49885de181862da",
+                "url": "https://api.github.com/repos/pear/DB/zipball/f6cf9399683e1bdc408bdeeaf12fec2f78140896",
+                "reference": "f6cf9399683e1bdc408bdeeaf12fec2f78140896",
                 "shasum": ""
             },
             "require": {
                 "pear/pear-core-minimal": "*"
             },
-            "time": "2024-01-17T08:06:35+00:00",
+            "time": "2024-04-15T21:14:06+00:00",
             "type": "library",
             "extra": {
                 "patches_applied": {
                     "Ensure that error messages about MySQL-SSL connections are reported": "https://download.civicrm.org/patches/a6e31a769218801fb1fb3d679ff72d3d8a7c5637d3bb7b78680cd7809552e0c6/mysqli-ssl.patch",
-                    "Apply CiviCRM Customisations for the pear:db package": "https://download.civicrm.org/patches/83a3d0dd9f8e555a474ee433c453ff741a4dedf1983bad8b3566136e90f9c46b/pear_db_civicrm_changes.patch"
+                    "Apply CiviCRM Customisations for the pear:db package": "https://download.civicrm.org/patches/47e125fec0c789b095880fa65c6037210b01179290d5727b22b70fa77333496b/pear_db_civicrm_changes.patch"
                 }
             },
             "installation-source": "dist",
@@ -2857,21 +2858,21 @@
         },
         {
             "name": "phpoffice/phpspreadsheet",
-            "version": "1.29.9",
-            "version_normalized": "1.29.9.0",
+            "version": "1.30.0",
+            "version_normalized": "1.30.0.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/PHPOffice/PhpSpreadsheet.git",
-                "reference": "ffb47b639649fc9c8a6fa67977a27b756592ed85"
+                "reference": "2f39286e0136673778b7a142b3f0d141e43d1714"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/PHPOffice/PhpSpreadsheet/zipball/ffb47b639649fc9c8a6fa67977a27b756592ed85",
-                "reference": "ffb47b639649fc9c8a6fa67977a27b756592ed85",
+                "url": "https://api.github.com/repos/PHPOffice/PhpSpreadsheet/zipball/2f39286e0136673778b7a142b3f0d141e43d1714",
+                "reference": "2f39286e0136673778b7a142b3f0d141e43d1714",
                 "shasum": ""
             },
             "require": {
-                "composer/pcre": "^3.3",
+                "composer/pcre": "^1||^2||^3",
                 "ext-ctype": "*",
                 "ext-dom": "*",
                 "ext-fileinfo": "*",
@@ -2914,7 +2915,7 @@
                 "mpdf/mpdf": "Option for rendering PDF with PDF Writer",
                 "tecnickcom/tcpdf": "Option for rendering PDF with PDF Writer"
             },
-            "time": "2025-01-26T04:55:00+00:00",
+            "time": "2025-08-10T06:28:02+00:00",
             "type": "library",
             "installation-source": "dist",
             "autoload": {
@@ -2960,7 +2961,7 @@
             ],
             "support": {
                 "issues": "https://github.com/PHPOffice/PhpSpreadsheet/issues",
-                "source": "https://github.com/PHPOffice/PhpSpreadsheet/tree/1.29.9"
+                "source": "https://github.com/PHPOffice/PhpSpreadsheet/tree/1.30.0"
             },
             "install-path": "../phpoffice/phpspreadsheet"
         },

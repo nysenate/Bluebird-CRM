@@ -69,35 +69,23 @@ abstract class CRM_Utils_System_Base {
    * @var int|string $print
    *   Should match a CRM_Core_Smarty::PRINT_* constant,
    *   or equal 0 if not in print mode.
-   *
-   * @todo when php7.4 is no more, switch the `switch` to a `match`
    */
   public static function getContentTemplate($print = 0): string {
     // I fear some callers of this function may still pass FALSE
     // let's make sure any falsey value is exactly 0
     $print = $print ?: 0;
 
-    // switch uses lazy type comparison
-    // on php < 8 this causes strange results when comparing
-    // string like 'json' with integer 0
-    // so we use this workaround
-    switch (TRUE) {
-      case ($print === 0):
-        // Not a print context.
-        // Despite what the template is called
-        return 'CRM/common/CMSPrint.tpl';
+    return match($print) {
+      // Not a print context (despite what the template is called)
+      0 => 'CRM/common/CMSPrint.tpl',
 
-      case ($print === CRM_Core_Smarty::PRINT_PAGE):
-        return 'CRM/common/print.tpl';
+      CRM_Core_Smarty::PRINT_PAGE => 'CRM/common/print.tpl',
 
-      case ($print === 'xls'):
-      case ($print === 'doc'):
-        return 'CRM/Contact/Form/Task/Excel.tpl';
+      'xls', 'doc' => 'CRM/Contact/Form/Task/Excel.tpl',
 
-      case ($print === CRM_Core_Smarty::PRINT_JSON):
-      default:
-        return 'CRM/common/snippet.tpl';
-    }
+      // Ex: CRM_Core_Smarty::PRINT_JSON
+      default => 'CRM/common/snippet.tpl',
+    };
   }
 
   /**
@@ -120,9 +108,15 @@ abstract class CRM_Utils_System_Base {
    *
    * @param string $head
    *   The new string to be appended.
+   * @internal
+   *   Historically, this was a public method.
+   *   In practice, today, it's mostly used as internal plumbing for some UF-integrations.
+   *   For writing application logic, you should be looking at one of these:
+   *     - To add JS+CSS resources, see Civi::resources().
+   *     - To add novel markup, see CRM_Core_Region::instance('html-header').
    */
   public function addHTMLHead($head) {
-    \CRM_Core_Error::deprecatedFunctionWarning("addHTMLHead is deprecated in " . self::class);
+    \CRM_Core_Error::deprecatedFunctionWarning('Civi::resources() or CRM_Core_Region::instance("html-header")');
   }
 
   /**
@@ -349,40 +343,38 @@ abstract class CRM_Utils_System_Base {
   /**
    * @see https://lab.civicrm.org/dev/core/-/issues/5803
    *
-   * If we are using a theming system, invoke theme, else just print the content.
+   * Print content to screen.
+   *
+   * On WP this adds the admin header on admin screens.
    *
    * @param string $content
-   *   The content that will be themed.
+   *   Content to print
    * @param bool $print
+   *   DEPRECATED - this function will always print
    * @param bool $maintenance
-   *   DEPRECATED - use renderMaintenanceMessage instead,
-   *
-   * @throws Exception
-   * @return string|null
-   *   NULL, If $print is FALSE, and some other criteria match up.
-   *   The themed string, otherwise.
-   *
-   * @todo Remove maintenance param
-   * @todo The return value is inconsistent.
-   * @todo Better to always return, and never print.
+   *   DEPRECATED - use renderMaintenanceMessage directly instead
    */
-  public function theme(&$content, $print = FALSE, $maintenance = FALSE) {
+  public function theme($content, $print = FALSE, $maintenance = FALSE): void {
     if ($maintenance) {
       \CRM_Core_Error::deprecatedWarning('Calling CRM_Utils_System::theme with $maintenance is deprecated - use renderMaintenanceMessage instead');
-      $content = $this->renderMaintenanceMessage($content);
+      $this->renderMaintenanceMessage($content);
+      return;
     }
+
     print $content;
-    return NULL;
   }
 
   /**
-   * Wrap content in maintenance template
+   * Print content to screen, wrapped in maintenance template if possible
+   *
+   * NOTE: on D7 / Backdrop / Standalone this function exits immediately
+   *
+   * @todo make the behaviours consistent?
    *
    * @param string $content
-   * @return string
    */
-  public function renderMaintenanceMessage(string $content): string {
-    return $content;
+  public function renderMaintenanceMessage(string $content): void {
+    print $content;
   }
 
   /**
@@ -977,7 +969,7 @@ abstract class CRM_Utils_System_Base {
    * @param string $content
    */
   public function outputError($content) {
-    echo CRM_Utils_System::theme($content);
+    CRM_Utils_System::theme($content);
   }
 
   /**
@@ -1060,6 +1052,21 @@ abstract class CRM_Utils_System_Base {
   }
 
   /**
+   * Output JSON response to the client
+   *
+   * @param array $response
+   * @param int $httpResponseCode
+   *
+   * @return void
+   */
+  public static function sendJSONResponse(array $response, int $httpResponseCode): void {
+    http_response_code($httpResponseCode);
+    CRM_Utils_System::setHttpHeader('Content-Type', 'application/json');
+    echo json_encode($response, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE);
+    CRM_Utils_System::civiExit();
+  }
+
+  /**
    * Start a new session.
    */
   public function sessionStart() {
@@ -1114,6 +1121,8 @@ abstract class CRM_Utils_System_Base {
    *
    * However, this string should contain backticks, or not, in accordance with the
    * CMS's drupal views expectations, if any.
+   *
+   * @deprecated
    */
   public function getCRMDatabasePrefix(): string {
     $crmDatabase = DB::parseDSN(CRM_Core_Config::singleton()->dsn)['database'];
@@ -1122,6 +1131,40 @@ abstract class CRM_Utils_System_Base {
       return '';
     }
     return "`$crmDatabase`.";
+  }
+
+  /**
+   * Get the CMS database name.
+   *
+   * This returns an empty string if the CRM/CMS database is shared.
+   * Otherwise it returns the name of the CMS database.
+   *
+   * @return string
+   */
+  public function getCMSDatabaseName(): string {
+    $crmDatabase = DB::parseDSN(CRM_Core_Config::singleton()->dsn)['database'];
+    $cmsDatabase = DB::parseDSN(CRM_Core_Config::singleton()->userFrameworkDSN)['database'];
+    if ($crmDatabase === $cmsDatabase) {
+      return '';
+    }
+    return $cmsDatabase;
+  }
+
+  /**
+   * Get the CRM database name.
+   *
+   * This returns an empty string if the CRM/CMS database is shared.
+   * Otherwise it returns the name of the CRM database.
+   *
+   * @return string
+   */
+  public function getCRMDatabaseName(): string {
+    $crmDatabase = DB::parseDSN(CRM_Core_Config::singleton()->dsn)['database'];
+    $cmsDatabase = DB::parseDSN(CRM_Core_Config::singleton()->userFrameworkDSN)['database'];
+    if ($crmDatabase === $cmsDatabase) {
+      return '';
+    }
+    return $crmDatabase;
   }
 
   /**

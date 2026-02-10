@@ -689,7 +689,7 @@ function iats_civicrm_buildForm_CRM_Contribute_Form_UpdateSubscription(&$form) {
         $form->addElement('select', $fid, ts($label), $receiptStatus);
         break;
       default:
-        $form->addDateTime($fid, ts($label));
+        $form->add('datepicker', $fid, ts($label), [], FALSE, ['time' => TRUE]);
         break;
     }
   }

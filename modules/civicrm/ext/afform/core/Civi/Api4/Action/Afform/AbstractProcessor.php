@@ -67,7 +67,31 @@ abstract class AbstractProcessor extends \Civi\Api4\Generic\AbstractAction {
    */
   protected $_entityIds = [];
 
+  /**
+   * Values of each entity that is submitted on the form.
+   * Eg. $entityValues['Contribution1'][0]['fields']['field1' => 1, 'field2' => 2]
+   *
+   * @var array
+   */
   protected $_entityValues = [];
+
+  /**
+   * Get the submitted values from all the entities on the form
+   *
+   * @return array
+   */
+  public function getSubmittedValues() {
+    return $this->_entityValues;
+  }
+
+  protected array $_response = [];
+
+  /**
+   * Line items gathered from entities on the form - for payment processing
+   *
+   * @var array[]
+   */
+  protected array $_lineItems = [];
 
   /**
    * @param \Civi\Api4\Generic\Result $result
@@ -75,7 +99,7 @@ abstract class AbstractProcessor extends \Civi\Api4\Generic\AbstractAction {
    */
   public function _run(Result $result) {
     $this->_afform = civicrm_api4('Afform', 'get', [
-      'select' => ['*', 'submit_currently_open'],
+      'select' => ['*', 'submit_currently_open', 'submit_limit_per_user', 'user_submission_count'],
       'where' => [['name', '=', $this->name]],
     ])->first();
     // Either the form doesn't exist or user lacks permission
@@ -83,10 +107,30 @@ abstract class AbstractProcessor extends \Civi\Api4\Generic\AbstractAction {
       throw new UnauthorizedException(E::ts('You do not have permission to submit this form'), ['show_detailed_error' => TRUE]);
     }
     if (empty($this->_afform['submit_currently_open'])) {
+      if (!empty($this->_afform['submit_limit_per_user']) && (($this->_afform['user_submission_count'] ?? 0) >= $this->_afform['submit_limit_per_user'])) {
+        throw new UnauthorizedException(E::ts('You have reached the maximum number of submissions for this form.'));
+      }
       throw new UnauthorizedException(E::ts('This form is not currently open for submissions.'), ['show_detailed_error' => TRUE]);
     }
+
+    // Set args based on extra data in authx bearer token. E.g. a link to the form could contain a case id when the link
+    // is send by email from the manage case screen.
+    $session = \CRM_Core_Session::singleton();
+    $authx = $session->get('authx');
+    if ($authx && isset($authx['jwt']['afformArgs'])) {
+      // It could be that afformArgs is stdClass
+      // so this way we convert it to an array.
+      $afformOptions = json_decode(json_encode($authx['jwt']['afformArgs']), TRUE);
+      if (is_array($afformOptions)) {
+        foreach ($afformOptions as $afformOption => $afformOptionValue) {
+          $this->args[$afformOption] = $afformOptionValue;
+        }
+      }
+    }
+
     $this->_formDataModel = new FormDataModel($this->_afform['layout']);
     $this->loadEntities();
+    // TODO: use _response more consistently
     $result->exchangeArray($this->processForm());
   }
 
@@ -140,6 +184,17 @@ abstract class AbstractProcessor extends \Civi\Api4\Generic\AbstractAction {
       $event = new AfformPrefillEvent($this->_afform, $this->_formDataModel, $this, $entity['type'], $entityName, $this->_entityIds);
       \Civi::dispatcher()->dispatch('civi.afform.prefill', $event);
     }
+  }
+
+  /**
+   * Unload a certain entity.
+   *
+   * @param array $entity
+   * @return void
+   */
+  public function unloadEntity(array $entity) {
+    unset($this->_entityIds[$entity['name']]);
+    unset($this->_entityValues[$entity['name']]);
   }
 
   /**
@@ -258,8 +313,7 @@ abstract class AbstractProcessor extends \Civi\Api4\Generic\AbstractAction {
   /**
    * Directly loads a join entity e.g. from an autocomplete field in the join block.
    */
-  private function loadJoin(array $afEntity, array $values): array {
-    $joinResult = [];
+  private function loadJoin(array $afEntity, array $values): void {
     foreach ($values as $entityIndex => $value) {
       foreach ($value['joins'] as $joinEntity => $joins) {
         $joinIdField = CoreUtil::getIdFieldName($joinEntity);
@@ -268,15 +322,16 @@ abstract class AbstractProcessor extends \Civi\Api4\Generic\AbstractAction {
           foreach ($join as $fieldName => $fieldValue) {
             if (!empty($joinInfo['fields'][$fieldName])) {
               $where = [[$fieldName, '=', $fieldValue]];
-              $joinResult = $this->getJoinResult($afEntity, $joinEntity, $joinInfo, $where, 1);
-              $this->_entityIds[$afEntity['name']][$entityIndex]['joins'][$joinEntity] = \CRM_Utils_Array::filterColumns($joinResult, [$joinIdField]);
-              $this->_entityValues[$afEntity['name']][$entityIndex]['joins'][$joinEntity] = array_values($joinResult);
+              $joinResult = \CRM_Utils_Array::first($this->getJoinResult($afEntity, $joinEntity, $joinInfo, $where, 1));
+              if ($joinResult) {
+                $this->_entityIds[$afEntity['name']][$entityIndex]['joins'][$joinEntity][$joinIndex][$joinIdField] = $joinResult[$joinIdField];
+                $this->_entityValues[$afEntity['name']][$entityIndex]['joins'][$joinEntity][$joinIndex] = $joinResult;
+              }
             }
           }
         }
       }
     }
-    return array_values($joinResult);
   }
 
   public function getJoinResult(array $afEntity, string $joinEntity, array $join, array $where, int $limit): array {
@@ -712,7 +767,13 @@ abstract class AbstractProcessor extends \Civi\Api4\Generic\AbstractAction {
       $records = $this->replaceReferences($entityName, $entityValues[$entityName]);
       $this->fillIdFields($records, $entityName);
       $event = new AfformSubmitEvent($this->_afform, $this->_formDataModel, $this, $records, $entityType, $entityName, $this->_entityIds);
-      \Civi::dispatcher()->dispatch('civi.afform.submit', $event);
+      try {
+        \Civi::dispatcher()->dispatch('civi.afform.submit', $event);
+      }
+      catch (\Throwable $e) {
+        \Civi::log('afform')->error('Afform: ' . $event->getAfform()['name'] . ': civi.afform.submit crashed with error: ' . $e->getMessage());
+        throw $e;
+      }
     }
   }
 
@@ -725,6 +786,36 @@ abstract class AbstractProcessor extends \Civi\Api4\Generic\AbstractAction {
   protected static function getNestedKey(array $values) {
     $firstValue = \CRM_Utils_Array::first(array_filter($values));
     return is_array($firstValue) && $firstValue ? array_keys($firstValue)[0] : NULL;
+  }
+
+  /**
+   * Set a key in the api response
+   *
+   * Note: key should be recognised by the afForm controller
+   * expected keys are:
+   *   token, redirect, message
+   *
+   * @param string $key
+   * @param mixed $value
+   */
+  public function setResponseItem(string $key, $value): void {
+    $this->_response[$key] = $value;
+  }
+
+  /**
+   * Retrieve stashed line items
+   * @return array
+   */
+  public function getLineItems(): array {
+    return $this->_lineItems;
+  }
+
+  /**
+   * Stash line items from across form entities
+   * @param array $lineItem
+   */
+  public function addLineItem(array $lineItem): void {
+    $this->_lineItems[] = $lineItem;
   }
 
   /**
@@ -742,6 +833,34 @@ abstract class AbstractProcessor extends \Civi\Api4\Generic\AbstractAction {
     }
 
     return $actions;
+  }
+
+  /**
+   * Function to replace tokens with entity values in e.g. redirect urls
+   *
+   * Tokens look like [Participant1.0.id]
+   *
+   * @param string $text
+   *
+   * @return string
+   */
+  public function replaceTokens(string $text): string {
+    $matches = [];
+    preg_match_all('/\[[a-zA-Z0-9]{1,}\.[0-9]{1,}\.[^.\]]{1,}\]/', $text, $matches);
+
+    foreach ($matches[0] as $match) {
+      // strip [ ] and split on .
+      [$entityName, $index, $field] = explode('.', substr($match, 1, -1));
+      if ($field === 'id') {
+        $value = $this->_entityIds[$entityName][$index]['id'];
+      }
+      else {
+        $value = $this->_entityValues[$entityName][$index]['fields'][$field];
+      }
+      $text = str_replace($match, $value, $text);
+    }
+
+    return $text;
   }
 
 }

@@ -66,17 +66,6 @@
 
 {literal}
 <script type="text/javascript">
-    showDeceasedDate( );
-    function showDeceasedDate( )
-    {
-        if ( cj("#is_deceased").is(':checked') ) {
-            cj("#showDeceasedDate").show( );
-        } else {
-    cj("#showDeceasedDate").hide( );
-         cj("#deceased_date").val('');
-        }
-    }
-
   //NYSS
   showOtherGender( );
   function showOtherGender( ) {
@@ -90,10 +79,11 @@
       cj('#showOtherGender').hide();
     }
   }
-
   //NYSS 5783
   cj('div#demographics span.crm-clear-link a').click(function(){
     showOtherGender();
   });
 </script>
 {/literal}
+
+{include file="CRM/Contact/Form/ShowDeceasedDate.js.tpl"}

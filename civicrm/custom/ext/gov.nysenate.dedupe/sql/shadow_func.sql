@@ -9,6 +9,9 @@ DELIMITER |
 -- Stored Utility Functions
 -- -----------------------------
 
+-- BB_ADDR_REPLACE() is duplicated in PHP code. See CRM_NYSS_Dedupe_Service_Normalizer.php for details.
+-- If you update this code, please update it there as well.
+
 DROP FUNCTION IF EXISTS BB_ADDR_REPLACE |
 CREATE FUNCTION BB_ADDR_REPLACE (address varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci)
     RETURNS varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DETERMINISTIC
@@ -79,6 +82,9 @@ CREATE FUNCTION BB_NORMALIZE (value VARCHAR(255) CHARACTER SET utf8mb4 COLLATE u
                     ' ', ''));
     END
 |
+
+-- BB_NORMALIZE_ADDR is duplicated in PHP code. See CRM_NYSS_Dedupe_Service_Normalizer.php for details.
+-- If you update this code, please update it there as well.
 
 DROP FUNCTION IF EXISTS BB_NORMALIZE_ADDR |
 CREATE FUNCTION BB_NORMALIZE_ADDR (value VARCHAR(255) CHARACTER SET utf8mb4  COLLATE utf8mb4_unicode_ci)

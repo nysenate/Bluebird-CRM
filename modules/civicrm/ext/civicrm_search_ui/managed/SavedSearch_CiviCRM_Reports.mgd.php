@@ -39,7 +39,7 @@ return [
         'saved_search_id.name' => 'CiviCRM_Reports',
         'type' => 'table',
         'settings' => [
-          'description' => E::ts(NULL),
+          'description' => NULL,
           'sort' => [
             ['title', 'ASC'],
           ],
@@ -50,7 +50,6 @@ return [
             [
               'type' => 'field',
               'key' => 'title',
-              'dataType' => 'String',
               'label' => E::ts('Title'),
               'sortable' => TRUE,
               'rewrite' => '',
@@ -58,7 +57,6 @@ return [
             [
               'type' => 'field',
               'key' => 'description',
-              'dataType' => 'String',
               'label' => E::ts('Description'),
               'sortable' => TRUE,
               'editable' => TRUE,
@@ -106,7 +104,7 @@ return [
               'alignment' => 'text-right',
             ],
             [
-              'text' => E::ts(''),
+              'text' => '',
               'style' => 'default',
               'size' => 'btn-xs',
               'icon' => 'fa-bars',
@@ -184,7 +182,7 @@ return [
               ],
               'type' => 'menu',
               'alignment' => 'text-right',
-              'label' => E::ts(''),
+              'label' => '',
             ],
           ],
           'actions' => FALSE,

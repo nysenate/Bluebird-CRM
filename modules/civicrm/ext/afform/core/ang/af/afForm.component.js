@@ -98,12 +98,6 @@
           }
           return crmApi4('Afform', 'prefill', params)
             .then((result) => {
-              // In some cases (noticed on Wordpress) the response header incorrectly outputs success when there's an error.
-              if (result.error_message) {
-                disableForm(result.error_message);
-                $element.unblock();
-                return;
-              }
               result.forEach((item) => {
                 // Use _.each() because item.values could be cast as an object if array keys are not sequential
                 _.each(item.values, (values, index) => {
@@ -328,22 +322,8 @@
           submissionResponse: submissionResponse,
         });
 
-        status.resolve();
-        $element.unblock();
-
-        if (dialog.length) {
-          dialog.dialog('close');
-        }
-
-        else if (metaData.confirmation_type && metaData.confirmation_type === 'show_confirmation_message') {
-          $element.hide();
-          const $confirmation = $('<div class="afform-confirmation" />');
-          $confirmation.text(metaData.confirmation_message);
-          $confirmation.insertAfter($element);
-        }
-
-        else if ((!metaData.confirmation_type && metaData.redirect ) || (metaData.confirmation_type && metaData.confirmation_type === 'redirect_to_url' && metaData.redirect)) {
-          var url = replaceTokens(metaData.redirect, submissionResponse[0]);
+        if (submissionResponse[0].redirect) {
+          let url = submissionResponse[0].redirect;
           if (url.indexOf('civicrm/') === 0) {
             url = CRM.url(url);
           } else if (url.indexOf('/') === 0) {
@@ -352,27 +332,28 @@
             url = `${$location.protocol()}://${$location.host()}${port}${url}`;
           }
           $window.location.href = url;
+          return;
         }
-      }
 
-      function replaceTokens(str, vars) {
-        function recurse(stack, values) {
-          _.each(values, function(value, key) {
-            if (_.isArray(value) || _.isPlainObject(value)) {
-              recurse(stack.concat([key]), value);
-            } else {
-              var token = (stack.length ? stack.join('.') + '.' : '') + key;
-              str = str.replace(new RegExp(_.escapeRegExp('[' + token + ']'), 'g'), value);
-            }
-          });
+        status.resolve();
+
+        if (submissionResponse[0].message) {
+          $element.hide();
+          const $confirmation = $('<div class="afform-confirmation" />');
+          $confirmation.text(submissionResponse[0].message);
+          $confirmation.insertAfter($element);
         }
-        recurse([], vars);
-        return str;
+        else if (dialog.length) {
+          dialog.dialog('close');
+        }
+        else {
+          $element.unblock();
+        }
       }
 
       function validateFileFields() {
         var valid = true;
-        $("af-form[ng-form=" + ctrl.getFormMeta().name +"] input[type='file']").each((index, fld) => {
+        $("af-form[ng-form=" + ctrl.getFormMeta().name + "] input[type='file']").each((index, fld) => {
           if ($(fld).attr('required') && $(fld).get(0).files.length == 0) {
             valid = false;
           }
@@ -387,13 +368,13 @@
         CRM.alert(errorMsg, ts('Sorry'), 'error');
       }
 
-      this.submit = function() {
+      this.submit = function () {
         // validate required fields on the form
         if (!ctrl.ngForm.$valid || !validateFileFields()) {
           CRM.alert(ts('Please fill all required fields.'), ts('Form Error'));
           return;
         }
-        status = CRM.status({});
+        status = CRM.status({error: ts('Not saved')});
         $element.block();
         if (cancelDraftWatcher) {
           cancelDraftWatcher();
@@ -415,7 +396,8 @@
               });
             });
             ctrl.fileUploader.uploadAll();
-          } else {
+          }
+          else {
             postProcess();
           }
         })
@@ -423,6 +405,12 @@
           status.reject();
           $element.unblock();
           CRM.alert(error.error_message || '', ts('Form Error'));
+          $element.trigger('crmFormError', {
+            afform: ctrl.getFormMeta(),
+            data: data,
+            submissionResponse: submissionResponse,
+            error: error
+          });
         });
       };
 
@@ -483,7 +471,7 @@
         const buttons = getDraftButtons();
         $.each(buttons, function(index, button) {
           $(button).text(text).attr('disabled', true);
-          $(button).prepend('<i class="crm-i ' + icon + '" aria-hidden="true"></i> ');
+          $(button).prepend('<i class="crm-i ' + icon + '" role="img" aria-hidden="true"></i> ');
         });
       }
 
@@ -493,7 +481,7 @@
           const initialState = saveDraftButtons[index] || saveDraftButtons[0];
           $(button).text(initialState.text).attr('disabled', false);
           if (initialState.icon) {
-            $(button).prepend('<i class="crm-i ' + saveDraftButtons[index].icon + '" aria-hidden="true"></i> ');
+            $(button).prepend('<i class="crm-i ' + saveDraftButtons[index].icon + '" role="img" aria-hidden="true"></i> ');
           }
         });
       }

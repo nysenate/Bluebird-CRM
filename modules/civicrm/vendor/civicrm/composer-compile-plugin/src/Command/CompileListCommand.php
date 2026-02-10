@@ -5,6 +5,7 @@ namespace Civi\CompilePlugin\Command;
 use Civi\CompilePlugin\TaskList;
 use Civi\CompilePlugin\TaskRunner;
 use Civi\CompilePlugin\Util\TaskUIHelper;
+use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
@@ -23,7 +24,7 @@ class CompileListCommand extends \Composer\Command\BaseCommand
         ;
     }
 
-    protected function execute(InputInterface $input, OutputInterface $output)
+    protected function execute(InputInterface $input, OutputInterface $output): int
     {
         $taskList = new TaskList($this->getComposer(), $this->getIO());
         $taskList->load();
@@ -42,6 +43,6 @@ class CompileListCommand extends \Composer\Command\BaseCommand
         } else {
             $output->write(TaskUIHelper::formatTaskTable($tasks, ['active', 'id', 'title', 'action']));
         }
-        return 0;
+      return Command::SUCCESS;
     }
 }

@@ -20,9 +20,13 @@
   <comments/>
   <civix>
     <namespace>CRM/NYSS/Dedupe</namespace>
-    <format>24.09.0</format>
+    <format>25.10.2</format>
   </civix>
   <classloader>
+    <psr0 prefix="CRM_" path="."/>
     <psr4 prefix="Civi\" path="Civi"/>
   </classloader>
+  <mixins>
+    <mixin>scan-classes@1.0.0</mixin>
+  </mixins>
 </extension>

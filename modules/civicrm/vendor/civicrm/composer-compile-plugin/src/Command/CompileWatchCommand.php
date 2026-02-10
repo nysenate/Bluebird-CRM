@@ -8,6 +8,7 @@ use Civi\CompilePlugin\Util\EnvHelper;
 use Civi\CompilePlugin\Util\ShellRunner;
 use Composer\EventDispatcher\ScriptExecutionException;
 use Lurker\ResourceWatcher;
+use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
@@ -27,7 +28,7 @@ class CompileWatchCommand extends \Composer\Command\BaseCommand
         ;
     }
 
-    protected function execute(InputInterface $input, OutputInterface $output)
+    protected function execute(InputInterface $input, OutputInterface $output): int
     {
         if ($output->isVerbose()) {
             EnvHelper::set('COMPOSER_COMPILE_PASSTHRU', 'always');
@@ -110,7 +111,7 @@ class CompileWatchCommand extends \Composer\Command\BaseCommand
             $output->writeln("Polling", OutputInterface::VERBOSITY_VERY_VERBOSE);
             $watcher->start($intervalMicroseconds, $intervalMicroseconds);
         }
-        return 0;
+      return Command::SUCCESS;
     }
 
     /**

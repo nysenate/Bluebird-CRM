@@ -31,46 +31,12 @@ function testing_civicrm_install() {
 }
 
 /**
- * Implements hook_civicrm_uninstall().
- *
- * @link http://wiki.civicrm.org/confluence/display/CRMDOC/hook_civicrm_uninstall
- */
-function testing_civicrm_uninstall() {
-  _testing_civix_civicrm_uninstall();
-}
-
-/**
  * Implements hook_civicrm_enable().
  *
  * @link http://wiki.civicrm.org/confluence/display/CRMDOC/hook_civicrm_enable
  */
 function testing_civicrm_enable() {
   _testing_civix_civicrm_enable();
-}
-
-/**
- * Implements hook_civicrm_disable().
- *
- * @link http://wiki.civicrm.org/confluence/display/CRMDOC/hook_civicrm_disable
- */
-function testing_civicrm_disable() {
-  _testing_civix_civicrm_disable();
-}
-
-/**
- * Implements hook_civicrm_upgrade().
- *
- * @param $op string, the type of operation being performed; 'check' or 'enqueue'
- * @param $queue CRM_Queue_Queue, (for 'enqueue') the modifiable list of pending up upgrade tasks
- *
- * @return mixed
- *   Based on op. for 'check', returns array(boolean) (TRUE if upgrades are pending)
- *                for 'enqueue', returns void
- *
- * @link http://wiki.civicrm.org/confluence/display/CRMDOC/hook_civicrm_upgrade
- */
-function testing_civicrm_upgrade($op, CRM_Queue_Queue $queue = NULL) {
-  return _testing_civix_civicrm_upgrade($op, $queue);
 }
 
 /**
@@ -145,21 +111,3 @@ function testing_civicrm_navigationMenu(&$menu) {
   ));
   _testing_civix_navigationMenu($menu);
 } // */
-
-/**
- * Implements hook_civicrm_postInstall().
- *
- * @link https://docs.civicrm.org/dev/en/latest/hooks/hook_civicrm_postInstall
- */
-function testing_civicrm_postInstall() {
-  _testing_civix_civicrm_postInstall();
-}
-
-/**
- * Implements hook_civicrm_entityTypes().
- *
- * @link https://docs.civicrm.org/dev/en/latest/hooks/hook_civicrm_entityTypes
- */
-function testing_civicrm_entityTypes(&$entityTypes) {
-  _testing_civix_civicrm_entityTypes($entityTypes);
-}

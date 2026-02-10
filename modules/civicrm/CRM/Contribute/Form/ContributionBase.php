@@ -15,6 +15,7 @@
  * @copyright CiviCRM LLC https://civicrm.org/licensing
  */
 
+use Civi\Api4\Contribution;
 use Civi\Api4\PremiumsProduct;
 use Civi\Api4\PriceSet;
 
@@ -1484,7 +1485,6 @@ class CRM_Contribute_Form_ContributionBase extends CRM_Core_Form {
     $membership->id = $this->getRenewalMembershipID();
 
     if ($membership->find(TRUE)) {
-      $this->_defaultMemTypeId = $membership->membership_type_id;
       if ($membership->contact_id != $this->_contactID) {
         $validMembership = FALSE;
         $organizations = CRM_Contact_BAO_Relationship::getPermissionedContacts($this->getAuthenticatedContactID(), NULL, NULL, 'Organization');
@@ -1544,11 +1544,22 @@ class CRM_Contribute_Form_ContributionBase extends CRM_Core_Form {
    * @throws \CRM_Core_Exception
    */
   public function getCurrency(): string {
-    $currency = $this->getContributionPageValue('currency');
-    if (empty($currency)) {
-      $currency = CRM_Utils_Request::retrieveValue('currency', 'String');
+    $existingContributionID = $this->getExistingContributionID();
+    if ($existingContributionID) {
+      $currency = Contribution::get(FALSE)
+        ->addSelect('currency')
+        ->addWhere('id', '=', $existingContributionID)
+        ->execute()
+        ->first()['currency'];
     }
-    return (string) ($currency ?? \Civi::settings()->get('currency'));
+    else {
+      $currency = $this->getContributionPageValue('currency');
+      if (empty($currency)) {
+        $currency = CRM_Utils_Request::retrieveValue('currency', 'String');
+      }
+      $currency = (string) ($currency ?? \Civi::settings()->get('currency'));
+    }
+    return $currency;
   }
 
 }

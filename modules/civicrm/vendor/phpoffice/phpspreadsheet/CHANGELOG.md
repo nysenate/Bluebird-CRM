@@ -3,7 +3,46 @@
 All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com)
-and this project adheres to [Semantic Versioning](https://semver.org).
+and this project adheres to [Semantic Versioning](https://semver.org). This is always true of the master branch. Some earlier branches, including the branch from which you are reading this file, remain supported and security fixes are applied to them; if the security fix represents a breaking change, it may have to be applied as a minor or patch version.
+
+## 2025-08-10 - 1.30.0
+
+### Breaking Changes
+
+- Images will be loaded from an external source (e.g. http://example.com/img.png) only if the reader is explicitly set to allow it via `$reader->setAllowExternalImages(true)`. We do not believe that loading of external images is a widely used feature. This is a necessary change for security purposes. It unfortunately breaks Semantic Versioning for reasons described above; there is no way to start a new major version for this branch.
+
+# 2025-07-23 - 1.29.12
+
+### Added
+
+- Add to all readers the option to allow or forbid fetching external images. This is unconditionally allowed now. The default will be set to "allow", so no code changes are necessary. However, we are giving consideration to changing the default.[PR #4545](https://github.com/PHPOffice/PhpSpreadsheet/pull/4545)
+
+# 2025-06-22 - 1.29.11
+
+### Changed
+
+- Allow php-cs-fixer to Handle Implicit Backslashes.
+
+### Added
+
+- Allow spreadsheet to be serialized. [PR #4405](https://github.com/PHPOffice/PhpSpreadsheet/pull/4405)
+
+### Fixed
+
+- TEXT and TIMEVALUE functions. [Issue #4249](https://github.com/PHPOffice/PhpSpreadsheet/issues/4249) [PR #4352](https://github.com/PHPOffice/PhpSpreadsheet/pull/4352)
+- Removing Columns/Rows Containing Merged Cells. Backport of [PR #4465](https://github.com/PHPOffice/PhpSpreadsheet/pull/4465)
+- Allow Xlsx Reader to Specify ParseHuge. [Issue #4260](https://github.com/PHPOffice/PhpSpreadsheet/issues/4260) [PR #4515](https://github.com/PHPOffice/PhpSpreadsheet/pull/4515)
+
+# 2025-02-07 - 1.29.10
+
+### Changed
+
+- Allow version 1 and 2 of `composer/pcre`.
+
+### Fixed
+
+- Xls writer Parser Mishandling True/False Argument. Backport of [PR #4333](https://github.com/PHPOffice/PhpSpreadsheet/pull/4333)
+- Xls writer Parser Parse By Character Not Byte. Backport of [PR #4344](https://github.com/PHPOffice/PhpSpreadsheet/pull/4344)
 
 # 2025-01-26 - 1.29.9
 
