@@ -11,6 +11,7 @@
 // Revised: 2015-01-20 - email footer can now have three office addresses
 // Revised: 2015-07-22 - added email.header.website_url
 // Revised: 2019-03-14 - remove parameters that are now set in civicrm.settings
+// Revised: 2026-02-11 - store fromEmail in civicrm_site_email_address
 //
 
 require_once 'common_funcs.php';
@@ -21,7 +22,7 @@ define('SERIALIZED_FALSE', serialize(false));
 function sqlPrepareValue($val)
 {
   if ($val !== null) {
-    return "'".serialize($val)."'";
+    return "'".addslashes(serialize($val))."'";
   }
   else {
     return 'NULL';
@@ -106,6 +107,8 @@ function getVariableValues($dbh, $names = null)
 // Get name/value settings from the CiviCRM "option_value" table for the
 // provided option-value group.  If a value is given, retrieve only those
 // entries that match the value.  If a limit is given, limit the results.
+// [This function is no longer used, since the "fromEmail" is no longer
+//  stored in the civicrm_option_group/value tables.]
 function getOptionValues($dbh, $group_name, $val = null, $limit = 0)
 {
   $optValues = array();
@@ -139,10 +142,23 @@ function getOptionValues($dbh, $group_name, $val = null, $limit = 0)
 
 
 
+// Get the site email address, which is the full name and email address
+// of the sender from which all outgoing emails are sent.
+// This information is stored in the civicrm_site_email_address table
+// (formerly, in the civicrm_option_group/value tables as the option
+// group "from_email_address"), and is returned as an array that
+// contains both the sender's name and email address.
+// Note that multiple site email addresses can be stored, but this
+// configurator always targets the first one (id=1), while leaving any
+// others unmodified.
 function getFromEmail($dbh)
 {
-  $optval = getOptionValues($dbh, 'from_email_address', "1", 1);
-  return key($optval);
+  $sql = "SELECT display_name, email FROM civicrm_site_email_address ".
+         "WHERE id = 1";
+  $stmt = $dbh->query($sql);
+  $row = $stmt->fetch(PDO::FETCH_ASSOC);
+  $stmt = null;
+  return [ 'name' => $row['display_name'], 'email' => $row['email'] ];
 } // getFromEmail()
 
 
@@ -394,7 +410,7 @@ function modifyConfig(&$cfg, $bbcfg)
       $fromEmail = (!empty($bbcfg['smtp.username'])) ? $bbcfg['smtp.username'] : 'bluebird.admin@nysenate.gov';
     }
 
-    $from = '"'.addslashes($fromName).'"'." <$fromEmail>";
+    $from = [ 'name' => $fromName, 'email' => $fromEmail ];
     modifyParam($cfg['civicrm'], 'from_email', $from);
   }
 
@@ -539,12 +555,15 @@ function updateEmailMenu($dbh)
 
 
 
+// Set the site email address (full name and email address) from the config
+// file.  Note that the civicrm_site_email_address table can store multiple
+// site email addresses.  This script only updates the first one (id=1).
 function updateFromEmail($dbh, $from)
 {
-  $sql = "UPDATE civicrm_option_value SET label='$from', name='$from' ".
-         "WHERE value='1' AND option_group_id=(".
-                  "SELECT id FROM civicrm_option_group ".
-                  "WHERE name='from_email_address')";
+  $sql = "UPDATE civicrm_site_email_address ".
+         "SET display_name='{$from['name']}', email='{$from['email']}', ".
+         "    is_active=1, is_default=1 ".
+         "WHERE id = 1";
   if ($dbh->exec($sql) === false) {
     print_r($dbh->errorInfo());
     return false;
