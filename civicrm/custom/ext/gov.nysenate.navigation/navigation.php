@@ -511,7 +511,7 @@ function _buildEmailMenu($emailID) {
         'attributes' => [
           'label' => 'Draft and Unscheduled Emails',
           'name' => 'Draft and Unscheduled Emails',
-          'url' => 'civicrm/mailing/browse/unscheduled?reset=1&scheduled=false',
+          'url' => 'civicrm/mailing/drafts#?is_archived=0&status=Draft',
           'permission' => 'access CiviMail,create mailings,schedule mailings',
           'operator' => 'OR',
           'separator' => 0,
@@ -524,7 +524,7 @@ function _buildEmailMenu($emailID) {
         'attributes' => [
           'label' => 'Scheduled and Sent Emails',
           'name' => 'Scheduled and Sent Emails',
-          'url' => 'civicrm/mailing/browse/scheduled?reset=1&scheduled=true',
+          'url' => 'civicrm/mailing/scheduled-and-sent#?is_archived=0&status=Scheduled,Running,Complete,Paused,Canceled',
           'permission' => 'access CiviMail,create mailings,schedule mailings,approve mailings',
           'operator' => 'OR',
           'separator' => 0,
