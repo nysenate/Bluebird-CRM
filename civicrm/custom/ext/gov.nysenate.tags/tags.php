@@ -245,6 +245,7 @@ function tags_civicrm_buildForm($formName, &$form) {
 } //tags_civicrm_buildForm()
 
 function tags_civicrm_validateForm($formName, &$fields, &$files, &$form, &$errors) {
+  $p_tag_id = CRM_NYSS_Tags_Constants::POSITIONS_TAG_ID;
   /*Civi::log()->debug('tags_civicrm_postProcess', array(
     '$formName' => $formName,
     '$fields' => $fields,
@@ -256,9 +257,10 @@ function tags_civicrm_validateForm($formName, &$fields, &$files, &$form, &$error
   //11334 (extension of 10658): process leg positions from contact edit form
   //we need to take the submitted value, create the tag, and replace the
   //submitted value with the newly created tag id
-  if (($formName == 'CRM_Contact_Form_Contact' && !empty($fields['contact_taglist'][292])) ||
-    ($formName == 'CRM_Activity_Form_Activity' && !empty($fields['activity_taglist'][292])) ||
-    ($formName == 'CRM_Case_Form_Case' && !empty($fields['case_taglist'][292]))
+  if (($formName == 'CRM_Contact_Form_Contact' && !empty($fields['contact_taglist'][$p_tag_id])) ||
+    ($formName == 'CRM_Activity_Form_Activity' && !empty($fields['activity_taglist'][$p_tag_id])) ||
+    ($formName == 'CRM_Case_Form_Activity' && !empty($fields['activity_taglist'][$p_tag_id])) ||
+    ($formName == 'CRM_Case_Form_Case' && !empty($fields['case_taglist'][$p_tag_id]))
   ) {
     if (isset($fields['contact_taglist'])) {
       $legPosTagFld = 'contact_taglist';
@@ -273,10 +275,10 @@ function tags_civicrm_validateForm($formName, &$fields, &$files, &$form, &$error
       $recordType = 'Case';
     }
 
-    $tags = CRM_Tags_NYSS::processPositionsList($fields[$legPosTagFld][292]);
+    $tags = CRM_Tags_NYSS::processPositionsList($fields[$legPosTagFld][$p_tag_id]);
 
     $data = &$form->controller->container();
-    $data['values'][$recordType][$legPosTagFld][292] = implode(',', $tags);
+    $data['values'][$recordType][$legPosTagFld][$p_tag_id] = implode(',', $tags);
     //Civi::log()->debug('tags_civicrm_postProcess', array('$tags' => $tags, '$data' => $data));
   }
 
