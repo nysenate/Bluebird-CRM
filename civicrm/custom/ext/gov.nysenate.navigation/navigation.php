@@ -467,6 +467,13 @@ function _buildManageMenu($manageID) {
  * return the complete array to be added to the main navigation array
  */
 function _buildEmailMenu($emailID) {
+
+    // NYSS 17867
+    // If Admin UI is enabled, then we must change some Admin UI links with extra path info to force a browser pull.
+    // Though, https://github.com/civicrm/civicrm-core/pull/34783 will address some issues in core, and will
+    // allow us to rollback the 2 links affected below.
+    $admin_ui_enabled = (CRM_Extension_System::singleton()->getManager()->getStatus('civicrm_admin_ui') === CRM_Extension_Manager::STATUS_INSTALLED);
+
   //6799 first retrieve mailing report IDs; prefer reserved, lower IDs
   $rptIDs = [];
   $sql = "
@@ -511,7 +518,9 @@ function _buildEmailMenu($emailID) {
         'attributes' => [
           'label' => 'Draft and Unscheduled Emails',
           'name' => 'Draft and Unscheduled Emails',
-          'url' => 'civicrm/mailing/drafts#?is_archived=0&status=Draft',
+          'url' => ($admin_ui_enabled) ?
+              'civicrm/mailing/drafts#?is_archived=0&status=Draft' :
+              'civicrm/mailing/browse/unscheduled?reset=1&scheduled=false',
           'permission' => 'access CiviMail,create mailings,schedule mailings',
           'operator' => 'OR',
           'separator' => 0,
@@ -524,7 +533,9 @@ function _buildEmailMenu($emailID) {
         'attributes' => [
           'label' => 'Scheduled and Sent Emails',
           'name' => 'Scheduled and Sent Emails',
-          'url' => 'civicrm/mailing/scheduled-and-sent#?is_archived=0&status=Scheduled,Running,Complete,Paused,Canceled',
+          'url' => ($admin_ui_enabled) ?
+              'civicrm/mailing/scheduled-and-sent#?is_archived=0&status=Scheduled,Running,Complete,Paused,Canceled' :
+              'civicrm/mailing/browse/scheduled?reset=1&scheduled=true',
           'permission' => 'access CiviMail,create mailings,schedule mailings,approve mailings',
           'operator' => 'OR',
           'separator' => 0,
