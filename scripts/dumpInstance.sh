@@ -21,7 +21,6 @@ script_dir=`cd "$script_dir"; echo $PWD`
 clearCache=$script_dir/clearCache.sh
 execSql=$script_dir/execSql.sh
 readConfig=$script_dir/readConfig.sh
-tmpdir=/data/tmp/dumpInstance_$$
 civi_file=
 no_civi=0
 drup_file=
@@ -77,6 +76,9 @@ db_basename=`$readConfig --ig $instance db.basename` || db_basename="$instance"
 db_civi_prefix=`$readConfig --ig $instance db.civicrm.prefix` || db_civi_prefix="$DEFAULT_DB_CIVICRM_PREFIX"
 db_drup_prefix=`$readConfig --ig $instance db.drupal.prefix` || db_drup_prefix="$DEFAULT_DB_DRUPAL_PREFIX"
 db_log_prefix=`$readConfig --ig $instance db.log.prefix` || db_log_prefix="$DEFAULT_DB_LOG_PREFIX"
+tmp_root_dir=`$readConfig --ig $instance tmp.rootdir` || tmp_root_dir="$DEFAULT_TMP_ROOTDIR"
+
+tmpdir="$tmp_root_dir"/dumpInstance_$$
 
 if [ "$archive_dump" -o ! "$civi_file" ]; then
   civi_file=$db_civi_prefix$db_basename.sql
