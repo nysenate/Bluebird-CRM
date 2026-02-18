@@ -466,13 +466,8 @@ function _buildManageMenu($manageID) {
  * given our "starting" ID, construct the mass email menu items
  * return the complete array to be added to the main navigation array
  */
+#[CRM_NYSS_Attribute_IssueRef('17368')]
 function _buildEmailMenu($emailID) {
-
-    // NYSS 17867
-    // If Admin UI is enabled, then we must change some Admin UI links with extra path info to force a browser pull.
-    // Though, https://github.com/civicrm/civicrm-core/pull/34783 will address some issues in core, and will
-    // allow us to rollback the 2 links affected below.
-    $admin_ui_enabled = (CRM_Extension_System::singleton()->getManager()->getStatus('civicrm_admin_ui') === CRM_Extension_Manager::STATUS_INSTALLED);
 
   //6799 first retrieve mailing report IDs; prefer reserved, lower IDs
   $rptIDs = [];
@@ -518,9 +513,7 @@ function _buildEmailMenu($emailID) {
         'attributes' => [
           'label' => 'Draft and Unscheduled Emails',
           'name' => 'Draft and Unscheduled Emails',
-          'url' => ($admin_ui_enabled) ?
-              'civicrm/mailing/drafts#?is_archived=0&status=Draft' :
-              'civicrm/mailing/browse/unscheduled?reset=1&scheduled=false',
+          'url' => 'civicrm/mailing/browse/unscheduled?reset=1&scheduled=false',
           'permission' => 'access CiviMail,create mailings,schedule mailings',
           'operator' => 'OR',
           'separator' => 0,
@@ -533,9 +526,7 @@ function _buildEmailMenu($emailID) {
         'attributes' => [
           'label' => 'Scheduled and Sent Emails',
           'name' => 'Scheduled and Sent Emails',
-          'url' => ($admin_ui_enabled) ?
-              'civicrm/mailing/scheduled-and-sent#?is_archived=0&status=Scheduled,Running,Complete,Paused,Canceled' :
-              'civicrm/mailing/browse/scheduled?reset=1&scheduled=true',
+          'url' => 'civicrm/mailing/browse/scheduled?reset=1&scheduled=true',
           'permission' => 'access CiviMail,create mailings,schedule mailings,approve mailings',
           'operator' => 'OR',
           'separator' => 0,
@@ -548,7 +539,8 @@ function _buildEmailMenu($emailID) {
         'attributes' => [
           'label' => 'Find Mailings',
           'name' => 'Find Mailings',
-          'url' => 'civicrm/mailing/browse?reset=1',
+          // NYSS #17368 point to custom Afform/SearchKit
+          'url' => 'civicrm/nyss/mailing/browse?reset=1',
           'permission' => 'access CiviMail,create mailings,schedule mailings,approve mailings',
           'operator' => 'OR',
           'separator' => 0,
