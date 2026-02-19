@@ -69,31 +69,31 @@ function navigation_civicrm_navigationMenu(&$params) {
     'child' => [],
   ];
 
-  $params[1000] = _buildCreateMenu(1000);
+  $params[CRM_NYSS_Navigation_Constants::MENU_ID_CREATE] = _buildCreateMenu(CRM_NYSS_Navigation_Constants::MENU_ID_CREATE);
 
   //build Custom Search menu
-  $params[2000] = _buildSearchMenu(2000);
+  $params[CRM_NYSS_Navigation_Constants::MENU_ID_SEARCH] = _buildSearchMenu(CRM_NYSS_Navigation_Constants::MENU_ID_SEARCH);
 
   //move Report menu
-  $params[2500] = _buildReportsMenu(2500, $reportNav);
+  $params[CRM_NYSS_Navigation_Constants::MENU_ID_REPORTS] = _buildReportsMenu(CRM_NYSS_Navigation_Constants::MENU_ID_REPORTS, $reportNav);
 
   //build Manage menu
-  $params[3000] = _buildManageMenu(3000);
+  $params[CRM_NYSS_Navigation_Constants::MENU_ID_MANAGE] = _buildManageMenu(CRM_NYSS_Navigation_Constants::MENU_ID_MANAGE);
 
   //build Mass Email menu
-  $params[4000] = _buildEmailMenu(4000);
+  $params[CRM_NYSS_Navigation_Constants::MENU_ID_EMAIL] = _buildEmailMenu(CRM_NYSS_Navigation_Constants::MENU_ID_EMAIL);
 
   //build Inbox menu
-  $params[5000] = _buildInboxMenu(5000);
+  $params[CRM_NYSS_Navigation_Constants::MENU_ID_INBOX] = _buildInboxMenu(CRM_NYSS_Navigation_Constants::MENU_ID_INBOX);
 
   //move Administer menu
-  $params[5500] = _buildAdminMenu(5500);
+  $params[CRM_NYSS_Navigation_Constants::MENU_ID_ADMIN] = _buildAdminMenu(CRM_NYSS_Navigation_Constants::MENU_ID_ADMIN);
 
   //create Help menu 11965
-  $params[6000] = _buildHelpMenu(6000);
+  $params[CRM_NYSS_Navigation_Constants::MENU_ID_HELP] = _buildHelpMenu(CRM_NYSS_Navigation_Constants::MENU_ID_HELP);
 
   //recent items placeholder
-  $params[7000] = [
+  $params[CRM_NYSS_Navigation_Constants::MENU_ID_RECENT] = [
     'attributes' => [
       'label' => 'Recent Items',
       'name' => 'recent_items',
@@ -102,12 +102,12 @@ function navigation_civicrm_navigationMenu(&$params) {
       'operator' => 'AND',
       'separator' => 0,
       'parentID' => null,
-      'navID' => 7000,
+      'navID' => CRM_NYSS_Navigation_Constants::MENU_ID_RECENT,
       'active' => 1
     ],
   ];
 
-  $params[8000] = [
+  $params[CRM_NYSS_Navigation_Constants::MENU_ID_LOGOUT] = [
     'attributes' => [
       'label' => 'Log Out',
       'name' => 'log_out',
@@ -116,7 +116,7 @@ function navigation_civicrm_navigationMenu(&$params) {
       'operator' => 'AND',
       'separator' => 0,
       'parentID' => null,
-      'navID' => 8000,
+      'navID' => CRM_NYSS_Navigation_Constants::MENU_ID_LOGOUT,
       'active' => 1,
     ],
   ];
@@ -466,7 +466,9 @@ function _buildManageMenu($manageID) {
  * given our "starting" ID, construct the mass email menu items
  * return the complete array to be added to the main navigation array
  */
+#[CRM_NYSS_Attribute_IssueRef('17368')]
 function _buildEmailMenu($emailID) {
+
   //6799 first retrieve mailing report IDs; prefer reserved, lower IDs
   $rptIDs = [];
   $sql = "
@@ -537,7 +539,8 @@ function _buildEmailMenu($emailID) {
         'attributes' => [
           'label' => 'Find Mailings',
           'name' => 'Find Mailings',
-          'url' => 'civicrm/mailing/browse?reset=1',
+          // NYSS #17368 point to custom Afform/SearchKit
+          'url' => 'civicrm/nyss/mailing/browse?reset=1',
           'permission' => 'access CiviMail,create mailings,schedule mailings,approve mailings',
           'operator' => 'OR',
           'separator' => 0,

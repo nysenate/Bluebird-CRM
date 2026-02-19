@@ -40,10 +40,6 @@ $clearCache $instance
 echo "running civicrm db upgrade and extension upgrades..."
 $cv $instance upgrade:db -n -q
 
-# NYSS 17368
-echo "enable Admin UI extension..."
-$drush $instance cvapi extension.enable key=civicrm_admin_ui --quiet
-
 ## clear cache again
 $clearCache $instance
 
