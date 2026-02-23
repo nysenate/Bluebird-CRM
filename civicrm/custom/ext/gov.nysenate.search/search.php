@@ -92,7 +92,7 @@ function search_civicrm_buildForm($formName, &$form) {
     //11138 remove activity test
     if ($form->elementExists('activity_test')) {
       $form->removeElement('activity_test');
-      CRM_Core_Resources::singleton()->addStyle('a.helpicon[title="Test Records Help"] { display: none; }');
+      CRM_Core_Resources::singleton()->addStyle('a.helpicon[data-help-id="is_test"] { display: none; }');
     }
 
     //11134 change tag label text; remove issue codes from list
