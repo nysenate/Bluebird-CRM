@@ -13,9 +13,9 @@ $select = [
   'created_id.display_name',
   'created_date',
   'scheduled_id.display_name',
-  'MIN(Mailing_MailingJob_mailing_id_01.scheduled_date) AS MIN_Mailing_MailingJob_mailing_id_01_scheduled_date',
-  'MIN(Mailing_MailingJob_mailing_id_01.start_date) AS MIN_Mailing_MailingJob_mailing_id_01_start_date',
-  'MAX(Mailing_MailingJob_mailing_id_01.end_date) AS MAX_Mailing_MailingJob_mailing_id_01_end_date',
+  'scheduled_date',
+  'start_date',
+  'end_date',
   'status:label',
 ];
 
@@ -68,19 +68,19 @@ $columns = array_merge($columns, [
   ],
   [
     'type' => 'field',
-    'key' => 'MIN_Mailing_MailingJob_mailing_id_01_scheduled_date',
+    'key' => 'scheduled_date',
     'label' => E::ts('Scheduled'),
     'sortable' => TRUE,
   ],
   [
     'type' => 'field',
-    'key' => 'MIN_Mailing_MailingJob_mailing_id_01_start_date',
+    'key' => 'start_date',
     'label' => E::ts('Started'),
     'sortable' => TRUE,
   ],
   [
     'type' => 'field',
-    'key' => 'MAX_Mailing_MailingJob_mailing_id_01_end_date',
+    'key' => 'end_date',
     'label' => E::ts('Completed'),
     'sortable' => TRUE,
   ],
@@ -275,7 +275,7 @@ return [
           'description' => NULL,
           'sort' => [
             [
-              'MIN_Mailing_MailingJob_mailing_id_01_scheduled_date',
+              'scheduled_date',
               'DESC',
             ],
           ],
