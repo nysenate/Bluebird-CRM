@@ -129,12 +129,12 @@
 
         {*NYSS 12559/13006*}
         <br /><br />
-        {$form.tag_search.label}  {help id="id-all-tags"}<br />{$form.tag_search.html}
+        {$form.tag_search.label}  {help id="tag_search"}<br />{$form.tag_search.html}
 
         {*NYSS 13006*}
         {if $form.all_tag_types}
           <br /><br />
-          {$form.all_tag_types.html} {$form.all_tag_types.label} {help id="id-all-tag-types"}
+          {$form.all_tag_types.html} {$form.all_tag_types.label} {help id="all_tag_types"}
         {/if}
       </td>
     {else}
@@ -169,7 +169,7 @@
       <table class="form-layout-compressed">
       <tr>
         <td colspan="2">
-            {$form.privacy_toggle.html} {help id="id-privacy"}
+            {$form.privacy_toggle.html} {help id="privacy_toggle"}
         </td>
       </tr>
       <tr>
@@ -177,19 +177,18 @@
             {$form.privacy_options.html}
         </td>
         <td style="vertical-align:middle">
-            <div id="privacy-operator-wrapper">{$form.privacy_operator.html} {help id="privacy-operator"}</div>
+            <div id="privacy-operator-wrapper">{$form.privacy_operator.html} {help id="privacy_operator"}</div>
         </td>
       </tr>
       </table>
       {literal}
         <script type="text/javascript">
-          cj("select#privacy_options").change(function() {
-            if (cj(this).val() && cj(this).val().length > 1) {
-              cj('#privacy-operator-wrapper').show();
-            } else {
-              cj('#privacy-operator-wrapper').hide();
-            }
-          }).change();
+          CRM.$(function($) {
+            $("select#privacy_options").change(function() {
+              const showOperator = ($(this).val() && $(this).val().length > 1);
+              $('#privacy-operator-wrapper').toggle(showOperator);
+            }).change();
+          });
         </script>
       {/literal}
     </td>
@@ -205,7 +204,7 @@
   </tr>
   <tr>
     <td>
-      {$form.contact_source.label} {help id="id-source" file="CRM/Contact/Form/Contact"}<br />
+      {$form.contact_source.label} {help id="contact_source" file="CRM/Contact/Form/Contact"}<br />
       {$form.contact_source.html}
     </td>
     <td>
@@ -219,11 +218,11 @@
   </tr>
   <tr>
     <td>
-       {$form.id.label} {help id="id-internal-id" file="CRM/Contact/Form/Contact"}<br />
+       {$form.id.label} {help id="contact_id" title="{ts}Contact ID{/ts}" file="CRM/Contact/Form/Contact"}<br />
        {$form.id.html}
     </td>
     <td>
-       {$form.external_identifier.label} {help id="id-external-id" file="CRM/Contact/Form/Contact"}<br />
+       {$form.external_identifier.label} {help id="external_identifier" file="CRM/Contact/Form/Contact"}<br />
        {$form.external_identifier.html}
     </td>
     <td>
