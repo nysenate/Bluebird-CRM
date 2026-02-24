@@ -287,7 +287,10 @@ return [
           ],
           'placeholder' => 5,
           'columns' => $columns,
-          'actions' => TRUE,
+          'actions' => [
+            'delete',
+            'download'
+          ],
           'classes' => [
             'table',
             'table-striped',
