@@ -40,6 +40,10 @@ $clearCache $instance
 echo "running civicrm db upgrade and extension upgrades..."
 $cv $instance upgrade:db -n -q
 
+## enable nyss_print_export
+echo "enabling extension nyss_print_export"
+$cv $instance en nyss_print_export -n -q
+
 ## clear cache again
 $clearCache $instance
 
