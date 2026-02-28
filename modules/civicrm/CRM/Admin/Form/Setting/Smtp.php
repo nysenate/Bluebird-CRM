@@ -16,10 +16,24 @@
  */
 
 /**
- * This class generates form components for Smtp Server.
+ * This form has not been fully converted to use the Generic settings form,
+ * as the `mailing_backend` setting is complex and must be split into multiple form elements.
  */
-class CRM_Admin_Form_Setting_Smtp extends CRM_Admin_Form_Setting {
+class CRM_Admin_Form_Setting_Smtp extends CRM_Admin_Form_Generic {
   protected $_testButtonName;
+
+  public function preProcess() {
+    parent::preProcess();
+
+    // TODO: Metadata-based sections are prevented by the complex nature of the `mailing_backend` setting
+    // for now, just add a title to the default section.
+    $this->sections = [
+      'default' => [
+        'title' => ts('General'),
+        'icon' => 'fa-envelope',
+      ],
+    ];
+  }
 
   /**
    * Build the form object.
@@ -30,8 +44,8 @@ class CRM_Admin_Form_Setting_Smtp extends CRM_Admin_Form_Setting {
     //Load input as readonly whose values are overridden in civicrm.settings.php.
     foreach ($settings as $setting => $value) {
       if (isset($value)) {
-        $props[$setting]['readonly'] = TRUE;
-        $setStatus = TRUE;
+        $props[$setting]['disabled'] = TRUE;
+        $this->readOnlyFields[] = $setting;
       }
     }
 
@@ -49,7 +63,7 @@ class CRM_Admin_Form_Setting_Smtp extends CRM_Admin_Form_Setting {
     $this->add('text', 'sendmail_args', ts('Sendmail Argument'));
     $this->add('text', 'smtpServer', ts('SMTP Server'), $props['smtpServer'] ?? NULL);
     $this->add('text', 'smtpPort', ts('SMTP Port'), $props['smtpPort'] ?? NULL);
-    $this->addYesNo('smtpAuth', ts('Authentication?'), $props['smtpAuth'] ?? NULL);
+    $this->addYesNo('smtpAuth', ts('Authentication?'), empty($props['smtpAuth']['disabled']), FALSE, $props['smtpAuth'] ?? []);
     $this->addElement('text', 'smtpUsername', ts('SMTP Username'), $props['smtpUsername'] ?? NULL);
     $this->addElement('password', 'smtpPassword', ts('SMTP Password'), $props['smtpPassword'] ?? NULL);
 
@@ -65,10 +79,6 @@ class CRM_Admin_Form_Setting_Smtp extends CRM_Admin_Form_Setting {
       ['type' => 'submit']
     );
     $this->getElement('buttons')->setElements($buttons);
-
-    if (!empty($setStatus)) {
-      CRM_Core_Session::setStatus(ts("Some fields are loaded as 'readonly' as they have been set (overridden) in civicrm.settings.php."), '', 'info', ['expires' => 0]);
-    }
   }
 
   /**
@@ -77,13 +87,16 @@ class CRM_Admin_Form_Setting_Smtp extends CRM_Admin_Form_Setting {
    * @throws \Exception
    */
   public function postProcess() {
+    // Parent postProcess will save all settings with the `'settings_pages' => ['smtp'...` metadata
+    parent::postProcess();
     // flush caches so we reload details for future requests
     // CRM-11967
-    CRM_Utils_System::flushCache();
+    Civi::rebuild(['system' => TRUE])->execute();
 
     $formValues = $this->controller->exportValues($this->_name);
 
-    Civi::settings()->set('allow_mail_from_logged_in_contact', (!empty($formValues['allow_mail_from_logged_in_contact'])));
+    // FIXME: Shouldn't we be unsetting ALL already-processed values? e.g.
+    // $formValues = array_diff_key($formValues, $this->_settings);
     unset($formValues['allow_mail_from_logged_in_contact']);
 
     $buttonName = $this->controller->getButtonName();
@@ -105,7 +118,7 @@ class CRM_Admin_Form_Setting_Smtp extends CRM_Admin_Form_Setting {
 
         if (!$domainEmailAddress || $domainEmailAddress === 'info@EXAMPLE.ORG') {
           $fixUrl = CRM_Utils_System::url('civicrm/admin/options/site_email_address');
-          CRM_Core_Error::statusBounce(ts('The site administrator needs to enter a valid "Site Email Address" in <a href="%1">Administer CiviCRM &raquo; Communications &raquo; Site Email Addresses</a>. The email address used may need to be a valid mail account with your email service provider.', [1 => $fixUrl]));
+          CRM_Core_Error::statusBounce(ts('The site administrator needs to enter a valid "Site From Email Address" in <a href="%1">Administer CiviCRM &raquo; Communications &raquo; Site Email Addresses</a>. The email address used may need to be a valid mail account with your email service provider.', [1 => $fixUrl]));
         }
         if (!$toEmail) {
           CRM_Core_Error::statusBounce(ts('Cannot send a test email because your user record does not have a valid email address.'));
@@ -181,6 +194,7 @@ class CRM_Admin_Form_Setting_Smtp extends CRM_Admin_Form_Setting {
       $formValues['smtpPassword'] = \Civi::service('crypto.token')->encrypt($formValues['smtpPassword'], 'CRED');
     }
 
+    // FIXME: This setting stores all values from the quickform (including `qfKey`, etc)??
     Civi::settings()->set('mailing_backend', $formValues);
   }
 

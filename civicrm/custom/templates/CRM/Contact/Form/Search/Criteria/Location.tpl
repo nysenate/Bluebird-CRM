@@ -14,7 +14,7 @@
     <td>
       {*NYSS moved from right col*}
       <div class="crm-field-wrapper">
-        <div>{$form.location_type.label} {help id="location_type" title=$form.location_type.label}</div>
+        <div>{$form.location_type.label} {help id="location_type"}</div>
         {$form.location_type.html}
       </div>
       {if $form.address_name.html}

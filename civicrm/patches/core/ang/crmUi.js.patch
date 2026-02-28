@@ -1,14 +1,14 @@
 diff --git a/modules/civicrm/ang/crmUi.js b/modules/civicrm/ang/crmUi.js
-index 3035d1756..d7f61b633 100644
+index a11f4110c..defdaef4f 100644
 --- a/modules/civicrm/ang/crmUi.js
 +++ b/modules/civicrm/ang/crmUi.js
-@@ -357,7 +357,8 @@
+@@ -369,7 +369,8 @@
                iframe.setAttribute('src', scope.$parent.$eval(attrs.crmUiIframeSrc));
              }
              else {
--              var iframeHtml = scope.$parent.$eval(attrs.crmUiIframe);
+-              let iframeHtml = scope.$parent.$eval(attrs.crmUiIframe);
 +              //NYSS 12135
-+              var iframeHtml = scope.$parent.$eval(attrs.crmUiIframe).replace(/<a /g, "<a target='_blank' ");
++              let iframeHtml = scope.$parent.$eval(attrs.crmUiIframe).replace(/<a /g, "<a target='_blank' ");
  
-               var doc = iframe.document;
+               let doc = iframe.document;
                if (iframe.contentDocument) {

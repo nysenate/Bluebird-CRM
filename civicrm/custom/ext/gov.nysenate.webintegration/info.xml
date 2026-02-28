@@ -20,8 +20,16 @@
   <comments/>
   <civix>
     <namespace>CRM/NYSS/WebIntegration</namespace>
+    <format>25.10.2</format>
   </civix>
   <classloader>
-    <psr4 prefix="Civi\" path="Civi" />
+    <psr4 prefix="Civi\" path="Civi"/>
+    <psr0 prefix="CRM_" path="."/>
   </classloader>
+  <mixins>
+    <mixin>mgd-php@2.0.0</mixin>
+    <mixin>smarty@1.0.3</mixin>
+    <mixin>scan-classes@1.0.0</mixin>
+  </mixins>
+  <upgrader>CiviMix\Schema\Webintegration\AutomaticUpgrader</upgrader>
 </extension>

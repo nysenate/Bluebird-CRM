@@ -20,6 +20,13 @@ function contact_civicrm_config(&$config) {
       [1 => [$jobID, 'String']]
     );
   }
+
+  //prevent multiple calls
+  if (isset(Civi::$statics[__FUNCTION__])) { return; }
+  Civi::$statics[__FUNCTION__] = 1;
+
+  // NYSS 14192, 17702
+  Civi::dispatcher()->addListener('civi.token.eval', ['CRM_NYSS_Contact_TokenEvalListener', 'evalToken'], -1000);
 }
 
 /**
@@ -510,34 +517,6 @@ function contact_civicrm_buildForm($formName, &$form) {
   //4808 remove various CiviCRM references in page title, etc.
   if (drupal_get_title() == 'CiviCRM') {
     CRM_Utils_System::setTitle(ts('Bluebird'));
-  }
-
-  //4921
-  if ($formName == 'CRM_Activity_Form_Activity') {
-    //resort activity type
-    if (!$form->elementExists('activity_type_id')) {
-      return;
-    }
-    $ele =& $form->getElement('activity_type_id');
-    $fele =& $form->getElement('followup_activity_type_id');
-    $aTypes = $eleOptions = $feleOptions = [];
-
-    foreach ($ele->_options as $k => $aT) {
-      $aTypes[$k] = $aT['text'];
-    }
-    asort($aTypes);
-    foreach ($aTypes as $k => $aT) {
-      $eleOptions[$k] = [
-        'text' => $ele->_options[$k]['text'],
-        'attr' => $ele->_options[$k]['attr'],
-      ];
-      $feleOptions[$k] = [
-        'text' => $fele->_options[$k]['text'],
-        'attr' => $fele->_options[$k]['attr'],
-      ];
-    }
-    $ele->_options  = $eleOptions;
-    $fele->_options = $feleOptions;
   }
 
   //6655 add to group perms

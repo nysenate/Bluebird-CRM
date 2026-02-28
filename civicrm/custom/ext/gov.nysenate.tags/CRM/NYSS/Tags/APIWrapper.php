@@ -12,7 +12,7 @@
  * management page. Logic from the custom entity type has been implemented here.
  * NYSS #17149
  */
-#[CRM_NYSS_Attribute_IssueRefs('17149')]
+#[CRM_NYSS_Attribute_IssueRefs('17149', '17833')]
 class CRM_NYSS_Tags_APIWrapper {
   /**
    * Callback to wrap completetransaction API calls.
@@ -46,6 +46,33 @@ class CRM_NYSS_Tags_APIWrapper {
             return $continue($apiRequest);
           }
         });
+        break;
+        // NYSS #17833 - not solely, but as a result of this ticket
+      case '4.entitytag.create':
+          $event->wrapAPI(function($apiRequest, $continue){
+              $values = $apiRequest->getValues();
+              $tag_id = self::preprocessPositionTags($values['tag_id'] ?? '');
+              // Now update $apiRequest['values]['tag_id'] with ID,
+              // which might be changed by preprocessPositionTags
+              $values['tag_id'] = $tag_id;
+              $apiRequest->setValues($values);
+              return $continue($apiRequest);
+          });
+          break;
+          // NYSS #17833 - not solely, but as a result of this ticket
+      case '4.entitytag.save':
+          $event->wrapAPI(function($apiRequest, $continue){
+              $records = $apiRequest->getRecords();
+              for($i=0; $i < sizeof($records); $i++) {
+                  $tag_id = self::preprocessPositionTags($records[$i]['tag_id'] ?? '');
+                  // Now update record with new tag_id,
+                  // which might be changed by preprocessPositionTags
+                  $records[$i]['tag_id'] = $tag_id;
+              }
+              $apiRequest->setRecords($records);
+              return $continue($apiRequest);
+          });
+          break;
     }
   }
 
@@ -75,6 +102,38 @@ class CRM_NYSS_Tags_APIWrapper {
     // depending on the source of the API request.
     return $apiRequest['params']['params']['parent_id'] ?? $params['parent_id'] ?? 0;
   }
+
+    /**
+     * When given the special ":::value" tag ID, it creates the associated Tag entity and returns the "real" tag id.
+     * :::value is just a bit of magic that let's us know that the tag doesn't yet exist in the civicrm_tag table.
+     * @param string $tag_id
+     * @return mixed|string
+     * @throws CRM_Core_Exception
+     * @throws \Civi\API\Exception\UnauthorizedException
+     */
+    #[CRM_NYSS_Attribute_IssueRefs('17833')]
+  public static function preprocessPositionTags(string $tag_id) {
+      if (str_ends_with($tag_id, ':::value') &&  // short circuit to avoid preg_match() when unnecessary.
+          preg_match('/^([A-Z]{1}[0-9]+.+):{3}value$/', $tag_id ?? '', $matches)) {
+          $tag = $matches[1];
+          $result = \Civi\Api4\Tag::save(TRUE)
+              ->addRecord([
+                  'name' => $tag,
+                  'label' => $tag,
+                  'parent_id' => CRM_NYSS_Tags_Constants::POSITIONS_TAG_ID,
+                  'is_selectable' => true,
+                  'used_for' => ['civicrm_contact','civicrm_activity','civicrm_case'],
+              ])
+              ->setMatch([
+                  'name',
+              ])
+              ->execute()->single();
+          return $result['id'];
+      } else {
+          return $tag_id;
+      }
+  }
+
   /**
    * <insert appropriate docs here>
    * @param array $apiRequest

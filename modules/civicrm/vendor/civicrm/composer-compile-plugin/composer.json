@@ -15,12 +15,13 @@
         }
     },
     "require": {
-        "composer-plugin-api": "^1.1 || ^2.0",
-        "php": ">=7.2",
+        "composer-plugin-api": "^2.3",
+        "php": ">=7.3",
         "totten/lurkerlite": "^1.3"
     },
     "require-dev": {
-        "composer/composer": "~1.0",
+        "composer/composer": "~2.3",
+        "phpunit/phpunit": "^8.5 || ^9.5",
         "totten/process-helper": "^1.0.1"
     },
     "autoload": {

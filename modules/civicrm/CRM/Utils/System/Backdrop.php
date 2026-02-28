@@ -185,6 +185,7 @@ class CRM_Utils_System_Backdrop extends CRM_Utils_System_DrupalBase {
 
   /**
    * @inheritDoc
+   * @internal
    */
   public function addHTMLHead($header) {
     static $count = 0;
@@ -497,8 +498,8 @@ AND    u.status = 1
 
       // Config must be re-initialized to reset the base URL
       // otherwise links will have the wrong language prefix/domain.
-      $config = CRM_Core_Config::singleton();
-      $config->free();
+      $domain = \CRM_Core_BAO_Domain::getDomain();
+      \CRM_Core_BAO_ConfigSetting::applyLocale(\Civi::settings($domain->id), $domain->locales);
 
       return TRUE;
     }
@@ -1145,7 +1146,11 @@ AND    u.status = 1
    * CMS's drupal views expectations, if any.
    */
   public function getCRMDatabasePrefix(): string {
-    return str_replace('`', '', parent::getCRMDatabasePrefix());
+    $crmDatabaseName = parent::getCRMDatabaseName();
+    if (!empty($crmDatabaseName)) {
+      return "$crmDatabaseName.";
+    }
+    return $crmDatabaseName;
   }
 
   /**
@@ -1203,41 +1208,14 @@ AND    u.status = 1
   /**
    * @inheritdoc
    */
-  public function theme(&$content, $print = FALSE, $maintenance = FALSE) {
-    if ($maintenance) {
-      \CRM_Core_Error::deprecationMessage('CRM_Utils_System::theme called with $maintenance = TRUE - please use renderMaintenanceMessage instead');
-    }
-
-    $ret = FALSE;
-
-    if (!$print) {
-      if ($maintenance) {
-        print $this->renderMaintanceMessage($content);
-        exit();
-      }
-      $ret = TRUE;
-    }
-    $out = $content;
-
-    if ($ret) {
-      return $out;
-    }
-    else {
-      print $out;
-      return NULL;
-    }
-  }
-
-  /**
-   * @inheritdoc
-   */
-  public function renderMaintanceMessage(string $content): string {
+  public function renderMaintenanceMessage(string $content): void {
     backdrop_set_breadcrumb('');
     backdrop_maintenance_theme();
     if ($region = CRM_Core_Region::instance('html-header', FALSE)) {
       $this->addHTMLHead($region->render(''));
     }
-    return theme('maintenance_page', ['content' => $content]);
+    print theme('maintenance_page', ['content' => $content]);
+    exit();
   }
 
   /**

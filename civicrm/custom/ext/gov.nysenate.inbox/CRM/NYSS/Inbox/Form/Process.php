@@ -127,7 +127,7 @@ class CRM_NYSS_Inbox_Form_Process extends CRM_Core_Form {
     ), FALSE);
 
     $this->addEntityRef('activity_positions', 'Positions', array(
-      'entity' => 'nyss_tags',
+      'entity' => 'tag',
       'multiple' => TRUE,
       'create' => FALSE,
       'api' => array('params' => array('parent_id' => CRM_NYSS_Tags_Constants::POSITIONS_TAG_ID)),

@@ -18,10 +18,20 @@
   <version>1.0</version>
   <develStage>beta</develStage>
   <compatibility>
-    <ver>5.x</ver>
+    <ver>5.51</ver>
   </compatibility>
   <comments/>
   <civix>
     <namespace>CRM/Mosaicoimageeditor</namespace>
+    <format>25.10.2</format>
   </civix>
+  <mixins>
+    <mixin>menu-xml@1.0.0</mixin>
+    <mixin>smarty-v2@1.0.3</mixin>
+    <mixin>scan-classes@1.0.0</mixin>
+  </mixins>
+  <classloader>
+    <psr0 prefix="CRM_" path="."/>
+    <psr4 prefix="Civi\" path="Civi"/>
+  </classloader>
 </extension>

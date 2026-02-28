@@ -33,6 +33,10 @@ class Admin {
    * @throws \CRM_Core_Exception
    */
   public static function getAdminSettings():array {
+    // Check minimum permission needed to reach this
+    if (!\CRM_Core_Permission::check('manage own search_kit')) {
+      return [];
+    }
     $schema = self::getSchema();
     $data = [
       'schema' => self::addImplicitFKFields($schema),
@@ -58,6 +62,10 @@ class Admin {
         ->execute(),
       'myName' => \CRM_Core_Session::singleton()->getLoggedInContactDisplayName(),
       'dateFormats' => self::getDateFormats(),
+      'numberAttributes' => [
+        \NumberFormatter::MAX_FRACTION_DIGITS => E::ts('Max Decimal Places'),
+        \NumberFormatter::MIN_FRACTION_DIGITS => E::ts('Min Decimal Places'),
+      ],
     ];
     $perms = \Civi\Api4\Permission::get()
       ->addWhere('group', 'IN', ['civicrm', 'cms'])
@@ -105,6 +113,7 @@ class Admin {
       'NOT BETWEEN' => E::ts('Not Between'),
       'IS EMPTY' => E::ts('Is Empty'),
       'IS NOT EMPTY' => E::ts('Not Empty'),
+      'IS NOT NULL' => E::ts('Any value'),
     ];
   }
 
@@ -204,7 +213,10 @@ class Admin {
       $possibleColumns[$column] = "$column:label";
     }
     // Other possible relevant columns... now we're just guessing
-    $possibleColumns['financial_type_id'] = 'financial_type_id:label';
+    //
+    // TODO: these can be specified using the @searchColumns annotation on
+    // the Api4 entity class so would probably be better to specify sensible
+    // options for core entities explicitly - which allows you to order logically too
     $possibleColumns['description'] = 'description';
     // E.g. "activity_status_id"
     $possibleColumns[strtolower($entity['name']) . 'status_id'] = strtolower($entity['name']) . 'status_id:label';

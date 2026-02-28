@@ -795,17 +795,24 @@ class CRM_NYSS_Inbox_BAO_Inbox {
       if (!empty($values['contact_positions'])) {
         foreach (explode(',', $values['contact_positions']) as $tagID) {
           if (!in_array($tagID, $assigneeTags)) {
-            try {
-              civicrm_api3('entity_tag', 'create', [
-                'entity_id' => (!empty($values['assignee'])) ? $values['assignee'] : $row['current_assignee'],
-                'tag_id' => $tagID,
-                'entity_table' => 'civicrm_contact',
-              ]);
-            }
-            catch (CiviCRM_API3_Exception $e) {
-              //Civi::log()->debug('processMessages contact positions', array('e' => $e));
-              //$msg[] = 'Unable to assign all positions to the contact.';
-            }
+              try {
+                  $result = \Civi\Api4\EntityTag::save(TRUE)
+                      ->addRecord([
+                          'entity_table' => 'civicrm_contact',
+                          'tag_id' => $tagID,
+                          'entity_id' => (!empty($values['assignee'])) ? $values['assignee'] : $row['current_assignee'],
+                      ])
+                      ->setMatch([
+                          'tag_id',
+                          'entity_id',
+                          'entity_table'
+                      ])
+                      ->execute();
+              }
+              catch (CRM_Core_Exception $e) {
+                  //Civi::log()->debug('processMessages contact positions', array('e' => $e));
+                  //$msg[] = 'Unable to assign all positions to the contact.';
+              }
           }
         }
       }
@@ -861,13 +868,20 @@ class CRM_NYSS_Inbox_BAO_Inbox {
         if (!empty($values['activity_positions'])) {
           foreach (explode(',', $values['activity_positions']) as $tagID) {
             try {
-              civicrm_api3('entity_tag', 'create', [
-                'entity_id' => $row['activity_id'],
-                'tag_id' => $tagID,
-                'entity_table' => 'civicrm_activity',
-              ]);
+                $result = \Civi\Api4\EntityTag::save(TRUE)
+                    ->addRecord([
+                        'entity_table' => 'civicrm_activity',
+                        'tag_id' => $tagID,
+                        'entity_id' => $row['activity_id'],
+                    ])
+                    ->setMatch([
+                        'tag_id',
+                        'entity_id',
+                        'entity_table'
+                    ])
+                    ->execute();
             }
-            catch (CiviCRM_API3_Exception $e) {
+            catch (CRM_Core_Exception $e) {
               //Civi::log()->debug('processMessages contact positions', array('e' => $e));
               //$msg[] = 'Unable to assign all positions to the contact.';
             }

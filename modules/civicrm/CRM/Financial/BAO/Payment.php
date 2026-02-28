@@ -130,7 +130,7 @@ class CRM_Financial_BAO_Payment {
     }
     else {
       // Link the payment with the relevant financial items, by creating EntityFinancialItems.
-      // We also ensure the status of the Item is set to Paid or Partially Paid as appropriate.
+      // We also ensure the status of the Item is set to Paid or Partially paid as appropriate.
       foreach ($payableItems as $payableItem) {
         if ($payableItem['allocation'] === 0.0) {
           continue;
@@ -186,7 +186,7 @@ class CRM_Financial_BAO_Payment {
       }
     }
     elseif ($contributionStatus === 'Pending' && $params['total_amount'] > 0) {
-      self::updateContributionStatus($contribution['id'], 'Partially Paid');
+      self::updateContributionStatus($contribution['id'], 'Partially paid');
       $participantPayments = civicrm_api3('ParticipantPayment', 'get', [
         'contribution_id' => $contribution['id'],
         'participant_id.status_id' => ['IN' => ['Pending from pay later', 'Pending from incomplete transaction']],
@@ -197,10 +197,22 @@ class CRM_Financial_BAO_Payment {
     }
     // Note that we reload the payments rather than use $contribution['paid_amount']
     // here as we are interested in the paid_amount AFTER this payment has been made.
-    elseif ($contributionStatus === 'Completed' && ((float) CRM_Core_BAO_FinancialTrxn::getTotalPayments($contribution['id'], TRUE) === 0.0)) {
-      // If the contribution has previously been completed (fully paid) and now has total payments adding up to 0
-      //  change status to 'refunded'.
-      self::updateContributionStatus($contribution['id'], 'Refunded');
+    elseif (in_array($contributionStatus, ['Partially paid', 'Completed'])) {
+      $contributionPaidAmount = Contribution::get(FALSE)
+        ->addSelect('paid_amount')
+        ->addWhere('id', '=', $contribution['id'])
+        ->execute()
+        ->first()['paid_amount'];
+      if ($contributionPaidAmount === 0.0) {
+        // If the contribution has previously been Completed (fully paid) and now has total payments adding up to 0
+        //  change status to 'refunded'.
+        // Note: If refunds add up to more than total amount it'll get set to "Partially paid" - see below.
+        self::updateContributionStatus($contribution['id'], 'Refunded');
+      }
+      elseif ($contributionPaidAmount < $contribution['total_amount']) {
+        // Amount paid is less than contribution amount. Set to "Partially paid".
+        self::updateContributionStatus($contribution['id'], 'Partially paid');
+      }
     }
     CRM_Contribute_BAO_Contribution::recordPaymentActivity($params['contribution_id'], $params['participant_id'] ?? NULL, $params['total_amount'], $trxn->currency, $trxn->trxn_date);
     return $trxn;
@@ -394,7 +406,6 @@ class CRM_Financial_BAO_Payment {
       'paymentAmount' => $entities['payment']['total_amount'],
       'checkNumber' => $entities['payment']['check_number'] ?? NULL,
       'receive_date' => $entities['payment']['trxn_date'],
-      'paidBy' => CRM_Core_PseudoConstant::getLabel('CRM_Core_BAO_FinancialTrxn', 'payment_instrument_id', $entities['payment']['payment_instrument_id']),
       'isShowLocation' => (!empty($entities['event']) ? $entities['event']['is_show_location'] : FALSE),
       'event' => $entities['event'] ?? NULL,
       'component' => (!empty($entities['event']) ? 'event' : 'contribution'),
@@ -404,57 +415,7 @@ class CRM_Financial_BAO_Payment {
       'paymentsComplete' => ($entities['payment']['balance'] == 0),
     ];
 
-    return self::filterUntestedTemplateVariables($templateVariables);
-  }
-
-  /**
-   * Filter out any untested variables.
-   *
-   * This just serves to highlight if any variables are added without a unit test also being added.
-   *
-   * (if hit then add a unit test for the param & add to this array).
-   *
-   * @param array $params
-   *
-   * @return array
-   */
-  public static function filterUntestedTemplateVariables($params) {
-    $testedTemplateVariables = [
-      'contactDisplayName',
-      'totalAmount',
-      'currency',
-      'amountOwed',
-      'paymentAmount',
-      'event',
-      'component',
-      'checkNumber',
-      'receive_date',
-      'paidBy',
-      'isShowLocation',
-      'isRefund',
-      'refundAmount',
-      'totalPaid',
-      'paymentsComplete',
-      'emailGreeting',
-    ];
-    // These are assigned by the payment form - they still 'get through' from the
-    // form for now without being in here but we should ideally load
-    // and assign. Note we should update the tpl to use {if $billingName}
-    // and ditch contributeMode - although it might need to be deprecated rather than removed.
-    $todoParams = [
-      'billingName',
-      'address',
-      'credit_card_type',
-      'credit_card_number',
-      'credit_card_exp_date',
-    ];
-    $filteredParams = [];
-    foreach ($testedTemplateVariables as $templateVariable) {
-      // This will cause an a-notice if any are NOT set - by design. Ensuring
-      // they are set prevents leakage.
-      $filteredParams[$templateVariable] = $params[$templateVariable];
-    }
-    return $filteredParams;
+    return $templateVariables;
   }
 
   /**

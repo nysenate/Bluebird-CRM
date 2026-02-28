@@ -305,7 +305,10 @@ abstract class AbstractAction implements \ArrayAccess {
             $docs['type'] = array_diff($docs['type'], ['null']);
           }
           if (!empty($docs['optionsCallback'])) {
-            $docs['options'] = $this->{$docs['optionsCallback']}();
+            // Allow to create actions in PHPUnit tests without booted CiviCRM environment.
+            if (\Civi\Core\Container::isContainerBooted()) {
+              $docs['options'] = $this->{$docs['optionsCallback']}();
+            }
             unset($docs['optionsCallback']);
           }
           $this->_paramInfo[$name] = $docs;
@@ -476,6 +479,25 @@ abstract class AbstractAction implements \ArrayAccess {
       $this->_reflection = new \ReflectionClass($this);
     }
     return $this->_reflection;
+  }
+
+  /**
+   * @param array $savedRecords
+   * @param array|bool $select
+   * @return array
+   * @throws \CRM_Core_Exception
+   */
+  protected function reloadResults(array $savedRecords, mixed $select = TRUE): array {
+    $idField = CoreUtil::getIdFieldName($this->getEntityName());
+    /** @var AbstractGetAction $get */
+    $get = \Civi\API\Request::create($this->getEntityName(), 'get', ['version' => 4]);
+    $get
+      ->setCheckPermissions($this->getCheckPermissions())
+      ->addWhere($idField, 'IN', array_column($savedRecords, $idField));
+    if (is_array($select) && !empty($select)) {
+      $get->setSelect($select);
+    }
+    return (array) $get->execute();
   }
 
   /**

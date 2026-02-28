@@ -50,8 +50,8 @@ function activity_civicrm_buildForm($formName, &$form) {
     'form' => $form,
   ));*/
 
-  //13050 assignee filter
   if ($formName == 'CRM_Activity_Form_Activity') {
+      // NYSS 13050 assignee filter
     if ($form->elementExists('assignee_contact_id')) {
       $ele =& $form->getElement('assignee_contact_id');
       $apiParams = json_decode($ele->_attributes['data-api-params'], TRUE);
@@ -61,7 +61,56 @@ function activity_civicrm_buildForm($formName, &$form) {
       $ele->_attributes['data-api-params'] = json_encode($apiParams);
       $ele->_attributes['data-create-links'] = FALSE;
     }
+
+      // NYSS 3153
+      // NYSS 6567
+      // NYSS 17735
+      _activity_buildForm_unfreeze_activity_type($form);
+
+      // NYSS 6567
+      _activity_buildForm_fix_activity_type($form);
+
   }
+}
+
+/** NYSS 6567
+ * If inbound email, add "Inbound Email" to select list (which will be readonly) so that it appears on screen
+ * This probably won't be needed after PR https://github.com/civicrm/civicrm-core/pull/34431 has been
+ * merged into CiviCore.
+ */
+#[CRM_NYSS_Attribute_IssueRef(6567)]
+function _activity_buildForm_fix_activity_type(&$form) {
+    if ($form->_activityTypeName == 'Inbound Email') {
+        if ($form->elementExists('activity_type_id')) {
+            $ele = $form->getElement('activity_type_id');
+            $ele->addOption($form->_activityTypeName, $form->_activityTypeId);
+        }
+    }
+}
+
+#[CRM_NYSS_Attribute_IssueRef(17735,3153,6567)]
+function _activity_buildForm_unfreeze_activity_type(&$form) {
+    if ($form->_activityTypeId && ($form->_action & CRM_Core_Action::UPDATE)) {
+        $option_values = \Civi\Api4\OptionValue::get(FALSE)
+            ->addSelect('id', 'is_reserved', 'is_active', 'name', 'option_group_id:name')
+            ->addWhere('option_group_id:name', '=', 'activity_type')
+            ->addWhere('is_reserved', '=', FALSE)
+            ->addWhere('is_active', '=', TRUE)
+            ->addWhere('component_id', 'IS NULL')
+            ->addWhere('value', '=', $form->_activityTypeId)
+            ->setLimit(1)
+            ->execute();
+
+        // If the activity type was returned in the above API query, then
+        // it is reasonably ok to change. If it wasn't returned, then it's reserved, inactive, or
+        // should probably be left alone.
+        if ($option_values->count() > 0) {
+            if ($form->elementExists('activity_type_id')) {
+                $ele =& $form->getElement('activity_type_id');
+                $ele->unfreeze();
+            }
+        }
+    }
 }
 
 function activity_civicrm_postProcess($formName, &$form) {
@@ -124,4 +173,12 @@ function activity_civicrm_alterMailParams(&$params, $context) {
 
     $params['from'] = $fromEmail;
   }
+}
+
+#[CRM_NYSS_Attribute_IssueRef(4921)]
+function activity_civicrm_optionValues(&$options, $groupName) {
+    // NYSS 4921 - alphabetize activity types
+    if ($groupName == 'activity_type') {
+        asort($options);
+    }
 }

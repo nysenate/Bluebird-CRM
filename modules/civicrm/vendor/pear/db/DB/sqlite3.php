@@ -21,7 +21,6 @@
  * @author     Armin Graefe <schengawegga@gmail.com>
  * @copyright  1997-2007 The PHP Group
  * @license    http://www.php.net/license/3_0.txt  PHP License 3.0 3.0
- * @version    CVS: $Id$
  * @link       http://pear.php.net/package/DB
  */
 
@@ -31,8 +30,8 @@
 require_once 'DB/common.php';
 
 /**
- * The methods PEAR DB uses to interact with PHP's sqlite extension
- * for interacting with SQLite databases
+ * The methods PEAR DB uses to interact with PHP's sqlite3 extension
+ * for interacting with SQLite3 databases
  *
  * These methods overload the ones declared in DB_common.
  *
@@ -104,7 +103,7 @@ class DB_sqlite3 extends DB_common
     
     /**
      * The raw database connection created by PHP
-     * @var resource
+     * @var SQLite3 object
      */
     var $connection;
     
@@ -170,7 +169,7 @@ class DB_sqlite3 extends DB_common
      *
      * Don't call this method directly.  Use DB::connect() instead.
      *
-     * PEAR DB's sqlite driver supports the following extra DSN options:
+     * PEAR DB's sqlite3 driver supports the following extra DSN options:
      *   + mode  The permissions for the database file, in four digit
      *            chmod octal format (eg "0600").
      *
@@ -241,8 +240,6 @@ class DB_sqlite3 extends DB_common
         @ini_set('track_errors', 1);
         $php_errormsg = '';
         
-        //var_dump($this->getOption('readable'));exit();
-        
         if (!$this->connection = @new SQLite3($dsn['database'])) {
             return $this->raiseError(DB_ERROR_NODBSELECTED,
                 null, null, null,
@@ -278,7 +275,7 @@ class DB_sqlite3 extends DB_common
      *
      * @param string  the SQL query string
      *
-     * @return mixed  + a PHP result resrouce for successful SELECT queries
+     * @return mixed  + a PHP SQLite3Result object for successful SELECT queries
      *                + the DB_OK constant for other successful queries
      *                + a DB_Error object on failure
      */
@@ -298,7 +295,7 @@ class DB_sqlite3 extends DB_common
             return $this->sqliteRaiseError(null);
         }
         
-        // sqlite_query() seems to allways return a resource
+        // sqlite_query() seems to always return a SQLite3Result object
         // so cant use that. Using $ismanip instead
         if (!$ismanip) {
             $numRows = $this->numRows($result);
@@ -317,7 +314,7 @@ class DB_sqlite3 extends DB_common
     /**
      * Move the internal sqlite result pointer to the next available result
      *
-     * @param resource $result  the valid sqlite result resource
+     * @param SQLite3Result $result  the valid sqlite result SQLite3Result object
      *
      * @return bool  true if a result is available otherwise return false
      */
@@ -339,10 +336,10 @@ class DB_sqlite3 extends DB_common
      * DB_result::fetchInto() instead.  It can't be declared "protected"
      * because DB_result is a separate object.
      *
-     * @param resource $result    the query result resource
-     * @param array    $arr       the referenced array to put the data in
-     * @param int      $fetchmode how the resulting array should be indexed
-     * @param int      $rownum    the row number to fetch (0 = first row)
+     * @param SQLite3Result $result    the query SQLite3Result object
+     * @param array         $arr       the referenced array to put the data in
+     * @param int           $fetchmode how the resulting array should be indexed
+     * @param int           $rownum    the row number to fetch (0 = first row)
      *
      * @return mixed  DB_OK on success, NULL when the end of a result set is
      *                 reached or on failure
@@ -416,7 +413,7 @@ class DB_sqlite3 extends DB_common
      * DB_result::free() instead.  It can't be declared "protected"
      * because DB_result is a separate object.
      *
-     * @param resource $result  PHP's query result resource
+     * @param SQLite3Result $result  PHP's query SQLite3Result object
      *
      * @return bool  TRUE on success, FALSE if $result is invalid
      *
@@ -425,7 +422,9 @@ class DB_sqlite3 extends DB_common
     function freeResult(&$result)
     {
         // XXX No native free?
-        if (!is_resource($result)) {
+        if (!is_object($result) || get_class($result) != "SQLite3Result") {
+            // FIXME return false has no effect at DB::free, because PEAR::isError expected
+            // But it returns false in every DBMS, maybe a bug in every DBMS??
             return false;
         }
         $result = null;
@@ -442,7 +441,7 @@ class DB_sqlite3 extends DB_common
      * DB_result::numCols() instead.  It can't be declared "protected"
      * because DB_result is a separate object.
      *
-     * @param resource $result  PHP's query result resource
+     * @param SQLite3Result $result  PHP's query SQLite3Result object
      *
      * @return int  the number of columns.  A DB_Error object on failure.
      *
@@ -467,7 +466,7 @@ class DB_sqlite3 extends DB_common
      * DB_result::numRows() instead.  It can't be declared "protected"
      * because DB_result is a separate object.
      *
-     * @param resource $result  PHP's query result resource
+     * @param SQLite3Result $result  PHP's query SQLite3Result object
      *
      * @return int  the number of rows.  A DB_Error object on failure.
      *

@@ -68,6 +68,9 @@ define('CIVICRM_DB_CACHE_CLASS', get_config_value($bbcfg, 'cache.db.class', null
 define('CIVICRM_MEMCACHE_TIMEOUT', get_config_value($bbcfg, 'cache.memcache.timeout', 600));
 define('CIVICRM_MEMCACHE_PREFIX', $servername);
 
+// Smarty version
+define('CIVICRM_SMARTY_AUTOLOAD_PATH', $civicrm_root . '/packages/smarty4/vendor/autoload.php');
+
 // SAGE API constants
 define('SAGE_API_KEY', get_config_value($bbcfg, 'sage.api.key', 'NO_KEY'));
 define('SAGE_API_BASE', get_config_value($bbcfg, 'sage.api.base', 'NO_API'));

@@ -545,8 +545,9 @@ function storeAttachments($message, $params, $rowId) {
     bbscript_log(LL::TRACE, '$type', $type);
     bbscript_log(LL::TRACE, '$mime', $mime);
 
-    if (empty($fileExt = $attachment->getExtension())) {
-      $fileExt = substr(strrchr($attributes['name'], '.'), 1);
+    // NYSS #17822 - limit to 10 characters to avoid db errors
+    if (empty($fileExt = substr($attachment->getExtension(),0,10))) {
+      $fileExt = substr(strrchr($attributes['name'], '.'), 1,10);
     }
     bbscript_log(LL::TRACE, '$fileExt', $fileExt);
 
@@ -572,18 +573,23 @@ function storeAttachments($message, $params, $rowId) {
       bbscript_log(LL::DEBUG, '$status', ($status) ? $status : "FALSE");
 
       if ($status) {
-        //store record of attachment
-        CRM_Core_DAO::executeQuery($sql, [
-          1 => [$rowId, 'Positive'],
-          2 => [$attributes['name'], 'String'],
-          3 => [$uploadInbox.$civiFilename, 'String'],
-          4 => [$attributes['size'], 'Positive'],
-          5 => [$mime, 'String'],
-          6 => [$fileExt, 'String'],
-          7 => [$rej_reason, 'String'],
-        ]);
+          try {
+              //store record of attachment
+              CRM_Core_DAO::executeQuery($sql, [
+                  1 => [$rowId, 'Positive'],
+                  2 => [$attributes['name'], 'String'],
+                  3 => [$uploadInbox.$civiFilename, 'String'],
+                  4 => [$attributes['size'], 'Positive'],
+                  5 => [$mime, 'String'],
+                  6 => [$fileExt, 'String'],
+                  7 => [$rej_reason, 'String'],
+              ]);
 
-        $success++;
+              $success++;
+          } catch (Exception $e) {
+              bbscript_log(LL::ERROR, "Unable to save {$attachment->getName()} to database (nyss_inbox_attachments).");
+          }
+
       }
       else {
         bbscript_log(LL::ERROR, "Unable to store attachment {$attachment->getName()} to disk.");

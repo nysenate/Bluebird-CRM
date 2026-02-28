@@ -20,7 +20,6 @@
  * @author     Daniel Convissor <danielc@php.net>
  * @copyright  1997-2007 The PHP Group
  * @license    http://www.php.net/license/3_0.txt  PHP License 3.0
- * @version    CVS: $Id$
  * @link       http://pear.php.net/package/DB
  */
 
@@ -147,7 +146,7 @@ class DB_common extends PEAR
      */
     function __construct()
     {
-        parent::__construct('DB_Error');
+        $this->PEAR('DB_Error');
     }
 
     // }}}
@@ -1921,7 +1920,7 @@ class DB_common extends PEAR
      *
      * @see PEAR_Error
      */
-    function raiseError($code = DB_ERROR, $mode = null, $options = null,
+    function &raiseError($code = DB_ERROR, $mode = null, $options = null,
                          $userinfo = null, $nativecode = null, $dummy1 = null,
                          $dummy2 = null)
     {
@@ -2294,20 +2293,6 @@ class DB_common extends PEAR
     }
 
     // }}}
-    // {{{ lastInsertId()
-
-   /**
-    * Get the most recently inserted Id
-    *
-    * @throws RuntimeException
-    */
-    function lastInsertId()
-    {
-        throw new \RuntimeException("Not implemented: " . get_class($this) . '::lastInsertId');
-    }
-
-    // }}}
-
 }
 
 /*
