@@ -51,14 +51,14 @@
     <div class="crm-section">
       <div class="label">{$form.start_date.label}</div>
       <div class="content">
-        {include file="CRM/common/jcalendar.tpl" elementName=start_date}
+        {$form.start_date.html}
       </div>
       <div class="clear"></div>
     </div>
     <div class="crm-section">
       <div class="label">{$form.end_date.label}</div>
       <div class="content">
-        {include file="CRM/common/jcalendar.tpl" elementName=end_date}
+        {$form.end_date.html}
       </div>
       <div class="clear"></div>
     </div>
