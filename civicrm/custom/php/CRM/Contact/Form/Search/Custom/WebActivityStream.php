@@ -39,8 +39,10 @@ class CRM_Contact_Form_Search_Custom_WebActivityStream
     ];
     $form->add('select', 'type', ts('Type'), $type, false);
     
-    $form->addDate('start_date', ts('Date from'), false, ['formatType' => 'birth']);
-    $form->addDate('end_date', ts('Date to'), false, ['formatType' => 'birth']);
+    //$form->addDate('start_date', ts('Date from'), false, ['formatType' => 'birth']);
+    $form->add('datepicker', 'start_date', ts('Date from'), false, ['formatType' => 'birth']);
+    //$form->addDate('end_date', ts('Date to'), false, ['formatType' => 'birth']);
+    $form->add('datepicker', 'end_date', ts('Date to'), false, ['formatType' => 'birth']);
 
     $form->setDefaults($this->setDefaultValues());
   }//buildForm

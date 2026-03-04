@@ -84,9 +84,9 @@ class CRM_Contact_Form_Search_Custom_TagGroupLog
       FALSE,
       $select2style
     );
-    
-    $form->addDate('start_date', ts('Date from'), false, ['formatType' => 'birth']);
-    $form->addDate('end_date', ts('Date to'), false, ['formatType' => 'birth']);
+
+    $form->add('datepicker', 'start_date', ts('Date from'), false, ['formatType' => 'birth']);
+    $form->add('datepicker', 'end_date', ts('Date to'), false, ['formatType' => 'birth']);
 
     $actionType = [
       '1' => ts('Added'),
