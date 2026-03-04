@@ -40,8 +40,11 @@ return [
               ],
               [
                 'Contact_ActivityContact_Activity_01.record_type_id:name',
-                '=',
-                '"Activity Assignees"',
+                'IN',
+                [
+                  'Activity Assignees',
+                  'Activity Source',
+                ],
               ],
               [
                 'Contact_ActivityContact_Activity_01.contact_id',
