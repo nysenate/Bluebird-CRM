@@ -267,6 +267,14 @@ table.crm-edit-address-form div[id$="_location_type_id"] {
   display: none;
 }
 
+/* NYSS 17991 - Fixes dashlet header controls in Chromium-based browsers */
+@supports (-webkit-appearance: none) and (not (-moz-appearance: none)) {
+  /* Chrome and Edge, but not Firefox */
+  .crm-container #civicrm-dashboard .crm-dashlet-header .crm-i {
+    color: #fcfcfc;
+  }
+}
+
 /*Footer*/
 #bb-header {
   float: right;
