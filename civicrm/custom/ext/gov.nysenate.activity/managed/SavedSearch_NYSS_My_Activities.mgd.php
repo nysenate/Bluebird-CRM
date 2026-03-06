@@ -40,8 +40,11 @@ return [
               ],
               [
                 'Contact_ActivityContact_Activity_01.record_type_id:name',
-                '=',
-                '"Activity Assignees"',
+                'IN',
+                [
+                  'Activity Assignees',
+                  'Activity Source',
+                ],
               ],
               [
                 'Contact_ActivityContact_Activity_01.contact_id',
@@ -111,7 +114,10 @@ return [
         'settings' => [
           'description' => E::ts(NULL),
           'sort' => [
-            ['sort_name', 'ASC'],
+              [
+                  'Contact_ActivityContact_Activity_01.activity_date_time',
+                  'DESC',
+              ],
           ],
           'limit' => 25,
           'pager' => [],

@@ -974,11 +974,11 @@
          style="background-color: #bfbfbf; -ko-background-color: @externalBackgroundColor; -ko-attr-bgcolor: @externalBackgroundColor" data-ko-block="articleImageBlock">
     <tr>
       <td class="vb-outer" align="center" valign="top" bgcolor="#bfbfbf"
-          style="background-color: #bfbfbf; -ko-background-color: @externalBackgroundColor; -ko-attr-bgcolor: @externalBackgroundColor">
+          style="padding-left: 9px; padding-right: 9px; font-size: 0; background-color: #bfbfbf; -ko-background-color: @externalBackgroundColor; -ko-attr-bgcolor: @externalBackgroundColor">
 
         <!--[if (gte mso 9)|(lte ie 8)]><table align="center" border="0" cellspacing="0" cellpadding="0" width="570"><tr><td align="center" valign="top"><![endif]-->
         <div class="oldwebkit">
-          <table width="570" border="0" cellpadding="0" cellspacing="18" class="vb-container fullpad" bgcolor="#ffffff"
+          <table width="570" border="0" cellpadding="0" cellspacing="18" class="vb-row" bgcolor="#ffffff"
                  style="width: 100%; max-width: 570px; background-color: #ffffff; -ko-attr-bgcolor: @backgroundColor; -ko-background-color: @backgroundColor; border-spacing: 18px 18px; -ko-border-spacing: 18px @[blockPaddingVisible ? 18 : 9]px;">
             <tr>
               <td>
@@ -1785,7 +1785,7 @@
             </td></tr>
             <tr data-ko-display="socialIconType eq 'bw'" style="display: none"><td width="100%" valign="top" style="font-weight: normal; text-align: right; padding: 9px; padding-top: 5px; padding-bottom: 5px; padding: 9px; padding-top: 5px; padding-bottom: 5px; -ko-padding: @[blockSpacing.horizontalSpacing]px; -ko-padding-top: @[blockSpacing.verticalSpacing]px; -ko-padding-bottom: @[blockSpacing.verticalSpacing]px;" align="right" class="links-color socialLinks mobile-textcenter">
 
-                <div data-ko-wrap="false" style="display: inline-block;" data-ko-display="fbVisible">&nbsp;aaa<a href="" data-ko-display="fbVisible" style="background: url(data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7), #818181; border-radius: 50px; -ko-attr-href: @[fbUrl]"><img border="0" style="display: inline-block; vertical-align: top; padding-bottom: 0px" src="img/icons/fb-bw-96.png" width="32" height="32" alt="Facebook"></a></div>
+                <div data-ko-wrap="false" style="display: inline-block;" data-ko-display="fbVisible"><a href="" data-ko-display="fbVisible" style="background: url(data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7), #818181; border-radius: 50px; -ko-attr-href: @[fbUrl]"><img border="0" style="display: inline-block; vertical-align: top; padding-bottom: 0px" src="img/icons/fb-bw-96.png" width="32" height="32" alt="Facebook"></a></div>
 
                 <div data-ko-wrap="false" style="display: inline-block;" data-ko-display="twVisible">&nbsp;<a href="" data-ko-display="twVisible" style="background: url(data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7), #818181; border-radius: 50px; -ko-attr-href: @[twUrl]"><img border="0" style="display: inline-block; vertical-align: top; padding-bottom: 0px" src="img/icons/tw-bw-96.png" width="32" height="32" alt="X / Twitter"></a></div>
 
@@ -1969,6 +1969,49 @@
                         <img src="img/social_def/youtube_bw_ok.png" alt="Youtube" border="0" class="socialIcon" />
                       </a>
                     </td>
+                      <td valign="middle" class="links-color socialLinks mobile-textcenter" data-ko-display="socialIconType neq 'colors' and socialIconType neq 'bw'"
+                          style="display: none; -ko-attr-align: @[socialIconAlign];">
+                          <span data-ko-display="fbVisible" data-ko-wrap="false">&nbsp;</span>
+                          <a data-ko-display="fbVisible" href="" style="-ko-attr-href: @fbUrl">
+                              <img style="-ko-attr-src: @[Url.templatePath('img/icons/fb-'+socialIconType+'-96.png')]" src="img/icons/fb-rdcol-96.png" alt="Facebook" width="32" height="32"  border="0" class="socialIcon" />
+                          </a>
+                          <span data-ko-display="twVisible" data-ko-wrap="false">&nbsp;</span>
+                          <a data-ko-display="twVisible" href="" style="-ko-attr-href: @twUrl">
+                              <img style="-ko-attr-src: @[Url.templatePath('img/icons/tw-'+socialIconType+'-96.png')]" src="img/icons/tw-rdcol-96.png" alt="X" width="32" height="32" border="0" class="socialIcon" />
+                          </a>
+                          <span data-ko-display="ggVisible" data-ko-wrap="false">&nbsp;</span>
+                          <a data-ko-display="ggVisible" href="" style="-ko-attr-href: @ggUrl">
+                              <img style="-ko-attr-src: @[Url.templatePath('img/icons/gg-'+socialIconType+'-96.png')]" src="img/icons/gg-rdcol-96.png" alt="Google+" width="32" height="32" border="0" class="socialIcon" />
+                          </a>
+                          <span data-ko-display="bskyVisible" data-ko-wrap="false">&nbsp;</span>
+                          <a data-ko-display="bskyVisible" href="" style="-ko-attr-href: @bskyUrl">
+                              <img style="-ko-attr-src: @[Url.templatePath('img/icons/bsky-'+socialIconType+'-96.png')]" src="img/icons/bsky-rdcol-96.png" alt="Bluesky" width="32" height="32" border="0" class="socialIcon" />
+                          </a>
+                          <span data-ko-display="webVisible" data-ko-wrap="false" style="display: none">&nbsp;</span>
+                          <a data-ko-display="webVisible" href="" style="-ko-attr-href: @webUrl; display: none">
+                              <img style="-ko-attr-src: @[Url.templatePath('img/icons/web-'+socialIconType+'-96.png')]" src="img/icons/web-rdcol-96.png" alt="Web" width="32" height="32" border="0" class="socialIcon" />
+                          </a>
+                          <span data-ko-display="inVisible" data-ko-wrap="false" style="display: none">&nbsp;</span>
+                          <a data-ko-display="inVisible" href="" style="-ko-attr-href: @inUrl; display: none">
+                              <img style="-ko-attr-src: @[Url.templatePath('img/icons/in-'+socialIconType+'-96.png')]" src="img/icons/in-rdcol-96.png" alt="Linkedin" width="32" height="32" border="0" class="socialIcon" />
+                          </a>
+                          <span data-ko-display="flVisible" data-ko-wrap="false" style="display: none">&nbsp;</span>
+                          <a data-ko-display="flVisible" href="" style="-ko-attr-href: @flUrl; display: none">
+                              <img style="-ko-attr-src: @[Url.templatePath('img/icons/fl-'+socialIconType+'-96.png')]" src="img/icons/fl-rdcol-96.png" alt="Flickr" width="32" height="32" border="0" class="socialIcon" />
+                          </a>
+                          <span data-ko-display="viVisible" data-ko-wrap="false" style="display: none">&nbsp;</span>
+                          <a data-ko-display="viVisible" href="" style="-ko-attr-href: @viUrl; display: none">
+                              <img style="-ko-attr-src: @[Url.templatePath('img/icons/vi-'+socialIconType+'-96.png')]" src="img/icons/vi-rdcol-96.png" alt="Vimeo" width="32" height="32" border="0" class="socialIcon" />
+                          </a>
+                          <span data-ko-display="instVisible" data-ko-wrap="false" style="display: none">&nbsp;</span>
+                          <a data-ko-display="instVisible" href="" style="-ko-attr-href: @instUrl; display: none">
+                              <img style="-ko-attr-src: @[Url.templatePath('img/icons/inst-'+socialIconType+'-96.png')]" src="img/icons/inst-rdcol-96.png" alt="Instagram" width="32" height="32" border="0"  class="socialIcon" />
+                          </a>
+                          <span data-ko-display="youVisible" data-ko-wrap="false" style="display: none">&nbsp;</span>
+                          <a data-ko-display="youVisible" href="" style="-ko-attr-href: @youUrl; display: none">
+                              <img style="-ko-attr-src: @[Url.templatePath('img/icons/you-'+socialIconType+'-96.png')]" src="img/icons/you-rdcol-96.png" alt="Youtube" width="32" height="32" border="0" class="socialIcon" />
+                          </a>
+                      </td>
                   </tr>
                 </table>
 

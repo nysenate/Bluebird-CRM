@@ -37,8 +37,8 @@ class CRM_NYSS_Form_ProofingReport extends CRM_Core_Form {
   public function buildQuickForm() {
     $this->addElement( 'text', 'jobID', ts('Job ID') );
     $this->addElement( 'text', 'alteredBy', ts('Altered By') );
-    $this->addDate( 'start_date', ts('Date from'), FALSE, array( 'formatType' => 'custom') );
-    $this->addDate( 'end_date', ts('...to'), FALSE, array( 'formatType' => 'custom') );
+    $this->add('datepicker', 'start_date', ts('Date from'), false, ['formatType' => 'custom']);
+    $this->add('datepicker', 'end_date', ts('...to'), false, ['formatType' => 'custom']);
     $this->add( 'select', 'pdf_format_id', ts( 'Page Format' ),
       array( 0 => ts( '- default -' ) ) + CRM_Core_BAO_PdfFormat::getList( true ) );
     //7582/7685/11831 add tags
