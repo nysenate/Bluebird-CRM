@@ -1,0 +1,4 @@
+{htxt id="generate_greetings"}
+    <p>Generate greetings for individuals with currently incomplete greetings. Only <em>Individual</em> contacts will be processed. Households and Organizations will not be processed.</p>
+    <p>This will add email greetings, addressees and postal greetings.</p>
+{/htxt}

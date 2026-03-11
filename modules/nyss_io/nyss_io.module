@@ -182,8 +182,8 @@ function nyss_ioimport_form()
       'all' => t('Process All Contacts'),
       'none' => t('Disable Greeting Generation'),
     ],
-    '#default_value' => 'imported',
-    '#description' => t('By default, only imported contacts will have greetings generated. If you choose, you may run the greeting generation script across the entire database, or disable it altogether.'),
+    '#default_value' => 'none',
+    '#description' => t('Greeting Generation has moved and will be removed from the importer in the near future. Please use the new <a href="/civicrm/nyss/generate-greetings">greeting generation tool</a> instead. If you must do greeting generation here, then you may run the greeting generation script across the entire database, or only on imported contacts.'),
   ];
 
   $form['import']['submit'] = [
