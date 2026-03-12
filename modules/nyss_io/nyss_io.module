@@ -4,6 +4,15 @@ define('BATCHSIZE', 250);
 define('BATCHSIZETAG', 5000);
 define('VARSTATS', false);
 
+// Tables whose auto-increment IDs are not needed back in the same record's
+// processing chain — safe to accumulate and bulk-insert per batch. - Claude
+define('BULK_INSERT_TABLES', [
+  'civicrm_phone',
+  'civicrm_email',
+  'civicrm_value_constituent_information_1',
+  'civicrm_value_district_information_7',
+]);
+
 require_once(dirname(__FILE__) . '/nyss_lib.php');
 
 //define menu path
@@ -255,6 +264,8 @@ function nyss_ioimport_form_submit($form, &$form_state) {
   global $nyss_iototallines;
   global $nyss_conn;
   global $dryrun;
+  global $nyss_insert_buffer; // Claude
+  $nyss_insert_buffer = [];
 
   civicrm_initialize();
 
@@ -543,6 +554,7 @@ function nyss_ioimport_form_submit($form, &$form_state) {
     _processNote($l, $nyss_conn);
 
     if ($nyss_ioline%BATCHSIZE == 0) {
+      nyss_flushInsertBuffer(); // Claude
       mysqli_query($nyss_conn, "COMMIT");
     }
 
@@ -551,6 +563,7 @@ function nyss_ioimport_form_submit($form, &$form_state) {
 
   // Commit any stragglers!
   if ($nyss_ioline%BATCHSIZE!=0) {
+    nyss_flushInsertBuffer(); // Claude
     mysqli_query($nyss_conn, "COMMIT" );
   }
 
@@ -984,8 +997,23 @@ function nyss_ioimportData($tbl, &$l, $dryrun, $form_state)
 
     //process if sql insert exists and not dryrun
     if (!$dryrun && $sqlINSERT) {
-      $result = mysqli_query($nyss_conn, $sqlINSERT) or die(mysqli_error($nyss_conn));
-      $l[$pkImport] = mysqli_insert_id($nyss_conn);
+      if (in_array($tbl, BULK_INSERT_TABLES)) { // Claude
+        // Buffer this insert; flush will happen at each transaction commit.
+        // IDs for these tables are not needed back in the same record's pipeline.
+        global $nyss_insert_buffer;
+        $colSig = implode(',', $insertKeys);
+        if (!isset($nyss_insert_buffer[$tbl][$colSig])) {
+          $nyss_insert_buffer[$tbl][$colSig] = [
+            'columns' => implode(',', $insertKeys),
+            'rows'    => [],
+          ];
+        }
+        $nyss_insert_buffer[$tbl][$colSig]['rows'][] = '(' . implode(',', $insertData) . ')';
+      }
+      else {
+        $result = mysqli_query($nyss_conn, $sqlINSERT) or die(mysqli_error($nyss_conn));
+        $l[$pkImport] = mysqli_insert_id($nyss_conn);
+      }
     }
     elseif ($sqlINSERT) {
       print_r($sqlINSERT."<br>"); //debug

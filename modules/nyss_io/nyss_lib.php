@@ -165,3 +165,34 @@ class NYSS_IOFileObject
     }
   } // getLineAsArray()
 } // NYSS_IOFileObject
+
+
+/**
+ * Flush accumulated bulk-insert buffers for leaf tables. - Claude
+ *
+ * Called just before each transaction COMMIT so all buffered rows are written
+ * within the same transaction as the civicrm_contact/address inserts they
+ * depend on. Rows are grouped by column signature so every row in a given
+ * multi-row INSERT statement has identical columns.
+ */
+function nyss_flushInsertBuffer() {
+  global $nyss_insert_buffer;
+  global $nyss_conn;
+
+  if (empty($nyss_insert_buffer)) {
+    return;
+  }
+
+  foreach ($nyss_insert_buffer as $tbl => $groups) {
+    foreach ($groups as $group) {
+      if (empty($group['rows'])) {
+        continue;
+      }
+      $sql = "INSERT INTO {$tbl} ({$group['columns']}) VALUES " . implode(',', $group['rows']);
+      mysqli_query($nyss_conn, $sql) or die(mysqli_error($nyss_conn));
+      nyss_out('debug', "bulk inserted " . count($group['rows']) . " rows into {$tbl}", FALSE);
+    }
+  }
+
+  $nyss_insert_buffer = [];
+} // nyss_flushInsertBuffer()
