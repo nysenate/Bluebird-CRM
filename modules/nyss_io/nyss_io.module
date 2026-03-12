@@ -251,6 +251,7 @@ function nyss_ioimport_form_submit($form, &$form_state) {
 
   //temporarily bump memory limit
   ini_set('memory_limit', '10000M');
+  set_time_limit(0); // moved out of per-record loop - Claude
 
   //track processing time
   $timeStart = time();
@@ -349,9 +350,6 @@ function nyss_ioimport_form_submit($form, &$form_state) {
     }
 
     //nyss_out('debug', $l, true); //exit();
-
-    //seconds to process each row
-    set_time_limit (0);
 
     //increase line number
     ++$nyss_ioline;
