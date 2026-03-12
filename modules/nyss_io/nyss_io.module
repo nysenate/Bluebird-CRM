@@ -1448,11 +1448,16 @@ function _findContact(&$l, $nyss_conn, $ruleID = 1) {
   $params = CRM_Dedupe_Finder::formatParams($params, 'Individual');
   $params['check_permission'] = 0;
 
-  $ruleTitle = CRM_Core_DAO::singleValueQuery("
-    SELECT title
-    FROM civicrm_dedupe_rule_group
-    WHERE id = {$ruleID}
-  ");
+  // Cache rule title so the DB is only queried once per import run. - Claude
+  static $ruleTitleCache = [];
+  if (!isset($ruleTitleCache[$ruleID])) {
+    $ruleTitleCache[$ruleID] = CRM_Core_DAO::singleValueQuery("
+      SELECT title
+      FROM civicrm_dedupe_rule_group
+      WHERE id = {$ruleID}
+    ");
+  }
+  $ruleTitle = $ruleTitleCache[$ruleID];
 
 
   $o = new stdClass();
