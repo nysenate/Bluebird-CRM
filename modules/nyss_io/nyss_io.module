@@ -1336,6 +1336,7 @@ function _fixState(&$l, $aStates)
 {
   if (!empty($l['st']) && !empty($aStates[$l['st']]) ) {
     $l['state_province_id'] = $aStates[$l['st']];
+    unset($l['st']); // remove alias to prevent duplicate column in INSERT - Claude
   }
   else if (!empty($l['state_province_id']) && !empty($aStates[$l['state_province_id']]) ) {
     $l['state_province_id'] = $aStates[$l['state_province_id']];
