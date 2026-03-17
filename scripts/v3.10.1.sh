@@ -1,12 +1,14 @@
-#!/bin/sh
+#!/bin/bash
 #
-# v39.sh
-# Upgrade Drupal Core to version 6.4.0
+# v3.10.1.sh
+# Minor upgrade
+# - enables new extension, nyss_greeting
+# - fixes NYSS #18009 - Add .msg file extension to safe_file_extension option group
 #
 # Project: BluebirdCRM
 # Authors: Nate Frank
 # Organization: New York State Senate
-# Date: 2025-08-15
+# Date: 2026-03-15
 #
 
 prog=`basename $0`
