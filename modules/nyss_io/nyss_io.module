@@ -4,6 +4,15 @@ define('BATCHSIZE', 250);
 define('BATCHSIZETAG', 5000);
 define('VARSTATS', false);
 
+// Tables whose auto-increment IDs are not needed back in the same record's
+// processing chain — safe to accumulate and bulk-insert per batch. - Claude
+define('BULK_INSERT_TABLES', [
+  'civicrm_phone',
+  'civicrm_email',
+  'civicrm_value_constituent_information_1',
+  'civicrm_value_district_information_7',
+]);
+
 require_once(dirname(__FILE__) . '/nyss_lib.php');
 
 //define menu path
@@ -182,8 +191,8 @@ function nyss_ioimport_form()
       'all' => t('Process All Contacts'),
       'none' => t('Disable Greeting Generation'),
     ],
-    '#default_value' => 'imported',
-    '#description' => t('By default, only imported contacts will have greetings generated. If you choose, you may run the greeting generation script across the entire database, or disable it altogether.'),
+    '#default_value' => 'none',
+    '#description' => t('Greeting Generation has moved and will be removed from the importer in the near future. Please use the new <a href="/civicrm/nyss/generate-greetings">greeting generation tool</a> instead. If you must do greeting generation here, then you may run the greeting generation script across the entire database, or only on imported contacts.'),
   ];
 
   $form['import']['submit'] = [
@@ -242,6 +251,7 @@ function nyss_ioimport_form_submit($form, &$form_state) {
 
   //temporarily bump memory limit
   ini_set('memory_limit', '10000M');
+  set_time_limit(0); // moved out of per-record loop - Claude
 
   //track processing time
   $timeStart = time();
@@ -255,6 +265,8 @@ function nyss_ioimport_form_submit($form, &$form_state) {
   global $nyss_iototallines;
   global $nyss_conn;
   global $dryrun;
+  global $nyss_insert_buffer; // Claude
+  $nyss_insert_buffer = [];
 
   civicrm_initialize();
 
@@ -338,9 +350,6 @@ function nyss_ioimport_form_submit($form, &$form_state) {
     }
 
     //nyss_out('debug', $l, true); //exit();
-
-    //seconds to process each row
-    set_time_limit (0);
 
     //increase line number
     ++$nyss_ioline;
@@ -543,6 +552,7 @@ function nyss_ioimport_form_submit($form, &$form_state) {
     _processNote($l, $nyss_conn);
 
     if ($nyss_ioline%BATCHSIZE == 0) {
+      nyss_flushInsertBuffer(); // Claude
       mysqli_query($nyss_conn, "COMMIT");
     }
 
@@ -551,6 +561,7 @@ function nyss_ioimport_form_submit($form, &$form_state) {
 
   // Commit any stragglers!
   if ($nyss_ioline%BATCHSIZE!=0) {
+    nyss_flushInsertBuffer(); // Claude
     mysqli_query($nyss_conn, "COMMIT" );
   }
 
@@ -984,8 +995,23 @@ function nyss_ioimportData($tbl, &$l, $dryrun, $form_state)
 
     //process if sql insert exists and not dryrun
     if (!$dryrun && $sqlINSERT) {
-      $result = mysqli_query($nyss_conn, $sqlINSERT) or die(mysqli_error($nyss_conn));
-      $l[$pkImport] = mysqli_insert_id($nyss_conn);
+      if (in_array($tbl, BULK_INSERT_TABLES)) { // Claude
+        // Buffer this insert; flush will happen at each transaction commit.
+        // IDs for these tables are not needed back in the same record's pipeline.
+        global $nyss_insert_buffer;
+        $colSig = implode(',', $insertKeys);
+        if (!isset($nyss_insert_buffer[$tbl][$colSig])) {
+          $nyss_insert_buffer[$tbl][$colSig] = [
+            'columns' => implode(',', $insertKeys),
+            'rows'    => [],
+          ];
+        }
+        $nyss_insert_buffer[$tbl][$colSig]['rows'][] = '(' . implode(',', $insertData) . ')';
+      }
+      else {
+        $result = mysqli_query($nyss_conn, $sqlINSERT) or die(mysqli_error($nyss_conn));
+        $l[$pkImport] = mysqli_insert_id($nyss_conn);
+      }
     }
     elseif ($sqlINSERT) {
       print_r($sqlINSERT."<br>"); //debug
@@ -1310,6 +1336,7 @@ function _fixState(&$l, $aStates)
 {
   if (!empty($l['st']) && !empty($aStates[$l['st']]) ) {
     $l['state_province_id'] = $aStates[$l['st']];
+    unset($l['st']); // remove alias to prevent duplicate column in INSERT - Claude
   }
   else if (!empty($l['state_province_id']) && !empty($aStates[$l['state_province_id']]) ) {
     $l['state_province_id'] = $aStates[$l['state_province_id']];
@@ -1421,11 +1448,16 @@ function _findContact(&$l, $nyss_conn, $ruleID = 1) {
   $params = CRM_Dedupe_Finder::formatParams($params, 'Individual');
   $params['check_permission'] = 0;
 
-  $ruleTitle = CRM_Core_DAO::singleValueQuery("
-    SELECT title
-    FROM civicrm_dedupe_rule_group
-    WHERE id = {$ruleID}
-  ");
+  // Cache rule title so the DB is only queried once per import run. - Claude
+  static $ruleTitleCache = [];
+  if (!isset($ruleTitleCache[$ruleID])) {
+    $ruleTitleCache[$ruleID] = CRM_Core_DAO::singleValueQuery("
+      SELECT title
+      FROM civicrm_dedupe_rule_group
+      WHERE id = {$ruleID}
+    ");
+  }
+  $ruleTitle = $ruleTitleCache[$ruleID];
 
 
   $o = new stdClass();
