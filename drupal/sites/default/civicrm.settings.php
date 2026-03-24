@@ -134,7 +134,7 @@ $prefs['securityAlert'] = false;
 $prefs['smart_group_cache_refresh_mode'] = 'deterministic';
 $prefs['syncCMSEmail'] = false;
 $prefs['wkhtmltopdfPath'] = get_config_value($bbcfg, 'wkhtmltopdf.path', '');
-$prefs['weasyprint_path'] = get_config_value($bbcfg, 'weasyprint.path', '');
+//$prefs['weasyprint_path'] = get_config_value($bbcfg, 'weasyprint.path', '');
 $prefs['versionCheck'] = false;
 $prefs['checksumTimeout'] = 7;
 $prefs['menubar_color'] = '#ffffff';
@@ -277,7 +277,7 @@ $prefs['fts_query_mode'] = 'wildwords-suffix';
 $prefs['includeWildCardInName'] = get_config_value($bbcfg, 'search.include_wildcard_in_name', false);
 $prefs['includeEmailInName'] = get_config_value($bbcfg, 'search.include_email_in_name', true);
 // includeNickNameInName
-$prefs['includeNickNameInName'] =  get_config_value($bbcfg, 'search.include_nickname_in_name', false);
+$prefs['includeNickNameInName'] =  get_config_value($bbcfg, 'search.include_nickname_in_name', true);
 // includeAlphabeticalPager
 $prefs['smartGroupCacheTimeout'] = 10;
 //NYSS 16679 - no longer needed but leaving in place for reference
