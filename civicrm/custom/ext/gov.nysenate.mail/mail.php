@@ -479,6 +479,8 @@ function mail_civicrm_pre($op, $objectName, $id, &$params) {
         ->attr('style', "{$style}; margin-inline-start: 5px; margin-inline-end: 5px;");
       $params['body_html'] = $doc->html();
     }
+    // allow garbage collection
+    phpQuery::unloadDocuments($doc->getDocumentID());
     //Civi::log()->debug('mail_civicrm_pre AFTER', ['$style' => $style, '$params[body_html]' => $params['body_html']]);
   }
 
