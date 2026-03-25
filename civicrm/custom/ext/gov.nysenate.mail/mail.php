@@ -430,7 +430,12 @@ function mail_civicrm_alterMailingRecipients(&$mailing, &$params, $context) {
     _mail_logRecipients('_mail_removeOnHold', $mailing->id);
   }
 
-  _mail_dedupeContacts($mailing->id);
+  // NYSS #17656 - Only do failsafe contact dedupe after recipient list has been built...
+  // We definitely don't want to do it when context is mailingQuery.
+  // Honestly, the dedupe might not be needed at all anymore. So, minimizing its impact is a first step.
+  if ($context == 'post') {
+      _mail_dedupeContacts($mailing->id);
+  }
 }
 
 function mail_civicrm_pre($op, $objectName, $id, &$params) {
@@ -499,6 +504,10 @@ function mail_civicrm_post($op, $objectName, $objectId, &$objectRef) {
     '$objectRef' => $objectRef,
   ]);*/
 
+  /* Based on issue #11888, I believe this is an attempt to prevent a mailing from going out more than once.
+   * @todo Do this check before the job is created -- not after. Should be done in Core, and core might already be doing that check.
+   * NYSS #11888
+   */
   if ($objectName == 'MailingJob') {
     //check if existing non-test parent job exists for same mailing
     if ($op == 'create' && !$objectRef->is_test && empty($objectRef->parent_id)) {
