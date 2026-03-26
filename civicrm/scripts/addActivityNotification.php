@@ -1,7 +1,7 @@
 <?php
 /*
  *
- * addScheduledReminder.php
+ * addActivityNotification.php
  *
  * Creates 'Activity' related Scheduled Reminder aka ActionSchedule entity based on command line options.
  * A Scheduled Reminder comes in the form of an email notification.
