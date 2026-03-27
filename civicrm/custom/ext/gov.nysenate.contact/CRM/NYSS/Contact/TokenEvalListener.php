@@ -1,5 +1,7 @@
 <?php
 
+use Civi\Token\TokenRow;
+
 class CRM_NYSS_Contact_TokenEvalListener {
 
     public static function evalToken($event) {
@@ -16,6 +18,14 @@ class CRM_NYSS_Contact_TokenEvalListener {
                 self::remove_title_and_org_from_label($event);
             }
         }
+
+        // NYSS #17730 - add nick_name to token data for use in display_name
+        if (in_array('CRM_Contact_BAO_Individual',$ctx_class ?? []) && $event?->getTokenProcessor()?->getMessage('display_name')) {
+            foreach ($event->getRows() as $row) {
+                self::add_nick_name($row);
+            }
+        }
+
     }
 
     /** NYSS 14192
@@ -25,6 +35,15 @@ class CRM_NYSS_Contact_TokenEvalListener {
         $row = $event?->getTokenProcessor()->getRow(0);
         $row->tokens('contact', 'job_title', "");
         $row->tokens('contact', 'current_employer', "");
+    }
+
+    /** NYSS #17730
+     * Add nick_name to token data. Nick name will only appear if {nick_name} is in the token pattern */
+    #[CRM_NYSS_Attribute_IssueRef('17730')]
+    private static function add_nick_name(TokenRow $row): void
+    {
+        $nick_name = $row?->tokenProcessor?->rowContexts[$row->tokenRow]['contact']['nick_name'] ?? NULL;
+        $row->tokens('contact', 'nick_name', $nick_name);
     }
 
 }

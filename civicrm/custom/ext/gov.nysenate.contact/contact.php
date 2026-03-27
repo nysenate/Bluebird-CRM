@@ -25,7 +25,7 @@ function contact_civicrm_config(&$config) {
   if (isset(Civi::$statics[__FUNCTION__])) { return; }
   Civi::$statics[__FUNCTION__] = 1;
 
-  // NYSS 14192, 17702
+  // NYSS #14192, #17702, #17730
   Civi::dispatcher()->addListener('civi.token.eval', ['CRM_NYSS_Contact_TokenEvalListener', 'evalToken'], -1000);
 }
 
@@ -907,6 +907,16 @@ function contact_civicrm_searchTasks($objectType, &$tasks) {
   }
 }
 
+#[CRM_NYSS_Attribute_IssueRef(17730)]
+function contact_civicrm_alterReportVar($varType, &$var, $object) {
+  if ($varType === 'columns' && $object instanceof CRM_Report_Form_Contact_Detail) {
+    $var['civicrm_contact']['fields']['nick_name'] = [
+      'title' => ts('Nick Name'),
+    ];
+  }
+}
+
+#[CRM_NYSS_Attribute_IssueRef(17730)]
 function contact_civicrm_searchColumns($objectName, &$headers, &$rows, &$selector) {
   /*Civi::log()->debug('', [
     '$objectName' => $objectName,
@@ -922,6 +932,15 @@ function contact_civicrm_searchColumns($objectName, &$headers, &$rows, &$selecto
         unset($header['sort']);
       }
     }
+  }
+
+  // NYSS #17730 - show nickname on advanced search (this is dependent on a customization in CRM_Contact_Selector)
+  if (get_class($selector) === 'CRM_Contact_Selector_Controller' && sizeof($rows ?? []) && array_key_exists('nick_name',reset($rows))) {
+      foreach ($rows as &$row) {
+          if (!empty($row['nick_name'])) {
+              CRM_NYSS_Contact_Utils::showNickName($row['sort_name'], $row['nick_name'] ?? '');
+          }
+      }
   }
 }
 

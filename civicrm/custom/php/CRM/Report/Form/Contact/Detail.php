@@ -846,8 +846,6 @@ HERESQL;
    * @throws \Civi\Core\Exception\DBQueryException
    */
   public function postProcess(): void {
-      echo "asdfasdf";
-      die();
     $this->beginPostProcess();
     $sql = $this->buildQuery(TRUE);
 
