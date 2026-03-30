@@ -49,9 +49,10 @@ class CRM_NYSS_Scripts_AddActivityNotification {
   const MAPPING_ID_ACTIVITY    = 1;
   const RECIPIENT_ASSIGNEE     = 1;
   const RECIPIENT_MANUAL       = 'manual';
+  const RECIPIENT_GROUP        = 'group';
 
-  private $short_opts = 'dvt:l:s:j:ahi:c:';
-  private $long_opts = ['dryrun', 'verbose', 'types=', 'title=', 'statuses=', 'subject=', 'after', 'hours', 'interval=', 'contacts='];
+  private $short_opts = 'dvt:l:s:j:ahi:c:g:';
+  private $long_opts = ['dryrun', 'verbose', 'types=', 'title=', 'statuses=', 'subject=', 'after', 'hours', 'interval=', 'contacts=', 'group='];
   private $user_opts = NULL;
   private ?string $site = NULL;
   private bool $dryrun = FALSE;
@@ -74,6 +75,7 @@ class CRM_NYSS_Scripts_AddActivityNotification {
    */
   private string $start_date = self::START_DATE_ACTIVITY;
   private array $recipientContactIds = [];
+  private ?int $recipientGroupId = NULL;
   private $bbcfg;
 
   public function run() {
@@ -125,8 +127,9 @@ class CRM_NYSS_Scripts_AddActivityNotification {
       'subject'               => $this->subject,
       'body_html'             => $this->body_html,
       'body_text'             => $this->body_text,
-      'recipient'             => empty($this->recipientContactIds) ? self::RECIPIENT_ASSIGNEE : self::RECIPIENT_MANUAL,
+      'recipient'             => $this->recipientGroupId ? self::RECIPIENT_GROUP : (empty($this->recipientContactIds) ? self::RECIPIENT_ASSIGNEE : self::RECIPIENT_MANUAL),
       'recipient_manual'      => empty($this->recipientContactIds) ? NULL : implode(',', $this->recipientContactIds),
+      'group_id'              => $this->recipientGroupId,
       'is_active'             => TRUE,
     ];
 
@@ -378,6 +381,7 @@ class CRM_NYSS_Scripts_AddActivityNotification {
           'hours'    => '[--hours]',
           'interval' => '[--interval=N]',
           'contacts' => '[--contacts=1,2,3,...]',
+          'group'    => '[--group=N]',
           default    => '[--' . $s . ']',
         };
       }, $this->long_opts));
@@ -423,6 +427,20 @@ class CRM_NYSS_Scripts_AddActivityNotification {
         }
         $this->recipientContactIds[] = (int) $id;
       }
+    }
+
+    if (!empty($this->user_opts['group'])) {
+      $group = trim($this->user_opts['group']);
+      if (!ctype_digit($group) || (int) $group < 1) {
+        echo "Error: --group must be a positive integer.\n";
+        exit(1);
+      }
+      $this->recipientGroupId = (int) $group;
+    }
+
+    if (!empty($this->recipientContactIds) && $this->recipientGroupId !== NULL) {
+      echo "Error: --contacts and --group are mutually exclusive.\n";
+      exit(1);
     }
 
     if (!empty($this->user_opts['subject'])) {
