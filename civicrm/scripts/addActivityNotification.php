@@ -10,6 +10,23 @@
  * 1. An office wants an Activity Assignee to be reminded 2 hours before a scheduled meeting
  * 2. An office wants an Activity Creator to be notified 1 day after an activity was "due"
  *
+ * Usage Notes / Command Line Options
+ * --dry-run (-d) -- Doesn't update the database. Just reports what it would do.
+ * --verbose (-v) -- Not implemented
+ * --types (-t) -- specify a list of Activity Types such as Meeting or Phone Call (incoming). Each must match an actual
+ * activity type in the database. If not specified, you will be prompted.
+ * --title (-l) -- Specify a title for the notification. Defaults to 'Activity Notification'. If the specified or default
+ * title already exists, then you will be prompted to choose a different one.
+ * --statuses (-s) -- Specify a list of Activity Statuses such as "Scheduled", etc...
+ * --subject (-j) -- Set the subject for the email notification. Default is 'Bluebird Activity Notification: {activity.activity_type_id:label}'
+ * Notice that the subject can include any valid tokens.
+ * --after (-a) -- add this flag if you want the notification to be sent after the Activity Date. default is before.
+ * --hours (-h) -- add this flag to specify that the notification arrive hours before or after the Activity Date.
+ * The default is days.
+ * --interval (i) -- Number of hours or days to send the reminder before or after the Activity Date
+ * --contacts (-c) -- Specify a list of contact IDs who will receive the notification.
+ * The default behavior is to send the notification to the Assignee. This overrides that behavior to send to specific contacts.
+ *
  * Project: BluebirdCRM
  * Author: Nate Frank
  * Organization: New York State Senate
@@ -31,9 +48,10 @@ class CRM_NYSS_Scripts_AddActivityNotification {
   const START_DATE_ACTIVITY    = 'activity_date_time';
   const MAPPING_ID_ACTIVITY    = 1;
   const RECIPIENT_ASSIGNEE     = 1;
+  const RECIPIENT_MANUAL       = 'manual';
 
-  private $short_opts = 'dvt:l:s:j:ahi:';
-  private $long_opts = ['dryrun', 'verbose', 'types=', 'title=', 'statuses=', 'subject=', 'after', 'hours', 'interval='];
+  private $short_opts = 'dvt:l:s:j:ahi:c:';
+  private $long_opts = ['dryrun', 'verbose', 'types=', 'title=', 'statuses=', 'subject=', 'after', 'hours', 'interval=', 'contacts='];
   private $user_opts = NULL;
   private ?string $site = NULL;
   private bool $dryrun = FALSE;
@@ -55,6 +73,7 @@ class CRM_NYSS_Scripts_AddActivityNotification {
    * Not a date.
    */
   private string $start_date = self::START_DATE_ACTIVITY;
+  private array $recipientContactIds = [];
   private $bbcfg;
 
   public function run() {
@@ -106,7 +125,8 @@ class CRM_NYSS_Scripts_AddActivityNotification {
       'subject'               => $this->subject,
       'body_html'             => $this->body_html,
       'body_text'             => $this->body_text,
-      'recipient'             => self::RECIPIENT_ASSIGNEE,
+      'recipient'             => empty($this->recipientContactIds) ? self::RECIPIENT_ASSIGNEE : self::RECIPIENT_MANUAL,
+      'recipient_manual'      => empty($this->recipientContactIds) ? NULL : implode(',', $this->recipientContactIds),
       'is_active'             => TRUE,
     ];
 
@@ -357,6 +377,7 @@ class CRM_NYSS_Scripts_AddActivityNotification {
           'after'    => '[--after]',
           'hours'    => '[--hours]',
           'interval' => '[--interval=N]',
+          'contacts' => '[--contacts=1,2,3,...]',
           default    => '[--' . $s . ']',
         };
       }, $this->long_opts));
@@ -391,6 +412,17 @@ class CRM_NYSS_Scripts_AddActivityNotification {
         exit(1);
       }
       $this->start_offset = $interval;
+    }
+
+    if (!empty($this->user_opts['contacts'])) {
+      $ids = array_map('trim', explode(',', $this->user_opts['contacts']));
+      foreach ($ids as $id) {
+        if (!ctype_digit($id) || (int) $id < 1) {
+          echo "Error: --contacts must be a comma-separated list of positive integers (got '{$id}').\n";
+          exit(1);
+        }
+        $this->recipientContactIds[] = (int) $id;
+      }
     }
 
     if (!empty($this->user_opts['subject'])) {
