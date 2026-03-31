@@ -771,7 +771,7 @@ function nyss_ioimportData($tbl, &$l, $dryrun, $form_state)
   }
 
   //11516 also check if a foreign key relationship exists
-  $fkDetails = $nyss_select[$tbl]['FK'];
+  $fkDetails = $nyss_select[$tbl]['FK'] ?? NULL;
   //nyss_out('debug', 'fkDetails:', true);
   //nyss_out('debug', $fkDetails, true);
   if (!empty($fkDetails) && !empty($l[$fkDetails['fkAlias']])) {
