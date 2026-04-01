@@ -66,11 +66,6 @@ else
 fi
 ## END NYSS #18009
 
-## NYSS #17730 - Change format_dislay_name and format_sort_name to include nicknames
-echo "update display_name_format -- add nickname"
-$cv $instance api4 Setting.set values='{"display_name_format":"{contact.last_name}{, }{contact.first_name}{ }{contact.middle_name}{, }{contact.individual_suffix}{ (}{contact.nick_name}{)}"}'
-## END NYSS #17730
-
 ## clear cache again
 $clearCache $instance
 
