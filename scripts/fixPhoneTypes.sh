@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 #
 # fixPhoneTypes.sh - correct phone types assigned during OMIS import
 #

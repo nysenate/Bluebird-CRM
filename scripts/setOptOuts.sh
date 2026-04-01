@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 #
 # setOptOuts.sh - Given a file of opted out e-mail addresses, set the
 #                 is_opt_out field for matching contacts.

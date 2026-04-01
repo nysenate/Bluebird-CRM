@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 #
 # iterateInstances.sh - Perform a command for one or more CRM instances
 #
@@ -191,7 +191,7 @@ for instance in $instances; do
     [ $quiet_mode -eq 0 ] && logdt "[$run_as@$instance] About to exec: $realcmd $bg_jobs" >&2
     [ $show_timing -eq 1 ] && echo "==> START [`date +%H:%M:%S.%N`]"
     if [ "$run_as" ]; then
-      su $run_as -s /bin/sh -c "$realcmd $bg_jobs"
+      su $run_as -s /bin/bash -c "$realcmd $bg_jobs"
     else
       eval $realcmd $bg_jobs
     fi

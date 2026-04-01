@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 #
 # mercury_install.sh - Automate the process of installing Pantheon/Mercury
 #

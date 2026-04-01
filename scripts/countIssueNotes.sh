@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 #
 # countIssueNotes.sh - Count number of "OMIS ISSUE CODES" notes in CRM.
 #

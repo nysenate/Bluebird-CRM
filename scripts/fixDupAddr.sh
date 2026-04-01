@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 #
 # fixDupAddr.sh - Nullify supp1 or supp2 values if they duplicate street_address
 #

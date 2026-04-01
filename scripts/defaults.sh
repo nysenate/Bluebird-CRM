@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 #
 # defaults.sh - Shell defaults when using the Bluebird config file.
 #

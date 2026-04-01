@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 #
 # removeCopyright.sh - Remove any Copyright statement from e-mail footers
 #

@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 #
 # deleteInstance.sh - Delete the databases and files for a CRM instance
 #
