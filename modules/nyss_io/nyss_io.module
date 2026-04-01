@@ -9,8 +9,6 @@ define('VARSTATS', false);
 define('BULK_INSERT_TABLES', [
   'civicrm_phone',
   'civicrm_email',
-  'civicrm_value_constituent_information_1',
-  'civicrm_value_district_information_7',
 ]);
 
 require_once(dirname(__FILE__) . '/nyss_lib.php');
@@ -773,7 +771,7 @@ function nyss_ioimportData($tbl, &$l, $dryrun, $form_state)
   }
 
   //11516 also check if a foreign key relationship exists
-  $fkDetails = $nyss_select[$tbl]['FK'];
+  $fkDetails = $nyss_select[$tbl]['FK'] ?? NULL;
   //nyss_out('debug', 'fkDetails:', true);
   //nyss_out('debug', $fkDetails, true);
   if (!empty($fkDetails) && !empty($l[$fkDetails['fkAlias']])) {
