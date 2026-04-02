@@ -47,29 +47,35 @@ class CRM_NyssGreeting_Form_GenerateGreetingsForm extends CRM_Core_Form
     public function postProcess(): void
     {
         // Process greeting generation in a job queue to avoid page timeouts.
-        // If we do get timeout problems, then we can think about breaking
-        // the tasks up into smaller jobs using the 'limit' parameter
+        // Each task processes a small batch so individual AJAX requests stay fast.
+        $batch_size = 500;
+
+        // Use total Individual count as a safe upper bound for tasks per greeting type.
+        // updateGreeting() returns early if there's nothing left to process, so
+        // slightly over-allocating tasks is harmless.
+        $total = (int) CRM_Core_DAO::singleValueQuery(
+            "SELECT COUNT(*) FROM civicrm_contact WHERE contact_type = 'Individual' AND is_deleted = 0"
+        );
+        $num_tasks = max(1, (int) ceil($total / $batch_size));
+
+        // Use Sql (sequential) rather than SqlParallel to avoid two tasks for the
+        // same greeting type selecting the same unprocessed contacts concurrently.
         $queue = \Civi::queue(CRM_NyssGreeting_Utils::QUEUE_NAME, [
-            'type' => 'SqlParallel',
+            'type' => 'Sql',
             'reset' => FALSE,
             'error' => 'abort',
         ]);
 
         foreach (['postal_greeting', 'email_greeting', 'addressee'] as $g) {
-            $task = $queue->createItem(
-                new \CRM_Queue_Task(
-                    ['CRM_NyssGreeting_Utils', 'runTask'],
-                    // arguments
-                    [
-                        [
-                            'ct' => 'Individual',
-                            'gt' => $g,
-                        ]
-                    ],
-                    // title
-                    ts("Update Postal Greetings")
-                )
-            );
+            for ($i = 0; $i < $num_tasks; $i++) {
+                $queue->createItem(
+                    new \CRM_Queue_Task(
+                        ['CRM_NyssGreeting_Utils', 'runTask'],
+                        [['ct' => 'Individual', 'gt' => $g, 'limit' => $batch_size]],
+                        ts("Update %1 (batch %2 of %3)", [1 => $g, 2 => $i + 1, 3 => $num_tasks])
+                    )
+                );
+            }
         }
 
         $runner = new CRM_Queue_Runner([
