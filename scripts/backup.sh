@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 #
 # backup.sh - Back up Bluebird code and data to a local or non-local directory.
 #

@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 #
 # manageCiviConfig.sh - Wrapper around manageCiviConfig.php
 #

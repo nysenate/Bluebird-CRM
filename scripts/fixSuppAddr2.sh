@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 #
 # fixSuppAddr2.sh - Move e-mail addresses and/or phone numbers from
 #                   supplemental_address_2 into e-mail/phone tables.

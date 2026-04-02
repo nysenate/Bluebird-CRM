@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 #
 # copyInstance.sh - Copy one CRM database instance into another.
 #

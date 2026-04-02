@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 #
 # convertLogInnoDB.sh - Convert logging tables to compressed InnoDB.
 #

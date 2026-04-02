@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 #
 # manageAccumulator.sh - Perform operations on the Sendgrid Stats Accumulator
 #

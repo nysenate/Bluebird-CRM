@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 #
 # sageSetup.sh - The nyss_sage setup script
 #

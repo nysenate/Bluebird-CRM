@@ -47,7 +47,7 @@ $databases = array (
       'username' => $bbconfig['db.user'],
       'password' => $bbconfig['db.pass'],
       'host'     => $bbconfig['db.host'],
-      'port'     => '',
+      'port'     => $bbconfig['db.port'] ?? '',
       'prefix'   => '',
     ),
   ),
