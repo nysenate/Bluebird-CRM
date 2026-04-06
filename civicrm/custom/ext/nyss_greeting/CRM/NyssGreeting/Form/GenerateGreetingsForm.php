@@ -50,14 +50,6 @@ class CRM_NyssGreeting_Form_GenerateGreetingsForm extends CRM_Core_Form
         // Each task processes a small batch so individual AJAX requests stay fast.
         $batch_size = 500;
 
-        // Use total Individual count as a safe upper bound for tasks per greeting type.
-        // updateGreeting() returns early if there's nothing left to process, so
-        // slightly over-allocating tasks is harmless.
-        $total = (int) CRM_Core_DAO::singleValueQuery(
-            "SELECT COUNT(*) FROM civicrm_contact WHERE contact_type = 'Individual' AND is_deleted = 0"
-        );
-        $num_tasks = max(1, (int) ceil($total / $batch_size));
-
         // Use Sql (sequential) rather than SqlParallel to avoid two tasks for the
         // same greeting type selecting the same unprocessed contacts concurrently.
         $queue = \Civi::queue(CRM_NyssGreeting_Utils::QUEUE_NAME, [
@@ -66,16 +58,52 @@ class CRM_NyssGreeting_Form_GenerateGreetingsForm extends CRM_Core_Form
             'error' => 'abort',
         ]);
 
-        foreach (['postal_greeting', 'email_greeting', 'addressee'] as $g) {
-            for ($i = 0; $i < $num_tasks; $i++) {
-                $queue->createItem(
-                    new \CRM_Queue_Task(
-                        ['CRM_NyssGreeting_Utils', 'runTask'],
-                        [['ct' => 'Individual', 'gt' => $g, 'limit' => $batch_size]],
-                        ts("Update %1 (batch %2 of %3)", [1 => $g, 2 => $i + 1, 3 => $num_tasks])
-                    )
-                );
-            }
+        // Email Greeting Generation
+        $email_greeting_total = (int) CRM_Core_DAO::singleValueQuery(
+            "SELECT COUNT(*) FROM civicrm_contact WHERE contact_type = 'Individual' AND is_deleted = 0 AND email_greeting_id IS NULL"
+        );
+        $email_greeting_num_tasks = max(1, (int) ceil($email_greeting_total / $batch_size));
+
+        for ($i = 0; $i < $email_greeting_num_tasks; $i++) {
+            $queue->createItem(
+                new \CRM_Queue_Task(
+                    ['CRM_NyssGreeting_Utils', 'runTask'],
+                    [['ct' => 'Individual', 'gt' => 'email_greeting', 'limit' => $batch_size]],
+                    ts("Update %1 (batch %2 of %3)", [1 => 'email greetings', 2 => $i + 1, 3 => $email_greeting_num_tasks])
+                )
+            );
+        }
+
+        // Postal Greeting Generation
+        $postal_greeting_total = (int) CRM_Core_DAO::singleValueQuery(
+            "SELECT COUNT(*) FROM civicrm_contact WHERE contact_type = 'Individual' AND is_deleted = 0 AND postal_greeting_id IS NULL"
+        );
+        $postal_greeting_num_tasks = max(1, (int) ceil($postal_greeting_total / $batch_size));
+
+        for ($i = 0; $i < $postal_greeting_num_tasks; $i++) {
+            $queue->createItem(
+                new \CRM_Queue_Task(
+                    ['CRM_NyssGreeting_Utils', 'runTask'],
+                    [['ct' => 'Individual', 'gt' => 'postal_greeting', 'limit' => $batch_size]],
+                    ts("Update %1 (batch %2 of %3)", [1 => 'postal greetings', 2 => $i + 1, 3 => $postal_greeting_num_tasks])
+                )
+            );
+        }
+
+        // Addressee Generation
+        $addressee_greeting_total = (int) CRM_Core_DAO::singleValueQuery(
+            "SELECT COUNT(*) FROM civicrm_contact WHERE contact_type = 'Individual' AND is_deleted = 0 AND addressee_id IS NULL"
+        );
+        $addressee_greeting_num_tasks = max(1, (int) ceil($addressee_greeting_total / $batch_size));
+
+        for ($i = 0; $i < $addressee_greeting_num_tasks; $i++) {
+            $queue->createItem(
+                new \CRM_Queue_Task(
+                    ['CRM_NyssGreeting_Utils', 'runTask'],
+                    [['ct' => 'Individual', 'gt' => 'addressee', 'limit' => $batch_size]],
+                    ts("Update %1 (batch %2 of %3)", [1 => 'Addressees', 2 => $i + 1, 3 => $addressee_greeting_num_tasks])
+                )
+            );
         }
 
         $runner = new CRM_Queue_Runner([

@@ -552,6 +552,7 @@ function nyss_ioimport_form_submit($form, &$form_state) {
     if ($nyss_ioline%BATCHSIZE == 0) {
       nyss_flushInsertBuffer(); // Claude
       mysqli_query($nyss_conn, "COMMIT");
+      CRM_Core_DAO::singleValueQuery("SELECT 1"); // keepalive: prevents wait_timeout on CiviCRM's DAO connection
     }
 
     unset($l);
@@ -560,7 +561,8 @@ function nyss_ioimport_form_submit($form, &$form_state) {
   // Commit any stragglers!
   if ($nyss_ioline%BATCHSIZE!=0) {
     nyss_flushInsertBuffer(); // Claude
-    mysqli_query($nyss_conn, "COMMIT" );
+    mysqli_query($nyss_conn, "COMMIT");
+    CRM_Core_DAO::singleValueQuery("SELECT 1"); // keepalive: prevents wait_timeout on CiviCRM's DAO connection
   }
 
   //track processing time
