@@ -1,4 +1,4 @@
-<iframe src="{$previewUrl}" id="mailing-preview-wrapper" style="width: 100%;"></iframe>
+<iframe src="{$previewUrl}" id="mailing-preview-wrapper" style="width: 100%; height:100vh;"></iframe>
 
 {literal}
 <script type="text/javascript">
