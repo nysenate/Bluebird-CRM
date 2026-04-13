@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 #
 # fixSuppAddr1.sh - Set supplemental_address_1 to NULL wherever possible.
 #

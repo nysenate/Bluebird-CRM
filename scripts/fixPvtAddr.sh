@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 #
 # fixPvtAddr.sh - Remove "Pvt" from street_name and street_unit fields.
 #

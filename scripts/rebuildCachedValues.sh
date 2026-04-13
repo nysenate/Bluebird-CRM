@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 #
 # rebuildCachedValues.sh - Rebuild certain CiviCRM cached values.
 #

@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 #
 # manageSolrConfig.sh - Handle setup of SOLR integration
 #

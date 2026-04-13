@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 #
 # fixRecordTypes.sh - Set the record_type based on saved OMIS data
 #

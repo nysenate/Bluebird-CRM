@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 #
 # countDupEmails.sh - Provides statistics on number of duplicate e-mails in CRM.
 #

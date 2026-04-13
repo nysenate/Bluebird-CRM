@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 #
 # rsync_bluebird.sh - Synchronize the local repo with the production codebase
 #

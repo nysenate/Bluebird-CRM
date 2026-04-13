@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 #
 # install.sh - Install the new changelog summary/detail layer.
 #

@@ -1,0 +1,9 @@
+<?xml version="1.0"?>
+<menu>
+  <item>
+    <path>civicrm/nyss/generate-greetings</path>
+    <page_callback>CRM_NyssGreeting_Form_GenerateGreetingsForm</page_callback>
+    <title>GenerateGreetingsForm</title>
+    <access_arguments>access CiviCRM,import print production</access_arguments>
+  </item>
+</menu>

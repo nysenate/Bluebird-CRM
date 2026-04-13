@@ -257,7 +257,20 @@ function _buildManageMenu($manageID) {
           'active' => 1,
         ],
       ],
-      $manageID+2 => [
+      ...(CRM_Extension_System::singleton()->getMapper()->isActiveModule('nyss_greeting') ? [$manageID+2 => [
+        'attributes' => [
+            'label' => 'Generate Greetings',
+            'name' => 'Generate Greetings',
+            'url' => 'civicrm/nyss/generate-greetings',
+            'permission' => 'access CiviCRM,import print production',
+            'operator' => 'AND',
+            'separator' => 0,
+            'parentID' => $manageID,
+            'navID' => $manageID+2,
+            'active' => 1,
+        ],
+      ]] : []),
+      $manageID+3 => [
         'attributes' => [
           'label' => 'Site Maintenance',
           'name' => 'Site Maintenance',
@@ -270,7 +283,7 @@ function _buildManageMenu($manageID) {
           'active' => 1,
         ],
       ],
-      $manageID+3 => [
+      $manageID+4 => [
         'attributes' => [
           'label' => 'Backup/Restore',
           'name' => 'Backup/Restore',
@@ -283,7 +296,7 @@ function _buildManageMenu($manageID) {
           'active' => 1,
         ],
       ],
-      $manageID+4 => [
+      $manageID+5 => [
         'attributes' => [
           'label' => 'Load Sample Data',
           'name' => 'Load Sample Data',

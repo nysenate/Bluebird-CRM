@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 #
 # padAddrInfo.sh - Left-pad ZIP+4, School District, and County with zeroes
 #

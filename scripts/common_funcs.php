@@ -62,14 +62,18 @@ function connect_to_database($bbcfg, $dbtype, $driver = DRIVER_MYSQL)
   }
 
   if ($driver == DRIVER_MYSQL) {
-    $dsn = "mysql:host=${bbcfg['db.host']};dbname=$dbname";
+    $dsn = "mysql:host={$bbcfg['db.host']};dbname=$dbname";
   }
   else if ($driver == DRIVER_PGSQL) {
-    $dsn = "pgsql:host=${bbcfg['db.host']};dbname=$dbname";
+    $dsn = "pgsql:host={$bbcfg['db.host']};dbname=$dbname";
   }
   else {
     echo "Invalid database driver specified\n";
     return null;
+  }
+
+  if (!empty($bbcfg['db.port'])) {
+    $dsn .= ';port=' . $bbcfg['db.port'];
   }
 
   try {

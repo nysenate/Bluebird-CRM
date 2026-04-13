@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 #
 # fixOmisStreetNum.sh - Use OMIS saved data to split HOUSE field into
 #                       street_number and street_number_suffix

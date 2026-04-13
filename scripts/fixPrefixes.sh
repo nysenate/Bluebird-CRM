@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 #
 # fixPrefixes.sh - For records without a prefix, set prefix according to gender.
 #

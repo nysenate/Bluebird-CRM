@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 #
 # readConfig.sh - Read the Bluebird config file and return values
 #

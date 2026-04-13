@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 #
 # reportWebSignups.sh - Generate reports (typically scheduled weekly) for
 #                       nysenate.gov web signups and send to Senators.

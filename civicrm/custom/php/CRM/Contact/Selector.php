@@ -64,6 +64,7 @@ class CRM_Contact_Selector extends CRM_Core_Selector_Base implements CRM_Core_Se
     'do_not_phone',
     'do_not_sms',
     'do_not_mail',
+    'nick_name', // NYSS #17730 - include nick_name in search results
   ];
 
   /**
