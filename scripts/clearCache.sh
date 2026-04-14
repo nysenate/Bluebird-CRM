@@ -183,7 +183,7 @@ data_owner=`$readConfig --ig $instance data.rootdir.owner | cut -d: -f1` || data
 # templates_c/ directory when "drush cc css-js" is run.
 
 if [ $EUID -eq 0 -a $skip_root_check -ne 1 ]; then
-  echo "$prog: Running as root causes file permission problems; restarting as user apache"
+  echo "$prog: Running as root causes file permission problems; restarting as user $data_owner"
   exec su $data_owner -s /bin/bash -c "$0 $*"
 fi
 
