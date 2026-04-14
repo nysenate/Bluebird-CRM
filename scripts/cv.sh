@@ -7,6 +7,7 @@
 # Organization: New York State Senate
 # Date: 2025-06-04
 # Revised: 2025-06-04
+# Last revised: 2026-04-13 - Ensure 
 #
 
 prog=`basename $0`
@@ -25,7 +26,6 @@ if [ $# -lt 2 ]; then
 fi
 
 instance="$1"
-shift
 
 if ! $readConfig --instance $instance --quiet; then
   echo "$prog: Instance [$instance] not found in config" >&2
@@ -34,6 +34,16 @@ fi
 
 drupal_rootdir=`$readConfig --ig $instance drupal.rootdir` || drupal_rootdir="$DEFAULT_DRUPAL_ROOTDIR"
 base_domain=`$readConfig --ig $instance base.domain`
+data_owner=`$readConfig --ig $instance data.rootdir.owner | cut -d: -f1` || data_owner="apache"
+
+# Force this script to run as the apache user, rather than root.
+# This prevents root-owned cache files from being created in the
+# templates_c/ directory.
+
+if [ $EUID -eq 0 ]; then
+  echo "$prog: Running as root causes file permission problems; restarting as user $data_owner"
+  exec su $data_owner -s /bin/bash -c "$0 $*"
+fi
 
 if [ "$base_domain" ]; then
   full_uri="http://$instance.$base_domain/"
@@ -41,6 +51,7 @@ else
   full_uri="http://$instance/"
 fi
 
+shift
 CIVICRM_BOOT="Drupal:$drupal_rootdir" cv --url="$full_uri" "$@"
 
 exit $?
