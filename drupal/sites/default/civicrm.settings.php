@@ -117,29 +117,29 @@ $prefs = &$civicrm_setting['domain'];
 // dedupe_default_limit
 // preserve_activity_tab_filter
 // do_not_notify_assignees_for
+$prefs['acl_cache_refresh_mode'] = 1; //https://docs.civicrm.org/sysadmin/en/latest/setup/optimizations/#smart-group-and-acl-performance
 $prefs['advanced_search_options'] = SEP.implode(SEP, [1,2,3,4,5,6,10,13,16,17,18,19]).SEP;
-$prefs['contact_view_options'] = SEP.implode(SEP, [1,2,3,4,5,6,10,14,15]).SEP;
-$prefs['contact_edit_options'] = SEP.implode(SEP, [1,2,3,4,5,6,7,8,12,14,15,16,17]).SEP;
+$prefs['ajaxPopupsEnabled'] = 1;
 $prefs['checksum_timeout'] = 7;
 $prefs['communityMessagesUrl'] = false;
 $prefs['contact_autocomplete_options'] = SEP.implode(SEP, [1,2,3,4,5,8,9]).SEP;
+$prefs['contact_edit_options'] = SEP.implode(SEP, [1,2,3,4,5,6,7,8,12,14,15,16,17]).SEP;
 $prefs['contact_reference_options'] = SEP.implode(SEP, [1,2,3,4,5,8,9]).SEP;
+$prefs['contact_view_options'] = SEP.implode(SEP, [1,2,3,4,5,6,10,14,15]).SEP;
 $prefs['empoweredBy'] = false;
 $prefs['enable_components'] = [ 'CiviMail', 'CiviCase', 'CiviReport' ];
 $prefs['max_attachments'] = 5;
 $prefs['maxFileSize'] = 12;
+$prefs['menubar_color'] = '#ffffff';
 $prefs['recentItemsMaxCount'] = 10;
 $prefs['remote_profile_submissions'] = false;
 $prefs['securityAlert'] = false;
 $prefs['smart_group_cache_refresh_mode'] = 'deterministic';
 $prefs['syncCMSEmail'] = false;
-$prefs['wkhtmltopdfPath'] = get_config_value($bbcfg, 'wkhtmltopdf.path', '');
 $prefs['weasyprint_path'] = get_config_value($bbcfg, 'weasyprint.path', '');
+$prefs['wkhtmltopdfPath'] = get_config_value($bbcfg, 'wkhtmltopdf.path', '');
 $prefs['versionCheck'] = false;
-$prefs['checksumTimeout'] = 7;
-$prefs['menubar_color'] = '#ffffff';
-$prefs['ajaxPopupsEnabled'] = 1;
-$prefs['acl_cache_refresh_mode'] = 1; //https://docs.civicrm.org/sysadmin/en/latest/setup/optimizations/#smart-group-and-acl-performance
+
 $prefs['mailing_format'] = "{contact.addressee}
 {contact.job_title}
 {contact.current_employer}
