@@ -26,6 +26,8 @@
  * --interval (i) -- Number of hours or days to send the reminder before or after the Activity Date
  * --contacts (-c) -- Specify a list of contact IDs who will receive the notification.
  * The default behavior is to send the notification to the Assignee. This overrides that behavior to send to specific contacts.
+ * --repeat (-R) -- Enable repeating. The notification will be sent every week until 1 year after the Activity Date,
+ * or until the activity no longer matches the configured type and status conditions.
  *
  * Project: BluebirdCRM
  * Author: Nate Frank
@@ -51,8 +53,8 @@ class CRM_NYSS_Scripts_AddActivityNotification {
   const RECIPIENT_MANUAL       = 'manual';
   const RECIPIENT_GROUP        = 'group';
 
-  private $short_opts = 'dvt:l:s:j:ahi:c:g:';
-  private $long_opts = ['dryrun', 'verbose', 'types=', 'title=', 'statuses=', 'subject=', 'after', 'hours', 'interval=', 'contacts=', 'group='];
+  private $short_opts = 'dvt:l:s:j:ahi:c:g:R';
+  private $long_opts = ['dryrun', 'verbose', 'types=', 'title=', 'statuses=', 'subject=', 'after', 'hours', 'interval=', 'contacts=', 'group=', 'repeat'];
   private $user_opts = NULL;
   private ?string $site = NULL;
   private bool $dryrun = FALSE;
@@ -76,6 +78,7 @@ class CRM_NYSS_Scripts_AddActivityNotification {
   private string $start_date = self::START_DATE_ACTIVITY;
   private array $recipientContactIds = [];
   private ?int $recipientGroupId = NULL;
+  private bool $is_repeat = FALSE;
   private $bbcfg;
 
   public function run() {
@@ -131,7 +134,17 @@ class CRM_NYSS_Scripts_AddActivityNotification {
       'recipient_manual'      => empty($this->recipientContactIds) ? NULL : implode(',', $this->recipientContactIds),
       'group_id'              => $this->recipientGroupId,
       'is_active'             => TRUE,
+      'is_repeat'             => $this->is_repeat,
     ];
+
+    if ($this->is_repeat) {
+      $values['repetition_frequency_interval'] = 1;
+      $values['repetition_frequency_unit'] = 'week';
+      $values['end_frequency_interval'] = 1;
+      $values['end_frequency_unit'] = 'year';
+      $values['end_action'] = self::START_CONDITION_AFTER;
+      $values['end_date'] = self::START_DATE_ACTIVITY;
+    }
 
     if ($this->dryrun) {
       echo "\n[Dryrun] Would create ActionSchedule with the following values:\n";
@@ -382,10 +395,13 @@ class CRM_NYSS_Scripts_AddActivityNotification {
           'interval' => '[--interval=N]',
           'contacts' => '[--contacts=1,2,3,...]',
           'group'    => '[--group=N]',
+          'repeat'            => '[--repeat|-R]',
           default    => '[--' . $s . ']',
         };
       }, $this->long_opts));
       error_log("Usage: " . basename(__FILE__) . "  $stdusage  $usage\n");
+      error_log("  --repeat|-R: When set, the notification repeats every 1 week until 1 year after the Activity Date,\n");
+      error_log("               or until the activity no longer matches the configured type and status conditions.\n");
       exit(1);
     }
 
@@ -442,6 +458,8 @@ class CRM_NYSS_Scripts_AddActivityNotification {
       echo "Error: --contacts and --group are mutually exclusive.\n";
       exit(1);
     }
+
+    $this->is_repeat = !empty($this->user_opts['repeat']) || !empty($this->user_opts['R']);
 
     if (!empty($this->user_opts['subject'])) {
       $subject = trim($this->user_opts['subject']);
