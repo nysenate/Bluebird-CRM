@@ -204,7 +204,7 @@
   </tr>
   <tr>
     <td>
-      {$form.contact_source.label} {help id="contact_source" file="CRM/Contact/Form/Contact"}<br />
+      {$form.contact_source.label} {help title="{ts}Other Source{/ts}" id="id-other_source"}<br />
       {$form.contact_source.html}
     </td>
     <td>
