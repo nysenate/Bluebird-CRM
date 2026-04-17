@@ -3,6 +3,7 @@
 require_once 'search.civix.php';
 
 use Symfony\Component\DependencyInjection\ContainerBuilder;
+use CRM_NYSS_Search_ExtensionUtil as E;
 
 /**
  * Implements hook_civicrm_config().
@@ -101,6 +102,9 @@ function search_civicrm_buildForm($formName, &$form) {
       unset($contactTags->_options[0]);
       CRM_Core_Resources::singleton()->addScript('cj("select#contact_tags").prev("label").text("Issue Codes")');
     }
+    
+    // NYSS #18117
+    _search_civicrm_change_contact_source_label($form);
 
     //13256 adv search postal code field
     if ($form->elementExists('postal_code')) {
@@ -143,6 +147,14 @@ function search_civicrm_buildForm($formName, &$form) {
   }
 }
 
+#[CRM_NYSS_Attribute_IssueRef('18117')]
+function _search_civicrm_change_contact_source_label(&$form) {
+    // NYSS #18117
+    if ($form->elementExists('contact_source')) {
+        $contact_source =& $form->getElement('contact_source');
+        $contact_source->setLabel(E::ts("Other Source"));
+    }
+}
 function search_civicrm_validateForm($formName, &$fields, &$files, &$form, &$errors) {
   /*Civi::log()->debug('', [
     '$formName' => $formName,
