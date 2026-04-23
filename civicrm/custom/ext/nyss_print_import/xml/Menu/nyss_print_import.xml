@@ -1,0 +1,9 @@
+<?xml version="1.0"?>
+<menu>
+  <item>
+    <path>civicrm/nyss/print/data-import</path>
+    <page_callback>CRM_NYSS_PrintImport_Form_Import</page_callback>
+    <title>Import</title>
+    <access_arguments>access CiviCRM</access_arguments>
+  </item>
+</menu>
