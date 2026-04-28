@@ -219,12 +219,7 @@ class CRM_NYSS_PrintImport_Form_Import extends CRM_Core_Form {
       $aLocType = array_flip(CRM_NYSS_PrintImport_Utils::getCiviOptions('\Civi\Api4\Address', 'location_type_id'));
       $aStates  = array_flip(CRM_NYSS_PrintImport_Utils::getCiviOptions('\Civi\Api4\Address', 'state_province_id'));
 
-      // Read import file
-      if (!empty($values['servercsv'])) {
-          $filename = '/data/importData/'.$values['servercsv'];
-      } else {
-          $filename = $_FILES['csv']['tmp_name'];
-      }
+      $filename = $this->resolveImportFilePath($values);
 
       $fo = new CRM_NYSS_PrintImport_IOFileObject($filename, "\t");
       self::$nyss_iototallines = $fo->countLines();
@@ -344,7 +339,7 @@ class CRM_NYSS_PrintImport_Form_Import extends CRM_Core_Form {
           $contactMode = $importer->detectImportMode('civicrm_contact', $l);
           CRM_NYSS_PrintImport_Preparer::prepareContactType($l);
           CRM_NYSS_PrintImport_Preparer::prepareContactName($l, $prefixOptions, $suffixOptions);
-          $importer->importData('civicrm_contact', $l);
+          $importer->importData('civicrm_contact', $l, self::$nyss_ioline);
 
           // Track imported contact IDs for post-loop processing
           if (!$this->dryrun) {
@@ -364,26 +359,26 @@ class CRM_NYSS_PrintImport_Form_Import extends CRM_Core_Form {
               CRM_NYSS_PrintImport_Preparer::prepareAddressLocationType($l);
               CRM_NYSS_PrintImport_Preparer::prepareAddressCountry($l);
               CRM_NYSS_PrintImport_Preparer::prepareAddressPrimary($l);
-              $importer->importData('civicrm_address', $l);
+              $importer->importData('civicrm_address', $l, self::$nyss_ioline);
           }
 
           // civicrm_phone
           $l['phone_contact_id'] = $l['contact_id'];
           CRM_NYSS_PrintImport_Preparer::preparePhone($l);
-          $importer->importData('civicrm_phone', $l);
+          $importer->importData('civicrm_phone', $l, self::$nyss_ioline);
 
           // civicrm_email
           $l['email_contact_id'] = $l['contact_id'];
           CRM_NYSS_PrintImport_Preparer::prepareEmail($l);
-          $importer->importData('civicrm_email', $l);
+          $importer->importData('civicrm_email', $l, self::$nyss_ioline);
 
           // civicrm_value_constituent_information_1
           $l['constinfo_entity_id'] = $l['id'];
-          $importer->importData('civicrm_value_constituent_information_1', $l);
+          $importer->importData('civicrm_value_constituent_information_1', $l, self::$nyss_ioline);
 
           // civicrm_value_district_information_7
           $l['entity_id'] = $l['address_id'];
-          $importer->importData('civicrm_value_district_information_7', $l);
+          $importer->importData('civicrm_value_district_information_7', $l, self::$nyss_ioline);
 
           $post_processor->processCurrentEmployer($l);
           $post_processor->processNote($l);
@@ -545,6 +540,20 @@ class CRM_NYSS_PrintImport_Form_Import extends CRM_Core_Form {
       }
 
       return $dedupeRuleOptions;
+  }
+
+  /**
+   * Resolve the import file path from submitted form values.
+   * The return will either be a file on the server or an uploaded file.
+   *
+   * @param array $values exportValues() output
+   * @return string Absolute path to the import file.
+   */
+  protected function resolveImportFilePath(array $values): string {
+    if (!empty($values['servercsv'])) {
+      return '/data/importData/' . $values['servercsv'];
+    }
+    return $_FILES['csv']['tmp_name'];
   }
 
   /**

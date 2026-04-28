@@ -1,0 +1,6 @@
+id	first_name	middle_name	last_name	suffix_id	street_address	city	state_province_id	postal_code	postal_code_suffix	birth_date	gender_id	phone	town_52	ward_53	election_district_49	congressional_district_46	ny_senate_district_47	ny_assembly_district_48	school_district_54	county_50	keywords	geo_code_1	geo_code_2
+	E2EAlice		E2ESmith		100 Main St	Albany	NY	12210		19850615	F	518-555-0001	Albany	1	10	21	45	107	1	3	Newsletter|Environment	42.6526	-73.7562
+	E2EBob	J	E2EJones	Jr	200 Elm St	Troy	NY	12180		19721130	M		Lansingburgh	2	22	21	45	108	1	3		42.7284	-73.6918
+	E2ECarol		E2EWilliams		45 Oak Ave Apt 3B	Schenectady	NY	12304		19900322	F	518-555-0003	Schenectady	3	31	20	46	105	2	47	Petition1
+	E2EDave	R	E2EBrown		789 River Rd	Watertown	NY	13601				315-555-0004	Watertown	1	5	23	48	120	3	45		44.0979	-75.9107
+	E2EEve		E2EGarcia	Sr	12 Pine Lane	Buffalo	NY	14201		19650804	F		Buffalo	5	55	26	60	145	6	15	Volunteer|Newsletter	42.8865	-78.8784
