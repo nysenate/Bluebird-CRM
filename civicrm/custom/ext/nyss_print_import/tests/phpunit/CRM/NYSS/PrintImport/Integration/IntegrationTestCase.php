@@ -56,15 +56,16 @@ abstract class CRM_NYSS_PrintImport_Integration_IntegrationTestCase extends Test
   protected function tearDown(): void {
     // Raw SQL deletes run FIRST, before BAO touches civicrm_contact.
     //
-    // The civicrm_address_after_delete trigger does:
+    // Many block tables (address, email, phone, entity_tag, constituent_info,
+    // etc.) have AFTER DELETE triggers that do:
     //   UPDATE civicrm_contact SET modified_date = ... WHERE id = OLD.contact_id
-    // If BAO's deleteContact() runs first it puts civicrm_contact in a
-    // modified state; any subsequent address DELETE then fires the trigger
-    // which tries to UPDATE civicrm_contact again — MySQL rejects that with
+    // If BAO's deleteContact() modifies civicrm_contact first and then removes
+    // these rows as part of the same operation, MySQL rejects the trigger with
     // "Can't update table already used by statement that invoked trigger".
-    // Deleting addresses via raw SQL while the contact still exists avoids
-    // the conflict entirely. The ON DELETE CASCADE on district_information_7
-    // fires here too, so tracked district info rows are cleaned up for free.
+    // Deleting all such rows via separate raw SQL statements while the contact
+    // row is still untouched lets each trigger's UPDATE complete cleanly.
+    // The ON DELETE CASCADE on civicrm_value_district_information_7 fires when
+    // addresses are deleted, so district info rows are removed for free.
     foreach ($this->rowsToDelete as $table => $ids) {
       if (empty($ids)) {
         continue;
@@ -73,24 +74,34 @@ abstract class CRM_NYSS_PrintImport_Integration_IntegrationTestCase extends Test
       mysqli_query(static::$conn, "DELETE FROM {$table} WHERE id IN ({$safe})");
     }
 
-    // Delete block records (email, phone) for each fixture contact via raw SQL
-    // before BAO runs. The civicrm_email_after_delete and _phone_after_delete
-    // triggers also do UPDATE civicrm_contact SET modified_date = ..., so the
-    // same trigger conflict applies as with addresses.
+    // Delete block records for each fixture contact via raw SQL before BAO runs.
+    // Every table below has an AFTER DELETE trigger that does:
+    //   UPDATE civicrm_contact SET modified_date = CURRENT_TIMESTAMP WHERE id = ...
+    // When BAO's deleteContact() modifies civicrm_contact and then tries to
+    // remove these rows as part of the same operation, MySQL rejects the trigger
+    // with "Can't update table already used by statement that invoked trigger".
+    // Deleting them first — as separate statements while the contact row is still
+    // untouched — lets each trigger's UPDATE complete cleanly before BAO runs.
+    // Rows already removed in step 1 are a no-op here.
     foreach ($this->contactsToDelete as $contactId) {
       $cid = (int) $contactId;
+      // civicrm_address: ON DELETE CASCADE removes district_information_7 rows.
+      mysqli_query(static::$conn, "DELETE FROM civicrm_address WHERE contact_id = {$cid}");
       mysqli_query(static::$conn, "DELETE FROM civicrm_email WHERE contact_id = {$cid}");
       mysqli_query(static::$conn, "DELETE FROM civicrm_phone WHERE contact_id = {$cid}");
+      mysqli_query(static::$conn, "DELETE FROM civicrm_entity_tag WHERE entity_table = 'civicrm_contact' AND entity_id = {$cid}");
+      mysqli_query(static::$conn, "DELETE FROM civicrm_value_constituent_information_1 WHERE entity_id = {$cid}");
     }
 
-    // Delete fixture contacts after their block records are gone.
+    // Hard-delete the contacts directly. All block records with AFTER DELETE
+    // triggers have been removed above, so no trigger conflict occurs. The
+    // civicrm_contact_after_delete trigger only logs to the audit table and
+    // deletes from shadow_contact — it does not UPDATE civicrm_contact.
+    // We use raw SQL rather than BAO::deleteContact() because BAO may require
+    // a CiviCRM session context that is not guaranteed in integration tests.
     foreach ($this->contactsToDelete as $contactId) {
-      try {
-        CRM_Contact_BAO_Contact::deleteContact($contactId, FALSE, TRUE);
-      }
-      catch (Exception $e) {
-        // Best-effort; if the contact was already deleted by the test, ignore.
-      }
+      $cid = (int) $contactId;
+      mysqli_query(static::$conn, "DELETE FROM civicrm_contact WHERE id = {$cid}");
     }
 
     $this->contactsToDelete = [];
@@ -119,6 +130,18 @@ abstract class CRM_NYSS_PrintImport_Integration_IntegrationTestCase extends Test
     $id     = (int) $result['id'];
     $this->contactsToDelete[] = $id;
     return $id;
+  }
+
+  /**
+   * Register a contact ID for deletion in tearDown().
+   *
+   * Use this when a contact was created outside of createContact() — e.g. by
+   * the import pipeline itself — and still needs to be cleaned up.
+   *
+   * @param int $contactId
+   */
+  protected function registerContactForCleanup(int $contactId): void {
+    $this->contactsToDelete[] = $contactId;
   }
 
   /**

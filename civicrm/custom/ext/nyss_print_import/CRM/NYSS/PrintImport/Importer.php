@@ -94,7 +94,7 @@ class CRM_NYSS_PrintImport_Importer {
       return FALSE;
     }
 
-    $deleted = CRM_Contact_BAO_Contact::deleteContact($l['id'], FALSE, TRUE);
+    $deleted = CRM_Contact_BAO_Contact::deleteContact((int) $l['id'], FALSE, TRUE, FALSE);
     if ($deleted) {
       CRM_NYSS_PrintImport_Utils::out('debug',
         "deleted contact id {$l['id']} at line {$line_num}.", FALSE);
