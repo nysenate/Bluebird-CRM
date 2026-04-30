@@ -1737,7 +1737,7 @@ function _mail_get_browserview_clause($bbcfg) {
 
 
 function _mail_get_optout_clause($bbcfg, $cid, $qid) {
-  $cs = CRM_Contact_BAO_Contact_Utils::generateChecksum($cid);
+  $cs = CRM_Contact_BAO_Contact_Utils::generateChecksum($cid, CRM_Utils_Time::time(),\Civi::settings()->get('nyssUnsubLinkTimeout'));
   $url = "{$bbcfg['public.url.base']}/{$bbcfg['envname']}/{$bbcfg['shortname']}/subscription/manage/$qid/$cs";
 
   $text = "To manage your email subscription settings or to unsubscribe, go to $url";
