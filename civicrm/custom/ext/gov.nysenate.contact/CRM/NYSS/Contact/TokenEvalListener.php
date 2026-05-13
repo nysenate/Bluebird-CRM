@@ -42,7 +42,7 @@ class CRM_NYSS_Contact_TokenEvalListener {
     #[CRM_NYSS_Attribute_IssueRef('17730')]
     private static function add_nick_name(TokenRow $row): void
     {
-        $nick_name = $row?->tokenProcessor?->rowContexts[$row->tokenRow]['contact']['nick_name'] ?? NULL;
+        $nick_name = $row?->tokenProcessor?->rowContexts[$row->tokenRow]['contact']['nick_name'] ?? '';
         $row->tokens('contact', 'nick_name', $nick_name);
     }
 
