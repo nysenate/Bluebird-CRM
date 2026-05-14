@@ -1,0 +1,57 @@
+@import "tailwindcss";
+
+.af-layout-cols {
+    @apply flex flex-row;
+}
+
+.nyss-caseload-dash-intro-section {
+    @apply my-2 mb-6 p-4 pt-1 bg-white;
+}
+afsearch-n-y-s-s-caseload-overview-totals  {
+    @apply pb-4;
+    div[api-entities="['SK_NyssCaseloadDetailsStats']"] {
+        crm-search-display-table {
+            @apply flex flex-col grow;
+            div.crm-search-display-table {
+                @apply flex grow mx-1 lg:mx-3;
+                table.nyss-caseload-dash {
+                    @apply shadow-md flex flex-col rounded-lg;
+                    tr {
+                        @apply block;
+                    }
+                    thead tr th {
+                        @apply !bg-transparent !text-zinc-600 text-center !py-2 !block xl:h-auto sm:h-15;
+                        span.crm-search-display-table-column-label {
+                            @apply !font-semibold antialiased;
+                        }
+                    }
+                    tbody tr td  {
+                        @apply !py-2 text-3xl !font-medium w-full !block;
+                        a {
+                            @apply !underline !font-medium antialiased text-center;
+                        }
+                        span.crm-search-field-value {
+                            @apply !font-medium;
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    div[af-fieldset] {
+        @apply p-2;
+        h2 {
+            @apply !my-1;
+        }
+    }
+}
+
+afsearch-n-y-s-s-caseload-overview-details  {
+    div[af-fieldset] {
+        @apply p-2;
+        h2 {
+            @apply !my-1;
+        }
+    }
+}
