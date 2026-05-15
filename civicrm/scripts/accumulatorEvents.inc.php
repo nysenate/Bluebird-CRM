@@ -57,8 +57,9 @@ function archive_events($dbcon, $events, $status, $bbcfg)
     list($event, $queue_event) = array_values($pair);
     $mailing_id = $event['mailing_id'];
     $category = mysqli_real_escape_string($dbcon, $event['category']);
+    $email = mysqli_real_escape_string($dbcon, $event['email']);
     $message_id = "returnMessage($instance_id, $mailing_id, '$category')";
-    $archive[] = "($event_id, $message_id, {$event['job_id']}, {$event['queue_id']}, '{$event['event_type']}', '$status', '{$event['email']}', {$event['is_test']}, '{$event['dt_created']}', '{$event['dt_received']}', NOW())";
+    $archive[] = "($event_id, $message_id, {$event['job_id']}, {$event['queue_id']}, '{$event['event_type']}', '$status', '$email', {$event['is_test']}, '{$event['dt_created']}', '{$event['dt_received']}', NOW())";
   }
 
   // Do the transaction
