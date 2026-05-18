@@ -1,19 +1,22 @@
 <?php
 
+//https://www.php-imap.com/
+use Webklex\PHPIMAP\IMAP;
+
 class CRM_NYSS_IMAP_Message
 {
   const MAX_SUBJ_LEN = 255;
 
   private static $_body_type_labels = [
-    TYPETEXT => 'text',
-    TYPEMULTIPART => 'multipart',
-    TYPEMESSAGE => 'message',
-    TYPEAPPLICATION => 'application',
-    TYPEAUDIO => 'audio',
-    TYPEIMAGE => 'image',
-    TYPEVIDEO => 'video',
-    TYPEMODEL => 'model',
-    TYPEOTHER => 'other'];
+    IMAP::TYPETEXT => 'text',
+    IMAP::TYPEMULTIPART => 'multipart',
+    IMAP::TYPEMESSAGE => 'message',
+    IMAP::TYPEAPPLICATION => 'application',
+    IMAP::TYPEAUDIO => 'audio',
+    IMAP::TYPEIMAGE => 'image',
+    IMAP::TYPEVIDEO => 'video',
+    IMAP::TYPEMODEL => 'model',
+    IMAP::TYPEOTHER => 'other'];
 
 
   /* Credit to http://www.regular-expressions.info/email.html
@@ -440,7 +443,7 @@ class CRM_NYSS_IMAP_Message
     foreach ($msgParts as $part) {
       $flatParts[$prefix.$index] = $part;
       if (isset($part->parts)) {
-        if ($part->type == TYPEMESSAGE) {
+        if ($part->type == IMAP::TYPEMESSAGE) {
           $flatParts = $this->_flattenParts($part->parts, $flatParts, $prefix.$index.'.', 0, false);
         }
         elseif ($fullPrefix) {
@@ -491,7 +494,7 @@ class CRM_NYSS_IMAP_Message
   // body type, then load the content, decode it, and add it to the _content
   // array using the appropriate label.
   // By default, only grab TEXT body parts, such as text/plain and text/html.
-  private function _loadContent($bodyType = TYPETEXT)
+  private function _loadContent($bodyType = IMAP::TYPETEXT)
   {
     $label = $this->getBodyTypeLabel($bodyType);
     $this->_content[$label] = array();
@@ -519,7 +522,7 @@ class CRM_NYSS_IMAP_Message
 
   private function _loadTextContent()
   {
-    return $this->_loadContent(TYPETEXT);
+    return $this->_loadContent(IMAP::TYPETEXT);
   } // _loadTextContent()
 
 
