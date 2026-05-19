@@ -13,14 +13,9 @@
         <p>Each total in Caseload Overview can be clicked to reveal more details about the cases in the District-wide Details section. This section can be expanded or collapsed as desired.</p>
     {/ts}
 {/htxt}
-{htxt id="id-dashboard_intro-title"}
-    {ts}Caseload Dashboard{/ts}
-{/htxt}
 {htxt id="id-overview_details"}
     {ts}
-        <p>Each total in Caseload Overview can be clicked to reveal more details about the cases in the District-wide Details section. This section can be expanded or collapsed as desired by clicking the toggle-able heading.</p>
+        <p>Each total in the caseload overview can be clicked to reveal more details about the cases included in the total. This detailed information appears in the District-wide Details section.</p>
+        <p>Tip - This section can be expanded or collapsed as desired by clicking the toggle-able heading.</p>
     {/ts}
-{/htxt}
-{htxt id="id-overview_details-title"}
-    {ts}District-wide Details{/ts}
 {/htxt}
