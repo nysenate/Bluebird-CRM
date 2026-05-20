@@ -339,8 +339,26 @@ function process_dropped_events($events)
 
 function get_queue_event($queue_id)
 {
-  $result = CRM_Core_DAO::executeQuery(
-    "SELECT * FROM civicrm_mailing_event_queue WHERE id=$queue_id");
+  static $cache = [];
 
-  return ($result && $result->fetch()) ? (array) $result : null;
+  // return from cache, if avaialble, and avoid the database call.
+  if (array_key_exists($queue_id, $cache)) {
+    return $cache[$queue_id];
+  }
+
+  $result = CRM_Core_DAO::executeQuery(
+    "SELECT * FROM civicrm_mailing_event_queue WHERE id = %1",
+    [1 => [$queue_id, 'Positive']]);
+
+  $value = ($result && $result->fetch()) ? (array) $result : null;
+
+  // prevent cache from growing greater than x entries.
+  if (count($cache) >= 1000) {
+    array_shift($cache);
+  }
+
+  // add value to cache
+  $cache[$queue_id] = $value;
+
+  return $value;
 } // get_queue_event()
