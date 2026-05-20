@@ -64,6 +64,10 @@ $batch_size = (int)($optlist['maxbatch'] ?? 1);
 
 // Establish a connection to the accumulator
 $dbcon = get_accumulator_connection($bbconfig);
+if (!$dbcon) {
+    // Error already printed to log in get_accumulator_connection. Can't do much else without a connection. So, we leave the building.
+    exit(1);
+}
 
 $event_types = implode(',', array_keys($event_map));
 
