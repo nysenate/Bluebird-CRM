@@ -98,9 +98,14 @@ foreach ($event_map as $event_type => $cb_func) {
     if ($row = mysqli_fetch_assoc($result)) {
       $qid = $row['queue_id'];
       if (!($queue = get_queue_event($qid))) {
-        // Log this as a failure! TODO: Mark as failure for archival as well.
         bbscript_log(LL::ERROR, "Queue Id $qid not found in {$bbconfig['servername']} (event_type: {$event_type})");
         $errors[$row['event_id']] = [$row, []];
+        // process the current batch of errors (events with invalid Queue IDs)
+        if (count($errors) >= $batch_size) {
+          bbscript_log(LL::ERROR, count($errors)." events failed queue lookup.");
+          archive_events($dbcon, $errors, 'FAILED', $bbconfig);
+          $errors = [];
+        }
         continue;
       }
       $batch[$row['event_id']] = ['event' => $row, 'queue' => $queue];
@@ -110,37 +115,42 @@ foreach ($event_map as $event_type => $cb_func) {
     }
 
     //When we've reached the batch limit or the end of the rows
-    if ((count($batch) >= $batch_size || !$in_process)) {
-      list($archived, $skipped, $failed) = [[], [], []];
-      // Record the successful processing of the batch in the database
-      // This isn't a great way to do it (what if the event processor
-      // encounters an error after the first one?) but CiviCRM doesn't
-      // give you a chance to recover from errors so...we'll do this.
-      if (!empty($batch)) {
+    if (count($batch) >= $batch_size || !$in_process) {
+      // this transaction should rollback bluebird database changes when archival process fails
+      $tx = new CRM_Core_Transaction();
+      try {
         list($archived, $skipped, $failed) = call_user_func($cb_func, $batch);
-      }
-      $failed += $errors;
 
-      if (!empty($failed) && count($failed)) {
-        bbscript_log(LL::ERROR, count($failed)." events failed processing.");
-        archive_events($dbcon, $failed, 'FAILED', $bbconfig);
+        if (count($archived)) {
+          bbscript_log(LL::INFO, count($archived)." events were archived.");
+          archive_events($dbcon, $archived, 'ARCHIVED', $bbconfig);
+        }
+        if (count($skipped)) {
+          bbscript_log(LL::INFO, count($skipped)." events were skipped.");
+          archive_events($dbcon, $skipped, 'SKIPPED', $bbconfig);
+        }
+        if (count($failed)) {
+          bbscript_log(LL::ERROR, count($failed)." events failed processing.");
+          archive_events($dbcon, $failed, 'FAILED', $bbconfig);
+        }
       }
-
-      if (count($archived)) {
-        bbscript_log(LL::INFO, count($archived)." events were archived.");
-        archive_events($dbcon, $archived, 'ARCHIVED', $bbconfig);
+      catch (Exception $e) {
+        $tx->rollback();
+        bbscript_log(LL::ERROR, "Batch failed, rolling back CiviCRM writes: ".$e->getMessage());
       }
-
-      if (count($skipped)) {
-        bbscript_log(LL::INFO, count($skipped)." events were skipped.");
-        archive_events($dbcon, $skipped, 'SKIPPED', $bbconfig);
-      }
-
+      // __destruct() handles the commit
+      unset($tx);
       //Reset for the next batch
       $batch = [];
-      $errors = [];
     }
   }
+
+  if (!empty($errors)) {
+    // archive any remaining events with invalid Queue IDs
+    bbscript_log(LL::ERROR, count($errors)." events failed queue lookup.");
+    archive_events($dbcon, $errors, 'FAILED', $bbconfig);
+  }
+
   mysqli_free_result($result);
 }
 

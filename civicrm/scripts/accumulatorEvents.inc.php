@@ -62,13 +62,21 @@ function archive_events($dbcon, $events, $status, $bbcfg)
     $archive[] = "($event_id, $message_id, {$event['job_id']}, {$event['queue_id']}, '{$event['event_type']}', '$status', '$email', {$event['is_test']}, '{$event['dt_created']}', '{$event['dt_received']}', NOW())";
   }
 
-  // Do the transaction
-  bb_mysql_query('BEGIN', $dbcon, true);
-  bb_mysql_query('DELETE FROM incoming WHERE event_id IN ('.implode(',', array_keys($events)).')', $dbcon, true);
-  bb_mysql_query('INSERT INTO archive
-              (event_id, message_id, job_id, queue_id, event_type, result, email, is_test, dt_created, dt_received, dt_processed)
-              VALUES '.implode(',', $archive), $dbcon, true);
-  bb_mysql_query('COMMIT', $dbcon, true);
+  mysqli_begin_transaction($dbcon);
+  try {
+    $deleted = bb_mysql_query('DELETE FROM incoming WHERE event_id IN ('.implode(',', array_keys($events)).')', $dbcon);
+    $inserted = $deleted && bb_mysql_query('INSERT INTO archive
+                (event_id, message_id, job_id, queue_id, event_type, result, email, is_test, dt_created, dt_received, dt_processed)
+                VALUES '.implode(',', $archive), $dbcon);
+    if (!$deleted || !$inserted) {
+      throw new RuntimeException("Failed to archive $status events: ".mysqli_error($dbcon));
+    }
+    mysqli_commit($dbcon);
+  }
+  catch (Exception $e) {
+    mysqli_rollback($dbcon);
+    throw $e;
+  }
 } // archive_events()
 
 
