@@ -136,7 +136,7 @@ class CRM_NYSS_IMAP_Message
   * This function attempts to find various sender addresses in the email.
   * It returns an array with 3 levels of addresses: primary, secondary, other
   * The "primary" element contains an array of one element, and that element
-  * is the official sender of the email, based on the headers.
+  * is the official sender of the email, based on the SMTP headers.
   * The "secondary" element contains any email addresses in the body of the
   * message that were extracted from apparent "From:" headers.  This should
   * include the email address of the original sender if the message is a
@@ -157,7 +157,7 @@ class CRM_NYSS_IMAP_Message
 
     foreach ($this->getContent() as $content) {
       $matches = [];
-      if (preg_match_all('/(^|\n)([\ \t]*([>*][\ \t]*)?)?(From|Reply-To):[\*\s]*(("(\\\"|[^"])*")?[^@]{2,100}@(.*))/i', $content, $matches)) {
+      if (preg_match_all('/(^|\n)([\ \t]*([>*][\ \t]*)?)?(From|Sender|Reply-To):[\*\s]*(("(\\\"|[^"])*")?[^@]{2,100}@(.*))/i', $content, $matches)) {
         foreach ($matches[5] as $k => $v) {
           $v = str_replace(["\n","\r"], [' ',''], $v);
 
@@ -165,12 +165,12 @@ class CRM_NYSS_IMAP_Message
             $v = $this->_resolveLDAPAddress($v);
           }
 
-          $ta = imap_rfc822_parse_adrlist($v, '');
+          $ta = $this->_rfc2822_parse_first_address($v, '');
 
-          if (count($ta) && $ta[0]->host && $ta[0]->mailbox && $ta[0]->host != '.SYNTAX-ERROR.') {
+          if ($ta && $ta->email) {
             $newta = [
-              'address' => $ta[0]->mailbox.'@'.$ta[0]->host,
-              'name' => $ta[0]->personal ?? NULL,
+              'address' => $ta->email,
+              'name' => $ta->name ?? NULL,
             ];
             switch (strtoupper($matches[2][$k])) {
               case 'REPLY TO':
@@ -244,28 +244,28 @@ class CRM_NYSS_IMAP_Message
     ** The tracked_headers array needs to include only the mangled versions of
     ** desired headers - any still adhering to spec will be picked up normally
     */
-    $tracked_headers = array('reply to', 'sent by');
+    $tracked_headers = ['reply to', 'sent by'];
     $tracked_headers_regex = '('.implode('|',$tracked_headers).'|[!-9;-~]+)';
     // get the primary content
     $content = $this->_getPrimaryContent();
     // initialize loop variables
-    $headers = array();
+    $headers = [];
     $header_block = 0;
     $in_header = false;
     $pattern = '([!-9;-~]+|'.implode('|',$tracked_headers).')';
     // read each line of the content and parse for a header
     foreach (explode("\n", $content) as $k => $v) {
       $trimv = trim($v);
-      $matches = array();
+      $matches = [];
       if (!$trimv) {
         $in_header = false;
       }
       elseif (preg_match('/^'.$tracked_headers_regex.':[[:space:]]*(.*)$/i', $trimv, $matches)) {
         if (!$in_header) {
           $in_header = true;
-          $headers[++$header_block] = array();
+          $headers[++$header_block] = [];
         }
-        $headers[$header_block][] = array(1 => $matches[1], 2 => $matches[2]);
+        $headers[$header_block][] = [1 => $matches[1], 2 => $matches[2]];
       }
       elseif ($in_header) {
         $headers[$header_block][count($headers[$header_block])-1][2].= " $trimv";
@@ -283,9 +283,7 @@ class CRM_NYSS_IMAP_Message
     if (strpos($fsubj, '?UTF-8?') !== false) {
       $fsubj = mb_convert_encoding(mb_decode_mimeheader($fsubj), 'HTML-ENTITIES', 'UTF-8');
       //convert some special characters manually
-      $search = array('&rsquo;');
-      $replace = array("'");
-      $fsubj = str_replace($search, $replace, $fsubj);
+      $fsubj = str_replace(['&rsquo;'], ["'"], $fsubj);
     }
 
     $fl_r = $headers->Recent ? $headers->Recent : '-';
@@ -400,7 +398,7 @@ class CRM_NYSS_IMAP_Message
     // See NYSS #5748 for more details.
 
     // if o= is appended to the end of the email address remove it
-    $patterns = array(
+    $patterns = [
       '#/senate@senate#i',   /* standardize reference to senate */
       /* SBB DEVCHANGE: This next line was in the original code, but I have found that removing
          the /CENTER part of the name makes the search fail.  Keep as standard, or remove?
@@ -410,20 +408,20 @@ class CRM_NYSS_IMAP_Message
       '/mailto|\(|\)|:/i',   /* remove link remnants, parenthesis */
       '/"|\'/i',             /* remove quotes */
       '/\[|\]/i',            /* remove square brackets */
-    );
-    $replace = array('/senate', '/senate');
+    ];
+    $replace = ['/senate', '/senate'];
     $str = preg_replace($patterns, $replace, trim($addr));
     $ret = '';
     if (strpos($str, '/senate') !== false) {
       $search = false;
       $ldapcon = ldap_connect("senmail.senate.state.ny.us", 389);
       if ($ldapcon) {
-        $retrieve = array('sn', 'givenname', 'mail');
+        $retrieve = ['sn', 'givenname', 'mail'];
         $search = ldap_search($ldapcon, 'o=senate', "(displayname=$str)", $retrieve);
       } else {
         error_log("Failed to create connection to LDAP server (testing msg#={$this->_msgnum}, addr=$str)");
       }
-      $info = ($search === false) ? array('count'=>0) : ldap_get_entries($ldapcon, $search);
+      $info = ($search === false) ? ['count'=>0] : ldap_get_entries($ldapcon, $search);
       if (array_key_exists(0,$info)) {
         $name = $info[0]['givenname'][0].' '.$info[0]['sn'][0];
         $ret = "$name <{$info[0]['mail'][0]}>";
@@ -437,7 +435,7 @@ class CRM_NYSS_IMAP_Message
 
   // Recursive function that flattens out the multipart hierarchy and
   // names the keys using the standard IMAP part number.
-  private function _flattenParts($msgParts, $flatParts = array(), $prefix = '',
+  private function _flattenParts($msgParts, $flatParts = [], $prefix = '',
                                  $index = 1, $fullPrefix = true)
   {
     foreach ($msgParts as $part) {
@@ -497,7 +495,7 @@ class CRM_NYSS_IMAP_Message
   private function _loadContent($bodyType = IMAP::TYPETEXT)
   {
     $label = $this->getBodyTypeLabel($bodyType);
-    $this->_content[$label] = array();
+    $this->_content[$label] = [];
 
     if ($this->isMultipart()) {
       foreach ($this->getParts() as $partnum => $part) {
@@ -541,4 +539,117 @@ class CRM_NYSS_IMAP_Message
     }
     return $fname;
   } // _getFilename()
+
+
+
+  /**
+   * Parse the first RFC 2822 address from a header value string.
+   *
+   * Handles:
+   *  - Single address:           jane@example.com
+   *  - Display name + angle:     John Doe <john@example.com>
+   *  - Quoted display name:      "Doe, John" <john@example.com>
+   *  - Encoded words:            =?UTF-8?Q?John_D=C3=B6e?= <john@example.com>
+   *  - Trailing comments:        john@example.com (John Doe)
+   *
+   * @param string $addressList  Raw RFC 2822 address header value
+   * @return object|null         Object with ->name and ->email,
+   *                             or null if unparseable
+   */
+  function _rfc2822_parse_first_address(string $addressList): ?object
+  {
+    // Unfold any RFC 2822 header folding (CRLF + whitespace -> single space)
+    $addressList = preg_replace('/\r\n[ \t]+/', ' ', $addressList);
+
+    // Take only the first address by splitting on comma, respecting
+    // quoted strings
+    $addr = trim(str_getcsv($addressList, ',', '"')[0] ?? '');
+
+    // Strip any trailing comment:  addr (comment)
+    // NOTE: Comments can actually appear anywhere, so this is imperfect.
+    $addr = preg_replace('/\s*\([^)]*\)\s*$/', '', $addr);
+
+    if ($addr === '') {
+      return null;
+    }
+
+    $name = $email = '';
+
+    $start = strrpos($addr, '<');
+    if ($start !== false) {
+      // name-addr form:  [display-name] <local@domain>
+      $end = strrpos($addr, '>');
+
+      if ($end !== false && $end > $start) {
+        $name  = trim(substr($addr, 0, $start));
+        $email = trim(substr($addr, $start + 1, $end - $start - 1));
+
+        // Remove any folding whitespace inside the angle brackets
+        $email = preg_replace('/\s+/', '', $email);
+
+        if ($name !== '') {
+          // Strip surrounding double-quotes from display name
+          if ($name[0] === '"' && $name[-1] === '"') {
+            $name = stripslashes(substr($name, 1, -1));
+          }
+
+          // Decode RFC 2047 encoded words in display name
+          if (str_contains($name, '=?')) {
+            $name = $this->_decode_mime_words($name);
+          }
+        }
+      }
+      else {
+        return null;
+      }
+    }
+    else {
+      // addr-spec only - quoted or unquoted local-part
+      if (str_contains($addr, '@')) {
+        $email = $addr;
+      }
+    }
+
+    if ($email === '') {
+      return null;
+    }
+
+    $obj = new stdClass();
+    $obj->name  = $name;
+    $obj->email = $email;
+
+    return $obj;
+  } // _rfc2822_parse_first_address()
+
+
+  /**
+   * Decode RFC 2047 encoded words:
+   *   =?charset?B?base64text?=   (Base64)
+   *   =?charset?Q?qp_text?=    (Quoted-Printable)
+   */
+  function _decode_mime_words(string $str): string
+  {
+    return preg_replace_callback(
+      '/=\?([^?]+)\?([BQbq])\?([^?]*)\?=/',
+      function (array $m): string {
+        $charset  = $m[1];
+        $encoding = strtoupper($m[2]);
+        $text   = $m[3];
+
+        $decoded = match ($encoding) {
+          'B' => base64_decode($text),
+          'Q' => quoted_printable_decode(str_replace('_', ' ', $text)),
+          default => $text,
+        };
+
+        if (strtolower($charset) === 'utf-8') {
+          return $decoded;
+        }
+
+        return mb_convert_encoding($decoded, 'UTF-8', $charset);
+      },
+      $str
+    );
+  } // _decode_mime_words()
+
 }
