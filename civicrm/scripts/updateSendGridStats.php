@@ -39,13 +39,12 @@ if (!empty($optlist['log-level'])) {
 // Creating the CRM_Core_Config class bootstraps the rest
 require_once 'CRM/Core/Config.php';
 require_once 'CRM/Core/DAO.php';
-require_once 'CRM/Utils/Array.php';
 
 $config = CRM_Core_Config::singleton();
 $bbconfig = get_bluebird_instance_config();
 
 // Allow filtering of the events to be processed on the commandline
-if (CRM_Utils_Array::value('all', $optlist, false) === false) {
+if (($optlist['all'] ?? FALSE) === FALSE) {
   foreach ($event_map as $key => $value) {
     if (!$optlist[$key]) {
       unset($event_map[$key]);
@@ -55,13 +54,13 @@ if (CRM_Utils_Array::value('all', $optlist, false) === false) {
 
 // Limits can be useful for putting a cap on the amount of work done in any
 // one run of the cron job
-$limit = (int)CRM_Utils_Array::value('limit', $optlist, false);
+$limit = (int)($optlist['limit'] ?? 0);
 
 // Batches can be useful for reducing the back and forth queries performed here.
 // Unless batch inserts are defined on the CiviCRM level though using batches is
 // risky because in theory a script could be interrupted with no record of what
 // was processed
-$batch_size = (int)CRM_Utils_Array::value('maxbatch', $optlist, 1);
+$batch_size = (int)($optlist['maxbatch'] ?? 1);
 
 // Establish a connection to the accumulator
 $dbcon = get_accumulator_connection($bbconfig);
@@ -172,12 +171,11 @@ function process_delivered_events($events)
 
 function process_open_events($events)
 {
-  require_once 'CRM/Mailing/Event/BAO/Opened.php';
   $successes = [];
   $errors = [];
   foreach ($events as $event_id => $pair) {
     list($event, $queue_event) = array_values($pair);
-    if (CRM_Mailing_Event_BAO_Opened::open($queue_event['id'])) {
+    if (CRM_Mailing_Event_BAO_MailingEventOpened::open($queue_event['id'])) {
        $successes[$event_id] = $pair;
     }
     else {
@@ -203,8 +201,6 @@ function process_processed_events($events)
 
 function process_click_events($events)
 {
-  require_once 'CRM/Mailing/BAO/TrackableURL.php';
-  require_once 'CRM/Mailing/Event/BAO/TrackableURLOpen.php';
   $successes = $errors = [];
   foreach ($events as $event_id => $pair) {
     list($event, $queue_event) = array_values($pair);
@@ -221,14 +217,14 @@ function process_click_events($events)
       continue;
     }
 
-    $tracker = new CRM_Mailing_BAO_TrackableURL();
+    $tracker = new CRM_Mailing_BAO_MailingTrackableURL();
     $tracker->url = $event['url'];
     $tracker->mailing_id = $event['mailing_id'];
     if (!$tracker->find(true)) {
       $tracker->save();
     }
 
-    CRM_Mailing_Event_BAO_TrackableURLOpen::track($queue_event['id'], $tracker->id);
+    CRM_Mailing_Event_BAO_MailingEventTrackableURLOpen::track($queue_event['id'], $tracker->id);
 
     $successes[$event_id] = $pair;
   }
@@ -239,9 +235,6 @@ function process_click_events($events)
 
 function process_bounce_events($events)
 {
-  require_once 'CRM/Mailing/Event/BAO/Bounce.php';
-  require_once 'CRM/Mailing/BAO/BouncePattern.php';
-
   $errors = [];
   $successes = [];
 
@@ -257,7 +250,7 @@ function process_bounce_events($events)
     //Use the CiviCRM pattern matchers to clean up our bounce info
     $params += CRM_Mailing_BAO_BouncePattern::match($event['reason']);
 
-    if (CRM_Mailing_Event_BAO_Bounce::create($params)) {
+    if (CRM_Mailing_Event_BAO_MailingEventBounce::recordBounce($params)) {
       $successes[$event_id] = $pair;
     }
     else {
@@ -271,13 +264,11 @@ function process_bounce_events($events)
 
 function process_unsubscribe_events($events)
 {
-  require_once 'CRM/Mailing/Event/BAO/Unsubscribe.php';
-
   $errors = [];
   $successes = [];
   foreach ($events as $event_id => $pair) {
     list($event, $queue_event) = array_values($pair);
-    $unsubs = CRM_Mailing_Event_BAO_Unsubscribe::unsub_from_domain(
+    $unsubs = CRM_Mailing_Event_BAO_MailingEventUnsubscribe::unsub_from_domain(
       $queue_event['job_id'],
       $queue_event['id'],
       $queue_event['hash']

@@ -8,11 +8,11 @@ require_once 'script_utils.php';
 
 function get_accumulator_connection($bbcfg)
 {
-  $host = CRM_Utils_Array::value('accumulator.db.host', $bbcfg);
-  $port = CRM_Utils_Array::value('accumulator.db.port', $bbcfg);
-  $name = CRM_Utils_Array::value('accumulator.db.name', $bbcfg);
-  $user = CRM_Utils_Array::value('accumulator.db.user', $bbcfg);
-  $pass = CRM_Utils_Array::value('accumulator.db.pass', $bbcfg);
+  $host = $bbcfg['accumulator.db.host'] ?? '';
+  $port = $bbcfg['accumulator.db.port'] ?? '';
+  $name = $bbcfg['accumulator.db.name'] ?? '';
+  $user = $bbcfg['accumulator.db.user'] ?? '';
+  $pass = $bbcfg['accumulator.db.pass'] ?? '';
 
   if (!$host || !$name || !$user || !$pass) {
     bbscript_log(LL::ERROR, 'Accumulator configuration parameters missing. accumulator.{host,name,user,pass} required');
