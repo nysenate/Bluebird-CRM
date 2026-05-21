@@ -39,13 +39,12 @@ if (!empty($optlist['log-level'])) {
 // Creating the CRM_Core_Config class bootstraps the rest
 require_once 'CRM/Core/Config.php';
 require_once 'CRM/Core/DAO.php';
-require_once 'CRM/Utils/Array.php';
 
 $config = CRM_Core_Config::singleton();
 $bbconfig = get_bluebird_instance_config();
 
 // Allow filtering of the events to be processed on the commandline
-if (CRM_Utils_Array::value('all', $optlist, false) === false) {
+if (($optlist['all'] ?? FALSE) === FALSE) {
   foreach ($event_map as $key => $value) {
     if (!$optlist[$key]) {
       unset($event_map[$key]);
@@ -55,16 +54,23 @@ if (CRM_Utils_Array::value('all', $optlist, false) === false) {
 
 // Limits can be useful for putting a cap on the amount of work done in any
 // one run of the cron job
-$limit = (int)CRM_Utils_Array::value('limit', $optlist, false);
+$limit = (int)($optlist['limit'] ?? 0);
 
 // Batches can be useful for reducing the back and forth queries performed here.
 // Unless batch inserts are defined on the CiviCRM level though using batches is
 // risky because in theory a script could be interrupted with no record of what
 // was processed
-$batch_size = (int)CRM_Utils_Array::value('maxbatch', $optlist, 1);
+$batch_size = (int)($optlist['maxbatch'] ?? 1);
 
 // Establish a connection to the accumulator
 $dbcon = get_accumulator_connection($bbconfig);
+if (!$dbcon) {
+    CRM_NYSS_Errorhandler_BAO::notifyEmail(
+      "updateSendGridStats.php could not connect to the accumulator database for '{$bbconfig['servername']}'. No events were processed.",
+      "Bluebird SendGrid: Accumulator DB connection failed [{$bbconfig['shortname']}]"
+    );
+    exit(1);
+}
 
 $event_types = implode(',', array_keys($event_map));
 
@@ -95,9 +101,14 @@ foreach ($event_map as $event_type => $cb_func) {
     if ($row = mysqli_fetch_assoc($result)) {
       $qid = $row['queue_id'];
       if (!($queue = get_queue_event($qid))) {
-        // Log this as a failure! TODO: Mark as failure for archival as well.
         bbscript_log(LL::ERROR, "Queue Id $qid not found in {$bbconfig['servername']} (event_type: {$event_type})");
         $errors[$row['event_id']] = [$row, []];
+        // process the current batch of errors (events with invalid Queue IDs)
+        if (count($errors) >= $batch_size) {
+          bbscript_log(LL::ERROR, count($errors)." events failed queue lookup.");
+          archive_events($dbcon, $errors, 'FAILED', $bbconfig);
+          $errors = [];
+        }
         continue;
       }
       $batch[$row['event_id']] = ['event' => $row, 'queue' => $queue];
@@ -107,37 +118,42 @@ foreach ($event_map as $event_type => $cb_func) {
     }
 
     //When we've reached the batch limit or the end of the rows
-    if ((count($batch) >= $batch_size || !$in_process)) {
-      list($archived, $skipped, $failed) = [[], [], []];
-      // Record the successful processing of the batch in the database
-      // This isn't a great way to do it (what if the event processor
-      // encounters an error after the first one?) but CiviCRM doesn't
-      // give you a chance to recover from errors so...we'll do this.
-      if (!empty($batch)) {
+    if (count($batch) >= $batch_size || !$in_process) {
+      // this transaction should rollback bluebird database changes when archival process fails
+      $tx = new CRM_Core_Transaction();
+      try {
         list($archived, $skipped, $failed) = call_user_func($cb_func, $batch);
-      }
-      $failed += $errors;
 
-      if (!empty($failed) && count($failed)) {
-        bbscript_log(LL::ERROR, count($failed)." events failed processing.");
-        archive_events($dbcon, $failed, 'FAILED', $bbconfig);
+        if (count($archived)) {
+          bbscript_log(LL::INFO, count($archived)." events were archived.");
+          archive_events($dbcon, $archived, 'ARCHIVED', $bbconfig);
+        }
+        if (count($skipped)) {
+          bbscript_log(LL::INFO, count($skipped)." events were skipped.");
+          archive_events($dbcon, $skipped, 'SKIPPED', $bbconfig);
+        }
+        if (count($failed)) {
+          bbscript_log(LL::ERROR, count($failed)." events failed processing.");
+          archive_events($dbcon, $failed, 'FAILED', $bbconfig);
+        }
       }
-
-      if (count($archived)) {
-        bbscript_log(LL::INFO, count($archived)." events were archived.");
-        archive_events($dbcon, $archived, 'ARCHIVED', $bbconfig);
+      catch (Exception $e) {
+        $tx->rollback();
+        bbscript_log(LL::ERROR, "Batch failed, rolling back CiviCRM writes: ".$e->getMessage());
       }
-
-      if (count($skipped)) {
-        bbscript_log(LL::INFO, count($skipped)." events were skipped.");
-        archive_events($dbcon, $skipped, 'SKIPPED', $bbconfig);
-      }
-
+      // __destruct() handles the commit
+      unset($tx);
       //Reset for the next batch
       $batch = [];
-      $errors = [];
     }
   }
+
+  if (!empty($errors)) {
+    // archive any remaining events with invalid Queue IDs
+    bbscript_log(LL::ERROR, count($errors)." events failed queue lookup.");
+    archive_events($dbcon, $errors, 'FAILED', $bbconfig);
+  }
+
   mysqli_free_result($result);
 }
 
@@ -172,12 +188,11 @@ function process_delivered_events($events)
 
 function process_open_events($events)
 {
-  require_once 'CRM/Mailing/Event/BAO/Opened.php';
   $successes = [];
   $errors = [];
   foreach ($events as $event_id => $pair) {
     list($event, $queue_event) = array_values($pair);
-    if (CRM_Mailing_Event_BAO_Opened::open($queue_event['id'])) {
+    if (CRM_Mailing_Event_BAO_MailingEventOpened::open($queue_event['id'])) {
        $successes[$event_id] = $pair;
     }
     else {
@@ -203,8 +218,6 @@ function process_processed_events($events)
 
 function process_click_events($events)
 {
-  require_once 'CRM/Mailing/BAO/TrackableURL.php';
-  require_once 'CRM/Mailing/Event/BAO/TrackableURLOpen.php';
   $successes = $errors = [];
   foreach ($events as $event_id => $pair) {
     list($event, $queue_event) = array_values($pair);
@@ -221,14 +234,14 @@ function process_click_events($events)
       continue;
     }
 
-    $tracker = new CRM_Mailing_BAO_TrackableURL();
+    $tracker = new CRM_Mailing_BAO_MailingTrackableURL();
     $tracker->url = $event['url'];
     $tracker->mailing_id = $event['mailing_id'];
     if (!$tracker->find(true)) {
       $tracker->save();
     }
 
-    CRM_Mailing_Event_BAO_TrackableURLOpen::track($queue_event['id'], $tracker->id);
+    CRM_Mailing_Event_BAO_MailingEventTrackableURLOpen::track($queue_event['id'], $tracker->id);
 
     $successes[$event_id] = $pair;
   }
@@ -239,9 +252,6 @@ function process_click_events($events)
 
 function process_bounce_events($events)
 {
-  require_once 'CRM/Mailing/Event/BAO/Bounce.php';
-  require_once 'CRM/Mailing/BAO/BouncePattern.php';
-
   $errors = [];
   $successes = [];
 
@@ -257,7 +267,7 @@ function process_bounce_events($events)
     //Use the CiviCRM pattern matchers to clean up our bounce info
     $params += CRM_Mailing_BAO_BouncePattern::match($event['reason']);
 
-    if (CRM_Mailing_Event_BAO_Bounce::create($params)) {
+    if (CRM_Mailing_Event_BAO_MailingEventBounce::recordBounce($params)) {
       $successes[$event_id] = $pair;
     }
     else {
@@ -271,13 +281,11 @@ function process_bounce_events($events)
 
 function process_unsubscribe_events($events)
 {
-  require_once 'CRM/Mailing/Event/BAO/Unsubscribe.php';
-
   $errors = [];
   $successes = [];
   foreach ($events as $event_id => $pair) {
     list($event, $queue_event) = array_values($pair);
-    $unsubs = CRM_Mailing_Event_BAO_Unsubscribe::unsub_from_domain(
+    $unsubs = CRM_Mailing_Event_BAO_MailingEventUnsubscribe::unsub_from_domain(
       $queue_event['job_id'],
       $queue_event['id'],
       $queue_event['hash']
@@ -344,8 +352,26 @@ function process_dropped_events($events)
 
 function get_queue_event($queue_id)
 {
-  $result = CRM_Core_DAO::executeQuery(
-    "SELECT * FROM civicrm_mailing_event_queue WHERE id=$queue_id");
+  static $cache = [];
 
-  return ($result && $result->fetch()) ? (array) $result : null;
+  // return from cache, if avaialble, and avoid the database call.
+  if (array_key_exists($queue_id, $cache)) {
+    return $cache[$queue_id];
+  }
+
+  $result = CRM_Core_DAO::executeQuery(
+    "SELECT * FROM civicrm_mailing_event_queue WHERE id = %1",
+    [1 => [$queue_id, 'Positive']]);
+
+  $value = ($result && $result->fetch()) ? (array) $result : null;
+
+  // prevent cache from growing greater than x entries.
+  if (count($cache) >= 1000) {
+    array_shift($cache);
+  }
+
+  // add value to cache
+  $cache[$queue_id] = $value;
+
+  return $value;
 } // get_queue_event()
