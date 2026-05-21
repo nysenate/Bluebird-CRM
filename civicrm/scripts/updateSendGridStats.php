@@ -65,7 +65,10 @@ $batch_size = (int)($optlist['maxbatch'] ?? 1);
 // Establish a connection to the accumulator
 $dbcon = get_accumulator_connection($bbconfig);
 if (!$dbcon) {
-    // Error already printed to log in get_accumulator_connection. Can't do much else without a connection. So, we leave the building.
+    CRM_NYSS_Errorhandler_BAO::notifyEmail(
+      "updateSendGridStats.php could not connect to the accumulator database for '{$bbconfig['servername']}'. No events were processed.",
+      "Bluebird SendGrid: Accumulator DB connection failed [{$bbconfig['shortname']}]"
+    );
     exit(1);
 }
 
