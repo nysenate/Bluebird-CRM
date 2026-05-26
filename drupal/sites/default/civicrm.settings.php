@@ -120,7 +120,8 @@ $prefs = &$civicrm_setting['domain'];
 $prefs['acl_cache_refresh_mode'] = 1; //https://docs.civicrm.org/sysadmin/en/latest/setup/optimizations/#smart-group-and-acl-performance
 $prefs['advanced_search_options'] = SEP.implode(SEP, [1,2,3,4,5,6,10,13,16,17,18,19]).SEP;
 $prefs['ajaxPopupsEnabled'] = 1;
-$prefs['checksum_timeout'] = 7;
+$prefs['checksum_timeout'] = 7; // days
+$prefs['nyssUnsubLinkTimeout'] = 1440; // specified in hours (1440 hours = 60 days)
 $prefs['communityMessagesUrl'] = false;
 $prefs['contact_autocomplete_options'] = SEP.implode(SEP, [1,2,3,4,5,8,9]).SEP;
 $prefs['contact_edit_options'] = SEP.implode(SEP, [1,2,3,4,5,6,7,8,12,14,15,16,17]).SEP;

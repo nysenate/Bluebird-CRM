@@ -8,11 +8,11 @@ require_once 'script_utils.php';
 
 function get_accumulator_connection($bbcfg)
 {
-  $host = CRM_Utils_Array::value('accumulator.db.host', $bbcfg);
-  $port = CRM_Utils_Array::value('accumulator.db.port', $bbcfg);
-  $name = CRM_Utils_Array::value('accumulator.db.name', $bbcfg);
-  $user = CRM_Utils_Array::value('accumulator.db.user', $bbcfg);
-  $pass = CRM_Utils_Array::value('accumulator.db.pass', $bbcfg);
+  $host = $bbcfg['accumulator.db.host'] ?? '';
+  $port = $bbcfg['accumulator.db.port'] ?? '';
+  $name = $bbcfg['accumulator.db.name'] ?? '';
+  $user = $bbcfg['accumulator.db.user'] ?? '';
+  $pass = $bbcfg['accumulator.db.pass'] ?? '';
 
   if (!$host || !$name || !$user || !$pass) {
     bbscript_log(LL::ERROR, 'Accumulator configuration parameters missing. accumulator.{host,name,user,pass} required');
@@ -57,17 +57,26 @@ function archive_events($dbcon, $events, $status, $bbcfg)
     list($event, $queue_event) = array_values($pair);
     $mailing_id = $event['mailing_id'];
     $category = mysqli_real_escape_string($dbcon, $event['category']);
+    $email = mysqli_real_escape_string($dbcon, $event['email']);
     $message_id = "returnMessage($instance_id, $mailing_id, '$category')";
-    $archive[] = "($event_id, $message_id, {$event['job_id']}, {$event['queue_id']}, '{$event['event_type']}', '$status', '{$event['email']}', {$event['is_test']}, '{$event['dt_created']}', '{$event['dt_received']}', NOW())";
+    $archive[] = "($event_id, $message_id, {$event['job_id']}, {$event['queue_id']}, '{$event['event_type']}', '$status', '$email', {$event['is_test']}, '{$event['dt_created']}', '{$event['dt_received']}', NOW())";
   }
 
-  // Do the transaction
-  bb_mysql_query('BEGIN', $dbcon, true);
-  bb_mysql_query('DELETE FROM incoming WHERE event_id IN ('.implode(',', array_keys($events)).')', $dbcon, true);
-  bb_mysql_query('INSERT INTO archive
-              (event_id, message_id, job_id, queue_id, event_type, result, email, is_test, dt_created, dt_received, dt_processed)
-              VALUES '.implode(',', $archive), $dbcon, true);
-  bb_mysql_query('COMMIT', $dbcon, true);
+  mysqli_begin_transaction($dbcon);
+  try {
+    $deleted = bb_mysql_query('DELETE FROM incoming WHERE event_id IN ('.implode(',', array_keys($events)).')', $dbcon);
+    $inserted = $deleted && bb_mysql_query('INSERT INTO archive
+                (event_id, message_id, job_id, queue_id, event_type, result, email, is_test, dt_created, dt_received, dt_processed)
+                VALUES '.implode(',', $archive), $dbcon);
+    if (!$deleted || !$inserted) {
+      throw new RuntimeException("Failed to archive $status events: ".mysqli_error($dbcon));
+    }
+    mysqli_commit($dbcon);
+  }
+  catch (Exception $e) {
+    mysqli_rollback($dbcon);
+    throw $e;
+  }
 } // archive_events()
 
 
