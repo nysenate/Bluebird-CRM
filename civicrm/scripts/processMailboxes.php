@@ -22,6 +22,7 @@
 // Revised: 2023-08-21 - implement https://www.php-imap.com/ and OAuth
 //                       connection support
 // Revised: 2024-02-14 - add --no-auto-create option; auto-create by default
+// Revised: 2026-05-20 - add --batch-size option to limit message batch
 //
 
 // Version number, used for debugging
@@ -34,6 +35,7 @@ define('DEFAULT_IMAP_FLAGS', '/imap/notls');
 define('DEFAULT_IMAP_MAILBOX', 'INBOX');
 define('DEFAULT_IMAP_ARCHIVEBOX', 'Archive');
 define('DEFAULT_IMAP_VALID_SENDERS', false);
+define('DEFAULT_IMAP_BATCH_SIZE', 500);
 define('DEFAULT_IMAP_DENY_UNAUTH', false);
 define('DEFAULT_IMAP_ACTIVITY_STATUS', 'Completed');
 define('DEFAULT_IMAP_NO_ARCHIVE', false);
@@ -81,12 +83,12 @@ $prog = basename(__FILE__);
 
 require_once 'script_utils.php';
 $stdusage = civicrm_script_usage();
-$usage = "[--imap-user|-u username]  [--imap-pass|-s password]  [--cmd|-c <poll|list|delarchive>]  [--log-level|-l LEVEL]  [--host|-h imap_host]  [--port|-p imap_port]  [--imap-flags|-f imap_flags]  [--mailbox|-m name]  [--archivebox|-a name]  [--valid-senders|-v EMAILS]  [--deny-unauthorized|-x]  [--default-activity-status|-d <Completed|Scheduled|Cancelled>]  [--no-archive|-A]  [--no-auto-create|-C]  [--no-email|-E]  [--recheck-unmatched|-r]";
-$shortopts = "u:s:c:l:h:p:f:m:a:v:xd:ACEr";
+$usage = "[--imap-user|-u username]  [--imap-pass|-s password]  [--cmd|-c <poll|list|delarchive>]  [--log-level|-l LEVEL]  [--host|-h imap_host]  [--port|-p imap_port]  [--imap-flags|-f imap_flags]  [--mailbox|-m name]  [--archivebox|-a name]  [--valid-senders|-v EMAILS]  [--batch-size|-b size]  [--deny-unauthorized|-x]  [--default-activity-status|-d <Completed|Scheduled|Cancelled>]  [--no-archive|-A]  [--no-auto-create|-C]  [--no-email|-E]  [--recheck-unmatched|-r]";
+$shortopts = "u:s:c:l:h:p:f:m:a:v:b:xd:ACEr";
 $longopts = [
   "imap-user=", "imap-pass=", "cmd=", "log-level=",
   "host=", "port=", "imap-flags=", "mailbox=", "archivebox=",
-  "valid-senders=", "deny-unauthorized",
+  "valid-senders=", "batch-size=", "deny-unauthorized",
   "default-activity-status=",
   "no-archive", "no-auto-create", "no-email",
   "recheck-unmatched"
@@ -128,6 +130,7 @@ $all_params = [
   ['mailbox', 'mailbox', 'imap.mailbox', DEFAULT_IMAP_MAILBOX],
   ['archivebox', 'archivebox', 'imap.archivebox', DEFAULT_IMAP_ARCHIVEBOX],
   ['validsenders', 'valid-senders', 'imap.validsenders', DEFAULT_IMAP_VALID_SENDERS],
+  ['batchsize', 'batch-size', 'imap.batchsize', DEFAULT_IMAP_BATCH_SIZE],
   ['denyunauth', 'deny-unauthorized', 'imap.deny.unauth', DEFAULT_IMAP_DENY_UNAUTH],
   ['actstatus', 'default-activity-status', 'imap.activity.status.default', DEFAULT_IMAP_ACTIVITY_STATUS],
   ['noarchive', 'no-archive', null, DEFAULT_IMAP_NO_ARCHIVE],
@@ -410,8 +413,8 @@ function checkImapAccount($imap, $params) {
     return TRUE;
   }
 
-  //get messages in batches of 500
-  $messages = $mailbox->query()->all()->limit($limit = 500)->get();
+  //get messages in batches
+  $messages = $mailbox->query()->all()->limit($params['batchsize'])->get();
   bbscript_log(LL::TRACE, '$messages: ', $messages);
 
   $msg_count = count($messages);
@@ -422,14 +425,14 @@ function checkImapAccount($imap, $params) {
 
   //cycle through messages
   foreach ($messages as $message) {
-    bbscript_log(LL::INFO, "Retrieving message {$message->getMsgn()} of $msg_count");
+    bbscript_log(LL::INFO, "Retrieving message {$message->getMsgn()} of $msg_count; id={$message->getUid()}");
     bbscript_log(LL::TRACE, '$message: ', $message);
 
     $imap_message = new CRM_NYSS_IMAP_Message($message);
     bbscript_log(LL::TRACE, '$imap_message: ', $imap_message);
 
     $fwder = $message->getFrom()->first()->toArray();
-    bbscript_log(LL::TRACE, '$fwder: ', $fwder);
+    bbscript_log(LL::DEBUG, '$fwder=', $fwder);
 
     $isAuth = isAuthForwarder(strtolower($fwder['mail']), $params['authForwarders']);
 
@@ -480,14 +483,16 @@ function checkImapAccount($imap, $params) {
       $moveMsg->setSequence(3); //IMAP::ST_MSGN
 
       try {
-        if ($moveMsg->move($params['archivebox'])) {
+        if ($moveMsg->move($params['archivebox'], false)) {
           bbscript_log(LL::DEBUG, "Messsage {$moveMsg->getMsgn()} moved to {$params['archivebox']}");
         }
         else {
           bbscript_log(LL::ERROR, "Failed to move message {$moveMsg->getMsgn()} to {$params['archivebox']}");
         }
       }
-      catch (Exception $e) {}
+      catch (Exception $e) {
+        bbscript_log(LL::ERROR, "Exception occurred while moving message {$moveMsg->getMsgn()}: " . $e->getMessage());
+      }
     }
   }
 
