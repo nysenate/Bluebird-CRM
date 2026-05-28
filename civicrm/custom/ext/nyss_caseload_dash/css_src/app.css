@@ -47,7 +47,7 @@ afsearch-n-y-s-s-caseload-overview-totals  {
     }
 }
 
-afsearch-n-y-s-s-caseload-overview-details  {
+afsearch-n-y-s-s-caseload-overview-details, afsearch-n-y-s-s-caseload-case-manager-totals  {
     div[af-fieldset] {
         @apply p-2;
         h2 {

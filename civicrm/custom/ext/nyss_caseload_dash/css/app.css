@@ -283,7 +283,7 @@ afsearch-n-y-s-s-caseload-overview-totals {
     }
   }
 }
-afsearch-n-y-s-s-caseload-overview-details {
+afsearch-n-y-s-s-caseload-overview-details, afsearch-n-y-s-s-caseload-case-manager-totals {
   div[af-fieldset] {
     padding: calc(var(--spacing) * 2);
     h2 {

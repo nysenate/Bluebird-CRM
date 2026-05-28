@@ -4,13 +4,15 @@
         <p>Shows the total count of: open cases, urgent cases, unassigned cases, cases opened in the last 7 days, cases opened 7 - 30 days ago, cases opened more than 30 days ago, and cases resolved in the past 7 days.</p>
         <p>Notes:
             <ul>
-            <li>Open cases include cases with statuses: adsf asdf asdf. </li>
+            <li>Open cases include cases with statuses: Ongoing, Urgent, Not Started, Assigned, and Unassigned. </li>
             <li>Unassigned cases are cases that either (a) have the status 'unassigned' or (b) do not have an associated case manager.</li>
             <li>Average Days to Resolution includes cases closed within the last 90 days.</li>
             </ul>
         </p>
         <h4>District-wide Details</h4>
         <p>Each total in Caseload Overview can be clicked to reveal more details about the cases in the District-wide Details section. This section can be expanded or collapsed as desired.</p>
+        <h4>Breakdown by Case Manager</h4>
+        <p>A glance at each of your case managers' current workloads and recent resolution rates.</p>
     {/ts}
 {/htxt}
 {htxt id="id-overview_details"}
@@ -18,4 +20,17 @@
         <p>Each total in the caseload overview can be clicked to reveal more details about the cases included in the total. This detailed information appears in the District-wide Details section.</p>
         <p>Tip - This section can be expanded or collapsed as desired by clicking the toggle-able heading.</p>
     {/ts}
+{/htxt}
+{htxt id="id-casemanager-totals"}
+{ts}
+    <p>A glance at each of your case managers' current workloads and recent resolution rates.</p>
+    <p>Each total can be clicked to show more details about the cases included in the total.</p>
+    <p>Notes:
+    <ul>
+        <li>Open cases include cases with statuses: Ongoing, Urgent, Not Started, Assigned, and Unassigned. </li>
+        <li>If a case is assigned to multiple case managers, then it will be included in each of those case manager's totals.</li>
+        <li>Average Days to Resolution includes cases closed within the last 90 days.</li>
+    </ul>
+    </p>
+{/ts}
 {/htxt}

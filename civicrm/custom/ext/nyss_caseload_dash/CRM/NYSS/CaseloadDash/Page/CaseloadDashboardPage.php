@@ -11,7 +11,7 @@ class CRM_NYSS_CaseloadDash_Page_CaseloadDashboardPage extends CRM_Core_Page {
 
     // Example: Assign a variable for use in a template
     $this->assign('currentTime', date('Y-m-d H:i:s'));
-    Civi::service('angularjs.loader')->addModules(['afsearchNYSSCaseloadOverviewTotals','afsearchNYSSCaseloadOverviewDetails']);
+    Civi::service('angularjs.loader')->addModules(['crmNyssCaseloadDash','afsearchNYSSCaseloadOverviewTotals','afsearchNYSSCaseloadOverviewDetails', 'afsearchNYSSCaseloadCaseManagerTotals']);
     parent::run();
   }
 

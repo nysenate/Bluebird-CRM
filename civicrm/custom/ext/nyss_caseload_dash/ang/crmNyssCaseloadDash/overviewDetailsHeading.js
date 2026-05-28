@@ -12,18 +12,32 @@
         var ts = CRM.ts('nyss_caseload_dash');
 
         function updateHeading(params) {
-          $scope.heading = ts('All Cases');
-          Object.keys(params).forEach(function(key) {
-            switch (key) {
-              case 'segment_NYSS_Caseload_Open':               $scope.heading = ts('Open Cases');                   break;
-              case 'segment_NYSS_Caseload_Urgent':             $scope.heading = ts('Urgent Cases');                 break;
-              case 'segment_NYSS_Caseload_Unassigned':         $scope.heading = ts('Unassigned Cases');             break;
-              case 'segment_NYSS_Caseload_Newer_Than_7_Days':  $scope.heading = ts('Cases Open < 7 Days');          break;
-              case 'segment_NYSS_Caseload_7_To_30_Days':       $scope.heading = ts('Cases Open 7 - 30 Days');       break;
-              case 'segment_NYSS_Caseload_Older_Than_30_Days': $scope.heading = ts('Cases Open > 30 Days');         break;
-              case 'segment_NYSS_Caseload_Resolved_Last_7_Days': $scope.heading = ts('Cases Resolved (Last 7 Days)'); break;
-            }
-          });
+            $scope.heading = ts('All Cases');
+            Object.keys(params).forEach(function (key) {
+                switch (key) {
+                    case 'segment_NYSS_Caseload_Open':
+                        $scope.heading = ts('Open Cases');
+                        break;
+                    case 'segment_NYSS_Caseload_Urgent':
+                        $scope.heading = ts('Urgent Cases');
+                        break;
+                    case 'segment_NYSS_Caseload_Unassigned':
+                        $scope.heading = ts('Unassigned Cases');
+                        break;
+                    case 'segment_NYSS_Caseload_Newer_Than_7_Days':
+                        $scope.heading = ts('Cases Open < 7 Days');
+                        break;
+                    case 'segment_NYSS_Caseload_7_To_30_Days':
+                        $scope.heading = ts('Cases Open 7 - 30 Days');
+                        break;
+                    case 'segment_NYSS_Caseload_Older_Than_30_Days':
+                        $scope.heading = ts('Cases Open > 30 Days');
+                        break;
+                    case 'segment_NYSS_Caseload_Resolved_Last_7_Days':
+                        $scope.heading = ts('Cases Resolved (Last 7 Days)');
+                        break;
+                }
+            });
         }
 
         $scope.$watch(function() { return $location.search(); }, updateHeading, true);
