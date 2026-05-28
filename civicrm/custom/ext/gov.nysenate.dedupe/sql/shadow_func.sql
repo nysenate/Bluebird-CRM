@@ -1,6 +1,6 @@
 -- Functions and triggers for the shadow tables
 
-SET NAMES UTF8MB4 COLLATE utf8mb4_unicode_ci;
+SET NAMES UTF8MB4 COLLATE utf8mb4_0900_ai_ci;
 
 -- Change the delimiter to make stored triggers/functions easier to write!
 DELIMITER |
@@ -13,8 +13,8 @@ DELIMITER |
 -- If you update this code, please update it there as well.
 
 DROP FUNCTION IF EXISTS BB_ADDR_REPLACE |
-CREATE FUNCTION BB_ADDR_REPLACE (address varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci)
-    RETURNS varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DETERMINISTIC
+CREATE FUNCTION BB_ADDR_REPLACE (address varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci)
+    RETURNS varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci DETERMINISTIC
 
     BEGIN
         -- Start with the first alpha word occurance and loop
@@ -61,8 +61,8 @@ CREATE FUNCTION BB_ADDR_REPLACE (address varchar(255) CHARACTER SET utf8mb4 COLL
 |
 
 DROP FUNCTION IF EXISTS BB_NORMALIZE |
-CREATE FUNCTION BB_NORMALIZE (value VARCHAR(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci)
-    RETURNS VARCHAR(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DETERMINISTIC
+CREATE FUNCTION BB_NORMALIZE (value VARCHAR(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci)
+    RETURNS VARCHAR(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci DETERMINISTIC
 
     BEGIN
         -- Compress '' values into null
@@ -87,8 +87,8 @@ CREATE FUNCTION BB_NORMALIZE (value VARCHAR(255) CHARACTER SET utf8mb4 COLLATE u
 -- If you update this code, please update it there as well.
 
 DROP FUNCTION IF EXISTS BB_NORMALIZE_ADDR |
-CREATE FUNCTION BB_NORMALIZE_ADDR (value VARCHAR(255) CHARACTER SET utf8mb4  COLLATE utf8mb4_unicode_ci)
-    RETURNS VARCHAR(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DETERMINISTIC
+CREATE FUNCTION BB_NORMALIZE_ADDR (value VARCHAR(255) CHARACTER SET utf8mb4  COLLATE utf8mb4_0900_ai_ci)
+    RETURNS VARCHAR(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci DETERMINISTIC
 
     BEGIN
         DECLARE address VARCHAR(255);

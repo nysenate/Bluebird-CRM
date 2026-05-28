@@ -6131,11 +6131,10 @@ DELIMITER ;
 /*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
 /*!50003 SET sql_mode              = '' */ ;
 DELIMITER ;;
-CREATE DEFINER=`crmadmin`@`crmas%.nysenate.gov` FUNCTION `BB_ADDR_REPLACE`(address varchar(255)) RETURNS varchar(255) CHARSET utf8
-    DETERMINISTIC
+CREATE FUNCTION BB_ADDR_REPLACE (address varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci)
+    RETURNS varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci DETERMINISTIC
 BEGIN
-        
-        
+
         DECLARE occurence INT DEFAULT 1;
         DECLARE address_part VARCHAR(255);
         DECLARE abbreviation VARCHAR(255);
@@ -6190,8 +6189,8 @@ DELIMITER ;
 /*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
 /*!50003 SET sql_mode              = '' */ ;
 DELIMITER ;;
-CREATE DEFINER=`crmadmin`@`crmas%.nysenate.gov` FUNCTION `BB_NORMALIZE`(value VARCHAR(255)) RETURNS varchar(255) CHARSET utf8
-    DETERMINISTIC
+CREATE FUNCTION `BB_NORMALIZE`(value VARCHAR(255)) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci)
+    RETURNS VARCHAR(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci DETERMINISTIC
 BEGIN
         
         IF value IS NULL OR value = '' THEN
@@ -6224,8 +6223,9 @@ DELIMITER ;
 /*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
 /*!50003 SET sql_mode              = '' */ ;
 DELIMITER ;;
-CREATE DEFINER=`crmadmin`@`crmas%.nysenate.gov` FUNCTION `BB_NORMALIZE_ADDR`(value VARCHAR(255)) RETURNS varchar(255) CHARSET utf8
-    DETERMINISTIC
+CREATE FUNCTION BB_NORMALIZE_ADDR (value VARCHAR(255) CHARACTER SET utf8mb4  COLLATE utf8mb4_0900_ai_ci)
+    RETURNS VARCHAR(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci DETERMINISTIC
+
 BEGIN
         DECLARE address VARCHAR(255);
 
