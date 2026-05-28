@@ -75,6 +75,11 @@ if [ $rebuildTables -eq 1 ]; then
     ## We might want to split some of this out in the future
     echo "Rebuilding shadow tables, triggers, and functions."
     $execSql $instance -f $dedupe_dir/shadow.sql
+    ## NOTE: I don't see shadow.sql. It might have been split into shadow_tables.sql and shadow_func.sql.
+    ## The line above will fail. Consider Replacing it with the two lines below... if the intention is to rebuild
+    ## these the shadow tables and functions.
+    # $execSql $instance -f $dedupe_dir/sql/shadow_tables.sql
+    # $execSql $instance -f $dedupe_dir/sql/shadow_func.sql
 
     ## Force an update on all the relevant fields
     ## This is a bit of a hack right now banking on us not having other contact types
