@@ -14,6 +14,8 @@ return [
   'partials' => [
     'ang/crmNyssCaseloadDash',
   ],
-  'requires' => ['crmUi', 'crmUtil', 'ngRoute'],
+  // doesn't really require crmMosaico, but it fails because something else somewhere up the chain is looking for it.
+  // This is a cheap workaround
+  'requires' => ['crmMosaico'],
   'settings' => [],
 ];
