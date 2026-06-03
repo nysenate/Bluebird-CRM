@@ -58,9 +58,13 @@ CRM.$(function ($) {
     for (var i = 0; i < ids.length; i++) {
       var id = ids[i];
       if (id.length > 0 && $('div#cid-' + id).length === 0) {
+        // Add the match-details-row div here to avoid triggering additional change events while handling the
+        // async api result
+        $('div#matched-contacts').append($('<div class="match-details-row"></div>').attr('id', 'cid-' + id));
         var contact = CRM.api3('contact', 'getsingle', {id: id})
           .done(function (result) {
-            $('div#matched-contacts').append(addDetailRow(result));
+              $('div#cid-' + result.contact_id).replaceWith(addDetailRow(result));
+              //$('div#matched-contacts').append(addDetailRow(result));
           });
       }
     }
