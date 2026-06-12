@@ -6131,11 +6131,10 @@ DELIMITER ;
 /*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
 /*!50003 SET sql_mode              = '' */ ;
 DELIMITER ;;
-CREATE DEFINER=`crmadmin`@`crmas%.nysenate.gov` FUNCTION `BB_ADDR_REPLACE`(address varchar(255)) RETURNS varchar(255) CHARSET utf8
-    DETERMINISTIC
+CREATE FUNCTION BB_ADDR_REPLACE (address varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci)
+    RETURNS varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci DETERMINISTIC
 BEGIN
-        
-        
+
         DECLARE occurence INT DEFAULT 1;
         DECLARE address_part VARCHAR(255);
         DECLARE abbreviation VARCHAR(255);
@@ -6190,16 +6189,21 @@ DELIMITER ;
 /*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
 /*!50003 SET sql_mode              = '' */ ;
 DELIMITER ;;
-CREATE DEFINER=`crmadmin`@`crmas%.nysenate.gov` FUNCTION `BB_NORMALIZE`(value VARCHAR(255)) RETURNS varchar(255) CHARSET utf8
-    DETERMINISTIC
+CREATE FUNCTION `BB_NORMALIZE`(value VARCHAR(255)) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci)
+    RETURNS VARCHAR(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci DETERMINISTIC
 BEGIN
-        
+        DECLARE normalized_value VARCHAR(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci;
+
         IF value IS NULL OR value = '' THEN
             RETURN NULL;
         END IF;
 
+        -- strip all 4-byte supplementary characters plus the most common BMP symbol/emoji block
+        SET normalized_value = REGEXP_REPLACE(REGEXP_REPLACE(value,
+                      '[\\x{10000}-\\x{10FFFF}]', ''),
+                      '[\\x{2600}-\\x{27BF}]', '');
         
-        RETURN LCASE(REPLACE( REPLACE( REPLACE( REPLACE( REPLACE( REPLACE( REPLACE( REPLACE( value,
+        RETURN LCASE(REPLACE( REPLACE( REPLACE( REPLACE( REPLACE( REPLACE( REPLACE( REPLACE( normalized_value,
                     ',', ''),
                    '\'', ''),
                     '.', ''),
@@ -6224,22 +6228,30 @@ DELIMITER ;
 /*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
 /*!50003 SET sql_mode              = '' */ ;
 DELIMITER ;;
-CREATE DEFINER=`crmadmin`@`crmas%.nysenate.gov` FUNCTION `BB_NORMALIZE_ADDR`(value VARCHAR(255)) RETURNS varchar(255) CHARSET utf8
-    DETERMINISTIC
-BEGIN
-        DECLARE address VARCHAR(255);
+CREATE FUNCTION BB_NORMALIZE_ADDR (value VARCHAR(255) CHARACTER SET utf8mb4  COLLATE utf8mb4_0900_ai_ci)
+    RETURNS VARCHAR(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci DETERMINISTIC
 
-        
+BEGIN
+        DECLARE address VARCHAR(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci;
+
+        -- Compress '' values into null
         IF value IS NULL OR value = '' THEN
             RETURN NULL;
         END IF;
 
+        -- strip all 4-byte supplementary characters plus the most common BMP symbol/emoji block
+        SET address = REGEXP_REPLACE(REGEXP_REPLACE(value,
+                      '[\\x{10000}-\\x{10FFFF}]', ''),
+                      '[\\x{2600}-\\x{27BF}]', '');
+
+        -- Lower the case and strip out all the ordinals from the street numbers
         SET address = REGEXP_REPLACE(TRIM(LCASE(value)), '(?<=[0-9])(?:st|nd|rd|th)','');
         
         SET address = REGEXP_REPLACE(address, '^(\d+)-?(\w+)\s', '$1 $2 ');
 
         
-        
+        -- Strip out all the different kinds of punctuation
+        -- SPECIAL: Don't replace 's with spaces
         SET address = REPLACE( REPLACE( REPLACE( REPLACE( REPLACE( REPLACE( REPLACE( address,
                     ',', ' '),
                     '\'', ''),
@@ -6251,7 +6263,7 @@ BEGIN
 
         SET address = BB_ADDR_REPLACE(address);
 
-        
+        -- Some other adhoc changes we need to make
         SET address = REPLACE( address, 'apt', '');
         SET address = REPLACE( address, 'floor', 'fl');
         SET address = REPLACE( address, 'east', 'e');
@@ -6259,7 +6271,7 @@ BEGIN
         SET address = REPLACE( address, 'west', 'w');
         SET address = REPLACE( address, 'south', 's');
 
-        
+        -- Normalize the spaces on the way out the door
         RETURN REGEXP_REPLACE(TRIM(address), ' +', ' ');
     END ;;
 DELIMITER ;

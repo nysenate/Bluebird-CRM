@@ -1,6 +1,6 @@
 -- Functions and triggers for the shadow tables
 
-SET NAMES UTF8MB4 COLLATE utf8mb4_unicode_ci;
+SET NAMES UTF8MB4 COLLATE utf8mb4_0900_ai_ci;
 
 -- Change the delimiter to make stored triggers/functions easier to write!
 DELIMITER |
@@ -13,8 +13,8 @@ DELIMITER |
 -- If you update this code, please update it there as well.
 
 DROP FUNCTION IF EXISTS BB_ADDR_REPLACE |
-CREATE FUNCTION BB_ADDR_REPLACE (address varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci)
-    RETURNS varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DETERMINISTIC
+CREATE FUNCTION BB_ADDR_REPLACE (address varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci)
+    RETURNS varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci DETERMINISTIC
 
     BEGIN
         -- Start with the first alpha word occurance and loop
@@ -61,17 +61,23 @@ CREATE FUNCTION BB_ADDR_REPLACE (address varchar(255) CHARACTER SET utf8mb4 COLL
 |
 
 DROP FUNCTION IF EXISTS BB_NORMALIZE |
-CREATE FUNCTION BB_NORMALIZE (value VARCHAR(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci)
-    RETURNS VARCHAR(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DETERMINISTIC
+CREATE FUNCTION BB_NORMALIZE (value VARCHAR(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci)
+    RETURNS VARCHAR(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci DETERMINISTIC
 
     BEGIN
+        DECLARE normalized_value VARCHAR(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci;
         -- Compress '' values into null
         IF value IS NULL OR value = '' THEN
             RETURN NULL;
         END IF;
 
+        -- strip all 4-byte supplementary characters plus the most common BMP symbol/emoji block
+        SET normalized_value = REGEXP_REPLACE(REGEXP_REPLACE(value,
+                      '[\\x{10000}-\\x{10FFFF}]', ''),
+                      '[\\x{2600}-\\x{27BF}]', '');
+
         -- Strip all  punctuation and spaces from strings
-        RETURN LCASE(REPLACE( REPLACE( REPLACE( REPLACE( REPLACE( REPLACE( REPLACE( REPLACE( value,
+        RETURN LCASE(REPLACE( REPLACE( REPLACE( REPLACE( REPLACE( REPLACE( REPLACE( REPLACE( normalized_value,
                     ',', ''),
                    '\'', ''),
                     '.', ''),
@@ -87,19 +93,24 @@ CREATE FUNCTION BB_NORMALIZE (value VARCHAR(255) CHARACTER SET utf8mb4 COLLATE u
 -- If you update this code, please update it there as well.
 
 DROP FUNCTION IF EXISTS BB_NORMALIZE_ADDR |
-CREATE FUNCTION BB_NORMALIZE_ADDR (value VARCHAR(255) CHARACTER SET utf8mb4  COLLATE utf8mb4_unicode_ci)
-    RETURNS VARCHAR(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DETERMINISTIC
+CREATE FUNCTION BB_NORMALIZE_ADDR (value VARCHAR(255) CHARACTER SET utf8mb4  COLLATE utf8mb4_0900_ai_ci)
+    RETURNS VARCHAR(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci DETERMINISTIC
 
     BEGIN
-        DECLARE address VARCHAR(255);
+        DECLARE address VARCHAR(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci;
 
         -- Compress '' values into null
         IF value IS NULL OR value = '' THEN
             RETURN NULL;
         END IF;
 
+        -- strip all 4-byte supplementary characters plus the most common BMP symbol/emoji block
+        SET address = REGEXP_REPLACE(REGEXP_REPLACE(value,
+                      '[\\x{10000}-\\x{10FFFF}]', ''),
+                      '[\\x{2600}-\\x{27BF}]', '');
+
         -- Lower the case and strip out all the ordinals from the street numbers
-        SET address = REGEXP_REPLACE(TRIM(LCASE(value)), '(?<=[0-9])(?:st|nd|rd|th)','');
+        SET address = REGEXP_REPLACE(TRIM(LCASE(address)), '(?<=[0-9])(?:st|nd|rd|th)','');
 
         -- Standardize spacing from the street numbers from 7B, 7-B, 7 B => 7 B
         SET address = REGEXP_REPLACE(address, '^(\d+)-?(\w+)\s', '$1 $2 ');

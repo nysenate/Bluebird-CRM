@@ -15,6 +15,7 @@ class NyssFlexmailListener extends AutoService {
   public static string $PARAM_JOB_INFO = 'job_info';
   public static string $PARAM_CONTACT_ID = 'contact_id';
   public static string $PARAM_EVENT_Q_ID = 'event_queue_id';
+  public static string $PARAM_TASK_HASH = 'task_hash';
 
   /**
    * Inject basic headers
@@ -36,6 +37,7 @@ class NyssFlexmailListener extends AutoService {
       ];
       $mailParams[self::$PARAM_CONTACT_ID] = $task->getContactId();
       $mailParams[self::$PARAM_EVENT_Q_ID] = $task->getEventQueueId();
+      $mailParams[self::$PARAM_TASK_HASH] = $task->getHash(); // used for unsubscribe URL
 
       $task->setMailParams(array_merge(
         $mailParams,
@@ -59,6 +61,7 @@ class NyssFlexmailListener extends AutoService {
       unset($mailParams[self::$PARAM_JOB_INFO]);
       unset($mailParams[self::$PARAM_CONTACT_ID]);
       unset($mailParams[self::$PARAM_EVENT_Q_ID]);
+      unset($mailParams[self::$PARAM_TASK_HASH]);
       $task->setMailParams($mailParams);
     }
   }
