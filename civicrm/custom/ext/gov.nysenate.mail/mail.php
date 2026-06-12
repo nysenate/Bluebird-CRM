@@ -83,6 +83,14 @@ function mail_civicrm_alterMenu(&$items) {
     ],
     'or'
   ];
+
+  // NYSS #18424 - This page is publicly accessible via a hash-secured URL (jid/qid/h params).
+  // Set access_callback=1 to bypass CiviCRM permission checks entirely, matching the same
+  // pattern used by civicrm/payment/ipn and other intrinsically public CiviCRM routes.
+  $items['civicrm/mailing/unsubscribe']['access_callback'] = 1;
+  // NYSS #18424 - One-click POSTs opt out of the mailing category instead of removing from groups.
+  $items['civicrm/mailing/unsubscribe']['page_callback'] = 'CRM_NYSS_Mail_Page_Unsubscribe';
+
 }
 
 /**
