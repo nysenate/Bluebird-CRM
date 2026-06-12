@@ -30,6 +30,8 @@ function mail_civicrm_config(&$config) {
   if (isset(Civi::$statics[__FUNCTION__])) { return; }
   Civi::$statics[__FUNCTION__] = 1;
 
+  // NYSS #18424 - Override List-Unsubscribe header with proxy URL (-1000 priority to run late for override)
+  Civi::dispatcher()->addListener('hook_civicrm_alterMailParams', ['CRM_NYSS_Mail_HookAlterMailParamsListener', 'alterMailParamsLate'], -1000);
   // NYSS #18424 - validates that a mailing has a category during approval/submission
   Civi::dispatcher()->addListener('civi.flexmailer.checkSendable', [CheckSendableListener::class, 'requireMailingCategory']);
 }
@@ -46,6 +48,7 @@ function mail_civicrm_container(ContainerBuilder $container) {
       ],
       FM::WEIGHT_PREPARE,
     ]);
+  // Run it again to clean-up
   $container->findDefinition('dispatcher')->addMethodCall('addListenerService',
     [
       FM::EVENT_COMPOSE,
@@ -999,7 +1002,6 @@ function mail_civicrm_alterMailParams(&$params, $context) {
 
     if (isset($params[NyssFlexmailListener::$PARAM_EVENT_Q_ID])) {
       $eventQueueID = $params[NyssFlexmailListener::$PARAM_EVENT_Q_ID];
-      unset($params[NyssFlexmailListener::$PARAM_EVENT_Q_ID]);
     }
     elseif (empty($params['is_test'])) {
       CRM_Core_Error::debug_var('params: event_queue_id not found', $params);
@@ -1009,11 +1011,9 @@ function mail_civicrm_alterMailParams(&$params, $context) {
     if (isset($params[NyssFlexmailListener::$PARAM_CONTACT_ID])) {
       $contactID = $params[NyssFlexmailListener::$PARAM_CONTACT_ID];
       $params['X-clientid'] = $contactID;
-      unset($params[NyssFlexmailListener::$PARAM_CONTACT_ID]);
     }
 
     $params['Return-Path'] = '';
-    $params['List-Unsubscribe'] = '';
     $params['Reply-To'] = $replyto;
 
     if (isset($params['job_id'])) {
