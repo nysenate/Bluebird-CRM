@@ -84,13 +84,14 @@ function mail_civicrm_alterMenu(&$items) {
     'or'
   ];
 
-  // NYSS #18424 - This page is publicly accessible via a hash-secured URL (jid/qid/h params).
-  // Set access_callback=1 to bypass CiviCRM permission checks entirely, matching the same
-  // pattern used by civicrm/payment/ipn and other intrinsically public CiviCRM routes.
+  // NYSS #18424 - Override core unsubscribe page so that One-click POSTs will opt out of the mailing category
+  // instead of unsubscribing from civicrm mailing groups, which is the default core behavior.
   $items['civicrm/mailing/unsubscribe']['access_callback'] = 1;
-  // NYSS #18424 - One-click POSTs opt out of the mailing category instead of removing from groups.
   $items['civicrm/mailing/unsubscribe']['page_callback'] = 'CRM_NYSS_Mail_Page_Unsubscribe';
 
+  // NYSS #18424 - Override core resubscribe page to issue redirect to custom mail preferences page
+  $items['civicrm/mailing/resubscribe']['access_callback'] = 1;
+  $items['civicrm/mailing/resubscribe']['page_callback'] = 'CRM_NYSS_Mail_Page_Resubscribe';
 }
 
 /**
@@ -1732,7 +1733,6 @@ function _mail_get_browserview_clause($bbcfg) {
   return ['text' => $text, 'html' => $html];
 } // _mail_get_browserview_clause()
 
-
 function _mail_get_optout_clause($bbcfg, $cid, $qid) {
   $cs = CRM_Contact_BAO_Contact_Utils::generateChecksum($cid, CRM_Utils_Time::time(),\Civi::settings()->get('nyssUnsubLinkTimeout'));
   $url = "{$bbcfg['public.url.base']}/{$bbcfg['envname']}/{$bbcfg['shortname']}/subscription/manage/$qid/$cs";
@@ -1742,7 +1742,6 @@ function _mail_get_optout_clause($bbcfg, $cid, $qid) {
 
   return ['text' => $text, 'html' => $html];
 } // _mail_get_optout_clause()
-
 
 function _mail_get_shareon_clause($bbcfg) {
   $fbimg = "{$bbcfg['public.url.base']}/{$bbcfg['envname']}/{$bbcfg['shortname']}/common/images/social_media/facebook_share_68x25.png";
