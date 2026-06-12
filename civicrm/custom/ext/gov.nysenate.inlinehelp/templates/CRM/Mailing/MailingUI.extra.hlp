@@ -1,6 +1,7 @@
 {*NYSS 7852*}
 {htxt id="category" override=1}
-  <p>Mailing categories allow mail recipients to subscribe to/unsubscribe from specific mailing categories.</p>
+    <p>Mailing categories allow your constituents to choose which types of mailings they want to (or don't want to) receive. For example, they might choose to unsubscribe from newsletters but continue receiving emergency alerts.</p>
+    <p>A mailing category is required for all mailings and defaults to <strong>General Announcements</strong>. Change it when appropriate to properly categorize your mailing and respect your constituents' mail preferences.</p>
 {/htxt}
 
 {*NYSS*}
