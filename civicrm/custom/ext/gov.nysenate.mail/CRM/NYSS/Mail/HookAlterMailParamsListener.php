@@ -25,8 +25,9 @@ class CRM_NYSS_Mail_HookAlterMailParamsListener
             }
         }
 
-        // NYSS #18424 - avoid for big mailing jobs.
-        // rewrite the resubscribe link in the unsubscribe confirmation messages in html and text.
+        // NYSS #18424 - avoid for big mailing jobs. This is only intended to execute for "one-shot" emails
+        // like unsubscribe confirmations. Rewrite the resubscribe link in the unsubscribe confirmation
+        // messages in html and text.
         if (!$has_job) {
             $bbcfg ??= get_bluebird_instance_config();
             foreach (['html', 'text'] as $key) {
@@ -38,6 +39,7 @@ class CRM_NYSS_Mail_HookAlterMailParamsListener
     }
 
     /**
+     * return a list of urls (there's really only one) for "one-click" unsubscribes / List-Unsubscribe header
      * @param $params
      * @return string[]|null really only one value right now
      */
@@ -45,7 +47,6 @@ class CRM_NYSS_Mail_HookAlterMailParamsListener
     protected static function get_oneclick_unsubscribe_values($params) : array {
 
         $bbcfg = get_bluebird_instance_config();
-        $job_id = $params[NyssFlexmailListener::$PARAM_JOB_INFO]['job_id'] ?? NULL;
         $queue_id = $params[NyssFlexmailListener::$PARAM_EVENT_Q_ID] ?? NULL;
         $task_hash = $params[NyssFlexmailListener::$PARAM_TASK_HASH] ?? NULL;
         $return_values = [];
@@ -56,26 +57,18 @@ class CRM_NYSS_Mail_HookAlterMailParamsListener
         // Parse the X-CiviMail-Bounce header which is based on the same information.
         //} else if (strlen($params['X-CiviMail-Bounce'])) {
 
-        if ($job_id && $queue_id && $task_hash) {
-
-            $query_params = array(
-                'reset' => 1,
-                'jid' => $job_id,
-                'qid' => $queue_id,
-                'h' => $task_hash,
-            );
-            $url = "{$bbcfg['public.url.base']}/{$bbcfg['envname']}/{$bbcfg['shortname']}/mailing/unsubscribe?" . http_build_query($query_params,'', '&');
+        if ($queue_id && $task_hash) {
+            // Expected Squid Proxy / Public URL pattern = ^https?://pubfiles\.nysenate\.gov/(crm[^/]*)/([^/]*)/subscription/(manage|view|(un|re)subscribe)/([0-9]+)/([0-9a-f_]+)$
+            $url = "{$bbcfg['public.url.base']}/{$bbcfg['envname']}/{$bbcfg['shortname']}/subscription/unsubscribe/" . $queue_id . '/' . $task_hash;
             $return_values[] = '<' . $url . '>';
-            Civi::log()->debug('get_oneclick_unsubscribe_values 2', [
-                '$query_params' => $query_params,
-                '$url' => $url,
+            Civi::log()->debug('get_oneclick_unsubscribe_values', [
                 '$return_values' => $return_values,
             ]);
         } else {
             // I don't expect to land here, but if we do then issue a log warning so that we know that other
             // accommodations need to be made -- like a database query or parsing another header for the needed data points.
             Civi::log()->warning('get_oneclick_unsubscribe_values: missing required params, skipping List-Unsubscribe header', [
-                'job_id' => $job_id, 'queue_id' => $queue_id, 'task_hash' => $task_hash,
+                'queue_id' => $queue_id, 'task_hash' => $task_hash,
             ]);
         }
         return $return_values;
@@ -95,13 +88,10 @@ class CRM_NYSS_Mail_HookAlterMailParamsListener
                 if (empty($q['qid']) || empty($q['h'])) {
                     return $m[0];
                 }
-                $sep = $isHtml ? '&amp;' : '&';
-                return "{$bbcfg['public.url.base']}/{$bbcfg['envname']}/{$bbcfg['shortname']}/mailing/resubscribe?"
-                    . http_build_query(['qid' => $q['qid'], 'h' => $q['h']], '', $sep);
+                return "{$bbcfg['public.url.base']}/{$bbcfg['envname']}/{$bbcfg['shortname']}/subscription/resubscribe/"
+                       . $q['qid'] . '/' . $q['h'];
             },
             $body
         );
     }
-
-
 }
