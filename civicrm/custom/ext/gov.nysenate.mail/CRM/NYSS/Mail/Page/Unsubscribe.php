@@ -16,7 +16,11 @@ class CRM_NYSS_Mail_Page_Unsubscribe extends CRM_Mailing_Page_Unsubscribe {
 
     $q = CRM_Mailing_Event_BAO_MailingEventQueue::verify(NULL, $queue_id, $hash);
     if (!$q) {
+      Civi::log()->warning('CRM_NYSS_Mail_Page_Unsubscribe: failed to verify queue_id and event queue hash', [
+        '$queue_id' => $queue_id, '$hash' => $hash,
+      ]);
       CRM_Utils_System::sendInvalidRequestResponse(ts("Invalid request: bad parameters"));
+      return;
     }
 
     $contact_id = $q->contact_id;
@@ -27,12 +31,12 @@ class CRM_NYSS_Mail_Page_Unsubscribe extends CRM_Mailing_Page_Unsubscribe {
          FROM civicrm_mailing_event_queue meq
          INNER JOIN civicrm_mailing_job mj ON mj.id = meq.job_id
          INNER JOIN civicrm_email em ON em.id = meq.email_id
-         WHERE meq.id = %1",
-      [1 => [$queue_id, 'Positive']]
+         WHERE meq.id = %1 AND meq.hash = %2",
+      [1 => [$queue_id, 'Positive'], 2 => [$hash, 'String']]
     );
     if (!$row->fetch()) {
       Civi::log()->warning('CRM_NYSS_Mail_Page_Unsubscribe: could not resolve mailing/email from queue', [
-        'queueId' => $queue_id, 'contactId' => $contact_id,
+        '$queue_id' => $queue_id, 'contactId' => $contact_id,
       ]);
       CRM_Utils_System::sendOkRequestResponse();
       return;

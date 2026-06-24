@@ -88,10 +88,16 @@ function mail_civicrm_alterMenu(&$items) {
   // instead of unsubscribing from civicrm mailing groups, which is the default core behavior.
   $items['civicrm/mailing/unsubscribe']['access_callback'] = 1;
   $items['civicrm/mailing/unsubscribe']['page_callback'] = 'CRM_NYSS_Mail_Page_Unsubscribe';
+  // This is the URL that the proxy is proxying to
+  $items['civicrm/nyss/subscription/unsubscribe']['access_callback'] = 1;
+  $items['civicrm/nyss/subscription/unsubscribe']['page_callback'] = 'CRM_NYSS_Mail_Page_Unsubscribe';
 
   // NYSS #18424 - Override core resubscribe page to issue redirect to custom mail preferences page
   $items['civicrm/mailing/resubscribe']['access_callback'] = 1;
   $items['civicrm/mailing/resubscribe']['page_callback'] = 'CRM_NYSS_Mail_Page_Resubscribe';
+  // This is the URL that the proxy is proxying to
+  $items['civicrm/nyss/subscription/resubscribe']['access_callback'] = 1;
+  $items['civicrm/nyss/subscription/resubscribe']['page_callback'] = 'CRM_NYSS_Mail_Page_Resubscribe';
 }
 
 /**
