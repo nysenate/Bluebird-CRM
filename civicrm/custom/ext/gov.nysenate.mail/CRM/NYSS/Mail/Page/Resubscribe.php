@@ -27,7 +27,7 @@ class CRM_NYSS_Mail_Page_Resubscribe extends CRM_Core_Page {
     );
 
     $bbcfg = get_bluebird_instance_config();
-    $url = "{$bbcfg['public.url.base']}/{$bbcfg['envname']}/{$bbcfg['shortname']}/nyss/subscription/view?eq={$queue_id}&cs={$cs}";
+    $url = "{$bbcfg['public.url.base']}/{$bbcfg['envname']}/{$bbcfg['shortname']}/subscription/manage/{$queue_id}/{$cs}";
 
     CRM_Utils_System::redirect($url);
   }
