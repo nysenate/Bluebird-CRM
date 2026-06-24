@@ -38,7 +38,6 @@ return [
                 'option_group_id',
                 'name',
                 'value',
-                'is_default'
             ],
         ],
     ],
