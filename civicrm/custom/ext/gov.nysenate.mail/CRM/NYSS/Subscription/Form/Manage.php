@@ -60,8 +60,8 @@ class CRM_NYSS_Subscription_Form_Manage extends CRM_Core_Form {
         ON eq.contact_id = c.id
       JOIN civicrm_email e
         ON eq.email_id = e.id
-      WHERE eq.id = {$eq}
-    ");
+      WHERE eq.id = %1
+    ", [1 => [$eq, 'Positive']]);
     if ($dao->N) {
       while ($dao->fetch()) {
         $contact = [
