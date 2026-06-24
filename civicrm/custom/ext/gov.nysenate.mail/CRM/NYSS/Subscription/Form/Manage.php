@@ -29,7 +29,8 @@ class CRM_NYSS_Subscription_Form_Manage extends CRM_Core_Form {
 
     //get form params
     $eq = CRM_Utils_Request::retrieve('eq', 'Positive');
-    $cs = CRM_Utils_Request::retrieve('cs', 'String');
+    // accommodating both intended proxy pattern ('tk') (NYSS #18424) and current proxy pattern ('cs')
+    $cs = CRM_Utils_Request::retrieve('tk', 'String') ?: CRM_Utils_Request::retrieve('cs', 'String');
 
     if (!$eq || !$cs) {
       //check to see if set to submitValues

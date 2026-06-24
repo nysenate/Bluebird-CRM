@@ -10,72 +10,73 @@
 class CRM_NYSS_Mail_Page_Unsubscribe extends CRM_Mailing_Page_Unsubscribe {
 
   public function handleOneClick(): void {
-    $jobId = CRM_Utils_Request::retrieve('jid', 'Integer');
-    $queueId = CRM_Utils_Request::retrieve('qid', 'Integer');
-    $hash = CRM_Utils_Request::retrieve('h', 'String');
+    $queue_id = CRM_Utils_Request::retrieve('eq', 'Integer');
+    // accommodating both intended proxy pattern ('tk') (NYSS #18424) and current proxy pattern ('cs')
+    $hash = CRM_Utils_Request::retrieve('tk', 'String') ?: CRM_Utils_Request::retrieve('cs', 'String');
 
-    $q = CRM_Mailing_Event_BAO_MailingEventQueue::verify(NULL, $queueId, $hash);
+    $q = CRM_Mailing_Event_BAO_MailingEventQueue::verify(NULL, $queue_id, $hash);
     if (!$q) {
       CRM_Utils_System::sendInvalidRequestResponse(ts("Invalid request: bad parameters"));
     }
 
-    $contactId = $q->contact_id;
+    $contact_id = $q->contact_id;
 
     // Resolve mailing ID and the specific email address that received this mailing.
     $row = CRM_Core_DAO::executeQuery(
-      "SELECT mj.mailing_id, em.id AS email_id
+      "SELECT mj.mailing_id, mj.id AS job_id, em.id AS email_id
          FROM civicrm_mailing_event_queue meq
          INNER JOIN civicrm_mailing_job mj ON mj.id = meq.job_id
          INNER JOIN civicrm_email em ON em.id = meq.email_id
          WHERE meq.id = %1",
-      [1 => [$queueId, 'Positive']]
+      [1 => [$queue_id, 'Positive']]
     );
     if (!$row->fetch()) {
       Civi::log()->warning('CRM_NYSS_Mail_Page_Unsubscribe: could not resolve mailing/email from queue', [
-        'queueId' => $queueId, 'contactId' => $contactId,
+        'queueId' => $queue_id, 'contactId' => $contact_id,
       ]);
       CRM_Utils_System::sendOkRequestResponse();
       return;
     }
-    $mailingId = (int) $row->mailing_id;
-    $emailId = (int) $row->email_id;
+    $mailing_id = (int) $row->mailing_id;
+    $email_id = (int) $row->email_id;
+    $job_id = (int) $row->job_id;
 
     $category = CRM_Core_DAO::singleValueQuery(
       "SELECT category FROM civicrm_mailing WHERE id = %1",
-      [1 => [$mailingId, 'Positive']]
+      [1 => [$mailing_id, 'Positive']]
     );
 
     if (empty($category)) {
       Civi::log()->warning('CRM_NYSS_Mail_Page_Unsubscribe: mailing has no category, one-click unsubscribe ignored', [
-        'mailingId' => $mailingId, 'contactId' => $contactId, 'jobId' => $jobId,
+        'mailingId' => $mailing_id, 'contactId' => $contact_id,
       ]);
       CRM_Utils_System::sendOkRequestResponse();
       return;
     }
 
-    $currentCategories = CRM_Core_DAO::singleValueQuery(
+    $current_categories = CRM_Core_DAO::singleValueQuery(
       "SELECT mailing_categories FROM civicrm_email WHERE id = %1",
-      [1 => [$emailId, 'Positive']]
+      [1 => [$email_id, 'Positive']]
     );
-    $categoryList = array_values(array_filter(explode(',', $currentCategories ?? '')));
+    $category_list = array_values(array_filter(explode(',', $current_categories ?? '')));
 
-    if (!in_array($category, $categoryList)) {
-      $categoryList[] = $category;
+    if (!in_array($category, $category_list)) {
+      $category_list[] = $category;
       civicrm_api3('Email', 'create', [
-        'id' => $emailId,
-        'mailing_categories' => implode(',', $categoryList),
+        'id' => $email_id,
+        'mailing_categories' => implode(',', $category_list),
       ]);
     }
 
     // Track the unsubscribe event for reporting (mirrors what unsub_from_mailing does).
     $ue = new CRM_Mailing_Event_BAO_MailingEventUnsubscribe();
-    $ue->event_queue_id = $queueId;
+    $ue->event_queue_id = $queue_id;
     $ue->org_unsubscribe = 0;
     $ue->time_stamp = date('YmdHis');
     $ue->save();
 
     // Look up the category label so the confirmation email reads sensibly.
-    $categoryLabel = CRM_Core_DAO::singleValueQuery(
+    $category_label = CRM_Core_DAO::singleValueQuery(
       "SELECT ov.label
          FROM civicrm_option_value ov
          INNER JOIN civicrm_option_group og ON og.id = ov.option_group_id
@@ -84,12 +85,12 @@ class CRM_NYSS_Mail_Page_Unsubscribe extends CRM_Mailing_Page_Unsubscribe {
     ) ?? $category;
 
     CRM_Mailing_Event_BAO_MailingEventUnsubscribe::send_unsub_response(
-      $queueId, [$category => $categoryLabel], FALSE, $jobId
+      $queue_id, [$category => $category_label], FALSE, $job_id
     );
 
     Civi::log()->info('CRM_NYSS_Mail_Page_Unsubscribe: one-click category opt-out recorded', [
-      'mailingId' => $mailingId, 'contactId' => $contactId, 'emailId' => $emailId,
-      'category' => $category, 'jobId' => $jobId,
+      'mailingId' => $mailing_id, 'contactId' => $contact_id, 'emailId' => $email_id,
+      'category' => $category
     ]);
 
     CRM_Utils_System::sendOkRequestResponse();

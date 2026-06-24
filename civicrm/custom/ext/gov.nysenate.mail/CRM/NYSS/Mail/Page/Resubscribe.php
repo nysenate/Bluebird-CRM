@@ -10,10 +10,11 @@ class CRM_NYSS_Mail_Page_Resubscribe extends CRM_Core_Page {
 
   public function run(): void {
     // first validate current URL
-    $queueId = CRM_Utils_Request::retrieve('qid', 'Integer');
-    $hash = CRM_Utils_Request::retrieve('h', 'String');
+    $queue_id = CRM_Utils_Request::retrieve('eq', 'Integer');
+    // accommodating both intended proxy pattern ('tk') (NYSS #18424) and current proxy pattern ('cs')
+    $hash = CRM_Utils_Request::retrieve('tk', 'String') ?: CRM_Utils_Request::retrieve('cs', 'String');
 
-    $q = CRM_Mailing_Event_BAO_MailingEventQueue::verify(NULL, $queueId, $hash);
+    $q = CRM_Mailing_Event_BAO_MailingEventQueue::verify(NULL, $queue_id, $hash);
     if (!$q) {
       CRM_Utils_System::sendInvalidRequestResponse(ts("Invalid request: bad parameters"));
     }
@@ -26,7 +27,7 @@ class CRM_NYSS_Mail_Page_Resubscribe extends CRM_Core_Page {
     );
 
     $bbcfg = get_bluebird_instance_config();
-    $url = "{$bbcfg['public.url.base']}/{$bbcfg['envname']}/{$bbcfg['shortname']}/nyss/subscription/view?eq={$queueId}&cs={$cs}";
+    $url = "{$bbcfg['public.url.base']}/{$bbcfg['envname']}/{$bbcfg['shortname']}/nyss/subscription/view?eq={$queue_id}&cs={$cs}";
 
     CRM_Utils_System::redirect($url);
   }
