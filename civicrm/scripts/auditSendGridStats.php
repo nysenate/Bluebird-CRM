@@ -482,8 +482,8 @@ Usage: php $script -S <site> --instance <servername> [OPTIONS]
 Audits the SendGrid accumulator archive against Bluebird mailing event tables.
 
 Required:
-  -S <site>                  Bluebird site name (e.g. bb310)
-  --instance <servername>    Accumulator instance servername (e.g. bb310.nysenate.gov)
+  -S <site>                  Bluebird site name (e.g. sd99)
+  --instance <servername>    Accumulator instance servername (e.g. sd99.nysenate.gov)
 
 Options:
   --since <date>             Check events on or after this date (default: 30 days ago)

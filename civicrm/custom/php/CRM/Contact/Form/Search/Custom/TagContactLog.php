@@ -164,6 +164,8 @@ class CRM_Contact_Form_Search_Custom_TagContactLog
 
     $unionQuery = implode("\n UNION ALL \n", $unionQueryParts);
 
+    $limitSql = ($rowcount > 0) ? "LIMIT {$offset}, {$rowcount}" : '';
+
     $sql = "
       SELECT contact_id, tag_name, COUNT(contact_id) tag_count
       FROM (
@@ -171,7 +173,7 @@ class CRM_Contact_Form_Search_Custom_TagContactLog
       ) base
       GROUP BY contact_id, tag_name
       {$orderBySql}
-      LIMIT {$offset}, {$rowcount}
+      {$limitSql}
     ";
 
     //CRM_Core_Error::debug_var('$sql',$sql);
@@ -379,9 +381,9 @@ class CRM_Contact_Form_Search_Custom_TagContactLog
       $_REQUEST['is_quick_export'] = true;
       $formValues = $_REQUEST['formValues'];
 
-      CRM_Export_BAO_Export::exportCustom($formValues['customSearchClass'],
+        CRM_Contact_Form_Search_Action_Export::exportCustom($formValues['customSearchClass'],
         $formValues,
-        'sort_name'
+        'tag_name'
       );
     }
   }//quickExport
