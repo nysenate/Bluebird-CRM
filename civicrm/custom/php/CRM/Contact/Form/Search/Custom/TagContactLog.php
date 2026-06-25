@@ -379,7 +379,7 @@ class CRM_Contact_Form_Search_Custom_TagContactLog
       $_REQUEST['is_quick_export'] = true;
       $formValues = $_REQUEST['formValues'];
 
-      CRM_Export_BAO_Export::exportCustom($formValues['customSearchClass'],
+        CRM_Contact_Form_Search_Action_Export::exportCustom($formValues['customSearchClass'],
         $formValues,
         'sort_name'
       );

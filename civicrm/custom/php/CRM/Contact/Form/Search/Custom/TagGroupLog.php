@@ -379,7 +379,8 @@ class CRM_Contact_Form_Search_Custom_TagGroupLog
       $_REQUEST['is_quick_export'] = true;
       $formValues = Civi::cache()->get('TagGroupLog-'.$qfKey);
 
-      CRM_Export_BAO_Export::exportCustom($formValues['customSearchClass'],
+      CRM_Contact_Form_Search_Action_Export::exportCustom(
+        'CRM_Contact_Form_Search_Custom_TagGroupLog',
         $formValues,
         'sort_name'
       );

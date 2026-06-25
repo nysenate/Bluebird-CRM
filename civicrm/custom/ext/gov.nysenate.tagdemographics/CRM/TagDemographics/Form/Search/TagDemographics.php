@@ -360,7 +360,7 @@ class CRM_TagDemographics_Form_Search_TagDemographics extends CRM_Contact_Form_S
       $_REQUEST['is_quick_export'] = true;
       $formValues = $_REQUEST['formValues'];
 
-      CRM_Export_BAO_Export::exportCustom($formValues['customSearchClass'],
+      CRM_Contact_Form_Search_Action_Export::exportCustom($formValues['customSearchClass'],
         $formValues,
         'sort_name'
       );
