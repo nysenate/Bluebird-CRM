@@ -251,7 +251,7 @@ class CRM_Contact_Form_Search_Custom_TagGroupLog
 
     switch ($this->_formValues['search_type']) {
       case 1:
-        $tags = implode(',', $this->_formValues['tag']);
+        $tags = implode(',', (array)$this->_formValues['tag']);
         if (!empty($tags)) {
           $where[] = "log_et.tag_id IN ({$tags}) ";
         }
@@ -261,7 +261,7 @@ class CRM_Contact_Form_Search_Custom_TagGroupLog
         break;
 
       case 2:
-        $groups = implode(',', $this->_formValues['group']);
+        $groups = implode(',', (array)$this->_formValues['group']);
         if (!empty($groups)) {
           $where[] = "log_et.group_id IN ({$groups}) ";
         }
