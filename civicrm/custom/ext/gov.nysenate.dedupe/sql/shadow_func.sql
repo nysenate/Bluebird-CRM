@@ -113,7 +113,7 @@ CREATE FUNCTION BB_NORMALIZE_ADDR (value VARCHAR(255) CHARACTER SET utf8mb4  COL
         SET address = REGEXP_REPLACE(TRIM(LCASE(address)), '(?<=[0-9])(?:st|nd|rd|th)','');
 
         -- Standardize spacing from the street numbers from 7B, 7-B, 7 B => 7 B
-        SET address = REGEXP_REPLACE(address, '^(\d+)-?(\w+)\s', '$1 $2 ');
+        SET address = REGEXP_REPLACE(address, '^(\\d+)-?([a-zA-Z]+)\\s', '$1 $2 ');
 
         -- Strip out all the different kinds of punctuation
         -- SPECIAL: Don't replace 's with spaces
