@@ -53,7 +53,7 @@ class CRM_NYSS_Dedupe_Service_Normalizer extends AutoService implements EventSub
         $address = preg_replace('/([0-9])(st|nd|rd|th)/i', '$1', $address);
 
         // Normalize spacing: 7B, 7-B, 7 B → 7 B
-        $address = preg_replace('/^([0-9]+)-?(\W+)\s/u', '$1 $2 ', $address);
+        $address = preg_replace('/^([0-9]+)-?([a-zA-Z]+)\s/u', '$1 $2 ', $address);
 
         // Replace punctuation
         // NOTE: apostrophes are removed, others become spaces

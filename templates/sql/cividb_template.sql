@@ -6246,8 +6246,8 @@ BEGIN
 
         -- Lower the case and strip out all the ordinals from the street numbers
         SET address = REGEXP_REPLACE(TRIM(LCASE(value)), '(?<=[0-9])(?:st|nd|rd|th)','');
-        
-        SET address = REGEXP_REPLACE(address, '^(\d+)-?(\w+)\s', '$1 $2 ');
+        -- Standardize spacing from the street numbers from 7B, 7-B, 7 B => 7 B
+        SET address = REGEXP_REPLACE(address, '^(\\d+)-?([a-zA-Z]+)\\s', '$1 $2 ');
 
         
         -- Strip out all the different kinds of punctuation
