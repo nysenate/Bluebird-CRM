@@ -6,7 +6,7 @@
             <ul>
             <li>Open cases include cases with statuses: Ongoing, Urgent, Not Started, Assigned, and Unassigned. </li>
             <li>Unassigned cases are cases that either (a) have the status 'unassigned' or (b) do not have an associated case manager.</li>
-            <li>Average Days to Resolution includes cases closed within the last 90 days.</li>
+            <li>Average Days to Resolution includes cases that were both opened and closed within the last 180 days.</li>
             </ul>
         </p>
         <h4>District-wide Details</h4>
@@ -29,7 +29,7 @@
     <ul>
         <li>Open cases include cases with statuses: Ongoing, Urgent, Not Started, Assigned, and Unassigned. </li>
         <li>If a case is assigned to multiple case managers, then it will be included in each of those case manager's totals.</li>
-        <li>Average Days to Resolution includes cases closed within the last 90 days.</li>
+        <li>Average Days to Resolution includes cases that were both opened and closed within the last 180 days.</li>
     </ul>
     </p>
 {/ts}
