@@ -43,19 +43,13 @@ return [
             [
               'OR',
               [
-                [
-                  'segment_NYSS_Caseload_Resolved',
-                  'IS EMPTY',
-                ],
+                ['status_id:name', '!=', 'Closed'],
                 [
                   'AND',
                   [
-                    [
-                      'segment_NYSS_Caseload_Resolved',
-                      '=',
-                      '1',
-                    ],
-                    ['end_date', '>', 'now - 90 day'],
+                    ['status_id:name', '=', 'Closed'],
+                    ['end_date', '>', 'now - 180 day'],
+                    ['start_date', '>', 'now - 180 day'],
                   ],
                 ],
               ],
