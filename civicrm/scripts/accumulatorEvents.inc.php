@@ -51,29 +51,39 @@ function getBoolInput($message)
 
 function archive_events($dbcon, $events, $status, $bbcfg)
 {
-  $archive = array();
-  $instance_id = "returnInstance('{$bbcfg['install_class']}','{$bbcfg['servername']}','{$bbcfg['shortname']}')";
+  $ins_values = []; // an array of arrays of values to be inserted
+  $row_placeholders = []; // an array of placeholder strings to be combined for the bulk insert.
+
+  // compile multiple rows for a bulk insert.
   foreach ($events as $event_id => $pair) {
     list($event, $queue_event) = array_values($pair);
-    $mailing_id = $event['mailing_id'];
-    $category = mysqli_real_escape_string($dbcon, $event['category']);
-    $email = mysqli_real_escape_string($dbcon, $event['email']);
-    $message_id = "returnMessage($instance_id, $mailing_id, '$category')";
-    $archive[] = "($event_id, $message_id, {$event['job_id']}, {$event['queue_id']}, '{$event['event_type']}', '$status', '$email', {$event['is_test']}, '{$event['dt_created']}', '{$event['dt_received']}', NOW())";
+    $ins_values[] = [(int)$event_id, $bbcfg['install_class'], $bbcfg['servername'], $bbcfg['shortname'], (int)$event['mailing_id'], $event['category'], (int)$event['job_id'], (int)$event['queue_id'], $event['event_type'], $status, $event['email'], (int)$event['is_test'], $event['dt_created'], $event['dt_received']];
+    $row_placeholders[] = '(?,returnMessage(returnInstance(?,?,?),?,?),?,?,?,?,?,?,?,?,NOW())';
   }
 
   mysqli_begin_transaction($dbcon);
   try {
-    $deleted = bb_mysql_query('DELETE FROM incoming WHERE event_id IN ('.implode(',', array_keys($events)).')', $dbcon);
-    $inserted = $deleted && bb_mysql_query('INSERT INTO archive
-                (event_id, message_id, job_id, queue_id, event_type, result, email, is_test, dt_created, dt_received, dt_processed)
-                VALUES '.implode(',', $archive), $dbcon);
-    if (!$deleted || !$inserted) {
-      throw new RuntimeException("Failed to archive $status events: ".mysqli_error($dbcon));
-    }
-    mysqli_commit($dbcon);
+      $del_query = 'DELETE FROM incoming WHERE event_id IN('.implode(', ', array_fill(0, count(array_keys($events)), '?')).')';
+      $del_result = mysqli_execute_query($dbcon, $del_query, array_keys($events));
+      if (!$del_result) {
+          throw new RuntimeException("Failed to delete events from incoming table: ".mysqli_error($dbcon));
+      }
+      $bulk_insert_placeholders = implode(', ', $row_placeholders);
+      $ins_query = <<<ENDINSERT
+        INSERT INTO archive
+        (event_id, message_id, job_id, queue_id, event_type, result, email, is_test, dt_created, dt_received, dt_processed)
+        VALUES $bulk_insert_placeholders
+      ENDINSERT;
+      $ins_result = mysqli_execute_query($dbcon, $ins_query, array_merge(...$ins_values));
+
+      if (!$ins_result) {
+          throw new RuntimeException("Failed to insert archive records: ".mysqli_error($dbcon));
+      }
+
+      mysqli_commit($dbcon);
   }
   catch (Exception $e) {
+    bbscript_log(LL::ERROR, "MySQL Error: ".$e->getMessage());
     mysqli_rollback($dbcon);
     throw $e;
   }
