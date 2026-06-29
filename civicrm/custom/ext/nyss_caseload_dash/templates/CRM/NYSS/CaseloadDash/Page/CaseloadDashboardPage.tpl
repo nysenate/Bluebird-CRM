@@ -9,26 +9,13 @@
             <afsearch-n-y-s-s-caseload-overview-totals></afsearch-n-y-s-s-caseload-overview-totals>
         </form>
     </crm-angular-js>
-    <crm-angular-js modules="afsearchNYSSCaseloadOverviewDetails" overview-details-control>
-        <details id="afsearchNYSSCaseloadOverviewDetails-accordion" class="crm-accordion-light">
-            <summary>{ts}District-wide Details{/ts}{help id="id-overview_details" title="{ts}District-wide Details{/ts}"}</summary>
-            <div>
-                <form>
-                    <afsearch-n-y-s-s-caseload-overview-details></afsearch-n-y-s-s-caseload-overview-details>
-                </form>
-            </div>
-        </details>
-    </crm-angular-js>
+
     <crm-angular-js modules="afsearchNYSSCaseloadCaseManagerTotals">
-        <details open class="crm-accordion-light">
-            <summary>{ts}Breakdown by Case Manager{/ts}{help id="id-casemanager-totals" title="{ts}Breakdown by Case Manager{/ts}"}</summary>
-            <div>
-                <div afsearchNYSSCaseloadOverviewDetails-test-dir></div>
-                <form>
-                    <afsearch-n-y-s-s-caseload-case-manager-totals></afsearch-n-y-s-s-caseload-case-manager-totals>
-                </form>
-            </div>
-        </details>
+        <div>
+            <form>
+                <afsearch-n-y-s-s-caseload-case-manager-totals></afsearch-n-y-s-s-caseload-case-manager-totals>
+            </form>
+        </div>
     </crm-angular-js>
 </div>
 

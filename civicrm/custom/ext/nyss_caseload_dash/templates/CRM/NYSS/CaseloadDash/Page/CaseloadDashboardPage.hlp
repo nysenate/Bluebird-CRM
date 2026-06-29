@@ -9,8 +9,6 @@
             <li>Average Days to Resolution includes cases that were both opened and closed within the last 180 days.</li>
             </ul>
         </p>
-        <h4>District-wide Details</h4>
-        <p>Each total in Caseload Overview can be clicked to reveal more details about the cases in the District-wide Details section. This section can be expanded or collapsed as desired.</p>
         <h4>Breakdown by Case Manager</h4>
         <p>A glance at each of your case managers' current workloads and recent resolution rates.</p>
     {/ts}

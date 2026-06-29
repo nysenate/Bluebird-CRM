@@ -108,7 +108,7 @@ return [
               'cssRules' => [
                 ['font-bold'],
               ],
-              'rewrite' => '<a href="/civicrm/nyss/caseload/dashboard#/?segment_NYSS_Caseload_7_To_30_Days=yes">[COUNT_segment_NYSS_Caseload_7_To_30_Days]</a>',
+              'rewrite' => '<a class="crm-popup" href="/civicrm/nyss/caseload/district#/?segment_NYSS_Caseload_7_To_30_Days=yes&popup_title=Open%207%20-%2030%20Days">[COUNT_segment_NYSS_Caseload_7_To_30_Days]</a>',
             ],
           ],
           'actions' => FALSE,
@@ -151,7 +151,7 @@ return [
               'cssRules' => [
                 ['font-bold'],
               ],
-              'rewrite' => '<a href="/civicrm/nyss/caseload/dashboard#/?segment_NYSS_Caseload_Newer_Than_7_Days=yes">[COUNT_segment_NYSS_Caseload_Newer_Than_7_Days]</a>',
+              'rewrite' => '<a class="crm-popup" href="/civicrm/nyss/caseload/district#/?segment_NYSS_Caseload_Newer_Than_7_Days=yes&popup_title=Open%20%3C%207%20Days">[COUNT_segment_NYSS_Caseload_Newer_Than_7_Days]</a>',
             ],
           ],
           'actions' => FALSE,
@@ -194,7 +194,7 @@ return [
                 ['font-bold'],
               ],
               'alignment' => 'text-center',
-              'rewrite' => '<a href="/civicrm/nyss/caseload/dashboard#/?segment_NYSS_Caseload_Older_Than_30_Days=yes">[COUNT_segment_NYSS_Caseload_Older_Than_30_Days]</a>',
+              'rewrite' => '<a class="crm-popup" href="/civicrm/nyss/caseload/district#/?segment_NYSS_Caseload_Older_Than_30_Days=yes&popup_title=Open%20%3E%2030%20Days">[COUNT_segment_NYSS_Caseload_Older_Than_30_Days]</a>',
             ],
           ],
           'actions' => FALSE,
@@ -237,7 +237,7 @@ return [
               'cssRules' => [
                 ['font-bold'],
               ],
-              'rewrite' => '<a href="/civicrm/nyss/caseload/dashboard#/?segment_NYSS_Caseload_Older_Than_7_Days=yes">[COUNT_segment_NYSS_Caseload_Older_Than_7_Days]</a>',
+              'rewrite' => '<a href="/civicrm/nyss/caseload/dashboard#/?segment_NYSS_Caseload_Older_Than_7_Days=yes&popup_title=Open%20%3E%207%20Days">[COUNT_segment_NYSS_Caseload_Older_Than_7_Days]</a>',
             ],
           ],
           'actions' => FALSE,
@@ -280,8 +280,9 @@ return [
               'cssRules' => [
                 ['font-bold'],
               ],
-              'rewrite' => '<a href="/civicrm/nyss/caseload/dashboard#/?segment_NYSS_Caseload_Open=yes">[COUNT_segment_NYSS_Caseload_Open]</a>',
-            ],
+              'rewrite' => '<a class="crm-popup" href="/civicrm/nyss/caseload/district#/?segment_NYSS_Caseload_Open=yes&popup_title=Total%20Open">[COUNT_segment_NYSS_Caseload_Open]</a>',
+            //<a class=\"crm-popup\" href=\"/civicrm/nyss/caseload/case-manager#?Case_Manager=[Case_CaseContact_Contact_01_Contact_Relaticd0b67c6898a0668]&Case_Manager_Open=true&popup_title=[Case_CaseContact_Contact_01_Contact_Relati55de3f513091bdce]%20%E2%80%94%20Open%20Cases\">[COUNT_segment_NYSS_Caseload_Open]</a>
+                ],
           ],
           'actions' => FALSE,
           'classes' => [
@@ -323,7 +324,7 @@ return [
               'cssRules' => [
                 ['font-bold'],
               ],
-              'rewrite' => '<a href="/civicrm/nyss/caseload/dashboard#/?segment_NYSS_Caseload_Resolved_Last_7_Days=yes">[COUNT_segment_NYSS_Caseload_Resolved_Last_7_Days]</a>',
+              'rewrite' => '<a class="crm-popup" href="/civicrm/nyss/caseload/district#/?segment_NYSS_Caseload_Resolved_Last_7_Days=yes&popup_title=Resolved%20Last%207%20Days">[COUNT_segment_NYSS_Caseload_Resolved_Last_7_Days]</a>',
             ],
           ],
           'actions' => FALSE,
@@ -366,7 +367,7 @@ return [
               'cssRules' => [
                 ['font-bold'],
               ],
-              'rewrite' => '<a href="/civicrm/nyss/caseload/dashboard#/?segment_NYSS_Caseload_Unassigned=yes">[COUNT_Case_SK_NyssCaseloadUnassignedCases_id_01_c7b0c6b4793bbbee_label]</a>',
+              'rewrite' => '<a class="crm-popup" href="/civicrm/nyss/caseload/district#/?segment_NYSS_Caseload_Unassigned=yes&popup_title=Total%20Unassigned">[COUNT_Case_SK_NyssCaseloadUnassignedCases_id_01_c7b0c6b4793bbbee_label]</a>',
             ],
           ],
           'actions' => FALSE,
@@ -409,7 +410,7 @@ return [
               'cssRules' => [
                 ['font-bold'],
               ],
-              'rewrite' => '<a href="/civicrm/nyss/caseload/dashboard#/?segment_NYSS_Caseload_Urgent=yes">[COUNT_segment_NYSS_Caseload_Urgent]</a>',
+              'rewrite' => '<a class="crm-popup" href="/civicrm/nyss/caseload/district#/?segment_NYSS_Caseload_Urgent=yes&popup_title=Total%20Urgent">[COUNT_segment_NYSS_Caseload_Urgent]</a>',
             ],
           ],
           'actions' => FALSE,
