@@ -33,7 +33,7 @@ return [
             'segment_NYSS_Caseload_Resolved_Last_7_Days:label',
             'DATEDIFF(end_date, start_date) AS DATEDIFF_end_date_start_date',
             'Case_CaseContact_Contact_01_Contact_RelationshipCache_Case_01.near_contact_id',
-            'Case_CaseContact_Contact_01_Contact_RelationshipCache_Case_01.near_contact_id.display_name',
+            'Case_CaseContact_Contact_01_Contact_RelationshipCache_Case_01.near_contact_id.sort_name',
           ],
           'orderBy' => [],
           'where' => [
@@ -159,7 +159,7 @@ return [
             ],
             [
               'type' => 'field',
-              'key' => 'Case_CaseContact_Contact_01_Contact_RelationshipCache_Case_01.near_contact_id.display_name',
+              'key' => 'Case_CaseContact_Contact_01_Contact_RelationshipCache_Case_01.near_contact_id.sort_name',
               'label' => E::ts('Case Manager'),
               'sortable' => TRUE,
             ],
@@ -213,15 +213,15 @@ return [
             ],
             [
               'type' => 'field',
-              'key' => 'Case_CaseContact_Contact_01_Contact_RelationshipCache_Case_01.near_contact_id.display_name',
+              'key' => 'Case_CaseContact_Contact_01_Contact_RelationshipCache_Case_01.near_contact_id.sort_name',
               'label' => E::ts('Case Manager Display Name'),
               'spec' => [
-                'name' => 'Case_CaseContact_Contact_01_Contact_Relati55de3f513091bdce',
+                'name' => 'Case_CaseContact_Contact_01_Contact_Relati0e9a026673a1bc81',
                 'data_type' => 'String',
                 'suffixes' => NULL,
                 'options' => FALSE,
                 'serialize' => NULL,
-                'original_field_name' => 'display_name',
+                'original_field_name' => 'sort_name',
                 'original_field_entity' => 'Contact',
                 'input_type' => 'Text',
                 'entity_reference' => NULL,
