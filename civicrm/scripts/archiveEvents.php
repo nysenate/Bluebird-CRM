@@ -34,16 +34,15 @@ $conn = get_accumulator_connection($bbconfig);
 bbscript_log(LL::INFO, "Checking Orphaned Events for $instance");
 
 //gets all relevant pulls from the instance
-$result = exec_query("
-    SELECT *
-    FROM incoming
-    WHERE instance='$instance'
-    ORDER BY mailing_id
-    ", $conn, true);
+$result = mysqli_execute_query($conn, 'SELECT * FROM incoming WHERE instance = ? ORDER BY mailing_id', [$instance]);
+if (!$result) {
+  bbscript_log(LL::FATAL, 'MySQL Fatal Error: '.mysqli_error($conn));
+  exit(1);
+}
 
 // Eventually: join mailing id keys on summary for initial processed (dt_first)
 // Can't do it because some old events get logged without mailing_id's in
 // the summary table.
-archive_orphaned_events($conn, $result, $optlist, $bbconfig);
+archive_orphaned_events($conn, $result, $instance, $bbconfig);
 
 ?>

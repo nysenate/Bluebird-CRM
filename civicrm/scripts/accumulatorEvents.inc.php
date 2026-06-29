@@ -112,7 +112,7 @@ function archive_orphaned_events($dbcon, $result, $opts, $bbcfg)
 
     //moves the archive events to the table
     archive_events($dbcon, $orphans, 'ARCHIVED', $bbcfg);
-    bbscript_log('Archived '.$event_count.' orphaned events from '.$opts['instance']);
+    bbscript_log(LL::INFO, 'Archived '.$event_count.' orphaned events from '.$opts['instance']);
   }
   else {
     bbscript_log(LL::NOTICE, 'There are no orphaned events for '.$opts['instance']);
