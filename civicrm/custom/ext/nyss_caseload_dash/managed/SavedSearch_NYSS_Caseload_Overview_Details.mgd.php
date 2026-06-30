@@ -6,7 +6,7 @@ return [
     'name' => 'SavedSearch_NYSS_Caseload_Overview_Details',
     'entity' => 'SavedSearch',
     'cleanup' => 'unused',
-    'update' => 'unmodified',
+    'update' => 'always',
     'params' => [
       'version' => 4,
       'values' => [
@@ -26,6 +26,7 @@ return [
             'segment_NYSS_Caseload_Open:label',
             'segment_NYSS_Caseload_Resolved:label',
             'Case_SK_NyssCaseloadUnassignedCases_id_01.segment_NYSS_Caseload_Unassigned:label',
+            'Case_SK_NyssCaseloadUnassignedCases_id_01.segment_NYSS_Caseload_Unassigned',
             'segment_NYSS_Caseload_Urgent:label',
             'segment_NYSS_Caseload_Newer_Than_7_Days:label',
             'segment_NYSS_Caseload_Older_Than_7_Days:label',
@@ -119,7 +120,7 @@ return [
     'name' => 'SavedSearch_NYSS_Caseload_Overview_Details_SearchDisplay_NYSS_Caseload_Overview_Details_Table',
     'entity' => 'SearchDisplay',
     'cleanup' => 'unused',
-    'update' => 'unmodified',
+    'update' => 'always',
     'params' => [
       'version' => 4,
       'values' => [
@@ -234,7 +235,7 @@ return [
     'name' => 'SavedSearch_NYSS_Caseload_Overview_Details_SearchDisplay_NyssCaseloadDetailsStats',
     'entity' => 'SearchDisplay',
     'cleanup' => 'unused',
-    'update' => 'unmodified',
+    'update' => 'always',
     'params' => [
       'version' => 4,
       'values' => [
@@ -243,6 +244,7 @@ return [
         'saved_search_id.name' => 'NYSS_Caseload_Overview_Details',
         'type' => 'entity',
         'settings' => [
+          'entity_permission' => 'access caseload dashboard',
           'sort' => [],
           'columns' => [
             [

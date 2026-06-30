@@ -13,4 +13,5 @@ return [
   'icon' => 'fa-list-alt',
   'requires' => ['crmNyssCaseloadDash'],
   'server_route' => 'civicrm/nyss/caseload/district',
+  'permission' => ['access caseload dashboard'],
 ];

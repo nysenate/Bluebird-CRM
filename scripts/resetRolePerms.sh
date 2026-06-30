@@ -7,6 +7,7 @@
 # Organization: New York State Senate
 # Date: 2013-05-07
 # Revised: 2019-01-31
+#          2026-06-29 - Add 'access caseload dashboard' perm - NYSS #18119
 #
 
 prog=`basename $0`
@@ -72,6 +73,7 @@ sql="
     (3, 'access administration pages', 'system'),
     (3, 'access all cases and activities', 'civicrm'),
     (3, 'access all custom data', 'civicrm'),
+    (3, 'access caseload dashboard', 'civicrm'),
     (3, 'access CiviCRM', 'civicrm'),
     (3, 'access CiviReport', 'civicrm'),
     (3, 'access Contact Dashboard', 'civicrm'),
@@ -123,6 +125,7 @@ sql="
     (4, 'access administration pages', 'system'),
     (4, 'access all cases and activities', 'civicrm'),
     (4, 'access all custom data', 'civicrm'),
+    (4, 'access caseload dashboard', 'civicrm'),
     (4, 'access CiviCRM', 'civicrm'),
     (4, 'access CiviMail', 'civicrm'),
     (4, 'access CiviReport', 'civicrm'),
@@ -302,6 +305,7 @@ sql="
     (9, 'access administration pages', 'system'),
     (9, 'access all cases and activities', 'civicrm'),
     (9, 'access all custom data', 'civicrm'),
+    (9, 'access caseload dashboard', 'civicrm'),
     (9, 'access CiviCRM', 'civicrm'),
     (9, 'access CiviReport', 'civicrm'),
     (9, 'access Contact Dashboard', 'civicrm'),
@@ -373,6 +377,7 @@ sql="
 
     (10, 'access all cases and activities', 'civicrm'),
     (10, 'access all custom data', 'civicrm'),
+    (10, 'access caseload dashboard', 'civicrm'),
     (10, 'access CiviCRM', 'civicrm'),
     (10, 'access CiviReport', 'civicrm'),
     (10, 'access Contact Dashboard', 'civicrm'),
