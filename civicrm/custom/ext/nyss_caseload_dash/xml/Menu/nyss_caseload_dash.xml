@@ -4,6 +4,6 @@
     <path>civicrm/nyss/caseload/dashboard</path>
     <page_callback>CRM_NYSS_CaseloadDash_Page_CaseloadDashboardPage</page_callback>
     <title>CaseloadDashboardPage</title>
-    <access_arguments>access CiviCRM</access_arguments>
+    <access_arguments>access caseload dashboard</access_arguments>
   </item>
 </menu>

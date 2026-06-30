@@ -9,4 +9,5 @@ return [
   ],
   'icon' => 'fa-list-alt',
   //'server_route' => 'civicrm/nyss/caseload/overview',
+  'permission' => ['access caseload dashboard'],
 ];

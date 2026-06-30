@@ -183,6 +183,7 @@ return [
         'saved_search_id.name' => 'NYSS_Caseload_Manager_Details',
         'type' => 'entity',
         'settings' => [
+          'entity_permission' => 'access caseload dashboard',
           'sort' => [],
           'columns' => [
             [

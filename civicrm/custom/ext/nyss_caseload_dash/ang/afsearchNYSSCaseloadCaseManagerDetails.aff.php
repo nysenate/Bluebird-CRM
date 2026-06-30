@@ -6,4 +6,5 @@ return [
   'title' => E::ts('Caseload - Case Manager Details'),
   'icon' => 'fa-list-alt',
   'server_route' => 'civicrm/nyss/caseload/case-manager',
+  'permission' => ['access caseload dashboard'],
 ];

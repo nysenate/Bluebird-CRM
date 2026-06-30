@@ -5,7 +5,7 @@ declare(strict_types = 1);
 require_once 'nyss_caseload_dash.civix.php';
 // phpcs:enable
 
-use CRM_NyssCaseloadDash_ExtensionUtil as E;
+use CRM_NYSS_CaseloadDash_ExtensionUtil as E;
 
 /**
  * Implements hook_civicrm_config().
@@ -32,6 +32,13 @@ function nyss_caseload_dash_civicrm_install(): void {
  */
 function nyss_caseload_dash_civicrm_enable(): void {
   _nyss_caseload_dash_civix_civicrm_enable();
+}
+
+function nyss_caseload_dash_civicrm_permission(&$permissions): void {
+    $permissions['access caseload dashboard'] = [
+        'label' => E::ts('NYSS Caseload Dashboard: access caseload dashboard'),
+        'description' => E::ts('Allows access to the NYSS caseload dashboard page'),
+    ];
 }
 
 function nyss_caseload_dash_civicrm_pageRun(&$page) {
