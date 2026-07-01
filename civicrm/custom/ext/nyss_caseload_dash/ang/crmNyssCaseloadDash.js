@@ -24,6 +24,7 @@
         });
 
         dialog.on('crmLoad', function() {
+            $(this).parent().find('a.crm-dialog-titlebar-print').hide(); // print isn't working right now. Likely bug in Civi Core. So, hide it.
             $(this).dialog('option', 'title', customTitle);
             $titleSpan = $(this).parent().find('.ui-dialog-title');
             if ($titleSpan.length) {
