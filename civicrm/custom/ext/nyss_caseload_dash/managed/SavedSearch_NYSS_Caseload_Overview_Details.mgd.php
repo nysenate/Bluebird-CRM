@@ -33,7 +33,7 @@ return [
             'segment_NYSS_Caseload_7_To_30_Days:label',
             'segment_NYSS_Caseload_Older_Than_30_Days:label',
             'segment_NYSS_Caseload_Resolved_Last_7_Days:label',
-            'DATEDIFF(end_date, start_date) AS DATEDIFF_end_date_start_date',
+            'IF(ISNOTNULL(segment_NYSS_Caseload_Opened_Within_180_Days), DATEDIFF(end_date, start_date), NULL) AS DATEDIFF_end_date_start_date',
             'SUM(Case_SK_NyssCaseloadUnassignedCases_id_01.COUNT_Case_CaseContact_Contact_01_Contact_a6c385c12bd86d07) AS SUM_Case_SK_NyssCaseloadUnassignedCases_id_01_COUNT_Case_CaseContact_Contact_01_Contact_a6c385c12bd86d07',
             'GROUP_CONCAT(DISTINCT Case_CaseContact_Contact_01.sort_name) AS GROUP_CONCAT_Case_CaseContact_Contact_01_sort_name',
             'GROUP_CONCAT(DISTINCT Case_CaseContact_Contact_01_Contact_RelationshipCache_Case_01.near_contact_id.display_name) AS GROUP_CONCAT_Case_CaseContact_Contact_01_Contact_RelationshipCache_Case_01_near_contact_id_display_name',
@@ -50,7 +50,6 @@ return [
                   [
                     ['status_id:name', '=', 'Closed'],
                     ['end_date', '>', 'now - 180 day'],
-                    ['start_date', '>', 'now - 180 day'],
                   ],
                 ],
               ],
