@@ -18,6 +18,14 @@ interface Mailer
      * @param  mixed  $users
      * @return \Illuminate\Mail\PendingMail
      */
+    public function cc($users);
+
+    /**
+     * Begin the process of mailing a mailable class instance.
+     *
+     * @param  mixed  $users
+     * @return \Illuminate\Mail\PendingMail
+     */
     public function bcc($users);
 
     /**
@@ -38,4 +46,14 @@ interface Mailer
      * @return \Illuminate\Mail\SentMessage|null
      */
     public function send($view, array $data = [], $callback = null);
+
+    /**
+     * Send a new message synchronously using a view.
+     *
+     * @param  \Illuminate\Contracts\Mail\Mailable|string|array  $mailable
+     * @param  array  $data
+     * @param  \Closure|string|null  $callback
+     * @return \Illuminate\Mail\SentMessage|null
+     */
+    public function sendNow($mailable, array $data = [], $callback = null);
 }

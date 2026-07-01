@@ -45,13 +45,18 @@ class Lottery
      * Create a new Lottery instance.
      *
      * @param  int|float  $chances
-     * @param  int|null  $outOf
-     * @return void
+     * @param  int<1, max>|null  $outOf
+     *
+     * @throws \RuntimeException
      */
     public function __construct($chances, $outOf = null)
     {
         if ($outOf === null && is_float($chances) && $chances > 1) {
             throw new RuntimeException('Float must not be greater than 1.');
+        }
+
+        if ($outOf !== null && $outOf < 1) {
+            throw new RuntimeException('Lottery "out of" value must be greater than or equal to 1.');
         }
 
         $this->chances = $chances;
@@ -112,7 +117,7 @@ class Lottery
      * Run the lottery.
      *
      * @param  null|int  $times
-     * @return mixed
+     * @return ($times is null ? mixed : list<mixed>)
      */
     public function choose($times = null)
     {
@@ -184,7 +189,7 @@ class Lottery
     }
 
     /**
-     * Force the lottery to always result in a lose.
+     * Force the lottery to always result in a loss.
      *
      * @param  callable|null  $callback
      * @return void
@@ -211,7 +216,7 @@ class Lottery
      */
     public static function fix($sequence, $whenMissing = null)
     {
-        return static::forceResultWithSequence($sequence, $whenMissing);
+        static::forceResultWithSequence($sequence, $whenMissing);
     }
 
     /**
@@ -246,6 +251,16 @@ class Lottery
 
             return $whenMissing($chances, $outOf);
         });
+    }
+
+    /**
+     * Indicate that the lottery results should be determined normally.
+     *
+     * @return void
+     */
+    public static function determineResultsNormally()
+    {
+        static::determineResultNormally();
     }
 
     /**

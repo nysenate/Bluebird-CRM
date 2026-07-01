@@ -52,6 +52,7 @@ use SebastianBergmann\CodeUnit\CodeUnitCollection;
 use SebastianBergmann\CodeUnit\InvalidCodeUnitException;
 use SebastianBergmann\CodeUnit\Mapper;
 use SebastianBergmann\Environment\OperatingSystem;
+use SebastianBergmann\RecursionContext\InvalidArgumentException;
 
 /**
  * @internal This class is not covered by the backward compatibility promise for PHPUnit
@@ -84,7 +85,7 @@ final class Test
     private static $hookMethods = [];
 
     /**
-     * @throws \SebastianBergmann\RecursionContext\InvalidArgumentException
+     * @throws InvalidArgumentException
      */
     public static function describe(\PHPUnit\Framework\Test $test): array
     {
@@ -109,11 +110,11 @@ final class Test
     }
 
     /**
+     * @psalm-param class-string $className
+     *
      * @throws CodeCoverageException
      *
      * @return array|bool
-     *
-     * @psalm-param class-string $className
      */
     public static function getLinesToBeCovered(string $className, string $methodName)
     {
@@ -132,9 +133,9 @@ final class Test
     /**
      * Returns lines of code specified with the @uses annotation.
      *
-     * @throws CodeCoverageException
-     *
      * @psalm-param class-string $className
+     *
+     * @throws CodeCoverageException
      */
     public static function getLinesToBeUsed(string $className, string $methodName): array
     {
@@ -174,9 +175,9 @@ final class Test
     }
 
     /**
-     * @throws Exception
-     *
      * @psalm-param class-string $className
+     *
+     * @throws Exception
      */
     public static function getRequirements(string $className, string $methodName): array
     {
@@ -189,10 +190,10 @@ final class Test
     /**
      * Returns the missing requirements for a test.
      *
+     * @psalm-param class-string $className
+     *
      * @throws Exception
      * @throws Warning
-     *
-     * @psalm-param class-string $className
      */
     public static function getMissingRequirements(string $className, string $methodName): array
     {
@@ -319,9 +320,9 @@ final class Test
     /**
      * Returns the provided data for a method.
      *
-     * @throws Exception
-     *
      * @psalm-param class-string $className
+     *
+     * @throws Exception
      */
     public static function getProvidedData(string $className, string $methodName): ?array
     {
@@ -596,9 +597,9 @@ final class Test
     }
 
     /**
-     * @throws CodeCoverageException
-     *
      * @psalm-param class-string $className
+     *
+     * @throws CodeCoverageException
      */
     private static function getLinesToBeCoveredOrUsed(string $className, string $methodName, string $mode): array
     {

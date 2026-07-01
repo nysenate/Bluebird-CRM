@@ -2,6 +2,7 @@
 
 namespace Illuminate\Support\Testing\Fakes;
 
+use Carbon\Carbon;
 use Carbon\CarbonImmutable;
 use Closure;
 use Illuminate\Bus\BatchRepository;
@@ -112,7 +113,7 @@ class BatchRepositoryFake implements BatchRepository
     public function markAsFinished(string $batchId)
     {
         if (isset($this->batches[$batchId])) {
-            $this->batches[$batchId]->finishedAt = now();
+            $this->batches[$batchId]->finishedAt = Carbon::now();
         }
     }
 
@@ -143,11 +144,23 @@ class BatchRepositoryFake implements BatchRepository
     /**
      * Execute the given Closure within a storage specific transaction.
      *
-     * @param  \Closure  $callback
-     * @return mixed
+     * @template TReturn
+     *
+     * @param  (\Closure(): TReturn)  $callback
+     * @return TReturn
      */
     public function transaction(Closure $callback)
     {
         return $callback();
+    }
+
+    /**
+     * Rollback the last database transaction for the connection.
+     *
+     * @return void
+     */
+    public function rollBack()
+    {
+        //
     }
 }

@@ -3,8 +3,10 @@
 namespace Illuminate\Pagination;
 
 use Illuminate\Contracts\Support\Arrayable;
+use Illuminate\Support\Collection;
 use UnexpectedValueException;
 
+/** @implements Arrayable<array-key, mixed> */
 class Cursor implements Arrayable
 {
     /**
@@ -58,9 +60,9 @@ class Cursor implements Arrayable
      */
     public function parameters(array $parameterNames)
     {
-        return collect($parameterNames)->map(function ($parameterName) {
-            return $this->parameter($parameterName);
-        })->toArray();
+        return (new Collection($parameterNames))
+            ->map(fn ($parameterName) => $this->parameter($parameterName))
+            ->toArray();
     }
 
     /**
@@ -120,6 +122,10 @@ class Cursor implements Arrayable
         $parameters = json_decode(base64_decode(str_replace(['-', '_'], ['+', '/'], $encodedString)), true);
 
         if (json_last_error() !== JSON_ERROR_NONE) {
+            return null;
+        }
+
+        if (! is_array($parameters) || ! array_key_exists('_pointsToNextItems', $parameters)) {
             return null;
         }
 
