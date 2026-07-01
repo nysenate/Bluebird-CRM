@@ -8,6 +8,7 @@ return [
     'dashboard_dashlet',
   ],
   'icon' => 'fa-list-alt',
+  'requires' => ['crmNyssCaseloadDash'],
   'permission' => [
     'access CiviCRM','access my cases and activities',
   ],
