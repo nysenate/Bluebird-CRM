@@ -32,8 +32,14 @@ return [
               [
                 ['status_id:name', '=', 'Unassigned'],
                 [
-                  'Case_CaseContact_Contact_01_Contact_RelationshipCache_Case_01.near_contact_id',
-                  'IS EMPTY',
+                  'AND',
+                  [
+                    [
+                      'Case_CaseContact_Contact_01_Contact_RelationshipCache_Case_01.near_contact_id',
+                      'IS EMPTY',
+                    ],
+                    ['status_id:name', '!=', 'Resolved'],
+                  ],
                 ],
               ],
             ],
