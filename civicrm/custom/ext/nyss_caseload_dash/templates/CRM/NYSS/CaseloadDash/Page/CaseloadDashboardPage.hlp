@@ -1,33 +1,35 @@
 {htxt id="id-dashboard_intro"}
     {ts}
-        <h4>Caseload Overview</h4>
-        <p>Shows the total count of: open cases, urgent cases, unassigned cases, cases opened in the last 7 days, cases opened 7 - 30 days ago, cases opened more than 30 days ago, and cases resolved in the past 7 days.</p>
-        <p>Notes:
-            <ul>
-            <li>Open cases include cases with statuses: Ongoing, Urgent, Not Started, Assigned, and Unassigned. </li>
-            <li>Unassigned cases are cases that either (a) have the status 'unassigned' or (b) do not have an associated case manager.</li>
-            <li>Average Days to Resolution includes cases that were both opened and closed within the last 180 days.</li>
-            </ul>
-        </p>
-        <h4>Breakdown by Case Manager</h4>
-        <p>A glance at each of your case managers' current workloads and recent resolution rates.</p>
+        <p>The Caseload Dashboard is designed to give you insight into your district's current caseload, help you make decisions about case assignment, and identify when case managers need extra support.</p>
     {/ts}
 {/htxt}
-{htxt id="id-overview_details"}
+{htxt id="id-overview-totals"}
     {ts}
-        <p>Each total in the caseload overview can be clicked to reveal more details about the cases included in the total. This detailed information appears in the District-wide Details section.</p>
-        <p>Tip - This section can be expanded or collapsed as desired by clicking the toggle-able heading.</p>
+        <p>A look at district wide case stats:
+        <ul>
+            <li>Total Open &dash; includes cases with statuses: Ongoing, Urgent, Not Started, Assigned, and Unassigned</li>
+            <li>Total Urgent &dash; cases with the status "Urgent"</li>
+            <li>Total Unassigned &dash; cases that either (a) have the status 'unassigned' or (b) are open and do not have an associated case manager</li>
+            <li>Open < 7 Days &dash; Unresolved cases that have been open less than 7 days</li>
+            <li>Open 7 - 30 Days &dash; Unresolved cases that have been open between 7 and 30 days</li>
+            <li>Open > 30 Days &dash; Unresolved cases that have been open longer than 30 days</li>
+            <li>Resolved Last 7 Days &dash; Cases that have been closed/resolved in the last 7 days</li>
+            <li>Avg. Days to Resolution &dash; Your district's average case resolution rate. This average includes cases that are up to 180 days old.</li>
+        </ul>
+        </p>
+        <p>Each total in the caseload overview can be clicked to reveal more details about the cases included in the total.</p>
     {/ts}
 {/htxt}
 {htxt id="id-casemanager-totals"}
 {ts}
-    <p>A glance at each of your case managers' current workloads and recent resolution rates.</p>
+    <p>A look at each case manager's cases.</p>
     <p>Each total can be clicked to show more details about the cases included in the total.</p>
     <p>Notes:
     <ul>
         <li>Open cases include cases with statuses: Ongoing, Urgent, Not Started, Assigned, and Unassigned. </li>
-        <li>If a case is assigned to multiple case managers, then it will be included in each of those case manager's totals.</li>
-        <li>Average Days to Resolution includes cases that were both opened and closed within the last 180 days.</li>
+        <li>Cases assigned to multiple case managers, will be included in all of those case managers' stats.</li>
+        <li>Average Days to Resolution includes cases that are up to 180 days old.</li>
+        <li>Case Manager stats reflect case manager assignment &mdash; not case manager activity. For example, Mel resolves a case that is assigned to Kha. This resolution will be included in Kha's stats &mdash; not Mel's &mdash; because Kha is the current case manager.</li>
     </ul>
     </p>
 {/ts}

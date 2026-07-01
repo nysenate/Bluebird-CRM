@@ -4,6 +4,10 @@
     @apply flex flex-row;
 }
 
+.page-nyss-caseload-dashboard h1.page-title {
+    display: none;
+}
+
 .nyss-caseload-dash-intro-section {
     @apply my-2 mb-6 p-4 pt-1 bg-white;
 }

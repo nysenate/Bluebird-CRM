@@ -412,7 +412,7 @@ return [
             [
               'type' => 'field',
               'key' => 'DATEDIFF_end_date_start_date',
-              'label' => E::ts('Time to Resolution'),
+              'label' => E::ts('Avg. Days to Resolution'),
               'spec' => [
                 'name' => 'DATEDIFF_end_date_start_date',
                 'data_type' => 'Integer',
