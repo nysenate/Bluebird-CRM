@@ -364,6 +364,7 @@ return [
               'label' => E::ts('Avg. Days to Resolution'),
               'sortable' => TRUE,
               'alignment' => 'text-center',
+              'rewrite' => '{$AVG_DATEDIFF_end_date_start_date|round}',
             ],
           ],
           'actions' => TRUE,
