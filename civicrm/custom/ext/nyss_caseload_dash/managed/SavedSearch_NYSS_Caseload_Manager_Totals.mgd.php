@@ -316,7 +316,7 @@ return [
               'label' => E::ts('Open Cases'),
               'sortable' => TRUE,
               'alignment' => 'text-center',
-              'rewrite' => "<a class=\"crm-popup\" href=\"/civicrm/nyss/caseload/case-manager#?Case_Manager=[Case_CaseContact_Contact_01_Contact_Relaticd0b67c6898a0668]&Case_Manager_Open=true&popup_title=[Case_CaseContact_Contact_01_Contact_Relati0e9a026673a1bc81]%20%E2%80%94%20Open%20Cases\">[COUNT_segment_NYSS_Caseload_Open]</a>",
+              'rewrite' => '<a class="crm-popup" href="/civicrm/nyss/caseload/case-manager#?Case_Manager=[Case_CaseContact_Contact_01_Contact_Relaticd0b67c6898a0668]&Case_Manager_Open=true&popup_title=[Case_CaseContact_Contact_01_Contact_Relati0e9a026673a1bc81]%20%E2%80%94%20Open%20Cases">[COUNT_segment_NYSS_Caseload_Open]</a>',
             ],
             [
               'type' => 'html',
@@ -324,7 +324,7 @@ return [
               'label' => E::ts('Urgent Cases'),
               'sortable' => TRUE,
               'alignment' => 'text-center',
-              'rewrite' => "<a class=\"crm-popup\" href=\"/civicrm/nyss/caseload/case-manager#?Case_Manager=[Case_CaseContact_Contact_01_Contact_Relaticd0b67c6898a0668]&Case_Manager_Urgent=true&popup_title=[Case_CaseContact_Contact_01_Contact_Relati0e9a026673a1bc81]%20%E2%80%94%20Urgent%20Cases\">[COUNT_segment_NYSS_Caseload_Urgent]</a>",
+              'rewrite' => '<a class="crm-popup" href="/civicrm/nyss/caseload/case-manager#?Case_Manager=[Case_CaseContact_Contact_01_Contact_Relaticd0b67c6898a0668]&Case_Manager_Urgent=true&popup_title=[Case_CaseContact_Contact_01_Contact_Relati0e9a026673a1bc81]%20%E2%80%94%20Urgent%20Cases">[COUNT_segment_NYSS_Caseload_Urgent]</a>',
             ],
             [
               'type' => 'html',
@@ -332,7 +332,7 @@ return [
               'label' => E::ts('Open < 7 Days'),
               'sortable' => TRUE,
               'alignment' => 'text-center',
-              'rewrite' => "<a class=\"crm-popup\" href=\"/civicrm/nyss/caseload/case-manager#?Case_Manager=[Case_CaseContact_Contact_01_Contact_Relaticd0b67c6898a0668]&Case_Manager_Newer_Than_7_Days=true&popup_title=[Case_CaseContact_Contact_01_Contact_Relati0e9a026673a1bc81]%20%E2%80%94%20Open+%2F+7+Days\">[COUNT_segment_NYSS_Caseload_Newer_Than_7_Days]</a>",
+              'rewrite' => '<a class="crm-popup" href="/civicrm/nyss/caseload/case-manager#?Case_Manager=[Case_CaseContact_Contact_01_Contact_Relaticd0b67c6898a0668]&Case_Manager_Newer_Than_7_Days=true&popup_title=[Case_CaseContact_Contact_01_Contact_Relati0e9a026673a1bc81]%20%E2%80%94%20Open+%2F+7+Days">[COUNT_segment_NYSS_Caseload_Newer_Than_7_Days]</a>',
             ],
             [
               'type' => 'html',
@@ -340,7 +340,7 @@ return [
               'label' => E::ts('Open 7 - 30 Days'),
               'sortable' => TRUE,
               'alignment' => 'text-center',
-              'rewrite' => "<a class=\"crm-popup\" href=\"/civicrm/nyss/caseload/case-manager#?Case_Manager=[Case_CaseContact_Contact_01_Contact_Relaticd0b67c6898a0668]&Case_Manager_7_To_30_Days=true&popup_title=[Case_CaseContact_Contact_01_Contact_Relati0e9a026673a1bc81]%20%E2%80%94%20Open+7+%2D+30+Days\">[COUNT_segment_NYSS_Caseload_7_To_30_Days]</a>",
+              'rewrite' => '<a class="crm-popup" href="/civicrm/nyss/caseload/case-manager#?Case_Manager=[Case_CaseContact_Contact_01_Contact_Relaticd0b67c6898a0668]&Case_Manager_7_To_30_Days=true&popup_title=[Case_CaseContact_Contact_01_Contact_Relati0e9a026673a1bc81]%20%E2%80%94%20Open+7+%2D+30+Days">[COUNT_segment_NYSS_Caseload_7_To_30_Days]</a>',
             ],
             [
               'type' => 'html',
@@ -348,7 +348,7 @@ return [
               'label' => E::ts('Open > 30 Days'),
               'sortable' => TRUE,
               'alignment' => 'text-center',
-              'rewrite' => "<a class=\"crm-popup\" href=\"/civicrm/nyss/caseload/case-manager#?Case_Manager=[Case_CaseContact_Contact_01_Contact_Relaticd0b67c6898a0668]&Case_Manager_Older_Than_30_Days=true&popup_title=[Case_CaseContact_Contact_01_Contact_Relati0e9a026673a1bc81]%20%E2%80%94%20Open+%3E+Than+30+Days\">[COUNT_segment_NYSS_Caseload_Older_Than_30_Days]</a>",
+              'rewrite' => '<a class="crm-popup" href="/civicrm/nyss/caseload/case-manager#?Case_Manager=[Case_CaseContact_Contact_01_Contact_Relaticd0b67c6898a0668]&Case_Manager_Older_Than_30_Days=true&popup_title=[Case_CaseContact_Contact_01_Contact_Relati0e9a026673a1bc81]%20%E2%80%94%20Open+%3E+Than+30+Days">[COUNT_segment_NYSS_Caseload_Older_Than_30_Days]</a>',
             ],
             [
               'type' => 'html',
@@ -356,7 +356,7 @@ return [
               'label' => E::ts('Resolved Last 7 Days'),
               'sortable' => TRUE,
               'alignment' => 'text-center',
-              'rewrite' => "<a class=\"crm-popup\" href=\"/civicrm/nyss/caseload/case-manager#?Case_Manager=[Case_CaseContact_Contact_01_Contact_Relaticd0b67c6898a0668]&Case_Manager_Resolved_Last_7_Days=true&popup_title=[Case_CaseContact_Contact_01_Contact_Relati0e9a026673a1bc81]%20%E2%80%94%20Resolved+Last+7+Days\">[COUNT_segment_NYSS_Caseload_Resolved_Last_7_Days]</a>",
+              'rewrite' => '<a class="crm-popup" href="/civicrm/nyss/caseload/case-manager#?Case_Manager=[Case_CaseContact_Contact_01_Contact_Relaticd0b67c6898a0668]&Case_Manager_Resolved_Last_7_Days=true&popup_title=[Case_CaseContact_Contact_01_Contact_Relati0e9a026673a1bc81]%20%E2%80%94%20Resolved+Last+7+Days">[COUNT_segment_NYSS_Caseload_Resolved_Last_7_Days]</a>',
             ],
             [
               'type' => 'field',
@@ -370,7 +370,6 @@ return [
           'actions' => TRUE,
           'classes' => ['table', 'table-striped'],
           'actions_display_mode' => 'menu',
-          //'headerCount' => TRUE,
         ],
       ],
       'match' => [
