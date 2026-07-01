@@ -235,7 +235,7 @@ return [
               'key' => 'AVG_DATEDIFF_end_date_start_date',
               'index' => 1,
               'name' => 'y_0',
-              'label' => E::ts('(Average) Time to Resolution'),
+              'label' => E::ts('Avg. Days to Resolution'),
               'sourceDataType' => 'Float',
               'scaleType' => 'numeric',
               'datePrecision' => NULL,
@@ -361,7 +361,7 @@ return [
             [
               'type' => 'field',
               'key' => 'AVG_DATEDIFF_end_date_start_date',
-              'label' => E::ts('Time to Resolution (Days)'),
+              'label' => E::ts('Avg. Days to Resolution'),
               'sortable' => TRUE,
               'alignment' => 'text-center',
             ],

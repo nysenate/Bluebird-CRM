@@ -7,10 +7,12 @@ class CRM_NYSS_CaseloadDash_Page_CaseloadDashboardPage extends CRM_Core_Page {
 
   public function run() {
     // Example: Set the page-title dynamically; alternatively, declare a static title in xml/Menu/*.xml
-    CRM_Utils_System::setTitle(E::ts('Caseload Dashboard Page'));
+    CRM_Utils_System::setTitle(E::ts('Caseload Dashboard Page'), '');
+    // Used to hide h1.page-title on the dashboard page.
+    CRM_Core_Resources::singleton()->addScript(
+      'document.body.classList.add("page-nyss-caseload-dashboard");'
+    );
 
-    // Example: Assign a variable for use in a template
-    $this->assign('currentTime', date('Y-m-d H:i:s'));
     Civi::service('angularjs.loader')->addModules(['crmNyssCaseloadDash','afsearchNYSSCaseloadOverviewTotals','afsearchNYSSCaseloadOverviewDetails', 'afsearchNYSSCaseloadCaseManagerTotals']);
     parent::run();
   }
