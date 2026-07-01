@@ -182,7 +182,8 @@ return [
         'saved_search_id.name' => 'NYSS_Caseload_Manager_Details',
         'type' => 'entity',
         'settings' => [
-          'entity_permission' => 'access caseload dashboard',
+          'entity_permission' => ['access caseload dashboard', 'access all cases and activities'],
+          'entity_permission_operator' => 'OR',
           'sort' => [],
           'columns' => [
             [

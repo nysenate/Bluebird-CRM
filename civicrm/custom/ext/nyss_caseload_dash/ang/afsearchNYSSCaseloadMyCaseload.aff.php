@@ -10,6 +10,6 @@ return [
   'icon' => 'fa-list-alt',
   'requires' => ['crmNyssCaseloadDash'],
   'permission' => [
-    'access CiviCRM','access my cases and activities',
+    'access CiviCRM', 'access all cases and activities',
   ],
 ];
