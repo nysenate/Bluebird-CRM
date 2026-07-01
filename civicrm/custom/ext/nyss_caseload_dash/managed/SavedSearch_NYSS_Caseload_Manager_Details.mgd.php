@@ -31,7 +31,7 @@ return [
             'segment_NYSS_Caseload_7_To_30_Days:label',
             'segment_NYSS_Caseload_Older_Than_30_Days:label',
             'segment_NYSS_Caseload_Resolved_Last_7_Days:label',
-            'DATEDIFF(end_date, start_date) AS DATEDIFF_end_date_start_date',
+            'IF(ISNOTNULL(segment_NYSS_Caseload_Opened_Within_180_Days), DATEDIFF(end_date, start_date), NULL) AS DATEDIFF_end_date_start_date',
             'Case_CaseContact_Contact_01_Contact_RelationshipCache_Case_01.near_contact_id',
             'Case_CaseContact_Contact_01_Contact_RelationshipCache_Case_01.near_contact_id.sort_name',
           ],
@@ -47,7 +47,6 @@ return [
                   [
                     ['status_id:name', '=', 'Closed'],
                     ['end_date', '>', 'now - 180 day'],
-                    ['start_date', '>', 'now - 180 day'],
                   ],
                 ],
               ],
