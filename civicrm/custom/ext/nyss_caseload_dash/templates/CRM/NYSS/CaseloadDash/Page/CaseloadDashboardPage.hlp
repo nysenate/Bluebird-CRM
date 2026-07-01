@@ -22,14 +22,14 @@
 {/htxt}
 {htxt id="id-casemanager-totals"}
 {ts}
-    <p>A look at each case manager's cases.</p>
-    <p>Each total can be clicked to show more details about the cases included in the total.</p>
+    <p>A look at each case manager's caseload.</p>
+    <p>Click a stat to show more details about the included cases.</p>
     <p>Notes:
     <ul>
         <li>Open cases include cases with statuses: Ongoing, Urgent, Not Started, Assigned, and Unassigned. </li>
         <li>Cases assigned to multiple case managers, will be included in all of those case managers' stats.</li>
         <li>Average Days to Resolution includes cases that are up to 180 days old.</li>
-        <li>Case Manager stats reflect case manager assignment &mdash; not case manager activity. For example, Mel resolves a case that is assigned to Kha. This resolution will be included in Kha's stats &mdash; not Mel's &mdash; because Kha is the current case manager.</li>
+        <li>Case Manager stats only include information related to assigned cases. For example, Mel resolves a case that is assigned to Kha. This resolution will be included in Kha's stats &mdash; not Mel's &mdash; because the case is assigned to Kha.</li>
     </ul>
     </p>
 {/ts}
