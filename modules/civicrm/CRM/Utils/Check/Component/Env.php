@@ -630,7 +630,7 @@ class CRM_Utils_Check_Component_Env extends CRM_Utils_Check_Component {
             ]);
           }
           elseif (!empty($remotes[$key]) && version_compare($row['version'], $remotes[$key]->version, '<')) {
-            $updates[] = $row['label'] . ': ' . $mapper->getUpgradeLink($remotes[$key], $row);
+            $updates[] = $row['label'] . ': ' . $mapper->getUpgradeLink($remotes[$key], $row, CRM_Extension_System::singleton()->getDownloader()->extensionDirectoryWritable());
           }
           else {
             if (empty($row['label'])) {
@@ -713,12 +713,12 @@ class CRM_Utils_Check_Component_Env extends CRM_Utils_Check_Component {
         $message = ts('1 extension is up-to-date:', ['plural' => '%count extensions are up-to-date:', 'count' => count($okextensions)]);
       }
       else {
-        $message = ts('All extensions are up-to-date:');
+        $message = ts('All %1 installed extensions are up-to-date:', [1 => count($okextensions)]);
       }
       natcasesort($okextensions);
       $messages[] = new CRM_Utils_Check_Message(
         __FUNCTION__ . 'Ok',
-        $message . '<ul><li>' . implode('</li><li>', $okextensions) . '</li></ul>',
+        "<details><summary>$message</summary><ul><li>" . implode('</li><li>', $okextensions) . '</li></ul></details>',
         ts('Extensions'),
         \Psr\Log\LogLevel::INFO,
         'fa-plug'
@@ -785,7 +785,7 @@ class CRM_Utils_Check_Component_Env extends CRM_Utils_Check_Component {
         'options' => ['sort' => "id desc", 'limit' => 1],
       ])['values'][0]['description'] ?? NULL;
       if (!empty($lastExecutionMessage) && str_contains($lastExecutionMessage, 'Failure')) {
-        $viewLogURL = CRM_Utils_System::url('civicrm/admin/joblog', "jid={$job['id']}&reset=1");
+        $viewLogURL = CRM_Utils_System::url("civicrm/admin/joblog#?job_id={$job['id']}");
         $html .= '<tr>
           <td>' . $job['name'] . ' </td>
           <td>' . $lastExecutionMessage . '</td>
@@ -820,7 +820,9 @@ class CRM_Utils_Check_Component_Env extends CRM_Utils_Check_Component {
    * @return CRM_Utils_Check_Message[]
    */
   public function checkExtensionUpgrades() {
-    if (CRM_Extension_Upgrades::hasPending()) {
+    // Note: The system-DB-upgrade is a super-set of the extension-DB-upgrade. If that's
+    // being displayed, then we don't need to show the extension-DB-upgrade.
+    if (!CRM_Core_BAO_Domain::isDBUpdateRequired() && CRM_Extension_Upgrades::hasPending()) {
       $message = new CRM_Utils_Check_Message(
         __FUNCTION__,
         ts('Extension upgrades should be run as soon as possible.'),
@@ -829,7 +831,7 @@ class CRM_Utils_Check_Component_Env extends CRM_Utils_Check_Component {
         'fa-plug'
       );
       $message->addAction(
-        ts('Run Upgrades'),
+        ts('Run upgrades'),
         ts('Run extension upgrades now?'),
         'href',
         ['path' => 'civicrm/admin/extensions/upgrade', 'query' => ['reset' => 1, 'destination' => CRM_Utils_System::url('civicrm/a/#/status')]]
@@ -871,7 +873,6 @@ class CRM_Utils_Check_Component_Env extends CRM_Utils_Check_Component {
   public function checkDbVersion() {
     $messages = [];
     $dbVersion = CRM_Core_BAO_Domain::version();
-    $upgradeUrl = CRM_Utils_System::url("civicrm/upgrade", "reset=1");
 
     if (!$dbVersion) {
       // if db.ver missing
@@ -894,24 +895,28 @@ class CRM_Utils_Check_Component_Env extends CRM_Utils_Check_Component {
     }
     elseif (stripos($dbVersion, 'upgrade')) {
       // if db.ver indicates a partially upgraded db
-      $messages[] = new CRM_Utils_Check_Message(
+      $message = new CRM_Utils_Check_Message(
         __FUNCTION__,
-        ts('Database check failed - the database looks to have been partially upgraded. You must reload the database with the backup and try the <a href=\'%1\'>upgrade process</a> again.', [1 => $upgradeUrl]),
+        ts('Database check failed - the database looks to have been partially upgraded. You must reload the database with the backup and try the upgrade process again.'),
         ts('Database Partially Upgraded'),
         \Psr\Log\LogLevel::ALERT,
         'fa-database'
       );
+      $message->addAction(ts('Re-try upgrades'), NULL, 'href', ['path' => 'civicrm/upgrade', 'query' => 'reset=1']);
+      $messages[] = $message;
     }
     else {
       // if db.ver < code.ver, time to upgrade
       if (CRM_Core_BAO_Domain::isDBUpdateRequired()) {
-        $messages[] = new CRM_Utils_Check_Message(
+        $message = new CRM_Utils_Check_Message(
           __FUNCTION__,
-          ts('New codebase version detected. You must visit <a href=\'%1\'>upgrade screen</a> to upgrade the database.', [1 => $upgradeUrl]),
+          ts('New codebase version detected. Please run updates for the database.'),
           ts('Database Upgrade Required'),
           \Psr\Log\LogLevel::ALERT,
           'fa-database'
         );
+        $message->addAction(ts('Run upgrades'), NULL, 'href', ['path' => 'civicrm/upgrade', 'query' => 'reset=1']);
+        $messages[] = $message;
       }
 
       // if db.ver > code.ver, sth really wrong

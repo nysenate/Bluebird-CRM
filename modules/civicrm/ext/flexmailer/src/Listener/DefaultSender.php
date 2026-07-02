@@ -47,7 +47,11 @@ class DefaultSender extends AutoService {
         continue;
       }
 
-      $message = \Civi\FlexMailer\MailParams::convertMailParamsToMime($task->getMailParams());
+      $params = $task->getMailParams();
+      if (isset($params['abortMailSend']) && $params['abortMailSend']) {
+        continue;
+      }
+      $message = \Civi\FlexMailer\MailParams::convertMailParamsToMime($params);
 
       if (empty($message)) {
         // lets keep the message in the queue
@@ -62,7 +66,7 @@ class DefaultSender extends AutoService {
       }
 
       $headers = $message->headers();
-      $result = $mailer->send($headers['To'], $message->headers(), $message->get());
+      $result = $mailer->send($headers['To'], $headers, $message->get());
 
       if ($job_date) {
         unset($errorScope);
@@ -83,12 +87,10 @@ class DefaultSender extends AutoService {
           if ($smtpConnectionErrors <= 5) {
             $mailer->disconnect();
             $retryBatch = TRUE;
+            unset($result, $message, $params, $headers);
+            $task->setMailParams([]);
             continue;
           }
-
-          //NYSS
-          $msg = "A bulk mailing was deferred (ID: {$mailing->id}) due to excessive (more than 5) SMTP socket errors. This mailing will be retried.";
-          \CRM_NYSS_Errorhandler_BAO::notifySlack($msg, "<!channel> a mailing was deferred due to temporary SMTP errors");
 
           // seems like we have too many of them in a row, we should
           // write stuff to disk and abort the cron job
@@ -129,7 +131,8 @@ class DefaultSender extends AutoService {
         }
       }
 
-      unset($result);
+      unset($result, $message, $params, $headers);
+      $task->setMailParams([]);
 
       // seems like a successful delivery or bounce, lets decrement error count
       // only if we have smtp connection errors

@@ -241,7 +241,8 @@ abstract class ImportParser extends \CRM_Import_Parser {
    */
   protected function getAllContactFields(string $prefix = 'Contact.'): array {
     $allContactFields = (array) Contact::getFields()
-      ->addWhere('readonly', '=', FALSE)
+      // Exclude readonly fields, except for the id
+      ->addClause('OR', ['readonly', '=', FALSE], ['name', '=', 'id'])
       ->addWhere('usage', 'CONTAINS', 'import')
       ->addWhere('fk_entity', 'IS EMPTY')
       ->setAction('save')
@@ -249,7 +250,8 @@ abstract class ImportParser extends \CRM_Import_Parser {
       ->execute()->indexBy('name');
 
     $contactTypeFields['Individual'] = (array) Contact::getFields()
-      ->addWhere('readonly', '=', FALSE)
+      // Exclude readonly fields, except for the id
+      ->addClause('OR', ['readonly', '=', FALSE], ['name', '=', 'id'])
       ->addWhere('usage', 'CONTAINS', 'import')
       ->addWhere('fk_entity', 'IS EMPTY')
       ->setAction('save')
@@ -259,7 +261,8 @@ abstract class ImportParser extends \CRM_Import_Parser {
       ->execute()->indexBy('name');
 
     $contactTypeFields['Organization'] = (array) Contact::getFields()
-      ->addWhere('readonly', '=', FALSE)
+      // Exclude readonly fields, except for the id
+      ->addClause('OR', ['readonly', '=', FALSE], ['name', '=', 'id'])
       ->addWhere('usage', 'CONTAINS', 'import')
       ->addWhere('fk_entity', 'IS EMPTY')
       ->setAction('save')
@@ -269,7 +272,8 @@ abstract class ImportParser extends \CRM_Import_Parser {
       ->execute()->indexBy('name');
 
     $contactTypeFields['Household'] = (array) Contact::getFields()
-      ->addWhere('readonly', '=', FALSE)
+      // Exclude readonly fields, except for the id
+      ->addClause('OR', ['readonly', '=', FALSE], ['name', '=', 'id'])
       ->addWhere('usage', 'CONTAINS', 'import')
       ->addWhere('fk_entity', 'IS EMPTY')
       ->setAction('save')
@@ -290,7 +294,8 @@ abstract class ImportParser extends \CRM_Import_Parser {
     }
 
     $addressFields = (array) Address::getFields()
-      ->addWhere('readonly', '=', FALSE)
+      // Exclude readonly fields, except for the id
+      ->addClause('OR', ['readonly', '=', FALSE], ['name', '=', 'id'])
       ->addWhere('usage', 'CONTAINS', 'import')
       ->setAction('save')
       ->addOrderBy('title')
@@ -306,7 +311,8 @@ abstract class ImportParser extends \CRM_Import_Parser {
     }
 
     $phoneFields = (array) Phone::getFields()
-      ->addWhere('readonly', '=', FALSE)
+      // Exclude readonly fields, except for the id
+      ->addClause('OR', ['readonly', '=', FALSE], ['name', '=', 'id'])
       ->addWhere('usage', 'CONTAINS', 'import')
       ->setAction('save')
       // Exclude these fields to keep it simpler for now - we just map to primary
@@ -321,7 +327,8 @@ abstract class ImportParser extends \CRM_Import_Parser {
     }
 
     $emailFields = (array) Email::getFields()
-      ->addWhere('readonly', '=', FALSE)
+      // Exclude readonly fields, except for the id
+      ->addClause('OR', ['readonly', '=', FALSE], ['name', '=', 'id'])
       ->addWhere('usage', 'CONTAINS', 'import')
       ->setAction('save')
       // Exclude these fields to keep it simpler for now - we just map to primary
@@ -567,29 +574,23 @@ abstract class ImportParser extends \CRM_Import_Parser {
       if (count($possibleMatches) === 1) {
         $contactID = array_key_first($possibleMatches);
       }
-      elseif (count($possibleMatches) > 1) {
-        throw new \CRM_Core_Exception(ts('Record duplicates multiple contacts:') . ' ' . implode(',', $possibleMatches));
+      elseif (count($possibleMatches) === 2) {
+        $mergeUrl = \CRM_Utils_System::url('civicrm/contact/merge', ['reset' => 1, 'action' => 'update', 'cid' => array_key_first($possibleMatches), 'oid' => array_key_last($possibleMatches)]);
+        throw new \CRM_Core_Exception(ts('Record duplicates multiple contacts:') . ' ' . implode(', ', $possibleMatches) . '<br /><a href="' . $mergeUrl . '" target="_blank">' . ts('Merge contacts') . '</a>');
+      }
+      elseif (count($possibleMatches) > 2) {
+        throw new \CRM_Core_Exception(ts('Record duplicates multiple contacts:') . ' ' . implode(', ', $possibleMatches));
       }
       elseif (!in_array($action, ['create', 'ignore', 'save'], TRUE)) {
         throw new \CRM_Core_Exception(ts('No matching %1 found', [1 => $entity]));
       }
     }
-    if ($contactID && !isset($contactParams['is_deleted']) && $this->getExistingContactValue($contactID, 'is_deleted')) {
+    if ($contactID && !isset($contactParams['is_deleted'])) {
       // The contact may have been merged since the contact ID was determined (common in cases where
-      // a list of contacts is exported and the some time later imported with augmented data.
+      // a list of contacts is exported and then some time later imported with augmented data.
       // As long as is_deleted is not set (ie the importer is not trying to undelete the contact) we can
-      // use the merged to contact instead, if exists.
-      // Note using checkPermissions = FALSE as currently this requires administer CiviCRM
-      // but potentially reviewing that.
-      $result = Contact::getMergedTo(FALSE)
-        ->setContactId($contactID)
-        ->execute()->first();
-      if ($result) {
-        $contactID = $result['id'];
-      }
-      else {
-        throw new \CRM_Core_Exception(ts('Cannot import to a deleted contact %1', [1 => $contactID]));
-      }
+      // use the merged to contact instead, if it exists.
+      $contactID = $this->getMergedToContactIfDeleted($contactID);
     }
     return $contactID;
   }

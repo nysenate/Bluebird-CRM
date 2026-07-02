@@ -6,6 +6,7 @@ use Civi\API\Request;
 use Civi\Api4\Query\Api4SelectQuery;
 use Civi\Api4\Query\SqlExpression;
 use Civi\Api4\Result\SearchDisplayRunResult;
+use Civi\Api4\SearchDisplay;
 use Civi\Api4\Utils\CoreUtil;
 use Civi\Api4\Utils\FormattingUtil;
 
@@ -46,7 +47,7 @@ class Run extends AbstractRunAction {
   protected function processResult(SearchDisplayRunResult $result) {
     $entityName = $this->savedSearch['api_entity'];
     $apiParams =& $this->_apiParams;
-    $settings = $this->display['settings'];
+
     $page = $index = NULL;
     $key = $this->return;
     // Pager can operate in "page" mode for traditional pager, or "scroll" mode for infinite scrolling
@@ -90,12 +91,12 @@ class Run extends AbstractRunAction {
         // Pager mode: `page:n`
         // AJAX scroll mode: `scroll:n`
         // Or NULL for unlimited results
-        if (($settings['pager'] ?? FALSE) !== FALSE && $key && preg_match('/^(page|scroll):\d+$/', $key)) {
+        if (($this->display['settings']['pager'] ?? FALSE) !== FALSE && $key && preg_match('/^(page|scroll):\d+$/', $key)) {
           [$pagerMode, $page] = explode(':', $key);
-          $limit = !empty($settings['pager']['expose_limit']) && $this->limit ? $this->limit : NULL;
+          $limit = !empty($this->display['settings']['pager']['expose_limit']) && $this->limit ? $this->limit : NULL;
         }
         $apiParams['debug'] = $this->debug;
-        $apiParams['limit'] = $limit ?? $settings['limit'] ?? NULL;
+        $apiParams['limit'] = $limit ?? $this->display['settings']['limit'] ?? NULL;
         $apiParams['offset'] = $page ? $apiParams['limit'] * ($page - 1) : 0;
         // In scroll mode, add one extra to the limit as a lookahead to see if there are more results
         if ($apiParams['limit'] && $pagerMode === 'scroll') {
@@ -106,13 +107,16 @@ class Run extends AbstractRunAction {
         if ($this->getActionName() === 'run' && $pagerMode === 'page') {
           $this->addEditableInfo($result);
         }
+        if ($this->getActionName() === 'run') {
+          $this->addSubsearchDisplaySettings($result);
+        }
     }
 
     try {
       $apiResult = civicrm_api4($entityName, 'get', $apiParams, $index);
     }
     catch (\Throwable $e) {
-      \Civi::log()->error("SearchDisplay.Run error: " . get_class($e) . ": {$entityName}.get: [display_id] " . $this->display['id'] . ' [saved_search_id] ' . $this->display['saved_search_id'] . ' [label] ' . $this->display['label'] . ' [error] ' . $e->getMessage());
+      \Civi::log()->error("SearchDisplay.Run error: " . get_class($e) . ": {$entityName}.get: [display_id] " . ($this->display['id'] ?? 'null') . ' [saved_search_id] ' . ($this->display['saved_search_id'] ?? 'null') . ' [label] ' . ($this->display['label'] ?? '') . ' [error] ' . $e->getMessage());
       throw $e;
     }
     // Copy over meta properties to this result
@@ -170,6 +174,9 @@ class Run extends AbstractRunAction {
         }
         $select[] = $sqlFnClass::renderExpression(implode(' ', $fnArgs)) . " `$tallyKey`";
       }
+    }
+    if (!$select) {
+      return [];
     }
     $query = 'SELECT ' . implode(', ', $select) . "\nFROM (" . $sql . ")\n`api_query`";
     $dao = \CRM_Core_DAO::executeQuery($query);
@@ -247,6 +254,28 @@ class Run extends AbstractRunAction {
       }
     }
     return $toolbar;
+  }
+
+  private function addSubsearchDisplaySettings(SearchDisplayRunResult $result): void {
+    foreach ($this->display['settings']['columns'] as $col) {
+      $searchName = $col['subsearch']['search'] ?? NULL;
+      $displayName = $col['subsearch']['display'] ?? NULL;
+      if ($searchName && $displayName) {
+        $searchDisplay = SearchDisplay::get(FALSE)
+          ->addSelect('settings', 'saved_search_id.api_entity', 'type')
+          ->addWhere('name', '=', $displayName)
+          ->addWhere('saved_search_id.name', '=', $searchName)
+          ->execute()->first();
+        if ($searchDisplay) {
+          $result->subsearch ??= [];
+          $result->subsearch["{$searchName}.{$displayName}"] = [
+            'type' => $searchDisplay['type'],
+            'api_entity' => $searchDisplay['saved_search_id.api_entity'],
+            'settings' => $searchDisplay['settings'],
+          ];
+        }
+      }
+    }
   }
 
 }

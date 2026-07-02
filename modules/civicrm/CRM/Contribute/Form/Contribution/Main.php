@@ -24,8 +24,6 @@ class CRM_Contribute_Form_Contribution_Main extends CRM_Contribute_Form_Contribu
 
   public $_paymentProcessors;
 
-  public $_membershipTypeValues;
-
   /**
    * Array of payment related fields to potentially display on this form (generally credit card or debit card fields). This is rendered via billingBlock.tpl
    * @var array
@@ -191,10 +189,10 @@ class CRM_Contribute_Form_Contribution_Main extends CRM_Contribute_Form_Contribu
      */
 
     //build set default for pledge overdue payment.
-    if (!empty($this->_values['pledge_id'])) {
+    if ($this->getPledgeID()) {
       //used to record completed pledge payment ids used later for honor default
       $completedContributionIds = [];
-      $pledgePayments = CRM_Pledge_BAO_PledgePayment::getPledgePayments($this->_values['pledge_id']);
+      $pledgePayments = CRM_Pledge_BAO_PledgePayment::getPledgePayments($this->getPledgeID());
 
       $paymentAmount = 0;
       $duePayment = FALSE;
@@ -357,7 +355,7 @@ class CRM_Contribute_Form_Contribution_Main extends CRM_Contribute_Form_Contribu
 
     //build pledge block.
     //don't build membership block when pledge_id is passed
-    if (empty($this->_values['pledge_id']) && empty($this->getExistingContributionID())) {
+    if (empty($this->getPledgeID()) && empty($this->getExistingContributionID())) {
       $this->_separateMembershipPayment = FALSE;
       if (CRM_Core_Component::isEnabled('CiviMember')) {
         $this->_separateMembershipPayment = $this->buildMembershipBlock();
@@ -377,14 +375,14 @@ class CRM_Contribute_Form_Contribution_Main extends CRM_Contribute_Form_Contribu
         $this->buildPriceSet();
       }
       if ($this->_values['is_monetary'] &&
-        $this->_values['is_recur'] && empty($this->_values['pledge_id'])
+        $this->_values['is_recur'] && !$this->getPledgeID()
       ) {
         $this->buildRecur();
       }
     }
 
     //we allow premium for pledge during pledge creation only.
-    if (empty($this->_values['pledge_id']) && empty($this->getExistingContributionID())) {
+    if (!$this->getPledgeID() && empty($this->getExistingContributionID())) {
       $this->buildPremiumsBlock(TRUE);
     }
 
@@ -491,6 +489,16 @@ class CRM_Contribute_Form_Contribution_Main extends CRM_Contribute_Form_Contribu
     }
 
     $this->addFormRule(['CRM_Contribute_Form_Contribution_Main', 'formRule'], $this);
+  }
+
+  /**
+   * @return string
+   */
+  public function getPayLaterLabel(): string {
+    if (!$this->getContributionPageValue('is_pay_later')) {
+      return '';
+    }
+    return (string) $this->getContributionPageValue('pay_later_text');
   }
 
   /**
@@ -642,19 +650,10 @@ class CRM_Contribute_Form_Contribution_Main extends CRM_Contribute_Form_Contribu
 
       $separateMembershipPayment = $this->_membershipBlock['is_separate_payment'] ?? NULL;
 
-      $membershipTypeIds = $this->getAvailableMembershipTypeIDs();
-
-      //because we take first membership record id for renewal
-      if (!empty($membershipTypeIds)) {
-        // @todo = this hook should be called when loading the priceFieldMetadata in preProcess & incorporated
-        // There should be function to retrieve rather than property access.
-        $membershipTypeValues = CRM_Member_BAO_Membership::buildMembershipTypeValues($this, $membershipTypeIds);
-        $this->_membershipTypeValues = $membershipTypeValues;
-      }
       $endDate = NULL;
 
-      foreach ($membershipTypeIds as $membershipTypeID) {
-        $memType = $membershipTypeValues[$membershipTypeID];
+      foreach ($this->getAvailableMembershipTypeIDs() as $membershipTypeID) {
+        $memType = $this->getMembershipType($membershipTypeID);
         if ($memType['is_active']) {
           $autoRenewMembershipTypeOptions["autoRenewMembershipType_{$membershipTypeID}"] = $this->getConfiguredAutoRenewOptionForMembershipType($membershipTypeID);
           if ($this->isPageHasPaymentProcessorSupportForRecurring()) {
@@ -1036,7 +1035,7 @@ class CRM_Contribute_Form_Contribution_Main extends CRM_Contribute_Form_Contribu
     //validate the pledge fields.
     if (!empty($self->_values['pledge_block_id'])) {
       //validation for pledge payment.
-      if (!empty($self->_values['pledge_id'])) {
+      if (!empty($self->getPledgeID())) {
         if (empty($fields['pledge_amount'])) {
           $errors['pledge_amount'] = ts('At least one payment option needs to be checked.');
         }
@@ -1596,7 +1595,7 @@ class CRM_Contribute_Form_Contribution_Main extends CRM_Contribute_Form_Contribu
    */
   private function buildPledgeBlock() {
     //build pledge payment fields.
-    if (!empty($this->_values['pledge_id'])) {
+    if ($this->getPledgeID()) {
       //get all payments required details.
       $allPayments = [];
       $returnProperties = [
@@ -1606,7 +1605,7 @@ class CRM_Contribute_Form_Contribution_Main extends CRM_Contribute_Form_Contribu
         'currency',
       ];
       CRM_Core_DAO::commonRetrieveAll('CRM_Pledge_DAO_PledgePayment', 'pledge_id',
-        $this->_values['pledge_id'], $allPayments, $returnProperties
+        $this->getPledgeID(), $allPayments, $returnProperties
       );
       // get all status
       $allStatus = CRM_Contribute_PseudoConstant::contributionStatus(NULL, 'name');
@@ -1797,24 +1796,6 @@ class CRM_Contribute_Form_Contribution_Main extends CRM_Contribute_Form_Contribu
       }
     }
     return FALSE;
-  }
-
-  /**
-   * Get the membership type IDs available in the price set.
-   *
-   * @return array
-   * @throws \CRM_Core_Exception
-   */
-  private function getAvailableMembershipTypeIDs(): array {
-    $membershipTypeIDs = [];
-    foreach ($this->getPriceFieldMetaData() as $priceField) {
-      foreach ($priceField['options'] ?? [] as $option) {
-        if (!empty($option['membership_type_id'])) {
-          $membershipTypeIDs[$option['membership_type_id']] = $option['membership_type_id'];
-        }
-      }
-    }
-    return $membershipTypeIDs;
   }
 
   /**

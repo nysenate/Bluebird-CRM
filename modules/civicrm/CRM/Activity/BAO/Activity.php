@@ -385,9 +385,6 @@ class CRM_Activity_BAO_Activity extends CRM_Activity_DAO_Activity {
         ->setRecords($activityContactApiValues)->execute();
     }
 
-    // check and attach and files as needed
-    CRM_Core_BAO_File::processAttachment($params, 'civicrm_activity', $activityId);
-
     // write to changelog before transaction is committed/rolled
     // back (and prepare status to display)
     if (!empty($params['id'])) {
@@ -485,7 +482,6 @@ class CRM_Activity_BAO_Activity extends CRM_Activity_DAO_Activity {
       if (!isset($activity->parent_id)) {
         $recentContactDisplay = CRM_Contact_BAO_Contact::displayName($recentContactId);
         // add the recently created Activity
-        $activityTypes = CRM_Activity_BAO_Activity::buildOptions('activity_type_id');
         $activitySubject = CRM_Core_DAO::getFieldValue('CRM_Activity_DAO_Activity', $activity->id, 'subject');
 
         $title = "";
@@ -493,9 +489,10 @@ class CRM_Activity_BAO_Activity extends CRM_Activity_DAO_Activity {
           $title = $activitySubject . ' - ';
         }
 
-        $title = $title . $recentContactDisplay;
-        if (!empty($activityTypes[$activity->activity_type_id])) {
-          $title .= ' (' . $activityTypes[$activity->activity_type_id] . ')';
+        $title .= $recentContactDisplay;
+        $activityType = CRM_Core_PseudoConstant::getLabel('CRM_Activity_BAO_Activity', 'activity_type_id', $activity->activity_type_id);
+        if ($activityType) {
+          $title .= ' (' . $activityType . ')';
         }
 
         CRM_Utils_Recent::add($title,
@@ -715,7 +712,7 @@ class CRM_Activity_BAO_Activity extends CRM_Activity_DAO_Activity {
           // @todo this generic assign could just be handled in array declaration earlier.
           $activities[$id][$expectedName] = $activity[$apiKey] ?? NULL;
           if ($apiKey == 'campaign_id') {
-            $activities[$id]['campaign'] = $allCampaigns[$activities[$id][$expectedName]] ?? NULL;
+            $activities[$id]['campaign'] = $allCampaigns[$activities[$id][$expectedName] ?? ''] ?? NULL;
           }
         }
       }
@@ -1415,79 +1412,6 @@ WHERE entity_id =%1 AND entity_table = %2";
   }
 
   /**
-   * @deprecated - use the api instead.
-   *
-   * Get the Activities of a target contact.
-   *
-   * @param int $contactId
-   *   Id of the contact whose activities need to find.
-   *
-   * @return array
-   *   array of activity fields
-   */
-  public static function getContactActivity($contactId) {
-    // @todo remove this function entirely.
-    $activities = [];
-    $activityContacts = CRM_Activity_BAO_ActivityContact::buildOptions('record_type_id', 'validate');
-    $sourceID = CRM_Utils_Array::key('Activity Source', $activityContacts);
-    $assigneeID = CRM_Utils_Array::key('Activity Assignees', $activityContacts);
-    $targetID = CRM_Utils_Array::key('Activity Targets', $activityContacts);
-
-    // First look for activities where contactId is one of the targets
-    $query = "
-SELECT activity_id, record_type_id
-FROM   civicrm_activity_contact
-WHERE  contact_id = $contactId
-";
-    $dao = CRM_Core_DAO::executeQuery($query);
-    while ($dao->fetch()) {
-      if ($dao->record_type_id == $targetID) {
-        $activities[$dao->activity_id]['targets'][$contactId] = $contactId;
-      }
-      elseif ($dao->record_type_id == $assigneeID) {
-        $activities[$dao->activity_id]['asignees'][$contactId] = $contactId;
-      }
-      else {
-        // do source stuff here
-        $activities[$dao->activity_id]['source_contact_id'] = $contactId;
-      }
-    }
-
-    $activityIds = array_keys($activities);
-    if (count($activityIds) < 1) {
-      return [];
-    }
-
-    $activityIds = implode(',', $activityIds);
-    $query = "
-SELECT     activity.id as activity_id,
-           activity_type_id,
-           subject, location, activity_date_time, details, status_id
-FROM       civicrm_activity activity
-WHERE      activity.id IN ($activityIds)";
-
-    $dao = CRM_Core_DAO::executeQuery($query);
-
-    while ($dao->fetch()) {
-      $activities[$dao->activity_id]['id'] = $dao->activity_id;
-      $activities[$dao->activity_id]['activity_type_id'] = $dao->activity_type_id;
-      $activities[$dao->activity_id]['subject'] = $dao->subject;
-      $activities[$dao->activity_id]['location'] = $dao->location;
-      $activities[$dao->activity_id]['activity_date_time'] = $dao->activity_date_time;
-      $activities[$dao->activity_id]['details'] = $dao->details;
-      $activities[$dao->activity_id]['status_id'] = $dao->status_id;
-      $activities[$dao->activity_id]['activity_name'] = CRM_Core_PseudoConstant::getLabel('CRM_Activity_BAO_Activity', 'activity_type_id', $dao->activity_type_id);
-      $activities[$dao->activity_id]['status'] = CRM_Core_PseudoConstant::getLabel('CRM_Activity_BAO_Activity', 'activity_status_id', $dao->status_id);
-
-      // set to null if not set
-      if (!isset($activities[$dao->activity_id]['source_contact_id'])) {
-        $activities[$dao->activity_id]['source_contact_id'] = NULL;
-      }
-    }
-    return $activities;
-  }
-
-  /**
    * Add activity for Membership/Event/Contribution.
    *
    * @param object $activity
@@ -1508,6 +1432,7 @@ WHERE      activity.id IN ($activityIds)";
   ) {
     $date = date('YmdHis');
     if ($activity->__table == 'civicrm_contribution') {
+      CRM_Core_Error::deprecatedWarning('use the api, this function is deprecated for passing in Contributions');
       // create activity record only for Completed Contributions
       $contributionCompletedStatusId = CRM_Core_PseudoConstant::getKey('CRM_Contribute_BAO_Contribution', 'contribution_status_id', 'Completed');
       if ($activity->contribution_status_id != $contributionCompletedStatusId) {
@@ -1659,92 +1584,19 @@ WHERE      activity.id IN ($activityIds)";
   }
 
   /**
-   * Get all prior activities of currently viewed activity.
-   *
-   * @param int $activityID
-   *   Current activity id.
-   * @param bool $onlyPriorRevisions
-   *
-   * @return array
-   *   prior activities info.
-   * @throws \CRM_Core_Exception
+   * @deprecated unused function
    */
   public static function getPriorAcitivities($activityID, $onlyPriorRevisions = FALSE) {
-    static $priorActivities = [];
-
-    $activityID = CRM_Utils_Type::escape($activityID, 'Integer');
-    $index = $activityID . '_' . (int) $onlyPriorRevisions;
-
-    if (!array_key_exists($index, $priorActivities)) {
-      $priorActivities[$index] = [];
-
-      $originalID = CRM_Core_DAO::getFieldValue('CRM_Activity_DAO_Activity',
-        $activityID,
-        'original_id'
-      );
-      if (!$originalID) {
-        $originalID = $activityID;
-      }
-      if ($originalID) {
-        $query = "
-SELECT c.display_name as name, cl.modified_date as date, ca.id as activityID
-FROM civicrm_log cl, civicrm_contact c, civicrm_activity ca
-WHERE (ca.id = %1 OR ca.original_id = %1)
-AND cl.entity_table = 'civicrm_activity'
-AND cl.entity_id    = ca.id
-AND cl.modified_id  = c.id
-";
-        if ($onlyPriorRevisions) {
-          $query .= " AND ca.id < {$activityID}";
-        }
-        $query .= " ORDER BY ca.id DESC";
-
-        $params = [1 => [$originalID, 'Integer']];
-        $dao = CRM_Core_DAO::executeQuery($query, $params);
-
-        while ($dao->fetch()) {
-          $priorActivities[$index][$dao->activityID]['id'] = $dao->activityID;
-          $priorActivities[$index][$dao->activityID]['name'] = $dao->name;
-          $priorActivities[$index][$dao->activityID]['date'] = $dao->date;
-        }
-      }
-    }
-    return $priorActivities[$index];
+    CRM_Core_Error::deprecatedFunctionWarning('none; activity revisions are unsupported');
+    return [];
   }
 
   /**
-   * Find the latest revision of a given activity.
-   *
-   * @param int $activityID
-   *   Prior activity id.
-   *
-   * @return int
-   *   current activity id.
-   *
-   * @throws \CRM_Core_Exception
+   * @deprecated unused function
    */
   public static function getLatestActivityId($activityID) {
-    static $latestActivityIds = [];
-
-    $activityID = CRM_Utils_Type::escape($activityID, 'Integer');
-
-    if (!array_key_exists($activityID, $latestActivityIds)) {
-      $latestActivityIds[$activityID] = [];
-
-      $originalID = CRM_Core_DAO::getFieldValue('CRM_Activity_DAO_Activity',
-        $activityID,
-        'original_id'
-      );
-      if ($originalID) {
-        $activityID = $originalID;
-      }
-      $params = [1 => [$activityID, 'Integer']];
-      $query = 'SELECT id from civicrm_activity where original_id = %1 and is_current_revision = 1';
-
-      $latestActivityIds[$activityID] = CRM_Core_DAO::singleValueQuery($query, $params);
-    }
-
-    return $latestActivityIds[$activityID];
+    CRM_Core_Error::deprecatedFunctionWarning('none; activity revisions are unsupported');
+    return $activityID;
   }
 
   /**
@@ -1947,6 +1799,9 @@ AND cl.modified_id  = c.id
         'case_activity_medium_id' => [
           'title' => ts('Activity Medium'),
           'type' => CRM_Utils_Type::T_INT,
+          'pseudoconstant' => [
+            'optionGroupName' => 'encounter_medium',
+          ],
         ],
         'case_activity_is_auto' => [
           'title' => ts('Activity Auto-generated?'),
@@ -2251,13 +2106,15 @@ INNER JOIN  civicrm_option_group grp ON (grp.id = option_group_id AND grp.name =
    * @return array
    */
   public static function getViewOnlyActivityTypeIDs() {
-    $viewOnlyActivities = [
-      'Email' => CRM_Core_PseudoConstant::getKey('CRM_Activity_BAO_Activity', 'activity_type_id', 'Email'),
-    ];
-    if (!self::checkEditInboundEmailsPermissions()) {
-      $viewOnlyActivities['Inbound Email'] = CRM_Core_PseudoConstant::getKey('CRM_Activity_BAO_Activity', 'activity_type_id', 'Inbound Email');
+    if (!isset(Civi::$statics[__METHOD__])) {
+      Civi::$statics[__METHOD__] = [
+        'Email' => CRM_Core_PseudoConstant::getKey('CRM_Activity_BAO_Activity', 'activity_type_id', 'Email'),
+      ];
+      if (!self::checkEditInboundEmailsPermissions()) {
+        Civi::$statics[__METHOD__]['Inbound Email'] = CRM_Core_PseudoConstant::getKey('CRM_Activity_BAO_Activity', 'activity_type_id', 'Inbound Email');
+      }
     }
-    return $viewOnlyActivities;
+    return Civi::$statics[__METHOD__];
   }
 
   /**

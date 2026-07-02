@@ -256,7 +256,8 @@ class CRM_Core_Error extends PEAR_ErrorStack {
     // always log the backtrace to a file
     self::backtrace('backTrace', TRUE);
 
-    exit(0);
+    // If we failed in CLI context, then report the failure.
+    exit(1);
   }
 
   /**
@@ -344,7 +345,7 @@ class CRM_Core_Error extends PEAR_ErrorStack {
     if (php_sapi_name() == "cli") {
       print ("Sorry. A non-recoverable error has occurred.\n$message \n$code\n$email\n\n");
       // Fix for CRM-16899
-      echo static::formatBacktrace(debug_backtrace());
+      echo static::formatter('text')->formatBacktrace(debug_backtrace());
       die("\n");
       // FIXME: Why doesn't this call abend()?
       // Difference: abend() will cleanup transaction and (via civiExit) store session state
@@ -379,7 +380,7 @@ class CRM_Core_Error extends PEAR_ErrorStack {
         'content' => '<div class="messages status no-popup">' . CRM_Core_Page::crmIcon('fa-info-circle') . ' ' . ts('Sorry but we are not able to provide this at the moment.') . '</div>',
       ];
       if ($config->backtrace && CRM_Core_Permission::check('view debug output')) {
-        $out['backtrace'] = self::parseBacktrace(debug_backtrace());
+        $out['backtrace'] = static::formatter('array')->formatBacktrace(debug_backtrace());
         $message .= '<p><em>See console for backtrace</em></p>';
       }
       CRM_Core_Session::setStatus($message, ts('Sorry an error occurred'), 'error');
@@ -401,7 +402,7 @@ class CRM_Core_Error extends PEAR_ErrorStack {
    * entire CRM_Core_Error system can be hollowed out and replaced with
    * something that follows a cleaner separation of concerns.
    *
-   * @param Exception $exception
+   * @param Throwable $exception
    */
   public static function handleUnhandledException($exception) {
     try {
@@ -409,7 +410,7 @@ class CRM_Core_Error extends PEAR_ErrorStack {
     }
     catch (Exception $other) {
       // if the exception-handler generates an exception, then that sucks! oh, well. carry on.
-      CRM_Core_Error::debug_var('handleUnhandledException_nestedException', self::formatTextException($other), TRUE, TRUE, '', PEAR_LOG_ERR);
+      CRM_Core_Error::debug_var('handleUnhandledException_nestedException', self::formatter('text')->formatException($other), TRUE, TRUE, '', PEAR_LOG_ERR);
     }
     $config = CRM_Core_Config::singleton();
     $vars = [
@@ -427,7 +428,7 @@ class CRM_Core_Error extends PEAR_ErrorStack {
     // Case A: CLI
     if (php_sapi_name() == "cli") {
       printf("Sorry. A non-recoverable error has occurred.\n%s\n", $vars['message']);
-      print self::formatTextException($exception);
+      print self::formatter('text')->formatException($exception);
       die("\n");
       // FIXME: Why doesn't this call abend()?
       // Difference: abend() will cleanup transaction and (via civiExit) store session state
@@ -459,7 +460,7 @@ class CRM_Core_Error extends PEAR_ErrorStack {
     $content = $template->fetch('CRM/common/fatal.tpl');
 
     if ($config->backtrace) {
-      $content = self::formatHtmlException($exception) . $content;
+      $content = self::formatter('html')->formatException($exception) . $content;
     }
 
     // set the response code before starting the request
@@ -512,7 +513,7 @@ class CRM_Core_Error extends PEAR_ErrorStack {
 
     if ($log) {
       // Log the output to error_log with a unique reference.
-      $unique = bin2hex(random_bytes(6));
+      $unique = static::createErrorId();
       error_log("errorID:$unique\n$out");
 
       if (!$checkPermission) {
@@ -751,13 +752,29 @@ class CRM_Core_Error extends PEAR_ErrorStack {
    */
   public static function backtrace($msg = 'backTrace', $log = FALSE) {
     $backTrace = debug_backtrace();
-    $message = self::formatBacktrace($backTrace);
+    $message = self::formatter('text')->formatBacktrace($backTrace);
     if (!$log) {
       CRM_Core_Error::debug($msg, $message);
     }
     else {
       CRM_Core_Error::debug_var($msg, $message, TRUE, TRUE, '', PEAR_LOG_DEBUG);
     }
+  }
+
+  /**
+   * Get a helper to format complex error data (backtraces, exceptions, etc).
+   *
+   * @param string $format
+   *   Desired output format.
+   *   Ex: 'text', 'html', or 'array'
+   * @param bool $showArgs
+   *   TRUE if we should try to display content of function arguments (which could be sensitive); FALSE to display only the type of each function argument.
+   * @param int $maxArgLen
+   *   Maximum number of characters to show from each argument string.
+   * @return CRM_Core_Error_Formatter
+   */
+  public static function formatter(string $format, bool $showArgs = TRUE, int $maxArgLen = 80): CRM_Core_Error_Formatter {
+    return (new CRM_Core_Error_Formatter($format, $showArgs, $maxArgLen));
   }
 
   /**
@@ -771,92 +788,10 @@ class CRM_Core_Error extends PEAR_ErrorStack {
    *   Maximum number of characters to show from each argument string.
    * @return string
    *   printable plain-text
+   * @deprecated See formatter()
    */
   public static function formatBacktrace($backTrace, $showArgs = TRUE, $maxArgLen = 80) {
-    $message = '';
-    foreach (self::parseBacktrace($backTrace, $showArgs, $maxArgLen) as $idx => $trace) {
-      $message .= sprintf("#%s %s\n", $idx, $trace);
-    }
-    $message .= sprintf("#%s {main}\n", 1 + $idx);
-    return $message;
-  }
-
-  /**
-   * Render a backtrace array as an array.
-   *
-   * @param array $backTrace
-   *   Array of stack frames.
-   * @param bool $showArgs
-   *   TRUE if we should try to display content of function arguments (which could be sensitive); FALSE to display only the type of each function argument.
-   * @param int $maxArgLen
-   *   Maximum number of characters to show from each argument string.
-   * @return array
-   * @see debug_backtrace
-   * @see Exception::getTrace()
-   */
-  public static function parseBacktrace($backTrace, $showArgs = TRUE, $maxArgLen = 80) {
-    $ret = [];
-    foreach ($backTrace as $trace) {
-      $args = [];
-      $fnName = $trace['function'] ?? NULL;
-      $className = isset($trace['class']) ? ($trace['class'] . $trace['type']) : '';
-
-      // Do not show args for a few password related functions
-      $skipArgs = $className == 'DB::' && $fnName == 'connect';
-
-      if (!empty($trace['args'])) {
-        foreach ($trace['args'] as $arg) {
-          if (!$showArgs || $skipArgs) {
-            $args[] = '(' . gettype($arg) . ')';
-            continue;
-          }
-          switch ($type = gettype($arg)) {
-            case 'boolean':
-              $args[] = $arg ? 'TRUE' : 'FALSE';
-              break;
-
-            case 'integer':
-            case 'double':
-              $args[] = $arg;
-              break;
-
-            case 'string':
-              $args[] = '"' . CRM_Utils_String::ellipsify(addcslashes((string) $arg, "\r\n\t\""), $maxArgLen) . '"';
-              break;
-
-            case 'array':
-              $args[] = '(Array:' . count($arg) . ')';
-              break;
-
-            case 'object':
-              $args[] = 'Object(' . get_class($arg) . ')';
-              break;
-
-            case 'resource':
-              $args[] = 'Resource';
-              break;
-
-            case 'NULL':
-              $args[] = 'NULL';
-              break;
-
-            default:
-              $args[] = "($type)";
-              break;
-          }
-        }
-      }
-
-      $ret[] = sprintf(
-        "%s(%s): %s%s(%s)",
-        $trace['file'] ?? '[internal function]',
-        $trace['line'] ?? '',
-        $className,
-        $fnName,
-        implode(", ", $args)
-      );
-    }
-    return $ret;
+    return static::formatter('text', $showArgs, $maxArgLen)->formatBacktrace($backTrace);
   }
 
   /**
@@ -865,37 +800,10 @@ class CRM_Core_Error extends PEAR_ErrorStack {
    * @param Throwable $e
    * @return string
    *   printable HTML text
+   * @deprecated See formatter()
    */
   public static function formatHtmlException(Throwable $e) {
-    $msg = '';
-
-    // Exception metadata
-
-    // Exception backtrace
-    if ($e instanceof PEAR_Exception) {
-      $ei = $e;
-      if (is_callable([$ei, 'getCause'])) {
-        // DB_ERROR doesn't have a getCause but does have a __call function which tricks is_callable.
-        if (!$ei instanceof DB_Error) {
-          if ($ei->getCause() instanceof PEAR_Error) {
-            $msg .= '<table class="crm-db-error">';
-            $msg .= sprintf('<thead><tr><th>%s</th><th>%s</th></tr></thead>', ts('Error Field'), ts('Error Value'));
-            $msg .= '<tbody>';
-            foreach (['Type', 'Code', 'Message', 'Mode', 'UserInfo', 'DebugInfo'] as $f) {
-              $msg .= sprintf('<tr><td>%s</td><td>%s</td></tr>', $f, call_user_func([$ei->getCause(), "get$f"]));
-            }
-            $msg .= '</tbody></table>';
-          }
-          $ei = $ei->getCause();
-        }
-      }
-      $msg .= $e->toHtml();
-    }
-    else {
-      $msg .= '<p><b>' . get_class($e) . ': "' . htmlentities($e->getMessage()) . '"</b></p>';
-      $msg .= '<pre>' . htmlentities(self::formatBacktrace($e->getTrace())) . '</pre>';
-    }
-    return $msg;
+    return static::formatter('html')->formatException($e);
   }
 
   /**
@@ -904,28 +812,10 @@ class CRM_Core_Error extends PEAR_ErrorStack {
    * @param Throwable $e
    * @return string
    *   printable plain text
+   * @deprecated See formatter()
    */
   public static function formatTextException(Throwable $e) {
-    $msg = get_class($e) . ": \"" . $e->getMessage() . "\"\n";
-
-    $ei = $e;
-    while (is_callable([$ei, 'getCause'])) {
-      // DB_ERROR doesn't have a getCause but does have a __call function which tricks is_callable.
-      if (!$ei instanceof DB_Error) {
-        if ($ei->getCause() instanceof PEAR_Error) {
-          foreach (['Type', 'Code', 'Message', 'Mode', 'UserInfo', 'DebugInfo'] as $f) {
-            $msg .= sprintf(" * ERROR %s: %s\n", strtoupper($f), call_user_func([$ei->getCause(), "get$f"]));
-          }
-        }
-        $ei = $ei->getCause();
-      }
-      // if we have reached a DB_Error assume that is the end of the road.
-      else {
-        $ei = NULL;
-      }
-    }
-    $msg .= self::formatBacktrace($e->getTrace());
-    return $msg;
+    return static::formatter('text')->formatException($e);
   }
 
   /**
@@ -943,6 +833,15 @@ class CRM_Core_Error extends PEAR_ErrorStack {
     $error = CRM_Core_Error::singleton();
     $error->push($code, $level, [$params], $message);
     return $error;
+  }
+
+  /**
+   * Create a random identifier for an error.
+   *
+   * @return string
+   */
+  public static function createErrorId(): string {
+    return rtrim(chunk_split(CRM_Utils_String::createRandom(12, CRM_Utils_String::ALPHANUMERIC), 4, '-'), '-');
   }
 
   /**
@@ -991,7 +890,7 @@ class CRM_Core_Error extends PEAR_ErrorStack {
     try {
       $messageWithDetails = $message . ' ' . $pearError->getUserInfo();
 
-      \Civi::log()->debug($messageWithDetails . "\n\n" . self::formatBacktrace($pearError->getBacktrace()));
+      \Civi::log()->debug($messageWithDetails . "\n\n" . static::formatter('text')->formatBacktrace($pearError->getBacktrace()));
     }
     catch (\Exception $e) {
       // well we tried

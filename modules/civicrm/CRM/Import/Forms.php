@@ -450,7 +450,7 @@ class CRM_Import_Forms extends CRM_Core_Form {
         'job_type' => $this->getUserJobType(),
         'status_id:name' => 'draft',
         // This suggests the data could be cleaned up after this.
-        'expires_date' => '+ 1 week',
+        'expires_date' => '+1 month',
         'metadata' => [
           'submitted_values' => $submittedValues,
           'template_id' => $this->getTemplateID(),
@@ -497,10 +497,9 @@ class CRM_Import_Forms extends CRM_Core_Form {
       $this->getUserJob()['metadata'],
       [$key => $data]
     );
-    if (isset($metaData['import_options']['date_format'])) {
-      // The Select is sloppy with typing.
-      $metaData['import_options']['date_format'] = (int) $metaData['import_options']['date_format'];
-    }
+    // The Select is sloppy with typing.
+    // We need to prioritize the submitted value to save the user input from Choose Data Source in the interim until the date format is removed.
+    $metaData['import_options']['date_format'] = (int) $metaData['submitted_values']['dateFormats'] ?? NULL ?: (int) $metaData['import_options']['date_format'];
     $this->userJob['metadata'] = $metaData;
     if ($this->isUpdateTemplateJob()) {
       $this->updateTemplateUserJob($metaData);
@@ -665,13 +664,13 @@ class CRM_Import_Forms extends CRM_Core_Form {
     $form->set('user_job_id', $userJobID);
 
     $form->getUserJob();
-    $writer = Writer::createFromFileObject(new SplTempFileObject());
+    $writer = Writer::from(new SplTempFileObject());
     $headers = $form->getOutputColumnsHeaders();
     $writer->insertOne($headers);
     // Note this might be more inefficient by iterating the result
     // set & doing insertOne - possibly something to explore later.
     $writer->insertAll($form->getOutputRows($status));
-    $writer->output($saveFileName);
+    $writer->download($saveFileName);
     CRM_Utils_System::civiExit();
   }
 

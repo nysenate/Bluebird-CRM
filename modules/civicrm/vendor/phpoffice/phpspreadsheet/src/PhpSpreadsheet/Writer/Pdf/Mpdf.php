@@ -3,22 +3,21 @@
 namespace PhpOffice\PhpSpreadsheet\Writer\Pdf;
 
 use PhpOffice\PhpSpreadsheet\Worksheet\PageSetup;
-use PhpOffice\PhpSpreadsheet\Writer\Html;
 use PhpOffice\PhpSpreadsheet\Writer\Pdf;
 
 class Mpdf extends Pdf
 {
-    /** @var bool */
-    protected $isMPdf = true;
+    public const SIMULATED_BODY_START = '<!-- simulated body start -->';
+    private const BODY_TAG = '<body>';
 
     /**
      * Gets the implementation of external PDF library that should be used.
      *
-     * @param array $config Configuration array
+     * @param mixed[] $config Configuration array
      *
      * @return \Mpdf\Mpdf implementation
      */
-    protected function createExternalWriterInstance($config)
+    protected function createExternalWriterInstance(array $config): \Mpdf\Mpdf
     {
         return new \Mpdf\Mpdf($config);
     }
@@ -61,32 +60,36 @@ class Mpdf extends Pdf
         $pdf->SetCreator($this->spreadsheet->getProperties()->getCreator());
 
         $html = $this->generateHTMLAll();
-        $bodyLocation = strpos($html, Html::BODY_LINE);
+        $bodyLocation = strpos($html, self::SIMULATED_BODY_START);
+        if ($bodyLocation === false) {
+            $bodyLocation = strpos($html, self::BODY_TAG);
+            if ($bodyLocation !== false) {
+                $bodyLocation += strlen(self::BODY_TAG);
+            }
+        }
         // Make sure first data presented to Mpdf includes body tag
+        //   (and any htmlpageheader/htmlpagefooter tags)
         //   so that Mpdf doesn't parse it as content. Issue 2432.
         if ($bodyLocation !== false) {
-            $bodyLocation += strlen(Html::BODY_LINE);
             $pdf->WriteHTML(substr($html, 0, $bodyLocation));
             $html = substr($html, $bodyLocation);
         }
-        foreach (\array_chunk(\explode(PHP_EOL, $html), 1000) as $lines) {
-            $pdf->WriteHTML(\implode(PHP_EOL, $lines));
+        foreach (explode("\n", $html) as $line) {
+            $pdf->WriteHTML("$line\n");
         }
 
         //  Write to file
-        fwrite($fileHandle, $pdf->Output('', 'S'));
+        /** @var string */
+        $str = $pdf->Output('', 'S');
+        fwrite($fileHandle, $str);
 
         parent::restoreStateAfterSave();
     }
 
     /**
      * Convert inches to mm.
-     *
-     * @param float $inches
-     *
-     * @return float
      */
-    private function inchesToMm($inches)
+    private function inchesToMm(float $inches): float
     {
         return $inches * 25.4;
     }

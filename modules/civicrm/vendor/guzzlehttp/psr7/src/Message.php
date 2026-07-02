@@ -69,11 +69,16 @@ final class Message
 
         $body->rewind();
         $summary = $body->read($truncateAt);
-        $body->rewind();
 
         if ($size > $truncateAt) {
+            if (preg_match('//u', $summary) !== 1) {
+                $summary = self::trimTrailingIncompleteUtf8Character($summary, $body->read(3));
+            }
+
             $summary .= ' (truncated...)';
         }
+
+        $body->rewind();
 
         // Matches any printable character, including unicode characters:
         // letters, marks, numbers, punctuation, spacing, and separators.
@@ -82,6 +87,60 @@ final class Message
         }
 
         return $summary;
+    }
+
+    /**
+     * Trims a partial UTF-8 character from the end of a truncated string.
+     */
+    private static function trimTrailingIncompleteUtf8Character(string $summary, string $lookahead): string
+    {
+        $length = strlen($summary);
+
+        if ($length === 0) {
+            return $summary;
+        }
+
+        $start = $length - 1;
+
+        while ($start >= 0) {
+            $byte = ord($summary[$start]);
+
+            if ($byte < 0x80 || $byte > 0xBF) {
+                break;
+            }
+
+            --$start;
+        }
+
+        if ($start < 0) {
+            return $summary;
+        }
+
+        $lead = ord($summary[$start]);
+
+        if ($lead >= 0xC2 && $lead <= 0xDF) {
+            $expectedLength = 2;
+        } elseif ($lead >= 0xE0 && $lead <= 0xEF) {
+            $expectedLength = 3;
+        } elseif ($lead >= 0xF0 && $lead <= 0xF4) {
+            $expectedLength = 4;
+        } else {
+            return $summary;
+        }
+
+        $availableLength = $length - $start;
+
+        if ($availableLength >= $expectedLength) {
+            return $summary;
+        }
+
+        $sequence = substr($summary, $start).substr($lookahead, 0, $expectedLength - $availableLength);
+
+        if (strlen($sequence) !== $expectedLength || preg_match('//u', $sequence) !== 1) {
+            return $summary;
+        }
+
+        return substr($summary, 0, $start);
     }
 
     /**
@@ -175,6 +234,23 @@ final class Message
      */
     public static function parseRequestUri(string $path, array $headers): string
     {
+        $host = self::getHostFromHeaders($headers);
+
+        // If no host is found, then a full URI cannot be constructed.
+        if ($host === null) {
+            return $path;
+        }
+
+        $scheme = substr($host, -4) === ':443' ? 'https' : 'http';
+
+        return $scheme.'://'.$host.'/'.ltrim($path, '/');
+    }
+
+    /**
+     * @param array $headers Array of headers (each value an array).
+     */
+    private static function getHostFromHeaders(array $headers): ?string
+    {
         $hostKey = array_filter(array_keys($headers), function ($k) {
             // Numeric array keys are converted to int by PHP.
             $k = (string) $k;
@@ -182,15 +258,16 @@ final class Message
             return strtolower($k) === 'host';
         });
 
-        // If no host is found, then a full URI cannot be constructed.
         if (!$hostKey) {
-            return $path;
+            return null;
         }
 
         $host = $headers[reset($hostKey)][0];
-        $scheme = substr($host, -4) === ':443' ? 'https' : 'http';
+        if (!is_string($host) || Rfc7230::parseHostHeader($host) === null) {
+            throw new \InvalidArgumentException('Invalid request string');
+        }
 
-        return $scheme.'://'.$host.'/'.ltrim($path, '/');
+        return $host;
     }
 
     /**
@@ -201,6 +278,10 @@ final class Message
     public static function parseRequest(string $message): RequestInterface
     {
         $data = self::parseMessage($message);
+        if (strpbrk($data['start-line'], "\r\n") !== false) {
+            throw new \InvalidArgumentException('Invalid request string');
+        }
+
         $matches = [];
         if (!preg_match('/^[\S]+\s+([a-zA-Z]+:\/\/|\/).*/', $data['start-line'], $matches)) {
             throw new \InvalidArgumentException('Invalid request string');
@@ -227,6 +308,10 @@ final class Message
     public static function parseResponse(string $message): ResponseInterface
     {
         $data = self::parseMessage($message);
+        if (strpbrk($data['start-line'], "\r\n") !== false) {
+            throw new \InvalidArgumentException('Invalid response string');
+        }
+
         // According to https://datatracker.ietf.org/doc/html/rfc7230#section-3.1.2
         // the space between status-code and reason-phrase is required. But
         // browsers accept responses without space and reason as well.

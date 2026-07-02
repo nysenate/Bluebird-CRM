@@ -41,7 +41,6 @@ function _civicrm_api3_payment_processor_create_spec(&$params) {
   $params['is_default']['api.default'] = 0;
   $params['is_test']['api.default'] = 0;
   $params['is_active']['api.default'] = TRUE;
-  $params['domain_id']['api.default'] = CRM_Core_Config::domainID();
   $params['financial_account_id']['api.default'] = CRM_Financial_BAO_PaymentProcessor::getDefaultFinancialAccountID();
   $params['financial_account_id']['api.required'] = TRUE;
   $params['financial_account_id']['type'] = CRM_Utils_Type::T_INT;
@@ -176,7 +175,7 @@ function _civicrm_api3_payment_processor_pay_spec(&$params) {
  * @throws \Civi\Payment\Exception\PaymentProcessorException
  */
 function civicrm_api3_payment_processor_refund($params) {
-  if (!CRM_Core_Permission::check('refund contributions')) {
+  if (!empty($params['check_permissions']) && !CRM_Core_Permission::check('refund contributions')) {
     throw new UnauthorizedException(ts('You do not have permission to issue refunds'));
   }
   /** @var \CRM_Core_Payment $processor */

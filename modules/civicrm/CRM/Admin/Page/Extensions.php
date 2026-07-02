@@ -133,6 +133,7 @@ class CRM_Admin_Page_Extensions extends CRM_Core_Page_Basic {
     // $manager->refresh();
 
     $localExtensionRows = $this->formatLocalExtensionRows();
+    uasort($localExtensionRows, fn($a, $b) => strcasecmp($a['name'], $b['name']));
     $this->assign('localExtensionRows', $localExtensionRows);
 
     $remoteExtensionRows = $this->formatRemoteExtensionRows($localExtensionRows);
@@ -271,7 +272,7 @@ class CRM_Admin_Page_Extensions extends CRM_Core_Page_Basic {
       if (isset($localExtensionRows[$info->key])) {
         if (array_key_exists('version', $localExtensionRows[$info->key])) {
           if (version_compare($localExtensionRows[$info->key]['version'] ?? '', $info->version, '<')) {
-            $row['upgradelink'] = $mapper->getUpgradeLink($remoteExtensions[$info->key], $localExtensionRows[$info->key]);
+            $row['upgradelink'] = $mapper->getUpgradeLink($remoteExtensions[$info->key], $localExtensionRows[$info->key], CRM_Extension_System::singleton()->getDownloader()->extensionDirectoryWritable());
           }
         }
       }
@@ -370,7 +371,7 @@ class CRM_Admin_Page_Extensions extends CRM_Core_Page_Basic {
     ];
     $info = array_merge($defaultKeys, $info);
     $info['is_stable'] = $info['develStage'] === 'stable' && !preg_match(";(alpha|beta|dev);", $info['version']);
-    $info['develStage_formatted'] = $support[$info['develStage']] ?? $info['develStage'];
+    $info['develStage_formatted'] = $support[$info['develStage'] ?? ''] ?? $info['develStage'];
     if ($info['ready'] == 'ready') {
       $info['develStage_formatted'] = $support['reviewed'];
     }

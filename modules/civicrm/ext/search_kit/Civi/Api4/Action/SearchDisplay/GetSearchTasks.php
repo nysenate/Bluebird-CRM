@@ -97,6 +97,8 @@ class GetSearchTasks extends \Civi\Api4\Generic\AbstractAction {
         'title' => E::ts('Update %1', [1 => $entity['title_plural']]),
         'icon' => 'fa-save',
         'uiDialog' => ['templateUrl' => '~/crmSearchTasks/crmSearchTaskUpdate.html'],
+        // Default values can be set via `hook_civicrm_searchKitTasks`
+        'values' => [],
       ];
 
       // Enable/disable are basically shortcut update actions
@@ -172,6 +174,25 @@ class GetSearchTasks extends \Civi\Api4\Generic\AbstractAction {
           'runMsg' => E::ts('Refreshing %1 %2...'),
           'successMsg' => E::ts('%1 %2 Refreshed.'),
           'errorMsg' => E::ts('An error occurred while attempting to refresh %1 %2.'),
+        ],
+      ];
+    }
+
+    if ($entity['name'] === 'Contribution') {
+      $defaultSoftCreditTypeID = \CRM_Core_OptionGroup::getDefaultValue('soft_credit_type');
+      $tasks['Contribution']['add_soft_credit'] = [
+        'title' => E::ts('Add Soft Credits'),
+        'icon' => 'fa-user-plus',
+        'module' => 'crmSearchTasks',
+        'apiBatch' => [
+          'entity' => 'ContributionSoft',
+          'action' => 'save',
+          'runMsg' => E::ts('Adding soft credits...'),
+          'idField' => 'contribution_id',
+          'fields' => [
+            ['name' => 'contact_id', 'required' => TRUE],
+            ['name' => 'soft_credit_type_id', 'required' => TRUE, 'default_value' => $defaultSoftCreditTypeID],
+          ],
         ],
       ];
     }
@@ -283,7 +304,7 @@ class GetSearchTasks extends \Civi\Api4\Generic\AbstractAction {
 
   private function getApiBatchFields(array &$task): bool {
     try {
-      $fieldInfo = civicrm_api4($task['entity'], 'getFields', [
+      $fieldInfo = civicrm_api4($task['apiBatch']['entity'] ?? $task['entity'], 'getFields', [
         'checkPermissions' => $this->getCheckPermissions(),
         'action' => $task['apiBatch']['action'] ?? 'update',
         'select' => ['name', 'label', 'description', 'input_type', 'data_type', 'serialize', 'options', 'fk_entity', 'required', 'nullable'],

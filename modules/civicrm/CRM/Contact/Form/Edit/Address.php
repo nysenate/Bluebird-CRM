@@ -158,8 +158,10 @@ class CRM_Contact_Form_Edit_Address {
 
       // do we want to update employer for shared address
       $employer_label = '<span class="addrel-employer">' . ts('Set this organization as current employer') . '</span>';
+      $form->assign('employer_label', $employer_label);
       $household_label = '<span class="addrel-household">' . ts('Create a household member relationship with this contact') . '</span>';
-      $form->addElement('checkbox', "address[$blockId][add_relationship]", NULL, $employer_label . $household_label);
+      $form->assign('household_label', $household_label);
+      $form->addElement('checkbox', "address[$blockId][add_relationship]", NULL, '');
     }
   }
 
@@ -380,7 +382,8 @@ class CRM_Contact_Form_Edit_Address {
   private static function enforceRequired(CRM_Core_Form $form): bool {
     if ($form->isSubmitted()) {
       $addresses = (array) $form->getSubmittedValue('address');
-      foreach ($addresses as $address) {
+      foreach ($addresses as $idx => $address) {
+        $address['id'] = $form->_values['address'][$idx]['id'] ?? "";
         if (!empty($address['master_id']) || CRM_Core_BAO_Address::dataExists($address)) {
           return TRUE;
         }

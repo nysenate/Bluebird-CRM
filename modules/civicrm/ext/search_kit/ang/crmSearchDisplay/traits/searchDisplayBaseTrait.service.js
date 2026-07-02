@@ -22,23 +22,42 @@
         const ctrl = this;
         this.$element = $element;
         this.limit = this.settings.limit;
-        this.sort = this.settings.sort ? _.cloneDeep(this.settings.sort) : [];
-        this.seed = Date.now();
-        this.uniqueId = generateUniqueId(20);
+        this.sort = Array.isArray(this.settings.sort) ? _.cloneDeep(this.settings.sort) : [];
+        // Used to make dom ids unique, and as a seed for ORDER BY RAND() to stabilize random results
+        this.uniqueId = Math.floor(Math.random() * 10e10);
         this.placeholders = [];
         const placeholderCount = 'placeholder' in this.settings ? this.settings.placeholder : 5;
         for (let p=0; p < placeholderCount; ++p) {
           this.placeholders.push({});
         }
-        // Break reference so original settings are preserved
-        this.columns = _.cloneDeep(this.settings.columns);
-        this.columns.forEach((col) => {
+
+        // Add keys used by crmSearchDisplayTable.toggleColumns
+        const setColumnDefaults = (col) => {
           col.enabled = true;
           col.fetched = true;
-        });
-        _.each(ctrl.onInitialize, function(callback) {
-          callback.call(ctrl, $scope, $element);
-        });
+        };
+
+        // This will ony be true if running the search outside of an Afform.
+        // Within an Afform, default columns will be set by AfformSearchMetadataInjector.
+        if (this.settings.columnMode === 'auto' && (!this.settings.columns || !this.settings.columns.length)) {
+          // start with no columns in case we run before
+          // we've fetched the right ones
+          this.columns = [];
+          crmApi4('SearchDisplay', 'getDefault', {
+            savedSearch: this.search,
+            select: ['settings'],
+          })
+          .then((result) => this.columns = result[0].settings.columns)
+          .then(() => this.columns.forEach(setColumnDefaults))
+          .catch((error) => CRM.alert(ts('Error loading search columns')));
+        }
+        else {
+          // Break reference so original settings are preserved
+          this.columns = _.cloneDeep(this.settings.columns);
+          this.columns.forEach(setColumnDefaults);
+        }
+
+        ctrl.onInitialize.forEach(callback => callback.call(ctrl, $scope, $element));
 
         // _.debounce used here to trigger the initial search immediately but prevent subsequent launches within 300ms
         this.getResultsPronto = _.debounce(ctrl.runSearch, 300, {leading: true, trailing: false});
@@ -77,15 +96,6 @@
           }
         }
 
-        function generateUniqueId(length) {
-          const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
-          let result = "";
-          for (let i = 0; i < length; i++) {
-            result += chars.charAt(Math.floor(Math.random() * chars.length));
-          }
-          return result;
-        }
-
         // Popup forms in this display or surrounding Afform trigger a refresh
         $element.closest('form').on('crmPopupFormSuccess crmFormSuccess', function() {
           ctrl.rowCount = null;
@@ -96,9 +106,7 @@
         function onChangeFilters() {
           ctrl.page = 1;
           ctrl.rowCount = null;
-          _.each(ctrl.onChangeFilters, function(callback) {
-            callback.call(ctrl);
-          });
+          ctrl.onChangeFilters.forEach(callback => callback.call(ctrl));
           if (!ctrl.settings.button) {
             ctrl.getResultsSoon();
           }
@@ -140,12 +148,15 @@
           });
         }
 
+        // Trigger an event when the searchDisplay has completely (re-)loaded
+        this.onPostRun.push(() => $element[0].dispatchEvent(new Event('load')));
+
         // Set up watches to refresh search results when needed.
         // Because `angular.$watch` runs immediately as well as on subsequent changes,
         // this also kicks off the first run of the search (if there's no search button).
         function setUpWatches() {
           if (ctrl.afFieldset) {
-            $scope.$watch(ctrl.afFieldset.getFieldData, onChangeFilters, true);
+            $scope.$watch(ctrl.afFieldset.getFilterValues, onChangeFilters, true);
           }
           if (ctrl.settings.pager && ctrl.settings.pager.expose_limit) {
             $scope.$watch('$ctrl.limit', onChangePageSize);
@@ -210,7 +221,7 @@
           display: this.display,
           sort: this.sort,
           limit: this.limit,
-          seed: this.seed,
+          seed: this.uniqueId,
           filters: this.getFilters(),
           afform: this.afFieldset ? this.afFieldset.getFormName() : null
         };
@@ -243,9 +254,8 @@
         }
         apiCalls = apiCalls || {};
         apiCalls.run = ['SearchDisplay', 'run', apiParams];
-        _.each(ctrl.onPreRun, function(callback) {
-          callback.call(ctrl, apiCalls);
-        });
+        // Run all preRun callbacks
+        ctrl.onPreRun.forEach(callback => callback.call(ctrl, apiCalls));
         const apiRequest = crmApi4(apiCalls);
         apiRequest.then(function(apiResults) {
           if (requestId < ctrl._runCount) {
@@ -269,18 +279,16 @@
               });
             }
           }
-          _.each(ctrl.onPostRun, function(callback) {
-            callback.call(ctrl, apiResults, 'success', editedRow);
-          });
+          // Run all postRun callbacks on success
+          ctrl.onPostRun.forEach(callback => callback.call(ctrl, apiResults, 'success', editedRow));
         }, function(error) {
           if (requestId < ctrl._runCount) {
             return; // Another request started after this one
           }
           ctrl.results = [];
           ctrl.loading = false;
-          _.each(ctrl.onPostRun, function(callback) {
-            callback.call(ctrl, error, 'error', editedRow);
-          });
+          // Run all postRun callbacks on error
+          ctrl.onPostRun.forEach(callback => callback.call(ctrl, error, 'error', editedRow));
         });
         if (statusParams) {
           crmStatus(statusParams, apiRequest);
@@ -289,13 +297,17 @@
       },
 
       getFieldClass: function(colIndex, colData) {
-        return (colData.cssClass || '') + ' crm-search-col-type-' + this.settings.columns[colIndex].type + (this.settings.columns[colIndex].break ? '' : ' crm-inline-block');
+        return (colData.cssClass || '') + ' crm-search-col-type-' + this.columns[colIndex].type + (this.columns[colIndex].break ? '' : ' crm-inline-block');
       },
 
       getFieldTemplate: function(colIndex, colData) {
-        let colType = this.settings.columns[colIndex].type;
+        let colType = this.columns[colIndex].type;
         if (colType === 'include') {
-          return this.settings.columns[colIndex].path;
+          // Throw exception if path doesn't start with '~/'
+          if (/^~\/.+/.test(this.columns[colIndex].path) === false) {
+            throw 'Invalid path for include column: "' + this.columns[colIndex].path + '"';
+          }
+          return this.columns[colIndex].path;
         }
         if (colType === 'field') {
           if (colData.edit) {
@@ -306,6 +318,12 @@
         }
         return '~/crmSearchDisplay/colType/' + colType + '.html';
       },
+
+      getSearchDisplayKey: function() {
+        // note: if using the default search then this.display may be empty
+        return this.display ? `${this.search}.${this.display}` : this.search;
+      }
+
     };
   });
 

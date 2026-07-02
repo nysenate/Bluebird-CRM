@@ -33,6 +33,13 @@ class CRM_Case_Task extends CRM_Core_Task {
   public static $objectType = 'case';
 
   /**
+   * Tasks for this class – overridden from parent to avoid cross-contamination with sibling classes.
+   *
+   * @var array
+   */
+  public static $_tasks = [];
+
+  /**
    * These tasks are the core set of tasks that the user can perform
    * on a contact / group of contacts
    *
@@ -78,6 +85,16 @@ class CRM_Case_Task extends CRM_Core_Task {
           ],
           'result' => FALSE,
         ],
+        self::TAG_ADD => [
+          'title' => ts('Tag - add to cases'),
+          'class' => 'CRM_Case_Form_Task_AddToTag',
+          'result' => FALSE,
+        ],
+        self::TAG_REMOVE => [
+          'title' => ts('Tag - remove from cases'),
+          'class' => 'CRM_Case_Form_Task_RemoveFromTag',
+          'result' => FALSE,
+        ],
       ];
 
       //CRM-4418, check for delete
@@ -103,7 +120,6 @@ class CRM_Case_Task extends CRM_Core_Task {
    */
   public static function permissionedTaskTitles($permission, $params = []) {
     if (($permission == CRM_Core_Permission::EDIT)
-      || CRM_Core_Permission::check('access all cases and activities')
       || CRM_Core_Permission::check('access my cases and activities')
     ) {
       $tasks = self::taskTitles();

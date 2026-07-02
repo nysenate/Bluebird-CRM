@@ -10,10 +10,8 @@ class File
 {
     /**
      * Use Temp or File Upload Temp for temporary files.
-     *
-     * @var bool
      */
-    protected static $useUploadTempDirectory = false;
+    protected static bool $useUploadTempDirectory = false;
 
     /**
      * Set the flag indicating whether the File Upload Temp directory should be used for temporary files.
@@ -94,9 +92,9 @@ class File
             $pathArray = explode('/', $filename);
             while (in_array('..', $pathArray) && $pathArray[0] != '..') {
                 $iMax = count($pathArray);
-                for ($i = 0; $i < $iMax; ++$i) {
-                    if ($pathArray[$i] == '..' && $i > 0) {
-                        unset($pathArray[$i], $pathArray[$i - 1]);
+                for ($i = 1; $i < $iMax; ++$i) {
+                    if ($pathArray[$i] == '..') {
+                        array_splice($pathArray, $i - 1, 2);
 
                         break;
                     }
@@ -132,12 +130,25 @@ class File
 
     public static function temporaryFilename(): string
     {
-        $filename = tempnam(self::sysGetTempDir(), 'phpspreadsheet');
-        if ($filename === false) {
-            throw new Exception('Could not create temporary file');
-        }
+        return tempnam(self::sysGetTempDir(), 'phpspreadsheet') ?: throw new Exception('Could not create temporary file');
+    }
 
-        return $filename;
+    /**
+     * All filenames starting with protocol (e.g. phar://) are prohibited.
+     * Note that many protocols, including http and zip, will already
+     * return false for is_file.
+     * A whitelist of protocols may be added if needed in future.
+     */
+    public static function prohibitWrappers(string $filename): void
+    {
+        $scheme = parse_url($filename, PHP_URL_SCHEME);
+        // strlen check > 1 to avoid issues with Windows absolute paths (e.g. C:\...), Windows quirks :)
+        // since no built-in or commonly registered PHP stream wrapper uses a single-character scheme, this should be ok, to my knowledge
+        if (is_string($scheme) && strlen($scheme) > 1) {
+            throw new Exception(
+                "Stream wrappers are not permitted as file paths: {$filename}"
+            );
+        }
     }
 
     /**
@@ -145,12 +156,9 @@ class File
      */
     public static function assertFile(string $filename, string $zipMember = ''): void
     {
-        if (!is_file($filename)) {
-            throw new ReaderException('File "' . $filename . '" does not exist.');
-        }
-
-        if (!is_readable($filename)) {
-            throw new ReaderException('Could not open "' . $filename . '" for reading.');
+        self::prohibitWrappers($filename);
+        if (!is_file($filename) || !is_readable($filename)) {
+            throw new ReaderException('File "' . $filename . '" does not exist or is not readable.');
         }
 
         if ($zipMember !== '') {
@@ -167,13 +175,12 @@ class File
 
     /**
      * Same as assertFile, except return true/false and don't throw Exception.
+     * Will nevertheless throw if filename uses invalid protocol, e.g. phar.
      */
     public static function testFileNoThrow(string $filename, ?string $zipMember = null): bool
     {
-        if (!is_file($filename)) {
-            return false;
-        }
-        if (!is_readable($filename)) {
+        self::prohibitWrappers($filename);
+        if (!is_file($filename) || !is_readable($filename)) {
             return false;
         }
         if ($zipMember === null) {

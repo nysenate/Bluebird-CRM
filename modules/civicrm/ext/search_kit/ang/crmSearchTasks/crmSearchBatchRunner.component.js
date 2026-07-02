@@ -33,7 +33,7 @@
       const EST_BATCH_TIME = 5;
 
       this.$onInit = function() {
-        if (ctrl.action === 'create') {
+        if (ctrl.action === 'create' && !ctrl.idField) {
           ctrl.ids = [0];
         }
         totalBatches = Math.ceil(ctrl.ids.length / BATCH_SIZE);
@@ -53,10 +53,17 @@
           ctrl.last = ctrl.ids.length;
         }
         const params = _.cloneDeep(ctrl.params);
-        if (ctrl.action === 'save') {
+        if (ctrl.action === 'save' || (ctrl.action === 'create' && ctrl.idField)) {
+          actionName = 'save';
+          let originalRecords = params.records || [{}];
+          // If "values" were passed instead of "records"
+          if ('values' in params) {
+            originalRecords = [params.values];
+            delete params.values;
+          }
           // For the save action, take each record from params and copy it with each supplied id
           params.records = _.transform(ctrl.ids.slice(ctrl.first, ctrl.last), function(records, id) {
-            _.each(_.cloneDeep(ctrl.params.records || [{}]), function(record) {
+            _.each(_.cloneDeep(originalRecords), function(record) {
               record[ctrl.idField || 'id'] = id;
               records.push(record);
             });
@@ -79,7 +86,7 @@
             stopIncrementer();
             ctrl.progress = Math.floor(100 * ++currentBatch / totalBatches);
             processedCount += result.countFetched;
-            countMatched += (result.countMatched || result.count);
+            countMatched += ('countMatched' in result ? result.countMatched : result.count);
             // Gather all results into one super collection
             if (batchResult) {
               batchResult.push(...result);

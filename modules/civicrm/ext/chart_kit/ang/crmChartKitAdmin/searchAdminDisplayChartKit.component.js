@@ -1,4 +1,4 @@
-(function (angular, $, _) {
+(function (angular, $, _, chartKitChartTypes, chartKitTypeBackends, chartKitColumnOptions, chartKitUtils) {
   "use strict";
 
   angular.module('crmChartKitAdmin').component('searchAdminDisplayChartKit', {
@@ -12,12 +12,10 @@
       crmSearchAdmin: '^crmSearchAdmin'
     },
     templateUrl: '~/crmChartKitAdmin/searchAdminDisplayChartKit.html',
-    controller: function ($scope, searchMeta, chartKitChartTypes, chartKitColumn) {
+    controller: function ($scope, searchMeta) {
       const ts = $scope.ts = CRM.ts('chart_kit');
 
-      const columnConfigOptions = chartKitColumn.configOptions();
-
-      this.getChartTypeOptions = () => chartKitChartTypes.types.map((type) => ({ key: type.key, label: type.label, icon: type.icon }));
+      this.getChartTypeOptions = () => chartKitChartTypes;
 
       this.getInitialDisplaySettings = () => ({
         columns: [],
@@ -69,7 +67,7 @@
         }
         else {
           // run initial settings through our legacy adaptor
-          this.display.settings = chartKitChartTypes.legacySettingsAdaptor(this.display.settings);
+          this.display.settings = chartKitUtils.legacySettingsAdaptor(this.display.settings);
         }
 
         this.chartTypeOptions = this.getChartTypeOptions();
@@ -90,8 +88,8 @@
       };
 
       this.initChartType = () => {
-        const type = chartKitChartTypes.types.find((type) => type.key === this.display.settings.chartType);
-        this.chartType = type.service;
+        const type = chartKitChartTypes.find((type) => type.key === this.display.settings.chartType);
+        this.chartType = chartKitTypeBackends[type.backend];
       };
 
       this.initAxesForChartType = () => {
@@ -186,12 +184,12 @@
 
       this.axisDefaults = ({
         // by default allow all types we know
-        reduceTypes: columnConfigOptions.reduceType.map((type) => type.key),
-        scaleTypes: columnConfigOptions.scaleType.map((type) => type.key),
-        dataLabelTypes: columnConfigOptions.dataLabelType.map((type) => type.key),
+        reduceTypes: chartKitColumnOptions.reduceType.map((type) => type.key),
+        scaleTypes: chartKitColumnOptions.scaleType.map((type) => type.key),
+        dataLabelTypes: chartKitColumnOptions.dataLabelType.map((type) => type.key),
         // by default no option
         seriesTypes: [],
-        dataLabelFormatters: columnConfigOptions.dataLabelFormatter.map((type) => type.key),
+        dataLabelFormatters: chartKitColumnOptions.dataLabelFormatter.map((type) => type.key),
         multiColumn: false,
         prepopulate: true,
       });
@@ -248,27 +246,34 @@
         return this.searchColumns.find((searchColumn) => (searchColumn.key === key));
       };
 
-      this.getColumnSourceDataType = (col) => {
+      this.getColumnDataType = (col) => {
         const details = this.getSearchColumn(col.key);
         return details ? details.dataType : null;
-      };
-
-      this.getColumnSourceDataTypeIsDate = (col) => {
-        const dataType = this.getColumnSourceDataType(col);
-        return dataType && ['Date', 'Time', 'Timestamp'].includes(dataType);
       };
 
       this.getColumnScaleTypeOptions = (col) => {
         let options = this.getAxisScaleTypeOptions(col.axis);
 
-        // date is only valid if the column type is date
-        if (this.getColumnSourceDataTypeIsDate(col)) {
-          options = options.filter((item) => ['date', 'categorical'].includes(item));
-        } else if (this.getColumnSourceDataType(col) === 'String') {
-          options = options.filter((item) => item === 'categorical');
-        } else {
-          options = options.filter((item) => item !== 'date');
+        switch (this.getColumnDataType(col)) {
+          case 'Date':
+          case 'Time':
+          case 'Timestamp':
+            options = ['date', 'categorical'].filter((item) => options.includes(item));
+            break;
+
+          case 'Integer':
+            options = ['integer', 'numeric', 'categorical'].filter((item) => options.includes(item));
+            break;
+
+          case 'String':
+            options = options.filter((item) => item === 'categorical');
+            break;
+
+          default:
+            // exclude date if data type is not one of those above
+            options = options.filter((item) => item !== 'date');
         }
+
         // this is a bit hacky, but if option groups can be categorical, they
         // probably should be
         if (col.key && col.key.includes(':label') && options.includes('categorical')) {
@@ -278,8 +283,8 @@
       };
 
       this.getColumnDatePrecisionOptions = (col) => {
-        if (this.getColumnSourceDataTypeIsDate(col)) {
-          return columnConfigOptions.datePrecision.map((option) => option.key);
+        if (['Date', 'Time', 'Timestamp'].includes(this.getColumnDataType(col))) {
+          return chartKitColumnOptions.datePrecision.map((option) => option.key);
         }
         return [];
       };
@@ -308,19 +313,24 @@
       this.getColumnDataLabelFormatterOptions = (col) => {
         const options = this.getAxisDataLabelFormatterOptions(col.axis);
 
-        // categorical will often be rendered to string, which
-        // dont like being formatted
-        if (col.scaleType === 'categorical') {
-          return ['none', 'round', 'formatMoney'];
-        }
-        // default to money for money columns
-        if (col.sourceDataType === 'Money') {
+        // default to money formatting for money columns
+        if (this.getColumnDataType(col) === 'Money') {
           return ['formatMoney', 'round', 'none'];
         }
 
-        if (col.scaleType === 'date') {
-          // TODO support fancy date formatting?
-          return ['none'];
+        switch (col.scaleType) {
+          case 'categorical':
+            // categorical will often be rendered to string, which
+            // dont like being formatted
+            return ['none', 'round', 'formatMoney'];
+
+          case 'integer':
+            // formatters generally dont make sense for integer scales
+            return ['none'];
+
+          case 'date':
+            // TODO support fancy date formatting?
+            return ['none'];
         }
 
         return options;
@@ -357,7 +367,7 @@
         if (configKey === 'searchColumn') {
           return this.searchColumns;
         }
-        return columnConfigOptions[configKey];
+        return chartKitColumnOptions[configKey];
       };
 
       this.getOptionDetailsForKey = (configKey, optionKey) => this.getAllOptionDetails(configKey).find((option) => option.key === optionKey);
@@ -414,4 +424,4 @@
 
     }
   });
-})(angular, CRM.$, CRM._);
+})(angular, CRM.$, CRM._, CRM.chart_kit.chartTypes, CRM.chart_kit.typeBackends, CRM.chart_kit.columnOptions, CRM.chart_kit.utils);

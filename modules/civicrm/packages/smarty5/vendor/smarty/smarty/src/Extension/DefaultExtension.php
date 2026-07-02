@@ -35,6 +35,7 @@ class DefaultExtension extends Base {
 			case 'lower': $this->modifiers[$modifier] = new \Smarty\Compile\Modifier\LowerModifierCompiler(); break;
 			case 'nl2br': $this->modifiers[$modifier] = new \Smarty\Compile\Modifier\Nl2brModifierCompiler(); break;
 			case 'noprint': $this->modifiers[$modifier] = new \Smarty\Compile\Modifier\NoPrintModifierCompiler(); break;
+			case 'raw': $this->modifiers[$modifier] = new \Smarty\Compile\Modifier\RawModifierCompiler(); break;
 			case 'round': $this->modifiers[$modifier] = new \Smarty\Compile\Modifier\RoundModifierCompiler(); break;
 			case 'str_repeat': $this->modifiers[$modifier] = new \Smarty\Compile\Modifier\StrRepeatModifierCompiler(); break;
 			case 'string_format': $this->modifiers[$modifier] = new \Smarty\Compile\Modifier\StringFormatModifierCompiler(); break;
@@ -319,7 +320,7 @@ class DefaultExtension extends Base {
 					break;
 				}
 				foreach ($var as $curr_key => $curr_val) {
-					$results .= '<br>' . str_repeat('&nbsp;', $depth * 2) . '<b>' . strtr($curr_key, $_replace) .
+					$results .= '<br>' . str_repeat('&nbsp;', $depth * 2) . '<b>' . htmlspecialchars(strtr($curr_key, $_replace)) .
 						'</b> =&gt; ' .
 						$this->smarty_modifier_debug_print_var($curr_val, $max, $length, ++$depth, $objects);
 					$depth--;
@@ -337,7 +338,7 @@ class DefaultExtension extends Base {
 				}
 				$objects[] = $var;
 				foreach ($object_vars as $curr_key => $curr_val) {
-					$results .= '<br>' . str_repeat('&nbsp;', $depth * 2) . '<b> -&gt;' . strtr($curr_key, $_replace) .
+					$results .= '<br>' . str_repeat('&nbsp;', $depth * 2) . '<b> -&gt;' . htmlspecialchars(strtr($curr_key, $_replace)) .
 						'</b> = ' . $this->smarty_modifier_debug_print_var($curr_val, $max, $length, ++$depth, $objects);
 					$depth--;
 				}

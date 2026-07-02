@@ -57,7 +57,7 @@ $items = [
             [
               'type' => 'html',
               'key' => 'title',
-              'label' => E::ts('Permission'),
+              'label' => 'Permission',
               'sortable' => TRUE,
               'rewrite' => '[title]<p class="description">[description]</p>',
             ],
@@ -83,7 +83,7 @@ $items = [
 
 $roles = \Civi\Api4\Role::get(FALSE)
   ->addSelect('name', 'label')
-  ->addWhere('name', '!=', 'admin')
+  ->addWhere('name', '!=', CRM_Standaloneusers_BAO_Role::SUPERADMIN_ROLE_NAME)
   ->execute()
   ->column('label', 'name');
 

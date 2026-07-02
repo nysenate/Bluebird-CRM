@@ -1434,9 +1434,6 @@ class CRM_Core_CodeGen_GenerateData {
     // grab URL and pass it to the browser
     $outstr = curl_exec($ch);
 
-    // close CURL resource, and free up system resources
-    curl_close($ch);
-
     $preg = "/'(<\?xml.+?)',/s";
     preg_match($preg, $outstr, $matches);
     if ($matches[1]) {
@@ -2240,7 +2237,14 @@ ORDER BY cc.id; ";
         'financial_account_id' => $result->financial_account_id,
       ];
       $trxnId['id'] = $trxn->id;
-      CRM_Financial_BAO_FinancialItem::create($financialItem, NULL, $trxnId);
+      $financialItem = CRM_Financial_BAO_FinancialItem::create($financialItem);
+      $entityFinancialTrxnRecord = [
+        'entity_table' => "civicrm_financial_item",
+        'entity_id' => $financialItem->id,
+        'financial_trxn_id' => $trxn->id,
+        'amount' => $result->total_amount,
+      ];
+      CRM_Financial_BAO_EntityFinancialTrxn::writeRecord($entityFinancialTrxnRecord);
     }
   }
 

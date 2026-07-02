@@ -914,7 +914,7 @@ class CRM_Core_BAO_UFGroup extends CRM_Core_DAO_UFGroup implements \Civi\Core\Ho
    * @return null|array
    */
   public static function getValues(
-    $cid, &$fields, &$values,
+    $cid, $fields, &$values,
     $searchable = TRUE, $componentWhere = NULL,
     $absolute = FALSE, $additionalWhereClause = NULL,
     $context = NULL
@@ -973,7 +973,7 @@ class CRM_Core_BAO_UFGroup extends CRM_Core_DAO_UFGroup implements \Civi\Core\Ho
       $params[$index] = $values[$index] = '';
       $customFieldName = NULL;
       // hack for CRM-665
-      if (isset($details->$name) || $name == 'group' || $name == 'tag') {
+      if (isset($details->$name) || $name === 'group' || $name === 'tag') {
         // to handle gender / suffix / prefix
         if (in_array(substr($name, 0, -3), ['gender', 'prefix', 'suffix'])) {
           $params[$index] = $details->$name;
@@ -982,7 +982,7 @@ class CRM_Core_BAO_UFGroup extends CRM_Core_DAO_UFGroup implements \Civi\Core\Ho
         elseif (in_array($name, CRM_Contact_BAO_Contact::$_greetingTypes)) {
           $dname = $name . '_display';
           $values[$index] = $details->$dname;
-          $name = $name . '_id';
+          $name .= '_id';
           $params[$index] = $details->$name;
         }
         elseif (in_array($name, [
@@ -1892,7 +1892,7 @@ AND    ( entity_id IS NULL OR entity_id <= 0 )
     elseif (in_array($fieldName, ['gender_id', 'communication_style_id'])) {
       $options = [];
       $pseudoValues = CRM_Contact_DAO_Contact::buildOptions($fieldName);
-      $form->addRadio($name, ts('%1', [1 => $title]), $pseudoValues, ['allowClear' => !$required], NULL, $required);
+      $form->addRadio($name, ts('%1', [1 => $title]), $pseudoValues, ['allowClear' => !$required], '', $required);
     }
     elseif ($fieldName === 'prefix_id' || $fieldName === 'suffix_id') {
       $form->addSelect($name, [
@@ -3123,15 +3123,6 @@ AND    ( entity_id IS NULL OR entity_id <= 0 )
                     $skipValue = TRUE;
                     $defaults['field'][$componentId][$name] = $customValue;
                     break;
-                  }
-                  elseif (($tree['fields'][$customFieldDetails[0]]['data_type'] ?? NULL) == 'Date') {
-                    $skipValue = TRUE;
-
-                    // CRM-6681, $default contains formatted date, time values.
-                    $defaults[$fldName] = $customValue;
-                    if (!empty($defaults[$customKey . '_time'])) {
-                      $defaults['field'][$componentId][$name . '_time'] = $defaults[$customKey . '_time'];
-                    }
                   }
                 }
               }

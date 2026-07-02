@@ -369,8 +369,7 @@
               iframe.setAttribute('src', scope.$parent.$eval(attrs.crmUiIframeSrc));
             }
             else {
-              //NYSS 12135
-              let iframeHtml = scope.$parent.$eval(attrs.crmUiIframe).replace(/<a /g, "<a target='_blank' ");
+              let iframeHtml = scope.$parent.$eval(attrs.crmUiIframe);
 
               let doc = iframe.document;
               if (iframe.contentDocument) {
@@ -1240,6 +1239,9 @@
           crmDocumentTitle: '='
         },
         link: function(scope, $el, attrs) {
+          pageTitleHTML = attrs.initialPageTitle || 'CiviCRM';
+          documentTitle = attrs.initialDocumentTitle || 'CiviCRM';
+
           function update() {
             $timeout(function() {
               const newPageTitleHTML = $el.html().trim(),

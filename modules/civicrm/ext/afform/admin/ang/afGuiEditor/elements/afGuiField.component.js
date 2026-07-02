@@ -1,7 +1,7 @@
 // https://civicrm.org/licensing
 (function(angular, $, _) {
   "use strict";
-
+  let afGuiFieldId = 0;
   angular.module('afGuiEditor').component('afGuiField', {
     templateUrl: '~/afGuiEditor/elements/afGuiField.html',
     bindings: {
@@ -28,27 +28,27 @@
       let searchJoins = null;
 
       $scope.editingOptions = false;
+      $scope.fieldId = 'af-gui-field-' + afGuiFieldId++;
 
       this.$onInit = function() {
         ctrl.hasDefaultValue = !!getSet('afform_default');
         setFieldDefn();
         ctrl.inputTypes = _.transform(_.cloneDeep(afGui.meta.inputTypes), function(inputTypes, type) {
-          if (inputTypeCanBe(type.name)) {
-            // Change labels for EntityRef fields
-            if (ctrl.getDefn().input_type === 'EntityRef') {
-              const entity = ctrl.getFkEntity();
-              if (entity && type.name === 'EntityRef') {
-                type.label = ts('Autocomplete %1', {1: entity.label});
-              }
-              if (entity && type.name === 'Number') {
-                type.label = ts('%1 ID', {1: entity.label});
-              }
-              if (entity && type.name === 'Select') {
-                type.label = ts('Select Form %1', {1: entity.label});
-              }
+          type.enabled = inputTypeCanBe(type.name);
+          // Change labels for EntityRef fields
+          if (ctrl.getDefn().input_type === 'EntityRef') {
+            const entity = ctrl.getFkEntity();
+            if (entity && type.name === 'EntityRef') {
+              type.label = ts('Autocomplete %1', {1: entity.label});
             }
-            inputTypes.push(type);
+            if (entity && type.name === 'Number') {
+              type.label = ts('%1 ID', {1: entity.label});
+            }
+            if (entity && type.name === 'Select') {
+              type.label = ts('Select Form %1', {1: entity.label});
+            }
           }
+          inputTypes.push(type);
         });
         // Quick-add links for autocompletes
         this.quickAddLinks = [];
@@ -68,7 +68,7 @@
         if (ctrl.fieldDefn.operators && ctrl.fieldDefn.operators.length) {
           this.searchOperators = _.pick(this.searchOperators, ctrl.fieldDefn.operators);
         }
-        this.isMultiFieldFilter = ctrl.node.name.includes(',');
+        this.isMultiFieldFilter = ctrl.node.name?.includes(',');
       };
 
       this.getFkEntity = function() {
@@ -93,6 +93,38 @@
         ));
       };
 
+      const defaultStyles = [{value: '', label: ts('Default')}];
+      const inputStylesByType = {};
+      for (const s of (CRM.afAdmin.field_styles || [])) {
+        if (!inputStylesByType[s.grouping]) {
+          inputStylesByType[s.grouping] = [{value: '', label: ts('Default')}];
+        }
+        inputStylesByType[s.grouping].push({value: s.value, label: s.label});
+      }
+
+      this.getInputStyles = function() {
+        return inputStylesByType[$scope.getProp('input_type')] || defaultStyles;
+      };
+
+      // This is a guard against an empty "other" selection.
+      let userChoseOther = false;
+
+      this.getSetStyleSelect = function(val) {
+        if (arguments.length) {
+          userChoseOther = (val === '_other_');
+          if (!userChoseOther) {
+            getSet('input_style', val);
+          }
+          return val;
+        }
+        const current = getSet('input_style');
+        const styles = ctrl.getInputStyles();
+        if (current && (!styles || !styles.some(s => s.value === current))) {
+          return '_other_';
+        }
+        return userChoseOther ? '_other_' : current;
+      };
+
       this.canBeMultiple = () => {
         if (!this.isSearch() ||
           ['Date', 'Timestamp'].includes(ctrl.getDefn().data_type) ||
@@ -113,11 +145,21 @@
 
       // Returns the original field definition from metadata
       this.getDefn = function() {
-        let defn = afGui.getField(ctrl.container.getFieldEntityType(ctrl.getFieldName()), ctrl.getFieldName());
-        // Calc fields are specific to a search display, not part of the schema
-        if (!defn && ctrl.container.getSearchDisplay()) {
-          const searchDisplay = ctrl.container.getSearchDisplay();
-          defn = _.findWhere(searchDisplay.calc_fields, {name: ctrl.getFieldName()});
+        const fieldName = ctrl.getFieldName();
+        let defn;
+        if (fieldName) {
+          defn = afGui.getField(ctrl.container.getFieldEntityType(fieldName), fieldName);
+          // Calc fields are specific to a search display, not part of the schema
+          if (!defn && ctrl.container.getSearchDisplay()) {
+            const searchDisplay = ctrl.container.getSearchDisplay();
+            defn = _.findWhere(searchDisplay.calc_fields, {name: fieldName});
+          }
+        } else if (ctrl.node.defn?.input_type) {
+          // Extra (non-entity) field: seed from the inputType's extra_defn
+          const inputType = afGui.meta.inputTypes.find((t) => t.name === ctrl.node.defn.input_type);
+          if (inputType?.extra_defn) {
+            defn = _.cloneDeep(inputType.extra_defn);
+          }
         }
         defn = defn || {
           label: ts('Untitled'),
@@ -131,15 +173,21 @@
 
       this.getFieldName = function() {
         // Search filters can contain multiple field names joined by a comma. Return the first as the primary.
-        return ctrl.node.name.split(',')[0];
+        return ctrl.node.name?.split(',')[0];
       };
 
       // Get the api entity this field belongs to
       this.getEntity = function() {
-        return afGui.getEntity(ctrl.container.getFieldEntityType(ctrl.getFieldName()));
+        const fieldName = ctrl.getFieldName();
+        return fieldName ? afGui.getEntity(ctrl.container.getFieldEntityType(fieldName)) : null;
       };
 
       $scope.getOriginalLabel = function() {
+        // Generic (non-entity) field
+        if (!ctrl.node.name) {
+          const genericField = afGui.meta.inputTypes.find((field) => field.name === ctrl.node.defn?.input_type);
+          return genericField ? ts('Extra %1', {1: genericField.label}) : ts('Extra Field');
+        }
         // Use afform entity if available (e.g. "Individual1")
         if (ctrl.container.getEntityName()) {
           return ctrl.editor.getEntity(ctrl.container.getEntityName()).label + ': ' + ctrl.getDefn().label;
@@ -150,7 +198,10 @@
 
       $scope.hasOptions = function() {
         const inputType = $scope.getProp('input_type');
-        return _.contains(['CheckBox', 'Toggle', 'Radio', 'Select'], inputType) &&
+        if (inputType === 'Range' && ctrl.getOptions()) {
+          return true;
+        }
+        return ['CheckBox', 'Toggle', 'Radio', 'Select'].includes(inputType) &&
           !(inputType === 'CheckBox' && ctrl.getDefn().data_type === 'Boolean');
       };
 
@@ -237,6 +288,9 @@
           case 'Number':
             return !(defn.options || defn.data_type === 'Boolean');
 
+          case 'Range':
+            return (defn.data_type === 'Integer' || defn.data_type === 'Float' || defn.data_type === 'Money');
+
           case 'DisplayOnly':
           case 'Hidden':
             return true;
@@ -265,6 +319,38 @@
       $scope.propIsset = function(propName) {
         const val = $scope.getProp(propName);
         return !(typeof val === 'undefined' || val === null);
+      };
+
+      $scope.getRangeProp = (prop) => {
+        const options = this.getOptions();
+        if (!options) {
+          const val = $scope.getProp('input_attrs.' + prop);
+          // Set these all explicitly if not set
+          if (typeof val === 'undefined') {
+            ctrl.node.defn = ctrl.node.defn || {};
+            ctrl.node.defn.input_attrs = ctrl.node.defn.input_attrs || {};
+            switch (prop) {
+              case 'min':
+                return (ctrl.node.defn.input_attrs.min = 0);
+              case 'max':
+                return (ctrl.node.defn.input_attrs.max = 99);
+              case 'step':
+                return (ctrl.node.defn.input_attrs.step = 1);
+            }
+          }
+          return val;
+        }
+        // Calculate min, max and range based on options
+        switch (prop) {
+          case 'min':
+            return Math.min(...options.map(opt => Number(opt.id)));
+          case 'max':
+            return Math.max(...options.map(opt => Number(opt.id)));
+          case 'step':
+            const values = options.map(opt => Number(opt.id)).sort((a, b) => a - b);
+            // Return difference between first two values, or 1 if not enough values
+            return values.length > 1 ? values[1] - values[0] : 1;
+        }
       };
 
       $scope.toggleLabel = function() {
@@ -301,10 +387,10 @@
         getSet('help_' + position, $scope.propIsset('help_' + position) ? null : (ctrl.getDefn()['help_' + position] || ts('Enter text')));
       };
 
-      function defaultValueShouldBeArray() {
+      this.isMultiSelect = () => {
         return ($scope.getProp('data_type') !== 'Boolean' &&
           ($scope.getProp('input_type') === 'CheckBox' || $scope.getProp('input_type') === 'Toggle' || $scope.getProp('input_attrs.multiple')));
-      }
+      };
 
       function setFieldDefn() {
         // Deeply merge defn to include nested settings e.g. `input_attrs.time`.
@@ -332,6 +418,8 @@
       this.hasDefaultValueInput = function() {
         return ctrl.hasDefaultValue && ctrl.getDefn().data_type !== 'Boolean' && ctrl.defaultDateType() === 'fixed';
       };
+
+      this.allowTokensInDefault = () => this.editor.getFormType() === 'form' && ['Text', 'TextArea', 'Hidden', 'DisplayOnly'].includes(this.fieldDefn.input_type);
 
       this.defaultDateType = function(newValue) {
         if (arguments.length) {
@@ -404,8 +492,8 @@
       };
 
       $scope.toggleDefaultValueItem = function(val) {
-        if (defaultValueShouldBeArray()) {
-          if (!_.isArray(getSet('afform_default'))) {
+        if (ctrl.isMultiSelect()) {
+          if (!Array.isArray(getSet('afform_default'))) {
             ctrl.node.defn = ctrl.node.defn || {};
             ctrl.node.defn.afform_default = [];
           }
@@ -434,7 +522,7 @@
           // _EXPOSE_ is not a real option for search_operator, instead it sets the expose_operator boolean
           getSet('expose_operator', val === '_EXPOSE_');
           if (val === '_EXPOSE_') {
-            getSet('search_operator', _.keys(ctrl.searchOperators)[0]);
+            getSet('search_operator', Object.keys(ctrl.searchOperators)[0]);
           } else {
             getSet('search_operator', val);
           }
@@ -486,12 +574,12 @@
           // When changing the multiple property, force-reset the default value widget
           if (ctrl.hasDefaultValue && _.includes(['input_type', 'input_attrs.multiple'], propName)) {
             ctrl.hasDefaultValue = false;
-            if (!defaultValueShouldBeArray() && _.isArray(getSet('afform_default'))) {
+            if (!ctrl.isMultiSelect() && Array.isArray(getSet('afform_default'))) {
               ctrl.node.defn.afform_default = ctrl.node.defn.afform_default[0];
-            } else if (defaultValueShouldBeArray() && _.isString(getSet('afform_default')) && ctrl.node.defn.afform_default.length) {
+            } else if (ctrl.isMultiSelect() && _.isString(getSet('afform_default')) && ctrl.node.defn.afform_default.length) {
               ctrl.node.defn.afform_default = ctrl.node.defn.afform_default.split(',');
             }
-            $timeout(function() {
+            $timeout(() => {
               ctrl.hasDefaultValue = true;
             });
           }
@@ -520,6 +608,22 @@
           });
         }
         return searchJoins;
+      };
+
+      // When changing min, keep it greater than or equal to max.
+      this.onChangeMin = () => {
+        const max = $scope.getProp('input_attrs.max');
+        if (typeof max !== 'undefined' && max < ctrl.node.defn.input_attrs.min) {
+          ctrl.node.defn.input_attrs.min = ctrl.node.defn.input_attrs.max;
+        }
+      };
+
+      // When changing max, keep it less than or equal to min.
+      this.onChangeMax = () => {
+        const min = $scope.getProp('input_attrs.min');
+        if (typeof min !== 'undefined' && min > ctrl.node.defn.input_attrs.max) {
+          ctrl.node.defn.input_attrs.max = ctrl.node.defn.input_attrs.min;
+        }
       };
 
       // Returns a reference to a path n-levels deep within an object

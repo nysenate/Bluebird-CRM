@@ -139,7 +139,7 @@ class TimestampTriggers {
         'table' => [$this->getTableName()],
         'when' => 'BEFORE',
         'event' => ['INSERT'],
-        'sql' => "\nSET NEW.{$this->getCreatedDate()} = CURRENT_TIMESTAMP;\n",
+        'sql' => "SET NEW.{$this->getCreatedDate()} = CURRENT_TIMESTAMP;\n",
       ];
     }
 
@@ -300,11 +300,15 @@ class TimestampTriggers {
 
     if ($this->getCustomDataEntity()) {
       $customGroups = \CRM_Core_BAO_CustomGroup::getAll(['extends' => $this->getCustomDataEntity(), 'is_multiple' => FALSE]);
+      $tableNames = array_column($customGroups, 'table_name');
+      $existingTables = \Civi::schemaHelper()->getExistingTables($tableNames);
       foreach ($customGroups as $customGroup) {
-        $relations[] = [
-          'table' => $customGroup['table_name'],
-          'column' => 'entity_id',
-        ];
+        if (isset($existingTables[$customGroup['table_name']])) {
+          $relations[] = [
+            'table' => $customGroup['table_name'],
+            'column' => 'entity_id',
+          ];
+        }
       }
     }
 

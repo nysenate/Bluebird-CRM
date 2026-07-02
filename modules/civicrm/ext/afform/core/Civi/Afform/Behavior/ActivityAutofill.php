@@ -16,7 +16,7 @@ class ActivityAutofill extends AbstractBehavior implements EventSubscriberInterf
   /**
    * @return array
    */
-  public static function getSubscribedEvents() {
+  public static function getSubscribedEvents(): array {
     return [
       'civi.afform.prefill' => ['onAfformPrefill', 99],
       '&civi.afform.createToken' => ['onCreateToken', 99],
@@ -35,9 +35,9 @@ class ActivityAutofill extends AbstractBehavior implements EventSubscriberInterf
     return E::ts('Automatically identify this activity.');
   }
 
-  public static function getModes(string $type): array {
+  public static function getModes(string $entityName): array {
     $modes = [];
-    if ($type == 'Activity') {
+    if ($entityName === 'Activity') {
       $modes[] = [
         'name' => 'entity_id',
         'label' => E::ts('Activity being Viewed'),

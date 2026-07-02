@@ -82,6 +82,8 @@ WHERE  contact_id = {$event->params['contact_id']}
    */
   public static function self_hook_civicrm_post(\Civi\Core\Event\PostEvent $event) {
     $email = $event->object;
+    // CRM_Core_DAO::copyValues() sets is_primary to 'null' if not set
+    $email->is_primary = ($email->is_primary === 'null') ? NULL : $email->is_primary;
     if ($event->action !== 'delete' && !empty($email->is_primary) && !empty($email->contact_id)) {
       // update the UF user email if that has changed
       CRM_Core_BAO_UFMatch::updateUFName($email->contact_id);
@@ -156,7 +158,7 @@ ORDER BY  civicrm_email.is_primary DESC, email_id ASC ";
       ],
     ];
 
-    $emails = $values = [];
+    $emails = [];
     $dao = CRM_Core_DAO::executeQuery($query, $params);
     $count = 1;
     while ($dao->fetch()) {
@@ -173,7 +175,7 @@ ORDER BY  civicrm_email.is_primary DESC, email_id ASC ";
         $emails[$count++] = $values;
       }
       else {
-        $emails[$dao->email_id] = $values;
+        $emails[$dao->email_id ?? ''] = $values;
       }
     }
     return $emails;
@@ -307,7 +309,10 @@ AND    reset_date IS NULL
    * the domain email id
    *
    * @return array
-   *   an array of email ids
+   *   List of email addresses.
+   *   Keys are RFC822 name+email. Values are HTML-encoded variants.
+   *
+   *   Ex: ['"Bob Roberts" <info@example.org>' => '&quot;Bob Roberts&quot; &lt;info@example.org&gt;']
    */
   public static function getFromEmail() {
     // add all configured site email addresses

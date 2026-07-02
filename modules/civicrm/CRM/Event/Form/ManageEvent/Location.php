@@ -150,6 +150,7 @@ class CRM_Event_Form_ManageEvent_Location extends CRM_Event_Form_ManageEvent {
     $this->addEmailBlockNonContactFields(2);
     $this->addPhoneBlockFields(1);
     $this->addPhoneBlockFields(2);
+    $this->addToggle('is_map', ts('Show a Map'));
 
     $this->applyFilter('__ALL__', 'trim');
 
@@ -163,7 +164,7 @@ class CRM_Event_Form_ManageEvent_Location extends CRM_Event_Form_ManageEvent {
     $locationEvents = CRM_Event_BAO_Event::getLocationEvents();
     // remove duplicates and make sure that the duplicate entry with key as
     // loc_block_id of this event (this->_id) is preserved
-    if (!empty($locationEvents[$this->_oldLocBlockId])) {
+    if ($this->_oldLocBlockId && !empty($locationEvents[$this->_oldLocBlockId])) {
       $possibleDuplicate = $locationEvents[$this->_oldLocBlockId];
       $locationEvents = array_flip(array_unique($locationEvents));
       if (!empty($locationEvents[$possibleDuplicate])) {
@@ -184,12 +185,12 @@ class CRM_Event_Form_ManageEvent_Location extends CRM_Event_Form_ManageEvent {
 
       $this->addRadio('location_option', ts("Choose Location"), $optionTypes);
 
-      if (!isset($locationEvents[$this->_oldLocBlockId]) || (!$this->_oldLocBlockId)) {
+      if (!$this->_oldLocBlockId || !isset($locationEvents[$this->_oldLocBlockId])) {
         $locationEvents = ['' => ts('- select -')] + $locationEvents;
       }
       $this->add('select', 'loc_event_id', ts('Use Location'), $locationEvents, FALSE, ['class' => 'crm-select2']);
     }
-    $this->addElement('advcheckbox', 'is_show_location', ts('Show Location?'));
+    $this->addToggle('is_show_location', ts('Show Location'));
     parent::buildQuickForm();
   }
 
@@ -224,6 +225,12 @@ class CRM_Event_Form_ManageEvent_Location extends CRM_Event_Form_ManageEvent {
   public function postProcess() {
     $params = $this->exportValues();
     $deleteOldBlock = FALSE;
+
+    // This property is on the event itself, not the location
+    // It was previously on the EventInfo
+    $params['id'] = $this->getEventID();
+    $params['is_map'] ??= FALSE;
+    $event = CRM_Event_BAO_Event::create($params);
 
     // If 'Use existing location' is selected.
     if (($params['location_option'] ?? NULL) == 2) {

@@ -25,10 +25,27 @@ namespace CiviMix\Schema;
  * [[ CiviCRM 6.2+ / civimix-schema@5.85+ ]]
  *
  * @method bool createEntityTable(string $filePath)
- * @method bool alterSchemaField(string $entityName, string $fieldName, array $fieldSpec)
+ * @method bool alterSchemaField(string $entityName, string $fieldName, array $fieldSpec, ?string $position = NULL)
+ *
+ * [[ CiviCRM 6.10+ / civimix-schema@5.93+ ]]
+ *
+ * @method bool schemaFieldExists(string $entityName, string $fieldName)
+ * @method bool dropSchemaField(string $entityName, string $fieldName)
+ * @method string|null getTableName(string $entityName)
+ * @method bool tableExists(string $tableName)
+ * @method bool dropTable(string $tableName)
+ *
+ * [[ CiviCRM 6.15+ / civimix-schema@5.98+ ]]
+ *
+ * @method array getExistingTables(array $tableNames)
+ * @method bool indexExists(string $tableName, string $indexName)
+ * @method bool dropIndex(string $tableName, string $indexName)
+ * @method bool createIndex(string $tableName, string $indexName, array $indexDef)
+ * @method bool foreignKeyExists(string $tableName, string $foreignKeyName)
+ * @method bool dropForeignKey(string $tableName, string $foreignKeyName)
+ * @method bool createForeignKey(string $tableName, string $fieldName, array $fieldSpec)
  *
  * To see the latest implementation:
- *
  * @see ./SchemaHelper.php
  */
 interface SchemaHelperInterface {

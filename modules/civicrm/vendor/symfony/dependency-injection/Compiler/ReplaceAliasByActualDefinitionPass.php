@@ -24,23 +24,14 @@ use Symfony\Component\DependencyInjection\Reference;
  */
 class ReplaceAliasByActualDefinitionPass extends AbstractRecursivePass
 {
-    private $replacements;
-    private $autoAliasServicePass;
+    protected bool $skipScalars = true;
 
-    /**
-     * @internal to be removed in Symfony 6.0
-     *
-     * @return $this
-     */
-    public function setAutoAliasServicePass(AutoAliasServicePass $autoAliasServicePass): self
-    {
-        $this->autoAliasServicePass = $autoAliasServicePass;
-
-        return $this;
-    }
+    private array $replacements;
 
     /**
      * Process the Container to replace aliases with service definitions.
+     *
+     * @return void
      *
      * @throws InvalidArgumentException if the service definition does not exist
      */
@@ -50,12 +41,15 @@ class ReplaceAliasByActualDefinitionPass extends AbstractRecursivePass
         $seenAliasTargets = [];
         $replacements = [];
 
-        $privateAliases = $this->autoAliasServicePass ? $this->autoAliasServicePass->getPrivateAliases() : [];
-        foreach ($privateAliases as $target) {
-            $target->setDeprecated('symfony/dependency-injection', '5.4', 'Accessing the "%alias_id%" service directly from the container is deprecated, use dependency injection instead.');
-        }
+        // Sort aliases so non-deprecated ones come first. This ensures that when
+        // multiple aliases point to the same private definition, non-deprecated
+        // aliases get priority for renaming. Otherwise, the definition might be
+        // renamed to a deprecated alias ID, causing the original service ID to
+        // become an alias to the deprecated one (inverting the alias chain).
+        $aliases = $container->getAliases();
+        uasort($aliases, static fn ($a, $b) => $a->isDeprecated() <=> $b->isDeprecated());
 
-        foreach ($container->getAliases() as $definitionId => $target) {
+        foreach ($aliases as $definitionId => $target) {
             $targetId = (string) $target;
             // Special case: leave this target alone
             if ('service_container' === $targetId) {
@@ -103,16 +97,13 @@ class ReplaceAliasByActualDefinitionPass extends AbstractRecursivePass
         $this->replacements = [];
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    protected function processValue($value, bool $isRoot = false)
+    protected function processValue(mixed $value, bool $isRoot = false): mixed
     {
         if ($value instanceof Reference && isset($this->replacements[$referenceId = (string) $value])) {
             // Perform the replacement
             $newId = $this->replacements[$referenceId];
             $value = new Reference($newId, $value->getInvalidBehavior());
-            $this->container->log($this, sprintf('Changed reference of service "%s" previously pointing to "%s" to "%s".', $this->currentId, $referenceId, $newId));
+            $this->container->log($this, \sprintf('Changed reference of service "%s" previously pointing to "%s" to "%s".', $this->currentId, $referenceId, $newId));
         }
 
         return parent::processValue($value, $isRoot);

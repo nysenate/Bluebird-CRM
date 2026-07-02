@@ -299,9 +299,9 @@
                 filters: {},
               };
             if (option.val() === 'sort_name') {
-              params.input = request.term;
+              params.input = _.trim(request.term);
             } else {
-              params.filters[option.val()] = request.term;
+              params.filters[option.val()] = _.trim(request.term);
             }
             // Specialized Autocomplete SearchDisplay: @see ContactAutocompleteProvider
             CRM.api4('Contact', 'autocomplete', params).then(function(result) {
@@ -500,10 +500,9 @@
         '<ul></ul>' +
       '</li>',
     branchTpl:
-      //NYSS 13087
       '<% _.forEach(items, function(item) { %>' +
         '<li <%= attr("li", item) %>>' +
-          '<a <%= attr("a", item) %> <% if (item.target) { %>target=<%- item.target %><% } %>>' +
+          '<a <%= attr("a", item) %>>' +
             '<% if (item.icon) { %>' +
               '<i class="<%- item.icon %>" role="img" aria-hidden="true"></i>' +
             '<% } %>' +

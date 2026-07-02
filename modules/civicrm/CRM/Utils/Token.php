@@ -148,70 +148,6 @@ class CRM_Utils_Token {
   }
 
   /**
-   * Replace all the domain-level tokens in $str
-   *
-   * @deprecated since ages ago will be removed around 5.90
-   *
-   * @param string $str
-   *   The string with tokens to be replaced.
-   * @param object $domain
-   *   The domain BAO.
-   * @param bool $html
-   *   Replace tokens with HTML or plain text.
-   *
-   * @param null $knownTokens
-   * @param bool $escapeSmarty
-   *
-   * @return string
-   *   The processed string
-   */
-  public static function replaceDomainTokens(
-    $str,
-    $domain,
-    $html = FALSE,
-    $knownTokens = NULL,
-    $escapeSmarty = FALSE
-  ) {
-    CRM_Core_Error::deprecatedFunctionWarning('use the Token Processor');
-    $key = 'domain';
-    if (
-      !$knownTokens || empty($knownTokens[$key])
-    ) {
-      return $str;
-    }
-
-    $str = preg_replace_callback(
-      self::tokenRegex($key),
-      function ($matches) use ($domain, $html, $escapeSmarty) {
-        return CRM_Utils_Token::getDomainTokenReplacement($matches[1], $domain, $html, $escapeSmarty);
-      },
-      $str
-    );
-    return $str;
-  }
-
-  /**
-   * Do not use.
-   *
-   * @deprecated
-   *
-   * @param string $token
-   * @param CRM_Core_BAO_Domain $domain
-   * @param bool $html
-   * @param bool $escapeSmarty
-   *
-   * @return null|string
-   */
-  public static function getDomainTokenReplacement($token, $domain, $html = FALSE, $escapeSmarty = FALSE): ?string {
-    $tokens = CRM_Core_DomainTokens::getDomainTokenValues($domain->id, $html);
-    $value = $tokens[$token] ?? "{domain.$token}";
-    if ($escapeSmarty) {
-      $value = self::tokenEscapeSmarty($value);
-    }
-    return $value;
-  }
-
-  /**
    * Replace all mailing tokens in $str
    *
    * @param string $str
@@ -252,8 +188,8 @@ class CRM_Utils_Token {
   }
 
   /**
-   * @param $token
-   * @param $mailing
+   * @param string $token
+   * @param \CRM_Mailing_BAO_Mailing $mailing
    * @param bool $escapeSmarty
    *
    * @return string
@@ -280,7 +216,7 @@ class CRM_Utils_Token {
         break;
 
       case 'group':
-        $groups = $mailing ? $mailing->getGroupNames() : ['Mailing Groups'];
+        $groups = $mailing ? ($mailing->getGroupNames() ?? []) : ['Mailing Groups'];
         $value = implode(', ', $groups);
         break;
 
@@ -772,33 +708,6 @@ class CRM_Utils_Token {
   }
 
   /**
-   * Replace subscription-confirmation-request tokens
-   *
-   * @deprecated
-   *
-   * @param string $str
-   *   The string with tokens to be replaced.
-   * @param string $group
-   *   The name of the group being subscribed.
-   * @param $url
-   * @param bool $html
-   *   Replace tokens with html or plain text.
-   *
-   * @return string
-   *   The processed string
-   */
-  public static function &replaceSubscribeTokens($str, $group, $url, $html) {
-    CRM_Core_Error::deprecatedFunctionWarning('use token processor');
-    if (self::token_match('subscribe', 'group', $str)) {
-      self::token_replace('subscribe', 'group', $group, $str);
-    }
-    if (self::token_match('subscribe', 'url', $str)) {
-      self::token_replace('subscribe', 'url', $url, $str);
-    }
-    return $str;
-  }
-
-  /**
    * Replace subscription-invitation tokens
    *
    * @param string $str
@@ -1121,49 +1030,6 @@ class CRM_Utils_Token {
   }
 
   /**
-   * @deprecated
-   *
-   * Do not use this function - it still needs full removal from active code
-   * in CRM_Contribute_Form_Task_PDFLetter.
-   */
-  protected static function _buildContributionTokens() {
-    CRM_Core_Error::deprecatedFunctionWarning('use the token processor');
-    $key = 'contribution';
-
-    if (!isset(Civi::$statics[__CLASS__][__FUNCTION__][$key])) {
-      $tokens = array_merge(CRM_Contribute_BAO_Contribution::exportableFields('All'),
-        ['campaign' => [], 'financial_type' => [], 'payment_instrument' => []],
-        self::getCustomFieldTokens('Contribution'),
-        [
-          'financial_type_id:label',
-          'financial_type_id:name',
-          'contribution_page_id:label',
-          'contribution_page_id:name',
-          'payment_instrument_id:label',
-          'payment_instrument_id:name',
-          'is_test:label',
-          'is_pay_later:label',
-          'contribution_status_id:label',
-          'contribution_status_id:name',
-          'is_template:label',
-          'campaign_id:label',
-          'campaign_id:name',
-        ]
-      );
-      foreach ($tokens as $token) {
-        if (!empty($token['name'])) {
-          $tokens[$token['name']] = [];
-        }
-        elseif (is_string($token) && str_contains($token, ':')) {
-          $tokens[$token] = [];
-        }
-      }
-      Civi::$statics[__CLASS__][__FUNCTION__][$key] = array_keys($tokens);
-    }
-    self::$_tokens[$key] = Civi::$statics[__CLASS__][__FUNCTION__][$key];
-  }
-
-  /**
    * Do not use.
    *
    * @deprecated
@@ -1323,61 +1189,6 @@ class CRM_Utils_Token {
   }
 
   /**
-   * Do not use - unused in core.
-   *
-   * @param $token
-   * @param $contribution
-   * @param bool $html
-   * @param bool $escapeSmarty
-   *
-   * @deprecated
-   *
-   * @return mixed|string
-   * @throws \CRM_Core_Exception
-   */
-  public static function getContributionTokenReplacement($token, $contribution, $html = FALSE, $escapeSmarty = FALSE) {
-    CRM_Core_Error::deprecatedFunctionWarning('use the token processor');
-    self::_buildContributionTokens();
-
-    switch ($token) {
-      case 'total_amount':
-      case 'net_amount':
-      case 'fee_amount':
-      case 'non_deductible_amount':
-        // FIXME: Is this ever a multi-dimensional array?  Why use retrieveValueRecursive()?
-        $amount = CRM_Utils_Array::retrieveValueRecursive($contribution, $token);
-        $currency = CRM_Utils_Array::retrieveValueRecursive($contribution, 'currency');
-        $value = CRM_Utils_Money::format($amount, $currency);
-        break;
-
-      case 'receive_date':
-      case 'receipt_date':
-        $value = CRM_Utils_Array::retrieveValueRecursive($contribution, $token);
-        $config = CRM_Core_Config::singleton();
-        $value = CRM_Utils_Date::customFormat($value, $config->dateformatDatetime);
-        break;
-
-      case 'source':
-        $value = CRM_Utils_Array::retrieveValueRecursive($contribution, 'contribution_source');
-        break;
-
-      default:
-        if (!in_array($token, self::$_tokens['contribution'])) {
-          $value = "{contribution.$token}";
-        }
-        else {
-          $value = CRM_Utils_Array::retrieveValueRecursive($contribution, $token);
-        }
-        break;
-    }
-
-    if ($escapeSmarty) {
-      $value = self::tokenEscapeSmarty($value);
-    }
-    return $value;
-  }
-
-  /**
    * @deprecated
    *
    * Only used from deprecated functions not called by core.
@@ -1502,6 +1313,7 @@ class CRM_Utils_Token {
           '$contribution_status_id' => 'contribution.contribution_status_id',
           '$contributionStatusName' => 'contribution.contribution_status_id:name',
           '$subTotal' => 'contribution.tax_amount',
+          '$totalTaxAmount' => 'contribution.tax_amount',
           '$is_pay_later' => 'contribution.is_pay_later|bool',
           '$domain_street_address' => 'domain.street_address',
           '$domain_city' => 'domain.city',
@@ -1514,14 +1326,34 @@ class CRM_Utils_Token {
           '$domain_state' => 'domain.state_province_id:abbr',
           '$domain_country' => 'domain.country_id:abbr',
           '$lineItem' => '$lineItems',
+          '$billingName' => 'contribution.address_id.name',
         ],
         'contribution_online_receipt' => [
           '$contributeMode' => ts('no longer available / relevant'),
+          '$totalTaxAmount' => 'contribution.tax_amount',
           '$first_name' => 'contact.first_name',
           '$last_name' => 'contact.last_name',
           '$displayName' => 'contact.display_name',
           '$dataArray' => ts('see default template for how to show this'),
+          '$onBehalfAddress' => ts('no longer available / relevant'),
+          '$priceSetID' => ts('no longer available / relevant'),
+          '$useForMember' => ts('no longer available / relevant'),
+          '$contributionPageId' => 'contribution.contribution_page_id',
           '$lineItem' => '$lineItems',
+          '$billingName' => 'contribution.address_id.name',
+          '$selectPremium' => 'contribution_product.id|boolean',
+          '$product_name' => 'contribution_product.product_id.name',
+          '$option' => 'contribution_product.product_option:label',
+          '$sku' => 'contribution_product.product_id.sku',
+          '$price' => 'contribution_product.product_id.price|crmMoney',
+          '$is_deductible' => 'contribution.non_deductible_amount|boolean',
+          '$receive_date' => 'contribution.receive_date',
+          '$financialTypeId' => 'contribution.financial_type_id',
+          '$financialTypeName' => 'contribution.financial_type_id:name',
+          '$contributionTypeName' => 'contribution.financial_type_id:name',
+          '$email' => 'contact.email_primary.email',
+          '$address' => 'contribution.address_id.display',
+          '$amount' => ts('see default template for how to show this'),
         ],
         'membership_offline_receipt' => [
           // receipt_text_renewal appears to be long gone.
@@ -1543,6 +1375,8 @@ class CRM_Utils_Token {
           '$currency' => 'contribution.currency',
           '$paidBy' => 'contribution.payment_instrument_id:label',
           '$lineItem' => '$lineItems',
+          '$billingName' => 'contribution.address_id.name',
+          '$address' => 'contribution.address_id.display',
         ],
         'membership_online_receipt' => [
           '$dataArray' => ts('see default template for how to show this'),
@@ -1554,7 +1388,24 @@ class CRM_Utils_Token {
           '$mem_status' => 'membership.membership_status_id:name',
           '$receive_date' => 'contribution.receive_date',
           '$currency' => 'contribution.currency',
+          '$totalTaxAmount' => 'contribution.tax_amount',
+          '$priceSetID' => ts('no longer available / relevant'),
+          '$useForMember' => ts('no longer available / relevant'),
+          '$onBehalfAddress' => ts('no longer available / relevant'),
+          '$contributionPageId' => 'contribution.contribution_page_id',
           '$lineItem' => '$lineItems',
+          '$billingName' => 'contribution.address_id.name',
+          '$selectPremium' => 'contribution_product.id|boolean',
+          '$product_name' => 'contribution_product.product_id.name',
+          '$option' => 'contribution_product.product_option:label',
+          '$sku' => 'contribution_product.product_id.sku',
+          '$price' => 'contribution_product.product_id.price|crmMoney',
+          '$is_deductible' => 'contribution.non_deductible_amount|boolean',
+          '$financialTypeId' => 'contribution.financial_type_id',
+          '$financialTypeName' => 'contribution.financial_type_id:name',
+          '$contributionTypeName' => 'contribution.financial_type_id:name',
+          '$address' => 'contribution.address_id.display',
+          '$amount' => ts('see default template for how to show this'),
         ],
         'contribution_offline_receipt' => [
           '$totalTaxAmount' => 'contribution.tax_amount',
@@ -1565,6 +1416,12 @@ class CRM_Utils_Token {
           '$receipt_date' => 'contribution.receipt_date',
           '$cancel_date' => 'contribution.cancel_date',
           '$lineItem' => '$lineItems',
+          '$billingName' => 'contribution.address_id.name',
+          '$address' => 'contribution.address_id.display',
+          '$selectPremium' => 'contribution_product.id|boolean',
+          '$product_name' => 'contribution_product.product_id.name',
+          '$option' => 'contribution_product.product_option:label',
+          '$sku' => 'contribution_product.product_id.sku',
         ],
         'event_offline_receipt' => [
           '$contributeMode' => ts('no longer available / relevant'),
@@ -1591,39 +1448,55 @@ class CRM_Utils_Token {
           '$participant_status_id' => 'participant.status_id',
           '$participant.role' => 'participant.role_id:label',
           '$lineItem' => '$lineItems',
+          '$billingName' => 'contribution.address_id.name',
+          '$address' => 'contribution.address_id.display',
         ],
         'event_online_receipt' => [
           '`$participant.id`' => 'participant.id',
           '$dataArray' => ts('see default template for how to show this'),
           '$individual' => ts('see default template for how to show this'),
           '$amount' => ts('see default template for how to show this'),
+          '$isAdditionalParticipant' => ts('see default template for how to show this'),
           '$location' => 'event.location',
           '$register_date' => 'participant.register_date',
           '$participant.role' => 'participant.role_id:label',
+          '$totalAmount' => 'contribution.total_amount',
+          '$totalTaxAmount' => 'contribution.tax_amount',
           '$event.participant_role' => 'participant.role_id:label',
           '$paidBy' => 'contribution.payment_instrument_id:label',
           '$title' => 'event.title',
           '$lineItem' => '$lineItems',
+          '$participant_status' => 'participant.status_id:label',
+          '$billingName' => 'contribution.address_id.name',
+          '$event.customGroup' => 'no longer available / relevant, use event tokens',
+          '$participant.customGroup' => 'no longer available / relevant, use participant tokens',
+          '$custom_pre_id' => 'no longer available/relevant',
+          '$custom_post_id' => 'no longer available/relevant',
+          '$address' => 'contribution.address_id.display',
         ],
         'participant_transferred' => [
           '$location' => 'event.location',
           '$participant.role' => 'participant.role_id:label',
           '$event.participant_role' => 'participant.role_id:label',
+          '$billingName' => 'contribution.address_id.name',
         ],
         'participant_cancelled' => [
           '$location' => 'event.location',
           '$participant.role' => 'participant.role_id:label',
           '$event.participant_role' => 'participant.role_id:label',
+          '$billingName' => 'contribution.address_id.name',
         ],
         'participant_expired' => [
           '$location' => 'event.location',
           '$participant.role' => 'participant.role_id:label',
           '$event.participant_role' => 'participant.role_id:label',
+          '$billingName' => 'contribution.address_id.name',
         ],
         'participant_confirm' => [
           '$location' => 'event.location',
           '$participant.role' => 'participant.role_id:label',
           '$event.participant_role' => 'participant.role_id:label',
+          '$billingName' => 'contribution.address_id.name',
         ],
         'payment_or_refund_notification' => [
           '$location' => 'event.location',
@@ -1631,15 +1504,25 @@ class CRM_Utils_Token {
           '$event.participant_role' => 'participant.role_id:label',
           '$contactDisplayName' => 'contact.display_name',
           '$paymentsComplete' => 'contribution.balance_amount',
+          '$billingName' => 'contribution.address_id.name',
         ],
         'pledge_acknowledgement' => [
           '$domain' => ts('no longer available / relevant'),
           '$contact' => ts('no longer available / relevant'),
+          '$billingName' => 'contribution.address_id.name',
         ],
         'pledge_reminder' => [
           '$domain' => ts('no longer available / relevant'),
           '$contact' => ts('no longer available / relevant'),
+          '$billingName' => 'contribution.address_id.name',
         ],
+        'membership_autorenew_billing' => [
+          '$email' => ts('no longer available / relevant'),
+        ],
+        'contribution_recurring_billing' => [
+          '$email' => ts('no longer available / relevant'),
+        ],
+
       ],
     ];
   }

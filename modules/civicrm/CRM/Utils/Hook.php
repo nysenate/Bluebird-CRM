@@ -317,8 +317,8 @@ abstract class CRM_Utils_Hook {
       if (!file_exists($civiModule['filePath'] ?? '')) {
         CRM_Core_Session::setStatus(
           ts('Error loading module file (%1). Please restore the file or disable the module.',
-            [1 => $civiModule['filePath']]),
-          ts('Warning'), 'error');
+            [1 => htmlentities($civiModule['filePath'] ?? '')]),
+          ts('Warning'), 'error', purify: FALSE);
         continue;
       }
       include_once $civiModule['filePath'];
@@ -353,21 +353,21 @@ abstract class CRM_Utils_Hook {
    *
    * @param string $op
    *   The type of operation being performed.
-   * @param string $objectName
+   * @param string|null $objectName
    *   The name of the object.
-   * @param int $objectId
+   * @param int|null $objectId
    *   The unique identifier for the object.
-   * @param object $objectRef
+   * @param object|null $objectRef
    *   The reference to the object if available.
-   * @param array $params
+   * @param array|null $params
    *   Original params used, if available
    *
    * @return mixed
    *   based on op. pre-hooks return a boolean or
    *                           an error message which aborts the operation
    */
-  public static function post($op, $objectName, $objectId, &$objectRef = NULL, $params = NULL) {
-    $event = new \Civi\Core\Event\PostEvent($op, $objectName, $objectId, $objectRef, $params);
+  public static function post(string $op, ?string $objectName, ?int $objectId, &$objectRef = NULL, ?array $params = NULL) {
+    $event = new \Civi\Core\Event\PostEvent($op, (string) $objectName, (int) $objectId, $objectRef, $params);
     Civi::dispatcher()->dispatch('hook_civicrm_post', $event);
     return $event->getReturnValues();
   }
@@ -391,13 +391,15 @@ abstract class CRM_Utils_Hook {
    *   The unique identifier for the object.
    * @param object $objectRef
    *   The reference to the object if available.
+   * @param array $params
+   *   Original params used, if available
    *
    * @return mixed
    *   based on op. pre-hooks return a boolean or
    *                           an error message which aborts the operation
    */
-  public static function postCommit($op, $objectName, $objectId, $objectRef = NULL) {
-    $event = new \Civi\Core\Event\PostEvent($op, $objectName, $objectId, $objectRef);
+  public static function postCommit($op, $objectName, $objectId, $objectRef = NULL, $params = NULL) {
+    $event = new \Civi\Core\Event\PostEvent($op, $objectName, $objectId, $objectRef, $params);
     Civi::dispatcher()->dispatch('hook_civicrm_postCommit', $event);
     return $event->getReturnValues();
   }
@@ -2415,7 +2417,7 @@ abstract class CRM_Utils_Hook {
   }
 
   /**
-   * @param CRM_Core_Exception $exception
+   * @param Throwable $exception
    */
   public static function unhandledException($exception) {
     $null = NULL;
@@ -2885,7 +2887,7 @@ abstract class CRM_Utils_Hook {
    * inserted in civicrm_financial_trxn table
    *
    * @param array $deferredRevenues
-   * @param CRM_Contribute_BAO_Contribution $contributionDetails
+   * @param CRM_Contribute_BAO_Contribution|CRM_Contribute_DAO_Contribution $contributionDetails
    * @param bool $update
    * @param string $context
    *

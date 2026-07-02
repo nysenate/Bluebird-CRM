@@ -14,7 +14,7 @@
   {foreach from=$customValues item=cd_edit key=cvID}
     {crmRegion name="custom-data-view-`$cd_edit.name`"}
     {if $cd_edit.help_pre}
-      <div class="messages help">{$cd_edit.help_pre}</div>
+      <div class="messages help">{$cd_edit.help_pre|purify}</div>
     {/if}
     {if $multiRecordDisplay neq 'single'}
     <table class="no-border">
@@ -34,7 +34,7 @@
           <details class="crm-accordion-bold" {if !empty($cd_edit.collapse_display) && empty($skipTitle)}{else}open{/if}>
             {if !$skipTitle}
               <summary>
-                {$cd_edit.title}
+                {$cd_edit.title|escape}
               </summary>
             {/if}
             <div class="crm-accordion-body">
@@ -69,8 +69,10 @@
                           {else}
                             {if $element.field_data_type EQ 'ContactReference' && $element.contact_ref_links}
                               {$element.contact_ref_links|join:', '}
+                            {elseif $element.field_type eq 'File' || $element.field_type eq 'TextArea' || $element.field_type eq 'RichTextEditor' || $element.field_type === 'Link'}
+                              {$element.field_value|purify}
                             {else}
-                              {$element.field_value}
+                              {$element.field_value|escape}
                             {/if}
                           {/if}
                         {/if}
@@ -92,7 +94,7 @@
       {foreach from=$cd_edit.fields item=element key=field_id}
         <div class="crm-section">
           {if $element.options_per_line != 0}
-              <div class="label">{$element.field_title}</div>
+              <div class="label">{$element.field_title|escape}</div>
               <div class="content">
               {* sort by fails for option per line. Added a variable to iterate through the element array*}
               {foreach from=$element.field_value item=val}
@@ -121,8 +123,10 @@
                   <div class="content">
                     {if $element.field_data_type EQ 'ContactReference' && $element.contact_ref_links}
                       {$element.contact_ref_links|join:', '}
+                    {elseif $element.field_type eq 'File' || $element.field_type eq 'TextArea' || $element.field_type eq 'RichTextEditor' || $element.field_type === 'Link'}
+                      {$element.field_value|purify}
                     {else}
-                      {if $element.field_value}{$element.field_value} {else}<br/>{/if}
+                      {if $element.field_value}{$element.field_value|escape} {else}<br/>{/if}
                     {/if}
                   </div>
                 {/if}
@@ -132,7 +136,7 @@
         {/foreach}
       {/if}
       {if $cd_edit.help_post}
-        <div class="messages help">{$cd_edit.help_post}</div>
+        <div class="messages help">{$cd_edit.help_post|purify}</div>
       {/if}
     {/crmRegion}
   {/foreach}

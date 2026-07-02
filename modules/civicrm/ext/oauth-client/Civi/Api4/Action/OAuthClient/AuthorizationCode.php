@@ -90,10 +90,11 @@ class AuthorizationCode extends AbstractGrantAction {
     // effective list.
     $scopes = $this->getScopes() ?: $this->callProtected($provider, 'getDefaultScopes');
 
-    $stateId = \CRM_OAuth_Page_Return::storeState([
+    $stateId = \Civi::service('oauth2.state')->store([
       'time' => \CRM_Utils_Time::time(),
       'ttl' => $this->getTtl(),
       'clientId' => $this->getClientDef()['id'],
+      'grant_type' => 'authorization_code',
       'landingUrl' => $this->getLandingUrl(),
       'storage' => $this->getStorage(),
       'scopes' => $scopes,
@@ -162,7 +163,6 @@ class AuthorizationCode extends AbstractGrantAction {
    */
   protected function callProtected($obj, $method, $args = []) {
     $r = new \ReflectionMethod(get_class($obj), $method);
-    $r->setAccessible(TRUE);
     return $r->invokeArgs($obj, $args);
   }
 

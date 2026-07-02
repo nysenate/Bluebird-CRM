@@ -60,7 +60,7 @@ function civicrm_api3_job_Iatsrecurringcontributions($params) {
   $lock = new CRM_Core_Lock('civicrm.job.Iatsrecurringcontributions');
 
   if (!$lock->acquire()) {
-    return civicrm_api3_create_success(ts('Failed to acquire lock. No contribution records were processed.'));
+    return civicrm_api3_create_success(E::ts('Failed to acquire lock. No contribution records were processed.'));
   }
   // Restrict this method of recurring contribution processing to only iATS (Faps + Legacy) active payment processors.
   // TODO: exclude test processors?
@@ -68,13 +68,14 @@ function civicrm_api3_job_Iatsrecurringcontributions($params) {
   $iatsProcessors = _iats_filter_payment_processors('iATS%', array(), array('active' => 1));
   $paymentProcessors = $fapsProcessors + $iatsProcessors;
   if (empty($paymentProcessors)) {
-    return;
+    $lock->release();
+    return civicrm_api3_create_success(E::ts('Failed to find any iATS processors. No contribution records were processed.'));
   }
   // stale_limit restricts processing of schedules by next_sched_contribution_date no further in the past than this number of days, defaulting to 7.
-  $stale_limit = empty($params['stale_limit']) ? 7 : (integer) $params['stale_limit'];
+  $stale_limit = empty($params['stale_limit']) ? 7 : (int) $params['stale_limit'];
   unset($params['stale_limit']);
   // failsafe_limit restricts all processing of schedules if the number of stale schedules exceeds this number. Defaults to 0 = ignore.
-  $failsafe_limit = empty($params['failsafe_limit']) ? 0 : (integer) $params['failsafe_limit'];
+  $failsafe_limit = empty($params['failsafe_limit']) ? 0 : (int) $params['failsafe_limit'];
   unset($params['failsafe_limit']);
   // use catchup mode to calculate next scheduled contribution based on current value rather than current date
   $catchup = !empty($params['catchup']);
@@ -130,7 +131,7 @@ function civicrm_api3_job_Iatsrecurringcontributions($params) {
     $output[] = "Failsafe Decision: ". ($failsafeFlag ? 'Flagged': 'Clear');
   }
   $settings = CRM_Iats_Utils::getSettings();
-  $receipt_recurring = $settings['receipt_recurring'] ?? null;
+  $receipt_recurring = $settings['receipt_recurring'] ?? NULL;
   $email_failure_report = empty($settings['email_recurring_failure_report']) ? '' : $settings['email_recurring_failure_report'];
   $email_failure_contribution_receipt = empty($settings['email_failure_contribution_receipt']) ? FALSE : TRUE;
   list($emailFromName, $emailFromEmail) = CRM_Core_BAO_Domain::getNameAndEmail();
@@ -150,7 +151,7 @@ function civicrm_api3_job_Iatsrecurringcontributions($params) {
       $contact_id = $recurringContribution['contact_id'];
       // But first, check if the next scheduled contribution date is too far in the past, in which case I'll just notify an administrator and skip it.
       if ($recurringContribution['next_sched_contribution_date'] < $stale_date) {
-        $failure_text = ts(
+        $failure_text = E::ts(
           'Stale recurring contribution schedule for contact id %1, recurring schedule id %2, %3',
           array(
             1 => $contact_id,
@@ -303,10 +304,10 @@ function civicrm_api3_job_Iatsrecurringcontributions($params) {
         if ($email_failure_contribution_receipt) {
           civicrm_api3('Contribution', 'sendconfirmation', [
             'id' => $contribution['id'],
-            'receipt_from_name' => empty($emailFromName) ? ts('Admin') : $emailFromName,
+            'receipt_from_name' => empty($emailFromName) ? E::ts('Admin') : $emailFromName,
             'receipt_from_email' => $emailFromEmail,
-            'receipt_text' => ts('It seems something is not quite right with your recurring contribution payment. Please see details below.') . '<hr><br>' . $result['message'],
-            'bcc_receipt' => !empty($email_failure_report)? $email_failure_report: $fromEmail,
+            'receipt_text' => E::ts('It seems something is not quite right with your recurring contribution payment. Please see details below.') . '<hr><br>' . $result['message'],
+            'bcc_receipt' => !empty($email_failure_report) ? $email_failure_report : $emailFromEmail,
           ]);
         }
       }
@@ -319,13 +320,13 @@ function civicrm_api3_job_Iatsrecurringcontributions($params) {
           'source_contact_id'   => $contact_id,
           'source_record_id' => $contribution['id'],
           'assignee_contact_id' => $contact_id,
-          'subject'       => ts('Attempted iATS Payments (%1) Recurring Contribution for %2 -- %3', array(1 => $paymentClass, 2 => $total_amount, 3 => $payment_status_label)),
+          'subject'       => E::ts('Attempted iATS Payments (%1) Recurring Contribution for %2 -- %3', array(1 => $paymentClass, 2 => $total_amount, 3 => $payment_status_label)),
           'status_id'       => 2,
           'activity_date_time'  => date("YmdHis"),
         )
       );
       if ($result['is_error']) {
-        $output[] = ts(
+        $output[] = E::ts(
           'An error occurred while creating activity record for contact id %1: %2',
           array(
             1 => $contact_id,
@@ -370,7 +371,7 @@ function civicrm_api3_job_Iatsrecurringcontributions($params) {
   if ((strlen($failure_report_text) > 0) && $email_failure_report) {
     $mailparams = array(
       'from' => $emailFromName . ' <' . $emailFromEmail . '> ',
-      'toName' => empty($emailFromName) ? ts('System Administrator') : $emailFromName,
+      'toName' => empty($emailFromName) ? E::ts('System Administrator') : $emailFromName,
       'toEmail' => $email_failure_report,
       'bcc' =>  !empty($settings['bcc_email_recurring_failure_report']) ? $settings['bcc_email_recurring_failure_report'] : '',
       'subject' => ts('iATS Recurring Payment job failure report: ' . date('c')),
@@ -382,7 +383,7 @@ function civicrm_api3_job_Iatsrecurringcontributions($params) {
   // If errors, return with an error.
   if ($error_count > 0) {
     return civicrm_api3_create_error(
-      ts("Completed, but with %1 errors. %2 records processed.",
+      E::ts("Completed, but with %1 errors. %2 records processed.",
         array(
           1 => $error_count,
           2 => $counter,
@@ -393,7 +394,7 @@ function civicrm_api3_job_Iatsrecurringcontributions($params) {
   // If no errors and records processed ..
   if ($counter) {
     return civicrm_api3_create_success(
-      ts(
+      E::ts(
         '%1 contribution record(s) were processed.',
         array(
           1 => $counter,

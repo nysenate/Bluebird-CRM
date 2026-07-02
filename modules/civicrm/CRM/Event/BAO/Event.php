@@ -1123,7 +1123,6 @@ WHERE civicrm_event.is_active = 1
           'credit_card_exp_date' => CRM_Utils_Date::mysqlToIso(CRM_Utils_Date::format($participantParams['credit_card_exp_date'] ?? NULL)),
           'selfcancelxfer_time' => abs($values['event']['selfcancelxfer_time']),
           'selfservice_preposition' => $values['event']['selfcancelxfer_time'] < 0 ? ts('after') : ts('before'),
-          'currency' => $values['event']['currency'] ?? CRM_Core_Config::singleton()->defaultCurrency,
         ]);
 
         // CRM-13890 : NOTE wait list condition need to be given so that
@@ -1151,35 +1150,6 @@ WHERE civicrm_event.is_active = 1
             'note' => $participantParams['note'] ?? '',
           ],
         ];
-
-        // address required during receipt processing (pdf and email receipt)
-        $displayAddress = $values['address'] ?? NULL;
-        if ($displayAddress) {
-          $sendTemplateParams['tplParams']['address'] = $displayAddress;
-        }
-
-        // set lineItem details
-        $lineItem = $values['lineItem'] ?? NULL;
-        if ($lineItem) {
-          // check if additional participant, if so filter only to relevant ones
-          // CRM-9902
-          if (!empty($values['params']['additionalParticipant'])) {
-            $ownLineItems = [];
-            foreach ($lineItem as $liKey => $liValue) {
-              $firstElement = array_pop($liValue);
-              if ($firstElement['entity_id'] == $participantId) {
-                $ownLineItems[0] = $lineItem[$liKey];
-                break;
-              }
-            }
-            if (!empty($ownLineItems)) {
-              $sendTemplateParams['tplParams']['lineItem'] = $ownLineItems;
-            }
-          }
-          else {
-            $sendTemplateParams['tplParams']['lineItem'] = $lineItem;
-          }
-        }
 
         if ($returnMessageText) {
           [$sent, $subject, $message, $html] = CRM_Core_BAO_MessageTemplate::sendTemplate($sendTemplateParams);
@@ -1485,12 +1455,6 @@ WHERE  id = $cfID
                   // sometime in the future
                   $customVal = $displayValue = CRM_Utils_Date::customFormat(
                     CRM_Utils_Date::processDate($params[$name]), $config->dateformatFull);
-
-                  if (!empty($params[$name . '_time'])) {
-                    $customVal = $displayValue = CRM_Utils_Date::customFormat(
-                      CRM_Utils_Date::processDate($params[$name], $params[$name . '_time']),
-                      $config->dateformatDatetime);
-                  }
                   $skip = TRUE;
                 }
                 // for checkboxes, change array of [key => bool] to array of [idx => key]
@@ -2347,8 +2311,7 @@ WHERE  ce.loc_block_id = $locBlockId";
           $values[$valuesKeys[$noteKeyPos]] = "";
         }
 
-        if (isset($fields['participant_status_id']['title']) &&
-          isset($values[$fields['participant_status_id']['title']]) &&
+        if (isset($fields['participant_status_id']['title'], $values[$fields['participant_status_id']['title']]) &&
           is_numeric($values[$fields['participant_status_id']['title']])
         ) {
           // @todo - is this a thing?
@@ -2356,23 +2319,20 @@ WHERE  ce.loc_block_id = $locBlockId";
           $values[$fields['participant_status_id']['title']] = CRM_Core_PseudoConstant::getLabel('CRM_Event_BAO_Participant', 'status_id', $statusID);
         }
 
-        if (isset($fields['participant_role_id']['title']) &&
-          isset($values[$fields['participant_role_id']['title']]) &&
+        if (isset($fields['participant_role_id']['title'], $values[$fields['participant_role_id']['title']]) &&
           is_numeric($values[$fields['participant_role_id']['title']])
         ) {
           $roleID = $values[$fields['participant_role_id']['title']];
           $values[$fields['participant_role_id']['title']] = CRM_Core_PseudoConstant::getLabel('CRM_Event_BAO_Participant', 'role_id', $roleID);
         }
 
-        if (isset($fields['participant_register_date']['title']) &&
-          isset($values[$fields['participant_register_date']['title']])
+        if (isset($fields['participant_register_date']['title'], $values[$fields['participant_register_date']['title']])
         ) {
           $values[$fields['participant_register_date']['title']] = CRM_Utils_Date::customFormat($values[$fields['participant_register_date']['title']]);
         }
 
         //handle fee_level for price set
-        if (isset($fields['participant_fee_level']['title']) &&
-          isset($values[$fields['participant_fee_level']['title']])
+        if (isset($fields['participant_fee_level']['title'], $values[$fields['participant_fee_level']['title']])
         ) {
           $feeLevel = explode(CRM_Core_DAO::VALUE_SEPARATOR,
             $values[$fields['participant_fee_level']['title']]

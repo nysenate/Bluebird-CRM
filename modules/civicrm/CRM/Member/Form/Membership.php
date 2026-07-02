@@ -248,12 +248,7 @@ class CRM_Member_Form_Membership extends CRM_Member_Form {
     $defaults['num_terms'] = 1;
 
     if (!empty($defaults['id'])) {
-      $contributionId = CRM_Core_DAO::singleValueQuery("
-SELECT contribution_id
-FROM civicrm_membership_payment
-WHERE membership_id = $this->_id
-ORDER BY contribution_id
-DESC limit 1");
+      $contributionId = CRM_Member_BAO_MembershipPayment::getLatestContributionIDFromLineitemAndFallbackToMembershipPayment($this->_id);
 
       if ($contributionId) {
         $defaults['record_contribution'] = $contributionId;
@@ -420,7 +415,7 @@ DESC limit 1");
         $selOrgMemType[$memberOfContactId][0] = ts('- select -');
       }
       if (empty($selOrgMemType[$memberOfContactId][$key])) {
-        $selOrgMemType[$memberOfContactId][$key] = $values['name'] ?? NULL;
+        $selOrgMemType[$memberOfContactId][$key] = $values['title'] ?? NULL;
       }
 
       $totalAmount = $values['minimum_fee'] ?? 0;
@@ -546,7 +541,8 @@ DESC limit 1");
       ['onclick' => "showEmailOptions()"]
     );
 
-    $this->add('select', 'from_email_address', ts('Receipt From'), $this->_fromEmails);
+    $fromEmailSelect = $this->add('select', 'from_email_address', ts('Receipt From'), $this->_fromEmails);
+    $fromEmailSelect->setOptionTextEscaped();
 
     $this->add('textarea', 'receipt_text', ts('Receipt Message'));
 
@@ -1227,9 +1223,6 @@ DESC limit 1");
 
       $this->set('params', $formValues);
       $this->assign('trxn_id', $result['trxn_id'] ?? NULL);
-      $this->assign('receive_date',
-        CRM_Utils_Date::mysqlToIso($params['receive_date'])
-      );
 
       // required for creating membership for related contacts
       $params['action'] = $this->_action;
@@ -1309,7 +1302,7 @@ DESC limit 1");
       }
       $params['lineItems'] = $lineItem;
       if (!empty($formValues['record_contribution'])) {
-        CRM_Member_BAO_Membership::recordMembershipContribution($params);
+        $params['contribution_id'] = CRM_Member_BAO_Membership::recordMembershipContribution($params)->id;
       }
     }
 
@@ -1395,14 +1388,7 @@ DESC limit 1");
       $contributionID = CRM_Member_BAO_MembershipPayment::getLatestContributionIDFromLineitemAndFallbackToMembershipPayment($this->getMembershipID());
 
       // get price fields of chosen price-set
-      $priceSetDetails = CRM_Utils_Array::value(
-        $this->_priceSetId,
-        CRM_Price_BAO_PriceSet::getSetDetail(
-          $this->_priceSetId,
-          TRUE,
-          TRUE
-        )
-      );
+      $priceSetDetails = CRM_Price_BAO_PriceSet::getSetDetail($this->_priceSetId, TRUE, TRUE)[$this->_priceSetId] ?? NULL;
 
       // add price field information in $inputParams
       self::addPriceFieldByMembershipType($inputParams, $priceSetDetails['fields'], $this->getMembership()['membership_type_id']);
@@ -1576,8 +1562,6 @@ DESC limit 1");
     $customValues = $this->getCustomValuesForReceipt();
     $this->assign('customValues', $customValues);
     $this->assign('total_amount', $this->order->getTotalAmount());
-    $this->assign('totalTaxAmount', $this->order->getTotalTaxAmount());
-    $this->assign('taxTerm', $this->getSalesTaxTerm());
 
     if ($this->_mode) {
       // @todo move this outside shared code as Batch entry just doesn't
@@ -1588,10 +1572,6 @@ DESC limit 1");
       $this->assign('is_pay_later', 0);
       $this->assign('isPrimary', 1);
     }
-    //insert financial type name in receipt.
-    $formValues['contributionType_name'] = CRM_Core_DAO::getFieldValue('CRM_Financial_DAO_FinancialType',
-      $this->getFinancialTypeID()
-    );
     $this->emailReceipt($formValues);
     return TRUE;
   }

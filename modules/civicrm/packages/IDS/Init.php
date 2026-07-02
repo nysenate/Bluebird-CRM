@@ -114,6 +114,7 @@ class IDS_Init
      */
     public static function init($configPath = null)
     {
+        $configPath = (string) $configPath;
         if (!isset(self::$instances[$configPath])) {
             self::$instances[$configPath] = new IDS_Init($configPath);
         }

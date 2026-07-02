@@ -135,7 +135,6 @@
  * Backone Forms  c6920b3c89 X11/MIT     https://github.com/powmedia/backbone-forms
  * Backbon.Collectionsubset d3de0d6804 X11/MIT https://github.com/anthonyshort/backbone.collectionsubset
  * Backbone.ModelBinder 448472f X11/MIT  https://github.com/theironcook/Backbone.ModelBinder
- * git-footnote   2013-03-27 LGPL 3      https://github.com/totten/git-footnote
  * json2          2012-10-08 PUBDOM      https://github.com/douglascrockford/JSON-js
  * Marionette     1.0.0-rc2  X11/MIT     http://marionettejs.com/
  * Moment.js      2.5..0     X11/MIT     http://momentjs.com/

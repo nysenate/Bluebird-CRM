@@ -3268,7 +3268,7 @@ WHERE  $smartGroupClause
             ON ( civicrm_activity_contact.contact_id = contact_a.id AND civicrm_activity_contact.record_type_id = {$targetID} )
             LEFT JOIN civicrm_activity
             ON ( civicrm_activity.id = civicrm_activity_contact.activity_id
-            AND civicrm_activity.is_deleted = 0 AND civicrm_activity.is_current_revision = 1 )
+            AND civicrm_activity.is_deleted = 0 )
             LEFT JOIN civicrm_entity_tag as {$etActTable} ON ( {$etActTable}.entity_table = 'civicrm_activity' AND {$etActTable}.entity_id = civicrm_activity.id )
             LEFT JOIN civicrm_tag {$tActTable} ON ( {$etActTable}.tag_id = {$tActTable}.id  )";
 
@@ -3355,7 +3355,7 @@ WHERE  $smartGroupClause
             ON ( civicrm_activity_contact.contact_id = contact_a.id AND civicrm_activity_contact.record_type_id = {$targetID} )
             LEFT JOIN civicrm_activity
             ON ( civicrm_activity.id = civicrm_activity_contact.activity_id
-            AND civicrm_activity.is_deleted = 0 AND civicrm_activity.is_current_revision = 1 )
+            AND civicrm_activity.is_deleted = 0 )
             LEFT JOIN civicrm_entity_tag as {$etActTable} ON ( {$etActTable}.entity_table = 'civicrm_activity' AND {$etActTable}.entity_id = civicrm_activity.id ) ";
 
       // CRM-10338
@@ -4654,7 +4654,7 @@ civicrm_relationship.start_date > {$today}
       $sql .= self::getGroupByFromSelectColumns($query->_select, 'contact_a.id');
     }
     if (!empty($sort)) {
-      $sort = CRM_Utils_Type::escape($sort, 'String');
+      $sort = CRM_Utils_Type::escape($sort, 'MysqlOrderBy');
       $sql .= " ORDER BY $sort ";
     }
     if ($row_count > 0 && $offset >= 0) {
@@ -6832,7 +6832,7 @@ AND   displayRelType.is_active = 1
     [$select, $from, $where, $having] = $this->query($count, $sortByChar, $groupContacts, $onlyDeleted);
 
     if ($additionalWhereClause) {
-      $where = $where . ' AND ' . $additionalWhereClause;
+      $where .= ' AND ' . $additionalWhereClause;
     }
 
     //additional from clause should be w/ proper joins.

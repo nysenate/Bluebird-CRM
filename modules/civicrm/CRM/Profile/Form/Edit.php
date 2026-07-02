@@ -93,6 +93,9 @@ class CRM_Profile_Form_Edit extends CRM_Profile_Form {
     }
 
     parent::preProcess();
+    if (empty($this->_gid)) {
+      return CRM_Utils_System::sendInvalidRequestResponse(ts('Missing Profile ID'));
+    }
 
     // and also the profile is of type 'Profile'
     $query = '
@@ -253,7 +256,7 @@ SELECT module,is_reserved
     }
 
     // When saving (not deleting) and not in an ajax popup
-    if (empty($_POST[$this->_deleteButtonName]) && $this->_context !== 'dialog') {
+    if ($this->_deleteButtonName !== NULL && empty($_POST[$this->_deleteButtonName]) && $this->_context !== 'dialog') {
       CRM_Core_Session::setStatus(ts('Your information has been saved.'), ts('Thank you.'), 'success');
     }
 

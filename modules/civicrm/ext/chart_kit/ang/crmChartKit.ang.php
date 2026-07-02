@@ -4,14 +4,12 @@ return [
   'js' => [
     'ang/crmChartKit.js',
     'ang/crmChartKit/*.js',
-    'ang/crmChartKit/chartTypes/*.js',
   ],
   'css' => [
     'ang/crmChartKit.css',
   ],
   'partials' => [
     'ang/crmChartKit',
-    'ang/crmChartKit/chartTypes',
   ],
   'requires' => [
     'crmUi',
@@ -20,10 +18,9 @@ return [
     'ui.bootstrap',
     'crmSearchDisplay',
   ],
-  'basePages' => ['civicrm/search', 'civicrm/admin/search'],
+  'basePages' => [],
   'bundles' => ['bootstrap3', 'chart_kit'],
   'exports' => [
     'crm-search-display-chart-kit' => 'E',
   ],
-  'settings' => [],
 ];

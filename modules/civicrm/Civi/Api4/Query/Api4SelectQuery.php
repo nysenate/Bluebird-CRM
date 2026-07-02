@@ -266,7 +266,8 @@ class Api4SelectQuery extends Api4Query {
           $options = FormattingUtil::getPseudoconstantList($field, $item);
           if ($options) {
             asort($options);
-            $column = "FIELD($column,'" . implode("','", array_keys($options)) . "')";
+            $keys = \CRM_Core_DAO::escapeStrings(array_keys($options));
+            $column = "FIELD($column, $keys)";
           }
         }
       }
@@ -543,22 +544,25 @@ class Api4SelectQuery extends Api4Query {
     $aclStack = [];
     // See if the ON clause already contains an FK reference to joinEntity
     $explicitFK = array_filter($joinTree, function($clause) use ($alias, $joinEntityFields, &$aclStack) {
-      [$sideA, $op, $sideB] = array_pad((array) $clause, 3, NULL);
-      if ($op !== '=' || !$sideB) {
+      [$sideA, $op, $sideB, $isExpr] = array_pad((array) $clause, 4, TRUE);
+      if ($op !== '=' || !$isExpr || !is_string($sideB) || !strlen($sideB)) {
         return FALSE;
       }
       foreach ([2 => $sideA, 0 => $sideB] as $otherSide => $expr) {
         if (!str_starts_with($expr, "$alias.")) {
           continue;
         }
-        $joinField = str_replace("$alias.", '', $expr);
+        $joinFieldName = str_replace("$alias.", '', $expr);
+        $otherSideField = $this->apiFieldSpec[$clause[$otherSide]] ?? NULL;
         // Check for explicit link to FK entity (include entity_id for dynamic FKs)
         if (
+          // FK FROM the other entity
+          !empty($otherSideField['fk_entity']) ||
           // Unique field - might be a link FROM the other entity
           // FIXME: This is just guessing. We ought to check the schema for all unique fields
-          in_array($joinField, ['id', 'name'], TRUE) ||
+          in_array($joinFieldName, ['id', 'name'], TRUE) ||
           // FK field - might be a link TO the other entity
-          !empty($joinEntityFields[$joinField]['dfk_entities']) || !empty($joinEntityFields[$joinField]['fk_entity'])
+          !empty($joinEntityFields[$joinFieldName]['dfk_entities']) || !empty($joinEntityFields[$joinFieldName]['fk_entity'])
         ) {
           // If the join links to a field on another entity
           if (preg_match('/^[_a-z0-9.]+$/i', $clause[$otherSide])) {
@@ -576,11 +580,12 @@ class Api4SelectQuery extends Api4Query {
         if (!is_array($field) || $field['type'] !== 'Field') {
           continue;
         }
+        $fkColumn = $field['fk_column'] ?? 'id';
         if ($field['entity'] !== $joinEntity && $field['fk_entity'] === $joinEntity) {
-          $conditions[] = $this->treeWalkClauses([$name, '=', "$alias.id"], 'ON');
+          $conditions[] = $this->treeWalkClauses([$name, '=', "$alias.$fkColumn"], 'ON');
         }
         elseif (str_starts_with($name, "$alias.") && substr_count($name, '.') === 1 && $field['fk_entity'] === $this->getEntity()) {
-          $conditions[] = $this->treeWalkClauses([$name, '=', 'id'], 'ON');
+          $conditions[] = $this->treeWalkClauses([$name, '=', $fkColumn], 'ON');
           $aclStack = ['id', $name];
         }
       }
@@ -640,13 +645,14 @@ class Api4SelectQuery extends Api4Query {
     $this->openJoin['bridgeKey'] = $joinRef->getReferenceKey();
     $this->openJoin['bridgeCondition'] = array_intersect_key($linkConditions, [1 => 1]);
 
+    // Info needed for joining custom fields extending the bridge entity
+    $this->explicitJoins[$alias]['bridge_table_alias'] = $bridgeAlias;
+
     $outerConditions = [];
     foreach (array_filter($joinTree) as $clause) {
       $outerConditions[] = $this->treeWalkClauses($clause, 'ON');
     }
 
-    // Info needed for joining custom fields extending the bridge entity
-    $this->explicitJoins[$alias]['bridge_table_alias'] = $bridgeAlias;
     // Invert the join so all nested joins will link to the bridge entity
     $this->openJoin['table'] = $bridgeTableExpr;
     $this->openJoin['alias'] = $bridgeAlias;
@@ -926,7 +932,7 @@ class Api4SelectQuery extends Api4Query {
     foreach ($this->openJoin['subjoins'] as $subjoin) {
       $subjoinClause .= " INNER JOIN {$subjoin['table']} `{$subjoin['alias']}` ON (" . implode(' AND ', $subjoin['conditions']) . ")";
     }
-    $this->query->join($tableAlias, "$side JOIN ($tableExpr `$tableAlias`$subjoinClause) ON " . implode(' AND ', $conditions));
+    $this->query->join($tableAlias, "$side JOIN ($tableExpr `$tableAlias`$subjoinClause)\n  ON " . implode("\n  AND ", $conditions));
     $this->openJoin = NULL;
   }
 
@@ -939,7 +945,7 @@ class Api4SelectQuery extends Api4Query {
    */
   private function addJoin(string $side, string $tableExpr, string $tableAlias, string $baseTableAlias, array $conditions): void {
     // If this join is based off the current open join, incorporate it
-    if ($baseTableAlias === ($this->openJoin['alias'] ?? NULL)) {
+    if ($baseTableAlias === ($this->openJoin['alias'] ?? NULL) || $baseTableAlias === ($this->openJoin['bridgeAlias'] ?? NULL)) {
       $this->openJoin['subjoins'][] = [
         'table' => $tableExpr,
         'alias' => $tableAlias,
@@ -947,7 +953,7 @@ class Api4SelectQuery extends Api4Query {
       ];
     }
     else {
-      $this->query->join($tableAlias, "$side JOIN $tableExpr `$tableAlias` ON " . implode(' AND ', $conditions));
+      $this->query->join($tableAlias, "$side JOIN $tableExpr `$tableAlias`\n  ON " . implode("\n  AND ", $conditions));
     }
   }
 

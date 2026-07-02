@@ -267,7 +267,7 @@ class CRM_Utils_System_Standalone extends CRM_Utils_System_Base {
   public static function currentPath() {
     $path = parse_url($_SERVER['REQUEST_URI'] ?? '', PHP_URL_PATH);
 
-    return $path ? trim($path, '/') : NULL;
+    return $path ? trim(urldecode($path), '/') : NULL;
   }
 
   /**
@@ -731,6 +731,15 @@ class CRM_Utils_System_Standalone extends CRM_Utils_System_Base {
   public function postContainerBoot(): void {
     $sess = \CRM_Core_Session::singleton();
     $sess->initialize();
+  }
+
+  public function getRoleNames(): array {
+    return \Civi\Api4\Role::get(FALSE)
+      ->addSelect('name', 'label')
+      ->addWhere('is_active', '=', TRUE)
+      ->addOrderBy('label')
+      ->execute()
+      ->column('label', 'name');
   }
 
 }

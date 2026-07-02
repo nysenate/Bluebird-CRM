@@ -114,7 +114,7 @@ ORDER BY page_type, page_id';
 
       if ($pcpInfoDao->status_id != $approved || $pcpInfoDao->is_active != 1) {
         $class = 'disabled';
-        if (!$pcpInfoDao->is_tellfriend_enabled) {
+        if (!function_exists('tellafriend_civicrm_config') || !$pcpInfoDao->is_tellfriend_enabled) {
           $mask -= CRM_Core_Action::DETACH;
         }
       }
@@ -333,14 +333,6 @@ WHERE pcp.id = %1 AND cc.contribution_status_id = %2 AND cc.is_test = 0";
           'qs' => 'action=disable&reset=1&id=%%pcpId%%&component=%%pageComponent%%',
           'title' => ts('Disable'),
           'weight' => CRM_Core_Action::getWeight(CRM_Core_Action::DISABLE),
-        ],
-        CRM_Core_Action::DELETE => [
-          'name' => ts('Delete'),
-          'url' => 'civicrm/pcp',
-          'qs' => 'action=delete&reset=1&id=%%pcpId%%&component=%%pageComponent%%',
-          'extra' => 'onclick = "return confirm(\'' . $deleteExtra . '\');"',
-          'title' => ts('Delete'),
-          'weight' => CRM_Core_Action::getWeight(CRM_Core_Action::DELETE),
         ],
       ];
 
@@ -654,8 +646,6 @@ WHERE pcp.id = %1 AND cc.contribution_status_id = %2 AND cc.is_test = 0";
     if (!isset($pcpStatus[$newStatus])) {
       return FALSE;
     }
-
-    require_once 'Mail/mime.php';
 
     //set loginUrl
     $loginURL = $config->userSystem->getLoginURL();
