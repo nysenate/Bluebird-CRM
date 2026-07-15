@@ -898,12 +898,6 @@ function contact_civicrm_searchTasks($objectType, &$tasks) {
       'class' => 'CRM_Activity_Form_Task_UpdateStatus',
       'result' => '',
     ];
-
-    $tasks[101] = [
-      'title' => 'Tag Activities (assign keywords)',
-      'class' => 'CRM_Activity_Form_Task_AddToTag',
-      'result' => '',
-    ];
   }
 }
 
