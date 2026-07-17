@@ -2,6 +2,13 @@
 
 namespace Illuminate\Contracts\Pagination;
 
+/**
+ * @template TKey of array-key
+ *
+ * @template-covariant TValue
+ *
+ * @method $this through(callable(TValue): mixed $callback)
+ */
 interface Paginator
 {
     /**
@@ -25,9 +32,16 @@ interface Paginator
      * Get / set the URL fragment to be appended to URLs.
      *
      * @param  string|null  $fragment
-     * @return $this|string|null
+     * @return ($fragment is null ? string|null : $this)
      */
     public function fragment($fragment = null);
+
+    /**
+     * Add all current query string values to the paginator.
+     *
+     * @return $this
+     */
+    public function withQueryString();
 
     /**
      * The URL for the next page, or null.
@@ -46,7 +60,7 @@ interface Paginator
     /**
      * Get all of the items being paginated.
      *
-     * @return array
+     * @return array<TKey, TValue>
      */
     public function items();
 

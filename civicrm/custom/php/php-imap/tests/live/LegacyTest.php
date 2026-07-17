@@ -98,7 +98,7 @@ class LegacyTest extends TestCase {
      */
     public function testSizes(): void {
 
-        $delimiter = ClientManager::get("options.delimiter");
+        $delimiter = self::$client->getConfig()->get("options.delimiter");
         $child_path = implode($delimiter, ['INBOX', 'test']);
         if (self::$client->getFolder($child_path) === null) {
             self::$client->createFolder($child_path, false);
@@ -236,7 +236,7 @@ class LegacyTest extends TestCase {
      * @throws ResponseException
      * @throws RuntimeException
      */
-    final protected function deleteFolder(Folder $folder = null): bool {
+    final protected function deleteFolder(?Folder $folder = null): bool {
         $response = $folder?->delete(false);
         if (is_array($response)) {
             $valid_response = false;
@@ -276,7 +276,7 @@ class LegacyTest extends TestCase {
      * @throws MessageSearchValidationException
      */
     public function testQueryWhere(): void {
-        $delimiter = ClientManager::get("options.delimiter");
+        $delimiter = self::$client->getConfig()->get("options.delimiter");
         $folder_path = implode($delimiter, ['INBOX', 'search']);
 
         $folder = self::$client->getFolder($folder_path);
@@ -423,7 +423,7 @@ class LegacyTest extends TestCase {
      * @throws ResponseException
      * @throws RuntimeException
      */
-    protected function assertWhereSearchCriteria(Folder $folder, string $criteria, Carbon|string $value = null, bool $date = false): void {
+    protected function assertWhereSearchCriteria(Folder $folder, string $criteria, Carbon|string|null $value = null, bool $date = false): void {
         $query = $folder->query()->where($criteria, $value);
         self::assertInstanceOf(WhereQuery::class, $query);
 
@@ -431,7 +431,7 @@ class LegacyTest extends TestCase {
         $criteria = str_replace("CUSTOM ", "", $criteria);
         $expected = $value === null ? [$criteria] : [$criteria, $value];
         if ($date === true && $value instanceof Carbon) {
-            $date_format = ClientManager::get('date_format', 'd M y');
+            $date_format = $folder->getClient()->getConfig()->get('date_format', 'd M y');
             $expected[1] = $value->format($date_format);
         }
 
