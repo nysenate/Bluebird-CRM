@@ -39,6 +39,13 @@ cv en sage
 
 (* FIXME: Where would a new user navigate to get started? What changes would they see? *)
 
+## Manual Testing
+
+Navigate to `civicrm/sage/test` (menu title "SageTest") for a quick manual
+smoke test — it runs `checkAddress()`, `geocode()`, `distassign()`, and
+`lookup()` against a few known NY addresses and displays the resulting
+field values.
+
 ## Known Issues
 
 (* FIXME *)
