@@ -11,6 +11,8 @@ class CRM_SAGE_Page_SageTest extends CRM_Core_Page
         // Example: Set the page-title dynamically; alternatively, declare a static title in xml/Menu/*.xml
         CRM_Utils_System::setTitle(E::ts('SageTest'));
 
+        $this->assign('sage_api_base', SAGE_API_BASE);
+
         $tests = array(
             0 => array(
                 'name' => 'Standardize Lark',
