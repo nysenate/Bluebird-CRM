@@ -9,10 +9,14 @@ class CRM_Utils_SAGE
   * Produces a SAGE warning.
   * @param string $message  Error message.
   */
-  private static function warn(string $message) {
+  private static function warn(string $message, $data = []) {
     $session = CRM_Core_Session::singleton();
     $config = CRM_Core_Config::singleton();
 
+    Civi::log()->warning(debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS,2)[1]['function'], [
+      'message' => $message,
+      'data' => $data,
+    ]);
     // Limit the length of the status message.
     //NYSS 7340
     //TODO setStatus doesn't trigger the js warning message when triggered via inline;
@@ -148,7 +152,7 @@ class CRM_Utils_SAGE
     }
     // No, post a warning
     else {
-      self::warn("Postal lookup for [$addr] has failed.\n");
+      self::warn("Postal lookup for address has failed.\n", [$addr]);
     }
 
     return $ret;
@@ -212,7 +216,7 @@ class CRM_Utils_SAGE
     else {
       //QQQ: Why do we set these values to 'null' instead of ''?
       $values['geo_code_1'] = $values['geo_code_2'] = 'null';
-      self::warn("Geocoding for [$params] has failed.");
+      self::warn("Geocoding has failed.", [$params]);
     }
 
     return $ret;
@@ -295,7 +299,7 @@ class CRM_Utils_SAGE
       }
     }
     else {
-      self::warn("Distassign for [$params] has failed.");
+      self::warn("Distassign has failed.", [$params]);
     }
 
     return $ret;
@@ -370,7 +374,7 @@ class CRM_Utils_SAGE
     }
     else {
       $params = json_encode($params);
-      self::warn("Lookup for [$params] has failed.");
+      self::warn("Lookup has failed.", [$params]);
     }
     return $ret;
   }
@@ -447,7 +451,7 @@ class CRM_Utils_SAGE
           self::storeAddress($values, $xml, $addr_field);
       }
       else {
-        self::warn("USPS could not validate address: [$addr]");
+        self::warn("USPS could not validate address", [$addr]);
       }
 
       if ($xml->geocoded == 'true') {
@@ -460,7 +464,7 @@ class CRM_Utils_SAGE
     }
     else {
       $params = json_encode($params);
-      self::warn("Lookup for [$params] has failed.");
+      self::warn("Lookup has failed.",[$params]);
     }
 
     return $ret;
