@@ -53,9 +53,9 @@ class CRM_Utils_SAGE
    * @param array $params Address parameters to use in the request's query string
    * @param false $refresh If a new call should be forced
    *
-   * @return \SimpleXMLElement
+   * @return \SimpleXMLElement|null Null if the request failed or the response could not be parsed.
    */
-  public static function callSAGE(string $url, array $params, $refresh = FALSE): SimpleXMLElement {
+  public static function callSAGE(string $url, array $params, $refresh = FALSE): ?SimpleXMLElement {
     static $cache = [];
 
     // Build the URL, which will also be the cache key.
@@ -69,7 +69,15 @@ class CRM_Utils_SAGE
           ->setStatus("SAGE Request: $cache_key");
       }
       $request = new \GuzzleHttp\Client();
-      $cache[$cache_key] = simplexml_load_string($request->get($cache_key)->getBody());
+      try {
+        $body = $request->get($cache_key)->getBody();
+      }
+      catch (\GuzzleHttp\Exception\GuzzleException $e) {
+        // Don't cache a failure; a later call may succeed.
+        return NULL;
+      }
+      $xml = simplexml_load_string($body);
+      $cache[$cache_key] = ($xml !== FALSE) ? $xml : NULL;
     }
 
     return $cache[$cache_key];
@@ -86,9 +94,9 @@ class CRM_Utils_SAGE
    * @param array $params The query string parameters to use
    * @param string $data The POST body
    *
-   * @return \SimpleXMLElement
+   * @return \SimpleXMLElement|null Null if the request failed or the response could not be parsed.
    */
-  public static function callSAGEPost(string $url, array $params, $data = ''): SimpleXMLElement {
+  public static function callSAGEPost(string $url, array $params, $data = ''): ?SimpleXMLElement {
     $full_url = self::buildSAGEUrl($url, $params);
 
     // Make the call, using $data for the POST body.
@@ -99,10 +107,11 @@ class CRM_Utils_SAGE
         ->getBody();
     }
     catch (\GuzzleHttp\Exception\GuzzleException $e) {
-      $r = '';
+      return NULL;
     }
 
-    return simplexml_load_string($r);
+    $xml = simplexml_load_string($r);
+    return ($xml !== FALSE) ? $xml : NULL;
   }
 
   /**
