@@ -25,7 +25,7 @@ function main()
   [--threshold|-h COUNT] [--sleep|-P MINUTES]
   [--log|-l [TRACE|DEBUG|INFO|WARN|ERROR|FATAL]]
   [--validate|-v]  [--geocode|-g]  [--distassign|-d]  [--parse|-p]
-  [--usecoords|-u] [--streetonly|-t]
+  [--usecoords|-u (deprecated, ignored: SAGE no longer supports point-based district assignment)] [--streetonly|-t]
   [--force|-f]  [--dryrun|-y]  [--debug|-z]
   [--senate|-N]  [--congress|-G]  [--assembly|-A]  [--county|-C]
   [--town|-T]  [--school|-H]  [--election|-E]  [--cleg|-L]  [--ward|-W]\n";
@@ -67,6 +67,10 @@ function main()
     if ($optlist['parse'] == false) {
       $parseStreetAddress = false;
     }
+  }
+
+  if ($optlist['usecoords']) {
+    bbscript_log(LL::WARN, ts("--usecoords/-u is deprecated and ignored: SAGE no longer supports district assignment by point. District assignment will always use the address."));
   }
 
   $force = ($optlist['force'] ? "update" : "fill");
@@ -128,7 +132,6 @@ function processContacts($parseStreetAddress, $optlist) {
   $performUspsValidate = $optlist['validate'];
   $performGeocode = $optlist['geocode'];
   $performDistAssign = $optlist['distassign'];
-  $useCoords = $optlist['usecoords'];
   $streetFileOnly = $optlist['streetonly'];
   $dryrun = $optlist['dryrun'];
   $threshold = $optlist['threshold'];
@@ -191,16 +194,17 @@ function processContacts($parseStreetAddress, $optlist) {
         bbscript_log(LL::INFO, ts("Performing batch check address #{$batchNum}..."));
         CRM_Utils_SAGE::batchCheckAddress($addressBatch);
       }
-      if ($performGeocode && !($performDistAssign && !$useCoords)) {
+      if ($performGeocode && !$performDistAssign) {
         bbscript_log(LL::INFO, ts("Performing batch geocode #{$batchNum}..."));
         CRM_Utils_SAGE::batchGeocode($addressBatch, $overwrite);
       }
       if ($performDistAssign) {
-        if ($useCoords) {
-          bbscript_log(LL::INFO, ts("Performing batch lookup using geocodes #{$batchNum}..."));
-          CRM_Utils_SAGE::batchLookupFromPoint($addressBatch, $overwrite);
-        }
-        else if ($performGeocode) {
+        // NYSS: district assignment by point (batchLookupFromPoint) is no
+        // longer supported by SAGE (confirmed with the SAGE developer) —
+        // always assign by address instead. batchDistAssign() also stores
+        // geocode data as a side effect, which is why batchGeocode() above
+        // is skipped whenever distassign is requested.
+        if ($performGeocode) {
           bbscript_log(LL::INFO, ts("Performing batch geocode/district assign #{$batchNum}..."));
           CRM_Utils_SAGE::batchDistAssign($addressBatch, $overwrite, $overwrite, $streetFileOnly);
         }
@@ -491,12 +495,7 @@ function getQuery($optlist)
     $querySelect[] = implode(', ', $distSelect);
     $querySelect[] = "d.id as d_id";
 
-    if ($optlist['usecoords'] && !$optlist['geocode']) {
-      $querySelect[] = "a.geo_code_1 as lat";
-      $querySelect[] = "a.geo_code_2 as lon";
-    }
-
-    // If force is not requested the query tries to filter out addresses that already have 
+    // If force is not requested the query tries to filter out addresses that already have
     // certain districts assigned. These certain district types are determined either by the 
     // command line args or a default set of districts if args are missing.    
     if (!$optlist['force']) {

@@ -356,6 +356,8 @@ class CRM_Utils_SAGE
   /**
   * Performs a bluebird lookup by point and assigns district information to {$values}
   *
+  * @deprecated SAGE has removed support for district assignment by point
+  *
   * @param array &$values Array representing address/geocode/district values.
   * @param boolean $overwrite_districts  If true, districts will be written by default to {$values}.
   * @return boolean if response validated successfully, false otherwise.
@@ -383,6 +385,8 @@ class CRM_Utils_SAGE
   /**
    * Performs a bluebird lookup by point and assigns district information to
    * {$rows}.
+   *
+   * @deprecated SAGE has removed support for batch district assignment by point.
    *
    * @param array   &$rows An array of rows that each contain an array point
    *   columms.
