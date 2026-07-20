@@ -5,6 +5,7 @@
 */
 class CRM_Utils_SAGE
 {
+    const DISTRICT_SRC_STREETFILE = 'STREETFILE';
   /**
   * Produces a SAGE warning.
   * @param string $message  Error message.
@@ -135,7 +136,6 @@ class CRM_Utils_SAGE
 
     // Build the params, and make the request.
     $params = [
-      'provider' => 'usps',
       'addr1' => str_replace(',', '', $addr),
       'city' => CRM_Utils_Array::value('city', $values, ""),
       'zip5' => CRM_Utils_Array::value('postal_code', $values, ""),
@@ -170,7 +170,7 @@ class CRM_Utils_SAGE
     $addresses = self::getAddressesFromRows($rows);
 
     $url = '/address/validate/batch';
-    $params = ['provider' => 'usps'];
+    $params = [];
     $batchXml = self::callSAGEPost($url, $params, json_encode($addresses));
 
     if (($batchXml instanceof SimpleXMLElement) && $batchXml->total == count($addresses)) {
@@ -280,11 +280,10 @@ class CRM_Utils_SAGE
       'city' => CRM_Utils_Array::value('city',$values,""),
       'zip5' => CRM_Utils_Array::value('postal_code',$values,""),
       'state' => CRM_Utils_Array::value('state_province',$values,""),
-      'key' => SAGE_API_KEY,
     );
 
     if ($streetfile_only) {
-      $params['districtStrategy'] = 'streetOnly';
+      $params['districtSource'] = self::DISTRICT_SRC_STREETFILE;
     }
 
     $xml = self::callSAGE($url, $params);
@@ -329,9 +328,10 @@ class CRM_Utils_SAGE
     $addresses = self::getAddressesFromRows($rows);
 
     $url = '/district/assign/batch';
-    $params = [
-      'districtStrategy' => ($streetfile_only) ? 'streetOnly' : 'streetFallback',
-    ];
+    $params = [];
+    if ($streetfile_only) {
+      $params['districtSource'] = self::DISTRICT_SRC_STREETFILE;
+    }
 
     $batchXml = self::callSAGEPost($url, $params, json_encode($addresses));
 
@@ -410,7 +410,6 @@ class CRM_Utils_SAGE
     return $ret;
   }
 
-
   /**
   * Performs a bluebird lookup by address and assigns geocode and district information to {$values}.
   *
@@ -472,8 +471,8 @@ class CRM_Utils_SAGE
 
 
   /**
-  * Performs a batch bluebird lookup by address and assigns district and geocode information to
-  * each entry in {$rows}.
+  * Performs a batch combined validate + geocode + district-assign
+  * lookup by address.
   *
   * @param array &$rows  An array of rows that each contain an array with address, geocode,
   *                      and district columms. Basically an array of {$values} used in the
@@ -484,8 +483,11 @@ class CRM_Utils_SAGE
   */
   public static function batchLookup(&$rows, $overwrite_districts=true, $overwrite_point=true) {
     $addresses = self::getAddressesFromRows($rows);
-    $url = '/district/bluebird/batch';
-    $batchXml = self::callSAGEPost($url, [], json_encode($addresses));
+    // NYSS #18799: /district/bluebird/batch endpoint is no longer supported in SAGE
+    // using district/assign/batch, which does the same thing.
+    $url = '/district/assign/batch';
+    $params = [];
+    $batchXml = self::callSAGEPost($url, $params, json_encode($addresses));
 
     $ret = ($batchXml instanceof SimpleXMLElement) && ($batchXml->total == count($addresses));
     if ($ret) {
@@ -515,7 +517,7 @@ class CRM_Utils_SAGE
    *
    * @param array &$rows An array of rows that each contain an array with address columns.
    *
-   * @return array containing arrays of (addr1, city, state, zip5).
+   * @return array containing arrays of (addr1, postalCity, state, zip5).
    */
   protected static function getAddressesFromRows(array &$rows): array {
     $addresses = array();
@@ -527,7 +529,7 @@ class CRM_Utils_SAGE
 
       $address = array(
         'addr1' => str_replace(',', '', $addr),
-        'city'  => CRM_Utils_Array::value('city', $row, ""),
+        'postalCity' => CRM_Utils_Array::value('city', $row, ""),
         'state' => CRM_Utils_Array::value('state_province', $row, ""),
         'zip5'  => CRM_Utils_Array::value('postal_code', $row, "")
       );
