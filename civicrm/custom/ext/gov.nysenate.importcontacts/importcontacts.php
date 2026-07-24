@@ -174,7 +174,7 @@ function importcontacts_civicrm_import($object, $usage, &$objectRef, &$params) {
         try {
           $params = [
             'name' => $keyword,
-            'parent_id' => '296'
+            'parent_id' => CRM_NYSS_Tags_Constants::KEYWORDS_TAG_ID
           ];
 
           //lookup tag; create new if nonexist

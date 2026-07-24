@@ -74,7 +74,7 @@ class CRM_Admin_Form_Tag extends CRM_Admin_Form {
       //also remove select option as tags must be created within Issue Codes parent at minimum
       //hardcode Keywords tagset as option
       require_once 'CRM/Core/BAO/Tag.php';
-      $allTag = array ('296' => 'Keywords') + CRM_Core_BAO_Tag::getTags( );
+      $allTag = array (CRM_NYSS_Tags_Constants::KEYWORDS_TAG_ID => 'Keywords') + CRM_Core_BAO_Tag::getTags( );
 
       if ($this->_id) {
         unset($allTag[$this->_id]);

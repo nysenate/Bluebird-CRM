@@ -36,15 +36,7 @@ class CRM_Mailing_Page_Browse extends CRM_Core_Page {
    */
   protected $_mailingId;
 
-  /**
-   * The action that we are performing (in CRM_Core_Action terms)
-   *
-   * @var int
-   */
-  protected $_action;
-
   public $_sortByCharacter;
-
   public $_unscheduled;
   public $_archived;
 
@@ -55,6 +47,11 @@ class CRM_Mailing_Page_Browse extends CRM_Core_Page {
    */
   public $_scheduled;
 
+  /**
+   * Whether we are browsing SMS (if not, regular mailings)
+   *
+   * @var bool
+   */
   public $_sms;
 
   /**
@@ -68,6 +65,7 @@ class CRM_Mailing_Page_Browse extends CRM_Core_Page {
     $this->_mailingId = CRM_Utils_Request::retrieve('mid', 'Positive', $this);
     $this->_sms = CRM_Utils_Request::retrieve('sms', 'Positive', $this);
 
+    // @todo Duplicates code with CRM_Mailing_Page_Action
     if ($this->_sms) {
       // if this is an SMS page, check that the user has permission to browse SMS
       if (!CRM_Core_Permission::check('send SMS')) {
@@ -287,13 +285,6 @@ class CRM_Mailing_Page_Browse extends CRM_Core_Page {
   }
 
   public function search() {
-    if ($this->_action & (CRM_Core_Action::ADD |
-        CRM_Core_Action::UPDATE
-      )
-    ) {
-      return;
-    }
-
     $form = new CRM_Core_Controller_Simple('CRM_Mailing_Form_Search',
       ts('Search Mailings'),
       CRM_Core_Action::ADD
