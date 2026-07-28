@@ -189,7 +189,7 @@ class CRM_Mailing_Event_BAO_MailingEventDelivered extends CRM_Mailing_Event_DAO_
     $orderBy = "sort_name ASC, {$delivered}.time_stamp DESC";
     if ($sort) {
       if (is_string($sort)) {
-        $sort = CRM_Utils_Type::escape($sort, 'String');
+        $sort = CRM_Utils_Type::escape($sort, 'MysqlOrderBy');
         $orderBy = $sort;
       }
       else {
@@ -204,9 +204,6 @@ class CRM_Mailing_Event_BAO_MailingEventDelivered extends CRM_Mailing_Event_DAO_
       $query .= ' LIMIT ' . CRM_Utils_Type::escape($offset, 'Integer') . ', ' . CRM_Utils_Type::escape($rowCount, 'Integer');
     }
 
-    //NYSS first set mysql group by mode
-    //TODO discuss with core team for more complete fix
-    CRM_Core_DAO::executeQuery("SET SESSION sql_mode = '';");
     $dao->query($query);
 
     $results = [];
