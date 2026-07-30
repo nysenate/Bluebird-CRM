@@ -12,6 +12,13 @@ interface InvokedProcess
     public function id();
 
     /**
+     * Get the command line for the process.
+     *
+     * @return string
+     */
+    public function command();
+
+    /**
      * Send a signal to the process.
      *
      * @param  int  $signal
@@ -58,7 +65,15 @@ interface InvokedProcess
      * Wait for the process to finish.
      *
      * @param  callable|null  $output
-     * @return \Illuminate\Console\Process\ProcessResult
+     * @return \Illuminate\Process\ProcessResult
      */
-    public function wait(callable $output = null);
+    public function wait(?callable $output = null);
+
+    /**
+     * Wait until the given callback returns true.
+     *
+     * @param  callable|null  $output
+     * @return \Illuminate\Process\ProcessResult
+     */
+    public function waitUntil(?callable $output = null);
 }

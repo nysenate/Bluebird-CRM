@@ -76,9 +76,9 @@ class CRM_Core_BAO_Dashboard extends CRM_Core_DAO_Dashboard {
 
 
         //NYSS 3439 also check for group based permission if created from report
-        if (strpos($item['url'], 'civicrm/report/instance/') !== FALSE) {
-          $end = strpos($item['url'], "&");
-          $instanceID = substr($item['url'], 24, $end-24);
+        if (strpos($item['url'] ?? '', 'civicrm/report/instance/') !== FALSE) {
+          $end = strpos($item['url'] ?? '', "&");
+          $instanceID = substr($item['url'] ?? '', 24, $end-24);
           //CRM_Core_Error::debug_var('instanceID',$instanceID);
 
           if ($instanceID &&

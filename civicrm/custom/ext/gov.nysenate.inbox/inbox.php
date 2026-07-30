@@ -93,6 +93,10 @@ function inbox_civicrm_buildForm($formName, &$form) {
       (strpos($referer, 'civicrm/nyss/inbox/matched') !== FALSE ||
        strpos($referer, 'civicrm/nyss/inbox/unmatched') !== FALSE)
     ) {
+
+      // NYSS 18205
+      _inbox_rename_duplicate_contact_button($form);
+
       CRM_Core_Resources::singleton()->addScriptFile('gov.nysenate.inbox', 'js/new_individual.js');
       CRM_Core_Resources::singleton()->addStyleFile('gov.nysenate.inbox', 'css/new_individual.css');
     }
@@ -148,7 +152,6 @@ function inbox_civicrm_postProcess($formName, $form) {
   // So, we need to give the entityRef field some extra information to allow
   // it to populate the field with the new case.
   if ($formName === 'CRM_Case_Form_Case' && $form->_context === 'inbox_entityref' && isset($form->_caseId)) {
-
     $case = \Civi\Api4\CiviCase::get(TRUE)
       ->addSelect('id', 'subject')
       ->addWhere('id', '=', $form->_caseId)
@@ -163,4 +166,65 @@ function inbox_civicrm_postProcess($formName, $form) {
 
 function inbox_civicrm_container(ContainerBuilder $container) {
   $container->register('inbox.parser', '\CRM_NYSS_Inbox_BAO_MessageParserRegex')->setPublic(TRUE);
+}
+
+#[CRM_NYSS_Attribute_IssueRefs('18205')]
+function inbox_civicrm_validateForm($formName, &$fields, &$files, &$form, &$errors) {
+    if ($formName === 'CRM_Profile_Form_Edit') {
+        // NYSS 18205
+        _inbox_add_duplicate_data_to_response($form, $fields);
+        // NYSS 18205
+        _inbox_change_duplicate_contact_notification_message($form);
+    }
+}
+/** NYSS 18205
+ *  adds dependable and clear 'duplicate contact' data for javascript to use in decision-making */
+#[CRM_NYSS_Attribute_IssueRefs('18205')]
+function _inbox_add_duplicate_data_to_response(&$form, &$fields) {
+    $ufGroup = $form->getVar('_ufGroup');
+    if (empty($ufGroup['name']) || $ufGroup['name'] !== 'new_individual') {
+        return;
+    }
+    if (CRM_Core_Smarty::singleton()->getTemplateVars('showSaveDuplicateButton')) {
+        // NYSS 18205
+        // Really don't like running the dupe check again, but CRM_Contact_Form_Contact::checkDuplicateContacts()
+        // is really unhelpful in providing clean duplicate contact data. I chose between 2 evils:
+        // 1) parse the HTML error message for contact info, or
+        // 2) run the dupe check again.
+        // duplicate contact IDs are used to show the duplicate users in the UI.
+        // TODO: talk to core team about refactoring checkDuplicateContacts()
+        $duplicateIds = CRM_Contact_BAO_Contact::getDuplicateContacts(
+            $fields, 'Individual', 'Supervised', [], FALSE, NULL
+        );
+        $form->ajaxResponse['nyssInboxDuplicateIds'] = $duplicateIds ?: [];
+        $form->ajaxResponse['nyssInboxIsDuplicate'] = TRUE;
+    }
+}
+
+/**
+ * @see CRM_Contact_Form_Contact::checkDuplicateContacts()
+ * NYSS 18205
+ */
+#[CRM_NYSS_Attribute_IssueRefs('18205')]
+function _inbox_change_duplicate_contact_notification_message(&$form) {
+    $ufGroup = $form->getVar('_ufGroup');
+    if (empty($ufGroup['name']) || $ufGroup['name'] !== 'new_individual') {
+        return;
+    }
+    if (CRM_Core_Smarty::singleton()->getTemplateVars('showSaveDuplicateButton')) {
+        // Replacing message originally set in CRM_Contact_Form_Contact::checkDuplicateContacts()
+        $form->_errors['_qf_default'] = ts('Duplicate constituent(s) found.');
+    }
+}
+
+/** NYSS 18205 */
+#[CRM_NYSS_Attribute_IssueRefs('18205')]
+function _inbox_rename_duplicate_contact_button(&$form) {
+    $buttonName = $form->getButtonName('upload', 'duplicate');
+    if ($form->elementExists($buttonName)) {
+        $el = $form->getElement($buttonName);
+        $el->setContent(ts('Create Duplicate Constituent'));
+        $existingClass = $el->getAttribute('class');
+        $el->updateAttributes(['class' => trim($existingClass . ' nyss-inbox-duplicate-contact-btn')]);
+    }
 }

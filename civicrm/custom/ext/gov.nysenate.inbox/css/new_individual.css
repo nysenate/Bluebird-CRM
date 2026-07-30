@@ -22,17 +22,11 @@ form.CRM_Profile_Form_Edit div.message-details {
 form.CRM_Profile_Form_Edit div.message-details .content {
   padding-left: 4px;
 }
-form.CRM_Profile_Form_Edit div.crm-submit-buttons {
-  overflow: visible !important;
-  padding-left: 150px !important;
+
+form.CRM_Profile_Form_Edit div.nyss-duplicate-warning {
+    margin-bottom: 2rem;
 }
-div.ui-dialog-buttonpane {
-  margin-top: 0 !important;
-  display: none !important;
+form.CRM_Profile_Form_Edit div.nyss-duplicate-warning h4 {
+    margin: 0;
 }
-.crm-container.ui-dialog .button.cancel {
-  padding: 8px 12px !important;
-}
-.crm-container.ui-dialog .button.cancel i {
-  padding-right: 4px;
-}
+

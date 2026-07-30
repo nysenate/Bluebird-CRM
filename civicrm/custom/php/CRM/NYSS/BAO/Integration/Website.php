@@ -213,6 +213,18 @@ class CRM_NYSS_BAO_Integration_Website
     $params['middle_name'] = strip_tags($params['middle_name']);
     $params['last_name'] = strip_tags($params['last_name']);
 
+    // strip emoji and supplementary Unicode from name fields
+    foreach (['first_name', 'middle_name', 'last_name'] as $field) {
+      if (!empty($params[$field])) {
+          // strip \uXXXX escape sequences stored as text, with or without the leading backslash
+          // (MySQL silently drops the backslash from unrecognised \u escapes, turning ⭐ into u2b50)
+          $params[$field] = preg_replace('/\\\\?u[0-9a-fA-F]{4}/', '', $params[$field]);
+          // strip any remaining actual Unicode emoji/symbols: keep only letters, combining marks, spaces, name punctuation
+          $params[$field] = preg_replace('/[^\p{L}\p{M}\s\'\-\.]/u', '', $params[$field]);
+          $params[$field] = trim($params[$field]);
+      }
+    }
+
     //cycle through contact fields and truncate if necessary
     foreach ($contactFields['values'] as $field) {
       if (array_key_exists($field['name'], $params) && !empty($field['maxlength'])) {

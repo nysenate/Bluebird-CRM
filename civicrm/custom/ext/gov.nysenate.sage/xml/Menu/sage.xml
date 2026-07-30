@@ -1,0 +1,9 @@
+<?xml version="1.0"?>
+<menu>
+  <item>
+    <path>civicrm/sage/test</path>
+    <page_callback>CRM_SAGE_Page_SageTest</page_callback>
+    <title>SageTest</title>
+    <access_arguments>access CiviCRM</access_arguments>
+  </item>
+</menu>

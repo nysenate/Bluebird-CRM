@@ -5,14 +5,19 @@
 */
 class CRM_Utils_SAGE
 {
+    const DISTRICT_SRC_STREETFILE = 'STREETFILE';
   /**
   * Produces a SAGE warning.
   * @param string $message  Error message.
   */
-  private static function warn(string $message) {
+  private static function warn(string $message, $data = []) {
     $session = CRM_Core_Session::singleton();
     $config = CRM_Core_Config::singleton();
 
+    Civi::log()->warning(debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS,2)[1]['function'], [
+      'message' => $message,
+      'data' => $data,
+    ]);
     // Limit the length of the status message.
     //NYSS 7340
     //TODO setStatus doesn't trigger the js warning message when triggered via inline;
@@ -53,9 +58,9 @@ class CRM_Utils_SAGE
    * @param array $params Address parameters to use in the request's query string
    * @param false $refresh If a new call should be forced
    *
-   * @return \SimpleXMLElement
+   * @return \SimpleXMLElement|null Null if the request failed or the response could not be parsed.
    */
-  public static function callSAGE(string $url, array $params, $refresh = FALSE): SimpleXMLElement {
+  public static function callSAGE(string $url, array $params, $refresh = FALSE): ?SimpleXMLElement {
     static $cache = [];
 
     // Build the URL, which will also be the cache key.
@@ -69,7 +74,15 @@ class CRM_Utils_SAGE
           ->setStatus("SAGE Request: $cache_key");
       }
       $request = new \GuzzleHttp\Client();
-      $cache[$cache_key] = simplexml_load_string($request->get($cache_key)->getBody());
+      try {
+        $body = $request->get($cache_key)->getBody();
+      }
+      catch (\GuzzleHttp\Exception\GuzzleException $e) {
+        // Don't cache a failure; a later call may succeed.
+        return NULL;
+      }
+      $xml = simplexml_load_string($body);
+      $cache[$cache_key] = ($xml !== FALSE) ? $xml : NULL;
     }
 
     return $cache[$cache_key];
@@ -86,9 +99,9 @@ class CRM_Utils_SAGE
    * @param array $params The query string parameters to use
    * @param string $data The POST body
    *
-   * @return \SimpleXMLElement
+   * @return \SimpleXMLElement|null Null if the request failed or the response could not be parsed.
    */
-  public static function callSAGEPost(string $url, array $params, $data = ''): SimpleXMLElement {
+  public static function callSAGEPost(string $url, array $params, $data = ''): ?SimpleXMLElement {
     $full_url = self::buildSAGEUrl($url, $params);
 
     // Make the call, using $data for the POST body.
@@ -99,10 +112,11 @@ class CRM_Utils_SAGE
         ->getBody();
     }
     catch (\GuzzleHttp\Exception\GuzzleException $e) {
-      $r = '';
+      return NULL;
     }
 
-    return simplexml_load_string($r);
+    $xml = simplexml_load_string($r);
+    return ($xml !== FALSE) ? $xml : NULL;
   }
 
   /**
@@ -122,7 +136,6 @@ class CRM_Utils_SAGE
 
     // Build the params, and make the request.
     $params = [
-      'provider' => 'usps',
       'addr1' => str_replace(',', '', $addr),
       'city' => CRM_Utils_Array::value('city', $values, ""),
       'zip5' => CRM_Utils_Array::value('postal_code', $values, ""),
@@ -139,7 +152,7 @@ class CRM_Utils_SAGE
     }
     // No, post a warning
     else {
-      self::warn("Postal lookup for [$addr] has failed.\n");
+      self::warn("Postal lookup for address has failed.\n", [$addr]);
     }
 
     return $ret;
@@ -157,7 +170,7 @@ class CRM_Utils_SAGE
     $addresses = self::getAddressesFromRows($rows);
 
     $url = '/address/validate/batch';
-    $params = ['provider' => 'usps'];
+    $params = [];
     $batchXml = self::callSAGEPost($url, $params, json_encode($addresses));
 
     if (($batchXml instanceof SimpleXMLElement) && $batchXml->total == count($addresses)) {
@@ -203,7 +216,7 @@ class CRM_Utils_SAGE
     else {
       //QQQ: Why do we set these values to 'null' instead of ''?
       $values['geo_code_1'] = $values['geo_code_2'] = 'null';
-      self::warn("Geocoding for [$params] has failed.");
+      self::warn("Geocoding has failed.", [$params]);
     }
 
     return $ret;
@@ -267,11 +280,10 @@ class CRM_Utils_SAGE
       'city' => CRM_Utils_Array::value('city',$values,""),
       'zip5' => CRM_Utils_Array::value('postal_code',$values,""),
       'state' => CRM_Utils_Array::value('state_province',$values,""),
-      'key' => SAGE_API_KEY,
     );
 
     if ($streetfile_only) {
-      $params['districtStrategy'] = 'streetOnly';
+      $params['districtSource'] = self::DISTRICT_SRC_STREETFILE;
     }
 
     $xml = self::callSAGE($url, $params);
@@ -286,7 +298,7 @@ class CRM_Utils_SAGE
       }
     }
     else {
-      self::warn("Distassign for [$params] has failed.");
+      self::warn("Distassign has failed.", [$params]);
     }
 
     return $ret;
@@ -316,9 +328,10 @@ class CRM_Utils_SAGE
     $addresses = self::getAddressesFromRows($rows);
 
     $url = '/district/assign/batch';
-    $params = [
-      'districtStrategy' => ($streetfile_only) ? 'streetOnly' : 'streetFallback',
-    ];
+    $params = [];
+    if ($streetfile_only) {
+      $params['districtSource'] = self::DISTRICT_SRC_STREETFILE;
+    }
 
     $batchXml = self::callSAGEPost($url, $params, json_encode($addresses));
 
@@ -343,6 +356,8 @@ class CRM_Utils_SAGE
   /**
   * Performs a bluebird lookup by point and assigns district information to {$values}
   *
+  * @deprecated SAGE has removed support for district assignment by point
+  *
   * @param array &$values Array representing address/geocode/district values.
   * @param boolean $overwrite_districts  If true, districts will be written by default to {$values}.
   * @return boolean if response validated successfully, false otherwise.
@@ -361,7 +376,7 @@ class CRM_Utils_SAGE
     }
     else {
       $params = json_encode($params);
-      self::warn("Lookup for [$params] has failed.");
+      self::warn("Lookup has failed.", [$params]);
     }
     return $ret;
   }
@@ -370,6 +385,8 @@ class CRM_Utils_SAGE
   /**
    * Performs a bluebird lookup by point and assigns district information to
    * {$rows}.
+   *
+   * @deprecated SAGE has removed support for batch district assignment by point.
    *
    * @param array   &$rows An array of rows that each contain an array point
    *   columms.
@@ -396,7 +413,6 @@ class CRM_Utils_SAGE
 
     return $ret;
   }
-
 
   /**
   * Performs a bluebird lookup by address and assigns geocode and district information to {$values}.
@@ -438,7 +454,7 @@ class CRM_Utils_SAGE
           self::storeAddress($values, $xml, $addr_field);
       }
       else {
-        self::warn("USPS could not validate address: [$addr]");
+        self::warn("USPS could not validate address", [$addr]);
       }
 
       if ($xml->geocoded == 'true') {
@@ -451,7 +467,7 @@ class CRM_Utils_SAGE
     }
     else {
       $params = json_encode($params);
-      self::warn("Lookup for [$params] has failed.");
+      self::warn("Lookup has failed.",[$params]);
     }
 
     return $ret;
@@ -459,8 +475,8 @@ class CRM_Utils_SAGE
 
 
   /**
-  * Performs a batch bluebird lookup by address and assigns district and geocode information to
-  * each entry in {$rows}.
+  * Performs a batch combined validate + geocode + district-assign
+  * lookup by address.
   *
   * @param array &$rows  An array of rows that each contain an array with address, geocode,
   *                      and district columms. Basically an array of {$values} used in the
@@ -471,8 +487,11 @@ class CRM_Utils_SAGE
   */
   public static function batchLookup(&$rows, $overwrite_districts=true, $overwrite_point=true) {
     $addresses = self::getAddressesFromRows($rows);
-    $url = '/district/bluebird/batch';
-    $batchXml = self::callSAGEPost($url, [], json_encode($addresses));
+    // NYSS #18799: /district/bluebird/batch endpoint is no longer supported in SAGE
+    // using district/assign/batch, which does the same thing.
+    $url = '/district/assign/batch';
+    $params = [];
+    $batchXml = self::callSAGEPost($url, $params, json_encode($addresses));
 
     $ret = ($batchXml instanceof SimpleXMLElement) && ($batchXml->total == count($addresses));
     if ($ret) {
@@ -502,7 +521,7 @@ class CRM_Utils_SAGE
    *
    * @param array &$rows An array of rows that each contain an array with address columns.
    *
-   * @return array containing arrays of (addr1, city, state, zip5).
+   * @return array containing arrays of (addr1, postalCity, state, zip5).
    */
   protected static function getAddressesFromRows(array &$rows): array {
     $addresses = array();
@@ -514,7 +533,7 @@ class CRM_Utils_SAGE
 
       $address = array(
         'addr1' => str_replace(',', '', $addr),
-        'city'  => CRM_Utils_Array::value('city', $row, ""),
+        'postalCity' => CRM_Utils_Array::value('city', $row, ""),
         'state' => CRM_Utils_Array::value('state_province', $row, ""),
         'zip5'  => CRM_Utils_Array::value('postal_code', $row, "")
       );

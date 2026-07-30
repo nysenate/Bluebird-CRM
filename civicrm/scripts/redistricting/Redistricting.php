@@ -494,10 +494,21 @@ function distassign(&$fmt_batch, $url, &$cnts)
 } // distassign()
 
 
+/**
+ * @todo This function presumably is no longer compatible with SAGE. Jacob says that Bluebird's address ID is no longer
+ *       returned with the results. He says that results are "guaranteed" to be returned in the same order as the payload.
+ *       So, we can potentially track the order of Bluebird IDs and results and match accordingly. I'm going to "die hard"
+ *       for now, with the assumption that we'll need to test everything before the next redistricting effort.
+ * @param $db
+ * @param $orig_batch
+ * @param $batch_results
+ * @param $cnts
+ * @return void
+ */
 function process_batch_results($db, &$orig_batch, &$batch_results, &$cnts)
 {
   global $BB_UPDATE_FLAGS, $DIST_FIELDS, $ADDR_FIELDS;
-
+  die("process_batch_results is no longer compatible with SAGE results. Updates required.");
   bbscript_log(LL::TRACE, '==> process_batch_results()');
   bbscript_log(LL::TRACE, 'Batch results:', $batch_results);
 
@@ -528,6 +539,8 @@ function process_batch_results($db, &$orig_batch, &$batch_results, &$cnts)
   bb_mysql_query('BEGIN', $db, true);
 
   foreach ($batch_results as $batch_res) {
+      // TODO: My understanding from conversations with Jacob is that SAGE no longer supports the address id pass-thru.
+      // So, this expectation will likely break when we next need to run this script.
     $address_id = $batch_res['address']['id'] ?? NULL;
     $match_source = $batch_res['source'] ?? NULL;
     $match_level = $batch_res['matchLevel'] ?? NULL;

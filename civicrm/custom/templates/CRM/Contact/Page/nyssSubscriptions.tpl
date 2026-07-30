@@ -21,7 +21,7 @@
   function showHideSubscriptions(emailId, blockNo) {
     //console.log('showHideSubscriptions emailId: ', emailId, ' | blockNo: ' + blockNo);
 
-    var dataURL = {/literal}"{crmURL p='civicrm/nyss/subscription/admin' q="reset=1&snippet=5&context=dialog&emailId=" h=0 }"{literal};
+    var dataURL = {/literal}"{crmURL p='civicrm/nyss/subscription/admin' q="reset=1&snippet=4&context=dialog&emailId=" h=0 }"{literal};
     dataURL = dataURL + emailId;
 
     cj.ajax({

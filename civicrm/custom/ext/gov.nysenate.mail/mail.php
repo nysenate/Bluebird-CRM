@@ -4,6 +4,7 @@ require_once 'mail.civix.php';
 use CRM_NYSS_Mail_ExtensionUtil as E;
 use Civi\FlexMailer\FlexMailer as FM;
 use Civi\NYSS\Mail\Listener\NyssFlexmailListener;
+use Civi\NYSS\Mail\Listener\CheckSendableListener;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
 
 defined('FILTER_ALL') or define('FILTER_ALL', 0);
@@ -24,6 +25,15 @@ function mail_civicrm_config(&$config) {
   //16724
   Civi::dispatcher()->addListener('civi.search.autocompleteDefault', [
     'CRM_NYSS_Mail_APIWrapperRecipient', 'autocompleteDefault'], -100);
+
+  //prevent multiple calls
+  if (isset(Civi::$statics[__FUNCTION__])) { return; }
+  Civi::$statics[__FUNCTION__] = 1;
+
+  // NYSS #18424 - Override List-Unsubscribe header with proxy URL (-1000 priority to run late for override)
+  Civi::dispatcher()->addListener('hook_civicrm_alterMailParams', ['CRM_NYSS_Mail_HookAlterMailParamsListener', 'alterMailParamsLate'], -1000);
+  // NYSS #18424 - validates that a mailing has a category during approval/submission
+  Civi::dispatcher()->addListener('civi.flexmailer.checkSendable', [CheckSendableListener::class, 'requireMailingCategory']);
 }
 
 function mail_civicrm_container(ContainerBuilder $container) {
@@ -38,6 +48,7 @@ function mail_civicrm_container(ContainerBuilder $container) {
       ],
       FM::WEIGHT_PREPARE,
     ]);
+  // Run it again to clean-up
   $container->findDefinition('dispatcher')->addMethodCall('addListenerService',
     [
       FM::EVENT_COMPOSE,
@@ -72,6 +83,21 @@ function mail_civicrm_alterMenu(&$items) {
     ],
     'or'
   ];
+
+  // NYSS #18424 - Override core unsubscribe page so that One-click POSTs will opt out of the mailing category
+  // instead of unsubscribing from civicrm mailing groups, which is the default core behavior.
+  $items['civicrm/mailing/unsubscribe']['access_callback'] = 1;
+  $items['civicrm/mailing/unsubscribe']['page_callback'] = 'CRM_NYSS_Mail_Page_Unsubscribe';
+  // This is the URL that the proxy is proxying to
+  $items['civicrm/nyss/subscription/unsubscribe']['access_callback'] = 1;
+  $items['civicrm/nyss/subscription/unsubscribe']['page_callback'] = 'CRM_NYSS_Mail_Page_Unsubscribe';
+
+  // NYSS #18424 - Override core resubscribe page to issue redirect to custom mail preferences page
+  $items['civicrm/mailing/resubscribe']['access_callback'] = 1;
+  $items['civicrm/mailing/resubscribe']['page_callback'] = 'CRM_NYSS_Mail_Page_Resubscribe';
+  // This is the URL that the proxy is proxying to
+  $items['civicrm/nyss/subscription/resubscribe']['access_callback'] = 1;
+  $items['civicrm/nyss/subscription/resubscribe']['page_callback'] = 'CRM_NYSS_Mail_Page_Resubscribe';
 }
 
 /**
@@ -484,9 +510,13 @@ function mail_civicrm_pre($op, $objectName, $id, &$params) {
     //Civi::log()->debug('mail_civicrm_pre AFTER', ['$style' => $style, '$params[body_html]' => $params['body_html']]);
   }
 
-  //10925 set click/open values to 0
   if ($op == 'create' && $objectName == 'Mailing') {
+    // NYSS #10925 set click/open values to 0
     $params['open_tracking'] = $params['url_tracking'] = FALSE;
+    // NYSS #18424 - initialize to default category
+    if (empty($params['category'])) {
+        $params['category'] = CRM_Core_OptionGroup::getDefaultValue(CRM_NYSS_Mail::MAILING_CATEGORIES_GROUP);
+    }
   }
 
   if ($objectName === 'Mailing' && in_array($op, ['create', 'edit'])) {
@@ -684,19 +714,8 @@ function mail_civicrm_buildForm($formName, &$form) {
       false);
 
     //NYSS 5581 - mailing category options
-    $mCats = ['' => '- select -'];
-    $opts = CRM_Core_DAO::executeQuery("
-      SELECT ov.label, ov.value
-      FROM civicrm_option_value ov
-      JOIN civicrm_option_group og
-        ON ov.option_group_id = og.id
-        AND og.name = 'mailing_categories'
-      ORDER BY ov.label
-    ");
-    while ($opts->fetch()) {
-      $mCats[$opts->value] = $opts->label;
-    }
-    $form->add('select', 'category', 'Mailing Category', $mCats, false);
+    $options = \CRM_Core_OptionGroup::values(CRM_NYSS_Mail::MAILING_CATEGORIES_GROUP);
+    $form->add('select', 'category', ts('Mailing Category'), $options, TRUE);
 
     if ($mailingID) {
       $m = CRM_Core_DAO::executeQuery("SELECT * FROM civicrm_mailing WHERE id = {$mailingID}");
@@ -711,6 +730,7 @@ function mail_civicrm_buildForm($formName, &$form) {
     }
     else {
       $defaults['dedupe_email'] = true;
+      $defaults['category'] = CRM_Core_OptionGroup::getDefaultValue(CRM_NYSS_Mail::MAILING_CATEGORIES_GROUP);
     }
 
     //CRM_Core_Error::debug_var('defaults', $defaults);
@@ -997,7 +1017,6 @@ function mail_civicrm_alterMailParams(&$params, $context) {
 
     if (isset($params[NyssFlexmailListener::$PARAM_EVENT_Q_ID])) {
       $eventQueueID = $params[NyssFlexmailListener::$PARAM_EVENT_Q_ID];
-      unset($params[NyssFlexmailListener::$PARAM_EVENT_Q_ID]);
     }
     elseif (empty($params['is_test'])) {
       CRM_Core_Error::debug_var('params: event_queue_id not found', $params);
@@ -1007,11 +1026,9 @@ function mail_civicrm_alterMailParams(&$params, $context) {
     if (isset($params[NyssFlexmailListener::$PARAM_CONTACT_ID])) {
       $contactID = $params[NyssFlexmailListener::$PARAM_CONTACT_ID];
       $params['X-clientid'] = $contactID;
-      unset($params[NyssFlexmailListener::$PARAM_CONTACT_ID]);
     }
 
     $params['Return-Path'] = '';
-    $params['List-Unsubscribe'] = '';
     $params['Reply-To'] = $replyto;
 
     if (isset($params['job_id'])) {
@@ -1264,26 +1281,20 @@ function _mail_alterMailingWizard(phpQueryObject $doc) {
  */
 function _mail_alterMailingBlock(phpQueryObject $doc) {
   //NYSS 5581 - mailing category options
-  $catOptions = "<option value=''>- select -</option>";
-  $opts = CRM_Core_DAO::executeQuery("
-    SELECT ov.label, ov.value
-    FROM civicrm_option_value ov
-    JOIN civicrm_option_group og
-      ON ov.option_group_id = og.id
-      AND og.name = 'mailing_categories'
-    ORDER BY ov.label
-  ");
-  while ($opts->fetch()) {
-    $catOptions .= "<option value='{$opts->value}'>{$opts->label}</option>";
+  $catOptions = "<option value=''>--Select--</option>";
+  $opts = \CRM_Core_OptionGroup::values(CRM_NYSS_Mail::MAILING_CATEGORIES_GROUP);
+  foreach($opts as $value => $label) {
+    $catOptions .= "<option value='{$value}'>{$label}</option>";
   }
 
   $doc->find('.crm-group')->append('
     <div crm-ui-field="{name: \'subform.nyss\', title: \'Mailing Category\', help: hs(\'category\')}">
-      <select 
-        crm-ui-id="subform.nyss" 
-        crm-ui-select="{dropdownAutoWidth : true, allowClear: true, placeholder: ts(\'Category\')}"
-        name="category" 
+      <select
+        crm-ui-id="subform.nyss"
+        crm-ui-select="{dropdownAutoWidth : true}"
+        name="category"
         ng-model="mailing.category"
+        ng-required="true"
       >'.$catOptions.'</select>
     </div>
     <div crm-ui-field="{name: \'subform.nyss\', title: \'Send to all contact emails?\', help: hs(\'all-emails\')}">
@@ -1314,17 +1325,10 @@ function _mail_alterMailingBlockMosaico(phpQueryObject $doc) {
   //CRM_NYSS_Mail_Utils::createMosaicoThumbnails();
 
   //NYSS 5581 - mailing category options
-  $catOptions = "<option value=''>- select -</option>";
-  $opts = CRM_Core_DAO::executeQuery("
-    SELECT ov.label, ov.value
-    FROM civicrm_option_value ov
-    JOIN civicrm_option_group og
-      ON ov.option_group_id = og.id
-      AND og.name = 'mailing_categories'
-    ORDER BY ov.label
-  ");
-  while ($opts->fetch()) {
-    $catOptions .= "<option value='{$opts->value}'>{$opts->label}</option>";
+  $catOptions = "<option value=''>--Select--</option>";
+  $opts = \CRM_Core_OptionGroup::values(CRM_NYSS_Mail::MAILING_CATEGORIES_GROUP);
+  foreach($opts as $value => $label) {
+    $catOptions .= "<option value='{$value}'>{$label}</option>";
   }
   //Civi::log()->debug(__FUNCTION__, ['doc->html()' => $doc->html()]);
 
@@ -1735,7 +1739,6 @@ function _mail_get_browserview_clause($bbcfg) {
   return ['text' => $text, 'html' => $html];
 } // _mail_get_browserview_clause()
 
-
 function _mail_get_optout_clause($bbcfg, $cid, $qid) {
   $cs = CRM_Contact_BAO_Contact_Utils::generateChecksum($cid, CRM_Utils_Time::time(),\Civi::settings()->get('nyssUnsubLinkTimeout'));
   $url = "{$bbcfg['public.url.base']}/{$bbcfg['envname']}/{$bbcfg['shortname']}/subscription/manage/$qid/$cs";
@@ -1745,7 +1748,6 @@ function _mail_get_optout_clause($bbcfg, $cid, $qid) {
 
   return ['text' => $text, 'html' => $html];
 } // _mail_get_optout_clause()
-
 
 function _mail_get_shareon_clause($bbcfg) {
   $fbimg = "{$bbcfg['public.url.base']}/{$bbcfg['envname']}/{$bbcfg['shortname']}/common/images/social_media/facebook_share_68x25.png";

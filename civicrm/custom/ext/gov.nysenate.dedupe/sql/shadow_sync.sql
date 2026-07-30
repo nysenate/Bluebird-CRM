@@ -3,8 +3,11 @@ START TRANSACTION;
 TRUNCATE shadow_contact;
 TRUNCATE shadow_address;
 TRUNCATE fn_group_contact;
-TRUNCATE fn_group_name;
-TRUNCATE fn_group;
+-- Without being 100% clear on the original intent of this script, it seems that this is not the right time to
+-- truncate fn_group_name and fn_group. These tables need to be seeded (so it seems) prior to inserting into the
+-- shadow tables. Commenting out the following truncate statements to avoid potential problems.
+-- TRUNCATE fn_group_name;
+-- TRUNCATE fn_group;
 
 INSERT INTO shadow_contact (contact_id, first_name, middle_name, last_name, suffix_id, birth_date, gender_id, contact_type, household_name, organization_name)
 	SELECT id, BB_NORMALIZE(first_name), BB_NORMALIZE(middle_name), BB_NORMALIZE(last_name), suffix_id, birth_date, gender_id, contact_type, BB_NORMALIZE(household_name), BB_NORMALIZE(organization_name) FROM civicrm_contact;

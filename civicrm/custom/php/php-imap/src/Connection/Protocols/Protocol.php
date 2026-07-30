@@ -12,6 +12,7 @@
 
 namespace Webklex\PHPIMAP\Connection\Protocols;
 
+use Webklex\PHPIMAP\Config;
 use Webklex\PHPIMAP\Exceptions\ConnectionFailedException;
 use Webklex\PHPIMAP\IMAP;
 
@@ -38,9 +39,14 @@ abstract class Protocol implements ProtocolInterface {
     protected bool $enable_uid_cache = true;
 
     /**
-     * @var resource
+     * @var resource|mixed|boolean|null $stream
      */
     public $stream = false;
+
+    /**
+     * @var Config $config
+     */
+    protected Config $config;
 
     /**
      * Connection encryption method
@@ -64,6 +70,15 @@ abstract class Protocol implements ProtocolInterface {
         'username' => null,
         'password' => null,
     ];
+
+    /**
+     * SSL stream context options
+     *
+     * @see https://www.php.net/manual/en/context.ssl.php for possible options
+     *
+     * @var array
+     */
+    protected array $ssl_options = [];
 
     /**
      * Cache for uid of active folder.
@@ -157,6 +172,28 @@ abstract class Protocol implements ProtocolInterface {
     }
 
     /**
+     * Set SSL context options settings
+     * @var array $options
+     *
+     * @return Protocol
+     */
+    public function setSslOptions(array $options): Protocol
+    {
+        $this->ssl_options = $options;
+
+        return $this;
+    }
+
+    /**
+     * Get the current SSL context options settings
+     *
+     * @return array
+     */
+    public function getSslOptions(): array {
+        return $this->ssl_options;
+    }
+
+    /**
      * Prepare socket options
      * @return array
      *@var string $transport
@@ -169,6 +206,11 @@ abstract class Protocol implements ProtocolInterface {
                 'verify_peer_name' => $this->getCertValidation(),
                 'verify_peer'      => $this->getCertValidation(),
             ];
+
+            if (count($this->ssl_options)) {
+                /* Get the ssl context options from the config, but prioritize the 'validate_cert' config over the ssl context options */
+                $options["ssl"] = array_replace($this->ssl_options, $options["ssl"]);
+            }
         }
 
         if ($this->proxy["socket"] != null) {
@@ -268,7 +310,7 @@ abstract class Protocol implements ProtocolInterface {
      *
      * @param array|null $uids
      */
-    public function setUidCache(?array $uids) {
+    public function setUidCache(?array $uids): void {
         if (is_null($uids)) {
             $this->uid_cache = [];
             return;
@@ -330,7 +372,7 @@ abstract class Protocol implements ProtocolInterface {
     }
 
     /**
-     * Retrieves header/meta data from the resource stream
+     * Retrieves header/metadata from the resource stream
      *
      * @return array
      */
@@ -362,5 +404,14 @@ abstract class Protocol implements ProtocolInterface {
      */
     public function getStream(): mixed {
         return $this->stream;
+    }
+
+    /**
+     * Set the Config instance
+     *
+     * @return Config
+     */
+    public function getConfig(): Config {
+        return $this->config;
     }
 }
