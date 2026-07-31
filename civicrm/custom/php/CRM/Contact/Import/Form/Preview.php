@@ -47,7 +47,7 @@ class CRM_Contact_Import_Form_Preview extends CRM_Import_Form_Preview {
       );
     }
 
-    $groups = CRM_Core_PseudoConstant::nestedGroup();
+    $groups = CRM_Core_PseudoConstant::nestedGroup(textFormat: 'plain');
 
     if (!empty($groups)) {
       $this->addElement('select', 'groups', ts('Add imported records to existing group(s)'), $groups, [
@@ -173,7 +173,7 @@ class CRM_Contact_Import_Form_Preview extends CRM_Import_Form_Preview {
         'is_selectable' => TRUE,
         'used_for' => 'civicrm_contact',
         //NYSS new tags during import should be imported as keywords
-        'parent_id'	=> 296,
+        'parent_id' => CRM_NYSS_Tags_Constants::KEYWORDS_TAG_ID,
       ])->execute()->first()['id'];
       $summaryInfo['tags'][$tagID] = [
         'url' => CRM_Utils_System::url('civicrm/contact/search', 'reset=1&force=1&context=smog&id=' . $tagID),

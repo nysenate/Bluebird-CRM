@@ -129,7 +129,7 @@ class CRM_Contact_Form_Search_Custom_Group extends CRM_Contact_Form_Search_Custo
     $keywords = CRM_Core_BAO_Tag::getTagsUsedFor( $usedFor = array( 'civicrm_contact' ),
       $buildSelect = true,
       $all = false,
-      $parentId = 296
+      $parentId = CRM_NYSS_Tags_Constants::KEYWORDS_TAG_ID
     );
 
     //NYSS 7646
@@ -140,7 +140,7 @@ class CRM_Contact_Form_Search_Custom_Group extends CRM_Contact_Form_Search_Custo
       foreach ( $keywords as $key => $keyword ) {
         $keywords[$key] = '&nbsp;&nbsp;'.$keyword;
       }
-      $tags = $issue_codes + array ('296' => 'Keywords') + $keywords;
+      $tags = $issue_codes + array (CRM_NYSS_Tags_Constants::KEYWORDS_TAG_ID => 'Keywords') + $keywords;
     }
     else {
       $tags = $issue_codes;
