@@ -2045,7 +2045,7 @@ class CRM_Contact_BAO_Query {
       case 'prox_country_id':
       case 'prox_geo_code_1':
       case 'prox_geo_code_2':
-        // handled by the proximity_distance clause
+            // handled by the proximity_distance clause
         return;
 
       default:
