@@ -71,11 +71,7 @@ CREATE FUNCTION BB_NORMALIZE (value VARCHAR(255) CHARACTER SET utf8mb4 COLLATE u
             RETURN NULL;
         END IF;
 
-        -- strip all 4-byte supplementary characters plus the most common BMP symbol/emoji block
-        SET normalized_value = REGEXP_REPLACE(REGEXP_REPLACE(value,
-                      '[\\x{10000}-\\x{10FFFF}]', ''),
-                      '[\\x{2600}-\\x{27BF}]', '');
-
+        SET normalized_value = value;
         -- Strip all  punctuation and spaces from strings
         RETURN LCASE(REPLACE( REPLACE( REPLACE( REPLACE( REPLACE( REPLACE( REPLACE( REPLACE( normalized_value,
                     ',', ''),
@@ -104,10 +100,7 @@ CREATE FUNCTION BB_NORMALIZE_ADDR (value VARCHAR(255) CHARACTER SET utf8mb4  COL
             RETURN NULL;
         END IF;
 
-        -- strip all 4-byte supplementary characters plus the most common BMP symbol/emoji block
-        SET address = REGEXP_REPLACE(REGEXP_REPLACE(value,
-                      '[\\x{10000}-\\x{10FFFF}]', ''),
-                      '[\\x{2600}-\\x{27BF}]', '');
+        SET address = value;
 
         -- Lower the case and strip out all the ordinals from the street numbers
         SET address = REGEXP_REPLACE(TRIM(LCASE(address)), '(?<=[0-9])(?:st|nd|rd|th)','');
