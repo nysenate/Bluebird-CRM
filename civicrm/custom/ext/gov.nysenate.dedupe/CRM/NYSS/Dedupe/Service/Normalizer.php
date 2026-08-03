@@ -42,10 +42,6 @@ class CRM_NYSS_Dedupe_Service_Normalizer extends AutoService implements EventSub
             return $addr;
         }
 
-        // Strip 4-byte supplementary characters and common BMP symbols/emoji
-        $addr = preg_replace('/[\x{10000}-\x{10FFFF}]/u', '', $addr);
-        $addr = preg_replace('/[\x{2600}-\x{27BF}]/u', '', $addr);
-
         // Lowercase + trim
         $address = mb_strtolower(trim($addr), 'UTF-8');
 
