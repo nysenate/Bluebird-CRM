@@ -3304,7 +3304,6 @@ WHERE  $smartGroupClause
           LEFT JOIN civicrm_activity all_tag_types_act
             ON all_tag_types_act.id = all_tag_types.activity_id
             AND all_tag_types_act.is_deleted = 0
-            AND all_tag_types_act.is_current_revision = 1
           LEFT JOIN civicrm_entity_tag as {$etActTable}
             ON {$etActTable}.entity_table = 'civicrm_activity'
             AND {$etActTable}.entity_id = all_tag_types_act.id
@@ -3398,7 +3397,6 @@ WHERE  $smartGroupClause
           LEFT JOIN civicrm_activity all_tag_types_act
             ON all_tag_types_act.id = all_tag_types.activity_id
             AND all_tag_types_act.is_deleted = 0
-            AND all_tag_types_act.is_current_revision = 1
           LEFT JOIN civicrm_entity_tag as {$etActTable}
             ON {$etActTable}.entity_table = 'civicrm_activity'
             AND {$etActTable}.entity_id = all_tag_types_act.id ";
@@ -4755,7 +4753,7 @@ civicrm_relationship.start_date > {$today}
       $sql .= self::getGroupByFromSelectColumns($query->_select, 'contact_a.id');
     }
     if (!empty($sort)) {
-      $sort = CRM_Utils_Type::escape($sort, 'String');
+      $sort = CRM_Utils_Type::escape($sort, 'MysqlOrderBy');
       $sql .= " ORDER BY $sort ";
     }
     if ($row_count > 0 && $offset >= 0) {
@@ -6989,7 +6987,7 @@ AND   displayRelType.is_active = 1
     [$select, $from, $where, $having] = $this->query($count, $sortByChar, $groupContacts, $onlyDeleted);
 
     if ($additionalWhereClause) {
-      $where = $where . ' AND ' . $additionalWhereClause;
+      $where .= ' AND ' . $additionalWhereClause;
     }
 
     //additional from clause should be w/ proper joins.

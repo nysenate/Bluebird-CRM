@@ -267,45 +267,28 @@ class CRM_Core_BAO_Address extends CRM_Core_DAO_Address implements Civi\Core\Hoo
       $aspClass = "CRM_Utils_Address_$asp";
       eval( $aspClass.'::checkAddress( $params );');
 
-      // do street parsing again if enabled, since street address might have changed
-      $parseStreetAddress = CRM_Utils_Array::value(
-        'street_address_parsing',
-        CRM_Core_BAO_Setting::valueOptions(
-          CRM_Core_BAO_Setting::SYSTEM_PREFERENCES_NAME,
-          'address_options'
-        ),
-        FALSE
-      );
-
-      if ($parseStreetAddress && !empty($params['street_address'])) {
-        foreach (array(
-                   'street_number',
-                   'street_name',
-                   'street_unit',
-                   'street_number_suffix',
-                 ) as $fld) {
-          unset($params[$fld]);
-        }
-        // main parse string.
-        $parseString = CRM_Utils_Array::value('street_address', $params);
-        $parsedFields = CRM_Core_BAO_Address::parseStreetAddress($parseString);
-
-        // merge parse address in to main address block.
-        $params = array_merge($params, $parsedFields);
+    if ($parseStreetAddress && !empty($params['street_address'])) {
+      foreach (['street_number', 'street_name', 'street_unit', 'street_number_suffix'] as $fld) {
+        unset($params[$fld]);
       }
+      // main parse string.
+      $parseString = $params['street_address'] ?? NULL;
+      $parsedFields = CRM_Core_BAO_Address::parseStreetAddress($parseString);
+
+      // merge parse address in to main address block.
+      $params = array_merge($params, $parsedFields);
     }
 
-    // check if geocode should be skipped (can be forced with an optional parameter through the api)
-    $skip_geocode = (isset($params['skip_geocode']) && $params['skip_geocode']) ? TRUE : FALSE;
+    } // END NYSS guard
 
-    // add latitude and longitude and format address if needed
-    if (!$skip_geocode && !empty($config->geocodeMethod) && ($config->geocodeMethod != 'CRM_Utils_Geocode_OpenStreetMaps') && empty($params['manual_geo_code'])) {
+    // skip_geocode is an optional parameter through the api.
+         // manual_geo_code is on the contact edit form. They do the same thing....
+         if (empty($params['skip_geocode']) && empty($params['manual_geo_code'])) {
+             //NYSS hackish solution to prevent double geocode lookup
+             //TODO the SAGE::format function is only used by one of our scripts; consider having that method empty
+             //self::addGeocoderData($params);
+         }
 
-      //NYSS hackish solution to prevent double geocode lookup
-      //TODO the SAGE::format function is only used by one of our scripts; consider having that method empty
-      //$class = $config->geocodeMethod;
-      //$class::format($params);
-    }
   }
 
   /**
@@ -345,7 +328,7 @@ class CRM_Core_BAO_Address extends CRM_Core_DAO_Address implements Civi\Core\Hoo
       }
       elseif (!CRM_Utils_System::isNull($value)) {
         // name could be country or country id
-        if (substr($name, 0, 7) == 'country') {
+        if (substr($name, 0, 7) == 'country' && empty($params['id'])) {
           // make sure its different from the default country
           // iso code
           $defaultCountry = CRM_Core_BAO_Country::defaultContactCountry();
