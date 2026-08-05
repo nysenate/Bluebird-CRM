@@ -133,20 +133,12 @@ class CRM_NYSS_Subscription_Form_Manage extends CRM_Core_Form {
     $this->add('hidden', 'emailID', $this->_contact['email_id'], ['id' => 'emailID']);
 
     //get category options
-    $mCats = [];
-    $opts = CRM_Core_DAO::executeQuery("
-      SELECT ov.label, ov.value
-      FROM civicrm_option_value ov
-      JOIN civicrm_option_group og
-        ON ov.option_group_id = og.id
-        AND og.name = 'mailing_categories'
-      ORDER BY ov.weight
-    ");
-    while ($opts->fetch()) {
-      $mCats[$opts->value] = $opts->label;
-      $mailingCats[] = $this->createElement('checkbox', $opts->value, NULL, $opts->label);
-      $this->addGroup($mailingCats, 'mailing_categories', ts('Mailing Categories'), '<br />');
+    $mCats = \CRM_Core_OptionGroup::values(CRM_NYSS_Mail::MAILING_CATEGORIES_GROUP) ?? [];
+    $mailingCats = [];
+    foreach ($mCats as $val => $label) {
+      $mailingCats[] = $this->createElement('checkbox', $val, NULL, $label);
     }
+    $this->addGroup($mailingCats, 'mailing_categories', ts('Mailing Categories'), '<br />');
 
     $this->addElement('checkbox', 'opt_out', ts('Opt-Out'));
 
@@ -193,19 +185,8 @@ class CRM_NYSS_Subscription_Form_Manage extends CRM_Core_Form {
     }
 
     //mailing categories
-    $mCats = [];
     $mc = 'null';
-    $opts = CRM_Core_DAO::executeQuery("
-      SELECT ov.label, ov.value
-      FROM civicrm_option_value ov
-      JOIN civicrm_option_group og
-        ON ov.option_group_id = og.id
-        AND og.name = 'mailing_categories'
-      ORDER BY ov.weight
-    ");
-    while ($opts->fetch()) {
-      $mCats[$opts->value] = $opts->label;
-    }
+    $mCats = \CRM_Core_OptionGroup::values(CRM_NYSS_Mail::MAILING_CATEGORIES_GROUP) ?? [];
 
     //translate opt-outs to present as opt-ins
     $unselectedOpts = [];
