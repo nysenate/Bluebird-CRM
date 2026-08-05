@@ -86,7 +86,7 @@ class CRM_NYSS_BAO_Mailing {
 
       return $job['id'];
     }
-    catch (CiviCRM_API3_Exception $e) {}
+    catch (CRM_Core_Exception $e) {}
 
     return NULL;
   }

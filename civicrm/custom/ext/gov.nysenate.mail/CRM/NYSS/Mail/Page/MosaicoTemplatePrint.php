@@ -16,7 +16,7 @@ class CRM_NYSS_Mail_Page_MosaicoTemplatePrint extends CRM_Core_Page {
       CRM_Utils_System::setTitle($template['title']);
       $this->assign('templateHtml', $template['html']);
     }
-    catch (CiviCRM_API3_Exception $e) {
+    catch (CRM_Core_Exception $e) {
       CRM_Core_Error::statusBounce('Unable to retrieve template.', CRM_Utils_System::url('civicrm/mosaico-template-list'));
     }
 

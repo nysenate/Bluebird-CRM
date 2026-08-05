@@ -213,7 +213,7 @@ function boe_civicrm_buildForm($formName, &$form) {
               "address_{$blockId}_street_unit" => CRM_Utils_Array::value('street_unit', $addrVals),
             ]);
           }
-          catch (CiviCRM_API3_Exception $e) {}
+          catch (CRM_Core_Exception $e) {}
         }
 
         foreach ($form->_elementIndex as $ele => $dontcare) {

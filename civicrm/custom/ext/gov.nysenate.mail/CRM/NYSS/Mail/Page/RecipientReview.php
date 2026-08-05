@@ -41,13 +41,13 @@ class CRM_NYSS_Mail_Page_RecipientReview extends CRM_Core_Page {
               'email' => $email,
             ];
           }
-          catch (CiviCRM_API3_Exception $e) {
+          catch (CRM_Core_Exception $e) {
             Civi::log()->debug(__FUNCTION__, ['$e' => $e]);
           }
 
         }
       }
-      catch (CiviCRM_API3_Exception $e) {
+      catch (CRM_Core_Exception $e) {
         Civi::log()->debug(__FUNCTION__, ['$e' => $e]);
       }
     }

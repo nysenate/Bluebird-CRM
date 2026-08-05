@@ -532,7 +532,7 @@ class CRM_NYSS_BAO_Integration_Website
         ]);
         //CRM_Core_Error::debug_var('$tag', $tag);
       }
-      catch (CiviCRM_API3_Exception $e) {
+      catch (CRM_Core_Exception $e) {
         CRM_Core_Error::debug_var('processPetition tag creation', $e);
         return [
           'is_error' => 1,
@@ -554,7 +554,7 @@ class CRM_NYSS_BAO_Integration_Website
     try {
       $et = self::entityTagAction($contactId, $tagId, $apiAction);
     }
-    catch (CiviCRM_API3_Exception $e) {
+    catch (CRM_Core_Exception $e) {
       CRM_Core_Error::debug_var('CRM_NYSS_BAO_Integration_Website::processPetition $e', $e);
     }
 
@@ -634,7 +634,7 @@ class CRM_NYSS_BAO_Integration_Website
       $result = civicrm_api3('custom_value', 'create', $profileParams);
       //CRM_Core_Error::debug_var('update profile result', $result);
     }
-    catch (CiviCRM_API3_Exception $e) {
+    catch (CRM_Core_Exception $e) {
       // handle error here
       $errorMessage = $e->getMessage();
       $errorCode = $e->getErrorCode();
@@ -757,7 +757,7 @@ class CRM_NYSS_BAO_Integration_Website
       $result = civicrm_api3('activity', 'create', $params);
       //CRM_Core_Error::debug_var('processCommunication result', $result);
     }
-    catch (CiviCRM_API3_Exception $e) {
+    catch (CRM_Core_Exception $e) {
       // handle error here
       $errorMessage = $e->getMessage();
       $errorCode = $e->getErrorCode();
@@ -845,7 +845,7 @@ class CRM_NYSS_BAO_Integration_Website
         return $cf;
       }
     }
-    catch (CiviCRM_API3_Exception $e) {
+    catch (CRM_Core_Exception $e) {
       CRM_Core_Error::debug_var('Survey Construction Issue', $e, TRUE, TRUE, 'integration');
     }
 
@@ -1008,7 +1008,7 @@ class CRM_NYSS_BAO_Integration_Website
         $cg = civicrm_api3('custom_group', 'create', $params);
         $csID = $cg['id'];
       }
-      catch (CiviCRM_API3_Exception $e) {
+      catch (CRM_Core_Exception $e) {
         CRM_Core_Error::debug_var('buildSurvey $e', $e, TRUE, TRUE, 'integration');
 
         return FALSE;
@@ -1074,7 +1074,7 @@ class CRM_NYSS_BAO_Integration_Website
         $existingFieldNames[] = $field_name;
         $fieldCreated = TRUE;
       }
-      catch (CiviCRM_API3_Exception $e) {
+      catch (CRM_Core_Exception $e) {
         $fieldCreated = FALSE;
         CRM_Core_Error::debug_var('buildSurvey $e', $e, TRUE, TRUE, 'integration');
       }
@@ -1642,7 +1642,7 @@ class CRM_NYSS_BAO_Integration_Website
         $results = civicrm_api3('entity_tag', $action, $params);
       }
     }
-    catch (CiviCRM_API3_Exception $e) {
+    catch (CRM_Core_Exception $e) {
       CRM_Core_Error::debug_var('CRM_NYSS_BAO_Integration_Website::entityTagAction', $e);
     }
 

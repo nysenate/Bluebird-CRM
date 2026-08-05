@@ -60,7 +60,7 @@ class CRM_NYSS_Case_Form_CreateCase extends CRM_Core_Form {
         'subject' => $values['subject'],
       ]);
     }
-    catch (CiviCRM_API3_Exception $e) {}
+    catch (CRM_Core_Exception $e) {}
 
     parent::postProcess();
   }

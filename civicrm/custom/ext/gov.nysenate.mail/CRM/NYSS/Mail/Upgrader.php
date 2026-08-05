@@ -70,7 +70,7 @@ class CRM_NYSS_Mail_Upgrader extends CRM_Extension_Upgrader_Base {
         civicrm_api3('OptionValue', 'delete', ['id' => $opt['id']]);
       }
     }
-    catch (CiviCRM_API3_Exception $e) {}
+    catch (CRM_Core_Exception $e) {}
 
     $cats = [
       [
@@ -124,7 +124,7 @@ class CRM_NYSS_Mail_Upgrader extends CRM_Extension_Upgrader_Base {
           'icon' => NULL,
         ]);
       }
-      catch (CiviCRM_API3_Exception $e) {}
+      catch (CRM_Core_Exception $e) {}
     }
 
     return TRUE;

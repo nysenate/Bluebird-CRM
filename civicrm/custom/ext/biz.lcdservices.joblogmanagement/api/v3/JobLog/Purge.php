@@ -29,7 +29,7 @@ function _civicrm_api3_job_log_Purge_spec(&$spec) {
  * @return array API result descriptor
  * @see civicrm_api3_create_success
  * @see civicrm_api3_create_error
- * @throws API_Exception
+ * @throws CRM_Core_Exception
  */
 function civicrm_api3_job_log_Purge($params) {
   if (CRM_Utils_Array::value('days_retained', $params)) {
@@ -52,7 +52,7 @@ function civicrm_api3_job_log_Purge($params) {
           'api_action' => $apiAction,
         ));
       }
-      catch (CiviCRM_API3_Exception $e) {
+      catch (CRM_Core_Exception $e) {
         $error = $e->getMessage();
         CRM_Core_Error::debug_log_message($error);
       }
@@ -76,7 +76,7 @@ function civicrm_api3_job_log_Purge($params) {
 
     return civicrm_api3_create_success(1, $params, 'JobLog', 'Purge');
   } else {
-    throw new API_Exception('Could not purge job logs');
+    throw new CRM_Core_Exception('Could not purge job logs');
   }
 }
 
