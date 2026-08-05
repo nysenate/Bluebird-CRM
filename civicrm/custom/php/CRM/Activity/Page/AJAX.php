@@ -68,7 +68,7 @@ class CRM_Activity_Page_AJAX {
       $relationship['email'] = $value['email'];
 
       //NYSS 12990 - expose org
-      // note from Nate Jul 20205 -- It's likely that we can start using searchkit
+      // note from Nate Jul 2025 -- It's likely that we can start using searchkit
       // for this customization instead of using an override file. This note is
       // intended as a future reminder that we might be able to remove this
       // if/when we move to searchkit
@@ -335,9 +335,7 @@ class CRM_Activity_Page_AJAX {
     $mainActivity->copyValues($mainActVals);
     $mainActivity->id = NULL;
     $mainActivity->activity_date_time = $actDateTime;
-    // Make sure this is current revision.
-    $mainActivity->is_current_revision = TRUE;
-    $mainActivity->original_id = $mainActivity->parent_id = NULL;
+    $mainActivity->parent_id = NULL;
 
     $mainActivity->save();
     $mainActivityId = $mainActivity->id;

@@ -237,30 +237,6 @@ class CRM_Activity_BAO_Query {
             $query->_where[$grouping][] = " civicrm_activity_contact.record_type_id = $targetID";
             $query->_qill[$grouping][] = ts('Activity targeted to');
           }
-
-          //NYSS 5009 if created by field has comma, reconstruct to search multiple values
-          if ($values[2] == 1 &&
-            !empty($query->_paramLookup['sort_name'][0][2])
-          ) {
-            $nameVal = $query->_paramLookup['sort_name'][0][2];
-            if (strpos($nameVal, ',') !== FALSE) {
-              $aValues = explode(',', $nameVal);
-              foreach ($aValues as $aVal) {
-                $aVal = trim($aVal);
-                if (!empty($aVal)) {
-                  $aValArray[] = "contact_a.sort_name LIKE '%{$aVal}%'";
-                }
-              }
-              $aString = implode(' OR ', $aValArray);
-
-              //recreate query where string for sort_name
-              foreach ($query->_where[0] as $wKey => $wVal) {
-                if (strpos($wVal, 'contact_a.sort_name') !== FALSE && !empty($aString)) {
-                  $query->_where[0][$wKey] = "({$aString})";
-                }
-              }
-            }
-          }
         }
         break;
 
@@ -404,7 +380,7 @@ class CRM_Activity_BAO_Query {
                       ON ( civicrm_activity_contact.contact_id = contact_a.id ) ";
         $from .= " $side JOIN civicrm_activity
                       ON ( civicrm_activity.id = civicrm_activity_contact.activity_id
-                      AND civicrm_activity.is_deleted = 0 AND civicrm_activity.is_current_revision = 1 )";
+                      AND civicrm_activity.is_deleted = 0 )";
         // Do not show deleted contact's activity
         // unless we are looking at deleted contacts.
         $from .= " INNER JOIN civicrm_contact
