@@ -1,5 +1,6 @@
 <?php
 
+use Civi\Api4\CiviCase;
 use CRM_NYSS_Case_ExtensionUtil as E;
 
 /**
@@ -8,6 +9,7 @@ use CRM_NYSS_Case_ExtensionUtil as E;
  * @see https://docs.civicrm.org/dev/en/latest/framework/quickform/
  */
 class CRM_NYSS_Case_Form_CreateCase extends CRM_Core_Form {
+
   public function buildQuickForm() {
 
     $this->add(
@@ -51,16 +53,14 @@ class CRM_NYSS_Case_Form_CreateCase extends CRM_Core_Form {
 
   public function postProcess() {
     $values = $this->exportValues();
-    //Civi::log()->debug(__FUNCTION__, ['values' => $values]);
 
-    try {
-      civicrm_api3('Case', 'create', [
+    CiviCase::create(FALSE)
+      ->setValues([
         'contact_id' => $values['contact_id'],
         'case_type_id' => $values['case_type_id'],
         'subject' => $values['subject'],
-      ]);
-    }
-    catch (CRM_Core_Exception $e) {}
+      ])
+      ->execute();
 
     parent::postProcess();
   }
@@ -85,4 +85,5 @@ class CRM_NYSS_Case_Form_CreateCase extends CRM_Core_Form {
     }
     return $elementNames;
   }
+
 }
