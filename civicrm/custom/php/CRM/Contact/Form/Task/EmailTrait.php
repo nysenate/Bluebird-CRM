@@ -256,7 +256,8 @@ trait CRM_Contact_Form_Task_EmailTrait {
 
     $this->add('text', 'subject', ts('Subject'), ['size' => 50, 'maxlength' => 254], TRUE);
 
-    $this->add('select', 'from_email_address', ts('From'), $this->getFromEmails(), TRUE, ['class' => 'crm-select2 huge']);
+    $fromEmailSelect = $this->add('select', 'from_email_address', ts('From'), $this->getFromEmails(), TRUE, ['class' => 'crm-select2 huge']);
+    $fromEmailSelect->setOptionTextEscaped();
 
     CRM_Mailing_BAO_Mailing::commonCompose($this);
 
@@ -456,13 +457,13 @@ trait CRM_Contact_Form_Task_EmailTrait {
 
       if (!empty($formValues['saveTemplate'])) {
         $messageTemplate['msg_title'] = $formValues['saveTemplateName'];
-        CRM_Core_BAO_MessageTemplate::add($messageTemplate);
+        CRM_Core_BAO_MessageTemplate::writeRecord($messageTemplate);
       }
 
       if (!empty($formValues['template']) && !empty($formValues['updateTemplate'])) {
         $messageTemplate['id'] = $formValues['template'];
         unset($messageTemplate['msg_title']);
-        CRM_Core_BAO_MessageTemplate::add($messageTemplate);
+        CRM_Core_BAO_MessageTemplate::writeRecord($messageTemplate);
       }
     }
   }
@@ -799,7 +800,7 @@ trait CRM_Contact_Form_Task_EmailTrait {
           'msg_html' => $html,
           'msg_subject' => $this->getSubject(),
         ],
-        'tokenContext' => array_merge(['schema' => $this->getTokenSchema()], ($values['schema'] ?? [])),
+        'tokenContext' => array_merge(['schema' => array_keys($values['schema'] ?? [])], ($values['schema'] ?? [])),
         'contactId' => $contactId,
         'disableSmarty' => !CRM_Utils_Constant::value('CIVICRM_MAIL_SMARTY'),
       ]);
@@ -884,13 +885,11 @@ trait CRM_Contact_Form_Task_EmailTrait {
     // CRM-5916: strip [case #…] before saving the activity (if present in subject)
     $activityParams['subject'] = preg_replace('/\[case #([0-9a-h]{7})\] /', '', $activityParams['subject']);
 
-    // add the attachments to activity params here
-    if ($attachments) {
-      // first process them
-      $activityParams = array_merge($activityParams, $attachments);
-    }
-
     $activity = civicrm_api3('Activity', 'create', $activityParams);
+
+    if ($attachments) {
+      \CRM_Core_BAO_File::processAttachment($attachments, 'civicrm_activity', $activity['id']);
+    }
 
     return $activity['id'];
   }
