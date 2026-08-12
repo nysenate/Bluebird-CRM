@@ -211,7 +211,7 @@ class CRM_NYSS_BAO_NYSS {
         $result['values'][$idx]['data'] = "{$contact['sort_name']} [Case #{$case['id']} :: {$case['subject']}]";
       }
     }
-    catch (CiviCRM_API3_Exception $e) {}
+    catch (CRM_Core_Exception $e) {}
 
     //Civi::log()->debug(__FUNCTION__, ['$result' => $result]);
     return $result;

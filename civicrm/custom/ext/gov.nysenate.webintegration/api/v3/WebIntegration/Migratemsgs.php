@@ -45,7 +45,7 @@ function _civicrm_api3_web_integration_migratemsgs_spec(&$spec) {
  * @return array API result descriptor
  * @see civicrm_api3_create_success
  * @see civicrm_api3_create_error
- * @throws API_Exception
+ * @throws CRM_Core_Exception
  */
 function civicrm_api3_web_integration_migratemsgs($params) {
   global $_MigrateMsgsDebug;
@@ -89,7 +89,7 @@ function civicrm_api3_web_integration_migratemsgs($params) {
       break;
 
     default:
-      throw new API_Exception('Invalid Action');
+      throw new CRM_Core_Exception('Invalid Action');
   }
 
   return civicrm_api3_create_success(['processed' => $result], $params, 'WebIntegration', 'MigrateMsgs');
@@ -147,7 +147,7 @@ function _wimm_Migrate($limit, $type) {
 
       $i ++;
     }
-    catch (CiviCRM_API3_Exception $e) {
+    catch (CRM_Core_Exception $e) {
       Civi::log()->debug('_wimm_Migrate', [
         '$e' => $e,
         '$dao' => $dao,
@@ -193,7 +193,7 @@ function _wimm_Purge($limit, $type) {
 
       $i ++;
     }
-    catch (CiviCRM_API3_Exception $e) {
+    catch (CRM_Core_Exception $e) {
       Civi::log()->debug('_wimm_Migrate', [
         '$e' => $e,
         '$dao' => $dao,

@@ -19,7 +19,7 @@ class CRM_Tags_NYSS {
             'value' => $tag,
           ));
         }
-        catch (CiviCRM_API3_Exception $e) {}
+        catch (CRM_Core_Exception $e) {}
       }
       else {
         $tags[] = $tag;

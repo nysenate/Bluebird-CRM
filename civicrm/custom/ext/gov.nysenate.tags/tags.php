@@ -84,7 +84,7 @@ function tags_civicrm_buildForm($formName, &$form) {
           ]);
         //Civi::log()->debug('buildForm', array('$setName' => $setName));
       }
-      catch (CiviCRM_API3_Exception $e) {}
+      catch (CRM_Core_Exception $e) {}
 
       if (in_array($setName, $webSets)) {
         $webViewOnly[] = $setDetails['parentID'];
@@ -352,7 +352,7 @@ function tags_civicrm_postProcess($formName, &$form) {
               }
             }
           }
-          catch (CiviCRM_API3_Exception $e) {
+          catch (CRM_Core_Exception $e) {
             Civi::log()->debug('CRM_Contact_Form_Task_AddToTag', ['$e' => $e]);
           }
         }

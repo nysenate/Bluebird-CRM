@@ -79,7 +79,7 @@ class CRM_NYSS_Contact_Upgrader extends CRM_Extension_Upgrader_Base {
         'column_name' => "preferred_pronouns",
       ]);
     }
-    catch (CiviCRM_API3_Exception $e) {
+    catch (CRM_Core_Exception $e) {
       Civi::log()->debug(__METHOD__, ['e' => $e]);
     }
 
@@ -102,7 +102,7 @@ class CRM_NYSS_Contact_Upgrader extends CRM_Extension_Upgrader_Base {
         'field_type' => "Individual",
       ]);
     }
-    catch (CiviCRM_API3_Exception $e) {
+    catch (CRM_Core_Exception $e) {
       Civi::log()->debug(__METHOD__, ['e' => $e]);
     }
 
@@ -125,7 +125,7 @@ class CRM_NYSS_Contact_Upgrader extends CRM_Extension_Upgrader_Base {
         'is_active' => 0,
       ]);
     }
-    catch (CiviCRM_API3_Exception $e) {
+    catch (CRM_Core_Exception $e) {
       Civi::log()->debug(__METHOD__, ['e' => $e]);
     }
 
@@ -158,7 +158,7 @@ class CRM_NYSS_Contact_Upgrader extends CRM_Extension_Upgrader_Base {
         ->addValue('is_active', TRUE)
         ->execute();
     }
-    catch (CiviCRM_API3_Exception $e) {
+    catch (CRM_Core_Exception $e) {
       Civi::log()->debug(__METHOD__, ['e' => $e]);
     }
 
