@@ -856,7 +856,7 @@ function contact_civicrm_tabset($tabsetName, &$tabs, $context) {
 
       CRM_Core_Error::debug_var('nyss rel', $tabs['n_y_s_s_contact_summary_relationships']);
     }
-    catch (CiviCRM_API3_Exception $e) {}
+    catch (CRM_Core_Exception $e) {}
   }
 }
 

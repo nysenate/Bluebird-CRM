@@ -108,7 +108,7 @@ function civicrm_api3_nyss_tags_savePosition($params) {
 
       return $tag['id'];
     }
-    catch (CiviCRM_API3_Exception $e) {
+    catch (CRM_Core_Exception $e) {
       Civi::log()->error('civicrm_api3_nyss_tags_savePosition', array('e' => $e));
     }
   }

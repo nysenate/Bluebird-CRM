@@ -30,7 +30,7 @@ function _civicrm_api3_nyss_Purgedraftemails_spec(&$spec) {
  * @return array API result descriptor
  * @see civicrm_api3_create_success
  * @see civicrm_api3_create_error
- * @throws API_Exception
+ * @throws CRM_Core_Exception
  */
 function civicrm_api3_nyss_Purgedraftemails($params) {
   //Civi::log()->debug(__FUNCTION__, ['params' => $params]);
@@ -53,7 +53,7 @@ function civicrm_api3_nyss_Purgedraftemails($params) {
       }
     }
   }
-  catch (CiviCRM_API3_Exception $e) {}
+  catch (CRM_Core_Exception $e) {}
 
   return civicrm_api3_create_success(['count' => count($mailingIds), 'ids' => $mailingIds], $params, 'Nyss', 'Purgedraftemails');
 }

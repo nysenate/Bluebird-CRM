@@ -70,21 +70,13 @@ class CRM_NYSS_Subscription_Form_Admin extends CRM_Core_Form
     ");
     $this->assign('email', $email);
 
-    //get category options
-    $mCats = $mailingCats = array();
-    $opts = CRM_Core_DAO::executeQuery("
-      SELECT ov.label, ov.value
-      FROM civicrm_option_value ov
-      JOIN civicrm_option_group og
-        ON ov.option_group_id = og.id
-        AND og.name = 'mailing_categories'
-      ORDER BY ov.weight
-    ");
-    while ( $opts->fetch() ) {
-      $mCats[$opts->value] = $opts->label;
-      $mailingCats[] = $this->createElement('checkbox', $opts->value, NULL, $opts->label);
-      $this->addGroup($mailingCats, 'mailing_categories', ts('Mailing Categories'), '<br />');
+    // get category options
+    $mCats = \CRM_Core_OptionGroup::values(CRM_NYSS_Mail::MAILING_CATEGORIES_GROUP) ?? [];
+    $mailingCats = [];
+    foreach ($mCats as $val => $label) {
+      $mailingCats[] = $this->createElement('checkbox', $val, NULL, $label);
     }
+    $this->addGroup($mailingCats, 'mailing_categories', ts('Mailing Categories'), '<br />');
 
     $this->addButtons(
       array(
@@ -153,22 +145,11 @@ class CRM_NYSS_Subscription_Form_Admin extends CRM_Core_Form
     //CRM_Core_Error::debug_var('_processSubscriptions $formParams', $formParams);
 
     //mailing categories
-    $mCats = array();
     $mc = 'null';
-    $opts = CRM_Core_DAO::executeQuery("
-      SELECT ov.label, ov.value
-      FROM civicrm_option_value ov
-      JOIN civicrm_option_group og
-        ON ov.option_group_id = og.id
-        AND og.name = 'mailing_categories'
-      ORDER BY ov.weight
-    ");
-    while ( $opts->fetch() ) {
-      $mCats[$opts->value] = $opts->label;
-    }
+    $mCats = \CRM_Core_OptionGroup::values(CRM_NYSS_Mail::MAILING_CATEGORIES_GROUP) ?? [];
 
     //translate opt-outs to present as opt-ins
-    $unselectedOpts = array();
+    $unselectedOpts = [];
     foreach ( $mCats as $mCatID => $mCatLabel ) {
       if ( !array_key_exists($mCatID, $formParams['mailing_categories']) ) {
         $unselectedOpts[] = $mCatID;

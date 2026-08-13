@@ -78,7 +78,7 @@ class CRM_Activity_Page_AJAX {
           'return' => 'current_employer',
         ]);
       }
-      catch (CiviCRM_API3_Exception $e) {
+      catch (CRM_Core_Exception $e) {
         $relationship['organization'] = '';
       }
 

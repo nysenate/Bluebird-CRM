@@ -39,7 +39,7 @@ class CRM_NYSS_Mail_Page_PreviewRecipients extends CRM_Core_Page {
       ]);
       //Civi::log()->debug(__FUNCTION__, ['$count' => $count]);
     }
-    catch (CiviCRM_API3_Exception $e) {}
+    catch (CRM_Core_Exception $e) {}
 
     $partialCount = 50;
     if ($recipients['count'] < 50) {

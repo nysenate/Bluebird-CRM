@@ -139,7 +139,7 @@ class CRM_NYSS_Errorhandler_BAO {
           'is_active' => 0,
         ]);
       }
-      catch (CiviCRM_API3_Exception $e) {}
+      catch (CRM_Core_Exception $e) {}
 
       if (CRM_Utils_Array::value('update_smart_groups', $_REQUEST) == 1) {
         CRM_Core_Session::setStatus(E::ts('ERROR: Group ID %1 could not be loaded and has been disabled.',

@@ -44,7 +44,7 @@ class CRM_NYSS_WebIntegration_Upgrader extends CRM_Extension_Upgrader_Base {
         ));
       }
     }
-    catch (CiviCRM_API3_Exception $e) {
+    catch (CRM_Core_Exception $e) {
       Civi::log()->debug('install', array('$e' => $e));
     }
   }
