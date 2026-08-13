@@ -2,6 +2,19 @@
 
 All notable changes of the PHPUnit 9.6 release series are documented in this file using the [Keep a CHANGELOG](https://keepachangelog.com/) principles.
 
+## [9.6.36] - 2026-08-11
+
+### Changed
+
+* Use `spl_object_id()` instead of `spl_object_hash()` (which will be deprecated in PHP 8.6)
+* Use the error suppression operator (`@`) when calling `DeepCopy\DeepCopy::copy()` because it uses `spl_object_hash()` (which will be deprecated in PHP 8.6)
+
+## [9.6.35] - 2026-07-06
+
+### Changed
+
+* [#6797](https://github.com/sebastianbergmann/phpunit/issues/6797): Adapt code generated for test double of interface with constructor for PHP 8.6
+
 ## [9.6.34] - 2026-01-27
 
 ### Fixed
@@ -230,6 +243,8 @@ All notable changes of the PHPUnit 9.6 release series are documented in this fil
 * [#5064](https://github.com/sebastianbergmann/phpunit/issues/5064): Deprecate `PHPUnit\Framework\TestCase::getMockClass()`
 * [#5132](https://github.com/sebastianbergmann/phpunit/issues/5132): Deprecate `Test` suffix for abstract test case classes
 
+[9.6.36]: https://github.com/sebastianbergmann/phpunit/compare/9.6.35...9.6.36
+[9.6.35]: https://github.com/sebastianbergmann/phpunit/compare/9.6.34...9.6.35
 [9.6.34]: https://github.com/sebastianbergmann/phpunit/compare/9.6.33...9.6.34
 [9.6.33]: https://github.com/sebastianbergmann/phpunit/compare/9.6.32...9.6.33
 [9.6.32]: https://github.com/sebastianbergmann/phpunit/compare/9.6.31...9.6.32
