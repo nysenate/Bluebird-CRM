@@ -614,7 +614,7 @@ class CRM_NYSS_Inbox_BAO_Inbox {
           }
         }
       }
-      catch (CiviCRM_API3_Exception $e) {
+      catch (CRM_Core_Exception $e) {
         Civi::log()->error('assignMessage', ['e' => $e]);
 
         //we arguably should attempt to process all contacts before we
@@ -742,7 +742,7 @@ class CRM_NYSS_Inbox_BAO_Inbox {
               'target_contact_id' => $values['assignee'],
             ]);
           }
-          catch (CiviCRM_API3_Exception $e) {
+          catch (CRM_Core_Exception $e) {
             Civi::log()
               ->debug('processMessages update activity target', ['e' => $e]);
             $msg[] = 'Unable to update activity target.';
@@ -765,7 +765,7 @@ class CRM_NYSS_Inbox_BAO_Inbox {
                 'entity_table' => 'civicrm_contact',
               ]);
             }
-            catch (CiviCRM_API3_Exception $e) {
+            catch (CRM_Core_Exception $e) {
               //Civi::log()->debug('processMessages contact keywords', array('e' => $e));
               //$msg[] = 'Unable to assign all keywords to the contact.';
             }
@@ -784,7 +784,7 @@ class CRM_NYSS_Inbox_BAO_Inbox {
                 'entity_table' => 'civicrm_contact',
               ]);
             }
-            catch (CiviCRM_API3_Exception $e) {
+            catch (CRM_Core_Exception $e) {
               //Civi::log()->debug('processMessages contact issue codes', array('e' => $e));
               //$msg[] = 'Unable to assign all issue codes to the contact.';
             }
@@ -825,7 +825,7 @@ class CRM_NYSS_Inbox_BAO_Inbox {
             'group_id' => $values['group_id'],
           ]);
         }
-        catch (CiviCRM_API3_Exception $e) {
+        catch (CRM_Core_Exception $e) {
           //Civi::log()->debug('processMessages groups', array('e' => $e));
         }
       }
@@ -841,7 +841,7 @@ class CRM_NYSS_Inbox_BAO_Inbox {
                 'entity_table' => 'civicrm_activity',
               ]);
             }
-            catch (CiviCRM_API3_Exception $e) {
+            catch (CRM_Core_Exception $e) {
               //Civi::log()->debug('processMessages activity keywords', array('e' => $e));
               //$msg[] = 'Unable to assign all keywords to the activity.';
             }
@@ -858,7 +858,7 @@ class CRM_NYSS_Inbox_BAO_Inbox {
                 'entity_table' => 'civicrm_activity',
               ]);
             }
-            catch (CiviCRM_API3_Exception $e) {
+            catch (CRM_Core_Exception $e) {
               //Civi::log()->debug('processMessages contact issue codes', array('e' => $e));
               //$msg[] = 'Unable to assign all issue codes to the activity.';
             }
@@ -963,7 +963,7 @@ class CRM_NYSS_Inbox_BAO_Inbox {
                 }
               }
             }
-            catch (CiviCRM_API3_Exception $e) {
+            catch (CRM_Core_Exception $e) {
             }
           }
         }
@@ -1053,7 +1053,7 @@ class CRM_NYSS_Inbox_BAO_Inbox {
         $matchedContacts[] = "<a href='{$matchedUrl}'>{$contact['display_name']}</a>";
       }
     }
-    catch (CiviCRM_API3_Exception $e) {
+    catch (CRM_Core_Exception $e) {
     }
 
     return $matchedContacts;

@@ -495,7 +495,7 @@ function _merge_fixRT(&$data, &$rows, &$conflicts) {
         $conflicts['move_custom_61'] = array_search($rtMain, $recordTypeOpts['values'], 2);
       }
     }
-    catch (CiviCRM_API3_Exception $e) {}
+    catch (CRM_Core_Exception $e) {}
   }
 } //_merge_fixRT()
 
@@ -549,7 +549,7 @@ function _merge_fixPrivacyNote($mainId, $otherId) {
       return "{$pnA}; {$pnB}";
     }
   }
-  catch (CiviCRM_API3_Exception $e) {
+  catch (CRM_Core_Exception $e) {
     _merge_mD('error retrieving privacy note: $e', $e);
   }
 

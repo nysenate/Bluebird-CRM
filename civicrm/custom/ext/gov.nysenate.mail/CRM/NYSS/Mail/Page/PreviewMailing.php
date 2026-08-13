@@ -13,7 +13,7 @@ class CRM_NYSS_Mail_Page_PreviewMailing extends CRM_Core_Page {
       $mailing = civicrm_api3('Mailing', 'preview', ['id' => $mailingId]);
       //Civi::log()->debug(__FUNCTION__, ['$mailing' => $mailing]);
     }
-    catch (CiviCRM_API3_Exception $e) {}
+    catch (CRM_Core_Exception $e) {}
 
     $this->assign('content', $mailing['values']['body_html']);
 

@@ -895,7 +895,7 @@ function mail_civicrm_buildForm($formName, &$form) {
         'mailing_id' => $form->_mailingID,
       ]);
     }
-    catch (CiviCRM_API3_Exception $e) {
+    catch (CRM_Core_Exception $e) {
       Civi::log()->debug(__FUNCTION__, ['$e' => $e]);
     }
 
@@ -1009,7 +1009,7 @@ function mail_civicrm_alterMailParams(&$params, $context) {
         try {
           $eventQueue = civicrm_api3('MailingEventQueue', 'getsingle', ['id' => $params['event_queue_id']]);
           $params[NyssFlexmailListener::$PARAM_CONTACT_ID] = CRM_Utils_Array::value('contact_id', $eventQueue);
-        } catch (CiviCRM_API3_Exception $e) {
+        } catch (CRM_Core_Exception $e) {
           Civi::log()->debug(__FUNCTION__, ['e' => $e]);
         }
       }

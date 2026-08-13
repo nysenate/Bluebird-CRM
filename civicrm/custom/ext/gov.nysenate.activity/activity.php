@@ -138,7 +138,7 @@ function activity_civicrm_postProcess($formName, &$form) {
             'record_type_id' => $targetID,
           ]);
         }
-        catch (CiviCRM_API3_Exception $e) {}
+        catch (CRM_Core_Exception $e) {}
       }
     }
   }

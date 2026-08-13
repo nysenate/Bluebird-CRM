@@ -197,7 +197,7 @@ function importcontacts_civicrm_import($object, $usage, &$objectRef, &$params) {
             civicrm_api3('EntityTag', 'create', $entityParams);
           }
         }
-        catch (CiviCRM_API3_Exception $e) {}
+        catch (CRM_Core_Exception $e) {}
       }
     }
   }

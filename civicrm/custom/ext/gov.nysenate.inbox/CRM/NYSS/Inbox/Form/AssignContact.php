@@ -109,7 +109,7 @@ class CRM_NYSS_Inbox_Form_AssignContact extends CRM_Core_Form {
               }
             }
           }
-          catch (CiviCRM_API3_Exception $e) {
+          catch (CRM_Core_Exception $e) {
           }
         }
       }

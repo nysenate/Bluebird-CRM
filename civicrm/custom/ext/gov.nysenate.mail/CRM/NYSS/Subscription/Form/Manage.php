@@ -243,6 +243,6 @@ class CRM_NYSS_Subscription_Form_Manage extends CRM_Core_Form {
         2 => [date('YmdHis'), 'Timestamp'],
       ]);
     }
-    catch (CiviCRM_API3_Exception $e) {}
+    catch (CRM_Core_Exception $e) {}
   }
 }//end class
