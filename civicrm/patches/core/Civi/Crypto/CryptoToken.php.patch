@@ -1,0 +1,13 @@
+diff --git a/modules/civicrm/Civi/Crypto/CryptoToken.php b/modules/civicrm/Civi/Crypto/CryptoToken.php
+index 32b74d26b..04b72fa0d 100644
+--- a/modules/civicrm/Civi/Crypto/CryptoToken.php
++++ b/modules/civicrm/Civi/Crypto/CryptoToken.php
+@@ -112,7 +112,7 @@ class CryptoToken extends AutoService {
+     return $this->delim . self::FMT_QUERY . \http_build_query([
+       'k' => $key['id'],
+       't' => \CRM_Utils_String::base64UrlEncode($cipherText),
+-    ]);
++    ], '', '&');
+   }
+ 
+   /**
