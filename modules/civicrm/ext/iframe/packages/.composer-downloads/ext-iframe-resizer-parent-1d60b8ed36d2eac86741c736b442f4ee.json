@@ -1,0 +1,5 @@
+{
+    "name": "civicrm/civicrm-core:ext-iframe-resizer-parent",
+    "url": "https://raw.githubusercontent.com/davidjbradshaw/iframe-resizer/refs/tags/v4.3.11/js/iframeResizer.js",
+    "checksum": "c1dc55175f45ec20790e896145387dd85e8983ec9f4e4a443cb9cf8f13f53258"
+}
