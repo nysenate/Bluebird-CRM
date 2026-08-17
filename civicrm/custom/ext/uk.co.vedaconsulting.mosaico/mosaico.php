@@ -312,14 +312,3 @@ function mosaico_wrapMailingApi($event) {
       break;
   }
 }
-
-/**
-  * Implements hook_civicrm_apiWrappers().
-  */
-function mosaico_civicrm_apiWrappers(&$wrappers, $apiRequest) {
-  if ($apiRequest['entity'] == 'MosaicoTemplate' && $apiRequest['action'] == 'get') {
-    if ($apiRequest['version'] == '4') {
-      $wrappers[] = new CRM_Mosaico_API4Wrappers_MosaicoTemplate();
-    }
-  }
-}

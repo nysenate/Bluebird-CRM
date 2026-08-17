@@ -89,6 +89,7 @@ class CRM_Mosaico_ExtensionUtil {
 
 use CRM_Mosaico_ExtensionUtil as E;
 
+pathload()->addSearchDir(__DIR__ . '/mixin/lib');
 spl_autoload_register('_mosaico_civix_class_loader', TRUE, TRUE);
 
 function _mosaico_civix_class_loader($class) {

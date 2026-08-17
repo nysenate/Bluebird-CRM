@@ -145,7 +145,7 @@ class CRM_Mosaico_Page_Editor extends CRM_Core_Page {
    */
   protected function getMaxFileSize() {
     $fakeUnlimited = 25 * 1024 * 1024;
-    $iniVal = ini_get('upload_max_filesize') ? CRM_Utils_Number::formatUnitSize(ini_get('upload_max_filesize'), TRUE) : $fakeUnlimited;
+    $iniVal = ini_get('upload_max_filesize') ? ini_parse_quantity(ini_get('upload_max_filesize')) : $fakeUnlimited;
     $settingVal = Civi::settings()->get('maxFileSize') ? (1024 * 1024 * Civi::settings()->get('maxFileSize')) : $fakeUnlimited;
     return (int) min($iniVal, $settingVal);
   }
@@ -157,6 +157,10 @@ class CRM_Mosaico_Page_Editor extends CRM_Core_Page {
    */
   public function getMosaicoPlugins() {
     $plugins = [];
+
+    if ($themedColorWidget = $this->getThemedColorWidgetPlugin()) {
+      $plugins[] = $themedColorWidget;
+    }
 
     // Allow plugins to be added by a hook.
     if (class_exists('\Civi\Core\Event\GenericHookEvent')) {
@@ -170,6 +174,42 @@ class CRM_Mosaico_Page_Editor extends CRM_Core_Page {
     $plugins = '[ ' . implode(',', $plugins) . ' ]';
 
     return $plugins;
+  }
+
+  public function getThemedColorWidgetPlugin(): ?string {
+    $colors = explode(',', (string) \Civi::settings()->get('mosaico_custom_theme_colors'));
+
+    // sanitize (remove anything other than #, 0-9 and alphanum)
+    $colors = array_filter(array_map(function ($color) {
+      return preg_replace('/[^#0-9a-zA-Z]/', '', $color);
+    }, $colors));
+
+    // if no valid colors in setting, return null
+    if (!$colors) {
+      return NULL;
+    }
+
+    $themeString = '[' . implode(',', array_map(fn ($c) => "\'{$c}\'", $colors)) . ']';
+
+    return <<<JS
+      {
+        widget: function($, ko, kojqui) {
+          return {
+            widget: 'color',
+            html: function(propAccessor, onfocusbinding, parameters) {
+              return `
+                <div class="color-select">
+                  <input size="7" type="text" style="width: 0; padding: 0; visibility: hidden;" data-bind="colorpicker: { color: \${propAccessor}, customTheme: {$themeString}, strings: \$root.t(\'Theme Colors,Standard Colors,Web Colors,Theme Colors,Back to Palette,History,No history yet.\') }, \${onfocusbinding}" />
+                </div>
+                <div class="color-text">
+                  <input size="15" type="text" data-bind="value: \${propAccessor}, \${onfocusbinding}">
+                </div>
+              `;
+            }
+          };
+        }
+      }
+    JS;
   }
 
   /**

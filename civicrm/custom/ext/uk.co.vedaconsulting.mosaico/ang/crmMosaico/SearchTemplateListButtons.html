@@ -1,20 +1,19 @@
 <div>
   <button type="button" class="btn btn-xs btn-primary" ng-click="$ctrl.editTpl($ctrl.tpl)">
-    <i class="crm-i fa-pencil"></i>
+    <i class="crm-i fa-pencil" role="img" aria-hidden="true"></i>
     {{:: ts('Edit') }}
   </button>
   <button type="button" class="btn btn-xs btn-primary" ng-click="$ctrl.copyTpl($ctrl.tpl)">
-    <i class="crm-i fa-copy"></i>
+    <i class="crm-i fa-copy" role="img" aria-hidden="true"></i>
     {{:: ts('Copy') }}
   </button>
   <button type="button" class="btn btn-xs btn-danger" crm-confirm="{type: 'delete', obj: $ctrl.tpl}" on-yes="$ctrl.deleteTpl($ctrl.tpl)">
-    <i class="crm-i fa-trash"></i>
+    <i class="crm-i fa-trash" role="img" aria-hidden="true"></i>
     {{:: ts('Delete') }}
   </button>
-
   <!--NYSS 14824-->
   <a class="btn btn-xs btn-secondary" href="mosaicotemplate/print?id={{$ctrl.tpl.id}}&snippet=1" title="Printer-friendly template view." target="_blank">
-    <i class="crm-i fa-print"></i>
+    <i class="crm-i fa-print" role="img" aria-hidden="true"></i>
     {{:: ts('Print') }}
   </a>
 </div>

@@ -15,7 +15,7 @@
     <input crm-mailing-token on-select="$broadcast('insert:subject', token.name)" tabindex="-1" class="form-control"/>
 
     <a ng-click="addSubj()" class="btn btn-default" title="{{ts('Add alternate \'Subject\'')}}">
-      <span><i class="crm-i fa-plus-circle"></i></span>
+      <span><i class="crm-i fa-plus-circle" role="img" aria-hidden="true"></i></span>
     </a>
 
   </div>
@@ -40,7 +40,7 @@
     <input crm-mailing-token on-select="$broadcast('insert:subject', token.name)" tabindex="-1" class="form-control"/>
 
     <a ng-click="rmSubj(vid)" class="btn btn-default" title="{{ts('Remove alternate \'Subject\'')}}">
-      <span><i class="crm-i fa-trash"></i></span>
+      <span><i class="crm-i fa-trash" role="img" aria-hidden="true"></i></span>
     </a>
 
   </div>

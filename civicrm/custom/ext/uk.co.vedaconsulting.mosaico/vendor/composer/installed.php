@@ -3,7 +3,7 @@
         'name' => 'civipkg/uk.co.vedaconsulting.mosaico',
         'pretty_version' => '2.x-dev',
         'version' => '2.9999999.9999999.9999999-dev',
-        'reference' => '4bee26338e0923748501b10b500738ea05bd5e33',
+        'reference' => '57ed63cbce69efb7651fc3acd80ed10c4d6fa6e3',
         'type' => 'civicrm-ext',
         'install_path' => __DIR__ . '/../../',
         'aliases' => array(),
@@ -31,7 +31,7 @@
         'civipkg/uk.co.vedaconsulting.mosaico' => array(
             'pretty_version' => '2.x-dev',
             'version' => '2.9999999.9999999.9999999-dev',
-            'reference' => '4bee26338e0923748501b10b500738ea05bd5e33',
+            'reference' => '57ed63cbce69efb7651fc3acd80ed10c4d6fa6e3',
             'type' => 'civicrm-ext',
             'install_path' => __DIR__ . '/../../',
             'aliases' => array(),

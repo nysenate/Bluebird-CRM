@@ -1,5 +1,5 @@
 diff --git a/civicrm/custom/ext/uk.co.vedaconsulting.mosaico/ang/crmMosaico/BlockMailing.html b/civicrm/custom/ext/uk.co.vedaconsulting.mosaico/ang/crmMosaico/BlockMailing.html
-index 853c9565f..e021963eb 100644
+index 7fc32eb43..af9732666 100644
 --- a/civicrm/custom/ext/uk.co.vedaconsulting.mosaico/ang/crmMosaico/BlockMailing.html
 +++ b/civicrm/custom/ext/uk.co.vedaconsulting.mosaico/ang/crmMosaico/BlockMailing.html
 @@ -38,20 +38,35 @@
@@ -13,7 +13,7 @@ index 853c9565f..e021963eb 100644
 -      <crm-mosaico-subject-list crm-mailing="mailing" />
 +      <div style="float: right;" class="token-holder">
 +        <input class="form-control" crm-mailing-token on-select="$broadcast('insert:subject', token.name)" tabindex="-1"/>
-     </div>
++      </div>
 +      <input
 +        id="inputSubject"
 +        crm-ui-insert-rx="insert:subject"
@@ -24,7 +24,7 @@ index 853c9565f..e021963eb 100644
 +        ng-model="mailing.subject"
 +        ng-required="!checkPerm('create mailings')"
 +      />
-+  </div>
+     </div>
    </div>
  
 -  <div class="form-group" ng-if="isMailingSplit(mailing, 'subject')">
@@ -40,5 +40,5 @@ index 853c9565f..e021963eb 100644
 +      <!-- NYSS -->
 +      <label for="inputUnsubscribeGroup" ng-class="checkPerm('create mailings') ? 'control-label' : 'control-label required-mark'">{{ts('Unsubscribe Group')}}</label>
        <input
-         crm-entityref="{entity: 'Group', api: {params: {is_hidden: 0, is_active: 1}}, select: {allowClear:true, minimumInputLength: 0}}"
+         crm-entityref="{entity: 'Group', api: {params: {is_hidden: 0, is_active: 1, group_type: {LIKE: '%2%'}}}, select: {allowClear:true, minimumInputLength: 0}}"
          class="form-control"
