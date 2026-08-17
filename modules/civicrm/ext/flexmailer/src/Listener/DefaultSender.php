@@ -92,10 +92,6 @@ class DefaultSender extends AutoService {
             continue;
           }
 
-          //NYSS
-          $msg = "A bulk mailing was deferred (ID: {$mailing->id}) due to excessive (more than 5) SMTP socket errors. This mailing will be retried.";
-          \CRM_NYSS_Errorhandler_BAO::notifySlack($msg, "<!channel> a mailing was deferred due to temporary SMTP errors");
-
           // seems like we have too many of them in a row, we should
           // write stuff to disk and abort the cron job
           $job->writeToDB($deliveredParams, $targetParams, $mailing, $job_date);
