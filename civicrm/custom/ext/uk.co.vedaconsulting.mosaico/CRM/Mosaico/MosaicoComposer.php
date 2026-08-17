@@ -7,11 +7,24 @@
  *
  * For the most part, we use the same structure as CiviMail -- with some
  * exceptions (like disabling Smarty).
+ *
+ * @service civi_mosaico_mosaico_composer
  */
 class CRM_Mosaico_MosaicoComposer extends \Civi\FlexMailer\Listener\DefaultComposer {
 
   public function isSupported(\CRM_Mailing_DAO_Mailing $mailing) {
     return $mailing->template_type === 'mosaico';
+  }
+
+  public function onCompose(
+    \Civi\FlexMailer\Event\ComposeBatchEvent $e
+  ) {
+    if (!$this->isActive() || !$this->isSupported($e->getMailing())) {
+      return;
+    }
+    parent::onCompose($e);
+    // Disable the processing in the parent onCompose function now that we have processed it already
+    \Civi::service('civi_flexmailer_default_composer')->setActive(FALSE);
   }
 
   public function createTokenProcessorContext(

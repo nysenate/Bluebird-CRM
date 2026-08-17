@@ -55,6 +55,9 @@ class CRM_Mosaico_AbDemux {
     'unsubscribe_id',
     'resubscribe_id',
     'optout_id',
+    'mosaicoTemplate',
+    'mosaicoMetadata',
+    'mosaicoContent',
   ];
 
   /**
@@ -231,14 +234,22 @@ class CRM_Mosaico_AbDemux {
    */
   protected function applyVariant(&$mailing, $variant) {
     $overrides = array_intersect(array_keys($variant), $this->variantFields);
+    $templateOptions = ['mosaicoTemplate', 'mosaicoMetadata', 'mosaicoContent'];
     if (is_array($mailing)) {
       foreach ($overrides as $override) {
-        $mailing[$override] = $variant[$override];
+        if (in_array($override, $templateOptions)) {
+          $mailing['template_options'][$override] = $variant[$override];
+        }
+        else {
+          $mailing[$override] = $variant[$override];
+        }
       }
     }
     elseif (is_object($mailing)) {
       foreach ($overrides as $override) {
-        $mailing->{$override} = $variant[$override];
+        if (!(in_array($override, $templateOptions))) {
+          $mailing->{$override} = $variant[$override];
+        }
       }
     }
     else {

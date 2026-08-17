@@ -64,9 +64,9 @@ class CRM_Mosaico_Graphics_Intervention extends CRM_Mosaico_Graphics_Interface {
         $y += $size * 2;
       }
     }
-    $img->text("{$width} x {$height}", $width / 2, $height / 2, function ($font) use ($width) {
+    $img->text("{$width} x {$height}", round($width / 2), round($height / 2), function ($font) use ($width) {
       $font->file(E::path(self::FONT_PATH));
-      $font->size($width / 5);
+      $font->size(round($width / 5));
       $font->align('center');
       $font->valign('middle');
       $font->color("#B0B0B0");

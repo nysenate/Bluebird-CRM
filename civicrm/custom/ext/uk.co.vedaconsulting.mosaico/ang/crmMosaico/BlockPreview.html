@@ -36,7 +36,7 @@ Vars: mailing:obj, testContact:obj, testGroup:obj, crmMailing:FormController
   <label for="preview_test_group">{{:: ts('Send test email to group:') }} <a crm-ui-help="hs({id: 'test', title: ts('Test Email')})"></a> </label>
   <input
     id="preview_test_group"
-    crm-entityref="{entity: 'Group', api: {params: {is_hidden: 0, is_active: 1}}, select: {allowClear:true, minimumInputLength: 0}}"
+    crm-entityref="{entity: 'Group', api: {params: {is_hidden: 0, is_active: 1, group_type: {LIKE: '%2%'}}}, select: {allowClear:true, minimumInputLength: 0}}"
     ng-model="testGroup.gid"
     class="form-control margin-bottom-10 full-width-force"
   />
