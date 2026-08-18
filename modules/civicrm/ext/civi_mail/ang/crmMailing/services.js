@@ -549,7 +549,8 @@
               }
             })
           ;
-        return crmStatus({start: ts('Sending...'), success: ts('Sent')}, promise);
+        //NYSS 13571
+        return crmStatus({start: ts('Sending...'), success: ts('Sent'), error: ts('Error')}, promise);
       }
     };
   });

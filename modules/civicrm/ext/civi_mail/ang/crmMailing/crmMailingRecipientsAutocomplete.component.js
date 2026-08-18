@@ -6,9 +6,10 @@
       mailingId: '<crmMailingId',
       mode: '@crmMode',
     },
+    //NYSS remove ng-required
     template: '<input type="text" crm-autocomplete="\'EntitySet\'" ' +
       'crm-autocomplete-params="$ctrl.autocompleteParams" ' +
-      'ng-required="$ctrl.mode === \'include\'" ' +
+      /*'ng-required="$ctrl.mode === \'include\'" ' +*/
       'ng-model="$ctrl.getSetValue" ' +
       'ng-model-options="{getterSetter: true}" ' +
       'multi="true" ' +
