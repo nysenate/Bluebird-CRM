@@ -17,6 +17,13 @@ class CRM_NYSS_Mail_Page_PreviewMailing extends CRM_Core_Page {
 
     $this->assign('content', $mailing['values']['body_html']);
 
+    // Suppress "Bootstrap theme not found" error that was introduced in CiviCore 6.13
+    // as part of the "Bootstrap3 Everywhere PR" (https://github.com/civicrm/civicrm-core/pull/34890)
+    CRM_Core_Region::instance('page-header')->add([
+      'markup' => '<style>#bootstrap-theme { display: none !important; }</style>',
+      'weight' => 100,
+    ]);
+
     parent::run();
   }
 
