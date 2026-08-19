@@ -101,13 +101,13 @@ class CRM_NYSS_Inbox_BAO_Inbox {
     $string = trim($string);
 
     // return with no change if string is shorter than $limit
-    if (strlen($string) <= $limit) {
+    if (mb_strlen($string, 'UTF-8') <= $limit) {
       return $string;
     }
 
     //truncate
     if ($limit > 0) {
-      $string = substr($string, 0, $limit) . $pad;
+      $string = mb_substr($string, 0, $limit, 'UTF-8') . $pad;
     }
 
     return $string;
