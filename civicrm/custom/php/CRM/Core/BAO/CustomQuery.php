@@ -250,14 +250,9 @@ class CRM_Core_BAO_CustomQuery {
                 $value = implode(',', $value);
               }
 
-              //NYSS build district id fields using IN to allow multiple values
-              if ($op == '=') {
-                $distinfo = [52, 56];
-                if (in_array($id, $distinfo)) {
-                  $op = 'IN';
-                  $field['data_type'] = 'nyss_String'; //flag for processing
-                }
-              }
+              // NYSS build district id fields using IN to allow multiple values
+              CRM_NYSS_Search_DistrictQueryModifier::modifyStringFieldClause($id, $op, $value);
+              // End NYSS
 
               // CRM-14563,CRM-16575 : Special handling of multi-select custom fields
               if ($isSerialized && !CRM_Utils_System::isNull($value) && !strstr($op, 'NULL') && !strstr($op, 'LIKE')) {
@@ -283,11 +278,6 @@ class CRM_Core_BAO_CustomQuery {
                 $this->_where[$grouping][] = CRM_Contact_BAO_Query::buildClause($fieldName, $op, $value, 'String', TRUE);
               }
 
-              //NYSS reset data type
-              if (!empty($distinfo) && in_array($id, $distinfo)) {
-                $field['data_type'] = 'String';
-              }
-
               $this->_qill[$grouping][] = $field['label'] . " $qillOp $qillValue";
             }
             break;
@@ -295,32 +285,13 @@ class CRM_Core_BAO_CustomQuery {
           case 'Int':
           case 'EntityReference':
             //NYSS build district id fields using IN to allow multiple values
-            $field['data_type'] = 'Integer';
+            $data_type = 'Integer';
+            if (CRM_NYSS_Search_DistrictQueryModifier::skipIntegerFieldClause($id, $op, $value)) break;
+            CRM_NYSS_Search_DistrictQueryModifier::modifyIntegerFieldClause($id, $op, $value, $data_type);
+            // End NYSS
 
-            $distinfo = [46, 47, 48, 49, 50, 51, 53, 54, 55];
-            if (in_array($id, $distinfo)) {
-              if ($op == '=') {
-                //check for value existence
-                if (empty($value)) {
-                  break;
-                }
-
-                $op = 'IN';
-                $field['data_type'] = 'nyss_Integer'; //flag for processing
-              }
-              //13461 allow a percentage symbol
-              elseif ($op == 'LIKE') {
-                $field['data_type'] = 'String';
-              }
-            }
-
-            $this->_where[$grouping][] = CRM_Contact_BAO_Query::buildClause($fieldName, $op, $value, $field['data_type']); //NYSS
+            $this->_where[$grouping][] = CRM_Contact_BAO_Query::buildClause($fieldName, $op, $value, $data_type); //NYSS
             $this->_qill[$grouping][] = ts("%1 %2 %3", array(1 => $field['label'], 2 => $qillOp, 3 => $qillValue));
-
-            //NYSS reset data type
-            if (in_array($id, $distinfo)) {
-              $field['data_type'] = 'Integer';
-            }
 
             break;
 

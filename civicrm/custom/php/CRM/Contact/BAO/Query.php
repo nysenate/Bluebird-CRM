@@ -5760,29 +5760,6 @@ civicrm_relationship.start_date > {$today}
 
       case 'IN':
       case 'NOT IN':
-        //NYSS support multiple values for some fields
-        //Civi::log()->debug('buildClause', array('dataType' => $dataType, 'value' => $value));
-        if (isset($dataType)) {
-          if (!is_array($value)) {
-            $value = CRM_Utils_Type::escape($value, 'String');
-            $values = explode('[:comma:]', $value);
-            //NYSS - type is passed as nyss_String or nyss_Integer
-            if (str_contains($dataType, 'nyss_')) {
-              $value = str_replace(['(', ')'], '', $value); //4969 make sure no parens were added (search bldr)
-              $values = array_map('trim', explode(',', $value));
-              $dataType = str_replace('nyss_', '', $dataType); //return to expected format
-            }
-
-            foreach ($values as &$v) {
-              $v = "'{$v}'";
-            }
-            $value = '(' . implode(',', $values) . ')';
-            //$value = array($op => (array) $values);
-
-            return "$clause $value";
-          }
-        }
-
         // I feel like this would be escaped properly if passed through $queryString = CRM_Core_DAO::createSqlFilter.
         if (!empty($value) && (!is_array($value) || !array_key_exists($op, $value))) {
           $value = [$op => (array) $value];

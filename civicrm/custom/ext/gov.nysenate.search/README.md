@@ -39,6 +39,15 @@ cv en search
 
 (* FIXME: Where would a new user navigate to get started? What changes would they see? *)
 
+## Running Tests
+
+From the extension directory:
+
+```bash
+cd civicrm/custom/ext/gov.nysenate.search
+INSTANCE=<instance> HTTP_HOST=<instance> phpunit
+```
+
 ## Known Issues
 
 (* FIXME *)
