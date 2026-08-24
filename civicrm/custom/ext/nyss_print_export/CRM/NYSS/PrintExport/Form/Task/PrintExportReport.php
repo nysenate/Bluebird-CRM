@@ -717,21 +717,29 @@ class CRM_NYSS_PrintExport_Form_Task_PrintExportReport extends CRM_Contact_Form_
 
     /**
      *
-     * 5142
+     * NYSS 5142
      * given a district ID, collect district exclusions and remove from the import
      *
+     * This was primarily written to accommodate the "3rdparty" instance, which is used by Print Productions to send
+     * printed material (or maybe create filtered mailing lists -- I'm not sure) based on a third party obtained list.
+     * So, the assumption is that, in many cases, this code is being executed on the third party instance, but needs
+     * information from a specific instance's (district's) database. It needs to know who has opted out of mailings.
+     * So, the database query in this function is actually looking in a different database for the "exclude" information.
+     *
      */
+    #[CRM_NYSS_Attribute_IssueRef('5142')]
     protected function processDistrictExclude( $districtID, $tbl, $localSeedsList ) {
         itime('processDistrictExclude start');
 
-        //retrieve the instance name using the district ID
-        $instance = $dbBase = '';
+        // this loop finds the instance config associated with the given district ID.
+        // We need the instance config (of likely a different instance) to get that instance's database name
+        // because we will query that database for do_not_mail and do_not_trade data points.
+        $instance = '';
         $bbFullConfig = get_bluebird_config();
         foreach ($bbFullConfig as $group => $details) {
             if (!empty($group) && strpos($group, 'instance:') !== false) {
                 if ($details['district'] == $districtID) {
                     $instance = substr($group, 9);
-                    $dbBase = $details['db.basename'];
                     break;
                 }
             }
@@ -740,7 +748,8 @@ class CRM_NYSS_PrintExport_Form_Task_PrintExportReport extends CRM_Contact_Form_
         $localSeedsList = ( $localSeedsList ) ? $localSeedsList : 0;
 
         //retrieve values using db basename and create temp table
-        $db = $bbFullConfig['globals']['db.civicrm.prefix'].$dbBase;
+        $bbcfg = get_bluebird_instance_config($instance);
+        $db = $bbcfg['db.civicrm.prefix'].$bbcfg['db.basename'];
         $dTbl = "{$tbl}_d{$districtID}";
 
         //need to list sa columns to avoid naming conflicts
