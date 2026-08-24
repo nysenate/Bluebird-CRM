@@ -3295,7 +3295,7 @@ WHERE  $smartGroupClause
       $activityContacts = CRM_Activity_BAO_ActivityContact::buildOptions('record_type_id', 'validate');
       $targetID = CRM_Utils_Array::key('Activity Targets', $activityContacts);
 
-      //NYSS 7770
+      //NYSS 7770 --- FIXED IN CORE WITH https://github.com/civicrm/civicrm-core/pull/36627
       $this->_tables[$etActTable] =
         $this->_whereTables[$etActTable] =
         " LEFT JOIN civicrm_activity_contact all_tag_types
@@ -3388,7 +3388,7 @@ WHERE  $smartGroupClause
             LEFT JOIN civicrm_entity_tag {$etCaseTable} ON ( {$etCaseTable}.entity_table = 'civicrm_case' AND {$etCaseTable}.entity_id = civicrm_case.id ) ";
       // search tag in activities
       $etActTable = "`civicrm_entity_act_tag-" . uniqid() . "`";
-      //NYSS 7770
+      //NYSS 7770 --- FIXED IN CORE WITH https://github.com/civicrm/civicrm-core/pull/36627
       $this->_tables[$etActTable] =
         $this->_whereTables[$etActTable] =
         " LEFT JOIN civicrm_activity_contact all_tag_types
