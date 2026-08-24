@@ -160,6 +160,7 @@
     {foreach from = $editOptions item = "title" key="name"}
       {if $name eq 'CustomData'}
         <div id='customData_{$contactType}'>{include file="CRM/Contact/Form/Edit/CustomData.tpl" isSingleRecordEdit=false skipTitle=false}</div>
+      {*NYSS - Address edit form has already been rendered. So, skip it here. *}
       {elseif $name neq "Address"}
         {include file="CRM/Contact/Form/Edit/$name.tpl"}
       {/if}
