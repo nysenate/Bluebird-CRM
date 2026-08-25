@@ -1,0 +1,26 @@
+diff --git a/modules/civicrm/ext/search_kit/Civi/Api4/Event/Subscriber/SKEntitySubscriber.php b/modules/civicrm/ext/search_kit/Civi/Api4/Event/Subscriber/SKEntitySubscriber.php
+index 1fd5007bbb..9bc1dfa94f 100644
+--- a/modules/civicrm/ext/search_kit/Civi/Api4/Event/Subscriber/SKEntitySubscriber.php
++++ b/modules/civicrm/ext/search_kit/Civi/Api4/Event/Subscriber/SKEntitySubscriber.php
+@@ -116,7 +116,11 @@ class SKEntitySubscriber extends AutoService implements EventSubscriberInterface
+       if (!$expr) {
+         continue;
+       }
+-      $column['spec'] = Meta::formatFieldSpec($column, $expr);
++      // If saving for the first time and `spec` exists, it's probably coming fully-formed from hook_civicrm_managed/.mgd.php
++      // Skip recalculating it in that case to prevent load-order issues. dev/core#6706
++      if ($event->id || empty($column['spec'])) {
++         $column['spec'] = Meta::formatFieldSpec($column, $expr);
++      }
+       $table['fields'][] = $this->formatSQLSpec($column, $expr);
+       if (in_array($column['key'], $primaryKeys)) {
+         $newSettings['primaryKey'][] = $column['spec']['name'];
+@@ -137,7 +141,7 @@ class SKEntitySubscriber extends AutoService implements EventSubscriberInterface
+       case 'view':
+         $tableName = _getSearchKitDisplayTableName($newName);
+         $tempSettings = $event->params['settings'];
+-        $sql = (new SKEntityGenerator())->createQuery($this->savedSearch['api_entity'], $this->savedSearch['api_params'], $tempSettings);
++        $sql = (new SKEntityGenerator())->createQuery($this->savedSearch['api_entity'], $this->savedSearch['api_params'], $tempSettings, 'view');
+         $columnSpecs = array_column($tempSettings['columns'], 'spec');
+         $columns = implode(', ', array_column($columnSpecs, 'name'));
+         $sql = "CREATE VIEW `$tableName` ($columns) AS " . $sql;
