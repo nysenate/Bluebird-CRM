@@ -32,8 +32,11 @@ if ! $readConfig --instance $instance --quiet; then
   exit 1
 fi
 
-## uninstall angularprofiles extension -- See #18926
+## uninstall angularprofiles extension -- See NYSS #18926
 $cv $instance ext:uninstall org.civicrm.angularprofiles
+
+## install nyss_caseload_dash extension -- NYSS #18119
+$cv $instance ext:enable nyss_caseload_dash
 
 ## clear cache again
 $clearCache $instance
