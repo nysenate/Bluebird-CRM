@@ -174,11 +174,3 @@ function activity_civicrm_alterMailParams(&$params, $context) {
     $params['from'] = $fromEmail;
   }
 }
-
-#[CRM_NYSS_Attribute_IssueRef(4921)]
-function activity_civicrm_optionValues(&$options, $groupName) {
-    // NYSS 4921 - alphabetize activity types
-    if ($groupName == 'activity_type') {
-        asort($options);
-    }
-}
