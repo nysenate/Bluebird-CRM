@@ -1,0 +1,40 @@
+diff --git a/modules/civicrm/ext/search_kit/Civi/Search/Meta.php b/modules/civicrm/ext/search_kit/Civi/Search/Meta.php
+index 1a551dbdc..4b454e4ce 100644
+--- a/modules/civicrm/ext/search_kit/Civi/Search/Meta.php
++++ b/modules/civicrm/ext/search_kit/Civi/Search/Meta.php
+@@ -150,19 +150,22 @@ class Meta {
+     $spec['original_field_name'] = $field['name'] ?? NULL;
+     $spec['original_field_entity'] = $field['entity'] ?? NULL;
+     if ($expr['expr']->getType() === 'SqlField') {
+-      // An entity id counts as a FK
+-      if (!$field['fk_entity'] && $field['name'] === CoreUtil::getIdFieldName($field['entity'])) {
+-        $spec['entity_reference'] = [
+-          'entity' => $field['entity'],
+-        ];
+-        $spec['input_type'] = 'EntityRef';
+-      }
+-      else {
+-        $originalEntity = CoreUtil::isContact($field['entity']) ? 'Contact' : $field['entity'];
+-        $originalField = \Civi::entity($originalEntity)->getField($field['name']);
+-        $spec['input_type'] = $originalField['input_type'] ?? NULL;
+-        $spec['serialize'] = $originalField['serialize'] ?? NULL;
+-        $spec['entity_reference'] = $originalField['entity_reference'] ?? NULL;
++      // Pseudo-fields (e.g. SearchSegment fields) have no entity; skip entity-specific metadata for them
++      if (!empty($field['entity'])) {
++        // An entity id counts as a FK
++        if (!($field['fk_entity'] ?? NULL) && $field['name'] === CoreUtil::getIdFieldName($field['entity'])) {
++          $spec['entity_reference'] = [
++            'entity' => $field['entity'],
++          ];
++          $spec['input_type'] = 'EntityRef';
++        }
++        else {
++          $originalEntity = CoreUtil::isContact($field['entity']) ? 'Contact' : $field['entity'];
++          $originalField = \Civi::entity($originalEntity)->getField($field['name']);
++          $spec['input_type'] = $originalField['input_type'] ?? NULL;
++          $spec['serialize'] = $originalField['serialize'] ?? NULL;
++          $spec['entity_reference'] = $originalField['entity_reference'] ?? NULL;
++        }
+       }
+       if ($suffix) {
+         // Options will be looked up by SKEntitySpecProvider::getOptionsForSKEntityField
