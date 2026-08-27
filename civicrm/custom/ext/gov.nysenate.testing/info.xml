@@ -2,7 +2,7 @@
 <extension key="gov.nysenate.testing" type="module">
   <file>testing</file>
   <name>NYSS: Testing Extension</name>
-  <description/>
+  <description>Provides testing utilities, test runner forms, and API endpoints for Bluebird development.</description>
   <license>AGPL-3.0</license>
   <maintainer>
     <author>NYS Senate</author>

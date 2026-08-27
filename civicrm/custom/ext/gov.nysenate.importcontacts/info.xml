@@ -2,7 +2,7 @@
 <extension key="gov.nysenate.importcontacts" type="module">
   <file>importcontacts</file>
   <name>NYSS: Import Modifications</name>
-  <description/>
+  <description>Enhances the CiviCRM contact import workflow with job tracking and custom data handling.</description>
   <license>AGPL-3.0</license>
   <maintainer>
     <author>Lighthouse Consulting and Design, Inc.</author>
