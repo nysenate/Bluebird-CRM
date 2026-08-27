@@ -111,7 +111,11 @@ class SKEntitySubscriber extends AutoService implements EventSubscriberInterface
       if (!$expr) {
         continue;
       }
-      $column['spec'] = Meta::formatFieldSpec($column, $expr);
+      // If saving for the first time and `spec` exists, it's probably coming fully-formed from hook_civicrm_managed/.mgd.php
+      // Skip recalculating it in that case to prevent load-order issues. dev/core#6706
+      if ($event->id || empty($column['spec'])) {
+         $column['spec'] = Meta::formatFieldSpec($column, $expr);
+      }
       $table['fields'][] = $this->formatSQLSpec($column, $expr);
     }
     // Store new settings with added column spec
