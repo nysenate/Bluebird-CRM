@@ -2,7 +2,7 @@
 <extension key="gov.nysenate.errorhandler" type="module">
   <file>errorhandler</file>
   <name>NYSS: Error Handler</name>
-  <description/>
+  <description>Provides a custom fatal error handling callback for Bluebird CRM.</description>
   <license>AGPL-3.0</license>
   <maintainer>
     <author>Lighthouse Consulting and Design, Inc.</author>

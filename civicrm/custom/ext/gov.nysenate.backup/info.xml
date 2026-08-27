@@ -2,7 +2,7 @@
 <extension key="gov.nysenate.backup" type="module">
   <file>backup</file>
   <name>NYSS: Backup</name>
-  <description/>
+  <description>Provides an administrative interface for managing database backups.</description>
   <license>AGPL-3.0</license>
   <maintainer>
     <author>FIXME</author>

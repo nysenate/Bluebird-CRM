@@ -2,7 +2,7 @@
 <extension key="gov.nysenate.mail" type="module">
   <file>mail</file>
   <name>NYSS: Mailing Customizations</name>
-  <description/>
+  <description>Provides New York State Senate customizations for CiviMail and FlexMailer.</description>
   <license>AGPL-3.0</license>
   <maintainer>
     <author>NYSS Senate</author>

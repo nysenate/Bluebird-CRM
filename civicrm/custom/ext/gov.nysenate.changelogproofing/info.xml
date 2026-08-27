@@ -2,7 +2,7 @@
 <extension key="gov.nysenate.changelogproofing" type="module">
   <file>changelogproofing</file>
   <name>NYSS: Changelog Proofing Report</name>
-  <description/>
+  <description>Generates change log proofing reports to review contact, tag, and group modifications.</description>
   <license>AGPL-3.0</license>
   <maintainer>
     <author>NYS Senate</author>

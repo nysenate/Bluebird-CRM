@@ -2,7 +2,7 @@
 <extension key="gov.nysenate.dedupe" type="module">
   <file>dedupe</file>
   <name>NYSS: Dedupe</name>
-  <description/>
+  <description>Provides custom deduplication rules and shadow tables for Bluebird CRM.</description>
   <license>AGPL-3.0</license>
   <maintainer>
     <author>NYS Senate</author>

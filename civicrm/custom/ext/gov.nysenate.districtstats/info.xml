@@ -2,7 +2,7 @@
 <extension key="gov.nysenate.districtstats" type="module">
   <file>districtstats</file>
   <name>NYSS: District Stats</name>
-  <description/>
+  <description>Provides district demographic and constituent statistics reports for Senate districts.</description>
   <license>AGPL-3.0</license>
   <maintainer>
     <author>NYS Senate</author>
