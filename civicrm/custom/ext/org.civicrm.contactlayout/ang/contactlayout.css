@@ -11,14 +11,6 @@
   padding: 15px 20px;
 }
 
-/* Fix weird shorditch style */
-#bootstrap-theme #contactLayoutEditor .panel-heading {
-  border-bottom-right-radius: 0;
-  border-bottom-left-radius: 0;
-  margin-bottom: 0;
-  height: 50px;
-}
-
 #bootstrap-theme #contactLayoutEditor .panel-heading .btn-group {
   top: -8px;
 }
@@ -226,8 +218,14 @@
   margin-top: 6px;
   margin-bottom: 2px;
 }
-#cse-block-container .cse-block .cse-block-collapsible-toggle button {
+#cse-block-container .cse-block .cse-block-collapsible-toggle button.btn {
   background: transparent;
+  padding: 0.3rem .5rem 0 0;
+}
+#cse-block-container .cse-block .cse-block-collapsible-toggle button.btn i.crm-i {
+  width: 2rem;
+  display: inline-block;
+  color: var(--crm-primary-color, #696969);
 }
 #cse-block-container .cse-block .cse-block-collapsible-toggle button:active,
 #cse-block-container .cse-block .cse-block-collapsible-toggle button:focus {

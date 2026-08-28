@@ -16,6 +16,7 @@ class CRM_Contactlayout_Page_Base extends CRM_Core_Page {
       'blocks' => (array) civicrm_api4('ContactLayout', 'getBlocks'),
       'tabs' => (array) civicrm_api4('ContactLayout', 'getTabs'),
       'contactTypes' => (array) civicrm_api4('ContactType', 'get', [
+        'select' => ['id', 'name', 'label', 'icon', 'parent_id'],
         'where' => [['is_active', '=', 1]],
         'orderBy' => ['label' => 'ASC'],
       ]),

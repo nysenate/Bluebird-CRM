@@ -11,9 +11,15 @@ class CRM_Contactlayout_BAO_ContactLayout extends CRM_Contactlayout_DAO_ContactL
    * @param int $uid
    *   Contact id of current user.
    *
-   * @return array|null
+   * @return array
    */
-  public static function getLayout($cid, $uid = NULL) {
+  public static function getLayout($cid, $uid = NULL): array {
+    // Static cache because this function may be called twice on the same request
+    $layout = Civi::$statics['contactLayout'][$cid] ?? NULL;
+    if (is_array($layout)) {
+      return $layout;
+    }
+    Civi::$statics['contactLayout'][$cid] = [];
     $uid = $uid ?: CRM_Core_Session::getLoggedInContactID();
     $contact = \Civi\Api4\Contact::get()
       ->addWhere('id', '=', $cid)
@@ -39,10 +45,11 @@ class CRM_Contactlayout_BAO_ContactLayout extends CRM_Contactlayout_DAO_ContactL
     foreach ($get->execute() as $layout) {
       if (self::checkSubtypeFilter($contact, $layout) && self::checkGroupFilter($uid, $layout)) {
         self::loadBlocks($layout, $contact['contact_type']);
-        return $layout;
+        Civi::$statics['contactLayout'][$cid] = $layout;
+        break;
       }
     }
-    return NULL;
+    return Civi::$statics['contactLayout'][$cid];
   }
 
   /**
