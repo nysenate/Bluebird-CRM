@@ -27,17 +27,17 @@ class CRM_Contactlayout_Form_Inline_ProfileBlock extends CRM_Profile_Form_Edit {
 
   public function buildQuickForm(): void {
     parent::buildQuickForm();
-    $buttons = array(
-      array(
+    $buttons = [
+      [
         'type' => 'upload',
         'name' => E::ts('Save'),
         'isDefault' => TRUE,
-      ),
-      array(
+      ],
+      [
         'type' => 'cancel',
         'name' => E::ts('Cancel'),
-      ),
-    );
+      ],
+    ];
     $this->addButtons($buttons);
     $this->assign('help_pre', $this->_ufGroup['help_pre'] ?? NULL);
     $this->assign('help_post', $this->_ufGroup['help_post'] ?? NULL);
@@ -55,7 +55,7 @@ class CRM_Contactlayout_Form_Inline_ProfileBlock extends CRM_Profile_Form_Edit {
       $label = $groupElement->getLabel();
       $frozen = $groupElement->isFrozen();
       $this->removeElement('group');
-      $groups = CRM_Contact_BAO_Group::getGroupsHierarchy(CRM_Core_PseudoConstant::group(), NULL, '&nbsp;&nbsp;', TRUE);
+      $groups = CRM_Contact_BAO_Group::getGroupsHierarchy(CRM_Core_PseudoConstant::group(NULL, TRUE, 'plain'), NULL, '- ', TRUE, FALSE, 'plain');
       $groupElement = $this->add('select', 'group', $label, $groups, FALSE, ['class' => 'crm-select2', 'multiple' => TRUE]);
       if ($frozen) {
         $groupElement->freeze();

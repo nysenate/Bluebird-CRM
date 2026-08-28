@@ -1,11 +1,11 @@
 <h5 title="{{ ts('%1 block', {1: block.groupTitle || 'Unknown'}) + (block.contact_type ? ' (' + contactTypeLabel(block.contact_type) + ')' : '') }}">
-  <i class="crm-i {{ block.icon || 'fa-question-circle-o' }}"></i>
+  <i role="img" aria-hidden="true" class="crm-i {{ block.icon || 'fa-question-circle-o' }}"></i>
   <span ng-if="!col || (!block.collapsible && !block.showTitle)">{{ block.title || ts('Untitled') }}</span>
   <span ng-if="col && (block.collapsible || block.showTitle)" contact-layout-editable ng-model="block.title">{{ block.title || ts('Untitled') }}</span>
 </h5>
 <div class="btn-group btn-group-xs cse-block-buttons">
   <button type="button" class="btn btn-success-outline" ng-if="block.edit" ng-click="editBlock(block)" title="{{:: ts('Edit block') }}">
-    <i class="crm-i fa-pencil"></i>
+    <i role="img" aria-hidden="true" class="crm-i fa-pencil"></i>
   </button>
   <button type="button"
           class="btn btn-success-outline"
@@ -13,21 +13,21 @@
     ng-if="block.profile_id"
     ng-click="editBlockRelationship(block)"
   >
-    <i class="crm-i fa-users" ng-class="{'text-primary': !!block.related_rel}"></i>
+    <i role="img" aria-hidden="true" class="crm-i fa-users" ng-class="{'text-primary': !!block.related_rel}"></i>
   </button>
   <button type="button" class="btn btn-danger-outline" ng-if="col" ng-click="removeBlock($index, col)" title="{{:: ts('Remove block') }}">
-    <i class="crm-i fa-close"></i>
+    <i role="img" aria-hidden="true" class="crm-i fa-close"></i>
   </button>
   <button type="button" class="btn btn-danger-outline" ng-if="!col && block.profile_id" ng-click="deleteBlock(block)" title="{{:: ts('Delete block') }}">
-    <i class="crm-i fa-trash"></i>
+    <i role="img" aria-hidden="true" class="crm-i fa-trash"></i>
   </button>
 </div>
 <div class="btn-group btn-group-xs cse-block-collapsible-toggle">
   <button type="button" class="btn btn-info-outline" ng-click="toggleCollapsible(block)" title="{{:: ts('Display mode') }}">
-    <span ng-if="!block.collapsible && block.showTitle"><i class="crm-i fa-window-maximize"></i> <span>{{:: ts('Open - show title') }}</span></span>
-    <span ng-if="!block.collapsible && !block.showTitle"><i class="crm-i fa-square-o"></i> <span>{{:: ts('Open - hide title') }}</span></span>
-    <span ng-if="block.collapsible && !block.collapsed"><i class="crm-i fa-caret-square-o-down"></i> <span>{{:: ts('Collapsible - expanded') }}</span></span>
-    <span ng-if="block.collapsible && block.collapsed"><i class="crm-i fa-caret-square-o-right"></i> <span>{{:: ts('Collapsible - collapsed') }}</span></span>
+    <span ng-if="!block.collapsible && block.showTitle"><i role="img" aria-hidden="true" class="crm-i fa-window-maximize"></i> <span>{{:: ts('Open - show title') }}</span></span>
+    <span ng-if="!block.collapsible && !block.showTitle"><i role="img" aria-hidden="true" class="crm-i fa-square-o"></i> <span>{{:: ts('Open - hide title') }}</span></span>
+    <span ng-if="block.collapsible && !block.collapsed"><i role="img" aria-hidden="true" class="crm-i fa-caret-square-o-down"></i> <span>{{:: ts('Collapsible - expanded') }}</span></span>
+    <span ng-if="block.collapsible && block.collapsed"><i role="img" aria-hidden="true" class="crm-i fa-caret-square-o-right"></i> <span>{{:: ts('Collapsible - collapsed') }}</span></span>
   </button>
 </div>
 <div class="cse-block-sample">

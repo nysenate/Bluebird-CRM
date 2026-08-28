@@ -36,7 +36,7 @@
       function getRelationshipFromOption (relationshipOption) {
         const relationship = relationshipOption.split('_');
         const relationshipTypeId = parseInt(relationship[0], 10);
-        const relationshipType = _.find(RELATIONSHIP_TYPES, { id: relationshipTypeId });
+        const relationshipType = RELATIONSHIP_TYPES.find((r) => r.id === relationshipTypeId);
 
         return {
           type: relationshipType,
