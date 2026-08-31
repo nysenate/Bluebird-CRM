@@ -284,7 +284,7 @@ $prefs['smartGroupCacheTimeout'] = 10;
 //NYSS 16679 - no longer needed but leaving in place for reference
 //$prefs['defaultSearchProfileID'] = 11;
 $prefs['searchPrimaryDetailsOnly'] = false;
-$prefs['quicksearch_options'] = ['sort_name', 'first_name', 'last_name', 'email_primary.email', 'phone_primary.phone_numeric', 'address_primary.street_address', 'address_primary.city', 'address_primary.postal_code', 'case_id'];
+$prefs['quicksearch_options'] = ['sort_name', 'first_name', 'last_name', 'Email.email', 'Phone.phone_numeric', 'Address.street_address', 'Address.city', 'Address.postal_code', 'case_id'];
 
 // URL settings, from Url.setting.php
 $prefs['userFrameworkResourceURL'] = 'sites/all/modules/civicrm/';
