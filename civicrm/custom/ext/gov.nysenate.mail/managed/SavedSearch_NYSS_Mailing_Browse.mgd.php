@@ -9,8 +9,9 @@ if (!CRM_Core_Component::isEnabled('CiviMail')) {
 $select = [
   'id',
   'name',
+  'subject',
   'language:label',
-  'created_id.display_name',
+  //'created_id.display_name',
   'created_date',
   'scheduled_id.display_name',
   'scheduled_date',
@@ -24,6 +25,13 @@ $columns = [
     'type' => 'field',
     'key' => 'name',
     'label' => E::ts('Mailing Name'),
+    'sortable' => TRUE,
+    'icons' => [],
+  ],
+  [
+    'type' => 'field',
+    'key' => 'subject',
+    'label' => E::ts('Subject'),
     'sortable' => TRUE,
     'icons' => [],
   ],
@@ -48,12 +56,12 @@ if (CRM_Core_I18n::isMultilingual()) {
 }
 
 $columns = array_merge($columns, [
-  [
+  /*[
     'type' => 'field',
     'key' => 'created_id.display_name',
     'label' => E::ts('Created By'),
     'sortable' => TRUE,
-  ],
+  ],*/
   [
     'type' => 'field',
     'key' => 'created_date',
