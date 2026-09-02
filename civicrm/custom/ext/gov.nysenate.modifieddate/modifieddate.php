@@ -30,35 +30,6 @@ function modifieddate_civicrm_enable() {
 }
 
 /**
- * Functions below this ship commented out. Uncomment as required.
- *
-
-/**
- * Implements hook_civicrm_preProcess().
- *
- * @link http://wiki.civicrm.org/confluence/display/CRMDOC/hook_civicrm_preProcess
- *
-
- // */
-
-/**
- * Implements hook_civicrm_navigationMenu().
- *
- * @link http://wiki.civicrm.org/confluence/display/CRMDOC/hook_civicrm_navigationMenu
- *
-function modifieddate_civicrm_navigationMenu(&$menu) {
-  _modifieddate_civix_insert_navigation_menu($menu, NULL, array(
-    'label' => ts('The Page', array('domain' => 'gov.nysenate.modifieddate')),
-    'name' => 'the_page',
-    'url' => 'civicrm/the-page',
-    'permission' => 'access CiviReport,access CiviContribute',
-    'operator' => 'OR',
-    'separator' => 0,
-  ));
-  _modifieddate_civix_navigationMenu($menu);
-} // */
-
-/**
  * @param $info
  * @param $tableName
  *
@@ -79,11 +50,6 @@ function modifieddate_civicrm_triggerInfo(&$info, $tableName) {
     _modifieddate_relationship(),
     _modifieddate_case()
   );
-
-  /*Civi::log()->debug('modifieddate_civicrm_triggerInfo', array(
-    'info' => $info,
-    //'_modifieddate_note()' => _modifieddate_note(),
-  ));*/
 }
 
 function _modifieddate_note() {

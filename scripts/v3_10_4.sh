@@ -17,6 +17,7 @@ cv=$script_dir/cv.sh
 clearCache=$script_dir/clearCache.sh
 readConfig=$script_dir/readConfig.sh
 execSql=$script_dir/execSql.sh
+resetRoles=$script_dir/resetRolePerms.sh
 
 . $script_dir/defaults.sh
 
@@ -37,6 +38,9 @@ $cv $instance ext:uninstall org.civicrm.angularprofiles
 
 ## install nyss_caseload_dash extension -- NYSS #18119
 $cv $instance ext:enable nyss_caseload_dash
+
+## Adds perms for caseload dashboard -- NYSS #18119
+$resetRoles $instance
 
 ## clear cache again
 $clearCache $instance

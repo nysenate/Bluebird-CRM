@@ -2,7 +2,7 @@
 <extension key="gov.nysenate.tokens" type="module">
   <file>tokens</file>
   <name>NYSS: Tokens</name>
-  <description/>
+  <description>Register custom NYSS tokens.</description>
   <license>AGPL-3.0</license>
   <maintainer>
     <author>Lighthouse Consulting and Design, Inc.</author>

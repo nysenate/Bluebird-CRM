@@ -2,7 +2,7 @@
 <extension key="gov.nysenate.contact" type="module">
   <file>contact</file>
   <name>NYSS: Contact Customizations</name>
-  <description/>
+  <description>Provides New York State Senate customizations for contact management.</description>
   <license>AGPL-3.0</license>
   <maintainer>
     <author>NYS Senate</author>

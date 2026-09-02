@@ -132,33 +132,3 @@ _joblogmanagement_civix_civicrm_angularModules($angularModules);
 function joblogmanagement_civicrm_alterSettingsFolders(&$metaDataFolders = NULL) {
   _joblogmanagement_civix_civicrm_alterSettingsFolders($metaDataFolders);
 }
-
-/**
- * Functions below this ship commented out. Uncomment as required.
- *
-
-/**
- * Implements hook_civicrm_preProcess().
- *
- * @link http://wiki.civicrm.org/confluence/display/CRMDOC/hook_civicrm_preProcess
- *
-function joblogmanagement_civicrm_preProcess($formName, &$form) {
-
-} // */
-
-/**
- * Implements hook_civicrm_navigationMenu().
- *
- * @link http://wiki.civicrm.org/confluence/display/CRMDOC/hook_civicrm_navigationMenu
- *
-function joblogmanagement_civicrm_navigationMenu(&$menu) {
-  _joblogmanagement_civix_insert_navigation_menu($menu, NULL, array(
-    'label' => ts('The Page', array('domain' => 'biz.lcdservices.joblogmanagement')),
-    'name' => 'the_page',
-    'url' => 'civicrm/the-page',
-    'permission' => 'access CiviReport,access CiviContribute',
-    'operator' => 'OR',
-    'separator' => 0,
-  ));
-  _joblogmanagement_civix_navigationMenu($menu);
-} // */
