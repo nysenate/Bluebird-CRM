@@ -60,6 +60,24 @@ function webintegration_civicrm_navigationMenu(&$menu) {
 
 //TODO eventually move all related customizations to this extension
 
+/**
+ * Implements hook_civicrm_merge().
+ *
+ * nyss_web_account and nyss_web_activity aren't CiviCRM-managed DAO entities.
+ * So, we register them here so their contact_id gets reassigned to the surviving
+ * contact instead of staying orphaned on the deleted one.
+ * @todo Make them DAO entities??? Maybe???
+ * @link http://wiki.civicrm.org/confluence/display/CRMDOC/hook_civicrm_merge
+ */
+#[CRM_NYSS_Attribute_IssueRef('19007')]
+function webintegration_civicrm_merge($type, &$data, $mainId = NULL, $otherId = NULL, $tables = NULL) {
+  // NYSS #19007
+  if ($type === 'cidRefs') {
+    $data['nyss_web_account'][] = 'contact_id';
+    $data['nyss_web_activity'][] = 'contact_id';
+  }
+}
+
 function webintegration_civicrm_alterMenu(&$items) {
   $items['civicrm/nyss/dashlet/webintegration/unmatched'] = array(
     'title' => 'Website Inbox Messages',
