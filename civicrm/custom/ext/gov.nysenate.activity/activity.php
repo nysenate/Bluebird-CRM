@@ -113,37 +113,6 @@ function _activity_buildForm_unfreeze_activity_type(&$form) {
     }
 }
 
-function activity_civicrm_postProcess($formName, &$form) {
-  /*Civi::log()->debug('activity_civicrm_postProcess', array(
-    'formName' => $formName,
-    'form' => $form,
-  ));*/
-
-  if (in_array($formName, array('CRM_Contact_Form_Task_Email')) &&
-    $form->_action == CRM_Core_Action::ADD &&
-    !empty($form->_activityId)
-  ) {
-    if (!empty($form->_ccContactIds) || !empty($form->_bccContactIds)) {
-      $ccBccIds = array_merge($form->_ccContactIds, $form->_bccContactIds);
-      //Civi::log()->debug('activity_civicrm_postProcess', array('$ccBccIds' => $ccBccIds));
-
-      $activityContacts = CRM_Core_OptionGroup::values('activity_contacts', FALSE, FALSE, FALSE, NULL, 'name');
-      $targetID = CRM_Utils_Array::key('Activity Targets', $activityContacts);
-
-      foreach ($ccBccIds as $cid) {
-        try {
-          civicrm_api3('activity_contact', 'create', [
-            'activity_id' => $form->_activityId,
-            'contact_id' => $cid,
-            'record_type_id' => $targetID,
-          ]);
-        }
-        catch (CRM_Core_Exception $e) {}
-      }
-    }
-  }
-}
-
 function activity_civicrm_alterMailParams(&$params, $context) {
   /*Civi::log()->debug(__FUNCTION__, [
     'params' => $params,

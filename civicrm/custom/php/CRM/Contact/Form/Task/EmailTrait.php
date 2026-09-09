@@ -411,8 +411,6 @@ trait CRM_Contact_Form_Task_EmailTrait {
       $formValues['campaign_id'] ?? NULL,
       $this->getCaseID()
     );
-    //NYSS 7362 store activityId so it's available to postProcess hook
-    $this->_activityId = $activityIds;
 
     if ($sent) {
       // Only use the first activity id if there's multiple.

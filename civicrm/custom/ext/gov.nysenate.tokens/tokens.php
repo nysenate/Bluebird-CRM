@@ -29,36 +29,3 @@ function tokens_civicrm_install() {
 function tokens_civicrm_enable() {
   _tokens_civix_civicrm_enable();
 }
-
-function tokens_civicrm_tokens(&$tokens) {
-  $tokens['nyss'] = [
-    'nyss.base_url' => 'Base URL',
-    'nyss.senator_formal' => 'Senator Formal Name',
-    'nyss.senator_email' => 'Senator Email',
-  ];
-}
-
-function tokens_civicrm_tokenValues(&$values, $cids, $job, $tokens, $context) {
-  /*Civi::log()->debug(__FUNCTION__, [
-    'values' => $values,
-    'cids' => $cids,
-    'tokens' => $tokens,
-  ]);*/
-
-  if (!empty($tokens['nyss'])) {
-    $bbconfig = get_bluebird_instance_config();
-    $bb = [
-      'base_url' => "{$bbconfig['db.basename']}.{$bbconfig['base.domain']}",
-      'senator_formal' => CRM_Utils_Array::value('senator.name.formal', $bbconfig),
-      'senator_email' => CRM_Utils_Array::value('senator.email', $bbconfig),
-    ];
-
-    foreach ($cids as $cid) {
-      $values[$cid] = [
-        'nyss.base_url' => 'http://'.$bb['base_url'],
-        'nyss.senator_formal' => $bb['senator_formal'],
-        'nyss.senator_email' => $bb['senator_email'],
-      ];
-    }
-  }
-}
