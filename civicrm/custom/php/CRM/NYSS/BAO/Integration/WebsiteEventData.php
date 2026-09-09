@@ -94,7 +94,7 @@ class CRM_NYSS_BAO_Integration_WebsiteEventData {
 
       $this->user_info = $event_data->user_info;
       // user_info could be altered. Store a copy that won't change
-      $this->raw_user_info = $event_data->user_info;
+      $this->raw_user_info = clone $event_data->user_info;
 
       if (!empty($event_data->event_info)) {
         $this->event_info = $event_data->event_info;
