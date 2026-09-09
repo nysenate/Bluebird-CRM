@@ -93,6 +93,7 @@ class CRM_NYSS_BAO_Integration_Website
 
   /*
    * attempt to match the record with existing contacts
+   * If $params['dryrun'] is truthy, then no database changes should be made.
    */
   static function matchContact($params) {
     //CRM_Core_Error::debug_var('matchContact $params', $params);
@@ -154,18 +155,28 @@ class CRM_NYSS_BAO_Integration_Website
     }
     else {
       //if not found, create new contact
-      $cid = self::createContact($params);
+      if (empty($params['dryrun'] ?? FALSE)) { // don't make database changes in dryrun mode
+          $cid = self::createContact($params);
+      } else {
+          $cid = NULL;
+          bbscript_log(LL::NOTICE, "Dryrun. matchContact() skipped createContact()");
+      }
     }
 
     //set user id
-    if (!empty($cid) && !empty($params['web_user_id'])) {
-      CRM_Core_DAO::executeQuery("
-        UPDATE civicrm_contact
-        SET web_user_id = {$params['web_user_id']}
-        WHERE id = {$cid}
-      ");
 
-      return $cid;
+    if (!empty($cid) && !empty($params['web_user_id'])) {
+      if (empty($params['dryrun'] ?? FALSE)) { // don't make database changes in dryrun mode
+          CRM_Core_DAO::executeQuery("
+            UPDATE civicrm_contact
+            SET web_user_id = {$params['web_user_id']}
+            WHERE id = {$cid}
+          ");
+        return $cid;
+      } else {
+          bbscript_log(LL::NOTICE, "Dryrun. matchContact() skipped update: " . $cid);
+          return $cid;
+      }
     }
     elseif (!empty($cid)) {
       return $cid;
