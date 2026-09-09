@@ -92,6 +92,7 @@ function merge_civicrm_buildForm($formName, &$form) {
  * 4. unset($conflicts[field]) && $data[migration_info][main_details] = NEW VAL
  *    - remove conflict and fix value
  */
+#[CRM_NYSS_Attribute_IssueRef('17752')]
 function _merge_resolveConflicts(&$data, $mainId, $otherId) {
   _merge_mD('data', $data, 3);
 
@@ -275,6 +276,25 @@ function _merge_resolveConflicts(&$data, $mainId, $otherId) {
     else {
       $conflicts['move_custom_79'] = $rows['move_custom_79']['main'];
       $conflicts['move_custom_72'] = $rows['move_custom_72']['other'];
+    }
+  }
+
+  // Website Profile "Status" (custom_77) comes from the website integration and is likely defunct.
+  // It's never manually set/reviewed by staff, so a conflict (or either side being empty) doesn't need to block
+  // a merge. 'edited' wins if either side has it; otherwise prefer whichever
+  // side is non-empty; otherwise take the other contact's value.
+  // NYSS #17752
+  if (array_key_exists('move_custom_77', $conflicts)) {
+    $statusMain = $rows['move_custom_77']['main'];
+    $statusOther = $rows['move_custom_77']['other'];
+    if ($statusMain === 'edited' || $statusOther === 'edited') {
+      $conflicts['move_custom_77'] = 'edited';
+    }
+    elseif ($statusOther === NULL || $statusOther === '') {
+      $conflicts['move_custom_77'] = $statusMain;
+    }
+    else {
+      $conflicts['move_custom_77'] = $statusOther;
     }
   }
 
