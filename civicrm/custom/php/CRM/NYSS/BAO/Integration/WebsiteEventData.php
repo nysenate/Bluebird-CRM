@@ -107,6 +107,9 @@ class CRM_NYSS_BAO_Integration_WebsiteEventData {
       throw new InvalidArgumentException("Event data cannot be empty.");
     }
 
+    // clean user info
+    $this->cleanUserInfo();
+
     // user_district and user_shortname
     if (!empty($data->user_shortname) && $data->user_district > 0) {
       $this->user_district = new CRM_NYSS_BAO_Integration_SenateDistrict($data->user_district, $data->user_shortname);
@@ -214,6 +217,19 @@ class CRM_NYSS_BAO_Integration_WebsiteEventData {
     }
 
     return $result;
+  }
+
+  #[CRM_NYSS_Attribute_IssueRef('18888')]
+  protected function cleanUserInfo(): void {
+      // NYSS #18888 - strip emojis and BMP symbols from names and address fields
+      $this->user_info->first_name = preg_replace('/[\x{10000}-\x{10FFFF}]/u', '', $this->user_info->first_name ?? '');
+      $this->user_info->first_name = preg_replace('/[\x{2600}-\x{27BF}]/u', '', $this->user_info->first_name ?? '');
+      $this->user_info->last_name = preg_replace('/[\x{10000}-\x{10FFFF}]/u', '', $this->user_info->last_name ?? '');
+      $this->user_info->last_name = preg_replace('/[\x{2600}-\x{27BF}]/u', '', $this->user_info->last_name ?? '');
+      $this->user_info->address = preg_replace('/[\x{10000}-\x{10FFFF}]/u', '', $this->user_info->address ?? '');
+      $this->user_info->address = preg_replace('/[\x{2600}-\x{27BF}]/u', '', $this->user_info->address ?? '');
+      $this->user_info->city = preg_replace('/[\x{10000}-\x{10FFFF}]/u', '', $this->user_info->city ?? '');
+      $this->user_info->city = preg_replace('/[\x{2600}-\x{27BF}]/u', '', $this->user_info->city ?? '');
   }
 
   public function getUserInfo(): object {
