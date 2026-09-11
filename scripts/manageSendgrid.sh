@@ -12,6 +12,7 @@
 # Revised: 2016-05-09 - added options to override config file
 # Revised: 2021-01-14 - fix mismatched option --subpassword
 # Revised: 2021-03-17 - convert to API v3
+# Revised: 2026-09-10 - add --set-default-branded-link option
 #
 
 #
@@ -96,6 +97,7 @@ where [options] are:
   [Deliverability]
   --get-branded-links|-gbl  (retrieve all branded links)
   --get-default-branded-link|-gdbl  (retrieve the default branded link)
+  --set-default-branded-link|-sdbl <link_id>  (set the default branded link)
   --get-subuser-branded-links|-gsbl  (get associated subuser branded links)
   --get-warmup-ips|-gwi  (retrieve all IP addresses that are warming up)
   --get-reverse-dns|-grd  (retrieve all of the Reverse DNS records for account)
@@ -262,6 +264,7 @@ while [ $# -gt 0 ]; do
     # Deliverability
     --get-branded-links|-gbl) cmd="whitelabel/links" ;;
     --get-default-branded-link|-gdbl) cmd="whitelabel/links/default" ;;
+    --set-default-branded-link|-sdbl) shift; method="POST"; cmd="whitelabel/links/$1/subuser"; json="{\"username\":\"%SUBUSERNAME%\"}" ;;
     --get-subuser-branded-links|-gsbl) cmd="whitelabel/links/subuser"; params="$params&username=%SUBUSERNAME%" ;;
     --get-warmup-ips|-gwi) cmd="ips/warmup" ;;
     --get-reverse-dns|-grd) cmd="whitelabel/ips" ;;
