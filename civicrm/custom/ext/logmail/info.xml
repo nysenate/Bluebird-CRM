@@ -2,7 +2,7 @@
 <extension key="logmail" type="module">
   <file>logmail</file>
   <name>Log Email to File</name>
-  <description/>
+  <description>Log emails to a file.</description>
   <license>AGPL-3.0</license>
   <maintainer>
     <author>Lighthouse Consulting and Design</author>

@@ -2,7 +2,7 @@
 <extension key="gov.nysenate.merge" type="module">
   <file>merge</file>
   <name>NYSS: Merge</name>
-  <description/>
+  <description>Provides custom contact deduplication and batch merge conflict resolution rules.</description>
   <license>AGPL-3.0</license>
   <maintainer>
     <author>NYS Senate</author>

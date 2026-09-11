@@ -2,7 +2,7 @@
 <extension key="gov.nysenate.webintegration" type="module">
   <file>webintegration</file>
   <name>NYSS: Web Integration</name>
-  <description/>
+  <description>Integrates public Senate website submissions with Bluebird CRM activities and contacts.</description>
   <license>AGPL-3.0</license>
   <maintainer>
     <author>NYS Senate</author>

@@ -1,0 +1,15 @@
+<div af-fieldset="">
+  <div class="af-markup">
+    <h2>{{ ts('Caseload Overview') }}<a class="helpicon" href="#" onclick="CRM.help(ts('Caseload Overview'), {id: 'id-overview-totals', file: 'CRM/NYSS/CaseloadDash/Page/CaseloadDashboardPage'}); return false;"></a></h2>
+  </div>
+  <div class="af-container af-layout-cols">
+    <crm-search-display-table search-name="NYSS_Caseload_Overview_Totals" display-name="NYSS_Caseload_Total_Open"></crm-search-display-table>
+    <crm-search-display-table search-name="NYSS_Caseload_Overview_Totals" display-name="NYSS_Caseload_Total_Urgent"></crm-search-display-table>
+    <crm-search-display-table search-name="NYSS_Caseload_Overview_Totals" display-name="NYSS_Caseload_Total_Unassigned"></crm-search-display-table>
+    <crm-search-display-table search-name="NYSS_Caseload_Overview_Totals" display-name="NYSS_Caseload_Total_Newer_Than_7_Days"></crm-search-display-table>
+    <crm-search-display-table search-name="NYSS_Caseload_Overview_Totals" display-name="NYSS_Caseload_Total_7_To_30_Days"></crm-search-display-table>
+    <crm-search-display-table search-name="NYSS_Caseload_Overview_Totals" display-name="NYSS_Caseload_Total_Older_Than_30_Days"></crm-search-display-table>
+    <crm-search-display-table search-name="NYSS_Caseload_Overview_Totals" display-name="NYSS_Caseload_Total_Resolved_Last_7_Days"></crm-search-display-table>
+    <crm-search-display-table search-name="NYSS_Caseload_Overview_Totals" display-name="NYSS_Caseload_Average_Days_to_Resolution"></crm-search-display-table>
+  </div>
+</div>

@@ -2,7 +2,7 @@
 <extension key="gov.nysenate.tagdemographics" type="module">
   <file>tagdemographics</file>
   <name>NYSS: Tag Demographics Search</name>
-  <description/>
+  <description>Provides a custom search tool to analyze constituent demographic distributions by tag.</description>
   <license>AGPL-3.0</license>
   <maintainer>
     <author>NYS Senate</author>

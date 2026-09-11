@@ -1,0 +1,24 @@
+diff --git a/modules/civicrm/Civi/Api4/Service/Spec/Provider/IsCurrentFieldSpecProvider.php b/modules/civicrm/Civi/Api4/Service/Spec/Provider/IsCurrentFieldSpecProvider.php
+index afe41cbe4..475bdbf34 100644
+--- a/modules/civicrm/Civi/Api4/Service/Spec/Provider/IsCurrentFieldSpecProvider.php
++++ b/modules/civicrm/Civi/Api4/Service/Spec/Provider/IsCurrentFieldSpecProvider.php
+@@ -81,8 +81,7 @@ class IsCurrentFieldSpecProvider extends \Civi\Core\Service\AutoService implemen
+     $startDate = substr_replace($field['sql_name'], 'start_date', -11, -1);
+     $endDate = substr_replace($field['sql_name'], 'end_date', -11, -1);
+     $isActive = substr_replace($field['sql_name'], 'is_active', -11, -1);
+-    $today = date('Ymd');
+-    return "IF($isActive = 1 AND ($startDate <= '$today' OR $startDate IS NULL) AND ($endDate >= '$today' OR $endDate IS NULL), '1', '0')";
++    return "IF($isActive = 1 AND ($startDate <= CURDATE() OR $startDate IS NULL) AND ($endDate >= CURDATE() OR $endDate IS NULL), '1', '0')";
+   }
+ 
+   /**
+@@ -94,8 +93,7 @@ class IsCurrentFieldSpecProvider extends \Civi\Core\Service\AutoService implemen
+    */
+   public static function renderNonExpiredSql(array $field): string {
+     $endDate = substr_replace($field['sql_name'], 'expires_date', -11, -1);
+-    $today = date('Ymd');
+-    return "IF($endDate >= '$today' OR $endDate IS NULL, 1, 0)";
++    return "IF($endDate >= CURDATE() OR $endDate IS NULL, 1, 0)";
+   }
+ 
+ }

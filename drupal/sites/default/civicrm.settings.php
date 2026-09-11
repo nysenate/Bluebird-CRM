@@ -56,6 +56,29 @@ define('CIVICRM_LOGGING_DSN', $bbcfg['log_db_url'].'?new_link=true');
 
 define('CIVICRM_TEMPLATE_COMPILEDIR', "$dataroot/$datadirname/civicrm/templates_c");
 define('CIVICRM_UF_BASEURL', "http://$servername/");
+
+/**
+ * If credentials are stored in the database, the CIVICRM_CRED_KEYS will be
+ * used to encrypt+decrypt them. This is a space-delimited list of keys (ordered by
+ * priority). Put the preferred key first. Any old/deprecated keys may be
+ * listed after.
+ *
+ * More info at https://docs.civicrm.org/sysadmin/en/latest/setup/cred-key/
+ */
+if (!defined('CIVICRM_CRED_KEYS') ) {
+  define( 'CIVICRM_CRED_KEYS', get_config_value($bbcfg, 'site.civicrm_cred_keys', ''));
+}
+
+/**
+ * The signing key is used to generate and verify shareable tokens.
+ *
+ * This is a space-delimited list of keys (ordered by priority). Put the preferred
+ * key first. Any old/deprecated keys may be listed after.
+ */
+if (!defined('CIVICRM_SIGN_KEYS') ) {
+  define( 'CIVICRM_SIGN_KEYS', get_config_value($bbcfg, 'site.civicrm_sign_keys', ''));
+}
+
 define('CIVICRM_SITE_KEY', get_config_value($bbcfg, 'site.key', '32425kj24h5kjh24542kjh524'));
 
 define('CIVICRM_DOMAIN_ID', 1);

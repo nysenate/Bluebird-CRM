@@ -32,34 +32,6 @@ function importcontacts_civicrm_enable() {
   _importcontacts_civix_civicrm_enable();
 }
 
-// --- Functions below this ship commented out. Uncomment as required. ---
-
-/**
- * Implements hook_civicrm_preProcess().
- *
- * @link https://docs.civicrm.org/dev/en/latest/hooks/hook_civicrm_preProcess
- */
-//function importcontacts_civicrm_preProcess($formName, &$form) {
-//
-//}
-
-/**
- * Implements hook_civicrm_navigationMenu().
- *
- * @link https://docs.civicrm.org/dev/en/latest/hooks/hook_civicrm_navigationMenu
- */
-//function importcontacts_civicrm_navigationMenu(&$menu) {
-//  _importcontacts_civix_insert_navigation_menu($menu, 'Mailings', [
-//    'label' => E::ts('New subliminal message'),
-//    'name' => 'mailing_subliminal_message',
-//    'url' => 'civicrm/mailing/subliminal',
-//    'permission' => 'access CiviMail',
-//    'operator' => 'OR',
-//    'separator' => 0,
-//  ]);
-//  _importcontacts_civix_navigationMenu($menu);
-//}
-
 function importcontacts_civicrm_buildForm($formName, &$form) {
   if ($formName == 'CRM_Contact_Import_Form_DataSource') {
     $dataSource = $form->getElement('dataSource');

@@ -32,34 +32,6 @@ function sage_civicrm_enable() {
   _sage_civix_civicrm_enable();
 }
 
-// --- Functions below this ship commented out. Uncomment as required. ---
-
-/**
- * Implements hook_civicrm_preProcess().
- *
- * @link https://docs.civicrm.org/dev/en/latest/hooks/hook_civicrm_preProcess
- */
-//function sage_civicrm_preProcess($formName, &$form) {
-//
-//}
-
-/**
- * Implements hook_civicrm_navigationMenu().
- *
- * @link https://docs.civicrm.org/dev/en/latest/hooks/hook_civicrm_navigationMenu
- */
-//function sage_civicrm_navigationMenu(&$menu) {
-//  _sage_civix_insert_navigation_menu($menu, 'Mailings', array(
-//    'label' => E::ts('New subliminal message'),
-//    'name' => 'mailing_subliminal_message',
-//    'url' => 'civicrm/mailing/subliminal',
-//    'permission' => 'access CiviMail',
-//    'operator' => 'OR',
-//    'separator' => 0,
-//  ));
-//  _sage_civix_navigationMenu($menu);
-//}
-
 function sage_civicrm_pre($op, $objectName, $id, &$params) {
   //Don't do anything unless we are saving an address
   if ($objectName == 'Address' && in_array($op, ['create', 'edit'])) {
@@ -78,14 +50,5 @@ function sage_civicrm_pre($op, $objectName, $id, &$params) {
     if ($addr_changed || $geo_missing || $district_info_missing) {
       CRM_Utils_SAGE::lookup($params, $addr_changed, true);
     }
-
-    /*Civi::log()->debug(__FUNCTION__, [
-      'op' => $op,
-      'id' => $id,
-      'params' => $params,
-      '$addr_changed' => $addr_changed,
-      '$geo_missing' => $geo_missing,
-      '$district_info_missing' => $district_info_missing,
-    ]);*/
   }
 }

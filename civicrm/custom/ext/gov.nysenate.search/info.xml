@@ -2,7 +2,7 @@
 <extension key="gov.nysenate.search" type="module">
   <file>search</file>
   <name>NYSS: Search Customizations</name>
-  <description/>
+  <description>Enhances CiviCRM QuickSearch, Advanced Search, and SearchKit interfaces.</description>
   <license>AGPL-3.0</license>
   <maintainer>
     <author>NYS Senate</author>

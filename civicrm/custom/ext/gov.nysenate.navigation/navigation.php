@@ -416,6 +416,19 @@ function _buildManageMenu($manageID) {
       ],
       $manageID+13 => [
         'attributes' => [
+            'label' => 'Caseload Dashboard',
+            'name' => 'Caseload Dashboard',
+            'url' => 'civicrm/nyss/caseload/dashboard',
+            'permission' => 'access caseload dashboard',
+            'operator' => 'AND',
+            'separator' => 0,
+            'parentID' => $manageID,
+            'navID' => $manageID+13,
+            'active' => 1,
+        ],
+      ],
+      $manageID+14 => [
+        'attributes' => [
           'label' => 'Import/Export Mappings',
           'name' => 'Import/Export Mappings',
           'url' => 'civicrm/admin/mapping?reset=1',
@@ -423,12 +436,12 @@ function _buildManageMenu($manageID) {
           'operator' => 'OR',
           'separator' => 0,
           'parentID' => $manageID,
-          'navID' => $manageID+13,
+          'navID' => $manageID+14,
           'active' => 1,
         ],
       ],
       //5230 add duplicate address removal tool
-      $manageID+14 => [
+      $manageID+15 => [
         'attributes' => [
           'label' => 'Duplicate Address Removal',
           'name' => 'Duplicate Address Removal',
@@ -437,12 +450,12 @@ function _buildManageMenu($manageID) {
           'operator' => 'AND',
           'separator' => 0,
           'parentID' => $manageID,
-          'navID' => $manageID+14,
+          'navID' => $manageID+15,
           'active' => 1,
         ],
       ],
       //delete trashed tool
-      $manageID+15 => [
+      $manageID+16 => [
         'attributes' => [
           'label' => 'Delete Trashed Contacts',
           'name' => 'Delete Trashed Contacts',
@@ -451,11 +464,11 @@ function _buildManageMenu($manageID) {
           'operator' => 'OR',
           'separator' => 0,
           'parentID' => $manageID,
-          'navID' => $manageID+15,
+          'navID' => $manageID+16,
           'active' => 1,
         ],
       ],
-      $manageID+16 => [
+      $manageID+17 => [
         'attributes' => [
           'label' => 'Manage Images',
           'name' => 'Manage Images',
@@ -464,7 +477,7 @@ function _buildManageMenu($manageID) {
           'operator' => 'OR',
           'separator' => 0,
           'parentID' => $manageID,
-          'navID' => $manageID+16,
+          'navID' => $manageID+17,
           'active' => 1,
           'target' => '_blank',
         ],
