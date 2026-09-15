@@ -11,21 +11,27 @@
 
 namespace Civi\Authx;
 
-use Civi\Standalone\Security;
-
 class Standalone implements AuthxInterface {
 
   /**
    * @inheritDoc
    */
   public function checkPassword(string $username, string $password) {
-    return Security::singleton()->checkPassword($username, $password);
+    $security = \Civi::service('standaloneusers.security');
+    $cred = [
+      'username' => $username,
+      'password' => $password,
+    ];
+    $user = $security->loadUser($cred);
+    return $user && $security->checkPassword($cred, $user) ? $user['id'] : NULL;
   }
 
   /**
    * @inheritDoc
    */
   public function loginSession($userId) {
+    \session_regenerate_id(FALSE);
+
     $this->loginStateless($userId);
 
     $session = \CRM_Core_Session::singleton();
@@ -51,8 +57,10 @@ class Standalone implements AuthxInterface {
   public function logoutSession() {
     global $loggedInUserId;
     $loggedInUserId = NULL;
+
+    session_regenerate_id(TRUE);
     \CRM_Core_Session::singleton()->reset();
-    // session_destroy();
+    $_SESSION = [];
   }
 
   /**
@@ -66,12 +74,31 @@ class Standalone implements AuthxInterface {
   /**
    * @inheritDoc
    */
+  public function logoutStateless() {
+    global $loggedInUserId;
+    $loggedInUserId = NULL;
+
+    \CRM_Core_Session::singleton()->reset();
+    $_SESSION = [];
+  }
+
+  /**
+   * @inheritDoc
+   */
   public function getCurrentUserId() {
     global $loggedInUserId;
     if (empty($loggedInUserId) && session_status() === PHP_SESSION_ACTIVE) {
       $loggedInUserId = \CRM_Core_Session::singleton()->get('ufID');
     }
     return $loggedInUserId;
+  }
+
+  /**
+   * @inheritDoc
+   */
+  public function getUserIsBlocked($userId) {
+    // ToDo
+    return FALSE;
   }
 
 }

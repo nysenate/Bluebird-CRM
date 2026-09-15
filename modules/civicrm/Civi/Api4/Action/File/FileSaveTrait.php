@@ -19,37 +19,59 @@ trait FileSaveTrait {
    */
   protected function write(array $items) {
     foreach ($items as &$file) {
+      // In update mode, the uri cannot be changed.
+      if (!empty($file['id']) && isset($file['uri'])) {
+        $existingUri = \CRM_Core_DAO_File::getDbVal('uri', $file['id']);
+        if ($existingUri !== $file['uri']) {
+          throw new \CRM_Core_Exception("Uri of existing file cannot be changed.");
+        }
+        unset($file['uri']);
+      }
+      // In create mode, uri cannot be set.
+      if (isset($file['uri'])) {
+        throw new \CRM_Core_Exception("Setting file URI is not permitted. Use file_name instead.");
+      }
       if (empty($file['id']) && !empty($file['file_name'])) {
         $file['uri'] = $this->makeFileUri($file['file_name']);
         if (!empty($file['move_file'])) {
           if ($this->getCheckPermissions()) {
             throw new \CRM_Core_Exception("The move_file option is only allowed in trusted operations. Set checkPermissions=0 to enable move_file.");
           }
-          $path = $this->getFilePath($file);
+          $path = \CRM_Core_BAO_File::getFilePath($file);
           if (!copy($file['move_file'], $path)) {
             throw new \CRM_Core_Exception("Cannot copy uploaded file {$file['move_file']} to $path");
           }
           unlink($file['move_file']);
         }
       }
+      // Security: Validate existing URI before writing content
+      if (!empty($file['content']) && !empty($file['id'])) {
+        $existingUri = \CRM_Core_DAO_File::getDbVal('uri', $file['id']);
+        $this->validateUri($existingUri);
+      }
       if (!empty($file['content'])) {
-        $path = $this->getFilePath($file);
+        $path = \CRM_Core_BAO_File::getFilePath($file);
         file_put_contents($path, $file['content']);
       }
     }
     return \CRM_Core_BAO_File::writeRecords($items);
   }
 
-  private function getFilePath(array $file) {
-    $uri = $file['uri'] ?? \CRM_Core_DAO_File::getDbVal('uri', $file['id']);
-    return \CRM_Core_Config::singleton()->customFileUploadDir . $uri;
+  private function makeFileUri(string $fileName) {
+    $this->validateUri($fileName);
+    return \CRM_Utils_File::makeFileName($fileName);
   }
 
-  private function makeFileUri($fileName) {
-    if ($fileName != basename($fileName) || preg_match(':[/\\\\]:', $fileName)) {
-      throw new \CRM_Core_Exception('Malformed name');
+  /**
+   * Validate that a URI/filename doesn't contain directory separators or path traversal.
+   *
+   * @param string $uri
+   * @throws \CRM_Core_Exception
+   */
+  private function validateUri(string $uri): void {
+    if ($uri !== basename($uri)) {
+      throw new \CRM_Core_Exception('Invalid URI: must not contain directory separators or path traversal sequences');
     }
-    return \CRM_Utils_File::makeFileName($fileName);
   }
 
 }

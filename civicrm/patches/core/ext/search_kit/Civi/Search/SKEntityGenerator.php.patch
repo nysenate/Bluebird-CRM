@@ -1,5 +1,5 @@
 diff --git a/modules/civicrm/ext/search_kit/Civi/Search/SKEntityGenerator.php b/modules/civicrm/ext/search_kit/Civi/Search/SKEntityGenerator.php
-index fd99ac829..44e412082 100644
+index 8ff2518e16..b881e7da02 100644
 --- a/modules/civicrm/ext/search_kit/Civi/Search/SKEntityGenerator.php
 +++ b/modules/civicrm/ext/search_kit/Civi/Search/SKEntityGenerator.php
 @@ -23,11 +23,13 @@ class SKEntityGenerator {
@@ -17,8 +17,8 @@ index fd99ac829..44e412082 100644
      $apiParams = $realParams;
      // Add orderBy to api params
      foreach ($settings['sort'] ?? [] as $item) {
-@@ -47,6 +49,9 @@ class SKEntityGenerator {
-     $api = Request::create($realEntity, 'get', $apiParams);
+@@ -52,6 +54,9 @@ class SKEntityGenerator {
+ 
      $query = new Api4SelectQuery($api);
      $query->forceSelectId = FALSE;
 +    if ($mode === 'view') {

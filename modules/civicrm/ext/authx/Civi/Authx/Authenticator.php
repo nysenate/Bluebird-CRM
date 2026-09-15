@@ -41,7 +41,12 @@ class Authenticator extends AutoService implements HookInterface {
     }
 
     if (!empty($_SERVER['HTTP_AUTHORIZATION']) && !empty(\Civi::settings()->get('authx_header_cred'))) {
-      return $this->auth($e, ['flow' => 'header', 'cred' => $_SERVER['HTTP_AUTHORIZATION'], 'siteKey' => $siteKey]);
+      try {
+        return $this->auth($e, ['flow' => 'header', 'cred' => $_SERVER['HTTP_AUTHORIZATION'], 'siteKey' => $siteKey]);
+      }
+      catch (IgnoreCredentialException $e) {
+        // HTTP `Authorization:` can be dirty. Try other things...
+      }
     }
 
     if (!empty($params['_authx'])) {
@@ -311,6 +316,9 @@ class Authenticator extends AutoService implements HookInterface {
       // Already logged in. Post-condition met - but by unusual means.
       \CRM_Core_Session::singleton()->set('authx', $tgt->createAlreadyLoggedIn());
       return;
+    }
+    if ($tgt->userId !== NULL && $this->authxUf->getUserIsBlocked($tgt->userId)) {
+      $this->reject('Cannot login. User is blocked.');
     }
 
     if (empty($tgt->contactId)) {

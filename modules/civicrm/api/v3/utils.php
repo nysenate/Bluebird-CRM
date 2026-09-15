@@ -9,6 +9,8 @@
  +--------------------------------------------------------------------+
  */
 
+require_once 'CRM/Core/ClassLoader.php';
+
 /**
  * CiviCRM APIv3 utility functions.
  *
@@ -19,7 +21,6 @@
  * Initialize CiviCRM - should be run at the start of each API function.
  */
 function _civicrm_api3_initialize() {
-  require_once 'CRM/Core/ClassLoader.php';
   CRM_Core_ClassLoader::singleton()->register();
   CRM_Core_Config::singleton();
 }
@@ -263,7 +264,7 @@ function civicrm_api3_create_success($values = 1, $params = [], $entity = NULL, 
       $result['deprecated'] = $deprecated;
     }
     // Action-specific deprecations
-    elseif (!empty($deprecated[$action])) {
+    elseif (!empty($deprecated[$action ?? ''])) {
       $result['deprecated'] = $deprecated[$action];
     }
   }
@@ -506,6 +507,10 @@ function _civicrm_api3_get_using_query_object($entity, $params, $additional_opti
     $fields = civicrm_api($entity, 'getfields', ['version' => 3, 'action' => 'get']);
     // we need to add this in as earlier in this function 'id' was unset in favour of $entity_id
     $fields['values'][$lowercase_entity . '_id'] = [];
+    // Allow search by phone_numeric for contacts.
+    if ($lowercase_entity === 'contact') {
+      $fields['values']['phone_numeric'] = [];
+    }
     $varsToFilter = ['returnProperties', 'inputParams'];
     foreach ($varsToFilter as $varToFilter) {
       if (!is_array($$varToFilter)) {
@@ -2427,7 +2432,7 @@ function _civicrm_api3_api_resolve_alias($entity, $fieldName, $action = 'create'
   ]);
   $meta = $result['values'];
   if (!isset($meta[$fieldName]['name']) && isset($meta[$fieldName . '_id'])) {
-    $fieldName = $fieldName . '_id';
+    $fieldName .= '_id';
   }
   if (isset($meta[$fieldName])) {
     return $meta[$fieldName]['name'];
@@ -2520,7 +2525,7 @@ function _civicrm_api3_basic_array_get($entity, $params, $records, $idCol, $filt
       foreach ($sort as $field) {
         [$field, $dir] = array_pad(explode(' ', $field), 2, 'asc');
         $modifier = strtolower($dir) == 'asc' ? 1 : -1;
-        if (isset($a[$field]) && isset($b[$field])) {
+        if (isset($a[$field], $b[$field])) {
           if ($a[$field] == $b[$field]) {
             continue;
           }

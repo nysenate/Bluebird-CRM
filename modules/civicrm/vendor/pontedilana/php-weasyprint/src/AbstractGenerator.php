@@ -22,6 +22,11 @@ abstract class AbstractGenerator implements GeneratorInterface, LoggerAwareInter
     public const DEFAULT_TIMEOUT = 10;
 
     /** @var list<string> */
+    protected const ALLOWED_PROTOCOLS = ['file'];
+
+    protected const WINDOWS_LOCAL_FILENAME_REGEX = '/^[a-z]:(?:[\\\\\/]?(?:[\w\s!#()-]+|[\.]{1,2})+)*[\\\\\/]?/i';
+
+    /** @var list<string> */
     public array $temporaryFiles = [];
     protected ?string $temporaryFolder = null;
     private LoggerInterface $logger;
@@ -31,22 +36,37 @@ abstract class AbstractGenerator implements GeneratorInterface, LoggerAwareInter
     private ?array $env;
     private ?int $timeout = null;
 
-    /** @var array<string, bool|string|array|null> */
+    /** @var array<string, bool|int|string|array|null> */
     private array $options = [];
     private ?string $binary = null;
 
     /**
-     * @param array<string, bool|string|array|null> $options
-     * @param array<string, mixed>|null             $env
+     * @param array<string, bool|int|string|array|null> $options
+     * @param array<string, mixed>|null                 $env
+     *
+     * @note
+     *  This class sets a default timeout on the process to prevent
+     *  orphaned or hanging processes. This is a defensive measure that applies
+     *  in most cases.
+     *
+     *  If you run this inside a queue worker, job runner, or any environment
+     *  that already handles timeouts (e.g. Symfony Messenger, Laravel Queue),
+     *  you can disable the internal timeout using:
+     *
+     *      $generator->disableTimeout();
+     *  or
+     *      $generator->setTimeout(null);
+     *
+     *  This ensures no conflicts with higher-level timeout strategies.
      */
-    public function __construct(string $binary = null, array $options = [], array $env = null)
+    public function __construct(?string $binary = null, array $options = [], ?array $env = null)
     {
         $this->configure();
 
         $this->logger = new NullLogger();
         $this->setBinary($binary);
-        $this->setOptions($options);
         $this->setTimeout(self::DEFAULT_TIMEOUT);
+        $this->setOptions($options);
         $this->env = empty($env) ? null : $env;
 
         if (\is_callable([$this, 'removeTemporaryFiles'])) {
@@ -145,15 +165,14 @@ abstract class AbstractGenerator implements GeneratorInterface, LoggerAwareInter
     /**
      * Builds the command string.
      *
-     * @param string                                $binary  The binary path/name
-     * @param string                                $input   Url or file location of the page to process
-     * @param string                                $output  File location to the pdf-or-image-to-be
-     * @param array<string, bool|string|array|null> $options An array of options
+     * @param string                                    $binary  The binary path/name
+     * @param string                                    $input   Url or file location of the page to process
+     * @param string                                    $output  File location to the pdf-or-image-to-be
+     * @param array<string, bool|int|string|array|null> $options An array of options
      */
     protected function buildCommand(string $binary, string $input, string $output, array $options = []): string
     {
-        $escapedBinary = \escapeshellarg($binary);
-        $command = \is_executable($escapedBinary) ? $escapedBinary : $binary;
+        $command = $this->getEscapedBinary($binary);
 
         foreach ($options as $key => $option) {
             if (null === $option || false === $option) {
@@ -170,21 +189,27 @@ abstract class AbstractGenerator implements GeneratorInterface, LoggerAwareInter
                     $command .= ' --' . $key . ' ' . \escapeshellarg($v);
                 }
             } else {
-                switch ($key) {
-                    case 'format':
-                        $command .= ' --' . $key . ' ' . $option;
-                        break;
-                    case 'resolution':
-                        $command .= ' --' . $key . ' ' . (int)$option;
-                        break;
-                    default:
-                        $command .= ' --' . $key . ' ' . \escapeshellarg((string)$option);
-                        break;
-                }
+                $command .= ' --' . $key . ' ' . \escapeshellarg((string)$option);
             }
         }
 
         return $command . (' ' . \escapeshellarg($input) . ' ' . \escapeshellarg($output));
+    }
+
+    /**
+     * Verifies the binary points to a real executable file, then returns it shell-escaped.
+     * Validating before escaping prevents shell-command injection through an
+     * attacker-controlled binary string.
+     *
+     * @throws \RuntimeException if the binary is not an executable file
+     */
+    protected function getEscapedBinary(string $binary): string
+    {
+        if (!\is_executable($binary)) {
+            throw new \RuntimeException(\sprintf("The binary '%s' is not executable.", $binary));
+        }
+
+        return \escapeshellarg($binary);
     }
 
     /**
@@ -217,8 +242,8 @@ abstract class AbstractGenerator implements GeneratorInterface, LoggerAwareInter
      */
     protected function prepareOutput(string $filename, bool $overwrite): void
     {
-        if (0 === \strpos($filename, 'phar://')) {
-            throw new \InvalidArgumentException('The output file cannot be a phar archive.');
+        if (!$this->isProtocolAllowed($filename)) {
+            throw new \InvalidArgumentException(\sprintf("The output file scheme is not supported. Expected one of ['%s'].", \implode("', '", self::ALLOWED_PROTOCOLS)));
         }
 
         $directory = \dirname($filename);
@@ -238,6 +263,34 @@ abstract class AbstractGenerator implements GeneratorInterface, LoggerAwareInter
         }
     }
 
+    /**
+     * Verifies that the given filename uses an allowed protocol.
+     *
+     * A scheme allow-list (instead of a `phar://` blacklist) closes the
+     * case-insensitive wrapper bypass that would otherwise reach file_exists()
+     * with e.g. `PHAR://`, enabling PHAR deserialization on PHP < 8.
+     *
+     * @throws \InvalidArgumentException if the filename is not valid
+     */
+    protected function isProtocolAllowed(string $filename): bool
+    {
+        if (false === $parsedFilename = \parse_url($filename)) {
+            throw new \InvalidArgumentException('The filename is not valid.');
+        }
+
+        $protocol = isset($parsedFilename['scheme']) ? \strtolower($parsedFilename['scheme']) : 'file';
+
+        if (
+            'Windows' === \PHP_OS_FAMILY
+            && 1 === \strlen($protocol)
+            && 1 === \preg_match(self::WINDOWS_LOCAL_FILENAME_REGEX, $filename)
+        ) {
+            $protocol = 'file';
+        }
+
+        return \in_array($protocol, self::ALLOWED_PROTOCOLS, true);
+    }
+
     public function getDefaultExtension(): string
     {
         return $this->defaultExtension;
@@ -255,6 +308,11 @@ abstract class AbstractGenerator implements GeneratorInterface, LoggerAwareInter
         $this->timeout = $timeout;
 
         return $this;
+    }
+
+    public function disableTimeout(): self
+    {
+        return $this->setTimeout(null);
     }
 
     /**
@@ -280,9 +338,9 @@ abstract class AbstractGenerator implements GeneratorInterface, LoggerAwareInter
     /**
      * Returns the command for the given input and output files.
      *
-     * @param string                                $input   The input file
-     * @param string                                $output  The ouput file
-     * @param array<string, bool|string|array|null> $options An optional array of options that will be used only for this command
+     * @param string                                    $input   The input file
+     * @param string                                    $output  The ouput file
+     * @param array<string, bool|int|string|array|null> $options An optional array of options that will be used only for this command
      */
     public function getCommand(string $input, string $output, array $options = []): string
     {
@@ -300,7 +358,20 @@ abstract class AbstractGenerator implements GeneratorInterface, LoggerAwareInter
      */
     public function removeTemporaryFiles(): void
     {
+        $temporaryFolderPath = \realpath($this->getTemporaryFolder());
+        if (false === $temporaryFolderPath) {
+            return;
+        }
+        $temporaryFolderPath = \rtrim($temporaryFolderPath, \DIRECTORY_SEPARATOR) . \DIRECTORY_SEPARATOR;
+
         foreach ($this->temporaryFiles as $file) {
+            // Only delete files actually located inside the temporary folder, so a path
+            // injected into the public $temporaryFiles cannot turn cleanup into an
+            // arbitrary file deletion at shutdown.
+            $filePath = \realpath($file);
+            if (false === $filePath || 0 !== \strncmp($filePath, $temporaryFolderPath, \strlen($temporaryFolderPath))) {
+                continue;
+            }
             $this->unlink($file);
         }
     }
@@ -363,8 +434,8 @@ abstract class AbstractGenerator implements GeneratorInterface, LoggerAwareInter
      * Sets an option. Be aware that option values are NOT validated and that
      * it is your responsibility to validate user inputs.
      *
-     * @param string                 $name  The option to set
-     * @param bool|string|array|null $value The value (NULL to unset)
+     * @param string                     $name  The option to set
+     * @param bool|int|string|array|null $value The value (NULL to unset)
      *
      * @throws \InvalidArgumentException
      */
@@ -384,7 +455,7 @@ abstract class AbstractGenerator implements GeneratorInterface, LoggerAwareInter
     /**
      * Sets an array of options.
      *
-     * @param array<string, bool|string|array|null> $options An associative array of options as name/value
+     * @param array<string, bool|int|string|array|null> $options An associative array of options as name/value
      */
     public function setOptions(array $options): self
     {
@@ -398,7 +469,7 @@ abstract class AbstractGenerator implements GeneratorInterface, LoggerAwareInter
     /**
      * Returns all the options.
      *
-     * @return array<string, bool|string|array|null>
+     * @return array<string, bool|int|string|array|null>
      */
     public function getOptions(): array
     {
@@ -408,8 +479,8 @@ abstract class AbstractGenerator implements GeneratorInterface, LoggerAwareInter
     /**
      * Adds an option.
      *
-     * @param string                 $name    The name
-     * @param bool|string|array|null $default An optional default value
+     * @param string                     $name    The option name
+     * @param bool|int|string|array|null $default An optional default value
      *
      * @throws \InvalidArgumentException
      */
@@ -427,7 +498,7 @@ abstract class AbstractGenerator implements GeneratorInterface, LoggerAwareInter
     /**
      * Adds an array of options.
      *
-     * @param array<string, bool|string|array|null> $options
+     * @param array<string, bool|int|string|array|null> $options
      */
     protected function addOptions(array $options): self
     {
@@ -442,9 +513,9 @@ abstract class AbstractGenerator implements GeneratorInterface, LoggerAwareInter
      * Merges the given array of options to the instance options and returns
      * the result options array. It does NOT change the instance options.
      *
-     * @param array<string, bool|string|array|null> $options
+     * @param array<string, bool|int|string|array|null> $options
      *
-     * @return array<string, bool|string|array|null>
+     * @return array<string, bool|int|string|array|null>
      *
      * @throws \InvalidArgumentException
      */

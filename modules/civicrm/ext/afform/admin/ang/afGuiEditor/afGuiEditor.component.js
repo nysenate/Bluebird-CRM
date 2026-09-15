@@ -18,20 +18,22 @@
       mode: '@'
     },
     controllerAs: 'editor',
-    controller: function($scope, crmApi4, afGui, $parse, $timeout, $location, $route, $rootScope) {
-      var ts = $scope.ts = CRM.ts('org.civicrm.afform_admin');
+    controller: function($scope, $element, crmApi4, crmUiHelp, afGui, $parse, $timeout, $location, $route, $rootScope, formatForSelect2) {
+      const ts = $scope.ts = CRM.ts('org.civicrm.afform_admin');
+      $scope.hs = crmUiHelp({file: 'CRM/AfformAdmin/afformBuilder'});
 
       this.afform = null;
       $scope.saving = false;
       $scope.selectedEntityName = null;
       $scope.searchDisplayListFilter = {};
       this.meta = afGui.meta;
-      var editor = this,
-        undoHistory = [],
-        undoPosition = 0,
-        undoAction = null,
-        lastSaved = {},
-        sortableOptions = {};
+      const editor = this;
+      let undoHistory = [];
+      let undoPosition = 0;
+      let undoAction = null;
+      let lastSaved = {};
+      const sortableOptions = {};
+      this.afformTags = formatForSelect2(this.meta.afform_fields.tags.options || [], 'id', 'label', ['description', 'color']);
 
       // ngModelOptions to debounce input
       // Used to prevent cluttering the undo history with every keystroke
@@ -145,8 +147,8 @@
 
         editor.afform.permission_operator = editor.afform.permission_operator || 'AND';
         // set redirect to url as default if not set
-        if (!editor.afform.confirmation_type && editor.meta.confirmation_types.length > 0) {
-          editor.afform.confirmation_type = editor.meta.confirmation_types[0].value;
+        if (!editor.afform.confirmation_type && editor.meta.afform_fields.confirmation_type.options.length > 0) {
+          editor.afform.confirmation_type = editor.meta.afform_fields.confirmation_type.options[0].id;
         }
 
         // Initialize undo history
@@ -223,17 +225,17 @@
       $scope.updateLayoutHtml = function() {
         $scope.layoutHtml = '...Loading...';
         crmApi4('Afform', 'convert', {layout: editor.afform.layout, from: 'deep', to: 'html', formatWhitespace: true})
-          .then(function(r){
+          .then((r) => {
             $scope.layoutHtml = r[0].layout || '(Error)';
           })
-          .catch(function(r){
+          .catch((r) => {
             $scope.layoutHtml = '(Error)';
           });
       };
 
       this.addEntity = function(type, selectTab) {
-        var meta = afGui.meta.entities[type],
-          num = 1;
+        const meta = afGui.meta.entities[type];
+        let num = 1;
         // Give this new entity a unique name
         while (!!$scope.entities[type + num]) {
           num++;
@@ -256,17 +258,17 @@
             });
           }
           // Add this af-entity tag after the last existing one
-          var pos = 1 + _.findLastIndex(editor.layout['#children'], {'#tag': 'af-entity'});
+          let pos = 1 + _.findLastIndex(editor.layout['#children'], {'#tag': 'af-entity'});
           editor.layout['#children'].splice(pos, 0, $scope.entities[type + num]);
           // Create a new af-fieldset container for the entity
           if (meta.boilerplate !== false) {
-            var fieldset = _.cloneDeep(afGui.meta.elements.fieldset.element);
+            const fieldset = _.cloneDeep(afGui.meta.elements.fieldset.element);
             fieldset['af-fieldset'] = type + num;
             fieldset['af-title'] = meta.label + ' ' + num;
-            // Add boilerplate contents
-            _.each(meta.boilerplate, function (tag) {
-              fieldset['#children'].push(tag);
-            });
+            // Add boilerplate contents if any
+            if (Array.isArray(meta.boilerplate) && meta.boilerplate.length) {
+              fieldset['#children'].push(..._.cloneDeep(meta.boilerplate));
+            }
             // Attempt to place the new af-fieldset after the last one on the form
             pos = 1 + _.findLastIndex(editor.layout['#children'], 'af-fieldset');
             if (pos) {
@@ -278,7 +280,7 @@
           delete $scope.entities[type + num].loading;
           if (selectTab) {
             editor.selectEntity(type + num);
-            $timeout(function() {
+            $timeout(() => {
               editor.scrollToEntity(type + num);
             });
           }
@@ -292,7 +294,7 @@
           crmApi4('Afform', 'loadAdminData', {
             definition: {type: 'form'},
             entity: type
-          }, 0).then(function(data) {
+          }, 0).then((data) => {
             afGui.addMeta(data);
             addToCanvas();
           });
@@ -325,9 +327,10 @@
 
       // Scroll an entity's first fieldset into view of the canvas
       this.scrollToEntity = function(entityName) {
-        var $canvas = $('#afGuiEditor-canvas-body'),
-          $entity = $('.af-gui-container-type-fieldset[data-entity="' + entityName + '"]').first(),
-          scrollValue, maxScroll;
+        const $canvas = $('#afGuiEditor-canvas-body');
+        const $entity = $('.af-gui-container-type-fieldset[data-entity="' + entityName + '"]').first();
+        let scrollValue;
+        let maxScroll;
         if ($entity.length) {
           // Scrolltop value needed to place entity's fieldset at top of canvas
           scrollValue = $canvas.scrollTop() + ($entity.offset().top - $canvas.offset().top);
@@ -457,7 +460,7 @@
 
       this.placementRequiresServerRoute = function() {
         let requiresServerRoute = false;
-        editor.afform.placement.forEach(function(placement) {
+        editor.afform.placement.forEach((placement) => {
           const item = editor.meta.afform_placement.find(item => item.id === placement);
           if (item && item.filter) {
             requiresServerRoute = item.text;
@@ -468,27 +471,27 @@
 
       // Gets complete field defn, merging values from the field with default values
       function fillFieldDefn(entityType, field) {
-        var spec = _.cloneDeep(afGui.getField(entityType, field.name));
+        const spec = _.cloneDeep(afGui.getField(entityType, field.name));
         return _.merge(spec, field.defn || {});
       }
 
       // Get all fields on the form for a particular entity
       this.getEntityFields = function(entityName) {
-        var fieldsets = afGui.findRecursive(editor.layout['#children'], {'af-fieldset': entityName}),
+        const fieldsets = afGui.findRecursive(editor.layout['#children'], {'af-fieldset': entityName}),
           entityType = editor.getEntity(entityName).type,
           entityFields = {fields: [], joins: []},
-          isJoin = function(item) {
+          isJoin = function (item) {
             return _.isPlainObject(item) && ('af-join' in item);
           };
-        _.each(fieldsets, function(fieldset) {
-          _.each(afGui.getFormElements(fieldset['#children'], {'#tag': 'af-field'}, isJoin), function(field) {
+        fieldsets.forEach((fieldset) => {
+          afGui.getFormElements(fieldset['#children'], {'#tag': 'af-field'}, isJoin).forEach((field) => {
             if (field.name) {
               entityFields.fields.push(fillFieldDefn(entityType, field));
             }
           });
-          _.each(afGui.getFormElements(fieldset['#children'], isJoin), function(join) {
-            var joinFields = [];
-            _.each(afGui.getFormElements(join['#children'], {'#tag': 'af-field'}), function(field) {
+          afGui.getFormElements(fieldset['#children'], isJoin).forEach((join) => {
+            const joinFields = [];
+            afGui.getFormElements(join['#children'], {'#tag': 'af-field'}).forEach((field) => {
               if (field.name) {
                 joinFields.push(fillFieldDefn(join['af-join'], field));
               }
@@ -539,7 +542,7 @@
           return;
         }
         editor.navigationMenu = null;
-        var conditions = [
+        const conditions = [
           ['domain_id', '=', 'current_domain'],
           ['name', '!=', 'Home']
         ];
@@ -550,34 +553,35 @@
           select: ['name', 'label', 'parent_id', 'icon'],
           where: conditions,
           orderBy: {weight: 'ASC'}
-        }).then(function(items) {
+        }).then((items) => {
           editor.navigationMenu = buildTree(items, null);
         });
       }
 
       function buildTree(items, parentId) {
-        return _.transform(items, function(navigationMenu, item) {
+        return items.reduce((navigationMenu, item) => {
           if (parentId === item.parent_id) {
-            var children = buildTree(items, item.id),
-              menuItem = {
-                id: item.name,
-                text: item.label,
-                icon: item.icon
-              };
+            const children = buildTree(items, item.id);
+            const menuItem = {
+              id: item.name,
+              text: item.label,
+              icon: item.icon
+            };
             if (children.length) {
               menuItem.children = children;
             }
             navigationMenu.push(menuItem);
           }
+          return navigationMenu;
         }, []);
       }
 
       // Collects all search displays currently on the form
       function getSearchDisplaysOnForm() {
-        var searchFieldsets = afGui.findRecursive(editor.afform.layout, {'af-fieldset': ''});
-        return _.transform(searchFieldsets, function(searchDisplays, fieldset) {
-          var displayElement = afGui.findRecursive(fieldset['#children'], function(item) {
-            return item['search-name'] && item['#tag'] && item['#tag'].indexOf('crm-search-display-') === 0;
+        const searchFieldsets = afGui.findRecursive(editor.afform.layout, {'af-fieldset': ''});
+        return searchFieldsets.reduce((searchDisplays, fieldset) => {
+          const displayElement = afGui.findRecursive(fieldset['#children'], (item) => {
+            return item['search-name'] && item['#tag'] && afGui.meta.searchDisplayTags.includes(item['#tag']);
           })[0];
           if (displayElement) {
             searchDisplays[displayElement['search-name'] + (displayElement['display-name'] ? '.' + displayElement['display-name'] : '')] = {
@@ -586,6 +590,7 @@
               settings: afGui.getSearchDisplay(displayElement['search-name'], displayElement['display-name'])
             };
           }
+          return searchDisplays;
         }, {});
       }
 
@@ -596,16 +601,16 @@
         // A value means it's alredy loaded. Null means it's loading.
         if (!editor.searchOptions && editor.searchOptions !== null) {
           editor.searchOptions = null;
-          afGui.getAllSearchDisplays().then(function(links) {
+          afGui.getAllSearchDisplays().then((links) => {
             editor.searchOptions = links;
           });
         }
       };
 
       this.addSearchDisplay = function(display) {
-        var searchName = display.key.split('.')[0];
-        var displayName = display.key.split('.')[1] || '';
-        var fieldset = {
+        const searchName = display.key.split('.')[0];
+        const displayName = display.key.split('.')[1] || '';
+        const fieldset = {
           '#tag': 'div',
           'af-fieldset': '',
           'af-title': display.label,
@@ -617,7 +622,7 @@
             }
           ]
         };
-        var meta = {
+        const meta = {
           fieldset: fieldset,
           element: fieldset['#children'][0],
           settings: afGui.getSearchDisplay(searchName, displayName),
@@ -635,7 +640,7 @@
           crmApi4('Afform', 'loadAdminData', {
             definition: {type: 'search'},
             entity: display.key
-          }, 0).then(function(data) {
+          }, 0).then((data) => {
             afGui.addMeta(data);
             meta.settings = afGui.getSearchDisplay(searchName, displayName);
             addToCanvas();
@@ -647,8 +652,8 @@
       this.onRemoveElement = function() {
         // Keep this.searchDisplays in-sync when deleteing stuff from the form
         if (editor.getFormType() === 'search') {
-          var current = getSearchDisplaysOnForm();
-          _.each(_.keys(editor.searchDisplays), function(key) {
+          const current = getSearchDisplaysOnForm();
+          Object.keys(editor.searchDisplays).forEach(key => {
             if (!(key in current)) {
               delete editor.searchDisplays[key];
               editor.selectEntity(null);
@@ -685,11 +690,11 @@
 
       // Validates that a drag-n-drop action is allowed
       this.onDrop = function(event, ui) {
-        var sort = ui.item.sortable;
+        const sort = ui.item.sortable;
         // Check if this is a callback for an item dropped into a different container
         // @see https://github.com/angular-ui/ui-sortable notes on canceling
         if (!sort.received && sort.source[0] !== sort.droptarget[0]) {
-          var $source = $(sort.source[0]),
+          const $source = $(sort.source[0]),
             $target = $(sort.droptarget[0]),
             $item = $(ui.item[0]);
           // Fields cannot be dropped outside their own entity
@@ -706,7 +711,10 @@
       };
 
       $scope.save = function() {
-        var afform = JSON.parse(angular.toJson(editor.afform));
+        // save and close any open rich text elements
+        $element[0].querySelectorAll('civi-rich-text-input[editing]').forEach((el) => el.saveAndCloseEditor());
+
+        const afform = JSON.parse(angular.toJson(editor.afform));
         // This might be set to undefined by validation
         afform.server_route = afform.server_route || '';
         // create submission is required if email confirmation is selected.
@@ -715,7 +723,7 @@
         }
         $scope.saving = true;
         crmApi4('Afform', 'save', {formatWhitespace: true, records: [afform]})
-          .then(function (data) {
+          .then((data) => {
             $scope.saving = false;
             // When saving a new form for the first time
             if (!editor.afform.name) {
@@ -725,7 +733,7 @@
               changePathQuietly('/edit/' + data[0].name);
             }
             // Update undo history - mark current snapshot as "saved"
-            _.each(undoHistory, function(snapshot, index) {
+            undoHistory.forEach((snapshot, index) => {
               snapshot.saved = index === undoPosition;
               snapshot.afform.name = data[0].name;
             });
@@ -736,12 +744,17 @@
               refreshMenubar();
             }
             setLastSaved();
+          })
+          .catch((error) => {
+            const message = error?.error_message ? error.error_message : ts('Unknown error');
+            CRM.alert(message, ts('Save failed'), 'error');
+            $scope.saving = false;
           });
       };
 
       $scope.$watch('editor.afform.title', function(newTitle, oldTitle) {
         if (typeof oldTitle === 'string') {
-          _.each($scope.entities, function(entity) {
+          Object.values($scope.entities).forEach((entity) => {
             if (entity.data && 'source' in entity.data && (entity.data.source || '') === oldTitle) {
               entity.data.source = newTitle;
             }
@@ -764,7 +777,7 @@
 
       // Force editor panels to a fixed height, to avoid palette scrolling offscreen
       function fixEditorHeight() {
-        var height = $(window).height() - $('#afGuiEditor').offset().top;
+        const height = $(window).height() - $('#afGuiEditor').offset().top;
         $('#afGuiEditor').height(Math.floor(height));
       }
 
@@ -772,7 +785,7 @@
       this.adjustTabWidths = function() {
         $('#afGuiEditor .panel-heading ul.nav-tabs li.active').css('max-width', '');
         $('#afGuiEditor .panel-heading ul.nav-tabs').each(function() {
-          var remainingSpace = Math.floor($(this).width()) - 1,
+          let remainingSpace = Math.floor($(this).width()) - 1,
             inactiveTabs = $(this).children('li.fluid-width-tab').not('.active');
           $(this).children('.active,:not(.fluid-width-tab)').each(function() {
             remainingSpace -= $(this).width();
@@ -793,6 +806,67 @@
         });
         return $location.path(newPath);
       }
+
+      this.getTokens = (includeSubmissionTokens = false) => {
+        const allTokens = [];
+        this.getEntities().forEach((entity) => {
+          const entityTokens = [];
+          const entityMeta = this.meta.entities[entity.type];
+          const entityLabel = entity.label || entityMeta.label;
+          if (entityMeta.submissionTokens && includeSubmissionTokens) {
+            // Explicitly defined submission tokens e.g. by FormProcessor extension
+            entityMeta.submissionTokens.forEach((submissionToken) => {
+              entityTokens.push({
+                id: entity.name + '.0.' + submissionToken.token,
+                text: submissionToken.label,
+                description: submissionToken.description ?? '',
+              });
+            });
+          } else if (!entityMeta.submissionTokens) {
+            // Primary key token
+            // FIXME: not all entities use `id` for primary key
+            if (includeSubmissionTokens) {
+              entityTokens.push({
+                id: entity.name + '.0.id',
+                text: ts('%1 ID', {1: entityMeta.label}),
+              });
+            }
+            // Tokens from entity data values
+            if (entity.data) {
+              Object.keys(entity.data).forEach((key) => {
+                if (entityMeta.fields[key]) {
+                  entityTokens.push({
+                    id: entity.name + '.0.' + key,
+                    text: entityMeta.fields[key].label,
+                  });
+                }
+              });
+            }
+            // Tokens from entity fields on the form
+            this.getEntityFields(entity.name).fields.forEach((field) => {
+              entityTokens.push({
+                id: entity.name + '.0.' + field.name,
+                text: field.label,
+              });
+            });
+          }
+          if (entityTokens.length) {
+            allTokens.push({
+              text: entityLabel,
+              children: entityTokens,
+            });
+          }
+        });
+        if (includeSubmissionTokens) {
+          allTokens.push({
+            text: ts('Form'),
+            children: [
+              {id: 'token', text: ts('Submission JWT')},
+            ],
+          });
+        }
+        return allTokens;
+      };
 
     }
   });

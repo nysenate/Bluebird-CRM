@@ -281,3 +281,13 @@ function case_civicrm_searchColumns($objectName, &$headers, &$rows, &$selector) 
     }
   }
 }
+
+#[CRM_NYSS_Attribute_IssueRef(15095, 'https://dev.nysenate.gov/issues/15095', 18898)]
+function case_civicrm_selectWhereClause($entity, &$clauses, $userId = NULL, $conditions = []) {
+
+    // NYSS 15095 -- loosen permissions for seeing trashed (soft-deleted) cases.
+    if ($entity === 'Case') {
+        $clauses['is_deleted'] = CRM_Core_Permission::check('delete in CiviCase', $userId) ? [] : ['= 0'];
+    }
+
+}

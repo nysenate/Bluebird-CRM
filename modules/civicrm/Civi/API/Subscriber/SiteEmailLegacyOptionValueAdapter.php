@@ -28,7 +28,7 @@ class SiteEmailLegacyOptionValueAdapter extends AutoSubscriber {
   /**
    * @return array
    */
-  public static function getSubscribedEvents() {
+  public static function getSubscribedEvents(): array {
     return [
       'civi.api.prepare' => [
         ['onApiPrepare', 2000],
@@ -149,7 +149,7 @@ class SiteEmailLegacyOptionValueAdapter extends AutoSubscriber {
         if (isset($value['id'])) {
           $value['value'] = $value['id'];
         }
-        if (isset($value['display_name']) && isset($value['email'])) {
+        if (isset($value['display_name'], $value['email'])) {
           $addWeights = TRUE;
           $value['label'] = $value['name'] = \CRM_Utils_Mail::formatFromAddress($value);
         }
@@ -199,7 +199,6 @@ class SiteEmailLegacyOptionValueAdapter extends AutoSubscriber {
     // Modify internal variables of the api request... don't try this at home
     $reflection = $apiRequest->reflect();
     $entityNameProperty = $reflection->getProperty('_entityName');
-    $entityNameProperty->setAccessible(TRUE);
     $entityNameProperty->setValue($apiRequest, 'SiteEmailAddress');
     $allowedFields = array_keys(\Civi::entity('SiteEmailAddress')->getFields());
     if ($reflection->hasProperty('where')) {

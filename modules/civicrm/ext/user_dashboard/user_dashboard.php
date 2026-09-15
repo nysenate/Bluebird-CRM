@@ -31,6 +31,21 @@ function user_dashboard_civicrm_enable(): void {
 }
 
 /**
+ * Implements hook_civicrm_navigationMenu().
+ */
+function user_dashboard_civicrm_navigationMenu(&$params) {
+  _user_dashboard_civix_insert_navigation_menu($params, 'Home', [
+    'label' => E::ts('My User Dashboard'),
+    'name' => 'user_dashboard',
+    'url' => 'civicrm/user',
+    'icon' => 'crm-i fa-dashboard',
+    'permission' => 'access Contact Dashboard',
+    'weight' => 2,
+  ]);
+  _user_dashboard_civix_navigationMenu($params);
+}
+
+/**
  * Tag SavedSearches with the "UserDashboard" tag.
  *
  * The reason for using this hook is that it's write-once (just during insert),
@@ -78,16 +93,3 @@ function user_dashboard_civicrm_post($action, $entity, $id, $savedSearch) {
       ->execute();
   }
 }
-
-/**
- * @param \Civi\Angular\Manager $angular
- * @see \CRM_Utils_Hook::alterAngular()
- */
-Civi::dispatcher()->addListener('&hook_civicrm_alterAngular', function(\Civi\Angular\Manager $angular) {
-  $changeSet = \Civi\Angular\ChangeSet::create('afsearchUserDashboard')
-    ->alterHtml('~/afsearchUserDashboard/afsearchUserDashboard.aff.html', function (phpQueryObject $doc) {
-      $f = require __DIR__ . '/ang/afsearchUserDashboard.alterLayout.php';
-      $f($doc);
-    });
-  $angular->add($changeSet);
-}, 1500);

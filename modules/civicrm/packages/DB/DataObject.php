@@ -4255,8 +4255,8 @@ class DB_DataObject extends DB_DataObject_Overload
 
         $ret = array();
         $rf = ($this->_resultFields !== false) ? $this->_resultFields :
-                (isset($_DB_DATAOBJECT['RESULTFIELDS'][$this->_DB_resultid]) ?
-                 $_DB_DATAOBJECT['RESULTFIELDS'][$this->_DB_resultid] : false);
+                (isset($_DB_DATAOBJECT['RESULTFIELDS'][$this->_DB_resultid ?? '']) ?
+                 $_DB_DATAOBJECT['RESULTFIELDS'][$this->_DB_resultid ?? ''] : false);
 
         $ar = ($rf !== false) ?
             (($hideEmpty === 0) ? $rf : array_merge($rf, $this->table())) :
@@ -4872,11 +4872,12 @@ class DB_DataObject extends DB_DataObject_Overload
     {
         global $_DB_DATAOBJECT;
 
-        if (isset($_DB_DATAOBJECT['RESULTFIELDS'][$this->_DB_resultid])) {
-            unset($_DB_DATAOBJECT['RESULTFIELDS'][$this->_DB_resultid]);
+        $key = $this->_DB_resultid ?? '';
+        if (isset($_DB_DATAOBJECT['RESULTFIELDS'][$key])) {
+            unset($_DB_DATAOBJECT['RESULTFIELDS'][$key]);
         }
-        if (isset($_DB_DATAOBJECT['RESULTS'][$this->_DB_resultid])) {
-            unset($_DB_DATAOBJECT['RESULTS'][$this->_DB_resultid]);
+        if (isset($_DB_DATAOBJECT['RESULTS'][$key])) {
+            unset($_DB_DATAOBJECT['RESULTS'][$key]);
         }
         // clear the staticGet cache as well.
         $this->_clear_cache();

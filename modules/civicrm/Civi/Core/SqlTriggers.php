@@ -76,6 +76,9 @@ class SqlTriggers extends \Civi\Core\Service\AutoService {
     }
 
     $triggers = [];
+    // without the "AS" sometimes the DAO field is TABLE_NAME, and then fetchmap fails because $dao->table_name doesn't exist because php is case-sensitive
+    $query = "SELECT table_name AS table_name FROM information_schema.tables WHERE table_schema = DATABASE() AND table_type = 'BASE TABLE'";
+    $existingTables = \CRM_Core_DAO::executeQuery($query)->fetchMap('table_name', 'table_name');
 
     // now enumerate the tables and the events and collect the same set in a different format
     foreach ($info as $value) {
@@ -87,6 +90,7 @@ class SqlTriggers extends \Civi\Core\Service\AutoService {
         isset($value['when']) == FALSE ||
         isset($value['sql']) == FALSE
       ) {
+        \CRM_Core_Error::deprecatedWarning('malformed triggers are deprecated');
         continue;
       }
 
@@ -95,6 +99,13 @@ class SqlTriggers extends \Civi\Core\Service\AutoService {
       }
       else {
         $tables = $value['table'];
+      }
+
+      foreach ($tables as $table) {
+        if (empty($existingTables[$table])) {
+          \Civi::log()->warning('trigger on non-existent table ' . $table);
+          continue 2;
+        }
       }
 
       if (is_string($value['event']) == TRUE) {
@@ -205,11 +216,12 @@ class SqlTriggers extends \Civi\Core\Service\AutoService {
       if (!file_exists($this->getFile())) {
         // Ugh. Need to let user know somehow. This is the first change.
         \CRM_Core_Session::setStatus(ts('The mysql commands you need to run are stored in %1', [
-          1 => $this->getFile(),
+          1 => htmlentities($this->getFile()),
         ]),
           '',
           'alert',
-          ['expires' => 0]
+          ['expires' => 0],
+          purify: FALSE
         );
       }
       $query = \CRM_Core_DAO::composeQuery($triggerSQL, $params);

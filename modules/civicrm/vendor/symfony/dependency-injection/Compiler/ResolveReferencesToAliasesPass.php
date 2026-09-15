@@ -22,8 +22,10 @@ use Symfony\Component\DependencyInjection\Reference;
  */
 class ResolveReferencesToAliasesPass extends AbstractRecursivePass
 {
+    protected bool $skipScalars = true;
+
     /**
-     * {@inheritdoc}
+     * @return void
      */
     public function process(ContainerBuilder $container)
     {
@@ -34,15 +36,16 @@ class ResolveReferencesToAliasesPass extends AbstractRecursivePass
             $this->currentId = $id;
 
             if ($aliasId !== $defId = $this->getDefinitionId($aliasId, $container)) {
-                $container->setAlias($id, $defId)->setPublic($alias->isPublic());
+                $newAlias = $container->setAlias($id, $defId)->setPublic($alias->isPublic());
+
+                if ($alias->isDeprecated()) {
+                    $newAlias->setDeprecated(...array_values($alias->getDeprecation('%alias_id%')));
+                }
             }
         }
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    protected function processValue($value, bool $isRoot = false)
+    protected function processValue(mixed $value, bool $isRoot = false): mixed
     {
         if (!$value instanceof Reference) {
             return parent::processValue($value, $isRoot);

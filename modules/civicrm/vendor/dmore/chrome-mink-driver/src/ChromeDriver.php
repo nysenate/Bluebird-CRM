@@ -5,6 +5,7 @@ namespace DMore\ChromeDriver;
 use Behat\Mink\Driver\CoreDriver;
 use Behat\Mink\Exception\DriverException;
 use Behat\Mink\Exception\ElementNotFoundException;
+use Behat\Mink\KeyModifier;
 use Symfony\Component\OptionsResolver\OptionsResolver;
 use WebSocket\ConnectionException;
 
@@ -100,7 +101,7 @@ class ChromeDriver extends CoreDriver
      */
     public function __construct(
         $api_url = 'http://localhost:9222',
-        HttpClient $http_client = null,
+        ?HttpClient $http_client = null,
         $base_url = null,
         $options = []
     ) {
@@ -144,7 +145,6 @@ class ChromeDriver extends CoreDriver
         }
 
         if (isset($this->options['validateCertificate']) && $this->options['validateCertificate'] === false) {
-            $this->page->send('Security.enable');
             $this->page->send('Security.setIgnoreCertificateErrors', ['ignore' => true]);
         }
     }
@@ -188,11 +188,8 @@ class ChromeDriver extends CoreDriver
     {
         try {
             $this->reset();
-            foreach ($this->getWindowNames() as $key => $window_id) {
-                if ($key == 0) {
-                    continue;
-                }
-                $this->http_client->get($this->api_url . '/json/close/' . $window_id);
+            if ($this->page) {
+                $this->page->close();
             }
             $this->browser->close();
         } catch (ConnectionException $exception) {
@@ -229,10 +226,67 @@ class ChromeDriver extends CoreDriver
         $this->ensureStarted();
         $this->document = 'document';
         $this->deleteAllCookies();
-        $this->connectToWindow($this->main_window);
+        $this->closeWindows(
+            array_filter(
+                $this->getWindowNames(),
+                fn ($window_id) => $window_id !== $this->main_window
+            )
+        );
+        $this->switchToWindow($this->main_window);
         $this->page->reset();
-        $this->request_headers = [];
-        $this->sendRequestHeaders();
+        if ($this->request_headers !== []) {
+            $this->request_headers = [];
+            $this->sendRequestHeaders();
+        }
+    }
+
+    /**
+     * @param list<string> $window_ids
+     *
+     * @throws DriverException if windows do not close within the timeout
+     */
+    private function closeWindows(array $window_ids): void
+    {
+        if ($window_ids === []) {
+            // Nothing to do
+            return;
+        }
+
+        foreach ($window_ids as $id) {
+            $this->http_client->get($this->api_url . '/json/close/' . $id);
+        }
+
+        // Windows close asynchronously and will still be visible in `getWindowNames()` for a moment
+        // after the JSON close command is sent.
+        // Using the JSON API here increases the chance that `->reset()` will succeed even if the
+        // devtools protocol has crashed or is hanging (e.g. if a page has opened a JS dialog, or
+        // failed to load within the timeout).
+
+        // In general, this should take milliseconds, but allow a few seconds for transient slowness.
+        // It is unlikely that this timeout needs to be customised.
+        $timeout = time() + 3;
+
+        while (true) {
+            $open_window_ids = array_map(
+                fn ($w) => $w->id,
+                json_decode($this->http_client->get($this->api_url . '/json/list'))
+            );
+
+            $pending = array_intersect($open_window_ids, $window_ids);
+
+            if ($pending === []) {
+                // All the windows we want to close are now closed
+                return;
+            }
+
+            if (time() > $timeout) {
+                throw new DriverException(
+                    'Timed out waiting to close windows: ' . implode(', ', $pending)
+                );
+            }
+
+            usleep(5000);
+        }
     }
 
     /**
@@ -332,38 +386,6 @@ class ChromeDriver extends CoreDriver
                     return;
                 }
             }
-            try {
-                $this->runScript("window.latest_popup = window.open('', '{$name}');");
-                $condition = "window.latest_popup.location.href != 'about:blank';";
-                $this->wait(2000, $condition);
-                $script = "[window.latest_popup.document.title, window.latest_popup.location.href]";
-                list($title, $href) = $this->evaluateScript($script);
-
-                foreach ($this->getWindowNames() as $id) {
-                    $info = $this->page->send('Target.getTargetInfo', ['targetId' => $id])['targetInfo'];
-                    if ($info['type'] === 'page' && $info['url'] == $href && $info['title'] == $title) {
-                        $this->switchToWindow($id);
-                        return;
-                    }
-                }
-            } catch (\Exception $e) {
-            }
-            try {
-                // Last effort, connect to each window and compare its window name.
-                $currentWindow = $this->getCurrentWindow();
-                foreach ($this->page->getTabs() as $tab) {
-                    $this->connectToWindow($tab['targetId']);
-                    $windowName = $this->evaluateScript('window.name');
-
-                    if ($windowName === $name) {
-                        return;
-                    }
-                }
-                // Failed to find it, try to reconnect to the original window.
-                $this->connectToWindow($currentWindow);
-            } catch (\Exception $e) {
-            }
-
             throw new DriverException("Couldn't find window {$name}");
         }
     }
@@ -511,23 +533,12 @@ JS;
     }
 
     /**
-     * Capture a fullscreen screenshot of the current window.
-     *
-     * @return string screenshot of MIME type image/* depending
-     *                on driver (e.g., image/png, image/jpeg)
-     *
-     * @throws \Behat\Mink\Exception\DriverException
-     *  When the operation cannot be done
+     * {@inheritdoc}
      */
     public function getScreenshot()
     {
-        $metrics = $this->page->send('Page.getLayoutMetrics');
-        $weight = ceil($metrics['contentSize']['width']);
-        $height = ceil($metrics['contentSize']['height']);
-        $this->setVisibleSize($weight, $height);
         $screenshot = $this->page->send(
-            'Page.captureScreenshot',
-            ['clip' => ['x' => 0, 'y' => 0, 'width' => $weight, 'height' => $height, 'scale' => 1]]
+            'Page.captureScreenshot'
         );
         return base64_decode($screenshot['data']);
     }
@@ -755,11 +766,7 @@ JS;
             || (element.hasAttribute('contenteditable') && element.getAttribute('contenteditable') != 'false')
             JS;
 
-        if (!$this->runScriptOnXpathElement($xpath, $is_text_field)) {
-            return true;
-        } else {
-            return false;
-        }
+        return (bool) $this->runScriptOnXpathElement($xpath, $is_text_field);
     }
 
     /**
@@ -767,7 +774,7 @@ JS;
      */
     public function setValue($xpath, $value)
     {
-        if (!$this->isTextTypeInput($xpath)) {
+        if ($this->isTextTypeInput($xpath)) {
             $this->setTextTypeValue($xpath, $value);
         } else {
             $this->setNonTextTypeValue($xpath, $value);
@@ -800,28 +807,26 @@ JS;
 
         // Remove the current value if present (nb an empty contenteditable returns `null` as current value)
         for ($i = 0; $i < strlen($current_value ?? ''); $i++) {
-            $parameters = ['type' => 'rawKeyDown', 'nativeVirtualKeyCode' => 8, 'windowsVirtualKeyCode' => 8];
-            $this->page->send('Input.dispatchKeyEvent', $parameters);
-            $this->page->send('Input.dispatchKeyEvent', ['type' => 'keyUp']);
-            $parameters = ['type' => 'rawKeyDown', 'nativeVirtualKeyCode' => 46, 'windowsVirtualKeyCode' => 46];
-            $this->page->send('Input.dispatchKeyEvent', $parameters);
-            $this->page->send('Input.dispatchKeyEvent', ['type' => 'keyUp']);
+            // Press backspace.
+            $this->keyDown($xpath, 8);
+            $this->keyUp($xpath, 8);
+            // Press delete.
+            $this->keyDown($xpath, 46);
+            $this->keyUp($xpath, 46);
         }
 
-        // Then add the new value
+        // Then add the new value.
         for ($i = 0; $i < mb_strlen($value); $i++) {
             $char = mb_substr($value, $i, 1);
-            // For 'normal' chars, the `text` devtools property & the `key` event property are the desired character
-            $text = $key = $char;
             if ($char === "\n") {
-                // For newlines, the `text` and `key` have special values. This is also the case for other special
-                // (control etc) keys, but newline is the only one that can also be added as part of the string value
-                // of a text field (e.g. a textarea or contenteditable).
-                $text = chr(13);
-                $key = 'Enter';
+                // Convert newline character to the Enter key.
+                $char = 13;
+            } elseif ($char === "\t") {
+                // Convert tab character to the Tab key.
+                $char = 9;
             }
-            $this->page->send('Input.dispatchKeyEvent', ['type' => 'keyDown', 'text' => $text, 'key' => $key]);
-            $this->page->send('Input.dispatchKeyEvent', ['type' => 'keyUp', 'key' => $key]);
+            $this->keyDown($xpath, $char);
+            $this->keyUp($xpath, $char);
         }
         usleep(5000);
 
@@ -860,6 +865,10 @@ JS;
 
         if (!\is_string($value) && in_array($fieldType, ['file', 'radio'])) {
             throw new DriverException('Only string values can be used for a ' . $fieldType . ' input.');
+        }
+
+        if (!\is_bool($value) && in_array($fieldType, ['checkbox'])) {
+            throw new DriverException('Boolean values must be used for a ' . $fieldType . ' element.');
         }
 
         if (\is_bool($value) && in_array($fieldType, ['select', 'select-one', 'submit', 'color', 'date', 'time'])) {
@@ -911,7 +920,7 @@ JS;
             expected_value = [expected_value]
         }
         for (var i = 0; i < element.options.length; i++) {
-            if ((element.multiple && expected_value.includes(element.options[i].value)) 
+            if ((element.multiple && expected_value.includes(element.options[i].value))
                 || element.options[i].value == expected_value) {
                 element.options[i].selected = true;
             } else {
@@ -1160,7 +1169,7 @@ JS;
      */
     public function keyPress($xpath, $char, $modifier = null)
     {
-        $this->triggerKeyboardEvent($xpath, $char, $modifier, 'keypress');
+        $this->triggerKeyboardEvent($xpath, $char, $modifier, 'char');
     }
 
     /**
@@ -1168,7 +1177,7 @@ JS;
      */
     public function keyDown($xpath, $char, $modifier = null)
     {
-        $this->triggerKeyboardEvent($xpath, $char, $modifier, 'keydown');
+        $this->triggerKeyboardEvent($xpath, $char, $modifier, 'keyDown');
     }
 
     /**
@@ -1176,7 +1185,7 @@ JS;
      */
     public function keyUp($xpath, $char, $modifier = null)
     {
-        $this->triggerKeyboardEvent($xpath, $char, $modifier, 'keyup');
+        $this->triggerKeyboardEvent($xpath, $char, $modifier, 'keyUp');
     }
 
     /**
@@ -1442,42 +1451,140 @@ JS;
     }
 
     /**
-     * @param  $xpath
-     * @param  $char
-     * @param  $modifier
-     * @param  $event
-     * @throws \Behat\Mink\Exception\ElementNotFoundException
+     * Get the KeyboardEvent.key value for a given keycode.
+     *
+     * @param int $keycode
+     *   The keycode for which to find the KeyboardEvent.key value.
+     * @return string|null
+     *   The corresponding KeyboardEvent.key value or NULL if not known.
+     *
+     * @see https://developer.mozilla.org/en-US/docs/Web/API/UI_Events/Keyboard_event_key_values
      */
-    protected function triggerKeyboardEvent($xpath, $char, $modifier, $event)
+    protected function getKeycodeKeyValue(int $keycode)
     {
-        if (is_string($char)) {
-            $char = ord($char);
+        switch ($keycode) {
+            case 8:
+                return 'Backspace';
+            case 9:
+                return 'Tab';
+            case 13:
+                return 'Enter';
+            case 16:
+            case 160:
+            case 161:
+                return 'Shift';
+            case 17:
+            case 162:
+            case 163:
+                return 'Control';
+            case 18:
+            case 164:
+            case 165:
+                return 'Alt';
+            case 19:
+                return 'Pause';
+            case 20:
+                return 'CapsLock';
+            case 27:
+                return 'Escape';
+            case 35:
+                return 'End';
+            case 36:
+                return 'Home';
+            case 37:
+                return 'ArrowLeft';
+            case 38:
+                return 'ArrowUp';
+            case 39:
+                return 'ArrowRight';
+            case 40:
+                return 'ArrowDown';
+            case 45:
+                return 'Insert';
+            case 46:
+                return 'Delete';
+            case 33:
+                return 'PageUp';
+            case 34:
+                return 'PageDown';
+            default:
+                return null;
         }
-        $options = [
-            'ctrlKey' => $modifier == 'ctrl' ? 'true' : 'false',
-            'altKey' => $modifier == 'alt' ? 'true' : 'false',
-            'shiftKey' => $modifier == 'shift' ? 'true' : 'false',
-            'metaKey' => $modifier == 'meta' ? 'true' : 'false',
-        ];
-
-        $script = <<<JS
-    if (element) {
-        element.focus();
-        var event = document.createEvent("Events");
-        event.initEvent("$event", true, true);
-        event.keyCode = $char;
-        event.which = $char;
-        event.ctrlKey = {$options['ctrlKey']};
-        event.shiftKey = {$options['shiftKey']};
-        event.altKey = {$options['altKey']};
-        event.metaKey = {$options['metaKey']};
-
-        element.dispatchEvent(event);
     }
-    element != null;
-JS;
 
+    /**
+     * Trigger a keyboard event on an element.
+     *
+     * @param string $xpath
+     *   The xpath of the element on which to trigger the keyboard event.
+     * @param string|int $char
+     *   A single character (string) or keycode (integer) to associate with the keyboard event.
+     * @param string|null $modifier
+     *   An optional \Behat\Mink\KeyModifier::* modifier key (eg. KeyModifier::CTRL).
+     * @param string $event
+     *   The DevTools Protocol Input.dispatchKeyEvent.type string. One of "keyDown", "keyUp", "rawKeyDown", or "char".
+     *
+     * @throws \Behat\Mink\Exception\DriverException
+     *
+     * @see https://developer.mozilla.org/en-US/docs/Web/API/KeyboardEvent/KeyboardEvent
+     * @see \Behat\Mink\KeyModifier
+     * @see https://chromedevtools.github.io/devtools-protocol/tot/Input/#method-dispatchKeyEvent
+     */
+    protected function triggerKeyboardEvent(
+        string $xpath,
+        $char,
+        $modifier,
+        string $event
+    ): void {
+        // Set up the devtools dispatchKeyEvent parameters, starting with type.
+        $parameters = ['type' => $event];
+
+        // Associate the character or keycode.
+        $send_text = !in_array($event, ['keyUp', 'rawKeyDown']);
+        switch (gettype($char)) {
+            case 'string':
+                if (mb_strlen($char) === 1) {
+                    // A simple character. Send key and text (if necessary).
+                    $parameters['key'] = $char;
+                    $parameters['text'] = $send_text ? $char : '';
+                } else {
+                    throw new DriverException("Invalid character '{$char}'.");
+                }
+                break;
+
+            case 'integer':
+                // A keycode. Send nativeVirtualKeyCode, windowsVirtualKeyCode, key (if known), and text (if necessary).
+                $parameters['nativeVirtualKeyCode'] = $char;
+                $parameters['windowsVirtualKeyCode'] = $char;
+                $parameters['key'] = $this->getKeycodeKeyValue($char) ?? '';
+                $parameters['text'] = $send_text ? chr($char) : '';
+                break;
+
+            default:
+                throw new DriverException("Unsupported char parameter type '" . gettype($char) . "'.");
+        }
+
+        // Set the modifier, if present.
+        if (gettype($modifier) === 'string') {
+            $modifiers = [
+                KeyModifier::CTRL => 2,
+                KeyModifier::ALT => 1,
+                KeyModifier::SHIFT => 8,
+                KeyModifier::META => 4,
+            ];
+            if (isset($modifiers[$modifier])) {
+                $parameters['modifiers'] = $modifiers[$modifier];
+            } else {
+                throw new DriverException("Unsupported modifier key '{$modifier}'.");
+            }
+        }
+
+        // Focus the element, if not already focused.
+        $script = 'if (document.activeElement !== element) { element.focus(); }';
         $this->runScriptOnXpathElement($xpath, $script);
+
+        // Dispatch the keyboard event.
+        $this->page->send('Input.dispatchKeyEvent', $parameters);
     }
 
     /**

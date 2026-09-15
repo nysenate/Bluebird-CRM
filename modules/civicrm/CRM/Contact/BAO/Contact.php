@@ -128,15 +128,6 @@ class CRM_Contact_BAO_Contact extends CRM_Contact_DAO_Contact implements Civi\Co
       }
     }
 
-    if (isset($params['preferred_communication_method']) && is_array($params['preferred_communication_method'])) {
-      if (!empty($params['preferred_communication_method']) && empty($params['preferred_communication_method'][0])) {
-        CRM_Core_Error::deprecatedWarning(' Form layer formatting should never get to the BAO');
-        CRM_Utils_Array::formatArrayKeys($params['preferred_communication_method']);
-        $contact->preferred_communication_method = CRM_Utils_Array::implodePadded($params['preferred_communication_method']);
-        unset($params['preferred_communication_method']);
-      }
-    }
-
     $defaults = ['source' => $params['contact_source'] ?? NULL];
     if ($params['contact_type'] === 'Organization' && isset($params['organization_name'])) {
       $defaults['display_name'] = $params['organization_name'];
@@ -2245,16 +2236,6 @@ ORDER BY civicrm_email.is_primary DESC";
           $data[$key . '_id'] = $value;
         }
         elseif (!$skipCustom && ($customFieldId = CRM_Core_BAO_CustomField::getKeyID($key))) {
-          // for autocomplete transfer hidden value instead of label
-          if ($params[$key] && isset($params[$key . '_id'])) {
-            $value = $params[$key . '_id'];
-          }
-
-          // we need to append time with date
-          if ($params[$key] && isset($params[$key . '_time'])) {
-            $value .= ' ' . $params[$key . '_time'];
-          }
-
           // if auth source is not checksum / login && $value is blank, do not proceed - CRM-10128
           if (($session->get('authSrc') & (CRM_Core_Permission::AUTH_SRC_CHECKSUM + CRM_Core_Permission::AUTH_SRC_LOGIN)) == 0 &&
             ($value == '' || !isset($value) || (is_array($value) && empty($value)))
@@ -2403,7 +2384,7 @@ WHERE      civicrm_email.email = %1 AND civicrm_contact.is_deleted=0";
       $p[3] = [$ctype, 'String'];
     }
 
-    $query .= " ORDER BY civicrm_email.is_primary DESC";
+    $query .= " ORDER BY civicrm_email.is_primary DESC, civicrm_contact.id ASC";
 
     $dao = CRM_Core_DAO::executeQuery($query, $p);
 
@@ -3605,6 +3586,7 @@ LEFT JOIN civicrm_address ON ( civicrm_address.contact_id = civicrm_contact.id )
       ['key' => 'postal_code', 'value' => ts('Postal Code'), 'type' => 'text', 'entity' => 'Address'],
       ['key' => 'state_province', 'value' => ts('State/Province'), 'entity' => 'Address'],
       ['key' => 'country', 'value' => ts('Country'), 'entity' => 'Address'],
+      ['key' => 'phone_numeric', 'value' => ts('Phone'), 'type' => 'text', 'entity' => 'Phone'],
       ['key' => 'first_name', 'value' => ts('First Name'), 'type' => 'text', 'condition' => ['contact_type' => 'Individual']],
       ['key' => 'last_name', 'value' => ts('Last Name'), 'type' => 'text', 'condition' => ['contact_type' => 'Individual']],
       ['key' => 'nick_name', 'value' => ts('Nick Name'), 'type' => 'text', 'condition' => ['contact_type' => 'Individual']],
@@ -3640,6 +3622,12 @@ LEFT JOIN civicrm_address ON ( civicrm_address.contact_id = civicrm_contact.id )
       default:
         $actionType = CRM_Core_Permission::EDIT;
         break;
+    }
+
+    // No contact id, cannot check
+    if (empty($record['id'])) {
+      $e->setAuthorized(FALSE);
+      return;
     }
 
     $e->setAuthorized(CRM_Contact_BAO_Contact_Permission::allow($record['id'], $actionType, $userID));

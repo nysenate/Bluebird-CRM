@@ -85,7 +85,7 @@ class CRM_Iats_Form_Report_Verify extends CRM_Report_Form {
     foreach ($rows as $rowNum => $row) {
       // Link to contact.
       if (
-        ($value = CRM_Utils_Array::value('civicrm_iats_verify_cid', $row)) 
+        !empty($row['civicrm_iats_verify_cid'])
       ) {
         $url = CRM_Utils_System::url('civicrm/contact/view',
           'reset=1&cid=' . $row['civicrm_iats_verify_cid'],
@@ -96,8 +96,8 @@ class CRM_Iats_Form_Report_Verify extends CRM_Report_Form {
       }
       // Link to contribution.
       if (
-        ($value = CRM_Utils_Array::value('civicrm_iats_verify_cid', $row)) 
-        && ($value = CRM_Utils_Array::value('civicrm_iats_verify_contribution_id', $row)) 
+        !empty($row['civicrm_iats_verify_cid'])
+        && !empty($row['civicrm_iats_verify_contribution_id'])
       ) {
         $url = CRM_Utils_System::url('civicrm/contact/view/contribution',
           'reset=1&action=view&context=contribution&selectedChild=contribute&cid=' . $row['civicrm_iats_verify_cid'] . '&id=' . $row['civicrm_iats_verify_contribution_id'],
@@ -109,8 +109,8 @@ class CRM_Iats_Form_Report_Verify extends CRM_Report_Form {
 
       // Link to recurring series.
       if (
-        ($value = CRM_Utils_Array::value('civicrm_iats_verify_recur_id', $row)) 
-        && ($value = CRM_Utils_Array::value('civicrm_iats_verify_cid', $row)) 
+        !empty($row['civicrm_iats_verify_recur_id'])
+        && !empty($row['civicrm_iats_verify_cid'])
         && CRM_Core_Permission::check('access CiviContribute')
       ) {
         $url = CRM_Utils_System::url("civicrm/contact/view/contributionrecur",
@@ -125,11 +125,11 @@ class CRM_Iats_Form_Report_Verify extends CRM_Report_Form {
       }
 
       // Handle contribution status id.
-      if ($value = CRM_Utils_Array::value('civicrm_iats_verify_contribution_status_id', $row)) {
+      if ($value = $row['civicrm_iats_verify_contribution_status_id'] ?? NULL) {
         $rows[$rowNum]['civicrm_iats_verify_contribution_status_id'] = self::$contributionStatus[$value];
       }
       // Handle processor id.
-      if ($value = CRM_Utils_Array::value('civicrm_iats_verify_recur_payment_processor_id', $row)) {
+      if ($value = $row['civicrm_iats_verify_recur_payment_processor_id'] ?? NULL) {
         $rows[$rowNum]['civicrm_iats_verify_recur_payment_processor_id'] = self::$processors[$value];
       }
     }

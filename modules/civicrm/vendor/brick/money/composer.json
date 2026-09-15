@@ -9,17 +9,16 @@
     ],
     "license": "MIT",
     "require": {
-        "php": "^7.4 || ^8.0",
-        "ext-json": "*",
-        "brick/math": "~0.10.1 || ~0.11.0"
+        "php": "^8.1",
+        "brick/math": "~0.12.0|~0.13.0|~0.14.0"
     },
     "require-dev": {
         "ext-dom": "*",
         "ext-pdo": "*",
-        "brick/varexporter": "~0.3.0",
+        "brick/varexporter": "~0.5.0",
         "php-coveralls/php-coveralls": "^2.2",
-        "phpunit/phpunit": "^9.4.3",
-        "vimeo/psalm": "5.4.0"
+        "phpunit/phpunit": "^10.1",
+        "vimeo/psalm": "6.3.0"
     },
     "suggest": {
         "ext-intl": "Required to format Money objects"

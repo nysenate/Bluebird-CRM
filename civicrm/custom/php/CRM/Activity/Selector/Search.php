@@ -228,9 +228,6 @@ class CRM_Activity_Selector_Search extends CRM_Core_Selector_Base implements CRM
       $accessCiviMail = 1;
     }
 
-    // Get all campaigns.
-    $allCampaigns = CRM_Campaign_BAO_Campaign::getCampaigns(NULL, NULL, FALSE, FALSE, FALSE, TRUE);
-
     $engagementLevels = CRM_Campaign_PseudoConstant::engagementLevel();
     $activityContacts = CRM_Activity_BAO_ActivityContact::buildOptions('record_type_id', 'validate');
     $sourceID = CRM_Utils_Array::key('Activity Source', $activityContacts);
@@ -320,7 +317,7 @@ class CRM_Activity_Selector_Search extends CRM_Core_Selector_Base implements CRM
       );
 
       // Carry campaign to selector.
-      $row['campaign'] = $allCampaigns[$result->activity_campaign_id] ?? NULL;
+      $row['campaign'] = CRM_Core_PseudoConstant::getLabel('CRM_Activity_BAO_Activity', 'campaign_id', $result->activity_campaign_id);
       $row['campaign_id'] = $result->activity_campaign_id;
 
       $engagementLevel = $row['activity_engagement_level'] ?? NULL;

@@ -654,7 +654,7 @@ class IDS_Converter
      * @static
      * @return string
      */
-    public static function runCentrifuge($value, IDS_Monitor $monitor = null)
+    public static function runCentrifuge($value, ?IDS_Monitor $monitor = null)
     {
         $threshold = 3.49;
         if (strlen($value) > 25) {

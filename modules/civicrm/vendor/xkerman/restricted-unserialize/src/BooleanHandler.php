@@ -19,6 +19,6 @@ class BooleanHandler implements HandlerInterface
      */
     public function handle(Source $source, $args)
     {
-        return array((boolean)$args, $source);
+        return array((bool)$args, $source);
     }
 }

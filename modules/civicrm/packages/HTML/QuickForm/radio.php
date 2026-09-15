@@ -49,6 +49,14 @@ class HTML_QuickForm_radio extends HTML_QuickForm_input
      */
     var $_text = '';
 
+    /**
+     * Radio Text has been escaped
+     * @var bool
+     * @since 1.2
+     * @access private
+     */
+    private $_textEscaped = FALSE;
+
     // }}}
     // {{{ constructor
 
@@ -143,7 +151,7 @@ class HTML_QuickForm_radio extends HTML_QuickForm_input
         } elseif ($this->_flagFrozen) {
             $label = $this->_text;
         } else {
-            $label = '<label for="' . $this->getAttribute('id') . '">' . $this->_text . '</label>';
+            $label = '<label for="' . htmlspecialchars($this->getAttribute('id'), ENT_QUOTES | ENT_HTML401) . '">' . ($this->_textEscaped ? $this->_text : htmlspecialchars($this->_text, ENT_QUOTES | ENT_HTML401)) . '</label>';
         }
         return HTML_QuickForm_input::toHtml() . $label;
     } //end func toHtml
@@ -198,6 +206,21 @@ class HTML_QuickForm_radio extends HTML_QuickForm_input
     {
         return $this->_text;
     } //end func getText
+
+    // }}}
+    // {{{ setTextEscaped()
+
+    /**
+     * Sets that the radio text has been escaped
+     *
+     * @since     1.1
+     * @access    public
+     * @return    string
+     */
+    function setTextEscaped()
+    {
+        $this->_textEscaped = TRUE;
+    } //end func setTextEscaped
 
     // }}}
     // {{{ onQuickFormEvent()

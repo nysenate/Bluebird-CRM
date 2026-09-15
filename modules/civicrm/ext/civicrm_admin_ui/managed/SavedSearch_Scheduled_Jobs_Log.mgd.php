@@ -27,7 +27,9 @@ return [
             'data',
           ],
           'orderBy' => [],
-          'where' => [],
+          'where' => [
+            ['domain_id:name', '=', 'current_domain'],
+          ],
           'groupBy' => [],
           'join' => [],
           'having' => [],
@@ -68,22 +70,27 @@ return [
             [
               'type' => 'field',
               'key' => 'run_time',
-              'label' => E::ts('Date'),
+              'label' => 'Date',
               'sortable' => TRUE,
             ],
             [
               'type' => 'html',
               'key' => 'name',
-              'label' => E::ts('Job Name and Command'),
+              'label' => 'Job Name and Command',
               'sortable' => TRUE,
               'rewrite' => '[name]<br><br>[command]',
             ],
             [
-              'type' => 'html',
+              'type' => 'field',
               'key' => 'description',
-              'label' => E::ts('Output'),
+              'label' => 'Result',
               'sortable' => TRUE,
-              'rewrite' => '<b>' . E::ts("Summary:") . '</b> [description]<br><b>' . E::ts("Details:") . '</b><pre>[data]</pre>',
+            ],
+            [
+              'type' => 'field',
+              'key' => 'data',
+              'label' => 'Data',
+              'sortable' => TRUE,
             ],
           ],
           'classes' => [

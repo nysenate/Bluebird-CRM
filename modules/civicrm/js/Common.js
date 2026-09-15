@@ -14,16 +14,24 @@ CRM._ = _;
  */
 function ts(text, params) {
   "use strict";
-  var d = (params && params.domain) ? ('strings::' + params.domain) : null;
+  let d;
+  if (typeof params === 'object') {
+    if (params.plural && 'count' in params && params.count !== 1) {
+      text = params.plural;
+    }
+    if (params.domain) {
+      d = 'strings::' + params.domain;
+    }
+  }
   if (d && CRM[d] && CRM[d][text]) {
     text = CRM[d][text];
   }
   else if (CRM.strings[text]) {
     text = CRM.strings[text];
   }
-  if (typeof(params) === 'object') {
-    for (var i in params) {
-      if (typeof(params[i]) === 'string' || typeof(params[i]) === 'number') {
+  if (typeof params === 'object') {
+    for (let i in params) {
+      if (i !== 'plural' && ['string', 'number'].includes(typeof params[i])) {
         // sprintf emulation: escape % characters in the replacements to avoid conflicts
         text = text.replace(new RegExp('%' + i, 'g'), String(params[i]).replace(/%/g, '%-crmescaped-'));
       }
@@ -117,27 +125,45 @@ function showHideByValue(trigger_field_id, trigger_value, target_element_id, tar
         }
       }
     }
-
   }
-  else {
-    if (field_type == 'radio') {
-      target = target_element_id.split("|");
-      for (j = 0; j < target.length; j++) {
-        if (cj('[name="' + trigger_field_id + '"]:first').is(':checked')) {
-          if (invert) {
-            cj('#' + target[j]).hide();
-          }
-          else {
-            cj('#' + target[j]).show();
-          }
+  else if (field_type == 'radio') {
+    target = target_element_id.split("|");
+    for (j = 0; j < target.length; j++) {
+      if (cj('[name="' + trigger_field_id + '"]:first').is(':checked')) {
+        if (invert) {
+          cj('#' + target[j]).hide();
         }
         else {
-          if (invert) {
-            cj('#' + target[j]).show();
-          }
-          else {
-            cj('#' + target[j]).hide();
-          }
+          cj('#' + target[j]).show();
+        }
+      }
+      else {
+        if (invert) {
+          cj('#' + target[j]).show();
+        }
+        else {
+          cj('#' + target[j]).hide();
+        }
+      }
+    }
+  }
+  else if (field_type == 'checkbox') {
+    target = target_element_id.split("|");
+    for (j = 0; j < target.length; j++) {
+      if (cj('#' + trigger_field_id).is(':checked')) {
+        if (invert) {
+          cj('#' + target[j]).hide();
+        }
+        else {
+          cj('#' + target[j]).show();
+        }
+      }
+      else {
+        if (invert) {
+          cj('#' + target[j]).show();
+        }
+        else {
+          cj('#' + target[j]).hide();
         }
       }
     }
@@ -616,11 +642,13 @@ if (!CRM.vars) CRM.vars = {};
         data = [data];
       }
       data.forEach((item) => {
-        links.push({
-          path: item.quickEdit.path,
-          icon: 'fa-pencil',
-          title: ts('Edit %1', {1: item.quickEdit.title}),
-        });
+        if (item.quickEdit?.path) {
+          links.push({
+            path: item.quickEdit.path,
+            icon: 'fa-pencil',
+            title: ts('Edit %1', {1: item.quickEdit.title}),
+          });
+        }
       });
       return links;
     }
@@ -1236,7 +1264,9 @@ if (!CRM.vars) CRM.vars = {};
         })
         .find('input.select-row:checked').parents('tr').addClass('crm-row-selected');
       $('.crm-sortable-list', e.target).sortable();
-      $('table.crm-sortable', e.target).DataTable();
+      if (typeof $.DataTable == 'function') {
+        $('table.crm-sortable', e.target).DataTable();
+      }
       $('table.crm-ajax-table', e.target).each(function() {
         var
           $table = $(this),
@@ -1267,11 +1297,11 @@ if (!CRM.vars) CRM.vars = {};
       $('form[data-warn-changes] :input', e.target).each(function() {
         $(this).data('crm-initial-value', $(this).is(':checkbox, :radio') ? $(this).prop('checked') : $(this).val());
       });
-      $('textarea.crm-form-wysiwyg', e.target).each(function() {
-        if ($(this).hasClass("collapsed")) {
-          CRM.wysiwyg.createCollapsed(this);
+      e.target.querySelectorAll('textarea.crm-form-wysiwyg').forEach((el) => {
+        if (el.classList.contains('collapsed')) {
+          CRM.wysiwyg.createCollapsed(el);
         } else {
-          CRM.wysiwyg.create(this);
+          CRM.wysiwyg.create(el);
         }
       });
       // Submit once handlers
@@ -1498,11 +1528,41 @@ if (!CRM.vars) CRM.vars = {};
       return $('#crm-notification-container').notify('create', params, options);
     }
     else {
-      if (title.length) {
-        text = title + "\n" + text;
+      if (document.querySelectorAll('dialog.crm-alert').length > 3) {
+        // something is producing alerts faster than user can close them
+        console.warn('Too many calls to CRM.alert! Diverting messages to console rather than creating more popups');
+        console.warn(title.length ? `${title}: ${text}` : text);
+        return null;
       }
-      // strip html tags as they are not parsed in standard alerts
-      alert($("<div/>").html(text).text());
+
+      // TODO: add icon/styling appropriate to type?
+      // TODO: allow specifying notices which dont need to block the user
+      const alertDialog = document.createElement('dialog');
+      alertDialog.classList.add('crm-dialog', 'crm-alert');
+
+      if (title?.length) {
+        const header = document.createElement('h1');
+        header.innerText = title;
+        alertDialog.append(header);
+      }
+      if (text?.length) {
+        const body = document.createElement('p');
+        body.innerText = text;
+        alertDialog.append(body);
+      }
+      const alertButtons = document.createElement('div');
+      alertButtons.classList.add('crm-buttons', 'crm-flex-justify-end');
+      alertButtons.innerHTML = `
+          <button class="crm-button" autofocus onclick="this.closest('dialog').remove()">
+            OK
+          </button>
+      `;
+      alertDialog.append(alertButtons);
+
+      // ideally append to crmContainer for styling. fallback to body if not available
+      const crmContainer = document.querySelector('.crm-container');
+      (crmContainer ? crmContainer : document.body).append(alertDialog);
+      alertDialog.showModal();
       return null;
     }
   };
@@ -1752,19 +1812,16 @@ if (!CRM.vars) CRM.vars = {};
 
       // Handle clear button for form elements
       .on('click', 'a.crm-clear-link', function() {
-        $(this).css({visibility: 'hidden'}).siblings('.crm-form-radio:checked').prop('checked', false).trigger('change', ['crmClear']);
-        $(this).closest('.crm-multiple-checkbox-radio-options').find('.crm-form-radio:checked').prop('checked', false).trigger('change', ['crmClear']);
+        $(this).css({visibility: 'hidden'}).parent().find('.crm-form-radio:checked').prop('checked', false).trigger('change', ['crmClear']);
         $(this).siblings('input:text').val('').trigger('change', ['crmClear']);
         return false;
       })
       .on('change keyup', 'input.crm-form-radio:checked, input[allowclear=1]', function(e, context) {
         if (context !== 'crmClear' && ($(this).is(':checked') || ($(this).is('[allowclear=1]') && $(this).val()))) {
-          $(this).siblings('.crm-clear-link').css({visibility: ''});
-          $(this).closest('.crm-multiple-checkbox-radio-options').find('.crm-clear-link').css({visibility: ''});
+          $(this).add($(this).parent('.crm-option-label-pair')).siblings('.crm-clear-link').css({visibility: ''});
         }
         if (context !== 'crmClear' && $(this).is('[allowclear=1]') && $(this).val() === '') {
-          $(this).siblings('.crm-clear-link').css({visibility: 'hidden'});
-          $(this).closest('.crm-multiple-checkbox-radio-options').find('.crm-clear-link').css({visibility: 'hidden'});
+          $(this).add($(this).parent('.crm-option-label-pair')).siblings('.crm-clear-link').css({visibility: 'hidden'});
         }
       })
 
@@ -2142,5 +2199,39 @@ if (!CRM.vars) CRM.vars = {};
 
     return html;
   };
+
+  CRM.utils.createButton = (label, btnClass = null, icon = null, clickHandler = null, href = null, target = null, type = 'button') => {
+    const button = document.createElement('button');
+
+    button.type = type;
+
+    button.classList.add('btn');
+    if (btnClass) {
+      button.classList.add(btnClass);
+    }
+
+    button.innerText = label;
+
+    if (icon) {
+      const i = document.createElement('i');
+      i.classList.add('crm-i', icon);
+      i.role = 'img';
+      i.ariaHidden = true;
+      button.prepend(i);
+    }
+
+    if (clickHandler) {
+      button.onclick = clickHandler;
+    }
+    if (href) {
+      button.href = href;
+    }
+    if (target) {
+      button.target = target;
+    }
+
+    return button;
+  };
+
 
 })(jQuery, _);

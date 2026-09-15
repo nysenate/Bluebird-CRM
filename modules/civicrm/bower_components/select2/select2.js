@@ -1551,11 +1551,27 @@ the specific language governing permissions and limitations under the Apache Lic
                 mask.on("click", function (e) {
                     var dropdown = $("#select2-drop"), self;
                     if (dropdown.length > 0) {
-                        self=dropdown.data("select2");
-                        if (self.opts.selectOnBlur) {
-                            self.selectHighlighted({noFocus: true});
+
+                        // Fix by CiviCRM: if the multiselect search input was clicked on, focus it and don't close.
+                        // 1. Hide the mask so we can see what's underneath it
+                        $(this).hide();
+                        // 2. Find the element at the click coordinates
+                        var elementAtClick = document.elementFromPoint(e.clientX, e.clientY);
+                        var $targetInput = $(elementAtClick).closest('.select2-container-multi.select2-dropdown-open .select2-choices').find('input.select2-input');
+                        // 4. If an input is found, focus it
+                        if ($targetInput.length) {
+                            $targetInput.focus();
+                            $(this).show();
                         }
-                        self.close();
+
+                        // Regular select2 behavior
+                        else {
+                            self = dropdown.data("select2");
+                            if (self.opts.selectOnBlur) {
+                                self.selectHighlighted({noFocus: true});
+                            }
+                            self.close();
+                        }
                         e.preventDefault();
                         e.stopPropagation();
                     }

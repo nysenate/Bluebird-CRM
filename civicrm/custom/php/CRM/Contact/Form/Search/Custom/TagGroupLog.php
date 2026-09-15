@@ -43,7 +43,7 @@ class CRM_Contact_Form_Search_Custom_TagGroupLog
     $keywords = CRM_Core_BAO_Tag::getTagsUsedFor($usedFor = ['civicrm_contact'],
       $buildSelect = true,
       $all = false,
-      $parentId = 296
+      $parentId = CRM_NYSS_Tags_Constants::KEYWORDS_TAG_ID
     );
     asort($keywords);
     if ($keywords) {
@@ -51,17 +51,17 @@ class CRM_Contact_Form_Search_Custom_TagGroupLog
       foreach ($keywords as $key => $keyword) {
         $keywords[$key] = '&nbsp;&nbsp;'.$keyword;
       }
-      $tags = $tags + ['296' => 'Keywords'] + $keywords;
+      $tags = $tags + [CRM_NYSS_Tags_Constants::KEYWORDS_TAG_ID => 'Keywords'] + $keywords;
     }
 
-    $legpos = CRM_Core_BAO_Tag::getTagsUsedFor(['civicrm_contact'], TRUE, FALSE, 292);
+    $legpos = CRM_Core_BAO_Tag::getTagsUsedFor(['civicrm_contact'], TRUE, FALSE, CRM_NYSS_Tags_Constants::POSITIONS_TAG_ID);
     asort($legpos);
     if ($legpos) {
       //lets indent leg positions
       foreach ($legpos as $key => $pos) {
         $legpos[$key] = '&nbsp;&nbsp;'.$pos;
       }
-      $tags = $tags + ['292' => 'Legislative Positions'] + $legpos;
+      $tags = $tags + [CRM_NYSS_Tags_Constants::POSITIONS_TAG_ID => 'Legislative Positions'] + $legpos;
     }
 
     $select2style = [

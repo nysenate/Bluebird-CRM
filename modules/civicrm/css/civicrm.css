@@ -1367,24 +1367,45 @@ input.crm-form-entityref {
   line-height: 1em;
 }
 
+/* Mobile-friendly layout for two columns */
+@media (min-width: 768px) {
+  #crm-container .pcp-page-pcpinfo-intro {
+    float: left;
+    max-width: calc(100% - 370px);
+  }
+  #crm-container .pcp-widgets {
+    float: right;
+    max-width: 360px;
+  }
+}
+
 #crm-container .pcp-intro-text {
   padding-bottom: 1em;
 }
 
 #crm-container .pcp-image {
-  float: left;
-  margin: 0 1em 1em 0;
+  text-align: center;
+  margin-bottom: 1em;
+}
+@media (min-width: 768px) {
+  #crm-container .pcp-image {
+    margin: 0 1em 1em 0;
+  }
 }
 
 #crm-container .pcp-image img {
-  max-width: 360px;
+  max-height: 360px;
 }
 
 #crm-container .pcp-widgets {
   border: 1px solid #cccccc;
-  float: right;
   margin: 0 0 1em 1em;
   padding: 0.5em;
+}
+
+#crm-container .pcp-donate {
+  text-align: center;
+  padding: 1rem 0;
 }
 
 #crm-container .pcp_honor_roll_entry {
@@ -1395,15 +1416,7 @@ input.crm-form-entityref {
   font-weight: bold;
 }
 
-#crm-container .pcp-donate {
-  height: 24px;
-}
-#crm-container a.pcp-contribute-button {
-  font-weight: bold;
-}
-
 #crm-container .pcp-create-your-own {
-  clear: left;
   margin: 1em 0;
 }
 
@@ -3250,6 +3263,7 @@ span.crm-select-item-color {
   background-image: url("../packages/jquery/css/images/pbar-ani.gif");
 }
 
+.crm-container .crm-dialog,
 .crm-container.ui-dialog {
   background-color: #fff;
   box-shadow: 0 0 10px rgba(0, 0, 0, 0.6);
@@ -4120,5 +4134,20 @@ html.crm-standalone body {
   margin: 0;
   padding: 0;
   font-family: var(--crm-font, sans-serif);
-  background-color: var(--crm-c-page-background, #f8f8f8);
+  background-color: var(--crm-page-bg-color, #f8f8f8);
+}
+
+/* HTML5 dialogs */
+.crm-container .crm-dialog {
+  margin: auto;
+  min-width: 10rem;
+  border-radius: 8px;
+  border-width: 0;
+}
+.crm-container .crm-dialog h1 {
+  font-size: 1rem;
+}
+.crm-container .crm-dialog .crm-buttons {
+  display: flex;
+  justify-content: flex-end;
 }

@@ -84,7 +84,7 @@ class CRM_Custom_Form_Group extends CRM_Admin_Form {
       $errors['title'] = ts('Custom group \'%1\' already exists in Database.', [1 => $title]);
     }
 
-    if (empty($fields['is_multiple']) && $fields['style'] == 'Tab with table') {
+    if ($self->_isGroupEmpty && empty($fields['is_multiple']) && $fields['style'] == 'Tab with table') {
       $errors['style'] = ts("Display Style 'Tab with table' is only supported for multiple-record custom field sets.");
     }
 
@@ -184,8 +184,8 @@ class CRM_Custom_Form_Group extends CRM_Admin_Form {
     $this->add('select2', 'extends_entity_column_value', ts('Sub Type'), $initialEntityColumnValueOptions, FALSE, ['multiple' => TRUE, 'placeholder' => ts('Any')]);
 
     // help text
-    $this->add('wysiwyg', 'help_pre', ts('Pre-form Help'), $attributes['help_pre']);
-    $this->add('wysiwyg', 'help_post', ts('Post-form Help'), $attributes['help_post']);
+    $this->add('wysiwyg', 'help_pre', ts('Pre-form Help'), ['class' => 'collapsed']);
+    $this->add('wysiwyg', 'help_post', ts('Post-form Help'), ['class' => 'collapsed']);
 
     // weight
     $this->add('number', 'weight', ts('Order'), $attributes['weight'], TRUE);
@@ -197,28 +197,29 @@ class CRM_Custom_Form_Group extends CRM_Admin_Form {
     $this->add('text', 'icon', ts('Tab icon'), ['class' => 'crm-icon-picker', 'allowClear' => TRUE]);
 
     // is this set collapsed or expanded ?
-    $this->addElement('advcheckbox', 'collapse_display', ts('Collapse this set on initial display'));
+    $this->addToggle('collapse_display', ts('Collapse on initial display'));
 
     // is this set collapsed or expanded ? in advanced search
-    $this->addElement('advcheckbox', 'collapse_adv_display', ts('Collapse this set in Advanced Search'));
+    $this->addToggle('collapse_adv_display', ts('Collapse in Advanced Search'));
 
     // is this set active ?
-    $this->addElement('advcheckbox', 'is_active', ts('Is this Custom Data Set active?'));
+    $this->addToggle('is_active', ts('Enabled'));
 
     //Is this set visible on public pages?
-    $this->addElement('advcheckbox', 'is_public', ts('Is this Custom Data Set public?'));
+    $this->addToggle('is_public', ts('Public'));
 
-    $this->addElement('advcheckbox', 'is_multiple',
-      ts('Does this Custom Field Set allow multiple records?'), NULL);
+    $this->addToggle('is_multiple', ts('Allow multiple records'),
+      ['on' => ts('Multiple'), 'off' => ts('Single')]
+    );
 
-    $this->add('number', 'max_multiple', ts('Maximum number of multiple records'), $attributes['max_multiple']);
+    $this->add('number', 'max_multiple', ts('Maximum number of multiple records'), ['class' => 'six', 'min' => 1, 'step' => 1]);
     $this->addRule('max_multiple', ts('is a numeric field'), 'numeric');
 
     // Once data exists, certain options cannot be changed
     if (!$this->_isGroupEmpty) {
       $this->getElement('extends')->freeze();
       $this->getElement('extends_entity_column_id')->freeze();
-      $this->getElement('is_multiple')->freeze();
+      $this->getElement('is_multiple')->setAttribute('disabled', 'disabled');
       // Don't allow max to be lowered if data already exists
       $this->getElement('max_multiple')->setAttribute('min', $this->_values['max_multiple'] ?? '0');
     }
@@ -246,12 +247,15 @@ class CRM_Custom_Form_Group extends CRM_Admin_Form {
    * @return array
    */
   public function setDefaultValues(): array {
-    $defaults = &$this->_values;
+    $defaults = parent::setDefaultValues();
     if ($this->_action == CRM_Core_Action::ADD) {
-      $defaults['weight'] = CRM_Utils_Weight::getDefaultWeight('CRM_Core_DAO_CustomGroup');
-
-      $defaults['is_active'] = $defaults['is_public'] = $defaults['collapse_adv_display'] = 1;
-      $defaults['style'] = 'Inline';
+      $defaults += [
+        'weight' => CRM_Utils_Weight::getDefaultWeight('CRM_Core_DAO_CustomGroup'),
+        'is_active' => 1,
+        'is_public' => 1,
+        'collapse_adv_display' => 1,
+        'style' => 'Inline',
+      ];
     }
     return $defaults;
   }
@@ -266,7 +270,10 @@ class CRM_Custom_Form_Group extends CRM_Admin_Form {
       // Because select2
       $params['extends_entity_column_value'] = explode(',', $params['extends_entity_column_value']);
     }
-    $params['overrideFKConstraint'] = 0;
+    // Don't submit value from disabled form control
+    if (!$this->_isGroupEmpty) {
+      unset($params['is_multiple']);
+    }
     if ($this->_action & CRM_Core_Action::UPDATE) {
       $params['id'] = $this->_id;
       if ($this->_values['extends'] != $params['extends']) {
@@ -282,12 +289,6 @@ class CRM_Custom_Form_Group extends CRM_Admin_Form {
         }
         CRM_Contact_BAO_ContactType::deleteCustomRowsOfSubtype($this->_id, $subtypesToBeRemoved, $subtypesToPreserve);
       }
-    }
-    elseif ($this->_action & CRM_Core_Action::ADD) {
-      //new custom set , so lets set the created_id
-      $session = CRM_Core_Session::singleton();
-      $params['created_id'] = $session->get('userID');
-      $params['created_date'] = date('YmdHis');
     }
 
     $result = civicrm_api3('CustomGroup', 'create', $params);

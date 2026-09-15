@@ -3,7 +3,6 @@
  <head>
   <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <link rel="icon" type="image/png" href="{$config->resourceBase}i/logo_lg.png" >
 
   {crmRegion name='html-header'}
   {/crmRegion}
@@ -57,7 +56,7 @@
 
     {* This has to come at the bottom because the variable may not be populated until some of the templates evaluated inline above get evaluated. *}
     {if $standaloneErrors}
-      <div class="standalone-errors">
+      <div class="status error standalone-errors">
         <ul>{$standaloneErrors}</ul>
       </div>
       <script type="text/javascript">

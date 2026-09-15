@@ -17,7 +17,8 @@
       const allTypes = {
         aggregate: ts('Aggregate'),
         comparison: ts('Comparison'),
-        date: ts('Date'),
+        date: ts('Date Calculation'),
+        partial_date: ts('Partial Date'),
         math: ts('Math'),
         string: ts('Text')
       };
@@ -33,7 +34,7 @@
 
       this.$onInit = function() {
         const info = searchMeta.parseExpr(ctrl.expr);
-        ctrl.fieldArg = _.findWhere(info.args, {type: 'field'});
+        ctrl.fieldArg = info.args.find(arg => arg.type === 'field');
         ctrl.args = info.args;
         ctrl.fn = info.fn;
         ctrl.fnName = !info.fn ? '' : info.fn.name;
@@ -42,7 +43,7 @@
 
       // Watch if field is switched
       $scope.$watch('$ctrl.expr', function(newExpr, oldExpr) {
-        if (oldExpr && newExpr && newExpr.indexOf('(') < 0) {
+        if (oldExpr && newExpr && !newExpr.includes('(')) {
           ctrl.$onInit();
         }
       });
@@ -132,17 +133,15 @@
           // Field in groupBy clause or field in select clause that isn't required to be aggregated
           if (ctrl.mode === 'groupBy' || !ctrl.crmSearchAdmin.mustAggregate(ctrl.expr)) {
             allowedTypes.push('comparison', 'string');
-            if (_.includes(['Integer', 'Float', 'Date', 'Timestamp', 'Money'], ctrl.fieldArg.field.data_type)) {
+            if (['Integer', 'Float', 'Date', 'Timestamp', 'Money'].includes(ctrl.fieldArg.field.data_type)) {
               allowedTypes.push('math');
             }
-            if (_.includes(['Date', 'Timestamp'], ctrl.fieldArg.field.data_type)) {
-              allowedTypes.push('date');
+            if (['Date', 'Timestamp'].includes(ctrl.fieldArg.field.data_type)) {
+              allowedTypes.push('date', 'partial_date');
             }
           }
-          _.each(allowedTypes, function(type) {
-            const allowedFunctions = _.filter(CRM.crmSearchAdmin.functions, function(fn) {
-              return fn.category === type && fn.params.length;
-            });
+          allowedTypes.forEach(type => {
+            const allowedFunctions = CRM.crmSearchAdmin.functions.filter(fn => fn.category === type && fn.params.length);
             functions.push({
               text: allTypes[type],
               children: formatForSelect2(allowedFunctions, 'name', 'title', ['description'])
@@ -159,7 +158,7 @@
       };
 
       this.selectFunction = function() {
-        ctrl.fn = _.find(CRM.crmSearchAdmin.functions, {name: ctrl.fnName});
+        ctrl.fn = CRM.crmSearchAdmin.functions.find(fn => fn.name === ctrl.fnName);
         ctrl.args = [ctrl.fieldArg];
         if (ctrl.fn) {
           let exprType,
@@ -200,11 +199,23 @@
         ctrl.writeExpr();
       };
 
+      function safeStringAlias(value) {
+        const MAX_LEN = 20;
+        const cleaned = value
+          .toLowerCase()
+          .replace(/['"]/g, '')        // remove quotes
+          .replace(/[^a-z0-9]+/g, '_') // replace unsafe chars
+          .replace(/^_+|_+$/g, '');    // trim underscores
+
+        const short = cleaned.slice(0, MAX_LEN);
+        return `${short}_${hash}`;
+      }
+
       // Make a sql-friendly alias for this expression
       function makeAlias() {
         const args = ctrl.args
-          .filter(arg => arg.value && (arg.type === 'field' || arg.type === 'number'))
-          .map(arg => arg.value);
+          .filter(arg => arg.value && (arg.type === 'field' || arg.type === 'number' || arg.type === 'string'))
+          .map(arg => arg.type === 'string' ? safeStringAlias(arg.value) : arg.value);
         return (ctrl.fnName + '_' + args.join('_')).replace(/[.:]/g, '_');
       }
 
@@ -212,7 +223,15 @@
         if (ctrl.fnName) {
           const args = ctrl.args.map((arg, index) => {
             const value = arg.value === undefined ? '' : arg.value;
-            const prefix = arg.name ? (index ? ' ' : '') + (arg.name) + (value === '' ? '' : ' ') : (index ? ', ' : '');
+            let prefix = '';
+            // Named arguments are separated by a space, unnamed ones are separated by a comma
+            if (arg.name) {
+              prefix = (index ? ' ' : '') + (arg.name) + (value === '' ? '' : ' ');
+            } else if (index && ctrl.fnName === 'e') {
+              prefix = ' ';
+            } else if (index) {
+              prefix = ', ';
+            }
             const flag = arg.flag_before ? arg.flag_before + ' ' : '';
             const suffix = arg.flag_after ? ' ' + arg.flag_after : '';
             let content = '';

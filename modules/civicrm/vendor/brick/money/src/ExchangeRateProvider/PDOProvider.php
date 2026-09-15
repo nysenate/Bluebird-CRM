@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Brick\Money\ExchangeRateProvider;
 
+use Brick\Math\BigNumber;
 use Brick\Money\ExchangeRateProvider;
 use Brick\Money\Exception\CurrencyConversionException;
 
@@ -15,17 +16,17 @@ final class PDOProvider implements ExchangeRateProvider
     /**
      * The SELECT statement.
      */
-    private \PDOStatement $statement;
+    private readonly \PDOStatement $statement;
 
     /**
      * The source currency code if fixed, or null if dynamic.
      */
-    private ?string $sourceCurrencyCode = null;
+    private readonly ?string $sourceCurrencyCode;
 
     /**
      * The target currency code if fixed, or null if dynamic.
      */
-    private ?string $targetCurrencyCode = null;
+    private readonly ?string $targetCurrencyCode;
 
     /**
      * Extra parameters set dynamically to resolve the query placeholders.
@@ -42,37 +43,27 @@ final class PDOProvider implements ExchangeRateProvider
     {
         $conditions = [];
 
-        if ($configuration->tableName === null) {
-            throw new \InvalidArgumentException('Invalid configuration: $tableName is not set.');
-        }
-
-        if ($configuration->exchangeRateColumnName === null) {
-            throw new \InvalidArgumentException('Invalid configuration: $exchangeRateColumnName is not set.');
-        }
-
-        if ($configuration->sourceCurrencyCode !== null && $configuration->targetCurrencyCode !== null) {
-            throw new \InvalidArgumentException('Invalid configuration: $sourceCurrencyCode and $targetCurrencyCode cannot be both set.');
-        }
-
         if ($configuration->whereConditions !== null) {
-            $conditions[] = '(' . $configuration->whereConditions . ')';
+            $conditions[] = sprintf('(%s)', $configuration->whereConditions);
         }
+
+        $sourceCurrencyCode = null;
+        $targetCurrencyCode = null;
 
         if ($configuration->sourceCurrencyCode !== null) {
-            $this->sourceCurrencyCode = $configuration->sourceCurrencyCode;
+            $sourceCurrencyCode = $configuration->sourceCurrencyCode;
         } elseif ($configuration->sourceCurrencyColumnName !== null) {
-            $conditions[] = $configuration->sourceCurrencyColumnName . ' = ?';
-        } else {
-            throw new \InvalidArgumentException('Invalid configuration: one of $sourceCurrencyCode or $sourceCurrencyColumnName must be set.');
+            $conditions[] = sprintf('%s = ?', $configuration->sourceCurrencyColumnName);
         }
 
         if ($configuration->targetCurrencyCode !== null) {
-            $this->targetCurrencyCode = $configuration->targetCurrencyCode;
+            $targetCurrencyCode = $configuration->targetCurrencyCode;
         } elseif ($configuration->targetCurrencyColumnName !== null) {
-            $conditions[] = $configuration->targetCurrencyColumnName . ' = ?';
-        } else {
-            throw new \InvalidArgumentException('Invalid configuration: one of $targetCurrencyCode or $targetCurrencyColumnName must be set.');
+            $conditions[] = sprintf('%s = ?', $configuration->targetCurrencyColumnName);
         }
+
+        $this->sourceCurrencyCode = $sourceCurrencyCode;
+        $this->targetCurrencyCode = $targetCurrencyCode;
 
         $conditions = implode(' AND ' , $conditions);
 
@@ -91,12 +82,8 @@ final class PDOProvider implements ExchangeRateProvider
      *
      * This is used in conjunction with $whereConditions in the configuration class.
      * The number of parameters passed to this method must match the number of placeholders.
-     *
-     * @param mixed ...$parameters
-     *
-     * @return void
      */
-    public function setParameters(...$parameters) : void
+    public function setParameters(mixed ...$parameters) : void
     {
         $this->parameters = $parameters;
     }
@@ -104,7 +91,7 @@ final class PDOProvider implements ExchangeRateProvider
     /**
      * {@inheritdoc}
      */
-    public function getExchangeRate(string $sourceCurrencyCode, string $targetCurrencyCode)
+    public function getExchangeRate(string $sourceCurrencyCode, string $targetCurrencyCode): int|float|string
     {
         $parameters = $this->parameters;
 

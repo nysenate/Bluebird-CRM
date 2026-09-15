@@ -9,8 +9,9 @@ if (!CRM_Core_Component::isEnabled('CiviMail')) {
 $select = [
   'id',
   'name',
+  'subject',
   'language:label',
-  'created_id.display_name',
+  //'created_id.display_name',
   'created_date',
   'scheduled_id.display_name',
   'scheduled_date',
@@ -24,6 +25,13 @@ $columns = [
     'type' => 'field',
     'key' => 'name',
     'label' => E::ts('Mailing Name'),
+    'sortable' => TRUE,
+    'icons' => [],
+  ],
+  [
+    'type' => 'field',
+    'key' => 'subject',
+    'label' => E::ts('Subject'),
     'sortable' => TRUE,
     'icons' => [],
   ],
@@ -48,12 +56,12 @@ if (CRM_Core_I18n::isMultilingual()) {
 }
 
 $columns = array_merge($columns, [
-  [
+  /*[
     'type' => 'field',
     'key' => 'created_id.display_name',
     'label' => E::ts('Created By'),
     'sortable' => TRUE,
-  ],
+  ],*/
   [
     'type' => 'field',
     'key' => 'created_date',
@@ -133,22 +141,7 @@ $columns = array_merge($columns, [
         'condition' => [],
       ],
       [
-        'path' => 'civicrm/mailing/browse?action=reopen&mid=[id]&reset=1',
-        'icon' => 'fa-play',
-        'text' => E::ts('Resume'),
-        'style' => 'default',
-        'condition' => [
-          'status:name',
-          '=',
-          'Paused',
-        ],
-        'entity' => '',
-        'action' => '',
-        'join' => '',
-        'target' => '',
-      ],
-      [
-        'path' => 'civicrm/mailing/browse?action=disable&mid=[id]&reset=1',
+        'path' => 'civicrm/mailing/action?action=disable&mid=[id]&reset=1',
         'icon' => 'fa-ban',
         'text' => E::ts('Cancel'),
         'style' => 'default',
@@ -157,28 +150,16 @@ $columns = array_merge($columns, [
           'IN',
           ['Scheduled', 'Running'],
         ],
-        'entity' => '',
-        'action' => '',
-        'join' => '',
-        'target' => '',
-      ],
-      [
-        'path' => 'civicrm/mailing/browse?action=close&mid=[id]&reset=1',
-        'icon' => 'fa-pause',
-        'text' => E::ts('Pause'),
-        'style' => 'default',
-        'condition' => [
-          'status:name',
-          'IN',
-          ['Scheduled', 'Running'],
+        'conditions' => [
+          ['check user permission', '=', 'access CiviMail'],
         ],
         'entity' => '',
         'action' => '',
         'join' => '',
-        'target' => '',
+        'target' => 'crm-popup',
       ],
       [
-        'path' => 'civicrm/mailing/browse?action=disable&mid=[id]&reset=1',
+        'path' => 'civicrm/mailing/action?action=disable&mid=[id]&reset=1',
         'icon' => 'fa-ban',
         'text' => E::ts('Cancel'),
         'style' => 'default',
@@ -187,10 +168,13 @@ $columns = array_merge($columns, [
           '=',
           'Paused',
         ],
+        'conditions' => [
+          ['check user permission', '=', 'access CiviMail'],
+        ],
         'entity' => '',
         'action' => '',
         'join' => '',
-        'target' => '',
+        'target' => 'crm-popup',
       ],
       [
         'icon' => 'fa-clone',
@@ -207,15 +191,18 @@ $columns = array_merge($columns, [
         'target' => '',
       ],
       [
-        'entity' => 'Mailing',
-        'action' => 'delete',
+        'entity' => '',
+        'action' => '',
         'join' => '',
         'target' => 'crm-popup',
         'icon' => 'fa-trash',
         'text' => E::ts('Delete'),
         'style' => 'danger',
-        'path' => 'civicrm/mailing/browse?action=delete&mid=[id]&reset=1',
+        'path' => 'civicrm/mailing/action?action=delete&mid=[id]&reset=1',
         'condition' => [],
+        'conditions' => [
+          ['check user permission', '=', 'delete in CiviMail'],
+        ],
       ],
     ],
   ],

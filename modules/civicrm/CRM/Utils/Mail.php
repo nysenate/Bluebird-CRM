@@ -1,4 +1,5 @@
 <?php
+
 /*
  +--------------------------------------------------------------------+
  | Copyright CiviCRM LLC. All rights reserved.                        |
@@ -133,6 +134,32 @@ class CRM_Utils_Mail {
   }
 
   /**
+   * When creating a `Mail_mime` payload for use with a `Mail_*` transport,
+   * they need to agree about the end-of-line character. (Otherwise, you
+   * see mix of EOLs on header-lines -- esp re: header-wrapping.)
+   *
+   * Use pickDefaultsEol() to make a consistent choice.
+   *
+   * Aside: IMHO, the concept of a "default EOL" is fundamentally flawed.
+   * If we swap-in external transports, or if we allow multiple outbound
+   * routes, then this makes it hard to mix-and-match the payloads+transports.
+   *
+   * But for the moment, we need them to match, and we have a legacy of
+   * system-configurations that depend on particular quirks in the drivers.
+   *
+   * @internal
+   * @return string
+   */
+  public static function pickDefaultEol(): string {
+    $mailer = \Civi::service('pear_mail');
+    if ($mailer instanceof CRM_Utils_Mail_FilteredPearMailer) {
+      $mailer = $mailer->getDelegate();
+    }
+    // In core, all mailers should have a "$sep". But in contrib, it hasn't been guaranteed.
+    return property_exists($mailer, 'sep') ? $mailer->sep : "\r\n";
+  }
+
+  /**
    * Wrapper function to send mail in CiviCRM. Hooks are called from this function. The input parameter
    * is an associateive array which holds the values of field needed to send an email. Note that these
    * parameters are case-sensitive. The Parameters are:
@@ -156,11 +183,13 @@ class CRM_Utils_Mail {
    *
    * @param array $params
    *   (by reference).
+   * @param string|null $errorMessage
+   *   Optional reference to capture error messages if sending fails.
    *
    * @return bool
    *   TRUE if a mail was sent, else FALSE.
    */
-  public static function send(array &$params): bool {
+  public static function send(array &$params, &$errorMessage = NULL): bool {
     // first call the mail alter hook
     CRM_Utils_Hook::alterMailParams($params, 'singleEmail');
 
@@ -212,15 +241,16 @@ class CRM_Utils_Mail {
         $result = $mailer->send($to, $headers, $message ?? '', $originalValues);
       }
       catch (Exception $e) {
-        \Civi::log()->error('Mailing error: ' . $e->getMessage());
+        $errorMessage = $e->getMessage();
+        \Civi::log()->error('Mailing error: ' . $errorMessage);
         CRM_Core_Session::setStatus(ts('Unable to send email. Please report this message to the site administrator'), ts('Mailing Error'), 'error');
         return FALSE;
       }
       if (is_a($result, 'PEAR_Error')) {
-        $message = self::errorMessage($mailer, $result);
+        $errorMessage = self::errorMessage($mailer, $result);
         // append error message in case multiple calls are being made to
         // this method in the course of sending a batch of messages.
-        \Civi::log()->error('Mailing error: ' . $message);
+        \Civi::log()->error('Mailing error: ' . $errorMessage);
         CRM_Core_Session::setStatus(ts('Unable to send email. Please report this message to the site administrator'), ts('Mailing Error'), 'error');
         return FALSE;
       }
@@ -304,9 +334,6 @@ class CRM_Utils_Mail {
     }
 
     $htmlMessage = $params['html'] ?? FALSE;
-    if (trim(CRM_Utils_String::htmlToText((string) $htmlMessage)) === '') {
-      $htmlMessage = FALSE;
-    }
     $attachments = $params['attachments'] ?? NULL;
     if (!empty($params['text']) && trim($params['text'])) {
       $textMessage = $params['text'];
@@ -392,8 +419,7 @@ class CRM_Utils_Mail {
       $headers['Reply-To'] = $headers['From'];
     }
 
-    require_once 'Mail/mime.php';
-    $msg = new Mail_mime();
+    $msg = new Mail_mime(static::pickDefaultEol());
     if ($textMessage) {
       $msg->setTxtBody($textMessage);
     }
@@ -549,7 +575,8 @@ class CRM_Utils_Mail {
 
     if (!empty($name)) {
       // escape the special characters
-      $name = str_replace(['<', '"', '>'],
+      $name = str_replace(
+        ['<', '"', '>'],
         ['\<', '\"', '\>'],
         $name
       );
@@ -610,10 +637,14 @@ class CRM_Utils_Mail {
     // and will be added to the <html> tag even if you do not include it.
     $html = preg_replace('/(<html)(.+?xmlns=["\'].[^\s]+["\'])(.+)?(>)/', '\1\3\4', $html);
 
-    file_put_contents($pdf_filename, CRM_Utils_PDF_Utils::html2pdf($html,
+    file_put_contents(
+      $pdf_filename,
+      CRM_Utils_PDF_Utils::html2pdf(
+        $html,
         $fileName,
         TRUE,
-        $format)
+        $format
+      )
     );
     return [
       'fullPath' => $pdf_filename,

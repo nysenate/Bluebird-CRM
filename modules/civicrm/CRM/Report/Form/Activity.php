@@ -588,8 +588,7 @@ class CRM_Report_Form_Activity extends CRM_Report_Form {
    */
   public function where($recordType = NULL) {
     $this->_where = " WHERE {$this->_aliases['civicrm_activity']}.is_test = 0 AND
-                                {$this->_aliases['civicrm_activity']}.is_deleted = 0 AND
-                                {$this->_aliases['civicrm_activity']}.is_current_revision = 1";
+                                {$this->_aliases['civicrm_activity']}.is_deleted = 0";
 
     $clauses = [];
     foreach ($this->_columns as $tableName => $table) {
@@ -1014,7 +1013,7 @@ GROUP BY civicrm_activity_id $having {$this->_orderBy}";
           $link = [];
           if ($viewLinks) {
             foreach ($assigneeContactIds as $id => $value) {
-              if (isset($value) && isset($assigneeNames[$id])) {
+              if (isset($value, $assigneeNames[$id])) {
                 $url = CRM_Utils_System::url('civicrm/contact/view',
                   'reset=1&cid=' . $value,
                   $this->_absoluteUrl
@@ -1036,7 +1035,7 @@ GROUP BY civicrm_activity_id $having {$this->_orderBy}";
           $link = [];
           if ($viewLinks) {
             foreach ($targetContactIds as $id => $value) {
-              if (isset($value) && isset($targetNames[$id])) {
+              if (isset($value, $targetNames[$id])) {
                 $url = CRM_Utils_System::url("civicrm/contact/view",
                   'reset=1&cid=' . $value,
                   $this->_absoluteUrl
@@ -1072,7 +1071,7 @@ GROUP BY civicrm_activity_id $having {$this->_orderBy}";
           $link = [];
           if ($viewLinks) {
             foreach ($assigneeContactIds as $id => $value) {
-              if (isset($value) && isset($assigneeNames[$id])) {
+              if (isset($value, $assigneeNames[$id])) {
                 $url = CRM_Utils_System::url('civicrm/contact/view',
                   'reset=1&cid=' . $value,
                   $this->_absoluteUrl
@@ -1094,7 +1093,7 @@ GROUP BY civicrm_activity_id $having {$this->_orderBy}";
           $link = [];
           if ($viewLinks) {
             foreach ($targetContactIds as $id => $value) {
-              if (isset($value) && isset($targetNames[$id])) {
+              if (isset($value, $targetNames[$id])) {
                 $url = CRM_Utils_System::url("civicrm/contact/view",
                   'reset=1&cid=' . $value,
                   $this->_absoluteUrl

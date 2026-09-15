@@ -2,7 +2,7 @@
   "use strict";
 
   angular.module('afAdmin').controller('afAdminList', function($scope, afforms, crmApi4, crmStatus, afGui) {
-    var ts = $scope.ts = CRM.ts('org.civicrm.afform_admin'),
+    const ts = $scope.ts = CRM.ts('org.civicrm.afform_admin'),
       ctrl = $scope.$ctrl = this;
     this.sortField = 'title';
     this.sortDir = false;
@@ -11,9 +11,9 @@
 
     $scope.searchCreateLinks = {};
 
-    this.tabs = CRM.afAdmin.afform_type;
+    this.tabs = CRM.afAdmin.afform_fields.type.options;
     $scope.types = _.indexBy(ctrl.tabs, 'name');
-    _.each(['form', 'block', 'search'], function(type) {
+    ['form', 'block', 'search'].forEach(type => {
       if ($scope.types[type]) {
         if (type === 'form') {
           $scope.types.form.default = '#create/form/Individual';
@@ -22,7 +22,7 @@
     });
     $scope.types.system.options = false;
 
-    this.afforms = _.transform(afforms, function(afforms, afform) {
+    this.afforms = afforms.reduce((afforms, afform) => {
       afform.type = afform.type || 'system';
       afform.placement = afform['placement:label'];
       afform.tags = afform['tags:label'];
@@ -39,10 +39,11 @@
       }
       afforms[afform.type] = afforms[afform.type] || [];
       afforms[afform.type].push(afform);
+      return afforms;
     }, {});
 
     // Change sort field/direction when clicking a column header
-    this.sortBy = function(col) {
+    this.sortBy = (col) => {
       ctrl.sortDir = ctrl.sortField === col ? !ctrl.sortDir : false;
       ctrl.sortField = col;
     };
@@ -57,7 +58,7 @@
       ctrl.tab = ctrl.tabs[0].name;
     }
 
-    this.createLinks = function() {
+    this.createLinks = () => {
       // Reset search input in dropdown
       $scope.searchCreateLinks.label = '';
       // A value means it's alredy loaded. Null means it's loading.
@@ -65,7 +66,7 @@
         return;
       }
       $scope.types[ctrl.tab].options = null;
-      var links = [];
+      const links = [];
 
       if (ctrl.tab === 'form') {
         _.each(CRM.afGuiEditor.entities, function(entity, name) {
@@ -81,7 +82,7 @@
       }
 
       if (ctrl.tab === 'block') {
-        _.each(CRM.afGuiEditor.entities, function(entity, name) {
+        Object.entries(CRM.afGuiEditor.entities).forEach(([name, entity]) => {
           if (true) { // FIXME: What conditions do we use for block entities?
             links.push({
               url: '#create/block/' + name,
@@ -90,7 +91,7 @@
             });
           }
         });
-        $scope.types.block.options = _.sortBy(links, function(item) {
+        $scope.types.block.options = _.sortBy(links, (item) => {
           return item.url === '#create/block/*' ? '0' : item.label;
         });
         // Add divider after the * entity (content block)
@@ -98,33 +99,37 @@
       }
 
       if (ctrl.tab === 'search') {
-        afGui.getAllSearchDisplays().then(function(links) {
+        afGui.getAllSearchDisplays().then((links) => {
           $scope.types.search.options = links;
         });
       }
     };
 
-    this.revert = function(afform) {
-      var index = _.findIndex(ctrl.afforms[ctrl.tab], {name: afform.name});
+    this.revert = (afform) => {
+      const index = ctrl.afforms[ctrl.tab].findIndex(item => item.name === afform.name);
       if (index > -1) {
-        var apiOps = [['Afform', 'revert', {where: [['name', '=', afform.name]]}]];
+        const apiOps = [['Afform', 'revert', {where: [['name', '=', afform.name]]}]];
         if (afform.has_base) {
           apiOps.push(['Afform', 'get', {
             where: [['name', '=', afform.name]],
             select: ['name', 'title', 'type', 'is_public', 'server_route', 'has_local', 'has_base', 'base_module', 'base_module:label']
           }, 0]);
         }
-        var apiCall = crmStatus(
-          afform.has_base ? {start: ts('Reverting...')} : {start: ts('Deleting...'), success: ts('Deleted'), error: ts('Error deleting')},
+        const apiCall = crmStatus(
+          afform.has_base ? {start: ts('Reverting...')} : {
+            start: ts('Deleting...'),
+            success: ts('Deleted'),
+            error: ts('Error deleting')
+          },
           crmApi4(apiOps)
         );
         if (afform.has_base) {
           afform.has_local = false;
-          apiCall.then(function(result) {
+          apiCall.then((result) => {
             ctrl.afforms[ctrl.tab][index] = result[1];
           });
         } else {
-          apiCall.then(function() {
+          apiCall.then(() => {
             ctrl.afforms[ctrl.tab].splice(index, 1);
           });
         }

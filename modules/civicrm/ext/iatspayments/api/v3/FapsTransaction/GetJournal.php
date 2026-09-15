@@ -87,7 +87,7 @@ function civicrm_api3_faps_transaction_get_journal($params) {
   }
   $limit = 1;
   if (isset($params['options']['limit'])) {
-    $limit = (integer) $params['options']['limit'];
+    $limit = (int) $params['options']['limit'];
   }
   if ($limit > 0) {
     $i++;

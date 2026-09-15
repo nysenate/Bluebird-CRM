@@ -2045,7 +2045,7 @@ class CRM_Contact_BAO_Query {
       case 'prox_country_id':
       case 'prox_geo_code_1':
       case 'prox_geo_code_2':
-        // handled by the proximity_distance clause
+            // handled by the proximity_distance clause
         return;
 
       default:
@@ -3295,7 +3295,7 @@ WHERE  $smartGroupClause
       $activityContacts = CRM_Activity_BAO_ActivityContact::buildOptions('record_type_id', 'validate');
       $targetID = CRM_Utils_Array::key('Activity Targets', $activityContacts);
 
-      //NYSS 7770
+      //NYSS 7770 --- FIXED IN CORE WITH https://github.com/civicrm/civicrm-core/pull/36627
       $this->_tables[$etActTable] =
         $this->_whereTables[$etActTable] =
         " LEFT JOIN civicrm_activity_contact all_tag_types
@@ -3304,7 +3304,6 @@ WHERE  $smartGroupClause
           LEFT JOIN civicrm_activity all_tag_types_act
             ON all_tag_types_act.id = all_tag_types.activity_id
             AND all_tag_types_act.is_deleted = 0
-            AND all_tag_types_act.is_current_revision = 1
           LEFT JOIN civicrm_entity_tag as {$etActTable}
             ON {$etActTable}.entity_table = 'civicrm_activity'
             AND {$etActTable}.entity_id = all_tag_types_act.id
@@ -3389,7 +3388,7 @@ WHERE  $smartGroupClause
             LEFT JOIN civicrm_entity_tag {$etCaseTable} ON ( {$etCaseTable}.entity_table = 'civicrm_case' AND {$etCaseTable}.entity_id = civicrm_case.id ) ";
       // search tag in activities
       $etActTable = "`civicrm_entity_act_tag-" . uniqid() . "`";
-      //NYSS 7770
+      //NYSS 7770 --- FIXED IN CORE WITH https://github.com/civicrm/civicrm-core/pull/36627
       $this->_tables[$etActTable] =
         $this->_whereTables[$etActTable] =
         " LEFT JOIN civicrm_activity_contact all_tag_types
@@ -3398,7 +3397,6 @@ WHERE  $smartGroupClause
           LEFT JOIN civicrm_activity all_tag_types_act
             ON all_tag_types_act.id = all_tag_types.activity_id
             AND all_tag_types_act.is_deleted = 0
-            AND all_tag_types_act.is_current_revision = 1
           LEFT JOIN civicrm_entity_tag as {$etActTable}
             ON {$etActTable}.entity_table = 'civicrm_activity'
             AND {$etActTable}.entity_id = all_tag_types_act.id ";
@@ -4755,7 +4753,7 @@ civicrm_relationship.start_date > {$today}
       $sql .= self::getGroupByFromSelectColumns($query->_select, 'contact_a.id');
     }
     if (!empty($sort)) {
-      $sort = CRM_Utils_Type::escape($sort, 'String');
+      $sort = CRM_Utils_Type::escape($sort, 'MysqlOrderBy');
       $sql .= " ORDER BY $sort ";
     }
     if ($row_count > 0 && $offset >= 0) {
@@ -5762,29 +5760,6 @@ civicrm_relationship.start_date > {$today}
 
       case 'IN':
       case 'NOT IN':
-        //NYSS support multiple values for some fields
-        //Civi::log()->debug('buildClause', array('dataType' => $dataType, 'value' => $value));
-        if (isset($dataType)) {
-          if (!is_array($value)) {
-            $value = CRM_Utils_Type::escape($value, 'String');
-            $values = explode('[:comma:]', $value);
-            //NYSS - type is passed as nyss_String or nyss_Integer
-            if (str_contains($dataType, 'nyss_')) {
-              $value = str_replace(['(', ')'], '', $value); //4969 make sure no parens were added (search bldr)
-              $values = array_map('trim', explode(',', $value));
-              $dataType = str_replace('nyss_', '', $dataType); //return to expected format
-            }
-
-            foreach ($values as &$v) {
-              $v = "'{$v}'";
-            }
-            $value = '(' . implode(',', $values) . ')';
-            //$value = array($op => (array) $values);
-
-            return "$clause $value";
-          }
-        }
-
         // I feel like this would be escaped properly if passed through $queryString = CRM_Core_DAO::createSqlFilter.
         if (!empty($value) && (!is_array($value) || !array_key_exists($op, $value))) {
           $value = [$op => (array) $value];
@@ -6989,7 +6964,7 @@ AND   displayRelType.is_active = 1
     [$select, $from, $where, $having] = $this->query($count, $sortByChar, $groupContacts, $onlyDeleted);
 
     if ($additionalWhereClause) {
-      $where = $where . ' AND ' . $additionalWhereClause;
+      $where .= ' AND ' . $additionalWhereClause;
     }
 
     //additional from clause should be w/ proper joins.

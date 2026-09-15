@@ -1,0 +1,33 @@
+{
+    "name": "phlib/xss-sanitizer",
+    "type": "library",
+    "description": "PHP XSS sanitizer tool for HTML",
+    "license": "LGPL-3.0",
+    "authors": [
+        {
+            "name": "Martin Price"
+        },
+        {
+            "name": "Phlib Team & Contributors",
+            "homepage": "https://github.com/phlib/xss-sanitizer/contributors"
+        }
+    ],
+    "autoload": {
+        "psr-4": {
+            "Phlib\\XssSanitizer\\": "src/"
+        }
+    },
+    "require": {
+        "php" : "^7.4 || ^8.0",
+        "ext-mbstring": "*"
+    },
+    "require-dev": {
+        "phpunit/phpunit": "^9",
+        "symplify/easy-coding-standard": "^12"
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "Phlib\\XssSanitizer\\Test\\": "tests/"
+        }
+    }
+}

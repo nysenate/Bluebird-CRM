@@ -72,8 +72,6 @@ class Decoder extends \Intervention\Image\AbstractDecoder
                 break;
 
             default:
-                //NYSS 15535 delete file if it can't be processed
-                unlink($path);
                 throw new NotReadableException(
                     sprintf("Unsupported image type %s. GD driver is only able to decode JPG, PNG, GIF, BMP or WebP files.", strtolower($mime))
                 );

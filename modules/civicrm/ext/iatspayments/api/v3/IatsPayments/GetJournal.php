@@ -87,7 +87,7 @@ function civicrm_api3_iats_payments_get_journal($params) {
   }
   $limit = 1;
   if (isset($params['options']['limit'])) {
-    $limit = (integer) $params['options']['limit'];
+    $limit = (int) $params['options']['limit'];
   }
   if ($limit > 0) {
     $i++;

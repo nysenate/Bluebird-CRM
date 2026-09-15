@@ -76,6 +76,14 @@ abstract class AbstractProcessor extends \Civi\Api4\Generic\AbstractAction {
   protected $_entityValues = [];
 
   /**
+   * Values for the submission tokens.
+   * Eg. $entityValues['FormProcessor_MyFormProcessor'][0]['input.first_name' => 'john', 'action.create_contact.id' => 2]
+   *
+   * @var array
+   */
+  protected $_submissionTokenValues = [];
+
+  /**
    * Get the submitted values from all the entities on the form
    *
    * @return array
@@ -154,6 +162,10 @@ abstract class AbstractProcessor extends \Civi\Api4\Generic\AbstractAction {
       $ids = (array) ($this->args[$entityName] ?? []);
 
       $entity = $this->_formDataModel->getEntity($entityName);
+      if (!$entity['type']) {
+        // E.g. the 'extra' entity.
+        continue;
+      }
       $this->_entityIds[$entityName] = [];
       $idField = CoreUtil::getIdFieldName($entity['type']);
 
@@ -195,6 +207,7 @@ abstract class AbstractProcessor extends \Civi\Api4\Generic\AbstractAction {
   public function unloadEntity(array $entity) {
     unset($this->_entityIds[$entity['name']]);
     unset($this->_entityValues[$entity['name']]);
+    unset($this->_submissionTokenValues[$entity['name']]);
   }
 
   /**
@@ -226,7 +239,7 @@ abstract class AbstractProcessor extends \Civi\Api4\Generic\AbstractAction {
 
     // Limit number of records based on af-repeat settings
     // If 'min' is set then it is repeatable, and max will either be a number or NULL for unlimited.
-    if (isset($entity['min']) && isset($entity['max'])) {
+    if (isset($entity['min'], $entity['max'])) {
       $values = array_slice($values, 0, $entity['max'], TRUE);
     }
     $matchField = self::getNestedKey($values);
@@ -397,8 +410,8 @@ abstract class AbstractProcessor extends \Civi\Api4\Generic\AbstractAction {
     return ($afEntity['security'] === 'FBAC' || \CRM_Core_Permission::check('access uploaded files'));
   }
 
-  protected static function getFileFields($entityName, $entityFields): array {
-    if (!$entityFields) {
+  protected static function getFileFields(?string $entityName, array $entityFields): array {
+    if (!$entityFields || !$entityName) {
       return [];
     }
     return civicrm_api4($entityName, 'getFields', [
@@ -626,6 +639,9 @@ abstract class AbstractProcessor extends \Civi\Api4\Generic\AbstractAction {
           $item = array_merge(($val ?? []), $idData);
           $combined[$name][$idx] = $item;
         }
+        else {
+          $combined[$name][$idx] = $val;
+        }
       }
     }
     return $combined;
@@ -642,6 +658,13 @@ abstract class AbstractProcessor extends \Civi\Api4\Generic\AbstractAction {
       $submittableFields = $this->getSubmittableFields($entity['fields']);
       $fileFields = $this->getFileFields($entity['type'], $submittableFields);
       foreach ($submittedValues[$entityName] ?? [] as $values) {
+        if (!is_array($values)) {
+          // For "extra" we might have $values['fields'] if we added any extra fields.
+          // But, if we have eg. recaptcha we will have $values['recaptcha2'] and might
+          //   not have $values['fields']. The below code **requires** $values['fields']
+          //   and must be run to pass the extra field values through to submit etc.
+          continue;
+        }
         // Use default values from DisplayOnly fields + submittable fields on the form
         $values['fields'] = $this->getForcedDefaultValues($entity['fields']) +
           array_intersect_key($values['fields'] ?? [], $submittableFields);
@@ -659,7 +682,7 @@ abstract class AbstractProcessor extends \Civi\Api4\Generic\AbstractAction {
           }
         }
         // Only accept joins set on the form
-        $values['joins'] = array_intersect_key($values['joins'] ?? [], $entity['joins']);
+        $values['joins'] = array_intersect_key($values['joins'] ?? [], $entity['joins'] ?? []);
         foreach ($values['joins'] as $joinEntity => &$joinValues) {
           // Only accept values from join fields on the form
           $idField = CoreUtil::getIdFieldName($joinEntity);
@@ -819,6 +842,27 @@ abstract class AbstractProcessor extends \Civi\Api4\Generic\AbstractAction {
   }
 
   /**
+   * Set the submission token values for a given entity and index.
+   *
+   * @param string $entityName
+   *   The entity
+   * @param int $index
+   *   The index of the entity (0 for single value entitie; otherwise the index of the multi value entity)
+   * @param array $tokenValues
+   *   An array containing the token name as the key and the token value as the value.
+   */
+  public function setSubmissionTokenValues(string $entityName, int $index, array $tokenValues) {
+    $this->_submissionTokenValues[$entityName][$index] = $tokenValues;
+  }
+
+  /**
+   * Rerturn the current set submission token values.
+   */
+  public function getSubmissionTokenValues(): array {
+    return $this->_submissionTokenValues;
+  }
+
+  /**
    * Function to get allowed action of a join entity
    *
    * @param array $mainEntity
@@ -838,7 +882,9 @@ abstract class AbstractProcessor extends \Civi\Api4\Generic\AbstractAction {
   /**
    * Function to replace tokens with entity values in e.g. redirect urls
    *
-   * Tokens look like [Participant1.0.id]
+   * Most tokens look like [Participant1.0.id]
+   *
+   * Except for special case of JWT submission token [token]
    *
    * @param string $text
    *
@@ -846,19 +892,25 @@ abstract class AbstractProcessor extends \Civi\Api4\Generic\AbstractAction {
    */
   public function replaceTokens(string $text): string {
     $matches = [];
-    preg_match_all('/\[[a-zA-Z0-9]{1,}\.[0-9]{1,}\.[^.\]]{1,}\]/', $text, $matches);
+    preg_match_all('/\[[a-zA-Z0-9_]+\.[0-9]+\.[^]]+]/', $text, $matches);
 
     foreach ($matches[0] as $match) {
       // strip [ ] and split on .
-      [$entityName, $index, $field] = explode('.', substr($match, 1, -1));
+      [$entityName, $index, $field] = explode('.', substr($match, 1, -1), 3);
       if ($field === 'id') {
         $value = $this->_entityIds[$entityName][$index]['id'];
+      }
+      elseif (isset($this->_submissionTokenValues[$entityName][$index][$field])) {
+        $value = $this->_submissionTokenValues[$entityName][$index][$field];
       }
       else {
         $value = $this->_entityValues[$entityName][$index]['fields'][$field];
       }
       $text = str_replace($match, $value, $text);
     }
+
+    // handle special case of JWT token token
+    $text = str_replace('[token]', $this->_response['token'] ?? '', $text);
 
     return $text;
   }

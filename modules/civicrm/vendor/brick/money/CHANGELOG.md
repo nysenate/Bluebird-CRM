@@ -1,5 +1,65 @@
 # Changelog
 
+## [0.10.3](https://github.com/brick/money/releases/tag/0.10.3) - 2025-09-03
+
+👌 **Improvements**
+
+- Compatibility with `brick/math` version `0.14` (#101 by @markwalet)
+
+## [0.10.2](https://github.com/brick/money/releases/tag/0.10.2) - 2025-08-05
+
+✨ **New features**
+
+- Add possibility to pass previous exception in `CurrencyConversionException` (#99 by @arokettu)
+
+## [0.10.1](https://github.com/brick/money/releases/tag/0.10.1) - 2025-03-05
+
+👌 **Improvements**
+
+- Compatibility with `brick/math` version `0.13` (#96 by @ekvedaras)
+
+## [0.10.0](https://github.com/brick/money/releases/tag/0.10.0) - 2024-10-12
+
+💥 **ISO currency changes**
+
+- `ZWG` (Zimbabwe Gold) has been added
+- `ZWL` (Zimbabwean Dollar) has been removed
+- `SLL` (Sierra Leonean Leone) has been removed
+- The currency of Zimbabwe (`ZW`) has been changed to `ZWG` (Zimbabwe Gold)
+- The `SLL` currency has been removed from Sierra Leone (`SL`), which only has `SLE` now
+
+## [0.9.0](https://github.com/brick/money/releases/tag/0.9.0) - 2023-11-26
+
+💥 **Breaking changes**
+
+- Minimum PHP version is now 8.1
+- `PDOProviderConfiguration` no longer has getters, its properties are `public readonly`
+- `RoundingMode` from `brick/math` is now an enum, so:
+  - all methods accepting an `int` rounding mode now accept a `RoundingMode` instance instead
+  - this should be transparent to your application, as you'll be using the same constants such as `RoundingMode::UP`
+
+## [0.8.1](https://github.com/brick/money/releases/tag/0.8.1) - 2023-09-23
+
+👌 **Improvement**
+
+`Currency` now implements `JsonSerializable` ([#79](https://github.com/brick/money/pull/79)).
+
+Thanks [@joelvh](https://github.com/joelvh)!
+
+## [0.8.0](https://github.com/brick/money/releases/tag/0.8.0) - 2023-01-16
+
+💥 **Breaking changes**
+
+- Minimum PHP version is now 8.0
+- Due to Croatia's adoption of the Euro on January 1st, 2023:
+  - the `HRK` currency (Kuna) has been removed from the ISO currency provider
+  - the `HR` country (Croatia) is now mapped to `EUR` (Euro)
+- `PDOProviderConfiguration` now has a proper constructor, and its properties are no longer public
+- `PDOProviderConfiguration` now throws exceptions in the constructor when configuration is invalid
+- All documented union types are now strongly typed:
+  - If you have a custom `ExchangeRateProvider` implementation, you will need to update your `getExchangeRate()` method signature
+  - If you were passing `Stringable` objects to `of()` or any of the methods internally calling `of()`, and have `strict_types` enabled, you will need to explicitly cast these objects to `string` first
+
 ## [0.7.1](https://github.com/brick/money/releases/tag/0.7.1) - 2023-01-16
 
 👌 **Improvements**

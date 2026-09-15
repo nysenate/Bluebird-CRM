@@ -1,0 +1,22 @@
+{
+  "$schema": "https://docs.renovatebot.com/renovate-schema.json",
+  "assignees": [],
+  "automerge": false,
+  "automergeSchedule": [
+    "every weekend"
+  ],
+  "baseBranchPatterns": [
+    "main"
+  ],
+  "branchPrefix": "deps/",
+  "extends": [
+    "config:recommended",
+    "group:symfony"
+  ],
+  "labels": [
+    "dependencies"
+  ],
+  "prConcurrentLimit": 1,
+  "rangeStrategy": "bump",
+  "rebaseWhen": "auto"
+}

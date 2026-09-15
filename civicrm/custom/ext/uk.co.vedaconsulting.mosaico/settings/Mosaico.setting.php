@@ -212,4 +212,19 @@ return [
     'help_text' => NULL,
     'settings_pages' => ['mosaico' => ['weight' => 90]]
   ],
+  'mosaico_custom_theme_colors' => [
+    'name' => 'mosaico_custom_theme_colors',
+    'group' => 'mosaico',
+    'group_name' => 'Mosaico Preferences',
+    'title' => E::ts('Mosaico Custom Theme Colors'),
+    'type' => 'String',
+    'html_type' => 'text',
+    'html_attributes' => [
+      'class' => 'huge',
+    ],
+    'description' => E::ts('Add a comma-separated list of css color values to override the default palette in the color picker'),
+    'is_domain' => 1,
+    'default' => '',
+    'settings_pages' => ['mosaico' => ['weight' => 100]]
+  ],
 ];
