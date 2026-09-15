@@ -7,7 +7,7 @@
       <div class="panel-heading">
         <div class="btn-group btn-group-md pull-right">
           <button type="button" class="btn btn-primary" ng-click="newLayout()" title="{{:: ts('Create new layout') }}">
-            <i class="crm-i fa-plus"></i> {{:: ts('Layout') }}
+            <i role="img" aria-hidden="true" class="crm-i fa-plus"></i> {{:: ts('Layout') }}
           </button>
         </div>
         <h2 class="panel-title">
@@ -16,7 +16,7 @@
       </div>
       <div class="panel-body">
         <div class="alert alert-info" ng-if="!deletedLayout">
-          <i class="crm-i fa-sort-amount-desc"></i>
+          <i role="img" aria-hidden="true" class="crm-i fa-sort-amount-desc"></i>
           {{:: ts('Layouts on top have highest priority.') }}
         </div>
         <div class="alert alert-danger cse-deleted-msg" ng-if="deletedLayout">
@@ -27,10 +27,10 @@
           <div class="cse-layout-item crm-draggable" ng-repeat="layout in $ctrl.data.layouts" ng-class="{'cse-item-selected': layout == selectedLayout}" ng-click="selectLayout(layout)">
             <div class="btn-group btn-group-sm pull-right">
               <button type="button" class="btn btn-info-outline" ng-click="copyLayout($index); $event.stopPropagation();" title="{{:: ts('Copy layout') }}">
-                <i class="crm-i fa-copy"></i>
+                <i role="img" aria-hidden="true" class="crm-i fa-copy"></i>
               </button>
               <button type="button" class="btn btn-danger-outline" ng-click="deleteLayout($index); $event.stopPropagation();" title="{{:: ts('Delete layout') }}">
-                <i class="crm-i fa-trash"></i>
+                <i role="img" aria-hidden="true" class="crm-i fa-trash"></i>
               </button>
             </div>
             <h4 class="cse-layout-item-title" contact-layout-editable ng-model="layout.label">{{ layout.label || ts('Untitled') }}</h4>
@@ -40,10 +40,10 @@
           <div class="cse-layout-item cse-layout-system-default" title="{{:: ts('Cannot be moved') }}" ng-class="{'cse-item-selected': !selectedLayout}" ng-click="selectLayout(null)">
             <div class="btn-group btn-group-sm pull-right">
               <button type="button" class="btn btn-info-outline" ng-click="copyDefaultLayout(); $event.stopPropagation();" title="{{:: ts('Copy layout') }}">
-                <i class="crm-i fa-copy"></i>
+                <i role="img" aria-hidden="true" class="crm-i fa-copy"></i>
               </button>
             </div>
-            <h4 class="cse-layout-item-title"><i class="crm-i fa-lock disabled"></i> {{:: ts('System Default') }}</h4>
+            <h4 class="cse-layout-item-title"><i role="img" aria-hidden="true" class="crm-i fa-lock disabled"></i> {{:: ts('System Default') }}</h4>
             <div>{{:: ts('Fallback for all contact types') }}</div>
             <div>{{:: ts('if no other layout applies for the acting user') }}</div>
           </div>
@@ -58,7 +58,7 @@
           <form class="form-inline">
             <div class="btn-group btn-group-md pull-right">
               <button type="submit" class="btn" ng-class="{'btn-primary': !changesSaved && !saving, 'btn-warning': saving, 'btn-success': changesSaved}" ng-disabled="changesSaved || saving" ng-click="save()">
-                <i class="crm-i" ng-class="{'fa-check': !saving, 'fa-spin fa-spinner': saving}"></i>
+                <i role="img" aria-hidden="true" class="crm-i" ng-class="{'fa-check': !saving, 'fa-spin fa-spinner': saving}"></i>
                 <span ng-if="changesSaved">{{:: ts('All Saved') }}</span>
                 <span ng-if="!changesSaved && !saving">{{:: ts('Save All') }}</span>
                 <span ng-if="saving">{{:: ts('Saving...') }}</span>

@@ -92,7 +92,7 @@ class CRM_Contactlayout_Page_Inline_ProfileBlock extends CRM_Core_Page {
         if ((!isset($fields['deceased_date']) || empty($details['deceased_date'])) && !empty($details['is_deceased'])) {
           $result[] = [
             'name' => $name,
-            'value' => '<span class="font-red upper">' . htmlspecialchars(ts('Contact is Deceased')) . '</span>',
+            'value' => '<span class="font-red upper">' . htmlspecialchars(E::ts('Contact is Deceased')) . '</span>',
             'label' => $field['title'],
           ];
         }
@@ -107,8 +107,8 @@ class CRM_Contactlayout_Page_Inline_ProfileBlock extends CRM_Core_Page {
       if ($name == 'birth_date' && !empty($details['age']) && empty($details['is_deceased'])) {
         $result[] = [
           'name' => 'age',
-          'label' => ts('Age'),
-          'value' => htmlspecialchars($details['age']['y'] ? ts('%count year', ['count' => $details['age']['y'], 'plural' => '%count years']) : ts('%count month', ['count' => $details['age']['m'], 'plural' => '%count months'])),
+          'label' => E::ts('Age'),
+          'value' => htmlspecialchars($details['age']['y'] ? E::ts('%count year', ['count' => $details['age']['y'], 'plural' => '%count years']) : E::ts('%count month', ['count' => $details['age']['m'], 'plural' => '%count months'])),
         ];
       }
     }

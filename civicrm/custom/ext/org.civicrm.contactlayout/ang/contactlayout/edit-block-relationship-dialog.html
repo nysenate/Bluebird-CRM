@@ -1,38 +1,38 @@
 <div class="contactlayout__relatioonship-dialog crm-container">
-  <p>If a relationship is selected, we display the information for the contact's
-    relation instead.</p>
+  <p class="help">{{:: ts('Choose a relationship type to show a related contact in this block.') }}</p>
   <div class="crm-section">
     <div class="label">
-      Relationship
+      <label for="contactlayout-relationship-select">
+        {{:: ts('Relationship') }}
+      </label>
     </div>
     <div class="content">
-      <input
+      <input id="contactlayout-relationship-select"
         ng-model="model.selectedRelationship"
         ng-change="model.storeRelationshipInfoForSelectedOption()"
         crm-ui-select="{
           data: model.relationshipOptions.options,
           dropdownAutoWidth : true,
           allowClear: true,
-          placeholder: model.ts('- Select -')
+          placeholder: ts('- Select -')
         }"
       />
-      <a class="helpicon" title="Field Help" aria-label="Field Help" href="#" ng-click="model.displayHelp($event)">&nbsp;</a>
     </div>
     <div
       ng-if="model.selectedRelationship"
       class="contactlayout__relatioonship-dialog__illustration">
       <div class="contactlayout__relatioonship-dialog__illustration__contact">
-        <i class="{{model.contactIcons.onBlock}}"></i><br />
-        <small>Contact on block</small>
+        <i class="{{ model.contactIcons.onBlock }}" role="img" aria-hidden="true"></i><br />
+        <span class="description">{{:: ts('Contact in Block') }}</span>
       </div>
       <div class="contactlayout__relatioonship-dialog__illustration__relationship-type">
-        <i class="fa fa-long-arrow-right"></i>
-        <small>{{model.relationshipLabel}}</small>
-        <i class="fa fa-long-arrow-right"></i>
+        <i class="crm-i fa-long-arrow-right" role="img" aria-hidden="true"></i>
+        <span class="description">{{ model.relationshipLabel }}</span>
+        <i class="crm-i fa-long-arrow-right" role="img" aria-hidden="true"></i>
       </div>
       <div class="contactlayout__relatioonship-dialog__illustration__contact">
-        <i class="{{model.contactIcons.viewing}}"></i><br />
-        <small>Contact we are viewing</small>
+        <i class="{{ model.contactIcons.viewing }}" role="img" aria-hidden="true"></i><br />
+        <span class="description">{{:: ts('Contact being Viewed') }}</span>
       </div>
     </div>
   </div>
