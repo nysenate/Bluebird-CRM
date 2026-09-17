@@ -34,7 +34,6 @@ function dao_civicrm_entityTypes(&$entityTypes) {
     $fields['do_not_trade']['title'] = 'Undeliverable: Do Not Mail';//4766
 
     //set fields that should not be exportable
-    $fields['user_unique_id']['export'] = FALSE;//2719
     $fields['contact_sub_type']['export'] = FALSE;
     //$fields['current_employer_id']['export'] = FALSE; //13123 this breaks things downstream with API calls
     $fields['hash']['export'] = FALSE;
@@ -74,7 +73,6 @@ function dao_civicrm_entityTypes(&$entityTypes) {
     $fields['geo_code_2']['export'] = FALSE;
     $fields['name']['export'] = FALSE;
     $fields['master_id']['export'] = FALSE;
-    $fields['county_id']['export'] = FALSE;
   };
 
   $entityTypes['WorldRegion']['fields_callback'][] = function($class, &$fields) {
