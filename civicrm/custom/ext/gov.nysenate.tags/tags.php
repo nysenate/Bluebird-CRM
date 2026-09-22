@@ -366,7 +366,7 @@ function tags_civicrm_pageRun(&$page) {
 
   if (is_a($page, 'CRM_Tag_Page_Tag')) {
     //hide some tagsets
-    $tagSets = $page->get_template_vars('tagsets');
+    $tagSets = $page->getTemplateVars('tagsets');
     $remove = array('Positions', 'Website Issues', 'Website Committees', 'Website Bills', 'Website Petitions');
     foreach ($tagSets as $setID => $tagSet) {
       if (in_array($tagSet['name'], $remove)) {

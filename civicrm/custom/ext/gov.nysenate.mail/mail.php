@@ -260,7 +260,7 @@ function mail_civicrm_pageRun(&$page) {
   //need to do manually since we are not using native tracking tools
   if ($page->getVar('_name') == 'CRM_Mailing_Page_Report') {
     $smarty =& CRM_Core_Smarty::singleton();
-    $rpt =& $smarty->get_template_vars('report');
+    $rpt =& $smarty->getTemplateVars('report');
     //CRM_Core_Error::debug('rpt', $rpt);
 
     $rpt['mailing']['url_tracking'] = 1;

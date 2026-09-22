@@ -100,8 +100,8 @@ function contact_civicrm_pageRun(&$page) {
   //5412
   if ($pagename == 'CRM_Contact_Page_Inline_Address') {
     $smarty = CRM_Core_Smarty::singleton();
-    if ($smarty->get_template_vars('privacy') === NULL) {
-      $cid = $smarty->get_template_vars('contactId');
+    if ($smarty->getTemplateVars('privacy') === NULL) {
+      $cid = $smarty->getTemplateVars('contactId');
       $contact = civicrm_api('contact', 'getsingle', array('version' => 3, 'id' => $cid));
       //CRM_Core_Error::debug_var('contact', $contact);
 
@@ -160,7 +160,7 @@ function contact_civicrm_pageRun(&$page) {
     'CRM_Contact_Page_View_Summary',
     'CRM_Activity_Page_Tab',
   ])) {
-    $activityTypes = $page->get_template_vars('activityTypes');
+    $activityTypes = $page->getTemplateVars('activityTypes');
     uasort($activityTypes, ['CRM_NYSS_Utils_Sort', 'cmpLabel']);
     $page->assign('activityTypes', $activityTypes);
   }
@@ -170,8 +170,8 @@ function contact_civicrm_pageRun(&$page) {
     'CRM_Contact_Page_View_Summary',
     'CRM_Contact_Page_Inline_CustomData',
   ])) {
-    $viewCustomData = $page->get_template_vars('viewCustomData');
-    $viewCustomDataInline = $page->get_template_vars('cd_edit');
+    $viewCustomData = $page->getTemplateVars('viewCustomData');
+    $viewCustomDataInline = $page->getTemplateVars('cd_edit');
     //Civi::log()->debug('', array('viewCustomData' => $viewCustomData));
 
     $modified = FALSE;
@@ -404,7 +404,7 @@ function contact_civicrm_buildForm($formName, &$form) {
 
   //11464
   if ($formName == 'CRM_Activity_Form_Activity') {
-    $max_target_msg = $form->get_template_vars('max_target_msg');
+    $max_target_msg = $form->getTemplateVars('max_target_msg');
     if ($max_target_msg) {
       CRM_Core_Resources::singleton()->addScript("
         $('tr.crm-activity-form-block-target_contact_id td.label').append('<br /><span style=\'font-size:90%; font-style: italic;\'><strong>Note: </strong>You will not be able to edit the target (with) contact list as there are more than 250 contacts already attached to this activity.</span>');
