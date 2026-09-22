@@ -3,9 +3,10 @@
 
   angular.module('contactlayout').component('contactLayoutEditor', {
     templateUrl: '~/contactlayout/contactLayoutEditor.html',
-    controller: function($scope, $timeout, $q, contactLayoutRelationshipOptions,
+    controller: function($rootScope, $scope, $timeout, $q, contactLayoutRelationshipOptions,
              crmApi4, crmStatus, dialogService) {
-      const ts = $scope.ts = CRM.ts('contactlayout'),
+      // Adding ts to $rootScope makes it available to dialogService modals
+      const ts = $rootScope.ts = $scope.ts = CRM.ts('contactlayout'),
         ctrl = this,
         vars = CRM.vars.contactlayout,
         profilesReady = $q.defer(),
@@ -16,7 +17,8 @@
       $scope.contactTypes = vars.contactTypes;
       this.data = {
         layouts: vars.layouts,
-        tabs: vars.defaultTabs
+        // Filter out any tabs that no longer exist (e.g. removed/renamed afform)
+        tabs: vars.defaultTabs ? vars.defaultTabs.filter(tab => allTabs[tab.id]) : vars.defaultTabs
       };
       $scope.systemTabs = vars.tabs;
       $scope.systemBlocks = [];
@@ -24,11 +26,20 @@
       let newLayoutCount = 0;
       const profileEntities = [{entity_name: "contact_1", entity_type: "IndividualModel"}];
       const allBlocks = [];
+      // Default icons if missing from the database
       const CONTACT_ICONS = {
-        Individual: 'fa fa-user',
-        Organization: 'fa fa-building',
-        Household: 'fa fa-home'
+        Individual: 'crm-i fa-user',
+        Organization: 'crm-i fa-building',
+        Household: 'crm-i fa-home'
       };
+      // Prefer icons from the database; fallback on the defaults.
+      vars.contactTypes.forEach(type => {
+        if (type.name in CONTACT_ICONS && type.icon) {
+          CONTACT_ICONS[type.name] = `crm-i ${type.icon}`;
+        } else if (type.name in CONTACT_ICONS) {
+          type.icon = CONTACT_ICONS[type.name].split(' ')[1];
+        }
+      });
 
       // Determines if the given block can be used for the current layout's contact type
       $scope.checkBlockValidity = function(block) {
@@ -101,7 +112,7 @@
       };
 
       $scope.selectableSubTypes = function(contactType) {
-        const typeId = vars.contactTypes.filter(type => type.name === contactType)[0].id;
+        const typeId = vars.contactTypes.find(type => type.name === contactType).id;
         return vars.contactTypes.filter(type => type.parent_id === typeId);
       };
 
@@ -127,7 +138,7 @@
             })
             .on('crmLoad', function(e) {
               if ($(e.target).is('.ui-dialog-content')) {
-                $(this).prepend('<div class="messages status"><i class="crm-i fa-exclamation-triangle"></i> ' +
+                $(this).prepend('<div class="messages status"><i role="img" aria-hidden="true" class="crm-i fa-exclamation-triangle"></i> ' +
                   ts('You are editing global settings, which will affect more than just this layout.') +
                   '</div>'
                 );
@@ -157,10 +168,6 @@
             onBlock: CONTACT_ICONS.Individual,
             viewing: CONTACT_ICONS.Individual,
           },
-          displayHelp: function(event) {
-            event.preventDefault();
-            CRM.help('Relationship selection', 'What is the relationship of the contact we want to display on this block?');
-          },
           // Stores the relationship label and contact icons for the selected relationship option
           storeRelationshipInfoForSelectedOption: function() {
             if (!model.selectedRelationship) {
@@ -177,7 +184,7 @@
           }
         };
         const dialogOptions = {
-          width: '500px',
+          width: '600px',
           title: ts('Relationship Selection'),
           buttons: [
             {
@@ -326,12 +333,15 @@
       $scope.copyDefaultLayout = function() {
         const newLayout = {
           label: ts('Untitled %1', {1: ++newLayoutCount}),
-          blocks: [[[], []]]
+          blocks: [],
         };
 
         allBlocks.forEach(block => {
           if (block.system_default && $scope.isSystemBlockEnabled(block)) {
             const [rowIndex, colIndex] = block.system_default;
+            while (newLayout.blocks.length <= rowIndex) {
+              newLayout.blocks.push([[], []]);
+            }
             newLayout.blocks[rowIndex][colIndex].push(block);
           }
         });
@@ -433,7 +443,7 @@
             });
           });
           if (layout.tabs) {
-            layout.tabs.forEach((tab, pos) => {
+            layout.tabs.filter(tab => allTabs[tab.id]).forEach((tab, pos) => {
               const tabInfo = {
                 id: tab.id,
                 is_active: tab.is_active
