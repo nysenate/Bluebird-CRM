@@ -222,7 +222,7 @@ function rules_action_set($variables = array(), $provides = array()) {
  *   (optional) This may be used to denote the beginning (TRUE) or the end
  *   (FALSE) of a new execution scope.
  */
-function rules_log($msg, $args = array(), $priority = RulesLog::INFO, RulesPlugin $element = NULL, $scope = NULL) {
+function rules_log($msg, $args = array(), $priority = RulesLog::INFO, ?RulesPlugin $element = NULL, $scope = NULL) {
   static $logger, $settings;
 
   // Statically cache the variable settings as this is called very often.
@@ -680,7 +680,7 @@ function rules_get_event_base_name($event_name) {
  * @return RulesEventHandlerInterface
  *   The event handler.
  */
-function rules_get_event_handler($event_name, array $settings = NULL) {
+function rules_get_event_handler($event_name, ?array $settings = NULL) {
   $event_name = rules_get_event_base_name($event_name);
   $event_info = rules_get_event_info($event_name);
   $class = !empty($event_info['class']) ? $event_info['class'] : 'RulesEventDefaultHandler';
