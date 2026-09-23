@@ -227,7 +227,9 @@ class CRM_NYSS_Inbox_BAO_Inbox {
    * this will be an array of arrays with a pairing: row_id, matched_id (optional)
    */
   static function deleteMessages($ids = []) {
-    if (empty($ids) && !empty(CRM_Utils_Array::value('ids', $_REQUEST))) {
+    // !is_array($ids) is important here because $ids could be a GuzzleHttp\Psr7\ServerRequest object
+    // without that guard it will error out on the data type
+    if ( ( !is_array($ids) || empty($ids) ) && !empty(CRM_Utils_Array::value('ids', $_REQUEST)) ) {
       $ids = CRM_Utils_Array::value('ids', $_REQUEST);
     }
     //Civi::log()->debug('deleteMessages', array('$ids' => $ids));
@@ -319,7 +321,9 @@ class CRM_NYSS_Inbox_BAO_Inbox {
    * either passed to function or via $_REQUEST (AJAX)
    */
   static function clearMessages($ids = []) {
-    if (empty($ids) && !empty(CRM_Utils_Array::value('ids', $_REQUEST))) {
+    // !is_array($ids) is important here because $ids could be a GuzzleHttp\Psr7\ServerRequest object
+    // without that guard it will error out on the data type
+    if ( ( !is_array($ids) || empty($ids) ) && !empty(CRM_Utils_Array::value('ids', $_REQUEST)) ) {
       $ids = CRM_Utils_Array::value('ids', $_REQUEST);
     }
 
@@ -686,6 +690,10 @@ class CRM_NYSS_Inbox_BAO_Inbox {
    */
   static function processMessages($values) {
     //Civi::log()->debug('processMessages', array('values' => $values, '$_REQUEST' => $_REQUEST));
+
+    if ( !is_array($values) ) {
+      $values = $_REQUEST;
+    }
 
     $msg = [];
     if (!empty($values['is_multiple'])) {

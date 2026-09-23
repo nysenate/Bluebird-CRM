@@ -125,8 +125,18 @@ class CRM_NYSS_Subscription_Form_Admin extends CRM_Core_Form
     self::_processSubscriptions($formParams);
   }//postProcess
 
+    /**
+     * @note This is called a couple different ways. It's called from postProcess(), but it's also called directly
+     * as a page callback (see xml/Menu/Mail.xml). Since the latest CiviCrm Core upgrade, when called as a page callback,
+     * it's not passed an array. It's passed a GuzzleHttp\Psr7\ServerRequest object, and this shouldn't be treated as an array.
+     * Therefore, the !is_array($formParams) guard before empty($formParams['eid'].
+     * @param $formParams
+     * @return array|void
+     * @throws \Civi\Core\Exception\DBQueryException
+     */
   static function _processSubscriptions($formParams = array()) {
-    if ( empty($formParams['eid']) ) {
+
+    if ( !is_array($formParams) || empty($formParams['eid']) ) {
       $formParams = $_REQUEST;
 
       //if still empty return now

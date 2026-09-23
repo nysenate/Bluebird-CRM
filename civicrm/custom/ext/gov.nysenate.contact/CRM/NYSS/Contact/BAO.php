@@ -8,6 +8,10 @@ class CRM_NYSS_Contact_BAO {
    * Process all trashed contacts (permanently delete)
    */
   static function processTrashed($params = []) {
+    if ( !is_array($params) ) {
+      $params = $_REQUEST;
+    }
+
     ini_set('memory_limit', '8000M');
     ini_set('max_execution_time', 0);
 
