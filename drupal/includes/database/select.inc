@@ -159,7 +159,7 @@ interface SelectQueryInterface extends QueryConditionInterface, QueryAlterableIn
    * @return
    *   An associative array of all placeholder arguments for this query.
    */
-  public function getArguments(QueryPlaceholderInterface $queryPlaceholder = NULL);
+  public function getArguments(?QueryPlaceholderInterface $queryPlaceholder = NULL);
 
   /* Query building operations */
 
@@ -479,7 +479,7 @@ interface SelectQueryInterface extends QueryConditionInterface, QueryAlterableIn
    * @return
    *   TRUE if the validation was successful, FALSE if not.
    */
-  public function preExecute(SelectQueryInterface $query = NULL);
+  public function preExecute(?SelectQueryInterface $query = NULL);
 
   /**
    * Helper function to build most common HAVING conditional clauses.
@@ -696,7 +696,7 @@ class SelectQueryExtender implements SelectQueryInterface {
     return $this->query->getUnion();
   }
 
-  public function getArguments(QueryPlaceholderInterface $queryPlaceholder = NULL) {
+  public function getArguments(?QueryPlaceholderInterface $queryPlaceholder = NULL) {
     return $this->query->getArguments($queryPlaceholder);
   }
 
@@ -704,7 +704,7 @@ class SelectQueryExtender implements SelectQueryInterface {
     return $this->query->isPrepared();
   }
 
-  public function preExecute(SelectQueryInterface $query = NULL) {
+  public function preExecute(?SelectQueryInterface $query = NULL) {
     // If no query object is passed in, use $this.
     if (!isset($query)) {
       $query = $this;
@@ -1228,7 +1228,7 @@ class SelectQuery extends Query implements SelectQueryInterface {
     return $this->union;
   }
 
-  public function getArguments(QueryPlaceholderInterface $queryPlaceholder = NULL) {
+  public function getArguments(?QueryPlaceholderInterface $queryPlaceholder = NULL) {
     if (!isset($queryPlaceholder)) {
       $queryPlaceholder = $this;
     }
@@ -1249,7 +1249,7 @@ class SelectQuery extends Query implements SelectQueryInterface {
    * @return
    *   TRUE if the validation was successful, FALSE if not.
    */
-  public function preExecute(SelectQueryInterface $query = NULL) {
+  public function preExecute(?SelectQueryInterface $query = NULL) {
     // If no query object is passed in, use $this.
     if (!isset($query)) {
       $query = $this;

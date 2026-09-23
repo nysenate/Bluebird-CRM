@@ -1,7 +1,7 @@
 <div id="cse-tabs-container">
   <div class="form-inline">
     <button type="button" class="btn btn-xs" ng-click="$ctrl.toggleTabs()">
-      <i class="crm-i fa-toggle-{{ $ctrl.layout.tabs ? 'on' : 'off' }}"></i>
+      <i role="img" aria-hidden="true" class="crm-i fa-toggle-{{ $ctrl.layout.tabs ? 'on' : 'off' }}"></i>
       {{:: ts('Customize Tabs') }}
     </button>
     <label ng-if="$ctrl.layout.tabs">{{:: ts('Overriding defaults') }}</label>
@@ -11,12 +11,12 @@
   <div ng-if="$ctrl.layout.tabs" ui-sortable="$ctrl.sortableOptions" ng-model="$ctrl.layout.tabs">
     <div class="cse-tab crm-draggable" data-tab-id="{{ tab.id }}" ng-if="$ctrl.tabIsValid(tab)" ng-class="{'cse-tab-disabled': !tab.is_active}" ng-repeat="tab in $ctrl.layout.tabs">
       <span class="cse-tab-icon crm-editable-enabled" ng-if="tab.is_active" ng-click="$ctrl.pickTabIcon(tab)">
-        <i class="{{ tab.icon || 'crm-i fa-puzzle-piece' }}"></i>
+        <i class="{{ tab.icon || 'crm-i fa-puzzle-piece' }}" role="img" aria-hidden="true"></i>
       </span>
       <span class="cse-tab-title" ng-if="tab.is_active" contact-layout-editable ng-model="tab.title">{{ tab.title }}</span>
       <span class="cse-tab-title" ng-if="!tab.is_active">{{ tab.title }}</span>
       <a href class="cse-tab-toggle" ng-if="tab.id !== 'summary'" ng-click="$ctrl.toggleTabActive(tab)">
-        <i class="crm-i" ng-class="{'fa-close': tab.is_active, 'fa-undo': !tab.is_active}"></i>
+        <i role="img" aria-hidden="true" class="crm-i" ng-class="{'fa-close': tab.is_active, 'fa-undo': !tab.is_active}"></i>
       </a>
     </div>
   </div>
@@ -24,7 +24,7 @@
   <div ng-if="!$ctrl.layout.tabs">
     <div class="cse-tab" ng-repeat="tab in $ctrl.defaultTabs" ng-if="$ctrl.tabIsValid(tab)">
       <span class="cse-tab-icon">
-        <i class="{{ tab.icon || 'crm-i fa-puzzle-piece' }}"></i>
+        <i class="{{ tab.icon || 'crm-i fa-puzzle-piece' }}" role="img" aria-hidden="true"></i>
       </span>
       <span class="cse-tab-title">{{:: tab.title }}</span>
     </div>

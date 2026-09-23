@@ -45,8 +45,8 @@ class Manager
      */
     public static function initialize(
         Behavior $behaviour,
-        Resolvable $resolver = null,
-        Collectable $collection = null
+        ?Resolvable $resolver = null,
+        ?Collectable $collection = null
     ) {
         if (self::$instance === null) {
             self::$instance = new self($behaviour, $resolver, $collection);
@@ -91,8 +91,8 @@ class Manager
      */
     private function __construct(
         Behavior $behaviour,
-        Resolvable $resolver = null,
-        Collectable $collection = null
+        ?Resolvable $resolver = null,
+        ?Collectable $collection = null
     ) {
         if ($collection === null) {
             $collection = new PharInvocationCollection();

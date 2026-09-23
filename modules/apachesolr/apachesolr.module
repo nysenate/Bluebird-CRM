@@ -1639,7 +1639,7 @@ function apachesolr_static_response_cache($searcher, $response = NULL) {
  *
  * @throws Exception
  */
-function apachesolr_drupal_query($name, array $params = array(), $solrsort = '', $base_path = '', DrupalApacheSolrServiceInterface $solr = NULL, $context = array()) {
+function apachesolr_drupal_query($name, array $params = array(), $solrsort = '', $base_path = '', ?DrupalApacheSolrServiceInterface $solr = NULL, $context = array()) {
   if (!interface_exists('DrupalSolrQueryInterface')) {
     require_once(dirname(__FILE__) . '/apachesolr.interface.inc');
   }
@@ -1696,7 +1696,7 @@ function apachesolr_drupal_subquery($operator = 'OR') {
  * @return DrupalSolrQueryInterface|null
  *   return the $query object if it is available in the drupal_static or null otherwise
  */
-function apachesolr_current_query($env_id, DrupalSolrQueryInterface $query = NULL) {
+function apachesolr_current_query($env_id, ?DrupalSolrQueryInterface $query = NULL) {
   $saved_query = &drupal_static(__FUNCTION__, NULL);
   if (is_object($query)) {
     $saved_query[$env_id] = clone $query;
