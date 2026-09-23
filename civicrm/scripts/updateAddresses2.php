@@ -12,10 +12,12 @@ $geocode_stats = array();
 function main()
 {
   $prog = basename(__FILE__);
-  $shortopts = 's:e:b:h:P:l:vgpdutfyzNGACTHELW';
-  $longopts = array('start=', 'end=', 'batch=', 'threshold=', 'sleep=', 'log=',
-                    'validate', 'geocode', 'parse', 'distassign', 'usecoords',
-                    'streetonly', 'force', 'dryrun', 'debug',
+  $shortopts = 's:e:b:h:P:l:vgpdtfnNGACTHELW';
+  $longopts = array('start=', 'end=', 'batch=',
+                    'threshold=', 'sleep=',
+                    'log-level=',
+                    'validate', 'geocode', 'parse', 'distassign',
+                    'streetonly', 'force', 'dryrun',
                     'senate', 'congress', 'assembly', 'county', 'town',
                     'school', 'election', 'cleg', 'ward');
 
@@ -23,17 +25,21 @@ function main()
   $usage = "
   [--start|-s START_ID]  [--end|-e END_ID]  [--batch|-b COUNT]
   [--threshold|-h COUNT] [--sleep|-P MINUTES]
-  [--log|-l [TRACE|DEBUG|INFO|WARN|ERROR|FATAL]]
-  [--validate|-v]  [--geocode|-g]  [--distassign|-d]  [--parse|-p]
-  [--usecoords|-u (deprecated, ignored: SAGE no longer supports point-based district assignment)] [--streetonly|-t]
-  [--force|-f]  [--dryrun|-y]  [--debug|-z]
-  [--senate|-N]  [--congress|-G]  [--assembly|-A]  [--county|-C]
-  [--town|-T]  [--school|-H]  [--election|-E]  [--cleg|-L]  [--ward|-W]\n";
+  [--log-level|-l [TRACE|DEBUG|INFO|WARN|ERROR|FATAL]]
+  [--validate|-v]  [--geocode|-g]  [--parse|-p]  [--distassign|-d]
+  [--streetonly|-t]  [--force|-f]  [--dryrun|-n]
+  [--senate|-N]  [--congress|-G]  [--assembly|-A]  [--county|-C]  [--town|-T]
+  [--school|-H]  [--election|-E]  [--cleg|-L]  [--ward|-W]\n";
 
   $optlist = civicrm_script_init($shortopts, $longopts);
   if ($optlist === null) {
     error_log("Usage: $prog  $stdusage  $usage");
     exit(1);
+  }
+
+  // Set the log level
+  if (!empty($optlist['log-level'])) {
+    set_bbscript_log_level($optlist['log-level']);
   }
 
   if (!is_cli_script()) {
@@ -42,51 +48,35 @@ function main()
 
   // Log the execution of script.
   require_once 'CRM/Core/Error.php';
-  CRM_Core_Error::debug_log_message('updateAddresses.php');
+  CRM_Core_Error::debug_log_message('updateAddresses2.php');
 
   // Check if street address should be parsed.
-  require_once 'CRM/Core/BAO/Preferences.php';
-
-  // Set the log level
-  global $BB_LOG_LEVEL, $LOG_LEVELS;
-  $BB_LOG_LEVEL = (!empty($optlist['log']) && isset($LOG_LEVELS[strtoupper($optlist['log'])]))
-                  ? $LOG_LEVELS[strtoupper($optlist['log'])][0]
-                  : $LOG_LEVELS['TRACE'][0];
-
   $address_options = CRM_Core_BAO_Setting::valueOptions(CRM_Core_BAO_Setting::SYSTEM_PREFERENCES_NAME, 'address_options');
-  $parseAddress = CRM_Utils_Array::value('street_address_parsing',$address_options, false);
+  $parseAddress = CRM_Utils_Array::value('street_address_parsing', $address_options, false);
   $parseStreetAddress = false;
-  if (!$parseAddress) {
-    if ($optlist['parse'] == true) {
-      bbscript_log(LL::ERROR, ts('Error: You need to enable Street Address Parsing under Global Settings >> Address Settings.'));
-      exit(1);
-    }
-  } else {
+  if ($parseAddress && $optlist['parse']) {
     $parseStreetAddress = true;
-    // User might want to override.
-    if ($optlist['parse'] == false) {
-      $parseStreetAddress = false;
-    }
   }
-
-  if ($optlist['usecoords']) {
-    bbscript_log(LL::WARN, ts("--usecoords/-u is deprecated and ignored: SAGE no longer supports district assignment by point. District assignment will always use the address."));
+  else if (!$parseAddress && $optlist['parse']) {
+    bbscript_log(LL::ERROR, ts('Error: You need to enable Street Address Parsing under Global Settings >> Address Settings.'));
+    exit(1);
   }
 
   $force = ($optlist['force'] ? "update" : "fill");
+
   if ($optlist['geocode'] && $optlist['distassign']) {
     bbscript_log(LL::INFO, ts("Geocoding and district assigning using $force strategy."));
   }
   else if ($optlist['geocode']) {
-    bbscript_log(LL::INFO, ts( "Geocoding using $force strategy." ));
+    bbscript_log(LL::INFO, ts("Geocoding using $force strategy."));
   }
   else if ($optlist['distassign']) {
-    bbscript_log(LL::INFO, ts( "District assigning using $force strategy." ));
+    bbscript_log(LL::INFO, ts("District assigning using $force strategy."));
   }
 
   // Don't process if no operations are specified
   if (!$parseStreetAddress && !$optlist['geocode'] && !$optlist['distassign'] && !$optlist['validate']) {
-    bbscript_log(LL::ERROR, ts("Error:USPS correction, Geocode mapping, district assignment and Street Address Parsing are disabled. At least one option must be enabled to use this script."));
+    bbscript_log(LL::ERROR, ts("One of the four operations (USPS validation, geocoding, district assignment, or address parsing) must be enabled to use this script."));
     exit(1);
   }
 
@@ -127,7 +117,6 @@ function processContacts($parseStreetAddress, $optlist) {
   $batchSize = ($optlist['batch']) ? $optlist['batch'] : DEFAULT_ADDRESS_BATCH;
   bbscript_log(LL::INFO, "Using batches of $batchSize addresses.");
 
-  $DEBUG = ($optlist['debug']);
   $overwrite = ($optlist['force'] == 'update');
   $performUspsValidate = $optlist['validate'];
   $performGeocode = $optlist['geocode'];
@@ -176,9 +165,7 @@ function processContacts($parseStreetAddress, $optlist) {
 
     $batchNum++;
 
-    if ($DEBUG) {
-      print_r($addressBatch);
-    }
+    bbscript_log(LL::DEBUG, 'addressBatch=', $addressBatch);
 
     // Perform batch requests based on groups of operations requested.
     if ($performUspsValidate && $performGeocode && $performDistAssign) {
@@ -242,7 +229,7 @@ function processContacts($parseStreetAddress, $optlist) {
       }
     }
 
-    foreach($geocode_stats as $method => $count) {
+    foreach ($geocode_stats as $method => $count) {
       if (!isset($total_geocode_stats[$method])) {
         $total_geocode_stats[$method] = 0;
       }
@@ -252,9 +239,7 @@ function processContacts($parseStreetAddress, $optlist) {
 
     $geocode_stats = array();
 
-    if ($DEBUG) {
-      print_r($addressBatch);
-    }
+    bbscript_log(LL::DEBUG, 'addressBatch=', $addressBatch);
 
     unset($addressBatch);
     $addressBatch = array();
@@ -489,7 +474,7 @@ function getQuery($optlist)
 
   if ($optlist['distassign']) {
     $distSelect = array();
-    foreach(array_values($districtColumns) as $col) {
+    foreach (array_values($districtColumns) as $col) {
       $distSelect[] = "d.$col";
     }
     $querySelect[] = implode(', ', $distSelect);
@@ -511,7 +496,7 @@ function getQuery($optlist)
         $assignTypes = array('senate', 'congress', 'assembly', 'county', 'school', 'town');
       }
 
-      foreach($assignTypes as $dt) {
+      foreach ($assignTypes as $dt) {
         $whereDist[] = "d.{$districtColumns[$dt]} is null OR d.{$districtColumns[$dt]} = \"\"";
       }
 
@@ -536,6 +521,7 @@ function getQuery($optlist)
   return $query;
 } // getQuery()
 
+
 /**
 * Returns a string containing the address portions.
 * @param $address - Array containing address columns from the database.
@@ -553,6 +539,7 @@ function getAddressLine(&$address)
   return $addressLine;
 } // getAddressLine()
 
+
 /**
 * Returns a string that summarizes the assigned districts.
 * @param $assignedDistricts - An assoc array mapping district type -> code.
@@ -566,4 +553,6 @@ function getAssignedDistrictsLine($assignedDistricts) {
   return $output;
 } // getAssignedDistrictsLine()
 
+
 main();
+

@@ -26,7 +26,6 @@ function drupal_error_levels() {
     E_USER_ERROR => array('User error', WATCHDOG_ERROR),
     E_USER_WARNING => array('User warning', WATCHDOG_WARNING),
     E_USER_NOTICE => array('User notice', WATCHDOG_NOTICE),
-    E_STRICT => array('Strict warning', WATCHDOG_DEBUG),
     E_RECOVERABLE_ERROR => array('Recoverable fatal error', WATCHDOG_ERROR),
   );
   // E_DEPRECATED and E_USER_DEPRECATED were added in PHP 5.3.0.

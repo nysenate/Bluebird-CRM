@@ -62,7 +62,7 @@ function changelogretention_civicrm_disable() {
  * @return mixed  based on op. for 'check', returns array(boolean) (TRUE if upgrades are pending)
  *                for 'enqueue', returns void
  */
-function changelogretention_civicrm_upgrade($op, CRM_Queue_Queue $queue = NULL) {
+function changelogretention_civicrm_upgrade($op, ?CRM_Queue_Queue $queue = NULL) {
   return;
 }
 

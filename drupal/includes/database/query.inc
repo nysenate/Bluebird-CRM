@@ -1140,7 +1140,7 @@ class UpdateQuery extends Query implements QueryConditionInterface {
    * @return UpdateQuery
    *   The called object.
    */
-  public function expression($field, $expression, array $arguments = NULL) {
+  public function expression($field, $expression, ?array $arguments = NULL) {
     $this->expressionFields[$field] = array(
       'expression' => $expression,
       'arguments' => $arguments,
@@ -1425,7 +1425,7 @@ class MergeQuery extends Query implements QueryConditionInterface {
    * @return MergeQuery
    *   The called object.
    */
-  public function expression($field, $expression, array $arguments = NULL) {
+  public function expression($field, $expression, ?array $arguments = NULL) {
     $this->expressionFields[$field] = array(
       'expression' => $expression,
       'arguments' => $arguments,
