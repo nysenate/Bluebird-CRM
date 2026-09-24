@@ -220,18 +220,15 @@ class CRM_NYSS_Inbox_BAO_Inbox {
 
   /**
    * @param array $ids
+   *   An array of arrays with a pairing: row_id, matched_id (optional).
+   *   Called from CRM_NYSS_Inbox_Page_DeleteMessages::run() (the
+   *   civicrm/nyss/inbox/deletemsgs AJAX endpoint) or from
+   *   CRM_NYSS_Inbox_Form_Delete::postProcess(). Never registered directly
+   *   as a page_callback.
    *
-   * retrieve list of ids to delete
-   * either passed to function or via $_REQUEST (AJAX)
-   *
-   * this will be an array of arrays with a pairing: row_id, matched_id (optional)
+   * @return array
    */
-  static function deleteMessages($ids = []) {
-    // !is_array($ids) is important here because $ids could be a GuzzleHttp\Psr7\ServerRequest object
-    // without that guard it will error out on the data type
-    if ( ( !is_array($ids) || empty($ids) ) && !empty(CRM_Utils_Array::value('ids', $_REQUEST)) ) {
-      $ids = CRM_Utils_Array::value('ids', $_REQUEST);
-    }
+  static function deleteMessages(array $ids = []) {
     //Civi::log()->debug('deleteMessages', array('$ids' => $ids));
 
     $userId = CRM_Core_Session::getLoggedInContactID();
@@ -287,7 +284,7 @@ class CRM_NYSS_Inbox_BAO_Inbox {
       }
     }
 
-    CRM_Utils_JSON::output($ret);
+    return $ret;
   }
 
   /**
@@ -316,17 +313,12 @@ class CRM_NYSS_Inbox_BAO_Inbox {
 
   /**
    * @param array $ids
-   *
-   * retrieve list of ids to clear
-   * either passed to function or via $_REQUEST (AJAX)
+   *   Called from CRM_NYSS_Inbox_Page_ClearMessages::run() (the
+   *   civicrm/nyss/inbox/clearmsgs AJAX endpoint), CRM_NYSS_Inbox_Form_Clear,
+   *   or CRM_NYSS_Inbox_Form_Process. Never registered directly as a
+   *   page_callback.
    */
-  static function clearMessages($ids = []) {
-    // !is_array($ids) is important here because $ids could be a GuzzleHttp\Psr7\ServerRequest object
-    // without that guard it will error out on the data type
-    if ( ( !is_array($ids) || empty($ids) ) && !empty(CRM_Utils_Array::value('ids', $_REQUEST)) ) {
-      $ids = CRM_Utils_Array::value('ids', $_REQUEST);
-    }
-
+  static function clearMessages(array $ids = []) {
     $idList = implode(',', $ids);
     $userId = CRM_Core_Session::getLoggedInContactID();
 

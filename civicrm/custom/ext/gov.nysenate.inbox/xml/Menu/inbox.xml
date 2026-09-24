@@ -64,13 +64,13 @@
 
   <item>
     <path>civicrm/nyss/inbox/deletemsgs</path>
-    <page_callback>CRM_NYSS_Inbox_BAO_Inbox::deleteMessages</page_callback>
+    <page_callback>CRM_NYSS_Inbox_Page_DeleteMessages</page_callback>
     <title>Delete Messages</title>
     <access_arguments>access inbox polling</access_arguments>
   </item>
   <item>
     <path>civicrm/nyss/inbox/clearmsgs</path>
-    <page_callback>CRM_NYSS_Inbox_BAO_Inbox::clearMessages</page_callback>
+    <page_callback>CRM_NYSS_Inbox_Page_ClearMessages</page_callback>
     <title>Clear Messages</title>
     <access_arguments>access inbox polling</access_arguments>
   </item>

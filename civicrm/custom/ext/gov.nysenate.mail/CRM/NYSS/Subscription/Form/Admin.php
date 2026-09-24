@@ -111,6 +111,14 @@ class CRM_NYSS_Subscription_Form_Admin extends CRM_Core_Form
   /**
    * process the form after the input has been submitted and validated
    *
+   * @note Currently unreachable through the UI: buildQuickForm() has no submit
+   * button (the real submit/cancel are commented out in the source), so the
+   * QuickForm submit flow that would invoke this never fires. The only live way
+   * to save subscription changes is the "Save Subscription Settings" dialog
+   * button in nyssSubscriptions.tpl, which POSTs directly to
+   * civicrm/nyss/subscription/admin/process (CRM_NYSS_Subscription_Page_ProcessSubscriptions),
+   * bypassing this entirely.
+   *
    * @access public
    * @return None
    */
@@ -126,23 +134,14 @@ class CRM_NYSS_Subscription_Form_Admin extends CRM_Core_Form
   }//postProcess
 
     /**
-     * @note This is called a couple different ways. It's called from postProcess(), but it's also called directly
-     * as a page callback (see xml/Menu/Mail.xml). Since the latest CiviCrm Core upgrade, when called as a page callback,
-     * it's not passed an array. It's passed a GuzzleHttp\Psr7\ServerRequest object, and this shouldn't be treated as an array.
-     * Therefore, the !is_array($formParams) guard before empty($formParams['eid'].
-     * @param $formParams
+     * @param array $formParams
      * @return array|void
      * @throws \Civi\Core\Exception\DBQueryException
      */
-  static function _processSubscriptions($formParams = array()) {
+  static function _processSubscriptions(array $formParams = array()) {
 
-    if ( !is_array($formParams) || empty($formParams['eid']) ) {
-      $formParams = $_REQUEST;
-
-      //if still empty return now
-      if ( empty($formParams['eid']) ) {
-        return;
-      }
+    if ( empty($formParams['eid']) ) {
+      return;
     }
 
     //if passed in list format, reconstruct for consistency
@@ -185,13 +184,7 @@ class CRM_NYSS_Subscription_Form_Admin extends CRM_Core_Form
     );
     //CRM_Core_Error::debug_var('_processSubscriptions $returnArray', $returnArray);
 
-    if ( $formParams['isajax'] ) {
-      echo json_encode($returnArray);
-      CRM_Utils_System::civiExit();
-    }
-    else {
-      return $returnArray;
-    }
+    return $returnArray;
   }//_processSubscriptions
 
 }//end class
