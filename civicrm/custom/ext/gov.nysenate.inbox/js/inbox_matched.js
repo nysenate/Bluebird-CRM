@@ -27,7 +27,9 @@ CRM.$(function($) {
       var request = $.post(url);
       CRM.status({success: 'Messages were successfully cleared.'}, request);
 
-      refreshList('matched');
+      request.always(function () {
+        refreshList('matched');
+      });
     });
   });
 
