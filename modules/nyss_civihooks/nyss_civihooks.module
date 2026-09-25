@@ -149,11 +149,14 @@ function nyss_civihooks_getfile()
   civicrm_initialize();
   $config =& CRM_Core_Config::singleton();
 
-  $file = $_REQUEST['file'];
-  $fullpath = $config->uploadDir.'printProduction/'.$file;
+  $basepath = rtrim($config->uploadDir, DIRECTORY_SEPARATOR) . DIRECTORY_SEPARATOR . 'printProduction';
+  $realbase = realpath($basepath);
+  $realfullpath = realpath($realbase . DIRECTORY_SEPARATOR . $_REQUEST['file']);
 
-  if (!file_exists($fullpath) || !$file) {
-    echo "No file provided. Make sure you have entered the full URL.<br />";
+  // security check. prevent path traversal attack
+  if (empty($_REQUEST['file']) || $realbase === FALSE || $realfullpath === FALSE ||
+      strpos($realfullpath, $realbase . DIRECTORY_SEPARATOR) !== 0 ) {
+    echo "Invalid file provided. Make sure you have entered the full URL.<br />";
     exit();
   }
 
@@ -164,9 +167,9 @@ function nyss_civihooks_getfile()
     "Cache-Control: public",
     "Content-Description: File Transfer",
     "Content-Type: application/csv",
-    "Content-Disposition: attachment; filename=".basename($fullpath),
+    "Content-Disposition: attachment; filename=".basename($realfullpath),
     "Expires: Mon, 26 Jul 1997 05:00:00 GMT",
-    'Content-Length: '.filesize($fullpath)
+    'Content-Length: '.filesize($realfullpath)
   );
 
   //don't use this, seems to cause problems...
@@ -177,10 +180,10 @@ function nyss_civihooks_getfile()
     header($header);
   }
 
-  $fh = fopen($fullpath, "r");
+  $fh = fopen($realfullpath, "r");
 
   if (!$fh) {
-    echo "no file provided. file requested is: $fullpath";
+    echo "no file provided. file requested is: $realfullpath";
     exit;
   }
 

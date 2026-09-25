@@ -413,8 +413,10 @@ function drupal_get_feeds($delimiter = "\n") {
  *
  * @return
  *   An array containing query parameters, which can be used for url().
+ *
+ *  NYSS #19113 - Fix Php8.4 warnings
  */
-function drupal_get_query_parameters(array $query = NULL, array $exclude = array('q'), $parent = '') {
+function drupal_get_query_parameters(?array $query = NULL, array $exclude = array('q'), $parent = '') {
   // Set defaults, if none given.
   if (!isset($query)) {
     $query = $_GET;
@@ -2170,8 +2172,10 @@ function date_iso8601($date) {
  * Translates a formatted date string.
  *
  * Callback for preg_replace_callback() within format_date().
+ *
+ * NYSS #19113 - Fix Php8.4 warnings
  */
-function _format_date_callback(array $matches = NULL, $new_langcode = NULL) {
+function _format_date_callback(?array $matches = NULL, $new_langcode = NULL) {
   // We cache translations to avoid redundant and rather costly calls to t().
   static $cache, $langcode;
 

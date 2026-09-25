@@ -1,0 +1,52 @@
+diff --git a/modules/civicrm/CRM/Core/Form.php b/modules/civicrm/CRM/Core/Form.php
+index 8fa305578..512d269ec 100644
+--- a/modules/civicrm/CRM/Core/Form.php
++++ b/modules/civicrm/CRM/Core/Form.php
+@@ -724,6 +724,38 @@ class CRM_Core_Form extends HTML_QuickForm_Page {
+     }
+   }
+ 
++  /**
++   * NYSS: reshape mandatory values for use as form defaults.
++   *
++   * `$mandatoryValues` holds each setting's raw stored value - a plain list
++   * of selected keys for an Array-type checkbox-group setting (e.g.
++   * quicksearch_options), or a delimiter-serialized string for a String-type
++   * one (e.g. contact_autocomplete_options, contact_reference_options). That
++   * raw shape is correct for disabling elements and for re-populating
++   * $_submitValues on POST-back, but a checkbox-group element's default must
++   * instead be keyed by sub-element name (e.g. ['sort_name' => 1, ...]) or
++   * none of its boxes will show as checked. Only checkbox-group values need
++   * reshaping here.
++   */
++  private function formatMandatoryValuesForDefaults(array $mandatoryValues): array {
++    foreach ($mandatoryValues as $name => &$value) {
++      $mandatoryElement = $this->getElement($name);
++      if (!($mandatoryElement instanceof HTML_QuickForm_group)) {
++        continue;
++      }
++      if (is_string($value)) {
++        $serialize = \Civi\Core\SettingsMetadata::getMetadata(['name' => [$name]])[$name]['serialize'] ?? NULL;
++        if ($serialize) {
++          $value = CRM_Core_DAO::unSerializeField($value, $serialize);
++        }
++      }
++      if (is_array($value) && array_is_list($value)) {
++        $value = array_fill_keys($value, 1);
++      }
++    }
++    return $mandatoryValues;
++  }
++
+   /**
+    * This is a virtual function that adds group and global rules to the form.
+    *
+@@ -795,7 +827,7 @@ class CRM_Core_Form extends HTML_QuickForm_Page {
+     $mandatory = $this->getMandatoryValues();
+     $this->applyMandatoryValues($mandatory);
+ 
+-    $defaults = array_merge($this->setDefaultValues() ?: [], $mandatory);
++    $defaults = array_merge($this->setDefaultValues() ?: [], $this->formatMandatoryValuesForDefaults($mandatory));
+     if (isset($defaults['qfKey'])) {
+       unset($defaults['qfKey']);
+     }

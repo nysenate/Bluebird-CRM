@@ -1,0 +1,28 @@
+diff --git a/modules/rules/rules.module b/modules/rules/rules.module
+index b7493efd3..ff49f483d 100644
+--- a/modules/rules/rules.module
++++ b/modules/rules/rules.module
+@@ -221,8 +221,10 @@ function rules_action_set($variables = array(), $provides = array()) {
+  * @param bool $scope
+  *   (optional) This may be used to denote the beginning (TRUE) or the end
+  *   (FALSE) of a new execution scope.
++ *
++ * NYSS #19113 - Fix Php8.4 warnings
+  */
+-function rules_log($msg, $args = array(), $priority = RulesLog::INFO, RulesPlugin $element = NULL, $scope = NULL) {
++function rules_log($msg, $args = array(), $priority = RulesLog::INFO, ?RulesPlugin $element = NULL, $scope = NULL) {
+   static $logger, $settings;
+ 
+   // Statically cache the variable settings as this is called very often.
+@@ -679,8 +681,10 @@ function rules_get_event_base_name($event_name) {
+  *
+  * @return RulesEventHandlerInterface
+  *   The event handler.
++ *
++ * NYSS #19113 - Fix Php8.4 warnings
+  */
+-function rules_get_event_handler($event_name, array $settings = NULL) {
++function rules_get_event_handler($event_name, ?array $settings = NULL) {
+   $event_name = rules_get_event_base_name($event_name);
+   $event_info = rules_get_event_info($event_name);
+   $class = !empty($event_info['class']) ? $event_info['class'] : 'RulesEventDefaultHandler';

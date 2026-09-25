@@ -1,0 +1,15 @@
+diff --git a/civicrm/custom/ext/uk.co.vedaconsulting.mosaico/vendor/intervention/image/src/Intervention/Image/Gd/Driver.php b/civicrm/custom/ext/uk.co.vedaconsulting.mosaico/vendor/intervention/image/src/Intervention/Image/Gd/Driver.php
+index 5f2f23ea3..b8f2b3c3e 100644
+--- a/civicrm/custom/ext/uk.co.vedaconsulting.mosaico/vendor/intervention/image/src/Intervention/Image/Gd/Driver.php
++++ b/civicrm/custom/ext/uk.co.vedaconsulting.mosaico/vendor/intervention/image/src/Intervention/Image/Gd/Driver.php
+@@ -12,8 +12,9 @@ class Driver extends \Intervention\Image\AbstractDriver
+      *
+      * @param Decoder $decoder
+      * @param Encoder $encoder
++     * NYSS #19113 - Function signature modified for php8.4
+      */
+-    public function __construct(Decoder $decoder = null, Encoder $encoder = null)
++    public function __construct(?Decoder $decoder = null, ?Encoder $encoder = null)
+     {
+         if ( ! $this->coreAvailable()) {
+             throw new NotSupportedException(

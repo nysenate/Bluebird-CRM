@@ -1,0 +1,64 @@
+diff --git a/civicrm/custom/ext/uk.co.vedaconsulting.mosaico/vendor/intervention/image/src/Intervention/Image/Size.php b/civicrm/custom/ext/uk.co.vedaconsulting.mosaico/vendor/intervention/image/src/Intervention/Image/Size.php
+index b1f26e405..63a731aaa 100644
+--- a/civicrm/custom/ext/uk.co.vedaconsulting.mosaico/vendor/intervention/image/src/Intervention/Image/Size.php
++++ b/civicrm/custom/ext/uk.co.vedaconsulting.mosaico/vendor/intervention/image/src/Intervention/Image/Size.php
+@@ -34,8 +34,10 @@ class Size
+      * @param int   $width
+      * @param int   $height
+      * @param Point $pivot
++     *
++     * NYSS #19113 - Function signature modified for php8.4
+      */
+-    public function __construct($width = null, $height = null, Point $pivot = null)
++    public function __construct($width = null, $height = null, ?Point $pivot = null)
+     {
+         $this->width = is_numeric($width) ? intval($width) : 1;
+         $this->height = is_numeric($height) ? intval($height) : 1;
+@@ -101,8 +103,10 @@ class Size
+      * @param  int     $height
+      * @param  Closure $callback
+      * @return Size
++     *
++     * NYSS #19113 - Function signature modified for php8.4
+      */
+-    public function resize($width, $height, Closure $callback = null)
++    public function resize($width, $height, ?Closure $callback = null)
+     {
+         if (is_null($width) && is_null($height)) {
+             throw new InvalidArgumentException(
+@@ -136,8 +140,10 @@ class Size
+      * @param  int     $width
+      * @param  Closure $callback
+      * @return Size
++     *
++     * NYSS #19113 - Function signature modified for php8.4
+      */
+-    private function resizeWidth($width, Closure $callback = null)
++    private function resizeWidth($width, ?Closure $callback = null)
+     {
+         $constraint = $this->getConstraint($callback);
+ 
+@@ -172,8 +178,10 @@ class Size
+      * @param  int     $height
+      * @param  Closure $callback
+      * @return Size
++     *
++     * NYSS #19113 - Function signature modified for php8.4
+      */
+-    private function resizeHeight($height, Closure $callback = null)
++    private function resizeHeight($height, ?Closure $callback = null)
+     {
+         $constraint = $this->getConstraint($callback);
+ 
+@@ -360,8 +368,10 @@ class Size
+      *
+      * @param  Closure $callback
+      * @return \Intervention\Image\Constraint
++     *
++     * NYSS #19113 - Function signature modified for php8.4
+      */
+-    private function getConstraint(Closure $callback = null)
++    private function getConstraint(?Closure $callback = null)
+     {
+         $constraint = new Constraint(clone $this);
+ 
