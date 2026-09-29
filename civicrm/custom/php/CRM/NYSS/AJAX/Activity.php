@@ -251,7 +251,7 @@ class CRM_NYSS_AJAX_Activity
             $activity['target_contact_name'] .= "</div> ";
           }
         }
-        elseif (!$values['target_contact_name']) {
+        elseif (empty($values['target_contact_name'])) {
           $activity['target_contact_name'] = '<em>n/a</em>';
         }
 
