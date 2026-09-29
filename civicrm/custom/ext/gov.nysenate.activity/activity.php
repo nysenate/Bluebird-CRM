@@ -113,6 +113,35 @@ function _activity_buildForm_unfreeze_activity_type(&$form) {
     }
 }
 
+#[CRM_NYSS_Attribute_IssueRef(5507, 18832)]
+function activity_civicrm_recent(&$recentArray) {
+    foreach ($recentArray as &$item) {
+        // NYSS #5507 -- don't show edit link to users that don't have permission to that page (like volunteers)
+        if (($item['entity_type'] ?? NULL) === 'Activity' && !empty($item['edit_url'])) {
+            if (!CRM_Activity_BAO_Activity::checkPermission($item['entity_id'], CRM_Core_Action::UPDATE)) {
+                unset($item['edit_url']);
+            }
+        }
+    }
+    unset($item);
+}
+
+#[CRM_NYSS_Attribute_IssueRef(5507, 18832)]
+function activity_civicrm_links($op, $objectName, $objectId, &$links, &$mask, &$values) {
+    // NYSS #5507 -- don't show edit link in activity listings (dashlet, contact Activities tab)
+    // to users that don't have permission to edit that activity (like volunteers)
+    if ($op !== 'activity.tab.row' || empty($objectId)) {
+        return;
+    }
+    foreach ($links as $key => $link) {
+        if (($link['bit'] ?? NULL) === CRM_Core_Action::UPDATE && (!$mask || ($mask & CRM_Core_Action::UPDATE))) {
+            if (!CRM_Activity_BAO_Activity::checkPermission($objectId, CRM_Core_Action::UPDATE)) {
+                unset($links[$key]);
+            }
+        }
+    }
+}
+
 function activity_civicrm_alterMailParams(&$params, $context) {
   /*Civi::log()->debug(__FUNCTION__, [
     'params' => $params,

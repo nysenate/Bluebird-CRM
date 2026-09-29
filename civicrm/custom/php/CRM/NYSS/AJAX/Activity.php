@@ -177,12 +177,6 @@ class CRM_NYSS_AJAX_Activity
         $permissions[] = CRM_Core_Permission::DELETE;
       }
 
-      //NYSS 5507 remove edit if not permissioned
-      if (!CRM_Core_Permission::check('access all cases and activities')) {
-        $permissions[] = CRM_Core_Permission::VIEW;
-        unset($permissions[array_search(CRM_Core_Permission::EDIT, $permissions)]);
-      }
-
       $mask = CRM_Core_Action::mask($permissions);
 
       foreach ($activities as $activityId => $values) {
@@ -204,7 +198,7 @@ class CRM_NYSS_AJAX_Activity
 
         $activity['activity_type'] = (!empty($activityIcons[$values['activity_type_id']]) ? '<span class="crm-i ' . $activityIcons[$values['activity_type_id']] . '"></span> ' : '') . $values['activity_type'];
         //NYSS 2423 indicate if activity has attachments
-        $activity['attachment'] = $values['attachment'];
+        $activity['attachment'] = !empty($values['attachment']);
         $activity['subject'] = $values['subject'];
 
         if ($params['contact_id'] == $values['source_contact_id']) {
