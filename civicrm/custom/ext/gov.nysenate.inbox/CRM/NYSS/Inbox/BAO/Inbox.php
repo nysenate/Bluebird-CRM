@@ -1420,7 +1420,7 @@ class CRM_NYSS_Inbox_BAO_Inbox {
       }
       else {
         // all other fields get converted to UTF-8
-        $res[$key] = utf8_encode($val);
+        $res[$key] = is_string($val) ? mb_convert_encoding($val, 'UTF-8', 'ISO-8859-1') : $val;
       }
     }
 
