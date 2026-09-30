@@ -1175,9 +1175,8 @@ function mail_civicrm_alterMailParams(&$params, $context) {
   $params['headers']['X-SMTPAPI'] = $hdr->asJSON();
 
   //13827 suppress draft text in subject when viewing via report;add some normalizing css;
-  if (function_exists('current_path') && current_path() == 'civicrm/mailing/view') {
+  if (CRM_Utils_System::currentPath() == 'civicrm/mailing/view') {
     $params['Subject'] = str_replace('[BluebirdMail Draft] ', '', $params['Subject']);
-
     //CRM_Core_Error::debug_var('params[html]', $params['html']);
     $params['html'] = _mail_mailingViewCss($params['html']);
   }
@@ -1213,36 +1212,24 @@ function mail_civicrm_alterTemplateFile($formName, &$form, $context, &$tplName) 
   }
 }
 
+#[CRM_NYSS_Attribute_IssueRefs('13174')]
 function mail_civicrm_permission_check($permission, &$granted) {
-  /*Civi::log()->debug('mail_civicrm_permission_check', [
-    '$permission' => $permission,
-    '$granted' => $granted,
-    'current_path' => current_path(),
-    '$_REQUEST' => $_REQUEST,
-  ]);*/
-
-  //current_path() is not available via the CLI; we don't need the permission checks
-  //in that context anyway, so simply return early
-  if (!function_exists('current_path') || !function_exists('user_access')) {
+  // return early to avoid recursion in CRM_Core_Permission::check().
+  if (!in_array($permission, ['access CiviMail', 'view public CiviMail content'])) {
     return;
   }
 
-  //13174 grant access to mailing tab if user has any of the mailing perms
-  if ($permission == 'access CiviMail') {
-    if (current_path() == 'civicrm/contact/view' &&
-      user_access("view all contacts")
-    ) {
-      $granted = TRUE;
-    }
+  $path = CRM_Utils_System::currentPath();
+  $can_view_contacts = CRM_Core_Permission::check('view all contacts');
+
+  // NYSS 13174 grant access to mailing tab if user has any of the mailing perms
+  if ($permission == 'access CiviMail' && $path == 'civicrm/contact/view' && $can_view_contacts) {
+    $granted = TRUE;
   }
 
-  //13174 view email content
-  if ($permission == 'view public CiviMail content') {
-    if (current_path() == 'civicrm/mailing/view' &&
-      user_access("view all contacts")
-    ) {
-      $granted = TRUE;
-    }
+  // NYSS 13174 view email content
+  if ($permission == 'view public CiviMail content' && $path == 'civicrm/mailing/view' && $can_view_contacts) {
+    $granted = TRUE;
   }
 }
 
