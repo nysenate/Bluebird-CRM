@@ -84,11 +84,6 @@ function dao_civicrm_entityTypes(&$entityTypes) {
     $fields['label']['maxlength'] = 1020;
   };
 
-  //9784
-  $entityTypes['CustomGroup']['fields_callback'][] = function($class, &$fields) {
-    $fields['title']['maxlength'] = 128;
-  };
-
   //2729
   $entityTypes['Email']['fields_callback'][] = function($class, &$fields) {
     $fields['is_primary']['title'] = 'Is Email Primary?';
@@ -118,11 +113,5 @@ function dao_civicrm_entityTypes(&$entityTypes) {
   //2719
   $entityTypes['OpenID']['fields_callback'][] = function($class, &$fields) {
     $fields['openid']['export'] = FALSE;
-  };
-
-  //9656
-  $entityTypes['Tag']['fields_callback'][] = function($class, &$fields) {
-    $fields['name']['maxlength'] = 128;
-    $fields['label']['maxlength'] = 128;
   };
 }
