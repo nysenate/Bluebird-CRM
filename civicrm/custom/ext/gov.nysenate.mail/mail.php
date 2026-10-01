@@ -497,17 +497,6 @@ function mail_civicrm_pre($op, $objectName, $id, &$params) {
     $params['auto_responder'] = 0;
     $params['open_tracking'] = 0;
     $params['visibility'] = 'Public Pages';
-
-    $doc = phpQuery::newDocument($params['body_html']);
-    $style = $doc->find('figure')->attr('style');
-    if (!empty($params['body_html']) && strpos($style, 'margin-inline-start') === FALSE) {
-      $doc->find('figure')
-        ->attr('style', "{$style}; margin-inline-start: 5px; margin-inline-end: 5px;");
-      $params['body_html'] = $doc->html();
-    }
-    // allow garbage collection
-    phpQuery::unloadDocuments($doc->getDocumentID());
-    //Civi::log()->debug('mail_civicrm_pre AFTER', ['$style' => $style, '$params[body_html]' => $params['body_html']]);
   }
 
   if ($op == 'create' && $objectName == 'Mailing') {
@@ -1797,8 +1786,7 @@ function _mail_replace_tokens($msg, $token_map) {
 
 
 function _mail_mailingViewCss($html) {
-  $doc = phpQuery::newDocument($html);
-  $doc->find('head')->append('
+  $css = '
     <style type="text/css">
       .crm-container td {
         padding: 0;
@@ -1813,12 +1801,8 @@ function _mail_mailingViewCss($html) {
         font-weight: normal !important;
       }
     </style>
-  ');
+  ';
 
-  $html = $doc->html();
-  //Civi::log()->debug(__FUNCTION__, ['$html' => $html]);
-
-  // allow garbage collection
-  phpQuery::unloadDocuments($doc->getDocumentID());
-  return $html;
+  // _mail_fixup_html_message() guarantees a </head> tag is present
+  return preg_replace('~</head>~i', $css.'</head>', $html, 1);
 } // _mail_mailingViewCss()
