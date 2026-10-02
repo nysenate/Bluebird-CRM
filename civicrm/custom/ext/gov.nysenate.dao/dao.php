@@ -2,6 +2,8 @@
 
 require_once 'dao.civix.php';
 
+use Civi\Core\Event\GenericHookEvent;
+
 /**
  * Implements hook_civicrm_config().
  *
@@ -9,6 +11,14 @@ require_once 'dao.civix.php';
  */
 function dao_civicrm_config(&$config) {
   _dao_civix_civicrm_config($config);
+
+  // Prevent multiple calls
+  if (isset(Civi::$statics[__FUNCTION__])) {
+    return;
+  }
+  Civi::$statics[__FUNCTION__] = 1;
+
+  Civi::dispatcher()->addListener('civi.entity.fields', 'dao_civi_entity_fields');
 }
 
 /**
@@ -29,100 +39,101 @@ function dao_civicrm_enable() {
   _dao_civix_civicrm_enable();
 }
 
-function dao_civicrm_entityTypes(&$entityTypes) {
-  $entityTypes['Contact']['fields_callback'][] = function($class, &$fields) {
-    $fields['do_not_trade']['title'] = 'Undeliverable: Do Not Mail';//4766
+/**
+ * Implements civi.entity.fields event.
+ *
+ * Customizes entity schema definitions and metadata across core entities.
+ *
+ * @param \Civi\Core\Event\GenericHookEvent $event
+ */
+function dao_civi_entity_fields(GenericHookEvent $event) {
+  switch ($event->entity) {
+    case 'Contact':
+      // 4766
+      $event->fields['do_not_trade']['title'] = ts('Undeliverable: Do Not Mail');
 
-    //set fields that should not be exportable
-    $fields['contact_sub_type']['export'] = FALSE;
-    //$fields['current_employer_id']['export'] = FALSE; //13123 this breaks things downstream with API calls
-    $fields['hash']['export'] = FALSE;
-    $fields['image_URL']['export'] = FALSE;
+      // Set fields that should not be exportable.
+      foreach (['contact_sub_type', 'hash', 'image_URL'] as $field) {
+        if (isset($event->fields[$field]['usage'])) {
+          $event->fields[$field]['usage'] = array_values(array_diff($event->fields[$field]['usage'], ['export']));
+        }
+      }
 
-    $fields['web_user_id'] = [
-      'name' => 'web_user_id',
-      'type' => CRM_Utils_Type::T_INT,
-      'title' => ts('Website User ID'),
-      'description' => ts('Public site User ID'),
-      'where' => 'civicrm_contact.web_user_id',
-      'table_name' => 'civicrm_contact',
-      'entity' => 'Contact',
-      'bao' => 'CRM_Contact_BAO_Contact',
-      'localizable' => 0,
-      'FKClassName' => 'CRM_Contact_DAO_Contact',
-      'html' => [
-        'label' => ts("Website User ID"),
-      ],
-      'readonly' => TRUE,
-      'import' => TRUE,
-      'headerPattern' => '/^web_user_id$/i',
-      'export' => TRUE,
-    ];
-  };
+      $event->fields['web_user_id'] = [
+        'title' => ts('Website User ID'),
+        'sql_type' => 'int',
+        'input_type' => 'Text',
+        'description' => ts('Public site User ID'),
+        'readonly' => TRUE,
+        'usage' => [
+          'import',
+          'export',
+        ],
+        'input_attrs' => [
+          'label' => ts('Website User ID'),
+        ],
+        'entity_reference' => [
+          'entity' => 'Contact',
+          'key' => 'id',
+        ],
+      ];
+      break;
 
-  $entityTypes['Address']['fields_callback'][] = function($class, &$fields) {
-    $fields['street_number']['import'] = TRUE; //include parsed address fields in import
-    $fields['street_name']['import'] = TRUE;
-    $fields['street_unit']['import'] = TRUE;
-    $fields['supplemental_address_1']['title'] = 'Mailing Address';
-    $fields['supplemental_address_2']['title'] = 'Building';
-    //unset($fields['country_id']);//2771 //removed with C5.57 upgrade (caused errors)
+    case 'Address':
+      // Include parsed address fields in import.
+      foreach (['street_number', 'street_name', 'street_unit'] as $field) {
+        $event->fields[$field]['usage'] ??= [];
+        if (!in_array('import', $event->fields[$field]['usage'], TRUE)) {
+          $event->fields[$field]['usage'][] = 'import';
+        }
+      }
 
-    //set fields that should not be exportable
-    $fields['geo_code_1']['export'] = FALSE;
-    $fields['geo_code_2']['export'] = FALSE;
-    $fields['name']['export'] = FALSE;
-    $fields['master_id']['export'] = FALSE;
-  };
+      $event->fields['supplemental_address_1']['title'] = ts('Mailing Address');
+      $event->fields['supplemental_address_2']['title'] = ts('Building');
 
-  $entityTypes['WorldRegion']['fields_callback'][] = function($class, &$fields) {
-    $fields['name']['export'] = FALSE;
-  };
+      // Set fields that should not be exportable.
+      foreach (['geo_code_1', 'geo_code_2', 'name', 'master_id'] as $field) {
+        if (isset($event->fields[$field]['usage'])) {
+          $event->fields[$field]['usage'] = array_values(array_diff($event->fields[$field]['usage'], ['export']));
+        }
+      }
+      break;
 
-  //9784
-  $entityTypes['CustomField']['fields_callback'][] = function($class, &$fields) {
-    $fields['label']['maxlength'] = 1020;
-  };
+    case 'WorldRegion':
+      if (isset($event->fields['name']['usage'])) {
+        $event->fields['name']['usage'] = array_values(array_diff($event->fields['name']['usage'], ['export']));
+      }
+      break;
 
-  //9784
-  $entityTypes['CustomGroup']['fields_callback'][] = function($class, &$fields) {
-    $fields['title']['maxlength'] = 128;
-  };
+    case 'Email':
+      // 2729
+      $event->fields['is_primary']['title'] = ts('Is Email Primary?');
 
-  //2729
-  $entityTypes['Email']['fields_callback'][] = function($class, &$fields) {
-    $fields['is_primary']['title'] = 'Is Email Primary?';
-    $fields['signature_text']['export'] = FALSE;
-    $fields['signature_html']['export'] = FALSE;
+      foreach (['signature_text', 'signature_html'] as $field) {
+        if (isset($event->fields[$field]['usage'])) {
+          $event->fields[$field]['usage'] = array_values(array_diff($event->fields[$field]['usage'], ['export']));
+        }
+      }
 
-    $fields['mailing_categories'] = [
-      'name' => 'mailing_categories',
-      'type' => CRM_Utils_Type::T_STRING,
-      'title' => ts('Mailing Categories'),
-      'description' => ts('Comma-separated list of mailing categories to EXCLUDE'),
-      'where' => 'civicrm_email.mailing_categories',
-      'table_name' => 'civicrm_email',
-      'entity' => 'Email',
-      'bao' => 'CRM_Core_BAO_Email',
-      'localizable' => 0,
-      'html' => [
-        'label' => ts('Mailing Categories'),
-      ],
-      'import' => FALSE,
-      'export' => FALSE,
-      'maxlength' => 254,
-      'size' => 30,
-    ];
-  };
+      $event->fields['mailing_categories'] = [
+        'title' => ts('Mailing Categories'),
+        'sql_type' => 'varchar(254)',
+        'input_type' => 'Text',
+        'description' => ts('Comma-separated list of mailing categories to EXCLUDE'),
+        'usage' => [],
+        'input_attrs' => [
+          'label' => ts('Mailing Categories'),
+          'size' => 30,
+          'maxlength' => 254,
+        ],
+      ];
+      break;
 
-  //2719
-  $entityTypes['OpenID']['fields_callback'][] = function($class, &$fields) {
-    $fields['openid']['export'] = FALSE;
-  };
-
-  //9656
-  $entityTypes['Tag']['fields_callback'][] = function($class, &$fields) {
-    $fields['name']['maxlength'] = 128;
-    $fields['label']['maxlength'] = 128;
-  };
+    case 'OpenID':
+      // 2719
+      if (isset($event->fields['openid']['usage'])) {
+        $event->fields['openid']['usage'] = array_values(array_diff($event->fields['openid']['usage'], ['export']));
+      }
+      break;
+  }
 }
