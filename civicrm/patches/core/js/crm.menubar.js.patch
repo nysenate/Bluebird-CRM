@@ -5,7 +5,8 @@ index f251df62c..c78a3f10b 100644
 @@ -500,9 +500,10 @@
          '<ul></ul>' +
        '</li>',
-     branchTpl:
+      branchTpl:
++      //DELETE ME: In core as of 6.20 - https://github.com/civicrm/civicrm-core/pull/37210
 +      //NYSS 13087
        '<% _.forEach(items, function(item) { %>' +
          '<li <%= attr("li", item) %>>' +
