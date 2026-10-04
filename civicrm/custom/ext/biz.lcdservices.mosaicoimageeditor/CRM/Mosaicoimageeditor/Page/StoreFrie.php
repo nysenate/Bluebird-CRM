@@ -19,6 +19,6 @@ class CRM_Mosaicoimageeditor_Page_StoreFrie extends CRM_Core_Page {
     catch (CRM_Core_Exception $e) {}
     //Civi::log()->debug(__FUNCTION__, ['$result' => $result]);
 
-    CRM_Utils_JSON::output(CRM_Utils_Array::value('values', $result));
+    CRM_Utils_System::sendJSONResponse($result['values'] ?? []);
   }
 }
