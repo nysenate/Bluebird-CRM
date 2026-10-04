@@ -285,7 +285,7 @@ class CRM_NYSS_Inbox_BAO_Inbox {
       }
     }
 
-    CRM_Utils_JSON::output($ret);
+    CRM_Utils_System::sendJSONResponse($ret);
   }
 
   /**
