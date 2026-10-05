@@ -435,17 +435,6 @@ function contact_civicrm_buildForm($formName, &$form) {
     $form->setDefaults($defaults);
   }
 
-  //5154
-  if ($formName == 'CRM_Contact_Form_Search_Custom') {
-    $bC = drupal_get_breadcrumb();
-    foreach ($bC as $k => $v) {
-      if (strpos($v, 'Custom Searches') !== false) {
-        unset($bC[$k]);
-      }
-    }
-    drupal_set_breadcrumb($bC);
-  }
-
   //set bounce reason default on, bounce report
   if ($formName == 'CRM_Report_Form_Mailing_Bounce') {
     $defaults['fields[bounce_reason]'] = 1;
