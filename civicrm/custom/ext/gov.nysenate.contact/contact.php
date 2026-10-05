@@ -1064,8 +1064,15 @@ function _contact_stripSpaces($text) {
 
 //4808/2960 word replacement for titles
 function _contact_fixTitles() {
-  $currentTitle = drupal_get_title();
-  //CRM_Core_Error::debug_var('currentTitle', $currentTitle);
+  // DELETE ME: Drupal-only code can go after the Standalone migration
+  if (function_exists('drupal_get_title')) {
+    $docTitle = $pageTitle = drupal_get_title();
+  }
+  // Standalone replacement for the above drupal code
+  else {
+    $docTitle = CRM_Core_Smarty::singleton()->getTemplateVars('docTitle');
+    $pageTitle = CRM_Core_Smarty::singleton()->getTemplateVars('pageTitle');
+  }
 
   $stringReplacement = [
     'CiviCRM' => 'Bluebird',
@@ -1075,8 +1082,12 @@ function _contact_fixTitles() {
   ];
 
   foreach ($stringReplacement as $search => $replace) {
-    if (strpos($currentTitle, $search) !== false) {
-      CRM_Utils_System::setTitle(str_replace($search, $replace, $currentTitle));
+    if (str_contains($docTitle, $search) || str_contains($pageTitle, $search)) {
+      CRM_Utils_System::setTitle(
+        str_replace($search, $replace, $docTitle),
+        str_replace($search, $replace, $pageTitle)
+      );
+      return;
     }
   }
 }
