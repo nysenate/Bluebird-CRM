@@ -297,21 +297,6 @@ function contact_civicrm_buildForm($formName, &$form) {
       $deceased->_attributes['onclick'] = $js;
     }
 
-    //3530 tweak js to place cursor at end of http in website field (IE8)
-    if (isset($form->_elementIndex['website[1][url]'])) {
-      $website =& $form->getElement('website[1][url]');
-      $js = "if(!this.value) {
-        this.value='http://';
-        if (this.createTextRange) {
-          var FieldRange = this.createTextRange();
-          FieldRange.moveStart('character', this.value.length);
-          FieldRange.collapse();
-          FieldRange.select();
-        }
-      } else { return false; }";
-      $website->_attributes['onfocus'] = $js;
-    }
-
     //NYSS 4407 remove bulk email from privacy list as it is a separate element
     if (isset($form->_elementIndex['privacy'])) {
       $privacy =& $form->getElement('privacy');
