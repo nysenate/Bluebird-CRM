@@ -326,7 +326,7 @@ function contact_civicrm_buildForm($formName, &$form) {
   //14808
   if ($formName == 'CRM_Contact_Form_Contact' && $form->_contactType == 'Individual') {
     //set personal pronoun custom field for use in tpl
-    $cfId = CRM_Core_BAO_CustomField::getCustomFieldID('preferred_pronouns', 'Additional_Constituent_Information', FALSE);
+    [, $cfId] = explode('_', CRM_Core_BAO_CustomField::getShortNameFromLongName('Additional_Constituent_Information.preferred_pronouns'));
     $form->assign('cf_preferred_pronoun_id', $cfId);
   }
 

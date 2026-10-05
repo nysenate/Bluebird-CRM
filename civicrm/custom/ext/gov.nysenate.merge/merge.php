@@ -245,7 +245,7 @@ function _merge_resolveConflicts(&$data, $mainId, $otherId) {
   }
 
   //16053 voter registration status: prefer Registered, else retain main
-  $keyVRS = 'move_'.CRM_Core_BAO_CustomField::getCustomFieldID('Voter_Registration_Status', 'Additional_Constituent_Information', TRUE);
+  $keyVRS = 'move_' . CRM_Core_BAO_CustomField::getShortNameFromLongName('Additional_Constituent_Information.Voter_Registration_Status');
   _merge_mD('$keyVRS', $keyVRS, 3);
 
   if (array_key_exists($keyVRS, $conflicts)) {
