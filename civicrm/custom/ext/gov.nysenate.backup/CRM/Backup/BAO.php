@@ -125,13 +125,17 @@ class CRM_Backup_BAO {
     $approot = $config['bbcfg']['app.rootdir'];
     $instance = $config['bbcfg']['shortname'];
 
-    /*Civi::log()->debug(__FUNCTION__, [
-      'fullFilePath' => $fullFilePath,
-      'approot' => $approot,
-      'instance' => $instance,
-    ]);*/
-
-    shell_exec("$approot/scripts/dumpInstance.sh $instance --zip --archive-file $fullFilePath");
+    $cmd = sprintf("%s/scripts/dumpInstance.sh %s --zip --archive-file %s",
+      escapeshellarg($approot), escapeshellarg($instance), escapeshellarg($fullFilePath));
+    $p = \Symfony\Component\Process\Process::fromShellCommandline($cmd);
+    $exitCode = $p->run();
+    // Civi::log()->debug("Create backup", [
+    //   'cwd' => getcwd(),
+    //   'cmd' => $cmd,
+    //   'exitCode' => $exitCode,
+    //   'output' => $p->getOutput(),
+    //   'error' => $p->getErrorOutput(),
+    // ]);
 
     if (file_exists($fullFilePath)) {
       return TRUE;
