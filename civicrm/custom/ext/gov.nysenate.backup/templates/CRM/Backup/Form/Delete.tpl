@@ -1,5 +1,5 @@
 <div>
-  <p>Are you sure you want to delete <strong>{$fileName}</strong>?</p>
+  <p>Are you sure you want to delete <strong>{$fileName|escape}</strong>?</p>
 </div>
 
 {* FOOTER *}
