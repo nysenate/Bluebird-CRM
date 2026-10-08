@@ -12,7 +12,7 @@
 
     {foreach from=$listing item=row}
       <tr>
-        <td>{$row.file}</td>
+        <td>{$row.file|escape}</td>
         <td>{$row.time_formatted}</td>
         <td>
           <a href="{$row.btn_restore_url}" class="button crm-popup"><i class="crm-i fa-refresh"></i> Restore</a>

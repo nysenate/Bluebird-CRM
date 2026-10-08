@@ -16,6 +16,11 @@ class CRM_Backup_Form_Restore extends CRM_Core_Form {
         CRM_Utils_System::url('civicrm/backup/listing', 'reset=1'));
     }
 
+    if (!CRM_Backup_BAO::resolveBackupFile($fileName)) {
+      CRM_Core_Error::statusBounce('Invalid backup file.',
+        CRM_Utils_System::url('civicrm/backup/listing', 'reset=1'));
+    }
+
     $this->add('hidden', 'fileName', $fileName);
     $this->assign('fileName', $fileName);
 
@@ -41,13 +46,14 @@ class CRM_Backup_Form_Restore extends CRM_Core_Form {
     //Civi::log()->debug(__FUNCTION__, ['$values' => $values]);
 
     $response = CRM_Backup_BAO::restore($values['fileName']);
+    $fileName = htmlspecialchars($values['fileName']);
 
     if ($response) {
-      $msg = "File restored successfully ({$values['fileName']}).";
+      $msg = "File restored successfully ({$fileName}).";
       $type = 'success';
     }
     else {
-      $msg = "Unable to restore file ({$values['fileName']}).";
+      $msg = "Unable to restore file ({$fileName}).";
       $type = 'error';
     }
 

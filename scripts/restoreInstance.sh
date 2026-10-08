@@ -53,8 +53,8 @@ elif [ ! -r "$archive_file" ]; then
   exit 1
 else
   # If the archive filepath is not absolute, then make it so.
-  if [ ${archive_file:0:1} != '/' ]; then
-    archive_filename=`basename $archive_file`
+  if [ "${archive_file:0:1}" != '/' ]; then
+    archive_filename=`basename "$archive_file"`
     archive_dir=`dirname "$archive_file"`
     archive_dir=`cd "$archive_dir"; echo $PWD`
     archive_file="$archive_dir/$archive_filename"
