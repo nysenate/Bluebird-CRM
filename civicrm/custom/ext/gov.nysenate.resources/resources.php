@@ -30,6 +30,28 @@ function resources_civicrm_enable() {
   _resources_civix_civicrm_enable();
 }
 
+/**
+ * Implements hook_civicrm_alterResourceSettings().
+ *
+ * Since CiviCRM 5.45, CKEditor 4's config comes from the ckeditor4 extension
+ * (one config file per preset). Load our config file ahead of it; ours chains
+ * to the preset file via config.customConfig (see js/ckeditor.nyss-config.js).
+ * This runs after every coreResourceList hook, so hook order doesn't matter.
+ */
+function resources_civicrm_alterResourceSettings(&$data) {
+  $ckConfig = $data['config']['CKEditorCustomConfig'] ?? NULL;
+  if (empty($ckConfig) || isset($data['config']['nyssCKEditorNextConfig'])) {
+    return;
+  }
+  if (is_string($ckConfig)) {
+    $ckConfig = ['default' => $ckConfig];
+  }
+
+  $nyssConfig = Civi::resources()->getUrl(E::LONG_NAME, 'js/ckeditor.nyss-config.js', TRUE);
+  $data['config']['nyssCKEditorNextConfig'] = $ckConfig;
+  $data['config']['CKEditorCustomConfig'] = array_fill_keys(array_keys($ckConfig), $nyssConfig);
+}
+
 function resources_civicrm_coreResourceList(&$list, $region) {
   /*Civi::log()->debug('resource_civicrm_coreResourceList', array(
     'list' => $list,
@@ -47,18 +69,6 @@ function resources_civicrm_coreResourceList(&$list, $region) {
   if (!CRM_NYSS_BAO_NYSS::isPublicUrl()) {
     Civi::resources()->addScriptFile('gov.nysenate.resources', 'js/jobId.js');
     Civi::resources()->addScriptFile('gov.nysenate.resources', 'js/menuBar.js');
-  }
-
-  //implement coreResourceList to define location of custom ckeditor config file
-  $extPath = Civi::resources()->getUrl('gov.nysenate.resources');
-  $config = array_keys(array_filter($list, function($v){return !empty($v['config']) ? true : false;}));
-  //Civi::log()->debug(__FUNCTION__, ['list' => $list, 'config' => $config]);
-
-  if (!empty($config[0])) {
-    $list[$config[0]]['config']['CKEditorCustomConfig'] = "{$extPath}/js/ckeditor.config.js";
-
-    //set ckeditor location (seems to get messed up by our special directory handling)
-    $list[$config[0]]['config']['wysisygScriptLocation'] = '/sites/all/modules/civicrm/js/wysiwyg/crm.ckeditor.js';
   }
 
   //set kcfinder maxImage settings

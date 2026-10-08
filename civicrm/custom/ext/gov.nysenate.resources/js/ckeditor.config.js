@@ -3,8 +3,11 @@
  * For licensing, see LICENSE.md or http://ckeditor.com/license
  */
 
+/* NYSS Note -- this custom config has not worked since 2022 when CiviCRM changed it's resource loading process in
+*  version 5.45. This file is an unused artifact. I've left it in place (for the time being) in case any of these
+*  settings need to be copied over to ckeditor.nyss-config.js. */
+
 //NYSS add paths to additional resources
-CKEDITOR.plugins.addExternal('aspell', '/sites/all/ext/gov.nysenate.resources/js/aspell/');
 CKEDITOR.plugins.addExternal('lineheight', '/sites/all/ext/gov.nysenate.resources/js/lineheight/');
 
 CKEDITOR.editorConfig = function( config ) {
@@ -34,7 +37,7 @@ CKEDITOR.editorConfig = function( config ) {
   config.tabSpaces = 5;
 
   //NYSS additional plugins
-  config.extraPlugins = 'font,aspell,justify,colorbutton,image2,lineheight';
+  config.extraPlugins = 'font,justify,colorbutton,image2,lineheight';
 
   //NYSS support anchors
   config.extraAllowedContent = 'a[name]';
