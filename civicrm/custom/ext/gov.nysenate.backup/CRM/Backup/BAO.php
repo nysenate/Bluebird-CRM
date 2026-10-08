@@ -40,14 +40,14 @@ class CRM_Backup_BAO {
     $files = [];
     if ($handle = opendir($dir)) {
       while (false !== ($file = readdir($handle))) {
-        if ($file != '.' && $file != '..' && !is_dir($dir.$file) && preg_match('/.*\.zip/', $file)) {
+        if ($file != '.' && $file != '..' && !is_dir($dir.$file) && preg_match('/\.zip$/', $file)) {
           $time = filemtime($dir.$file);
           $files[$time] = [
             'file' => $file,
             'time' => $time,
             'time_formatted' => date('m/d/Y g:ia', $time),
-            'btn_restore_url' => CRM_Utils_System::url('civicrm/backup/restore', "file={$file}"),
-            'btn_delete_url' => CRM_Utils_System::url('civicrm/backup/delete', "file={$file}"),
+            'btn_restore_url' => CRM_Utils_System::url('civicrm/backup/restore', 'file='.urlencode($file)),
+            'btn_delete_url' => CRM_Utils_System::url('civicrm/backup/delete', 'file='.urlencode($file)),
           ];
         }
       }
@@ -61,10 +61,31 @@ class CRM_Backup_BAO {
     return array_values($files);
   }
 
-  static function delete($fileName) {
-    $config = self::getConfig();
+  /**
+   * Check if a user supplied filename really exists in the Backup Dir.
+   * @param $fileName String indicates the name of the backup file to be checked/resolved
+   * @return String|NULL absolute path of given file if it exists or NULL if the file does not exist
+   */
+  static function resolveBackupFile($fileName) {
+    if (!is_string($fileName) || $fileName === '' || basename($fileName) !== $fileName) {
+      return NULL;
+    }
 
-    if (!empty($fileName) && unlink($config['bkupdir'].$fileName)) {
+    $config = self::getConfig();
+    $backups = array_column(self::getBackups($config['bkupdir'], $config['bbcfg']), 'file');
+
+    if (!in_array($fileName, $backups, TRUE)) {
+      return NULL;
+    }
+
+    $fullFileName = $config['bkupdir'].$fileName;
+    return is_file($fullFileName) ? $fullFileName : NULL;
+  }
+
+  static function delete($fileName) {
+    $fullFileName = self::resolveBackupFile($fileName);
+
+    if ($fullFileName && unlink($fullFileName)) {
       return TRUE;
     }
 
@@ -77,18 +98,19 @@ class CRM_Backup_BAO {
     $approot = $config['bbcfg']['app.rootdir'];
     $instance = $config['bbcfg']['shortname'];
 
-    if (!$fileName) {
+    $fullFileName = self::resolveBackupFile($fileName);
+    if (!$fullFileName) {
       return FALSE;
     }
-
-    $fullFileName = $config['bkupdir'].$fileName;
 
     //disable logging
     Civi::settings()->set('logging', FALSE);
     $logging = new CRM_Logging_Schema;
     $logging->disableLogging();
 
-    passthru("$approot/scripts/restoreInstance.sh $instance --archive-file $fullFileName --ok >/dev/null", $err);
+    $cmd = escapeshellarg("$approot/scripts/restoreInstance.sh").' '.escapeshellarg($instance)
+      .' --archive-file '.escapeshellarg($fullFileName).' --ok >/dev/null';
+    passthru($cmd, $err);
 
     //re-enable logging
     Civi::settings()->set('logging', TRUE);
@@ -131,7 +153,8 @@ class CRM_Backup_BAO {
       'instance' => $instance,
     ]);*/
 
-    shell_exec("$approot/scripts/dumpInstance.sh $instance --zip --archive-file $fullFilePath");
+    shell_exec(escapeshellarg("$approot/scripts/dumpInstance.sh").' '.escapeshellarg($instance)
+      .' --zip --archive-file '.escapeshellarg($fullFilePath));
 
     if (file_exists($fullFilePath)) {
       return TRUE;

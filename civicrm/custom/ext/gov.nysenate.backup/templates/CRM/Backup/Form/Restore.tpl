@@ -1,6 +1,6 @@
 {* HEADER *}
 <div>
-  <p>Are you sure you want to restore <strong>{$fileName}</strong>?</p>
+  <p>Are you sure you want to restore <strong>{$fileName|escape}</strong>?</p>
 </div>
 
 {* FOOTER *}
