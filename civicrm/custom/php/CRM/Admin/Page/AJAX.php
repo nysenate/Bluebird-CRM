@@ -16,6 +16,8 @@
  */
 
 /**
+ * DELETE ME: In core as of 6.20 - https://github.com/civicrm/civicrm-core/pull/37210
+ *
  * This class contains all the function that are called using AJAX.
  */
 class CRM_Admin_Page_AJAX {
@@ -74,6 +76,7 @@ class CRM_Admin_Page_AJAX {
       $item['name'] = !empty($props['name']) ? $props['name'] : CRM_Utils_String::munge($props['label'] ?? '');
 
       //NYSS 13087
+      // DELETE ME: In core as of 6.20 - https://github.com/civicrm/civicrm-core/pull/37210
       if (!empty($props['target'])) {
         $item['target'] = $props['target'];
       }
