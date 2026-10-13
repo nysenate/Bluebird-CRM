@@ -42,7 +42,7 @@ data_owner=`$readConfig --ig $instance data.rootdir.owner | cut -d: -f1` || data
 
 if [ $EUID -eq 0 ]; then
   echo "$prog: Running as root causes file permission problems; restarting as user $data_owner"
-  exec su $data_owner -s /bin/bash -c "$0 $*"
+  exec su $data_owner -s /bin/bash -c "$(printf '%q ' "$0" "$@")"
 fi
 
 # cv tries to store state (e.g. "upgrade:db" progress) in $HOME/.cv.
