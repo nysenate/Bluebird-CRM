@@ -1,5 +1,5 @@
 <?php
-// AUTO-GENERATED VIA /home/jenkins/bknix-min/build/cividist/src/vendor/civicrm/composer-compile-lib/src/StubsTpl.php
+// AUTO-GENERATED VIA /home/jenkins/buildkit/build/cividist/src/vendor/civicrm/composer-compile-lib/src/StubsTpl.php
 // If this file somehow becomes invalid (eg when patching CCL), you may safely delete and re-run install.
 use Symfony\Component\Filesystem\Exception\IOException;
 use Symfony\Component\Filesystem\Exception\FileNotFoundException;
@@ -31,116 +31,130 @@ class CCL {
    * If the target file is newer, it is overwritten only when the
    * $overwriteNewerFiles option is set to true.
    *
+   * @return void
+   *
    * @throws FileNotFoundException When originFile doesn't exist
    * @throws IOException           When copy fails
    */
   public static function copy($originFile, $targetFile, bool $overwriteNewerFiles = TRUE) {
-    self::_sym()->copy($originFile, $targetFile, $overwriteNewerFiles);
+    return self::_sym()->copy($originFile, $targetFile, $overwriteNewerFiles);
   }
 
   /**
    * Creates a directory recursively.
    *
-   * @param string|iterable $dirs The directory path
+   * @return void
    *
    * @throws IOException On any directory creation failure
    */
   public static function mkdir($dirs, $mode = 511) {
-    self::_sym()->mkdir($dirs, $mode);
+    return self::_sym()->mkdir($dirs, $mode);
   }
 
   /**
    * Checks the existence of files or directories.
-   *
-   * @param string|iterable $files A filename, an array of files, or a \Traversable instance to check
-   *
-   * @return bool
    */
   public static function exists($files) {
-    return self::_sym()->exists($files);
+    self::_sym()->exists($files);
   }
 
   /**
    * Sets access and modification time of file.
    *
-   * @param string|iterable $files A filename, an array of files, or a \Traversable instance to create
-   * @param int|null        $time  The touch time as a Unix timestamp, if not supplied the current system time is used
-   * @param int|null        $atime The access time as a Unix timestamp, if not supplied the current system time is used
+   * @param int|null $time  The touch time as a Unix timestamp, if not supplied the current system time is used
+   * @param int|null $atime The access time as a Unix timestamp, if not supplied the current system time is used
+   *
+   * @return void
    *
    * @throws IOException When touch fails
    */
   public static function touch($files, $time = NULL, $atime = NULL) {
-    self::_sym()->touch($files, $time, $atime);
+    return self::_sym()->touch($files, $time, $atime);
   }
 
   /**
    * Removes files or directories.
    *
-   * @param string|iterable $files A filename, an array of files, or a \Traversable instance to remove
+   * @return void
    *
    * @throws IOException When removal fails
    */
   public static function remove($files) {
-    self::_sym()->remove($files);
+    return self::_sym()->remove($files);
   }
 
   /**
    * Change mode for an array of files or directories.
    *
-   * @param string|iterable $files     A filename, an array of files, or a \Traversable instance to change mode
-   * @param int             $mode      The new mode (octal)
-   * @param int             $umask     The mode mask (octal)
-   * @param bool            $recursive Whether change the mod recursively or not
+   * @param int  $mode      The new mode (octal)
+   * @param int  $umask     The mode mask (octal)
+   * @param bool $recursive Whether change the mod recursively or not
+   *
+   * @return void
    *
    * @throws IOException When the change fails
    */
   public static function chmod($files, $mode, $umask = 0, $recursive = FALSE) {
-    self::_sym()->chmod($files, $mode, $umask, $recursive);
+    return self::_sym()->chmod($files, $mode, $umask, $recursive);
   }
 
   /**
    * Change the owner of an array of files or directories.
    *
-   * @param string|iterable $files     A filename, an array of files, or a \Traversable instance to change owner
-   * @param string|int      $user      A user name or number
-   * @param bool            $recursive Whether change the owner recursively or not
+   * This method always throws on Windows, as the underlying PHP function is not supported.
+   *
+   * @see https://php.net/chown
+   *
+   * @param string|int $user      A user name or number
+   * @param bool       $recursive Whether change the owner recursively or not
+   *
+   * @return void
    *
    * @throws IOException When the change fails
    */
   public static function chown($files, $user, $recursive = FALSE) {
-    self::_sym()->chown($files, $user, $recursive);
+    return self::_sym()->chown($files, $user, $recursive);
   }
 
   /**
    * Change the group of an array of files or directories.
    *
-   * @param string|iterable $files     A filename, an array of files, or a \Traversable instance to change group
-   * @param string|int      $group     A group name or number
-   * @param bool            $recursive Whether change the group recursively or not
+   * This method always throws on Windows, as the underlying PHP function is not supported.
+   *
+   * @see https://php.net/chgrp
+   *
+   * @param string|int $group     A group name or number
+   * @param bool       $recursive Whether change the group recursively or not
+   *
+   * @return void
    *
    * @throws IOException When the change fails
    */
   public static function chgrp($files, $group, $recursive = FALSE) {
-    self::_sym()->chgrp($files, $group, $recursive);
+    return self::_sym()->chgrp($files, $group, $recursive);
   }
 
   /**
    * Renames a file or a directory.
    *
+   * @return void
+   *
    * @throws IOException When target file or directory already exists
    * @throws IOException When origin cannot be renamed
    */
   public static function rename($origin, $target, $overwrite = FALSE) {
-    self::_sym()->rename($origin, $target, $overwrite);
+    return self::_sym()->rename($origin, $target, $overwrite);
   }
 
   /**
    * Creates a symbolic link or copy a directory.
    *
+   * @return void
+   *
    * @throws IOException When symlink fails
    */
   public static function symlink($originDir, $targetDir, $copyOnWindows = FALSE) {
-    self::_sym()->symlink($originDir, $targetDir, $copyOnWindows);
+    return self::_sym()->symlink($originDir, $targetDir, $copyOnWindows);
   }
 
   /**
@@ -148,11 +162,13 @@ class CCL {
    *
    * @param string|string[] $targetFiles The target file(s)
    *
+   * @return void
+   *
    * @throws FileNotFoundException When original file is missing or not a file
    * @throws IOException           When link fails, including if link already exists
    */
   public static function hardlink($originFile, $targetFiles) {
-    self::_sym()->hardlink($originFile, $targetFiles);
+    return self::_sym()->hardlink($originFile, $targetFiles);
   }
 
   /**
@@ -165,20 +181,16 @@ class CCL {
    * With $canonicalize = true
    *      - if $path does not exist, returns null
    *      - if $path exists, returns its absolute fully resolved final version
-   *
-   * @return string|null
    */
   public static function readlink($path, $canonicalize = FALSE) {
-    return self::_sym()->readlink($path, $canonicalize);
+    self::_sym()->readlink($path, $canonicalize);
   }
 
   /**
    * Given an existing path, convert it to a path relative to a given starting path.
-   *
-   * @return string
    */
   public static function makePathRelative($endPath, $startPath) {
-    return self::_sym()->makePathRelative($endPath, $startPath);
+    self::_sym()->makePathRelative($endPath, $startPath);
   }
 
   /**
@@ -196,19 +208,19 @@ class CCL {
    *                                    - $options['copy_on_windows'] Whether to copy files instead of links on Windows (see symlink(), defaults to false)
    *                                    - $options['delete'] Whether to delete files that are not in the source directory (defaults to false)
    *
+   * @return void
+   *
    * @throws IOException When file type is unknown
    */
   public static function mirror($originDir, $targetDir, $iterator = NULL, $options = []) {
-    self::_sym()->mirror($originDir, $targetDir, $iterator, $options);
+    return self::_sym()->mirror($originDir, $targetDir, $iterator, $options);
   }
 
   /**
    * Returns whether the file path is an absolute path.
-   *
-   * @return bool
    */
   public static function isAbsolutePath($file) {
-    return self::_sym()->isAbsolutePath($file);
+    self::_sym()->isAbsolutePath($file);
   }
 
   /**
@@ -220,8 +232,8 @@ class CCL {
    *
    * @return string The new temporary filename (with path), or throw an exception on failure
    */
-  public static function tempnam($dir, $prefix) {
-    return self::_sym()->tempnam($dir, $prefix);
+  public static function tempnam($dir, $prefix, $suffix = '') {
+    return self::_sym()->tempnam($dir, $prefix, $suffix);
   }
 
   /**
@@ -229,10 +241,12 @@ class CCL {
    *
    * @param string|resource $content The data to write into the file
    *
+   * @return void
+   *
    * @throws IOException if the file cannot be written to
    */
   public static function dumpFile($filename, $content) {
-    self::_sym()->dumpFile($filename, $content);
+    return self::_sym()->dumpFile($filename, $content);
   }
 
   /**
@@ -241,10 +255,12 @@ class CCL {
    * @param string|resource $content The content to append
    * @param bool            $lock    Whether the file should be locked when writing to it
    *
+   * @return void
+   *
    * @throws IOException If the file is not writable
    */
   public static function appendToFile($filename, $content) {
-    self::_sym()->appendToFile($filename, $content);
+    return self::_sym()->appendToFile($filename, $content);
   }
 
   /**

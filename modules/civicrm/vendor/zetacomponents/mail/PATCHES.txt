@@ -9,3 +9,7 @@ CiviCRM Custom patch to fix a php8.1 issue found in CiviCRM unit tests
 Source: https://download.civicrm.org/patches/d187bcd1100b99529705cdd61193efa683951f6cfbc97ecaa69bc6cd601d2e5f/200-php-81.patch
 
 
+CiviCRM Custom patch to fix a php8.5 notice issue found in CiviCRM unit tests
+Source: https://download.civicrm.org/patches/f907a8be8c8ece783278f6d0de2d9fecd92f2a75631e9f959a3886ba6b610b64/300-php-85.patch
+
+

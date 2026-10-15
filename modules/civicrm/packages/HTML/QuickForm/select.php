@@ -61,6 +61,14 @@ class HTML_QuickForm_select extends HTML_QuickForm_element {
      */
     var $_values = null;
 
+    /**
+     * Select option text has been escaped
+     * @var bool
+     * @since 1.2
+     * @access private
+     */
+    private $_optionTextEscaped = FALSE;
+
     // }}}
     // {{{ constructor
 
@@ -499,7 +507,7 @@ class HTML_QuickForm_select extends HTML_QuickForm_element {
                     $option['attr']['selected'] = 'selected';
                 }
                 $strHtml .= $tabs . "\t<option" . $this->_getAttrString($option['attr']) . '>' .
-                            $option['text'] . "</option>\n";
+                            ($this->_optionTextEscaped ? $option['text'] : htmlspecialchars($option['text'], ENT_QUOTES | ENT_HTML401)) . "</option>\n";
             }
 
             return $strHtml . $tabs . '</select>';
@@ -524,7 +532,7 @@ class HTML_QuickForm_select extends HTML_QuickForm_element {
                 if ( $val || is_numeric($val) ) {
                     foreach ($this->_options as $oKey => $oVal ) {
                         if (0 == strcmp($val, $this->_options[$oKey]['attr']['value'])) {
-                            $value[$key] = $oVal['text'];
+                            $value[$key] = $this->_optionTextEscaped ? $oVal['text'] : htmlspecialchars($oVal['text'], ENT_QUOTES | ENT_HTML401);
                             break;
                         }
                     }
@@ -597,6 +605,21 @@ class HTML_QuickForm_select extends HTML_QuickForm_element {
             return $this->_prepareValue($cleanValue, $assoc);
         }
     }
+
+    // }}}
+    // {{{ setTextEscaped()
+
+    /**
+     * Sets that the select option text has been escaped
+     *
+     * @since     1.1
+     * @access    public
+     * @return    string
+     */
+    function setOptionTextEscaped()
+    {
+        $this->_optionTextEscaped = TRUE;
+    } //end func setTextEscaped
 
     // }}}
     // {{{ onQuickFormEvent()

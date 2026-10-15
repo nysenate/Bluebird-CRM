@@ -76,9 +76,6 @@ function civicrm_api3_mosaico_template_get($params) {
     if (_civicrm_api3_mosaico_template_getDomainFrom($baseTemplateURL)) {
       $urlParts = parse_url($baseTemplateURL);
       $templatePath = $urlParts['path'];
-      // NYSS #17507 (temporary) regression fix.
-      // This fix will hopefully make it into vendor source.
-      // https://github.com/veda-consulting-company/uk.co.vedaconsulting.mosaico/issues/692
       $currentURL = rtrim(\Civi::paths()->getVariable('cms.root', 'url'), "/") .
                     '/' . ltrim($templatePath,'/');
     } else {

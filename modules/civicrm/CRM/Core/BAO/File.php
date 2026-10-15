@@ -50,6 +50,29 @@ class CRM_Core_BAO_File extends CRM_Core_DAO_File implements \Civi\Core\HookInte
         $event->params['created_id'] = CRM_Core_Session::getLoggedInContactID();
       }
     }
+    // When updating is_public, move the file to public/private directory.
+    if ($event->action === 'edit' && isset($event->params['is_public'])) {
+      $wasPublic = self::getDbVal('is_public', $event->params['id']);
+      $isPublic = (bool) $event->params['is_public'];
+      if ($wasPublic !== $isPublic) {
+        $privateDir = CRM_Core_Config::singleton()->customFileUploadDir;
+        $publicDir = CRM_Core_Config::singleton()->imageUploadDir;
+        $oldUri = self::getDbVal('uri', $event->params['id']);
+        $newUri = $event->params['uri'] ?? $oldUri;
+        $oldPath = ($wasPublic ? $publicDir : $privateDir) . "/$oldUri";
+        $newPath = ($isPublic ? $publicDir : $privateDir) . "/$newUri";
+        if (file_exists($oldPath)) {
+          rename($oldPath, $newPath);
+        }
+      }
+    }
+  }
+
+  public static function getFilePath(array $file): string {
+    $uri = $file['uri'] ?? \CRM_Core_DAO_File::getDbVal('uri', $file['id']);
+    $isPublic = $file['is_public'] ?? (isset($file['id']) ? \CRM_Core_DAO_File::getDbVal('is_public', $file['id']) : FALSE);
+    $settingName = $isPublic ? 'imageUploadDir' : 'customFileUploadDir';
+    return \CRM_Core_Config::singleton()->$settingName . $uri;
   }
 
   /**
@@ -61,8 +84,7 @@ class CRM_Core_BAO_File extends CRM_Core_DAO_File implements \Civi\Core\HookInte
     $fileDAO = new CRM_Core_DAO_File();
     $fileDAO->id = $fileID;
     if ($fileDAO->find(TRUE)) {
-      $config = CRM_Core_Config::singleton();
-      $path = $config->customFileUploadDir . $fileDAO->uri;
+      $path = self::getFilePath($fileDAO->toArray());
 
       if (file_exists($path) && is_readable($path)) {
         return [$path, $fileDAO->mime_type];
@@ -74,7 +96,7 @@ class CRM_Core_BAO_File extends CRM_Core_DAO_File implements \Civi\Core\HookInte
 
   /**
    * @param string $data
-   * @param int $fileTypeID
+   * @param ?int $fileTypeID
    * @param string $entityTable
    * @param int $entityID
    * @param string|false $entitySubtype
@@ -427,7 +449,7 @@ AND       CEF.entity_id    = %2";
     $form->assign('numAttachments', $numAttachments);
 
     CRM_Core_BAO_Tag::getTags('civicrm_file', $tags, NULL,
-      '&nbsp;&nbsp;', TRUE);
+      '- ', TRUE);
 
     // get tagset info
     $parentNames = CRM_Core_BAO_Tag::getTagSet('civicrm_file');
@@ -554,6 +576,12 @@ AND       CEF.entity_id    = %2";
   }
 
   /**
+   * Attach files from a QuickForm.
+   *
+   * Security Warning: This function must not be called from BAO add/create functions,
+   * as it will then be exposed to the API, allowing attackers to manipulate the fileSystem
+   * via api calls. See https://lab.civicrm.org/security/core/-/work_items/173
+   *
    * @param array $params
    * @param $entityTable
    * @param int $entityID
@@ -772,8 +800,16 @@ HEREDOC;
   }
 
   public static function getFileUrl(int $fileId, string $cmsEnd = 'current', ?string $flags = NULL): \Civi\Core\Url {
-    $fileHash = self::generateFileHash(NULL, $fileId);
-    return Civi::url("$cmsEnd://civicrm/file?reset=1&id=$fileId&fcs=$fileHash", $flags);
+    $isPublic = self::getDbVal('is_public', $fileId);
+    if ($isPublic) {
+      $uri = self::getDbVal('uri', $fileId);
+      $path = Civi::settings()->get('imageUploadURL');
+      return Civi::url("$path/$uri", $flags);
+    }
+    else {
+      $fileHash = self::generateFileHash(NULL, $fileId);
+      return Civi::url("$cmsEnd://civicrm/file?reset=1&id=$fileId&fcs=$fileHash", $flags);
+    }
   }
 
   /**

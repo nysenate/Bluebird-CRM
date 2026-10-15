@@ -17,6 +17,8 @@ class ImageManagerStatic
      * Creates a new instance
      *
      * @param ImageManager $manager
+     *
+     * NYSS #19113 - Function signature modified for php8.4
      */
     public function __construct(?ImageManager $manager = null)
     {

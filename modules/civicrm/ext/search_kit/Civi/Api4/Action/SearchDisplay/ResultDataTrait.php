@@ -93,7 +93,7 @@ trait ResultDataTrait {
    * @param string $fileName
    */
   private function outputCSV(array $rows, array $columns, string $fileName) {
-    $csv = Writer::createFromFileObject(new \SplTempFileObject());
+    $csv = Writer::from(new \SplTempFileObject());
     $csv->setOutputBOM(Writer::BOM_UTF8);
 
     // Header row
@@ -109,7 +109,7 @@ trait ResultDataTrait {
       $csv->insertOne($row);
     }
     // Echo headers and content directly to browser
-    $csv->output($fileName);
+    $csv->download($fileName);
   }
 
   /**
@@ -174,7 +174,7 @@ trait ResultDataTrait {
         return $val['value'];
       }
 
-      if (($value['dataType'] === 'Date' || $value['dataType'] === 'Timestamp') && ($val !== NULL)) {
+      if (($value['dataType'] === 'Date' || $value['dataType'] === 'Timestamp') && ($val !== NULL) && !is_array($val)) {
         return Date::stringToExcel($val);
       }
     }

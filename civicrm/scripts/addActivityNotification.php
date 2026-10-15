@@ -133,6 +133,7 @@ class CRM_NYSS_Scripts_AddActivityNotification {
       'recipient'             => $this->recipientGroupId ? self::RECIPIENT_GROUP : (empty($this->recipientContactIds) ? self::RECIPIENT_ASSIGNEE : self::RECIPIENT_MANUAL),
       'recipient_manual'      => empty($this->recipientContactIds) ? NULL : implode(',', $this->recipientContactIds),
       'group_id'              => $this->recipientGroupId,
+      'limit_to'              => 1,
       'is_active'             => TRUE,
       'is_repeat'             => $this->is_repeat,
     ];

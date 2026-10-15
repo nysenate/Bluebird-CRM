@@ -1,3 +1,10 @@
+1.9.5 - Wednesday 12 November 2025
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+- PHP 8.5 compatibility: Case statements followed by a semicolon (;) are
+  deprecated, use a colon (:) instead.
+
+
 1.9.4 - Wednesday 30 November 2022
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 

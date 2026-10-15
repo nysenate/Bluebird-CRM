@@ -428,7 +428,7 @@ class CRM_Iats_Form_Report_ContributeDetail extends CRM_Report_Form {
     $contributionOrSoftVal = $this->getElementValue('contribution_or_soft_value');
     if ($contributionOrSoftVal[0] == 'contributions_only') {
       $groupBySoft = $this->getElementValue('group_bys');
-      if (CRM_Utils_Array::value('soft_credit_id', $groupBySoft)) {
+      if (!empty($groupBySoft['soft_credit_id'])) {
         $this->setElementError('group_bys', ts('You cannot group by soft credit when displaying contributions only.  Please uncheck "Soft Credit" in the Grouping tab.'));
       }
     }
@@ -739,24 +739,24 @@ UNION ALL
         $rows[$rowNum]['civicrm_contact_sort_name_hover'] = ts("View Contact Summary for this Contact.");
       }
 
-      if ($value = CRM_Utils_Array::value('civicrm_contribution_financial_type_id', $row)) {
+      if ($value = $row['civicrm_contribution_financial_type_id'] ?? NULL) {
         $rows[$rowNum]['civicrm_contribution_financial_type_id'] = $contributionTypes[$value];
         $entryFound = TRUE;
       }
-      if ($value = CRM_Utils_Array::value('civicrm_contribution_contribution_status_id', $row)) {
+      if ($value = $row['civicrm_contribution_contribution_status_id'] ?? NULL) {
         $rows[$rowNum]['civicrm_contribution_contribution_status_id'] = $contributionStatus[$value];
         $entryFound = TRUE;
       }
-      if ($value = CRM_Utils_Array::value('civicrm_contribution_contribution_page_id', $row)) {
+      if ($value = $row['civicrm_contribution_contribution_page_id'] ?? NULL) {
         $rows[$rowNum]['civicrm_contribution_contribution_page_id'] = $contributionPages[$value];
         $entryFound = TRUE;
       }
-      if ($value = CRM_Utils_Array::value('civicrm_contribution_payment_instrument_id', $row)) {
+      if ($value = $row['civicrm_contribution_payment_instrument_id'] ?? NULL) {
         $rows[$rowNum]['civicrm_contribution_payment_instrument_id'] = $paymentInstruments[$value];
         $entryFound = TRUE;
       }
       if (!empty($row['civicrm_batch_batch_id'])) {
-        $rows[$rowNum]['civicrm_batch_batch_id'] = CRM_Utils_Array::value($row['civicrm_batch_batch_id'], $batches);
+        $rows[$rowNum]['civicrm_batch_batch_id'] = $batches[$row['civicrm_batch_batch_id']] ?? NULL;
         $entryFound = TRUE;
       }
       if (!empty($row['civicrm_financial_trxn_card_type_id'])) {
@@ -765,7 +765,7 @@ UNION ALL
       }
 
       // Contribution amount links to viewing contribution
-      if ($value = CRM_Utils_Array::value('civicrm_contribution_total_amount', $row)) {
+      if ($value = $row['civicrm_contribution_total_amount'] ?? NULL) {
         $rows[$rowNum]['civicrm_contribution_total_amount'] = CRM_Utils_Money::format($value, $row['civicrm_contribution_currency']);
         if (CRM_Core_Permission::check('access CiviContribute')) {
           $url = CRM_Utils_System::url(
@@ -796,8 +796,7 @@ UNION ALL
 
       // soft credits
       if (array_key_exists('civicrm_contribution_soft_credits', $row) &&
-        'Contribution' ==
-        CRM_Utils_Array::value('civicrm_contribution_contribution_or_soft', $rows[$rowNum]) &&
+        'Contribution' == ($rows[$rowNum]['civicrm_contribution_contribution_or_soft'] ?? NULL) &&
         array_key_exists('civicrm_contribution_contribution_id', $row)
       ) {
         $query = "
@@ -818,8 +817,7 @@ WHERE  civicrm_contribution_contribution_id={$row['civicrm_contribution_contribu
       }
 
       if (array_key_exists('civicrm_contribution_soft_credit_for', $row) &&
-        'Soft Credit' ==
-        CRM_Utils_Array::value('civicrm_contribution_contribution_or_soft', $rows[$rowNum]) &&
+        'Soft Credit' == ($rows[$rowNum]['civicrm_contribution_contribution_or_soft'] ?? NULL) &&
         array_key_exists('civicrm_contribution_contribution_id', $row)
       ) {
         $query = "

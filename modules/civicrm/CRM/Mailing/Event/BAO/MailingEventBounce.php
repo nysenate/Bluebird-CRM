@@ -59,7 +59,7 @@ class CRM_Mailing_Event_BAO_MailingEventBounce extends CRM_Mailing_Event_DAO_Mai
     $params['bounce_reason'] = preg_replace('/[\x{10000}-\x{10FFFF}]/u', "\xEF\xBF\xBD", $params['bounce_reason']);
 
     // CRM-11989
-    $params['bounce_reason'] = mb_strcut($params['bounce_reason'], 0, 254);
+    $params['bounce_reason'] = mb_strcut($params['bounce_reason'], 0, 512);
 
     self::writeRecord($params);
 
@@ -202,7 +202,7 @@ class CRM_Mailing_Event_BAO_MailingEventBounce extends CRM_Mailing_Event_DAO_Mai
     $orderBy = "sort_name ASC, {$bounce}.time_stamp DESC";
     if ($sort) {
       if (is_string($sort)) {
-        $sort = CRM_Utils_Type::escape($sort, 'String');
+        $sort = CRM_Utils_Type::escape($sort, 'MysqlOrderBy');
         $orderBy = $sort;
       }
       else {

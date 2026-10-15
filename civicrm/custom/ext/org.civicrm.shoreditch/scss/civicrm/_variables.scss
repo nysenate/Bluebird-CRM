@@ -1,7 +1,8 @@
 $crm-standard-gap: 20px;
 $crm-table-form-cell-padding: 4px;
 $crm-table-cell-line-height: 18px;
-$crm-table-cell-padding: 16px 10px;
+/* NYSS 19170 */
+$crm-table-cell-padding: 16px 10px !important;
 $crm-table-first-cell-padding-left: 20px;
 
 $crm-contact-info-block-min-height: 60px;

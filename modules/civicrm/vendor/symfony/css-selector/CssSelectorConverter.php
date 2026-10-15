@@ -26,11 +26,13 @@ use Symfony\Component\CssSelector\XPath\Translator;
  */
 class CssSelectorConverter
 {
-    private $translator;
-    private $cache;
+    public static int $maxCachedItems = 1024;
 
-    private static $xmlCache = [];
-    private static $htmlCache = [];
+    private Translator $translator;
+    private array $cache;
+
+    private static array $xmlCache = [];
+    private static array $htmlCache = [];
 
     /**
      * @param bool $html Whether HTML support should be enabled. Disable it for XML documents
@@ -59,11 +61,24 @@ class CssSelectorConverter
      *
      * Optionally, a prefix can be added to the resulting XPath
      * expression with the $prefix parameter.
-     *
-     * @return string
      */
-    public function toXPath(string $cssExpr, string $prefix = 'descendant-or-self::')
+    public function toXPath(string $cssExpr, string $prefix = 'descendant-or-self::'): string
     {
-        return $this->cache[$prefix][$cssExpr] ?? $this->cache[$prefix][$cssExpr] = $this->translator->cssToXPath($cssExpr, $prefix);
+        $cacheKey = $prefix."\0".$cssExpr;
+
+        if (isset($this->cache[$cacheKey])) {
+            // Move the item last in cache (LRU)
+            $value = $this->cache[$cacheKey];
+            unset($this->cache[$cacheKey]);
+
+            return $this->cache[$cacheKey] = $value;
+        }
+
+        if (\count($this->cache) >= self::$maxCachedItems) {
+            // Evict the oldest entry
+            unset($this->cache[array_key_first($this->cache)]);
+        }
+
+        return $this->cache[$cacheKey] = $this->translator->cssToXPath($cssExpr, $prefix);
     }
 }

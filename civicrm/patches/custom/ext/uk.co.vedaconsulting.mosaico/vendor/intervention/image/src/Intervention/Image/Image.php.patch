@@ -1,0 +1,15 @@
+diff --git a/civicrm/custom/ext/uk.co.vedaconsulting.mosaico/vendor/intervention/image/src/Intervention/Image/Image.php b/civicrm/custom/ext/uk.co.vedaconsulting.mosaico/vendor/intervention/image/src/Intervention/Image/Image.php
+index 3b26ea2a9..8cf748766 100644
+--- a/civicrm/custom/ext/uk.co.vedaconsulting.mosaico/vendor/intervention/image/src/Intervention/Image/Image.php
++++ b/civicrm/custom/ext/uk.co.vedaconsulting.mosaico/vendor/intervention/image/src/Intervention/Image/Image.php
+@@ -88,8 +88,9 @@ class Image extends File
+      *
+      * @param AbstractDriver $driver
+      * @param mixed  $core
++     * NYSS #19113 - Function signature modified for php8.4
+      */
+-    public function __construct(AbstractDriver $driver = null, $core = null)
++    public function __construct(?AbstractDriver $driver = null, $core = null)
+     {
+         $this->driver = $driver;
+         $this->core = $core;

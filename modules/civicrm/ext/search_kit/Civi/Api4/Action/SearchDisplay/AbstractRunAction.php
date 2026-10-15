@@ -8,6 +8,7 @@ use Civi\Api4\Query\SqlField;
 use Civi\Api4\SearchDisplay;
 use Civi\Api4\Utils\CoreUtil;
 use Civi\Api4\Utils\FormattingUtil;
+use Civi\Search\Display;
 
 /**
  * Base class for running a search.
@@ -134,6 +135,15 @@ abstract class AbstractRunAction extends \Civi\Api4\Generic\AbstractAction {
     $this->_apiParams['checkPermissions'] = $this->savedSearch['api_params']['checkPermissions'] = empty($this->display['acl_bypass']);
     $this->display['settings']['columns'] ??= [];
 
+    // Get auto columns
+    if ('auto' === ($this->display['settings']['columnMode'] ?? NULL)) {
+      $defaultDisplay = \Civi\Api4\SearchDisplay::getDefault(FALSE)
+        ->setSavedSearch($this->savedSearch)
+        ->setType($this->display['type'])
+        ->execute()->single();
+      $this->display['settings']['columns'] = $defaultDisplay['settings']['columns'];
+    }
+
     $this->processResult($result);
   }
 
@@ -232,17 +242,17 @@ abstract class AbstractRunAction extends \Civi\Api4\Generic\AbstractAction {
         if ($this->hasValue($column['label']) && (!empty($column['forceLabel']) || $this->hasValue($out['val']))) {
           $out['label'] = $this->replaceTokens($column['label'], $data, 'view');
         }
-        if (!empty($column['link'])) {
+        if (!empty($column['link']) && $this->hasValue($out['val'])) {
           $links = $this->formatFieldLinks($column, $data, $out['val']);
           if ($links) {
             $out['links'] = $links;
           }
         }
-        elseif (!empty($column['editable']) && !$column['rewrite'] && empty($settings['editableRow']['disable'])) {
+        elseif (!empty($column['editable']) && empty($settings['editableRow']['disable'])) {
           $edit = $this->formatEditableColumn($column, $data);
           if ($edit) {
             // When internally processing an inline-edit, get all metadata
-            if (isset($this->rowKey) && isset($this->values) && array_key_exists($column['key'], $this->values)) {
+            if (isset($this->rowKey, $this->values) && array_key_exists($column['key'], $this->values)) {
               $out['edit'] = $edit;
             }
             // Otherwise, the client only needs a boolean
@@ -279,6 +289,11 @@ abstract class AbstractRunAction extends \Civi\Api4\Generic\AbstractAction {
       case 'buttons':
       case 'menu':
         $out = $this->formatLinksColumn($column, $data);
+        break;
+
+      case 'subsearch':
+        $out = $this->computeSubsearchColumn($column, $data);
+        $out['val'] = $this->rewrite($column['rewrite'] ?? '', $data);
         break;
     }
     // Format tooltip
@@ -378,7 +393,7 @@ abstract class AbstractRunAction extends \Civi\Api4\Generic\AbstractAction {
    * @param int|null $index
    * @return array
    */
-  protected function getCssStyles(array $styleRules, array $data, ?int $index = NULL) {
+  protected function getCssStyles(array $styleRules, array $data, ?int $index = NULL): array {
     $classes = [];
     foreach ($styleRules as $clause) {
       $cssClass = $clause[0] ?? '';
@@ -535,7 +550,9 @@ abstract class AbstractRunAction extends \Civi\Api4\Generic\AbstractAction {
   private function formatFieldLinks($column, $data, $value): array {
     $links = [];
     foreach ((array) $value as $index => $val) {
-      $link = $this->formatLink($column['link'], $data, FALSE, $val, $index);
+      // If contents of field are multi-valued, pass $index to formatLink(), otherwise NULL
+      // This tells it whether to select a single value or all values in a multivalued token
+      $link = $this->formatLink($column['link'], $data, FALSE, $val, is_array($value) ? $index : NULL);
       if ($link) {
         // Style rules get appled to each link
         if (!empty($column['cssRules'])) {
@@ -573,6 +590,38 @@ abstract class AbstractRunAction extends \Civi\Api4\Generic\AbstractAction {
   }
 
   /**
+   * Compute subsearch search column
+   */
+  private function computeSubsearchColumn($column, $data): array {
+    $out = [
+      'subsearch' => [
+        'search' => $column['subsearch']['search'],
+        'display' => $column['subsearch']['display'],
+        // this gives us a full key for settings in the result - see addSubsearchDisplaySettings
+        'search_and_display' => "{$column['subsearch']['search']}.{$column['subsearch']['display']}",
+        'filters' => [],
+        'subsearch_mode' => $column['subsearch']['subsearch_mode'] ?? 'dropdown',
+      ],
+    ];
+
+    foreach ($column['subsearch']['filters'] as $filterSetting) {
+      // Use parent_field from column data
+      if (isset($filterSetting['parent_field'])) {
+        $value = $data[$filterSetting['parent_field']] ?? NULL;
+      }
+      // Use fixed value
+      else {
+        $value = $filterSetting['value'] ?? NULL;
+      }
+      if (isset($value)) {
+        $out['subsearch']['filters'][$filterSetting['subsearch_field']] = $value;
+      }
+    }
+
+    return $out;
+  }
+
+  /**
    * Format a link to resolve tokens and form the url.
    *
    * There are 3 ways a link can be declared:
@@ -584,13 +633,13 @@ abstract class AbstractRunAction extends \Civi\Api4\Generic\AbstractAction {
    * @param array $data
    * @param bool $allowMultiple
    * @param string|NULL $text
-   * @param int $index
+   * @param int|null $index
    * @return array|null
    * @throws \CRM_Core_Exception
    */
-  protected function formatLink(array $link, array $data, bool $allowMultiple = FALSE, ?string $text = NULL, $index = 0): ?array {
+  protected function formatLink(array $link, array $data, bool $allowMultiple = FALSE, ?string $text = NULL, ?int $index = NULL): ?array {
     $useApi = (!empty($link['entity']) && !empty($link['action']));
-    $originalData = $data;
+    // When rendering multiple links, gather multivalued token values
     if (isset($index)) {
       foreach ($data as $key => $value) {
         if (is_array($value)) {
@@ -619,8 +668,6 @@ abstract class AbstractRunAction extends \Civi\Api4\Generic\AbstractAction {
     elseif (!$this->checkLinkAccess($link, $data)) {
       return NULL;
     }
-    // FIXME: We should use $originalData so button links can render tokens correctly. But
-    // this doesn't match the getLinks() behavior so is out of scope for now.
     $link['text'] = $text ?? $this->replaceTokens($link['text'], $data, 'view');
     if (!empty($link['task'])) {
       $keys = ['task', 'text', 'title', 'icon', 'style'];
@@ -630,8 +677,7 @@ abstract class AbstractRunAction extends \Civi\Api4\Generic\AbstractAction {
       if (($link['csrf'] ?? NULL) === 'qfKey') {
         $query['qfKey'] = $this->getQfKey($link['path']);
       }
-      // We use original data so that tokens which rely on array-based columns are correctly rendered.
-      $path = $this->replaceTokens($link['path'], $originalData, 'url');
+      $path = $this->replaceTokens($link['path'], $data, 'url');
       if (!$path) {
         // Return null if `$link[path]` is empty or if any tokens do not resolve
         return NULL;
@@ -902,9 +948,11 @@ abstract class AbstractRunAction extends \Civi\Api4\Generic\AbstractAction {
         ]);
         $link['path'] = $getLinks[0]['path'] ?? NULL;
         $link['conditions'] = array_merge($link['conditions'], $getLinks[0]['conditions'] ?? []);
-        // This is a bit clunky, the function_join_field gets un-munged later by $this->getJoinFromAlias()
+
+        // Uh oh. Column contains multiple values but token calls for a single value. What to do?
+        // This is a bit clunky, the function_join_field gets un-munged later by $this->addSelectExpression()
         if ($this->canAggregate($link['prefix'] . $idKey)) {
-          $link['prefix'] = 'GROUP_CONCAT_' . str_replace('.', '_', $link['prefix']);
+          $link['prefix'] = 'MIN_' . str_replace('.', '_', $link['prefix']);
         }
         if ($link['prefix']) {
           $link['path'] = str_replace('[', '[' . $link['prefix'], $link['path']);
@@ -916,14 +964,13 @@ abstract class AbstractRunAction extends \Civi\Api4\Generic\AbstractAction {
         $link['conditions'] = array_merge($link['conditions'], $task['conditions'] ?? []);
         // Convert legacy tasks (which have a url)
         if (!empty($task['crmPopup'])) {
-          $idField = CoreUtil::getIdFieldName($link['entity']);
           $link['path'] = \CRM_Utils_JS::decode($task['crmPopup']['path']);
           $data = \CRM_Utils_JS::getRawProps($task['crmPopup']['data']);
           // Find the special key that combines selected ids and replace it with id token
           $idsKey = array_search("ids.join(',')", $data);
           unset($data[$idsKey], $link['task']);
           $amp = strpos($link['path'], '?') ? '&' : '?';
-          $link['path'] .= $amp . $idField . '=[' . $link['prefix'] . $idKey . ']';
+          $link['path'] .= $amp . $idsKey . '=[' . $link['prefix'] . $idKey . ']';
           // Add the rest of the data items
           foreach ($data as $dataKey => $dataRaw) {
             $link['path'] .= '&' . $dataKey . '=' . \CRM_Utils_JS::decode($dataRaw);
@@ -984,8 +1031,8 @@ abstract class AbstractRunAction extends \Civi\Api4\Generic\AbstractAction {
       try {
         $this->tasks = SearchDisplay::getSearchTasks()
           ->setCheckPermissions($this->getCheckPermissions())
-          ->setSavedSearch($this->getSavedSearch())
-          ->setDisplay($this->getDisplay())
+          ->setSavedSearch($this->getSavedSearchParam())
+          ->setDisplay($this->getDisplayParam())
           ->execute()
           ->indexBy('name');
       }
@@ -1234,24 +1281,36 @@ abstract class AbstractRunAction extends \Civi\Api4\Generic\AbstractAction {
   }
 
   /**
-   * @param string $tokenExpr
+   * @param string|null $tokenExpr
    * @param array $data
    * @param string $format view|raw|url
-   * @return string
+   * @return string|null
    */
-  private function replaceTokens($tokenExpr, $data, $format) {
-    foreach ($this->getTokens($tokenExpr ?? '') as $token) {
-      $val = $data[$token] ?? NULL;
+  private function replaceTokens(?string $tokenExpr, array $data, string $format): ?string {
+    if (!$tokenExpr) {
+      return $tokenExpr;
+    }
+    foreach (\CRM_Utils_String::getSquareTokens($tokenExpr) as $token) {
+      $val = $data[$token['content']] ?? NULL;
       if (isset($val) && $format === 'view') {
-        $dataType = $this->getSelectExpression($token)['dataType'] ?? NULL;
-        $val = $this->formatViewValue($token, $val, $data, $dataType);
+        $dataType = $this->getSelectExpression($token['content'])['dataType'] ?? NULL;
+        $val = $this->formatViewValue($token['content'], $val, $data, $dataType);
       }
-      $replacement = implode(', ', (array) $val);
-      // A missing token value in a url invalidates it
-      if ($format === 'url' && (!isset($replacement) || $replacement === '')) {
-        return NULL;
+      // Convert array to string. Add space to user-facing display value.
+      $separator = $format === 'view' ? ', ' : ',';
+      $replacement = implode($separator, (array) $val);
+      // A missing token in a url invalidates it
+      if ($format === 'url' && $replacement === '') {
+        // Required token - invalidate the whole url
+        if ($token['qualifier'] !== '?') {
+          return NULL;
+        }
+        // Optional token - remove url arg
+        $tokenRegex = '\w+=' . preg_quote($token['token'], '/');
+        $tokenExpr = preg_replace("/([?&])$tokenRegex&?/", '$1', $tokenExpr);
+        $tokenExpr = rtrim($tokenExpr, '&');
       }
-      $tokenExpr = str_replace('[' . $token . ']', ($replacement ?? ''), ($tokenExpr ?? ''));
+      $tokenExpr = str_replace($token['token'], $replacement, ($tokenExpr ?? ''));
     }
     return $tokenExpr;
   }
@@ -1289,7 +1348,7 @@ abstract class AbstractRunAction extends \Civi\Api4\Generic\AbstractAction {
         break;
 
       case 'Money':
-        $currencyField = $this->getCurrencyField($key);
+        $currencyField = $this->getCurrencyField($key) ?? '';
         $currency = is_string($data[$currencyField] ?? NULL) ? $data[$currencyField] : NULL;
         $formatted = \Civi::format()->money($rawValue, $currency);
         break;
@@ -1459,6 +1518,11 @@ abstract class AbstractRunAction extends \Civi\Api4\Generic\AbstractAction {
           $this->addSelectExpression($token);
         }
       }
+      foreach ($column['subsearch']['filters'] ?? [] as $filter) {
+        if (!empty($filter['parent_field'])) {
+          $this->addSelectExpression($filter['parent_field']);
+        }
+      }
 
       // Select id, value & grouping for in-place editing
       if (!empty($column['editable'])) {
@@ -1506,9 +1570,14 @@ abstract class AbstractRunAction extends \Civi\Api4\Generic\AbstractAction {
         $field = $clause['fields'][$fieldAlias];
         if (!empty($field['input_attrs']['control_field']) && strpos($fieldAlias, ':')) {
           $prefix = substr($fieldAlias, 0, strrpos($fieldAlias, $field['name']));
-          // Don't need to add the field if a suffixed version already exists
-          if (!$this->getSelectExpression($prefix . $field['input_attrs']['control_field'] . ':label')) {
-            $this->addSelectExpression($prefix . $field['input_attrs']['control_field']);
+          $controlField = $prefix . $field['input_attrs']['control_field'];
+          if (
+            // Don't need to add the field if a suffixed version already exists
+            !array_intersect(array_keys($this->getSelectClause()), ["$controlField:label", "$controlField:name"]) &&
+            // Don't add if it would cause aggregation problems
+            !$this->canAggregate($controlField)
+          ) {
+            $this->addSelectExpression($controlField);
           }
         }
       }
@@ -1616,13 +1685,15 @@ abstract class AbstractRunAction extends \Civi\Api4\Generic\AbstractAction {
   }
 
   /**
+   * Add an expression to the select clause.
+   *
    * @param string $expr
    */
   protected function addSelectExpression(string $expr):void {
     if (!$this->getSelectExpression($expr)) {
-      // Tokens for aggregated columns start with 'GROUP_CONCAT_'
-      if (str_starts_with($expr, 'GROUP_CONCAT_')) {
-        $expr = 'GROUP_CONCAT(UNIQUE ' . $this->getJoinFromAlias(explode('_', $expr, 3)[2]) . ') AS ' . $expr;
+      // Tokens for aggregated columns get formatted with 'MIN_' by $this->preprocessLink()
+      if (str_starts_with($expr, 'MIN_')) {
+        $expr = 'MIN(' . $this->getJoinFromAlias(explode('_', $expr, 2)[1]) . ') AS ' . $expr;
       }
       $this->_apiParams['select'][] = $expr;
       // Force-reset cache so it gets rebuilt with the new select param
@@ -1738,7 +1809,7 @@ abstract class AbstractRunAction extends \Civi\Api4\Generic\AbstractAction {
         }
         $displays = \CRM_Utils_Array::findAll(
           $fieldset,
-          ['#tag' => $this->display['type:name'], 'search-name' => $this->savedSearch['name'], 'display-name' => $this->display['name']]
+          ['search-name' => $this->savedSearch['name'], 'display-name' => $this->display['name']]
         );
         if (!$displays) {
           continue;
@@ -1753,6 +1824,42 @@ abstract class AbstractRunAction extends \Civi\Api4\Generic\AbstractAction {
           // Set the fieldset for this display (if it is in one and we haven't fallen back to the whole form)
           // TODO: This just uses the first fieldset, but there could be multiple. Potentially could use filters to match it.
           $afform['searchDisplay']['fieldset'] = $key === 'form' ? [] : $fieldset;
+        }
+      }
+      // If not found, check if this is a subsearch embedded within another display
+      if (!$afform['searchDisplay']) {
+        $displayTags = array_column(Display::getDisplayTypes(['name']), 'name');
+        $displayTags[] = 'crm-search-display';
+        $displays = \CRM_Utils_Array::findAll(
+          $afform['layout'],
+         fn($element) => isset($element['#tag']) && in_array($element['#tag'], $displayTags, TRUE)
+        );
+        foreach ($displays as $display) {
+          if (empty($display['display-name'])) {
+            continue;
+          }
+          $parentDisplay = SearchDisplay::get(FALSE)
+            ->addSelect('settings')
+            ->addWhere('name', '=', $display['display-name'])
+            ->addWhere('saved_search_id.name', '=', $display['search-name'])
+            ->execute()->first();
+          foreach ($parentDisplay['settings']['columns'] ?? [] as $column) {
+            if (isset($column['subsearch']) &&
+              ($column['subsearch']['display'] ?? '') === $this->display['name'] &&
+              ($column['subsearch']['search'] ?? '') === $this->savedSearch['name']
+            ) {
+              $afform['searchDisplay'] = [
+                'count' => 1,
+                '#tag' => NULL,
+                'search-name' => $this->savedSearch['name'],
+                'display-name' => $this->display['name'],
+                // When embedded within another display, filters from fieldset do not apply
+                'fieldset' => [],
+                'filters' => NULL,
+              ];
+              break 2;
+            }
+          }
         }
       }
       // For security, Afform must contain the search display.
@@ -1925,7 +2032,7 @@ abstract class AbstractRunAction extends \Civi\Api4\Generic\AbstractAction {
     // First pass: gather raw data from the where & having clauses
     $data = [];
     foreach (array_merge($this->_apiParams['where'], $this->_apiParams['having'] ?? []) as $clause) {
-      if ($clause[1] === '=' || $clause[1] === 'IN') {
+      if ($clause[1] === '=' || $clause[1] === 'IN' || $clause[1] === 'CONTAINS') {
         $data[$clause[0]] = $clause[2];
       }
     }

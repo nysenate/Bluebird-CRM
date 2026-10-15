@@ -84,6 +84,9 @@ function _civiimport_civicrm_get_import_tables(): array {
   if (isset(Civi::$statics['civiimport_tables'])) {
     return Civi::$statics['civiimport_tables'];
   }
+  if (CRM_Core_BAO_Domain::isDBUpdateRequired() && !\CRM_Core_BAO_SchemaHandler::checkIfFieldExists('civicrm_user_job', 'search_display_id')) {
+    return [];
+  }
   // label may not exist yet as a field in the table, e.g. if the upgrade
   // hasn't run yet. If so, then always use '' as label.
   $labelField = CRM_Core_BAO_Domain::isDBVersionAtLeast('6.8.alpha1') ? '`user_job`.`label`, ' : "'' AS `label`, ";
@@ -105,7 +108,7 @@ function _civiimport_civicrm_get_import_tables(): array {
   $importEntities = [];
   while ($tables->fetch()) {
     $tableName = json_decode($tables->metadata, TRUE)['DataSource']['table_name'];
-    if (!$tableName || !CRM_Utils_Rule::alphanumeric($tableName) || !CRM_Core_DAO::singleValueQuery('SHOW TABLES LIKE %1', [1 => [$tableName, 'String']])) {
+    if (!$tableName || !CRM_Utils_Rule::alphanumeric($tableName)) {
       continue;
     }
     $createdBy = !$tables->display_name ? '' : ' (' . E::ts('created by %1', [1 => $tables->display_name]) . ')';
@@ -122,6 +125,13 @@ function _civiimport_civicrm_get_import_tables(): array {
       'entity' => $tables->entity,
     ];
   }
+
+  // Verify the tables exist; remove any that don't.
+  $tablesToVerify = array_column($importEntities, 'table_name', 'user_job_id');
+  $existingTables = Civi::schemaHelper()->getExistingTables($tablesToVerify);
+  $existingTables = array_intersect($tablesToVerify, $existingTables);
+  $importEntities = array_intersect_key($importEntities, $existingTables);
+
   Civi::$statics['civiimport_tables'] = $importEntities;
   return $importEntities;
 }

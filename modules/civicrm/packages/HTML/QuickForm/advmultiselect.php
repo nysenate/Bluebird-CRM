@@ -499,7 +499,7 @@ class HTML_QuickForm_advmultiselect extends HTML_QuickForm_select
                                         $this->_parseAttributes($attributes));
             }
             break;
-        default;
+        default:
             return PEAR::throwError('Argument 1 of HTML_QuickForm_advmultiselect::' .
                        'setButtonAttributes has unexpected value',
                        HTML_QUICKFORM_ADVMULTISELECT_ERROR_INVALID_INPUT,

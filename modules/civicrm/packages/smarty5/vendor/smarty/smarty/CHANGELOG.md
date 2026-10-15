@@ -6,6 +6,56 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [5.7.0] - 2025-11-19
+- PHP 8.5 support
+
+
+## [5.6.0] - 2025-10-03
+- Added support for shorttags in functions [#1005](https://github.com/smarty-php/smarty/issues/1005)
+
+
+## [5.5.2] - 2025-08-26
+
+
+- Fixed escaping of array/object keys in debug_print_var
+
+## [5.5.1] - 2025-05-19
+- Fix missing support for loading modifiercompilers from plugin dir in BCPluginsAdapter [#1132](https://github.com/smarty-php/smarty/pull/1132)
+
+
+## [5.5.0] - 2025-05-03
+- Support trailing comma in array [#1013](https://github.com/smarty-php/smarty/issues/1013)
+
+
+## [5.4.5] - 2025-04-15
+- Fixed deprecation notice in StringEval in PHP8.4 [#1119](https://github.com/smarty-php/smarty/issues/1119)
+
+
+## [5.4.4] - 2025-04-13
+- Fix syntax error occurring when registering a function plugin that ends with the string 'close' [#1122](https://github.com/smarty-php/smarty/issues/1122)
+- Replace SMARTY_VERSION constant with $smarty.version in debug.tpl [#1073](https://github.com/smarty-php/smarty/issues/1073)
+
+
+## [5.4.3] - 2024-12-23
+- Fix PHP backtraces by qualifying/replacing `call_user_func_array` calls [#1074](https://github.com/smarty-php/smarty/issues/1074)
+
+
+## [5.4.2] - 2024-11-20
+
+
+- Support the deprecations introduced in PHP 8.4 and added tests for PHP 8.4 [#1043](https://github.com/smarty-php/smarty/pull/1043)
+
+## [5.4.1] - 2024-08-29
+
+
+- Enable (and fix) unit tests for Windows [#1046](https://github.com/smarty-php/smarty/pull/1046)
+- Fix the use of "extends:" to define the inheritance tree on Windows [#1018](https://github.com/smarty-php/smarty/issues/1018)
+
+## [5.4.0] - 2024-08-14
+- Fixing forced OpCache invalidation on every template include, which is resulting in fast raising wasted OpCache memory [#1007](https://github.com/smarty-php/smarty/issues/1007) 
+- Improvement of auto-escaping [#1030](https://github.com/smarty-php/smarty/pull/1030)
+
+
 ## [5.3.1] - 2024-06-16
 - Fixed error when using section with nocache [#1034](https://github.com/smarty-php/smarty/issues/1034)
 

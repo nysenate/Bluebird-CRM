@@ -88,6 +88,7 @@ class Image extends File
      *
      * @param AbstractDriver $driver
      * @param mixed  $core
+     * NYSS #19113 - Function signature modified for php8.4
      */
     public function __construct(?AbstractDriver $driver = null, $core = null)
     {

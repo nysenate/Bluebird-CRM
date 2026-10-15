@@ -98,10 +98,12 @@ class CRM_Member_Page_MembershipType extends CRM_Core_Page {
     $this->assign('action');
     $membershipType = (array) MembershipType::get()
       ->addOrderBy('weight')
+      ->addWhere('domain_id', '=', 'current_domain')
       ->setSelect([
         'id',
         'domain_id',
-        'name',
+        'title',
+        'frontend_title',
         'fixed_period_start_day',
         'fixed_period_rollover_day',
         'max_related',

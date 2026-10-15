@@ -38,17 +38,8 @@ class CRM_Contribute_Form_UpdateBilling extends CRM_Contribute_Form_Contribution
       }
     }
 
-    if ($this->_coid) {
-      $this->_paymentProcessor = CRM_Financial_BAO_PaymentProcessor::getProcessorForEntity($this->_coid, 'contribute', 'info');
-      $this->_paymentProcessor['object'] = CRM_Financial_BAO_PaymentProcessor::getProcessorForEntity($this->_coid, 'contribute', 'obj');
-    }
-
     if ($this->getMembershipID()) {
-      $this->_paymentProcessor = CRM_Financial_BAO_PaymentProcessor::getProcessorForEntity($this->getMembershipID(), 'membership', 'info');
-      $this->_paymentProcessor['object'] = CRM_Financial_BAO_PaymentProcessor::getProcessorForEntity($this->getMembershipID(), 'membership', 'obj');
-      $membershipTypes = CRM_Member_PseudoConstant::membershipType();
-      $membershipTypeId = CRM_Core_DAO::getFieldValue('CRM_Member_DAO_Membership', $this->getMembershipID(), 'membership_type_id');
-      $this->assign('membershipType', $membershipTypes[$membershipTypeId] ?? NULL);
+      $this->assign('membershipType', $this->getMembershipValue('membership_type_id:name'));
       $this->_mode = 'auto_renew';
     }
 
@@ -342,7 +333,7 @@ class CRM_Contribute_Form_UpdateBilling extends CRM_Contribute_Form_Contribution
     $session = CRM_Core_Session::singleton();
     $userID = $session->get('userID');
     if ($userID && $status) {
-      $session->setStatus($status, $msgTitle, $msgType);
+      CRM_Core_Session::setStatus($status, $msgTitle, $msgType);
     }
     elseif (!$userID) {
       if ($status) {

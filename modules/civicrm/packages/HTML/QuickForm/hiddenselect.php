@@ -92,7 +92,7 @@ class HTML_QuickForm_hiddenselect extends HTML_QuickForm_select
                 if ($val == $this->_options[$i]['attr']['value']) {
                     $strHtml .= $tabs . '<input' . $this->_getAttrString(array(
                         'type'  => 'hidden',
-                        'name'  => $name,
+                        'name'  => htmlspecialchars($name, ENT_QUOTES | ENT_HTML401),
                         'value' => $val
                     )) . " />\n" ;
                 }

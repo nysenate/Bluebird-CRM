@@ -1,0 +1,16 @@
+diff --git a/civicrm/custom/ext/uk.co.vedaconsulting.mosaico/vendor/intervention/image/src/Intervention/Image/ImageManagerStatic.php b/civicrm/custom/ext/uk.co.vedaconsulting.mosaico/vendor/intervention/image/src/Intervention/Image/ImageManagerStatic.php
+index a1b564264..f292f7a53 100644
+--- a/civicrm/custom/ext/uk.co.vedaconsulting.mosaico/vendor/intervention/image/src/Intervention/Image/ImageManagerStatic.php
++++ b/civicrm/custom/ext/uk.co.vedaconsulting.mosaico/vendor/intervention/image/src/Intervention/Image/ImageManagerStatic.php
+@@ -17,8 +17,10 @@ class ImageManagerStatic
+      * Creates a new instance
+      *
+      * @param ImageManager $manager
++     *
++     * NYSS #19113 - Function signature modified for php8.4
+      */
+-    public function __construct(ImageManager $manager = null)
++    public function __construct(?ImageManager $manager = null)
+     {
+         self::$manager = $manager ? $manager : new ImageManager;
+     }

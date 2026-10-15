@@ -17,7 +17,7 @@ class GroupSubscription extends AbstractBehavior implements EventSubscriberInter
   /**
    * @return array
    */
-  public static function getSubscribedEvents() {
+  public static function getSubscribedEvents(): array {
     return [
       'civi.afform.sort.prefill' => 'onAfformSortPrefill',
       'civi.afform.prefill' => ['onAfformPrefill', 99],
@@ -44,7 +44,7 @@ class GroupSubscription extends AbstractBehavior implements EventSubscriberInter
     return \CRM_Core_Component::isEnabled('CiviMail') ? 'double-opt-in' : 'no-confirm';
   }
 
-  public static function getModes(string $contactType): array {
+  public static function getModes(string $entityName): array {
     $modes = [];
     if (\CRM_Core_Component::isEnabled('CiviMail')) {
       $modes[] = [

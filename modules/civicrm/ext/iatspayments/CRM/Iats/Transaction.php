@@ -157,7 +157,7 @@ class CRM_Iats_Transaction {
           'contribution_recur_id' => $contribution['contribution_recur_id'],
         ));
         // watchdog('iats_civicrm','repeat transaction result <pre>@params</pre>',array('@params' => print_r($pending,TRUE)));.
-        $contribution['id'] = CRM_Utils_Array::value('id', $contributionResult);
+        $contribution['id'] = $contributionResult['id'] ?? NULL;
       }
       catch (Exception $e) {
         // Ignore this, though perhaps I should log it.
@@ -227,7 +227,7 @@ class CRM_Iats_Transaction {
         $contributionResult = [];
       }
       // Pass back the created id indirectly since I'm calling by reference.
-      $contribution['id'] = CRM_Utils_Array::value('id', $contributionResult);
+      $contribution['id'] = $contributionResult['id'] ?? NULL;
       // Connect to a membership if requested.
       if (!empty($contribution['id']) && !empty($contribution['membership_id'])) {
         try {

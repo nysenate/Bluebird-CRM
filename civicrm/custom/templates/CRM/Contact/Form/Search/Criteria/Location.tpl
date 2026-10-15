@@ -38,59 +38,65 @@
         <script type="text/javascript">
           {literal}
           CRM.$(function($) {
-            $('#postal-code-range-toggle').change(function() {
-              if ($(this).is(':checked')) {
-                $('.postal_code_range-wrapper').show();
-                $('.postal_code-wrapper').hide().find('input').val('');
-              } else {
-                $('.postal_code-wrapper').show();
-                $('.postal_code_range-wrapper').hide().find('input').val('');
+              $('#postal-code-range-toggle').change(function() {
+                  if ($(this).is(':checked')) {
+                      $('.postal_code_range-wrapper').show();
+                      $('.postal_code-wrapper, .prox_distance-wrapper').hide().find('input').val('');
+                  } else {
+                      $('.postal_code-wrapper, .prox_distance-wrapper').show();
+                      $('.postal_code_range-wrapper').hide().find('input').val('');
+                  }
+              });
+              if ($('#postal_code_low').val() || $('#postal_code_high').val()) {
+                  $('#postal-code-range-toggle').prop('checked', true).change();
               }
-            });
-            if ($('#postal_code_low').val() || $('#postal_code_high').val()) {
-              $('#postal-code-range-toggle').prop('checked', true).change();
-            }
           });
           {/literal}
         </script>
       {/if}
       {if $form.prox_distance.html}
-        <div class="crm-field-wrapper">
+        <div class="crm-field-wrapper prox_distance-wrapper">
           {$form.prox_distance.label}<br />
           {$form.prox_distance.html}&nbsp;{$form.prox_distance_unit.html}
         </div>
       {/if}
 
-      <div id="streetAddress" class="crm-field-wrapper">
-        {$form.street_address.label}<br />
-        {$form.street_address.html|crmAddClass:big}
+      {if !empty($form.street_address.html)}
+        <div id="streetAddress" class="crm-field-wrapper">
+            {$form.street_address.label}<br />
+            {$form.street_address.html|crmAddClass:big}
+            {if $parseStreetAddress}
+                <div>
+                    <a href="#" title="{ts escape='htmlattribute'}Use Address Elements{/ts}" rel="addressElements" class="address-elements-toggle">{ts}Use Address Elements{/ts}</a>
+                </div>
+            {/if}
+        </div>
         {if $parseStreetAddress}
-          <div>
-            <a href="#" title="{ts escape='htmlattribute'}Use Address Elements{/ts}" rel="addressElements" class="address-elements-toggle">{ts}Use Address Elements{/ts}</a>
-          </div>
+            <div id="addressElements" class="crm-field-wrapper" style="display: none;">
+                <table class="crm-block crm-form-block advanced-search-address-elements">
+                    <tr><td>{$form.street_number.label}<br />{$form.street_number.html}<br /><span class="description nowrap">{ts}or ODD / EVEN{/ts}</td>
+                        <td>{$form.street_name.label}<br />{$form.street_name.html}</td>
+                        <td>{$form.street_unit.label}<br />{$form.street_unit.html|crmAddClass:four}</td>
+                    </tr>
+                    <tr>
+                        <td colspan="3"><a href="#" title="{ts escape='htmlattribute'}Use Complete Address{/ts}" rel="streetAddress" class="address-elements-toggle">{ts}Use Street Address{/ts}</a></td>
+                    </tr>
+                </table>
+            </div>
         {/if}
-      </div>
-      {if $parseStreetAddress}
-        <div id="addressElements" class="crm-field-wrapper" style="display: none;">
-          <table class="crm-block crm-form-block advanced-search-address-elements">
-            <tr><td>{$form.street_number.label}<br />{$form.street_number.html}<br /><span class="description nowrap">{ts}or ODD / EVEN{/ts}</td>
-              <td>{$form.street_name.label}<br />{$form.street_name.html}</td>
-              <td>{$form.street_unit.label}<br />{$form.street_unit.html|crmAddClass:four}</td>
-            </tr>
-            <tr>
-              <td colspan="3"><a href="#" title="{ts escape='htmlattribute'}Use Complete Address{/ts}" rel="streetAddress" class="address-elements-toggle">{ts}Use Street Address{/ts}</a></td>
-            </tr>
-          </table>
+      {/if}
+      {if !empty($form.city.html)}
+        <div class="crm-field-wrapper">
+            {$form.city.label}<br />
+            {$form.city.html}
         </div>
       {/if}
-      <div class="crm-field-wrapper">
-        {$form.city.label}<br />
-        {$form.city.html}
-      </div>
-      <div class="crm-field-wrapper">
-        {$form.state_province.label}<br />
-        {$form.state_province.html}
-      </div>
+      {if !empty($form.state_province.html)}
+        <div class="crm-field-wrapper">
+            {$form.state_province.label}<br />
+            {$form.state_province.html}
+        </div>
+      {/if}
     </td>
     <td>
       {if $addressGroupTree}

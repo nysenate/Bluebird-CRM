@@ -1,0 +1,70 @@
+diff --git a/drupal/includes/database/select.inc b/drupal/includes/database/select.inc
+index cabb242df..c4a45be93 100644
+--- a/drupal/includes/database/select.inc
++++ b/drupal/includes/database/select.inc
+@@ -158,8 +158,10 @@ interface SelectQueryInterface extends QueryConditionInterface, QueryAlterableIn
+    *
+    * @return
+    *   An associative array of all placeholder arguments for this query.
++   *
++   * NYSS #19113 - Fix Php8.4 warnings
+    */
+-  public function getArguments(QueryPlaceholderInterface $queryPlaceholder = NULL);
++  public function getArguments(?QueryPlaceholderInterface $queryPlaceholder = NULL);
+ 
+   /* Query building operations */
+ 
+@@ -478,8 +480,10 @@ interface SelectQueryInterface extends QueryConditionInterface, QueryAlterableIn
+    *
+    * @return
+    *   TRUE if the validation was successful, FALSE if not.
++   *
++   * NYSS #19113 - Fix Php8.4 warnings
+    */
+-  public function preExecute(SelectQueryInterface $query = NULL);
++  public function preExecute(?SelectQueryInterface $query = NULL);
+ 
+   /**
+    * Helper function to build most common HAVING conditional clauses.
+@@ -696,7 +700,8 @@ class SelectQueryExtender implements SelectQueryInterface {
+     return $this->query->getUnion();
+   }
+ 
+-  public function getArguments(QueryPlaceholderInterface $queryPlaceholder = NULL) {
++  /** NYSS #19113 - Fix Php8.4 warnings */
++  public function getArguments(?QueryPlaceholderInterface $queryPlaceholder = NULL) {
+     return $this->query->getArguments($queryPlaceholder);
+   }
+ 
+@@ -704,7 +709,8 @@ class SelectQueryExtender implements SelectQueryInterface {
+     return $this->query->isPrepared();
+   }
+ 
+-  public function preExecute(SelectQueryInterface $query = NULL) {
++  /** NYSS #19113 - Fix Php8.4 warnings */
++  public function preExecute(?SelectQueryInterface $query = NULL) {
+     // If no query object is passed in, use $this.
+     if (!isset($query)) {
+       $query = $this;
+@@ -1228,7 +1234,8 @@ class SelectQuery extends Query implements SelectQueryInterface {
+     return $this->union;
+   }
+ 
+-  public function getArguments(QueryPlaceholderInterface $queryPlaceholder = NULL) {
++  /** NYSS #19113 - Fix Php8.4 warnings */
++  public function getArguments(?QueryPlaceholderInterface $queryPlaceholder = NULL) {
+     if (!isset($queryPlaceholder)) {
+       $queryPlaceholder = $this;
+     }
+@@ -1248,8 +1255,10 @@ class SelectQuery extends Query implements SelectQueryInterface {
+    *
+    * @return
+    *   TRUE if the validation was successful, FALSE if not.
++   *
++   * NYSS #19113 - Fix Php8.4 warnings
+    */
+-  public function preExecute(SelectQueryInterface $query = NULL) {
++  public function preExecute(?SelectQueryInterface $query = NULL) {
+     // If no query object is passed in, use $this.
+     if (!isset($query)) {
+       $query = $this;

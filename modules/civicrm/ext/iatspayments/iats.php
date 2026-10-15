@@ -715,9 +715,9 @@ function iats_civicrm_buildForm_CRM_Contribute_Form_UpdateSubscription(&$form) {
 function iats_civicrm_buildForm_CRM_Contribute_Form_UpdateBilling(&$form) {
   // add hidden form field for the contribution recur ID taken from URL
   // if not specified directly, look it up via a membership ID
-  $crid = CRM_Utils_Array::value('crid', $_GET);
+  $crid = $_GET['crid'] ?? NULL;
   if (!$crid) {
-    $mid = CRM_Utils_Array::value('mid', $_GET);
+    $mid = $_GET['mid'] ?? NULL;
     if ($mid) {
       try {
         $crid = civicrm_api3('Membership', 'getvalue', array(

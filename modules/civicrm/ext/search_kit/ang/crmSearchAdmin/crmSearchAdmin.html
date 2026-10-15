@@ -31,7 +31,7 @@
           <div class="btn-group" ng-if="$ctrl.afformEnabled && $ctrl.savedSearch.id && !$ctrl.savedSearch.is_template">
             <button type="button" ng-click="$ctrl.openAfformMenu = true;" class="btn dropdown-toggle btn-primary-outline" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
               <i class="crm-i fa-list-alt" role="img" aria-hidden="true"></i>
-              {{ ($ctrl.afformCount !== undefined) ? ($ctrl.afformCount === 1 ? ts('1 Form') : ts('%1 Forms', {1: $ctrl.afformCount})) : ts('Forms...') }}
+              {{ ($ctrl.afformCount !== undefined) ? (ts('1 Form', {plural: '%count Forms', count: $ctrl.afformCount})) : ts('Forms...') }}
               <span class="caret"></span>
             </button>
             <ul class="dropdown-menu dropdown-menu-right" ng-if=":: $ctrl.openAfformMenu">
@@ -81,6 +81,13 @@
                 <a ng-href="{{ display.acl_bypass ? '' : $ctrl.searchDisplayPath + '#/display/' + $ctrl.savedSearch.name + '/' + display.name }}" target="_blank">
                   <i class="crm-i {{ display.acl_bypass ? 'fa-unlock' : $ctrl.displayTypes[display.type].icon }}" role="img" aria-hidden="true"></i>
                   {{ display.label }}
+                </a>
+              </li>
+	      <li class="divider" role="separator"></li>
+              <li title="{{:: ts('Export this saved search for sharing or reuse') }}">
+                <a href crm-dialog-popup="crmSearchAdminExport" popup-data="$ctrl.savedSearch" popup-tpl="~/crmSearchAdmin/searchListing/export.html" title="{{:: ts('Export %1', {1: $ctrl.savedSearch.label}) }}">
+                  <i class="crm-i fa-download" role="img" aria-hidden="true"></i>
+                  {{ $ctrl.savedSearch.is_template ? ts('Export Template') : ts('Export Search') }}
                 </a>
               </li>
             </ul>

@@ -89,6 +89,31 @@ input[type=color] {
 }
 .crm-container #civicrm-dashboard .crm-dashlet-header h3 {
   font-size: 15px;
+  color: #fcfcfc !important;
+  margin: 0 50px 0 0 !important;
+}
+/* fix dashboard styles - possible shoreditch theme compatibility drift */
+.crm-container .crm-case-dashboard-buttons.float-right {
+  padding: 4px 0 !important;
+  margin: 4px 0 4px 2px !important;
+}
+
+.crm-container .crm-case-dashboard-buttons.float-right .crm-form-toggle-container{
+  display: inline-flex;
+}
+
+.crm-container .crm-case-dashboard-buttons.float-right + h3{
+  position: inherit;
+}
+
+/* case summary dashlet: bootstrap's ".label" badge component collides with
+   the report table's <td class="label"> cells */
+.crm-container #civicrm-dashboard table.report td.label {
+  display: table-cell !important;
+  padding: 10px 10px 4px 10px !important;
+  border: 1px solid #999999 !important;
+  background-color: #f6f6f6 !important;
+  color: inherit !important;
 }
 .crm-container .crm-dashboard-controls {
   margin-top: 0;
@@ -141,6 +166,11 @@ a#send-test {
 }
 #bootstrap-theme .crm-mosaico-template-item.thumbnail {
   display: block;
+}
+
+/* fix afform field alignment in CiviCRM 6.16 - possible shoreditch compatibility drift */
+.af-container.af-layout-inline > * {
+  flex: initial;
 }
 
 /*********** BELOW SHOULD BE TEMPORARY! *************/

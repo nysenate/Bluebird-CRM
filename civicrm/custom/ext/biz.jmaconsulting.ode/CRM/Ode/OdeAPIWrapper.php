@@ -19,7 +19,7 @@ class CRM_Ode_OdeAPIWrapper {
       case '4.siteemailaddress.get':
         $parsedResult = self::siteEmailAddressRespond($apiRequest, $result);
         $result->exchangeArray($parsedResult);
-        $result->count = count($parsedResult);
+        $result->rowCount = count($parsedResult);
         $event->setResponse($result);
         break;
 

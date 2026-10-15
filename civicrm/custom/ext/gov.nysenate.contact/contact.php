@@ -180,25 +180,24 @@ function contact_civicrm_pageRun(&$page) {
         //Civi::log()->debug('', array('$details' => $details));
         if ($details['name'] == 'Attachments') {
           foreach ($details['fields'] as $key => &$field) {
-            $doc = phpQuery::newDocument($field['field_value']);
-            $text = $doc->find('a')->text();
+            if (empty($field['field_value'])) {
+              continue;
+            }
+
+            $doc = \Dom\HTMLDocument::createFromString('<!DOCTYPE html><body>'.$field['field_value'], LIBXML_NOERROR);
+            $link = $doc->querySelector('a');
+            $text = $link ? $link->textContent : '';
             $maxLength = 35;
-            if (strlen($text) > $maxLength) {
-              $text = substr($text, 0, $maxLength).'...';
-              $doc->find('a')->text($text);
-              $field['field_value'] = $doc->html();
+            if (mb_strlen($text) > $maxLength) {
+              $link->textContent = mb_substr($text, 0, $maxLength).'...';
+              $field['field_value'] = $doc->body->innerHTML;
 
               if (!empty($viewCustomDataInline)) {
-                $viewCustomDataInline['fields'][$key]['field_value'] = $doc->html();
+                $viewCustomDataInline['fields'][$key]['field_value'] = $field['field_value'];
               }
 
               $modified = TRUE;
             }
-
-            // It's good practice to call unloadDocuments() when finished with
-            // phpQuery documents. Though, not the case here, big documents
-            // can consume a lot of memory. This releases the memory.
-            phpQuery::unloadDocuments($doc->getDocumentID());
 
             /*Civi::log()->debug('', array(
               //'$doc' => $doc,

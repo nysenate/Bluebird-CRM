@@ -132,7 +132,7 @@ class CRM_Activity_Form_Activity extends CRM_Contact_Form_Task {
   /**
    * @var array
    */
-  public $_groupTree;
+  public $_groupTree = [];
 
   public $_entityTagValues;
 
@@ -209,6 +209,7 @@ class CRM_Activity_Form_Activity extends CRM_Contact_Form_Task {
         'type' => 'datepicker',
         'label' => ts('Date'),
         'required' => TRUE,
+        'attributes' => ['formatType' => 'activityDateTime'],
       ],
       'followup_assignee_contact_id' => [
         'type' => 'entityRef',
@@ -618,8 +619,15 @@ class CRM_Activity_Form_Activity extends CRM_Contact_Form_Task {
     // Enable form element (ActivityLinks sets this true).
     $this->assign('suppressForm', FALSE);
 
+    // In create mode, reuse activity options from the followup_activity_type_id field since they've already been set there.
+    $activityTypeOptions = $this->_fields['followup_activity_type_id']['attributes'];
+    // But in edit mode, get all activity types (including disabled) so the frozen field correctly renders even for disabled types.
+    if ($this->_action & CRM_Core_Action::UPDATE) {
+      $activityTypeOptions = CRM_Activity_BAO_Activity::buildOptions('activity_type_id', 'get');
+    }
+
     $element = $this->add('select', 'activity_type_id', ts('Activity Type'),
-      $this->_fields['followup_activity_type_id']['attributes'],
+      $activityTypeOptions,
       FALSE, [
         'onchange' => "CRM.buildCustomData( 'Activity', this.value, false, false, false, false, false, false, {$this->_currentlyViewedContactId});",
         'class' => 'crm-select2 required',
@@ -751,7 +759,7 @@ class CRM_Activity_Form_Activity extends CRM_Contact_Form_Task {
 
     // if we're viewing, we're assigning different buttons than for adding/editing
     if ($this->_action & CRM_Core_Action::VIEW) {
-      if (isset($this->_groupTree)) {
+      if (!empty($this->_groupTree)) {
         CRM_Core_BAO_CustomGroup::buildCustomDataView($this, $this->_groupTree, FALSE, NULL, NULL, NULL, $this->_activityId);
       }
       // form should be frozen for view mode
@@ -1034,6 +1042,9 @@ class CRM_Activity_Form_Activity extends CRM_Contact_Form_Task {
 
     $activity = CRM_Activity_BAO_Activity::create($params);
 
+    // check and attach and files as needed
+    CRM_Core_BAO_File::processAttachment($params, 'civicrm_activity', $activity->id);
+
     // add tags if exists
     $tagParams = [];
     if (!empty($params['tag'])) {
@@ -1193,15 +1204,6 @@ class CRM_Activity_Form_Activity extends CRM_Contact_Form_Task {
   }
 
   /**
-   * For the moment keeping this the same as the original pulled from preProcess(). Also note the "s" at the end of the function name - planning to change that but in baby steps.
-   *
-   * @return string[]
-   */
-  public function getActivityTypeDisplayLabels() {
-    return CRM_Core_OptionGroup::values('activity_type', FALSE, FALSE, FALSE, 'AND v.value = ' . $this->_activityTypeId, 'label');
-  }
-
-  /**
    * For the moment this is just pulled from preProcess
    */
   public function assignActivityType() {
@@ -1209,30 +1211,21 @@ class CRM_Activity_Form_Activity extends CRM_Contact_Form_Task {
     $activityTypeNameAndLabel = ['machineName' => FALSE];
 
     if ($this->_activityTypeId) {
-      $activityTypeDisplayLabels = $this->getActivityTypeDisplayLabels();
-      if ($activityTypeDisplayLabels[$this->_activityTypeId]) {
-        $this->_activityTypeName = $activityTypeDisplayLabels[$this->_activityTypeId];
+      $activityTypeObj = new CRM_Activity_BAO_ActivityType($this->_activityTypeId);
+      $activityTypeNameAndLabel = $activityTypeObj->getActivityType();
+      // this is really label not name
+      $this->_activityTypeName = $activityTypeNameAndLabel['displayLabel'];
 
-        // At the moment this is duplicating other code in this section, but refactoring in small steps.
-        $activityTypeObj = new CRM_Activity_BAO_ActivityType($this->_activityTypeId);
-        $activityTypeNameAndLabel = $activityTypeObj->getActivityType();
+      if ($this->_currentlyViewedContactId) {
+        $displayName = CRM_Contact_BAO_Contact::displayName($this->_currentlyViewedContactId);
+        // Check if this is default domain contact CRM-10482.
+        if (CRM_Contact_BAO_Contact::checkDomainContact($this->_currentlyViewedContactId)) {
+          $displayName .= ' (' . ts('default organization') . ')';
+        }
+        $this->setTitle($displayName . ' - ' . $activityTypeNameAndLabel['displayLabel']);
       }
-      // Set title.
-      if (isset($activityTypeDisplayLabels)) {
-        // FIXME - it's not clear why the if line just above is needed here and why we can't just set this once above and re-use. What is interesting, but can't possibly be the reason, is that the first if block will fail if the label is the string '0', whereas this one won't. But who would have an activity type called '0'?
-        $activityTypeDisplayLabel = $activityTypeDisplayLabels[$this->_activityTypeId] ?? NULL;
-
-        if ($this->_currentlyViewedContactId) {
-          $displayName = CRM_Contact_BAO_Contact::displayName($this->_currentlyViewedContactId);
-          // Check if this is default domain contact CRM-10482.
-          if (CRM_Contact_BAO_Contact::checkDomainContact($this->_currentlyViewedContactId)) {
-            $displayName .= ' (' . ts('default organization') . ')';
-          }
-          $this->setTitle($displayName . ' - ' . $activityTypeDisplayLabel);
-        }
-        else {
-          $this->setTitle(ts('%1 Activity', [1 => $activityTypeDisplayLabel]));
-        }
+      else {
+        $this->setTitle(ts('%1 Activity', [1 => $activityTypeNameAndLabel['displayLabel']]));
       }
     }
     $this->assign('activityTypeNameAndLabel', $activityTypeNameAndLabel);

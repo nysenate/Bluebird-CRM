@@ -42,7 +42,22 @@ data_owner=`$readConfig --ig $instance data.rootdir.owner | cut -d: -f1` || data
 
 if [ $EUID -eq 0 ]; then
   echo "$prog: Running as root causes file permission problems; restarting as user $data_owner"
-  exec su $data_owner -s /bin/bash -c "$0 $*"
+  exec su $data_owner -s /bin/bash -c "$(printf '%q ' "$0" "$@")"
+fi
+
+# cv tries to store state (e.g. "upgrade:db" progress) in $HOME/.cv.
+# So, the current user must be able to write to their $HOME dir.
+# If the user can't write to $HOME, then XDG_STATE_HOME can be set as a fallback.
+
+if [ ! -w "$HOME" ]; then
+  data_rootdir=`$readConfig --ig $instance data.rootdir` || data_rootdir="$DEFAULT_DATA_ROOTDIR"
+  state_home_dir="$data_rootdir/tmp/cv_state"
+  echo "$prog: Unable to write to $HOME. Using fallback cv state directory: $state_home_dir" >&2
+  if ! mkdir -p "$state_home_dir"; then
+    echo "$prog: $state_home_dir: Unable to create cv state directory; aborting" >&2
+    exit 1
+  fi
+  export XDG_STATE_HOME="$state_home_dir"
 fi
 
 if [ "$base_domain" ]; then

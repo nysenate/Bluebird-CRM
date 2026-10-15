@@ -34,6 +34,8 @@ class Size
      * @param int   $width
      * @param int   $height
      * @param Point $pivot
+     *
+     * NYSS #19113 - Function signature modified for php8.4
      */
     public function __construct($width = null, $height = null, ?Point $pivot = null)
     {
@@ -101,6 +103,8 @@ class Size
      * @param  int     $height
      * @param  Closure $callback
      * @return Size
+     *
+     * NYSS #19113 - Function signature modified for php8.4
      */
     public function resize($width, $height, ?Closure $callback = null)
     {
@@ -136,6 +140,8 @@ class Size
      * @param  int     $width
      * @param  Closure $callback
      * @return Size
+     *
+     * NYSS #19113 - Function signature modified for php8.4
      */
     private function resizeWidth($width, ?Closure $callback = null)
     {
@@ -172,6 +178,8 @@ class Size
      * @param  int     $height
      * @param  Closure $callback
      * @return Size
+     *
+     * NYSS #19113 - Function signature modified for php8.4
      */
     private function resizeHeight($height, ?Closure $callback = null)
     {
@@ -360,6 +368,8 @@ class Size
      *
      * @param  Closure $callback
      * @return \Intervention\Image\Constraint
+     *
+     * NYSS #19113 - Function signature modified for php8.4
      */
     private function getConstraint(?Closure $callback = null)
     {

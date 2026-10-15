@@ -861,7 +861,7 @@ class RulesPluginUI extends FacesExtender implements RulesPluginUIInterface {
    * Generates a path using the given operation for the element with the given
    * id of the configuration with the given name.
    */
-  public static function path($name, $op = NULL, RulesPlugin $element = NULL, $parameter = FALSE) {
+  public static function path($name, $op = NULL, ?RulesPlugin $element = NULL, $parameter = FALSE) {
     $element_id = isset($element) ? $element->elementId() : FALSE;
     if (isset(self::$basePath)) {
       $base_path = self::$basePath;
