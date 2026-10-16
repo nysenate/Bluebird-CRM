@@ -20,6 +20,7 @@ class CiviConnect extends AutoService {
    * @inject crypto.registry, cache.long
    * @return \Civi\OAuth\CiviConnect
    */
+  // NYSS #19113 - stop php deprecation warnings
   public static function factory(\Civi\Crypto\CryptoRegistry $registry, ?CRM_Utils_Cache_Interface $cache = NULL) {
     $instance = new static();
     $instance->cache = $cache;
