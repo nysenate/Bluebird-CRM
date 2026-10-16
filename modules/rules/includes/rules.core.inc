@@ -144,6 +144,7 @@ class RulesEntityController extends EntityAPIControllerExportable {
     return $config;
   }
 
+  // NYSS #19113 - fix deprecation warning in php 8.4
   public function save($rules_config, ?DatabaseTransaction $transaction = NULL) {
     $transaction = isset($transaction) ? $transaction : db_transaction();
 
@@ -261,6 +262,7 @@ class RulesEntityController extends EntityAPIControllerExportable {
    * Overridden to also delete tags and events.
    *
    * @see EntityAPIControllerExportable::delete()
+   *  NYSS #19113 - fix deprecation warning in php 8.4
    */
   public function delete($ids, ?DatabaseTransaction $transaction = NULL) {
     $transaction = isset($transaction) ? $transaction : db_transaction();
@@ -1710,6 +1712,7 @@ abstract class RulesAbstractPlugin extends RulesPlugin {
 
   /**
    * Execute the configured execution callback and log that.
+   *  NYSS #19113 - fix deprecation warning in php 8.4
    */
   abstract protected function executeCallback(array $args, ?RulesState $state = NULL);
 

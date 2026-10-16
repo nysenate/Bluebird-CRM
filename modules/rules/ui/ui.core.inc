@@ -860,6 +860,7 @@ class RulesPluginUI extends FacesExtender implements RulesPluginUIInterface {
    *
    * Generates a path using the given operation for the element with the given
    * id of the configuration with the given name.
+   *  NYSS #19113 - fix deprecation warning in php 8.4
    */
   public static function path($name, $op = NULL, ?RulesPlugin $element = NULL, $parameter = FALSE) {
     $element_id = isset($element) ? $element->elementId() : FALSE;

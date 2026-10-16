@@ -318,7 +318,8 @@ class CRM_NYSS_AJAX_Activity
             'id' => $values['activity_id'],
             'cid' => $params['contact_id'],
             'cxt' => $context,
-            'caseid' => CRM_Utils_Array::value('case_id', $values),
+            // getActivities() returns case_id as an array (API4 multi-value)
+            'caseid' => CRM_Utils_Array::first((array) ($values['case_id'] ?? [])),
           ],
           ts('more'),
           FALSE,

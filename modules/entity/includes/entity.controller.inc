@@ -319,6 +319,7 @@ class EntityAPIController extends DrupalDefaultEntityController implements Entit
 
   /**
    * Overrides DrupalDefaultEntityController::resetCache().
+   * NYSS #19113 - fix deprecation warning in php 8.4
    */
   public function resetCache(?array $ids = NULL) {
     $this->cacheComplete = FALSE;
@@ -373,6 +374,7 @@ class EntityAPIController extends DrupalDefaultEntityController implements Entit
    * @param $transaction
    *   Optionally a DatabaseTransaction object to use. Allows overrides to pass
    *   in their transaction object.
+   *  NYSS #19113 - fix deprecation warning in php 8.4
    */
   public function delete($ids, ?DatabaseTransaction $transaction = NULL) {
     $entities = $ids ? $this->load($ids) : FALSE;
@@ -436,6 +438,7 @@ class EntityAPIController extends DrupalDefaultEntityController implements Entit
    * @param $transaction
    *   Optionally a DatabaseTransaction object to use. Allows overrides to pass
    *   in their transaction object.
+   *  NYSS #19113 - fix deprecation warning in php 8.4
    */
   public function save($entity, ?DatabaseTransaction $transaction = NULL) {
     $transaction = isset($transaction) ? $transaction : db_transaction();
@@ -872,6 +875,7 @@ class EntityAPIControllerExportable extends EntityAPIController {
     }
   }
 
+  // NYSS #19113 - fix deprecation warning in php 8.4
   public function resetCache(?array $ids = NULL) {
     $this->cacheComplete = FALSE;
     if (isset($ids)) {
@@ -888,6 +892,7 @@ class EntityAPIControllerExportable extends EntityAPIController {
 
   /**
    * Overridden to care about reverted entities.
+   *  NYSS #19113 - fix deprecation warning in php 8.4
    */
   public function delete($ids, ?DatabaseTransaction $transaction = NULL) {
     $entities = $ids ? $this->load($ids) : FALSE;
@@ -945,6 +950,7 @@ class EntityAPIControllerExportable extends EntityAPIController {
 
   /**
    * Overridden to care exportables that are overridden.
+   *  NYSS #19113 - fix deprecation warning in php 8.4
    */
   public function save($entity, ?DatabaseTransaction $transaction = NULL) {
     // Preload $entity->original by name key if necessary.
