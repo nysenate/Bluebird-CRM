@@ -147,6 +147,26 @@ class CRM_SAGE_UtilsSAGETest extends \PHPUnit\Framework\TestCase {
   }
 
   // -------------------------------------------------------------------------
+  // hasAddressComponents
+  // -------------------------------------------------------------------------
+
+  public function testHasAddressComponentsFalseForMergeStyleUpdate(): void {
+    // The shape MergeHandler::mergeLocations() sends when re-parenting an address.
+    $params = ['id' => 10, 'contact_id' => 20, 'location_type_id' => 1, 'is_primary' => 1];
+    $this->assertFalse(CRM_Utils_SAGE::hasAddressComponents($params));
+  }
+
+  public function testHasAddressComponentsTrueForSingleComponent(): void {
+    $this->assertTrue(CRM_Utils_SAGE::hasAddressComponents(['id' => 10, 'city' => 'Albany']));
+  }
+
+  public function testHasAddressComponentsTrueWhenComponentCleared(): void {
+    // Clearing a field is an address change, so it must still count.
+    $this->assertTrue(CRM_Utils_SAGE::hasAddressComponents(['id' => 10, 'supplemental_address_1' => '']));
+    $this->assertTrue(CRM_Utils_SAGE::hasAddressComponents(['id' => 10, 'street_address' => NULL]));
+  }
+
+  // -------------------------------------------------------------------------
   // customValue
   // -------------------------------------------------------------------------
 

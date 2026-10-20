@@ -6,6 +6,15 @@
 class CRM_Utils_SAGE
 {
     const DISTRICT_SRC_STREETFILE = 'STREETFILE';
+
+  /**
+   * Address fields included in a SAGE lookup.
+   */
+  const ADDRESS_COMPONENT_KEYS = [
+    'street_address', 'city', 'postal_code', 'postal_code_suffix',
+    'state_province_id', 'supplemental_address_1',
+  ];
+
   /**
   * Produces a SAGE warning.
   * @param string $message  Error message.
@@ -899,11 +908,7 @@ class CRM_Utils_SAGE
       return FALSE;
     }
 
-    $cmp_keys = [
-      'street_address', 'city', 'postal_code', 'postal_code_suffix',
-      'state_province_id', 'supplemental_address_1',
-    ];
-    foreach ($cmp_keys as $akey) {
+    foreach (self::ADDRESS_COMPONENT_KEYS as $akey) {
       $val1 = $addr->$akey ?? NULL;
       $val2 = $params[$akey] ?? NULL;
 
@@ -913,6 +918,23 @@ class CRM_Utils_SAGE
     }
 
     return TRUE;
+  }
+
+  /**
+   * @param array $params
+   * @return bool
+   *
+   * Return true if the params include any address component, even an empty
+   * one (clearing a field is still an address change).
+   */
+  static function hasAddressComponents(array $params): bool {
+    foreach (self::ADDRESS_COMPONENT_KEYS as $akey) {
+      if (array_key_exists($akey, $params)) {
+        return TRUE;
+      }
+    }
+
+    return FALSE;
   }
 
   /**
