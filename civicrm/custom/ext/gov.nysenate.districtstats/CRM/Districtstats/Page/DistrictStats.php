@@ -219,7 +219,7 @@ class CRM_Districtstats_Page_DistrictStats extends CRM_Core_Page {
         AND cp.phone_type_id = 1
       WHERE is_deleted != 1;
     ";
-    $miscCounts['Contacts with Phone'] = CRM_Core_DAO::singleValueQuery($sql_phone)."<a href='{$baseUrl}&phone=%' target='_blank'>{$linkIcon}</a>";;
+    $miscCounts['Contacts with Phone'] = CRM_Core_DAO::singleValueQuery($sql_phone)."<a href='{$baseUrl}&phone=%' target='_blank'>{$linkIcon}</a>";
 
     //do not mail
     $sql_DNM = "
