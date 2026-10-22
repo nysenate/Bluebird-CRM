@@ -16,36 +16,36 @@ class CRM_NYSS_WebIntegration_Upgrader extends CRM_Extension_Upgrader_Base {
 
     //create activity types: Website Direct/Contextual Message
     try {
-      $at = civicrm_api3('option_value', 'get', array(
+      $at = civicrm_api3('option_value', 'get', [
         'option_group_name' => 'activity_type',
         'name' => 'website_direct_message',
-      ));
+      ]);
       if (empty($at['count'])) {
-        civicrm_api3('option_value', 'create', array(
+        civicrm_api3('option_value', 'create', [
           'option_group_id' => 'activity_type',
           'name' => 'website_direct_message',
           'label' => 'Website Direct Message',
           'is_reserved' => true,
           'is_active' => true,
-        ));
+        ]);
       }
 
-      $at = civicrm_api3('option_value', 'get', array(
+      $at = civicrm_api3('option_value', 'get', [
         'option_group_name' => 'activity_type',
         'name' => 'website_contextual_message',
-      ));
+      ]);
       if (empty($at['count'])) {
-        civicrm_api3('option_value', 'create', array(
+        civicrm_api3('option_value', 'create', [
           'option_group_id' => 'activity_type',
           'name' => 'website_contextual_message',
           'label' => 'Website Contextual Message',
           'is_reserved' => true,
           'is_active' => true,
-        ));
+        ]);
       }
     }
     catch (CRM_Core_Exception $e) {
-      Civi::log()->debug('install', array('$e' => $e));
+      Civi::log()->debug('install', ['$e' => $e]);
     }
   }
 

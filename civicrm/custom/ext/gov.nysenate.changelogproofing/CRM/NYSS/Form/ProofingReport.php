@@ -17,12 +17,12 @@ class CRM_NYSS_Form_ProofingReport extends CRM_Core_Form {
   function preProcess( ) {
     //handle breadcrumbs
     $url = CRM_Utils_System::url( 'civicrm/logging/proofingreport', 'reset=1' );
-    $breadCrumb = array(
-      array(
+    $breadCrumb = [
+      [
         'url' => $url,
         'title' => ts('Log Proofing Report')
-      )
-    );
+      ]
+    ];
     CRM_Utils_System::appendBreadCrumb( $breadCrumb );
     //set page title
     CRM_Utils_System::setTitle( ts('Generate Log Proofing Report') );
@@ -40,49 +40,49 @@ class CRM_NYSS_Form_ProofingReport extends CRM_Core_Form {
     $this->add('datepicker', 'start_date', ts('Date from'), false, ['formatType' => 'custom']);
     $this->add('datepicker', 'end_date', ts('...to'), false, ['formatType' => 'custom']);
     $this->add( 'select', 'pdf_format_id', ts( 'Page Format' ),
-      array( 0 => ts( '- default -' ) ) + CRM_Core_BAO_PdfFormat::getList( true ) );
+      [ 0 => ts( '- default -' ) ] + CRM_Core_BAO_PdfFormat::getList( true ) );
     //7582/7685/11831 add tags
     $tags = CRM_Core_BAO_Tag::getColorTags('civicrm_contact');
     if (!empty($tags)) {
-      $this->add('select2', 'tag', ts('Tag(s)'), $tags, FALSE, array('class' => 'huge', 'placeholder' => ts('- select -'), 'multiple' => TRUE));
+      $this->add('select2', 'tag', ts('Tag(s)'), $tags, FALSE, ['class' => 'huge', 'placeholder' => ts('- select -'), 'multiple' => TRUE]);
     }
     // build tag widget
     $parentNames = CRM_Core_BAO_Tag::getTagSet('civicrm_contact');
     foreach ($parentNames as $k => $name) {
-      if (!in_array($name, array('Keywords', 'Positions'))) {
+      if (!in_array($name, ['Keywords', 'Positions'])) {
         unset($parentNames[$k]);
       }
     }
     CRM_Core_Form_Tag::buildQuickForm($this, $parentNames, 'civicrm_contact', NULL, TRUE);
     $this->add('checkbox', 'merge_house', 'Merge Households? (CSV export only)');
     $this->addButtons(
-      array(
-        array(
+      [
+        [
           'type' => 'next',
           'name' => ts('Generate PDF Report'),
-        ),
-        array(
+        ],
+        [
           'type' => 'upload',
           'name' => ts('Generate Print Report'),
           'isDefault' => TRUE
-        ),
-        array(
+        ],
+        [
           'type' => 'submit',
           'name' => ts('Generate CSV'),
-        ),
-      )
+        ],
+      ]
     );
-    $this->addFormRule(array('CRM_NYSS_Form_ProofingReport', 'formRule'), $this);
+    $this->addFormRule(['CRM_NYSS_Form_ProofingReport', 'formRule'], $this);
   }
 
   /**
    * Set default values
    */
   function setDefaultValues() {
-    $defaults = array(
+    $defaults = [
       'year' => date('Y'),
       'pdf_format_id' => 1895,
-    );
+    ];
     return $defaults;
   }
   /**
@@ -99,7 +99,7 @@ class CRM_NYSS_Form_ProofingReport extends CRM_Core_Form {
   static function formRule( $fields, $files, $self )
   {
     //CRM_Core_Error::debug_var('fields',$fields);
-    $errors = array();
+    $errors = [];
     if (empty($fields['jobID']) &&
       empty($fields['alteredBy']) &&
       empty($fields['start_date']) &&
@@ -136,7 +136,7 @@ class CRM_NYSS_Form_ProofingReport extends CRM_Core_Form {
     //get form parameters and create sql criteria
     $formParams = $this->controller->exportValues( $this->_name );
     //CRM_Core_Error::debug_var('formParams', $formParams);
-    $sqlParams = $rows = array();
+    $sqlParams = $rows = [];
     $startDate = $endDate = $alteredByFrom = '';
     if ($formParams['jobID']) {
       $sqlParams['job'] = "main.log_job_id = '{$formParams['jobID']}'";
@@ -417,7 +417,7 @@ class CRM_NYSS_Form_ProofingReport extends CRM_Core_Form {
       //set col headers after the first row is constructed
       if ( !isset($this->_columnHeaders) ) {
         foreach ( $rows[$dao->id] as $hdr => $dontcare ) {
-          $this->_columnHeaders[$hdr] = array('title' => $hdr);
+          $this->_columnHeaders[$hdr] = ['title' => $hdr];
         }
       }
     }
@@ -517,14 +517,14 @@ tr.tableSummary td {
           unset($rows[$cid]);
         }
         else {
-          $params = array(
+          $params = [
             'version' => 3,
             'id' => $cDetails['house_id'],
-          );
+          ];
           $house = civicrm_api('contact', 'getsingle', $params);
           //CRM_Core_Error::debug_var('_mergeHouseholds $house', $house);
           //add to rows; pass some non-standard details from indiv record; unset indiv
-          $rows[$cDetails['house_id']] = array(
+          $rows[$cDetails['house_id']] = [
             'id' => $cDetails['house_id'],
             'sort_name' => $house['sort_name'] ?? '',
             'display_name' => $house['display_name'] ?? '',
@@ -550,7 +550,7 @@ tr.tableSummary td {
             'taglist' => $cDetails['tagList'],
             'when' => $cDetails['when'],
             'house_id' => '',
-          );
+          ];
           unset($rows[$cid]);
         }
       }

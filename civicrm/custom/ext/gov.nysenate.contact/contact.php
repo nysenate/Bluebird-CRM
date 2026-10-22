@@ -102,7 +102,7 @@ function contact_civicrm_pageRun(&$page) {
     $smarty = CRM_Core_Smarty::singleton();
     if ($smarty->getTemplateVars('privacy') === NULL) {
       $cid = $smarty->getTemplateVars('contactId');
-      $contact = civicrm_api('contact', 'getsingle', array('version' => 3, 'id' => $cid));
+      $contact = civicrm_api('contact', 'getsingle', ['version' => 3, 'id' => $cid]);
       //CRM_Core_Error::debug_var('contact', $contact);
 
       $privacy = [];
@@ -421,7 +421,7 @@ function contact_civicrm_buildForm($formName, &$form) {
     $form->add('file', 'uploadFile', ts('Import Data File'), 'size=30 maxlength=60', true);
 
     $form->setMaxFileSize($uploadFileSize);
-    $form->addRule('uploadFile', ts('File size should be less than %1 MBytes (%2 bytes)', array(1 => $uploadSize, 2 => $uploadFileSize)), 'maxfilesize', $uploadFileSize);
+    $form->addRule('uploadFile', ts('File size should be less than %1 MBytes (%2 bytes)', [1 => $uploadSize, 2 => $uploadFileSize]), 'maxfilesize', $uploadFileSize);
     $form->addRule('uploadFile', ts('Input file must be in CSV format'), 'utf8File');
     $form->addRule('uploadFile', ts('A valid file must be uploaded.'), 'uploadedfile');
     $form->_rules['uploadFile'][1]['message'] = 'File size should be less than 1 MBytes (1048576 bytes)';
@@ -678,7 +678,7 @@ function contact_civicrm_postProcess($formName, &$form) {
 
       //now register the status message. handle here so we can combine in a nice bullet list
       if ($msg) {
-        CRM_Core_Session::setStatus("<ul>$msg</ul>", 'Please note', 'alert', array('expires' => 0));
+        CRM_Core_Session::setStatus("<ul>$msg</ul>", 'Please note', 'alert', ['expires' => 0]);
       }
     }
   }

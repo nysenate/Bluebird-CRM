@@ -1393,7 +1393,7 @@ class CRM_NYSS_Inbox_BAO_Inbox {
   }
 
   private static function processUsageRecords($fields) {
-    $res = array();
+    $res = [];
 
     foreach ($fields as $key => $val) {
       /*** the old way of cleaning fields....
@@ -1402,19 +1402,19 @@ class CRM_NYSS_Inbox_BAO_Inbox {
       $val = preg_replace('/[^a-zA-Z0-9\s\p{P}]/', '', trim($val));
       $val = substr($val, 0, 240);
        ***/
-      if (in_array($key, array(
+      if (in_array($key, [
         'id',
         'message_id',
         'imap_id',
         'status',
         'matcher',
         'matched_to',
-        'activity_id'))
+        'activity_id'])
       ) {
         // convert string ID to integer ID
         $res[$key] = (int)$val;
       }
-      elseif (in_array($key, array('format', 'updated_date', 'email_date'))) {
+      elseif (in_array($key, ['format', 'updated_date', 'email_date'])) {
         // no conversion necessary for these fields
         $res[$key] = $val;
       }
@@ -1459,9 +1459,9 @@ class CRM_NYSS_Inbox_BAO_Inbox {
       $shortForm = date('M d, Y', $unixTime);
     }
 
-    return array('unix' => $unixTime,
+    return ['unix' => $unixTime,
       'long' => date('M d, Y h:i A', $unixTime),
-      'short' => $shortForm);
+      'short' => $shortForm];
   } // expandDate()
 
   static function formatDate($date, $format = 'Y-m-d H:i:s') {

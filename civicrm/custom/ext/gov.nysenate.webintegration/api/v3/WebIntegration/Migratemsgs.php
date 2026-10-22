@@ -130,7 +130,7 @@ function _wimm_Migrate($limit, $type) {
     _wimm_Debug('$dao', $dao);
 
     //build activity params
-    $params = array(
+    $params = [
       'activity_type_id' => $typeMap[$type],
       'source_contact_id' => $dao->entity_id,
       'target_id' => $dao->entity_id,
@@ -139,7 +139,7 @@ function _wimm_Migrate($limit, $type) {
       'details' => $dao->note,
       'status_id' => 'Completed',
       'source_record_id' => $dao->id,
-    );
+    ];
 
     try {
       $result = civicrm_api3('activity', 'create', $params);

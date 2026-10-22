@@ -1549,10 +1549,10 @@ function _mail_dedupeContacts($mailingId) {
   // I wonder if it's inadvertently creating duplicates in the event queue.
   $deletedCount = $result->affectedRows();
   if ($deletedCount) {
-    Civi::log()->warning('_mail_dedupeContacts NYSS 17656', array(
+    Civi::log()->warning('_mail_dedupeContacts NYSS 17656', [
       '$deletedCount' => $deletedCount,
       '$mailingId' => $mailingId
-    ));
+    ]);
   }
 
 } // _mail_dedupeContacts()
@@ -1726,7 +1726,7 @@ function _mail_get_shareon_clause($bbcfg) {
 
   $text = 'To share this on Facebook, go to %SHAREON_FACEBOOK_URL%';
   $html = '<a style="color:#386eff; text-decoration:underline;" href="%SHAREON_FACEBOOK_URL%" target="_blank">Share&nbsp;on&nbsp;Facebook.</a>';
-  return array('text' => $text, 'html' => $html);
+  return ['text' => $text, 'html' => $html];
 } // _mail_get_shareon_clause()
 
 

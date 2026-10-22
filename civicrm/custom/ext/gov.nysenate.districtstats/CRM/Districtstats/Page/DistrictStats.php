@@ -18,7 +18,7 @@ class CRM_Districtstats_Page_DistrictStats extends CRM_Core_Page {
 
     //contact counts by type
     $allContacts = 0;
-    $contactTypes = array();
+    $contactTypes = [];
     $sql_contacts = "
       SELECT contact_type, COUNT(*) AS ct_count
       FROM civicrm_contact
@@ -66,7 +66,7 @@ class CRM_Districtstats_Page_DistrictStats extends CRM_Core_Page {
     $this->assign('contactGenders', $contactGenders);
 
     //email counts
-    $emailCounts = array();
+    $emailCounts = [];
 
     //get contacts with emails
     $sql_emails = "
@@ -352,12 +352,12 @@ class CRM_Districtstats_Page_DistrictStats extends CRM_Core_Page {
     ";
     $dao = CRM_Core_DAO::executeQuery( $sql_townaded );
     while ($dao->fetch()) {
-      $contactTownADED[] = array(
+      $contactTownADED[] = [
         'town' => $dao->town_52,
         'ad' => $dao->ny_assembly_district_48,
         'ed' => $dao->election_district_49,
         'count' => $dao->townaded_count."<a href='{$baseUrl}&custom_52={$dao->town_52}&custom_48={$dao->ny_assembly_district_48}&custom_49={$dao->election_district_49}' target='_blank'>{$linkIcon}</a>"
-      );
+      ];
     }
     $this->assign('contactTownADED', $contactTownADED);
     //CRM_Core_Error::debug($contactTownADED);

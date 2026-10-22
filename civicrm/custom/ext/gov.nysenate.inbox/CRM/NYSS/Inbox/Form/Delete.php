@@ -24,17 +24,17 @@ class CRM_NYSS_Inbox_Form_Delete extends CRM_Core_Form {
     $this->assign('details', $details);
 
     // add form elements
-    $this->addButtons(array(
-      array(
+    $this->addButtons([
+      [
         'type' => 'submit',
         'name' => ts('Delete Message'),
         'isDefault' => TRUE,
-      ),
-      array(
+      ],
+      [
         'type' => 'cancel',
         'name' => ts('Cancel'),
-      ),
-    ));
+      ],
+    ]);
 
     // export form elements
     $this->assign('elementNames', $this->getRenderableElementNames());
@@ -50,12 +50,12 @@ class CRM_NYSS_Inbox_Form_Delete extends CRM_Core_Form {
       return;
     }
 
-    $ids = array(
-      array(
+    $ids = [
+      [
         'row_id' => $values['row_id'],
         'matched_id' => $values['matched_id'] ?? NULL,
-      )
-    );
+      ]
+    ];
 
     CRM_NYSS_Inbox_BAO_Inbox::deleteMessages($ids);
     CRM_Core_Session::setStatus('Message has been deleted.');
@@ -73,7 +73,7 @@ class CRM_NYSS_Inbox_Form_Delete extends CRM_Core_Form {
     // auto-rendered in the loop -- such as "qfKey" and "buttons".  These
     // items don't have labels.  We'll identify renderable by filtering on
     // the 'label'.
-    $elementNames = array();
+    $elementNames = [];
     foreach ($this->_elements as $element) {
       /** @var HTML_QuickForm_Element $element */
       $label = $element->getLabel();

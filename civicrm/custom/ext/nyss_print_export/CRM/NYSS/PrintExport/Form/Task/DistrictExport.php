@@ -298,7 +298,7 @@ class CRM_NYSS_PrintExport_Form_Task_DistrictExport extends CRM_Contact_Form_Tas
     $urlclean = urlencode( $url );
     $href = "mailto:?subject=district export: $filename&body=".$urlclean;
 
-    $status = array();
+    $status = [];
     $status[] = "District Merge/Purge Export";
     $status[] = "District: $instance (task $rnd).";
     $status[] = "$count contact(s) were exported.";
@@ -327,7 +327,7 @@ class CRM_NYSS_PrintExport_Form_Task_DistrictExport extends CRM_Contact_Form_Tas
         $dao = CRM_Core_DAO::executeQuery("SELECT id, abbreviation from civicrm_state_province",
             CRM_Core_DAO::$_nullArray);
 
-        $options = array();
+        $options = [];
         while ($dao->fetch()) {
             $options[$dao->id] = $dao->abbreviation;
         }
@@ -345,7 +345,7 @@ class CRM_NYSS_PrintExport_Form_Task_DistrictExport extends CRM_Contact_Form_Tas
         require_once 'CRM/Contact/BAO/Group.php';
 
         //get group contacts
-        $excludeContacts = array();
+        $excludeContacts = [];
         foreach ( $groups as $group ) {
             $groupContacts = CRM_Contact_BAO_Group::getMember( $group );
             $excludeContacts = array_merge( $excludeContacts, array_keys($groupContacts) );
@@ -473,12 +473,12 @@ class CRM_NYSS_PrintExport_Form_Task_DistrictExport extends CRM_Contact_Form_Tas
             return $tblTouched;
         }
 
-        $insertVals = array();
+        $insertVals = [];
 
         //cycle through ids and check for values
         //for both fields, we return 1 if the condition is met
         while ( $dao->fetch() ) {
-            $records = array('Email', 'Notes', 'Activities', 'Cases');
+            $records = ['Email', 'Notes', 'Activities', 'Cases'];
             $untouched = 1;
             $privacy = 0;
 

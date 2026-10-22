@@ -103,9 +103,9 @@ function resources_civicrm_alterTemplateFile($formName, &$form, $context, &$tplN
 function resources_civicrm_pageRun(&$page) {
   //Civi::log()->debug('resources_civicrm_pageRun', array('page' => $page));
 
-  if (in_array($page->getVar('_name'), array(
+  if (in_array($page->getVar('_name'), [
     'CRM_Contact_Page_View_Print'
-  ))) {
+  ])) {
     CRM_Core_Resources::singleton()->addStyleFile('gov.nysenate.resources', 'css/print_contact_summary.css');
   }
 }

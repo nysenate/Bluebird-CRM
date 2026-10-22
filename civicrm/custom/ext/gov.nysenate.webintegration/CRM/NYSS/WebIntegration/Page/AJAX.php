@@ -56,10 +56,10 @@ class CRM_NYSS_WebIntegration_Page_AJAX extends CRM_Core_Page {
     // Add total.
     $params['total'] = CRM_Core_DAO::singleValueQuery('SELECT FOUND_ROWS();');
 
-    $msgs = array();
+    $msgs = [];
     if ($dao->N) {
       while ($dao->fetch()) {
-        $msg = array();
+        $msg = [];
         $msg['DT_RowId'] = $dao->aid;
         $msg['DT_RowClass'] = 'crm-entity';
         $msg['DT_RowAttr'] = [];
@@ -92,12 +92,12 @@ class CRM_NYSS_WebIntegration_Page_AJAX extends CRM_Core_Page {
         $note = nl2br($dao->note);
         $activityView = CRM_Utils_System::url('civicrm/activity',
           "atype={$dao->type}&action=view&reset=1&id={$dao->aid}&cid={$dao->cid}&context=dashlet");
-        $links = array(
+        $links = [
           'note' => "<a href='#' id='view-msg-{$dao->aid}' class='action-item crm-hover-button view-msg'>View Message</a>",
           'message' => "<div title='Message Text' style='display:none;' id='msg-{$dao->aid}'>{$note}</div>",
           //'activity_create' => "<a href='#' id='create-activity-{$dao->id}' contact_id='{$dao->entity_id}' class='action-item crm-hover-button create-activity'>Create Activity</a>",
           'activity_view' => "<a href='$activityView' id='activity-{$dao->aid}' contact_id='{$dao->cid}' class='action-item crm-hover-button view-activity crm-popup'>View Activity</a>",
-        );
+        ];
 
         $msg['links'] = implode(' ', $links);
 
@@ -105,7 +105,7 @@ class CRM_NYSS_WebIntegration_Page_AJAX extends CRM_Core_Page {
       }
     }
 
-    $msgsDT = array();
+    $msgsDT = [];
     $msgsDT['data'] = $msgs;
     $msgsDT['recordsTotal'] = $params['total'];
     $msgsDT['recordsFiltered'] = $params['total'];

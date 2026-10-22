@@ -284,12 +284,12 @@ class CRM_Utils_SAGE
 
     // Construct and send the API Request
     $url = '/district/assign';
-    $params = array(
+    $params = [
       'addr1' => str_replace(',', '', $addr),
       'city' => $values['city'] ?? "",
       'zip5' => $values['postal_code'] ?? "",
       'state' => $values['state_province'] ?? "",
-    );
+    ];
 
     if ($streetfile_only) {
       $params['districtSource'] = self::DISTRICT_SRC_STREETFILE;
@@ -533,19 +533,19 @@ class CRM_Utils_SAGE
    * @return array containing arrays of (addr1, postalCity, state, zip5).
    */
   protected static function getAddressesFromRows(array &$rows): array {
-    $addresses = array();
+    $addresses = [];
     foreach ($rows as $row) {
       [$addr_field, $addr] = self::getAddress($row);
       if (isset($row['state_province_id'])) {
         $row['state_province'] = CRM_Core_PseudoConstant::stateProvinceAbbreviation($row['state_province_id']);
       }
 
-      $address = array(
+      $address = [
         'addr1' => str_replace(',', '', $addr),
         'postalCity' => $row['city'] ?? "",
         'state' => $row['state_province'] ?? "",
         'zip5'  => $row['postal_code'] ?? ""
-      );
+      ];
 
       $addresses[] = $address;
     }
@@ -560,12 +560,12 @@ class CRM_Utils_SAGE
    * @return array containing arrays of (lat, lon).
    */
   protected static function getPointsFromRows(array &$rows): array {
-    $points = array();
+    $points = [];
     foreach($rows as $row) {
-      $points[] = array(
+      $points[] = [
         'lat' => $row['geo_code_1'] ?? "",
         'lon' => $row['geo_code_2'] ?? ""
-      );
+      ];
     }
     return $points;
   }
@@ -591,13 +591,13 @@ class CRM_Utils_SAGE
   * @return array containing (column name, street address)
   */
   protected static function getAddress(array $values): array {
-    $addr_fields = array('street_address', 'supplemental_address_1');
+    $addr_fields = ['street_address', 'supplemental_address_1'];
     foreach ($addr_fields as $addr_field) {
       if (!empty($values[$addr_field])) {
-        return array($addr_field, $values[$addr_field]);
+        return [$addr_field, $values[$addr_field]];
       }
     }
-    return array('street_address', "");
+    return ['street_address', ""];
   }
 
 
@@ -861,8 +861,8 @@ class CRM_Utils_SAGE
     if (!empty($options['street_address_parsing'])) {
       //parseStreetAddress might be missing keys for some parts so wipe
       //all the parts out of the input and copy onto a clean slate
-      foreach (array('street_number', 'street_name',
-                     'street_unit', 'street_number_suffix') as $part) {
+      foreach (['street_number', 'street_name',
+                     'street_unit', 'street_number_suffix'] as $part) {
         $values[$part] = "";
       }
 
