@@ -21,7 +21,7 @@ class CRM_NYSS_WebIntegration_Page_AJAX extends CRM_Core_Page {
     // Format the params.
     $params['offset'] = ($params['page'] - 1) * $params['rp'];
     $params['rowCount'] = $params['rp'];
-    $params['sort'] = CRM_Utils_Array::value('sortBy', $params);
+    $params['sort'] = $params['sortBy'] ?? NULL;
     $orderBy = (!empty($params['sort'])) ? $params['sort'] : 'date DESC';
 
     $actDirect = CRM_Core_PseudoConstant::getKey('CRM_Activity_BAO_Activity', 'activity_type_id', 'website_direct_message');

@@ -86,7 +86,7 @@ function webintegration_civicrm_buildForm($formName, &$form) {
 function webintegration_civicrm_postProcess($formName, &$form) {
   if ($formName == 'CRM_Activity_Form_Activity') {
     $params = $form->controller->exportValues($form->getVar('_name'));
-    $msgID = CRM_Utils_Array::value('msg_id', $params);
+    $msgID = $params['msg_id'] ?? NULL;
     $aid = $form->_activityId;
 
     if ($msgID && $aid) {

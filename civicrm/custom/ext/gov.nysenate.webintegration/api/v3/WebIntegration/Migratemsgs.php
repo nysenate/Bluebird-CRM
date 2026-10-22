@@ -51,10 +51,10 @@ function civicrm_api3_web_integration_migratemsgs($params) {
   global $_MigrateMsgsDebug;
 
   $result = [];
-  $action = CRM_Utils_Array::value('action', $params);
-  $limit = CRM_Utils_Array::value('limit', $params);
-  $type = CRM_Utils_Array::value('type', $params);
-  $_MigrateMsgsDebug = CRM_Utils_Array::value('debug', $params);
+  $action = $params['action'] ?? NULL;
+  $limit = $params['limit'] ?? NULL;
+  $type = $params['type'] ?? NULL;
+  $_MigrateMsgsDebug = $params['debug'] ?? NULL;
   _wimm_Debug('params', $params);
 
   switch ($action) {

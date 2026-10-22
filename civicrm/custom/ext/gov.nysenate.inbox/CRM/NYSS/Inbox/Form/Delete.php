@@ -53,7 +53,7 @@ class CRM_NYSS_Inbox_Form_Delete extends CRM_Core_Form {
     $ids = array(
       array(
         'row_id' => $values['row_id'],
-        'matched_id' => CRM_Utils_Array::value('matched_id', $values),
+        'matched_id' => $values['matched_id'] ?? NULL,
       )
     );
 

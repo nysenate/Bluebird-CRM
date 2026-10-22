@@ -32,14 +32,13 @@ function _civicrm_api3_job_log_Purge_spec(&$spec) {
  * @throws CRM_Core_Exception
  */
 function civicrm_api3_job_log_Purge($params) {
-  if (CRM_Utils_Array::value('days_retained', $params)) {
+  if (!empty($params['days_retained'])) {
     // sql to delete the job logs older than the day_retained setting value
     $deleteQuery = "DELETE FROM civicrm_job_log WHERE 1";
     $where = " AND run_time < (NOW() - INTERVAL {$params['days_retained']} DAY)";
 
     // Check if the param "api_call" is set and it's not set to 'all'
-    if (CRM_Utils_Array::value('api_call', $params) &&
-    $params['api_call'] != 'all') {
+    if (!empty($params['api_call']) && $params['api_call'] != 'all') {
       $apiCall   = explode('.', $params['api_call']);
       $apiEntity = $apiCall[0];
       $apiAction = $apiCall[1];

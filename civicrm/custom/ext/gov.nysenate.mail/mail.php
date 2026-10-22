@@ -288,7 +288,7 @@ function mail_civicrm_pageRun(&$page) {
 
   // NYSS 5567 - fix title
   if ($page->getVar('_name') == 'CRM_Mailing_Page_Event') {
-    $event = CRM_Utils_Array::value('event', $_GET);
+    $event = $_GET['event'] ?? NULL;
     if ($event == 'unsubscribe') {
       CRM_Utils_System::setTitle(ts('Opt-out Requests'));
     }
@@ -358,7 +358,7 @@ function mail_civicrm_pageRun(&$page) {
           'location_type_id' => $lt[$email->location_type_id],
           'email' => $email->email,
           'is_primary' => $email->is_primary,
-          'on_hold' => CRM_Utils_Array::value($email->on_hold, $holdOptions, ''),
+          'on_hold' => $holdOptions[$email->on_hold] ?? '',
           'hold_date' => $email->hold_date,
         ];
         $cats = explode(',', $email->mailing_categories);
@@ -842,7 +842,7 @@ function mail_civicrm_buildForm($formName, &$form) {
         'location_type_id' => $lt[$email->location_type_id],
         'email' => $email->email,
         'is_primary' => $email->is_primary,
-        'on_hold' => CRM_Utils_Array::value($email->on_hold, $holdOptions, ''),
+        'on_hold' => $holdOptions[$email->on_hold] ?? '',
         'hold_date' => $email->hold_date,
         'mailing_categories' => $email->mailing_categories,
       ];
@@ -987,7 +987,7 @@ function mail_civicrm_alterMailParams(&$params, $context) {
     // civimail context ever needs it.
     if ((empty($params[NyssFlexmailListener::$PARAM_EVENT_Q_ID]) ||
          empty($params[NyssFlexmailListener::$PARAM_CONTACT_ID])) &&
-         $xCiviMail = CRM_Utils_Array::value('X-CiviMail-Bounce', $params)
+         $xCiviMail = $params['X-CiviMail-Bounce'] ?? NULL
     ) {
       $emailParts = explode('@', $xCiviMail);
       $idParts = explode('.', $emailParts[0]);
@@ -997,7 +997,7 @@ function mail_civicrm_alterMailParams(&$params, $context) {
          !empty($params[NyssFlexmailListener::$PARAM_EVENT_Q_ID])) {
         try {
           $eventQueue = civicrm_api3('MailingEventQueue', 'getsingle', ['id' => $params['event_queue_id']]);
-          $params[NyssFlexmailListener::$PARAM_CONTACT_ID] = CRM_Utils_Array::value('contact_id', $eventQueue);
+          $params[NyssFlexmailListener::$PARAM_CONTACT_ID] = $eventQueue['contact_id'] ?? NULL;
         } catch (CRM_Core_Exception $e) {
           Civi::log()->debug(__FUNCTION__, ['e' => $e]);
         }

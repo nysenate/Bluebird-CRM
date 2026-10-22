@@ -153,7 +153,7 @@ class CRM_TagDemographics_Form_Search_TagDemographics extends CRM_Contact_Form_S
    */
   function from() {
     $meta = $this->getDemographicMeta($this->_activeDemographic);
-    $tag = CRM_Utils_Array::value('tag', $this->_formValues);
+    $tag = $this->_formValues['tag'] ?? NULL;
 
     return "
       FROM civicrm_contact c

@@ -344,9 +344,9 @@ class CRM_NYSS_Inbox_BAO_Inbox {
     // Format the params.
     $params['offset'] = ($params['page'] - 1) * $params['rp'];
     $params['rowCount'] = $params['rp'];
-    $params['sort'] = CRM_Utils_Array::value('sortBy', $params);
-    $params['range'] = CRM_Utils_Array::value('range', $params, 0);
-    $params['term'] = json_decode(CRM_Utils_Array::value('term', $params, NULL));
+    $params['sort'] = $params['sortBy'] ?? NULL;
+    $params['range'] = $params['range'] ?? 0;
+    $params['term'] = json_decode($params['term'] ?? 'null');
     $orderBy = (!empty($params['sort'])) ? $params['sort'] : 'updated_date DESC, subject, matched_id, sender_email';
 
     //build range SQL; range = 0 -> all time (no where clause)
@@ -774,7 +774,7 @@ class CRM_NYSS_Inbox_BAO_Inbox {
       }
 
       if (!empty($values['tag'])) {
-        $tags = explode(',', CRM_Utils_Array::value('tag', $values));
+        $tags = explode(',', $values['tag'] ?? '');
         foreach ($tags as $tagID) {
           if (!in_array($tagID, $assigneeTags)) {
             try {
@@ -849,7 +849,7 @@ class CRM_NYSS_Inbox_BAO_Inbox {
         }
 
         if (!empty($values['activity_tag'])) {
-          $tags = explode(',', CRM_Utils_Array::value('activity_tag', $values));
+          $tags = explode(',', $values['activity_tag'] ?? '');
           foreach ($tags as $tagID) {
             try {
               civicrm_api3('entity_tag', 'create', [
@@ -933,11 +933,11 @@ class CRM_NYSS_Inbox_BAO_Inbox {
       }
 
       //if working with a single contact, check if email should be updated
-      if (!CRM_Utils_Array::value('is_multiple', $values)) {
+      if (empty($values['is_multiple'])) {
         $matchId = (!empty($values['assignee'])) ? $values['assignee'] : $row['current_assignee'];
         foreach (['phone', 'email'] as $type) {
-          $new_val = CRM_Utils_Array::value("{$type}-" . $matchId, $_REQUEST);
-          $orig_val = CRM_Utils_Array::value("{$type}orig-" . $matchId, $_REQUEST);
+          $new_val = $_REQUEST["{$type}-" . $matchId] ?? NULL;
+          $orig_val = $_REQUEST["{$type}orig-" . $matchId] ?? NULL;
 
           if ($new_val != $orig_val) {
             try {

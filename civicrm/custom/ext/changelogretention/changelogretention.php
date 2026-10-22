@@ -114,7 +114,7 @@ function changelogretention_civicrm_alterLogTables(&$logTableSpec) {
     $contactIndexes = [];
     $logTableSpec[$tableName]['engine'] = 'INNODB';
     $logTableSpec[$tableName]['engine_config'] = 'ROW_FORMAT=COMPRESSED KEY_BLOCK_SIZE=4';
-    $contactRefsForTable = CRM_Utils_Array::value($tableName, $contactReferences, []);
+    $contactRefsForTable = $contactReferences[$tableName] ?? [];
     foreach ($contactRefsForTable as $fieldName) {
       $contactIndexes['index_' . $fieldName] = $fieldName;
     }

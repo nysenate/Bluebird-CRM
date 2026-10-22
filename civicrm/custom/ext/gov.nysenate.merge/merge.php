@@ -415,7 +415,7 @@ function _merge_fixGreeting($gType, &$rows, &$conflicts) {
       'greeting_type' => $greetingType,
     ];
     $allGreetings = CRM_Core_PseudoConstant::greeting($filter);
-    $defaultGreetingString = $greetingString = CRM_Utils_Array::value($defaultGreetingId, $allGreetings);
+    $defaultGreetingString = $allGreetings[$defaultGreetingId] ?? NULL;
     _merge_mD('setting default greeting string', $defaultGreetingString, 2);
 
     $conflicts[$gType] = $defaultGreetingString;

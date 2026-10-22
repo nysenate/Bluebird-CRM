@@ -31,7 +31,7 @@ class CRM_Utils_SAGE
     //NYSS 7340
     //TODO setStatus doesn't trigger the js warning message when triggered via inline;
     //disable for now, but investigate ways to handle that better
-    if (CRM_Utils_Array::value('class_name', $_REQUEST, '') != 'CRM_Contact_Form_Inline_Address') {
+    if (($_REQUEST['class_name'] ?? '') != 'CRM_Contact_Form_Inline_Address') {
       // NYSS 5798 - Only show details in debug mode
       if ($config->debug) {
         $session->setStatus(ts("SAGE Warning: $message<br/>"));
@@ -146,9 +146,9 @@ class CRM_Utils_SAGE
     // Build the params, and make the request.
     $params = [
       'addr1' => str_replace(',', '', $addr),
-      'city' => CRM_Utils_Array::value('city', $values, ""),
-      'zip5' => CRM_Utils_Array::value('postal_code', $values, ""),
-      'state' => CRM_Utils_Array::value('state_province', $values, ""),
+      'city' => $values['city'] ?? "",
+      'zip5' => $values['postal_code'] ?? "",
+      'state' => $values['state_province'] ?? "",
     ];
     $xml = self::callSAGE('/address/validate', $params);
 
@@ -207,9 +207,9 @@ class CRM_Utils_SAGE
     // Generate a cache key from the address parameters.
     $params = [
       'addr1' => str_replace(',', '', $addr),
-      'city' => CRM_Utils_Array::value('city', $values, ""),
-      'state' => CRM_Utils_Array::value('state_province', $values, ""),
-      'zip5' => CRM_Utils_Array::value('postal_code', $values, ""),
+      'city' => $values['city'] ?? "",
+      'state' => $values['state_province'] ?? "",
+      'zip5' => $values['postal_code'] ?? "",
     ];
 
     $xml = self::callSAGE('/geo/geocode', $params);
@@ -286,9 +286,9 @@ class CRM_Utils_SAGE
     $url = '/district/assign';
     $params = array(
       'addr1' => str_replace(',', '', $addr),
-      'city' => CRM_Utils_Array::value('city',$values,""),
-      'zip5' => CRM_Utils_Array::value('postal_code',$values,""),
-      'state' => CRM_Utils_Array::value('state_province',$values,""),
+      'city' => $values['city'] ?? "",
+      'zip5' => $values['postal_code'] ?? "",
+      'state' => $values['state_province'] ?? "",
     );
 
     if ($streetfile_only) {
@@ -374,8 +374,8 @@ class CRM_Utils_SAGE
   public static function lookupFromPoint(&$values, $overwrite_districts=true): bool {
     $url = '/district/bluebird';
     $params = [
-        'lat' => CRM_Utils_Array::value('geo_code_1', $values, ""),
-        'lon' => CRM_Utils_Array::value('geo_code_2', $values, ""),
+        'lat' => $values['geo_code_1'] ?? "",
+        'lon' => $values['geo_code_2'] ?? "",
       ];
     $xml = self::callSAGE($url, $params);
     $ret = self::validateResponse($xml);
@@ -447,9 +447,9 @@ class CRM_Utils_SAGE
     $url = '/district/bluebird';
     $params = [
         'addr1' => str_replace(',', '', $addr),
-        'city' => CRM_Utils_Array::value('city', $values, ""),
-        'state' => CRM_Utils_Array::value('state_province', $values, ""),
-        'zip5' => CRM_Utils_Array::value('postal_code', $values, ""),
+        'city' => $values['city'] ?? "",
+        'state' => $values['state_province'] ?? "",
+        'zip5' => $values['postal_code'] ?? "",
       ];
 
     $xml = self::callSAGE($url, $params);
@@ -542,9 +542,9 @@ class CRM_Utils_SAGE
 
       $address = array(
         'addr1' => str_replace(',', '', $addr),
-        'postalCity' => CRM_Utils_Array::value('city', $row, ""),
-        'state' => CRM_Utils_Array::value('state_province', $row, ""),
-        'zip5'  => CRM_Utils_Array::value('postal_code', $row, "")
+        'postalCity' => $row['city'] ?? "",
+        'state' => $row['state_province'] ?? "",
+        'zip5'  => $row['postal_code'] ?? ""
       );
 
       $addresses[] = $address;
@@ -563,8 +563,8 @@ class CRM_Utils_SAGE
     $points = array();
     foreach($rows as $row) {
       $points[] = array(
-        'lat' => CRM_Utils_Array::value('geo_code_1', $row, ""),
-        'lon' => CRM_Utils_Array::value('geo_code_2', $row, "")
+        'lat' => $row['geo_code_1'] ?? "",
+        'lon' => $row['geo_code_2'] ?? ""
       );
     }
     return $points;
@@ -593,7 +593,7 @@ class CRM_Utils_SAGE
   protected static function getAddress(array $values): array {
     $addr_fields = array('street_address', 'supplemental_address_1');
     foreach ($addr_fields as $addr_field) {
-      if (CRM_Utils_Array::value($addr_field, $values)) {
+      if (!empty($values[$addr_field])) {
         return array($addr_field, $values[$addr_field]);
       }
     }
@@ -667,7 +667,7 @@ class CRM_Utils_SAGE
     $id = -1;
     foreach (array_keys($values) as $key) {
       if (preg_match('/^custom_(\d+)_?(-?\d+)?$/', $key, $match)) {
-        $id = CRM_Utils_Array::value(2, $match, -1);
+        $id = $match[2] ?? -1;
       }
     }
 
@@ -858,7 +858,7 @@ class CRM_Utils_SAGE
     }
 
     $options = CRM_Core_BAO_Setting::valueOptions(CRM_Core_BAO_Setting::SYSTEM_PREFERENCES_NAME, 'address_options');
-    if (CRM_Utils_Array::value('street_address_parsing', $options)) {
+    if (!empty($options['street_address_parsing'])) {
       //parseStreetAddress might be missing keys for some parts so wipe
       //all the parts out of the input and copy onto a clean slate
       foreach (array('street_number', 'street_name',

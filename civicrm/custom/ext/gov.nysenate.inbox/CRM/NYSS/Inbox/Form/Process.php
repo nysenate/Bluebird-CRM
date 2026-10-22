@@ -275,7 +275,7 @@ class CRM_NYSS_Inbox_Form_Process extends CRM_Core_Form {
     //CRM_Core_Error::debug_var('classSub', $classSub);
 
     $rows = array($values['row_id']);
-    if (CRM_Utils_Array::value('is_multiple', $values)) {
+    if (!empty($values['is_multiple'])) {
       $rows = CRM_NYSS_Inbox_BAO_Inbox::getMultiRowIds(json_decode($values['multi_ids'], TRUE));
     }
 

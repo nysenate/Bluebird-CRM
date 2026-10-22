@@ -533,7 +533,7 @@ function contact_civicrm_buildForm($formName, &$form) {
     $instVals = $form->getVar('_instanceValues');
     if ($instVals['report_id'] == 'logging/contact/detail') {
       $instAttrib = $form->getVar('_attributes');
-      $instPath = trim(CRM_Utils_Array::value('action', $instAttrib), '/');
+      $instPath = trim($instAttrib['action'] ?? '', '/');
       $printerFriendly = CRM_Utils_System::makeURL('snippet', true, false, $instPath).'2';
       $form->assign('printerFriendly', $printerFriendly);
     }
