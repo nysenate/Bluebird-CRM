@@ -42,7 +42,7 @@
    * @param array
    */
   public static function getLocationSearchFields() {
-    return array(
+    return [
       'street_address' => ['title' => ts('Street Address'), 'data_type' => 'String'],
       'supplemental_address_1' => ['title' => ts('Supplemental Address 1'), 'data_type' => 'String'],
       'supplemental_address_2' => ['title' => ts('Supplemental Address 2'), 'data_type' => 'String'],
@@ -56,7 +56,7 @@
       'street_number' => ['title' => ts('Street Number'), 'data_type' => 'String'],
       'street_name' => ['title' => ts('Street Name'), 'data_type' => 'String'],
       'street_unit' => ['title' => ts('Apt/Unit/Suite'), 'data_type' => 'String'],
-    );
+    ];
   }
 
   //NYSS 12133
@@ -92,7 +92,7 @@
    * @param array
    */
   public static function getCustomSearchFields() {
-    $extends = array_merge(array('Contact', 'Individual', 'Household', 'Organization', 'Address'),
+    $extends = array_merge(['Contact', 'Individual', 'Household', 'Organization', 'Address'],
       CRM_Contact_BAO_ContactType::subTypes()
     );
     $groupDetails = CRM_Core_BAO_CustomGroup::getGroupDetail(NULL, TRUE,

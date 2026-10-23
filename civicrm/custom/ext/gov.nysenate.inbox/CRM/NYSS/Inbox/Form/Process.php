@@ -24,13 +24,13 @@ class CRM_NYSS_Inbox_Form_Process extends CRM_Core_Form {
       $this->add('hidden', 'is_multiple', $isMultiple);
       $this->assign('is_multiple', $isMultiple);
 
-      $multiIds = $matchedIds = array();
+      $multiIds = $matchedIds = [];
       $multiIdPairs = CRM_Utils_Request::retrieve('ids', 'String');
       if (empty($multiIdPairs)) {
-        return array(
+        return [
           'is_error' => TRUE,
           'message' => 'Unable to process messages. Please try re-selecting records.'
-        );
+        ];
       }
 
       foreach ($multiIdPairs as $pair) {
@@ -55,14 +55,14 @@ class CRM_NYSS_Inbox_Form_Process extends CRM_Core_Form {
             'current_assignee' => $pairParts[1],
           ];
           $multiIds[] = $data;
-          $multiIdsDetails[] = $data + array('details' => $details);
+          $multiIdsDetails[] = $data + ['details' => $details];
           $matchedIds[] = $pairParts[1];
         }
       }
       $this->assign('multiple_count', count($multiIdPairs));
       $this->assign('message_details', $multiIdsDetails);
       $this->add('hidden', 'multi_ids', json_encode($multiIds));
-      CRM_Core_Resources::singleton()->addVars('NYSS', array('matched_id' => $matchedIds));
+      CRM_Core_Resources::singleton()->addVars('NYSS', ['matched_id' => $matchedIds]);
     }
     else {
       //get details about record
@@ -73,9 +73,9 @@ class CRM_NYSS_Inbox_Form_Process extends CRM_Core_Form {
       $this->add('hidden', 'matched_id', $matchedId);
 
       $details = CRM_NYSS_Inbox_BAO_Inbox::getDetails($rowId, $matchedId);
-      $this->assign('message_details', array(array('details' => $details)));
+      $this->assign('message_details', [['details' => $details]]);
       $this->add('hidden', 'activity_id', $details['activity_id']);
-      CRM_Core_Resources::singleton()->addVars('NYSS', array('matched_id' => $matchedId));
+      CRM_Core_Resources::singleton()->addVars('NYSS', ['matched_id' => $matchedId]);
     }
     /*Civi::log()->debug('CRM_NYSS_Inbox_Form_Process', array(
       'isMultiple' => $isMultiple,
@@ -86,28 +86,28 @@ class CRM_NYSS_Inbox_Form_Process extends CRM_Core_Form {
     ));*/
 
     //assignment form elements
-    $this->addEntityRef('assignee', 'Select Assignee', array(
+    $this->addEntityRef('assignee', 'Select Assignee', [
       'create' => TRUE,
-    ), FALSE);
+    ], FALSE);
 
     //tag form elements
-    $this->addEntityRef('contact_keywords', 'Keywords', array(
+    $this->addEntityRef('contact_keywords', 'Keywords', [
       'entity' => 'tag',
       'multiple' => TRUE,
       'create' => TRUE,
-      'api' => array('params' => array('parent_id' => CRM_NYSS_Tags_Constants::KEYWORDS_TAG_ID)),
+      'api' => ['params' => ['parent_id' => CRM_NYSS_Tags_Constants::KEYWORDS_TAG_ID]],
       'data-entity_table' => 'civicrm_contact',
       'data-entity_id' => NULL,
       'class' => "crm-contact-tagset",
-    ), FALSE);
+    ], FALSE);
 
-    $this->addEntityRef('contact_positions', 'Positions', array(
+    $this->addEntityRef('contact_positions', 'Positions', [
       'entity' => 'nyss_tags',
       'multiple' => TRUE,
       'create' => FALSE,
-      'api' => array('params' => array('parent_id' => CRM_NYSS_Tags_Constants::POSITIONS_TAG_ID)),
+      'api' => ['params' => ['parent_id' => CRM_NYSS_Tags_Constants::POSITIONS_TAG_ID]],
       'class' => "crm-contact-tagset",
-    ), FALSE);
+    ], FALSE);
 
     //tag tree
     $tags = CRM_Core_BAO_Tag::getColorTags('civicrm_contact');
@@ -116,23 +116,23 @@ class CRM_NYSS_Inbox_Form_Process extends CRM_Core_Form {
         FALSE, ['class' => 'huge', 'placeholder' => ts('- select -'), 'multiple' => TRUE]);
     }
 
-    $this->addEntityRef('activity_keywords', 'Keywords', array(
+    $this->addEntityRef('activity_keywords', 'Keywords', [
       'entity' => 'tag',
       'multiple' => TRUE,
       'create' => TRUE,
-      'api' => array('params' => array('parent_id' => CRM_NYSS_Tags_Constants::KEYWORDS_TAG_ID)),
+      'api' => ['params' => ['parent_id' => CRM_NYSS_Tags_Constants::KEYWORDS_TAG_ID]],
       'data-entity_table' => 'civicrm_activity',
       'data-entity_id' => NULL,
       'class' => "crm-activity-tagset",
-    ), FALSE);
+    ], FALSE);
 
-    $this->addEntityRef('activity_positions', 'Positions', array(
+    $this->addEntityRef('activity_positions', 'Positions', [
       'entity' => 'tag',
       'multiple' => TRUE,
       'create' => FALSE,
-      'api' => array('params' => array('parent_id' => CRM_NYSS_Tags_Constants::POSITIONS_TAG_ID)),
+      'api' => ['params' => ['parent_id' => CRM_NYSS_Tags_Constants::POSITIONS_TAG_ID]],
       'class' => "crm-activity-tagset",
-    ), FALSE);
+    ], FALSE);
 
     if (!empty($tags)) {
       $this->add('select2', 'activity_tag', ts('Issue Codes'), $tags,
@@ -143,26 +143,26 @@ class CRM_NYSS_Inbox_Form_Process extends CRM_Core_Form {
     $allGroups = CRM_Core_PseudoConstant::group();
     $groupHierarchy = CRM_Contact_BAO_Group::getGroupsHierarchy($allGroups, NULL, '&nbsp;&nbsp;', TRUE);
     $this->add('select', 'group_id', 'Group(s)', $groupHierarchy, FALSE,
-      array('id' => 'group_id', 'multiple' => 'multiple', 'class' => 'crm-select2 twenty')
+      ['id' => 'group_id', 'multiple' => 'multiple', 'class' => 'crm-select2 twenty']
     );
 
     //edit activity form elements
     $staffGroupID = civicrm_api3('group', 'getvalue',
       ['name' => 'Office_Staff', 'return' => 'id']);
-    $this->addEntityRef('activity_assignee', 'Assign Activity to', array(
-      'api' => array(
-        'params' => array(
+    $this->addEntityRef('activity_assignee', 'Assign Activity to', [
+      'api' => [
+        'params' => [
           'contact_type' => 'Individual',
           'group' => $staffGroupID,
-        ),
+        ],
         'add_wildcard' => TRUE,
-      ),
+      ],
       'create' => FALSE,
-      'select' => array('minimumInputLength' => 0),
-    ), FALSE);
+      'select' => ['minimumInputLength' => 0],
+    ], FALSE);
     $statusTypes = CRM_Core_PseudoConstant::activityStatus();
     $this->add('select', 'activity_status', 'Status',
-      array('' => '- select status -') + $statusTypes, FALSE);
+      ['' => '- select status -'] + $statusTypes, FALSE);
 
     // NYSS #17369 -- Allow case creation if only one item selected
     $create_case = FALSE;
@@ -274,8 +274,8 @@ class CRM_NYSS_Inbox_Form_Process extends CRM_Core_Form {
     //CRM_Core_Error::debug_var('actionName', $actionName);
     //CRM_Core_Error::debug_var('classSub', $classSub);
 
-    $rows = array($values['row_id']);
-    if (CRM_Utils_Array::value('is_multiple', $values)) {
+    $rows = [$values['row_id']];
+    if (!empty($values['is_multiple'])) {
       $rows = CRM_NYSS_Inbox_BAO_Inbox::getMultiRowIds(json_decode($values['multi_ids'], TRUE));
     }
 
@@ -319,7 +319,7 @@ class CRM_NYSS_Inbox_Form_Process extends CRM_Core_Form {
     // auto-rendered in the loop -- such as "qfKey" and "buttons".  These
     // items don't have labels.  We'll identify renderable by filtering on
     // the 'label'.
-    $elementNames = array();
+    $elementNames = [];
     foreach ($this->_elements as $element) {
       /** @var HTML_QuickForm_Element $element */
       $label = $element->getLabel();

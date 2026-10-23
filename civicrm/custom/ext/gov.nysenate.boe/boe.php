@@ -68,7 +68,7 @@ function boe_civicrm_buildForm($formName, &$form) {
     foreach ($blocks as $name) {
       foreach ($values[$name] as $blockId => $block) {
         //process BOE locking, etc.
-        if (in_array(CRM_Utils_Array::value('location_type_id', $block), $skippedLocTypes)) {
+        if (in_array($block['location_type_id'] ?? NULL, $skippedLocTypes)) {
           if ($name == 'address') {
             $specialBlockIds[] = $blockId;
 
@@ -208,9 +208,9 @@ function boe_civicrm_buildForm($formName, &$form) {
             //CRM_Core_Error::debug_var('$addrVals', $addrVals);
 
             CRM_Core_Resources::singleton()->addVars('NYSS', [
-              "address_{$blockId}_street_number" => CRM_Utils_Array::value('street_number', $addrVals),
-              "address_{$blockId}_street_name" => CRM_Utils_Array::value('street_name', $addrVals),
-              "address_{$blockId}_street_unit" => CRM_Utils_Array::value('street_unit', $addrVals),
+              "address_{$blockId}_street_number" => $addrVals['street_number'] ?? NULL,
+              "address_{$blockId}_street_name" => $addrVals['street_name'] ?? NULL,
+              "address_{$blockId}_street_unit" => $addrVals['street_unit'] ?? NULL,
             ]);
           }
           catch (CRM_Core_Exception $e) {}

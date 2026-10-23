@@ -10,7 +10,7 @@ class CRM_TagDemographics_Form_Search_TagDemographics extends CRM_Contact_Form_S
   function __construct(&$formValues) {
     parent::__construct($formValues);
 
-    $this->_demographicOptions = array(
+    $this->_demographicOptions = [
       'gender' => 'Gender',
       'age' => 'Age',
       'postal_code' => 'Postal Code',
@@ -20,7 +20,7 @@ class CRM_TagDemographics_Form_Search_TagDemographics extends CRM_Contact_Form_S
       'sd' => 'Senate District',
       'ad' => 'Assembly District',
       'school_district' => 'School District',
-    );
+    ];
 
     $this->_activeDemographic = NULL;
   }
@@ -34,30 +34,30 @@ class CRM_TagDemographics_Form_Search_TagDemographics extends CRM_Contact_Form_S
   function buildForm(&$form) {
     CRM_Utils_System::setTitle(ts('Tag Demographics Search'));
 
-    $tags = array('' => ts('- any tag -')) + CRM_Core_PseudoConstant::get('CRM_Core_DAO_EntityTag', 'tag_id', array('onlyActive' => FALSE));
-    $form->add('select', 'tag', ts('Tag'), $tags, TRUE, array('class' => "crm-select2 huge"));
+    $tags = ['' => ts('- any tag -')] + CRM_Core_PseudoConstant::get('CRM_Core_DAO_EntityTag', 'tag_id', ['onlyActive' => FALSE]);
+    $form->add('select', 'tag', ts('Tag'), $tags, TRUE, ['class' => "crm-select2 huge"]);
 
     $form->add('select', 'demographic', ts('Demographic'),
-      $this->_demographicOptions, TRUE, array(
+      $this->_demographicOptions, TRUE, [
         'class' => 'crm-select2 huge',
         'multiple' => TRUE,
         'placeholder' => ts('- select -'),
-      ));
+      ]);
 
     // Optionally define default search values
-    $form->setDefaults(array());
+    $form->setDefaults([]);
 
     /**
      * if you are using the standard template, this array tells the template what elements
      * are part of the search criteria
      */
-    $form->assign('elements', array('tag', 'demographic'));
+    $form->assign('elements', ['tag', 'demographic']);
 
     //export option
     $formValues = $form->get('formValues');
     if (!empty($formValues)) {
       $quickExportUrl = CRM_Utils_System::url('civicrm/search/custom/tagdemographics/quickexport',
-        http_build_query(array('formValues' => $formValues)));
+        http_build_query(['formValues' => $formValues]));
       $form->assign('quickExportUrl', $quickExportUrl);
     }
   }
@@ -85,11 +85,11 @@ class CRM_TagDemographics_Form_Search_TagDemographics extends CRM_Contact_Form_S
     ));*/
 
     // return by reference
-    $columns = array(
+    $columns = [
       'Demographic' => 'demo',
       'Values' => 'label',
       'Count' => 'demo_count',
-    );
+    ];
     return $columns;
   }
 
@@ -108,7 +108,7 @@ class CRM_TagDemographics_Form_Search_TagDemographics extends CRM_Contact_Form_S
   ) {
     //Civi::log()->debug('all', array('this' => $this));
 
-    $sql = array();
+    $sql = [];
     foreach ($this->_formValues['demographic'] as $demo) {
       //set cycle demo value so we can use in sql parts
       $this->_activeDemographic = $demo;
@@ -153,7 +153,7 @@ class CRM_TagDemographics_Form_Search_TagDemographics extends CRM_Contact_Form_S
    */
   function from() {
     $meta = $this->getDemographicMeta($this->_activeDemographic);
-    $tag = CRM_Utils_Array::value('tag', $this->_formValues);
+    $tag = $this->_formValues['tag'] ?? NULL;
 
     return "
       FROM civicrm_contact c
@@ -224,10 +224,10 @@ class CRM_TagDemographics_Form_Search_TagDemographics extends CRM_Contact_Form_S
   }
 
   function getDemographicMeta($demo) {
-    $meta = array();
+    $meta = [];
     switch ($demo) {
       case 'gender':
-        $meta = array(
+        $meta = [
           'title' => $this->_demographicOptions[$demo],
           'select' => 'demo.label',
           'from' => "
@@ -236,20 +236,20 @@ class CRM_TagDemographics_Form_Search_TagDemographics extends CRM_Contact_Form_S
               AND demo.option_group_id = 3
           ",
           'where' => '',
-        );
+        ];
         break;
 
       case 'age':
-        $meta = array(
+        $meta = [
           'title' => $this->_demographicOptions[$demo],
           'select' => 'YEAR(CURRENT_DATE) - YEAR(c.birth_date) - (RIGHT(CURRENT_DATE, 5) < RIGHT(c.birth_date, 5))',
           'from' => "",
           'where' => ' AND c.birth_date IS NOT NULL'
-        );
+        ];
         break;
 
       case 'postal_code':
-        $meta = array(
+        $meta = [
           'title' => $this->_demographicOptions[$demo],
           'select' => 'demo.postal_code',
           'from' => "
@@ -257,11 +257,11 @@ class CRM_TagDemographics_Form_Search_TagDemographics extends CRM_Contact_Form_S
               ON c.id = demo.contact_id
           ",
           'where' => '',
-        );
+        ];
         break;
 
       case 'city':
-        $meta = array(
+        $meta = [
           'title' => $this->_demographicOptions[$demo],
           'select' => 'demo.city',
           'from' => "
@@ -269,11 +269,11 @@ class CRM_TagDemographics_Form_Search_TagDemographics extends CRM_Contact_Form_S
               ON c.id = demo.contact_id
           ",
           'where' => '',
-        );
+        ];
         break;
 
       case 'town':
-        $meta = array(
+        $meta = [
           'title' => $this->_demographicOptions[$demo],
           'select' => 'di.town_52',
           'from' => "
@@ -283,11 +283,11 @@ class CRM_TagDemographics_Form_Search_TagDemographics extends CRM_Contact_Form_S
               ON demo.id = di.entity_id
           ",
           'where' => '',
-        );
+        ];
         break;
 
       case 'county':
-        $meta = array(
+        $meta = [
           'title' => $this->_demographicOptions[$demo],
           'select' => 'di.county_50',
           'from' => "
@@ -297,11 +297,11 @@ class CRM_TagDemographics_Form_Search_TagDemographics extends CRM_Contact_Form_S
               ON demo.id = di.entity_id
           ",
           'where' => '',
-        );
+        ];
         break;
 
       case 'sd':
-        $meta = array(
+        $meta = [
           'title' => $this->_demographicOptions[$demo],
           'select' => 'di.ny_senate_district_47',
           'from' => "
@@ -311,11 +311,11 @@ class CRM_TagDemographics_Form_Search_TagDemographics extends CRM_Contact_Form_S
               ON demo.id = di.entity_id
           ",
           'where' => '',
-        );
+        ];
         break;
 
       case 'ad':
-        $meta = array(
+        $meta = [
           'title' => $this->_demographicOptions[$demo],
           'select' => 'di.ny_assembly_district_48',
           'from' => "
@@ -325,11 +325,11 @@ class CRM_TagDemographics_Form_Search_TagDemographics extends CRM_Contact_Form_S
               ON demo.id = di.entity_id
           ",
           'where' => '',
-        );
+        ];
         break;
 
       case 'school_district':
-        $meta = array(
+        $meta = [
           'title' => $this->_demographicOptions[$demo],
           'select' => 'di.school_district_54',
           'from' => "
@@ -339,7 +339,7 @@ class CRM_TagDemographics_Form_Search_TagDemographics extends CRM_Contact_Form_S
               ON demo.id = di.entity_id
           ",
           'where' => '',
-        );
+        ];
         break;
 
       default:

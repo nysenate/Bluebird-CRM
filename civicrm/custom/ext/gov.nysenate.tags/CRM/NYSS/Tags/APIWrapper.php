@@ -222,7 +222,7 @@ class CRM_NYSS_Tags_APIWrapper {
       }
 
       //construct positions
-      $billTags = array($billName, "$billName: SUPPORT", "$billName: OPPOSE");
+      $billTags = [$billName, "$billName: SUPPORT", "$billName: OPPOSE"];
 
       //construct tags array
       foreach ($billTags as $billTag) {

@@ -88,7 +88,7 @@ function inbox_civicrm_buildForm($formName, &$form) {
   //inject js/css to new indiv form, but only when triggered from inbox matched list
   if ($formName == 'CRM_Profile_Form_Edit') {
     $ufGroup = $form->getVar('_ufGroup');
-    $referer = CRM_Utils_Array::value('HTTP_REFERER', $_SERVER);
+    $referer = $_SERVER['HTTP_REFERER'] ?? NULL;
     if ($ufGroup['name'] == 'new_individual' &&
       (strpos($referer, 'civicrm/nyss/inbox/matched') !== FALSE ||
        strpos($referer, 'civicrm/nyss/inbox/unmatched') !== FALSE)

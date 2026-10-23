@@ -18,7 +18,7 @@ class SmtpApiHeader
   function addTo($tos)
   {
     if (!isset($this->data['to'])) {
-      $this->data['to'] = array();
+      $this->data['to'] = [];
     }
     $this->data['to'] = array_merge($this->data['to'], (array)$tos);
   }
@@ -27,11 +27,11 @@ class SmtpApiHeader
   function addSubVal($var, $val)
   {
     if (!isset($this->data['sub'])) {
-      $this->data['sub'] = array();
+      $this->data['sub'] = [];
     }
  
     if (!isset($this->data['sub'][$var])) {
-      $this->data['sub'][$var] = array();
+      $this->data['sub'][$var] = [];
     }
     $this->data['sub'][$var] = array_merge($this->data['sub'][$var], (array)$val);
   }
@@ -57,15 +57,15 @@ class SmtpApiHeader
   function addFilterSetting($filter, $setting, $value)
   {
     if (!isset($this->data['filters'])) {
-      $this->data['filters'] = array();
+      $this->data['filters'] = [];
     }
  
     if (!isset($this->data['filters'][$filter])) {
-      $this->data['filters'][$filter] = array();
+      $this->data['filters'][$filter] = [];
     }
  
     if (!isset($this->data['filters'][$filter]['settings'])) {
-      $this->data['filters'][$filter]['settings'] = array();
+      $this->data['filters'][$filter]['settings'] = [];
     }
     $this->data['filters'][$filter]['settings'][$setting] = $value;
   }

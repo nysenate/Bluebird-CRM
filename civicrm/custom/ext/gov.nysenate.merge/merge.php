@@ -310,7 +310,7 @@ function _merge_resolveConflicts(&$data, $mainId, $otherId) {
 
   //let's log any remaining conflicts for later review
   if (in_array(null, $conflicts, true)) {
-    $conflictDetails = array();
+    $conflictDetails = [];
     foreach ($conflicts as $fld => $value) {
       if ($value === null) {
         $conflictDetails[$fld] = [
@@ -415,7 +415,7 @@ function _merge_fixGreeting($gType, &$rows, &$conflicts) {
       'greeting_type' => $greetingType,
     ];
     $allGreetings = CRM_Core_PseudoConstant::greeting($filter);
-    $defaultGreetingString = $greetingString = CRM_Utils_Array::value($defaultGreetingId, $allGreetings);
+    $defaultGreetingString = $allGreetings[$defaultGreetingId] ?? NULL;
     _merge_mD('setting default greeting string', $defaultGreetingString, 2);
 
     $conflicts[$gType] = $defaultGreetingString;

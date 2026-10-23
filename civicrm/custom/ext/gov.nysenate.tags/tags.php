@@ -62,16 +62,16 @@ function tags_civicrm_buildForm($formName, &$form) {
     'form' => $form,
   ));*/
 
-  if (in_array($formName, array('CRM_Tag_Form_Tag', 'CRM_Contact_Form_Task_AddToTag',
-    'CRM_Contact_Form_Contact', 'CRM_Contact_Form_Task_RemoveFromTag'))
+  if (in_array($formName, ['CRM_Tag_Form_Tag', 'CRM_Contact_Form_Task_AddToTag',
+    'CRM_Contact_Form_Contact', 'CRM_Contact_Form_Task_RemoveFromTag'])
   ) {
-    $webSets = array(
+    $webSets = [
       'Website Bills',
       'Website Committees',
       'Website Issues',
       'Website Petitions',
-    );
-    $webViewOnly = array();
+    ];
+    $webViewOnly = [];
     foreach ($form->_tagsetInfo as $setId => $setDetails) {
       //Civi::log()->debug('buildForm', array('$setDetails' => $setDetails));
 
@@ -131,7 +131,7 @@ function tags_civicrm_buildForm($formName, &$form) {
     $contactId = $form->getVar('_entityID');
 
     //Construct list of issue codes, comma-separated; work with the full list and subtract tagsets
-    $contactIssueCode_item = array();
+    $contactIssueCode_item = [];
     $contactTags = CRM_Core_BAO_EntityTag::getTag($contactId);
     $tagsNotTagset = CRM_Core_BAO_Tag::getTagsNotInTagset();
 
@@ -160,7 +160,7 @@ function tags_civicrm_buildForm($formName, &$form) {
         $name = $legposition['name'];
         $bill_id = substr($name, 0, strcspn($name, ' :'));
         $id_parts = explode('-', $bill_id);  // [0]=billno, [1]=year
-        $search = array('{billno}', '{year}');
+        $search = ['{billno}', '{year}'];
         $bill_url = str_replace($search, $id_parts, $url_template);
         $bill_html = "<a href=\"$bill_url\" target=\"_blank\">$bill_url</a>";
         $legposition['description'] = $bill_html;
@@ -173,12 +173,12 @@ function tags_civicrm_buildForm($formName, &$form) {
     }
 
     //10658 rebuild leg positions entity ref using custom API and disabling create
-    CRM_Core_Resources::singleton()->addVars('NYSS', array('contactId' => $contactId));
+    CRM_Core_Resources::singleton()->addVars('NYSS', ['contactId' => $contactId]);
     CRM_Core_Resources::singleton()->addScriptFile('gov.nysenate.tags', 'js/form_tags.js');
 
     //11072/11167 append list of issue codes and leg positions
     if (!empty($contactIssueCode_list)) {
-      CRM_Core_Region::instance('page-header')->add(array(
+      CRM_Core_Region::instance('page-header')->add([
         'markup' => "
           <div class='contactTagsList help'>
             <strong>Issue Codes: </strong>
@@ -186,11 +186,11 @@ function tags_civicrm_buildForm($formName, &$form) {
           </div>
     	    <div class='clear'></div>
     	  ",
-      ));
+      ]);
     }
 
     if (!empty($legpositions)) {
-      CRM_Core_Region::instance('page-body')->add(array(
+      CRM_Core_Region::instance('page-body')->add([
         'markup' => "
           <div class='contactTagsList help'>
             <strong>Legislative Position Details</strong>
@@ -198,11 +198,11 @@ function tags_civicrm_buildForm($formName, &$form) {
           </div>
     	    <div class='clear'></div>
     	  ",
-      ));
+      ]);
     }
 
     //11072/11450 auto-expand issue code tree
-    CRM_Core_Region::instance('form-bottom')->add(array(
+    CRM_Core_Region::instance('form-bottom')->add([
       'jquery' => "
         var interval_id = setInterval(function(){
           if ($('li#j1_1').length != 0){
@@ -211,7 +211,7 @@ function tags_civicrm_buildForm($formName, &$form) {
           }
         }, 5);
       ",
-    ));
+    ]);
   }
 
   //11334 (extension of 10658): rebuild leg positions entity ref using custom API and disabling create
@@ -226,9 +226,9 @@ function tags_civicrm_buildForm($formName, &$form) {
   //11082 - force used_for value
   if ($formName == 'CRM_Tag_Form_Edit' && !$form->getVar('_isTagSet')) {
     if ($form->elementExists('used_for')) {
-      $form->setDefaults(array(
+      $form->setDefaults([
         'used_for' => 'civicrm_contact,civicrm_activity,civicrm_case',
-      ));
+      ]);
       $form->getElement('used_for')->freeze();
     }
   }
@@ -367,7 +367,7 @@ function tags_civicrm_pageRun(&$page) {
   if (is_a($page, 'CRM_Tag_Page_Tag')) {
     //hide some tagsets
     $tagSets = $page->getTemplateVars('tagsets');
-    $remove = array('Positions', 'Website Issues', 'Website Committees', 'Website Bills', 'Website Petitions');
+    $remove = ['Positions', 'Website Issues', 'Website Committees', 'Website Bills', 'Website Petitions'];
     foreach ($tagSets as $setID => $tagSet) {
       if (in_array($tagSet['name'], $remove)) {
         unset($tagSets[$setID]);
@@ -424,11 +424,11 @@ function tags_civicrm_alterAPIPermissions($entity, $action, &$params, &$permissi
   ]);*/
 
   //11459
-  if ($entity == 'nyss_tags' && in_array($action, array('getlist', 'saveposition'))) {
+  if ($entity == 'nyss_tags' && in_array($action, ['getlist', 'saveposition'])) {
     $params['check_permissions'] = false;
   }
 
   // NYSS #17149 -- moving API action from nyss_tags to tag entity
-  $permissions['tag']['save_position'] = array('access CiviCRM', 'edit all contacts');
+  $permissions['tag']['save_position'] = ['access CiviCRM', 'edit all contacts'];
 
 } //tags_civicrm_alterAPIPermissions()

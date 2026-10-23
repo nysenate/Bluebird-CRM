@@ -9,7 +9,7 @@ class CRM_NYSS_Resources_Resources
    * county code lookup map
    */
   static function getCountyCodes($id = NULL) {
-    $countyCodes = array(
+    $countyCodes = [
       1 => 'Albany',
       2 => 'Allegany',
       3 => 'Broome',
@@ -72,7 +72,7 @@ class CRM_NYSS_Resources_Resources
       62 => 'New York',
       63 => 'Queens',
       64 => 'Richmond',
-    );
+    ];
 
     if (!empty($id)) {
       if (isset($countyCodes[$id])) {
