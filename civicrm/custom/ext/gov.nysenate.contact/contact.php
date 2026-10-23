@@ -850,12 +850,32 @@ function contact_civicrm_tabset($tabsetName, &$tabs, $context) {
         ];
       }
 
+      // NYSS #5184, #5185
+      _contact_append_log_tab_pagination($tabs);
+
       // NYSS #17217
       _contact_replace_contact_tab_relationships($tabs);
 
       CRM_Core_Error::debug_var('nyss rel', $tabs['n_y_s_s_contact_summary_relationships']);
     }
     catch (CRM_Core_Exception $e) {}
+  }
+}
+
+// NYSS #5184, #5185
+#[CRM_NYSS_Attribute_IssueRef(5184)]
+#[CRM_NYSS_Attribute_IssueRef(5185)]
+function _contact_append_log_tab_pagination(&$tabs) {
+  $crmPID = CRM_Utils_Request::retrieve('crmPID', 'Integer');
+  if (!$crmPID && CRM_Utils_Request::retrieve('crmPID_B', 'Integer') && CRM_Utils_Request::retrieve('PagerBottomButton', 'String')) {
+    $crmPID = CRM_Utils_Request::retrieve('crmPID_B', 'Integer');
+  }
+  if ($crmPID) {
+    foreach ($tabs as $key => &$tab) {
+      if ((is_array($tab) && ($tab['id'] ?? NULL) === 'log') || $key === 'log') {
+        $tab['url'] .= '&crmPID=' . $crmPID;
+      }
+    }
   }
 }
 
