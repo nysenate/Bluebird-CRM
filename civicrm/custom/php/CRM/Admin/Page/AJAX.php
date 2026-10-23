@@ -18,6 +18,7 @@
 /**
  * This class contains all the function that are called using AJAX.
  */
+#[CRM_NYSS_Attribute_UpstreamFix('civicrm', '6.20', 'https://github.com/civicrm/civicrm-core/pull/37210')]
 class CRM_Admin_Page_AJAX {
 
   /**
@@ -52,6 +53,7 @@ class CRM_Admin_Page_AJAX {
   /**
    * @param array $menu
    */
+  #[CRM_NYSS_Attribute_UpstreamFix('civicrm', '6.20', 'https://github.com/civicrm/civicrm-core/pull/37210')]
   public static function formatMenuItems(&$menu) {
     foreach ($menu as $key => &$item) {
       $props = $item['attributes'];
