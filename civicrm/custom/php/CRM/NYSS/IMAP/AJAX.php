@@ -555,7 +555,7 @@ class CRM_NYSS_IMAP_AJAX
               'parent_id' => $parentId,
               'used_for' => $used_for
             );
-            $tagObj = CRM_Core_BAO_Tag::add($params, CRM_Core_DAO::$_nullArray);
+            $tagObj = CRM_Core_BAO_Tag::add($params);
             $tagId = strval($tagObj->id);
           }
         }

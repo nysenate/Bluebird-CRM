@@ -25,7 +25,7 @@ class CRM_NYSS_Subscription_Form_Admin extends CRM_Core_Form
     //CRM_Core_Error::debug_log_message('CRM_NYSS_Subscription_Form_Manage::preProcess');
 
     //get form params
-    $eid = CRM_Utils_Request::retrieve('emailId', 'Positive', CRM_Core_DAO::$_nullObject, FALSE, NULL, $_REQUEST);
+    $eid = CRM_Utils_Request::retrieve('emailId', 'Positive');
 
     if ( !$eid ) {
       //check to see if set to submitValues

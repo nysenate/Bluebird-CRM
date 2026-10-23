@@ -188,9 +188,7 @@ class CRM_TagDemographics_Form_Search_TagDemographics extends CRM_Contact_Form_S
   public function count() {
     $sql = $this->all();
 
-    $dao = CRM_Core_DAO::executeQuery($sql,
-      CRM_Core_DAO::$_nullArray
-    );
+    $dao = CRM_Core_DAO::executeQuery($sql);
     return $dao->N;
   }
 
