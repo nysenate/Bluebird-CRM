@@ -7,7 +7,9 @@
  | and copyright information, see https://civicrm.org/licensing       |
  +--------------------------------------------------------------------+
 *}
-{*NYSS 13373*}
+{*Original Override: NYSS 13373*}
+{*Override Removal: NYSS 19280*}
+{*#[CRM_NYSS_Attribute_UpstreamFix('civicrm', '6.21', 'https://github.com/civicrm/civicrm-core/pull/37710')]*}
 <tr><td colspan="2" style="padding:0;">
 <table class="crm-address-element" style="width: auto">
 <tr>
