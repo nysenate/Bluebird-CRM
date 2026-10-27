@@ -38,12 +38,11 @@
  *  Example 2: Add multiple refs to different issue numbers. Note that
  *  numeric values are assumed to be issue numbers.
  *
- *  #[CRM_NYSS_Attribute_IssueRefs('12345', 67890)]
+ *  #[CRM_NYSS_Attribute_IssueRef('12345', 67890)]
  *  function _references_multiple_issues($vars...) {
  *
  *  }
  */
-use Attribute;
 
 #[Attribute(Attribute::TARGET_ALL|Attribute::IS_REPEATABLE)]
 class CRM_NYSS_Attribute_IssueRef {

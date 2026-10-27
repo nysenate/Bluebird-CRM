@@ -3,6 +3,7 @@
 // override Mosaico Editor.php
 // ref: https://github.com/veda-consulting/uk.co.vedaconsulting.mosaico/issues/347
 
+#[CRM_NYSS_Attribute_AlterMenuOverride('civicrm/mosaico/iframe', CRM_Mosaico_Page_EditorIframe::class, 'mosaico')]
 class CRM_NYSS_Page_MosaicoEditor extends CRM_Mosaico_Page_Editor {
   const DEFAULT_MODULE_WEIGHT = 200;
 

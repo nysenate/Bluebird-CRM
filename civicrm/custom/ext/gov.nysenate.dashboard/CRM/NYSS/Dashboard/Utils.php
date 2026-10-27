@@ -13,7 +13,7 @@ class CRM_NYSS_Dashboard_Utils
      * @param $record
      * @return bool - TRUE
      */
-    #[CRM_NYSS_Attribute_IssueRefs('3439')]
+    #[CRM_NYSS_Attribute_IssueRef('3439')]
     public static function filterDashletsBasedOnReport($record):bool {
         //NYSS 3439 also check for group based permission if created from report
         $url = $record['url'] ?? '';
@@ -33,7 +33,7 @@ class CRM_NYSS_Dashboard_Utils
      * NYSS 3439
      * @return int[]
      */
-    #[CRM_NYSS_Attribute_IssueRefs('3439')]
+    #[CRM_NYSS_Attribute_IssueRef('3439')]
     public static function getDeniedReportDashletIds():array {
         $denied_ids = [];
         $dao = CRM_Core_DAO::executeQuery(

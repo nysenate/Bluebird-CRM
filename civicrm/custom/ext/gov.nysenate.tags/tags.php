@@ -8,7 +8,7 @@ require_once 'tags.civix.php';
  *
  * @link http://wiki.civicrm.org/confluence/display/CRMDOC/hook_civicrm_config
  */
-#[CRM_NYSS_Attribute_IssueRefs('17149')]
+#[CRM_NYSS_Attribute_IssueRef('17149')]
 function tags_civicrm_config(&$config) {
   _tags_civix_civicrm_config($config);
 
@@ -55,7 +55,7 @@ function tags_civicrm_merge($type, &$sqls, $fromId, $toId, $tables) {
   }
 } //tags_civicrm_merge()
 
-#[CRM_NYSS_Attribute_IssueRefs('17149')]
+#[CRM_NYSS_Attribute_IssueRef('17149')]
 function tags_civicrm_buildForm($formName, &$form) {
   /*Civi::log()->debug('buildForm', array(
     'formName' => $formName,
@@ -381,7 +381,7 @@ function tags_civicrm_pageRun(&$page) {
   }
 } //tags_civicrm_pageRun()
 
-#[CRM_NYSS_Attribute_IssueRefs('17149')]
+#[CRM_NYSS_Attribute_IssueRef('17149')]
 function tags_civicrm_alterEntityRefParams(&$params, $formName) {
   /*Civi::log()->debug('tags_civicrm_alterEntityRefParams', [
     'params' => $params,

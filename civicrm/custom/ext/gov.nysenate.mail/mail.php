@@ -141,7 +141,7 @@ function mail_civicrm_angularModules(&$angularModules) {
   }
 }
 
-#[CRM_NYSS_Attribute_IssueRefs('13402','11041','14402','13305','12136','17587')]
+#[CRM_NYSS_Attribute_IssueRef('13402','11041','14402','13305','12136','17587')]
 function mail_civicrm_alterAngular(\Civi\Angular\Manager $angular) {
   //inject mailing form options
   $changeSet = \Civi\Angular\ChangeSet::create('inject_options')
@@ -1197,7 +1197,7 @@ function mail_civicrm_alterTemplateFile($formName, &$form, $context, &$tplName) 
   }
 }
 
-#[CRM_NYSS_Attribute_IssueRefs('13174')]
+#[CRM_NYSS_Attribute_IssueRef('13174')]
 function mail_civicrm_permission_check($permission, &$granted) {
   // return early to avoid recursion in CRM_Core_Permission::check().
   if (!in_array($permission, ['access CiviMail', 'view public CiviMail content'])) {

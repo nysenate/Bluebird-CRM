@@ -12,7 +12,7 @@
  * management page. Logic from the custom entity type has been implemented here.
  * NYSS #17149
  */
-#[CRM_NYSS_Attribute_IssueRefs('17149', '17833')]
+#[CRM_NYSS_Attribute_IssueRef('17149', '17833')]
 class CRM_NYSS_Tags_APIWrapper {
   /**
    * Callback to wrap completetransaction API calls.
@@ -111,7 +111,7 @@ class CRM_NYSS_Tags_APIWrapper {
      * @throws CRM_Core_Exception
      * @throws \Civi\API\Exception\UnauthorizedException
      */
-    #[CRM_NYSS_Attribute_IssueRefs('17833')]
+    #[CRM_NYSS_Attribute_IssueRef('17833')]
   public static function preprocessPositionTags(string $tag_id) {
       if (str_ends_with($tag_id, ':::value') &&  // short circuit to avoid preg_match() when unnecessary.
           preg_match('/^([A-Z]{1}[0-9]+.+):{3}value$/', $tag_id ?? '', $matches)) {

@@ -7,7 +7,7 @@ use Civi;
 
 class CheckSendableListener
 {
-    #[CRM_NYSS_Attribute_IssueRef(18424)]
+    #[\CRM_NYSS_Attribute_IssueRef(18424)]
     /**
      * Validate that a category exists on the mailing before approval and submission.
      * NYSS #18424 -- one-click unsubscribe depends on having a mailing category

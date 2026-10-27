@@ -7,6 +7,7 @@
  * mailing's category rather than CiviCRM groups.
  */
 #[CRM_NYSS_Attribute_IssueRef(18424)]
+#[CRM_NYSS_Attribute_AlterMenuOverride('civicrm/mailing/unsubscribe', CRM_Mailing_Page_Unsubscribe::class)]
 class CRM_NYSS_Mail_Page_Unsubscribe extends CRM_Mailing_Page_Unsubscribe {
 
   public function handleOneClick(): void {
