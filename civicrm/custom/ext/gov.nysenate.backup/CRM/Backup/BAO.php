@@ -131,7 +131,7 @@ class CRM_Backup_BAO {
       $fileName = str_replace('.zip', '', $fileName);
     }
 
-    $fileName = preg_replace(array('/(?![ \-])\W/','/ /'), ['','_'], $fileName);
+    $fileName = preg_replace(['/(?![ \-])\W/','/ /'], ['','_'], $fileName);
     $fileName = substr($fileName, 0, 50);
     $fileName .= '.zip';
 

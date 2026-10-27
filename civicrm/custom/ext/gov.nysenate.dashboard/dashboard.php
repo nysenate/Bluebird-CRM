@@ -36,7 +36,7 @@ function dashboard_civicrm_enable() {
  * NYSS 3439 - hide legacy report dashlets from users who aren't in one of the
  * report's ACL Group/Roles.
  */
-#[CRM_NYSS_Attribute_IssueRefs('3439')]
+#[CRM_NYSS_Attribute_IssueRef('3439')]
 function dashboard_civicrm_selectWhereClause($entity, &$clauses, $userId, $conditions) {
     // NYSS #3439
     if ($entity === 'Dashboard') {

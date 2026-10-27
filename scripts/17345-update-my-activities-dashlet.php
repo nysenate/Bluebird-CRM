@@ -5,7 +5,7 @@ set_time_limit(0);
 
 define('DEFAULT_LOG_LEVEL', 'INFO');
 
-#[CRM_NYSS_Attribute_IssueRefs('17345')]
+#[CRM_NYSS_Attribute_IssueRef('17345')]
 class CRM_NYSS_Scripts_UpdateMyActivitiesDashlet {
 
   const OLD_DASHLET_NAME = 'activity';

@@ -30,7 +30,7 @@ function civicrm_api3_nyss_cleanaddresses($params) {
     'errored' => [],
   ];
 
-  $limit = CRM_Utils_Array::value('limit', $params);
+  $limit = $params['limit'] ?? NULL;
   $limitSql = ($limit) ? "LIMIT {$limit}" : '';
 
   $dao = CRM_Core_DAO::executeQuery("

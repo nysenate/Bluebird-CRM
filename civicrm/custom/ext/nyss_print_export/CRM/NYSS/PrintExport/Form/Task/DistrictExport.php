@@ -154,10 +154,10 @@ class CRM_NYSS_PrintExport_Form_Task_DistrictExport extends CRM_Contact_Form_Tas
     $ids = "($ids)";
 
     $sql = "CREATE TABLE $tmpExport (id int not null primary key) ENGINE=myisam;";
-    $dao = CRM_Core_DAO::executeQuery( $sql, CRM_Core_DAO::$_nullArray );
+    $dao = CRM_Core_DAO::executeQuery( $sql );
 
     $sql = "INSERT INTO $tmpExport VALUES $ids;";
-    $dao = CRM_Core_DAO::executeQuery( $sql, CRM_Core_DAO::$_nullArray );
+    $dao = CRM_Core_DAO::executeQuery( $sql );
 
     if ( $excludeGroups ) {
       $this->excludeGroupContacts( $tmpExport, $excludeGroups );
@@ -211,7 +211,7 @@ class CRM_NYSS_PrintExport_Form_Task_DistrictExport extends CRM_Contact_Form_Tas
     //order export by oldest male, then oldest female
     //ensure empty values fall last
 
-    $dao = CRM_Core_DAO::executeQuery( $sql, CRM_Core_DAO::$_nullArray );
+    $dao = CRM_Core_DAO::executeQuery( $sql );
 
     $skipVars['_DB_DataObject_version'] = 1;
     $skipVars['__table'] = 1;
@@ -286,19 +286,19 @@ class CRM_NYSS_PrintExport_Form_Task_DistrictExport extends CRM_Contact_Form_Tas
 
     //get rid of helper table
     $sql = "DROP TABLE $tmpExport;";
-    $dao = CRM_Core_DAO::executeQuery( $sql, CRM_Core_DAO::$_nullArray );
+    $dao = CRM_Core_DAO::executeQuery( $sql );
 
     //get rid of log table
     if ( $include_log ) {
       $sql = "DROP TABLE $logTable;";
-      $dao = CRM_Core_DAO::executeQuery( $sql, CRM_Core_DAO::$_nullArray );
+      $dao = CRM_Core_DAO::executeQuery( $sql );
     }
 
     $url = "http://".$_SERVER['HTTP_HOST'].'/nyss_getfile?file='.$filename;
     $urlclean = urlencode( $url );
     $href = "mailto:?subject=district export: $filename&body=".$urlclean;
 
-    $status = array();
+    $status = [];
     $status[] = "District Merge/Purge Export";
     $status[] = "District: $instance (task $rnd).";
     $status[] = "$count contact(s) were exported.";
@@ -324,15 +324,8 @@ class CRM_NYSS_PrintExport_Form_Task_DistrictExport extends CRM_Contact_Form_Tas
      */
     protected function getStates()
     {
-        $dao = CRM_Core_DAO::executeQuery("SELECT id, abbreviation from civicrm_state_province",
-            CRM_Core_DAO::$_nullArray);
-
-        $options = array();
-        while ($dao->fetch()) {
-            $options[$dao->id] = $dao->abbreviation;
-        }
-
-        return $options;
+        $dao = CRM_Core_DAO::executeQuery("SELECT id, abbreviation from civicrm_state_province");
+        return $dao->fetchMap('id', 'abbreviation');
     } // getStates()
 
 
@@ -345,7 +338,7 @@ class CRM_NYSS_PrintExport_Form_Task_DistrictExport extends CRM_Contact_Form_Tas
         require_once 'CRM/Contact/BAO/Group.php';
 
         //get group contacts
-        $excludeContacts = array();
+        $excludeContacts = [];
         foreach ( $groups as $group ) {
             $groupContacts = CRM_Contact_BAO_Group::getMember( $group );
             $excludeContacts = array_merge( $excludeContacts, array_keys($groupContacts) );
@@ -372,7 +365,7 @@ class CRM_NYSS_PrintExport_Form_Task_DistrictExport extends CRM_Contact_Form_Tas
         $tblLogDedupe = TEMP_TABLE_PREFIX."log_dedupe_$rnd";
 
         $sql = "CREATE TABLE $tblLog ( cid int not null, mod_date date, INDEX (cid) ) ENGINE=myisam;";
-        $dao = CRM_Core_DAO::executeQuery( $sql, CRM_Core_DAO::$_nullArray );
+        $dao = CRM_Core_DAO::executeQuery( $sql );
 
         //first retrieve latest contact and activity log records for unique
         //entity_table and entity_id and store in temp table
@@ -385,7 +378,7 @@ class CRM_NYSS_PrintExport_Form_Task_DistrictExport extends CRM_Contact_Form_Tas
     WHERE entity_table = 'civicrm_contact'
     GROUP BY entity_id;
   ";
-        $dao = CRM_Core_DAO::executeQuery( $sql, CRM_Core_DAO::$_nullArray );
+        $dao = CRM_Core_DAO::executeQuery( $sql );
 
         //insert activities
         //skip source as that will only be staff
@@ -415,15 +408,15 @@ class CRM_NYSS_PrintExport_Form_Task_DistrictExport extends CRM_Contact_Form_Tas
     JOIN $tblIDs c
       ON cat.contact_id = c.id;
     ";
-        $dao = CRM_Core_DAO::executeQuery( $sql, CRM_Core_DAO::$_nullArray );
+        $dao = CRM_Core_DAO::executeQuery( $sql );
 
         //collapse resulting data in a separate table
         //this give us the latest mod date among both contact and activity logs
         $sql = "CREATE TABLE $tblLogDedupe LIKE $tblLog;";
-        $dao = CRM_Core_DAO::executeQuery( $sql, CRM_Core_DAO::$_nullArray );
+        $dao = CRM_Core_DAO::executeQuery( $sql );
 
         $sql = "ALTER TABLE $tblLogDedupe ADD UNIQUE ( cid );";
-        $dao = CRM_Core_DAO::executeQuery( $sql, CRM_Core_DAO::$_nullArray );
+        $dao = CRM_Core_DAO::executeQuery( $sql );
 
         $sql = "
     INSERT INTO $tblLogDedupe
@@ -431,7 +424,7 @@ class CRM_NYSS_PrintExport_Form_Task_DistrictExport extends CRM_Contact_Form_Tas
     FROM $tblLog
     GROUP BY cid
   ";
-        $dao = CRM_Core_DAO::executeQuery( $sql, CRM_Core_DAO::$_nullArray );
+        $dao = CRM_Core_DAO::executeQuery( $sql );
 
         //now drop first temp table
         CRM_Core_DAO::executeQuery("DROP TABLE $tblLog;");
@@ -450,7 +443,7 @@ class CRM_NYSS_PrintExport_Form_Task_DistrictExport extends CRM_Contact_Form_Tas
         $tblTouched = TEMP_TABLE_PREFIX."touched_$rnd";
 
         $sql = "CREATE TABLE $tblTouched ( cid int not null, untouched int, privacy int, INDEX (cid) ) ENGINE=myisam;";
-        CRM_Core_DAO::executeQuery( $sql, CRM_Core_DAO::$_nullArray );
+        CRM_Core_DAO::executeQuery( $sql );
 
         //reduce how many records we are working with
         $sql = "
@@ -473,12 +466,12 @@ class CRM_NYSS_PrintExport_Form_Task_DistrictExport extends CRM_Contact_Form_Tas
             return $tblTouched;
         }
 
-        $insertVals = array();
+        $insertVals = [];
 
         //cycle through ids and check for values
         //for both fields, we return 1 if the condition is met
         while ( $dao->fetch() ) {
-            $records = array('Email', 'Notes', 'Activities', 'Cases');
+            $records = ['Email', 'Notes', 'Activities', 'Cases'];
             $untouched = 1;
             $privacy = 0;
 
@@ -505,7 +498,7 @@ class CRM_NYSS_PrintExport_Form_Task_DistrictExport extends CRM_Contact_Form_Tas
     VALUES
     {$insertValsSql}
   ";
-        CRM_Core_DAO::executeQuery( $sql, CRM_Core_DAO::$_nullArray );
+        CRM_Core_DAO::executeQuery( $sql );
 
         return $tblTouched;
     } // buildTouched()

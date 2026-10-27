@@ -6,6 +6,7 @@
  * public proxy URL.
  */
 #[CRM_NYSS_Attribute_IssueRef(18424)]
+#[CRM_NYSS_Attribute_AlterMenuOverride('civicrm/mailing/resubscribe', CRM_Mailing_Page_Resubscribe::class)]
 class CRM_NYSS_Mail_Page_Resubscribe extends CRM_Core_Page {
 
   public function run(): void {

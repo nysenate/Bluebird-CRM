@@ -15,19 +15,19 @@ class CRM_NYSS_Testing_Form_RunTests extends CRM_Core_Form {
       'select', // field type
       'test_type', // field name
       'Test Type', // field label
-      array(
+      [
         'create_address' => 'Create Address',
         'create_address_with_sage' => 'Create Address trigger SAGE manually',
-      ), // list of options
+      ], // list of options
       TRUE // is required
     );
-    $this->addButtons(array(
-      array(
+    $this->addButtons([
+      [
         'type' => 'submit',
         'name' => ts('Submit'),
         'isDefault' => TRUE,
-      ),
-    ));
+      ],
+    ]);
 
     // export form elements
     $this->assign('elementNames', $this->getRenderableElementNames());
@@ -36,7 +36,7 @@ class CRM_NYSS_Testing_Form_RunTests extends CRM_Core_Form {
 
   public function postProcess() {
     $values = $this->exportValues();
-    Civi::log()->debug('postProcess', array('values' => $values));
+    Civi::log()->debug('postProcess', ['values' => $values]);
 
     switch ($values['test_type']) {
       case 'create_address':
@@ -46,7 +46,7 @@ class CRM_NYSS_Testing_Form_RunTests extends CRM_Core_Form {
       default:
     }
 
-    Civi::log()->debug("RunTest: {$values['test_type']}", array('$response' => $response));
+    Civi::log()->debug("RunTest: {$values['test_type']}", ['$response' => $response]);
     CRM_Core_Error::debug("RunTest: {$values['test_type']}", $response);
 
     parent::postProcess();
@@ -62,7 +62,7 @@ class CRM_NYSS_Testing_Form_RunTests extends CRM_Core_Form {
     // auto-rendered in the loop -- such as "qfKey" and "buttons".  These
     // items don't have labels.  We'll identify renderable by filtering on
     // the 'label'.
-    $elementNames = array();
+    $elementNames = [];
     foreach ($this->_elements as $element) {
       /** @var HTML_QuickForm_Element $element */
       $label = $element->getLabel();
@@ -74,7 +74,7 @@ class CRM_NYSS_Testing_Form_RunTests extends CRM_Core_Form {
   }
 
   function testCreateAddress() {
-    $params = array(
+    $params = [
       'first_name' => 'Contact',
       'last_name' => 'RunTest',
       'street_address' => '47 Norwood Ave',
@@ -82,12 +82,12 @@ class CRM_NYSS_Testing_Form_RunTests extends CRM_Core_Form {
       'city' => 'Albany',
       'state_province' => 'NY',
       'postal_code' => '12208',
-    );
+    ];
     $cid = CRM_NYSS_BAO_Integration_Website::createContact($params);
 
-    $response = civicrm_api3('address', 'get', array(
+    $response = civicrm_api3('address', 'get', [
       'contact_id' => $cid,
-    ));
+    ]);
 
     return $response;
   }

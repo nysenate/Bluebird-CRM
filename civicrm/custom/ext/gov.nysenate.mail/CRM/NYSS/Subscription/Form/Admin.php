@@ -25,7 +25,7 @@ class CRM_NYSS_Subscription_Form_Admin extends CRM_Core_Form
     //CRM_Core_Error::debug_log_message('CRM_NYSS_Subscription_Form_Manage::preProcess');
 
     //get form params
-    $eid = CRM_Utils_Request::retrieve('emailId', 'Positive', CRM_Core_DAO::$_nullObject, FALSE, NULL, $_REQUEST);
+    $eid = CRM_Utils_Request::retrieve('emailId', 'Positive');
 
     if ( !$eid ) {
       //check to see if set to submitValues
@@ -61,7 +61,7 @@ class CRM_NYSS_Subscription_Form_Admin extends CRM_Core_Form
     }
 
     //build form elements
-    $this->add('hidden', 'eid', $this->_eid, array('id' => 'eid'));
+    $this->add('hidden', 'eid', $this->_eid, ['id' => 'eid']);
 
     $email = CRM_Core_DAO::singleValueQuery("
       SELECT email
@@ -79,7 +79,7 @@ class CRM_NYSS_Subscription_Form_Admin extends CRM_Core_Form
     $this->addGroup($mailingCats, 'mailing_categories', ts('Mailing Categories'), '<br />');
 
     $this->addButtons(
-      array(
+      [
         /*array(
           'type' => 'submit',
           'name' => ts('Save Subscription Options'),
@@ -88,11 +88,11 @@ class CRM_NYSS_Subscription_Form_Admin extends CRM_Core_Form
           'type' => 'cancel',
           'name' => ts('Cancel'),
         ),*/
-      )
+      ]
     );
 
     //set defaults; translate opt-outs to present as opt-ins
-    $defaults = array();
+    $defaults = [];
     $existingOptOuts = CRM_Core_DAO::singleValueQuery("
       SELECT mailing_categories
       FROM civicrm_email
@@ -138,7 +138,7 @@ class CRM_NYSS_Subscription_Form_Admin extends CRM_Core_Form
      * @return array|void
      * @throws \Civi\Core\Exception\DBQueryException
      */
-  static function _processSubscriptions(array $formParams = array()) {
+  static function _processSubscriptions(array $formParams = []) {
 
     if ( empty($formParams['eid']) ) {
       return;
@@ -177,11 +177,11 @@ class CRM_NYSS_Subscription_Form_Admin extends CRM_Core_Form
     //CRM_Core_Error::debug_var('sql', $sql);
     $dao = CRM_Core_DAO::executeQuery($sql);
 
-    $returnArray = array(
+    $returnArray = [
       'emailID' => $formParams['eid'],
       'unsubList' => $mc,
       'subUpdateResponse' => ($dao->is_error) ? FALSE : TRUE,
-    );
+    ];
     //CRM_Core_Error::debug_var('_processSubscriptions $returnArray', $returnArray);
 
     return $returnArray;

@@ -10,6 +10,7 @@
       'update' => 'unmodified',
       'params' => [
         'version' => 4,
+        'match' => ['name'],
         'values' => [
           'name' => 'Search_Inbox_Messages',
           'label' => 'Search Inbox Messages',
@@ -67,6 +68,7 @@
       'update' => 'unmodified',
       'params' => [
         'version' => 4,
+        'match' => ['saved_search_id', 'name'],
         'values' => [
           'name' => 'Search_Inbox_Messages_Table_1',
           'label' => 'Search Inbox Messages Table',

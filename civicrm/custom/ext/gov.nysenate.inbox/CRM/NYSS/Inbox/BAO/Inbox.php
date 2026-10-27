@@ -344,9 +344,9 @@ class CRM_NYSS_Inbox_BAO_Inbox {
     // Format the params.
     $params['offset'] = ($params['page'] - 1) * $params['rp'];
     $params['rowCount'] = $params['rp'];
-    $params['sort'] = CRM_Utils_Array::value('sortBy', $params);
-    $params['range'] = CRM_Utils_Array::value('range', $params, 0);
-    $params['term'] = json_decode(CRM_Utils_Array::value('term', $params, NULL));
+    $params['sort'] = $params['sortBy'] ?? NULL;
+    $params['range'] = $params['range'] ?? 0;
+    $params['term'] = json_decode($params['term'] ?? 'null');
     $orderBy = (!empty($params['sort'])) ? $params['sort'] : 'updated_date DESC, subject, matched_id, sender_email';
 
     //build range SQL; range = 0 -> all time (no where clause)
@@ -774,7 +774,7 @@ class CRM_NYSS_Inbox_BAO_Inbox {
       }
 
       if (!empty($values['tag'])) {
-        $tags = explode(',', CRM_Utils_Array::value('tag', $values));
+        $tags = explode(',', $values['tag'] ?? '');
         foreach ($tags as $tagID) {
           if (!in_array($tagID, $assigneeTags)) {
             try {
@@ -849,7 +849,7 @@ class CRM_NYSS_Inbox_BAO_Inbox {
         }
 
         if (!empty($values['activity_tag'])) {
-          $tags = explode(',', CRM_Utils_Array::value('activity_tag', $values));
+          $tags = explode(',', $values['activity_tag'] ?? '');
           foreach ($tags as $tagID) {
             try {
               civicrm_api3('entity_tag', 'create', [
@@ -933,11 +933,11 @@ class CRM_NYSS_Inbox_BAO_Inbox {
       }
 
       //if working with a single contact, check if email should be updated
-      if (!CRM_Utils_Array::value('is_multiple', $values)) {
+      if (empty($values['is_multiple'])) {
         $matchId = (!empty($values['assignee'])) ? $values['assignee'] : $row['current_assignee'];
         foreach (['phone', 'email'] as $type) {
-          $new_val = CRM_Utils_Array::value("{$type}-" . $matchId, $_REQUEST);
-          $orig_val = CRM_Utils_Array::value("{$type}orig-" . $matchId, $_REQUEST);
+          $new_val = $_REQUEST["{$type}-" . $matchId] ?? NULL;
+          $orig_val = $_REQUEST["{$type}orig-" . $matchId] ?? NULL;
 
           if ($new_val != $orig_val) {
             try {
@@ -1393,7 +1393,7 @@ class CRM_NYSS_Inbox_BAO_Inbox {
   }
 
   private static function processUsageRecords($fields) {
-    $res = array();
+    $res = [];
 
     foreach ($fields as $key => $val) {
       /*** the old way of cleaning fields....
@@ -1402,19 +1402,19 @@ class CRM_NYSS_Inbox_BAO_Inbox {
       $val = preg_replace('/[^a-zA-Z0-9\s\p{P}]/', '', trim($val));
       $val = substr($val, 0, 240);
        ***/
-      if (in_array($key, array(
+      if (in_array($key, [
         'id',
         'message_id',
         'imap_id',
         'status',
         'matcher',
         'matched_to',
-        'activity_id'))
+        'activity_id'])
       ) {
         // convert string ID to integer ID
         $res[$key] = (int)$val;
       }
-      elseif (in_array($key, array('format', 'updated_date', 'email_date'))) {
+      elseif (in_array($key, ['format', 'updated_date', 'email_date'])) {
         // no conversion necessary for these fields
         $res[$key] = $val;
       }
@@ -1459,9 +1459,9 @@ class CRM_NYSS_Inbox_BAO_Inbox {
       $shortForm = date('M d, Y', $unixTime);
     }
 
-    return array('unix' => $unixTime,
+    return ['unix' => $unixTime,
       'long' => date('M d, Y h:i A', $unixTime),
-      'short' => $shortForm);
+      'short' => $shortForm];
   } // expandDate()
 
   static function formatDate($date, $format = 'Y-m-d H:i:s') {

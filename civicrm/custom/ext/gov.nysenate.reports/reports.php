@@ -780,7 +780,7 @@ function _reports_MailingSummary_rows(&$var, &$object) {
   //13187 mailing category
   $catOpts = _reports_CategoryOpts();
   foreach ($var as &$row) {
-    $row['civicrm_mailing_category'] = CRM_Utils_Array::value($row['civicrm_mailing_category'], $catOpts);
+    $row['civicrm_mailing_category'] = $catOpts[$row['civicrm_mailing_category'] ?? 0] ?? NULL;
   }
 }
 

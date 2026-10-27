@@ -15,9 +15,9 @@ class CRM_Tags_NYSS {
     foreach (explode(',', $positions) as $tag) {
       if (strpos($tag, ':::') !== false) {
         try {
-          $tags[] = civicrm_api3('nyss_tags', 'savePosition', array(
+          $tags[] = civicrm_api3('nyss_tags', 'savePosition', [
             'value' => $tag,
-          ));
+          ]);
         }
         catch (CRM_Core_Exception $e) {}
       }

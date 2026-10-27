@@ -64,7 +64,7 @@ function civicrm_api3_nyss_purgeusers($params) {
 
 function _nyss_getUsers($params) {
   $users = entity_load('user');
-  $time = strtotime(CRM_Utils_Array::value('time', $params, '-1 year'));
+  $time = strtotime($params['time'] ?? '-1 year');
   //Civi::log()->debug(__FUNCTION__, ['users' => $users]);
 
   $modLdapAuthorization = drupal_get_path('module', 'ldap_authentication');
