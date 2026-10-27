@@ -11,7 +11,6 @@ use CRM_Mosaicoextras_ExtensionUtil as E;
  */
 function mosaicoextras_civicrm_config(&$config) {
   _mosaicoextras_civix_civicrm_config($config);
-  Civi::dispatcher()->addListener('civi.api.authorize', ['CRM_Mosaicoextras_APIWrapper', 'authorize'], -100);
 }
 
 /**
@@ -31,34 +30,6 @@ function mosaicoextras_civicrm_install() {
 function mosaicoextras_civicrm_enable() {
   _mosaicoextras_civix_civicrm_enable();
 }
-
-// --- Functions below this ship commented out. Uncomment as required. ---
-
-/**
- * Implements hook_civicrm_preProcess().
- *
- * @link https://docs.civicrm.org/dev/en/latest/hooks/hook_civicrm_preProcess
- */
-//function mosaicoextras_civicrm_preProcess($formName, &$form) {
-//
-//}
-
-/**
- * Implements hook_civicrm_navigationMenu().
- *
- * @link https://docs.civicrm.org/dev/en/latest/hooks/hook_civicrm_navigationMenu
- */
-//function mosaicoextras_civicrm_navigationMenu(&$menu) {
-//  _mosaicoextras_civix_insert_navigation_menu($menu, 'Mailings', array(
-//    'label' => E::ts('New subliminal message'),
-//    'name' => 'mailing_subliminal_message',
-//    'url' => 'civicrm/mailing/subliminal',
-//    'permission' => 'access CiviMail',
-//    'operator' => 'OR',
-//    'separator' => 0,
-//  ));
-//  _mosaicoextras_civix_navigationMenu($menu);
-//}
 
 /**
  * Implements hook_civicrm_mosaicoConfig().
@@ -83,7 +54,7 @@ function mosaicoextras_civicrm_mosaicoConfig(&$config) {
 function mosaicoextras_civicrm_permission(&$permissions) {
   $permissions['delete Mosaico templates'] = [
     'label' => E::ts('MosaicoExtras: delete Mosaico templates'),
-    'description' => E::ts('Grants the necessary API permissions to access mosaico templates and delete without Administer CiviCRM permission'),
+    'description' => E::ts('Allows deleting Mosaico templates without Administer CiviCRM permission'),
   ];
 }
 

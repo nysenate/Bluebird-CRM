@@ -1,6 +1,6 @@
 <?php
 
-use CRM_Mosaico_ExtensionUtil as E;
+use CRM_Mosaicoextras_ExtensionUtil as E;
 
 return [
   'mosaico_plugins' => [
