@@ -45,6 +45,14 @@ function search_civicrm_enable() {
   _search_civix_civicrm_enable();
 }
 
+#[CRM_NYSS_Attribute_IssueRef('17663')]
+function search_civicrm_apiWrappers(&$wrappers, $apiRequest) {
+  // Allows EntityRef fields to search by email -- even with the includeEmailInName pref disabled
+  if (CRM_NYSS_Search_APIWrapper_ContactEmailSearch::applies($apiRequest)) {
+    $wrappers[] = new CRM_NYSS_Search_APIWrapper_ContactEmailSearch();
+  }
+}
+
 function search_civicrm_container(ContainerBuilder $container) {
   $container->register(CRM_NYSS_Search_UrlParamHelper::$SERVICE_NAME, 'CRM_NYSS_Search_UrlParamHelper')
     ->setPublic(TRUE);

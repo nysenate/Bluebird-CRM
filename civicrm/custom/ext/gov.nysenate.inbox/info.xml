@@ -18,6 +18,9 @@
     <ver>5.69</ver>
   </compatibility>
   <comments/>
+  <requires>
+    <ext>gov.nysenate.search</ext>
+  </requires>
   <classloader>
     <psr0 prefix="CRM_" path="."/>
     <psr4 prefix="Civi\" path="Civi"/>

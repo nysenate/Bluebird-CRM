@@ -28,6 +28,9 @@ class CRM_NYSS_Inbox_Form_AssignContact extends CRM_Core_Form {
     $this->addEntityRef('matches', 'Match Contacts', [
       'create' => TRUE,
       'multiple' => TRUE,
+      // NYSS #17663 -- enable search by email address
+      'placeholder' => ts('- search by name or email -'),
+      'api' => [CRM_NYSS_Search_APIWrapper_ContactEmailSearch::PARAM_ENABLED => 1],
     ], TRUE);
 
     $this->addButtons([
