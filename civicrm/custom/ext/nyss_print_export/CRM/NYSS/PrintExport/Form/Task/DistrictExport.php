@@ -294,7 +294,7 @@ class CRM_NYSS_PrintExport_Form_Task_DistrictExport extends CRM_Contact_Form_Tas
       $dao = CRM_Core_DAO::executeQuery( $sql );
     }
 
-    $url = "http://".$_SERVER['HTTP_HOST'].'/nyss_getfile?file='.$filename;
+    $url = CRM_Utils_System::url('nyss_getfile', 'file='.$filename, TRUE, NULL, FALSE);
     $urlclean = urlencode( $url );
     $href = "mailto:?subject=district export: $filename&body=".$urlclean;
 
