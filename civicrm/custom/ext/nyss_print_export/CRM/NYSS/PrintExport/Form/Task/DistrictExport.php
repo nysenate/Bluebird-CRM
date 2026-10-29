@@ -478,7 +478,7 @@ class CRM_NYSS_PrintExport_Form_Task_DistrictExport extends CRM_Contact_Form_Tas
             //check each record type; if a record is found, return 0 to indicate condition is not met
             foreach ( $records as $type ) {
                 $fnc = "_check{$type}";
-                $untouched = $fnc($dao->id);
+                $untouched = $this->$fnc($dao->id);
                 if ( $untouched != 1 ) {
                     break;
                 }
@@ -502,6 +502,64 @@ class CRM_NYSS_PrintExport_Form_Task_DistrictExport extends CRM_Contact_Form_Tas
 
         return $tblTouched;
     } // buildTouched()
+
+
+    private function _checkEmail($cid)
+    {
+        $sql = "
+    SELECT CASE WHEN count(*) > 0 THEN 0 ELSE 1 END
+    FROM civicrm_email
+    WHERE contact_id = $cid
+      AND email IS NOT NULL
+      AND email != ''
+  ";
+        return CRM_Core_DAO::singleValueQuery($sql);
+    } // _checkEmail()
+
+
+    private function _checkNotes($cid)
+    {
+        $sql = "
+    SELECT CASE WHEN count(*) > 0 THEN 0 ELSE 1 END
+    FROM civicrm_note
+    WHERE entity_id = $cid
+      AND entity_table = 'civicrm_contact'
+      AND note IS NOT NULL
+      AND note != ''
+  ";
+        return CRM_Core_DAO::singleValueQuery($sql);
+    } // _checkNotes()
+
+
+    private function _checkActivities($cid)
+    {
+        //exclude bulk email activities
+        $sql = "
+    SELECT CASE WHEN count(at.id) > 0 THEN 0 ELSE 1 END
+    FROM civicrm_activity_contact at
+    JOIN civicrm_activity a
+      ON at.activity_id = a.id
+      AND at.record_type_id = 3
+    WHERE at.contact_id = $cid
+      AND a.activity_type_id != 19
+      AND a.is_deleted = 0
+  ";
+        return CRM_Core_DAO::singleValueQuery($sql);
+    } // _checkActivities()
+
+
+    private function _checkCases($cid)
+    {
+        $sql = "
+    SELECT CASE WHEN count(cc.id) > 0 THEN 0 ELSE 1 END
+    FROM civicrm_case_contact cc
+    JOIN civicrm_case c
+      ON cc.case_id = c.id
+    WHERE cc.contact_id = $cid
+      AND c.is_deleted = 0
+  ";
+        return CRM_Core_DAO::singleValueQuery($sql);
+    } // _checkCases()
 
 
     private function _checkPrivacy($cid)
