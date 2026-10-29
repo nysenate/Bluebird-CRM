@@ -308,7 +308,8 @@ function ode_suppressEmails(&$fromEmailAddress, $showNotice): array {
       if ($emailNotValidated) {
         $host = '@' . $domain;
         $hostLength = strlen($host);
-        $email = CRM_Utils_Mail::pluckEmailFromHeader(html_entity_decode($headers['text']));
+        // NYSS #19293 - fix email address parsing. Do locally instead of calling CRM_Utils_Mail::pluckEmailFromHeader()
+        $email = preg_match('/<([^<>]*)>[^<>]*$/', html_entity_decode($headers['text']), $matches) ? $matches[1] : '';
         if (empty($domainEmails)) {
           if (substr($email, -$hostLength) == $host) {
             $emailNotValidated = FALSE;
