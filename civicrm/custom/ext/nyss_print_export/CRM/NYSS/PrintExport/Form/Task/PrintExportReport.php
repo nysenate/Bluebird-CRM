@@ -636,7 +636,7 @@ class CRM_NYSS_PrintExport_Form_Task_PrintExportReport extends CRM_Contact_Form_
       fwrite($fhoutStats, $tag_name."\t".$tag_stat."\n" );
     }
 
-    $urlStats = "http://".$_SERVER['HTTP_HOST'].'/nyss_getfile?file='.$filenameStats;
+    $urlStats = CRM_Utils_System::url('nyss_getfile', 'file='.$filenameStats, TRUE, NULL, FALSE);
     $urlcleanStats = urlencode( $urlStats );
     //end stats
 
@@ -644,7 +644,7 @@ class CRM_NYSS_PrintExport_Form_Task_PrintExportReport extends CRM_Contact_Form_
     $sql = "DROP TABLE $tmpTbl, $tmpTblIds;";
     CRM_Core_DAO::executeQuery($sql);
 
-    $url = "http://".$_SERVER['HTTP_HOST'].'/nyss_getfile?file='.$filename;
+    $url = CRM_Utils_System::url('nyss_getfile', 'file='.$filename, TRUE, NULL, FALSE);
     $urlclean = urlencode( $url );
     $body = "Contact export: $urlclean \r\n\r\n
              Tag stats export: $urlcleanStats \r\n";
