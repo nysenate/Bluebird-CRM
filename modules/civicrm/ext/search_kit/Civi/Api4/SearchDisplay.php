@@ -19,6 +19,15 @@ class SearchDisplay extends Generic\DAOEntity {
 
   /**
    * @param bool $checkPermissions
+   * @return Action\SearchDisplay\Get
+   */
+  public static function get($checkPermissions = TRUE) {
+    return (new Action\SearchDisplay\Get(__CLASS__, __FUNCTION__))
+      ->setCheckPermissions($checkPermissions);
+  }
+
+  /**
+   * @param bool $checkPermissions
    * @return Action\SearchDisplay\Run
    */
   public static function run($checkPermissions = TRUE) {
@@ -77,6 +86,15 @@ class SearchDisplay extends Generic\DAOEntity {
    */
   public static function getDefault($checkPermissions = TRUE) {
     return (new Action\SearchDisplay\GetDefault(__CLASS__, __FUNCTION__))
+      ->setCheckPermissions($checkPermissions);
+  }
+
+  /**
+   * @param bool $checkPermissions
+   * @return Action\SearchDisplay\GetMarkup
+   */
+  public static function getMarkup($checkPermissions = TRUE) {
+    return (new Action\SearchDisplay\GetMarkup(__CLASS__, __FUNCTION__))
       ->setCheckPermissions($checkPermissions);
   }
 

@@ -158,6 +158,8 @@ interface SelectQueryInterface extends QueryConditionInterface, QueryAlterableIn
    *
    * @return
    *   An associative array of all placeholder arguments for this query.
+   *
+   * NYSS #19113 - Fix Php8.4 warnings
    */
   public function getArguments(?QueryPlaceholderInterface $queryPlaceholder = NULL);
 
@@ -478,6 +480,8 @@ interface SelectQueryInterface extends QueryConditionInterface, QueryAlterableIn
    *
    * @return
    *   TRUE if the validation was successful, FALSE if not.
+   *
+   * NYSS #19113 - Fix Php8.4 warnings
    */
   public function preExecute(?SelectQueryInterface $query = NULL);
 
@@ -696,6 +700,7 @@ class SelectQueryExtender implements SelectQueryInterface {
     return $this->query->getUnion();
   }
 
+  /** NYSS #19113 - Fix Php8.4 warnings */
   public function getArguments(?QueryPlaceholderInterface $queryPlaceholder = NULL) {
     return $this->query->getArguments($queryPlaceholder);
   }
@@ -704,6 +709,7 @@ class SelectQueryExtender implements SelectQueryInterface {
     return $this->query->isPrepared();
   }
 
+  /** NYSS #19113 - Fix Php8.4 warnings */
   public function preExecute(?SelectQueryInterface $query = NULL) {
     // If no query object is passed in, use $this.
     if (!isset($query)) {
@@ -1228,6 +1234,7 @@ class SelectQuery extends Query implements SelectQueryInterface {
     return $this->union;
   }
 
+  /** NYSS #19113 - Fix Php8.4 warnings */
   public function getArguments(?QueryPlaceholderInterface $queryPlaceholder = NULL) {
     if (!isset($queryPlaceholder)) {
       $queryPlaceholder = $this;
@@ -1248,6 +1255,8 @@ class SelectQuery extends Query implements SelectQueryInterface {
    *
    * @return
    *   TRUE if the validation was successful, FALSE if not.
+   *
+   * NYSS #19113 - Fix Php8.4 warnings
    */
   public function preExecute(?SelectQueryInterface $query = NULL) {
     // If no query object is passed in, use $this.

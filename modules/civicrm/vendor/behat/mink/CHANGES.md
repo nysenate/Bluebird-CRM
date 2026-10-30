@@ -1,3 +1,22 @@
+1.13.0 / 2025-11-22
+===================
+
+New features:
+
+* Added support for `symfony/css-selector` 8
+* Improve PHPStorm's autocomplete for `DriverInterface` methods
+
+Testsuite:
+
+* Added CI jobs for PHP 8.5
+
+1.12.0 / 2024-10-31
+===================
+
+Bug fixes:
+
+* Explicitly mark method parameters with `null` default values as nullable to avoid deprecation notice in PHP 8.4
+
 1.11.0 / 2023-12-09
 ===================
 

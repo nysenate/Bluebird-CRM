@@ -32,7 +32,6 @@
         }
       });
 
-      //NYSS 13567/13916
       if (config.fileuploadConfig.acceptFileTypes) {
         config.fileuploadConfig.acceptFileTypes = /(\.|\/)(|gif|p?jpe?g|png|x-png|webp)$/i;
       }

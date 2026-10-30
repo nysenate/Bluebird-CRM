@@ -12,7 +12,7 @@
       editor: '^^afGuiEditor',
     },
     controller: function($scope, afGui) {
-      var ts = $scope.ts = CRM.ts('org.civicrm.afform_admin'),
+      const ts = $scope.ts = CRM.ts('org.civicrm.afform_admin'),
         ctrl = this;
 
       // TODO: Add action selector to UI
@@ -20,20 +20,21 @@
       //   "afform.submit()": ts('Submit Form')
       // };
 
-      $scope.styles = _.transform(CRM.afGuiEditor.styles, function(styles, val, key) {
+      $scope.styles = Object.entries(CRM.afGuiEditor.styles).reduce((styles, [key, val]) => {
         styles['btn-' + key] = val;
-      });
+        return styles;
+      }, {});
 
       // Getter/setter for ng-model
       $scope.getSetStyle = function(val) {
         if (arguments.length) {
-          return afGui.modifyClasses(ctrl.node, _.keys($scope.styles), ['btn', val]);
+          return afGui.modifyClasses(ctrl.node, Object.keys($scope.styles), ['btn', val]);
         }
-        return _.intersection(afGui.splitClass(ctrl.node['class']), _.keys($scope.styles))[0] || '';
+        return _.intersection(afGui.splitClass(ctrl.node['class']), Object.keys($scope.styles))[0] || '';
       };
 
-      $scope.pickIcon = function() {
-        afGui.pickIcon().then(function(val) {
+      $scope.pickIcon = () => {
+        afGui.pickIcon().then((val) => {
           ctrl.node['crm-icon'] = val;
         });
       };

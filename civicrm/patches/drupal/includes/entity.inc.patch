@@ -1,0 +1,28 @@
+diff --git a/drupal/includes/entity.inc b/drupal/includes/entity.inc
+index 7624d65c1..72d60680b 100644
+--- a/drupal/includes/entity.inc
++++ b/drupal/includes/entity.inc
+@@ -19,8 +19,10 @@ interface DrupalEntityControllerInterface {
+    * @param $ids
+    *   (optional) If specified, the cache is reset for the entities with the
+    *   given ids only.
++   *
++   * NYSS #19113 - Fix Php8.4 warnings
+    */
+-  public function resetCache(array $ids = NULL);
++  public function resetCache(?array $ids = NULL);
+ 
+   /**
+    * Loads one or more entities.
+@@ -139,8 +141,10 @@ class DrupalDefaultEntityController implements DrupalEntityControllerInterface {
+ 
+   /**
+    * Implements DrupalEntityControllerInterface::resetCache().
++   *
++   * NYSS #19113 - Fix Php8.4 warnings
+    */
+-  public function resetCache(array $ids = NULL) {
++  public function resetCache(?array $ids = NULL) {
+     if (isset($ids)) {
+       foreach ($ids as $id) {
+         unset($this->entityCache[$id]);

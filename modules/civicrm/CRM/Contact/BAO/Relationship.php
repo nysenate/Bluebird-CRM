@@ -10,6 +10,7 @@
  */
 
 use Civi\Api4\Event\AuthorizeRecordEvent;
+use Civi\Api4\Membership;
 use Civi\Api4\MembershipType;
 use Civi\Api4\Relationship;
 
@@ -313,7 +314,7 @@ class CRM_Contact_BAO_Relationship extends CRM_Contact_DAO_Relationship implemen
   public static function loadExistingRelationshipDetails($params) {
     if (!empty($params['contact_id_a'])
       && !empty($params['contact_id_b'])
-      && is_numeric($params['relationship_type_id'])) {
+      && is_numeric($params['relationship_type_id'] ?? NULL)) {
       return $params;
     }
     if (empty($params['id'])) {
@@ -2202,19 +2203,28 @@ SELECT count(*)
       // The custom_xx contains the display name of the contact, instead of the contact id.
       // The contact id is then available in custom_xx_id.
       foreach ($membershipValues as $field => $value) {
-        if (stripos($field, 'custom_') !== 0) {
-          // No a custom field
-          continue;
-        }
-        $custom_id = substr($field, 7);
-        if (substr($custom_id, -3) === '_id') {
-          $custom_id = substr($custom_id, 0, -3);
+        if (stripos($field, 'custom_') === 0) {
           unset($membershipValues[$field]);
-          $membershipValues['custom_' . $custom_id] = $value;
+          // If it is an entity reference custom field ignore the label value in favour of the id value.
+          if (!array_key_exists($field . '_id', $membershipValues) && !array_key_exists(CRM_Core_BAO_CustomField::getLongNameFromShortName($field), $membershipValues)) {
+            $membershipValues[CRM_Core_BAO_CustomField::getLongNameFromShortName($field)] = $value;
+          }
         }
       }
+      $extraneousIncomingKeys = [
+        'membership_type_id.relationship_type_id',
+        'membership_type_id.relationship_direction',
+        'inheriting_membership_ids',
+        'inheriting_contact_ids',
+        'relationship_type_ids',
+        'relationship_type_directions',
+        'relationship_type_keys',
+      ];
+      $membershipValues = array_diff_key($membershipValues, array_fill_keys($extraneousIncomingKeys, TRUE));
 
-      civicrm_api3('Membership', 'create', $membershipValues);
+      Membership::save(FALSE)
+        ->addRecord($membershipValues)
+        ->execute();
     }
     return $membershipValues;
   }
@@ -2306,11 +2316,14 @@ SELECT count(*)
     $record = $e->getRecord();
     $userID = $e->getUserID();
     $delegateAction = $e->getActionName() === 'get' ? 'get' : 'update';
+    // this is needed because if the context is relationship cache then id will point to relationship cache id
+    // which is different from relationship id
+    $relationshipID = $record['relationship_id'] ?? $record['id'] ?? NULL;
 
     // Delegate relationship permissions to contacts a & b
     foreach (['a', 'b'] as $ab) {
-      if (empty($record["contact_id_$ab"]) && !empty($record['id'])) {
-        $record["contact_id_$ab"] = CRM_Core_DAO::getFieldValue(__CLASS__, $record['id'], "contact_id_$ab");
+      if (empty($record["contact_id_$ab"]) && !empty($relationshipID)) {
+        $record["contact_id_$ab"] = CRM_Core_DAO::getFieldValue(__CLASS__, $relationshipID, "contact_id_$ab");
       }
       if (!empty($record["contact_id_$ab"]) && !\Civi\Api4\Utils\CoreUtil::checkAccessDelegated('Contact', $delegateAction, ['id' => $record["contact_id_$ab"]], $userID)) {
         $e->setAuthorized(FALSE);

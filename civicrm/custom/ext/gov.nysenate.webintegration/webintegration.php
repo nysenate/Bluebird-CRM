@@ -31,16 +31,34 @@ function webintegration_civicrm_enable() {
 
 //TODO eventually move all related customizations to this extension
 
+/**
+ * Implements hook_civicrm_merge().
+ *
+ * nyss_web_account and nyss_web_activity aren't CiviCRM-managed DAO entities.
+ * So, we register them here so their contact_id gets reassigned to the surviving
+ * contact instead of staying orphaned on the deleted one.
+ * @todo Make them DAO entities??? Maybe???
+ * @link http://wiki.civicrm.org/confluence/display/CRMDOC/hook_civicrm_merge
+ */
+#[CRM_NYSS_Attribute_IssueRef('19007')]
+function webintegration_civicrm_merge($type, &$data, $mainId = NULL, $otherId = NULL, $tables = NULL) {
+  // NYSS #19007
+  if ($type === 'cidRefs') {
+    $data['nyss_web_account'][] = 'contact_id';
+    $data['nyss_web_activity'][] = 'contact_id';
+  }
+}
+
 function webintegration_civicrm_alterMenu(&$items) {
-  $items['civicrm/nyss/dashlet/webintegration/unmatched'] = array(
+  $items['civicrm/nyss/dashlet/webintegration/unmatched'] = [
     'title' => 'Website Inbox Messages',
     'page_callback' => 'CRM_NYSS_WebIntegration_Page_UnMatched',
-    'access_arguments' => array(array('access CiviCRM'), "and"),
-  );
-  $items['civicrm/nyss/ajax/unmatchedmessages'] = array(
+    'access_arguments' => [['access CiviCRM'], "and"],
+  ];
+  $items['civicrm/nyss/ajax/unmatchedmessages'] = [
     'page_callback' => 'CRM_NYSS_WebIntegration_Page_AJAX::getMessages',
-    'access_arguments' => array(array('access CiviCRM'), "and"),
-  );
+    'access_arguments' => [['access CiviCRM'], "and"],
+  ];
 }
 
 function webintegration_civicrm_buildForm($formName, &$form) {
@@ -51,10 +69,10 @@ function webintegration_civicrm_buildForm($formName, &$form) {
     if ($msgID) {
       $msgNote = _webintegration_getNoteText($msgID);
       $form->addElement('hidden', 'msg_id', $msgID);
-      $form->setDefaults(array(
+      $form->setDefaults([
         'subject' => _webintegration_extractSubject($msgNote),
         'details' => nl2br($msgNote),
-      ));
+      ]);
     }
 
     /*Civi::log()->debug('webintegration_civicrm_buildForm', array(
@@ -68,7 +86,7 @@ function webintegration_civicrm_buildForm($formName, &$form) {
 function webintegration_civicrm_postProcess($formName, &$form) {
   if ($formName == 'CRM_Activity_Form_Activity') {
     $params = $form->controller->exportValues($form->getVar('_name'));
-    $msgID = CRM_Utils_Array::value('msg_id', $params);
+    $msgID = $params['msg_id'] ?? NULL;
     $aid = $form->_activityId;
 
     if ($msgID && $aid) {
@@ -89,10 +107,10 @@ function _webintegration_storeMessageActivity($msgID, $aid) {
     INSERT IGNORE INTO nyss_web_msg_activity
     (note_id, activity_id)
     VALUES (%1, %2)
-  ", array(
-    1 => array($msgID, 'Integer'),
-    2 => array($aid, 'Integer'),
-  ));
+  ", [
+    1 => [$msgID, 'Integer'],
+    2 => [$aid, 'Integer'],
+  ]);
 }//_storeMessageActivity
 
 function _webintegration_getNoteText($msgID) {
@@ -100,9 +118,9 @@ function _webintegration_getNoteText($msgID) {
     SELECT SQL_CALC_FOUND_ROWS n.note
     FROM civicrm_note n
     WHERE n.id = %1
-  ", array(
-    1 => array($msgID, 'Positive'),
-  ));
+  ", [
+    1 => [$msgID, 'Positive'],
+  ]);
 
   return $msgNote;
 }

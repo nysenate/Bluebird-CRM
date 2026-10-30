@@ -41,7 +41,7 @@ function case_civicrm_buildForm($formName, &$form) {
     CRM_Core_Resources::singleton()->addScriptFile(E::LONG_NAME, 'js/CaseView.js');
 
     //11518 hide timeline/audit fields
-    foreach (array('timeline_id', 'report_id') as $field) {
+    foreach (['timeline_id', 'report_id'] as $field) {
       if ($form->elementExists($field)) {
         $form->removeElement($field);
       }
@@ -52,13 +52,13 @@ function case_civicrm_buildForm($formName, &$form) {
       $ele =& $form->getElement('role_type');
       //Civi::log()->debug('case_civicrm_buildForm', array('ele' => $ele));
 
-      $allowedTypes = array(
+      $allowedTypes = [
         '- select type -',
         'Case Manager is',
         'Case Coordinator is',
         'Support Staff is',
         'Non-District Staff is'
-      );
+      ];
 
       foreach ($ele->_options as $k => $opt) {
         if (!in_array($opt['text'], $allowedTypes)) {
@@ -280,4 +280,14 @@ function case_civicrm_searchColumns($objectName, &$headers, &$rows, &$selector) 
       }
     }
   }
+}
+
+#[CRM_NYSS_Attribute_IssueRef(15095, 'https://dev.nysenate.gov/issues/15095', 18898)]
+function case_civicrm_selectWhereClause($entity, &$clauses, $userId = NULL, $conditions = []) {
+
+    // NYSS 15095 -- loosen permissions for seeing trashed (soft-deleted) cases.
+    if ($entity === 'Case') {
+        $clauses['is_deleted'] = CRM_Core_Permission::check('delete in CiviCase', $userId) ? [] : ['= 0'];
+    }
+
 }

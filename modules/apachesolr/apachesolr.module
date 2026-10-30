@@ -1638,6 +1638,8 @@ function apachesolr_static_response_cache($searcher, $response = NULL) {
  *   DrupalSolrQueryInterface object.
  *
  * @throws Exception
+ *
+ * NYSS #19113 - Fix Php8.4 warnings
  */
 function apachesolr_drupal_query($name, array $params = array(), $solrsort = '', $base_path = '', ?DrupalApacheSolrServiceInterface $solr = NULL, $context = array()) {
   if (!interface_exists('DrupalSolrQueryInterface')) {
@@ -1695,6 +1697,8 @@ function apachesolr_drupal_subquery($operator = 'OR') {
  *
  * @return DrupalSolrQueryInterface|null
  *   return the $query object if it is available in the drupal_static or null otherwise
+ *
+ * NYSS #19113 - Fix Php8.4 warnings
  */
 function apachesolr_current_query($env_id, ?DrupalSolrQueryInterface $query = NULL) {
   $saved_query = &drupal_static(__FUNCTION__, NULL);

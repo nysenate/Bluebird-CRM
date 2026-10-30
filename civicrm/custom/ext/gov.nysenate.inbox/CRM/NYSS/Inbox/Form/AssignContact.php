@@ -28,6 +28,9 @@ class CRM_NYSS_Inbox_Form_AssignContact extends CRM_Core_Form {
     $this->addEntityRef('matches', 'Match Contacts', [
       'create' => TRUE,
       'multiple' => TRUE,
+      // NYSS #17663 -- enable search by email address
+      'placeholder' => ts('- search by name or email -'),
+      'api' => [CRM_NYSS_Search_APIWrapper_ContactEmailSearch::PARAM_ENABLED => 1],
     ], TRUE);
 
     $this->addButtons([
@@ -83,8 +86,8 @@ class CRM_NYSS_Inbox_Form_AssignContact extends CRM_Core_Form {
     // determine if we need to update the email address or phone.
     foreach (explode(',', $values['matches']) as $matchId) {
       foreach (['email','phone'] as $type) {
-        $new_val = CRM_Utils_Array::value("{$type}-" . $matchId, $_REQUEST);
-        $orig_val = CRM_Utils_Array::value("{$type}orig-" . $matchId, $_REQUEST);
+        $new_val = $_REQUEST["{$type}-" . $matchId] ?? NULL;
+        $orig_val = $_REQUEST["{$type}orig-" . $matchId] ?? NULL;
         if ($new_val != $orig_val) {
           try {
             if (!empty($new_val)) {

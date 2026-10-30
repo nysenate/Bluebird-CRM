@@ -22,7 +22,9 @@ return [
             'category_id:label',
           ],
           'orderBy' => [],
-          'where' => [],
+          'where' => [
+            ['domain_id:name', '=', 'current_domain'],
+          ],
           'groupBy' => [],
           'join' => [],
           'having' => [],

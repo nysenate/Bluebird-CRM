@@ -144,7 +144,8 @@ class RulesEntityController extends EntityAPIControllerExportable {
     return $config;
   }
 
-  public function save($rules_config, DatabaseTransaction $transaction = NULL) {
+  // NYSS #19113 - fix deprecation warning in php 8.4
+  public function save($rules_config, ?DatabaseTransaction $transaction = NULL) {
     $transaction = isset($transaction) ? $transaction : db_transaction();
 
     // Load the stored entity, if any.
@@ -261,8 +262,9 @@ class RulesEntityController extends EntityAPIControllerExportable {
    * Overridden to also delete tags and events.
    *
    * @see EntityAPIControllerExportable::delete()
+   *  NYSS #19113 - fix deprecation warning in php 8.4
    */
-  public function delete($ids, DatabaseTransaction $transaction = NULL) {
+  public function delete($ids, ?DatabaseTransaction $transaction = NULL) {
     $transaction = isset($transaction) ? $transaction : db_transaction();
     // Use entity-load as ids may be the names as well as the ids.
     $configs = $ids ? entity_load('rules_config', $ids) : array();
@@ -1710,8 +1712,9 @@ abstract class RulesAbstractPlugin extends RulesPlugin {
 
   /**
    * Execute the configured execution callback and log that.
+   *  NYSS #19113 - fix deprecation warning in php 8.4
    */
-  abstract protected function executeCallback(array $args, RulesState $state = NULL);
+  abstract protected function executeCallback(array $args, ?RulesState $state = NULL);
 
   public function evaluate(RulesState $state) {
     $this->processSettings();

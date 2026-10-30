@@ -107,11 +107,7 @@ abstract class EntityMetadataBase implements EntityMetadataInterface {
     // Set default selectors (allowing for overrides)
     $field['pseudoconstant'] += ['key_column' => 'value'];
 
-    // Guard against sql errors if this (relatively new) column hasn't been added yet by the upgrader
-    if (version_compare(\CRM_Core_BAO_Domain::version(), '5.49', '>')) {
-      $optionValueFieldsStr = \CRM_Core_DAO::getFieldValue('CRM_Core_DAO_OptionGroup', $groupId, 'option_value_fields');
-    }
-    $optionValueFields = empty($optionValueFieldsStr) ? ['name', 'label', 'description'] : explode(',', $optionValueFieldsStr);
+    $optionValueFields = \CRM_Core_BAO_OptionGroup::getOptionValueFields($groupName);
     foreach ($optionValueFields as $optionValueField) {
       $field['pseudoconstant'] += ["{$optionValueField}_column" => $optionValueField];
     }
@@ -161,12 +157,15 @@ abstract class EntityMetadataBase implements EntityMetadataInterface {
       if (isset($fields['is_active'])) {
         $select->select('`is_active`');
       }
+      if (isset($fields['is_reserved'])) {
+        $select->select('`is_reserved`');
+      }
       // Also component_id for filtering (this is legacy, the new way for extensions to add options is via hook)
       if (isset($fields['component_id'])) {
         $select->select('`component_id`');
       }
       // Order by: prefer order_column; or else 'weight' column; or else label_column; or as a last resort, $idCol
-      $orderColumns = [$pseudoconstant['order_column'] ?? NULL, 'weight', $pseudoconstant['label_column'] ?? NULL, $idCol];
+      $orderColumns = array_filter([$pseudoconstant['order_column'] ?? NULL, 'weight', $pseudoconstant['label_column'] ?? NULL, $idCol]);
       foreach ($orderColumns as $orderColumn) {
         if (isset($fields[$orderColumn])) {
           $select->orderBy($orderColumn);
@@ -220,7 +219,7 @@ abstract class EntityMetadataBase implements EntityMetadataInterface {
         $fieldName = $customGroup['name'] . '.' . $customField['name'];
         $field = [
           'title' => $customField['label'],
-          'sql_type' => \CRM_Core_BAO_CustomValueTable::fieldToSQLType($customField['data_type'], $customField['text_length']),
+          'sql_type' => \CRM_Core_BAO_CustomValueTable::fieldToSQLType($customField['data_type'], $customField['text_length'], !empty($customField['serialize']), $customField['fk_entity'] ?? NULL),
           'data_type' => \CRM_Core_BAO_CustomField::getDataTypeString($customField),
           'input_type' => $inputTypeMap[$customField['html_type']] ?? $customField['html_type'],
           'input_attrs' => [
@@ -237,6 +236,9 @@ abstract class EntityMetadataBase implements EntityMetadataInterface {
           'table_name' => $customGroup['table_name'],
           'column_name' => $customField['column_name'],
         ];
+        if ($customField['data_type'] === 'File') {
+          $field['input_attrs']['file_is_public'] = $customField['file_is_public'];
+        }
         if (empty($customField['is_view'])) {
           $field['usage'][] = 'import';
         }

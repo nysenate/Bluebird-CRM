@@ -12,6 +12,7 @@ class Driver extends \Intervention\Image\AbstractDriver
      *
      * @param Decoder $decoder
      * @param Encoder $encoder
+     * NYSS #19113 - Function signature modified for php8.4
      */
     public function __construct(?Decoder $decoder = null, ?Encoder $encoder = null)
     {

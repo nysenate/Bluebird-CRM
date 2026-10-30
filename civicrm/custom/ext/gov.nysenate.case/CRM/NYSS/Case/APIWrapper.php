@@ -1,6 +1,6 @@
 <?php
 
-#[CRM_NYSS_Attribute_IssueRefs('17369')]
+#[CRM_NYSS_Attribute_IssueRef('17369')]
 class CRM_NYSS_Case_APIWrapper {
 
   public static function respond($event) {
@@ -40,7 +40,7 @@ class CRM_NYSS_Case_APIWrapper {
     return $result;
   }
 
-  #[CRM_NYSS_Attribute_IssueRefs('17369')]
+  #[CRM_NYSS_Attribute_IssueRef('17369')]
   public static function extend_case_contact_search($event) {
     $result= $event->getResponse();
     $apiRequest = $event->getApiRequest();

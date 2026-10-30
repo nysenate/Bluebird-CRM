@@ -36,17 +36,17 @@
  */
 class CRM_NYSS_Inbox_Form_MessageFilter extends CRM_Core_Form {
   public function buildQuickForm() {
-    $rangeOptions = array(
+    $rangeOptions = [
       0 => 'All Time',
       1 => 'Last 24 hours',
       7 => 'Last 7 days',
       30 => 'Last 30 days',
       90 => 'Last 90 days',
       365 => 'Last year',
-    );
+    ];
     $this->add('select', 'range_filter', ts('Date Range'), $rangeOptions);
 
-    $this->add('text', 'search_filter', 'Search', array('placeholder' => 'search...'));
+    $this->add('text', 'search_filter', 'Search', ['placeholder' => 'search...']);
   }
 
   /**
@@ -60,9 +60,9 @@ class CRM_NYSS_Inbox_Form_MessageFilter extends CRM_Core_Form {
    */
   public function setDefaultValues() {
     // CRM-11761 retrieve user's activity filter preferences
-    $defaults = array(
+    $defaults = [
       'range_filter' => 30,
-    );
+    ];
 
     return $defaults;
   }

@@ -1,8 +1,8 @@
 diff --git a/modules/civicrm/Civi/Api4/Service/Spec/Provider/IsCurrentFieldSpecProvider.php b/modules/civicrm/Civi/Api4/Service/Spec/Provider/IsCurrentFieldSpecProvider.php
-index afe41cbe4..475bdbf34 100644
+index cf68ab2c40..02403a4c7c 100644
 --- a/modules/civicrm/Civi/Api4/Service/Spec/Provider/IsCurrentFieldSpecProvider.php
 +++ b/modules/civicrm/Civi/Api4/Service/Spec/Provider/IsCurrentFieldSpecProvider.php
-@@ -81,8 +81,7 @@ class IsCurrentFieldSpecProvider extends \Civi\Core\Service\AutoService implemen
+@@ -82,8 +82,7 @@ class IsCurrentFieldSpecProvider extends \Civi\Core\Service\AutoService implemen
      $startDate = substr_replace($field['sql_name'], 'start_date', -11, -1);
      $endDate = substr_replace($field['sql_name'], 'end_date', -11, -1);
      $isActive = substr_replace($field['sql_name'], 'is_active', -11, -1);
@@ -12,7 +12,7 @@ index afe41cbe4..475bdbf34 100644
    }
  
    /**
-@@ -94,8 +93,7 @@ class IsCurrentFieldSpecProvider extends \Civi\Core\Service\AutoService implemen
+@@ -95,8 +94,7 @@ class IsCurrentFieldSpecProvider extends \Civi\Core\Service\AutoService implemen
     */
    public static function renderNonExpiredSql(array $field): string {
      $endDate = substr_replace($field['sql_name'], 'expires_date', -11, -1);

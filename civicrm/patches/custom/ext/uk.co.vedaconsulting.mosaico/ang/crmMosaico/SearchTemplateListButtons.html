@@ -1,15 +1,14 @@
 diff --git a/civicrm/custom/ext/uk.co.vedaconsulting.mosaico/ang/crmMosaico/SearchTemplateListButtons.html b/civicrm/custom/ext/uk.co.vedaconsulting.mosaico/ang/crmMosaico/SearchTemplateListButtons.html
-index 89bfef6d1..65ca8abb7 100644
+index 9c459d987..510ce771a 100644
 --- a/civicrm/custom/ext/uk.co.vedaconsulting.mosaico/ang/crmMosaico/SearchTemplateListButtons.html
 +++ b/civicrm/custom/ext/uk.co.vedaconsulting.mosaico/ang/crmMosaico/SearchTemplateListButtons.html
-@@ -11,4 +11,10 @@
-     <i class="crm-i fa-trash"></i>
+@@ -11,4 +11,9 @@
+     <i class="crm-i fa-trash" role="img" aria-hidden="true"></i>
      {{:: ts('Delete') }}
    </button>
-+
 +  <!--NYSS 14824-->
 +  <a class="btn btn-xs btn-secondary" href="mosaicotemplate/print?id={{$ctrl.tpl.id}}&snippet=1" title="Printer-friendly template view." target="_blank">
-+    <i class="crm-i fa-print"></i>
++    <i class="crm-i fa-print" role="img" aria-hidden="true"></i>
 +    {{:: ts('Print') }}
 +  </a>
  </div>

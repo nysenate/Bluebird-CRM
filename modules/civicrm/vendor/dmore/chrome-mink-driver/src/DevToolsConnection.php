@@ -147,7 +147,12 @@ abstract class DevToolsConnection
             }
 
             if (is_null($response)) {
-                return null;
+                // There seems to be no valid case where we could actually get an explicit `null` value from the
+                // underlying websocket, other than perhaps the socket being closed by Chrome. Certainly, calling code
+                // (which does not generally check the response) should not blindly continue at this point.
+                throw new DriverException(
+                    'Received unexpected NULL payload from Chrome websocket'
+                );
             }
 
             if ($data = json_decode($response, true)) {

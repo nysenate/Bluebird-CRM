@@ -80,6 +80,14 @@ class HTML_QuickForm_element extends HTML_Common
      */
     var $_persistantFreeze = false;
 
+    /**
+     * label text has been escaped
+     * @var bool
+     * @since 1.2
+     * @access private
+     */
+    private $_labelEscaped = false;
+
     // }}}
     // {{{ constructor
 
@@ -326,7 +334,10 @@ class HTML_QuickForm_element extends HTML_Common
      */
     function getLabel()
     {
-        return $this->_label;
+        if ($this->_labelEscaped) {
+            return $this->_label;
+        }
+        return htmlspecialchars($this->_label, ENT_QUOTES | ENT_HTML401);
     } //end func getLabel
 
     // }}}
@@ -354,6 +365,21 @@ class HTML_QuickForm_element extends HTML_Common
             return null;
         }
     } //end func _findValue
+
+    // }}}
+    // {{{ setLabelEscaped()
+
+    /**
+     * Sets that the element label has been escaped
+     *
+     * @since     1.1
+     * @access    public
+     * @return    string
+     */
+    function setLabelEscaped()
+    {
+        $this->_labelEscaped = TRUE;
+    } //end func setLabelEscaped
 
     // }}}
     // {{{ onQuickFormEvent()

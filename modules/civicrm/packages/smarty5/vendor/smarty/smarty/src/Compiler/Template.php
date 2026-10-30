@@ -313,6 +313,12 @@ class Template extends BaseCompiler {
 	 */
 	private $noCacheStackDepth = 0;
 
+	/**
+	 * disabled auto-escape (when set to true, the next variable output is not auto-escaped)
+	 *
+	 * @var boolean
+	 */
+	private $raw_output = false;
 
 	/**
 	 * Initialize compiler
@@ -499,7 +505,7 @@ class Template extends BaseCompiler {
 	 *
 	 * @return string
 	 */
-	public function compileVariable($variable) {
+	public function triggerTagNoCache($variable): void {
 		if (!strpos($variable, '(')) {
 			// not a variable variable
 			$var = trim($variable, '\'');
@@ -510,7 +516,6 @@ class Template extends BaseCompiler {
 					false
 				)->isNocache();
 		}
-		return '$_smarty_tpl->getValue(' . $variable . ')';
 	}
 
 	/**
@@ -659,7 +664,7 @@ class Template extends BaseCompiler {
 		$script = null;
 		$cacheable = true;
 
-		$result = call_user_func_array(
+		$result = \call_user_func_array(
 			$defaultPluginHandlerFunc,
 			[
 				$tag,
@@ -1141,12 +1146,12 @@ class Template extends BaseCompiler {
 		}
 
 		// check if tag is a function
-		if ($this->smarty->getFunctionHandler($base_tag)) {
-			if (!isset($this->smarty->security_policy) || $this->smarty->security_policy->isTrustedTag($base_tag, $this)) {
+		if ($this->smarty->getFunctionHandler($tag)) {
+			if (!isset($this->smarty->security_policy) || $this->smarty->security_policy->isTrustedTag($tag, $this)) {
 				return (new \Smarty\Compile\PrintExpressionCompiler())->compile(
 					['nofilter'], // functions are never auto-escaped
 					$this,
-					['value' =>	$this->compileFunctionCall($base_tag, $args, $parameter)]
+					['value' =>	$this->compileFunctionCall($tag, $args, $parameter)]
 				);
 			}
 		}
@@ -1159,16 +1164,16 @@ class Template extends BaseCompiler {
 		}
 
 		// the default plugin handler is a handler of last resort, it may also handle not specifically registered tags.
-		if ($callback = $this->getPluginFromDefaultHandler($base_tag, Smarty::PLUGIN_COMPILER)) {
+		if ($callback = $this->getPluginFromDefaultHandler($tag, Smarty::PLUGIN_COMPILER)) {
 			if (!empty($parameter['modifierlist'])) {
-				throw new CompilerException('No modifiers allowed on ' . $base_tag);
+				throw new CompilerException('No modifiers allowed on ' . $tag);
 			}
 			$tagCompiler = new \Smarty\Compile\Tag\BCPluginWrapper($callback);
 			return $tagCompiler->compile($args, $this, $parameter);
 		}
 
 		if ($this->getPluginFromDefaultHandler($base_tag, Smarty::PLUGIN_FUNCTION)) {
-			return $this->defaultHandlerFunctionCallCompiler->compile($args, $this, $parameter, $tag, $base_tag);
+			return $this->defaultHandlerFunctionCallCompiler->compile($args, $this, $parameter, $tag, $tag);
 		}
 
 		if ($this->getPluginFromDefaultHandler($base_tag, Smarty::PLUGIN_BLOCK)) {
@@ -1275,9 +1280,10 @@ class Template extends BaseCompiler {
 		}
 		// call post compile callbacks
 		foreach ($this->postCompileCallbacks as $cb) {
-			$parameter = $cb;
-			$parameter[0] = $this;
-			call_user_func_array($cb[0], $parameter);
+			$callbackFunction = $cb[0];
+			$parameters = $cb;
+			$parameters[0] = $this;
+			$callbackFunction(...$parameters);
 		}
 		// return compiled code
 		return $this->prefixCompiledCode . $this->parser->retvalue . $this->postfixCompiledCode;
@@ -1485,5 +1491,22 @@ class Template extends BaseCompiler {
 	 */
 	public function getTagStack(): array {
 		return $this->_tag_stack;
+	}
+
+	/**
+	 * Should the next variable output be raw (true) or auto-escaped (false)
+	 * @return bool
+	 */
+	public function isRawOutput(): bool {
+		return $this->raw_output;
+	}
+
+	/**
+	 * Should the next variable output be raw (true) or auto-escaped (false)
+	 * @param bool $raw_output
+	 * @return void
+	 */
+	public function setRawOutput(bool $raw_output): void {
+		$this->raw_output = $raw_output;
 	}
 }

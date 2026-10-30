@@ -10,6 +10,7 @@
       'update' => 'unmodified',
       'params' => [
         'version' => 4,
+        'match' => ['name'],
         'values' => [
           'name' => 'Case_Activity_Tags',
           'label' => 'Case/Activity Tags',
@@ -105,6 +106,7 @@
       'update' => 'unmodified',
       'params' => [
         'version' => 4,
+        'match' => ['saved_search_id', 'name'],
         'values' => [
           'name' => 'Case_Activity_Tags_Table_1',
           'label' => 'Case/Activity Tags Table 1',

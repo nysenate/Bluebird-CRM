@@ -111,6 +111,10 @@ class CRM_Member_BAO_MembershipPayment extends CRM_Member_DAO_MembershipPayment 
    * @internal
    */
   public static function getLatestContributionIDFromLineitemAndFallbackToMembershipPayment(int $membershipID) {
+    if (!class_exists('\Civi\Api4\LineItem')) {
+      // civi_contribute is not enabled
+      return NULL;
+    }
     $latestMembershipLineItem = LineItem::get(FALSE)
       ->addSelect('contribution_id')
       ->addWhere('entity_table', '=', 'civicrm_membership')
@@ -121,7 +125,7 @@ class CRM_Member_BAO_MembershipPayment extends CRM_Member_DAO_MembershipPayment 
     if (!empty($latestMembershipLineItem['contribution_id'])) {
       $latestContributionID = $latestMembershipLineItem['contribution_id'];
     }
-    else {
+    elseif (CRM_Price_BAO_LineItem::siteHasMembershipPaymentRecordsNotReflectedInLineItems()) {
       $membershipPayments = civicrm_api3('MembershipPayment', 'get', [
         'sequential' => 1,
         'return' => ["contribution_id.receive_date", "contribution_id"],
@@ -223,12 +227,11 @@ class CRM_Member_BAO_MembershipPayment extends CRM_Member_DAO_MembershipPayment 
    * @throws \CRM_Core_Exception
    * @internal
    */
-  public static function legacyMembershipPaymentCreateIfNotExist(int $membershipID, int $contributionID, bool $isSkipLineItem = FALSE) {
-    $membershipPayment = civicrm_api3('MembershipPayment', 'get', [
-      'membership_id' => $membershipID,
-      'contribution_id' => $contributionID,
-    ]);
-    if (empty($membershipPayment['count'])) {
+  public static function legacyMembershipPaymentCreateIfNotExist(int $membershipID, int $contributionID, bool $isSkipLineItem = FALSE): void {
+    if (!CRM_Core_DAO::singleValueQuery('SELECT id FROM civicrm_membership_payment WHERE membership_id = %1 AND contribution_id = %2', [
+      1 => [$membershipID, 'Integer'],
+      2 => [$contributionID, 'Integer'],
+    ])) {
       self::legacyMembershipPaymentCreate($membershipID, $contributionID, $isSkipLineItem);
     }
   }

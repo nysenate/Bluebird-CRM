@@ -17,12 +17,12 @@ class CRM_NYSS_Form_ProofingReport extends CRM_Core_Form {
   function preProcess( ) {
     //handle breadcrumbs
     $url = CRM_Utils_System::url( 'civicrm/logging/proofingreport', 'reset=1' );
-    $breadCrumb = array(
-      array(
+    $breadCrumb = [
+      [
         'url' => $url,
         'title' => ts('Log Proofing Report')
-      )
-    );
+      ]
+    ];
     CRM_Utils_System::appendBreadCrumb( $breadCrumb );
     //set page title
     CRM_Utils_System::setTitle( ts('Generate Log Proofing Report') );
@@ -40,49 +40,49 @@ class CRM_NYSS_Form_ProofingReport extends CRM_Core_Form {
     $this->add('datepicker', 'start_date', ts('Date from'), false, ['formatType' => 'custom']);
     $this->add('datepicker', 'end_date', ts('...to'), false, ['formatType' => 'custom']);
     $this->add( 'select', 'pdf_format_id', ts( 'Page Format' ),
-      array( 0 => ts( '- default -' ) ) + CRM_Core_BAO_PdfFormat::getList( true ) );
+      [ 0 => ts( '- default -' ) ] + CRM_Core_BAO_PdfFormat::getList( true ) );
     //7582/7685/11831 add tags
     $tags = CRM_Core_BAO_Tag::getColorTags('civicrm_contact');
     if (!empty($tags)) {
-      $this->add('select2', 'tag', ts('Tag(s)'), $tags, FALSE, array('class' => 'huge', 'placeholder' => ts('- select -'), 'multiple' => TRUE));
+      $this->add('select2', 'tag', ts('Tag(s)'), $tags, FALSE, ['class' => 'huge', 'placeholder' => ts('- select -'), 'multiple' => TRUE]);
     }
     // build tag widget
     $parentNames = CRM_Core_BAO_Tag::getTagSet('civicrm_contact');
     foreach ($parentNames as $k => $name) {
-      if (!in_array($name, array('Keywords', 'Positions'))) {
+      if (!in_array($name, ['Keywords', 'Positions'])) {
         unset($parentNames[$k]);
       }
     }
     CRM_Core_Form_Tag::buildQuickForm($this, $parentNames, 'civicrm_contact', NULL, TRUE);
     $this->add('checkbox', 'merge_house', 'Merge Households? (CSV export only)');
     $this->addButtons(
-      array(
-        array(
+      [
+        [
           'type' => 'next',
           'name' => ts('Generate PDF Report'),
-        ),
-        array(
+        ],
+        [
           'type' => 'upload',
           'name' => ts('Generate Print Report'),
           'isDefault' => TRUE
-        ),
-        array(
+        ],
+        [
           'type' => 'submit',
           'name' => ts('Generate CSV'),
-        ),
-      )
+        ],
+      ]
     );
-    $this->addFormRule(array('CRM_NYSS_Form_ProofingReport', 'formRule'), $this);
+    $this->addFormRule(['CRM_NYSS_Form_ProofingReport', 'formRule'], $this);
   }
 
   /**
    * Set default values
    */
   function setDefaultValues() {
-    $defaults = array(
+    $defaults = [
       'year' => date('Y'),
       'pdf_format_id' => 1895,
-    );
+    ];
     return $defaults;
   }
   /**
@@ -99,7 +99,7 @@ class CRM_NYSS_Form_ProofingReport extends CRM_Core_Form {
   static function formRule( $fields, $files, $self )
   {
     //CRM_Core_Error::debug_var('fields',$fields);
-    $errors = array();
+    $errors = [];
     if (empty($fields['jobID']) &&
       empty($fields['alteredBy']) &&
       empty($fields['start_date']) &&
@@ -111,8 +111,8 @@ class CRM_NYSS_Form_ProofingReport extends CRM_Core_Form {
       $errors['start_date'] = 'You must select a start date to run this report.';
     }
     //7776 check if date range is > 1 month
-    $dateStart = new DateTime(CRM_Utils_Array::value('start_date', $fields));
-    $dateEnd = new DateTime(CRM_Utils_Array::value('end_date', $fields, date('Y-m-d')));
+    $dateStart = new DateTime($fields['start_date'] ?? NULL);
+    $dateEnd = new DateTime($fields['end_date'] ?? date('Y-m-d'));
     $interval = $dateStart->diff($dateEnd);
     $days = $interval->format('%a');
     //CRM_Core_Error::debug_var('days', $days);
@@ -136,7 +136,7 @@ class CRM_NYSS_Form_ProofingReport extends CRM_Core_Form {
     //get form parameters and create sql criteria
     $formParams = $this->controller->exportValues( $this->_name );
     //CRM_Core_Error::debug_var('formParams', $formParams);
-    $sqlParams = $rows = array();
+    $sqlParams = $rows = [];
     $startDate = $endDate = $alteredByFrom = '';
     if ($formParams['jobID']) {
       $sqlParams['job'] = "main.log_job_id = '{$formParams['jobID']}'";
@@ -154,8 +154,8 @@ class CRM_NYSS_Form_ProofingReport extends CRM_Core_Form {
       $sqlParams['enddate'] = "main.log_date <= '{$endDate} 23:59:59'";
     }
     //handle tags
-    $tagsSelected = explode(',', CRM_Utils_Array::value('tag', $formParams, array()));
-    foreach (CRM_Utils_Array::value('contact_taglist', $formParams) as $tagSet => $tagSetList) {
+    $tagsSelected = explode(',', $formParams['tag'] ?? []);
+    foreach ($formParams['contact_taglist'] ?? [] as $tagSet => $tagSetList) {
       $tagsSelected = array_merge($tagsSelected, explode(',', $tagSetList));
     }
     $tagsSelected = array_filter($tagsSelected);
@@ -376,26 +376,26 @@ class CRM_NYSS_Form_ProofingReport extends CRM_Core_Form {
         </tr>";
       $rows[$dao->id] = [
         'id' => $dao->id,
-        'sort_name' => CRM_Utils_Array::value('sort_name', $cDetails, ''),
-        'display_name' => CRM_Utils_Array::value('display_name', $cDetails, ''),
-        'individual_prefix' => CRM_Utils_Array::value('individual_prefix', $cDetails, ''),
-        'first_name' => CRM_Utils_Array::value('first_name', $cDetails, ''),
-        'middle_name' => CRM_Utils_Array::value('middle_name', $cDetails, ''),
-        'last_name' => CRM_Utils_Array::value('last_name', $cDetails, ''),
-        'individual_suffix' => CRM_Utils_Array::value('individual_suffix', $cDetails, ''),
-        'organization_name' => CRM_Utils_Array::value('organization_name', $cDetails, ''),
-        'household_name' => CRM_Utils_Array::value('household_name', $cDetails, ''),
-        'street_address' => CRM_Utils_Array::value('street_address', $cDetails, ''),
-        'mailing_address' => CRM_Utils_Array::value('supplemental_address_1', $cDetails, ''),
-        'building' => CRM_Utils_Array::value('supplemental_address_2', $cDetails, ''),
-        'city' => CRM_Utils_Array::value('city', $cDetails, ''),
-        'state_province' => CRM_Utils_Array::value('state_province', $cDetails, ''),
-        'postal_code' => CRM_Utils_Array::value('postal_code', $cDetails, ''),
-        'postal_code_suffix' => CRM_Utils_Array::value('postal_code_suffix', $cDetails, ''),
-        'birth_date' => CRM_Utils_Array::value('birth_date', $cDetails, ''),
-        'gender' => CRM_Utils_Array::value('gender', $cDetails, ''),
-        'phone' => CRM_Utils_Array::value('phone', $cDetails, ''),
-        'email' => CRM_Utils_Array::value('email', $cDetails, ''),
+        'sort_name' => $cDetails['sort_name'] ?? '',
+        'display_name' => $cDetails['display_name'] ?? '',
+        'individual_prefix' => $cDetails['individual_prefix'] ?? '',
+        'first_name' => $cDetails['first_name'] ?? '',
+        'middle_name' => $cDetails['middle_name'] ?? '',
+        'last_name' => $cDetails['last_name'] ?? '',
+        'individual_suffix' => $cDetails['individual_suffix'] ?? '',
+        'organization_name' => $cDetails['organization_name'] ?? '',
+        'household_name' => $cDetails['household_name'] ?? '',
+        'street_address' => $cDetails['street_address'] ?? '',
+        'mailing_address' => $cDetails['supplemental_address_1'] ?? '',
+        'building' => $cDetails['supplemental_address_2'] ?? '',
+        'city' => $cDetails['city'] ?? '',
+        'state_province' => $cDetails['state_province'] ?? '',
+        'postal_code' => $cDetails['postal_code'] ?? '',
+        'postal_code_suffix' => $cDetails['postal_code_suffix'] ?? '',
+        'birth_date' => $cDetails['birth_date'] ?? '',
+        'gender' => $cDetails['gender'] ?? '',
+        'phone' => $cDetails['phone'] ?? '',
+        'email' => $cDetails['email'] ?? '',
         'postal_greeting' => CRM_Core_DAO::singleValueQuery("SELECT postal_greeting_display FROM civicrm_contact WHERE id = {$dao->id}"),
         'taglist' => stripslashes(iconv('UTF-8', 'Windows-1252', $tagList)),
         'grouplist' => stripslashes(iconv('UTF-8', 'Windows-1252', $groupList)),
@@ -417,7 +417,7 @@ class CRM_NYSS_Form_ProofingReport extends CRM_Core_Form {
       //set col headers after the first row is constructed
       if ( !isset($this->_columnHeaders) ) {
         foreach ( $rows[$dao->id] as $hdr => $dontcare ) {
-          $this->_columnHeaders[$hdr] = array('title' => $hdr);
+          $this->_columnHeaders[$hdr] = ['title' => $hdr];
         }
       }
     }
@@ -517,40 +517,40 @@ tr.tableSummary td {
           unset($rows[$cid]);
         }
         else {
-          $params = array(
+          $params = [
             'version' => 3,
             'id' => $cDetails['house_id'],
-          );
+          ];
           $house = civicrm_api('contact', 'getsingle', $params);
           //CRM_Core_Error::debug_var('_mergeHouseholds $house', $house);
           //add to rows; pass some non-standard details from indiv record; unset indiv
-          $rows[$cDetails['house_id']] = array(
+          $rows[$cDetails['house_id']] = [
             'id' => $cDetails['house_id'],
-            'sort_name' => CRM_Utils_Array::value('sort_name', $house, ''),
-            'display_name' => CRM_Utils_Array::value('display_name', $house, ''),
-            'individual_prefix' => CRM_Utils_Array::value('individual_prefix', $house, ''),
-            'first_name' => CRM_Utils_Array::value('first_name', $house, ''),
-            'middle_name' => CRM_Utils_Array::value('middle_name', $house, ''),
-            'last_name' => CRM_Utils_Array::value('last_name', $house, ''),
-            'individual_suffix' => CRM_Utils_Array::value('individual_suffix', $house, ''),
-            'organization_name' => CRM_Utils_Array::value('organization_name', $house, ''),
-            'household_name' => CRM_Utils_Array::value('household_name', $house, ''),
-            'street_address' => CRM_Utils_Array::value('street_address', $house, ''),
-            'mailing_address' => CRM_Utils_Array::value('supplemental_address_1', $house, ''),
-            'building' => CRM_Utils_Array::value('supplemental_address_2', $house, ''),
-            'city' => CRM_Utils_Array::value('city', $house, ''),
-            'state_province' => CRM_Utils_Array::value('state_province', $house, ''),
-            'postal_code' => CRM_Utils_Array::value('postal_code', $house, ''),
-            'postal_code_suffix' => CRM_Utils_Array::value('postal_code_suffix', $house, ''),
-            'birth_date' => CRM_Utils_Array::value('birth_date', $house, ''),
-            'gender' => CRM_Utils_Array::value('gender', $house, ''),
-            'phone' => CRM_Utils_Array::value('phone', $house, ''),
-            'email' => CRM_Utils_Array::value('email', $house, ''),
+            'sort_name' => $house['sort_name'] ?? '',
+            'display_name' => $house['display_name'] ?? '',
+            'individual_prefix' => $house['individual_prefix'] ?? '',
+            'first_name' => $house['first_name'] ?? '',
+            'middle_name' => $house['middle_name'] ?? '',
+            'last_name' => $house['last_name'] ?? '',
+            'individual_suffix' => $house['individual_suffix'] ?? '',
+            'organization_name' => $house['organization_name'] ?? '',
+            'household_name' => $house['household_name'] ?? '',
+            'street_address' => $house['street_address'] ?? '',
+            'mailing_address' => $house['supplemental_address_1'] ?? '',
+            'building' => $house['supplemental_address_2'] ?? '',
+            'city' => $house['city'] ?? '',
+            'state_province' => $house['state_province'] ?? '',
+            'postal_code' => $house['postal_code'] ?? '',
+            'postal_code_suffix' => $house['postal_code_suffix'] ?? '',
+            'birth_date' => $house['birth_date'] ?? '',
+            'gender' => $house['gender'] ?? '',
+            'phone' => $house['phone'] ?? '',
+            'email' => $house['email'] ?? '',
             'postal_greeting' => CRM_Core_DAO::singleValueQuery("SELECT postal_greeting_display FROM civicrm_contact WHERE id = {$cDetails['house_id']}"),
             'taglist' => $cDetails['tagList'],
             'when' => $cDetails['when'],
             'house_id' => '',
-          );
+          ];
           unset($rows[$cid]);
         }
       }

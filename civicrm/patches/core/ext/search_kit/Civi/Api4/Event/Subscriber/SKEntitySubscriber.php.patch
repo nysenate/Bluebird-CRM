@@ -1,8 +1,8 @@
 diff --git a/modules/civicrm/ext/search_kit/Civi/Api4/Event/Subscriber/SKEntitySubscriber.php b/modules/civicrm/ext/search_kit/Civi/Api4/Event/Subscriber/SKEntitySubscriber.php
-index 7dfab89cf..4b652c624 100644
+index 1fd5007bbb..9bc1dfa94f 100644
 --- a/modules/civicrm/ext/search_kit/Civi/Api4/Event/Subscriber/SKEntitySubscriber.php
 +++ b/modules/civicrm/ext/search_kit/Civi/Api4/Event/Subscriber/SKEntitySubscriber.php
-@@ -111,7 +111,11 @@ class SKEntitySubscriber extends AutoService implements EventSubscriberInterface
+@@ -116,7 +116,11 @@ class SKEntitySubscriber extends AutoService implements EventSubscriberInterface
        if (!$expr) {
          continue;
        }
@@ -13,9 +13,9 @@ index 7dfab89cf..4b652c624 100644
 +         $column['spec'] = Meta::formatFieldSpec($column, $expr);
 +      }
        $table['fields'][] = $this->formatSQLSpec($column, $expr);
-     }
-     // Store new settings with added column spec
-@@ -129,7 +133,7 @@ class SKEntitySubscriber extends AutoService implements EventSubscriberInterface
+       if (in_array($column['key'], $primaryKeys)) {
+         $newSettings['primaryKey'][] = $column['spec']['name'];
+@@ -137,7 +141,7 @@ class SKEntitySubscriber extends AutoService implements EventSubscriberInterface
        case 'view':
          $tableName = _getSearchKitDisplayTableName($newName);
          $tempSettings = $event->params['settings'];

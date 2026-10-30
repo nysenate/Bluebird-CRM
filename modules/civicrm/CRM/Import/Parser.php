@@ -521,7 +521,7 @@ abstract class CRM_Import_Parser implements UserJobInterface {
   }
 
   /**
-   * Validate that a passed in contact ID is for an existing, not-deleted contact.
+   * Validate that a passed in contact ID is of the given contact type.
    *
    * @param int $contactID
    * @param string|null $contactType
@@ -1487,6 +1487,30 @@ abstract class CRM_Import_Parser implements UserJobInterface {
       }
     }
     return 'Individual';
+  }
+
+  /**
+   * Check if the contact ID has been deleted and merged to another contact.
+   *
+   * Return the ID of the merged to contact or the original ID if not.
+   *
+   * @param int $contactID
+   * @return int
+   * @throws \CRM_Core_Exception
+   */
+  protected function getMergedToContactIfDeleted($contactID): int {
+    if ($this->getExistingContactValue($contactID, 'is_deleted')) {
+      $result = Contact::getMergedTo(FALSE)
+        ->setContactId($contactID)
+        ->execute()->first();
+      if ($result) {
+        $contactID = $result['id'];
+      }
+      else {
+        throw new \CRM_Core_Exception(ts('Cannot import to a deleted contact %1', [1 => $contactID]));
+      }
+    }
+    return $contactID;
   }
 
 }

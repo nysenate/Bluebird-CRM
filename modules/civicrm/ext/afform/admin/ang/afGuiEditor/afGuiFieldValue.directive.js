@@ -32,13 +32,13 @@
         }
       },
       controller: function ($element, $timeout) {
-        var ts = CRM.ts('org.civicrm.afform_admin'),
-          ctrl = this,
-          dataType,
-          multi;
+        const ts = CRM.ts('org.civicrm.afform_admin'),
+          ctrl = this;
+        let dataType;
+        let multi;
 
         function makeWidget(field) {
-          var options,
+          let options,
             filters,
             $el = $($element),
             inputType = field.input_type;
@@ -67,10 +67,10 @@
               if (field.fk_entity === 'Individual' || (field.fk_entity === 'Contact' && (!filters.contact_type || filters.contact_type === 'Individual'))) {
                 options.push('user_contact_id');
               }
-              _.each(ctrl.editor ? ctrl.editor.getEntities() : [], function(entity) {
+              (ctrl.editor ? ctrl.editor.getEntities() : []).forEach((entity) => {
                 let filtersMatch = (entity.type === field.fk_entity) || (field.fk_entity === 'Contact' && ['Individual', 'Household', 'Organization'].includes(entity.type));
                 // Check if field filters match entity data (e.g. contact_type)
-                _.each(filters, function(value, key) {
+                Object.entries(filters).forEach(([key, value]) => {
                   if (entity.data && entity.data[key] && entity.data[key] != value) {
                     filtersMatch = false;
                   }
@@ -79,7 +79,7 @@
                   options.push({id: entity.name, label: entity.label, icon: afGui.meta.entities[entity.type].icon});
                 }
               });
-              var params = field.entity && field.name ? {fieldName: field.entity + '.' + field.name} : {filters: filters};
+              const params = field.entity && field.name ? {fieldName: field.entity + '.' + field.name} : {filters: filters};
               $el.crmAutocomplete(field.fk_entity, params, {
                 multiple: multi,
                 separator: '\u0001',
@@ -87,9 +87,10 @@
                 minimumInputLength: options.length ? 1 : 0
               });
             } else if (field.options) {
-              options = _.transform(field.options, function(options, val) {
-                options.push({id: val.id, text: val.label});
-              }, []);
+              const options = field.options.map(val => ({
+                id: val.id,
+                text: val.label
+              }));
               $el.select2({data: options, multiple: multi, separator: '\u0001'});
             } else if (dataType === 'Boolean') {
               $el.attr('placeholder', ts('- select -')).crmSelect2({allowClear: false, separator: '\u0001', placeholder: ts('- select -'), data: [
@@ -132,9 +133,9 @@
         }
 
         // Copied from ng-list but applied conditionally if field is multi-valued
-        var parseFieldInput = function(viewValue) {
+        const parseFieldInput = (viewValue) => {
           // If the viewValue is invalid (say required but empty) it will be `undefined`
-          if (_.isUndefined(viewValue)) return;
+          if (typeof viewValue === 'undefined') return;
 
           if ((viewValue === '1' || viewValue === '0') && ctrl.field.data_type === 'Boolean') {
             return viewValue === '1';
@@ -144,10 +145,10 @@
             return convertDataType(viewValue);
           }
 
-          var list = [];
+          const list = [];
 
           if (viewValue) {
-            _.each(viewValue.split("\u0001"), function(value) {
+            viewValue.split("\u0001").forEach(value => {
               list.push(convertDataType(value));
             });
           }
@@ -167,7 +168,7 @@
         };
 
         this.$onChanges = function() {
-          $timeout(function() {
+          $timeout(() => {
             makeWidget(ctrl.field);
           });
         };

@@ -53,169 +53,169 @@ function modifieddate_civicrm_triggerInfo(&$info, $tableName) {
 }
 
 function _modifieddate_note() {
-  $triggers = array(
-    array(
+  $triggers = [
+    [
       'table' => 'civicrm_note',
       'when' => 'AFTER',
-      'event' => array('INSERT', 'UPDATE'),
+      'event' => ['INSERT', 'UPDATE'],
       'sql' => "
         UPDATE civicrm_contact 
         SET modified_date = CURRENT_TIMESTAMP 
         WHERE id = NEW.entity_id
           AND NEW.entity_table IN ('civicrm_contact', 'nyss_directmsg', 'nyss_contextmsg');
       ",
-    ),
-    array(
+    ],
+    [
       'table' => 'civicrm_note',
       'when' => 'AFTER',
-      'event' => array('DELETE'),
+      'event' => ['DELETE'],
       'sql' => "
         UPDATE civicrm_contact
         SET modified_date = CURRENT_TIMESTAMP
         WHERE id = OLD.entity_id
           AND OLD.entity_table IN ('civicrm_contact', 'nyss_directmsg', 'nyss_contextmsg');
       ",
-    ),
-  );
+    ],
+  ];
 
   return $triggers;
 }
 
 function _modifieddate_tag() {
-  $triggers = array(
-    array(
+  $triggers = [
+    [
       'table' => 'civicrm_entity_tag',
       'when' => 'AFTER',
-      'event' => array('INSERT', 'UPDATE'),
+      'event' => ['INSERT', 'UPDATE'],
       'sql' => "
         UPDATE civicrm_contact 
         SET modified_date = CURRENT_TIMESTAMP 
         WHERE id = NEW.entity_id
           AND NEW.entity_table IN ('civicrm_contact');
       ",
-    ),
-    array(
+    ],
+    [
       'table' => 'civicrm_entity_tag',
       'when' => 'AFTER',
-      'event' => array('DELETE'),
+      'event' => ['DELETE'],
       'sql' => "
         UPDATE civicrm_contact
         SET modified_date = CURRENT_TIMESTAMP
         WHERE id = OLD.entity_id
           AND OLD.entity_table IN ('civicrm_contact');
       ",
-    ),
-  );
+    ],
+  ];
 
   return $triggers;
 }
 
 function _modifieddate_groupcontact() {
-  $triggers = array(
-    array(
+  $triggers = [
+    [
       'table' => 'civicrm_group_contact',
       'when' => 'AFTER',
-      'event' => array('INSERT', 'UPDATE'),
+      'event' => ['INSERT', 'UPDATE'],
       'sql' => "
         UPDATE civicrm_contact 
         SET modified_date = CURRENT_TIMESTAMP 
         WHERE id = NEW.contact_id;
       ",
-    ),
-    array(
+    ],
+    [
       'table' => 'civicrm_group_contact',
       'when' => 'AFTER',
-      'event' => array('DELETE'),
+      'event' => ['DELETE'],
       'sql' => "
         UPDATE civicrm_contact
         SET modified_date = CURRENT_TIMESTAMP
         WHERE id = OLD.contact_id;
       ",
-    ),
-  );
+    ],
+  ];
 
   return $triggers;
 }
 
 function _modifieddate_activity() {
-  $triggers = array(
-    array(
+  $triggers = [
+    [
       'table' => 'civicrm_activity_contact',
       'when' => 'AFTER',
-      'event' => array('INSERT', 'UPDATE'),
+      'event' => ['INSERT', 'UPDATE'],
       'sql' => "
         UPDATE civicrm_contact 
         SET modified_date = CURRENT_TIMESTAMP 
         WHERE id = NEW.contact_id;
       ",
-    ),
-    array(
+    ],
+    [
       'table' => 'civicrm_activity_contact',
       'when' => 'AFTER',
-      'event' => array('DELETE'),
+      'event' => ['DELETE'],
       'sql' => "
         UPDATE civicrm_contact
         SET modified_date = CURRENT_TIMESTAMP
         WHERE id = OLD.contact_id;
       ",
-    ),
-  );
+    ],
+  ];
 
   return $triggers;
 }
 
 function _modifieddate_relationship() {
-  $triggers = array(
-    array(
+  $triggers = [
+    [
       'table' => 'civicrm_relationship',
       'when' => 'AFTER',
-      'event' => array('INSERT', 'UPDATE'),
+      'event' => ['INSERT', 'UPDATE'],
       'sql' => "
         UPDATE civicrm_contact 
         SET modified_date = CURRENT_TIMESTAMP 
         WHERE id = NEW.contact_id_a
           OR id = NEW.contact_id_b;
       ",
-    ),
-    array(
+    ],
+    [
       'table' => 'civicrm_relationship',
       'when' => 'AFTER',
-      'event' => array('DELETE'),
+      'event' => ['DELETE'],
       'sql' => "
         UPDATE civicrm_contact
         SET modified_date = CURRENT_TIMESTAMP
         WHERE id = OLD.contact_id_a
           OR id = OLD.contact_id_b;
       ",
-    ),
-  );
+    ],
+  ];
 
   return $triggers;
 }
 
 function _modifieddate_case() {
-  $triggers = array(
-    array(
+  $triggers = [
+    [
       'table' => 'civicrm_case_contact',
       'when' => 'AFTER',
-      'event' => array('INSERT', 'UPDATE'),
+      'event' => ['INSERT', 'UPDATE'],
       'sql' => "
         UPDATE civicrm_contact 
         SET modified_date = CURRENT_TIMESTAMP 
         WHERE id = NEW.contact_id;
       ",
-    ),
-    array(
+    ],
+    [
       'table' => 'civicrm_case_contact',
       'when' => 'AFTER',
-      'event' => array('DELETE'),
+      'event' => ['DELETE'],
       'sql' => "
         UPDATE civicrm_contact
         SET modified_date = CURRENT_TIMESTAMP
         WHERE id = OLD.contact_id;
       ",
-    ),
-  );
+    ],
+  ];
 
   return $triggers;
 }

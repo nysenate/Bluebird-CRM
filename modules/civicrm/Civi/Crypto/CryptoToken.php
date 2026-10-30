@@ -112,7 +112,7 @@ class CryptoToken extends AutoService {
     return $this->delim . self::FMT_QUERY . \http_build_query([
       'k' => $key['id'],
       't' => \CRM_Utils_String::base64UrlEncode($cipherText),
-    ]);
+    ], '', '&');
   }
 
   /**

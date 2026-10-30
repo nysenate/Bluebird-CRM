@@ -16,7 +16,7 @@ class ContactDedupe extends AbstractBehavior implements EventSubscriberInterface
   /**
    * @return array
    */
-  public static function getSubscribedEvents() {
+  public static function getSubscribedEvents(): array {
     return [
       'civi.afform.submit' => ['onAfformSubmit', 101],
     ];
@@ -31,7 +31,8 @@ class ContactDedupe extends AbstractBehavior implements EventSubscriberInterface
   }
 
   public static function getDescription():string {
-    return E::ts('Update existing contact instead of creating a new one based on a dedupe rule.');
+    return E::ts('Use an existing contact instead of creating a new one based on a dedupe rule.'
+      . ' No changes will be made to the matched contact unless "Update" is enabled above under "Allowed Actions".');
   }
 
   public static function getModes(string $entityName):array {
@@ -55,7 +56,7 @@ class ContactDedupe extends AbstractBehavior implements EventSubscriberInterface
   public static function onAfformSubmit(AfformSubmitEvent $event) {
     $entity = $event->getEntity();
     $dedupeMode = $entity['contact-dedupe'] ?? NULL;
-    if (!CoreUtil::isContact($entity['type']) || !$dedupeMode) {
+    if (!$entity['type'] || !CoreUtil::isContact($entity['type']) || !$dedupeMode) {
       return;
     }
     // Apply dedupe rule if contact isn't already identified

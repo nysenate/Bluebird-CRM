@@ -32,7 +32,7 @@ class ActionObjectProvider extends AutoService implements EventSubscriberInterfa
   /**
    * @return array
    */
-  public static function getSubscribedEvents() {
+  public static function getSubscribedEvents(): array {
     // Using a high priority allows adhoc implementations
     // to override standard implementations -- which is
     // handy for testing/mocking.
@@ -112,6 +112,12 @@ class ActionObjectProvider extends AutoService implements EventSubscriberInterfa
   protected function handleChains($action, $result) {
     foreach ($action->getChain() as $name => $request) {
       $request += [NULL, NULL, [], NULL];
+      // Do not allow permissions to be modified
+      foreach (array_keys($request[2]) as $key) {
+        if (strtolower($key) === 'checkpermissions') {
+          unset($request[2][$key]);
+        }
+      }
       $request[2]['checkPermissions'] = $action->getCheckPermissions();
       foreach ($result as &$row) {
         $row[$name] = $this->runChain($request, $row);

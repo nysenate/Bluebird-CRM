@@ -71,7 +71,15 @@ class CRM_Mailing_Page_View extends CRM_Core_Page {
     if (empty($id) || is_array($id)) {
       $print = TRUE;
     }
-    $this->getMailingID($id);
+    try {
+      $this->getMailingID($id);
+    }
+    catch (CRM_Core_Exception $e) {
+      // The view mailing URL is frequently hit by spammers.
+      Civi::log()->notice("Invalid mailing view URL requested.", ['request_url' => $_SERVER['REQUEST_URI'] ?? '']);
+      // Exit with permission denied.
+      CRM_Utils_System::permissionDenied();
+    }
 
     // Retrieve contact ID and checksum from the URL
     $cs = CRM_Utils_Request::retrieve('cs', 'String');
@@ -111,9 +119,14 @@ class CRM_Mailing_Page_View extends CRM_Core_Page {
         $this->_mailing->id = $this->_mailingID;
         // if mailing is present and associated hash is present
         // while 'hash' is not been used for mailing view : throw 'permissionDenied'
+        // Allow numeric ID access for authenticated users with CiviMail
+        // admin permissions, since they can already enumerate all mailings
+        // via the API. The hash requirement only protects against anonymous
+        // enumeration of public-facing "view in browser" links.
         if ($this->_mailing->find() &&
           CRM_Core_DAO::getFieldValue('CRM_Mailing_BAO_Mailing', $this->_mailingID, 'hash', 'id') &&
-          !$allowID
+          !$allowID &&
+          !CRM_Core_Permission::check([['administer CiviCRM', 'approve mailings', 'access CiviMail']])
         ) {
           CRM_Utils_System::permissionDenied();
           return NULL;
@@ -143,8 +156,9 @@ class CRM_Mailing_Page_View extends CRM_Core_Page {
     $title = NULL;
     if (!empty($mailing['body_html']) && empty($_GET['text'])) {
       $header = 'text/html; charset=utf-8';
-      $content = $mailing['body_html'];
+      $content = Civi::service('richtext')->filter('mailing', $mailing['body_html']);
       if (!str_contains($content, '<head>') && !str_contains($content, '<title>')) {
+        // Note: Mailing.preview returns htmlized subject.
         $title = '<head><title>' . $mailing['subject'] . '</title></head>';
       }
     }

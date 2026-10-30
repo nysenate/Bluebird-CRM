@@ -35,6 +35,14 @@ function sage_civicrm_enable() {
 function sage_civicrm_pre($op, $objectName, $id, &$params) {
   //Don't do anything unless we are saving an address
   if ($objectName == 'Address' && in_array($op, ['create', 'edit'])) {
+    // Skip edits when there's nothing to
+    // look up. lookup() would only warn "Not enough address info."
+    // A case where this is a problem is in the duplicate merge tool that
+    // does things like changing contacts and flipping the is_primary field.
+    if ($op == 'edit' && !CRM_Utils_SAGE::hasAddressComponents($params)) {
+      return;
+    }
+
     // If the address already exists, fetch it and compare with form values
     // Unless the address is being modified we never overwrite districts
     $old_addr = CRM_Utils_SAGE::retrieveAddress($id);

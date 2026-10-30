@@ -1139,6 +1139,8 @@ class UpdateQuery extends Query implements QueryConditionInterface {
    *
    * @return UpdateQuery
    *   The called object.
+   *
+   * NYSS #19113 - Fix Php8.4 warnings
    */
   public function expression($field, $expression, ?array $arguments = NULL) {
     $this->expressionFields[$field] = array(
@@ -1424,6 +1426,8 @@ class MergeQuery extends Query implements QueryConditionInterface {
    *
    * @return MergeQuery
    *   The called object.
+   *
+   * NYSS #19113 - Fix Php8.4 warnings
    */
   public function expression($field, $expression, ?array $arguments = NULL) {
     $this->expressionFields[$field] = array(

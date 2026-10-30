@@ -780,7 +780,7 @@ function _reports_MailingSummary_rows(&$var, &$object) {
   //13187 mailing category
   $catOpts = _reports_CategoryOpts();
   foreach ($var as &$row) {
-    $row['civicrm_mailing_category'] = CRM_Utils_Array::value($row['civicrm_mailing_category'], $catOpts);
+    $row['civicrm_mailing_category'] = $catOpts[$row['civicrm_mailing_category'] ?? 0] ?? NULL;
   }
 }
 
@@ -848,7 +848,7 @@ function _reports_Activity_cols(&$var, &$object) {
 
 function _reports_Activity_rows(&$var, &$object) {
   //get activity and contact tags
-  $object->_tags = CRM_Core_BAO_Tag::getTagsUsedFor(['civicrm_contact', 'civicrm_activity'], true, false, 296);
+  $object->_tags = CRM_Core_BAO_Tag::getTagsUsedFor(['civicrm_contact', 'civicrm_activity'], true, false, CRM_NYSS_Tags_Constants::KEYWORDS_TAG_ID);
   //Civi::log()->debug('_nyss_reports_Activity_rows', array('object->_tags' => $object->_tags));
 
   foreach ($var as $rowNum => &$row) {

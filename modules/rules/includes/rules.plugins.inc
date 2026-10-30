@@ -17,8 +17,9 @@ class RulesAction extends RulesAbstractPlugin implements RulesActionInterface {
 
   /**
    * Execute the callback and update/save data as specified by the action.
+   *  NYSS #19113 - fix deprecation warning in php 8.4
    */
-  protected function executeCallback(array $args, RulesState $state = NULL) {
+  protected function executeCallback(array $args, ?RulesState $state = NULL) {
     rules_log('Evaluating the action %name.', array(
       '%name' => $this->label($this->elementName),
     ), RulesLog::INFO, $this);
@@ -105,7 +106,8 @@ class RulesCondition extends RulesAbstractPlugin implements RulesConditionInterf
     return $this->negate;
   }
 
-  protected function executeCallback(array $args, RulesState $state = NULL) {
+  // NYSS #19113 - fix deprecation warning in php 8.4
+  protected function executeCallback(array $args, ?RulesState $state = NULL) {
     $return = (bool) $this->__call('execute', empty($this->info['named parameter']) ? $args : array($args));
     $return = $this->negate ? !$return : $return;
     rules_log('The condition %name evaluated to %bool', array(
@@ -413,8 +415,9 @@ class RulesReactionRule extends Rule implements RulesTriggerableInterface {
 
   /**
    * Implements RulesTriggerableInterface::event().
+   *  NYSS #19113 - fix deprecation warning in php 8.4
    */
-  public function event($event_name, array $settings = NULL) {
+  public function event($event_name, ?array $settings = NULL) {
     // Process any settings and determine the configured event's name.
     if ($settings) {
       $handler = rules_get_event_handler($event_name, $settings);

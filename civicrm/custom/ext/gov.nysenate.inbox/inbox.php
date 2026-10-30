@@ -78,7 +78,7 @@ function inbox_civicrm_entityRefFilters(&$filters) {
   ];
 }//entityRefFilters
 
-#[CRM_NYSS_Attribute_IssueRefs('17369')]
+#[CRM_NYSS_Attribute_IssueRef('17369')]
 function inbox_civicrm_buildForm($formName, &$form) {
   /*Civi::log()->debug('inbox_civicrm_buildForm', array(
     'formName' => $formName,
@@ -88,7 +88,7 @@ function inbox_civicrm_buildForm($formName, &$form) {
   //inject js/css to new indiv form, but only when triggered from inbox matched list
   if ($formName == 'CRM_Profile_Form_Edit') {
     $ufGroup = $form->getVar('_ufGroup');
-    $referer = CRM_Utils_Array::value('HTTP_REFERER', $_SERVER);
+    $referer = $_SERVER['HTTP_REFERER'] ?? NULL;
     if ($ufGroup['name'] == 'new_individual' &&
       (strpos($referer, 'civicrm/nyss/inbox/matched') !== FALSE ||
        strpos($referer, 'civicrm/nyss/inbox/unmatched') !== FALSE)
@@ -145,7 +145,7 @@ function inbox_civicrm_entityTypes(&$entityTypes) {
  * @throws \CRM_Core_Exception
  * @throws \Civi\API\Exception\UnauthorizedException
  */
-#[CRM_NYSS_Attribute_IssueRefs('17369')]
+#[CRM_NYSS_Attribute_IssueRef('17369')]
 function inbox_civicrm_postProcess($formName, $form) {
   // NYSS #17369
   // In this specific case, we are creating a case via an entityRef form field.
@@ -168,7 +168,7 @@ function inbox_civicrm_container(ContainerBuilder $container) {
   $container->register('inbox.parser', '\CRM_NYSS_Inbox_BAO_MessageParserRegex')->setPublic(TRUE);
 }
 
-#[CRM_NYSS_Attribute_IssueRefs('18205')]
+#[CRM_NYSS_Attribute_IssueRef('18205')]
 function inbox_civicrm_validateForm($formName, &$fields, &$files, &$form, &$errors) {
     if ($formName === 'CRM_Profile_Form_Edit') {
         // NYSS 18205
@@ -179,7 +179,7 @@ function inbox_civicrm_validateForm($formName, &$fields, &$files, &$form, &$erro
 }
 /** NYSS 18205
  *  adds dependable and clear 'duplicate contact' data for javascript to use in decision-making */
-#[CRM_NYSS_Attribute_IssueRefs('18205')]
+#[CRM_NYSS_Attribute_IssueRef('18205')]
 function _inbox_add_duplicate_data_to_response(&$form, &$fields) {
     $ufGroup = $form->getVar('_ufGroup');
     if (empty($ufGroup['name']) || $ufGroup['name'] !== 'new_individual') {
@@ -205,7 +205,7 @@ function _inbox_add_duplicate_data_to_response(&$form, &$fields) {
  * @see CRM_Contact_Form_Contact::checkDuplicateContacts()
  * NYSS 18205
  */
-#[CRM_NYSS_Attribute_IssueRefs('18205')]
+#[CRM_NYSS_Attribute_IssueRef('18205')]
 function _inbox_change_duplicate_contact_notification_message(&$form) {
     $ufGroup = $form->getVar('_ufGroup');
     if (empty($ufGroup['name']) || $ufGroup['name'] !== 'new_individual') {
@@ -218,7 +218,7 @@ function _inbox_change_duplicate_contact_notification_message(&$form) {
 }
 
 /** NYSS 18205 */
-#[CRM_NYSS_Attribute_IssueRefs('18205')]
+#[CRM_NYSS_Attribute_IssueRef('18205')]
 function _inbox_rename_duplicate_contact_button(&$form) {
     $buttonName = $form->getButtonName('upload', 'duplicate');
     if ($form->elementExists($buttonName)) {

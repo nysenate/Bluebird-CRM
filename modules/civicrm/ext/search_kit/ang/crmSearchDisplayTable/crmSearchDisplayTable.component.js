@@ -44,7 +44,6 @@
 
         this.initializeDisplay($scope, $element);
 
-
         if (ctrl.settings.draggable) {
           ctrl.draggableOptions = {
             containment: $element.children('div').first(),
@@ -69,6 +68,45 @@
             }
           };
         }
+
+        // if in an afFieldset, watch for afFormReset in case a
+        // a SavedParamSet has been loaded which includes column selection
+        if (this.afFieldset) {
+          $scope.$on('afFormReset', () => this.onAfformReset());
+        }
+      };
+
+      this.onAfformReset = () => {
+        const savedSearchParamSet = this.afFieldset.selectedSearchParamSet;
+        if (!savedSearchParamSet) {
+          this.columns.forEach((col) => col.enabled = true);
+          return;
+        }
+        const columns = savedSearchParamSet.columns ? savedSearchParamSet.columns[this.getSearchDisplayKey()] : null;
+        if (!columns || !Object.keys(columns).length) {
+          this.columns.forEach((col) => col.enabled = true);
+          return;
+        }
+        // note columns are saved as key => label if possible,
+        // or label => label if not
+        // first deselect all
+        this.columns.forEach((col) => col.enabled = false);
+        // reselect selected columns
+        Object.keys(columns).forEach((keyOrLabel) => {
+          const findByKey = this.columns.findIndex((col) => col.key === keyOrLabel);
+          if (findByKey > -1) {
+            this.columns[findByKey].enabled = true;
+            return;
+          }
+          const findByLabel = this.columns.findIndex((col) => this.getColumnToggleLabel(col) === keyOrLabel);
+          if (findByLabel > -1) {
+            this.columns[findByLabel].enabled = true;
+            return;
+          }
+          // couldnt find a match. maybe this column has been removed from the search kit
+        });
+        // update for toggled changes
+        this.toggleColumns();
       };
 
       function updateDraggableWeights(key, data) {
@@ -106,8 +144,8 @@
           headerClasses.push(column.alignment);
         }
         // Include unconditional css rules
-        if (column.cssRules) {
-          column.cssRules.forEach(function (cssRule) {
+        if (Array.isArray(column.cssRules)) {
+          column.cssRules.forEach(cssRule => {
             if (cssRule.length === 1) {
               headerClasses.push(cssRule[0]);
             }
@@ -117,7 +155,7 @@
       };
 
       this.getRowClass = function (row) {
-        let cssClass = row.cssClass || '';
+        let cssClass = '';
         if (ctrl.settings.hierarchical) {
           cssClass += ' crm-hierarchical-row crm-hierarchical-depth-' + row.data._depth;
           if (row.data._depth) {
@@ -160,9 +198,40 @@
         }
       };
 
+      /**
+       * Get a list of currently selected columns, for saving in SearchParamSet
+       * Unfortunately not all columns have keys, so we sometimes save the label,
+       * which may not be unique :(
+       *
+       * @returns string[]
+       */
+      this.getToggledColumns = () => {
+        const toggledColumns = this.columns.filter((col) => col.enabled);
+        // selecting all or none is ignored
+        if (!toggledColumns.length || toggledColumns.length === this.columns.length) {
+          return [];
+        }
+        const keyLabelMap = {};
+        toggledColumns.forEach((col) => {
+          const label = this.getColumnToggleLabel(col);
+          const key = col.key ? col.key : label;
+          // this could cause collisions, particularly with unlabelled
+          // columns. but it's the best we can do for now
+          keyLabelMap[key] = label;
+        });
+        return keyLabelMap;
+      };
+
       this.resetColumnToggles = () => {
         this.columns.forEach((col, index) => {
           this.columns[index].enabled = true;
+        });
+        this.toggleColumns();
+      };
+
+      this.clearColumnToggles = () => {
+        this.columns.forEach((col, index) => {
+          this.columns[index].enabled = false;
         });
         this.toggleColumns();
       };
@@ -177,6 +246,17 @@
         this.columns.forEach((col) => {
           col.fetched = col.enabled;
         });
+      };
+
+      this.onToggleDisclosure = (col, event) => {
+        col.hasBeenOpened = true;
+        const detailsElement = event.target.closest('details.crm-search-display-subsearch-dropdown');
+        // If we are opening a dropdown, close any others in the same search display
+        if (detailsElement && !detailsElement.open) {
+          detailsElement.closest('.crm-search-display-table')
+            .querySelectorAll('details.crm-search-display-subsearch-dropdown[open]')
+            .forEach((details) => details.open = false);
+        }
       };
 
     }

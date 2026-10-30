@@ -42,6 +42,8 @@ class Manager
      * @param Resolvable $resolver
      * @param Collectable $collection
      * @return self
+     *
+     * NYSS #19113 - Fix Php8.4 warnings
      */
     public static function initialize(
         Behavior $behaviour,
@@ -88,6 +90,8 @@ class Manager
      * @param Behavior $behaviour
      * @param Resolvable $resolver
      * @param Collectable $collection
+     *
+     * NYSS #19113 - Fix Php8.4 warnings
      */
     private function __construct(
         Behavior $behaviour,

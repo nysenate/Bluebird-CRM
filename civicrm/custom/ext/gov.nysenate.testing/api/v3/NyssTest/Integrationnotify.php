@@ -23,15 +23,15 @@ function _civicrm_api3_nyss_test_Integrationnotify_spec(&$spec) {
 function civicrm_api3_nyss_test_Integrationnotify($params) {
   $db = 'test.db';
   $type = 'testtype';
-  $row = array(
+  $row = [
     'val1',
     'val2',
-  );
-  $paramsTest = array(
+  ];
+  $paramsTest = [
     'param1',
     'param2',
     'param3',
-  );
+  ];
   $date = date('Y-m-d H:i:s');
 
   CRM_NYSS_BAO_Integration_Website::notifyError($db, $type, $row, $paramsTest, $date);

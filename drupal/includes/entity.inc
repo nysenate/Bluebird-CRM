@@ -19,6 +19,8 @@ interface DrupalEntityControllerInterface {
    * @param $ids
    *   (optional) If specified, the cache is reset for the entities with the
    *   given ids only.
+   *
+   * NYSS #19113 - Fix Php8.4 warnings
    */
   public function resetCache(?array $ids = NULL);
 
@@ -139,6 +141,8 @@ class DrupalDefaultEntityController implements DrupalEntityControllerInterface {
 
   /**
    * Implements DrupalEntityControllerInterface::resetCache().
+   *
+   * NYSS #19113 - Fix Php8.4 warnings
    */
   public function resetCache(?array $ids = NULL) {
     if (isset($ids)) {

@@ -11,7 +11,7 @@ if (!defined('CIVI_SETUP')) {
 
 class InstallSchemaPlugin implements \Symfony\Component\EventDispatcher\EventSubscriberInterface {
 
-  public static function getSubscribedEvents() {
+  public static function getSubscribedEvents(): array {
     return [
       'civi.setup.checkRequirements' => [
         ['checkXmlFiles', 0],

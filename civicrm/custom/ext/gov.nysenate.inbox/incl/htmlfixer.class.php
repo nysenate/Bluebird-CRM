@@ -25,7 +25,7 @@ class HtmlFixer {
 		$this->fixedhtml = "";
 		$this->debug = false;
 		$this->fixedhtmlDisplayCode = "";
-		$this->allowed_styles = array();
+		$this->allowed_styles = [];
 	}
 
 	public function getFixedHtml($dirtyhtml) {
@@ -84,14 +84,14 @@ class HtmlFixer {
 	private function fixTag($t){
 		/* remove non standard attributes and call the fix for quoted attributes */
 		$t = preg_replace (
-			array(
+			[
 				'/borderColor=([^ >])*/i',
 				'/border=([^ >])*/i'
-			), 
-			array(
+			],
+			[
 				'',
 				''
-			)
+			]
 			, $t);
 		$ar = explode(" ",$t);
 		$nt = "";
@@ -156,7 +156,7 @@ class HtmlFixer {
 		/*
 			metodo richiamato da fix() per aggiustare i tag auto chiudenti (<br/> <img ... />)
 		*/
-		if (in_array( $tipo, array ("img","input","br","hr")) ) {
+		if (in_array( $tipo, ["img","input","br","hr"]) ) {
 			if (!stristr($tag,'/>')) $tag = str_replace('>','/>',$tag );
 		}
 		return $tag;
@@ -176,27 +176,27 @@ class HtmlFixer {
 			$flag=false;
 			if ($this->matrix[$i]["tagType"]=="div") { //div cannot stay inside a p, b, etc.
 				$parentType = $this->matrix[$this->matrix[$i]["parentTag"]]["tagType"];
-				if (in_array($parentType, array("p","b","i","font","u","small","strong","em"))) $flag=true;
+				if (in_array($parentType, ["p","b","i","font","u","small","strong","em"])) $flag=true;
 			}
 
-			if (in_array( $this->matrix[$i]["tagType"], array( "b", "strong" )) ) { //b cannot stay inside b o strong.
+			if (in_array( $this->matrix[$i]["tagType"], [ "b", "strong" ]) ) { //b cannot stay inside b o strong.
 				$parentType = $this->matrix[$this->matrix[$i]["parentTag"]]["tagType"];
-				if (in_array($parentType, array("b","strong"))) $flag=true;
+				if (in_array($parentType, ["b","strong"])) $flag=true;
 			}
 
-			if (in_array( $this->matrix[$i]["tagType"], array ( "i", "em") )) { //i cannot stay inside i or em
+			if (in_array( $this->matrix[$i]["tagType"], [ "i", "em"] )) { //i cannot stay inside i or em
 				$parentType = $this->matrix[$this->matrix[$i]["parentTag"]]["tagType"];
-				if (in_array($parentType, array("i","em"))) $flag=true;
+				if (in_array($parentType, ["i","em"])) $flag=true;
 			}
 
 			if ($this->matrix[$i]["tagType"]=="p") {
 				$parentType = $this->matrix[$this->matrix[$i]["parentTag"]]["tagType"];
-				if (in_array($parentType, array("p","b","i","font","u","small","strong","em"))) $flag=true;
+				if (in_array($parentType, ["p","b","i","font","u","small","strong","em"])) $flag=true;
 			}
 
 			if ($this->matrix[$i]["tagType"]=="table") {
 				$parentType = $this->matrix[$this->matrix[$i]["parentTag"]]["tagType"];
-				if (in_array($parentType, array("p","b","i","font","u","small","strong","em","tr","table"))) $flag=true;
+				if (in_array($parentType, ["p","b","i","font","u","small","strong","em","tr","table"])) $flag=true;
 			}
 			if ($flag) {
 				$errorsCounter++;
@@ -237,7 +237,7 @@ class HtmlFixer {
 					$out.=$this->findSonsOf($i);
 					if ($this->matrix[$i]["tagType"]!="") {
 						//write the closing tag
-						if (!in_array($this->matrix[$i]["tagType"], array ( "br","img","hr","input"))) 
+						if (!in_array($this->matrix[$i]["tagType"], [ "br","img","hr","input"]))
 							$out.="</". $this->matrix[$i]["tagType"].">";
 					}
 				}
@@ -278,7 +278,7 @@ class HtmlFixer {
 		while ($i<10) {
 			$i++;
 			$s = preg_replace (
-				array(
+				[
 					'/[\r\n]/i',
 					'/  /i',
 					'/<p([^>])*>(&nbsp;)*\s*<\/p>/i',
@@ -294,8 +294,8 @@ class HtmlFixer {
 					'/<!DOCTYPE([^>])*>/i',
 					'/<!--(.|\s)*?-->/',
 					'/<\?(.|\s)*?\?>/'
-				), 
-				array(
+				],
+				[
 					' ',
 					' ',
 					'',
@@ -310,7 +310,7 @@ class HtmlFixer {
 					' ',
 					'',
 					''
-				)
+				]
 				, trim($s));
 		}
 		return $s;
@@ -325,14 +325,14 @@ class HtmlFixer {
 		$i=0;
 		$j=0;
 		$indexparentTag=0;
-		$padri=array();
+		$padri=[];
 		array_push($padri,"0");
 		$this->matrix[$j]["tagType"]="";
 		$this->matrix[$j]["tag"]="";
 		$this->matrix[$j]["parentTag"]="0";
 		$this->matrix[$j]["pre"]="";
 		$this->matrix[$j]["post"]="";
-		$tags=array();
+		$tags=[];
 		while($i<strlen($s)) {
 			if ( $s[$i] =="<") {
 				/*

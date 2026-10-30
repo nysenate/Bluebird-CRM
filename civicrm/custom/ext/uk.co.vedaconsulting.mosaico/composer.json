@@ -19,7 +19,7 @@
   "extra": {
     "downloads": {
       "mosaico": {
-        "version": "v0.18.10-civicrm-4.0",
+        "version": "v0.18.11-civicrm-1.0",
         "path": "packages/mosaico",
         "url": "https://github.com/civicrm/mosaico/releases/download/{$version}/mosaico-dist.tar.gz"
       }

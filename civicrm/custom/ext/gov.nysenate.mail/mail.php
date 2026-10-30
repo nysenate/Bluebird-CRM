@@ -141,7 +141,7 @@ function mail_civicrm_angularModules(&$angularModules) {
   }
 }
 
-#[CRM_NYSS_Attribute_IssueRefs('13402','11041','14402','13305','12136','17587')]
+#[CRM_NYSS_Attribute_IssueRef('13402','11041','14402','13305','12136','17587')]
 function mail_civicrm_alterAngular(\Civi\Angular\Manager $angular) {
   //inject mailing form options
   $changeSet = \Civi\Angular\ChangeSet::create('inject_options')
@@ -288,7 +288,7 @@ function mail_civicrm_pageRun(&$page) {
 
   // NYSS 5567 - fix title
   if ($page->getVar('_name') == 'CRM_Mailing_Page_Event') {
-    $event = CRM_Utils_Array::value('event', $_GET);
+    $event = $_GET['event'] ?? NULL;
     if ($event == 'unsubscribe') {
       CRM_Utils_System::setTitle(ts('Opt-out Requests'));
     }
@@ -358,7 +358,7 @@ function mail_civicrm_pageRun(&$page) {
           'location_type_id' => $lt[$email->location_type_id],
           'email' => $email->email,
           'is_primary' => $email->is_primary,
-          'on_hold' => CRM_Utils_Array::value($email->on_hold, $holdOptions, ''),
+          'on_hold' => $holdOptions[$email->on_hold] ?? '',
           'hold_date' => $email->hold_date,
         ];
         $cats = explode(',', $email->mailing_categories);
@@ -497,17 +497,6 @@ function mail_civicrm_pre($op, $objectName, $id, &$params) {
     $params['auto_responder'] = 0;
     $params['open_tracking'] = 0;
     $params['visibility'] = 'Public Pages';
-
-    $doc = phpQuery::newDocument($params['body_html']);
-    $style = $doc->find('figure')->attr('style');
-    if (!empty($params['body_html']) && strpos($style, 'margin-inline-start') === FALSE) {
-      $doc->find('figure')
-        ->attr('style', "{$style}; margin-inline-start: 5px; margin-inline-end: 5px;");
-      $params['body_html'] = $doc->html();
-    }
-    // allow garbage collection
-    phpQuery::unloadDocuments($doc->getDocumentID());
-    //Civi::log()->debug('mail_civicrm_pre AFTER', ['$style' => $style, '$params[body_html]' => $params['body_html']]);
   }
 
   if ($op == 'create' && $objectName == 'Mailing') {
@@ -853,7 +842,7 @@ function mail_civicrm_buildForm($formName, &$form) {
         'location_type_id' => $lt[$email->location_type_id],
         'email' => $email->email,
         'is_primary' => $email->is_primary,
-        'on_hold' => CRM_Utils_Array::value($email->on_hold, $holdOptions, ''),
+        'on_hold' => $holdOptions[$email->on_hold] ?? '',
         'hold_date' => $email->hold_date,
         'mailing_categories' => $email->mailing_categories,
       ];
@@ -998,7 +987,7 @@ function mail_civicrm_alterMailParams(&$params, $context) {
     // civimail context ever needs it.
     if ((empty($params[NyssFlexmailListener::$PARAM_EVENT_Q_ID]) ||
          empty($params[NyssFlexmailListener::$PARAM_CONTACT_ID])) &&
-         $xCiviMail = CRM_Utils_Array::value('X-CiviMail-Bounce', $params)
+         $xCiviMail = $params['X-CiviMail-Bounce'] ?? NULL
     ) {
       $emailParts = explode('@', $xCiviMail);
       $idParts = explode('.', $emailParts[0]);
@@ -1008,7 +997,7 @@ function mail_civicrm_alterMailParams(&$params, $context) {
          !empty($params[NyssFlexmailListener::$PARAM_EVENT_Q_ID])) {
         try {
           $eventQueue = civicrm_api3('MailingEventQueue', 'getsingle', ['id' => $params['event_queue_id']]);
-          $params[NyssFlexmailListener::$PARAM_CONTACT_ID] = CRM_Utils_Array::value('contact_id', $eventQueue);
+          $params[NyssFlexmailListener::$PARAM_CONTACT_ID] = $eventQueue['contact_id'] ?? NULL;
         } catch (CRM_Core_Exception $e) {
           Civi::log()->debug(__FUNCTION__, ['e' => $e]);
         }
@@ -1138,10 +1127,6 @@ function mail_civicrm_alterMailParams(&$params, $context) {
       }
     }
 
-    //13617 fix text alignment styles
-    //TODO this is fixed in a future Mosaico release
-    _mail_alterEmailContent($params);
-
     //Sendgrid headers
     $hdr->setCategory("BluebirdMail: {$jobInfo['mailing_name']} (ID: {$jobInfo['mailing_id']})");
     $hdr->setUniqueArgs([
@@ -1175,9 +1160,8 @@ function mail_civicrm_alterMailParams(&$params, $context) {
   $params['headers']['X-SMTPAPI'] = $hdr->asJSON();
 
   //13827 suppress draft text in subject when viewing via report;add some normalizing css;
-  if (function_exists('current_path') && current_path() == 'civicrm/mailing/view') {
+  if (CRM_Utils_System::currentPath() == 'civicrm/mailing/view') {
     $params['Subject'] = str_replace('[BluebirdMail Draft] ', '', $params['Subject']);
-
     //CRM_Core_Error::debug_var('params[html]', $params['html']);
     $params['html'] = _mail_mailingViewCss($params['html']);
   }
@@ -1213,36 +1197,24 @@ function mail_civicrm_alterTemplateFile($formName, &$form, $context, &$tplName) 
   }
 }
 
+#[CRM_NYSS_Attribute_IssueRef('13174')]
 function mail_civicrm_permission_check($permission, &$granted) {
-  /*Civi::log()->debug('mail_civicrm_permission_check', [
-    '$permission' => $permission,
-    '$granted' => $granted,
-    'current_path' => current_path(),
-    '$_REQUEST' => $_REQUEST,
-  ]);*/
-
-  //current_path() is not available via the CLI; we don't need the permission checks
-  //in that context anyway, so simply return early
-  if (!function_exists('current_path') || !function_exists('user_access')) {
+  // return early to avoid recursion in CRM_Core_Permission::check().
+  if (!in_array($permission, ['access CiviMail', 'view public CiviMail content'])) {
     return;
   }
 
-  //13174 grant access to mailing tab if user has any of the mailing perms
-  if ($permission == 'access CiviMail') {
-    if (current_path() == 'civicrm/contact/view' &&
-      user_access("view all contacts")
-    ) {
-      $granted = TRUE;
-    }
+  $path = CRM_Utils_System::currentPath();
+  $can_view_contacts = CRM_Core_Permission::check('view all contacts');
+
+  // NYSS 13174 grant access to mailing tab if user has any of the mailing perms
+  if ($permission == 'access CiviMail' && $path == 'civicrm/contact/view' && $can_view_contacts) {
+    $granted = TRUE;
   }
 
-  //13174 view email content
-  if ($permission == 'view public CiviMail content') {
-    if (current_path() == 'civicrm/mailing/view' &&
-      user_access("view all contacts")
-    ) {
-      $granted = TRUE;
-    }
+  // NYSS 13174 view email content
+  if ($permission == 'view public CiviMail content' && $path == 'civicrm/mailing/view' && $can_view_contacts) {
+    $granted = TRUE;
   }
 }
 
@@ -1577,10 +1549,10 @@ function _mail_dedupeContacts($mailingId) {
   // I wonder if it's inadvertently creating duplicates in the event queue.
   $deletedCount = $result->affectedRows();
   if ($deletedCount) {
-    Civi::log()->warning('_mail_dedupeContacts NYSS 17656', array(
+    Civi::log()->warning('_mail_dedupeContacts NYSS 17656', [
       '$deletedCount' => $deletedCount,
       '$mailingId' => $mailingId
-    ));
+    ]);
   }
 
 } // _mail_dedupeContacts()
@@ -1754,7 +1726,7 @@ function _mail_get_shareon_clause($bbcfg) {
 
   $text = 'To share this on Facebook, go to %SHAREON_FACEBOOK_URL%';
   $html = '<a style="color:#386eff; text-decoration:underline;" href="%SHAREON_FACEBOOK_URL%" target="_blank">Share&nbsp;on&nbsp;Facebook.</a>';
-  return array('text' => $text, 'html' => $html);
+  return ['text' => $text, 'html' => $html];
 } // _mail_get_shareon_clause()
 
 
@@ -1813,38 +1785,8 @@ function _mail_replace_tokens($msg, $token_map) {
 } // _mail_replace_tokens()
 
 
-function _mail_alterEmailContent(&$params) {
-  //Civi::log()->debug(__FUNCTION__, ['$params' => $params]);
-
-  $html = $params['html'];
-  $doc = phpQuery::newDocument($html);
-
-  foreach ($doc['p'] as $p) {
-    $dStyle = pq($p)->attr('data-mce-style');
-    //Civi::log()->debug(__FUNCTION__, ['$dStyle' => $dStyle]);
-
-    if (!empty($dStyle)) {
-      $style = pq($p)->attr('style');
-      //Civi::log()->debug(__FUNCTION__, ['$style' => $style]);
-
-      if (substr($style, -1) != ';') {
-        $style .= ';';
-      }
-
-      pq($p)->attr('style', $style.$dStyle);
-      pq($p)->attr('data-mce-style', '');
-    }
-  }
-
-  $params['html'] = $doc->html();
-  // allow garbage collection
-  phpQuery::unloadDocuments($doc->getDocumentID());
-} // _mail_alterEmailContent()
-
-
 function _mail_mailingViewCss($html) {
-  $doc = phpQuery::newDocument($html);
-  $doc->find('head')->append('
+  $css = '
     <style type="text/css">
       .crm-container td {
         padding: 0;
@@ -1859,12 +1801,8 @@ function _mail_mailingViewCss($html) {
         font-weight: normal !important;
       }
     </style>
-  ');
+  ';
 
-  $html = $doc->html();
-  //Civi::log()->debug(__FUNCTION__, ['$html' => $html]);
-
-  // allow garbage collection
-  phpQuery::unloadDocuments($doc->getDocumentID());
-  return $html;
+  // _mail_fixup_html_message() guarantees a </head> tag is present
+  return preg_replace('~</head>~i', $css.'</head>', $html, 1);
 } // _mail_mailingViewCss()

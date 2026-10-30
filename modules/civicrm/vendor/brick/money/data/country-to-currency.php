@@ -94,7 +94,7 @@
     'HK' => ['HKD'],
     'HM' => ['AUD'],
     'HN' => ['HNL'],
-    'HR' => ['HRK'],
+    'HR' => ['EUR'],
     'HT' => ['HTG', 'USD'],
     'HU' => ['HUF'],
     'ID' => ['IDR'],
@@ -198,7 +198,7 @@
     'SI' => ['EUR'],
     'SJ' => ['NOK'],
     'SK' => ['EUR'],
-    'SL' => ['SLL', 'SLE'],
+    'SL' => ['SLE'],
     'SM' => ['EUR'],
     'SN' => ['XOF'],
     'SO' => ['SOS'],
@@ -244,5 +244,5 @@
     'YT' => ['EUR'],
     'ZA' => ['ZAR'],
     'ZM' => ['ZMW'],
-    'ZW' => ['ZWL']
+    'ZW' => ['ZWG']
 ];

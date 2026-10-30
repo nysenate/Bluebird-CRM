@@ -6,10 +6,14 @@ define('TEST_COUNT', 0);
 class CRM_NYSS_Contact_BAO {
   /**
    * Process all trashed contacts (permanently delete)
+   *
+   * @param array $params
    */
-  static function processTrashed($params = []) {
+  static function processTrashed(array $params = []) {
     ini_set('memory_limit', '8000M');
     ini_set('max_execution_time', 0);
+
+    $lineBreak = (!empty($params['return'])) ? "\n" : '<br />';
 
     $sTime = microtime(TRUE);
 
@@ -48,10 +52,10 @@ class CRM_NYSS_Contact_BAO {
     //Civi::log()->debug(__METHOD__, ['$trashed' => $trashed]);
 
     if ($params['dryrun'] ?? FALSE) {
+      $output = "Dry Run Mode: There are {$trashed->N} contacts to be deleted. No action was taken in dry-run mode.{$lineBreak}";
+      echo $output;
       return $trashed->N;
     }
-
-    $lineBreak = (!empty($params['return'])) ? "\n" : '<br />';
 
     $contactIDs = $batchIDs = [];
 
@@ -144,10 +148,6 @@ class CRM_NYSS_Contact_BAO {
     $output = "{$lineBreak}{$contactCount} trashed contact records were permanently deleted.";
     echo $output;
 
-    if ($params['return'] ?? FALSE) {
-      return $contactCount;
-    }
-
-    CRM_Utils_System::civiExit();
+    return $contactCount;
   }
 }

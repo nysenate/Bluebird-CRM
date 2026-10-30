@@ -28,13 +28,13 @@ class CRM_NYSS_PrintExport_Form_Task_PrintExportResult extends CRM_Contact_Form_
     $this->assign('statusOutput', $statusOutput);
 
     $this->addButtons(
-      array(
-        array(
+      [
+        [
           'type' => 'next',
           'name' => ts('Return to Search Results'),
           'isDefault' => TRUE,
-        ),
-      )
+        ],
+      ]
     );
   }// buildQuickForm()
 

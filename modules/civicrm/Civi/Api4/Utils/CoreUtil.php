@@ -25,13 +25,13 @@ class CoreUtil {
   }
 
   /**
-   * @param $entityName
+   * @param string $entityName
    *
    * @return \CRM_Core_DAO|string
    *   The BAO name for use in static calls. Return doc block is hacked to allow
    *   auto-completion of static methods
    */
-  public static function getBAOFromApiName($entityName): ?string {
+  public static function getBAOFromApiName(string $entityName): ?string {
     // TODO: It would be nice to just call self::getInfoItem($entityName, 'dao')
     // but that currently causes test failures, probably due to early-bootstrap issues.
     if ($entityName === 'CustomValue' || str_starts_with($entityName, 'Custom_')) {
@@ -42,6 +42,12 @@ class CoreUtil {
     }
     if (!$dao && self::isContact($entityName)) {
       $dao = 'CRM_Contact_DAO_Contact';
+    }
+    // Last resort (added for the sake of SqlView APIs which are not registered with AllCoreTables).
+    // Again, all this could be avoided if we could just call self::getInfoItem.
+    $className = 'Civi\Api4\\' . $entityName;
+    if (!$dao && class_exists($className)) {
+      $dao = $className::getInfo()['dao'] ?? NULL;
     }
     return $dao ? AllCoreTables::getBAOClassName($dao) : NULL;
   }
@@ -156,7 +162,7 @@ class CoreUtil {
    * @param string $tableName
    * @return string|NULL
    */
-  public static function getApiNameFromTableName($tableName): ?string {
+  public static function getApiNameFromTableName(string $tableName): ?string {
     $provider = \Civi::service('action_object_provider');
     foreach ($provider->getEntities() as $entityName => $info) {
       if (($info['table_name'] ?? NULL) === $tableName) {
@@ -228,22 +234,10 @@ class CoreUtil {
       return [
         'extends' => [$entityName],
         'column' => 'id',
-        'grouping' => ($customGroupExtends[$entityName]['grouping'] ?: array_column(\CRM_Utils_Array::findAll($extendsSubGroups, ['extends' => $entityName]), 'grouping', 'id')) ?: NULL,
+        'grouping' => ($customGroupExtends[$entityName]['grouping'] ?: array_column(\CRM_Utils_Array::filter($extendsSubGroups, ['extends' => $entityName]), 'grouping', 'id')) ?: NULL,
       ];
     }
     return NULL;
-  }
-
-  /**
-   * @deprecated since 5.71 will be removed around 5.81
-   *
-   * @param $customGroupName
-   * @return bool
-   * @throws \CRM_Core_Exception
-   */
-  public static function isCustomEntity($customGroupName): bool {
-    \CRM_Core_Error::deprecatedFunctionWarning('CRM_Core_BAO_CustomGroup::getAll');
-    return $customGroupName && \CRM_Core_DAO::getFieldValue('CRM_Core_DAO_CustomGroup', $customGroupName, 'is_multiple', 'name');
   }
 
   /**
@@ -332,8 +326,17 @@ class CoreUtil {
    * @return array{name: string, type: string, count: int, table: string|null, key: string|null}[]
    */
   public static function getRefCount(string $entityName, $entityId): array {
-    $entity = \Civi::entity($entityName);
     $idField = self::getIdFieldName($entityName);
+    // If entity doesn't exist there are no refs to count
+    $exists = civicrm_api4($entityName, 'get', [
+      'checkPermissions' => FALSE,
+      'select' => [$idField],
+      'where' => [[$idField, '=', $entityId]],
+    ])->countFetched();
+    if (!$exists) {
+      return [];
+    }
+    $entity = \Civi::entity($entityName);
     return $entity->getReferenceCounts([$idField => $entityId]);
   }
 
@@ -383,21 +386,14 @@ class CoreUtil {
   /**
    * Get the suffixes supported by a given option group
    *
-   * @param string|int $optionGroup
-   *   OptionGroup id or name
-   * @param string $key
-   *   Is $optionGroup being passed as "id" or "name"
+   * @deprecated use \CRM_Core_BAO_OptionGroup::getSuffixes()
+   *
+   * @param string $optionGroup
+   *   OptionGroup name
    * @return array
    */
-  public static function getOptionValueFields($optionGroup, $key = 'name'): array {
-    // Prevent crash during upgrade
-    if (array_key_exists('option_value_fields', \CRM_Core_DAO_OptionGroup::getSupportedFields())) {
-      $fields = \CRM_Core_DAO::getFieldValue('CRM_Core_DAO_OptionGroup', $optionGroup, 'option_value_fields', $key);
-    }
-    if (!isset($fields)) {
-      return ['name', 'label', 'description'];
-    }
-    return explode(',', $fields);
+  public static function getOptionValueFields(string $optionGroup): array {
+    return \CRM_Core_BAO_OptionGroup::getOptionValueFields($optionGroup);
   }
 
   /**

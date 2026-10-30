@@ -367,9 +367,8 @@ return [
               'rewrite' => '{$AVG_DATEDIFF_end_date_start_date|round}',
             ],
           ],
-          'actions' => TRUE,
+          'actions' => FALSE,
           'classes' => ['table', 'table-striped'],
-          'actions_display_mode' => 'menu',
         ],
       ],
       'match' => [

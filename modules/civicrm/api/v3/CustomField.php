@@ -98,7 +98,7 @@ function _civicrm_api3_custom_field_flush_static_caches() {
 function _civicrm_api3_custom_field_create_spec(&$params) {
   $params['label']['api.required'] = 1;
   $params['custom_group_id']['api.required'] = 1;
-  $params['is_active']['api.default'] = 1;
+  $params['name']['api.required'] = 0;
   $params['option_values'] = [
     'title' => 'Option Values',
     'description' => "Pass an array of options (value => label) to create this field's option values",
@@ -134,7 +134,7 @@ function civicrm_api3_custom_field_delete($params) {
  */
 function civicrm_api3_custom_field_get($params) {
   // Legacy handling for serialize property
-  $handleLegacy = (($params['legacy_html_type'] ?? !isset($params['serialize'])) && CRM_Core_BAO_Domain::isDBVersionAtLeast('5.27.alpha1'));
+  $handleLegacy = ($params['legacy_html_type'] ?? !isset($params['serialize']));
   if ($handleLegacy && !empty($params['return'])) {
     if (!is_array($params['return'])) {
       $params['return'] = explode(',', str_replace(' ', '', $params['return']));

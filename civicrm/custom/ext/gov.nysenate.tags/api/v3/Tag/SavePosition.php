@@ -1,7 +1,7 @@
 <?php
 
 function civicrm_api3_tag_save_position($params) {
-  Civi::log()->debug('civicrm_api3_tag_savePosition', array('params' => $params));
+  Civi::log()->debug('civicrm_api3_tag_savePosition', ['params' => $params]);
 
   if (strpos($params['value'], ':::') !== false) {
     $label = explode(':::', $params['value'])[0];
@@ -12,26 +12,26 @@ function civicrm_api3_tag_save_position($params) {
         'parent_id' => 292,
         'sequential' => TRUE,
       ]);
-      Civi::log()->debug('civicrm_api3_tag_saveposition', array('$existingTag' => $existingTag));
+      Civi::log()->debug('civicrm_api3_tag_saveposition', ['$existingTag' => $existingTag]);
 
       if (!empty($existingTag['values'][0])) {
         return $existingTag;
         //return $existingTag['values'][0]['id'];
       }
 
-      Civi::log()->debug('civicrm_api3_tag_savePosition', array('label' => $label));
-      $tag = civicrm_api3('tag', 'create', array(
+      Civi::log()->debug('civicrm_api3_tag_savePosition', ['label' => $label]);
+      $tag = civicrm_api3('tag', 'create', [
         'name' => $label,
         'parent_id' => 292,
         'is_selectable' => true,
         'used_for' => ['civicrm_contact','civicrm_activity','civicrm_case'],
-      ));
+      ]);
       //Civi::log()->debug('civicrm_api3_nyss_tags_savePosition', array('tag' => $tag));
 
       //if this is triggered from contact edit form we don't have a contact ID (if new contact)
       if (!empty($params['contactId'])) {
         if (!is_array($params['contactId'])) {
-          $params['contactId'] = array($params['contactId']);
+          $params['contactId'] = [$params['contactId']];
         }
         foreach ($params['contactId'] as $contactId) {
           civicrm_api3('entity_tag', 'create', [
@@ -45,7 +45,7 @@ function civicrm_api3_tag_save_position($params) {
       return $tag['id'];
     }
     catch (CRM_Core_Exception $e) {
-      Civi::log()->error('civicrm_api3_nyss_tags_savePosition', array('e' => $e));
+      Civi::log()->error('civicrm_api3_nyss_tags_savePosition', ['e' => $e]);
     }
   } else {
     return civicrm_api3_create_success();

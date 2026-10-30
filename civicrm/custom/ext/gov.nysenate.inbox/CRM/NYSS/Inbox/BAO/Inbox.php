@@ -220,16 +220,15 @@ class CRM_NYSS_Inbox_BAO_Inbox {
 
   /**
    * @param array $ids
+   *   An array of arrays with a pairing: row_id, matched_id (optional).
+   *   Called from CRM_NYSS_Inbox_Page_DeleteMessages::run() (the
+   *   civicrm/nyss/inbox/deletemsgs AJAX endpoint) or from
+   *   CRM_NYSS_Inbox_Form_Delete::postProcess(). Never registered directly
+   *   as a page_callback.
    *
-   * retrieve list of ids to delete
-   * either passed to function or via $_REQUEST (AJAX)
-   *
-   * this will be an array of arrays with a pairing: row_id, matched_id (optional)
+   * @return array
    */
-  static function deleteMessages($ids = []) {
-    if (empty($ids) && !empty(CRM_Utils_Array::value('ids', $_REQUEST))) {
-      $ids = CRM_Utils_Array::value('ids', $_REQUEST);
-    }
+  static function deleteMessages(array $ids = []) {
     //Civi::log()->debug('deleteMessages', array('$ids' => $ids));
 
     $userId = CRM_Core_Session::getLoggedInContactID();
@@ -285,7 +284,7 @@ class CRM_NYSS_Inbox_BAO_Inbox {
       }
     }
 
-    CRM_Utils_JSON::output($ret);
+    return $ret;
   }
 
   /**
@@ -314,15 +313,12 @@ class CRM_NYSS_Inbox_BAO_Inbox {
 
   /**
    * @param array $ids
-   *
-   * retrieve list of ids to clear
-   * either passed to function or via $_REQUEST (AJAX)
+   *   Called from CRM_NYSS_Inbox_Page_ClearMessages::run() (the
+   *   civicrm/nyss/inbox/clearmsgs AJAX endpoint), CRM_NYSS_Inbox_Form_Clear,
+   *   or CRM_NYSS_Inbox_Form_Process. Never registered directly as a
+   *   page_callback.
    */
-  static function clearMessages($ids = []) {
-    if (empty($ids) && !empty(CRM_Utils_Array::value('ids', $_REQUEST))) {
-      $ids = CRM_Utils_Array::value('ids', $_REQUEST);
-    }
-
+  static function clearMessages(array $ids = []) {
     $idList = implode(',', $ids);
     $userId = CRM_Core_Session::getLoggedInContactID();
 
@@ -348,9 +344,9 @@ class CRM_NYSS_Inbox_BAO_Inbox {
     // Format the params.
     $params['offset'] = ($params['page'] - 1) * $params['rp'];
     $params['rowCount'] = $params['rp'];
-    $params['sort'] = CRM_Utils_Array::value('sortBy', $params);
-    $params['range'] = CRM_Utils_Array::value('range', $params, 0);
-    $params['term'] = json_decode(CRM_Utils_Array::value('term', $params, NULL));
+    $params['sort'] = $params['sortBy'] ?? NULL;
+    $params['range'] = $params['range'] ?? 0;
+    $params['term'] = json_decode($params['term'] ?? 'null');
     $orderBy = (!empty($params['sort'])) ? $params['sort'] : 'updated_date DESC, subject, matched_id, sender_email';
 
     //build range SQL; range = 0 -> all time (no where clause)
@@ -687,6 +683,10 @@ class CRM_NYSS_Inbox_BAO_Inbox {
   static function processMessages($values) {
     //Civi::log()->debug('processMessages', array('values' => $values, '$_REQUEST' => $_REQUEST));
 
+    if ( !is_array($values) ) {
+      $values = $_REQUEST;
+    }
+
     $msg = [];
     if (!empty($values['is_multiple'])) {
       $rows = json_decode($values['multi_ids'], TRUE);
@@ -774,7 +774,7 @@ class CRM_NYSS_Inbox_BAO_Inbox {
       }
 
       if (!empty($values['tag'])) {
-        $tags = explode(',', CRM_Utils_Array::value('tag', $values));
+        $tags = explode(',', $values['tag'] ?? '');
         foreach ($tags as $tagID) {
           if (!in_array($tagID, $assigneeTags)) {
             try {
@@ -849,7 +849,7 @@ class CRM_NYSS_Inbox_BAO_Inbox {
         }
 
         if (!empty($values['activity_tag'])) {
-          $tags = explode(',', CRM_Utils_Array::value('activity_tag', $values));
+          $tags = explode(',', $values['activity_tag'] ?? '');
           foreach ($tags as $tagID) {
             try {
               civicrm_api3('entity_tag', 'create', [
@@ -933,11 +933,11 @@ class CRM_NYSS_Inbox_BAO_Inbox {
       }
 
       //if working with a single contact, check if email should be updated
-      if (!CRM_Utils_Array::value('is_multiple', $values)) {
+      if (empty($values['is_multiple'])) {
         $matchId = (!empty($values['assignee'])) ? $values['assignee'] : $row['current_assignee'];
         foreach (['phone', 'email'] as $type) {
-          $new_val = CRM_Utils_Array::value("{$type}-" . $matchId, $_REQUEST);
-          $orig_val = CRM_Utils_Array::value("{$type}orig-" . $matchId, $_REQUEST);
+          $new_val = $_REQUEST["{$type}-" . $matchId] ?? NULL;
+          $orig_val = $_REQUEST["{$type}orig-" . $matchId] ?? NULL;
 
           if ($new_val != $orig_val) {
             try {
@@ -1393,7 +1393,7 @@ class CRM_NYSS_Inbox_BAO_Inbox {
   }
 
   private static function processUsageRecords($fields) {
-    $res = array();
+    $res = [];
 
     foreach ($fields as $key => $val) {
       /*** the old way of cleaning fields....
@@ -1402,19 +1402,19 @@ class CRM_NYSS_Inbox_BAO_Inbox {
       $val = preg_replace('/[^a-zA-Z0-9\s\p{P}]/', '', trim($val));
       $val = substr($val, 0, 240);
        ***/
-      if (in_array($key, array(
+      if (in_array($key, [
         'id',
         'message_id',
         'imap_id',
         'status',
         'matcher',
         'matched_to',
-        'activity_id'))
+        'activity_id'])
       ) {
         // convert string ID to integer ID
         $res[$key] = (int)$val;
       }
-      elseif (in_array($key, array('format', 'updated_date', 'email_date'))) {
+      elseif (in_array($key, ['format', 'updated_date', 'email_date'])) {
         // no conversion necessary for these fields
         $res[$key] = $val;
       }
@@ -1459,9 +1459,9 @@ class CRM_NYSS_Inbox_BAO_Inbox {
       $shortForm = date('M d, Y', $unixTime);
     }
 
-    return array('unix' => $unixTime,
+    return ['unix' => $unixTime,
       'long' => date('M d, Y h:i A', $unixTime),
-      'short' => $shortForm);
+      'short' => $shortForm];
   } // expandDate()
 
   static function formatDate($date, $format = 'Y-m-d H:i:s') {

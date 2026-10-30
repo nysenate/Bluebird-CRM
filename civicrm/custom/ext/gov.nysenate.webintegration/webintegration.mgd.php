@@ -1,10 +1,10 @@
 <?php
 
-return array(
-  array(
+return [
+  [
     'name' => 'Website Inbox Messages',
     'entity' => 'Dashboard',
-    'params' => array(
+    'params' => [
       'version' => 3,
       'domain_id' => 1,
       'name' => 'unmatchedMessages',
@@ -15,6 +15,6 @@ return array(
       'is_reserved' => 1,
       'fullscreen_url' => 'civicrm/nyss/dashlet/webintegration/unmatched?reset=1&context=dashletFullscreen',
       'cache_minutes' => 60,
-    ),
-  ),
-);
+    ],
+  ],
+];

@@ -38,7 +38,7 @@ function civicrm_api3_nyss_Generatemailtemplate($params) {
 
   $bbcfg = get_bluebird_instance_config();
   //Civi::log()->debug(__FUNCTION__, ['$bbcfg' => $bbcfg]);
-  $senator = CRM_Utils_Array::value('senator', $params);
+  $senator = $params['senator'] ?? NULL;
 
   $info = _mget_retrieveSenatorInfo($bbcfg, $senator);
 

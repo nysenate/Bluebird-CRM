@@ -44,7 +44,6 @@ class ChromePage extends DevToolsConnection
         $this->send('Page.enable');
         $this->send('DOM.enable');
         $this->send('Network.enable');
-        $this->send('Animation.enable');
         $this->send('Animation.setPlaybackRate', ['playbackRate' => 100000]);
         $this->send('Console.enable');
     }
@@ -228,24 +227,11 @@ class ChromePage extends DevToolsConnection
                     break;
                 case 'Page.navigatedWithinDocument':
                 case 'Page.frameStoppedLoading':
+                case 'Page.frameDetached':
                     $this->page_ready = true;
                     break;
                 case 'Inspector.targetCrashed':
                     throw new DriverException('Browser crashed');
-                case 'Animation.animationStarted':
-                    if (!empty($data['params']['source']['duration'])) {
-                        usleep($data['params']['source']['duration'] * 10);
-                    }
-                    break;
-                case 'Security.certificateError':
-                    if (isset($data['params']['eventId'])) {
-                        $this->send(
-                            'Security.handleCertificateError',
-                            ['eventId' => $data['params']['eventId'], 'action' => 'continue']
-                        );
-                        $this->page_ready = false;
-                    }
-                    break;
                 case 'Console.messageAdded':
                     $this->console_messages[] = $data['params']['message'];
                     break;

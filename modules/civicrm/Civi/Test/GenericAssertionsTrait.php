@@ -12,17 +12,6 @@ namespace Civi\Test;
 trait GenericAssertionsTrait {
 
   /**
-   * @param string $expected
-   *   Ex: 'array', 'object', 'int'
-   * @param $actual
-   *   The variable/item to check.
-   * @param string $message
-   */
-  public function assertType($expected, $actual, $message = '') {
-    return $this->assertInternalType($expected, $actual, $message);
-  }
-
-  /**
    * Assert that two array-trees are exactly equal.
    *
    * The ordering of keys do not affect the outcome (within either the roots
@@ -75,19 +64,6 @@ trait GenericAssertionsTrait {
   }
 
   /**
-   * @param string|int $key
-   * @param array $list
-   */
-  public function assertArrayValueNotNull($key, &$list) {
-    $this->assertArrayKeyExists($key, $list);
-
-    $value = $list[$key] ?? NULL;
-    $this->assertTrue($value,
-      sprintf("%s element not null?", $key)
-    );
-  }
-
-  /**
    * Assert the 2 arrays have the same values.
    *
    * The order of arrays, and keys of the arrays, do not affect the outcome.
@@ -101,6 +77,23 @@ trait GenericAssertionsTrait {
     sort($array1);
     sort($array2);
     $this->assertEquals($array1, $array2);
+  }
+
+  /**
+   * Assert 2 sql strings are the same, ignoring double spaces.
+   *
+   * @param string $expectedSQL
+   * @param string $actualSQL
+   * @param string $message
+   */
+  protected function assertLike(string $expectedSQL, string $actualSQL, string $message = 'different sql'): void {
+    // Normalize whitespace around brackets
+    $expected = str_replace(['(', ')'], [' ( ', ' ) '], $expectedSQL);
+    $actual = str_replace(['(', ')'], [' ( ', ' ) '], $actualSQL);
+    // Normalize all whitespace
+    $expected = trim(preg_replace('/\s+/', ' ', $expected));
+    $actual = trim(preg_replace('/\s+/', ' ', $actual));
+    $this->assertEquals($expected, $actual, $message);
   }
 
 }

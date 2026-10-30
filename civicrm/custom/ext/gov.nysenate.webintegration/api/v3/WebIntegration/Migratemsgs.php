@@ -51,10 +51,10 @@ function civicrm_api3_web_integration_migratemsgs($params) {
   global $_MigrateMsgsDebug;
 
   $result = [];
-  $action = CRM_Utils_Array::value('action', $params);
-  $limit = CRM_Utils_Array::value('limit', $params);
-  $type = CRM_Utils_Array::value('type', $params);
-  $_MigrateMsgsDebug = CRM_Utils_Array::value('debug', $params);
+  $action = $params['action'] ?? NULL;
+  $limit = $params['limit'] ?? NULL;
+  $type = $params['type'] ?? NULL;
+  $_MigrateMsgsDebug = $params['debug'] ?? NULL;
   _wimm_Debug('params', $params);
 
   switch ($action) {
@@ -130,7 +130,7 @@ function _wimm_Migrate($limit, $type) {
     _wimm_Debug('$dao', $dao);
 
     //build activity params
-    $params = array(
+    $params = [
       'activity_type_id' => $typeMap[$type],
       'source_contact_id' => $dao->entity_id,
       'target_id' => $dao->entity_id,
@@ -139,7 +139,7 @@ function _wimm_Migrate($limit, $type) {
       'details' => $dao->note,
       'status_id' => 'Completed',
       'source_record_id' => $dao->id,
-    );
+    ];
 
     try {
       $result = civicrm_api3('activity', 'create', $params);

@@ -217,12 +217,42 @@ class CRM_Integration_Process {
         }
 
         bbscript_log(LL::TRACE, 'calling matchContact() with:', $contactParams);
-        $cid = CRM_NYSS_BAO_Integration_Website::matchContact($contactParams);
-        bbscript_log(LL::DEBUG, "matched contact $cid");
+        try {
+          $contactParams['dryrun'] = $this->dry; // pass dryrun through to avoid writes in business logic layer
+          $cid = CRM_NYSS_BAO_Integration_Website::matchContact($contactParams);
+          unset($contactParams['dryrun']); // we don't need it anymore
+          bbscript_log(LL::DEBUG, "matched contact $cid");
+        }
+        catch (Exception $e) {
+          bbscript_log(LL::TRACE, 'Stack Trace:', $e->getTraceAsString());
+          bbscript_log(LL::DEBUG, 'Exception: ' . $e->getMessage());
+          bbscript_log(LL::NOTICE, 'Failed to match or create contact for ' . $event_data->getWebUserId() . ':', $e->getMessage());
+
+          $stats['error'][] = [
+            'is_error' => 1,
+            'error_message' => 'Failed to match or create contact for ' . $event_data->getWebUserId() . ': ' . $e->getMessage(),
+            'params' => $contactParams,
+          ];
+
+          $this->archiveError($row, $web_event, "Contact match/create error");
+          CRM_NYSS_Errorhandler_BAO::notifySlack('Website Event Contact Match/Create Error:' . var_export($row, true));
+          CRM_NYSS_Errorhandler_BAO::notifyEmail('Website Event Contact Match/Create Error:' . var_export($row, true), 'Website Event Contact Match/Create Error');
+
+          continue; // Move to the next record / event
+        }
       }
 
       // Couldn't find contact by contact id nor matching info. Archive the record and move to the next.
       if (!$cid) {
+        if ($this->dry) {
+          // In dryrun mode, matchContact() skips createContact() and returns NULL for
+          // rows that would otherwise create a new contact. Report accurately instead
+          // of flagging as an error.
+          bbscript_log(LL::NOTICE, 'Dryrun: would create new contact for web_user_id=' . $event_data->getWebUserId());
+          $stats['dryrun_skips'][] = $row->id;
+          continue;
+        }
+
         bbscript_log(LL::DEBUG, 'Failed to match or create contact', $contactParams);
         $stats['error'][] = [
           'is_error' => 1,

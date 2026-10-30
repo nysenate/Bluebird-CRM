@@ -29,13 +29,15 @@ class GetActions extends BasicGetAction {
   private $_actionsToGet;
 
   protected function getRecords() {
-    $this->_actionsToGet = $this->_itemsToGet('name');
+    // List of actions in the WHERE clause (strtolower in case the clause uses the case-insensitive LIKE operator)
+    $this->_actionsToGet = array_map('strtolower', (array) $this->_itemsToGet('name'));
 
     $className = CoreUtil::getApiClass($this->_entityName);
     $entityReflection = new \ReflectionClass($className);
-    foreach ($entityReflection->getMethods(\ReflectionMethod::IS_STATIC | \ReflectionMethod::IS_PUBLIC) as $method) {
+    foreach ($entityReflection->getMethods(\ReflectionMethod::IS_STATIC) as $method) {
       $actionName = $method->getName();
-      if (!in_array($actionName, ['permissions', 'getInfo', 'getEntityName'], TRUE) && !str_starts_with($actionName, '_')) {
+      // Filter out non-public methods (if the name begins with an underscore, it's not considered public)
+      if ($method->isPublic() && !in_array($actionName, ['permissions', 'getInfo', 'getEntityName'], TRUE) && !str_starts_with($actionName, '_')) {
         $this->loadAction($actionName, $method);
       }
     }
@@ -77,19 +79,25 @@ class GetActions extends BasicGetAction {
    */
   private function loadAction($actionName, $method = NULL) {
     try {
-      if (!isset($this->_actions[$actionName]) && (!$this->_actionsToGet || in_array($actionName, $this->_actionsToGet))) {
+      if (!isset($this->_actions[$actionName]) && (!$this->_actionsToGet || in_array(strtolower($actionName), $this->_actionsToGet))) {
+        $vars = ['entity' => $this->getEntityName(), 'action' => $actionName];
+        if ($method) {
+          $methodDocs = ReflectionUtils::getCodeDocs($method, 'Method', $vars);
+          // Internal non-api function should be skipped
+          if (!empty($methodDocs['internal']) && !(is_string($methodDocs['internal']) && strtolower($methodDocs['internal']) === 'api')) {
+            return;
+          }
+        }
         $action = \Civi\API\Request::create($this->getEntityName(), $actionName, ['version' => 4]);
         $authorized = !$this->checkPermissions || \Civi::service('civi_api_kernel')->runAuthorize($this->getEntityName(), $actionName, ['version' => 4]);
         if (is_object($action) && $authorized) {
           $this->_actions[$actionName] = ['name' => $actionName];
           if ($this->_isFieldSelected('description', 'comment', 'see')) {
-            $vars = ['entity' => $this->getEntityName(), 'action' => $actionName];
             // Docblock from action class
             $actionDocs = ReflectionUtils::getCodeDocs($action->reflect(), NULL, $vars);
             unset($actionDocs['method']);
             // Docblock from action factory function in entity class. This takes precedence since most action classes are generic.
             if ($method) {
-              $methodDocs = ReflectionUtils::getCodeDocs($method, 'Method', $vars);
               // Allow method doc to inherit class doc
               if (str_contains($method->getDocComment(), '@inheritDoc') && !empty($methodDocs['comment']) && !empty($actionDocs['comment'])) {
                 $methodDocs['comment'] .= "\n\n" . $actionDocs['comment'];

@@ -45,6 +45,14 @@ function search_civicrm_enable() {
   _search_civix_civicrm_enable();
 }
 
+#[CRM_NYSS_Attribute_IssueRef('17663')]
+function search_civicrm_apiWrappers(&$wrappers, $apiRequest) {
+  // Allows EntityRef fields to search by email -- even with the includeEmailInName pref disabled
+  if (CRM_NYSS_Search_APIWrapper_ContactEmailSearch::applies($apiRequest)) {
+    $wrappers[] = new CRM_NYSS_Search_APIWrapper_ContactEmailSearch();
+  }
+}
+
 function search_civicrm_container(ContainerBuilder $container) {
   $container->register(CRM_NYSS_Search_UrlParamHelper::$SERVICE_NAME, 'CRM_NYSS_Search_UrlParamHelper')
     ->setPublic(TRUE);
@@ -62,13 +70,13 @@ function search_civicrm_buildForm($formName, &$form) {
     $ele = $form->addElement('text', 'custom_64', ts('Privacy Option Notes'), ['id'=>'custom_64', 'class' => 'crm-form-text big'], 'size="30"');
     $eleHtml = $ele->toHtml();
 
-    CRM_Core_Resources::singleton()->addVars('NYSS', array('bbPrivacyOptionNotes_Html' => $eleHtml));
+    CRM_Core_Resources::singleton()->addVars('NYSS', ['bbPrivacyOptionNotes_Html' => $eleHtml]);
     CRM_Core_Resources::singleton()->addScriptFile('gov.nysenate.search', 'js/AdvancedSearch.js');
     CRM_Core_Resources::singleton()->addScriptFile('gov.nysenate.search', 'js/ActivitySearch.js');
     CRM_Core_Resources::singleton()->addStyleFile('gov.nysenate.search', 'css/AdvancedSearch.css');
 
     //7906 search birth date by month only
-    $months = array(
+    $months = [
       ''  => '- select month -',
       '1' => 'January',
       '2' => 'February',
@@ -82,8 +90,8 @@ function search_civicrm_buildForm($formName, &$form) {
       '10' => 'October',
       '11' => 'November',
       '12' => 'December',
-    );
-    $form->add('select', 'birth_date_month',  ts('Birth Date Month'), array('' => ts('- select month -')) + $months);
+    ];
+    $form->add('select', 'birth_date_month',  ts('Birth Date Month'), ['' => ts('- select month -')] + $months);
 
     //10557 remove CMS User
     if ($form->elementExists('uf_user')) {
@@ -135,7 +143,7 @@ function search_civicrm_buildForm($formName, &$form) {
 
     CRM_Core_Resources::singleton()->addStyleFile('gov.nysenate.search', 'css/CustomSearch.css');
 
-    CRM_Core_Region::instance('form-buttons')->add(array(
+    CRM_Core_Region::instance('form-buttons')->add([
       'markup' => "
         <div class='crm-submit-buttons reset-custom-search'>
           <a href='{$resetUrl}' id='resetCustomSearch' class='crm-hover-button' title='Clear search criteria'>
@@ -143,7 +151,7 @@ function search_civicrm_buildForm($formName, &$form) {
           </a>
         </div>
       ",
-    ));
+    ]);
   }
 }
 

@@ -102,7 +102,7 @@ function contact_civicrm_pageRun(&$page) {
     $smarty = CRM_Core_Smarty::singleton();
     if ($smarty->getTemplateVars('privacy') === NULL) {
       $cid = $smarty->getTemplateVars('contactId');
-      $contact = civicrm_api('contact', 'getsingle', array('version' => 3, 'id' => $cid));
+      $contact = civicrm_api('contact', 'getsingle', ['version' => 3, 'id' => $cid]);
       //CRM_Core_Error::debug_var('contact', $contact);
 
       $privacy = [];
@@ -180,25 +180,24 @@ function contact_civicrm_pageRun(&$page) {
         //Civi::log()->debug('', array('$details' => $details));
         if ($details['name'] == 'Attachments') {
           foreach ($details['fields'] as $key => &$field) {
-            $doc = phpQuery::newDocument($field['field_value']);
-            $text = $doc->find('a')->text();
+            if (empty($field['field_value'])) {
+              continue;
+            }
+
+            $doc = \Dom\HTMLDocument::createFromString('<!DOCTYPE html><body>'.$field['field_value'], LIBXML_NOERROR);
+            $link = $doc->querySelector('a');
+            $text = $link ? $link->textContent : '';
             $maxLength = 35;
-            if (strlen($text) > $maxLength) {
-              $text = substr($text, 0, $maxLength).'...';
-              $doc->find('a')->text($text);
-              $field['field_value'] = $doc->html();
+            if (mb_strlen($text) > $maxLength) {
+              $link->textContent = mb_substr($text, 0, $maxLength).'...';
+              $field['field_value'] = $doc->body->innerHTML;
 
               if (!empty($viewCustomDataInline)) {
-                $viewCustomDataInline['fields'][$key]['field_value'] = $doc->html();
+                $viewCustomDataInline['fields'][$key]['field_value'] = $field['field_value'];
               }
 
               $modified = TRUE;
             }
-
-            // It's good practice to call unloadDocuments() when finished with
-            // phpQuery documents. Though, not the case here, big documents
-            // can consume a lot of memory. This releases the memory.
-            phpQuery::unloadDocuments($doc->getDocumentID());
 
             /*Civi::log()->debug('', array(
               //'$doc' => $doc,
@@ -422,7 +421,7 @@ function contact_civicrm_buildForm($formName, &$form) {
     $form->add('file', 'uploadFile', ts('Import Data File'), 'size=30 maxlength=60', true);
 
     $form->setMaxFileSize($uploadFileSize);
-    $form->addRule('uploadFile', ts('File size should be less than %1 MBytes (%2 bytes)', array(1 => $uploadSize, 2 => $uploadFileSize)), 'maxfilesize', $uploadFileSize);
+    $form->addRule('uploadFile', ts('File size should be less than %1 MBytes (%2 bytes)', [1 => $uploadSize, 2 => $uploadFileSize]), 'maxfilesize', $uploadFileSize);
     $form->addRule('uploadFile', ts('Input file must be in CSV format'), 'utf8File');
     $form->addRule('uploadFile', ts('A valid file must be uploaded.'), 'uploadedfile');
     $form->_rules['uploadFile'][1]['message'] = 'File size should be less than 1 MBytes (1048576 bytes)';
@@ -534,7 +533,7 @@ function contact_civicrm_buildForm($formName, &$form) {
     $instVals = $form->getVar('_instanceValues');
     if ($instVals['report_id'] == 'logging/contact/detail') {
       $instAttrib = $form->getVar('_attributes');
-      $instPath = trim(CRM_Utils_Array::value('action', $instAttrib), '/');
+      $instPath = trim($instAttrib['action'] ?? '', '/');
       $printerFriendly = CRM_Utils_System::makeURL('snippet', true, false, $instPath).'2';
       $form->assign('printerFriendly', $printerFriendly);
     }
@@ -679,7 +678,7 @@ function contact_civicrm_postProcess($formName, &$form) {
 
       //now register the status message. handle here so we can combine in a nice bullet list
       if ($msg) {
-        CRM_Core_Session::setStatus("<ul>$msg</ul>", 'Please note', 'alert', array('expires' => 0));
+        CRM_Core_Session::setStatus("<ul>$msg</ul>", 'Please note', 'alert', ['expires' => 0]);
       }
     }
   }
@@ -851,12 +850,32 @@ function contact_civicrm_tabset($tabsetName, &$tabs, $context) {
         ];
       }
 
+      // NYSS #5184, #5185
+      _contact_append_log_tab_pagination($tabs);
+
       // NYSS #17217
       _contact_replace_contact_tab_relationships($tabs);
 
       CRM_Core_Error::debug_var('nyss rel', $tabs['n_y_s_s_contact_summary_relationships']);
     }
     catch (CRM_Core_Exception $e) {}
+  }
+}
+
+// NYSS #5184, #5185
+#[CRM_NYSS_Attribute_IssueRef(5184)]
+#[CRM_NYSS_Attribute_IssueRef(5185)]
+function _contact_append_log_tab_pagination(&$tabs) {
+  $crmPID = CRM_Utils_Request::retrieve('crmPID', 'Integer');
+  if (!$crmPID && CRM_Utils_Request::retrieve('crmPID_B', 'Integer') && CRM_Utils_Request::retrieve('PagerBottomButton', 'String')) {
+    $crmPID = CRM_Utils_Request::retrieve('crmPID_B', 'Integer');
+  }
+  if ($crmPID) {
+    foreach ($tabs as $key => &$tab) {
+      if ((is_array($tab) && ($tab['id'] ?? NULL) === 'log') || $key === 'log') {
+        $tab['url'] .= '&crmPID=' . $crmPID;
+      }
+    }
   }
 }
 

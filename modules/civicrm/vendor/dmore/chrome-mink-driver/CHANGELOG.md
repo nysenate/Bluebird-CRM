@@ -3,6 +3,19 @@ Changelog
 
 ## Unreleased
 
+## 2.10.0
+
+* Test using [zenika/alpine-chrome](https://github.com/Zenika/alpine-chrome) instead of custom build(s) (#155)
+* Fix returned value of `isTextTypeInput` (#149)
+* Session reset should close non-main windows (#152, !178)
+* Remove fallback behaviours for switching to windows that don't exist (#158, !193)
+* Tests run against PHP versions 8.1 to 8.3 (#153, !195)
+* Fix broken key methods (#156)
+* Fix closing of websockets (!189)
+* Respect current window height in getScreenshot() (#166, !208)
+* DevTools protocol improvements (!203)
+* Only reset request headers after scenario if they were set (!204)
+* Renovate configuration (#153, #161)
 
 ## 2.9.3
 

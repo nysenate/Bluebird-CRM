@@ -30,6 +30,23 @@ function dashboard_civicrm_enable() {
   _dashboard_civix_civicrm_enable();
 }
 
+/**
+ * Implements hook_civicrm_selectWhereClause().
+ *
+ * NYSS 3439 - hide legacy report dashlets from users who aren't in one of the
+ * report's ACL Group/Roles.
+ */
+#[CRM_NYSS_Attribute_IssueRef('3439')]
+function dashboard_civicrm_selectWhereClause($entity, &$clauses, $userId, $conditions) {
+    // NYSS #3439
+    if ($entity === 'Dashboard') {
+      $denied_ids = CRM_NYSS_Dashboard_Utils::getDeniedReportDashletIds();
+      if ($denied_ids) {
+        $clauses['id'][] = 'NOT IN (' . implode(',', $denied_ids) . ')';
+      }
+  }
+}
+
 function dashboard_civicrm_pageRun(&$page) {
   if (is_a($page, 'CRM_Contact_Page_DashBoard')) {
     $bbcfg = get_bluebird_instance_config();

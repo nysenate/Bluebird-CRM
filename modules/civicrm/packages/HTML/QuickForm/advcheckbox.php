@@ -208,7 +208,7 @@ class HTML_QuickForm_advcheckbox extends HTML_QuickForm_checkbox
         } else {
             return '<input' . $this->_getAttrString(array(
                         'type'  => 'hidden',
-                        'name'  => $this->getName(),
+                        'name'  => htmlspecialchars($this->getName(), ENT_QUOTES | ENT_HTML401),
                         'value' => $this->_values[0]
                    )) . ' />' . parent::toHtml();
 
