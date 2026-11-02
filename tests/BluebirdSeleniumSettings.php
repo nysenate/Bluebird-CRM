@@ -10,15 +10,15 @@ class BluebirdSeleniumSettings {
 
 	var $sandboxPATH = '';
 	
-	var $username = 'demo';
+	var $username = '';
 
-	var $password = 'demo';
+	var $password = '';
 
-	var $adminUsername = 'senateroot';
+	var $adminUsername = '';
 	
-	var $adminPassword = 'mysql';
+	var $adminPassword = '';
 
-    var $UFemail = 'noreply@civicrm.org';
+    var $UFemail = '';
 
     var $sleepTime = 0;
     
