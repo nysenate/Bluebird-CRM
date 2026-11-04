@@ -1,5 +1,5 @@
 diff --git a/civicrm/custom/ext/uk.co.vedaconsulting.mosaico/mosaico.php b/civicrm/custom/ext/uk.co.vedaconsulting.mosaico/mosaico.php
-index 664c6ef25..5f0d34b53 100644
+index 70f7dd573..c2070d190 100644
 --- a/civicrm/custom/ext/uk.co.vedaconsulting.mosaico/mosaico.php
 +++ b/civicrm/custom/ext/uk.co.vedaconsulting.mosaico/mosaico.php
 @@ -111,13 +111,14 @@ function mosaico_civicrm_check(&$messages) {
@@ -19,3 +19,14 @@ index 664c6ef25..5f0d34b53 100644
    }
    if (!CRM_Extension_System::singleton()->getMapper()->isActiveModule('flexmailer')) {
      $messages[] = new CRM_Utils_Check_Message(
+@@ -217,7 +218,9 @@ function _mosaico_civicrm_alterMailContent(&$content) {
+   $content = str_replace(array_keys($tokenAliases), array_values($tokenAliases), $content);
+ 
+   // Some existing and customized templates have awkward HTML <TITLE>s, which show up when viewing the mailing the browser.
+-  $content = preg_replace(';(\<head.*\<title\>\s*)TITLE(\s*\</title\>.*\</head\>);ms', '\\1{mailing.subject}\\2', $content, 1);
++  // NYSS #19309 - fix greedy regexp matching bug
++  //$content = preg_replace(';(\<head.*\<title\>\s*)TITLE(\s*\</title\>.*\</head\>);ms', '\\1{mailing.subject}\\2', $content, 1);
++  $content = preg_replace(';(<title>\s*)TITLE(\s*</title>);', '\\1{mailing.subject}\\2', $content, 1);
+ }
+ 
+ /**
