@@ -2,6 +2,7 @@
 
 require_once 'mail.civix.php';
 use CRM_NYSS_Mail_ExtensionUtil as E;
+use Civi\Core\Event\GenericHookEvent;
 use Civi\FlexMailer\FlexMailer as FM;
 use Civi\NYSS\Mail\Listener\NyssFlexmailListener;
 use Civi\NYSS\Mail\Listener\CheckSendableListener;
@@ -34,6 +35,8 @@ function mail_civicrm_config(&$config) {
   Civi::dispatcher()->addListener('hook_civicrm_alterMailParams', ['CRM_NYSS_Mail_HookAlterMailParamsListener', 'alterMailParamsLate'], -1000);
   // NYSS #18424 - validates that a mailing has a category during approval/submission
   Civi::dispatcher()->addListener('civi.flexmailer.checkSendable', [CheckSendableListener::class, 'requireMailingCategory']);
+  // Formally declare our additions to the mailing table as entity fields
+  Civi::dispatcher()->addListener('civi.entity.fields::Mailing', 'mail_civi_entity_fields_mailing');
 }
 
 function mail_civicrm_container(ContainerBuilder $container) {
@@ -380,32 +383,34 @@ function mail_civicrm_pageRun(&$page) {
   }
 }
 
-function mail_civicrm_entityTypes(&$entityTypes) {
-  //Civi::log()->debug('mail_civicrm_entityTypes', array('entityTypes' => $entityTypes));
+/**
+ * Implements civi.entity.fields event for Mailing.
+ *
+ * Formally declares NYSS additions to the civicrm_mailing table as entity fields.
+ *
+ * @param \Civi\Core\Event\GenericHookEvent $event
+ */
+function mail_civi_entity_fields_mailing(GenericHookEvent $event) {
+  $event->fields['all_emails'] = [
+    'title' => ts('All Emails'),
+    'sql_type' => 'int',
+    'input_type' => 'CheckBox',
+  ];
 
-  //formally declare our additions to the mailing table as entity fields
-  $entityTypes['Mailing']['fields_callback'][] = function($class, &$fields) {
-    //Civi::log()->debug('mail_civicrm_entityTypes', array('$class' => $class, 'fields' => $fields));
+  $event->fields['exclude_ood'] = [
+    'title' => ts('Exclude Out of District Emails'),
+    'sql_type' => 'int',
+    'input_type' => 'CheckBox',
+  ];
 
-    $fields['all_emails'] = [
-      'name' => 'all_emails',
-      'type' => CRM_Utils_Type::T_INT,
-      'title' => 'All Emails',
-    ];
-
-    $fields['exclude_ood'] = [
-      'name' => 'exclude_ood',
-      'type' => CRM_Utils_Type::T_INT,
-      'title' => 'Exclude Out of District Emails',
-    ];
-
-    $fields['category'] = [
-      'name' => 'category',
-      'type' => CRM_Utils_Type::T_STRING,
-      'title' => 'Category',
+  $event->fields['category'] = [
+    'title' => ts('Category'),
+    'sql_type' => 'varchar(255)',
+    'input_type' => 'Text',
+    'input_attrs' => [
       'maxlength' => 255,
-    ];
-  };
+    ],
+  ];
 }
 
 function mail_civicrm_alterMailingRecipients(&$mailing, &$params, $context) {
