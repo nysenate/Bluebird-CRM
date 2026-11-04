@@ -1,0 +1,9 @@
+<?xml version="1.0"?>
+<menu>
+  <item>
+    <path>civicrm/nyss/printexport/getfile</path>
+    <page_callback>CRM_NYSS_PrintExport_Page_GetFile</page_callback>
+    <title>Retrieve Print Production File</title>
+    <access_arguments>export print production files</access_arguments>
+  </item>
+</menu>
