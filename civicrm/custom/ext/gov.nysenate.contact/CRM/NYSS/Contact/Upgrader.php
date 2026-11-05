@@ -236,6 +236,26 @@ class CRM_NYSS_Contact_Upgrader extends CRM_Extension_Upgrader_Base {
   }
 
   /**
+   * Relabel nick_name as "Preferred Name" in profiles (e.g. the
+   * Contact_Summary_Individual panel). Profile field labels are stored data and
+   * don't pass through ts(), so the word replacements in
+   * managed/WordReplacement_preferred_name.mgd.php don't reach them.
+   * NYSS #17730
+   */
+  #[CRM_NYSS_Attribute_IssueRef(17730)]
+  public function upgrade_1600(): bool {
+    $this->ctx->log->info('Contact extension update 1600: relabel Nickname as Preferred Name in profiles');
+
+    \Civi\Api4\UFField::update(FALSE)
+      ->addValue('label', 'Preferred Name')
+      ->addWhere('field_name', '=', 'nick_name')
+      ->addWhere('label', 'IN', ['Nickname', 'Nick Name'])
+      ->execute();
+
+    return TRUE;
+  }
+
+  /**
    * Example: Run an external SQL script.
    *
    * @return TRUE on success
