@@ -19,6 +19,12 @@ class CRM_Mosaicoimageeditor_Page_StoreFrie extends CRM_Core_Page {
     catch (CRM_Core_Exception $e) {}
     //Civi::log()->debug(__FUNCTION__, ['$result' => $result]);
 
-    CRM_Utils_System::sendJSONResponse($result['values'] ?? []);
+    // FileRobotPlugin.js expects a string. It passes the parsed response straight to Mosaico's src().
+    // So, our response needs to send a string value.
+    CRM_Utils_System::sendResponse(new \GuzzleHttp\Psr7\Response(
+      200,
+      ['Content-Type' => 'application/json'],
+      json_encode($result['values'] ?? NULL, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE)
+    ));
   }
 }
