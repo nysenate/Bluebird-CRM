@@ -48,6 +48,6 @@ class CRM_NYSS_Inbox_Page_Report extends CRM_Core_Page {
     ];
     //Civi::log()->debug(__FUNCTION__, ['$dates' => $dates, '$res' => $res]);
 
-    CRM_Utils_JSON::output($res);
+    CRM_Utils_System::sendJSONResponse($res);
   }
 }
