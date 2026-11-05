@@ -51,8 +51,6 @@ function reports_civicrm_buildForm($formName, &$form) {
   }
 
   if (strpos($formName, 'CRM_Report_Form_') !== FALSE) {
-    CRM_Core_Resources::singleton()->addScriptUrl('/sites/all/modules/nyss_reports/js/reports.js');
-
     //set header/footer defaults
     $printHeaderRegion = CRM_Core_Region::instance('default-report-header', FALSE);
     $htmlHeader = ($printHeaderRegion) ? $printHeaderRegion->render('', FALSE) : '';
@@ -209,8 +207,33 @@ function reports_civicrm_alterReportVar($varType, &$var, &$object) {
 
       break;
 
+    case 'actions':
+      _reports_SaveConfirm_actions($var, $object);
+      break;
+
     default:
   }
+}
+
+/**
+ * NYSS #6440: warn that "Save" on an existing report instance overwrites
+ * the shared defaults for everyone in the office. 
+ */
+#[CRM_NYSS_Attribute_IssueRef(6440, 19031)]
+function _reports_SaveConfirm_actions(&$var, $object) {
+  // New (unsaved) instances get core's own "Create Report" confirm.
+  if (!$object->getID() || !isset($var['report_instance.save'])) {
+    return;
+  }
+
+  $msg = ts('"Save" will save your changes and use them as the defaults for <strong>all</strong> users in your office. "Save a Copy" will create a separate report, based on your changes.');
+  $msg2 = ts('If you wish to update this report, click Continue. If you would rather create a new report, click Cancel and choose "Save a Copy" from the actions menu instead.');
+
+  $var['report_instance.save']['data'] = [
+    'is_confirm' => TRUE,
+    'confirm_title' => ts('Update Existing Report'),
+    'confirm_message' => "<td><p>{$msg}</p><p>{$msg2}</p></td>",
+  ];
 }
 
 function reports_civicrm_alterLogTables(&$logTableSpec) {
