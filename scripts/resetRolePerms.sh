@@ -482,6 +482,7 @@ sql="
     (15, 'use text format 1', 'filter'),
 
     (16, 'approve mailings', 'civicrm'),
+    (16, 'cancel mailings', 'civicrm'),
     (16, 'delete in CiviMail', 'civicrm'),
     (16, 'use text format 1', 'filter'),
 

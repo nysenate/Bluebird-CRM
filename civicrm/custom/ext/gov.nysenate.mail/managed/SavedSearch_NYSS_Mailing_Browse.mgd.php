@@ -151,7 +151,7 @@ $columns = array_merge($columns, [
           ['Scheduled', 'Running'],
         ],
         'conditions' => [
-          ['check user permission', '=', 'access CiviMail'],
+          ['check user permission', '=', 'cancel mailings'],
         ],
         'entity' => '',
         'action' => '',
@@ -169,7 +169,7 @@ $columns = array_merge($columns, [
           'Paused',
         ],
         'conditions' => [
-          ['check user permission', '=', 'access CiviMail'],
+          ['check user permission', '=', 'cancel mailings'],
         ],
         'entity' => '',
         'action' => '',

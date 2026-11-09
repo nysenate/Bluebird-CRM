@@ -386,9 +386,11 @@ LEFT JOIN  civicrm_contact scheduledContact ON ( $mailing.scheduled_id = schedul
           }
         }
         if (in_array($row['status'], ['Scheduled', 'Running', 'Paused'])) {
-          if ($allAccess || ($showApprovalLinks && $showCreateLinks && $showScheduleLinks)) {
-
+          //NYSS #18870, #19344 cancel has its own permission (gov.nysenate.mail)
+          if ($allAccess || CRM_Core_Permission::check('cancel mailings')) {
             $actionMask |= CRM_Core_Action::DISABLE;
+          }
+          if ($allAccess || ($showApprovalLinks && $showCreateLinks && $showScheduleLinks)) {
             if ($row['status'] === "Paused") {
               $actionMask |= CRM_Core_Action::REOPEN;
             }
