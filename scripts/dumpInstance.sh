@@ -76,8 +76,9 @@ db_basename=`$readConfig --ig $instance db.basename` || db_basename="$instance"
 db_civi_prefix=`$readConfig --ig $instance db.civicrm.prefix` || db_civi_prefix="$DEFAULT_DB_CIVICRM_PREFIX"
 db_drup_prefix=`$readConfig --ig $instance db.drupal.prefix` || db_drup_prefix="$DEFAULT_DB_DRUPAL_PREFIX"
 db_log_prefix=`$readConfig --ig $instance db.log.prefix` || db_log_prefix="$DEFAULT_DB_LOG_PREFIX"
-tmp_root_dir=`$readConfig --ig $instance tmp.rootdir` || tmp_root_dir="$DEFAULT_TMP_ROOTDIR"
 
+# NYSS 17804 - PR-130 - allow tmpdir to be configured for the benefit of development envs
+tmp_root_dir=`$readConfig --ig $instance tmp.rootdir` || tmp_root_dir="$DEFAULT_TMP_ROOTDIR"
 tmpdir="$tmp_root_dir"/dumpInstance_$$
 
 if [ "$archive_dump" -o ! "$civi_file" ]; then
