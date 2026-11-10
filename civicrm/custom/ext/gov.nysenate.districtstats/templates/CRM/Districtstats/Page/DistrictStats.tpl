@@ -38,10 +38,10 @@
   <table>
     <tr id="districts">
       <td width="25%">
-        <div class="crm-accordion-wrapper crm-ajax-accordion crm-SenateDistricts-accordion collapsed">
-          <div class="crm-accordion-header" id="SenateDistricts">
+        <details class="crm-accordion-bold crm-ajax-accordion crm-SenateDistricts-accordion">
+          <summary id="SenateDistricts">
             Senate Districts
-          </div>
+          </summary>
           <div class="crm-accordion-body SenateDistricts">
             <table>
               {foreach from=$contactSD key=sd item=sdcount}
@@ -49,11 +49,11 @@
               {/foreach}
             </table>
           </div>
-        </div>
-        <div class="crm-accordion-wrapper crm-ajax-accordion crm-AssemblyDistricts-accordion collapsed">
-          <div class="crm-accordion-header" id="AssemblyDistricts">
+        </details>
+        <details class="crm-accordion-bold crm-ajax-accordion crm-AssemblyDistricts-accordion">
+          <summary id="AssemblyDistricts">
             Assembly Districts
-          </div>
+          </summary>
           <div class="crm-accordion-body AssemblyDistricts">
             <table>
               {foreach from=$contactAD key=ad item=adcount}
@@ -61,14 +61,14 @@
               {/foreach}
             </table>
           </div>
-        </div>
+        </details>
       </td>
 
       <td width="25%">
-        <div class="crm-accordion-wrapper crm-ajax-accordion crm-CongressionalDistricts-accordion collapsed">
-          <div class="crm-accordion-header" id="CongressionalDistricts">
+        <details class="crm-accordion-bold crm-ajax-accordion crm-CongressionalDistricts-accordion">
+          <summary id="CongressionalDistricts">
             Congressional Districts
-          </div>
+          </summary>
           <div class="crm-accordion-body CongressionalDistricts">
             <table>
               {foreach from=$contactCD key=cd item=cdcount}
@@ -78,11 +78,11 @@
               {/foreach}
             </table>
           </div>
-        </div>
-        <div class="crm-accordion-wrapper crm-ajax-accordion crm-ElectionDistricts-accordion collapsed">
-          <div class="crm-accordion-header" id="ElectionDistricts">
+        </details>
+        <details class="crm-accordion-bold crm-ajax-accordion crm-ElectionDistricts-accordion">
+          <summary id="ElectionDistricts">
             Election Districts
-          </div>
+          </summary>
           <div class="crm-accordion-body ElectionDistricts">
             <table>
               {foreach from=$contactED key=ed item=edcount}
@@ -90,11 +90,11 @@
               {/foreach}
             </table>
           </div>
-        </div>
-        <div class="crm-accordion-wrapper crm-ajax-accordion crm-TownADED-accordion collapsed">
-          <div class="crm-accordion-header" id="TownADED">
+        </details>
+        <details class="crm-accordion-bold crm-ajax-accordion crm-TownADED-accordion">
+          <summary id="TownADED">
             Town/Assembly/Election Districts
-          </div>
+          </summary>
           <div class="crm-accordion-body ElectionDistricts">
             <table>
               <tr><td>Town</td><td>AD</td><td>ED</td><td>Count</td></tr>
@@ -103,14 +103,14 @@
               {/foreach}
             </table>
           </div>
-        </div>
+        </details>
       </td>
 
       <td width="25%">
-        <div class="crm-accordion-wrapper crm-ajax-accordion crm-Counties-accordion collapsed">
-          <div class="crm-accordion-header" id="Counties">
+        <details class="crm-accordion-bold crm-ajax-accordion crm-Counties-accordion">
+          <summary id="Counties">
             Counties
-          </div>
+          </summary>
           <div class="crm-accordion-body Counties">
             <table>
               {foreach from=$contactCounty key=county item=countycount}
@@ -118,11 +118,11 @@
               {/foreach}
             </table>
           </div>
-        </div>
-        <div class="crm-accordion-wrapper crm-ajax-accordion crm-Towns-accordion collapsed">
-          <div class="crm-accordion-header" id="Towns">
+        </details>
+        <details class="crm-accordion-bold crm-ajax-accordion crm-Towns-accordion">
+          <summary id="Towns">
             Towns
-          </div>
+          </summary>
           <div class="crm-accordion-body Towns">
             <table>
               {foreach from=$contactTown key=town item=towncount}
@@ -130,11 +130,11 @@
               {/foreach}
             </table>
           </div>
-        </div>
-        <div class="crm-accordion-wrapper crm-ajax-accordion crm-Wards-accordion collapsed">
-          <div class="crm-accordion-header" id="Wards">
+        </details>
+        <details class="crm-accordion-bold crm-ajax-accordion crm-Wards-accordion">
+          <summary id="Wards">
             Wards
-          </div>
+          </summary>
           <div class="crm-accordion-body Wards">
             <table>
               {foreach from=$contactWard key=ward item=wardcount}
@@ -142,11 +142,11 @@
               {/foreach}
             </table>
           </div>
-        </div>
-        <div class="crm-accordion-wrapper crm-ajax-accordion crm-Schools-accordion collapsed">
-          <div class="crm-accordion-header" id="Schools">
+        </details>
+        <details class="crm-accordion-bold crm-ajax-accordion crm-Schools-accordion">
+          <summary id="Schools">
             School Districts
-          </div>
+          </summary>
           <div class="crm-accordion-body Schools">
             <table>
               {foreach from=$contactSC key=school item=schoolcount}
@@ -154,11 +154,11 @@
               {/foreach}
             </table>
           </div>
-        </div>
-        <div class="crm-accordion-wrapper crm-ajax-accordion crm-Zip-accordion collapsed">
-          <div class="crm-accordion-header" id="Zip">
+        </details>
+        <details class="crm-accordion-bold crm-ajax-accordion crm-Zip-accordion">
+          <summary id="Zip">
             Zip Codes
-          </div>
+          </summary>
           <div class="crm-accordion-body Zip">
             <table>
               {foreach from=$contactZip key=zip item=zipcount}
@@ -166,14 +166,14 @@
               {/foreach}
             </table>
           </div>
-        </div>
+        </details>
       </td>
 
       <td width="25%">
-        <div class="crm-accordion-wrapper crm-ajax-accordion crm-IssueCodes-accordion collapsed">
-          <div class="crm-accordion-header" id="IssueCodes">
+        <details class="crm-accordion-bold crm-ajax-accordion crm-IssueCodes-accordion">
+          <summary id="IssueCodes">
             Issue Codes
-          </div>
+          </summary>
           <div class="crm-accordion-body IssueCodes">
             <table>
               {foreach from=$issueCodes key=ic item=iccount}
@@ -181,12 +181,12 @@
               {/foreach}
             </table>
           </div>
-        </div>
+        </details>
 
-        <div class="crm-accordion-wrapper crm-ajax-accordion crm-Keywords-accordion collapsed">
-          <div class="crm-accordion-header" id="Keywords">
+        <details class="crm-accordion-bold crm-ajax-accordion crm-Keywords-accordion">
+          <summary id="Keywords">
             Keywords (contacts)
-          </div>
+          </summary>
           <div class="crm-accordion-body Keywords">
             <table>
               {foreach from=$keywords key=k item=kcount}
@@ -194,11 +194,11 @@
               {/foreach}
             </table>
           </div>
-        </div>
-        <div class="crm-accordion-wrapper crm-ajax-accordion crm-aKeywords-accordion collapsed">
-          <div class="crm-accordion-header" id="aKeywords">
+        </details>
+        <details class="crm-accordion-bold crm-ajax-accordion crm-aKeywords-accordion">
+          <summary id="aKeywords">
             Keywords (activities)
-          </div>
+          </summary>
           <div class="crm-accordion-body aKeywords">
             <table>
               {foreach from=$akeywords key=k item=akcount}
@@ -206,11 +206,11 @@
               {/foreach}
             </table>
           </div>
-        </div>
-        <div class="crm-accordion-wrapper crm-ajax-accordion crm-cKeywords-accordion collapsed">
-          <div class="crm-accordion-header" id="cKeywords">
+        </details>
+        <details class="crm-accordion-bold crm-ajax-accordion crm-cKeywords-accordion">
+          <summary id="cKeywords">
             Keywords (cases)
-          </div>
+          </summary>
           <div class="crm-accordion-body cKeywords">
             <table>
               {foreach from=$ckeywords key=k item=ckcount}
@@ -218,12 +218,12 @@
               {/foreach}
             </table>
           </div>
-        </div>
+        </details>
 
-        <div class="crm-accordion-wrapper crm-ajax-accordion crm-Positions-accordion collapsed">
-          <div class="crm-accordion-header" id="Positions">
+        <details class="crm-accordion-bold crm-ajax-accordion crm-Positions-accordion">
+          <summary id="Positions">
             Legislative Positions
-          </div>
+          </summary>
           <div class="crm-accordion-body Positions">
             <table>
               {foreach from=$positions key=p item=pcount}
@@ -231,7 +231,7 @@
               {/foreach}
             </table>
           </div>
-        </div>
+        </details>
       </td>
 
     </tr> <!--end districts-->
