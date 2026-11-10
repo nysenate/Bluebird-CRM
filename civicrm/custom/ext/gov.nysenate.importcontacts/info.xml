@@ -15,7 +15,7 @@
   <version>1.0</version>
   <develStage>alpha</develStage>
   <compatibility>
-    <ver>5.51</ver>
+    <ver>6.16</ver>
   </compatibility>
   <comments/>
   <classloader>
@@ -23,7 +23,7 @@
   </classloader>
   <civix>
     <namespace>CRM/Importcontacts</namespace>
-    <format>25.10.2</format>
+    <format>26.10.3</format>
     <angularModule>crmImportcontacts</angularModule>
   </civix>
   <mixins>
