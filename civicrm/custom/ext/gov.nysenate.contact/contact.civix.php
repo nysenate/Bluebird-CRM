@@ -89,21 +89,13 @@ class CRM_NYSS_Contact_ExtensionUtil {
 
 use CRM_NYSS_Contact_ExtensionUtil as E;
 
-($GLOBALS['_PathLoad'][0] ?? require __DIR__ . '/mixin/lib/pathload-0.php');
 pathload()->addSearchDir(__DIR__ . '/mixin/lib');
 spl_autoload_register('_contact_civix_class_loader', TRUE, TRUE);
 
 function _contact_civix_class_loader($class) {
   if ($class === 'CRM_NYSS_Contact_DAO_Base') {
-    if (version_compare(CRM_Utils_System::version(), '5.74.beta', '>=')) {
-      class_alias('CRM_Core_DAO_Base', 'CRM_NYSS_Contact_DAO_Base');
-      // ^^ Materialize concrete names -- encourage IDE's to pick up on this association.
-    }
-    else {
-      $realClass = 'CiviMix\\Schema\\Contact\\DAO';
-      class_alias($realClass, $class);
-      // ^^ Abstract names -- discourage IDE's from picking up on this association.
-    }
+    class_alias('CRM_Core_DAO_Base', 'CRM_NYSS_Contact_DAO_Base');
+    // ^^ Materialize concrete names -- encourage IDE's to pick up on this association.
     return;
   }
 
@@ -113,13 +105,6 @@ function _contact_civix_class_loader($class) {
     // where new revisions may become dynamically available.
     pathload()->loadPackage('civimix-schema@5', TRUE);
     CiviMix\Schema\loadClass($class);
-  }
-}
-
-function _contact_civix_mixin_polyfill() {
-  if (!class_exists('CRM_Extension_MixInfo')) {
-    $polyfill = __DIR__ . '/mixin/polyfill.php';
-    (require $polyfill)(E::LONG_NAME, E::SHORT_NAME, E::path());
   }
 }
 
@@ -138,7 +123,7 @@ function _contact_civix_civicrm_config($config = NULL) {
   $extRoot = __DIR__ . DIRECTORY_SEPARATOR;
   $include_path = $extRoot . PATH_SEPARATOR . get_include_path();
   set_include_path($include_path);
-  _contact_civix_mixin_polyfill();
+  // Based on <compatibility>, this does not currently require mixin/polyfill.php.
 }
 
 /**
@@ -148,7 +133,7 @@ function _contact_civix_civicrm_config($config = NULL) {
  */
 function _contact_civix_civicrm_install() {
   _contact_civix_civicrm_config();
-  _contact_civix_mixin_polyfill();
+  // Based on <compatibility>, this does not currently require mixin/polyfill.php.
 }
 
 /**
@@ -158,7 +143,7 @@ function _contact_civix_civicrm_install() {
  */
 function _contact_civix_civicrm_enable(): void {
   _contact_civix_civicrm_config();
-  _contact_civix_mixin_polyfill();
+  // Based on <compatibility>, this does not currently require mixin/polyfill.php.
 }
 
 /**
@@ -197,48 +182,5 @@ function _contact_civix_insert_navigation_menu(&$menu, $path, $item) {
       }
     }
     return $found;
-  }
-}
-
-/**
- * (Delegated) Implements hook_civicrm_navigationMenu().
- */
-function _contact_civix_navigationMenu(&$nodes) {
-  if (!is_callable(['CRM_Core_BAO_Navigation', 'fixNavigationMenu'])) {
-    _contact_civix_fixNavigationMenu($nodes);
-  }
-}
-
-/**
- * Given a navigation menu, generate navIDs for any items which are
- * missing them.
- */
-function _contact_civix_fixNavigationMenu(&$nodes) {
-  $maxNavID = 1;
-  array_walk_recursive($nodes, function($item, $key) use (&$maxNavID) {
-    if ($key === 'navID') {
-      $maxNavID = max($maxNavID, $item);
-    }
-  });
-  _contact_civix_fixNavigationMenuItems($nodes, $maxNavID, NULL);
-}
-
-function _contact_civix_fixNavigationMenuItems(&$nodes, &$maxNavID, $parentID) {
-  $origKeys = array_keys($nodes);
-  foreach ($origKeys as $origKey) {
-    if (!isset($nodes[$origKey]['attributes']['parentID']) && $parentID !== NULL) {
-      $nodes[$origKey]['attributes']['parentID'] = $parentID;
-    }
-    // If no navID, then assign navID and fix key.
-    if (!isset($nodes[$origKey]['attributes']['navID'])) {
-      $newKey = ++$maxNavID;
-      $nodes[$origKey]['attributes']['navID'] = $newKey;
-      $nodes[$newKey] = $nodes[$origKey];
-      unset($nodes[$origKey]);
-      $origKey = $newKey;
-    }
-    if (isset($nodes[$origKey]['child']) && is_array($nodes[$origKey]['child'])) {
-      _contact_civix_fixNavigationMenuItems($nodes[$origKey]['child'], $maxNavID, $nodes[$origKey]['attributes']['navID']);
-    }
   }
 }
