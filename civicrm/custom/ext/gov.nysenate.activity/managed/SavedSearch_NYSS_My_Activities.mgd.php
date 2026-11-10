@@ -114,10 +114,10 @@ return [
         'settings' => [
           'description' => E::ts(NULL),
           'sort' => [
-              [
-                  'Contact_ActivityContact_Activity_01.activity_date_time',
-                  'DESC',
-              ],
+            [
+              'Contact_ActivityContact_Activity_01.activity_date_time',
+              'DESC',
+            ],
           ],
           'limit' => 25,
           'pager' => [],
@@ -127,7 +127,7 @@ return [
               'type' => 'field',
               'key' => 'Contact_ActivityContact_Activity_01.activity_type_id:label',
               'dataType' => 'Integer',
-              'label' => E::ts('Activity Type'),
+              'label' => 'Activity Type',
               'sortable' => TRUE,
               'icons' => [
                 [
@@ -140,7 +140,7 @@ return [
               'type' => 'field',
               'key' => 'Contact_ActivityContact_Activity_01.subject',
               'dataType' => 'String',
-              'label' => E::ts('Subject'),
+              'label' => 'Subject',
               'sortable' => TRUE,
               'link' => [
                 'path' => '',
@@ -150,34 +150,34 @@ return [
                 'target' => 'crm-popup',
                 'task' => '',
               ],
-              'title' => E::ts('View Contact Activities'),
+              'title' => 'View Contact Activities',
             ],
             [
               'type' => 'field',
               'key' => 'Contact_ActivityContact_Activity_01_Activity_ActivityContact_Contact_01.display_name',
               'dataType' => 'String',
-              'label' => E::ts('With Constituents'),
+              'label' => 'With Constituents',
               'sortable' => TRUE,
             ],
             [
               'type' => 'field',
               'key' => 'Contact_ActivityContact_Activity_01.status_id:label',
               'dataType' => 'Integer',
-              'label' => E::ts('Status'),
+              'label' => 'Status',
               'sortable' => TRUE,
             ],
             [
               'type' => 'field',
               'key' => 'Contact_ActivityContact_Activity_01.activity_date_time',
               'dataType' => 'Timestamp',
-              'label' => E::ts('Activity Date'),
+              'label' => 'Activity Date',
               'sortable' => TRUE,
             ],
             [
               'type' => 'html',
               'key' => 'Contact_ActivityContact_Activity_01_Activity_CaseActivity_Case_01.id',
               'dataType' => 'Integer',
-              'label' => E::ts('Case'),
+              'label' => 'Case',
               'sortable' => TRUE,
               'rewrite' => '{if \'[Contact_ActivityContact_Activity_01_Activity_CaseActivity_Case_01.id]\'}<a href="/civicrm/contact/view/case?id=[Contact_ActivityContact_Activity_01_Activity_CaseActivity_Case_01.id]&action=view&reset=1" target="_blank">Case #[Contact_ActivityContact_Activity_01_Activity_CaseActivity_Case_01.id] - [Contact_ActivityContact_Activity_01_Activity_CaseActivity_Case_01.subject]</a>{/if}',
             ],
