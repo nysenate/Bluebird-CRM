@@ -15,17 +15,17 @@
   <version>1.0</version>
   <develStage>stable</develStage>
   <compatibility>
-    <ver>5.51</ver>
+    <ver>6.16</ver>
   </compatibility>
   <comments/>
   <civix>
     <namespace>CRM/Backup</namespace>
-    <format>25.10.2</format>
+    <format>26.10.3</format>
   </civix>
   <mixins>
     <mixin>menu-xml@1.0.0</mixin>
-    <mixin>smarty-v2@1.0.3</mixin>
     <mixin>scan-classes@1.0.0</mixin>
+    <mixin>smarty@1.0.3</mixin>
   </mixins>
   <classloader>
     <psr0 prefix="CRM_" path="."/>
