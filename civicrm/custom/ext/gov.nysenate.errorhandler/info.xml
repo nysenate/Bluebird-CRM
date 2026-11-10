@@ -15,7 +15,7 @@
   <version>1.0</version>
   <develStage>stable</develStage>
   <compatibility>
-    <ver>5.51</ver>
+    <ver>6.16</ver>
   </compatibility>
   <comments/>
   <classloader>
@@ -25,7 +25,7 @@
   <civix>
     <namespace>CRM/NYSS/Errorhandler</namespace>
     <angularModule>crmErrorhandler</angularModule>
-    <format>25.10.2</format>
+    <format>26.10.3</format>
   </civix>
   <mixins>
     <mixin>setting-php@1.0.0</mixin>
