@@ -104,6 +104,9 @@ define('SEP', "");
 
 // There are various symlinks in the build, so path/URL-detection doesn't always work. Be explicit.
 $civicrm_paths['civicrm.root']['url'] = CIVICRM_UF_BASEURL . 'sites/all/modules/civicrm';
+// [civicrm.files] lives in the instance data dir (the parent of templates_c),
+// which is resolved through a symlink
+$civicrm_paths['civicrm.files']['url'] = "/data/$datadirname/civicrm/";
 
 //temporary debugging statements
 //CRM_Core_Error::debug_var('bbcfg', $bbcfg);

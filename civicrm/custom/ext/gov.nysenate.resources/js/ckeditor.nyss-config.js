@@ -20,6 +20,11 @@ CKEDITOR.editorConfig = function(config) {
       plugins.push('scayt');
     }
     cfg.removePlugins = plugins.join(',');
+
+    // NYSS #19366 - Override the preset's content options. make sure pasted markup is cleaned up.
+    cfg.allowedContent = null;
+    // NYSS #19366 - Store characters like é and “ as-is rather than as named entities.
+    cfg.entities = false;
   });
 
   // Chain to the config file the ckeditor4 extension would have loaded.
