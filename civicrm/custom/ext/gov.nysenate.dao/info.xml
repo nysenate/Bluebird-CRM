@@ -15,12 +15,12 @@
   <version>1.0</version>
   <develStage>stable</develStage>
   <compatibility>
-    <ver>5.27</ver>
+    <ver>6.16</ver>
   </compatibility>
   <comments/>
   <civix>
     <namespace>CRM/NYSS/DAO</namespace>
-    <format>24.09.1</format>
+    <format>26.10.3</format>
   </civix>
   <classloader>
     <psr4 prefix="Civi\" path="Civi"/>

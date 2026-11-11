@@ -43,7 +43,7 @@
   </classloader>
   <civix>
     <namespace>CRM/NYSS/DevTools</namespace>
-    <format>25.10.2</format>
+    <format>26.10.3</format>
     <angularModule>crmNyssDevTools</angularModule>
   </civix>
   <mixins>

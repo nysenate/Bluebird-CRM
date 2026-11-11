@@ -122,38 +122,38 @@ return [
             [
               'type' => 'html',
               'key' => 'id',
-              'label' => E::ts('Case'),
+              'label' => 'Case',
               'sortable' => TRUE,
               'rewrite' => '<a href="/civicrm/contact/view/case?id=[id]&action=view&context=case&reset=1" target="_blank">#[id] &mdash; [subject]</a>',
             ],
             [
               'type' => 'field',
               'key' => 'GROUP_CONCAT_Case_CaseContact_Contact_01_sort_name',
-              'label' => E::ts('Constituent(s)'),
+              'label' => 'Constituent(s)',
               'sortable' => TRUE,
             ],
             [
               'type' => 'field',
               'key' => 'case_type_id:label',
-              'label' => E::ts('Case Type'),
+              'label' => 'Case Type',
               'sortable' => TRUE,
             ],
             [
               'type' => 'field',
               'key' => 'status_id:label',
-              'label' => E::ts('Status'),
+              'label' => 'Status',
               'sortable' => TRUE,
             ],
             [
               'type' => 'field',
               'key' => 'start_date',
-              'label' => E::ts('Start Date'),
+              'label' => 'Start Date',
               'sortable' => TRUE,
             ],
             [
               'type' => 'field',
               'key' => 'Case_CaseContact_Contact_01_Contact_RelationshipCache_Case_01.near_contact_id.sort_name',
-              'label' => E::ts('Case Manager'),
+              'label' => 'Case Manager',
               'sortable' => TRUE,
             ],
           ],
@@ -181,14 +181,17 @@ return [
         'saved_search_id.name' => 'NYSS_Caseload_Manager_Details',
         'type' => 'entity',
         'settings' => [
-          'entity_permission' => ['access caseload dashboard', 'access all cases and activities'],
+          'entity_permission' => [
+            'access caseload dashboard',
+            'access all cases and activities',
+          ],
           'entity_permission_operator' => 'OR',
           'sort' => [],
           'columns' => [
             [
               'type' => 'field',
               'key' => 'Case_CaseContact_Contact_01_Contact_RelationshipCache_Case_01.near_contact_id',
-              'label' => E::ts('Case Manager ID'),
+              'label' => 'Case Manager ID',
               'spec' => [
                 'name' => 'Case_CaseContact_Contact_01_Contact_Relaticd0b67c6898a0668',
                 'data_type' => 'Integer',
@@ -208,7 +211,7 @@ return [
             [
               'type' => 'field',
               'key' => 'Case_CaseContact_Contact_01_Contact_RelationshipCache_Case_01.near_contact_id.sort_name',
-              'label' => E::ts('Case Manager Display Name'),
+              'label' => 'Case Manager Display Name',
               'spec' => [
                 'name' => 'Case_CaseContact_Contact_01_Contact_Relati0e9a026673a1bc81',
                 'data_type' => 'String',
@@ -224,7 +227,7 @@ return [
             [
               'type' => 'field',
               'key' => 'id',
-              'label' => E::ts('Case ID'),
+              'label' => 'Case ID',
               'spec' => [
                 'name' => 'id',
                 'data_type' => 'Integer',
@@ -242,7 +245,7 @@ return [
             [
               'type' => 'field',
               'key' => 'segment_NYSS_Caseload_Open:label',
-              'label' => E::ts('Open'),
+              'label' => 'Open',
               'spec' => [
                 'name' => 'segment_NYSS_Caseload_Open',
                 'data_type' => 'String',
@@ -258,7 +261,7 @@ return [
             [
               'type' => 'field',
               'key' => 'segment_NYSS_Caseload_Urgent:label',
-              'label' => E::ts('Urgent'),
+              'label' => 'Urgent',
               'spec' => [
                 'name' => 'segment_NYSS_Caseload_Urgent',
                 'data_type' => 'String',
@@ -274,7 +277,7 @@ return [
             [
               'type' => 'field',
               'key' => 'segment_NYSS_Caseload_Resolved:label',
-              'label' => E::ts('Resolved'),
+              'label' => 'Resolved',
               'spec' => [
                 'name' => 'segment_NYSS_Caseload_Resolved',
                 'data_type' => 'String',
@@ -290,7 +293,7 @@ return [
             [
               'type' => 'field',
               'key' => 'segment_NYSS_Caseload_Newer_Than_7_Days:label',
-              'label' => E::ts('Open < 7 Days'),
+              'label' => 'Open < 7 Days',
               'spec' => [
                 'name' => 'segment_NYSS_Caseload_Newer_Than_7_Days',
                 'data_type' => 'String',
@@ -306,7 +309,7 @@ return [
             [
               'type' => 'field',
               'key' => 'segment_NYSS_Caseload_7_To_30_Days:label',
-              'label' => E::ts('Open 7 - 30 Days'),
+              'label' => 'Open 7 - 30 Days',
               'spec' => [
                 'name' => 'segment_NYSS_Caseload_7_To_30_Days',
                 'data_type' => 'String',
@@ -322,7 +325,7 @@ return [
             [
               'type' => 'field',
               'key' => 'segment_NYSS_Caseload_Older_Than_30_Days:label',
-              'label' => E::ts('Open > 30 Days'),
+              'label' => 'Open > 30 Days',
               'spec' => [
                 'name' => 'segment_NYSS_Caseload_Older_Than_30_Days',
                 'data_type' => 'String',
@@ -338,7 +341,7 @@ return [
             [
               'type' => 'field',
               'key' => 'segment_NYSS_Caseload_Resolved_Last_7_Days:label',
-              'label' => E::ts('Resolved Last 7 Days'),
+              'label' => 'Resolved Last 7 Days',
               'spec' => [
                 'name' => 'segment_NYSS_Caseload_Resolved_Last_7_Days',
                 'data_type' => 'String',
@@ -354,7 +357,7 @@ return [
             [
               'type' => 'field',
               'key' => 'DATEDIFF_end_date_start_date',
-              'label' => E::ts('Days to Resolution'),
+              'label' => 'Days to Resolution',
               'spec' => [
                 'name' => 'DATEDIFF_end_date_start_date',
                 'data_type' => 'Integer',

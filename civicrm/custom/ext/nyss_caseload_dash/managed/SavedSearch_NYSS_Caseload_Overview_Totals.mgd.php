@@ -50,7 +50,7 @@ return [
         'saved_search_id.name' => 'NYSS_Caseload_Overview_Totals',
         'type' => 'table',
         'settings' => [
-          'description' => E::ts(''),
+          'description' => '',
           'sort' => [],
           'limit' => 0,
           'pager' => FALSE,
@@ -59,7 +59,7 @@ return [
             [
               'type' => 'field',
               'key' => 'AVG_DATEDIFF_end_date_start_date',
-              'label' => E::ts('Avg. Days to Resolution'),
+              'label' => 'Avg. Days to Resolution',
               'sortable' => FALSE,
               'alignment' => 'text-center',
               'cssRules' => [
@@ -89,11 +89,11 @@ return [
       'version' => 4,
       'values' => [
         'name' => 'NYSS_Caseload_Total_7_To_30_Days',
-        'label' => E::ts('NYSS Caseload - Total Between 7 and 30 Days'),
+        'label' => 'NYSS Caseload - Total Between 7 and 30 Days',
         'saved_search_id.name' => 'NYSS_Caseload_Overview_Totals',
         'type' => 'table',
         'settings' => [
-          'description' => E::ts(''),
+          'description' => '',
           'sort' => [],
           'limit' => 0,
           'pager' => FALSE,
@@ -102,7 +102,7 @@ return [
             [
               'type' => 'html',
               'key' => 'COUNT_segment_NYSS_Caseload_7_To_30_Days',
-              'label' => E::ts('Open 7 - 30 Days'),
+              'label' => 'Open 7 - 30 Days',
               'sortable' => FALSE,
               'alignment' => 'text-center',
               'cssRules' => [
@@ -132,11 +132,11 @@ return [
       'version' => 4,
       'values' => [
         'name' => 'NYSS_Caseload_Total_Newer_Than_7_Days',
-        'label' => E::ts('NYSS Caseload - Total Newer Than 7 Days'),
+        'label' => 'NYSS Caseload - Total Newer Than 7 Days',
         'saved_search_id.name' => 'NYSS_Caseload_Overview_Totals',
         'type' => 'table',
         'settings' => [
-          'description' => E::ts(''),
+          'description' => '',
           'sort' => [],
           'limit' => 0,
           'pager' => FALSE,
@@ -145,7 +145,7 @@ return [
             [
               'type' => 'html',
               'key' => 'COUNT_segment_NYSS_Caseload_Newer_Than_7_Days',
-              'label' => E::ts('Open < 7 Days'),
+              'label' => 'Open < 7 Days',
               'sortable' => FALSE,
               'alignment' => 'text-center',
               'cssRules' => [
@@ -175,11 +175,11 @@ return [
       'version' => 4,
       'values' => [
         'name' => 'NYSS_Caseload_Total_Older_Than_30_Days',
-        'label' => E::ts('NYSS Caseload - Total Older Than 30 Days'),
+        'label' => 'NYSS Caseload - Total Older Than 30 Days',
         'saved_search_id.name' => 'NYSS_Caseload_Overview_Totals',
         'type' => 'table',
         'settings' => [
-          'description' => E::ts(''),
+          'description' => '',
           'sort' => [],
           'limit' => 0,
           'pager' => FALSE,
@@ -188,7 +188,7 @@ return [
             [
               'type' => 'html',
               'key' => 'COUNT_segment_NYSS_Caseload_Older_Than_30_Days',
-              'label' => E::ts('Open > 30 Days'),
+              'label' => 'Open > 30 Days',
               'sortable' => FALSE,
               'cssRules' => [
                 ['font-bold'],
@@ -222,7 +222,7 @@ return [
         'saved_search_id.name' => 'NYSS_Caseload_Overview_Totals',
         'type' => 'table',
         'settings' => [
-          'description' => E::ts(''),
+          'description' => '',
           'sort' => [],
           'limit' => 0,
           'pager' => FALSE,
@@ -231,7 +231,7 @@ return [
             [
               'type' => 'html',
               'key' => 'COUNT_segment_NYSS_Caseload_Older_Than_7_Days',
-              'label' => E::ts('Open > 7 Days'),
+              'label' => 'Open > 7 Days',
               'sortable' => FALSE,
               'alignment' => 'text-center',
               'cssRules' => [
@@ -261,11 +261,11 @@ return [
       'version' => 4,
       'values' => [
         'name' => 'NYSS_Caseload_Total_Open',
-        'label' => E::ts('NYSS Caseload - Total Open'),
+        'label' => 'NYSS Caseload - Total Open',
         'saved_search_id.name' => 'NYSS_Caseload_Overview_Totals',
         'type' => 'table',
         'settings' => [
-          'description' => E::ts(''),
+          'description' => '',
           'sort' => [],
           'limit' => 0,
           'pager' => FALSE,
@@ -274,7 +274,7 @@ return [
             [
               'type' => 'html',
               'key' => 'COUNT_segment_NYSS_Caseload_Open',
-              'label' => E::ts('Total Open'),
+              'label' => 'Total Open',
               'sortable' => FALSE,
               'alignment' => 'text-center',
               'cssRules' => [
@@ -309,7 +309,7 @@ return [
         'saved_search_id.name' => 'NYSS_Caseload_Overview_Totals',
         'type' => 'table',
         'settings' => [
-          'description' => E::ts(''),
+          'description' => '',
           'sort' => [],
           'limit' => 0,
           'pager' => FALSE,
@@ -318,7 +318,7 @@ return [
             [
               'type' => 'html',
               'key' => 'COUNT_segment_NYSS_Caseload_Resolved_Last_7_Days',
-              'label' => E::ts('Resolved Last 7 Days'),
+              'label' => 'Resolved Last 7 Days',
               'sortable' => FALSE,
               'alignment' => 'text-center',
               'cssRules' => [
@@ -352,7 +352,7 @@ return [
         'saved_search_id.name' => 'NYSS_Caseload_Overview_Totals',
         'type' => 'table',
         'settings' => [
-          'description' => E::ts(''),
+          'description' => '',
           'sort' => [],
           'limit' => 0,
           'pager' => FALSE,
@@ -361,7 +361,7 @@ return [
             [
               'type' => 'html',
               'key' => 'COUNT_Case_SK_NyssCaseloadUnassignedCases_id_01_c7b0c6b4793bbbee_label',
-              'label' => E::ts('Total Unassigned'),
+              'label' => 'Total Unassigned',
               'sortable' => FALSE,
               'alignment' => 'text-center',
               'cssRules' => [
@@ -395,7 +395,7 @@ return [
         'saved_search_id.name' => 'NYSS_Caseload_Overview_Totals',
         'type' => 'table',
         'settings' => [
-          'description' => E::ts(''),
+          'description' => '',
           'sort' => [],
           'limit' => 0,
           'pager' => FALSE,
@@ -404,7 +404,7 @@ return [
             [
               'type' => 'html',
               'key' => 'COUNT_segment_NYSS_Caseload_Urgent',
-              'label' => E::ts('Total Urgent'),
+              'label' => 'Total Urgent',
               'sortable' => FALSE,
               'alignment' => 'text-center',
               'cssRules' => [
