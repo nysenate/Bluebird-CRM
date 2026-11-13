@@ -33,6 +33,17 @@ if ! $readConfig --instance $instance --quiet; then
   exit 1
 fi
 
+## verify the Drupal themes symlink resolves after themes/ moved to bb4-transitional/themes
+drupal_rootdir=`$readConfig --ig $instance drupal.rootdir` || drupal_rootdir="$DEFAULT_DRUPAL_ROOTDIR"
+themes_link="$drupal_rootdir/sites/default/themes"
+
+if [ -L "$themes_link" ] && [ -f "$themes_link/BluebirdSeven/BluebirdSeven.info" ]; then
+  echo "$prog: themes symlink OK: $themes_link -> `readlink "$themes_link"`"
+else
+  echo "$prog: ERROR: themes symlink broken or missing: $themes_link -> `readlink "$themes_link"`" >&2
+  exit 1
+fi
+
 new_hash_salt=`php -r 'echo rtrim(strtr(base64_encode(random_bytes(32)), "+/", "-_"), "="), PHP_EOL;'`
 
 cat <<EOF
