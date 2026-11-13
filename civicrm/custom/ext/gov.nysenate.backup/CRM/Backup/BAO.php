@@ -156,15 +156,20 @@ class CRM_Backup_BAO {
     $cmd = sprintf("%s/scripts/dumpInstance.sh %s --zip --archive-file %s",
       escapeshellarg($approot), escapeshellarg($instance), escapeshellarg($fullFilePath));
     $p = \Symfony\Component\Process\Process::fromShellCommandline($cmd);
+    // Symfony's default 60s timeout is far too short for dumping a large instance.
+    $p->setTimeout(NULL);
     $exitCode = $p->run();
-    // FIXME: If $exitCode is non-zero, then... how do you want to report the error?
-    // Civi::log()->debug("Create backup", [
-    //   'cwd' => getcwd(),
-    //   'cmd' => $cmd,
-    //   'exitCode' => $exitCode,
-    //   'output' => $p->getOutput(),
-    //   'error' => $p->getErrorOutput(),
-    // ]);
+
+    if ($exitCode !== 0) {
+      Civi::log()->error('Backup creation failed', [
+        'cwd' => getcwd(),
+        'cmd' => $cmd,
+        'exitCode' => $exitCode,
+        'output' => $p->getOutput(),
+        'error' => $p->getErrorOutput(),
+      ]);
+      throw new CRM_Core_Exception("Backup script failed with exit code {$exitCode}. See the CiviCRM log for details.");
+    }
 
     if (file_exists($fullFilePath)) {
       return TRUE;
