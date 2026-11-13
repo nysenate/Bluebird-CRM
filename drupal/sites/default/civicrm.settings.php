@@ -34,6 +34,7 @@ $shortname = get_config_value($bbcfg, 'shortname', null);
 $approot = get_config_value($bbcfg, 'app.rootdir', null);
 $drupalroot = get_config_value($bbcfg, 'drupal.rootdir', null);
 $dataroot = get_config_value($bbcfg, 'data.rootdir', null);
+$httpPort = get_config_value($bbcfg, 'http.port', null);
 
 if (!$servername || !$shortname || !$approot || !$drupalroot || !$dataroot) {
   die("Incorrect config; check these settings: servername, shortname, app.rootdir, drupal.rootdir, data.rootdir\n");
@@ -56,7 +57,12 @@ define('CIVICRM_UF_DSN', $bbcfg['drupal_db_url'].'?new_link=true');
 define('CIVICRM_LOGGING_DSN', $bbcfg['log_db_url'].'?new_link=true');
 
 define('CIVICRM_TEMPLATE_COMPILEDIR', "$dataroot/$datadirname/civicrm/templates_c");
-define('CIVICRM_UF_BASEURL', "http://$servername/");
+define('CIVICRM_UF_BASEURL', implode('', [
+  'http://',
+  $servername,
+  empty($httpPort) ? '' : (':' . $httpPort),
+  '/',
+]));
 
 /**
  * If credentials are stored in the database, the CIVICRM_CRED_KEYS will be
