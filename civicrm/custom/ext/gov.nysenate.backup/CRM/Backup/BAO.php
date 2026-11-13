@@ -153,8 +153,18 @@ class CRM_Backup_BAO {
       'instance' => $instance,
     ]);*/
 
-    shell_exec(escapeshellarg("$approot/scripts/dumpInstance.sh").' '.escapeshellarg($instance)
-      .' --zip --archive-file '.escapeshellarg($fullFilePath));
+    $cmd = sprintf("%s/scripts/dumpInstance.sh %s --zip --archive-file %s",
+      escapeshellarg($approot), escapeshellarg($instance), escapeshellarg($fullFilePath));
+    $p = \Symfony\Component\Process\Process::fromShellCommandline($cmd);
+    $exitCode = $p->run();
+    // FIXME: If $exitCode is non-zero, then... how do you want to report the error?
+    // Civi::log()->debug("Create backup", [
+    //   'cwd' => getcwd(),
+    //   'cmd' => $cmd,
+    //   'exitCode' => $exitCode,
+    //   'output' => $p->getOutput(),
+    //   'error' => $p->getErrorOutput(),
+    // ]);
 
     if (file_exists($fullFilePath)) {
       return TRUE;
