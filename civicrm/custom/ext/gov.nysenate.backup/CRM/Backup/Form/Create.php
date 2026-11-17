@@ -35,7 +35,13 @@ class CRM_Backup_Form_Create extends CRM_Core_Form {
   public function postProcess() {
     $values = $this->exportValues();
 
-    $response = CRM_Backup_BAO::create($values['file_name']);
+    try {
+      $response = CRM_Backup_BAO::create($values['file_name']);
+    }
+    catch (CRM_Core_Exception $e) {
+      $response = FALSE;
+      $error = $e->getMessage();
+    }
 
     if ($response) {
       $msg = "Backup file created successfully ({$values['file_name']}).";
@@ -43,6 +49,9 @@ class CRM_Backup_Form_Create extends CRM_Core_Form {
     }
     else {
       $msg = "Unable to create backup ({$values['file_name']}).";
+      if (!empty($error)) {
+        $msg .= ' ' . $error;
+      }
       $type = 'error';
     }
 

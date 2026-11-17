@@ -32,6 +32,6 @@ class CRM_NYSS_Inbox_Page_Matched extends CRM_Core_Page {
     $matched = CRM_NYSS_Inbox_BAO_Inbox::getMessages($params, 'matched');
     //Civi::log()->debug('getMatched', ['params' => $params, 'matched' => $matched]);
 
-    CRM_Utils_JSON::output($matched);
+    CRM_Utils_System::sendJSONResponse($matched);
   }
 }

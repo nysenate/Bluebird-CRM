@@ -10,7 +10,7 @@ class CRM_NYSS_WebIntegration_Page_AJAX extends CRM_Core_Page {
     //get unmatched records
     $unmatched = self::getMessageActivities($params);
 
-    CRM_Utils_JSON::output($unmatched);
+    CRM_Utils_System::sendJSONResponse($unmatched);
   }
 
   /**

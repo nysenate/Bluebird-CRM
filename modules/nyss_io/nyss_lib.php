@@ -6,7 +6,7 @@
 function nyss_getConnection($bbcfg) {
   //Civi::log()->debug('getConnection', array('bbcfg' => $bbcfg));
 
-  $conn = mysqli_connect($bbcfg['db.host'], $bbcfg['db.user'], $bbcfg['db.pass'], $bbcfg['civicrm_db_name']);
+  $conn = mysqli_connect($bbcfg['db.host'], $bbcfg['db.user'], $bbcfg['db.pass'], $bbcfg['civicrm_db_name'], $bbcfg['db.port'] ?? NULL);
 
   if (mysqli_connect_errno()) {
     echo "Failed to connect to MySQL: " . mysqli_connect_error();

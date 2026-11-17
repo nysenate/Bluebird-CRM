@@ -45,10 +45,10 @@ fi
 $drush $instance vset --yes ldapauth_login_process 0 
 
 ## create drupal test users
-$drush $instance user-create mailing_creator   --mail="nyss.mailing.creator@gmail.com"   --password="create"
-$drush $instance user-create mailing_scheduler --mail="nyss.mailing.scheduler@gmail.com" --password="schedule"
-$drush $instance user-create mailing_approver  --mail="nyss.mailing.approver@gmail.com"  --password="approve"
-$drush $instance user-create mailing_cron      --mail="nyss.mailing.bounce@gmail.com"    --password="cronsend"
+$drush $instance user-create mailing_creator   --mail="nyss.mailing.creator@gmail.com"
+$drush $instance user-create mailing_scheduler --mail="nyss.mailing.scheduler@gmail.com"
+$drush $instance user-create mailing_approver  --mail="nyss.mailing.approver@gmail.com"
+$drush $instance user-create mailing_cron      --mail="nyss.mailing.bounce@gmail.com"   
 
 ## assign roles to users
 $drush $instance user-add-role "Mailing Creator"   mailing_creator

@@ -140,7 +140,7 @@ define( 'CIVICRM_UF_BASEURL'      , 'http://%%URL%%/nyss' );
  * We recommend using a 16-32 bit alphanumeric/punctuation key. 
  * More info at http://wiki.civicrm.org/confluence/display/CRMDOC/Command-line+Script+Configuration
  */
-define( 'CIVICRM_SITE_KEY', '32425kj24h5kjh24542kjh524' );
+define( 'CIVICRM_SITE_KEY', '%%SITE_KEY%%' );
 
 /**
  * Multi org / Multi site settings:

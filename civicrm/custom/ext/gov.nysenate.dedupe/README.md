@@ -28,8 +28,6 @@ mysql -u <user> -p <database> < civicrm/custom/ext/gov.nysenate.dedupe/sql/shado
 
 The functions must be reinstalled in the dabtabase whenever `sql/shadow_func.sql` is modified.
 
-`templates/sql/cividb_template.sql` should be updated whenever `sql/shadow_func.sql` is modified.
-
 ## Testing
 
 ### Test suite
