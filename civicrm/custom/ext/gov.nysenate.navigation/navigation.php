@@ -374,20 +374,6 @@ function _buildManageMenu($manageID) {
           'active' => 1,
         ],
       ],
-      //6552
-      $manageID+10 => [
-        'attributes' => [
-          'label' => 'Export Permissions',
-          'name' => 'Export Permissions',
-          'url' => 'civicrm/nyss/exportpermissions',
-          'permission' => 'administer CiviCRM',
-          'operator' => 'OR',
-          'separator' => 0,
-          'parentID' => $manageID,
-          'navID' => $manageID+10,
-          'active' => 1,
-        ],
-      ],
       $manageID+11 => [
         'attributes' => [
           'label' => 'Merge Duplicate Contacts',
