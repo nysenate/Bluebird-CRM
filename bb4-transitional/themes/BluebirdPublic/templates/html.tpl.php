@@ -26,6 +26,8 @@
         @import url('{$cssBase}/style.css');
       </style>
     ";
+    // NYSS #19407 -- hide bootstrap warnings coming from core
+    echo "<style>#bootstrap-theme > .messages.warning.collapse { display: none; }</style>\n";
   ?>
 
   <!--make fonts available-->
