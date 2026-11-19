@@ -1,0 +1,13 @@
+# Landing page for the bare CRM domain (e.g. crm.domain.gov).
+# Only index.html is served; every other file is denied. See README.md.
+# Requires Apache 2.4 and AllowOverride AuthConfig Indexes (or All).
+
+DirectoryIndex index.html
+
+Require all denied
+
+# The empty alternative matches requests for the directory itself ("/"),
+# so they can fall through to DirectoryIndex.
+<FilesMatch "^(index\.html)?$">
+    Require all granted
+</FilesMatch>
