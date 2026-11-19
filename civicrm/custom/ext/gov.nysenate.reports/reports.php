@@ -205,6 +205,8 @@ function reports_civicrm_alterReportVar($varType, &$var, &$object) {
         default:
       }
 
+      _reports_LimitRows_rows($var, $object);
+      _reports_SuppressEmptyEmail_rows($var, $object);
       break;
 
     case 'actions':
@@ -234,6 +236,41 @@ function _reports_SaveConfirm_actions(&$var, $object) {
     'confirm_title' => ts('Update Existing Report'),
     'confirm_message' => "<td><p>{$msg}</p><p>{$msg2}</p></td>",
   ];
+}
+
+/**
+ * NYSS #4619: prevent non-admins from printing/exporting/emailing reports
+ * with more than 10,000 records.
+ */
+#[CRM_NYSS_Attribute_IssueRef(4619)]
+function _reports_LimitRows_rows(&$var, $object) {
+  $outputMode = $object->getVar('_outputMode');
+  if ($outputMode === 'group') {
+    return;
+  }
+
+  $maxCountAllowed = 10000;
+  $countSelected = $object->get('_contactSelected');
+  $rowCount = (!empty($countSelected) && is_array($countSelected)) ? count($countSelected) : count($var ?? []);
+  if ($rowCount > $maxCountAllowed && !CRM_NYSS_BAO_NYSS::isAdmin()) {
+    $msg = ts('You cannot print, export, or generate a PDF for reports with more than 10,000 records. Please adjust your criteria to reduce the report size and try again.');
+    CRM_Core_Session::setStatus($msg, ts('Unable to Process Action'), 'error');
+    $object->setVar('_sendmail', FALSE);
+    $object->setVar('_outputMode', '');
+    $object->setOutputHandler();
+  }
+}
+
+/**
+ * Suppress empty scheduled report emails.
+ *
+ * Before removing this, must set the new `skip_empty` param for Bluebird's mail_report job
+ */
+#[CRM_NYSS_Attribute_UpstreamFix('civicrm', '6.22', 'https://github.com/civicrm/civicrm-core/pull/38109')]
+function _reports_SuppressEmptyEmail_rows($var, $object) {
+  if ($object->getVar('_outputMode') !== 'group' && $object->getVar('_sendmail') && empty($var)) {
+    CRM_Utils_System::civiExit();
+  }
 }
 
 function reports_civicrm_alterLogTables(&$logTableSpec) {
