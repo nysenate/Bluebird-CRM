@@ -125,18 +125,6 @@
     <access_arguments>export print production files</access_arguments>
   </item>
 
-  <!--Retrieve tab counts via ajax-->
-  <item>
-    <path>civicrm/ajax/count/changelog</path>
-    <page_callback>CRM_NYSS_BAO_Log::getTabCount</page_callback>
-    <access_arguments>access CiviCRM</access_arguments>
-  </item>
-  <item>
-    <path>civicrm/ajax/count/activity</path>
-    <page_callback>CRM_NYSS_BAO_Activity::getTabCount</page_callback>
-    <access_arguments>access CiviCRM</access_arguments>
-  </item>
-
   <!--3331-->
   <item>
     <path>civicrm/file/delete</path>
