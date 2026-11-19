@@ -20,6 +20,8 @@
  *
  * Class to handle logic of export.
  */
+#[CRM_NYSS_Attribute_IssueRef(16333)]
+#[CRM_NYSS_Attribute_UpstreamFix('civicrm', '6.21', 'https://github.com/civicrm/civicrm-core/pull/37696')]
 class CRM_Export_BAO_ExportProcessor {
 
   /**
