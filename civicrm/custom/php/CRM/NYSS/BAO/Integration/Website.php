@@ -1129,25 +1129,33 @@ class CRM_NYSS_BAO_Integration_Website
    * get the four types of website tagset tags
    * return hierarchal array by tagset
    */
-  static function getTags($cid)
-  {
-    $parentNames = CRM_Core_BAO_Tag::getTagSet('civicrm_contact');
-    //CRM_Core_Error::debug_var('$parentNames', $parentNames);
-
-    $tags = [
-      'Website Bills' =>
-        CRM_Core_BAO_EntityTag::getChildEntityTagDetails(array_search('Website Bills', $parentNames), $cid),
-      'Website Committees' =>
-        CRM_Core_BAO_EntityTag::getChildEntityTagDetails(array_search('Website Committees', $parentNames), $cid),
-      'Website Issues' =>
-        CRM_Core_BAO_EntityTag::getChildEntityTagDetails(array_search('Website Issues', $parentNames), $cid),
-      'Website Petitions' =>
-        CRM_Core_BAO_EntityTag::getChildEntityTagDetails(array_search('Website Petitions', $parentNames), $cid),
+  static function getTags($cid): array {
+    $tagsetNames = [
+      'Website Bills',
+      'Website Committees',
+      'Website Issues',
+      'Website Petitions',
     ];
+    $tags = array_fill_keys($tagsetNames, []);
 
-    //CRM_Core_Error::debug_var('$tags', $tags);
+    $entityTags = \Civi\Api4\EntityTag::get(FALSE)
+      ->addSelect('tag_id', 'tag_id.name', 'tag_id.description', 'tag_id.parent_id.name')
+      ->addWhere('entity_id', '=', $cid)
+      ->addWhere('entity_table', '=', 'civicrm_contact')
+      ->addWhere('tag_id.parent_id.name', 'IN', $tagsetNames)
+      ->addWhere('tag_id.parent_id.is_tagset', '=', TRUE)
+      ->execute();
+
+    foreach ($entityTags as $entityTag) {
+      $tags[$entityTag['tag_id.parent_id.name']][$entityTag['tag_id']] = [
+        'id' => $entityTag['tag_id'],
+        'name' => $entityTag['tag_id.name'],
+        'description' => $entityTag['tag_id.description'],
+      ];
+    }
+
     return $tags;
-  } //getTags()
+  }
 
 
   /*
