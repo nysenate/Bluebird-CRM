@@ -268,12 +268,6 @@ WHERE civicrm_case.id = %1";
       self::create($updateParams);
     }
 
-    //NYSS 7621 delete case tag entities
-    if (!$moveToTrash) {
-      $query = "DELETE FROM civicrm_entity_tag WHERE entity_table = 'civicrm_case' AND entity_id = {$caseId}";
-      CRM_Core_DAO::executeQuery($query);
-    }
-
     return TRUE;
   }
 
