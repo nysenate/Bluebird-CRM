@@ -30,6 +30,12 @@ class CRM_NYSS_PrintExport_Form_Task_PrintExportReport extends CRM_Contact_Form_
 
     if (CRM_Core_Permission::check('export print production files')) {
       $this->addElement('text', 'avanti_job_id', ts('Avanti Job ID'));
+      // the job ID becomes part of the export filename and download URL
+      $this->applyFilter('avanti_job_id', 'trim');
+      $this->addRule('avanti_job_id',
+        ts('Avanti Job ID may only contain letters, numbers, and dashes.'),
+        'regex', '/^[A-Za-z0-9-]+$/'
+      );
     }
 
     //4677
@@ -636,7 +642,7 @@ class CRM_NYSS_PrintExport_Form_Task_PrintExportReport extends CRM_Contact_Form_
       fwrite($fhoutStats, $tag_name."\t".$tag_stat."\n" );
     }
 
-    $urlStats = CRM_Utils_System::url('nyss_getfile', 'file='.$filenameStats, TRUE, NULL, FALSE);
+    $urlStats = CRM_NYSS_PrintExport_Page_GetFile::url($filenameStats);
     $urlcleanStats = urlencode( $urlStats );
     //end stats
 
@@ -644,7 +650,7 @@ class CRM_NYSS_PrintExport_Form_Task_PrintExportReport extends CRM_Contact_Form_
     $sql = "DROP TABLE $tmpTbl, $tmpTblIds;";
     CRM_Core_DAO::executeQuery($sql);
 
-    $url = CRM_Utils_System::url('nyss_getfile', 'file='.$filename, TRUE, NULL, FALSE);
+    $url = CRM_NYSS_PrintExport_Page_GetFile::url($filename);
     $urlclean = urlencode( $url );
     $body = "Contact export: $urlclean \r\n\r\n
              Tag stats export: $urlcleanStats \r\n";

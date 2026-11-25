@@ -115,28 +115,6 @@ function inbox_civicrm_buildForm($formName, &$form) {
 
 }
 
-function inbox_civicrm_entityTypes(&$entityTypes) {
-  if (empty($entityTypes['OAuthSysToken'])) {
-    $entityTypes['OAuthSysToken'] = [
-      'name' => 'OAuthSysToken',
-      'class' => 'CRM_OAuth_DAO_OAuthSysToken',
-      'table' => 'civicrm_oauth_systoken',
-    ];
-
-    $entityTypes['OAuthClient'] = [
-      'name' => 'OAuthClient',
-      'class' => 'CRM_OAuth_DAO_OAuthClient',
-      'table' => 'civicrm_oauth_client',
-    ];
-
-    $entityTypes['OAuthContactToken'] = [
-      'name' => 'OAuthContactToken',
-      'class' => 'CRM_OAuth_DAO_OAuthContactToken',
-      'table' => 'civicrm_oauth_contact_token',
-    ];
-  }
-}
-
 /**
  * @param $formName
  * @param $form

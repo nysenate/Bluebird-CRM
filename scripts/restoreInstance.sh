@@ -18,7 +18,6 @@ readConfig=$script_dir/readConfig.sh
 archive_file=
 force_ok=0
 ignore_mismatch=0
-tmpdir="/data/tmp/restoreInstance_$$"
 
 . $script_dir/defaults.sh
 
@@ -66,6 +65,10 @@ db_civi_prefix=`$readConfig --ig $instance db.civicrm.prefix` || db_civi_prefix=
 db_drup_prefix=`$readConfig --ig $instance db.drupal.prefix` || db_drup_prefix="$DEFAULT_DB_DRUPAL_PREFIX"
 db_log_prefix=`$readConfig --ig $instance db.log.prefix` || db_log_prefix="$DEFAULT_DB_LOG_PREFIX"
 
+# NYSS 17804 - PR-130 - allow tmpdir to be configured for the benefit of development envs
+tmp_root_dir=`$readConfig --ig $instance tmp.rootdir` || tmp_root_dir="$DEFAULT_TMP_ROOTDIR"
+tmpdir="$tmp_root_dir"/restoreInstance_$$
+
 errcode=0
 
 archive_ext=${archive_file##*.}
@@ -77,9 +80,12 @@ case "$archive_ext" in
   *) echo "$prog: $archive_ext: Unrecognized extension" >&2; exit 1 ;;
 esac
 
-mkdir -p $tmpdir/
-pushd $tmpdir/
-$unarc_cmd $archive_file || exit 1
+if ! mkdir -p "$tmpdir"; then
+  echo "$prog: $tmpdir: Unable to create temporary directory; aborting" >&2
+  exit 1
+fi
+pushd "$tmpdir" || exit 1
+$unarc_cmd "$archive_file" || exit 1
 
 # Sanity check.  Make sure the SQL dump files are named exactly as we expect.
 
@@ -96,17 +102,17 @@ fi
 if [ ! -r "$civi_file" ]; then
   echo "$prog: $civi_file: CiviCRM database file not found in archive." >&2
   popd
-  rm -rf $tmpdir/
+  rm -rf "$tmpdir"
   exit 1
 elif [ ! -r "$drup_file" ]; then
   echo "$prog: $drup_file: Drupal database file not found in archive." >&2
   popd
-  rm -rf $tmpdir/
+  rm -rf "$tmpdir"
   exit 1
 elif [ ! -r "$log_file" ]; then
   echo "$prog: $log_file: Logging database file not found in archive." >&2
   popd
-  rm -rf $tmpdir/
+  rm -rf "$tmpdir"
   exit 1
 fi
 
@@ -115,7 +121,7 @@ if [ $force_ok -eq 0 ]; then
   read ch
   case "$ch" in
     [yY]*) ;;
-    *) echo "Aborting."; popd; rm -rf $tmpdir/; exit 0 ;;
+    *) echo "Aborting."; popd; rm -rf "$tmpdir"; exit 0 ;;
   esac
 fi
 
@@ -124,6 +130,6 @@ $execSql "$instance" -f "$drup_file" --drupal
 $execSql "$instance" -f "$log_file" --log
 
 popd
-rm -rf $tmpdir/
+rm -rf "$tmpdir"
 
 exit $errcode

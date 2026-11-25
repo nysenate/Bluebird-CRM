@@ -53,7 +53,8 @@ $databases = array (
   ),
 );
 
-$drupal_hash_salt = 'Pq2DVthfEKZp4OMhWgx4tMEs6OfPxQo4Zts1ypJ_rgM';
+// If unset, Drupal falls back to a hash of $databases.
+$drupal_hash_salt = $bbconfig['site.drupal_hash_salt'] ?? '';
 
 ini_set('arg_separator.output',     '&amp;');
 ini_set('magic_quotes_runtime',     0);

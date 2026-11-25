@@ -296,21 +296,6 @@ function contact_civicrm_buildForm($formName, &$form) {
       $deceased->_attributes['onclick'] = $js;
     }
 
-    //3530 tweak js to place cursor at end of http in website field (IE8)
-    if (isset($form->_elementIndex['website[1][url]'])) {
-      $website =& $form->getElement('website[1][url]');
-      $js = "if(!this.value) {
-        this.value='http://';
-        if (this.createTextRange) {
-          var FieldRange = this.createTextRange();
-          FieldRange.moveStart('character', this.value.length);
-          FieldRange.collapse();
-          FieldRange.select();
-        }
-      } else { return false; }";
-      $website->_attributes['onfocus'] = $js;
-    }
-
     //NYSS 4407 remove bulk email from privacy list as it is a separate element
     if (isset($form->_elementIndex['privacy'])) {
       $privacy =& $form->getElement('privacy');
@@ -325,7 +310,7 @@ function contact_civicrm_buildForm($formName, &$form) {
   //14808
   if ($formName == 'CRM_Contact_Form_Contact' && $form->_contactType == 'Individual') {
     //set personal pronoun custom field for use in tpl
-    $cfId = CRM_Core_BAO_CustomField::getCustomFieldID('preferred_pronouns', 'Additional_Constituent_Information', FALSE);
+    [, $cfId] = explode('_', CRM_Core_BAO_CustomField::getShortNameFromLongName('Additional_Constituent_Information.preferred_pronouns'));
     $form->assign('cf_preferred_pronoun_id', $cfId);
   }
 
@@ -345,18 +330,6 @@ function contact_civicrm_buildForm($formName, &$form) {
       elseif (is_array($ele->_attributes['value'])) {
         $ele->_attributes['value'] = NULL;
       }
-    }
-  }
-
-  //16473 - make sure not date extends to future; may be able to revert in future version
-  if ($formName == 'CRM_Note_Form_Note') {
-    if ($form->elementExists('note_date')) {
-      $ele =& $form->getElement('note_date');
-      //Civi::log()->debug(__FUNCTION__, ['ele' => $ele]);
-
-      $existingMaxYear = date('Y', strtotime('-10 year'));
-      $newMaxYear = date('Y', strtotime('+10 year'));
-      $ele->_attributes['data-crm-datepicker'] = str_replace($existingMaxYear, $newMaxYear, $ele->_attributes['data-crm-datepicker']);
     }
   }
 
@@ -432,17 +405,6 @@ function contact_civicrm_buildForm($formName, &$form) {
     $form->getVar('_customSearchClass') == 'CRM_Contact_Form_Search_Custom_Proximity') {
     $defaults['state_province_id'] = 1031;
     $form->setDefaults($defaults);
-  }
-
-  //5154
-  if ($formName == 'CRM_Contact_Form_Search_Custom') {
-    $bC = drupal_get_breadcrumb();
-    foreach ($bC as $k => $v) {
-      if (strpos($v, 'Custom Searches') !== false) {
-        unset($bC[$k]);
-      }
-    }
-    drupal_set_breadcrumb($bC);
   }
 
   //set bounce reason default on, bounce report
@@ -1083,8 +1045,15 @@ function _contact_stripSpaces($text) {
 
 //4808/2960 word replacement for titles
 function _contact_fixTitles() {
-  $currentTitle = drupal_get_title();
-  //CRM_Core_Error::debug_var('currentTitle', $currentTitle);
+  // DELETE ME: Drupal-only code can go after the Standalone migration
+  if (function_exists('drupal_get_title')) {
+    $docTitle = $pageTitle = drupal_get_title();
+  }
+  // Standalone replacement for the above drupal code
+  else {
+    $docTitle = CRM_Core_Smarty::singleton()->getTemplateVars('docTitle');
+    $pageTitle = CRM_Core_Smarty::singleton()->getTemplateVars('pageTitle');
+  }
 
   $stringReplacement = [
     'CiviCRM' => 'Bluebird',
@@ -1094,8 +1063,12 @@ function _contact_fixTitles() {
   ];
 
   foreach ($stringReplacement as $search => $replace) {
-    if (strpos($currentTitle, $search) !== false) {
-      CRM_Utils_System::setTitle(str_replace($search, $replace, $currentTitle));
+    if (str_contains($docTitle, $search) || str_contains($pageTitle, $search)) {
+      CRM_Utils_System::setTitle(
+        str_replace($search, $replace, $docTitle),
+        str_replace($search, $replace, $pageTitle)
+      );
+      return;
     }
   }
 }

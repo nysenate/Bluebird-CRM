@@ -98,6 +98,32 @@ function mail_civicrm_alterMenu(&$items) {
   // This is the URL that the proxy is proxying to
   $items['civicrm/nyss/subscription/resubscribe']['access_callback'] = 1;
   $items['civicrm/nyss/subscription/resubscribe']['page_callback'] = 'CRM_NYSS_Mail_Page_Resubscribe';
+
+  // NYSS #18870, #19344 - Allow mailing approvers to cancel and archive mailings
+  $items['civicrm/mailing/action']['page_callback'] = 'CRM_NYSS_Mail_Form_Action';
+  $items['civicrm/mailing/action']['access_arguments'] = [
+    [
+      'access CiviMail',
+      'create mailings',
+      'schedule mailings',
+      'approve mailings',
+      'send SMS',
+    ],
+    'or'
+  ];
+}
+
+/**
+ * Implements hook_civicrm_permission().
+ *
+ * NYSS #18870, #19344 - create cancel mailing permission to allow roles other than admin to cancel mailings.
+ */
+function mail_civicrm_permission(&$permissions) {
+  $permissions['cancel mailings'] = [
+    'label' => E::ts('Bluebird: cancel mailings'),
+    'description' => E::ts('Cancel a scheduled, running or paused mailing. Does not allow pausing or resuming.'),
+    'implied_by' => ['access CiviMail'],
+  ];
 }
 
 /**
