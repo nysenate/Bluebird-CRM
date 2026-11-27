@@ -27,6 +27,16 @@ function contact_civicrm_config(&$config) {
 
   // NYSS #14192, #17702, #17730
   Civi::dispatcher()->addListener('civi.token.eval', ['CRM_NYSS_Contact_TokenEvalListener', 'evalToken'], -1000);
+
+  // NYSS #2365
+  Civi::dispatcher()->addListener('civi.dao.preInsert', function (\Civi\Core\DAO\Event\PreUpdate $event) {
+    if ($event->object instanceof CRM_Core_DAO_Log) {
+      $jobID = CRM_Core_Session::singleton()->get('jobID');
+      if ($jobID) {
+        $event->object->data = ($event->object->data ?? '') . ', [Job: ' . $jobID . ']';
+      }
+    }
+  });
 }
 
 /**
