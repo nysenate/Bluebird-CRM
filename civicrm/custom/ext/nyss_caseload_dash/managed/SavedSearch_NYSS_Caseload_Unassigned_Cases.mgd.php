@@ -15,7 +15,7 @@ return [
         'api_entity' => 'Case',
         'api_params' => [
           'version' => 4,
-            'checkPermissions' => FALSE,
+          'checkPermissions' => FALSE,
           'select' => [
             'id',
             'subject',
@@ -119,10 +119,10 @@ return [
             [
               'type' => 'html',
               'key' => 'id',
-              'label' => E::ts('Case'),
+              'label' => 'Case',
               'sortable' => TRUE,
               'rewrite' => '<a href="/civicrm/contact/view/case?id=[id]&action=view&reset=1" target="_blank">#[id] &mdash; [subject]</a>',
-              'title' => E::ts('Manage Case'),
+              'title' => 'Manage Case',
               'cssRules' => [
                 ['bg-warning', 'segment_Urgent', '=', 'Urgent'],
               ],
@@ -130,25 +130,25 @@ return [
             [
               'type' => 'field',
               'key' => 'start_date',
-              'label' => E::ts('Case Start Date'),
+              'label' => 'Case Start Date',
               'sortable' => TRUE,
             ],
             [
               'type' => 'field',
               'key' => 'GROUP_CONCAT_Case_CaseContact_Contact_01_display_name',
-              'label' => E::ts('Constituents'),
+              'label' => 'Constituents',
               'sortable' => TRUE,
             ],
             [
               'type' => 'field',
               'key' => 'case_type_id:label',
-              'label' => E::ts('Case Type'),
+              'label' => 'Case Type',
               'sortable' => TRUE,
             ],
             [
               'type' => 'field',
               'key' => 'status_id:label',
-              'label' => E::ts('Case Status'),
+              'label' => 'Case Status',
               'sortable' => TRUE,
               'cssRules' => [
                 ['bg-warning', 'segment_Urgent', '=', 'Urgent'],
@@ -238,7 +238,7 @@ return [
             [
               'type' => 'field',
               'key' => 'id',
-              'label' => E::ts('Case ID'),
+              'label' => 'Case ID',
               'spec' => [
                 'name' => 'id',
                 'data_type' => 'Integer',
@@ -256,7 +256,7 @@ return [
             [
               'type' => 'field',
               'key' => 'status_id:label',
-              'label' => E::ts('Case Status'),
+              'label' => 'Case Status',
               'spec' => [
                 'name' => 'status_id',
                 'data_type' => 'Integer',
@@ -272,7 +272,7 @@ return [
             [
               'type' => 'field',
               'key' => 'COUNT_Case_CaseContact_Contact_01_Contact_RelationshipCache_Case_01_near_contact_id',
-              'label' => E::ts('Case Manager Count'),
+              'label' => 'Case Manager Count',
               'spec' => [
                 'name' => 'COUNT_Case_CaseContact_Contact_01_Contact_a6c385c12bd86d07',
                 'data_type' => 'Integer',

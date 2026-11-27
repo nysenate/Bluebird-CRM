@@ -137,38 +137,38 @@ return [
             [
               'type' => 'html',
               'key' => 'id',
-              'label' => E::ts('Case'),
+              'label' => 'Case',
               'sortable' => TRUE,
               'rewrite' => '<a href="/civicrm/contact/view/case?id=[id]&action=view&context=case&reset=1" target="_blank">#[id] &mdash; [subject]</a>',
             ],
             [
               'type' => 'field',
               'key' => 'GROUP_CONCAT_Case_CaseContact_Contact_01_sort_name',
-              'label' => E::ts('Constituent(s)'),
+              'label' => 'Constituent(s)',
               'sortable' => TRUE,
             ],
             [
               'type' => 'field',
               'key' => 'case_type_id:label',
-              'label' => E::ts('Case Type'),
+              'label' => 'Case Type',
               'sortable' => TRUE,
             ],
             [
               'type' => 'field',
               'key' => 'status_id:label',
-              'label' => E::ts('Status'),
+              'label' => 'Status',
               'sortable' => TRUE,
             ],
             [
               'type' => 'field',
               'key' => 'start_date',
-              'label' => E::ts('Start Date'),
+              'label' => 'Start Date',
               'sortable' => TRUE,
             ],
             [
               'type' => 'field',
               'key' => 'GROUP_CONCAT_Case_CaseContact_Contact_01_Contact_RelationshipCache_Case_01_near_contact_id_display_name',
-              'label' => E::ts('Case Manager(s)'),
+              'label' => 'Case Manager(s)',
               'sortable' => TRUE,
             ],
             [
@@ -249,7 +249,7 @@ return [
             [
               'type' => 'field',
               'key' => 'id',
-              'label' => E::ts('Case ID'),
+              'label' => 'Case ID',
               'spec' => [
                 'name' => 'id',
                 'data_type' => 'Integer',
@@ -267,7 +267,7 @@ return [
             [
               'type' => 'field',
               'key' => 'segment_NYSS_Caseload_Open:label',
-              'label' => E::ts('Open'),
+              'label' => 'Open',
               'spec' => [
                 'name' => 'segment_NYSS_Caseload_Open',
                 'data_type' => 'String',
@@ -283,7 +283,7 @@ return [
             [
               'type' => 'field',
               'key' => 'segment_NYSS_Caseload_Resolved:label',
-              'label' => E::ts('Resolved'),
+              'label' => 'Resolved',
               'spec' => [
                 'name' => 'segment_NYSS_Caseload_Resolved',
                 'data_type' => 'String',
@@ -299,7 +299,7 @@ return [
             [
               'type' => 'field',
               'key' => 'Case_SK_NyssCaseloadUnassignedCases_id_01.segment_NYSS_Caseload_Unassigned:label',
-              'label' => E::ts('Unassigned'),
+              'label' => 'Unassigned',
               'spec' => [
                 'name' => 'Case_SK_NyssCaseloadUnassignedCases_id_01_c7b0c6b4793bbbee',
                 'data_type' => 'String',
@@ -315,7 +315,7 @@ return [
             [
               'type' => 'field',
               'key' => 'segment_NYSS_Caseload_Urgent:label',
-              'label' => E::ts('Urgent'),
+              'label' => 'Urgent',
               'spec' => [
                 'name' => 'segment_NYSS_Caseload_Urgent',
                 'data_type' => 'String',
@@ -331,7 +331,7 @@ return [
             [
               'type' => 'field',
               'key' => 'segment_NYSS_Caseload_Newer_Than_7_Days:label',
-              'label' => E::ts('Open < 7 Days'),
+              'label' => 'Open < 7 Days',
               'spec' => [
                 'name' => 'segment_NYSS_Caseload_Newer_Than_7_Days',
                 'data_type' => 'String',
@@ -347,7 +347,7 @@ return [
             [
               'type' => 'field',
               'key' => 'segment_NYSS_Caseload_Older_Than_7_Days:label',
-              'label' => E::ts('Open > 7 Days'),
+              'label' => 'Open > 7 Days',
               'spec' => [
                 'name' => 'segment_NYSS_Caseload_Older_Than_7_Days',
                 'data_type' => 'String',
@@ -363,7 +363,7 @@ return [
             [
               'type' => 'field',
               'key' => 'segment_NYSS_Caseload_7_To_30_Days:label',
-              'label' => E::ts('Open 7-30 Days'),
+              'label' => 'Open 7-30 Days',
               'spec' => [
                 'name' => 'segment_NYSS_Caseload_7_To_30_Days',
                 'data_type' => 'String',
@@ -379,7 +379,7 @@ return [
             [
               'type' => 'field',
               'key' => 'segment_NYSS_Caseload_Older_Than_30_Days:label',
-              'label' => E::ts('Open > 30 Days'),
+              'label' => 'Open > 30 Days',
               'spec' => [
                 'name' => 'segment_NYSS_Caseload_Older_Than_30_Days',
                 'data_type' => 'String',
@@ -395,7 +395,7 @@ return [
             [
               'type' => 'field',
               'key' => 'segment_NYSS_Caseload_Resolved_Last_7_Days:label',
-              'label' => E::ts('Resolved Last 7 Days'),
+              'label' => 'Resolved Last 7 Days',
               'spec' => [
                 'name' => 'segment_NYSS_Caseload_Resolved_Last_7_Days',
                 'data_type' => 'String',
@@ -411,7 +411,7 @@ return [
             [
               'type' => 'field',
               'key' => 'DATEDIFF_end_date_start_date',
-              'label' => E::ts('Avg. Days to Resolution'),
+              'label' => 'Avg. Days to Resolution',
               'spec' => [
                 'name' => 'DATEDIFF_end_date_start_date',
                 'data_type' => 'Integer',

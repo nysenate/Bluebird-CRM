@@ -23,7 +23,7 @@
   <develStage>alpha</develStage>
   <compatibility mode="semver">
     <comments>Semantic versioning. For example, compatibility with "6.1" implies compatibility with "6.2".</comments>
-    <ver>6.9</ver>
+    <ver>6.16</ver>
   </compatibility>
   <php_compatibility mode="list">
     <comments>Listed versions. For example, specify both "8.1" and "8.2".</comments>
@@ -44,7 +44,7 @@
   </classloader>
   <civix>
     <namespace>CRM/NYSS/PrintExport</namespace>
-    <format>25.10.2</format>
+    <format>26.10.3</format>
     <angularModule>crmNyssPrintExport</angularModule>
   </civix>
   <mixins>

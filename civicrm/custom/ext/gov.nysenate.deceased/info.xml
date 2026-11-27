@@ -15,12 +15,12 @@
   <version>1.0</version>
   <develStage>stable</develStage>
   <compatibility>
-    <ver>5.51</ver>
+    <ver>6.16</ver>
   </compatibility>
   <comments>This is a new, undeveloped module</comments>
   <civix>
     <namespace>CRM/NYSS/Deceased</namespace>
-    <format>25.10.2</format>
+    <format>26.10.3</format>
   </civix>
   <classloader>
     <psr4 prefix="Civi\" path="Civi"/>

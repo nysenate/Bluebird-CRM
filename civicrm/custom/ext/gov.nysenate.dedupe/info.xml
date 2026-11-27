@@ -15,12 +15,12 @@
   <version>1.0</version>
   <develStage>stable</develStage>
   <compatibility>
-    <ver>5.75</ver>
+    <ver>6.16</ver>
   </compatibility>
   <comments/>
   <civix>
     <namespace>CRM/NYSS/Dedupe</namespace>
-    <format>25.10.2</format>
+    <format>26.10.3</format>
   </civix>
   <classloader>
     <psr0 prefix="CRM_" path="."/>

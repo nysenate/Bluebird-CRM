@@ -15,18 +15,18 @@
   <version>1.0</version>
   <develStage>stable</develStage>
   <compatibility>
-    <ver>5.51</ver>
+    <ver>6.16</ver>
   </compatibility>
   <comments/>
   <civix>
     <namespace>CRM/Inlinehelp</namespace>
-    <format>25.10.2</format>
+    <format>26.10.3</format>
   </civix>
   <classloader>
     <psr4 prefix="Civi\" path="Civi"/>
   </classloader>
   <mixins>
     <mixin>scan-classes@1.0.0</mixin>
-    <mixin>smarty-v2@1.0.1</mixin>
+    <mixin>smarty@1.0.3</mixin>
   </mixins>
 </extension>

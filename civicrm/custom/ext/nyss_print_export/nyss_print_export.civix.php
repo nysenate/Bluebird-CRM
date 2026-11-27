@@ -6,7 +6,7 @@
  * The ExtensionUtil class provides small stubs for accessing resources of this
  * extension.
  */
-class CRM_NyssPrintExport_ExtensionUtil {
+class CRM_NYSS_PrintExport_ExtensionUtil {
   const SHORT_NAME = 'nyss_print_export';
   const LONG_NAME = 'nyss_print_export';
   const CLASS_PREFIX = 'CRM_NYSS_PrintExport';
@@ -77,7 +77,7 @@ class CRM_NyssPrintExport_ExtensionUtil {
 
 }
 
-use CRM_NyssPrintExport_ExtensionUtil as E;
+use CRM_NYSS_PrintExport_ExtensionUtil as E;
 
 /**
  * (Delegated) Implements hook_civicrm_config().
@@ -153,48 +153,5 @@ function _nyss_print_export_civix_insert_navigation_menu(&$menu, $path, $item) {
       }
     }
     return $found;
-  }
-}
-
-/**
- * (Delegated) Implements hook_civicrm_navigationMenu().
- */
-function _nyss_print_export_civix_navigationMenu(&$nodes) {
-  if (!is_callable(['CRM_Core_BAO_Navigation', 'fixNavigationMenu'])) {
-    _nyss_print_export_civix_fixNavigationMenu($nodes);
-  }
-}
-
-/**
- * Given a navigation menu, generate navIDs for any items which are
- * missing them.
- */
-function _nyss_print_export_civix_fixNavigationMenu(&$nodes) {
-  $maxNavID = 1;
-  array_walk_recursive($nodes, function($item, $key) use (&$maxNavID) {
-    if ($key === 'navID') {
-      $maxNavID = max($maxNavID, $item);
-    }
-  });
-  _nyss_print_export_civix_fixNavigationMenuItems($nodes, $maxNavID, NULL);
-}
-
-function _nyss_print_export_civix_fixNavigationMenuItems(&$nodes, &$maxNavID, $parentID) {
-  $origKeys = array_keys($nodes);
-  foreach ($origKeys as $origKey) {
-    if (!isset($nodes[$origKey]['attributes']['parentID']) && $parentID !== NULL) {
-      $nodes[$origKey]['attributes']['parentID'] = $parentID;
-    }
-    // If no navID, then assign navID and fix key.
-    if (!isset($nodes[$origKey]['attributes']['navID'])) {
-      $newKey = ++$maxNavID;
-      $nodes[$origKey]['attributes']['navID'] = $newKey;
-      $nodes[$newKey] = $nodes[$origKey];
-      unset($nodes[$origKey]);
-      $origKey = $newKey;
-    }
-    if (isset($nodes[$origKey]['child']) && is_array($nodes[$origKey]['child'])) {
-      _nyss_print_export_civix_fixNavigationMenuItems($nodes[$origKey]['child'], $maxNavID, $nodes[$origKey]['attributes']['navID']);
-    }
   }
 }

@@ -1271,7 +1271,6 @@ function _mail_alterMailingWizard(phpQueryObject $doc) {
   $doc->find('div[ng-form=crmMailingSubform]')->html($html);
 }
 
-
 /**
  * @param phpQueryObject $doc
  *
