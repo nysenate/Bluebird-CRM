@@ -29,10 +29,10 @@
 </div>
 
 <div class="crm-block crm-form-block crm-contact-custom-search-form-block">
-  <div class="crm-accordion-wrapper crm-custom_search_form-accordion {if $rows}collapsed{/if}">
-    <div class="crm-accordion-header crm-master-accordion-header">
+  <details class="crm-accordion-light crm-custom_search_form-accordion" {if !$rows}open{/if}>
+    <summary>
       {ts}Edit Search Criteria{/ts}
-    </div><!-- /.crm-accordion-header -->
+    </summary>
     <div class="crm-accordion-body">
       <div class="spacer"></div>
       <table class="form-layout-compressed">
@@ -45,9 +45,9 @@
         {/foreach}
       </table>
       <div class="crm-submit-buttons">{include file="CRM/common/formButtons.tpl" location="bottom"}</div>
-    </div><!-- /.crm-accordion-body -->
-  </div><!-- /.crm-accordion-wrapper -->
-</div><!-- /.crm-form-block -->
+    </div>
+  </details>
+</div>
 
 {if $rowsEmpty || $rows}
   <div class="crm-content-block">

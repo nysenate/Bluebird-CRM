@@ -101,8 +101,8 @@
 {*display message*}
 <div class="message-details-wrapper">
 {foreach from=$message_details item=message}
-  <div class="crm-accordion-wrapper crm-accordion {if $is_multiple}collapsed{/if} message-details">
-    <div class="crm-accordion-header">{$message.details.sender_name}: {$message.details.subject}</div>
+  <details class="crm-accordion-bold message-details" {if !$is_multiple}open{/if}>
+    <summary>{$message.details.sender_name}: {$message.details.subject}</summary>
     <div class="crm-accordion-body">
       <div class="crm-section">
         <div class="label">From</div>
@@ -134,7 +134,7 @@
         <div class="clear"></div>
       </div>
     </div>
-  </div>
+  </details>
 {/foreach}
 </div>
 

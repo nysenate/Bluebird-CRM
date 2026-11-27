@@ -57,7 +57,7 @@
       color: #003366;
       margin: 10px 0;
     }
-    .crm-accordion-header {
+    summary, .crm-accordion-header {
       font-size: 12px;
     }
     .crm-accordion-body {
@@ -89,10 +89,10 @@
         <div class="crm-section crm-error-message">{$error.message}</div>
     {/if}
     {if ($code OR $mysql_code OR $errorDetails) AND $config->debug}
-        <div class="crm-accordion-wrapper collapsed crm-fatal-error-details-block">
-         <div class="crm-accordion-header" onclick="toggle(this);";>
+        <details class="crm-accordion-bold crm-fatal-error-details-block">
+         <summary>
           {ts}Error Details{/ts}
-         </div><!-- /.crm-accordion-header -->
+         </summary>
          <div class="crm-accordion-body">
             {if $code}
                 <div class="crm-section">{ts}Error Code:{/ts} {$code}</div>
@@ -104,7 +104,7 @@
                 <div class="crm-section">{ts}Additional Details:{/ts} {$errorDetails}</div>
             {/if}
          </div><!-- /.crm-accordion-body -->
-        </div><!-- /.crm-accordion-wrapper -->
+        </details>
     {/if}
     <p><a href="{$config->userFrameworkBaseURL}" title="{ts}Main Menu{/ts}">{ts}Return to home page.{/ts}</a></p>
 </div>
@@ -116,15 +116,14 @@
     <p class="large"><a href="{$config->userFrameworkBaseURL}" title="Bluebird Home">Click here</a> to return to Bluebird.</p>
 
     {if $message}
-      <div class="crm-accordion-wrapper crm-accordion_title-accordion crm-accordion-closed crm-fatal-error-details-block" onclick="toggle(this);";>
-        <div class="crm-accordion-header">
-          <div class="icon crm-accordion-pointer"></div>
+      <details class="crm-accordion-bold crm-fatal-error-details-block">
+        <summary>
           {ts}Additional Details{/ts}
-        </div><!-- /.crm-accordion-header -->
+        </summary>
         <div class="crm-accordion-body">
           {$message}
         </div><!-- /.crm-accordion-body -->
-      </div><!-- /.crm-accordion-wrapper -->
+      </details>
     {/if}
   </div>
 {/if}{*NYSS*}
