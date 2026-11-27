@@ -16,6 +16,8 @@ return [
         'icon' => 'crm-i fa-history',
         'permission' => ['access CiviCRM'],
         'parent_id' => NULL,
+        'permission_operator' => 'AND',
+        'is_active' => TRUE,
       ],
       'match' => ['name', 'domain_id'],
     ],

@@ -1,0 +1,5 @@
+{
+    "name": "civicrm/recentmenu",
+    "description": "Places recently-viewed items in the Menu bar for quick access",
+    "type": "civicrm-ext"
+}
