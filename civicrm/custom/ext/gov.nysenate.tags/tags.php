@@ -144,7 +144,12 @@ function tags_civicrm_buildForm($formName, &$form) {
     $contactIssueCode_list = stripslashes(implode(' &#8226; ', $contactIssueCode_item));
 
     //Construct list of Legislative Positions
-    $legpositions = CRM_Core_BAO_EntityTag::getChildEntityTagDetails(292, $contactId);
+    $legpositions = \Civi\Api4\EntityTag::get(FALSE)
+      ->addSelect('tag_id.name')
+      ->addWhere('entity_id', '=', $contactId)
+      ->addWhere('entity_table', '=', 'civicrm_contact')
+      ->addWhere('tag_id.parent_id', '=', CRM_NYSS_Tags_Constants::POSITIONS_TAG_ID)
+      ->execute();
 
     $bbcfg = get_bluebird_instance_config();
     if (isset($bbcfg['openleg.url.template'])) {
@@ -154,20 +159,16 @@ function tags_civicrm_buildForm($formName, &$form) {
       $url_template = '/bill/{year}/{billno}';
     }
 
-    if (!empty($legpositions)) {
+    if ($legpositions->count()) {
       $legpositionsHTML = '<ul>';
-      foreach ($legpositions as &$legposition) {
-        $name = $legposition['name'];
+      foreach ($legpositions as $legposition) {
+        $name = $legposition['tag_id.name'];
         $bill_id = substr($name, 0, strcspn($name, ' :'));
         $id_parts = explode('-', $bill_id);  // [0]=billno, [1]=year
         $search = ['{billno}', '{year}'];
         $bill_url = str_replace($search, $id_parts, $url_template);
         $bill_html = "<a href=\"$bill_url\" target=\"_blank\">$bill_url</a>";
-        $legposition['description'] = $bill_html;
-
-        if (!empty($legposition['description']) && $legposition['description'] != 'No description available.') {
-          $legpositionsHTML .= "<li><strong>{$name}</strong> :: {$legposition['description']}</li>";
-        }
+        $legpositionsHTML .= "<li><strong>{$name}</strong> :: {$bill_html}</li>";
       }
       $legpositionsHTML .= '</ul>';
     }
@@ -189,7 +190,7 @@ function tags_civicrm_buildForm($formName, &$form) {
       ]);
     }
 
-    if (!empty($legpositions)) {
+    if ($legpositions->count()) {
       CRM_Core_Region::instance('page-body')->add([
         'markup' => "
           <div class='contactTagsList help'>
